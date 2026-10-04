@@ -15,10 +15,12 @@ import itertools
 import json
 import os
 import re
+import shutil
 import sqlite3
 import struct
 import subprocess
 import sys
+import time
 import uuid
 import wave
 from bisect import bisect_left, bisect_right
@@ -123,6 +125,9 @@ class _ReaderContext:
         self.connection.execute("PRAGMA mmap_size=0")
 
     def flush(self):
+        budget = getattr(self, "resource_budget", None)
+        if budget is not None:
+            budget.observe()
         self.connection.commit()
         self.pending_rows = self.pending_bytes = 0
 
@@ -377,6 +382,225 @@ def _join_key(value):
     return raw
 
 
+def _resource_identity(row):
+    i = row["identity"]
+    return tuple(i[k] for k in ("sessionId", "visit", "map", "phase")) + (
+        row["kind"],
+        row.get("subject"),
+        row.get("slot"),
+        row.get("layer"),
+        row.get("highPriority"),
+    )
+
+
+def _resource_key(row, required=False):
+    # Preserve the old candidate key, including its explicit Python numeric equality.
+    want = row["expected"] if required else row.get("expected")
+    if row["kind"] == "map":
+        data = want if required else row["used"]
+        match = (data.get("block"), data.get("tile"))
+    else:
+        match = (json.dumps(_inventory_key(want), sort_keys=True, separators=(",", ":")),)
+    return _resource_identity(row) + match
+
+
+class _ResourceRelation:
+    """Count exact operand variants and ordered runs; never expand candidate pairs.
+
+    Validation groups retain every operand their predicates read. Identical validation
+    rows carry multiplicity; original locators and candidate ordinals survive reduction.
+    Runs allow exact prefix counts when the legacy evaluated block stops at an exception.
+    These tables are disposable scratch, not the report's publication representation.
+    """
+
+    def __init__(self, context=None, budget=None):
+        global _STREAM_CONTEXT
+        if context is None and _STREAM_CONTEXT is None:
+            _STREAM_CONTEXT = _ReaderContext(_STREAM_SCRATCH_ROOT or repo_path("local"))
+        self.context = context or _working_context()
+        self.budget = budget
+        self.id = self.context.store()
+        self.count = 0
+        self.batch, self.validation_batch, self.last, self.runs = {}, {}, {}, {}
+        self.batch_bytes = 0
+        self.context.connection.executescript("""
+            CREATE TABLE IF NOT EXISTS resource_variants(
+                relation INTEGER,key BLOB,signature BLOB,count INTEGER,first INTEGER,payload BLOB,
+                PRIMARY KEY(relation,key,signature)) WITHOUT ROWID;
+            CREATE TABLE IF NOT EXISTS resource_validation(
+                relation INTEGER,category TEXT,signature BLOB,count INTEGER,
+                first INTEGER,payload BLOB,
+                PRIMARY KEY(relation,category,signature)) WITHOUT ROWID;
+            CREATE TABLE IF NOT EXISTS resource_runs(
+                relation INTEGER,key BLOB,first INTEGER,last INTEGER,signature BLOB,count INTEGER,
+                PRIMARY KEY(relation,key,first)) WITHOUT ROWID;
+        """)
+
+    def __bool__(self):
+        return bool(self.count)
+
+    def append(self, row):
+        ordinal = self.count
+        self.count += 1
+        locator = row.get("_captureLocator", dict(channel="resourceUses", index=ordinal))
+        payload = dict(row, _captureLocator=locator, _resourceOrdinal=ordinal)
+        # Exact JSON is a representation key, not the selector equality predicate.
+        signature = json.dumps(row.get("used"), sort_keys=True, separators=(",", ":")).encode()
+
+        def validation(category, operands):
+            operands = dict(operands, _validationCategory=category)
+            encoded = json.dumps(operands, sort_keys=True, separators=(",", ":")).encode()
+            batch_key = (category, encoded)
+            if batch_key not in self.validation_batch:
+                self.validation_batch[batch_key] = [
+                    0,
+                    ordinal,
+                    self.context.encode(dict(operands, _captureLocator=locator)),
+                ]
+                self.batch_bytes += len(encoded)
+                self.batch_bytes += len(self.validation_batch[batch_key][2])
+            self.validation_batch[batch_key][0] += 1
+
+        try:
+            for name in ("sessionId", "visit", "map", "phase", "observationSequence"):
+                row["identity"][name]
+            row["kind"]
+            row["used"]
+            key = _join_key(_resource_key(row))
+        except (KeyError, IndexError, ValueError, TypeError):
+            key = None  # The normal validation boundary retains its typed failure.
+            validation("occurrence", row)
+        if key is not None:
+            i = row["identity"]
+            validation(
+                "identity",
+                dict(
+                    kind="map" if row["kind"] == "map" else "entity",
+                    identity={
+                        k: i[k] for k in ("sessionId", "visit", "map", "observationSequence")
+                    },
+                    used=None,
+                ),
+            )
+            operands = dict(kind=row["kind"], identity=dict(visit=i["visit"], phase=i["phase"]))
+            if row["kind"] == "map":
+                operands.update({k: row[k] for k in ("layer", "highPriority", "pass") if k in row})
+                operands["used"] = {"word": row["used"]["word"]} if "word" in row["used"] else {}
+            validation("texture", operands)
+            entry = (key, signature)
+            if entry not in self.batch:
+                self.batch[entry] = [0, ordinal, self.context.encode(payload)]
+                self.batch_bytes += len(key) + len(signature) + len(self.batch[entry][2])
+            self.batch[entry][0] += 1
+            if key not in self.last:
+                found = self.context.connection.execute(
+                    "SELECT first,signature FROM resource_runs WHERE relation=? AND key=? "
+                    "ORDER BY first DESC LIMIT 1",
+                    (self.id, key),
+                ).fetchone()
+                self.last[key] = found
+            previous = self.last[key]
+            if previous is None or previous[1] != signature:
+                self.last[key] = (ordinal, signature)
+                self.runs[key, ordinal] = [ordinal, signature, 1]
+            else:
+                run = self.runs.setdefault((key, previous[0]), [ordinal, signature, 0])
+                run[0] = ordinal
+                run[2] += 1
+        if (
+            len(self.batch) + len(self.validation_batch) + len(self.runs) >= 4096
+            or self.batch_bytes >= 8 * 1024 * 1024
+        ):
+            self.flush()
+
+    def flush(self):
+        connection = self.context.connection
+        connection.executemany(
+            "INSERT INTO resource_variants VALUES(?,?,?,?,?,?) "
+            "ON CONFLICT(relation,key,signature) DO UPDATE SET count=count+excluded.count",
+            ((self.id, key, signature, *value) for (key, signature), value in self.batch.items()),
+        )
+        connection.executemany(
+            "INSERT INTO resource_validation VALUES(?,?,?,?,?,?) "
+            "ON CONFLICT(relation,category,signature) DO UPDATE SET count=count+excluded.count",
+            (
+                (self.id, category, signature, *value)
+                for (category, signature), value in self.validation_batch.items()
+            ),
+        )
+        connection.executemany(
+            "INSERT INTO resource_runs VALUES(?,?,?,?,?,?) "
+            "ON CONFLICT(relation,key,first) DO UPDATE SET "
+            "last=excluded.last,count=count+excluded.count",
+            ((self.id, key, first, *value) for (key, first), value in self.runs.items()),
+        )
+        self.batch.clear()
+        self.validation_batch.clear()
+        self.last.clear()
+        self.runs.clear()
+        self.batch_bytes = 0
+        self.context.flush()
+        if self.budget is not None:
+            self.budget.checkpoint("resource count spill")
+
+    def validations(self, category):
+        self.flush()
+        cursor = self.context.connection.execute(
+            "SELECT count,payload FROM resource_validation "
+            "WHERE relation=? AND category=? ORDER BY first",
+            (self.id, category),
+        )
+        try:
+            for count, raw in cursor:
+                row = self.context.decode(raw)
+                if row["_validationCategory"] == category:
+                    yield row, count
+        finally:
+            cursor.close()
+
+    def variants(self, key):
+        cursor = self.context.connection.execute(
+            "SELECT signature,count,first,payload FROM resource_variants "
+            "WHERE relation=? AND key=? ORDER BY first",
+            (self.id, _join_key(key)),
+        )
+        try:
+            for signature, count, first, raw in cursor:
+                yield signature, count, first, self.context.decode(raw)
+        finally:
+            cursor.close()
+
+    def prefix_count(self, key, signature, stop):
+        # A run contains only one signature; global ordinals need not be consecutive.
+        # The stop is another variant's first occurrence, so it cannot bisect this run.
+        row = self.context.connection.execute(
+            "SELECT coalesce(sum(count),0) FROM resource_runs "
+            "WHERE relation=? AND key=? AND signature=? AND last<?",
+            (self.id, _join_key(key), signature, stop),
+        ).fetchone()
+        return row[0]
+
+    def published_variants(self):
+        self.flush()
+        cursor = self.context.connection.execute(
+            "SELECT key,count,first,payload FROM resource_variants "
+            "WHERE relation=? ORDER BY key,first",
+            (self.id,),
+        )
+        try:
+            for key, count, first, raw in cursor:
+                row = self.context.decode(raw)
+                yield dict(
+                    candidateKey=json.loads(key),
+                    count=count,
+                    firstOrdinal=first,
+                    used=row["used"],
+                    locator=row["_captureLocator"],
+                )
+        finally:
+            cursor.close()
+
+
 class _OccurrenceMap:
     """Explicit native-key join, detached reads, assignment updates, first-seen order."""
 
@@ -586,9 +810,236 @@ def _unpack_stream(value, context):
     return value
 
 
-def _read_capture(path):
+class ResourceBudgetExceeded(RuntimeError):
+    pass
+
+
+def _private_bytes():
+    if os.name != "nt":
+        return None
+    import ctypes
+    from ctypes import wintypes
+
+    class Counters(ctypes.Structure):
+        _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD)] + [
+            (name, ctypes.c_size_t)
+            for name in (
+                "PeakWorkingSetSize",
+                "WorkingSetSize",
+                "QuotaPeakPagedPoolUsage",
+                "QuotaPagedPoolUsage",
+                "QuotaPeakNonPagedPoolUsage",
+                "QuotaNonPagedPoolUsage",
+                "PagefileUsage",
+                "PeakPagefileUsage",
+                "PrivateUsage",
+            )
+        ]
+
+    counters = Counters()
+    counters.cb = ctypes.sizeof(counters)
+    require(
+        ctypes.windll.psapi.GetProcessMemoryInfo(
+            ctypes.c_void_p(-1),
+            ctypes.byref(counters),
+            counters.cb,
+        ),
+        "cannot measure process private bytes",
+    )
+    return counters.PrivateUsage
+
+
+class _ResourceBudget:
+    def __init__(self, root, input_bytes, baseline=None, *, selected=False):
+        self.root, self.input_bytes, self.baseline = root, input_bytes, baseline
+        self.selected, self.selected_bytes = selected, 0
+        self.started, self.last = time.monotonic(), 0
+        self.peak_logical, self.peak_private = 0, 0
+        self.headroom = shutil.disk_usage(root).free
+        self.limit = 64 * 1024 * 1024 if selected else input_bytes
+        if self.headroom < input_bytes + 6 * 1024**3:
+            raise ResourceBudgetExceeded(
+                "insufficient physical reserve for conservative publication"
+            )
+
+    def observe(self):
+        logical = sum(p.stat().st_size for p in self.root.rglob("*") if p.is_file())
+        self.peak_logical = max(self.peak_logical, logical)
+        self.limit = self.selected_bytes + 64 * 1024**2 if self.selected else self.input_bytes
+        if logical > self.limit:
+            raise ResourceBudgetExceeded("resource comparison exceeded logical byte budget")
+        return logical
+
+    def checkpoint(self, stage, *, force=False):
+        now = time.monotonic()
+        if not force and now - self.last < 5:
+            return
+        self.last = now
+        logical = self.observe()
+        private = _private_bytes()
+        if private is not None:
+            self.peak_private = max(self.peak_private, private)
+        self.limit = self.selected_bytes + 64 * 1024**2 if self.selected else self.input_bytes
+        print(
+            json.dumps(
+                dict(
+                    stage=stage,
+                    elapsedSeconds=round(now - self.started, 2),
+                    selectedDependencyBytes=self.selected_bytes,
+                    logicalBytes=logical,
+                    privateBytes=private,
+                )
+            ),
+            flush=True,
+        )
+        if now - self.started > 20 * 60:
+            raise ResourceBudgetExceeded("resource comparison exceeded 20 minutes")
+        if (
+            private is not None
+            and self.baseline is not None
+            and private - self.baseline > 256 * 1024**2
+        ):
+            raise ResourceBudgetExceeded("resource comparison exceeded incremental private memory")
+        if shutil.disk_usage(self.root).free < 6 * 1024**3:
+            raise ResourceBudgetExceeded("resource comparison breached physical reserve")
+
+    def receipt(self):
+        return dict(
+            elapsedSeconds=time.monotonic() - self.started,
+            peakNewLogicalBytes=self.peak_logical,
+            logicalByteLimit=self.limit,
+            selectedDependencyBytes=self.selected_bytes,
+            sourceOnlyPrivateBytes=self.baseline,
+            sampledPeakPrivateBytes=self.peak_private,
+            incrementalPrivateByteLimit=256 * 1024**2,
+            initialPhysicalFreeBytes=self.headroom,
+            finalPhysicalFreeBytes=shutil.disk_usage(self.root).free,
+        )
+
+    def release_scratch(self):
+        context = getattr(self, "scratch_context", None)
+        if context is None:
+            return
+        root = context.root.resolve()
+        require(
+            root.parent == self.root.resolve() and root.name.startswith("reader-"),
+            "resource scratch cleanup escapes owned run",
+        )
+        context.close()
+        shutil.rmtree(root)
+
+
+def _resource_selected(identity, scope):
+    return all(
+        scope.get(key) is None or identity.get(key) == scope[key]
+        for key in ("sessionId", "visit", "observationSequence")
+    )
+
+
+def resource_pair_details(capture, requirement_result, *, limit):
+    """Replay at most limit original pairs from a previously verified raw capture.
+
+    This preview has no acceptance verdict and makes no new whole-capture integrity
+    claim. It stops on the requested limit and builds no derived stores. Source recipe
+    checks and exact logical counts remain in the independently readable report.
+    """
+    require(type(limit) is int and 0 < limit <= 1000, "pair detail limit must be 1..1000")
+    key = _join_key(requirement_result["candidateKey"])
+    capture = Path(capture) if Path(capture).is_absolute() else repo_path(capture)
+    descriptors, descriptor_bytes, emitted = {}, 0, 0
+    with capture.open("rb") as source:
+        while raw := source.readline(_STREAM_RECORD_LIMIT + 1):
+            require(
+                len(raw) <= _STREAM_RECORD_LIMIT and raw.endswith(b"\n"),
+                "oversized/truncated capture detail",
+            )
+            row = json.loads(raw)
+            channel, payload = row["channel"], row["payload"]
+            if channel == "descriptorReset":
+                descriptors.clear()
+                descriptor_bytes = 0
+            elif channel == "resourceDescriptors":
+                require(payload["id"] not in descriptors, "duplicate resource descriptor")
+                descriptor_bytes += _row_memory(payload["selector"])
+                require(
+                    len(descriptors) < 4096 and descriptor_bytes <= _STREAM_CACHE_LIMIT,
+                    "resource descriptor lifetime bound",
+                )
+                descriptors[payload["id"]] = payload["selector"]
+            elif channel in ("resourceUses", "drawUses"):
+                uses = payload["uses"] if channel == "drawUses" else (payload,)
+                for use_index, use in enumerate(uses):
+                    used = dict(use, identity=payload["identity"])
+                    if _join_key(_resource_key(used)) != key:
+                        continue
+                    bound = used["used"]
+                    selector = bound.get("selector", bound)
+                    if "captureDescriptor" in selector:
+                        require(
+                            selector["captureDescriptor"] in descriptors,
+                            "missing/detached resource descriptor",
+                        )
+                        resolved = descriptors[selector["captureDescriptor"]]
+                        used["used"] = (
+                            dict(bound, selector=resolved) if "selector" in bound else resolved
+                        )
+                    yield dict(
+                        expected=requirement_result["expected"],
+                        actualUse=used,
+                        locator=dict(
+                            captureSequence=row["captureSequence"],
+                            channel=channel,
+                            index=row["index"],
+                            useIndex=use_index if channel == "drawUses" else None,
+                        ),
+                    )
+                    emitted += 1
+                    if emitted == limit:
+                        return
+
+
+def _resource_state(state, family):
+    fields = {"sessionId", "map", "observationSequence", "revision", "presentation"}
+    if family in ("all", "map", "entity"):
+        fields.add("cameraProjection")
+    if family in ("all", "entity"):
+        fields.update(
+            ("entities", "nod", "portraitProjection", "portraitWork", "portraitFlags", "portraitId")
+        )
+    result = {k: v for k, v in state.items() if k in fields}
+    if isinstance(result.get("presentation"), dict):
+        result["presentation"] = {
+            k: v
+            for k, v in result["presentation"].items()
+            if k in ("activeCue", "cameraX", "cameraY")
+        }
+    projection = result.get("cameraProjection")
+    if isinstance(projection, dict):
+        selected = {
+            "sessionId",
+            "revision",
+            "map",
+            "observationSequence",
+            "simulationTick",
+            "token",
+            "drawSequence",
+        }
+        if family in ("all", "map"):
+            selected.update(
+                ("background", "foreground", "backgroundHigh", "foregroundHigh", "occlusionDraws")
+            )
+        if family in ("all", "entity"):
+            selected.add("actors")
+        result["cameraProjection"] = {k: v for k, v in projection.items() if k in selected}
+    return result
+
+
+def _read_capture(path, resource_scope=None, budget=None):
     global _STREAM_CONTEXT
     context = _ReaderContext(_STREAM_SCRATCH_ROOT or path.resolve().parent)
+    if budget is not None:
+        budget.scratch_context = context
+        context.resource_budget = budget
     _STREAM_CONTEXT = context
     channels, counts, descriptors, terminal = {}, {}, {}, None
     metadata = {}
@@ -600,6 +1051,26 @@ def _read_capture(path):
         "joinReturn",
     }
     previous, descriptor_bytes = 0, 0
+    relation = _ResourceRelation(context, budget) if resource_scope is not None else None
+    dependency_bytes, descriptor_sizes, counted_descriptors = 0, {}, set()
+    current_visit, selected_maps, context_sessions = 0, set(), set()
+    predecessor, selected_context = {}, set()
+
+    def selected_resource(row):
+        kind = row.get("kind")
+        family = "map" if kind == "map" else "entity"
+        return resource_scope["family"] in ("all", family) and _resource_selected(
+            row.get("identity") or {}, resource_scope
+        )
+
+    def retain_descriptor(selector):
+        nonlocal dependency_bytes
+        if "captureDescriptor" in selector:
+            ident = selector["captureDescriptor"]
+            if ident not in counted_descriptors:
+                dependency_bytes += descriptor_sizes.get(ident, 0)
+                counted_descriptors.add(ident)
+
     with path.open("rb") as source:
         while raw := source.readline(_STREAM_RECORD_LIMIT + 1):
             require(
@@ -634,6 +1105,8 @@ def _read_capture(path):
             elif channel == "descriptorReset":
                 descriptors.clear()
                 descriptor_bytes = 0
+                descriptor_sizes.clear()
+                counted_descriptors.clear()
             elif channel == "resourceDescriptors":
                 require(payload["id"] not in descriptors, "duplicate resource descriptor")
                 descriptor_bytes += _row_memory(payload["selector"])
@@ -642,6 +1115,7 @@ def _read_capture(path):
                     "resource descriptor lifetime bound",
                 )
                 descriptors[payload["id"]] = payload["selector"]
+                descriptor_sizes[payload["id"]] = len(raw)
             elif channel == "resourceUses":
                 used = payload["used"]
                 selector = used.get("selector", used)
@@ -650,14 +1124,17 @@ def _read_capture(path):
                         selector["captureDescriptor"] in descriptors,
                         "missing/detached resource descriptor",
                     )
+                    if resource_scope is not None and selected_resource(payload):
+                        retain_descriptor(selector)
                     if "selector" in used:
                         used["selector"] = descriptors[selector["captureDescriptor"]]
                     else:
                         payload["used"] = descriptors[selector["captureDescriptor"]]
             if channel == "drawUses":
-                if "resourceUses" not in channels:
+                if resource_scope is None and "resourceUses" not in channels:
                     channels["resourceUses"] = context.sequence()
-                for use in payload["uses"]:
+                retained_draw, selected_draw_bytes = False, 0
+                for use_index, use in enumerate(payload["uses"]):
                     used = use["used"]
                     selector = used.get("selector", used)
                     require(
@@ -665,11 +1142,40 @@ def _read_capture(path):
                         and selector["captureDescriptor"] in descriptors,
                         "missing/detached draw resource descriptor",
                     )
+                    use_row = dict(use, identity=payload["identity"])
+                    selected = resource_scope is None or selected_resource(use_row)
+                    if not selected:
+                        continue
+                    retained_draw = True
+                    if resource_scope is not None:
+                        retain_descriptor(selector)
+                        selected_draw_bytes += len(json.dumps(use, separators=(",", ":")).encode())
                     if "selector" in used:
                         used["selector"] = descriptors[selector["captureDescriptor"]]
                     else:
                         use["used"] = descriptors[selector["captureDescriptor"]]
-                    channels["resourceUses"].append(dict(use, identity=payload["identity"]))
+                    use_row = dict(use, identity=payload["identity"])
+                    use_row["_captureLocator"] = dict(
+                        captureSequence=previous,
+                        channel=channel,
+                        index=row["index"],
+                        useIndex=use_index,
+                    )
+                    if resource_scope is None:
+                        channels["resourceUses"].append(use_row)
+                    else:
+                        relation.append(use_row)
+                        selected_maps.add(payload["identity"].get("map"))
+                if retained_draw and resource_scope is not None:
+                    dependency_bytes += selected_draw_bytes + len(
+                        json.dumps(
+                            dict(row, payload=dict(identity=payload["identity"], uses=[])),
+                            separators=(",", ":"),
+                        ).encode()
+                    )
+                if budget is not None:
+                    budget.selected_bytes = dependency_bytes
+                    budget.checkpoint("scan and resource reduction")
                 continue
             if channel == "captureMetadata":
                 require(
@@ -681,6 +1187,106 @@ def _read_capture(path):
                 )
                 metadata[payload["key"]] = payload["value"]
                 continue
+            if resource_scope is None and channel in ("resourceUses", "resourceRequirements"):
+                payload["_captureLocator"] = dict(
+                    captureSequence=previous,
+                    channel=channel,
+                    index=row["index"],
+                )
+            if resource_scope is not None:
+                keep = False
+                if channel in ("header", "terminal"):
+                    keep = True
+                elif channel in ("resourceRequirements", "resourceUses"):
+                    keep = selected_resource(payload)
+                    if keep:
+                        payload["_captureLocator"] = dict(
+                            captureSequence=previous, channel=channel, index=row["index"]
+                        )
+                        selected_maps.add(payload["identity"].get("map"))
+                        if channel == "resourceUses":
+                            relation.append(payload)
+                            dependency_bytes += len(raw)
+                            continue
+                elif channel in ("samples", "consumerBoundaries", "warpRecords"):
+                    state = payload.get("state") or {}
+                    session = state.get("sessionId")
+                    if resource_scope.get("sessionId") in (None, session):
+                        if session:
+                            context_sessions.add(session)
+                        transitions = [
+                            e
+                            for e in payload.get("result", {}).get("observations", [])
+                            if e.get("Kind") == "map-transferred"
+                            or e.get("Detail") == "LoadSceneMap"
+                        ]
+                        if transitions:
+                            current_visit = transitions[-1]["Sequence"]
+                        identity = dict(state, visit=current_visit)
+                        keep = _resource_selected(identity, resource_scope)
+                        if resource_scope["family"] == "scene":
+                            keep = False
+                        original_selected = keep
+                        if not keep and channel == "warpRecords":
+                            # Required predecessor visit transitions, without unrelated projections.
+                            payload = dict(
+                                state={
+                                    k: state[k]
+                                    for k in ("sessionId", "observationSequence", "map")
+                                    if k in state
+                                },
+                                result=dict(observations=transitions),
+                            )
+                            keep = bool(transitions)
+                        if (
+                            keep
+                            and _resource_selected(identity, resource_scope)
+                            and state.get("map")
+                        ):
+                            selected_maps.add(state["map"])
+                        if original_selected:
+                            selected_context.add(channel)
+                            payload = dict(
+                                state=_resource_state(state, resource_scope["family"]),
+                                result=dict(observations=transitions),
+                            )
+                        elif channel not in selected_context:
+                            predecessor[channel] = dict(
+                                captureSequence=previous,
+                                index=row["index"],
+                                state={
+                                    k: state[k]
+                                    for k in ("sessionId", "observationSequence", "map")
+                                    if k in state
+                                },
+                            )
+                elif channel == "sceneObservations":
+                    keep = resource_scope["family"] in ("all", "scene") and _resource_selected(
+                        dict(payload, visit=current_visit),
+                        resource_scope,
+                    )
+                if not keep:
+                    continue
+                if channel in ("samples", "consumerBoundaries", "warpRecords") and isinstance(
+                    payload.get("state"), dict
+                ):
+                    payload["state"]["_captureLocator"] = dict(
+                        captureSequence=previous,
+                        channel=channel,
+                        index=row["index"],
+                    )
+                dependency_bytes += min(
+                    len(raw),
+                    len(
+                        json.dumps(
+                            dict(row, payload=payload),
+                            separators=(",", ":"),
+                        ).encode("utf-8")
+                    ),
+                )
+                if budget is not None:
+                    budget.selected_bytes = dependency_bytes
+                    budget.checkpoint("scan and resource reduction")
             if channel == "terminal":
                 terminal = payload
             else:
@@ -707,6 +1313,16 @@ def _read_capture(path):
         for key in metadata_keys:
             result[key] = metadata[key]
     result.update(channels)
+    if resource_scope is not None:
+        relation.flush()
+        result["resourceUses"] = relation
+        result["resourceScope"] = dict(
+            resource_scope,
+            maps=sorted(m for m in selected_maps if m),
+            contextSessions=sorted(context_sessions),
+            predecessors=predecessor,
+            dependencyBytes=dependency_bytes,
+        )
     result["captureIntegrity"] = dict(
         records=previous,
         channelCounts=counts,
@@ -753,7 +1369,7 @@ def read(path):
     return value
 
 
-def write(path, value):
+def write(path, value, *, resource_budget=None):
     path = (Path(path) if Path(path).is_absolute() else repo_path(path)).resolve()
     require(
         path.is_relative_to(repo_path("local").resolve()) and not path.exists(),
@@ -763,6 +1379,8 @@ def write(path, value):
     if _STREAM_CONTEXT is not None:
         database = path.with_name(path.name + ".sqlite")
         context = _ReaderContext(database=database)
+        if resource_budget is not None:
+            context.resource_budget = resource_budget
         try:
             value = _pack_stream(
                 dict(
@@ -2083,6 +2701,133 @@ def text_material_binding(actual, outcome, selection, source_root):
     return result
 
 
+def _resource_source_events(kind, want, sprites, source_sprites, portraits, source_portraits):
+    events = []
+    error = None
+    try:
+        if kind == "entity":
+            events.append(
+                (
+                    "reached sprite original pointer/palette/decode",
+                    sprites.get(want["sprite"]) == source_sprites.get(want["sprite"])
+                    and want["sprite"] in source_sprites,
+                )
+            )
+        elif kind != "map":
+            events.append(
+                (
+                    "reached portrait original decode/tile composition",
+                    portraits.get(want["portrait"]) == source_portraits.get(want["portrait"])
+                    and want["portrait"] in source_portraits,
+                )
+            )
+            original = source_portraits.get(want["portrait"])
+            # Retain the legacy container's exception boundary as well as its operands.
+            tiles = _bounded_list(range(64))
+            if original:
+                for changes in (
+                    original["eyes"] if want["eyes"] else [],
+                    original["mouth"] if want["mouth"] else [],
+                ):
+                    for x, y, alternate_x, alternate_y in changes:
+                        tiles[y * 8 + x] = alternate_y * 8 + alternate_x
+            events.append(
+                (
+                    "portrait source alternate tile selection",
+                    None if original is None else want["tiles"] == tiles,
+                )
+            )
+    except (KeyError, IndexError, ValueError, TypeError) as caught:
+        error = type(caught).__name__
+    return events, error
+
+
+def _resource_pair_events(required, used, source_recipe):
+    events = []
+    error = None
+    valid = None
+    try:
+        kind, want, bound = required["kind"], required["expected"], used["used"]
+        if kind == "map":
+            bound = bound.get("selector")
+            valid = (
+                None
+                if bound is None
+                else bound
+                == dict(
+                    kind="map-block",
+                    map=required["identity"]["map"],
+                    block=want["block"],
+                )
+                and used["used"].get("word") == want["word"]
+            )
+        elif kind == "entity":
+            valid = None if bound is None else bound == dict(kind="entity", **want)
+        else:
+            valid = (
+                None
+                if bound is None
+                else bound.get("texturePresent")
+                and (bound.get("selector") == dict(kind="portrait", **want))
+            )
+        source_events, error = source_recipe(kind, want) if kind != "map" else ([], None)
+        events.extend(source_events)
+        if error is None:
+            events.append(("bound texture selector matches logical source requirement", valid))
+    except (KeyError, IndexError, ValueError, TypeError) as caught:
+        error = type(caught).__name__
+    # AttributeError was outside both old exception boundaries and still propagates.
+    return events, valid, error
+
+
+def _reduce_resource_requirement(required, relation, source_recipe):
+    key = _resource_key(required, required=True)
+    stop, failure = None, None
+    for _, _, first, used in relation.variants(key):
+        events, _, error = _resource_pair_events(required, used, source_recipe)
+        if error is not None:
+            stop, failure = first, (events, error, used["_captureLocator"])
+            break
+    counts, checks, executed = Counter(), [], 0
+    for signature, count, first, used in relation.variants(key):
+        if stop is not None and first >= stop:
+            break
+        if stop is not None:
+            count = relation.prefix_count(key, signature, stop)
+        if not count:
+            continue
+        events, value, error = _resource_pair_events(required, used, source_recipe)
+        require(error is None, "resource exception prefix changed")
+        for name, outcome in events:
+            checks.append((name, outcome, count, used["_captureLocator"]))
+        counts[False if value == False else None if value is None else True] += count  # noqa: E712
+        executed += count
+    if failure is not None:
+        events, error, witness = failure
+        for name, value in events:
+            checks.append((name, value, 1, witness))
+        checks.append(
+            (
+                "required texture join operand absent"
+                if error == "KeyError"
+                else "required texture join malformed " + error,
+                None if error == "KeyError" else False,
+                1,
+                witness,
+            )
+        )
+    total = sum(count for _, count, _, _ in relation.variants(key))
+    return dict(
+        candidatePairCount=total,
+        executedPairCount=executed,
+        counts=dict(PASS=counts[True], FAIL=counts[False], Unavailable=counts[None]),
+        legacyStop=None
+        if failure is None
+        else dict(firstOrdinal=stop, error=failure[1], locator=failure[2]),
+        checks=checks,
+    )
+
+
 def reached_visual_materials(
     actual,
     selection,
@@ -2090,15 +2835,41 @@ def reached_visual_materials(
     canonical_content=None,
     tileset_metadata=None,
     palette_metadata=None,
+    *,
+    source_only=False,
+    budget=None,
 ):
     """Join reached texture selectors to existing source decoders and private exports."""
-    result = dict(map=None, entity=None, scene=None, checks=_bounded_list(), joins=_bounded_list())
+    result = dict(
+        map=None,
+        entity=None,
+        scene=None,
+        format="sf2-resource-binding-counts-v1",
+        checks=[],
+        joins=_bounded_list(),
+        witnesses=_bounded_list(),
+    )
+    scope = actual.get("resourceScope")
+    enabled = (
+        {"map", "entity", "scene"} if not scope or scope["family"] == "all" else {scope["family"]}
+    )
+    counted = Counter()
+    witness_counts = Counter()
+    weight, locator = 1, None
 
     def check(family, name, value, identity=None):
-        row = dict(family=family, name=name, value=value)
-        if identity is not None:
-            row["identity"] = identity
-        result["checks"].append(row)
+        if family not in enabled:
+            return
+        value = False if value == False else None if value is None else True  # noqa: E712
+        counted[family, name, value] += weight
+        if value is not True and witness_counts[family, name, value] < 8:
+            row = dict(family=family, name=name, value=value, count=weight)
+            if identity is not None:
+                row["identity"] = identity
+            if locator is not None:
+                row["locator"] = locator
+            result["witnesses"].append(row)
+            witness_counts[family, name, value] += 1
 
     from contextlib import contextmanager
 
@@ -2114,10 +2885,25 @@ def reached_visual_materials(
                 check(dependent, name + " malformed " + type(error).__name__, False)
 
     def finish():
+        result["checks"] = [
+            dict(family=f, name=n, value=v, count=c) for (f, n, v), c in counted.items()
+        ]
+        result["witnessPolicy"] = dict(
+            limitPerCheckOutcome=8,
+            retained=len(result["witnesses"]),
+            candidateVariants="all distinct operands retained",
+        )
+        result["familyCounts"] = {}
         for family in ("map", "entity", "scene"):
-            values = _bounded_list(c["value"] for c in result["checks"] if c["family"] == family)
+            values = Counter()
+            for (f, _, value), count in counted.items():
+                if f == family:
+                    values[value] += count
+            result["familyCounts"][family] = dict(
+                PASS=values[True], FAIL=values[False], Unavailable=values[None]
+            )
             result[family] = (
-                False if False in values else None if None in values or not values else True
+                False if values[False] else None if values[None] or not values else True
             )
         return result
 
@@ -2227,7 +3013,8 @@ def reached_visual_materials(
         selected_scene = (
             selected_scene.resolve() if selected_scene.is_absolute() else repo_path(selected_scene)
         )
-        scene_uses(read(selected_scene))
+        if "scene" in enabled:
+            scene_uses(read(selected_scene))
     except FileNotFoundError:
         check("scene", "selected scene definition absent", None)
     except (KeyError, IndexError, ValueError, TypeError):
@@ -2266,6 +3053,8 @@ def reached_visual_materials(
         source_root = source_root.resolve() if source_root.is_absolute() else repo_path(source_root)
         document, scene, process = read(world_path), read(scene_path), read(process_path)
         world, presentation = document["world"], document["world"]["presentation"]
+        selected_maps = set(scope["maps"]) if scope is not None and not source_only else None
+        world_maps = [m for m in world["maps"] if selected_maps is None or m["id"] in selected_maps]
         binding = all(
             repo_path(process["selectedInputs"][key]).resolve() == path
             for key, path in (
@@ -2317,14 +3106,18 @@ def reached_visual_materials(
             for m in family.map_indices
         }
         atlas_bindings = {
-            row["id"]: families[int(row["id"].split("-")[-1])].asset_id for row in world["maps"]
+            row["id"]: families[int(row["id"].split("-")[-1])].asset_id for row in world_maps
         }
         compiler = OriginalPrograms(canonical, source_root)
         compiler.programs = {p["id"]: p for p in world["programs"]}
         expected = prepare_visuals(
-            compiler, canonical, world["maps"], rom_path, asset_root, selection[7], atlas_bindings
+            compiler, canonical, world_maps, rom_path, asset_root, selection[7], atlas_bindings
         )
-        maps = {m["map"]: m for m in presentation["maps"]}
+        maps = {
+            m["map"]: m
+            for m in presentation["maps"]
+            if selected_maps is None or m["map"] in selected_maps
+        }
         source_maps = {m["map"]: m for m in expected["maps"]}
         sprites = {m["sprite"]: m for m in presentation["sprites"]}
         source_sprites = {m["sprite"]: m for m in expected["sprites"]}
@@ -2332,7 +3125,7 @@ def reached_visual_materials(
         source_portraits = {m["portrait"]: m for m in expected["portraits"]}
         canonical_maps = {m["id"]: m for m in canonical["maps"]}
         canonical_layouts = {m["id"]: m for m in canonical["resources"]["layouts"]}
-        for row in world["maps"]:
+        for row in world_maps if "map" in enabled else ():
             original = canonical_maps[int(row["id"].split("-")[-1])]
             layout = canonical_layouts[original["references"]["layout"]]
             check(
@@ -2359,7 +3152,7 @@ def reached_visual_materials(
             and hashlib.sha256(palette_metadata.read_bytes()).hexdigest().upper()
             == ACCEPTED_PALETTE_METADATA_SHA256,
         )
-        for name, visual in maps.items():
+        for name, visual in maps.items() if "map" in enabled else ():
             family = families[int(name.split("-")[-1])]
             decoded = _build_world_atlas_source(rom, tilesets, palettes, family)
             source_bytes = (asset_root / family.source_file).read_bytes()
@@ -2384,8 +3177,19 @@ def reached_visual_materials(
                 source_valid and visual == source_maps.get(name),
             )
 
-        requirements = _bounded_list(actual.get("resourceRequirements", []))
-        uses = _bounded_list(actual.get("resourceUses", []))
+        if budget is not None:
+            budget.checkpoint("source loaded", force=True)
+        if source_only:
+            return dict(sourceOnly=True, prepared=True, sourceOnlyPrivateBytes=_private_bytes())
+        requirements = actual.get("resourceRequirements", [])
+        uses = actual.get("resourceUses", [])
+        if not isinstance(uses, _ResourceRelation):
+            relation = _ResourceRelation()
+            for used in uses:
+                relation.append(used)
+            uses = relation
+        uses.flush()
+        result["actualUseCount"] = uses.count
 
         def available_rows(rows, requirement):
             for row in rows:
@@ -2399,7 +3203,23 @@ def reached_visual_materials(
                     yield row
 
         requirements = _bounded_list(available_rows(requirements, True))
-        uses = _bounded_list(available_rows(uses, False))
+
+        def counted_uses(category):
+            nonlocal weight, locator
+            for row, count in uses.validations(category):
+                weight, locator = count, row["_captureLocator"]
+                if category == "occurrence":
+                    yield from available_rows((row,), False)
+                else:
+                    yield row
+            weight, locator = 1, None
+
+        # Availability is distinct from identity and texture validation. The latter
+        # predicates read different operands; grouping them together amplifies state
+        # sequence × tile cardinality even without the requirement/use Cartesian join.
+        for _ in counted_uses("occurrence"):
+            pass
+
         programs = {p["id"]: p for p in world["programs"]}
         visits = {0: read(repo_path(process["selectedStart"]))["start"]["map"]}
         for delivery in actual.get("warpRecords", []):
@@ -2418,7 +3238,27 @@ def reached_visual_materials(
             for row in actual.get(channel, [])
             if row.get("state", {}).get("sessionId")
         }
-        for row in itertools.chain(requirements, uses):
+        if scope is not None:
+            sessions.update(scope["contextSessions"])
+            for family in enabled:
+                check(
+                    family,
+                    "selected scope retains independent session context",
+                    True if sessions else None,
+                )
+                if family in ("map", "entity"):
+                    check(
+                        family,
+                        "selected scope retains independent current projection context",
+                        True
+                        if any(
+                            row.get("state", {}).get("cameraProjection")
+                            for channel in ("samples", "consumerBoundaries", "warpRecords")
+                            for row in actual.get(channel, [])
+                        )
+                        else None,
+                    )
+        for row in itertools.chain(requirements, counted_uses("identity")):
             with evaluated("map" if row.get("kind") == "map" else "entity", "resource identity"):
                 i = row["identity"]
                 family = "map" if row["kind"] == "map" else "entity"
@@ -2448,24 +3288,12 @@ def reached_visual_materials(
             field_maps <= observed_maps if requirements else None,
         )
 
-        def identity(row):
-            i = row["identity"]
-            return (
-                i["sessionId"],
-                i["visit"],
-                i["map"],
-                i["phase"],
-                row["kind"],
-                row.get("subject"),
-                row.get("slot"),
-                row.get("layer"),
-                row.get("highPriority"),
-            )
-
-        requirement_phases = _resource_groups()
+        requirement_phases = set()
+        phase_groups = set()
         for required in requirements:
             i = required["identity"]
-            requirement_phases.setdefault((i["visit"], required["kind"]), []).append(i["phase"])
+            requirement_phases.add(_join_key((i["visit"], required["kind"], i["phase"])))
+            phase_groups.add(_join_key((i["visit"], required["kind"])))
         # Independently require visible logical subjects in retained current
         # projections. Surviving draw/use rows cannot define their own inventory.
         logical_states = (
@@ -2585,7 +3413,7 @@ def reached_visual_materials(
             for r in requirements
             if r["kind"] == "map"
         )
-        for state in logical_states:
+        for state in logical_states if enabled.intersection(("map", "entity")) else ():
             with evaluated(("map", "entity"), "logical draw occurrence"):
                 projection = state.get("cameraProjection") or {}
                 presentation = state.get("presentation") or {}
@@ -2604,7 +3432,7 @@ def reached_visual_materials(
                     for name in ("background", "foreground", "backgroundHigh", "foregroundHigh")
                 ]
                 layers += [("occlusion", layer) for layer in projection.get("occlusionDraws", [])]
-                for name, layer in layers:
+                for name, layer in layers if "map" in enabled else ():
                     if not layer or not layer.get("draws"):
                         continue
                     key = (visit, phase, name, layer.get("highPriority"), layer.get("subject"))
@@ -2632,7 +3460,7 @@ def reached_visual_materials(
                                     True if tile_key in required_tiles else None,
                                     tile_key,
                                 )
-                for logical in state.get("entities") or []:
+                for logical in (state.get("entities") or []) if "entity" in enabled else ():
                     with evaluated("entity", "logical entity occurrence"):
                         x = logical["x"] / 16 - presentation["cameraX"]
                         y = logical["y"] / 16 - presentation["cameraY"]
@@ -2696,13 +3524,18 @@ def reached_visual_materials(
                                         subject=logical["id"],
                                         slot=logical["slot"],
                                         expected=want,
+                                        _captureLocator=dict(
+                                            source="retained camera projection",
+                                            state=state.get("_captureLocator"),
+                                            subject=logical["id"],
+                                            slot=logical["slot"],
+                                        ),
                                     )
                                     requirements.append(requirement)
                                     uses.append(dict(requirement, used=actor["resourceSelector"]))
                                     required_entities.add(key)
-                                    requirement_phases.setdefault((visit, "entity"), []).append(
-                                        phase
-                                    )
+                                    requirement_phases.add(_join_key((visit, "entity", phase)))
+                                    phase_groups.add(_join_key((visit, "entity")))
                             check(
                                 "entity",
                                 "independent visible logical subject/pose requirement",
@@ -2710,7 +3543,7 @@ def reached_visual_materials(
                                 key,
                             )
                 portrait = state.get("portraitProjection") or {}
-                if portrait.get("id", -1) >= 0:
+                if "entity" in enabled and portrait.get("id", -1) >= 0:
                     with evaluated("entity", "independent portrait pose"):
                         work = state.get("portraitWork") or {}
                         flags = state["portraitFlags"]
@@ -2750,23 +3583,12 @@ def reached_visual_materials(
             "independent reached visible logical inventory",
             True if logical_inventory else None,
         )
+        result["projectionUseCount"] = uses.count - result["actualUseCount"]
 
-        def use_key(row, required=False):
-            # These are precisely the existing candidate filters, not acceptance operands.
-            want = row["expected"] if required else row.get("expected")
-            if row["kind"] == "map":
-                data = want if required else row["used"]
-                match = (data.get("block"), data.get("tile"))
-            else:
-                match = (json.dumps(_inventory_key(want), sort_keys=True, separators=(",", ":")),)
-            return identity(row) + match
-
-        index = _resource_groups()
-        for used in uses:
+        uses.flush()
+        for used in counted_uses("texture"):
             with evaluated("map" if used.get("kind") == "map" else "entity", "actual texture use"):
-                index.setdefault(use_key(used), []).append(used)
                 i = used["identity"]
-                phases = requirement_phases.get((i["visit"], used["kind"]), set())
                 family = "map" if used["kind"] == "map" else "entity"
                 if used["kind"] == "map":
                     high = used.get("highPriority")
@@ -2793,15 +3615,42 @@ def reached_visual_materials(
                 check(
                     family,
                     "actual use phase has independent logical requirements",
-                    None if not phases else i["phase"] in phases,
+                    None
+                    if _join_key((i["visit"], used["kind"])) not in phase_groups
+                    else _join_key((i["visit"], used["kind"], i["phase"])) in requirement_phases,
                 )
-        for required in requirements:
+        result["requirementCount"] = len(requirements)
+        result["candidatePairCount"] = 0
+        result["executedPairCount"] = 0
+        source_recipes = {}
+
+        def source_recipe(kind, want):
+            key = _join_key((kind, want))
+            if key not in source_recipes:
+                source_recipes[key] = _resource_source_events(
+                    kind,
+                    want,
+                    sprites,
+                    source_sprites,
+                    portraits,
+                    source_portraits,
+                )
+            return source_recipes[key]
+
+        for requirement_index, required in enumerate(requirements):
+            if uses.budget is not None and requirement_index % 256 == 0:
+                uses.budget.checkpoint("indexed requirement reduction")
+            locator = required.get(
+                "_captureLocator", dict(channel="resourceRequirements", index=requirement_index)
+            )
             with evaluated(
                 "map" if required.get("kind") == "map" else "entity", "required texture join"
             ):
                 kind, want = required["kind"], required["expected"]
                 family = "map" if kind == "map" else "entity"
-                candidates = index.get(use_key(required, required=True), [])
+                key = _resource_key(required, required=True)
+                candidate_count = sum(count for _, count, _, _ in uses.variants(key))
+                result["candidatePairCount"] += candidate_count
                 if kind == "map":
                     visual = maps[required["identity"]["map"]]
                     check(
@@ -2810,68 +3659,28 @@ def reached_visual_materials(
                         0 <= want["block"] < len(visual["blocks"])
                         and visual["blocks"][int(want["block"])][int(want["tile"])] == want["word"],
                     )
-                check(family, "required actual texture use", True if candidates else None)
-                for used in candidates:
-                    bound = used["used"]
-                    if kind == "map":
-                        bound = bound.get("selector")
-                        valid = (
-                            None
-                            if bound is None
-                            else bound
-                            == dict(
-                                kind="map-block",
-                                map=required["identity"]["map"],
-                                block=want["block"],
-                            )
-                            and used["used"].get("word") == want["word"]
-                        )
-                    elif kind == "entity":
-                        valid = None if bound is None else bound == dict(kind="entity", **want)
-                        check(
-                            family,
-                            "reached sprite original pointer/palette/decode",
-                            sprites.get(want["sprite"]) == source_sprites.get(want["sprite"])
-                            and want["sprite"] in source_sprites,
-                        )
-                    else:
-                        valid = (
-                            None
-                            if bound is None
-                            else bound.get("texturePresent")
-                            and bound.get("selector") == dict(kind="portrait", **want)
-                        )
-                        check(
-                            family,
-                            "reached portrait original decode/tile composition",
-                            portraits.get(want["portrait"])
-                            == source_portraits.get(want["portrait"])
-                            and want["portrait"] in source_portraits,
-                        )
-                        original = source_portraits.get(want["portrait"])
-                        tiles = _bounded_list(range(64))
-                        if original:
-                            for changes in (
-                                (original["eyes"] if want["eyes"] else []),
-                                (original["mouth"] if want["mouth"] else []),
-                            ):
-                                for change in changes:
-                                    x, y, alternate_x, alternate_y = change
-                                    tiles[y * 8 + x] = alternate_y * 8 + alternate_x
-                        check(
-                            family,
-                            "portrait source alternate tile selection",
-                            None if original is None else want["tiles"] == tiles,
-                        )
-                    check(
-                        family, "bound texture selector matches logical source requirement", valid
-                    )
-                    result["joins"].append(
-                        dict(kind=kind, identity=required["identity"], expected=want, value=valid)
-                    )
+                check(family, "required actual texture use", True if candidate_count else None)
+                compact = _reduce_resource_requirement(required, uses, source_recipe)
+                for name, value, count, witness in compact.pop("checks"):
+                    weight = count
+                    check(family, name, value, witness)
+                weight = 1
+                compact.update(
+                    kind=kind,
+                    identity=required["identity"],
+                    expected=want,
+                    candidateKey=key,
+                    locator=locator,
+                )
+                result["executedPairCount"] += compact["executedPairCount"]
+                result["joins"].append(compact)
+            weight, locator = 1, None
+        result["candidateVariants"] = _bounded_list(uses.published_variants())
 
         # Source recipe for the accepted three-raster extension, separate from base42.
         with evaluated("scene", "field-death source"):
+            if "scene" not in enabled:
+                return finish()
             field = read(scene_path.parent / "field-death-provenance.json")
             field_valid = (
                 field["upstreamCommit"] == UPSTREAM
@@ -6818,6 +7627,8 @@ def verdict(counts):
 def modern_report_integrity(report, ref):
     """Reject omitted obligations and contradictory serialization, not absent evidence."""
     errors = []
+    if report.get("comparisonScope", "full") != "full":
+        errors.append("selected-scope report cannot satisfy full H4 obligations")
     assertions = report.get("assertions", [])
     parents = report.get("coverageObligations", [])
     required = [a for a in assertions if a.get("applicability") != "historical-diagnostic"]
@@ -9258,7 +10069,9 @@ def compare_matrix(paths, ref, *, scope="current-keyboard"):
     excluded = ("B", "D")
     require(
         all(
-            r.get("profile") == "modern-continuous" and r.get("variant") in ("A", "B", "C", "D")
+            r.get("profile") == "modern-continuous"
+            and r.get("variant") in ("A", "B", "C", "D")
+            and r.get("comparisonScope", "full") == "full"
             for r in reports
         ),
         "matrix requires named modern reports",
@@ -9440,11 +10253,81 @@ def compare_matrix(paths, ref, *, scope="current-keyboard"):
     )
 
 
+def compare_resources(
+    actual_path,
+    selection,
+    source_root,
+    canonical_content,
+    tileset_metadata,
+    palette_metadata,
+    scope,
+    budget,
+    *,
+    source_only=False,
+):
+    actual_path = (
+        Path(actual_path).resolve() if Path(actual_path).is_absolute() else repo_path(actual_path)
+    )
+    budget.checkpoint(
+        "source-only preparation" if source_only else "capture integrity scan", force=True
+    )
+    if source_only:
+        binding = reached_visual_materials(
+            {},
+            selection,
+            source_root,
+            canonical_content,
+            tileset_metadata,
+            palette_metadata,
+            source_only=True,
+            budget=budget,
+        )
+        require(binding.get("prepared"), "source-only preparation failed")
+        return dict(
+            profile="modern-resource-source-only",
+            comparisonScope=scope,
+            sourceOnlyPrivateBytes=binding["sourceOnlyPrivateBytes"],
+            sourceOnly=True,
+            milestonePass=False,
+        )
+    with actual_path.open("rb") as stream:
+        header = json.loads(stream.readline(_STREAM_RECORD_LIMIT + 1))
+    require(header.get("channel") == "header", "scoped comparison requires sealed JSONL capture")
+    actual = _read_capture(actual_path, scope, budget)
+    budget.checkpoint("source preparation and independent inventory", force=True)
+    binding = reached_visual_materials(
+        actual,
+        selection,
+        source_root,
+        canonical_content,
+        tileset_metadata,
+        palette_metadata,
+        budget=budget,
+    )
+    selected = ("map", "entity", "scene") if scope["family"] == "all" else (scope["family"],)
+    values = [binding[family] for family in selected]
+    outcome = "FAIL" if False in values else "Unavailable" if None in values else "PASS"
+    budget.checkpoint("compact publication preparation", force=True)
+    return dict(
+        profile="modern-resource-scope",
+        comparisonScope=actual["resourceScope"],
+        result=outcome,
+        milestonePass=False,
+        fullH4Evidence=False,
+        actualObservations=dict(reachedVisualMaterialBinding=binding),
+        captureIntegrity=actual["captureIntegrity"],
+        provenance=dict(
+            capture=str(actual_path.relative_to(repo_path("."))), rawCaptureEmbedded=False
+        ),
+        resources=budget.receipt(),
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("plan", "compare", "matrix"))
+    parser.add_argument("mode", choices=("plan", "compare", "matrix", "resources"))
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
-    parser.add_argument("--reference", required=True, type=Path)
+    parser.add_argument("--reference", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--evidence-root", type=Path)
     parser.add_argument("--plan", type=Path)
@@ -9487,6 +10370,14 @@ def main():
     parser.add_argument("--expected-asset-commit")
     parser.add_argument("--expected-asset-tree")
     parser.add_argument("--expected-asset-manifest-sha256")
+    parser.add_argument(
+        "--resource-family", choices=("all", "map", "entity", "scene"), default="all"
+    )
+    parser.add_argument("--session-id")
+    parser.add_argument("--visit", type=int)
+    parser.add_argument("--occurrence", type=int, help="Exact logical observationSequence")
+    parser.add_argument("--source-only", action="store_true")
+    parser.add_argument("--source-only-private-bytes", type=int)
     args = parser.parse_args()
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
@@ -9506,6 +10397,98 @@ def main():
         "material comparison requires all explicit selections and asset pins",
     )
     material_selection = material_selection if all(material_selection) else None
+    require(
+        args.mode == "resources"
+        or not any(
+            (
+                args.session_id,
+                args.visit is not None,
+                args.occurrence is not None,
+                args.source_only,
+                args.source_only_private_bytes is not None,
+            )
+        ),
+        "resource selections apply only to resources mode",
+    )
+    if args.mode == "resources":
+        require(
+            args.source_only
+            or args.source_only_private_bytes is not None
+            and args.source_only_private_bytes > 0,
+            "resources requires separately measured source-only private bytes",
+        )
+        require(
+            args.actual is not None and material_selection is not None,
+            "resources requires actual capture and explicit material selection",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "resource output must be fresh beneath this worktree's local/",
+        )
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        temporary = args.output.parent / "temp"
+        temporary.mkdir(exist_ok=True)
+        os.environ["TEMP"] = os.environ["TMP"] = str(temporary)
+        actual_path = args.actual if args.actual.is_absolute() else repo_path(args.actual)
+        scope = dict(
+            family=args.resource_family,
+            sessionId=args.session_id,
+            visit=args.visit,
+            observationSequence=args.occurrence,
+        )
+        budget = _ResourceBudget(
+            args.output.parent,
+            actual_path.stat().st_size,
+            args.source_only_private_bytes,
+            selected=args.resource_family != "all"
+            or any(scope[key] is not None for key in ("sessionId", "visit", "observationSequence")),
+        )
+        try:
+            result = compare_resources(
+                actual_path,
+                material_selection,
+                args.text_source_root,
+                args.canonical_content,
+                args.tileset_metadata,
+                args.palette_metadata,
+                scope,
+                budget,
+                source_only=args.source_only,
+            )
+            write(args.output, result, resource_budget=budget)
+            budget.checkpoint("publication complete", force=True)
+            # Reopen only the published bundle before removing this run's new scratch.
+            read(args.output)
+            budget.release_scratch()
+            write(
+                args.output.with_name(args.output.name + ".resources.json"),
+                dict(
+                    resources=budget.receipt(),
+                    report=args.output.name,
+                    complete=not result.get("incomplete", False),
+                ),
+            )
+        except ResourceBudgetExceeded as error:
+            result = dict(
+                profile="modern-resource-scope",
+                comparisonScope=scope,
+                result="Unavailable",
+                incomplete=True,
+                milestonePass=False,
+                error=str(error),
+                resources=budget.receipt(),
+            )
+            failure_path = args.output.with_name(args.output.name + ".incomplete.json")
+            write(failure_path, result)
+        print(json.dumps(dict(result=result.get("result"), resources=budget.receipt())), flush=True)
+        raise SystemExit(
+            1
+            if result.get("result") == "FAIL"
+            else 2
+            if result.get("result") == "Unavailable"
+            else 0
+        )
+    require(args.reference is not None, "plan/compare/matrix requires accepted reference")
     ref = reference(args.reference)
     if args.mode == "matrix":
         require(args.variant_report, "matrix requires actual variant reports")
