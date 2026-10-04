@@ -720,6 +720,79 @@ No counter observation is invented from a successful probability calculation. Re
 AI choice and field/death services retain their own required comparisons. A scoped PASS does not
 change historical FAILs or authorize main-gate to skip independent acceptance.
 
+### Selected reward, growth and outcome consumer binding
+
+The optional `reward_consumer_binding` supplies only the required
+`EXP/gold/growth/spell learning and after-turn/outcome effects` child. Scoped `reward`
+and modern `--reward-context` use the same predicate. Source initial profiles, live
+preconditions, complete selected result envelopes and an independently retained census
+establish coverage; a final EXP/gold total or a known winning route does not supply it.
+
+**Confirmed selected observations:** the historical A producer
+`4d1d1b05f143ed872ceca6ff258cfca2b4087d90` reaches 28 scenes, 17 EXP commands, six
+gold awards, one level-up, six kill credits/death cleanups, 84 after-turn calls and
+85 action commits. The difference between after-turn and action counts includes the
+final victory path, which exits before another after-turn call. These are capture
+inventory facts, not gameplay quotas. Original record indices and both clock axes
+survive selection, including automatic/STAY work and nested scene preparation.
+
+Expected values come from pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` and the accepted
+[EXP/gold rules](combat-resolution.md#9-award-confirmed-battle-01-exp),
+[growth rules](level-up.md), [spell chronology](spellbook-state.md#learnspell-chronology)
+and [battle lifecycle](battle-control-lifecycle.md). Initial class/stat/item/spell
+definitions bind actual admitted provenance and source-initial battle operands.
+Source GIZMO definitions supply enemy level/maxHP and gold-table identity. Existing
+physical source arithmetic supplies damage operands; the accepted HEAL1 subset supplies
+healing recovery. Candidate reward totals supply no expected amount.
+
+The reached source-initial SDMN/PRST/KNTE subset checks damage/kill and healing EXP
+accumulators, caps, Battle01 enemy-target halving, ordered random adjustments, command
+saturation and one threshold subtraction. Gold changes during preparation; EXP remains
+deferred until its Reward command. Their owning result states are checked separately.
+Growth uses the source curves and five ordered stat pairs, then derived ATT/DEF refresh;
+current HP/MP remain unchanged at level-up. No source spell threshold is reached at the
+observed new level, and the stored/learned spell arrays must remain unchanged.
+
+This is not a general EXP model: the reused helper caps damage by remaining HP,
+whereas original `CalculateDamageExp` uses raw damage in its numerator. In this reached
+level1/2-allies versus level0-GIZMO cohort, lethal kill EXP and the action cap mask that
+difference. Other level differences and overkill operands require their own source
+comparison before extending this predicate's applicability.
+
+Kill credit belongs to the completed source action, and cleanup removes the dead target's
+placement before after-turn processing. Every reached after-turn call has status0 and
+no source recovery equipment; current resources stay unchanged. Faction/leader checks
+establish victory before the final action commit. Status expiry, recovery equipment,
+spell acquisition, promoted/cap/extreme-stat growth and defeat paths are not observations
+of this selected subset and remain outside its claim.
+
+**Confirmed composed persistence:** the first party-bearing state after outcome is
+retained even across the intervening identity-only/empty view. Source initial stats,
+observed growth effects and that state's `Party.Progress` agree; actual membership,
+source loadout, EXP, kills, gold and eligible living allies' healed HP/MP are checked.
+The source after-battle JOIN and unlock/completed flag operations retain their order
+and effects through return. Missing or empty first-party evidence cannot be replaced
+silently with a later populated snapshot. The proper final attack decision remains
+outcome record68; the later dialogue summary is not its pre-action state.
+Each owned outcome/return operation must have an accepted result envelope. Later retained
+gold snapshots must agree with the lawful reward balance through return; this selected
+outcome contains no admitted intervening gold operation. A future gold-changing outcome
+requires its own accepted operation binding rather than an assumed stable balance.
+
+**Unknown:** immediate live agility and mutable base ATT are absent from the producer's
+battle view. The composed persistence claim does not invent those observations. Complete
+scene/resource consumption, turn generation, AI and field services remain separate.
+Reward projections bind phase token, result identity, host-input ownership and completion.
+`signal-before-Present` retains the just-completed phase token even when its result starts
+the next phase. The token must own that exact completion and scene occurrence on both
+clock axes; an earlier same-named phase cannot substitute for it.
+They do not establish full rendering. Missing evidence contributes Unavailable, and known
+wrong arithmetic, membership, order or identity remains FAIL beside unrelated missing
+fields. A scoped PASS leaves `milestonePass=false` and requires independent acceptance.
+
+Reproduce with the [scoped reward route](../../../remake/docs/development-and-verification.md#scoped-reward-and-outcome-comparison).
+
 ### Selected HEAL rule and consumer binding
 
 The `HEAL recovery/cost/fairy opportunity and seed effects` child uses the accepted
