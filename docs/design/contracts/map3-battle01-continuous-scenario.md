@@ -617,6 +617,12 @@ session, physical input, token, before revision and whole Submit result identify
 
 **Confirmed:** the executable predicate checks mandatory range256 draw/copy/wait/read order,
 conditional portrait draws, the retained copy byte, eligible logical service and source continuation.
+Every selected Submit, including reveal/typewriting and separate choice delivery, joins its result
+session/revision/observation sequence/mode to its own state and ordered event envelope. Available
+adjacent original records and physical before states bound event progression. Coverage includes any
+W1-specific operation, so an orphan draw/wait/input/accept outside the poll inventory is a
+contradiction. The shared text-copy event requires a W1 or separately attributed W2 owner; reveal
+and choice delivery cannot hide it. Missing fields remain distinct from available wrong values.
 Release or reveal-only delivery cannot supply the accepting poll. Neutral Wait retains the same
 eligible consumer. Known contradictions produce **FAIL** beside missing evidence; omitted required
 operands remain **Unavailable**. Source programs and sprite-to-portrait selectors come from the
@@ -639,6 +645,13 @@ do not cover the tested cells. The actual ready actor, timer, radius, destinatio
 entity130 rejects three north attempts at the blocked cell before accepting east. Expected attempt
 counts are consequences of radius/collision tests, never a search for the recorded final seed.
 The actual destination, timer, velocity reset and complete post-service seed must agree.
+Before deriving either stationary walk, bind actual position equal to destination on both axes and
+zero carried X/Y travel. At the pinned `entityscriptengine_2.asm:VInt_UpdateEntities`,
+`UpdateEntityData` runs before action-script dispatch and reads position, destination and carried
+travel/velocity to determine movement. A reported `moving=false` alone cannot prove this stationary
+edge. Residual velocity can remain at rest; a changed target alone with zero travel does not prove
+coordinate movement. This bounded stationary admission is not a general movement model, and reaching
+wait20 does not imply that `esc01_waitUntilDestination` will run again before that wait expires.
 
 Three physical inputs contain both the W1 Submit and a separate choice-window Submit. Their entire
 input spans are bound, with unchanged W1 gameplay identity across choice delivery; the latter events

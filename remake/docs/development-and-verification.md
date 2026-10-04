@@ -3896,7 +3896,12 @@ indexed full capture. Verify this wiring directly; do not launch full comparison
 Direct controls should cover missing/duplicate polls, wrong source token or producer, foreign
 session and result identity, release/reveal misuse, missing plus contradictory evidence, event order,
 copy retention, conditional portrait range/seed/registration, NPC installation/collision/destination,
-and the separate choice-window Submit. Preserve a completed failed control, then rerun its correction
+and the separate choice-window Submit. Include result/state sequence and revision disagreements,
+negative or overlapping extra-event envelopes, orphan W1 operations on reveal/delivery rows, and
+stationary NPC geometry/travel contradictions beside missing operands. The strengthened movement
+counterexample changes both destination and carried travel while retaining `moving=false`; a changed
+target alone with zero travel is not evidence of coordinate movement. Preserve a completed failed
+control, then rerun its correction
 and any newly affected checks. No unit-test suite of the comparator is required. Exact original live
 service timing, removed intermediate clocks/typewriting, wider branch-flag truth, historical HEAL
 failures and whole-A CPU/AI/battle-scene boundaries remain explicit in the contract and handoff.
