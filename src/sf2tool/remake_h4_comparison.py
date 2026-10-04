@@ -14039,8 +14039,7 @@ def admission_seed_binding(actual, context, source_root):
         value=None,
         checks=[],
         historical=dict(result="FAIL", reason="disconnected historical A latch"),
-        openingControls=None,
-        unknown=["original opening mouth/view", "original low24 image", "later first AI value"],
+        unknown=["original low24 image", "later first AI value"],
     )
     absent = object()
 
@@ -14412,6 +14411,315 @@ def admission_seed_binding(actual, context, source_root):
     return result
 
 
+def admission_opening_binding(actual, context, source_root):
+    """Controlled original R1/readers versus historical A's own admission.
+
+    This decides the admission controls, not pixel cadence or every text service.
+    Original and remake clocks/sessions are deliberately separate proof domains.
+    """
+    context = (context or {}).get("opening") or {}
+    checks = []
+    absent = object()
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(want, got=absent):
+        if want is absent or got is absent or got is None and want is not None:
+            return None
+        if isinstance(want, dict):
+            return (
+                merge([match(v, got.get(k, absent)) for k, v in want.items()])
+                if isinstance(got, dict)
+                else False
+            )
+        return type(got) is bool and got == want if isinstance(want, bool) else got == want
+
+    def check(name, value):
+        checks.append(dict(name=name, value=value))
+
+    def one(name, rows):
+        check(name + " unique", None if not rows else len(rows) == 1)
+        return rows[0] if rows else {}
+
+    check(
+        "selected controlled original identities",
+        match(
+            dict(
+                SourceCommit=UPSTREAM,
+                RomSha256=ROM,
+                ConfigurationSha256="C72A2547D51BBE97CBEB6D7DB51E5FCCDDD5507917735CB11554F8461D69DAF7",
+                ObserverSha256="738E66DD261CAD1D2077E64EAC85E33A0CADC66C8712ED32F619A2818E747530",
+                RunnerSha256="CC1823FDF94A29A3C415F4535C68799DF5D900C75DC6951C5260E0134289535E",
+                InputSha256="991A51636102F00D837F605561538A39B60E7621370D523CFC412D52ECDDEB5E",
+            ),
+            context.get("candidate", absent),
+        ),
+    )
+    check(
+        "completed original boundary",
+        match(
+            dict(
+                status="OPENING-DIAGNOSTIC-COMPLETE-UNREVIEWED",
+                stopReason="opening-script-return",
+                canonicalRomUnchanged=True,
+                sessionRomDeleted=True,
+                process=dict(returncode=0, timed_out=False, process_terminated=True, error=None),
+            ),
+            context.get("host", absent),
+        ),
+    )
+    check(
+        "original restored selected scope",
+        match(
+            dict(
+                callbacksCleared=True,
+                sessionStateRestored=True,
+                sessionCartPatches=True,
+                dialogueAndInput=True,
+                cameraState=True,
+            ),
+            (context.get("observed") or {}).get("restoration", absent),
+        ),
+    )
+    rows = context.get("records") or []
+    selected = []
+    for name, pc in (
+        ("r1", 0x2591C),
+        ("view-read", 0x46B4),
+        ("view-selected", 0x46BE),
+        ("mouth-glyph", 0x68E6),
+        ("view-clear-before", 0x4723E),
+        ("view-clear-after", 0x47242),
+        ("program-return", 0x58C),
+    ):
+        row = one(
+            "original " + name,
+            [
+                r
+                for r in rows
+                if r.get("kind") == "opening:" + name
+                and (r.get("facts") or {}).get("stage") == "admitted"
+            ],
+        )
+        selected.append(row)
+        check(
+            "original " + name + " seam",
+            match(
+                dict(
+                    pc=pc,
+                    state=dict(map=3),
+                    facts=dict(values=dict(MOUTH_CONTROL_TOGGLE=0, VIEW_SCROLLING_SPEED=0)),
+                ),
+                row,
+            ),
+        )
+    for axis, strict in (("order", True), ("frame", False), ("inputFrame", False)):
+        values = [r.get(axis) for r in selected]
+        known = [v for v in values if v is not None]
+        check(
+            "original " + axis + " progression",
+            merge(
+                [
+                    True if len(known) == len(values) else None,
+                    all(v >= 0 for v in known),
+                    all(
+                        a < b if strict else a <= b for a, b in zip(known, known[1:], strict=False)
+                    ),
+                ]
+            ),
+        )
+    check("R1 precedes controller delivery", match(0, selected[0].get("inputFrame", absent)))
+    for row in selected[1:3]:
+        check(
+            "view default branch operands",
+            match(
+                dict(
+                    facts=dict(
+                        registers=dict(D7=24),
+                        values=dict(
+                            VIEW_TARGET_ENTITY=0,
+                            VIEW_SCROLLING_PLANES_BITFIELD=0,
+                            MAP_AREA_LAYER_TYPE=0,
+                            PLAYER_1_INPUT=4,
+                            CURRENT_PLAYER_INPUT=4,
+                        ),
+                    )
+                ),
+                row,
+            ),
+        )
+    check(
+        "glyph input reader",
+        match(
+            dict(
+                facts=dict(values=dict(PLAYER_1_INPUT=0, CURRENT_PLAYER_INPUT=0)),
+                state=dict(typewriting=1),
+            ),
+            selected[3],
+        ),
+    )
+    try:
+        root = Path(source_root)
+        pin = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        dirty = subprocess.check_output(
+            ["git", "-C", str(root), "diff", "HEAD", "--", "disasm"], text=True
+        )
+        check("pinned clean original source", pin == UPSTREAM and not dirty)
+        text = (
+            (root / "disasm/data/scripting/text/gamescript.txt")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        )
+        check(
+            "selected opening needs no delay token",
+            all(not re.search(r"\{(?:D[123]?|DELAY[^}]*)\}", text[i]) for i in (510, 511, 483)),
+        )
+    except (OSError, TypeError, IndexError, subprocess.CalledProcessError):
+        check("pinned original source and token path", None)
+
+    first = (
+        one(
+            "historical A admission",
+            [s for i, s in enumerate(actual.get("samples", [])) if s.get("_index", i) == 0],
+        ).get("state")
+        or {}
+    )
+    session = "99755635-cad5-4fff-bc88-b70fcc5f017b"
+    check(
+        "actual initial ready state",
+        match(
+            dict(
+                sessionId=session,
+                revision=4,
+                observationSequence=4,
+                simulationTick=0,
+                map="map-3",
+                mode="Exploration",
+                continuation="FieldInput",
+                cursor=None,
+                wait=None,
+                callers=[],
+                canWaitAtInput=True,
+            ),
+            first,
+        ),
+    )
+    check(
+        "actual admission controls",
+        match(dict(MouthControl=0, ViewSpeed=0), first.get("textSettings", absent)),
+    )
+    original_values = (selected[0].get("facts") or {}).get("values") or {}
+    check(
+        "independent admission value correspondence",
+        match(
+            dict(
+                MouthControl=original_values.get("MOUTH_CONTROL_TOGGLE", absent),
+                ViewSpeed=original_values.get("VIEW_SCROLLING_SPEED", absent),
+            ),
+            first.get("textSettings", absent),
+        ),
+    )
+    inp = one(
+        "first physical input",
+        [r for i, r in enumerate(actual.get("inputRecords", [])) if r.get("_index", i) == 0],
+    )
+    check(
+        "first input joins admission",
+        match(
+            {
+                k: first.get(k, absent)
+                for k in (
+                    "sessionId",
+                    "revision",
+                    "observationSequence",
+                    "simulationTick",
+                    "mode",
+                    "map",
+                    "cursor",
+                    "wait",
+                )
+            },
+            inp.get("before", absent),
+        ),
+    )
+    check(
+        "first physical input identity",
+        match(dict(ordinal=1, action="left", pressed=True, resultStart=0, resultEnd=1), inp),
+    )
+    submit = one(
+        "first actual Submit",
+        [r for i, r in enumerate(actual.get("warpRecords", [])) if r.get("_index", i) == 0],
+    )
+    check(
+        "first Submit identity",
+        match(
+            dict(
+                inputOrdinal=1,
+                result=dict(
+                    boundary="submit",
+                    sessionId=session,
+                    revision=5,
+                    observationSequence=5,
+                    failure=None,
+                ),
+                state=dict(sessionId=session, revision=5, observationSequence=5),
+            ),
+            submit,
+        ),
+    )
+    first_events = (submit.get("result") or {}).get("observations") or []
+    first_event = one("first input movement observation", first_events)
+    check(
+        "first Submit event closes both axes",
+        match(dict(Kind="movement-requested", Revision=5, Sequence=5), first_event),
+    )
+    check(
+        "first input after joins Submit",
+        match(
+            {
+                k: (submit.get("state") or {}).get(k, absent)
+                for k in (
+                    "sessionId",
+                    "revision",
+                    "observationSequence",
+                    "mode",
+                    "map",
+                    "cursor",
+                    "wait",
+                )
+            },
+            inp.get("after", absent),
+        ),
+    )
+    # Any selected contradictory settings remain a failure; later agreement cannot
+    # replace a missing initial state. Sparse result states do not invent settings.
+    for channel in ("samples", "warpRecords"):
+        for row in actual.get(channel, []):
+            state = row.get("state") or {}
+            if (state.get("cursor") or {}).get("Program") != "cs-5145c":
+                continue
+            check("selected opening session", match(session, state.get("sessionId", absent)))
+            if "textSettings" in state:
+                check(
+                    "selected opening settings",
+                    match(dict(MouthControl=0, ViewSpeed=0), state["textSettings"]),
+                )
+    return dict(
+        value=merge([c["value"] for c in checks]),
+        checks=checks,
+        boundary="controlled original R1/readers versus historical A admission controls",
+        unknown=[
+            "unreached delay reader",
+            "natural title/reset ancestry",
+            "per-glyph hardware timing",
+        ],
+        owner="docs/research/map3-messenger-acceptance.md#controlled-opening-scalar-readback",
+    )
+
+
 def compare_modern(
     ref,
     actual_path,
@@ -14477,6 +14785,11 @@ def compare_modern(
     admission_seed = (
         admission_seed_binding(actual, admission_context, text_source_root)
         if admission_context is not None
+        else None
+    )
+    admission_opening = (
+        admission_opening_binding(actual, admission_context, text_source_root)
+        if admission_context is not None and "opening" in admission_context
         else None
     )
     assertions = _bounded_list()
@@ -14840,14 +15153,20 @@ def compare_modern(
     check(
         1,
         "opening mouth/view controls before first source write",
-        "original opening readback",
-        (first.get("textSettings") or {}),
+        True if admission_opening is not None else "original opening readback",
+        admission_opening["value"]
+        if admission_opening is not None
+        else (first.get("textSettings") or {}),
         "samples[0].textSettings",
         dict(owner="docs/design/contracts/dialogue-system.md", binding="opening service gates"),
-        applicability="required-unobserved",
+        applicability="applicable" if admission_opening is not None else "required-unobserved",
         parent=phase_parent,
-        missing_side="original",
-        reason="MouthControl/ViewSpeed are ancestry Inferred, not an opening RAM observation",
+        missing_side="selected original/actual admission evidence"
+        if admission_opening is not None
+        else "original",
+        reason="Controlled original R1/readers bound to historical A's own initial settings"
+        if admission_opening is not None
+        else "Explicit controlled opening witness not selected",
     )
     # In this selected R1, zero script plus the 0x7000 sentinel denotes an unused physical slot.
     occupied = [
@@ -16240,6 +16559,7 @@ def compare_modern(
         candidateDefinitions=candidate_definitions,
         actualObservations=dict(
             admissionSeed=admission_seed,
+            admissionOpening=admission_opening,
             admissionInputConsistency=admission_identities,
             sceneRecords=len(scene_rows),
             visibleMountedResources=mounted_resources,
@@ -16909,15 +17229,32 @@ def main():
             args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
             "Admission output must be fresh beneath this worktree local/",
         )
-        binding = admission_seed_binding(
-            read(actual_path), read(args.admission_context), args.text_source_root
+        selected_actual, selected_context = read(actual_path), read(args.admission_context)
+        binding = admission_seed_binding(selected_actual, selected_context, args.text_source_root)
+        opening = admission_opening_binding(
+            selected_actual, selected_context, args.text_source_root
         )
         verdict = (
             "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
         )
-        write(args.output, dict(profile="modern-admission-seed-composition", result=verdict,
-                                milestonePass=False, binding=binding))
-        print(json.dumps(dict(result=verdict, openingControls="Unavailable", milestonePass=False)))
+        write(
+            args.output,
+            dict(
+                profile="modern-admission-seed-composition",
+                result=verdict,
+                milestonePass=False,
+                binding=binding,
+                opening=opening,
+            ),
+        )
+        opening_verdict = (
+            "Unavailable" if opening["value"] is None else "PASS" if opening["value"] else "FAIL"
+        )
+        print(
+            json.dumps(dict(result=verdict, openingControls=opening_verdict, milestonePass=False))
+        )
+        if "opening" in selected_context and opening["value"] is not True:
+            raise SystemExit(1 if opening["value"] is False else 2)
         raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
     require(
         args.map_context is None

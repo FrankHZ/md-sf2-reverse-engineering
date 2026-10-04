@@ -4031,8 +4031,9 @@ uv run python -X utf8 -m sf2tool.remake_h4_comparison admission-seed `
 
 `$pinnedSource` is an explicitly selected read-only pinned source checkout. Output must be fresh
 under the current worktree's `local/`; selected actual/context input is capped at10MiB. The same
-predicate is used by modern comparison's optional `--admission-context`. It replaces only the
-seed-copy child; opening mouth/view stays Unavailable. Neither command grants full H4 acceptance.
+predicate is used by modern comparison's optional `--admission-context`. A seed-only context replaces
+only the seed-copy child. An explicit `opening` selection also evaluates the separate opening-control
+child described below. Neither command grants full H4 acceptance.
 
 The private `select-seed.py` selects original checkpoint lines201/204/310/312/4011/4124 from
 registered `issue496/prepared-72`, retaining scalar facts, flag88, order and original line numbers.
@@ -4050,6 +4051,38 @@ use a negative/duplicate sequence, or contradict two ending channels while omitt
 Contradictions must remain FAIL beside missing evidence. These are direct
 verification runs, not a new test suite of the comparator. Preserve completed PR621 failures and
 narrow corrections; no SDK/native/whole-route rerun follows merely from composing this evidence.
+
+#### Selected opening controls
+
+The admitted original start139 is retained under `admission-binding-01/opening-prepared-02`.
+Its source/configuration/runner/observer/input identities,11 records, completed status and restoration
+are owned by the [original readback](../../docs/research/map3-messenger-acceptance.md#controlled-opening-scalar-readback).
+Do not rerun that successful observation. `correction-01/audit-opening.py` checks retained results and
+the450 registered installation files without launching the emulator. It preserves the original
+preparation-budget failure and the native receipt's absent exact monotonic duration.
+
+The separately authorized one-pass historical A selector is
+`correction-01/select-opening-actual.py`, with its plan and receipt in the same private owner.
+It streamed1,005,792,097B of the registered1,375,851,198B input, stopped each channel at the opening
+boundary, and wrote49,056B of selected actual data in9.1947s/1,642,496B incremental peak. Source
+size/mtime remained unchanged. It recovered initial revision4 settings, first-input/result joins,
+and selected opening results; sparse results genuinely omit some per-glyph/view operands.
+Do not scan again to fill absent producer fields or substitute later settings for admission.
+
+`compose-opening.py` merges these selected fields with the existing seed evidence, rejecting
+contradictory overlaps. Actual/context total2,107,507B remains below10MiB. Reproduce the scoped
+comparison using `correction-01/composed-actual.json` and `composed-context.json` as the two inputs
+to `admission-seed`, with a fresh output. Its seed and opening results are separate, and an explicitly
+selected opening FAIL/Unavailable produces a nonzero exit. Modern comparison uses the same function
+only for the opening child; no accepted service/map/audio/HEAL/turn predicate changes.
+
+Direct controls cover baseline, missing original/actual/context/settings, wrong mouth/view/input,
+foreign cohort/session, original order/frame/input-axis inversions, first input span and before/after
+joins, result/event axes, original exit/restoration failure, and known contradictions beside unrelated
+missing evidence. The opening child binds admission values and source-side readers; it does not
+claim a distinct historical first-glyph read event, source hardware cadence or full service replay.
+Run scoped lint/contracts and the committed planner under current scope, then record exact-head CI.
+No SDK/full H4/route/cleanup or repeat native observation follows from these changes.
 
 ### Historical A turn-order inventory
 

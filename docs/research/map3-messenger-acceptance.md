@@ -3530,7 +3530,7 @@ the existing1800-frame bootstrap watchdog bounds this candidate to2455 frames, i
 12000-frame ceiling. Other limits are300s,2000 scalar records/1MiB,64MiB total generated output and
 2GiB process working set. Source preparation already verifies shared-Lua syntax; it starts no emulator.
 
-The current candidate is `local/issue534/admission-binding-01/opening-prepared-02`; retain
+The selected candidate is `local/issue534/admission-binding-01/opening-prepared-02`; retain
 `opening-prepared-01` as the pre-correction artifact. After independent
 pre-launch inspection and installation ownership/process checks, the execution API is
 `run_map3_observation_candidate(rom, candidate, diagnostic_kind=OPENING_DIAGNOSTIC)` with all other
@@ -3539,8 +3539,8 @@ worktree-local config/cwd/TEMP/writable roles; no alternate emulator/source copy
 uses the private `admission-binding-01/correction-01/run-opening.py --execute-reviewed` supervisor to monitor
 storage/peak working set at250ms intervals, in addition to the runner's wall/frame and Lua record
 caps. The supervisor's default invocation is inspection-only. A resource violation retains a failed
-attempt and does not claim successful emulator restoration. Native enforcement remains unobserved
-until the admitted run; the prepared command is not a completed native gate.
+attempt and does not claim successful emulator restoration. The successful run below does not test
+the resource-violation termination path; preparation itself is not a completed native gate.
 
 Preparation completed in23.7919s with247,746,560B incremental peak working set. The inherited H1
 preparation reads the existing24,062,653B listing; its measured peak **exceeds** the proposed128MiB
@@ -3554,8 +3554,60 @@ justifies the fresh candidate; it does not justify rerunning the old preparation
 The prospective budget for this correction's unchanged H1 input is384MiB incremental/120s.
 `correction-01/preparation-receipt.json` records22.8582s and247,898,112B incremental peak, within
 that new allocation. The original128MiB overrun remains **FAIL**. No parser/toolchain expansion or
-native launch followed; native budgets are unchanged. No new original opening value, runtime
-compatibility/cleanup result or full H4 acceptance is claimed.
+native launch followed during preparation; native budgets are unchanged. Preparation alone establishes
+no original opening value, runtime compatibility/cleanup result or full H4 acceptance.
+
+### Controlled opening scalar readback
+
+**Confirmed (selected controlled observation):** `opening-prepared-02` ran once after independent
+admission at executor commit `dd83581f0d2b9cb0d7ddd31202820216cdbb34d4`, using the pinned source,
+USA ROM and registered BizHawk2.11.1/Genesis Plus GX. Its configuration identity is
+`C72A2547D51BBE97CBEB6D7DB51E5FCCDDD5507917735CB11554F8461D69DAF7`, observer
+`738E66DD261CAD1D2077E64EAC85E33A0CADC66C8712ED32F619A2818E747530`, runner
+`CC1823FDF94A29A3C415F4535C68799DF5D900C75DC6951C5260E0134289535E`, and input
+`991A51636102F00D837F605561538A39B60E7621370D523CFC412D52ECDDEB5E`.
+The candidate retains source/H1/ROM and execution-helper identities. Reproduction is the reviewed
+command above; do not overwrite or rerun the completed candidate. Inspect its
+`runtime/checkpoints.jsonl`, `observer.observed.json`, `observer.status.txt`, `host-status.json`
+and `launch-budget.json`, with `correction-01/audit-opening.py`/`opening-audit.json` for the
+bounded read-only audit and registered-installation comparison.
+
+| Selected seam | Order / callback frame / input frame | Observed operands |
+| --- | --- | --- |
+| Pre-R1 view read/selection | 1–2 / 329 / not admitted | override0; D7 remains24 |
+| R1 before input | 3 / 354 / 0 | mouth0 at`FFB198.b`, view0 at`FFB194.w`, copy0 at`FFDFB0.b`; both input bytes0 |
+| First admitted view read/selection | 4–5 / 355 / 1 | override0; D7 remains24; player/current input4; target0, layer0, active-plane mask0 |
+| First admitted glyph mouth read | 6 / 566 / 212 | mouth0; player/current input0; typewriting1 |
+| First W2 copy before/after | 7–8 / 661 / 307 | copy0→209, equal to D7 low byte209 |
+| Script-return view clear before/after | 9–10 / 1009 / 655 | override0→0 |
+| Matched `cs_5145C` return | 11 / 1009 / 655 | caller return PC`0x58C`; stop after this frame completes |
+
+At `loc_46B4`, override0 preserves D7; `loc_46BE` confirms24. Retained layer1/2 parallax values
+are256 and autoscroll bytes0. These operands support the selected default-speed branch, without
+imposing original pixel cadence on the remake. At `loc_68E6`, mouth0 permits the player-input
+test; input0 reaches `WaitForVInt`. Neutral input alone would not distinguish every mouth value,
+so retain the observed mouth byte itself.
+
+The delay-reader hook `loc_65D8` was not reached. Pinned `gamescript.txt` text510/511/483 has
+W2/W2/W1 respectively and no delay token; `symbol_delay1`/`symbol_delay3` is not required by this
+selected opening. Its unobserved execution remains **Unknown**, without a route extension or a
+fabricated delay record. R1 mouth/view values are directly observed in this controlled start;
+ancestry inference remains the limit for the unobserved natural title/reset path.
+
+The process exited0 without timeout/forced termination. Named callback/core/scope/cart-patch
+restoration fields passed; the canonical ROM was unchanged and the temporary session ROM was
+removed by its existing owner. Outputs remain retained (`outputRemoved=false`). Post-exit comparison
+of450 installed release members to the pinned archive passed. This proves this attempt's restoration,
+not historical attempts or failure-path cleanup.
+
+There were11 scalar records/16,547B, sampled peak working set847,978,496B and sampled peak generated
+bytes2,293,904, within the approved limits. One start raises retained starts138→139;
+655 admitted input frames and callback frame1009 are recorded, with no interactive batches added.
+The noninteractive receipt has no monotonic elapsed field: the file creation-to-final-receipt
+interval25.3233s is an estimate, not exact active time. Preserve prior15583.68017570005s plus
+this explicitly unmeasured increment; do not fabricate exact cumulative duration or rerun to obtain it.
+Prior429625 delivered frames and16332 batches remain distinct from bootstrap/callback numbering.
+This bounded result establishes no full H4 or obligation acceptance.
 
 ### Later blocks: complete source, no later runtime claim
 

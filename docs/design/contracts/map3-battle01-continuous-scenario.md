@@ -527,9 +527,11 @@ named flags/lists/readiness, candidate definitions and returned story flag/retur
 main draws use the existing original H3 generator model at each actual seed/range, independently of
 remake RNG code. That arithmetic comparison does not prove a source draw-to-effect association, AI
 thinking stream, service opportunity or whole action rule. The original `RANDOM_SEED_COPY=0` versus
-actual null and ancestry-inferred mouth/view gates remain explicit. The independently selected
+actual null remains explicit. The independently selected
 [seed composition](#admission-seed-copy-composition) can decide initial-copy relevance; it does not
-resolve opening mouth/view. With the explicit sealed R1 witness and selected compiled content, walking admission binds
+resolve opening mouth/view by itself. The separately selected
+[opening control binding](#controlled-opening-control-binding) uses the bounded original readback.
+With the explicit sealed R1 witness and selected compiled content, walking admission binds
 the three pointers through the pinned allocator/template to semantic cursor/moving state and consumed
 wait behavior. The [walking source owner](../../research/map3-messenger-acceptance.md#walking-admission-continuation)
 supplies expected phases; remake start values and program names do not supply them. Without that
@@ -594,9 +596,44 @@ wrong copy or foreign session fails the required predicate; unrelated missing ev
 hide it. Missing evidence remains **Unavailable**, including a missing copy despite later
 convergence. Original R1 copy0 remains its observed value, not a value inferred from null.
 
-**Unknown:** original opening mouth/view, other24 thinking-image bits, later original first-AI
+**Unknown:** other24 thinking-image bits, later original first-AI
 value and corrected whole-route host trajectory. These obligations remain independent. A scoped
 PASS has `milestonePass=false`; main-gate alone accepts any obligation reduction.
+
+### Controlled opening control binding
+
+With explicit `admission-context.opening`, `admission_opening_binding` replaces only the required
+`opening mouth/view controls before first source write` child. It joins two independent evidence
+domains: the selected controlled original R1 and its first source readers, and historical A's own
+initial state and physical input boundary. They do not share a session or clock. PR621's accepted
+seed mechanism remains separate; no corrected whole-A execution is implied.
+
+**Confirmed (bounded original observation):** the
+[controlled opening scalar readback](../../research/map3-messenger-acceptance.md#controlled-opening-scalar-readback)
+observes mouth0/view0 at R1 before input, then mouth0 at the first glyph reader and view0 at the first
+admitted override read/selection. The latter preserves source-selected D7=24; the script-return
+clear happens later. Frozen source/ROM/input/observer/runner/configuration identities, completed
+status, restoration, admitted phases, source PCs and monotonic frame/input/order joins are required.
+These values no longer depend on backwards inference from later saved zeros.
+
+The separately registered historical session `99755635-cad5-4fff-bc88-b70fcc5f017b` has
+`samples[0]` at revision/sequence4 and tick0: map3, FieldInput, neutral cursor/wait/callers and
+mouth0/view0. The first physical left input joins that before-state and owns result0 at
+revision/sequence5, including its movement-requested event and after-state. Selected opening
+settings at the `cs-5145c` caller must not contradict admission. Indices select retained evidence;
+they define no gameplay legality or required service count. Known wrong values, foreign identity,
+reversed chronology or input/result mismatches fail even beside unrelated missing evidence.
+Later zero values cannot replace a missing initial state.
+
+This child establishes admission control correspondence and the source-side relevance of those
+controls. Sparse historical A results do not emit a distinct first-glyph settings/read event or every
+view operand. They therefore do not independently establish per-service timing or a one-to-one
+original/remake glyph event mapping. Existing service consumers retain their own acceptance scope.
+The selected source text510/511/483 contains no delay token, so an unreached delay reader is
+**Unknown**, not an obligatory route extension. Natural title/reset ancestry, hardware timing,
+other thinking-image bits and later first-AI value remain separate. Without explicit original or
+actual admission evidence this child is **Unavailable**. Full H4 and all eight obligations remain
+subject to independent main-gate acceptance.
 
 Remaining operation/rule/resource/consumer joins name their required operands and missing side.
 The source-PC to typed-instruction correspondence, matched action preconditions, per-resource
