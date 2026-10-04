@@ -3802,6 +3802,46 @@ planner/actual CI. This offline comparator slice needs no SDK/native/capture, ne
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
 actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
 
+### Turn-order evidence inventory
+
+Before implementing the turn-order child, inventory retained required-keyboard A generation records
+and candidate state. The [contract boundary](../../docs/design/contracts/map3-battle01-continuous-scenario.md#reached-turn-order-binding-boundary)
+names the exact missing operands and resolving owner. The comparator currently has no scoped
+turn-order command and its existing required child stays Unavailable.
+
+For the retained A producer `4d1d1b05f143ed872ceca6ff258cfca2b4087d90`, stream the pretty JSON
+record arrays without loading the whole capture. Select only `warpRecords` whose
+`result.observations.Kind` is `round-started` or `round-rng`, preserving the containing session/result
+and source channel/ordinal; retain the `bound-first-battle-input` sample. Inspect the small outcome
+companion's action-state actor keys and queue separately. Read the process/settings receipts to
+identify the compiled source and A scope. Preserve source size/mtime before/after, selection recipe,
+counts, output bytes, elapsed time and incremental peak memory under the owning worktree's ignored
+`local/`; raw inputs remain read-only. Equal repeated result snapshots are retained as snapshots,
+not counted as new rounds or candidate draws.
+
+The completed pilot scanned the retained 1,375,851,198-byte A capture and selected 14 records with
+12 distinct round generations, including the repeated first-round result. Output was 326,233 bytes,
+elapsed 34.639 seconds and incremental peak working set 3,538,944 bytes. Its selection ceilings were
+120 seconds, 128 MiB incremental memory and 10 MiB retained output. Streaming reads O(input bytes);
+this pilot's repeated selected-size accounting additionally costs O(record count × selected bytes).
+Memory is bounded by the current record and selected records. The 4,814,568-byte outcome companion
+has 76 records and can be inspected separately within the same output budget. These measurements
+are evidence inventory, not acceptance counts. No database import, source acquisition, native/SDK
+launch or comparison report was generated.
+
+The projection in that exact producer's `BattleMapViewport.ObserveActors` lacks live agility,
+extra-turn and processing-order operands; `BattleAdvancer.Advance` publishes only the whole-round
+seed edge. Neither outcome snapshots nor original H3 fixtures recover the missing actual draws.
+Stop at this boundary rather than fabricate a positive/negative comparator fixture. Main-gate must
+assign the necessary generation observation and establish a lawful bounded local start before
+expanding production/adapter ownership. The retained A seed/AI trajectory remains historical after
+the accepted seed-copy correction; no corrected whole-route result is claimed.
+
+This documentation-only finding uses direct document/private-boundary checks and the committed
+verification plan. It does not run normal/full suites, full H4, a route or a matrix, and it does not
+change the comparator or accepted audio predicate. Keep the original 12 open obligations and
+historical aggregate results intact.
+
 ### Scoped audio consumer comparison
 
 Use the complete retained default-keyboard A audio channel and only its necessary scene/music/input

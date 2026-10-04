@@ -558,6 +558,42 @@ terminal voices; wait tokens are not playback IDs. The selected A audio dependen
 below. Other original resource selectors/provenance and required dependent-consumer joins retain
 their separate Unknowns, without queuing acquisition or adding untaken branches as prerequisites.
 
+### Reached turn-order binding boundary
+
+The `turn candidate score draws and tie/order result` child remains **Unavailable**. The accepted
+[turn-order construction](battle-control-lifecycle.md#turn-order-construction) and its
+`battle01-turn-order-v1.json` / `turn-order-boundaries-v1.json` H3 fixtures own the expected rule:
+placed/living admission in source combatant order, low-seven-bit agility, ordered bounded draws,
+extra-turn construction, wrapped scores and stable descending signed-byte sorting. The fixed buffer's
+sentinels participate in sorting; comparing only the visible living prefix is insufficient at the
+signed-score boundary. A remake-generated queue must never supply the expected queue.
+
+**Confirmed evidence limit:** retained required-keyboard A from compiled source
+`4d1d1b05f143ed872ceca6ff258cfca2b4087d90` records `round-started`, aggregate `round-rng`
+before/after images and projected `turnOrder`. Its battle actor projection retains identity, HP and
+position but omits live agility, extra-round action and processing order. Its round observations
+omit per-candidate ranges, draw results and unsorted scores. The selected first-battle-input sample
+and outcome action-state records therefore cannot establish matched candidate operands, full
+candidate coverage or actual draw-to-score consumption. Initial admitted definitions cannot replace
+the live generation operands; reconstructing draws from the accepted rule proves a prediction,
+not their actual consumption. This historical A predates the accepted text-copy/AI seed correction;
+a local comparison at its own operands would not prove execution of the corrected code.
+
+The smallest resolving boundary is an actual generation-local observation, after activation/spawn
+and before subsequent action mutations: session/round/revision, complete candidate roster with
+unique source order and placed/HP/agility/extra-turn operands (including skipped candidates), entry
+seed, each candidate's ordered range/before/after/result and unsorted score, exit seed and complete
+sorted buffer. Join these by session, round and candidate rather than a surviving event count.
+Missing operands stay Unavailable; independent contradictions remain FAIL even beside a missing
+occurrence. Duplicates, foreign identities and candidate omissions cannot satisfy coverage.
+
+Producing that observation requires separately assigned production/adapter ownership and a bounded
+legal local start; neither is supplied by this comparator-only slice. Availability of such a start
+is **Unknown**. No new route, emulator/native launch, full H4 recomputation or settings matrix is
+implied. The [bounded inventory procedure](../../../remake/docs/development-and-verification.md#turn-order-evidence-inventory)
+records the selection and stopping boundary. This finding closes no child or milestone and leaves
+the accepted audio binding independent.
+
 ### Composed reached audio consumer binding
 
 The audio replacement/fade/stop/resume child uses independent pinned original rules, accepted actual
