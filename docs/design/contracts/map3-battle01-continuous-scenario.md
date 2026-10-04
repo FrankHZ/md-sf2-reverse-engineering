@@ -663,6 +663,63 @@ terminal voices; wait tokens are not playback IDs. The selected A audio dependen
 below. Other original resource selectors/provenance and required dependent-consumer joins retain
 their separate Unknowns, without queuing acquisition or adding untaken branches as prerequisites.
 
+### Selected physical rule and consumer binding
+
+The optional `physical_consumer_binding` replaces only the required
+`physical range/dodge/critical/spread/double/counter effects` child. Its scoped command and
+modern `--physical-context` entry share the same predicate. Independent context supplies the
+complete retained battle census and original channel indices; candidate omissions cannot redefine
+which attacks require evidence. Scenario ordinals, a known winner and fixed damage totals are not
+rules of combat.
+
+**Confirmed:** the selected historical A capture, producer
+`4d1d1b05f143ed872ceca6ff258cfca2b4087d90`, contains 25 physical preparations: 14 player and
+11 automatic enemy actions. Their 27 strikes include three dodges, one critical and two second
+strikes. No counter strike is reached. These are inventory facts for this capture, not required
+counts for another battle. The final player attack joins its own action-selected outcome record68;
+summary75 follows victory dialogue and cannot use the preceding record as its battle state.
+
+Expected rules come from pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, the
+[physical contract](combat-resolution.md), [action construction](battle-action-construction.md)
+and [RNG contract](randomness.md). Source initial classes and battle01 placements bind the admitted
+party/enemy identities; equipped item definitions bind range, and the original compressed battle01
+terrain plus mover table bind land protection. Prowess and critical tables supply draw eligibility
+and ranges. Candidate damage and presentation sprites supply none of these expected parameters.
+The selected source-initial party declaration and initial placement/mover snapshots are required;
+this comparison does not establish an arbitrary missing deployment/profile join. The reviewed reached
+source subset is unpromoted SDMN/PRST/KNTE versus GIZMO, status0, ATT8–10/DEF4–5 and ATT-only
+weapons56/71/85. This does not establish promoted/altered-prowess, Gisarme, Burst Rock or special
+unarmed rules; unreached counters remain explicit.
+
+The predicate uses live ATT/DEF/HP, status, equipment, placement and full main-seed images. It checks
+ordered dodge/critical/spread/double/counter draws, sticky counter requests and follow-up eligibility,
+then associates first/second/counter dispatch with persistent HP effects. Both spread draws use the
+same pre-spread bound; reaction damage remains unclamped even when HP reaches zero. Physical effects
+must occur between the preceding command completion and their own phase start in the same Submit.
+HP stays deferred until its command and is checked in the surrounding selected live states. Dodge
+has no HP-valued event; its persistent HP must remain unchanged. Missing operands are Unavailable;
+known wrong arithmetic, identities or effects remain FAIL beside unrelated missing evidence.
+
+Session, result index, revision and observation sequence identify every retained boundary. A
+physical player confirmation binds through its input index and result interval; automatic actions
+retain their causal input and subsequent Submit/state chain. Result source indices bind to the
+latest applicable input interval, with before/after snapshots joined to retained result/state
+boundaries; the mere existence of an ordinal proves no ownership. Both clock axes must be
+nonnegative and progress through input, event, result and completion boundaries. One Submit may
+finish one scene and prepare the next. Projections join an actual result snapshot and the latest
+input at their host update. Host polls require the current phase token; signal-before-Present
+projections require their corresponding completion. Tokens alone cannot establish input or result
+ownership. Scene phase tokens also bind the proper strike and reaction. Preserved out-of-range target attempts are
+checked against the source weapon range at the preview destination. FieldSpin/FieldExit/FieldSettle
+projections after scene completion remain diagnostics for the separate death/scene obligation.
+
+**Unknown:** the historical whole-A RNG/AI trajectory, turn generation, unvisited physical branches
+and complete presentation/hardware timing remain outside this child. The selected source evaluator
+admits ordinary non-ailment, non-cursed weapon effects; unsupported source effects stay explicit.
+No counter observation is invented from a successful probability calculation. Rewards, growth,
+AI choice and field/death services retain their own required comparisons. A scoped PASS does not
+change historical FAILs or authorize main-gate to skip independent acceptance.
+
 ### Selected HEAL rule and consumer binding
 
 The `HEAL recovery/cost/fairy opportunity and seed effects` child uses the accepted
