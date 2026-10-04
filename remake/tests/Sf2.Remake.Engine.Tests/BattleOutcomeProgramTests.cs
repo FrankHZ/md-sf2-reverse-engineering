@@ -12,6 +12,20 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleOutcomeProgramTests
 {
+    [Fact]
+    public void AiSeedSurvivesLastActionAndOutcomeWithoutRestoringHistoricalTextByte()
+    {
+        var decision = SourceEnemyAi.Resolve(SourceEnemyAiTests.State(thinking: 0x80ABCDEF), new("varied-source-enemy"));
+        Assert.Equal(0x39ABCDEFu, decision.Battle.ThinkingSeed);
+        // Feed the real AI result to the existing legal final-action/outcome fixture.
+        var (_, completed, outcome) = WinningOutcome(3, false, decision.Battle.ThinkingSeed);
+        Assert.Null(outcome.Failure);
+        Assert.Equal(decision.Battle.ThinkingSeed, completed.Battle.ThinkingSeed);
+        Assert.Equal(decision.Battle.ThinkingSeed, outcome.Snapshot.Exploration!.Party.ThinkingSeed);
+        Assert.Equal((byte)0x39, outcome.Snapshot.CurrentRandomSeedCopy);
+        Assert.Equal((byte)0xA9, outcome.Snapshot.Story.RandomSeedCopy);
+    }
+
     [Theory]
     [InlineData(3, false)]
     [InlineData(5, true)]
@@ -29,6 +43,9 @@ public sealed class BattleOutcomeProgramTests
         Assert.Equal(completed.Story.Display, current.Story.Display);
         Assert.Equal(completed.Battle.MainSeed, world.Party.MainSeed);
         Assert.Equal(completed.Battle.ThinkingSeed, world.Party.ThinkingSeed);
+        Assert.Equal(completed.CurrentRandomSeedCopy, current.CurrentRandomSeedCopy);
+        Assert.Equal((byte)0xA9, current.Story.RandomSeedCopy); // An older text write is not the carried live byte.
+        Assert.NotEqual(current.Story.RandomSeedCopy, current.CurrentRandomSeedCopy);
         Assert.Equal(completed.Battle.Gold, world.Party.Gold);
         Assert.Equal(completed.Battle.GetActor(new("medic-a")).Exp, world.Party.Actors.Single(a => a.Actor.Value == "medic-a").Exp);
         foreach (var actor in completed.Battle.Actors)
@@ -92,7 +109,11 @@ public sealed class BattleOutcomeProgramTests
         for (int index = 1; index < fieldDraws.Length; index++)
             Assert.Equal(fieldDraws[index - 1].After, fieldDraws[index].Before);
         Assert.Equal(fieldDraws[^1].After, current.Exploration!.Party.MainSeed);
-        Assert.Equal(world.Party.ThinkingSeed, current.Exploration.Party.ThinkingSeed);
+        var lastTextDraw = fieldDraws.Last(row => row.Kind.StartsWith("rng-text-", StringComparison.Ordinal));
+        Assert.Equal((world.Party.ThinkingSeed & 0x00FFFFFFu) | ((uint)lastTextDraw.RandomValue!.Value << 24),
+            current.Exploration.Party.ThinkingSeed);
+        Assert.Equal((byte)lastTextDraw.RandomValue.Value, current.CurrentRandomSeedCopy);
+        Assert.Equal(current.Story.RandomSeedCopy, current.CurrentRandomSeedCopy);
         Assert.Equal(world.Party.Gold, current.Exploration.Party.Gold);
         foreach (var actor in world.Party.Actors)
         {
@@ -146,7 +167,7 @@ public sealed class BattleOutcomeProgramTests
         Assert.Same(story, input.Story);
     }
 
-    private static (ScenarioDefinition Definition, SessionSnapshot Completed, SessionResult Outcome) WinningOutcome(int x, bool deadAlly)
+    private static (ScenarioDefinition Definition, SessionSnapshot Completed, SessionResult Outcome) WinningOutcome(int x, bool deadAlly, uint? thinkingSeed = null)
     {
         var field = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
         {
@@ -173,7 +194,7 @@ public sealed class BattleOutcomeProgramTests
             "guard-a" => actor.With(hp: deadAlly ? (ushort)0 : (ushort)9),
             _ => actor.With(position: new(x + 1, 3), hp: 1),
         });
-        var battle = new EngineBattleState(battleDefinition, actors, 0x12341234, basis.ThinkingSeed, basis.Round, basis.Queue, basis.Cursor, 73);
+        var battle = new EngineBattleState(battleDefinition, actors, 0x12341234, thinkingSeed ?? basis.ThinkingSeed, basis.Round, basis.Queue, basis.Cursor, 73);
         var world = field.Definition.Exploration!;
         var map = world.Maps[new("quay")];
         var returnMap = new ExplorationMapDefinition(map.Map, map.Layout, map.Traversal, map.Entities, [],
@@ -195,7 +216,7 @@ public sealed class BattleOutcomeProgramTests
         var story = field.Current.Story.Copy(null, flags: [0, 32, 399, 401, 451], enteringBattle: route,
             entityServices: false, display: new(3, map.BasePalette!, map.BasePalette!, FullFadeVisibility.BaseRestored),
             logicalView: field.Current.Story.LogicalView! with { TargetSlot = 9, FollowCounter = 11 },
-            logicalText: field.Current.Story.LogicalText! with { Open = true });
+            logicalText: field.Current.Story.LogicalText! with { Open = true }, randomSeedCopy: 0xA9);
         var input = new SessionSnapshot(field.Current.SessionId, field.Current.Revision, field.Current.ObservationSequence,
             new ActiveBattle(battle, null), story, SessionStopReason.SimulationWait);
         var prepared = PhysicalBattleAction.Prepare(battle, new("medic-a"), new(x, 3), new("dummy-a"));

@@ -128,8 +128,14 @@ consumers retain legacy display/acknowledgement and cannot claim this W1 contrac
 the endpoint is a W1 or the final trailing span. Every optional `WaitForText` and the accepting
 `Acknowledge` executes the same ordered preamble: main-seed draw256, source copy-byte write, one
 logical suppressed-service wait, then input decision. Observations expose those four stages.
-`StoryState.RandomSeedCopy` is nullable until an admitted write and survives ordinary copies;
-it does not replace the separate `ThinkingSeed` image. Entity actions/motion/followers and portrait
+The copy commit writes the result into bits31..24 of the party's `ThinkingSeed` image, retaining
+its other24 bits. That image is the live authority carried into battle, updated by AI and carried
+back through battle outcome. `StoryState.RandomSeedCopy` is only the last text-write diagnostic:
+it is nullable until an admitted text write and survives ordinary copies, including later AI
+changes. `SessionSnapshot.CurrentRandomSeedCopy` always derives the current byte from the active
+party/battle image; a declared modern start supplies a value even before any text write. This does
+not confirm the original game's initial byte. The host reports this live byte as `randomSeedCopy`
+and the historical text write separately as `lastTextSeedCopy`. Entity actions/motion/followers and portrait
 RNG receive no service in this admitted wait. The source wrapper's existing pre-facing service
 still happens before admission; ordinary return/control and other programs keep their own rules.
 

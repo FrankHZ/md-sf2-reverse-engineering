@@ -460,11 +460,23 @@ internal static class ExplorationDispatcher
             int indicator = current.Story.LogicalView!.HideWindows ? 1 : window.Indicator;
             window = window with { IndicatorVisible = indicator >= 7, Indicator = indicator <= 1 ? 20 : indicator - 1 };
         }
-        current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, wait,
-            randomSeedCopy: (byte)draw.Value, logicalText: window), observations, "text-seed-copy");
-        observations[^1] = observations[^1] with { After = draw.Value };
+        current = CopyTextSeed(current, current.Story.Copy(current.Story.Cursor, wait, logicalText: window),
+            (byte)draw.Value, observations);
         current = Service(definition, current, observations, "text-" + kind + "-wait");
         return ProgramRunner.Commit(current, current.Active, current.Story, observations, "text-" + kind + "-input", accepting ? "accept" : "none");
+    }
+
+    private static SessionSnapshot CopyTextSeed(SessionSnapshot current, StoryState story, byte value,
+        List<SessionObservation> observations)
+    {
+        var world = current.Exploration!;
+        var party = world.Party;
+        uint thinking = ((uint)value << 24) | (party.ThinkingSeed & 0x00FFFFFFu);
+        current = ProgramRunner.Commit(current, new ActiveExploration(world.WithParty(
+            new(party.Encounter, party.Actors, party.MainSeed, thinking, party.Gold, party.NewBattle, party.ActiveAllies))),
+            story.Copy(story.Cursor, story.Wait, randomSeedCopy: value), observations, "text-seed-copy");
+        observations[^1] = observations[^1] with { After = value };
+        return current;
     }
 
     private static SessionSnapshot PollW1(SessionSnapshot current, List<SessionObservation> observations, bool accepting)
@@ -476,9 +488,7 @@ internal static class ExplorationDispatcher
             new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle))),
             current.Story, observations, "rng-text-w1");
         observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = draw.Range, RandomValue = draw.Value };
-        current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
-            randomSeedCopy: (byte)draw.Value), observations, "text-seed-copy");
-        observations[^1] = observations[^1] with { After = draw.Value };
+        current = CopyTextSeed(current, current.Story, (byte)draw.Value, observations);
         // The admitted caller suppresses entity services and has a closed portrait.
         // This is the logical WaitForVInt opportunity preceding the input decision.
         current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,

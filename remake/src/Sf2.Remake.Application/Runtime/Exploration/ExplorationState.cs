@@ -140,7 +140,8 @@ public sealed class StoryState
     public int? CameraEntitySlot { get; }
     public ExplorationDisplay? Display { get; }
     public OrdinaryWarp? Warp { get; }
-    // The source byte written by text polling; unknown until an admitted write.
+    // Last text-poll write only; null means no admitted text write. AI can change the live
+    // ThinkingSeed afterwards. SessionSnapshot.CurrentRandomSeedCopy projects that live byte.
     public byte? RandomSeedCopy { get; }
     public ExplorationTextSettings? TextSettings { get; }
     public LogicalTextWindow? LogicalText { get; }
