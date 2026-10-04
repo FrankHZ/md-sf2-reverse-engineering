@@ -4872,7 +4872,9 @@ def turn_order_binding(actual, source_root):
         if isinstance(expected, dict):
             if not isinstance(observed, dict):
                 return False
-            return merge([match(v, observed.get(k)) for k, v in expected.items()])
+            return merge(
+                [match(v, observed[k]) if k in observed else None for k, v in expected.items()]
+            )
         if isinstance(expected, list):
             if not isinstance(observed, list):
                 return False
@@ -5054,7 +5056,37 @@ def turn_order_binding(actual, source_root):
                 **identity,
             )
         by_actor = {json.dumps(c.get("Actor"), sort_keys=True): c for c in candidates or []}
-        draw_keys = []
+        # Complete operands are needed for the whole seed stream, not for a
+        # known field on another identified candidate. Check those first.
+        candidate_order = []
+        for actual_candidate in actual_candidates:
+            actor = actual_candidate.get("Actor")
+            live = by_actor.get(json.dumps(actor, sort_keys=True)) if actor is not None else None
+            check(
+                "actual candidate belongs to independent live roster",
+                None
+                if actor is None
+                or not candidates
+                or any(c.get("Actor") is None for c in candidates)
+                else live is not None,
+                **identity,
+            )
+            if live is not None:
+                if type(live.get("ProcessingOrder")) is int:
+                    candidate_order.append(live["ProcessingOrder"])
+                known_fields = {k: live[k] for k in fields if live.get(k) is not None}
+                check(
+                    "independently available candidate fields",
+                    match(known_fields, actual_candidate),
+                    **identity,
+                )
+        check(
+            "available candidate source order",
+            candidate_order == sorted(candidate_order),
+            **identity,
+        )
+        draw_keys, draw_order = [], []
+        identified_draws = {}
         for draw in generation.get("Draws") or []:
             actor_key = json.dumps(draw.get("Actor"), sort_keys=True)
             draw_keys.append((actor_key, draw.get("Turn"), draw.get("Index")))
@@ -5064,6 +5096,21 @@ def turn_order_binding(actual, source_root):
                 None if draw.get("Actor") is None or not candidates else candidate is not None,
                 **identity,
             )
+            if candidate:
+                check(
+                    "draw requires placed/living candidate",
+                    merge(
+                        [
+                            None
+                            if candidate.get("Placed") is None
+                            else candidate["Placed"] is True,
+                            None
+                            if candidate.get("Hp") is None
+                            else type(candidate["Hp"]) is int and candidate["Hp"] > 0,
+                        ]
+                    ),
+                    **identity,
+                )
             turn, index = draw.get("Turn"), draw.get("Index")
             check(
                 "draw turn/index operands",
@@ -5076,6 +5123,22 @@ def turn_order_binding(actual, source_root):
                 **identity,
             )
             if (
+                draw.get("Actor") is not None
+                and type(turn) is int
+                and turn in (0, 1)
+                and type(index) is int
+                and 0 <= index <= (2 if turn == 0 else 1)
+            ):
+                identified_draws[(actor_key, turn, index)] = draw
+                if candidate and type(candidate.get("ProcessingOrder")) is int:
+                    draw_order.append((candidate["ProcessingOrder"], turn, index))
+                if candidate and turn == 1 and candidate.get("ExtraRoundAction") is not None:
+                    check(
+                        "secondary draw requires extra action",
+                        candidate["ExtraRoundAction"] is True,
+                        **identity,
+                    )
+            if (
                 candidate
                 and type(candidate.get("Agility")) is int
                 and turn in (0, 1)
@@ -5087,12 +5150,6 @@ def turn_order_binding(actual, source_root):
                     match(3 if turn == 0 and index == 2 else basis >> 3, draw.get("Range")),
                     **identity,
                 )
-                if turn == 1 and candidate.get("ExtraRoundAction") is not None:
-                    check(
-                        "secondary draw requires extra action",
-                        candidate["ExtraRoundAction"] is True,
-                        **identity,
-                    )
             operands = [draw.get(k) for k in ("Before", "After", "Range", "Value")]
             if all(v is not None for v in operands):
                 old, new, range_, value = operands
@@ -5109,6 +5166,109 @@ def turn_order_binding(actual, source_root):
             len(draw_keys) == len(set(draw_keys)),
             **identity,
         )
+        check("available draw source order", draw_order == sorted(draw_order), **identity)
+        for (actor_key, turn, index), draw in identified_draws.items():
+            predecessor = (
+                (actor_key, turn, index - 1)
+                if index > 0
+                else (actor_key, 0, 2)
+                if turn == 1
+                else None
+            )
+            prior = identified_draws.get(predecessor)
+            if prior is not None:
+                check(
+                    "candidate consecutive draw seed chain",
+                    None
+                    if prior.get("After") is None
+                    else match(prior["After"], draw.get("Before")),
+                    **identity,
+                )
+        unsorted = generation.get("Unsorted")
+        if isinstance(unsorted, list):
+            for actor_key, live in by_actor.items():
+                # Within a candidate, source insertion is primary then extra.
+                # Do not assume an unknown preceding candidate's slot count or
+                # initial seed; the recorded local draws suffice for this rule.
+                if live.get("Actor") is None:
+                    continue
+                slots = [
+                    s for s in unsorted if json.dumps(s.get("Actor"), sort_keys=True) == actor_key
+                ]
+                skipped = live.get("Placed") is False or live.get("Hp") == 0
+                eligible = (
+                    live.get("Placed") is True and type(live.get("Hp")) is int and live["Hp"] > 0
+                )
+                extra_known = type(live.get("ExtraRoundAction")) is bool
+                turns = 2 if live.get("ExtraRoundAction") is True else 1
+                if skipped or eligible and extra_known:
+                    expected_count = 0 if skipped else turns
+                    check(
+                        "candidate unsorted entry coverage",
+                        False
+                        if len(slots) > expected_count
+                        else None
+                        if len(slots) < expected_count
+                        else True,
+                        **identity,
+                    )
+                # HP/placement determine admission, not the score formula. A
+                # reached, unambiguously associated score can still contradict
+                # known agility/draws when its admission input is unavailable.
+                if not extra_known or len(slots) != turns or type(live.get("Agility")) is not int:
+                    continue
+                for turn in range(turns):
+                    local = [
+                        d
+                        for d in generation.get("Draws") or []
+                        if json.dumps(d.get("Actor"), sort_keys=True) == actor_key
+                        and d.get("Turn") == turn
+                    ]
+                    count = 3 if turn == 0 else 2
+                    if len(local) != count or {d.get("Index") for d in local} != set(range(count)):
+                        check("candidate score requires its local draws", None, **identity)
+                        continue
+                    local.sort(key=lambda d: d["Index"])
+                    values = [d.get("Value") for d in local]
+                    if any(type(v) is not int for v in values):
+                        check("candidate score requires its local draw values", None, **identity)
+                        continue
+                    basis = live["Agility"] if turn == 0 else live["Agility"] * 5 // 6
+                    score = (
+                        basis + values[0] - values[1] + (values[2] - 1 if turn == 0 else 0)
+                    ) & 255
+                    check(
+                        "source score from matched candidate/local draws",
+                        match(score, slots[turn].get("Score")),
+                        **identity,
+                    )
+        # Sorting is a rule at the recorded unsorted operands even when another
+        # candidate's agility is absent. It cannot establish the missing score
+        # construction, but a known wrong sorted buffer still contradicts it.
+        if (
+            isinstance(unsorted, list)
+            and len(unsorted) == 64
+            and all(
+                "Actor" in s and type(s.get("Score")) is int and 0 <= s["Score"] <= 255
+                for s in unsorted
+            )
+        ):
+            source_sorted = list(unsorted)
+            for _ in range(62):
+                for index in range(63):
+                    left, right = source_sorted[index]["Score"], source_sorted[index + 1]["Score"]
+                    if (right if right < 128 else right - 256) > (
+                        left if left < 128 else left - 256
+                    ):
+                        source_sorted[index], source_sorted[index + 1] = (
+                            source_sorted[index + 1],
+                            source_sorted[index],
+                        )
+            check(
+                "source signed stable sort at recorded unsorted operands",
+                match(source_sorted, generation.get("Sorted")),
+                **identity,
+            )
         if not candidates or merge(valid) is not True:
             check("source score/order expectation requires matched live operands", None, **identity)
             continue
