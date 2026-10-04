@@ -108,11 +108,21 @@ public sealed class SessionSnapshot
 public sealed record EntityWaitRelease(WaitToken Token, EntityRef Subject, EntityWaitCompletion Completion,
     bool IsScriptIdle, bool Busy, bool Moving, int ActionCursor, ProgramLocation? Caller, ProgramLocation? AfterMotion);
 
+// Completed generation facts, copied from the actual generator result. No replay or state history.
+public sealed record BattleTurnCandidate(ActorRef Actor, int ProcessingOrder, bool Placed, ushort Hp,
+    byte Agility, bool ExtraRoundAction);
+public sealed record BattleTurnDraw(ActorRef Actor, int Turn, int Index, ushort Range,
+    ushort Before, ushort After, ushort Value);
+public sealed record BattleTurnSlot(ActorRef? Actor, byte Score);
+public sealed record BattleTurnGeneration(Guid SessionId, int Round, uint Before, uint After,
+    IReadOnlyList<BattleTurnCandidate> Candidates, IReadOnlyList<BattleTurnDraw> Draws,
+    IReadOnlyList<BattleTurnSlot> Unsorted, IReadOnlyList<BattleTurnSlot> Sorted);
+
 public sealed record SessionObservation(long Sequence, long Revision, string Kind,
     ActorRef? Actor = null, long? Before = null, long? After = null,
     MapPosition? From = null, MapPosition? To = null, ushort? RandomRange = null, ushort? RandomValue = null,
     ActorRef? Target = null, string? Detail = null, EntityRef? Entity = null, ProgramLocation? Program = null,
-    EntityWaitRelease? EntityWaitRelease = null);
+    EntityWaitRelease? EntityWaitRelease = null, BattleTurnGeneration? TurnGeneration = null);
 public sealed record ProgramControlRead(Guid SessionId, long Sequence, long Revision,
     ProgramLocation Source, string Operation, ProgramLocation? Cursor,
     IReadOnlyList<ProgramLocation> CallersBefore, IReadOnlyList<ProgramLocation> Callers);

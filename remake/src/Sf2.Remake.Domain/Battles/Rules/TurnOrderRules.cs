@@ -2,7 +2,10 @@ namespace Sf2.Remake.Domain.Battles;
 
 internal readonly record struct TurnOrderCandidate<TActor>(TActor Actor, int ProcessingOrder, bool Placed, ushort Hp, byte Agility, bool ExtraRoundAction) where TActor : struct;
 internal readonly record struct TurnOrderEntry<TActor>(TActor? Actor, byte AlteredAgility) where TActor : struct;
-internal sealed record TurnOrderResult<TActor>(IReadOnlyList<TurnOrderEntry<TActor>> Slots, ushort NextSeed) where TActor : struct;
+internal readonly record struct TurnOrderDraw<TActor>(TActor Actor, int Turn, int Index, ushort Range, WordRandomDraw Draw) where TActor : struct;
+internal sealed record TurnOrderResult<TActor>(IReadOnlyList<TurnOrderEntry<TActor>> Slots, ushort NextSeed,
+    IReadOnlyList<TurnOrderCandidate<TActor>> Candidates, IReadOnlyList<TurnOrderDraw<TActor>> Draws,
+    IReadOnlyList<TurnOrderEntry<TActor>> Unsorted) where TActor : struct;
 
 internal static class TurnOrderRules
 {
@@ -21,32 +24,35 @@ internal static class TurnOrderRules
             throw new ArgumentException("The turn buffer cannot hold the living candidates.", nameof(candidates));
 
         var slots = Enumerable.Repeat(new TurnOrderEntry<TActor>(null, 255), 64).ToArray();
+        var draws = new List<TurnOrderDraw<TActor>>();
         int length = 0;
         foreach (var candidate in living)
         {
             int basis = candidate.Agility;
             ushort range = (ushort)(basis >> 3);
-            int score = basis + Roll(range) - Roll(range) + Roll(3) - 1;
+            int score = basis + Roll(candidate.Actor, 0, 0, range) - Roll(candidate.Actor, 0, 1, range) + Roll(candidate.Actor, 0, 2, 3) - 1;
             slots[length++] = new(candidate.Actor, unchecked((byte)score));
             if (candidate.ExtraRoundAction)
             {
                 basis = basis * 5 / 6;
                 range = (ushort)(basis >> 3);
-                score = basis + Roll(range) - Roll(range);
+                score = basis + Roll(candidate.Actor, 1, 0, range) - Roll(candidate.Actor, 1, 1, range);
                 slots[length++] = new(candidate.Actor, unchecked((byte)score));
             }
         }
+        var unsorted = Array.AsReadOnly((TurnOrderEntry<TActor>[])slots.Clone());
         // Preserve the source's 62 passes, signed byte comparison and participating sentinels.
         for (int pass = 0; pass < 62; pass++)
             for (int index = 0; index < 63; index++)
                 if (unchecked((sbyte)slots[index + 1].AlteredAgility) > unchecked((sbyte)slots[index].AlteredAgility))
                     (slots[index], slots[index + 1]) = (slots[index + 1], slots[index]);
-        return new(Array.AsReadOnly(slots), seed);
+        return new(Array.AsReadOnly(slots), seed, Array.AsReadOnly(ordered), draws.AsReadOnly(), unsorted);
 
-        int Roll(ushort range)
+        int Roll(TActor actor, int turn, int index, ushort range)
         {
             var draw = BattleRandom.NextWord(seed, range);
             seed = draw.After;
+            draws.Add(new(actor, turn, index, range, draw));
             return draw.Value;
         }
     }

@@ -3802,6 +3802,92 @@ planner/actual CI. This offline comparator slice needs no SDK/native/capture, ne
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
 actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
 
+### Scoped turn-order rule comparison
+
+The completed generator exposes its actual ordered candidates, Roll results and unsorted/sorted
+buffers through `SessionObservation.TurnGeneration` on the existing `round-rng` event. These facts
+come from the one generation that updates the battle queue. `BattleTurnFlow` passes the ephemeral
+result to Application; snapshots store no generation history. Existing activation/spawn admission,
+seed carry and event identities are preserved. Candidate/draw storage is O(roster size + draws);
+64 slots permit at most 192 draws, and each buffer has 64 entries. The completed event copies those
+immutable values; it does not replay arithmetic or create another battle-state authority.
+
+The legal local start is the authored `practice-yard` scenario, reached through the ordinary
+`AuthoredScenarioPackageReader` and `GameSession.Start`. Enable only medic-a's extraRoundAction and
+use Confirm → ChooseAction(Stay) → Confirm until the third round. This is the same normal flow
+covered by `BattleAgilityTurnsTests.EqualAgilityDefinitionsConsumeExtraEntryAndCarrySeedsAcrossRounds`.
+Record each result's round-rng event with its independently read snapshot, before any later action
+mutation: sessionId/revision/observationSequence/round/mainSeed, complete live candidates as
+`BattleTurnCandidate` and the whole `turnOrder` as `BattleTurnSlot`. The compact input has
+`evidenceScope="controlled-application"`, `sessionId`, independent `selectedRounds` and `rounds`
+rows containing `event` / `state`. Generation payload fields retain their public DTO names;
+state envelope fields use the names above. No Godot, original emulator or private route is needed.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison turn-order `
+  --actual $selectedGenerations --text-source-root $pinnedSource `
+  --output local/turn-order/fresh-report.json
+```
+
+The command accepts at most three selected generations and 1 MiB input, enforces a fresh output
+under this checkout's local/, and caps the report at 1 MiB. It reports a controlled comparison scope
+and `milestonePass=false`. These limits scope the pilot, not gameplay legality. The ordinary H4
+child keeps its missing actual generation/state boundary; a controlled report cannot close it.
+The [contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#reached-turn-order-rule-and-result-binding)
+owns this distinction and the retained A limitations.
+
+Independent expectations use pinned original candidate eligibility, score construction, H3 word
+RNG and the full stable signed sort; modern arithmetic does not create expected values. Candidate
+and draw joins retain coverage/order even when an occurrence is omitted. Direct controls include
+missing whole generations, live agility, candidates or draws; foreign session/round/candidate;
+duplicates and reordered draws; wrong range/value/score/seed/extra-turn; and an internally agreeing
+wrong queue. A known contradiction remains FAIL beside missing operands/occurrences. Read the
+accepted boundary fixture directly to check negative scores, sentinel participation and ties.
+Do not add verifier tests or manufacture actual fields from the source expectation.
+
+The completed three-round Application pilot produced 23,210 bytes in 0.088 seconds after build;
+its source-rule binding PASS is separately scoped. Selection limits were 60 seconds / 1 MiB output,
+with no native launch. Narrow SDK commands use the existing protected selections and worktree-local
+outputs, estimated 15 minutes / 3 GiB memory / 2 GiB generated output per command. Memory is an
+estimate, not a measured peak. The changed shared observation DTO requires adapter compilation,
+not a host startup. Actual engine checks select `TurnOrderRulesTests` and `BattleAgilityTurnsTests`;
+rerun a completed failing node narrowly. Use scoped Ruff, document checks, the committed plan and
+actual CI; no normal/full suite, complete H4 comparison, full route or settings matrix follows.
+
+### Historical A turn-order inventory
+
+The retained required-keyboard A inventory remains separate from the controlled proof above.
+Its missing actual operands keep the required child Unavailable; do not repeat the completed scan
+or relabel historical A as execution of the current seed-copy correction.
+
+For the retained A producer `4d1d1b05f143ed872ceca6ff258cfca2b4087d90`, stream the pretty JSON
+record arrays without loading the whole capture. Select only `warpRecords` whose
+`result.observations.Kind` is `round-started` or `round-rng`, preserving the containing session/result
+and source channel/ordinal; retain the `bound-first-battle-input` sample. Inspect the small outcome
+companion's action-state actor keys and queue separately. Read the process/settings receipts to
+identify the compiled source and A scope. Preserve source size/mtime before/after, selection recipe,
+counts, output bytes, elapsed time and incremental peak memory under the owning worktree's ignored
+`local/`; raw inputs remain read-only. Equal repeated result snapshots are retained as snapshots,
+not counted as new rounds or candidate draws.
+
+The completed pilot scanned the retained 1,375,851,198-byte A capture and selected 14 records with
+12 distinct round generations, including the repeated first-round result. Output was 326,233 bytes,
+elapsed 34.639 seconds and incremental peak working set 3,538,944 bytes. Its selection ceilings were
+120 seconds, 128 MiB incremental memory and 10 MiB retained output. Streaming reads O(input bytes);
+this pilot's repeated selected-size accounting additionally costs O(record count × selected bytes).
+Memory is bounded by the current record and selected records. The 4,814,568-byte outcome companion
+has 76 records and can be inspected separately within the same output budget. These measurements
+are evidence inventory, not acceptance counts. No database import, source acquisition, native/SDK
+launch or comparison report was generated.
+
+The projection in that exact producer's `BattleMapViewport.ObserveActors` lacks live agility,
+extra-turn and processing-order operands; its `BattleAdvancer.Advance` publishes only the whole-round
+seed edge. Neither outcome snapshots nor original H3 fixtures recover the missing actual draws.
+The new completed-generation payload proves current controlled execution only. Keep historical
+aggregate results and the original 12 open obligations intact; no corrected whole-route result or
+required-A child closure is claimed.
+
 ### Scoped audio consumer comparison
 
 Use the complete retained default-keyboard A audio channel and only its necessary scene/music/input
