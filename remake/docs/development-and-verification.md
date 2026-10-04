@@ -2,6 +2,30 @@
 
 ## Scope
 
+### Retired bulk frame workflow
+
+The user's 2026-10-04 decision retires the previous whole-route per-frame H4 capture,
+processing and audit workflow. Its historical recipes below do not authorize another bulk run,
+processing pass or frame-by-frame audit. The old C comparison was terminated by user retirement;
+D was already cancelled. Large raw frame captures and reader-derived databases from the named
+#534 C/D and #605 allocations are authorized for disposal under the exact inventory in #615.
+Cleanup status belongs to that Issue; authorization is not proof that deletion completed.
+Small failure/acceptance records, necessary reproduction slices and published compact reports
+remain retained. Original ROMs, save states, source and asset libraries are outside that cleanup.
+
+Future work starts from the missing behavior or evidence relation, reuses accepted static rules
+and bounded results, and observes necessary logical actions, state changes and actual consumer
+boundaries. Use the [existing scale plan](#observation-and-comparison-planning) before acquisition.
+Per-frame measurements remain appropriate only for a named timing claim over a bounded interval;
+they are not the default format for whole-route state or resource evidence. Retiring this workflow
+does not turn unresolved assertions into PASS or erase the completed historical failures.
+
+On this host, future mutable execution uses the selected H-drive checkout and its local outputs,
+TEMP, Python/NuGet environments and caches. Exact paths stay in ignored machine configuration.
+Existing shared read-only inputs and tool installations are reused. The former C-drive execution
+checkout is retained history, not a destination for new work; do not migrate its retired bulk data
+into the new checkout merely to continue the old workflow.
+
 Current product acceptance uses the [explicit default-keyboard scope](#current-keyboard-comparison-scope).
 Older four-variant recipes below are retained history, not authorization to run B/D or require C.
 
