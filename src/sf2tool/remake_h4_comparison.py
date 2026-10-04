@@ -466,11 +466,10 @@ class _ResourceRelation:
                 row["identity"][name]
             row["kind"]
             row["used"]
-            key = _join_key(_resource_key(row))
         except (KeyError, IndexError, ValueError, TypeError):
-            key = None  # The normal validation boundary retains its typed failure.
+            key = None
             validation("occurrence", row)
-        if key is not None:
+        else:
             i = row["identity"]
             validation(
                 "identity",
@@ -482,11 +481,23 @@ class _ResourceRelation:
                     used=None,
                 ),
             )
-            operands = dict(kind=row["kind"], identity=dict(visit=i["visit"], phase=i["phase"]))
-            if row["kind"] == "map":
-                operands.update({k: row[k] for k in ("layer", "highPriority", "pass") if k in row})
-                operands["used"] = {"word": row["used"]["word"]} if "word" in row["used"] else {}
-            validation("texture", operands)
+            try:
+                key = _join_key(_resource_key(row))
+            except (KeyError, IndexError, ValueError, TypeError) as error:
+                key = None
+                # Availability and candidate-key failures are different old boundaries.
+                validation("texture", dict(kind=row["kind"], _keyError=type(error).__name__))
+            else:
+                operands = dict(kind=row["kind"], identity=dict(visit=i["visit"], phase=i["phase"]))
+                if row["kind"] == "map":
+                    operands.update(
+                        {k: row[k] for k in ("layer", "highPriority", "pass") if k in row}
+                    )
+                    operands["used"] = (
+                        {"word": row["used"]["word"]} if "word" in row["used"] else {}
+                    )
+                validation("texture", operands)
+        if key is not None:
             entry = (key, signature)
             if entry not in self.batch:
                 self.batch[entry] = [0, ordinal, self.context.encode(payload)]
@@ -3413,7 +3424,11 @@ def reached_visual_materials(
             for r in requirements
             if r["kind"] == "map"
         )
-        for state in logical_states if enabled.intersection(("map", "entity")) else ():
+        for state_index, state in enumerate(
+            logical_states if enabled.intersection(("map", "entity")) else ()
+        ):
+            if budget is not None and state_index % 256 == 0:
+                budget.checkpoint("independent logical inventory")
             with evaluated(("map", "entity"), "logical draw occurrence"):
                 projection = state.get("cameraProjection") or {}
                 presentation = state.get("presentation") or {}
@@ -3588,6 +3603,16 @@ def reached_visual_materials(
         uses.flush()
         for used in counted_uses("texture"):
             with evaluated("map" if used.get("kind") == "map" else "entity", "actual texture use"):
+                if "_keyError" in used:
+                    error = used["_keyError"]
+                    check(
+                        "map" if used["kind"] == "map" else "entity",
+                        "actual texture use operand absent"
+                        if error == "KeyError"
+                        else "actual texture use malformed " + error,
+                        None if error == "KeyError" else False,
+                    )
+                    continue
                 i = used["identity"]
                 family = "map" if used["kind"] == "map" else "entity"
                 if used["kind"] == "map":
