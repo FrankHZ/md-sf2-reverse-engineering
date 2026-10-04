@@ -3770,7 +3770,8 @@ Original audio capture cuts must equal runtime PCM and the selected world's raw 
 are checked independently by checkout preflight. Continuous starts/stops/finishes/fades and terminal
 voices retain the already observed lifecycle boundary.
 
-Run the matrix with the fresh A report and retained separate B/C/D reports. Compare all gameplay
+Run `matrix --matrix-scope current-keyboard` with the fresh A report and optional supplemental C.
+Retained B/D reports stay outside required acceptance. Compare all gameplay
 equivalence fields to the accepted A report; keep old sessions' absent fields Unavailable. Direct
 legacy applicability must remain unchanged. Use affected lint/design-contract checks and committed
 planner/actual CI. This offline comparator slice needs no SDK/native/capture, new source acquisition,
@@ -4046,6 +4047,85 @@ and the matrix exclusions. Obsolete historical reports still preserve raw exact 
 current mandatory report-integrity checks; they cannot stand in for current reports. Freeze this
 bounded result in the same Draft PR. Complete settings/H4, missing original timing/history and #605
 performance acceptance remain separate.
+
+### Selected offline resource comparison
+
+`remake_h4_comparison resources` selects only the reached visual resource binding. Supply the same
+explicit world/scene/process/asset pins and read-only source/canonical/metadata arguments as the
+complete material command. `--resource-family` selects `map`, `entity`, `scene`, or `all`;
+`--session-id`, `--visit`, and `--occurrence` select exact session, logical visit and
+`observationSequence` values. Selection precedes import and derivation. No selected result performs
+the audio, input, motion, operation-flow or ordered equivalence comparisons.
+
+Use a fresh worktree-local output directory for each command. First record a separate source-only
+loaded baseline, with no capture import or derived-store cache. For example, retain the complete
+material arguments in a PowerShell argument array:
+
+```powershell
+$resourceArgs = @('run', 'python', '-m', 'sf2tool.remake_h4_comparison', 'resources',
+  '--actual', $actual, '--selected-world', $world, '--selected-scene', $scene,
+  '--process-receipt', $processReceipt, '--scene-evidence-root', $sceneEvidenceRoot,
+  '--asset-root', $assetRoot, '--expected-asset-commit', $assetCommit,
+  '--expected-asset-tree', $assetTree, '--expected-asset-manifest-sha256', $assetManifestSha,
+  '--text-source-root', $sourceRoot, '--canonical-content', $selectedCanonical,
+  '--tileset-metadata', $selectedTilesetMetadata, '--palette-metadata', $selectedPaletteMetadata)
+& uv @resourceArgs --source-only --output $freshSourceReport
+$sourcePrivate = (Get-Content -LiteralPath $freshSourceReport -Raw -Encoding utf8 |
+  ConvertFrom-Json).sourceOnlyPrivateBytes
+& uv @resourceArgs --resource-family map --session-id $sessionId --visit $visit `
+  --occurrence $observationSequence --source-only-private-bytes $sourcePrivate --output $freshReport
+```
+
+The selected reader scans sealed JSONL envelopes once for sequence/channel/descriptor/terminal
+integrity. It retains selected requirements, exact use operand variants and necessary independent
+state/visit/start/terminal context. Referenced descriptor lifetimes and reduced context contribute
+to `selectedDependencyBytes`; unrelated channels and projections do not enlarge this allowance.
+Missing context or channels remain Unavailable. The process receipt's selected start and source
+selections remain read-only prerequisites. The source-only baseline loads those source inputs;
+record its loaded private bytes and separately measure the actual interpreter's absolute peak,
+including transient source preparation. A Python launcher alone is not that interpreter.
+
+Resource reduction retains the existing candidate key, Python numeric equality, repeated requirement
+and actual-use multiplicities, every distinct contradictory operand variant, and original
+captureSequence/channel/index/useIndex locators. Validation groups use only their own predicate's
+operands; phase membership is unique. Ordered compact runs preserve the old first-exception prefix.
+Theoretical `candidatePairCount` and legacy `executedPairCount` are separate. Source recipe checks are
+evaluated per distinct expected material and retain their logical multiplicity. Other predicates,
+temporal joins and ordered equivalence streams retain their existing rules.
+
+`reachedVisualMaterialBinding.format` is `sf2-resource-binding-counts-v1`. `checks` contains counted
+family/name/outcome rows; `familyCounts` supplies PASS/FAIL/Unavailable totals. `joins` contains compact
+requirement results and exact executed outcome counts, rather than one dictionary per candidate pair.
+`candidateVariants` retains all distinct operands/counts and first locators. Missing/failure witnesses
+are deterministic and limited to eight per check/outcome; this limit is explicit and does not truncate
+operand variants or counts. Do not use collection length as the logical check/pair count. FAIL still
+dominates Unavailable, including caught malformed prefixes; historical fatal exception boundaries
+remain fatal. Legacy JSON/SQLite reports remain readable without conversion.
+
+The published JSON and its named SQLite companion reopen and relocate independently of scratch.
+Raw locators are provenance; raw captures are not embedded. `resource_pair_details(capture,
+requirement_result, limit=...)` lazily previews at most 1,000 original pairs without derived stores;
+it supplies no new acceptance or whole-capture integrity verdict. The capture must be the retained,
+previously verified input. Selected reports use profile `modern-resource-scope`, explicit
+`comparisonScope` and `milestonePass=false`; matrix/integrity reject them as full H4 evidence.
+
+Resource commands enforce a 20-minute scan/source/reduction/publication limit and 256MiB private
+increment over the separately recorded baseline. A whole-capture resource run permits at most one raw
+capture's logical bytes; an explicit family/session/visit/occurrence scope permits selected dependency
+bytes plus64MiB. Preflight reserves at least6GiB of physical space after conservative allocation.
+Count scratch, journals and publication together; compression does not satisfy the logical budget.
+Progress is coarse by stage. Both JSON entries and their SQLite companions stay provisional until
+the detached report reopens and the complete publication set passes its budget check. A final check
+also covers entry promotion. The `*.resources.json` counters explicitly snapshot the stage before
+that receipt is written; final command output and an external absolute-memory/peak-output receipt
+cover its tail bytes and the complete run. On a budget miss, withdraw any promoted entries to
+`*.partial`, preserve their companions and scratch, and publish only an explicit incomplete entry.
+Correct the responsible stage before another large run. Remove only that new run's owned reader
+scratch after successful final publication. Existing evidence is never cleaned here.
+
+Use direct retained small positive/negative and scope/relocation drives, affected lint and document
+checks, the committed dependency plan and actual public CI. Preserve a completed normal-verification
+failure; this offline-only allocation does not authorize a generic aggregate, SDK/native/H3/full run.
 
 ### Current keyboard comparison scope
 
