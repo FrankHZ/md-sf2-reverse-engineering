@@ -27,6 +27,63 @@ public sealed class HealingFairyTests
         Assert.NotEqual(fairy, waited.Fairy);
     }
 
+    [Theory]
+    [InlineData(23, false)]
+    [InlineData(23, true)]
+    [InlineData(3, false)]
+    [InlineData(3, true)]
+    [InlineData(2, false)]
+    [InlineData(2, true)]
+    public void RecoveryCompletesItsWindowServicesWithoutDeliveryAddingOrRemovingFairyWork(int delay, bool earlyDelivery)
+    {
+        var (cursor, _) = Cursor();
+        // The admitted HEAL caller has two length-one ministatus windows and a
+        // closed dialogue. The source computes moving bits before counter advance;
+        // its move wait and completion wait each retain one logical service.
+        cursor = (cursor with { Fairy = State(new(2, 7, 0, 0, (short)delay, 0, 0, 0, 1, 384, 149))
+            with { Lifetime = 65534 } }).Enter(BattleScenePhase.Reaction);
+        uint seed = 0x00920000;
+        List<BattleEffect> effects = [];
+        if (earlyDelivery) cursor = cursor.Advance(seed, Actor, 1, effects, out seed, acknowledge: true);
+        Assert.False(cursor.LogicalComplete);
+        Assert.Equal(65534, cursor.Fairy!.Lifetime);
+
+        cursor = cursor.Advance(seed, Actor, 1, effects, out seed);
+        Assert.False(cursor.LogicalComplete);
+        Assert.Equal(65533, cursor.Fairy!.Lifetime);
+        Assert.Equal((short)(delay - 1), cursor.Fairy.Fairies[0].XFraction);
+        Assert.Equal(0x00920000u, seed);
+        Assert.Empty(effects);
+
+        cursor = cursor.Advance(seed, Actor, 1, effects, out seed);
+        Assert.True(cursor.LogicalComplete);
+        Assert.Equal(65532, cursor.Fairy!.Lifetime);
+        if (delay == 2)
+        {
+            // Independent source LCG: 0x0092 * 13 + 7 = 0x0771; range16 yields0.
+            Assert.Equal(0x07710000u, seed);
+            var draw = Assert.Single(effects);
+            Assert.Equal((ushort)16, draw.RandomRange);
+            Assert.Equal((ushort)0, draw.RandomValue);
+            Assert.Equal((ushort)0, cursor.Fairy.Fairies[0].Phase);
+            Assert.Equal((ushort)2, cursor.Fairy.Fairies[0].Age);
+        }
+        else
+        {
+            Assert.Equal(0x00920000u, seed);
+            Assert.Empty(effects);
+            Assert.Equal((short)(delay - 2), cursor.Fairy.Fairies[0].XFraction);
+            Assert.Equal((ushort)4, cursor.Fairy.Fairies[0].Age);
+        }
+        var finished = cursor;
+        Assert.Same(finished, cursor.Advance(seed, Actor, 1, effects, out uint afterIdle));
+        Assert.Equal(seed, afterIdle);
+        var delivered = cursor.Advance(seed, Actor, 1, effects, out uint afterDelivery, acknowledge: true);
+        Assert.True(delivered.Delivered);
+        Assert.Same(finished.Fairy, delivered.Fairy);
+        Assert.Equal(seed, afterDelivery);
+    }
+
     [Fact]
     public void DeliveryBeforeOrAfterMandatoryIdleDoesNotChangeTheLogicalWork()
     {

@@ -162,6 +162,71 @@ identical semantic Wait/ack streams under instant/adjustable reveal and reveal-o
 state/RNG must agree while actual presentation conditions still hold. Keep W2 and plain input
 cases distinct. No existing failure, golden or unresolved first-warp timing field is waived here.
 
+### W2 composed semantic acceptance
+
+The current semantic obligation can be established by the conjunction of independent original
+handler rules, evidence for the applicable caller/service gates, and actual token/input/service/
+indicator/validation-sound/continuation observations. A direct historical internal accepting-read
+callback is not a prerequisite for that composed proof. It remains a separate **Unknown**;
+text510/511 returns and `loc_6472` entry must never be relabelled as the later input read. If a
+missing caller or gate can change the logical result, keep that occurrence **Unknown** rather than
+inferring it from a text ID or a passed test.
+
+**Confirmed (static source):** pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`textfunctions_1.asm:@wait2/loc_6472/sub_64A8`, establishes the draw/copy → indicator → wait →
+masked input read sequence above. The indicator starts at20, is visible for counter>=7, decrements
+and resets at0; HIDE_WINDOWS forces its hidden branch. Acceptance requests validation67 and clears
+the indicator before token resumption. The indicator helper has no extra wait or random draw.
+The entity wrapper's CLEAR_FLAG suppresses entity updates, while
+`code/common/tech/interrupts/trap6_mapscript.asm:Trap6_TriggerAndExecuteMapScript` reactivates them
+before executing a nested script. Its return does not undo that activation. Consequently an
+EntityEventContext alone is insufficient to decide whether NPC services run.
+
+**Confirmed (bounded actual consumers):** the retained successful default-keyboard A cohort
+(`local/issue534/caller-resource-cohort-01/variant-A-02/actual.json`) contains these16 W2 accepts.
+Program positions are admitted content cursor positions; token/ordinal values identify evidence,
+not production admission rules:
+
+| Source caller/content | Reached W2 text IDs | Actual entity services and caller |
+| --- | --- | --- |
+| map03 `scripts_1.asm:cs_5145C` | 510,511 | Enabled zone caller; closed portrait |
+| map03 `s2_entityevents.asm:Map3_EntityEvent0/15` | 512,500 | Suppressed entity wrapper; registered open portrait |
+| map03 `s3_zoneevents.asm:byte_50E96` and `scripts_1.asm:cs_5149A` | 514,515,517,518,526 | Enabled zone caller; registered open portrait |
+| map20 `s6_initfunction.asm:cs_53996` | 2193 | Init script through Trap6; enabled, registered open portrait |
+| map19 `s2_entityevents.asm:Map19_EntityEvent12/cs_52F0C` | 575 twice,576 | Entity wrapper followed by Trap6 activation; enabled, registered open portrait |
+| battle01 `cs_beforebattle.asm:bbcs_01` | 2292,2299,2303 | Enabled before-battle script; registered open portrait |
+
+All16 accepts have an eligible delivered FieldTextWait, actual keyboard Confirm, exactly one
+`rng-text-w2`, one accepting service opportunity, `text-w2-input(accept)`, `text-w2-accepted`,
+and a new continuation token. The14 deliberate neutral polls remain distinct. The16 matching
+validation67 receipts report real playback `started`, joined by session and the **whole submit
+result** revision. `ExplorationSessionView.Send` requests the sound after Submit returns; its
+receipt revision can therefore follow the internal accepted observation. Requiring equality to
+that internal event revision would discard a valid receipt.
+
+The retained same-submit samples show indicator0/hidden for14 accepts. The final two before-battle
+accepts have their next text2300/2304 input samples showing indicator0/hidden; they do not record
+an intermediate same-submit projection. The explicit acceptance event, production clear/resume
+behavior, and subsequent hidden state compose the semantic boundary; an exact intermediate host
+draw/time remains **Unknown**. All selected ready states have HideWindows=false/Scrolling=false;
+changed view/indicator states retain their separate engine behavior coverage.
+
+For offline review, select only W2 token/input/result records and surrounding relevant states from
+the existing A cohort, and reuse its already retained audio receipts. Preserve original array
+indices and source metadata. The bounded selection is retained at
+`local/issue534/closure-preflight-01/current-A-w2.jsonl` with its selection receipt and four late
+context samples in `current-A-w2-tail.jsonl`; `semantic-closure-01/w2-occurrences.json` binds the
+16 accepts. No new original or complete route run is required to reproduce those selected facts.
+
+`ExplorationTextWaitTests.PollCopySurvivesNpcThenBlinkAndMouthDraws` exercises both neutral and
+accepting polls with enabled NPCs and simultaneous blink/mouth draws in zone/entity contexts.
+It independently checks the poll copy, final shared seed, single service/draw, indicator clear and
+continuation. Existing suppressed-service, indicator-cycle, raw-wrapper and delivery tests cover
+the complementary cases. Reproduce using the configured SDK and Engine.Tests filter
+`FullyQualifiedName~ExplorationTextWaitTests`. Tests prove engine behavior; the cohort proves
+actual consumers. Neither creates a new original runtime observation or clears unrelated H4 rows.
+
 ## Bound neutral text delay and narration
 
 **Confirmed (static source):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,

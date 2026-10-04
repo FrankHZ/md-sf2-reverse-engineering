@@ -751,9 +751,11 @@ public sealed class ExplorationTextWaitTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void PollCopySurvivesNpcThenBlinkAndMouthDraws(bool zone)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void PollCopySurvivesNpcThenBlinkAndMouthDraws(bool zone, bool accepting)
     {
         var session = StartFieldText("{W2}", enabled: true, npcRandom: true);
         DrainTextWork(session);
@@ -768,15 +770,31 @@ public sealed class ExplorationTextWaitTests
             portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 0, Registered: true, Movement: 4, Moving: false)));
         var snapshot = new SessionSnapshot(entry.SessionId, entry.Revision, entry.ObservationSequence,
             new ActiveExploration(world), story, entry.StopReason);
-        var result = ExplorationDispatcher.Submit(session.Definition, snapshot, new WaitForText(token));
+        var result = ExplorationDispatcher.Submit(session.Definition, snapshot,
+            accepting ? new Acknowledge(token) : new WaitForText(token));
         Assert.Null(result.Failure);
         Assert.Equal(new[] { "rng-text-w2", "text-seed-copy", "text-w2-wait", "rng-portrait-blink", "rng-portrait-mouth", "text-w2-input" },
-            result.Observations.Select(row => row.Kind));
+            result.Observations.Take(6).Select(row => row.Kind));
         // Independent LCG sequence: one poll, four radius-zero rejected NPC candidates, blink, mouth.
         Assert.Equal(0xECAB1234L, result.Observations[0].After);
         Assert.Equal((byte)236, result.Snapshot.Story.RandomSeedCopy);
         Assert.Equal(0x72EF1234L, result.Observations[3].Before);
         Assert.Equal(0xE0291234u, result.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(snapshot.Story.SimulationTick + 1, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(accepting ? "accept" : "none", result.Observations[5].Detail);
+        Assert.Single(result.Observations, row => row.Kind == "rng-text-w2");
+        if (accepting)
+        {
+            Assert.Equal("text-w2-accepted", result.Observations[6].Kind);
+            Assert.False(result.Snapshot.Story.LogicalText!.IndicatorVisible);
+            Assert.Equal(0, result.Snapshot.Story.LogicalText.Indicator);
+            Assert.NotEqual(token, result.Snapshot.Story.Wait!.Token);
+        }
+        else
+        {
+            Assert.Equal(6, result.Observations.Count);
+            Assert.Equal(token, result.Snapshot.Story.Wait!.Token);
+        }
     }
 
     [Fact]
