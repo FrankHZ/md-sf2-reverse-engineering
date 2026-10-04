@@ -17234,8 +17234,12 @@ def main():
         opening = admission_opening_binding(
             selected_actual, selected_context, args.text_source_root
         )
+        values = [binding["value"]]
+        if "opening" in selected_context:
+            values.append(opening["value"])
+        decision = False if False in values else None if None in values else True
         verdict = (
-            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+            "Unavailable" if decision is None else "PASS" if decision else "FAIL"
         )
         write(
             args.output,
@@ -17253,9 +17257,7 @@ def main():
         print(
             json.dumps(dict(result=verdict, openingControls=opening_verdict, milestonePass=False))
         )
-        if "opening" in selected_context and opening["value"] is not True:
-            raise SystemExit(1 if opening["value"] is False else 2)
-        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
+        raise SystemExit(2 if decision is None else 0 if decision else 1)
     require(
         args.map_context is None
         or args.mode in ("map", "resources")

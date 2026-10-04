@@ -4073,7 +4073,8 @@ Do not scan again to fill absent producer fields or substitute later settings fo
 contradictory overlaps. Actual/context total2,107,507B remains below10MiB. Reproduce the scoped
 comparison using `correction-01/composed-actual.json` and `composed-context.json` as the two inputs
 to `admission-seed`, with a fresh output. Its seed and opening results are separate, and an explicitly
-selected opening FAIL/Unavailable produces a nonzero exit. Modern comparison uses the same function
+selected opening FAIL/Unavailable produces a nonzero exit. Any selected child FAIL takes precedence
+over another child's Unavailable result in the command's combined verdict and exit. Modern comparison uses the same function
 only for the opening child; no accepted service/map/audio/HEAL/turn predicate changes.
 
 Direct controls cover baseline, missing original/actual/context/settings, wrong mouth/view/input,
