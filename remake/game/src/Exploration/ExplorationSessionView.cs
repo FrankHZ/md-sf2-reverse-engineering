@@ -543,6 +543,46 @@ public sealed partial class ExplorationSessionView : Control
     public Godot.Collections.Dictionary ReadCaptureState(bool full = false, bool resources = false) =>
         ObservationCapture.ToDictionary(ObservationFacts(full, resources));
 
+    private static Rect2I LayoutRegion(int x, int y, int width, int height)
+    {
+        if (x < 0 || y < 0 || width < 1 || height < 1 || width > 64 || height > 64 ||
+            x > 64 - width || y > 64 - height || width * height > 256)
+            throw new ArgumentOutOfRangeException(nameof(width), "A layout observation must fit the map and contain at most 256 cells.");
+        return new(x, y, width, height);
+    }
+
+    public int ObserveLayoutRegion(int x, int y, int width, int height)
+    {
+        var region = LayoutRegion(x, y, width, height);
+        int request = _presentation!.ObserveLayoutRegion(region);
+        QueueRedraw();
+        return request;
+    }
+
+    public void StopLayoutObservation() => _presentation?.ObserveLayoutRegion(null);
+
+    public Godot.Collections.Dictionary ReadLayoutRegion(int x, int y, int width, int height)
+    {
+        _ = LayoutRegion(x, y, width, height);
+        var current = _session!.Current;
+        var world = current.Exploration ?? throw new InvalidOperationException("Layout observation requires active exploration.");
+        var words = new List<ushort>(width * height);
+        var saved = new List<object>();
+        var roof = world.RoofState as MapBlockCopyLifecycleActiveState;
+        for (int row = y; row < y + height; row++)
+            for (int column = x; column < x + width; column++)
+            {
+                words.Add(world.Layout[column, row]);
+                if (roof is not null && column >= roof.DestinationX && column < roof.DestinationX + roof.Width &&
+                    row >= roof.DestinationY && row < roof.DestinationY + roof.Height)
+                    saved.Add(new { x = column, y = row, word = roof.SavedWords[(row - roof.DestinationY) * roof.Width + column - roof.DestinationX] });
+            }
+        return ObservationCapture.ToDictionary(new { sessionId = current.SessionId, revision = current.Revision,
+            observationSequence = current.ObservationSequence, map = world.Map.Value, x, y, width, height, words,
+            flags = current.Story.Flags, roof = roof is null ? null : new { roof.RecordOrdinal, roof.DestinationX,
+                roof.DestinationY, roof.Width, roof.Height, saved }, draw = _presentation?.LayoutDrawObservation });
+    }
+
     // Only callback control operands cross into GDScript. Full evidence is captured
     // below at the same synchronous boundary, without a CLR/Variant/CLR round trip.
     public Godot.Collections.Dictionary ReadCaptureWitness(bool route = false)

@@ -1683,3 +1683,81 @@ at termination. Material-source joins do not close original dispatch, causal wai
 The map/layer, entity/portrait/gesture, private text/font/glyph and full actor/healing/death resource
 families remain incomplete. See the [contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#offline-reached-original-material-joins)
 and [offline command](development-and-verification.md#offline-reached-material-comparison).
+
+### Bounded working-layout and draw operands
+
+`ExplorationSessionView.ObserveLayoutRegion(x,y,width,height)` explicitly enables a local observation
+of at most256 cells inside the64×64 working layout. `ReadLayoutRegion` reads authoritative row-major
+words, current flags and intersecting saved roof words; it does not advance the session. The latest
+successful draw carries request, session, map, revision, observation-sequence and fresh draw identity.
+Readers must match those identities and rectangle, and reject missing draws or overflow.
+`StopLayoutObservation` releases the observation. Disabled rendering allocates no added observation
+collections.
+
+`ExplorationPresentation.DrawLayer` records coordinate-specific use immediately after the actual
+`DrawTextureRectRegion` call. Records retain selected block/tile words, texture instance and selector,
+background/foreground/occlusion, pass, priority, actor-mask identity, offsets and clipped screen/source
+rectangles. The cap is4096 records per draw; overflow is explicit. These are actual draw operands, not
+GPU pixels or a coverage guarantee for every cell in the requested rectangle. Existing deduplicated
+resource requirements are not the expected-value authority for this observation.
+
+**Confirmed:** the private `map-layout` case in
+[`engine_private_exploration_observation.gd`](../game/probes/engine_private_exploration_observation.gd)
+uses real GameRoot controlled starts and keyboard input. From Map3(4,7), DOWN opens the(4,8) door;
+DOWN restores the roof, UP clears it, and DOWN restores it again. Door post-state is the pre-operation
+source word at(62,0). Roof restoration uses the56 original words in(2,32),7×8, independently retained
+from the selected content before roof-on-load clears them. Repeated reads/redraws preserve revision,
+observation sequence and working words while requiring new draw identities. The retained local case
+joins the door cell and21 visible restored roof coordinates to actual block/tile use; all56 roof
+words are checked, but offscreen cells have no draw claim. Cleared roof cells remain in the viewport
+and issue no texture draw. The separate flag-off controlled load at(28,24) observes both destination
+cells at(28,22),1×2 and stable repeated reads.
+
+Source operands are the first records in pinned SF2DISASM commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, under
+`disasm/data/maps/entries/map03/{4-step-events,5-roof-events,3-flag-events}.asm`:
+copy(62,0)→(4,8),1×1; clear/save/restore(2,32),7×8 (source255,255 denotes clear);
+and flag506 copy(23,23)→(28,22),1×2. Inspect those named records with `git show` in the pinned checkout.
+The independently selected content supplies the pre-load layout words and block tile table; applying
+these source operations gives expected working words and `word & 1023` gives the expected block.
+This local check does not prove original natural reach, original display cadence or raster fidelity.
+
+**Confirmed:** the flag506-on attempt fails at startup with `UnsupportedCapability: map-setup
+(ms-map3-flag506)`. `MapTransfer.ValidateSetup` rejects the non-default setup before layout loading.
+No variant substitution or setup bypass is admitted. **Unknown:** successful flag-on copy/draw use,
+including the second flag506 copy into(57,23), and complete H4 map/layer comparison. The unsupported
+alternate setup is not automatically a required gap for the selected H4 route. Applicability needs
+the actual caller/load flags at every reached Map3 load joined to the source506 gate; final flags,
+one controlled start and static metadata cannot establish that route-wide result. The retained small
+W2 selections do not cover every Map3 load, so that binding remains **Unknown**. Providing these
+operands does not close H4 item9 or the other outstanding obligations.
+
+#### Reproduce the bounded local observation
+
+Load the checkout's ignored private-input selections and the existing private exploration/party,
+static-data, battle-data, scene, terrain, enemy and gold inputs required by GameRoot. Keep the world
+and pinned sources read-only. Supply a small private JSON through `SF2_LAYOUT_OPERANDS` with `blocks`
+(the selected Map3 block tile-word table), `roofBaseWords` (the56 pre-load words above), and `starts`
+(three absolute controlled-start paths in door/roof, flag-off, flag-on order). Door/roof starts at(4,7)
+facing DOWN with flags0/32 and the retained controlled entity phases. Flag starts use(28,24), default
+entity phases and flags0/32, adding506 only to the third start. These are explicitly controlled local
+seams, not a natural route. Read only the required map metadata and block table from the private world;
+normal host loading retains its existing behavior.
+
+Set `SF2_PRIVATE_EXPLORATION_CASE=map-layout`, `SF2_LAYOUT_CASES=0,1` for door/roof plus flag-off, or `2`
+to reproduce the unavailable flag-on startup independently. Leaving the selection empty runs all three;
+a flag-on success comparison requires the preceding flag-off pre-state from the same run. Set
+`SF2_LAYOUT_CONTROLLED_START` to a writable ignored staging file, initially copied from the first
+selected controlled start, and `SF2_EXPLORATION_OBSERVATION_OUTPUT` to a fresh ignored output file.
+Launch the configured Godot with the checkout's `remake/game` path,
+`--script res://probes/engine_private_exploration_observation.gd -- --private-exploration-start`
+followed by that exact staging path. The probe replaces only the staged input between fresh hosts in
+the same process. Use the normal configured native audio driver and no screenshots.
+
+Keep90seconds and10MiB per case,30MiB combined; retain launcher exit, stdout/stderr and resource limits.
+The probe checkpoints completed cases with `complete:false` and only reports `passed:true` after
+normal completion without failures. Startup failure is saved before stopping, rather than querying
+exploration methods on the startup-error battle view. JSON numbers and direct Godot/CLR numeric
+variants compare by numeric value. Preserve prior failures and partial files; they are not passes.
+Run the affected adapter build and these direct observations; no test of this probe or full-route run
+is required by this bounded seam.
