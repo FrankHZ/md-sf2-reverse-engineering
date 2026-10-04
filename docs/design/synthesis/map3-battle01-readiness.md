@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **NOT READY** for continuous-milestone acceptance; not a default blocker for separately authorized implementation.
-- Accepted evidence baseline: `57d6cc296b77283eb5ee8a00b5121ecdfd132e1a`, including [PR #504](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/504)'s neutral endpoint, [PR #526](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/526)'s bounded Down extension, [PR #528](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/528)'s retained first comparison, and [PR #533](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/533)'s corrected selected-R1 inputs and comparison.
+- Current acceptance owners: [modern continuous comparison](../../../remake/docs/development-and-verification.md#current-keyboard-comparison-scope) and [capability status](../../../remake/docs/capability-status.md#current-engineering-frontier). Original evidence and completed historical failures retain the owners below.
 - Milestone: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md); profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md).
 - Start policy: [ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md); engine direction: [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md).
 - Definition owner: [Continuous Scenario Contract](../contracts/map3-battle01-continuous-scenario.md).
@@ -12,7 +12,16 @@ The selected profile is `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
 8D compares gameplay and presentation semantics, including actual host consumption, completion,
 acknowledgement and input readiness. Pixel/frame/waveform/chip and VInt/DMA/CRAM/VDP equality are
 outside scope; timing that changes gameplay, causal order or input availability remains required.
-Private original content, natural continuity, 5B and separately reported 9A/10A remain required.
+Private original content, natural continuity, 5B and separately reported applicable deviations remain
+required. [Current keyboard scope](../../decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope)
+requires default keyboard A; C is supplemental and gamepad B/D are excluded. Existing remapping,
+swapped buttons, reduced flash and adjustable text do not create additional full-route requirements.
+The separate #517 fast-text speech choice remains required.
+
+The accepted modern deterministic clock can change original whole-history RNG, actor order and
+resources. Those histories remain diagnostic; matched-state rule/RNG effects, mandatory route,
+manual agency, actual content use and consumer boundaries remain required. Do not infer a causal
+explanation for a historical discrepancy merely from the clock decision.
 
 This ledger accounts for evidence and acceptance; the linked contract owns exact comparison rules.
 Original evidence, definition delivery/review and actual remake H4 PASS are three distinct states.
@@ -66,15 +75,15 @@ transport/observer failures are not interrupted runs and are not erased by final
 | Bounded RA-12 ordinary input/effect | PASS bounded original evidence | PR #526: one Down read and settled displacement from Map57 `(5,12)` to `(5,13)`; separate terminal, not resumable and not part of the PR #504 projector binding |
 | Full controllable 5B | OPEN | Remaining continuous input/control and state assertions; bounded RA-12 evidence does not establish the whole 5B endpoint |
 | Continuous contract and ten-layer definitions | Accepted definitions; missing bindings OPEN | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; bounded offline bindings available; remaining field gaps and complete definition readiness OPEN |
-| Original expected fields complete for every assertion | OPEN | Missing full R1 fields, field-input normalization, thinking RNG/individual draw effects, cancel and required 8D consumption/ack evidence; not a new native authorization |
+| Original expected fields complete for every applicable assertion | OPEN | Admission, matched-state rule/RNG effects and required resource/consumer boundaries remain incomplete under the current applicability owner; historical whole-run fields are not automatically new acquisition obligations |
 | Save policy 6A | SELECTED; continuous H4 execution OPEN | Absent user persistence surfaces; restart to admitted state |
 | 7C content/provenance | OPEN | Complete reached original scene inventory, especially original audio; authored JoinCue chords or mute cannot pass. Modern HUD/theme/input glyphs/fonts follow accepted authorship/license and 9A, not a ROM-original-font requirement |
-| 8D semantic presentation | OPEN | Required identity/order, real host use, completion/ack and readiness; source dispatch pairs alone insufficient. BattlePresentation board markers/status/roster do not implement battle-scene consumers |
-| 9A configuration and bounded direct observations | PASS bounded implementation | [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation); not full continuous variants |
-| 9A variants / 10A deviations composed | Accepted definitions; missing bindings and execution OPEN | Contract requires separate baseline/variant results and state/ack equivalence |
+| 8D semantic presentation | OPEN | Required identity/order, real host use, completion/ack and readiness; bounded scene/resource bindings do not close all battle-scene command/wait/effect/end consumers |
+| Existing settings and bounded direct observations | PASS bounded implementation; supplemental/history | [Settings owner](../../../remake/docs/development-and-verification.md#native-9a-observation); implementation does not authorize additional required variants |
+| Current keyboard scope / 10A deviations | Scope comparison PASS; full H4 OPEN | Required A only; C diagnostic, B/D excluded. A self-equality closes only the declared scope row, not remaining obligations or arbitrary settings equivalence |
 | Required reached action support | PASS bounded implementation; continuous comparison OPEN | PR #521 (`78c201c3`) accepts ordinary Medical Herb selection/live inventory and host inventories/itemSlot observations; compare the winning original actions separately |
-| Actual continuous comparison | Diagnostic FAIL; milestone NOT READY | PR #533: admission gold and first-control live item arrays match; first-round order and next actor still fail. 40 assertions remain Unavailable |
-| All applicable H4 layers executed successfully | OPEN | The accepted comparator has a diagnostic actual result; complete layer coverage, full 5B, and continuous 9A variants remain unexecuted |
+| Actual continuous comparison | Unavailable; milestone NOT READY | Retained A10 under current scope: one scope comparison PASS, thirteen required children Unavailable; historical PR #533 failures remain below |
+| All applicable H4 layers executed successfully | OPEN | Required admission, matched-state rules/RNG, map-resource and consumer gaps remain; successful capture or reduced execution scope is not H4 acceptance |
 | Independent milestone readiness acceptance | OPEN | Main-gate; neither Issue closure nor a bounded implementation PASS is sufficient |
 | Separate implementation-start authorization | PASS | User authorization in [Remake README](../../../remake/README.md); does not accept this milestone |
 | Public distribution | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate rights/licensed replacement decision; private assets remain untracked |
@@ -90,15 +99,16 @@ are: (1) admission/provenance, (2) logical input/route, (3) world/story transiti
 Each assertion retains expected source and actual observation separately. Missing original fields or
 private inputs yield Unavailable with the missing side/field, never PASS, zero-filled expectations or
 implicit exclusion. Mismatches and observed unsupported required actions are FAIL. Unknown original
-fields leave definition readiness OPEN. Whole-run PASS requires every applicable assertion, variant
-and deviation result. Production legality must depend on state/content, not a fixed actor sequence,
+fields leave definition readiness OPEN. Whole-run PASS requires every assertion and deviation in the
+explicit current scope. Supplemental or excluded reports cannot change required totals. Production legality must depend on state/content, not a fixed actor sequence,
 round count or reference receipt history. Existing subsystem fixtures remain their own owners.
 
 ### Initial deviation inventory mapped to H4
 
 The contract maps all ADR0010 deviations: controlled construction (1A), optional-route exclusion
-(2A), fixed evidenced reference seed/trace with manual play (4A), no save (6A), logical remapping and
-accessibility (9A), and explicitly identified out-of-domain safe behavior (10A). Every result is
+(2A), fixed admitted seed and manual play with the accepted modern deterministic clock (4A), no save
+(6A), current keyboard scope and separately reported settings (9A), and explicitly identified
+out-of-domain safe behavior (10A). Every result is
 visible separately in layer 10, including passes. 7C private handling is a product boundary, not a
 fidelity waiver. Missing evidence/content cannot be recategorized as a deviation.
 
@@ -107,18 +117,30 @@ fidelity waiver. Missing evidence/content cannot be recategorized as a deviation
 | Owner | Work remaining / dependency |
 | --- | --- |
 | Research | PR #526 independently accepts the bounded RA-12 input/effect. Other selected original fields, input normalization, RNG and presentation gaps remain as defined by their owners |
-| Design | PR #526 evidence is reflected here and in the contract; its payload is not bound by the PR #504 projector. PR #528 records the first actual comparison failure; whole-run criteria remain OPEN |
-| Remake/content | Manual Herb accepted in PR #521; original audio/private provenance (#517) and battle-scene consumption (#523) remain OPEN, no unmerged results assumed |
-| H4 executor | Bind accepted records, run all ten layers and 9A variants through existing actual state/input/presentation surfaces; preserve failures and Unavailable |
+| Design | Keep current applicability and the keyboard acceptance boundary aligned with the contract; original PR #526 extension remains separate from the PR #504 projector |
+| Remake/content | Audio/private provenance (#517), mutable map resources and required scene consumers remain bounded by their current owners; #523's closed Issue state does not itself prove consumer closure |
+| H4 executor | Resolve the current required keyboard assertions using accepted evidence and selected-scope comparisons; preserve failures and Unavailable. #610 owns offline resource-reduction cost, not gameplay acceptance |
 | Main-gate | Independently accept definitions, evidence closures and eventual complete H4 result; serialize integration |
 
 Accepted [outcome implementation](../../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return)
 and R4a comparison prove their bounded common-session/static-spine behavior, not natural original
 expected values or this H4 run. The [capability ledger](../../../remake/docs/capability-status.md)
 retains other unsupported consumers. Do not expand scope to EGRESS or unrelated item/menu branches
-unless the selected route requires them. The existing 9A observations include remapped/swapped
-input and authored paired flash/text checks; physical driver/hot-plug and complete export remain
-unverified. Missing continuous variants cannot inherit those bounded passes.
+unless the selected route requires them. Existing remapped/swapped input and paired flash/text
+observations remain bounded evidence. Their missing device/export coverage does not expand the
+current keyboard milestone. No new capture follows from this ledger.
+
+### Current required comparison boundary
+
+**Confirmed:** the accepted current-scope matrix reads retained A10, passes its one required scope
+comparison and leaves thirteen required children Unavailable (`milestonePass=false`). They group into
+two admission obligations, six matched-state rule/RNG/draw-to-effect obligations, one mutable-map
+resource obligation and four text/scene/audio consumer obligations. The exact assertions and
+reproduction command belong to the [verification owner](../../../remake/docs/development-and-verification.md#current-keyboard-comparison-scope).
+Do not turn these counts into thirteen automatic capture jobs or infer closure from another native
+winning route. The existing C capture is supplemental; D's retained capture and cancelled offline
+comparison are historical. C has no completed full report. #610 must first address offline
+comparison growth; original evidence and all completed failures remain preserved.
 
 ### Conditional runtime questions
 
@@ -133,6 +155,9 @@ native launch and no automatic per-Unknown observation queue.
 
 ### First actual H4 comparison and correction (PR #528 / #533)
 
+This subsection is historical. It preserves the completed pre-modern-clock comparison and does not
+describe the current required gate or authorize the former four-variant scope.
+
 **Confirmed comparison results:** PR #528's completed baseline reported **5,336 PASS / 6 FAIL / 40
 Unavailable**; its six failures and report remain historical evidence. PR #533 corrected the
 connected selected R1 product inputs to source NewGame gold 60 and complete starting item words,
@@ -145,7 +170,8 @@ Sarah `[213,0,0,127]`, Chester `[184,0,127,127]`. These later inventories do not
 `SourceLoadout`, which remains null. First-round order remains different; after the diagnostic first STAY, original
 next actor is Bowie and actual is Sarah. The host's exit 2 is corroborated by that comparison.
 The PR #526 post-victory extension was not rebound or reached. NPC phase and timing/RNG mapping remain Unknown. This completed
-comparison is not H4 acceptance; full Battle01/return/endpoint and continuous 9A variants remain open.
+comparison was not H4 acceptance. Current Battle01/return/endpoint and keyboard obligations are
+assessed under the applicability and scope owners above, without erasing these failures.
 
 ### Original replay lineage and launch admission
 

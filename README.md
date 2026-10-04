@@ -39,7 +39,7 @@ HEAL/STAY, automatic AI waiting and natural rounds, and the connected private wo
 opening through Battle 01 outcome and return. The transitional reference implementation was retired at
 [M5](./docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation); only
 [controlled comparison inputs](./remake/reference/README.md) remain. A1–A8 closure, natural continuity
-and 8C/H4 remain open. Tests cover actual engine behavior; reference/probe/gate
+and 8D/H4 remain open under the [current keyboard acceptance scope](./docs/decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope). Tests cover actual engine behavior; reference/probe/gate
 programs are used directly without another test layer. Old tests may migrate or retire by behavior.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,

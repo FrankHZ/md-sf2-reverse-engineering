@@ -9,7 +9,10 @@
 [ADR 0010's current amendment](./0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
 supersedes this document's former 8C hardware-exact requirements with 8D gameplay/presentation
 semantics. Natural continuity, the controllable 5B endpoint, private 7C content, 9A/10A and applicable
-H4 evidence/execution remain required. Earlier 8C-specific capture, clock/tolerance and exact-backend
+H4 evidence/execution remain required. The [current keyboard scope](./0010-map3-battle01-product-acceptance.md#current-keyboard-scope)
+requires default keyboard A, treats C as supplemental and excludes gamepad B/D from this milestone.
+The accepted modern deterministic clock keeps original whole-history differences diagnostic while
+matched-state rules, resources and required consumer behavior remain binding. Earlier 8C-specific capture, clock/tolerance and exact-backend
 requirements below are historical, not implementation or completion prerequisites. The old original
 replay path is disabled and is not a mandatory evidence route. Existing failure records, evidence
 labels and ADR 0015 launch limits remain binding; no new observation is authorized by this change.
@@ -44,8 +47,9 @@ legality. The engine should apply supported rules to valid state and content; ex
 rounds, receipt prefixes and named character sequences belong to external reference verification.
 Keep genuine original rule conditions. The current controlled implementation's restrictions remain
 visible in the [architecture audit](../../remake/docs/architecture-audit.md); this clarification does
-not claim they are removed. [ADR 0019](./0019-state-and-content-driven-remake-engine.md) proposes that
-migration. The accepted continuous endpoint and 8C/H4 target are unchanged and incomplete.
+not claim they are removed. [ADR 0019](./0019-state-and-content-driven-remake-engine.md) is the adopted
+engine direction; its current implementation boundaries control the historical audit. The accepted
+continuous endpoint and current 8D/H4 target remain incomplete.
 
 The continuous playable milestone may be reported ready for its Phase 4 acceptance target only after all
 of the following are complete:
