@@ -3850,7 +3850,58 @@ them with affected controls. Use scoped Ruff, direct contracts/docs/private chec
 and actual CI. No verifier unit tests, SDK/native/H3 acquisition, new route, full H4 or matrix are
 implied. Accepted audio, W2 and turn predicates keep their own boundaries.
 
-### Scoped W2 consumer comparison
+### Scoped W1 consumer comparison
+
+The [selected W1 contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-w1-consumer-binding)
+uses the existing compact retained-A selection, original outcome records69–74, its final copy witness,
+and the bounded map3/NPC-history supplement. No SDK, host, emulator, full H4, matrix or repeated raw
+capture scan is needed.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 -m sf2tool.remake_h4_comparison w1 `
+  --actual $selectedW1Actual --w1-context $independentW1Context `
+  --text-source-root $pinnedSource --output local/w1-consumers/fresh-report.json
+```
+
+Candidate `samples`, `inputRecords` and `warpRecords` retain original `_index` values and complete
+selected observations. Keep the independent context separate:
+
+- `scope=retained-keyboard-A-w1`, `sessionId`, and ordered `occurrences` identify each source
+  `cursor`, `text`, control-token `position` and live `token`.
+- `polls` retain `ordinal`, `token`, `accepting`, original `inputIndex`/`resultIndex`,
+  `beforeRevision`/`resultRevision`/`afterRevision`, ready/after references (`channel`, `index`),
+  and the independently inventoried `entityIds`. A physical delivery can include another Submit.
+- `indices` select the original sample/input/result positions. `outcomeIndices` identify actual
+  outcome records as their own channel, never as sample indices. `copyWitnesses` retain each later
+  witness's channel, index where applicable, and exact session/revision/sequence/map/cursor/wait/token.
+- `npcHistoryIndices` and `npcPrograms` select the complete bounded installation/replacement history
+  and registered historical source programs. They carry identities, not expected RNG results.
+- `actualSupplement` may hold the retained `outcomeRecords`, `w1OutcomeFinal`, `w1NpcHistory` and
+  `w1NpcWorld` observations. These are actual evidence, separate from expected source rules. Scoped
+  candidates may instead carry these four fields directly; duplicate copies must agree. The world
+  supplement contains only provenance, map3 and the selected28 source programs, with no media assets.
+
+The current compact input is about6.3MiB. The command enforces10MiB combined input,1MiB context and
+10MiB report limits, plus a fresh worktree-local ignored output. Budget120s and128MiB incremental
+memory. Work is bounded by the selected rows, entity population and fixed source programs; full
+capture arrays support indexed reads and must not be iterated to reconstruct this cohort. Preserve
+selection receipts, failed attempts and original metadata checks. Any additional large selection
+needs its owning scope/budget decision; a missing field is not permission to scan again.
+
+Exit0/1/2 means PASS/FAIL/Unavailable. Every report retains `milestonePass=false`. Modern
+`compare --w1-context` invokes the same child, using the compact actual supplement alongside its
+indexed full capture. Verify this wiring directly; do not launch full comparison to test it.
+
+Direct controls should cover missing/duplicate polls, wrong source token or producer, foreign
+session and result identity, release/reveal misuse, missing plus contradictory evidence, event order,
+copy retention, conditional portrait range/seed/registration, NPC installation/collision/destination,
+and the separate choice-window Submit. Preserve a completed failed control, then rerun its correction
+and any newly affected checks. No unit-test suite of the comparator is required. Exact original live
+service timing, removed intermediate clocks/typewriting, wider branch-flag truth, historical HEAL
+failures and whole-A CPU/AI/battle-scene boundaries remain explicit in the contract and handoff.
+
+## Scoped W2 consumer comparison
 
 Use the retained `current-A-w2.jsonl`, `current-A-w2-tail.jsonl`, `w2-occurrences.json` and selected A
 audio receipts described by [the accepted policy](../../docs/design/contracts/dialogue-system.md#w2-composed-semantic-acceptance).

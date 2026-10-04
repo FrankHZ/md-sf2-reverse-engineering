@@ -606,6 +606,56 @@ Those completed failures remain retained. **Unknown:** interrupted CPU context, 
 window gates and whole original scene timing. The accepted logical-clock proof does not convert
 that history into a pass or establish the corrected whole-A RNG/AI trajectory or battle-scene fidelity.
 
+### Selected W1 consumer binding
+
+The [W1 source contract](dialogue-system.md#reached-w1-consumer-binding) and named original
+text483 accepting-read witness own the original rule. The scoped comparator binds the retained
+keyboard-A selection of68 distinct token occurrences and120 polls (68 accepting,52 neutral).
+These counts identify evidence; they impose no gameplay quota. Source text, producer and ordered
+control-token position remain distinct from the script's running text cursor. Original indices,
+session, physical input, token, before revision and whole Submit result identify every consumer.
+
+**Confirmed:** the executable predicate checks mandatory range256 draw/copy/wait/read order,
+conditional portrait draws, the retained copy byte, eligible logical service and source continuation.
+Release or reveal-only delivery cannot supply the accepting poll. Neutral Wait retains the same
+eligible consumer. Known contradictions produce **FAIL** beside missing evidence; omitted required
+operands remain **Unavailable**. Source programs and sprite-to-portrait selectors come from the
+pinned, clean disassembly through the existing compiler. Actual caller, entity enablement, view,
+portrait registration, mouth control and clock operands belong to the same ready state. Trap6
+activation survives return to an entity caller; caller category alone does not determine suppression.
+
+The source portrait service decrements blink, conditionally draws range120, then conditionally draws
+range5 for mouth work under W1's cleared typewriting gate. Every observed conditional draw must match
+its source range, incoming seed, result, outgoing seed and position before the input test. The source
+`OpenPortraitWindow` guard preserves an already-open window: the continued531 choice branch retains
+its original portrait orientation through535. A later open request does not replace those flags.
+
+Two reached entity services consume otherwise unlabelled walking RNG. Their retained source-producer
+history binds entity128's `Map3_ZoneEvent6`/`MakeEntityWalk` installation and entity130's default-map
+walking declaration, with competing motion writes included through both inputs. Pinned map3 layout
+bytes independently decode to the selected historical layout; source door/roof/flag write rectangles
+do not cover the tested cells. The actual ready actor, timer, radius, destination occupancy and source
+`esc06_walkRandomly` rules derive up to four attempts. The west attempt succeeds for entity128;
+entity130 rejects three north attempts at the blocked cell before accepting east. Expected attempt
+counts are consequences of radius/collision tests, never a search for the recorded final seed.
+The actual destination, timer, velocity reset and complete post-service seed must agree.
+
+Three physical inputs contain both the W1 Submit and a separate choice-window Submit. Their entire
+input spans are bound, with unchanged W1 gameplay identity across choice delivery; the latter events
+cannot be relabelled as W1 service. Fifteen portrait-close inputs lack an exact post-Submit full
+snapshot. Source close, explicit unregister/closing continuation, whole Submit state and separately
+identified later copy witnesses compose those edges. Later snapshots remain later observations.
+The source window closes before another portrait service can consume its removed clocks.
+
+**Unknown:** complete original live service bytes and timing beyond text483's named seam, transient
+portrait clocks/typewriting restoration removed by close, and branch-flag truth beyond the W1 resume
+boundary. The continuation check admits source branch paths to their first blocking consumer; it does
+not replace the operation-flow flag contract. This selected historical-A proof does not establish a
+corrected whole-route RNG/AI trajectory, all NPC scheduling, battle-scene timing or another H4 child.
+The [scoped command](../../../remake/docs/development-and-verification.md#scoped-w1-consumer-comparison)
+and modern child share one predicate; a scoped PASS always retains `milestonePass=false` and requires
+independent main-gate review before child closure.
+
 ### Composed W2 consumer binding
 
 The [accepted W2 policy](dialogue-system.md#w2-composed-semantic-acceptance) supplies the source,
