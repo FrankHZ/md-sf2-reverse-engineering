@@ -3,7 +3,9 @@
 The default legacy profile diagnoses first control and the first STAY/next actor.
 The modern profile evaluates the continuous winning route and named settings matrix;
 missing required original or host bindings keep full H4 acceptance incomplete.
-Use the accepted read-only reference projector first. All outputs remain private.
+Use the accepted read-only reference projector for those profiles. The audio mode
+evaluates selected consumer dependencies without loading the whole H4 report.
+All outputs remain private.
 """
 
 from __future__ import annotations
@@ -4759,6 +4761,595 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
 MATRIX_OBLIGATION = "complete named continuous settings matrix"
 
 
+def _audio_context(document, actual):
+    world = document["world"]
+    programs = [
+        dict(id=p["id"], source=p.get("source"), instruction=index, operation=op)
+        for p in world["programs"]
+        for index, op in enumerate(p["instructions"])
+        if op.get("op") == "present"
+        and op.get("kind") in ("Sound", "SoundWait", "PreviousMusic", "SoundFade")
+    ]
+    locations = {(p["id"], p["instruction"]) for p in programs}
+    return dict(
+        provenance=document["provenance"],
+        sessionId=actual["audioReceipts"][0]["poll"]["sessionId"]
+        if actual.get("audioReceipts")
+        else None,
+        audio=[
+            {k: v for k, v in a.items() if k != "pcm16"} for a in world["presentation"]["audio"]
+        ],
+        programs=programs,
+        events=[
+            e
+            for r in actual.get("warpRecords", [])
+            for e in r["result"].get("observations", [])
+            if e["Kind"] == "program-instruction"
+            and e.get("Program")
+            and (e["Program"]["Program"], e["Program"]["Instruction"]) in locations
+        ],
+    )
+
+
+def audio_consumer_binding(actual, context, source_root):
+    """Compose accepted audio rules with complete selected playback/release edges.
+
+    WaitToken describes current service context, not a voice. A cue with exactly
+    one outstanding start can be associated uniquely; overlapping same-cue voices
+    require retained instance identity and remain unavailable here.
+    """
+    result = dict(
+        value=None,
+        checks=_bounded_list(),
+        playbacks=_bounded_list(),
+        releases=_bounded_list(),
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            driver="disasm/code/common/tech/sound/sounddriver.asm:Load_Music/Load_SFX/"
+            "Fade_Out/UpdateSound/StopMusic/loc_DF2/loc_F88",
+            bus="disasm/code/common/tech/interrupts/"
+            "applyfadingeffectandz80busupdate.asm:ApplyZ80BusUpdates/@IsFadeOut",
+            policy="remake/docs/presentation-and-assets.md#sound-fade-request-and-effect-lifetime",
+            originalCompletion="Unknown",
+        ),
+    )
+
+    def check(name, value, **identity):
+        result["checks"].append(dict(name=name, value=value, **identity))
+
+    def finish():
+        values = [c["value"] for c in result["checks"]]
+        result["value"] = False if False in values else None if None in values else True
+        return result
+
+    if not context or not actual.get("audioReceipts"):
+        check("complete selected audio/context absent", None)
+        return finish()
+    required = (
+        "audioReceiptGaps",
+        "audioSequenceSeen",
+        "audioTerminal",
+        "warpRecords",
+        "sceneObservations",
+        "samples",
+        "inputRecords",
+    )
+    if any(key not in actual for key in required) or any(
+        key not in context for key in ("provenance", "audio", "programs", "events")
+    ):
+        check("selected dependency channels absent", None)
+        return finish()
+    check(
+        "selected complete default keyboard audio scope",
+        True if actual.get("h4Variant") == "A" else None,
+    )
+    check(
+        "selected original identity",
+        context.get("provenance", {}).get("commit") == UPSTREAM
+        and context.get("provenance", {}).get("romSha256") == ROM,
+    )
+    slots, types = {}, {}
+    try:
+        from sf2tool.h2.sound_data import (
+            SFX_TYPE_1_SLOTS,
+            SFX_TYPE_2_SLOTS,
+            _sfx_source_headers,
+        )
+        from sf2tool.source_text import read_upstream_text
+
+        if source_root is None:
+            raise ValueError("no pinned original source")
+        source_root = source_root.resolve() if source_root.is_absolute() else repo_path(source_root)
+        pin = subprocess.check_output(
+            ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        clean = subprocess.run(
+            ["git", "-C", str(source_root), "diff", "--quiet", UPSTREAM, "--", "disasm"],
+            check=False,
+        ).returncode
+        check("pinned original audio rules", pin == UPSTREAM and clean == 0)
+        driver = read_upstream_text(source_root / "disasm/code/common/tech/sound/sounddriver.asm")
+        for label, header in _sfx_source_headers(driver).items():
+            command = 64 + int(label[4:], 16)
+            active = set()
+            for slot, target in zip(
+                SFX_TYPE_1_SLOTS if header["type"] == 1 else SFX_TYPE_2_SLOTS,
+                header["targets"],
+                strict=True,
+            ):
+                first = re.search(r"^" + target + r":\s*db\s+([^\s,;]+)", driver, re.M)
+                if first is None:
+                    raise ValueError("SFX target operand absent")
+                if first[1] != "0FFh":
+                    active.add(slot)
+            slots[command], types[command] = active, header["type"]
+    except (OSError, ValueError, subprocess.CalledProcessError):
+        check("original sound slot classification absent", None)
+        return finish()
+
+    assets = {row["cue"]: row for row in context["audio"]}
+    wrappers = actual["audioReceipts"]
+    receipts = [row["receipt"] for row in wrappers]
+    check("unique selected audio cues", len(assets) == len(context["audio"]))
+    if any(r["Cue"] not in assets for r in receipts if r["Operation"] != "fade-command"):
+        check("selected reached audio metadata absent", None)
+        return finish()
+    terminal = actual.get("audioTerminal") or {}
+    session_ids = {row["poll"].get("sessionId") for row in wrappers}
+    check(
+        "one session and complete ordered receipt channel",
+        len(session_ids) == 1
+        and None not in session_ids
+        and not actual.get("audioReceiptGaps")
+        and [r["Sequence"] for r in receipts] == list(range(1, len(receipts) + 1))
+        and actual.get("audioSequenceSeen") == terminal.get("sequence") == len(receipts),
+    )
+    check("terminal player error absent", terminal.get("error") is None)
+    session = next(iter(session_ids))
+    check(
+        "selected audio producer session identity",
+        None if context.get("sessionId") is None else context["sessionId"] == session,
+    )
+    metadata = (
+        "Command",
+        "Cue",
+        "TimerB",
+        "PcmSha256",
+        "SampleFrames",
+        "SampleRate",
+        "Channels",
+        "LoopBegin",
+        "LoopEnd",
+        "RequestedTimerB",
+    )
+    fields = dict(
+        Command="command",
+        TimerB="timerB",
+        PcmSha256="sha256",
+        SampleFrames="sampleFrames",
+        SampleRate="sampleRate",
+        Channels="channels",
+        LoopBegin="loopBegin",
+        LoopEnd="loopEnd",
+    )
+    pending, instances, fades = {}, {}, []
+    music_timer = None
+    for index, r in enumerate(receipts):
+        cue, operation, command = r["Cue"], r["Operation"], r["Command"]
+        check(
+            "receipt operation",
+            operation in ("started", "stopped", "finished", "fade-command"),
+            sequence=r["Sequence"],
+        )
+        if operation == "fade-command":
+            fades.append(r)
+            check("asynchronous fade request identity", command == 253, sequence=r["Sequence"])
+            continue
+        asset = assets.get(cue)
+        check(
+            "admitted command/timer/PCM operand",
+            None
+            if asset is None
+            else all(r[key] == asset.get(field) for key, field in fields.items()),
+            sequence=r["Sequence"],
+        )
+        if operation == "started":
+            check(
+                "actual started player",
+                r["Playing"] and r["PlaybackPosition"] >= 0,
+                sequence=r["Sequence"],
+            )
+            if cue in pending:
+                check("same-cue instance association ambiguous", None, sequence=r["Sequence"])
+                return finish()
+            pending[cue] = r
+            instances[r["Sequence"]] = dict(start=r, end=None)
+            if command < 65:
+                music_timer = r["TimerB"]
+            else:
+                candidates = [a for a in assets.values() if a["command"] == command]
+                exact = [a for a in candidates if a["timerB"] == r["RequestedTimerB"]]
+                selected = exact if exact else candidates
+                check(
+                    "exact-or-unique inherited timer selection",
+                    r["RequestedTimerB"] == music_timer
+                    and len(selected) == 1
+                    and selected[0]["cue"] == cue,
+                    sequence=r["Sequence"],
+                )
+                check(
+                    "source slot class available", bool(slots.get(command)), sequence=r["Sequence"]
+                )
+        elif operation in ("finished", "stopped"):
+            start = pending.pop(cue, None)
+            if start is None:
+                check("terminal event has a unique prior start", False, sequence=r["Sequence"])
+                continue
+            instances[start["Sequence"]]["end"] = r
+            check(
+                "same actual playback operands",
+                all(start[k] == r[k] for k in metadata) and not r["Playing"],
+                sequence=r["Sequence"],
+                start=start["Sequence"],
+            )
+            if operation == "finished":
+                check(
+                    "natural completion belongs to finite playback",
+                    start["LoopBegin"] is None and start["LoopEnd"] is None,
+                    start=start["Sequence"],
+                )
+            else:
+                # Stop and its replacement share the actual service context. Do not
+                # equate current WaitToken with the start's (possibly earlier) token.
+                replacements = []
+                for following in receipts[index + 1 :]:
+                    if (following["Revision"], following["WaitToken"]) != (
+                        r["Revision"],
+                        r["WaitToken"],
+                    ):
+                        break
+                    if following["Operation"] == "started":
+                        new = following["Command"]
+                        if (
+                            command < 65
+                            and new < 65
+                            or command >= 65
+                            and new >= 65
+                            and slots.get(command, set()) <= slots.get(new, set())
+                            or command >= 65
+                            and types.get(command) == 1
+                            and new < 65
+                        ):
+                            replacements.append(following)
+                check(
+                    "stop has legitimate replacement/shared-release cause",
+                    bool(replacements),
+                    start=start["Sequence"],
+                    stop=r["Sequence"],
+                    replacements=[x["Sequence"] for x in replacements],
+                )
+    for start_sequence, instance in instances.items():
+        start, end = instance["start"], instance["end"]
+        result["playbacks"].append(
+            dict(
+                start=start_sequence,
+                end=end["Sequence"] if end else None,
+                operation=end["Operation"] if end else "ongoing",
+                cue=start["Cue"],
+                command=start["Command"],
+            )
+        )
+        if end is None:
+            check(
+                "ongoing playback is a live admitted loop",
+                start["LoopBegin"] is not None
+                and start["LoopEnd"] is not None
+                and start["Cue"] == terminal.get("musicCue")
+                and terminal.get("musicPlaying"),
+                start=start_sequence,
+            )
+    live_sounds = terminal.get("sounds", [])
+    check(
+        "terminal voices exactly match outstanding instances",
+        not live_sounds and len(pending) == int(bool(terminal.get("musicPlaying"))),
+    )
+
+    events = {}
+    for row in actual.get("warpRecords", []):
+        state = row.get("state", {})
+        check(
+            "dependent result belongs to audio session",
+            row["result"].get("sessionId") == session
+            and (not state or state.get("sessionId") == session),
+        )
+        for event in row["result"].get("observations", []):
+            seq = event["Sequence"]
+            if seq in events:
+                check("same logical event identity", events[seq] == event, sequence=seq)
+            events[seq] = event
+    phases = {}
+    for row in actual.get("sceneObservations", []):
+        scene = row["scene"]
+        if scene.get("phase") in ("Initialize", "End"):
+            check(
+                "scene consumer identity",
+                row.get("sessionId") == session and scene.get("error") is None,
+            )
+            phases.setdefault(scene["waitToken"], []).append(row)
+    phase_producers = {
+        e["Sequence"]: e
+        for e in events.values()
+        if e["Kind"] == "scene-prepared"
+        or e["Kind"] == "scene-step-started"
+        and e["Detail"] == "End"
+    }
+    check(
+        "complete reached fade/scene dependency inventory",
+        bool(phases)
+        and len(fades) == len(phases)
+        and {f["WaitToken"] for f in fades} == set(phases) == set(phase_producers),
+    )
+    for token, rows_for_token in phases.items():
+        controls = [f for f in fades if f["WaitToken"] == token]
+        before = [row for row in rows_for_token if not row["scene"]["completed"]]
+        after = [row for row in rows_for_token if row["scene"]["completed"]]
+        if len(controls) != 1 or not before or not after:
+            check(
+                "fade has start and actual completion",
+                None if not before or not after else False,
+                token=token,
+            )
+            continue
+        control, first, completed = controls[0], before[0], after[0]
+        phase = first["scene"]["phase"]
+        producer = phase_producers.get(token)
+        if producer is None:
+            check("scene phase producer absent", None, token=token)
+            continue
+        release = events.get(token + 1)
+        old = [
+            i
+            for i in instances.values()
+            if i["start"]["Cue"] == control["Cue"]
+            and i["start"]["Sequence"] < control["Sequence"]
+            and i["end"] is not None
+            and i["end"]["Sequence"] > control["Sequence"]
+        ]
+        restored = [
+            r
+            for r in receipts
+            if r["Operation"] == "started"
+            and r["Command"] < 65
+            and r["WaitToken"] == token
+            and r["Sequence"] > control["Sequence"]
+        ]
+        if len(old) != 1 or len(restored) != 1 or release is None:
+            check(
+                "fade stop/replacement/logical release operands",
+                None if release is None else False,
+                token=token,
+            )
+            continue
+        stopped, new = old[0]["end"], restored[0]
+        new_poll = wrappers[int(new["Sequence"]) - 1]["poll"]
+        check(
+            "actual fade stop and music restore precede matching release",
+            stopped["Operation"] == "stopped"
+            and control["Revision"] == first["revision"] == stopped["Revision"] == new["Revision"]
+            and control["Sequence"] < stopped["Sequence"] < new["Sequence"]
+            and stopped["WaitToken"] == token
+            and first["hostUpdate"] <= new_poll["hostUpdate"] <= completed["hostUpdate"]
+            and release["Kind"]
+            == (
+                "scene-delivery"
+                if first["scene"]["actionKind"] == "heal"
+                else "scene-step-completed"
+            )
+            and release["Detail"] == phase
+            and new["Revision"] < release["Revision"] <= completed["revision"]
+            and (
+                new["Command"] == (2 if producer["Actor"]["Value"].startswith("ally-") else 5)
+                if phase == "Initialize"
+                else new["Command"] == 34
+            ),
+            token=token,
+        )
+        result["releases"].append(
+            dict(
+                token=token,
+                phase=phase,
+                fade=control["Sequence"],
+                stop=stopped["Sequence"],
+                restart=new["Sequence"],
+                release=release["Sequence"],
+            )
+        )
+
+    # Finite music is the accepted modern clock. Original F0/channel/interleaving
+    # Unknowns remain separate; mailbox dispatch never supplies this completion.
+    ops = {(p["id"], p["instruction"]): p["operation"] for p in context["programs"]}
+    producers = context["events"]
+    check(
+        "generic fade requires its own selected service consumer",
+        None
+        if any(
+            ops.get((e["Program"]["Program"], e["Program"]["Instruction"]), {}).get("kind")
+            == "SoundFade"
+            for e in producers
+        )
+        else True,
+    )
+    check(
+        "finite music dependency classification",
+        all(
+            i["start"]["Command"] == 19
+            for i in instances.values()
+            if i["start"]["Command"] < 65 and i["start"]["LoopBegin"] is None
+        ),
+    )
+    joins = [i for i in instances.values() if i["start"]["Command"] == 19]
+    check("reached finite music dependency present", bool(joins))
+    for instance in joins:
+        start, ended = instance["start"], instance["end"]
+        if start["Cue"] not in assets:
+            continue
+        request = [
+            e
+            for e in producers
+            if e["Sequence"] == start["Revision"]
+            and ops.get((e["Program"]["Program"], e["Program"]["Instruction"]), {}).get("kind")
+            == "Sound"
+            and ops.get((e["Program"]["Program"], e["Program"]["Instruction"]), {}).get("resource")
+            == start["Cue"]
+        ]
+        waits = [
+            e
+            for e in producers
+            if e["Sequence"] > start["Revision"]
+            and ops.get((e["Program"]["Program"], e["Program"]["Instruction"]), {}).get("kind")
+            == "SoundWait"
+        ]
+        actual_done = [
+            e
+            for e in events.values()
+            if e["Kind"] == "music-actual-completed"
+            and e["Detail"] == start["Cue"]
+            and e["Sequence"] > start["Revision"]
+        ]
+        returned = [
+            e
+            for e in events.values()
+            if e["Kind"] == "music-wait-returned"
+            and e["Detail"] == start["Cue"]
+            and e["Sequence"] > start["Revision"]
+        ]
+        eligible = [
+            e
+            for e in events.values()
+            if e["Kind"] == "music-previous-eligible"
+            and e["Detail"] == start["Cue"]
+            and e["Sequence"] > start["Revision"]
+        ]
+        if not ended or not request or not waits or not actual_done or not returned or not eligible:
+            check(
+                "finite generation completion/release operands absent",
+                None,
+                start=start["Sequence"],
+            )
+            continue
+        helper, done, release, logical_done = waits[0], actual_done[0], returned[0], eligible[0]
+        check(
+            "wait remains owned by the requesting source program",
+            request[0]["Program"]["Program"] == helper["Program"]["Program"],
+            start=start["Sequence"],
+        )
+        progress = sorted(
+            (
+                e
+                for e in events.values()
+                if helper["Sequence"] < e["Sequence"] < release["Sequence"]
+                and e["Kind"] in ("music-step", "music-wait-armed", "music-previous-eligible")
+            ),
+            key=lambda e: e["Sequence"],
+        )
+        initial_steps = [
+            e
+            for e in events.values()
+            if start["Revision"] < e["Sequence"] < helper["Sequence"]
+            and e["Kind"] == "music-step"
+            and e["Detail"] == start["Cue"]
+        ]
+        armed = [e for e in progress if e["Kind"] == "music-wait-armed"]
+        check(
+            "accepted finite logical clock reaches end before release",
+            assets[start["Cue"]].get("modernEndStep") == 505
+            and len(armed) == 1
+            and len(initial_steps)
+            + sum(e["Sequence"] <= logical_done["Sequence"] for e in progress)
+            == assets[start["Cue"]]["modernEndStep"]
+            and progress[0] == armed[0],
+            start=start["Sequence"],
+        )
+        previous = [
+            e
+            for e in producers
+            if e["Sequence"] > release["Sequence"]
+            and ops.get((e["Program"]["Program"], e["Program"]["Instruction"]), {}).get("kind")
+            == "PreviousMusic"
+        ]
+        restart = [
+            r
+            for r in receipts
+            if previous
+            and r["Revision"] == previous[0]["Sequence"]
+            and r["Operation"] == "started"
+            and r["Command"] < 65
+        ]
+        prior = [
+            r
+            for r in receipts
+            if r["Operation"] == "started"
+            and r["Command"] < 65
+            and r["Sequence"] < start["Sequence"]
+        ]
+        check(
+            "finite generation owns actual finish before logical/actual joined release",
+            len(request) == len(waits) == len(actual_done) == len(returned) == len(eligible) == 1
+            and ended["Operation"] == "finished"
+            and ended["WaitToken"] == helper["Sequence"]
+            and start["Revision"] < helper["Sequence"] < release["Sequence"]
+            and ended["Revision"] < done["Sequence"] < release["Sequence"]
+            and logical_done["Sequence"] < release["Sequence"],
+            start=start["Sequence"],
+        )
+        check(
+            "previous music restarts same prior cue",
+            bool(prior)
+            and len(previous) == len(restart) == 1
+            and restart[0]["Cue"] == prior[-1]["Cue"]
+            and restart[0]["PlaybackPosition"] < 0.1,
+            start=start["Sequence"],
+        )
+        plain = [s["state"] for s in actual.get("samples", []) if s["label"] == "music-plain-input"]
+        confirms = [
+            r
+            for r in actual.get("inputRecords", [])
+            if r.get("pressed")
+            and r.get("action") == "confirm"
+            and plain
+            and r["before"].get("token") == plain[0]["token"]
+        ]
+        ready = [s["state"] for s in actual.get("samples", []) if s["label"] == "join-field-return"]
+        check(
+            "restarted playback precedes plain input and caller return",
+            None
+            if not plain or not confirms or not ready
+            else len(plain) == len(confirms) == len(ready) == 1
+            and len(restart) == 1
+            and release["Sequence"] < restart[0]["Revision"] < plain[0]["revision"]
+            and plain[0]["sessionId"] == ready[0]["sessionId"] == session
+            and plain[0]["wait"] == "DialogueWait"
+            and plain[0]["audio"]["musicPlaying"]
+            and plain[0]["audio"]["musicCue"] == restart[0]["Cue"]
+            and confirms[0]["after"]["wait"] == "TextCloseWait"
+            and confirms[0]["after"]["revision"] < ready[0]["revision"]
+            and ready[0]["canWaitAtInput"]
+            and ready[0]["wait"] is None,
+            start=start["Sequence"],
+        )
+        result["releases"].append(
+            dict(
+                phase="finite-music",
+                generation=start["Revision"],
+                helper=helper["Sequence"],
+                actualDone=done["Sequence"],
+                logicalDone=logical_done["Sequence"],
+                release=release["Sequence"],
+            )
+        )
+    return finish()
+
+
 def field_motion_binding(actual, selection, source_root):
     """Join source producers to occurrence-local field waits and actual consumers."""
     result = dict(
@@ -8118,6 +8709,15 @@ def compare_modern(
     operation_flow = operation_flow_binding(
         actual, material_selection, text_source_root, field_motion, text_material
     )
+    audio_context = None
+    if material_selection:
+        try:
+            world_path = material_selection[0]
+            world_path = world_path if world_path.is_absolute() else repo_path(world_path)
+            audio_context = _audio_context(read(world_path), actual)
+        except (OSError, ValueError, KeyError):
+            audio_context = None
+    audio_consumers = audio_consumer_binding(actual, audio_context, text_source_root)
     assertions = _bounded_list()
     obligations = {}
 
@@ -9575,6 +10175,21 @@ def compare_modern(
                 "without per-tick/terminal draw quotas",
             )
             continue
+        if name == "audio replacement/fade/stop/resume dependent consumer edges":
+            check(
+                9,
+                name,
+                True,
+                audio_consumers["value"],
+                actual_location,
+                original=dict(
+                    owner=OWNER, upstream=UPSTREAM, binding=audio_consumers["sourceRules"]
+                ),
+                parent=consumer_parent,
+                reason="Independent accepted rules plus complete selected actual playback and "
+                "matching release inventory; original completion/hardware time remain Unknown",
+            )
+            continue
         missing(9, consumer_parent, name, binding, actual_location, side, reason)
 
     check(
@@ -9823,6 +10438,7 @@ def compare_modern(
             audioReceiptCount=len(audio_receipts),
             audioContiguous=audio_contiguous,
             audioLifecycle=audio_lifecycle,
+            audioConsumerBinding=audio_consumers,
             reachedMaterialJoins=materials["joins"],
             reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
@@ -10355,13 +10971,18 @@ def compare_resources(
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("plan", "compare", "matrix", "resources"))
+    parser.add_argument("mode", choices=("plan", "compare", "matrix", "resources", "audio"))
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--evidence-root", type=Path)
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--actual", type=Path)
+    parser.add_argument(
+        "--audio-context",
+        type=Path,
+        help="Selected audio metadata/operands/events, without PCM; audio mode only",
+    )
     parser.add_argument("--host-log", type=Path)
     parser.add_argument("--host-exit", type=int)
     parser.add_argument("--outcome", type=Path)
@@ -10390,7 +11011,7 @@ def main():
     parser.add_argument(
         "--text-source-root",
         type=Path,
-        help="Read-only pinned SF2DISASM checkout for the reached text material join",
+        help="Read-only pinned SF2DISASM checkout for reached source bindings",
     )
     parser.add_argument("--original-join-evidence-root", type=Path)
     parser.add_argument("--selected-scene", type=Path)
@@ -10410,6 +11031,50 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    if args.mode == "audio":
+        require(
+            args.actual is not None and args.audio_context is not None,
+            "audio requires selected actual dependency channels and audio context",
+        )
+        actual_path, context_path = (
+            p.resolve() if p.is_absolute() else repo_path(p)
+            for p in (args.actual, args.audio_context)
+        )
+        require(
+            actual_path.stat().st_size + context_path.stat().st_size <= 10 * 1024 * 1024,
+            "audio selection exceeds 10 MiB; select required fields before comparison",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "audio output must be fresh beneath this worktree's local/",
+        )
+        binding = audio_consumer_binding(
+            read(actual_path), read(context_path), args.text_source_root
+        )
+        verdict_value = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-audio-consumers",
+            result=verdict_value,
+            milestonePass=False,
+            actual=actual_path.as_posix(),
+            context=context_path.as_posix(),
+            binding=binding,
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(
+                    result=verdict_value,
+                    milestonePass=False,
+                    playbacks=len(binding["playbacks"]),
+                    releases=len(binding["releases"]),
+                )
+            )
+        )
+        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
+    require(args.audio_context is None, "audio context applies only to audio mode")
     material_selection = (
         args.selected_world,
         args.selected_scene,

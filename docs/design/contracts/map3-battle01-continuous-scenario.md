@@ -554,9 +554,41 @@ shimmed DisplayText RTS cannot replace an unobserved accepting read. Scene backg
 do not supply resource IDs. The new A's successful-bind node IDs, texture/visibility and actual
 completion records supply their actual side, with pre-Present signal projections distinguished from
 later polls. Its continuous audio receipts identify actual starts/stops/finishes/fades and ongoing
-terminal voices; wait tokens are not playback IDs. Original resource selectors/provenance and each
-required dependent-consumer join remain separate Unknowns. Preserve them without queuing acquisition
-or adding untaken branches as prerequisites.
+terminal voices; wait tokens are not playback IDs. The selected A audio dependency binding follows
+below. Other original resource selectors/provenance and required dependent-consumer joins retain
+their separate Unknowns, without queuing acquisition or adding untaken branches as prerequisites.
+
+### Composed reached audio consumer binding
+
+The audio replacement/fade/stop/resume child uses independent pinned original rules, accepted actual
+mechanism observations and the complete selected default-keyboard A dependency inventory. It does
+not require a new original observation for every modern playback. Original command/timer/PCM material
+provenance remains the separate reached-resource claim; mailbox dispatch never proves playback.
+
+| Reached dependency | Required actual association |
+| --- | --- |
+| Started music/effect | Admitted cue/command/timer/PCM and format; real Playing start; uniquely associated natural finish, legitimate covered-slot/shared stop, or a still-playing admitted terminal loop. |
+| Battle Initialize/End fade | Logical phase producer, same session/token253, old music stop, ally/enemy scene music or battlefield restore, actual completed phase and matching logical release. HEAL uses its existing scene-delivery boundary; other actions use scene-step-completed. |
+| Finite JOIN/previous music | Source Sound generation and SoundWait helper, matching actual finite finish, accepted logical end and joined wait release, previous cue restart before plain input/Confirm and caller field return. |
+| Cosmetic tails | Source-derived slot classes and accepted whole-PCM replacement rules preserve independent type-2 effects across shared music/fade release. Legitimate later replacements remain allowed; stop never manufactures Finished or a product wait. |
+
+**Confirmed selected actual inventory:** the retained complete A channel contains1049 contiguous
+receipts,497 uniquely associated starts,496 actual finishes/stops and one ongoing battlefield loop.
+All56 scene fades join the independent phase producers and actual completion/release boundaries;
+the finite JOIN instance joins its generation/helper, finish, previous restart and dependent return.
+These are reproduced measurements, not required counts or legal-state restrictions. Missing selected
+channels/completions remain Unavailable; identity, ordering or illegal-stop contradictions are FAIL.
+Same-cue overlap without retained instance identity remains Unavailable rather than a FIFO guess.
+
+The [accepted controlled reveal witness](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+proves the Option A live-tail mechanism separately from A's omission of incremental speech. Its
+unchanged reveal/speech/input methods and current admitted PCM permit reuse. Historical C's natural
+reveal interval remains Unknown and is not backfilled; C is outside the current required A scope.
+Generic SoundFade was not reached in this source inventory and retains its authored service witness.
+Original JOIN completion/channel/F0/queue/interleaving and hardware timing remain Unknown. Other
+consumer children and full H4 keep their independent result. The
+[scoped audio command](../../../remake/docs/development-and-verification.md#scoped-audio-consumer-comparison)
+evaluates this child without rebuilding the full H4 report or running the route/matrix.
 
 ### Bounded plain JOIN consumer binding
 
@@ -579,9 +611,9 @@ script/caller continuation and F603 precede usable field input. Source operands 
 effects; actual observations supply occurrence and consumption. Indices, text IDs and measured
 seeds are evidence locators, never production restrictions.
 
-The comparator adds bounded JOIN playback/restart and caller subsets. Full audio
-replacement/fade/stop/resume, other operation/consumer/rule obligations and the other resource families
-remain Unavailable, keeping all five broad parents and full H4 incomplete. Unseen original helper
+The comparator adds bounded JOIN playback/restart and caller subsets. Complete selected A audio
+replacement/fade/stop/resume uses the composed binding above; other operation/consumer/rule obligations
+and resource families keep full H4 incomplete. Unseen original helper
 return order is Inferred; original music completion and channel/F0/queue/residual/interleaving remain
 Unknown. Modern finite music remains the accepted deviation.
 

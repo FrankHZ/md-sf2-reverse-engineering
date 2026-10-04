@@ -752,10 +752,23 @@ retain the selected inputs and reproduction routes; these observations do not ba
 before/after sound identity. Its sampled audio retains391 distinct receipts, including74 playback
 and confirmation67;47 early inputs have a same-token/revision sample with a playing voice. Such samples
 cannot prove that the same voice remained playing across reveal. A sparse later `Finished` is not
-sufficient. The existing audio-consumer obligation therefore retains this observation limit: a
+sufficient. That historical C claim therefore retains this observation limit: a
 bounded actual reveal while speech is playing would need the same startSequence/voice before and
 after, no reveal-induced stop/restart/new speech or67, and actual later completion or legitimate
 replacement. No new acceptance family or route/settings rerun follows from this limit.
+
+**Confirmed controlled reveal-tail mechanism:** the accepted
+[consumer boundary review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/600#issuecomment-5957595317)
+at commit `1c26b48640b1ef16401d23893e05a237a26ec9c5` independently read the real window-06 reveal:
+the same speech voice startSequence2/cue/slots remains Playing before and after input, with unchanged
+logical context/result range, no new dispatch receipt, and one later natural Finished at sequence3.
+This disclosed controlled program establishes the mechanism; it does not fill C's natural interval.
+Direct readback verifies the voice PCM against the current selected world. RevealText,
+SpeakRevealedCharacters and HandleAction are unchanged since that accepted witness. Later capture,
+resource and view observations do not alter those input/speech methods; SessionAudio's additions
+record immutable receipts/session identity and expose state without changing replacement or callback
+behavior. Reuse this evidence when those dependencies remain unchanged; a commit change alone does
+not require another native observation.
 
 The [continuous contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md)
 reports the accepted omission independently of state equivalence and actual lifecycle coverage.
@@ -931,7 +944,17 @@ WriteFlag(7,true), EndProgram. The existing host continues simulation ticks duri
 those observations remain explicit, and RNG is unchanged. This is authored service coverage;
 no naturally reached generic SoundFade instruction was established in the admitted source world.
 
-**Incomplete:** complete reached field/UI cue bindings remain open. The
+The [composed audio consumer binding](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
+now associates the complete selected A playback inventory with legitimate replacement/fade causes
+and the actual scene/JOIN releases. Source slot headers are read from the pinned original driver,
+using the maintained sound inventory parser. A cue with one outstanding start has a unique actual
+terminal association; current service tokens may change while its tail plays. No new playback ID is
+needed for that selected channel. Ambiguous simultaneous same-cue starts remain Unavailable.
+The terminal looping battlefield music needs no invented end. Finite effects retain real Finished
+callbacks or legitimate covered-slot replacements, including tails surviving shared music release.
+
+**Incomplete:** original hardware/per-channel timing, historical C reveal intervals and other H4
+consumer families remain outside this A binding. The
 [physical scene consumer](#physical-battle-scenes) implements a bounded battle-action music/SFX and
 input-release subset; the bounded HEAL consumer is described below. The modern half-second service
 is not source-timing evidence. Neither successful resource
