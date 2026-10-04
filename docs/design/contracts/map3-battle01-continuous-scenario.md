@@ -558,41 +558,50 @@ terminal voices; wait tokens are not playback IDs. The selected A audio dependen
 below. Other original resource selectors/provenance and required dependent-consumer joins retain
 their separate Unknowns, without queuing acquisition or adding untaken branches as prerequisites.
 
-### Reached turn-order binding boundary
+### Reached turn-order rule and result binding
 
-The `turn candidate score draws and tie/order result` child remains **Unavailable**. The accepted
+**Confirmed source rules:** the accepted
 [turn-order construction](battle-control-lifecycle.md#turn-order-construction) and its
-`battle01-turn-order-v1.json` / `turn-order-boundaries-v1.json` H3 fixtures own the expected rule:
-placed/living admission in source combatant order, low-seven-bit agility, ordered bounded draws,
-extra-turn construction, wrapped scores and stable descending signed-byte sorting. The fixed buffer's
-sentinels participate in sorting; comparing only the visible living prefix is insufficient at the
-signed-score boundary. A remake-generated queue must never supply the expected queue.
+`battle01-turn-order-v1.json` / `turn-order-boundaries-v1.json` H3 fixtures own placed/living
+admission, source candidate order, low-seven-bit agility, ordered bounded draws, extra-turn
+construction, byte wrapping and stable descending signed-byte sorting. The full 64-slot buffer,
+including sentinels and the source's 62 bubble passes, is required at the signed-score boundary.
+A remake-generated queue must never supply the expected queue.
 
-**Confirmed evidence limit:** retained required-keyboard A from compiled source
-`4d1d1b05f143ed872ceca6ff258cfca2b4087d90` records `round-started`, aggregate `round-rng`
-before/after images and projected `turnOrder`. Its battle actor projection retains identity, HP and
-position but omits live agility, extra-round action and processing order. Its round observations
-omit per-candidate ranges, draw results and unsorted scores. The selected first-battle-input sample
-and outcome action-state records therefore cannot establish matched candidate operands, full
-candidate coverage or actual draw-to-score consumption. Initial admitted definitions cannot replace
-the live generation operands; reconstructing draws from the accepted rule proves a prediction,
-not their actual consumption. This historical A predates the accepted text-copy/AI seed correction;
-a local comparison at its own operands would not prove execution of the corrected code.
+The actual generator now returns its ordered candidates (including skipped candidates), the real
+Roll ranges/before/after/results, the unsorted buffer and the sorted slots from that single execution.
+Application attaches those immutable completed-generation facts to the existing `round-rng` event
+as `TurnGeneration`, with session/round and full seed images. Activation/spawn admission, gameplay
+state, seed progression, event kind/order/sequence and queue consumption retain their existing
+mechanisms. The current admitted activation path consumes no seed before generation. No replay,
+stored generation history, per-frame trace channel or second state authority supplies these facts.
 
-The smallest resolving boundary is an actual generation-local observation, after activation/spawn
-and before subsequent action mutations: session/round/revision, complete candidate roster with
-unique source order and placed/HP/agility/extra-turn operands (including skipped candidates), entry
-seed, each candidate's ordered range/before/after/result and unsorted score, exit seed and complete
-sorted buffer. Join these by session, round and candidate rather than a surviving event count.
-Missing operands stay Unavailable; independent contradictions remain FAIL even beside a missing
-occurrence. Duplicates, foreign identities and candidate omissions cannot satisfy coverage.
+The [scoped comparison](../../../remake/docs/development-and-verification.md#scoped-turn-order-rule-comparison)
+derives eligibility, ordered draws, scores, signed stable ordering and the exit seed from the
+independently read live state roster and accepted original rules. It binds actual generation
+session/round/revision/sequence, candidate coverage, each draw, both full buffers and the actual
+state queue. Omitted candidate/draw records remain Unavailable when surviving identities retain
+their source order; duplicates, foreign joins, changed order or arithmetic contradictions are FAIL.
+Independent contradictions dominate missing operands or another missing occurrence. Equal actual
+and state queues alone cannot PASS the source-rule comparison.
 
-Producing that observation requires separately assigned production/adapter ownership and a bounded
-legal local start; neither is supplied by this comparator-only slice. Availability of such a start
-is **Unknown**. No new route, emulator/native launch, full H4 recomputation or settings matrix is
-implied. The [bounded inventory procedure](../../../remake/docs/development-and-verification.md#turn-order-evidence-inventory)
-records the selection and stopping boundary. This finding closes no child or milestone and leaves
-the accepted audio binding independent.
+**Confirmed controlled Application proof:** a lawful authored `practice-yard` Start with the
+medic's explicit extra-round action and normal Confirm/STAY commands produces three selected
+round generations. Their actual candidate/draw/score/order/seed/state bindings PASS; independent
+omission/contradiction controls and the original signed/tie boundary fixture readback support the
+comparison. Engine behavior checks retain dead/unplaced exclusion, zero-range draws, extra turns,
+signed sentinels, stable ties and seed carry. This is a local rule/result proof at controlled inputs,
+not original natural history, required A consumption or full H4 acceptance.
+
+**Confirmed retained-A evidence limit:** A compiled at
+`4d1d1b05f143ed872ceca6ff258cfca2b4087d90` has aggregate round seed edges and queues, but omits
+live agility, extra-round action, processing order and candidate draw/unsorted-score facts. Initial
+definitions and reconstructed expected draws cannot manufacture the missing actual operands. That
+capture also predates the accepted text-copy/AI seed correction. The existing required
+`turn candidate score draws and tie/order result` child remains **Unavailable**; the scoped
+controlled proof does not backfill it. Natural trajectory equivalence and source boundaries beyond
+the accepted seams remain **Unknown**. No new route, native/emulator launch, full H4 recomputation
+or matrix is implied, and the accepted audio binding remains independent.
 
 ### Composed reached audio consumer binding
 

@@ -104,10 +104,12 @@ internal static class BattleTurnFlow
     private static void Require(bool condition, string code, string field, bool unsupported = false)
     { if (!condition) throw new BattleRuleException(code, field, unsupported); }
 
-    internal static EngineBattleState GenerateRound(EngineBattleState battle)
+    internal static EngineBattleState GenerateRound(EngineBattleState battle) => GenerateRound(battle, out _);
+
+    internal static EngineBattleState GenerateRound(EngineBattleState battle, out TurnOrderResult<ActorRef> generated)
     {
         if (battle.Definition.Initialization is not null) battle = BattleActivationRules.BeforeRound(battle);
-        var generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
+        generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
             new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Agility, a.Definition.ExtraRoundAction)),
             (ushort)(battle.MainSeed >> 16));
         return battle.With(mainSeed: ((uint)generated.NextSeed << 16) | (battle.MainSeed & 0xFFFF),

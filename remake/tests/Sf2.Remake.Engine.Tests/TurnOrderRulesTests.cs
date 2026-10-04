@@ -25,6 +25,13 @@ public sealed class TurnOrderRulesTests
         Assert.Equal(new TurnOrderEntry<ActorRef>(Id(1), 135), result.Slots[63]);
         Assert.Equal(Id(0), candidates[0].Actor);
         Assert.Equal(255, candidates[0].ProcessingOrder);
+        Assert.Equal(candidates, result.Candidates);
+        Assert.Equal(new[] { Id(0), Id(0), Id(1), Id(129), Id(130), Id(131), Id(132), Id(133) },
+            result.Unsorted.Take(8).Select(slot => slot.Actor!.Value));
+        Assert.Equal(new byte[] { 255, 0, 135, 5, 6, 4, 5, 5 }, result.Unsorted.Take(8).Select(slot => slot.AlteredAgility));
+        Assert.DoesNotContain(result.Draws, draw => draw.Actor == Id(2) || draw.Actor == Id(128));
+        Assert.Equal(5, result.Draws.Count(draw => draw.Actor == Id(0)));
+        Assert.Equal(new ushort[] { 15, 15, 3 }, result.Draws.Where(draw => draw.Actor == Id(1)).Select(draw => draw.Range));
     }
 
     [Theory]
@@ -55,6 +62,8 @@ public sealed class TurnOrderRulesTests
             [new(5, 5, true, 0, 0, true), living[1], new(129, 129, false, 9, 127, true), living[0]], 0x1234);
         Assert.Equal(result.NextSeed, withExcluded.NextSeed);
         Assert.Equal(result.Slots, withExcluded.Slots);
+        Assert.Equal(result.Draws, withExcluded.Draws);
+        Assert.Equal(new byte[] { 5, 9, 129, 140 }, withExcluded.Candidates.Select(candidate => candidate.Actor));
     }
 
     [Fact]

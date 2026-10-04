@@ -36,7 +36,7 @@ internal static class BattleAdvancer
                 if (BattleTurnFlow.AtRoundEnd(battle))
                 {
                     var previous = battle;
-                    battle = BattleTurnFlow.GenerateRound(battle);
+                    battle = BattleTurnFlow.GenerateRound(battle, out var generated);
                     revision++;
                     if (battle.Regions is { } regions)
                     {
@@ -45,7 +45,14 @@ internal static class BattleAdvancer
                         observations.Add(new(++sequence, revision, "spawn-modes-admitted"));
                     }
                     observations.Add(new(++sequence, revision, "round-started", Before: previous.Round, After: battle.Round));
-                    observations.Add(new(++sequence, revision, "round-rng", Before: previous.MainSeed, After: battle.MainSeed));
+                    observations.Add(new(++sequence, revision, "round-rng", Before: previous.MainSeed, After: battle.MainSeed, TurnGeneration: new(
+                        current.SessionId, battle.Round, previous.MainSeed, battle.MainSeed,
+                        Array.AsReadOnly(generated.Candidates.Select(c => new BattleTurnCandidate(c.Actor,
+                            c.ProcessingOrder, c.Placed, c.Hp, c.Agility, c.ExtraRoundAction)).ToArray()),
+                        Array.AsReadOnly(generated.Draws.Select(d => new BattleTurnDraw(d.Actor, d.Turn,
+                            d.Index, d.Range, d.Draw.Before, d.Draw.After, d.Draw.Value)).ToArray()),
+                        Array.AsReadOnly(generated.Unsorted.Select(s => new BattleTurnSlot(s.Actor, s.AlteredAgility)).ToArray()),
+                        Array.AsReadOnly(generated.Slots.Select(s => new BattleTurnSlot(s.Actor, s.AlteredAgility)).ToArray()))));
                     continue;
                 }
                 var actor = BattleTurnFlow.QueuedActor(battle);

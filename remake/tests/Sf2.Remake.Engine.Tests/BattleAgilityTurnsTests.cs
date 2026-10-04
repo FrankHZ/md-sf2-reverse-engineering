@@ -9,6 +9,55 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleAgilityTurnsTests
 {
     [Fact]
+    public void DeadExtraTurnDeploymentRemainsInRosterWithoutConsumingARollOrQueueSlot()
+    {
+        var document = Document();
+        document["actors"]![0]!["extraRoundAction"] = true;
+        document["actors"]![1]!["extraRoundAction"] = true;
+        document["actors"]![1]!["agility"] = 127;
+        document["start"]!["actors"]![1]!["hp"] = 0;
+        var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(document)));
+        var generation = Assert.Single(started.Result.Observations, o => o.TurnGeneration is not null).TurnGeneration!;
+        var skipped = Assert.Single(generation.Candidates, c => c.Actor == new ActorRef("guard-a"));
+        Assert.Equal((false, (ushort)0, (byte)127, true),
+            (skipped.Placed, skipped.Hp, skipped.Agility, skipped.ExtraRoundAction));
+        Assert.DoesNotContain(generation.Draws, d => d.Actor == skipped.Actor);
+        Assert.DoesNotContain(generation.Sorted, s => s.Actor == skipped.Actor);
+        Assert.Equal(0x621C1234u, started.Session.Current.Battle.MainSeed); // Eight accepted word updates.
+        Assert.Equal(3, generation.Sorted.Count(s => s.Actor is not null));
+    }
+
+    [Fact]
+    public void CompletedRoundObservationUsesLiveCandidatesAndTheQueueThatControlsTheSession()
+    {
+        var document = Document();
+        document["actors"]![0]!["extraRoundAction"] = true;
+        var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(document)));
+        var session = started.Session;
+        var generation = Assert.Single(started.Result.Observations, o => o.TurnGeneration is not null).TurnGeneration!;
+        Assert.Equal((session.Current.SessionId, 1, 0x12341234u, 0xFF4D1234u),
+            (generation.SessionId, generation.Round, generation.Before, generation.After));
+        Assert.Equal(session.Current.Battle.Actors.Select(a => (a.Actor, a.ProcessingOrder, a.Hp, a.Agility)),
+            generation.Candidates.Select(c => (c.Actor, c.ProcessingOrder, c.Hp, c.Agility)));
+        Assert.Equal(session.Current.Battle.TurnOrder.Select(s => (s.Actor, s.AlteredAgility)),
+            generation.Sorted.Select(s => (s.Actor, s.Score)));
+        Assert.Equal(11, generation.Draws.Count);
+        Assert.Equal((ushort)0x1234, generation.Draws[0].Before);
+        Assert.Equal((ushort)0xFF4D, generation.Draws[^1].After);
+        Assert.Equal(5, generation.Draws.Count(d => d.Actor == new ActorRef("medic-a")));
+        Assert.Equal(64, generation.Unsorted.Count);
+        var held = generation.Sorted.ToArray();
+        var next = Stay(session);
+        Assert.DoesNotContain(next.Observations, o => o.TurnGeneration is not null);
+        Stay(session);
+        next = Stay(session);
+        var second = Assert.Single(next.Observations, o => o.TurnGeneration is not null).TurnGeneration!;
+        Assert.Equal((2, generation.After, 0x887A1234u), (second.Round, second.Before, second.After));
+        Assert.Equal(held, generation.Sorted);
+        Assert.Equal(second.After, session.Current.Battle.MainSeed);
+    }
+
+    [Fact]
     public void EqualAgilityDefinitionsConsumeExtraEntryAndCarrySeedsAcrossRounds()
     {
         var ordinary = Start();

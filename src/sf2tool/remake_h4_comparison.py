@@ -3,8 +3,8 @@
 The default legacy profile diagnoses first control and the first STAY/next actor.
 The modern profile evaluates the continuous winning route and named settings matrix;
 missing required original or host bindings keep full H4 acceptance incomplete.
-Use the accepted read-only reference projector for those profiles. The audio mode
-evaluates selected consumer dependencies without loading the whole H4 report.
+Use the accepted read-only reference projector for those profiles. The audio and
+turn-order modes evaluate selected dependencies without loading the whole H4 report.
 All outputs remain private.
 """
 
@@ -4789,6 +4789,379 @@ def _audio_context(document, actual):
             and (e["Program"]["Program"], e["Program"]["Instruction"]) in locations
         ],
     )
+
+
+def _source_turn_order(candidates, before):
+    """Accepted turnorderfunctions.asm model, using the independent H3 word RNG.
+
+    Source range is at most15 here, so its raw upper product also equals the
+    semantic doubled-range/halved result. Reproduce the full buffer and62 passes,
+    including signed sentinels, rather than sorting a filtered living prefix.
+    """
+    word = before >> 16
+    draws, entries = [], []
+    ordered = sorted(candidates, key=lambda c: c["ProcessingOrder"])
+    for candidate in ordered:
+        if not candidate["Placed"] or candidate["Hp"] == 0:
+            continue
+        for turn in range(2 if candidate["ExtraRoundAction"] else 1):
+            basis = candidate["Agility"] if turn == 0 else candidate["Agility"] * 5 // 6
+            values = []
+            for index, range_ in enumerate([basis >> 3, basis >> 3] + ([3] if turn == 0 else [])):
+                old = word
+                word, value = _rng_step(word, range_)
+                values.append(value)
+                draws.append(
+                    dict(
+                        Actor=candidate["Actor"],
+                        Turn=turn,
+                        Index=index,
+                        Range=range_,
+                        Before=old,
+                        After=word,
+                        Value=value,
+                    )
+                )
+            score = basis + values[0] - values[1] + (values[2] - 1 if turn == 0 else 0)
+            entries.append(dict(Actor=candidate["Actor"], Score=score & 255))
+    unsorted = entries + [dict(Actor=None, Score=255) for _ in range(64 - len(entries))]
+    slots = list(unsorted)
+    for _ in range(62):
+        for index in range(63):
+            left, right = slots[index]["Score"], slots[index + 1]["Score"]
+            if (right if right < 128 else right - 256) > (left if left < 128 else left - 256):
+                slots[index], slots[index + 1] = slots[index + 1], slots[index]
+    return dict(
+        Candidates=ordered,
+        Draws=draws,
+        Unsorted=unsorted,
+        Sorted=slots,
+        After=(word << 16) | (before & 65535),
+    )
+
+
+def turn_order_binding(actual, source_root):
+    """Bind a selected completed Application generation to source-derived rules.
+
+    The independently read state roster defines candidate coverage. Generation
+    payloads are actual one-execution facts, not expected values. This controlled
+    scope cannot close the historical A child that lacks those operands.
+    """
+    result = dict(
+        value=None,
+        checks=[],
+        rounds=[],
+        evidenceScope=actual.get("evidenceScope"),
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            owner="docs/design/contracts/battle-control-lifecycle.md",
+            symbol="GenerateBattleTurnOrder/AddCombatantAndRandomizedAgiToTurnOrder",
+            fixtures=[
+                "tests/fixtures/h3/battle01-turn-order-v1.json",
+                "tests/fixtures/h3/turn-order-boundaries-v1.json",
+            ],
+        ),
+    )
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(expected, observed):
+        if observed is None and expected is not None:
+            return None
+        if isinstance(expected, dict):
+            if not isinstance(observed, dict):
+                return False
+            return merge([match(v, observed.get(k)) for k, v in expected.items()])
+        if isinstance(expected, list):
+            if not isinstance(observed, list):
+                return False
+            return merge(
+                [
+                    False
+                    if len(observed) > len(expected)
+                    else None
+                    if len(observed) < len(expected)
+                    else True
+                ]
+                + [match(e, a) for e, a in zip(expected, observed, strict=False)]
+            )
+        return type(expected) is type(observed) and expected == observed
+
+    def check(name, value, **identity):
+        result["checks"].append(dict(name=name, value=value, **identity))
+
+    def ordered_records_match(expected, observed, keys):
+        if observed is None:
+            return None
+        if not isinstance(observed, list):
+            return False
+
+        def key(row):
+            return json.dumps([row[k] for k in keys], sort_keys=True)
+
+        positions = {key(row): index for index, row in enumerate(expected)}
+        indices, values = [], []
+        for row in observed:
+            if any(row.get(k) is None for k in keys):
+                values.append(None)
+                continue
+            index = positions.get(key(row))
+            if index is None:
+                values.append(False)
+                continue
+            indices.append(index)
+            values.append(match(expected[index], row))
+        values.extend(
+            [
+                indices == sorted(indices) and len(indices) == len(set(indices)),
+                True if len(indices) == len(expected) else None,
+            ]
+        )
+        return merge(values)
+
+    def finish():
+        result["value"] = merge([c["value"] for c in result["checks"]])
+        return result
+
+    selected = actual.get("rounds")
+    if not selected:
+        check(
+            "completed generation/state operands absent; historical aggregate is insufficient", None
+        )
+        return finish()
+    check(
+        "controlled Application scope", match("controlled-application", actual.get("evidenceScope"))
+    )
+    try:
+        root = Path(source_root) if source_root is not None else None
+        if root is None:
+            raise ValueError("no pinned source")
+        root = root.resolve() if root.is_absolute() else repo_path(root)
+        pin = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        clean = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+        ).returncode
+        check("pinned clean original rules", pin == UPSTREAM and clean == 0)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        check("pinned original rules unavailable", None)
+    rounds = actual.get("selectedRounds")
+    check(
+        "independent selected round inventory",
+        None
+        if rounds is None
+        else isinstance(rounds, list)
+        and bool(rounds)
+        and all(type(r) is int and r > 0 for r in rounds)
+        and len(set(rounds)) == len(rounds),
+    )
+    session = actual.get("sessionId")
+    check(
+        "selected session identity available",
+        True if isinstance(session, str) and session else None,
+    )
+    seen, sequences = [], []
+    for ordinal, row in enumerate(selected):
+        state, event = row.get("state") or {}, row.get("event") or {}
+        generation = event.get("TurnGeneration") or {}
+        identity = dict(ordinal=ordinal, round=state.get("round"))
+        seen.append(state.get("round"))
+        if event.get("Sequence") is not None:
+            sequences.append(event["Sequence"])
+        check(
+            "generation joins state session/round and aggregate seed edge",
+            merge(
+                [
+                    match(session, state.get("sessionId")) if session else None,
+                    match(session, generation.get("SessionId")) if session else None,
+                    match(state.get("round"), generation.get("Round"))
+                    if state.get("round") is not None
+                    else None,
+                    match("round-rng", event.get("Kind")),
+                    match(event.get("Before"), generation.get("Before"))
+                    if event.get("Before") is not None
+                    else None,
+                    match(event.get("After"), generation.get("After"))
+                    if event.get("After") is not None
+                    else None,
+                    match(state.get("mainSeed"), generation.get("After"))
+                    if state.get("mainSeed") is not None
+                    else None,
+                ]
+            ),
+            **identity,
+        )
+        for event_key, state_key in (("Revision", "revision"), ("Sequence", "observationSequence")):
+            old, new = event.get(event_key), state.get(state_key)
+            check(
+                "generation precedes its state " + event_key,
+                None
+                if old is None or new is None
+                else type(old) is int and type(new) is int and 0 <= old <= new,
+                **identity,
+            )
+        candidates = state.get("candidates")
+        fields = ("Actor", "ProcessingOrder", "Placed", "Hp", "Agility", "ExtraRoundAction")
+        valid = []
+        actors, orders = [], []
+        for c in candidates or []:
+            missing = any(k not in c or c[k] is None for k in fields)
+            known = []
+            for k, limit in (("ProcessingOrder", None), ("Hp", 65535), ("Agility", 127)):
+                if c.get(k) is not None:
+                    known.append(
+                        type(c[k]) is int and c[k] >= 0 and (limit is None or c[k] <= limit)
+                    )
+            for k in ("Placed", "ExtraRoundAction"):
+                if c.get(k) is not None:
+                    known.append(type(c[k]) is bool)
+            actor = c.get("Actor")
+            if actor is not None:
+                known.append(
+                    isinstance(actor, dict)
+                    and isinstance(actor.get("Value"), str)
+                    and bool(actor["Value"])
+                )
+                actors.append(json.dumps(actor, sort_keys=True))
+            if c.get("ProcessingOrder") is not None:
+                orders.append(c["ProcessingOrder"])
+            valid.append(merge(known + ([None] if missing else [])))
+        check("complete live candidate operands", merge(valid) if candidates else None, **identity)
+        check(
+            "unique candidate identities/source orders",
+            len(actors) == len(set(actors)) and len(orders) == len(set(orders)),
+            **identity,
+        )
+        actual_candidates = generation.get("Candidates") or []
+        actual_actors = [json.dumps(c.get("Actor"), sort_keys=True) for c in actual_candidates]
+        actual_orders = [
+            c.get("ProcessingOrder")
+            for c in actual_candidates
+            if c.get("ProcessingOrder") is not None
+        ]
+        check(
+            "actual candidate duplicates rejected",
+            len(actual_actors) == len(set(actual_actors))
+            and len(actual_orders) == len(set(actual_orders)),
+            **identity,
+        )
+        if state.get("turnOrder") is not None:
+            check(
+                "generation buffer agrees with independent state queue",
+                match(state["turnOrder"], generation.get("Sorted")),
+                **identity,
+            )
+        by_actor = {json.dumps(c.get("Actor"), sort_keys=True): c for c in candidates or []}
+        draw_keys = []
+        for draw in generation.get("Draws") or []:
+            actor_key = json.dumps(draw.get("Actor"), sort_keys=True)
+            draw_keys.append((actor_key, draw.get("Turn"), draw.get("Index")))
+            candidate = by_actor.get(actor_key)
+            check(
+                "draw candidate belongs to live roster",
+                None if draw.get("Actor") is None or not candidates else candidate is not None,
+                **identity,
+            )
+            turn, index = draw.get("Turn"), draw.get("Index")
+            check(
+                "draw turn/index operands",
+                None
+                if turn is None or index is None
+                else type(turn) is int
+                and turn in (0, 1)
+                and type(index) is int
+                and 0 <= index <= (2 if turn == 0 else 1),
+                **identity,
+            )
+            if (
+                candidate
+                and type(candidate.get("Agility")) is int
+                and turn in (0, 1)
+                and type(index) is int
+            ):
+                basis = candidate["Agility"] if turn == 0 else candidate["Agility"] * 5 // 6
+                check(
+                    "draw source agility range",
+                    match(3 if turn == 0 and index == 2 else basis >> 3, draw.get("Range")),
+                    **identity,
+                )
+                if turn == 1 and candidate.get("ExtraRoundAction") is not None:
+                    check(
+                        "secondary draw requires extra action",
+                        candidate["ExtraRoundAction"] is True,
+                        **identity,
+                    )
+            operands = [draw.get(k) for k in ("Before", "After", "Range", "Value")]
+            if all(v is not None for v in operands):
+                old, new, range_, value = operands
+                valid_draw = all(type(v) is int and 0 <= v <= 65535 for v in operands)
+                check(
+                    "draw word/range/result arithmetic",
+                    valid_draw and _rng_step(old, range_) == (new, value),
+                    **identity,
+                )
+            else:
+                check("draw word/range/result arithmetic", None, **identity)
+        check(
+            "duplicate candidate draw identities rejected",
+            len(draw_keys) == len(set(draw_keys)),
+            **identity,
+        )
+        if not candidates or merge(valid) is not True:
+            check("source score/order expectation requires matched live operands", None, **identity)
+            continue
+        before = generation.get("Before")
+        check(
+            "entry seed image available",
+            None if before is None else type(before) is int and 0 <= before <= 0xFFFFFFFF,
+            **identity,
+        )
+        if type(before) is not int or not 0 <= before <= 0xFFFFFFFF:
+            continue
+        capacity = sum(
+            2 if c["ExtraRoundAction"] else 1 for c in candidates if c["Placed"] and c["Hp"] > 0
+        )
+        check("admitted candidate buffer capacity", capacity <= 64, **identity)
+        if capacity > 64:
+            continue
+        expected = _source_turn_order(candidates, before)
+        for key in ("Candidates", "Draws", "Unsorted", "Sorted", "After"):
+            value = (
+                ordered_records_match(
+                    expected[key],
+                    generation.get(key),
+                    ("Actor",) if key == "Candidates" else ("Actor", "Turn", "Index"),
+                )
+                if key in ("Candidates", "Draws")
+                else match(expected[key], generation.get(key))
+            )
+            check("source-derived " + key, value, **identity)
+        check(
+            "actual sorted buffer controls state queue",
+            match(expected["Sorted"], state.get("turnOrder")),
+            **identity,
+        )
+        result["rounds"].append(dict(**identity, expected=expected))
+    present = [r for r in seen if r is not None]
+    coverage = None
+    if isinstance(rounds, list) and all(type(r) is int for r in rounds + present):
+        coverage = (
+            False if set(present) - set(rounds) else None if set(rounds) - set(present) else True
+        )
+    check(
+        "duplicate/foreign/omitted round joins",
+        merge(
+            [
+                len(present) == len(set(present)),
+                len(sequences) == len(set(sequences)),
+                coverage,
+                None if None in seen else True,
+            ]
+        ),
+    )
+    return finish()
 
 
 def audio_consumer_binding(actual, context, source_root):
@@ -9838,9 +10211,9 @@ def compare_modern(
     for name, binding, actual_location, side in (
         (
             "turn candidate score draws and tie/order result",
-            "turns.accounting.turnOrder + source agility/extra-round score rule at matched seed",
-            "round-rng/round-started + battle turnOrder",
-            "actual per-candidate range/draw operands",
+            "source turn-order eligibility/score/stable signed ordering at matched live operands",
+            "round-rng.TurnGeneration + independent live candidate roster/queue",
+            "actual generation/state operands; controlled proof cannot backfill historical A",
         ),
         (
             "physical range/dodge/critical/spread/double/counter effects",
@@ -11034,7 +11407,9 @@ def compare_resources(
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("plan", "compare", "matrix", "resources", "audio"))
+    parser.add_argument(
+        "mode", choices=("plan", "compare", "matrix", "resources", "audio", "turn-order")
+    )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
     parser.add_argument("--output", required=True, type=Path)
@@ -11094,6 +11469,44 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    if args.mode == "turn-order":
+        require(
+            args.actual is not None, "turn-order requires selected actual generation/state records"
+        )
+        actual_path = args.actual.resolve() if args.actual.is_absolute() else repo_path(args.actual)
+        require(actual_path.stat().st_size <= 1024 * 1024, "turn-order selection exceeds 1 MiB")
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "turn-order output must be fresh beneath this worktree's local/",
+        )
+        actual = read(actual_path)
+        require(
+            len(actual.get("rounds") or []) <= 3,
+            "turn-order scope exceeds three selected generations",
+        )
+        binding = turn_order_binding(actual, args.text_source_root)
+        verdict_value = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-turn-order-rule",
+            comparisonScope="controlled-application",
+            result=verdict_value,
+            milestonePass=False,
+            actual=actual_path.as_posix(),
+            binding=binding,
+        )
+        require(
+            len(json.dumps(report).encode("utf-8")) <= 1024 * 1024,
+            "turn-order report exceeds 1 MiB",
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(result=verdict_value, milestonePass=False, rounds=len(binding["rounds"]))
+            )
+        )
+        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
     if args.mode == "audio":
         require(
             args.actual is not None and args.audio_context is not None,
