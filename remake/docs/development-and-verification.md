@@ -3802,6 +3802,51 @@ planner/actual CI. This offline comparator slice needs no SDK/native/capture, ne
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
 actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
 
+### Scoped audio consumer comparison
+
+Use the complete retained default-keyboard A audio channel and only its necessary scene/music/input
+dependencies. `audio` evaluates the existing replacement/fade/stop/resume child and always reports
+`milestonePass=false`; it does not load the reference, outcomes, resources or settings matrix. The
+[contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
+owns the composed proof and remaining Unknowns. No route, emulator, native host or SDK build is needed.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison audio `
+  --actual $selectedAudioDependencies --audio-context $selectedAudioContext `
+  --text-source-root $pinnedSource --output local/audio-consumers/fresh-report.json
+```
+
+`$selectedAudioDependencies` retains h4Variant, complete audioReceipts/gaps/sequenceSeen/terminal,
+scene Initialize/End start-to-completed transitions, music/scene result observations with session
+context, semantic Confirm/Wait input records and music-plain-input/join-field-return samples.
+`$selectedAudioContext` is a selection from that same run's admitted world: original provenance,
+sessionId from its reached producer results, audio metadata without pcm16,
+audio presentation operands as id/instruction/operation/source, and
+their reached program-instruction events. Preserve source path/size/mtime and the selection recipe
+locally. The normal modern comparator derives the identical context from its explicit selected world;
+other twelve children are unaffected. An absent channel or completion stays Unavailable.
+
+The current selected inputs total about2.6MiB plus a30KiB context; the command enforces a10MiB input
+ceiling and a fresh output under this worktree's local/. The bounded readback is under two seconds,
+with an estimated128MiB memory ceiling and under1MiB report. Receipt/phase searches are quadratic in
+selected event count; these limits authorize the selected1049-receipt inventory, not a scaled run.
+Existing source-driver slot parsing is reused; no new registry, PCM copy or capture database is made.
+
+Direct counterexamples exercise receipt gaps, wrong session/PCM/timer/helper/generation, missing
+finite finish or actual phase completion, premature release, illegal stopped-slot replacement,
+co-loss of a fade and its actual phase while the logical producer survives, and a non-playing terminal
+loop. Actual completed phase/action identity must agree with its logical producer. Helper progress
+must retain that music cue, including armed/eligible events; foreign work cannot fill its clock.
+Plain Confirm before/after session, revision, token, wait, tick and RNG must match the retained
+poll/accepted samples. Contradictory records are checked rather than filtered away; missing identity
+fields remain Unavailable. Missing selections and nonrequired C remain Unavailable. The accepted window-06 controlled tail
+is read directly and its reveal/speech/input methods compared with its accepted Git object; historical
+C is not relabeled. Use affected lint/format, document checks, committed planner and actual CI.
+Do not run a full H4 comparison, route, matrix, normal/full aggregate or verification-helper tests for
+this scoped command. Preserve the earlier Herb overlap FAIL, missing81/C6 failure and original JOIN
+completion/channel/F0/queue/interleaving Unknowns.
+
 ### Offline plain JOIN consumer comparison
 
 Add `--original-join-evidence-root $selectedWitness` to the complete modern material comparison
