@@ -4396,6 +4396,11 @@ they do not define gameplay legality. The source tables define expected regions 
 Context can also carry the same compact `mapHistory`/`mapHistoryReceipt` when the ordinary actual
 capture supplies the session in a resource or modern comparison. New controlled sessions must remain
 distinct from the historical one and internally consistent; a passing report flag is not evidence.
+Join their layouts to the start and ordinary-input ready states, and bound transfer revision/sequence
+by the initiating input, warp start and resulting region state. Actor visibility and size are checked
+against viewport intersection and scaled 24-pixel bounds; pass allocation follows renderer actor and
+high-plane restoration order, independently of supplied mask passes. Older non-overlapping actor
+records can leave priority alternatives unresolved without inventing a mask observation.
 
 Supplying `--map-context` to `resources` or `compare --profile modern-continuous` calls the same
 predicate. It changes only the Map3/Map19 mutable-layout prerequisite; other resource checks and
@@ -4406,6 +4411,9 @@ Unavailable. Do not rerun a large historical capture merely to demonstrate CLI w
 Verification is direct: source decoding, complete applicability accounting, actual word/saved-state
 and draw-multiset joins, plus positive/missing/extra/wrong/session/coverage controls. Exercise an
 available contradiction alongside an earlier missing region and within a partially missing region.
+Include mutually changed actor/mask passes, hidden onscreen actors with removed masks, foreign but
+internally consistent snapshot sessions, out-of-order/out-of-range transfers, and missing actor
+fields alongside independently wrong draw geometry. Missing fields alone remain Unavailable.
 These are comparison controls, not new engine unit tests. Run affected Ruff, contract/private-boundary
 checks, normal public verification and the committed dependency planner. Preserve completed failing
 controls and native receipts; corrections rerun only the affected comparison/control, not successful

@@ -6247,7 +6247,7 @@ def _map_source_regions(root, map_id):
     return dict(layout=layout, blocks=[words[i : i + 9] for i in range(0, len(words), 9)], **tables)
 
 
-def _map_draw_cells(sample, expected_words, source, root):
+def _map_draw_cells(sample, expected_words, source, root, *, actor_population_complete=True):
     """Independent cell inventory, original sprite ink and actual clipped draw multiset.
 
     Match the existing float32 viewport boundary, including positive subpixel
@@ -6284,6 +6284,57 @@ def _map_draw_cells(sample, expected_words, source, root):
     screen, scale = rect(projection), f(projection["scale"])
     expected, missing_actor, ink_cache = [], False, {}
     entries = None
+
+    # ExplorationPresentation allocates one pass per actor, then restores each
+    # high plane only for an onscreen low-priority actor. Visibility and bounds
+    # come from geometry, never the reported visible flag or mask pass itself.
+    actor_ok, actor_rows, unknown_subjects = True, [], set()
+    passes = {4}
+    foreground = any(layer["name"].startswith("foreground") for layer in projection["layers"])
+    previous_order = None
+    for actor in projection["actors"]:
+        size = mul(24, scale)
+        bounds = (f(actor["x"]), f(actor["y"]), size, size) if {"x", "y"} <= actor.keys() else None
+        visible = intersect(screen, bounds) is not None if bounds is not None else None
+        if bounds is None:
+            missing_actor = True
+            if actor.get("entity") is not None:
+                unknown_subjects.add(actor["entity"])
+        for key, value in (("width", size), ("height", size), ("visible", visible)):
+            if key not in actor:
+                missing_actor = True
+            elif value is not None:
+                actor_ok &= (
+                    actor[key] is value if key == "visible" else abs(actor[key] - value) < 0.002
+                )
+        high = None
+        if "layer" in actor:
+            layer = int(actor["layer"])
+            high = (layer if layer < 128 else layer - 256) > 0
+            if "highPriority" in actor:
+                actor_ok &= actor["highPriority"] is high
+        if {"spritePriority", "y"} <= actor.keys():
+            order = (actor["spritePriority"], actor["y"])
+            actor_ok &= previous_order is None or previous_order <= order
+            previous_order = order
+        pass_ = next(iter(passes)) if len(passes) == 1 else None
+        if actor_population_complete:
+            if "pass" not in actor:
+                missing_actor = True
+            else:
+                actor_ok &= actor["pass"] in passes
+                # Older captures omit priority for actors outside the witnessed
+                # region. Retain only renderer-legal allocations at that seam.
+                if actor["pass"] in passes:
+                    pass_ = int(actor["pass"])
+        else:
+            missing_actor = True
+            pass_ = None
+        actor_rows.append((actor, bounds, visible, high, pass_))
+        increments = {1} if visible is False or high is True else {2 + int(foreground)}
+        if visible is None or visible and high is None:
+            increments.add(1)
+        passes = {p + n for p in ({pass_} if pass_ is not None else passes) for n in increments}
 
     def actor_ink(actor):
         nonlocal entries
@@ -6349,20 +6400,25 @@ def _map_draw_cells(sample, expected_words, source, root):
                 continue
             masks = [(None, int(layer["pass"]), [screen])]
             if high:
-                for actor in projection["actors"]:
-                    if not actor["visible"] or not intersect(block_rect, rect(actor)):
+                for actor, bounds, visible, actor_high, actor_pass in actor_rows:
+                    if bounds is None or not visible or not intersect(block_rect, bounds):
                         continue
-                    if actor.get("highPriority") is None:
+                    if actor_high is None or actor_pass is None:
                         missing_actor = True
+                        unknown_subjects.add(actor["entity"])
                         continue
-                    if actor["highPriority"] != (actor["layer"] > 0):
-                        raise ValueError("actor priority disagrees with input-ready layer")
-                    if not actor["highPriority"]:
+                    if not actor_high:
+                        try:
+                            ink = actor_ink(actor)
+                        except KeyError:
+                            missing_actor = True
+                            unknown_subjects.add(actor["entity"])
+                            continue
                         masks.append(
                             (
                                 actor["entity"],
-                                int(actor["pass"]) + (2 if overlay else 1),
-                                actor_ink(actor),
+                                actor_pass + (2 if overlay else 1),
+                                ink,
                             )
                         )
             for tile in range(1 if high is None else 9):
@@ -6483,10 +6539,10 @@ def _map_draw_cells(sample, expected_words, source, root):
             missing += 1
         else:
             candidates.pop(found)
-    extra = sum(map(len, groups.values()))
+    extra = sum(len(uses) for key, uses in groups.items() if key[8] not in unknown_subjects)
     return dict(
         value=False
-        if extra or not selector_ok
+        if extra or not selector_ok or not actor_ok
         else None
         if missing or missing_actor or missing_use
         else True,
@@ -6497,6 +6553,7 @@ def _map_draw_cells(sample, expected_words, source, root):
         missingActor=missing_actor,
         missingUse=missing_use,
         selectors=selector_ok,
+        actorAdmission=actor_ok,
     )
 
 
@@ -6866,8 +6923,74 @@ def map_consumer_binding(actual, context, source_root):
                 )
                 initial_state = starts[0].get("state", {})
                 check("controlled initial map", initial_state.get("map") == sources[role], role)
+                check(
+                    "controlled start/end enclose samples",
+                    samples[0] is starts[0] and samples[-1] is ends[0],
+                    role,
+                )
+
+                def same_state(name, left, right, label):
+                    for field in (
+                        "sessionId",
+                        "map",
+                        "revision",
+                        "observationSequence",
+                        "simulationTick",
+                        "flags",
+                        "player",
+                        "logicalView",
+                    ):
+                        check(
+                            name + " " + field,
+                            None
+                            if field not in left or field not in right
+                            else left[field] == right[field],
+                            label,
+                        )
+
+                ready, previous_state = initial_state, initial_state
+                input_intervals = []
                 for s in samples:
                     state = s.get("state")
+                    label = s.get("label")
+                    if not state:
+                        continue
+                    check(
+                        "observation belongs to controlled start",
+                        None
+                        if "sessionId" not in state or "sessionId" not in initial_state
+                        else state["sessionId"] == initial_state["sessionId"],
+                        label,
+                    )
+                    for axis in ("revision", "observationSequence", "simulationTick"):
+                        check(
+                            "ordered controlled observation " + axis,
+                            None
+                            if axis not in state or axis not in previous_state
+                            else 0 <= previous_state[axis] <= state[axis],
+                            label,
+                        )
+                    if "layout" in s:
+                        same_state("layout follows input-ready state", state, ready, label)
+                    elif label == "ordinary-input":
+                        before = s.get("before", {})
+                        same_state("input starts at previous ready state", before, ready, label)
+                        input_intervals.append((before, state))
+                        for axis in ("revision", "observationSequence"):
+                            check(
+                                "ordinary input advances " + axis,
+                                None
+                                if axis not in state or axis not in before
+                                else 0 <= before[axis] < state[axis],
+                                label,
+                            )
+                    if (
+                        "layout" not in s
+                        and state.get("stop") == "PlayerInput"
+                        and state.get("wait") is None
+                    ):
+                        ready = state
+                    previous_state = state
                     if state and s.get("label") == "ordinary-input":
                         check(
                             "ordinary input state continuity",
@@ -6881,6 +7004,85 @@ def map_consumer_binding(actual, context, source_root):
                             state.get("failure") is None
                             and state.get("stop") == "PlayerInput"
                             and state.get("wait") is None,
+                            role,
+                        )
+                # Event records have no separate session field. Join their two
+                # monotonic axes to this case's ordinary-input intervals and the
+                # ready state consumed by each preserve/rebuild witness.
+                for event_axis, state_axis in (
+                    ("Revision", "revision"),
+                    ("Sequence", "observationSequence"),
+                ):
+                    previous = initial_state.get(state_axis)
+                    end = ready.get(state_axis)
+                    for event in case_events:
+                        value = event.get(event_axis)
+                        check(
+                            "ordered bounded case event " + event_axis,
+                            None
+                            if value is None or previous is None or end is None
+                            else 0 <= previous < value <= end,
+                            role,
+                        )
+                        if value is not None:
+                            previous = value
+                transfers = [e for e in case_events if e.get("Kind") == "map-transferred"]
+                anchors = {
+                    "school": ["school-preserved-away", "school-preserved-return"],
+                    "castle-walk": [],
+                    "castle-rebuild": [None, "castle-rebuilt-inside-32"],
+                }[role]
+                used_intervals = set()
+                for transfer, anchor in zip(transfers, anchors, strict=False):
+                    try:
+                        matches = [
+                            (i, before, after)
+                            for i, (before, after) in enumerate(input_intervals)
+                            if before["revision"] < transfer["Revision"] <= after["revision"]
+                            and before["observationSequence"]
+                            < transfer["Sequence"]
+                            <= after["observationSequence"]
+                        ]
+                        check("transfer belongs to one ordinary input", len(matches) == 1, role)
+                        if len(matches) != 1:
+                            continue
+                        index, before, after = matches[0]
+                        check(
+                            "distinct transfer input intervals", index not in used_intervals, role
+                        )
+                        used_intervals.add(index)
+                        check(
+                            "transfer destination reaches input state",
+                            transfer.get("Detail") == after.get("map"),
+                            role,
+                        )
+                        warp_starts = [
+                            e
+                            for e in case_events
+                            if e.get("Kind") == "warp-started"
+                            and before["revision"] < e["Revision"] < transfer["Revision"]
+                            and before["observationSequence"] < e["Sequence"] < transfer["Sequence"]
+                        ]
+                        check(
+                            "transfer follows ordinary warp start",
+                            True if len(warp_starts) == 1 else None if not warp_starts else False,
+                            role,
+                        )
+                        if anchor is not None:
+                            witness = next((s for s in samples if s.get("label") == anchor), {})
+                            same_state(
+                                "transfer reaches named region state",
+                                after,
+                                witness.get("state", {}),
+                                anchor,
+                            )
+                    except KeyError:
+                        check("transfer interval operands", None, role)
+                for i, (before, after) in enumerate(input_intervals):
+                    if before.get("map") != after.get("map"):
+                        check(
+                            "map-changing input has transfer",
+                            True if i in used_intervals else None,
                             role,
                         )
         initial = [s["state"] for s in samples if s.get("label", "").startswith("layout-start")]
@@ -7061,6 +7263,7 @@ def map_consumer_binding(actual, context, source_root):
                     label,
                 )
                 projected = sample
+                actor_population_complete = True
                 if role == "house":
                     start = initial[1 if label.startswith("flag-off") else 0]
                     p = dict(start["mapViewport"], scale=start["mapViewport"]["height"] / 192)
@@ -7103,6 +7306,7 @@ def map_consumer_binding(actual, context, source_root):
                     s, p = sample["state"], sample["projection"]
                     if role == "school":
                         actor_ids = [a.get("entity") for a in p["actors"]]
+                        actor_population_complete = set(actor_ids) == school_entities
                         check(
                             "source school population independent of draw uses",
                             None
@@ -7181,7 +7385,13 @@ def map_consumer_binding(actual, context, source_root):
                             and layer["y"] == view[ay]["Position"] / 16,
                             label,
                         )
-                detail = _map_draw_cells(projected, expected, source, root)
+                detail = _map_draw_cells(
+                    projected,
+                    expected,
+                    source,
+                    root,
+                    actor_population_complete=actor_population_complete,
+                )
                 check("complete executed coordinate/resource multiset", detail["value"], label)
                 result["witnesses"].append(dict(role=role, label=label, **detail))
             except KeyError:

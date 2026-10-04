@@ -1114,3 +1114,14 @@ logical word validation but no invented draw. Missing required draws/operands re
 extra draws or wrong source words, selectors, geometry, priority or session fail. A missing earlier
 region/use cannot suppress an available later contradiction. Repeated read/draw leaves the logical
 snapshot unchanged.
+
+Controlled observations join the case's start session and ordered ordinary-input/ready-state
+chain. Transfer revision and sequence must lie inside one ordinary input, after its warp start,
+and reach the state consumed by the corresponding preserve/rebuild region. Internally consistent
+layout/draw identities from a different session do not establish this lineage.
+
+Actor admission follows `ExplorationPresentation`: 24-by-24 source-pixel bounds scaled to the
+viewport determine screen intersection; actor passes start at four and advance for each actor and
+each applicable high-plane restoration. Reported visibility, dimensions and pass values must agree
+with these independently derived constraints. Missing actor operands restrict the affected mask
+claim; they do not suppress complete plane-draw geometry or other available contradictions.
