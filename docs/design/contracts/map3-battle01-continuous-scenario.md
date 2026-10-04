@@ -558,6 +558,55 @@ terminal voices; wait tokens are not playback IDs. The selected A audio dependen
 below. Other original resource selectors/provenance and required dependent-consumer joins retain
 their separate Unknowns, without queuing acquisition or adding untaken branches as prerequisites.
 
+### Composed W2 consumer binding
+
+The [accepted W2 policy](dialogue-system.md#w2-composed-semantic-acceptance) supplies the source,
+caller and actual-consumer predicate for `W2 accepting read/validation indicator and token return`.
+The scoped comparator evaluates the retained default-keyboard A inventory:16 accepts and14 neutral
+polls, with the two text575 occurrences kept distinct. That inventory defines this evidence selection,
+not gameplay legality or a generic text-ID admission rule. Its independent occurrence context must
+retain the accepted source program/instruction/text correspondence, session, ordinal, token and
+original array locations. A candidate cannot define its own required inventory by dropping records.
+
+**Confirmed:** each selected input joins its before token/cursor/readiness to its original result span,
+whole Submit revision and after snapshot. Actual W2 events must order draw/copy/wait/read/accept,
+with one service opportunity and caller continuation after acceptance. Available event revisions
+must belong to the input/result revision interval and remain in nondecreasing order;
+internal events need not share the terminal Submit revision. The pinned, clean source is lowered by
+the existing `OriginalPrograms` compiler to check resumed producer/instruction/operation order and
+the terminal cursor. Source jumps preserve their distinct target programs. Nonterminal W2 resumes
+the remaining text at its existing producer; unsupported continuation paths remain **Unknown**.
+The accepted range256 model
+checks the draw and retained text-copy byte. Caller/service enablement, portrait state and view gates
+are read from the corresponding ready state; entity caller type alone is insufficient because Trap6
+can reactivate services. For text2292, the retained full ready state precedes its neutral poll; that
+complete input/result edge carries the same token and gates to acceptance. Duplicate projections of
+one revision must agree on the relevant state, rather than count as multiple occurrences.
+
+The16 actual validation67 `started` receipts join by session and whole Submit result revision.
+Each accepting Submit must have exactly one matching start, including receipts outside the named
+sequence selection; an extra start is a contradiction, while missing playback remains **Unavailable**.
+The internal accepted-event revision is not the sound receipt revision. Fourteen indicator witnesses
+are same-submit states; the final2299/2303 occurrences use the subsequent2300/2304 input states,
+whose separate identities are retained. Source clear/resume and accepted behavior compose those two
+later observations; they are not intermediate host draw observations. A later text may already have
+re-enabled typewriting, so its value is not relabelled as the transient restored W2 flag.
+
+Known contradictions produce **FAIL** even when another required edge is missing. Missing input,
+result, caller gate, copy, indicator or validation evidence remains **Unavailable**. The same predicate
+is used by the [scoped command](../../../remake/docs/development-and-verification.md#scoped-w2-consumer-comparison)
+and the modern comparison's W2 child when explicit context is provided; absent context cannot pass.
+Full-capture use reads only the context's named sample/input/result indices, without materializing the
+whole timeline. A scoped PASS evaluates only this W2 child and always leaves `milestonePass=false`;
+it does not recompute the old aggregate or decide unrelated child closure.
+
+**Unknown:** exact original internal accepting-read instruction/time and complete historical gate
+bytes, and the two intermediate same-submit host draws/times. Those diagnostics remain separate from
+the accepted composed predicate. The old A observations predate the live AI seed-binding correction:
+they are historical W2 consumer evidence, not a corrected RNG/AI trajectory. W1, HEAL timing/cursor
+failures, turn-generation inputs, map/resource bindings, original audio dispatch and settings variants
+retain their own acceptance boundaries.
+
 ### Reached turn-order rule and result binding
 
 **Confirmed source rules:** the accepted

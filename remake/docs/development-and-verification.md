@@ -3802,6 +3802,63 @@ planner/actual CI. This offline comparator slice needs no SDK/native/capture, ne
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
 actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
 
+### Scoped W2 consumer comparison
+
+Use the retained `current-A-w2.jsonl`, `current-A-w2-tail.jsonl`, `w2-occurrences.json` and selected A
+audio receipts described by [the accepted policy](../../docs/design/contracts/dialogue-system.md#w2-composed-semantic-acceptance).
+The `w2` mode evaluates only the
+[composed W2 child](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding);
+no SDK, native host, original capture, whole-A scan, full H4 or matrix is needed.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison w2 `
+  --actual $selectedW2Actual --w2-context $acceptedW2Context `
+  --text-source-root $pinnedSource --output local/w2-consumers/fresh-report.json
+```
+
+Normalize only the existing small selections into `samples`, `inputRecords` and `warpRecords` arrays:
+each selected row retains its payload and `_index` equal to its original `index`, not its JSONL line
+number. Append the four tail samples and retain the existing `audioReceipts` wrappers with their poll
+context. Do not copy the world, PCM or full timeline. Preserve the original selection receipts locally.
+
+Keep the independently accepted context separate from candidate data. It has `scope` equal to
+`retained-keyboard-A-w2`, the selected `sessionId`, and these two inventories:
+
+- `occurrences`: the existing16 accepted rows' `ordinal`, `token`, `program`, `instruction`, `text`,
+  `resultRevision`, `nextToken`, `nextWait`, `afterSample` and `validationSequences`. Add original
+  `inputIndex`, `resultIndex`, `readyIndices` and `indicatorIndex` from the retained locators. Keep
+  `indicatorIdentity` with the witness's revision, observationSequence, token, cursor and wait;
+  this is occurrence identity, not expected indicator behavior. The predicate derives clear/hidden,
+  draw/copy, caller/service and token-span requirements from the accepted source policy.
+- `neutral`: the14 retained neutral rows' `ordinal`, `token`, `resultRevision`, `inputIndex`,
+  `resultIndex` and `readyIndices`. Text2292's accepting `readyIndices` refer to its pre-neutral
+  full state; the actual neutral input/result edge must bridge to the accepting before state.
+
+The current prepared selection is about2MiB plus a small context. The command enforces10MiB combined
+input and10MiB report limits, and a fresh output beneath this checkout's ignored `local/`. Plan120s
+and128MiB incremental memory; retain measured runtime and peak working set with each control run.
+Input/result/sample/receipt indexes bound matching to this fixed cohort; full-capture
+access uses original array positions. Do not reuse this scope as permission to import a larger route.
+Exit0/1/2 means PASS/FAIL/Unavailable; every report sets `milestonePass=false` and keeps the original
+internal-read and two intermediate-draw Unknowns explicit. The existing modern `compare` mode accepts
+`--w2-context` for the identical child predicate; do not launch full comparison just to prove wiring.
+
+Direct controls cover occurrence deletion/duplication, foreign session/token/result/audio, crossed
+whole Submit revisions, wrong validation/caller/service/indicator/copy, premature caller resume and
+missing plus known contradictory evidence. Check all validation starts for each accepting Submit,
+event revision range/order, and source-derived resumed producer/instruction/operation order and
+terminal cursor. Include missing events, an extra validation start, an out-of-range event revision,
+a foreign resumed program, and the genuine source jumps and nonterminal-text continuations.
+The existing `OriginalPrograms` compiler reads pinned, clean source for a bounded continuation;
+unhandled source call/return/branch paths stay Unknown rather than forcing all events into one program.
+A contradiction dominates missing; a missing witness is
+not converted into a fabricated negative. Two575 labels are not unique keys, and the final two later
+indicator states must not become same-submit observations. Preserve failed reports and distinguish repeated projections of one revision from repeated
+occurrences. A resumed text's typewriting is not the transient restored W2 value. Existing PR618
+behavior results are reused, not rerun. Use scoped Ruff, direct contract/document checks, committed planner and actual CI;
+no tests of this verifier or broad legacy suites. Audio and turn-order predicates remain unchanged.
+
 ### Scoped turn-order rule comparison
 
 The completed generator exposes its actual ordered candidates, Roll results and unsorted/sorted
