@@ -5073,6 +5073,1418 @@ def _heal_fairy_source_step(previous, seed, quarter, setup=False):
     return state, seed, draws
 
 
+def reward_consumer_binding(actual, context, source_root):
+    """Source rewards at retained action operands, through first persistent party state."""
+    from sf2tool.h3.growth import _calculate_gain, _parse_growth_curves, _parse_stats_block
+
+    result = dict(
+        value=None,
+        checks=[],
+        occurrences=[],
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            owner="docs/design/contracts/combat-resolution.md",
+            growth="docs/design/contracts/level-up.md",
+            spells="docs/design/contracts/spellbook-state.md",
+            lifecycle="docs/design/contracts/battle-control-lifecycle.md",
+            binding="source initial profile -> observed reward/growth -> first Party.Progress",
+        ),
+        unknown=[
+            "live agility/base-attack are not directly observed; persistence is composed",
+            "unreached status, item recovery, spell-learning and defeat branches",
+            "turn generation, AI, field services and complete scene presentation",
+        ],
+    )
+    context = context or {}
+    absent = object()
+    session = context.get("sessionId")
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(expected, observed=absent):
+        if expected is absent or observed is absent:
+            return None
+        if isinstance(expected, dict):
+            return (
+                merge([match(v, observed.get(k, absent)) for k, v in expected.items()])
+                if isinstance(observed, dict)
+                else False
+            )
+        if isinstance(expected, list):
+            if not isinstance(observed, list):
+                return False
+            return merge(
+                [
+                    False
+                    if len(observed) > len(expected)
+                    else None
+                    if len(observed) < len(expected)
+                    else True
+                ]
+                + [match(x, y) for x, y in zip(expected, observed, strict=False)]
+            )
+        if (
+            isinstance(expected, (int, float))
+            and not isinstance(expected, bool)
+            and isinstance(observed, bool)
+        ):
+            return False
+        return observed == expected and (not isinstance(expected, bool) or type(observed) is bool)
+
+    def check(name, value, occurrence=None):
+        result["checks"].append(dict(name=name, value=value, occurrence=occurrence))
+
+    def eq(name, expected, observed=absent, occurrence=None):
+        check(name, match(expected, observed), occurrence)
+
+    def number(value):
+        return (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and value >= 0
+            and value == int(value)
+        )
+
+    def clocks(name, row):
+        eq(name + " session", session, row.get("sessionId", absent))
+        check(
+            name + " clocks",
+            merge(
+                [number(row[k]) if k in row else None for k in ("revision", "observationSequence")]
+            ),
+        )
+
+    def precedes(name, left, right):
+        check(
+            name,
+            merge(
+                [
+                    left[k] <= right[k]
+                    if number(left.get(k)) and number(right.get(k))
+                    else False
+                    if k in left and k in right
+                    else None
+                    for k in ("revision", "observationSequence")
+                ]
+            ),
+        )
+
+    def join(name, left, right):
+        for key in ("sessionId", "revision", "observationSequence"):
+            check(
+                name + " " + key, match(left[key], right.get(key, absent)) if key in left else None
+            )
+
+    def actor(event, key="Actor"):
+        return (event.get(key) or {}).get("Value")
+
+    def count(name, expected, observed, occurrence=None):
+        check(
+            name,
+            True if expected == observed else None if observed < expected else False,
+            occurrence,
+        )
+
+    eq("scope", "retained-keyboard-A-reward", context.get("scope", absent))
+    eq("source pin", UPSTREAM, context.get("upstream", absent))
+    check("independent session", bool(session) or None)
+    receipts = context.get("selectionReceipts") or []
+    check("selection receipts available", bool(receipts) or None)
+    for receipt in receipts:
+        eq("completed immutable selection", dict(sourceUnchanged=True, failure=None), receipt)
+    selected = {}
+    for channel in ("warpRecords", "inputRecords", "sceneObservations", "samples"):
+        wanted = set((context.get("indices") or {}).get(channel, []))
+        records, order = {}, []
+        for index, row in enumerate(actual.get(channel, [])):
+            index = row.get("_index", index)
+            if index in wanted:
+                check(channel + " unique index", index not in records)
+                records[index] = dict(row, _index=index)
+                order.append(index)
+        check(channel + " selected indices", True if wanted and wanted == set(records) else None)
+        check(channel + " source order", order == sorted(set(order)))
+        selected[channel] = records
+    warps, inputs = selected["warpRecords"], list(selected["inputRecords"].values())
+    events, event_rows = {}, {}
+    prior_result = None
+    for index, row in warps.items():
+        envelope, state = row.get("result") or {}, row.get("state") or {}
+        clocks("result", envelope)
+        if prior_result:
+            precedes("result source chronology", prior_result, envelope)
+        prior_result = envelope
+        if state:
+            clocks("state", state)
+            join("result/state identity", envelope, state)
+        # Range rejections are an accepted physical dependency, not reward commits.
+        kinds = {e.get("Kind") for e in envelope.get("observations", [])}
+        if kinds & {"exp", "gold", "level", "after-turn", "kills", "battle-outcome"}:
+            eq("reward result accepted", None, envelope.get("failure", absent), index)
+        previous = None
+        for event in envelope.get("observations", []):
+            sequence = event.get("Sequence")
+            check(
+                "event nonnegative clocks",
+                number(sequence) and number(event.get("Revision")),
+                index,
+            )
+            if previous:
+                check(
+                    "events source chronology",
+                    all(
+                        number(x.get(k))
+                        for x in (event, previous)
+                        for k in ("Sequence", "Revision")
+                    )
+                    and event["Sequence"] > previous["Sequence"]
+                    and event["Revision"] >= previous["Revision"],
+                    index,
+                )
+            previous = event
+            check(
+                "event within result clocks",
+                number(sequence)
+                and number(event.get("Revision"))
+                and number(envelope.get("observationSequence"))
+                and number(envelope.get("revision"))
+                and sequence <= envelope["observationSequence"]
+                and event["Revision"] <= envelope["revision"],
+                index,
+            )
+            if sequence in events:
+                eq("duplicate event payload", events[sequence], event, sequence)
+            else:
+                events[sequence], event_rows[sequence] = event, index
+    for n, row in enumerate(inputs):
+        before, after = row.get("before") or {}, row.get("after") or {}
+        clocks("input before", before)
+        clocks("input after", after)
+        precedes("input span clocks", before, after)
+        start, end = row.get("resultStart"), row.get("resultEnd")
+        check("input result span", number(start) and number(end) and start <= end)
+        if n:
+            precedes("input chronology", inputs[n - 1].get("after") or {}, before)
+            check(
+                "input result chronology",
+                start >= inputs[n - 1].get("resultEnd", 0) if number(start) else False,
+            )
+        if start == end:
+            join("empty input span", before, after)
+        for label, snapshot, boundary in (
+            ("before", before, start - 1 if number(start) else None),
+            ("after", after, end - 1 if number(end) else None),
+        ):
+            if boundary in warps:
+                join("input " + label + " result", snapshot, warps[boundary].get("result") or {})
+    missing_inputs = set((context.get("indices") or {}).get("inputRecords", [])) - set(
+        selected["inputRecords"]
+    )
+    for index, row in warps.items():
+        eligible = [x for x in inputs if number(x.get("resultStart")) and x["resultStart"] <= index]
+        later = [x for x in inputs if number(x.get("resultStart")) and x["resultStart"] > index]
+        if not eligible:
+            continue  # Pre-battle sparse provenance is not a physical input delivery claim.
+        owner = eligible[-1]
+        next_index = (
+            later[0]["_index"]
+            if later
+            else max((context.get("indices") or {}).get("inputRecords", [-1])) + 1
+        )
+        ambiguous = any(owner["_index"] < x < next_index for x in missing_inputs)
+        if not ambiguous:
+            eq("latest causal input", owner.get("ordinal"), row.get("inputOrdinal", absent), index)
+        else:
+            check("latest causal input", None, index)
+        envelope = row.get("result") or {}
+        precedes("input before result", owner.get("before") or {}, envelope)
+        if number(owner.get("resultEnd")):
+            if index < owner["resultEnd"]:
+                precedes("direct result within input", envelope, owner.get("after") or {})
+            else:
+                precedes("automatic result after input", owner.get("after") or {}, envelope)
+        if later:
+            precedes("result before next input", envelope, later[0].get("before") or {})
+
+    semantic = {
+        "exp",
+        "gold",
+        "exp-threshold",
+        "level",
+        "kills",
+        "defeats",
+        "death-cleanup",
+        "after-turn",
+        "action-committed",
+        "battle-selected",
+        "battle-initialized",
+        "battle-loaded",
+        "battle-outcome",
+        "battle-returned",
+        "scene-prepared",
+        "scene-ended",
+        "hp",
+        "mp",
+        "heal",
+        "physical-first",
+        "physical-second",
+        "physical-counter",
+        "dodge",
+        "critical",
+        "field-death-started",
+        "field-death-ended",
+        "after-battle-join",
+        "battle-unlock-cleared",
+        "battle-completed-set",
+        "exploration-return-started",
+        "map-transferred",
+    }
+
+    def relevant(kind):
+        return kind in semantic or bool(
+            kind
+            and kind.startswith(
+                ("rng-exp", "rng-growth", "level-", "status", "learn", "poison", "regen")
+            )
+        )
+
+    census = context.get("census") or []
+    check("independent census", bool(census) or None)
+    wanted_events = {row[2]: row for row in census}
+    check(
+        "unique ordered census",
+        len(wanted_events) == len(census) and [x[2] for x in census] == sorted(wanted_events),
+    )
+    for sequence, event in events.items():
+        if relevant(event.get("Kind")):
+            check("no unaccounted reward event", sequence in wanted_events, sequence)
+    for index, revision, sequence, kind, who, target in census:
+        event = events.get(sequence)
+        eq(
+            "census event",
+            dict(
+                Revision=revision,
+                Sequence=sequence,
+                Kind=kind,
+                Actor=None if who is None else {"Value": who},
+                Target=None if target is None else {"Value": target},
+            ),
+            event if event is not None else absent,
+            sequence,
+        )
+        if event is not None:
+            eq("owning result index", index, event_rows[sequence], sequence)
+
+    reward_phases = {"Reward", "RewardMessage", "GrowthMessage", "GoldMessage"}
+    projected_tokens = set()
+    for projection in selected["sceneObservations"].values():
+        scene = projection.get("scene") or {}
+        eq("selected scene session", session, projection.get("sessionId", absent))
+        eq("selected scene error", None, scene.get("error", absent))
+        if scene.get("phase") not in reward_phases:
+            continue
+        clocks("reward projection", projection)
+        token = scene.get("waitToken")
+        projected_tokens.add(token)
+        token_event = events.get(token)
+        eq(
+            "reward phase token",
+            dict(Kind="scene-step-started", Detail=scene["phase"]),
+            token_event if token_event else absent,
+            token,
+        )
+        if token_event:
+            precedes(
+                "phase token precedes projection",
+                dict(
+                    revision=token_event.get("Revision"),
+                    observationSequence=token_event.get("Sequence"),
+                ),
+                projection,
+            )
+        matching = [
+            row
+            for row in warps.values()
+            if all(
+                (row.get("result") or {}).get(k) == projection.get(k)
+                for k in ("sessionId", "revision", "observationSequence")
+            )
+        ]
+        check("reward projection result retained", bool(matching) or None, token)
+        for row in warps.values():
+            envelope = row.get("result") or {}
+            if envelope.get("observationSequence") == projection.get("observationSequence"):
+                eq(
+                    "reward projection revision join",
+                    envelope.get("revision"),
+                    projection.get("revision", absent),
+                    token,
+                )
+        for row in matching:
+            eq(
+                "reward projection input join",
+                row.get("inputOrdinal"),
+                projection.get("inputOrdinal", absent),
+                token,
+            )
+        stage = projection.get("projectionStage")
+        check(
+            "reward projection stage",
+            stage in ("host-poll", "signal-before-Present") if stage is not None else None,
+            token,
+        )
+        if stage == "host-poll":
+            phases = [
+                k
+                for k, e in events.items()
+                if number(k)
+                and k <= projection.get("observationSequence", -1)
+                and e.get("Kind") in ("scene-prepared", "scene-step-started")
+            ]
+            eq("reward host poll current token", max(phases) if phases else absent, token, token)
+        if stage == "signal-before-Present":
+            completions = [
+                e
+                for row in matching
+                for e in row.get("result", {}).get("observations", [])
+                if e.get("Kind") == "scene-step-completed"
+            ]
+            check(
+                "reward projection completion receipt",
+                any(e.get("Detail") == scene["phase"] for e in completions)
+                if completions
+                else None,
+                token,
+            )
+            eq("reward completion delivered", True, scene.get("completed", absent), token)
+        host_inputs = [
+            i
+            for i in inputs
+            if number(i.get("hostUpdate"))
+            and number(projection.get("hostUpdate"))
+            and i["hostUpdate"] <= projection["hostUpdate"]
+        ]
+        if host_inputs:
+            owner = host_inputs[-1]
+            next_inputs = [i for i in inputs if i["_index"] > owner["_index"]]
+            next_index = (
+                next_inputs[0]["_index"]
+                if next_inputs
+                else max((context.get("indices") or {}).get("inputRecords", [-1])) + 1
+            )
+            ambiguous = any(owner["_index"] < i < next_index for i in missing_inputs)
+            check(
+                "reward projection latest host input",
+                None
+                if ambiguous
+                else match(owner.get("ordinal"), projection.get("inputOrdinal", absent)),
+                token,
+            )
+            precedes("reward projection after input", owner.get("before") or {}, projection)
+            if next_inputs:
+                precedes(
+                    "reward projection before next input",
+                    projection,
+                    next_inputs[0].get("before") or {},
+                )
+        else:
+            check("reward projection host input retained", None, token)
+    for sequence, event in events.items():
+        if event.get("Kind") == "scene-step-started" and event.get("Detail") in reward_phases:
+            check(
+                "reward phase projection exists",
+                True if sequence in projected_tokens else None,
+                sequence,
+            )
+
+    initial = (selected["samples"].get(context.get("initialSample")) or {}).get("state") or {}
+    battle = (selected["samples"].get(context.get("battleSample")) or {}).get("state") or {}
+    clocks("initial profile", initial)
+    clocks("battle admission", battle)
+    admitted = initial.get("admittedParty") or {}
+    eq(
+        "admitted provenance",
+        dict(Commit=UPSTREAM, Repository=ACCEPTED_UPSTREAM_REPOSITORY, RomSha256=ROM),
+        admitted.get("provenance", absent),
+    )
+    eq("admitted encounter", "battle-1", admitted.get("encounter", absent))
+    eq(
+        "initial profile declaration",
+        "private-local-map3-r1-party-v1",
+        (battle.get("initializationPolicy") or {}).get("Declaration", absent),
+    )
+    initial_actors = {a.get("id"): a for a in battle.get("actors") or []}
+    initial_party = {actor(p): p for p in initial.get("party") or []}
+    source = None
+    profiles, progress, expected_items, expected_spells = {}, {}, {}, {}
+    equates, curves = {}, {}
+    enemy_operands = {}
+    try:
+        item_ids = {
+            int(w) & 127 for a in initial_actors.values() for w in a["items"] if int(w) & 128
+        }
+        source = _physical_source_operands(source_root, item_ids) if source_root else None
+        check("pinned source operands", True if source else None)
+        if source:
+            root = Path(source_root)
+            root = root.resolve() if root.is_absolute() else repo_path(root)
+            disasm = root / "disasm"
+            curves = _parse_growth_curves(disasm)
+            equates = source["equates"]
+            gold_table = [
+                int(x)
+                for x in re.findall(
+                    r"dc\.w\s+(\d+)",
+                    (disasm / "data/stats/enemies/enemygold.asm").read_text(encoding="utf-8"),
+                )
+            ][:103]
+            starts = re.split(
+                r"^\s*startClass\s+",
+                (disasm / "data/stats/allies/allystartdefs.asm").read_text(encoding="utf-8"),
+                flags=re.M,
+            )[1:]
+            definitions = {
+                d["actor"]: d["definition"]
+                for encounter in admitted.get("encounters", [])
+                if encounter.get("encounter") == "battle-1"
+                for d in encounter.get("deployments", [])
+            }
+            enemies = re.split(
+                r"^\s*unknownByte\s+",
+                (disasm / "data/stats/enemies/enemydefs.asm").read_text(encoding="utf-8"),
+                flags=re.M,
+            )[1:]
+            after_joins = [
+                int(x)
+                for x in re.findall(
+                    r"dc\.b\s+(\d+)",
+                    (disasm / "data/battles/global/afterbattlejoins.asm").read_text(
+                        encoding="utf-8"
+                    ),
+                )
+            ]
+            halved = re.findall(
+                r"^\s*battle\s+(\w+)",
+                (disasm / "data/battles/global/halvedexpearnedbattles.asm").read_text(
+                    encoding="utf-8"
+                ),
+                re.M,
+            )
+            check(
+                "source Battle01 halves enemy-target EXP",
+                1 in [int(x) if x.isdigit() else equates["BATTLE_" + x] for x in halved],
+            )
+            for who, profile in source["profiles"].items():
+                if not who.startswith("ally-"):
+                    block = enemies[profile["enemyId"]]
+                    enemy_operands[who] = {
+                        key: int(re.search(rf"^\s*{key}\s+(\d+)", block, re.M)[1])
+                        for key in ("level", "maxHp")
+                    }
+                    eq(
+                        "source enemy admitted reward operands",
+                        enemy_operands[who],
+                        definitions.get(who, absent),
+                        who,
+                    )
+                    continue
+                ally = int(who.split("-")[1])
+                block = _parse_stats_block(disasm, ally, profile["classCode"])
+                profiles[who] = block
+                stats = {k: v["start"] for k, v in block["stats"].items()}
+                items = []
+                for name, equipped in re.findall(
+                    r"^\s+([A-Z_]+)(\|EQUIPPED)?(?:,\s*&)?\s*$", starts[ally], re.M
+                ):
+                    items.append(equates["ITEM_" + name] | (128 if equipped else 0))
+                expected_items[who] = items
+                spells = [
+                    dict(Value=s["expression"].split("|")[0].lower(), Level=1)
+                    for s in block["spells"]
+                    if s["level"] == 1
+                ]
+                words = [
+                    equates["SPELL_" + s["expression"]] for s in block["spells"] if s["level"] == 1
+                ]
+                words += [equates["SPELL_NOTHING"]] * (4 - len(words))
+                expected_spells[who] = words
+                attack = stats["attack"] + sum(
+                    amount
+                    for w in items
+                    if w & 128
+                    for effect, amount in source["items"][w & 127]["effects"]
+                    if effect == "INCREASE_ATT"
+                )
+                eq(
+                    "source initial admitted definition",
+                    dict(
+                        level=1,
+                        maxHp=stats["hp"],
+                        maxMp=stats["mp"],
+                        attack=attack,
+                        defense=stats["defense"],
+                        agility=stats["agility"],
+                        classRule={
+                            "SDMN": "UnpromotedSwordsman",
+                            "PRST": "UnpromotedPriest",
+                            "KNTE": "UnpromotedKnight",
+                        }[profile["classCode"]],
+                        sourceLoadout=dict(Items=items, Spells=words),
+                        spells=spells,
+                    ),
+                    definitions.get(who, absent),
+                    who,
+                )
+                progress[who] = dict(
+                    Level=1,
+                    MaxHp=stats["hp"],
+                    MaxMp=stats["mp"],
+                    BaseAttack=stats["attack"],
+                    Defense=stats["defense"],
+                    Agility=stats["agility"],
+                    Spells=spells,
+                    SourceLoadout=dict(Items=items, Spells=words),
+                )
+                eq(
+                    "initial party resources",
+                    dict(Exp=0, Kills=0, Defeats=0, Status=0, Progress=None),
+                    initial_party.get(who, absent),
+                    who,
+                )
+                eq(
+                    "source battle admission resources",
+                    dict(
+                        exp=0,
+                        kills=0,
+                        defeats=0,
+                        level=1,
+                        maxHp=stats["hp"],
+                        maxMp=stats["mp"],
+                        attack=attack,
+                        defense=stats["defense"],
+                        status=0,
+                        items=items,
+                        spells=words,
+                        learned=spells,
+                    ),
+                    initial_actors.get(who, absent),
+                    who,
+                )
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        TypeError,
+        IndexError,
+        subprocess.SubprocessError,
+    ) as error:
+        check(
+            "pinned source operands",
+            False
+            if str(error) in ("physical source pin", "physical source modifications")
+            else None,
+        )
+        result["unknown"].append(str(error))
+        source = None
+
+    ordered_events = [events[k] for k in sorted(k for k in events if number(k))]
+    scenes = context.get("scenes") or []
+    preparations = [e for e in ordered_events if e.get("Kind") == "scene-prepared"]
+    check(
+        "scene census coverage",
+        {s.get("sequence") for s in scenes} == {e["Sequence"] for e in preparations}
+        if preparations
+        else None,
+    )
+    expected_exp, expected_gold, kills, growth_actors = {}, {}, {}, set()
+    for scene in scenes:
+        sequence = scene.get("sequence")
+        end = scene.get("end") or {}
+        endseq = end.get("sequence")
+        preparation = events.get(sequence)
+        ended = events.get(endseq)
+        eq(
+            "preparation clocks",
+            dict(Sequence=sequence, Revision=scene.get("revision"), Kind="scene-prepared"),
+            preparation if preparation is not None else absent,
+            sequence,
+        )
+        eq(
+            "scene end clocks",
+            dict(Sequence=endseq, Revision=end.get("revision"), Kind="scene-ended"),
+            ended if ended is not None else absent,
+            sequence,
+        )
+        if ended:
+            eq("scene end owning result", end.get("index"), event_rows[endseq], sequence)
+        if not (preparation and number(endseq) and source):
+            check("scene reward operands", None, sequence)
+            continue
+        check(
+            "scene ends after preparation",
+            endseq > sequence and end.get("revision", -1) >= scene.get("revision", 0),
+            sequence,
+        )
+        try:
+            index = event_rows[sequence]
+            row = warps[index]
+            before = warps[index - 1]["state"]
+            actors = {a["id"]: dict(a) for a in before["actors"]}
+            preparing = [e for e in row["result"]["observations"] if e["Sequence"] <= sequence]
+            who = actor(preparation)
+            for e in preparing:
+                if e["Kind"] == "movement" and actor(e) in actors:
+                    actors[actor(e)].update(x=e["To"]["X"], y=e["To"]["Y"])
+            effect_events = [e for e in ordered_events if sequence < e["Sequence"] <= endseq]
+            draws = [e for e in preparing if e["Kind"] in ("rng-exp-plus", "rng-exp-minus")]
+            physical = [e for e in preparing if e["Kind"] == "rng-dodge"]
+            accumulator = gold = 0
+            target = None
+            if physical:
+                target = actor(physical[0], "Target")
+                model = _physical_source_action(
+                    source, actors, who, target, int(physical[0]["Before"])
+                )
+                expected_hp = [
+                    dict(
+                        Actor={"Value": s["target"]},
+                        Target=None,
+                        Before=s["beforeHp"],
+                        After=s["afterHp"],
+                    )
+                    for s in model["strikes"]
+                    if not s["dodge"]
+                ]
+                eq(
+                    "reward damage operand matches source physical effect",
+                    expected_hp,
+                    [e for e in effect_events if e["Kind"] == "hp"],
+                    sequence,
+                )
+                if who.startswith("ally-"):
+                    difference = int(actors[who]["level"]) - int(actors[target]["level"])
+                    kill_exp = 50 if difference < 3 else max(0, 70 - 10 * difference)
+                    for strike in model["strikes"]:
+                        if strike["actor"] != who:
+                            check(
+                                "unreached counter reward needs separate source rule",
+                                None,
+                                sequence,
+                            )
+                            continue
+                        if not strike["dodge"]:
+                            accumulator = min(
+                                equates["PER_ACTION_EXP_CAP"],
+                                accumulator
+                                + kill_exp
+                                * min(strike["damage"], strike["beforeHp"])
+                                // int(actors[target]["maxHp"]),
+                            )
+                            if strike["afterHp"] == 0:
+                                accumulator = min(
+                                    equates["PER_ACTION_EXP_CAP"], accumulator + kill_exp
+                                )
+                                gold += gold_table[source["profiles"][target]["enemyId"]]
+                                kills[target] = who
+                    accumulator >>= 1  # Battle01 is in the accepted halved-EXP source table.
+                seed = model["seed"]
+            else:
+                healing = next(e for e in effect_events if e["Kind"] == "heal")
+                target = actor(healing, "Target")
+                eq(
+                    "HEAL reward source class",
+                    "PRST",
+                    source["profiles"][who].get("classCode"),
+                    sequence,
+                )
+                recovery = min(15, int(actors[target]["maxHp"]) - int(actors[target]["hp"]))
+                accumulator = min(
+                    equates["HEALING_ACTION_EXP_CAP"],
+                    max(
+                        equates["HEALING_SPELL_EXP_MIN"],
+                        equates["HEALING_SPELL_EXP_MAX"] * recovery // int(actors[target]["maxHp"]),
+                    ),
+                )
+                seed = int(before["mainSeed"])
+            eligible = who.startswith("ally-") and actors[who]["hp"] > 0
+            count("eligible EXP draw count", 2 if eligible else 0, len(draws), sequence)
+            if eligible:
+                adjustment = 0
+                for purpose, sign in (("rng-exp-plus", 1), ("rng-exp-minus", -1)):
+                    observed_draw = next((e for e in draws if e.get("Kind") == purpose), absent)
+                    word, value = _rng_step(seed >> 16, 32)
+                    value >>= 1
+                    after = (word << 16) | (seed & 65535)
+                    eq(
+                        "source EXP draw",
+                        dict(
+                            Kind=purpose,
+                            Actor={"Value": who},
+                            Target=None,
+                            Before=seed,
+                            After=after,
+                            RandomRange=16,
+                            RandomValue=value,
+                        ),
+                        observed_draw,
+                        sequence,
+                    )
+                    adjustment += sign if value == 0 else 0
+                    seed = after
+                award = max(1, accumulator + adjustment)
+                awards = [e for e in effect_events if e["Kind"] == "exp"]
+                count("one deferred EXP command", 1, len(awards), sequence)
+                planned = [x for x in census if sequence < x[2] <= endseq and x[3] == "exp"]
+                count("one census EXP command", 1, len(planned), sequence)
+                if planned:
+                    expected_exp[planned[0][2]] = (who, award)
+                eq(
+                    "preparation leaves EXP uncommitted",
+                    actors[who]["exp"],
+                    next(a for a in row["state"]["actors"] if a["id"] == who).get("exp", absent),
+                    sequence,
+                )
+            else:
+                eq(
+                    "enemy action awards no EXP",
+                    [],
+                    [e for e in effect_events if e["Kind"] == "exp"],
+                    sequence,
+                )
+            gold_events = [e for e in preparing if e["Kind"] == "gold"]
+            count("gold preparation count", 1 if gold else 0, len(gold_events), sequence)
+            planned_gold = [
+                x for x in census if x[0] == index and x[2] <= sequence and x[3] == "gold"
+            ]
+            count("one lethal census gold", 1 if gold else 0, len(planned_gold), sequence)
+            if planned_gold:
+                expected_gold[planned_gold[0][2]] = (who, gold)
+            result["occurrences"].append(
+                dict(
+                    sequence=sequence,
+                    end=endseq,
+                    actor=who,
+                    target=target,
+                    eligible=eligible,
+                    accumulator=accumulator,
+                    gold=gold,
+                )
+            )
+        except (KeyError, TypeError, IndexError, StopIteration, ValueError) as error:
+            check("scene reward operands", None, sequence)
+            result["unknown"].append(str(error))
+
+    # Only this child's persisted resources; action legality remains with its owner.
+    ledger = {who: dict(exp=0, kills=0, defeats=0) for who in profiles}
+    gold = initial.get("gold")
+    gold_known = source is not None
+    check("initial gold operand", number(gold) if gold is not None else None)
+    processed = set()
+    last_scene_actor = last_cleanup = last_after_turn = None
+    ledger_kinds = {
+        "exp",
+        "gold",
+        "exp-threshold",
+        "level",
+        "kills",
+        "death-cleanup",
+        "after-turn",
+        "action-committed",
+        "battle-outcome",
+        "scene-ended",
+    }
+    ledger_indices = set(warps) | {x[0] for x in census if x[3] in ledger_kinds}
+    for index in sorted(ledger_indices):
+        row = warps.get(index, {})
+        state = row.get("state") or {}
+        before = (warps.get(index - 1) or {}).get("state") or {}
+        actors = {a.get("id"): a for a in state.get("actors") or []}
+        previous_actors = {a.get("id"): a for a in before.get("actors") or []}
+        current_events = []
+        for e in (row.get("result") or {}).get("observations", []):
+            if e.get("Sequence") not in processed:
+                processed.add(e.get("Sequence"))
+                current_events.append(e)
+        # Missing effects remain missing observations. Their declared identity still
+        # schedules independently calculated resource changes, preventing a lost EXP
+        # row from turning every later correct resource snapshot into a false failure.
+        for declared in census:
+            if (
+                declared[0] == index
+                and declared[3] in ledger_kinds
+                and declared[2] not in processed
+            ):
+                processed.add(declared[2])
+                current_events.append(
+                    dict(
+                        Kind=declared[3],
+                        Sequence=declared[2],
+                        Revision=declared[1],
+                        Actor=None if declared[4] is None else {"Value": declared[4]},
+                    )
+                )
+        current_events.sort(key=lambda e: e["Sequence"])
+        # Receipt/state joins are independent of the source arithmetic. An absent
+        # source table cannot hide a contradictory actual command and actual state.
+        receipt_fields = {
+            "exp": "exp",
+            "exp-threshold": "exp",
+            "kills": "kills",
+            "defeats": "defeats",
+            "level": "level",
+            "level-max-hp": "maxHp",
+            "level-max-mp": "maxMp",
+            "level-defense": "defense",
+        }
+        pending_receipts = {}
+        for observed in (row.get("result") or {}).get("observations", []):
+            kind = observed.get("Kind")
+            if kind != "gold" and kind not in receipt_fields:
+                continue
+            who = actor(observed)
+            field = "gold" if kind == "gold" else receipt_fields[kind]
+            key = (None if kind == "gold" else who, field)
+            prior_state = before if kind == "gold" else previous_actors.get(who, {})
+            old = pending_receipts.get(key, prior_state.get(field, absent))
+            eq(
+                "reward receipt before joins actual state",
+                old,
+                observed.get("Before", absent),
+                observed.get("Sequence"),
+            )
+            pending_receipts[key] = observed.get("After", absent)
+        for (who, field), value in pending_receipts.items():
+            current_state = state if who is None else actors.get(who, {})
+            eq(
+                "reward receipt after joins actual state",
+                value,
+                current_state.get(field, absent),
+                index,
+            )
+        for e in current_events:
+            kind, seq, who = e.get("Kind"), e.get("Sequence"), actor(e)
+            try:
+                if kind == "scene-ended":
+                    last_scene_actor = who
+                if kind == "gold":
+                    expected = expected_gold.get(seq)
+                    check(
+                        "gold belongs to source lethal preparation", True if expected else None, seq
+                    )
+                    if expected and number(gold):
+                        eq(
+                            "source kill gold",
+                            dict(
+                                Actor={"Value": expected[0]},
+                                Before=gold,
+                                After=min(9999999, gold + expected[1]),
+                            ),
+                            e,
+                            seq,
+                        )
+                        gold = min(9999999, gold + expected[1])
+                    else:
+                        gold_known = False
+                if kind == "exp":
+                    expected = expected_exp.get(seq)
+                    check("EXP belongs to eligible source scene", True if expected else None, seq)
+                    if expected:
+                        recipient, amount = expected
+                        old = ledger[recipient]["exp"]
+                        new = min(200, old + amount)
+                        eq(
+                            "source EXP command saturation",
+                            dict(Actor={"Value": recipient}, Before=old, After=new),
+                            e,
+                            seq,
+                        )
+                        ledger[recipient]["exp"] = new
+                        marker = next(
+                            (
+                                x
+                                for x in current_events
+                                if x.get("Kind") == "scene-step-started"
+                                and x.get("Detail") == "Reward"
+                            ),
+                            None,
+                        )
+                        check(
+                            "EXP precedes its Reward marker",
+                            marker["Sequence"] > seq if marker else None,
+                            seq,
+                        )
+                if kind == "exp-threshold":
+                    old = ledger[who]["exp"]
+                    check("level threshold reached", old >= 100, seq)
+                    eq("one threshold subtraction", dict(Before=old, After=old - 100), e, seq)
+                    ledger[who]["exp"] = old - 100
+                    growth_actors.add(who)
+                    p = progress[who]
+                    check("reached unpromoted level below cap", p["Level"] < 40, seq)
+                    draws = [
+                        x
+                        for x in current_events
+                        if x.get("Kind") in ("rng-growth-plus", "rng-growth-minus")
+                    ]
+                    seed = int(before["mainSeed"])
+                    cursor = 0
+                    field_map = [
+                        ("hp", "MaxHp", "level-max-hp"),
+                        ("mp", "MaxMp", "level-max-mp"),
+                        ("attack", "BaseAttack", "level-base-attack"),
+                        ("defense", "Defense", "level-defense"),
+                        ("agility", "Agility", "level-agility"),
+                    ]
+                    for stat, field, event_kind in field_map:
+                        definition = profiles[who]["stats"][stat]
+                        values = []
+                        if definition["curve"]:
+                            for purpose in ("rng-growth-plus", "rng-growth-minus"):
+                                growth_census = [
+                                    x
+                                    for x in census
+                                    if x[0] == index
+                                    and x[3] in ("rng-growth-plus", "rng-growth-minus")
+                                ]
+                                draw = (
+                                    events.get(growth_census[cursor][2], {})
+                                    if cursor < len(growth_census)
+                                    else {}
+                                )
+                                cursor += 1
+                                word, value = _rng_step(seed >> 16, 256)
+                                value >>= 1
+                                after = (word << 16) | (seed & 65535)
+                                eq(
+                                    "source growth draw",
+                                    dict(
+                                        Kind=purpose,
+                                        Actor={"Value": who},
+                                        Before=seed,
+                                        After=after,
+                                        RandomRange=128,
+                                        RandomValue=value,
+                                    ),
+                                    draw,
+                                    seq,
+                                )
+                                values.append(value)
+                                seed = after
+                            gain, _ = _calculate_gain(
+                                current=p[field],
+                                start=definition["start"],
+                                projected=definition["projected"],
+                                curve=definition["curve"],
+                                level=p["Level"],
+                                first=values[0],
+                                second=values[1],
+                                curves=curves,
+                            )
+                        else:
+                            gain = 0
+                        old_stat = p[field]
+                        p[field] = min(100 if field == "Agility" else 200, old_stat + gain)
+                        observed = next(
+                            (x for x in current_events if x.get("Kind") == event_kind), None
+                        )
+                        eq(
+                            "source growth stat",
+                            dict(Actor={"Value": who}, Before=old_stat, After=p[field]),
+                            observed if observed else absent,
+                            seq,
+                        )
+                    count("growth draw cardinality", cursor, len(draws), seq)
+                    level = next((x for x in current_events if x.get("Kind") == "level"), None)
+                    eq(
+                        "source level increment",
+                        dict(Actor={"Value": who}, Before=p["Level"], After=p["Level"] + 1),
+                        level if level else absent,
+                        seq,
+                    )
+                    p["Level"] += 1
+                    learning = [s for s in profiles[who]["spells"] if s["level"] == p["Level"]]
+                    check("no learned spell applicable at reached level", not learning, seq)
+                    eq("growth carries updated seed", seed, state.get("mainSeed", absent), seq)
+                    eq(
+                        "level does not heal current resources",
+                        {k: previous_actors[who][k] for k in ("hp", "mp")},
+                        actors.get(who, absent),
+                        seq,
+                    )
+                if kind == "kills":
+                    check("kill credited to completed scene actor", who == last_scene_actor, seq)
+                    old = ledger[who]["kills"]
+                    eq("kill counter increment", dict(Before=old, After=old + 1), e, seq)
+                    ledger[who]["kills"] = old + 1
+                if kind == "death-cleanup":
+                    eq("cleanup work item consumed", dict(Before=1, After=0), e, seq)
+                    eq(
+                        "lethal source target cleanup recipient",
+                        kills.get(who, absent),
+                        last_scene_actor,
+                        seq,
+                    )
+                    eq(
+                        "cleanup zeroes dead actor and removes placement",
+                        dict(hp=0, status=0, x=None, y=None),
+                        actors.get(who, absent),
+                        seq,
+                    )
+                    eq(
+                        "cleanup starts from dead actor",
+                        0,
+                        previous_actors.get(who, {}).get("hp", absent),
+                        seq,
+                    )
+                    last_cleanup = seq
+                if kind == "after-turn":
+                    last_after_turn = (who, seq)
+                    a = previous_actors[who]
+                    check(
+                        "death cleanup precedes after-turn",
+                        not any(
+                            a["hp"] <= 0 and a.get("x") is not None
+                            for a in previous_actors.values()
+                        ),
+                        seq,
+                    )
+                    check(
+                        "factions still active before after-turn",
+                        previous_actors.get("ally-0", {}).get("hp", 0) > 0
+                        and any(
+                            a["hp"] > 0 and a.get("x") is not None
+                            for k, a in previous_actors.items()
+                            if k.startswith("enemy-")
+                        ),
+                        seq,
+                    )
+                    eq("reached after-turn has no status", 0, a.get("status", absent), seq)
+                    if source:
+                        forbidden = {
+                            equates["ITEM_" + name]
+                            for name in ("HOLY_STAFF", "MYSTERY_STAFF", "LIFE_RING")
+                        }
+                        check(
+                            "no equipped after-turn recovery item",
+                            not any(
+                                int(w) & 128 and (int(w) & 127) in forbidden for w in a["items"]
+                            ),
+                            seq,
+                        )
+                    else:
+                        check("source after-turn equipment operands", None, seq)
+                    eq(
+                        "after-turn preserves current resources",
+                        {k: a[k] for k in ("hp", "mp", "status")},
+                        actors.get(who, absent),
+                        seq,
+                    )
+                    check("after-turn actor alive", a["hp"] > 0, seq)
+                    last_after_turn = (who, seq)
+                if kind == "action-committed":
+                    outcome_here = any(
+                        x["Kind"] == "battle-outcome" and x["Sequence"] < seq
+                        for x in current_events
+                    )
+                    check(
+                        "post-action after-turn or outcome precedes commit",
+                        outcome_here
+                        or bool(
+                            last_after_turn
+                            and last_after_turn[0] == who
+                            and last_after_turn[1] < seq
+                        ),
+                        seq,
+                    )
+                    last_after_turn = None
+                if kind == "battle-outcome":
+                    eq("reached outcome", "Victory", e.get("Detail", absent), seq)
+                    check(
+                        "victory after final cleanup",
+                        last_cleanup is not None and last_cleanup < seq,
+                        seq,
+                    )
+                    check(
+                        "victory living factions",
+                        bool(previous_actors)
+                        and any(
+                            a["hp"] > 0 and a.get("x") is not None
+                            for k, a in previous_actors.items()
+                            if k.startswith("ally-")
+                        )
+                        and previous_actors.get("ally-0", {}).get("hp", 0) > 0
+                        and not any(
+                            a["hp"] > 0 and a.get("x") is not None
+                            for k, a in previous_actors.items()
+                            if k.startswith("enemy-")
+                        ),
+                        seq,
+                    )
+                    check(
+                        "victory does not run final after-turn",
+                        not any(x["Kind"] == "after-turn" for x in current_events),
+                        seq,
+                    )
+            except (KeyError, TypeError, ValueError, IndexError) as error:
+                check("reward effect operands", None, seq)
+                result["unknown"].append(str(error))
+        if actors and source:
+            for who, operands in enemy_operands.items():
+                eq(
+                    "source enemy reward operands remain stable",
+                    operands,
+                    actors.get(who, absent),
+                    index,
+                )
+            for who, expected in ledger.items():
+                p = progress[who]
+                attack = p["BaseAttack"] + sum(
+                    n
+                    for w in expected_items[who]
+                    if w & 128
+                    for code, n in source["items"][w & 127]["effects"]
+                    if code == "INCREASE_ATT"
+                )
+                eq(
+                    "persisted combatant reward state",
+                    expected
+                    | dict(
+                        level=p["Level"],
+                        maxHp=p["MaxHp"],
+                        maxMp=p["MaxMp"],
+                        attack=attack,
+                        defense=p["Defense"],
+                        items=expected_items[who],
+                        spells=expected_spells[who],
+                        learned=p["Spells"],
+                        status=0,
+                    ),
+                    actors.get(who, absent),
+                    index,
+                )
+            eq(
+                "persisted battle gold",
+                gold if gold_known else absent,
+                state.get("gold", absent),
+                index,
+            )
+
+    first = context.get("firstOutcomeParty") or {}
+    partyrow = warps.get(first.get("index"))
+    post = (partyrow or {}).get("state") or {}
+    eq(
+        "first party boundary",
+        dict(revision=first.get("revision"), observationSequence=first.get("sequence")),
+        post,
+    )
+    final_party = {actor(p): p for p in post.get("party") or []}
+    check(
+        "first party complete actor roster",
+        set(final_party) == set(initial_actors) if final_party else None,
+    )
+    joined = (post.get("partyLists") or {}).get("Joined")
+    check("first party membership available", isinstance(joined, list) or None)
+    before_party = (selected["samples"].get(context.get("preBattlePartySample")) or {}).get(
+        "state"
+    ) or {}
+    clocks("pre-battle party", before_party)
+    precedes("party admission precedes battle", before_party, battle)
+    for membership in ("Active", "Joined", "Reserve"):
+        old_members = (before_party.get("partyLists") or {}).get(membership)
+        new_members = (post.get("partyLists") or {}).get(membership)
+        check(
+            "victory preserves actual party membership",
+            old_members == new_members
+            if isinstance(old_members, list) and isinstance(new_members, list)
+            else None,
+            membership,
+        )
+    outcome_sequence = next(
+        (e["Sequence"] for e in ordered_events if e.get("Kind") == "battle-outcome"), None
+    )
+    observed_first = next(
+        (
+            i
+            for i, r in warps.items()
+            if number(outcome_sequence)
+            and r.get("state", {}).get("observationSequence", -1) > outcome_sequence
+            and r.get("state", {}).get("party") is not None
+        ),
+        None,
+    )
+    if first.get("index") in warps and "party" in post:
+        eq("earliest retained party is declared first boundary", first.get("index"), observed_first)
+    else:
+        check("earliest retained party is declared first boundary", None)
+    outcome_row = next(
+        (event_rows[e["Sequence"]] for e in ordered_events if e.get("Kind") == "battle-outcome"),
+        None,
+    )
+    last_battle = (warps.get(outcome_row - 1, {}) if number(outcome_row) else {}).get("state") or {}
+    living = {a.get("id"): a for a in last_battle.get("actors") or []}
+    for who, expected in ledger.items():
+        p = progress[who]
+        observed = final_party.get(who, absent)
+        expected_party = dict(
+            Exp=expected["exp"],
+            Kills=expected["kills"],
+            Defeats=expected["defeats"],
+            Status=0,
+            SourceLoadout=p["SourceLoadout"],
+            Progress=p if who in growth_actors else None,
+        )
+        prior_actor = living.get(who)
+        check("victory healing eligibility observed", True if prior_actor else None, who)
+        if prior_actor and (
+            prior_actor.get("hp", 0) > 0
+            or int(who.split("-")[1]) in {equates.get("ALLY_PETER"), equates.get("ALLY_LEMON")}
+        ):
+            expected_party.update(Hp=p["MaxHp"], Mp=p["MaxMp"])
+        elif prior_actor:
+            expected_party.update(Hp=prior_actor.get("hp"), Mp=prior_actor.get("mp"))
+        eq("composed first Party.Progress and victory healing", expected_party, observed, who)
+        for i, r in warps.items():
+            s = r.get("state") or {}
+            if number(first.get("index")) and i > first["index"] and s.get("party") is not None:
+                later_party = {actor(p): p for p in s["party"]}
+                eq(
+                    "outcome persistence through return",
+                    expected_party,
+                    later_party.get(who, absent),
+                    i,
+                )
+    eq("first party gold", gold if gold_known else absent, post.get("gold", absent))
+    outcome_events = [e for e in ordered_events if e.get("Kind") == "battle-outcome"]
+    if outcome_events:
+        precedes(
+            "outcome precedes first party",
+            dict(
+                revision=outcome_events[0]["Revision"],
+                observationSequence=outcome_events[0]["Sequence"],
+            ),
+            post,
+        )
+    tail = [
+        e
+        for e in ordered_events
+        if e.get("Kind")
+        in (
+            "after-battle-join",
+            "battle-unlock-cleared",
+            "battle-completed-set",
+            "exploration-return-started",
+            "map-transferred",
+            "battle-returned",
+        )
+    ]
+    eq(
+        "outcome operation order",
+        [
+            "after-battle-join",
+            "battle-unlock-cleared",
+            "battle-completed-set",
+            "exploration-return-started",
+            "map-transferred",
+            "battle-returned",
+        ],
+        [e["Kind"] for e in tail],
+    )
+    for event in tail:
+        if event["Kind"] not in (
+            "after-battle-join",
+            "battle-unlock-cleared",
+            "battle-completed-set",
+        ):
+            continue
+        detail = event.get("Detail")
+        if not isinstance(detail, str) or not detail.isdecimal():
+            check("outcome operation operand", None if detail is None else False, event["Sequence"])
+            continue
+        operand = int(detail)
+        state = warps[event_rows[event["Sequence"]]].get("state") or {}
+        if event["Kind"] == "after-battle-join":
+            members = (state.get("partyLists") or {}).get("Joined")
+            check(
+                "JOIN receipt persists membership",
+                operand in members if isinstance(members, list) else None,
+                event["Sequence"],
+            )
+        else:
+            flags = state.get("flags", state.get("storyFlags"))
+            check(
+                "flag receipt persists operation",
+                (operand in flags) == (event["Kind"] == "battle-completed-set")
+                if isinstance(flags, list)
+                else None,
+                event["Sequence"],
+            )
+    if source:
+        joined_event = next((e for e in tail if e["Kind"] == "after-battle-join"), None)
+        eq(
+            "source after-battle JOIN operand",
+            str(after_joins[1]),
+            joined_event.get("Detail", absent) if joined_event else absent,
+        )
+        if joined_event:
+            joined_state = warps[event_rows[joined_event["Sequence"]]].get("state") or {}
+            eq(
+                "after-battle JOIN membership persists",
+                post.get("partyLists", absent),
+                joined_state.get("partyLists", absent),
+            )
+        for kind, flag in [
+            ("battle-unlock-cleared", equates["BATTLE_UNLOCKED_FLAGS_START"] + 1),
+            ("battle-completed-set", equates["BATTLE_COMPLETED_FLAGS_START"] + 1),
+        ]:
+            event = next((e for e in tail if e["Kind"] == kind), None)
+            if event:
+                eq("source battle flag operand", str(flag), event.get("Detail", absent))
+                for index, row in warps.items():
+                    if index < event_rows[event["Sequence"]]:
+                        continue
+                    state = row.get("state") or {}
+                    flags = state.get("flags", state.get("storyFlags"))
+                    check(
+                        "battle flag persistence through return",
+                        (flag in flags) == (kind == "battle-completed-set")
+                        if isinstance(flags, list)
+                        else None,
+                        index,
+                    )
+        if joined_event:
+            for index, row in warps.items():
+                if index < event_rows[joined_event["Sequence"]]:
+                    continue
+                for membership in ("Active", "Joined", "Reserve"):
+                    expected = (post.get("partyLists") or {}).get(membership)
+                    actual_members = ((row.get("state") or {}).get("partyLists") or {}).get(
+                        membership
+                    )
+                    check(
+                        "post-JOIN membership through return",
+                        expected == actual_members
+                        if isinstance(expected, list) and isinstance(actual_members, list)
+                        else None,
+                        index,
+                    )
+    result["applicability"] = dict(
+        statusEffects="unreached: no status or recovery equipment at selected after-turn calls",
+        spellLearning="unreached: no source threshold at observed new level",
+        defeat="unreached: leader lives and all placed enemies are dead",
+        liveGrowthStats="composed initial source -> effect -> first party only",
+    )
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    result["unknown"] = list(dict.fromkeys(result["unknown"]))
+    # Keep every failure/absence and occurrence. Repeated successful checks are
+    # summarized so immutable gate reports fit the selected evidence output budget.
+    passed = Counter(c["name"] for c in result["checks"] if c["value"] is True)
+    result["checks"] = [c for c in result["checks"] if c["value"] is not True] + [
+        dict(name=name, value=True, count=count) for name, count in passed.items()
+    ]
+    return result
+
+
 def _physical_source_operands(source_root, item_ids):
     """Read only the selected source tables; never use candidate damage as an oracle."""
     from sf2tool.compression import decode_stack_compressed
@@ -16289,6 +17701,7 @@ def compare_modern(
     map_context=None,
     admission_context=None,
     physical_context=None,
+    reward_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -16328,6 +17741,11 @@ def compare_modern(
     physical_consumers = (
         physical_consumer_binding(actual, physical_context, text_source_root)
         if physical_context is not None
+        else None
+    )
+    reward_consumers = (
+        reward_consumer_binding(actual, reward_context, text_source_root)
+        if reward_context is not None
         else None
     )
     map_consumers = (
@@ -17493,6 +18911,22 @@ def compare_modern(
                 "prepared04 CPU-timing/cursor failures remain historical, not a third-tick quota",
             )
             continue
+        if (
+            name == "EXP/gold/growth/spell learning and after-turn/outcome effects"
+            and reward_consumers is not None
+        ):
+            check(
+                5,
+                name,
+                True,
+                reward_consumers["value"],
+                actual_location,
+                original=reward_consumers["sourceRules"],
+                parent=rule_parent,
+                reason="Source reward/growth rules at matched action operands, ordered lifecycle "
+                "and composed first Party.Progress; no immediate live agility/base-attack claim",
+            )
+            continue
         item_reached = any(e["Kind"] == "item-consumed" for e in unique_events.values()) or any(
             row["state"].get("itemSlot") is not None
             for row in outcome.get("records", [])
@@ -18147,6 +19581,7 @@ def compare_modern(
             w2ConsumerBinding=w2_consumers,
             healConsumerBinding=heal_consumers,
             physicalConsumerBinding=physical_consumers,
+            rewardConsumerBinding=reward_consumers,
             reachedMaterialJoins=materials["joins"],
             reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
@@ -18699,10 +20134,16 @@ def main():
             "map",
             "admission-seed",
             "physical",
+            "reward",
         ),
     )
     parser.add_argument(
         "--physical-context", type=Path, help="Selected complete physical census and source indices"
+    )
+    parser.add_argument(
+        "--reward-context",
+        type=Path,
+        help="Selected reward/lifecycle census and first party boundary",
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
@@ -18782,6 +20223,54 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.reward_context is None
+        or args.mode == "reward"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "Reward context applies only to reward or modern compare",
+    )
+    if args.reward_context is not None:
+        args.reward_context = (
+            args.reward_context
+            if args.reward_context.is_absolute()
+            else repo_path(args.reward_context)
+        ).resolve()
+        require(args.reward_context.stat().st_size <= 1024 * 1024, "Reward context exceeds 1MiB")
+    if args.mode == "reward":
+        require(
+            args.actual is not None and args.reward_context is not None,
+            "reward requires selected actual and independent census context",
+        )
+        actual_path = args.actual if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.reward_context.stat().st_size <= 10 * 1024 * 1024,
+            "Reward compact selection exceeds 10MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "Reward output must be fresh beneath this worktree local/",
+        )
+        binding = reward_consumer_binding(
+            read(actual_path), read(args.reward_context), args.text_source_root
+        )
+        verdict = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-reward-consumer", result=verdict, milestonePass=False, binding=binding
+        )
+        require(
+            len(json.dumps(report).encode("utf-8")) <= 10 * 1024 * 1024,
+            "Reward report exceeds 10MiB",
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(result=verdict, occurrences=len(binding["occurrences"]), milestonePass=False)
+            )
+        )
+        raise SystemExit(0 if binding["value"] is True else 1 if binding["value"] is False else 2)
     require(
         args.physical_context is None
         or args.mode == "physical"
@@ -19383,6 +20872,7 @@ def main():
                 read(args.map_context) if args.map_context else None,
                 read(args.admission_context) if args.admission_context else None,
                 read(args.physical_context) if args.physical_context else None,
+                read(args.reward_context) if args.reward_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))

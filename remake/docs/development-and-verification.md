@@ -3858,6 +3858,67 @@ under current verification policy, and exact-head CI. Existing normal-verificati
 historical A FAIL and original elapsed-time Unknown remain unchanged. Independent main-gate
 acceptance owns obligation closure.
 
+### Scoped reward and outcome comparison
+
+The [selected reward contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-reward-growth-and-outcome-consumer-binding)
+uses existing compact retained evidence and pinned source rules. It shares the modern
+reward child; no full H4 run, world export, SDK, host or original-runtime launch is needed.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 -m sf2tool.remake_h4_comparison reward `
+  --actual local/issue534/reward-binding-01/joined-actual.json `
+  --reward-context local/issue534/reward-binding-01/context.json `
+  --text-source-root $pinnedSource `
+  --output local/reward-consumers/fresh-report.json
+```
+
+Resolve `$pinnedSource` through the local private-input owner. The context declares
+`scope=retained-keyboard-A-reward`, session, producer/source revisions, original per-channel
+`indices`, complete semantic `census` and `scenes`, selection receipts, `initialSample`,
+`battleSample`, `preBattlePartySample` and the exact `firstOutcomeParty` boundary. Census
+rows carry result index, revision, sequence, kind, actor and target. Complete selected
+Submit arrays, input intervals and scene projection identities retain their original
+`_index`; neither observed subsets nor missing channels redefine the declared census.
+Modern comparison accepts this same `--reward-context` and predicate.
+
+Reproduction reads the retained selection; this recipe authorizes no new raw scan. The
+first authorized semantic selection completed within its budget but failed sufficiency:
+five post-battle transition kinds were counted without their envelopes, and an immediate
+previous-actor condition missed the first party behind an empty view bridge. The authorized
+correction retains those envelopes and their neighbors only within the same admitted
+Battle01 outcome/return, stopping after its following neighbor. It preserves the first
+party as observed, including empty/partial operands, rather than seeking a later adequate
+state. Retain `selection-sufficiency-failure.json` and both selection receipts beside the
+joined input. Initial selection used26.5580872s/4,075,520B incremental peak; correction
+used20.1643785s/2,207,744B. Joined actual is5,116,740B. Original source metadata stayed
+unchanged, and normalization stayed within its10MiB input/output bundle.
+
+Acquisition ceilings are120s/128MiB incremental and2MiB per raw record, selected10MiB,
+normalized10MiB, total fresh output24MiB; the correction has1MiB selected/1MiB normalized
+and3MiB fresh limits. These are allocation records, not automatic retry authority. The
+scoped CLI accepts actual plus context at most10MiB, context at most1MiB and report at
+most10MiB, with fresh output beneath this worktree's ignored `local/`. Repeated successful
+checks are summarized by name/count to preserve publication headroom; every failure,
+missing operand and scene occurrence stays explicit. Exit0/1/2 means
+PASS/FAIL/Unavailable; `milestonePass` remains false.
+
+Direct controls exercise reward values/recipients, source RNG and growth, deferred EXP,
+missing records, first-party progress and membership, victory healing, outcome flags,
+source/session identity, automatic input ownership, projection phase/token/completion,
+event ordering and census coverage. Preserve the initial controls' two classification
+failures (missing first-party fields and shortened membership), the later missing-source
+cascade failure, and the pilot's incorrect HP-event actor mapping alongside their corrected
+results. HP events identify the recipient; they do not carry the attacking actor as their
+Actor. Known wrong effects must still fail
+when a separate field is missing. No tests of this verification program are introduced.
+
+Run scoped Ruff, direct contracts/docs/private-boundary checks, the committed planner under
+the current verification policy and exact-head CI. Historical A FAIL, original elapsed
+Unknown and the completed normal-verification provenance failure remain unchanged. Main-gate
+owns independent integration and obligation closure; native/full routes and adjacent
+accepted predicates are outside this slice.
+
 ### Scoped HEAL consumer comparison
 
 The [selected HEAL contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding)
