@@ -4,7 +4,7 @@ The default legacy profile diagnoses first control and the first STAY/next actor
 The modern profile evaluates the continuous winning route and named settings matrix;
 missing required original or host bindings keep full H4 acceptance incomplete.
 Use the accepted read-only reference projector for those profiles. The audio and
-turn-order modes evaluate selected dependencies without loading the whole H4 report.
+turn-order and w2 modes evaluate selected dependencies without loading the whole H4 report.
 All outputs remain private.
 """
 
@@ -4840,6 +4840,603 @@ def _source_turn_order(candidates, before):
     )
 
 
+# The admitted cohort inventory is evidence scope, never a gameplay admission rule.
+_W2_COHORT = (
+    ("cs-5145c", 5, 510),
+    ("cs-5145c", 8, 511),
+    ("map3-entityevent0", 4, 512),
+    ("map3-entityevent15", 2, 500),
+    ("byte-50e96", 4, 514),
+    ("byte-50e96", 6, 515),
+    ("cs-5149a", 9, 517),
+    ("cs-5149a", 12, 518),
+    ("cs-5149a", 94, 526),
+    ("cs-53996", 158, 2193),
+    ("cs-52f0c", 3, 575),
+    ("cs-52f0c", 3, 575),
+    ("cs-52f0c", 8, 576),
+    ("bbcs-01", 17, 2292),
+    ("bbcs-01", 93, 2299),
+    ("bbcs-01", 146, 2303),
+)
+
+
+def w2_consumer_binding(actual, context, source_root):
+    """PR618's composed predicate on explicitly selected historical A occurrences.
+
+    Keep the independent accepted inventory separate from candidate channels. A
+    contradiction in any available edge dominates missing evidence elsewhere.
+    """
+    result = dict(
+        value=None,
+        checks=[],
+        occurrences=[],
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            owner="docs/design/contracts/dialogue-system.md",
+            section="w2-composed-semantic-acceptance",
+        ),
+        unknown=[
+            "original internal accepting-read instruction/time and complete gate bytes",
+            "intermediate same-submit host draw/time for the two later-state witnesses",
+        ],
+    )
+    absent = object()
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(expected, observed=absent):
+        if expected is absent or observed is absent or observed is None and expected is not None:
+            return None
+        if isinstance(expected, dict):
+            if not isinstance(observed, dict):
+                return False
+            return merge([match(v, observed.get(k, absent)) for k, v in expected.items()])
+        if isinstance(expected, bool):
+            return type(observed) is bool and observed == expected
+        return observed == expected
+
+    def check(name, value, ordinal=None):
+        result["checks"].append(dict(name=name, value=value, ordinal=ordinal))
+
+    def one(name, candidates, ordinal):
+        check(name, None if not candidates else len(candidates) == 1, ordinal)
+        return candidates[0] if candidates else {}
+
+    def index(records, key):
+        groups = {}
+        for row in records:
+            groups.setdefault(key(row), []).append(row)
+        return groups
+
+    context = context or {}
+    check("explicit accepted cohort", match("retained-keyboard-A-w2", context.get("scope")))
+    session = context.get("sessionId")
+    check("independent session", True if isinstance(session, str) and session else None)
+    inventory = context.get("occurrences") or []
+    expected_inventory = list(_W2_COHORT)
+    observed_inventory = [
+        (o.get("program"), o.get("instruction"), o.get("text")) for o in inventory
+    ]
+    check(
+        "accepted source occurrence inventory",
+        None if not inventory else observed_inventory == expected_inventory,
+    )
+    check(
+        "unique occurrence identity",
+        len({(o.get("ordinal"), o.get("token")) for o in inventory}) == len(inventory),
+    )
+    texts = {}
+    try:
+        root = Path(source_root) if source_root is not None else None
+        if root is None:
+            raise ValueError("source unavailable")
+        root = root.resolve() if root.is_absolute() else repo_path(root)
+        pin = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        check("original source pin", pin == UPSTREAM)
+        script = subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(root),
+                "show",
+                f"{UPSTREAM}:disasm/data/scripting/text/gamescript.txt",
+            ],
+            text=True,
+            encoding="utf-8",
+        )
+        texts = {
+            int(line[:4], 16): line[5:]
+            for line in script.splitlines()
+            if re.match(r"^[0-9A-Fa-f]{4}=", line)
+        }
+    except (OSError, ValueError, subprocess.SubprocessError):
+        check("pinned original text unavailable", None)
+
+    neutrals = context.get("neutral") or []
+    selected_polls = inventory + neutrals
+
+    def selected_rows(channel, positions):
+        channel_rows = actual.get(channel, [])
+        if not channel_rows:
+            return []
+        # Retained selections already preserve original indices. Full captures
+        # support indexed reads: never materialize their complete sample/results.
+        if "_index" in channel_rows[0]:
+            return channel_rows
+        return [
+            dict(channel_rows[int(i)], _index=int(i))
+            for i in sorted(i for i in positions if i is not None)
+            if 0 <= i < len(channel_rows)
+        ]
+
+    input_rows = selected_rows("inputRecords", {o.get("inputIndex") for o in selected_polls})
+    inputs = index(input_rows, lambda i: i.get("ordinal"))
+    sample_positions = {i for o in selected_polls for i in o.get("readyIndices", [])}
+    sample_positions.update(o.get("indicatorIndex") for o in inventory)
+    samples = selected_rows("samples", sample_positions)
+    sample_revisions = index(samples, lambda s: (s.get("state") or {}).get("revision"))
+    sample_indices = index(samples, lambda s: s["_index"])
+    records = [
+        (r["_index"], r)
+        for r in selected_rows("warpRecords", {o.get("resultIndex") for o in selected_polls})
+    ]
+    receipts = index(
+        actual.get("audioReceipts", []), lambda a: (a.get("receipt") or {}).get("Sequence")
+    )
+    check(
+        "retained neutral inventory",
+        None
+        if not neutrals
+        else len(neutrals) == 14 and len({n.get("ordinal") for n in neutrals}) == 14,
+    )
+    polls = [(o, o, True) for o in inventory]
+    for n in neutrals:
+        parents = [o for o in inventory if o.get("token") == n.get("token")]
+        parent = one("neutral belongs to one source occurrence", parents, n.get("ordinal"))
+        polls.append((n, parent, False))
+    poll_ordinals = [p.get("ordinal") for p, _, _ in polls]
+    check("distinct selected polls", len(set(poll_ordinals)) == len(poll_ordinals))
+    reached = [
+        r.get("inputOrdinal")
+        for _, r in records
+        if any(
+            e.get("Kind") == "text-w2-input"
+            for e in (r.get("result") or {}).get("observations", [])
+        )
+    ]
+    check(
+        "candidate poll inventory",
+        merge(
+            [
+                not (set(reached) - set(poll_ordinals)) if polls else None,
+                len(reached) == len(set(reached)),
+                True if set(reached) == set(poll_ordinals) and polls else None,
+            ]
+        ),
+    )
+
+    for poll, owner, accepting in polls:
+        ordinal = poll.get("ordinal")
+        token = owner.get("token")
+        cursor = dict(Program=owner.get("program"), Instruction=owner.get("instruction"))
+        inp = one("one delivered input", inputs.get(ordinal, []), ordinal)
+        before, after = inp.get("before") or {}, inp.get("after") or {}
+        check(
+            "eligible delivered input",
+            match(
+                dict(
+                    pressed=True,
+                    action="confirm" if accepting else "wait",
+                    delivery=dict(kind="key", code=4194309 if accepting else 86),
+                    before=dict(
+                        sessionId=session,
+                        token=token,
+                        cursor=cursor,
+                        wait="FieldTextWait",
+                        canWaitForText=True,
+                    ),
+                ),
+                inp,
+            ),
+            ordinal,
+        )
+        start, end = inp.get("resultStart"), inp.get("resultEnd")
+        selected = [
+            r for n, r in records if start is not None and end is not None and start <= n < end
+        ]
+        record = one("one result in input span", selected, ordinal)
+        submission = record.get("result") or {}
+        state = record.get("state") or {}
+        revision = poll.get("resultRevision")
+        check(
+            "whole Submit result and state identity",
+            match(
+                dict(
+                    inputOrdinal=ordinal,
+                    result=dict(
+                        boundary="submit", sessionId=session, revision=revision, failure=None
+                    ),
+                    state=dict(sessionId=session, revision=revision),
+                ),
+                record,
+            ),
+            ordinal,
+        )
+        check(
+            "input after joins whole Submit",
+            match(
+                dict(
+                    sessionId=session,
+                    revision=revision,
+                    token=state.get("token", absent),
+                    wait=state.get("wait", absent),
+                ),
+                after,
+            ),
+            ordinal,
+        )
+        snapshot_keys = (
+            "sessionId",
+            "revision",
+            "observationSequence",
+            "simulationTick",
+            "mainSeed",
+            "token",
+            "cursor",
+            "wait",
+            "map",
+            "mode",
+        )
+        check(
+            "result snapshot joins input after",
+            match({k: state.get(k, absent) for k in snapshot_keys}, after),
+            ordinal,
+        )
+        check(
+            "one accepting or neutral service",
+            None
+            if before.get("simulationTick") is None or after.get("simulationTick") is None
+            else after["simulationTick"] == before["simulationTick"] + 1,
+            ordinal,
+        )
+        ready_rows = sample_revisions.get(before.get("revision"), [])
+        ready_evidence = "same-revision"
+        ready_input = before
+        if not ready_rows and accepting:
+            # The2292 selection retains readiness before its neutral poll. Its
+            # complete input/result edge carries those gates to the accept.
+            bridges = [
+                i
+                for n in neutrals
+                if n.get("token") == token
+                for i in inputs.get(n.get("ordinal"), [])
+                if (i.get("after") or {}).get("revision") == before.get("revision")
+            ]
+            bridge = one("ready neutral edge", bridges, ordinal)
+            check(
+                "neutral edge joins accepting input",
+                match(
+                    {
+                        k: before.get(k, absent)
+                        for k in (
+                            "sessionId",
+                            "token",
+                            "revision",
+                            "cursor",
+                            "wait",
+                            "simulationTick",
+                            "mainSeed",
+                            "observationSequence",
+                            "canWaitForText",
+                        )
+                    },
+                    bridge.get("after", absent),
+                ),
+                ordinal,
+            )
+            ready_rows = sample_revisions.get((bridge.get("before") or {}).get("revision"), [])
+            ready_evidence = "retained neutral edge"
+            ready_input = bridge.get("before") or {}
+        check("ready state available", True if ready_rows else None, ordinal)
+        ready_state = (ready_rows[0].get("state") or {}) if ready_rows else {}
+        check(
+            "same-revision ready gate observations agree",
+            merge(
+                [
+                    match(
+                        {
+                            k: ready_state.get(k, absent)
+                            for k in (
+                                "sessionId",
+                                "token",
+                                "cursor",
+                                "canWaitForText",
+                                "entitiesRunning",
+                                "eventCaller",
+                                "portraitWindow",
+                                "typewriting",
+                                "logicalView",
+                                "fieldText",
+                            )
+                        },
+                        row.get("state", absent),
+                    )
+                    for row in ready_rows[1:]
+                ]
+            ),
+            ordinal,
+        )
+        check(
+            "ready snapshot joins input before",
+            match({k: ready_input.get(k, absent) for k in snapshot_keys}, ready_state),
+            ordinal,
+        )
+        program = owner.get("program")
+        entity_running = program not in ("map3-entityevent0", "map3-entityevent15")
+        caller = (
+            "EntityEventContext"
+            if program in ("map3-entityevent0", "map3-entityevent15", "cs-52f0c")
+            else None
+            if program in ("cs-53996", "bbcs-01")
+            else "ZoneEventContext"
+        )
+        portrait = "ClosedPortraitWindow" if program == "cs-5145c" else "OpenPortraitWindow"
+        check(
+            "source caller and live service gates",
+            match(
+                dict(
+                    sessionId=session,
+                    token=token,
+                    cursor=cursor,
+                    canWaitForText=True,
+                    wait="FieldTextWait",
+                    entitiesRunning=entity_running,
+                    eventCaller=caller,
+                    portraitWindow=portrait,
+                    typewriting=False,
+                    logicalView=dict(HideWindows=False, Scrolling=False),
+                    fieldText=dict(
+                        Text=owner.get("text"),
+                        Wait2=True,
+                        Revealed=True,
+                        LogicalDone=True,
+                        Token=dict(Value=token),
+                    ),
+                ),
+                ready_state,
+            ),
+            ordinal,
+        )
+        field = ready_state.get("fieldText") or {}
+        units, end_unit = field.get("Units") or [], field.get("End")
+        check(
+            "source W2 token at actual span",
+            merge(
+                [
+                    None if owner.get("text") not in texts else "{W2}" in texts[owner["text"]],
+                    None
+                    if end_unit is None or not units
+                    else 0 <= end_unit < len(units) and units[int(end_unit)].get("Kind") == 4,
+                ]
+            ),
+            ordinal,
+        )
+        events = submission.get("observations") or []
+        expected_kinds = ["rng-text-w2", "text-seed-copy", "text-w2-wait", "text-w2-input"] + (
+            ["text-w2-accepted"] if accepting else []
+        )
+        positions = []
+        found = {}
+        for kind in expected_kinds:
+            matches = [(i, e) for i, e in enumerate(events) if e.get("Kind") == kind]
+            e = one(kind, [e for _, e in matches], ordinal)
+            found[kind] = e
+            if matches:
+                positions.append(matches[0][0])
+        check("draw copy wait read accept order", positions == sorted(positions), ordinal)
+        check(
+            "draw copy wait precede service work",
+            None if len(positions) < len(expected_kinds) else positions[:3] == [0, 1, 2],
+            ordinal,
+        )
+        if accepting:
+            check(
+                "read accepts before caller resumes",
+                None
+                if len(positions) < 5
+                else positions[4] == positions[3] + 1
+                and not any(e.get("Kind") == "program-instruction" for e in events[: positions[4]]),
+                ordinal,
+            )
+        else:
+            check(
+                "neutral keeps caller suspended",
+                not any(e.get("Kind") == "program-instruction" for e in events),
+                ordinal,
+            )
+        check(
+            "masked accepting versus neutral read",
+            match("accept" if accepting else "none", found["text-w2-input"].get("Detail", absent)),
+            ordinal,
+        )
+        check(
+            "neutral does not accept",
+            accepting or not any(e.get("Kind") == "text-w2-accepted" for e in events),
+            ordinal,
+        )
+        draw = found["rng-text-w2"]
+        check(
+            "draw uses input main seed and range",
+            match(dict(Before=before.get("mainSeed", absent), RandomRange=256), draw),
+            ordinal,
+        )
+        if draw.get("Before") is not None:
+            word, value = _rng_step(int(draw["Before"]) >> 16, 512)
+            check(
+                "independent range256 main draw",
+                match(
+                    dict(
+                        After=(word << 16) | (int(draw["Before"]) & 65535), RandomValue=value >> 1
+                    ),
+                    draw,
+                ),
+                ordinal,
+            )
+        check(
+            "copy precedes service",
+            match(draw.get("RandomValue", absent), found["text-seed-copy"].get("After", absent)),
+            ordinal,
+        )
+        sequences = [e.get("Sequence") for e in events]
+        check(
+            "event sequence inside Submit",
+            None
+            if any(s is None for s in sequences)
+            or before.get("observationSequence") is None
+            or submission.get("observationSequence") is None
+            else sequences == sorted(set(sequences))
+            and all(
+                before["observationSequence"] < s <= submission["observationSequence"]
+                for s in sequences
+            ),
+            ordinal,
+        )
+        if not accepting:
+            check(
+                "neutral has no validation playback",
+                not any(
+                    a.get("receipt", {}).get("Revision") == revision
+                    and a.get("receipt", {}).get("Command") == 67
+                    and a.get("receipt", {}).get("Operation") == "started"
+                    for a in actual.get("audioReceipts", [])
+                ),
+                ordinal,
+            )
+            check(
+                "neutral retains token and input eligibility",
+                match(dict(token=token, canWaitForText=True, cursor=cursor), after),
+                ordinal,
+            )
+            continue
+        check(
+            "actual continuation token and wait",
+            match(dict(token=owner.get("nextToken"), wait=owner.get("nextWait")), after),
+            ordinal,
+        )
+        check(
+            "accepted token released",
+            None if after.get("token") is None else after["token"] != token,
+            ordinal,
+        )
+        later = owner.get("text") in (2299, 2303)
+        indicator = one(
+            "indicator witness", sample_indices.get(owner.get("indicatorIndex"), []), ordinal
+        )
+        check(
+            "indicator occurrence identity",
+            match(
+                dict(label=owner.get("afterSample"), state=owner.get("indicatorIdentity", absent)),
+                indicator,
+            ),
+            ordinal,
+        )
+        visible = indicator.get("state") or {}
+        check(
+            "actual retained text copy",
+            match(
+                found["text-seed-copy"].get("After", absent), visible.get("randomSeedCopy", absent)
+            ),
+            ordinal,
+        )
+        check(
+            "actual indicator clear",
+            match(
+                dict(
+                    sessionId=session,
+                    logicalText=dict(Indicator=0, IndicatorVisible=False),
+                ),
+                visible,
+            ),
+            ordinal,
+        )
+        if later:
+            check(
+                "later next-display witness",
+                match(
+                    dict(
+                        cursor=dict(Program=program),
+                        fieldText=dict(Text=owner["text"] + 1),
+                        wait="FieldTextWait",
+                        canWaitForText=True,
+                    ),
+                    visible,
+                ),
+                ordinal,
+            )
+            check(
+                "later witness follows accepted result",
+                None
+                if visible.get("revision") is None or revision is None
+                else visible["revision"] > revision,
+                ordinal,
+            )
+        else:
+            check(
+                "same-submit indicator identity",
+                match(
+                    dict(
+                        revision=revision,
+                        token=after.get("token", absent),
+                        cursor=after.get("cursor", absent),
+                    ),
+                    visible,
+                ),
+                ordinal,
+            )
+        audio_sequences = owner.get("validationSequences") or []
+        check(
+            "one expected validation receipt",
+            None if not audio_sequences else len(audio_sequences) == 1,
+            ordinal,
+        )
+        for sequence in audio_sequences:
+            audio = one("actual validation playback", receipts.get(sequence, []), ordinal)
+            check(
+                "validation whole Submit binding",
+                match(
+                    dict(
+                        poll=dict(sessionId=session),
+                        receipt=dict(
+                            Sequence=sequence,
+                            Revision=revision,
+                            Command=67,
+                            Operation="started",
+                            Playing=True,
+                        ),
+                    ),
+                    audio,
+                ),
+                ordinal,
+            )
+        result["occurrences"].append(
+            dict(
+                ordinal=ordinal,
+                token=token,
+                text=owner.get("text"),
+                resultRevision=revision,
+                indicatorEvidence="later-state composition" if later else "same-submit",
+                sourceProgram=program,
+                readyEvidence=ready_evidence,
+            )
+        )
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    return result
+
+
 def turn_order_binding(actual, source_root):
     """Bind a selected completed Application generation to source-derived rules.
 
@@ -9281,6 +9878,7 @@ def compare_modern(
     canonical_content=None,
     tileset_metadata=None,
     palette_metadata=None,
+    w2_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -9314,6 +9912,7 @@ def compare_modern(
         except (OSError, ValueError, KeyError):
             audio_context = None
     audio_consumers = audio_consumer_binding(actual, audio_context, text_source_root)
+    w2_consumers = w2_consumer_binding(actual, w2_context, text_source_root)
     assertions = _bounded_list()
     obligations = {}
 
@@ -10699,8 +11298,8 @@ def compare_modern(
             "W2 accepting read/validation indicator and token return",
             "source loc_6472 draw/copy/wait/read then sub_64A8 validation/clear -> token resume",
             "inputRecords + text-w2-* + audio validation receipt",
-            "original exact W2 accepting read and actual occurrence correlation",
-            "Text510/511 returns and W2 loop entry do not observe the later accepting read",
+            "selected source/caller/actual occurrence and validation/indicator binding",
+            "PR618 composed acceptance; original internal read/time remains Unknown",
         ),
         (
             "plain JOIN input after matching finite completion",
@@ -10738,6 +11337,19 @@ def compare_modern(
             "event",
         ),
     ):
+        if name == "W2 accepting read/validation indicator and token return":
+            check(
+                9,
+                name,
+                True,
+                w2_consumers["value"],
+                actual_location,
+                original=w2_consumers["sourceRules"],
+                parent=consumer_parent,
+                reason="Accepted source/caller/actual composed proof; original internal read and "
+                "exact intermediate host timing remain Unknown",
+            )
+            continue
         if (
             name == "plain JOIN input after matching finite completion"
             and join["plain"] is not None
@@ -11035,6 +11647,7 @@ def compare_modern(
             audioContiguous=audio_contiguous,
             audioLifecycle=audio_lifecycle,
             audioConsumerBinding=audio_consumers,
+            w2ConsumerBinding=w2_consumers,
             reachedMaterialJoins=materials["joins"],
             reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
@@ -11568,7 +12181,7 @@ def compare_resources(
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "mode", choices=("plan", "compare", "matrix", "resources", "audio", "turn-order")
+        "mode", choices=("plan", "compare", "matrix", "resources", "audio", "turn-order", "w2")
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
@@ -11580,6 +12193,9 @@ def main():
         "--audio-context",
         type=Path,
         help="Selected audio metadata/operands/events, without PCM; audio mode only",
+    )
+    parser.add_argument(
+        "--w2-context", type=Path, help="Accepted selected W2 occurrence inventory and session"
     )
     parser.add_argument("--host-log", type=Path)
     parser.add_argument("--host-exit", type=int)
@@ -11629,6 +12245,63 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.w2_context is None
+        or args.mode == "w2"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "W2 context applies only to w2 or modern compare mode",
+    )
+    if args.w2_context is not None:
+        args.w2_context = (
+            args.w2_context.resolve()
+            if args.w2_context.is_absolute()
+            else repo_path(args.w2_context)
+        )
+        require(args.w2_context.stat().st_size <= 10 * 1024 * 1024, "W2 context exceeds 10 MiB")
+    if args.mode == "w2":
+        require(
+            args.actual is not None and args.w2_context is not None,
+            "w2 requires selected actual and independent occurrence context",
+        )
+        actual_path, context_path = (
+            p.resolve() if p.is_absolute() else repo_path(p) for p in (args.actual, args.w2_context)
+        )
+        require(
+            actual_path.stat().st_size + context_path.stat().st_size <= 10 * 1024 * 1024,
+            "W2 selection exceeds 10 MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "W2 output must be fresh beneath this worktree's local/",
+        )
+        binding = w2_consumer_binding(read(actual_path), read(context_path), args.text_source_root)
+        verdict_value = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-w2-composed-consumer",
+            comparisonScope="retained-keyboard-A-w2",
+            result=verdict_value,
+            milestonePass=False,
+            actual=actual_path.as_posix(),
+            context=context_path.as_posix(),
+            binding=binding,
+        )
+        require(
+            len(json.dumps(report).encode("utf-8")) <= 10 * 1024 * 1024, "W2 report exceeds 10 MiB"
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(
+                    result=verdict_value,
+                    milestonePass=False,
+                    occurrences=len(binding["occurrences"]),
+                )
+            )
+        )
+        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
     if args.mode == "turn-order":
         require(
             args.actual is not None, "turn-order requires selected actual generation/state records"
@@ -11785,9 +12458,7 @@ def main():
                 budget,
                 source_only=args.source_only,
             )
-            provisional = write(
-                args.output, result, resource_budget=budget, defer_publication=True
-            )
+            provisional = write(args.output, result, resource_budget=budget, defer_publication=True)
             # Reopen the detached bundle while its entry point is still provisional.
             read(provisional)
             budget.checkpoint("report prepared", force=True)
@@ -11910,6 +12581,7 @@ def main():
                 args.canonical_content,
                 args.tileset_metadata,
                 args.palette_metadata,
+                read(args.w2_context) if args.w2_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
