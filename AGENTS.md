@@ -129,6 +129,17 @@ push, and leave a Draft PR for independent integration. An unmerged branch is co
 not a second source of truth. Remove only an accepted topic's own worktree and refs after explicit
 merge-cleanup authorization.
 
+## Scale and Resource Planning
+
+Before a large or materially expanded acquisition or processing run, select the minimum sufficient
+evidence granularity and estimate input, intermediate and output volumes, time/space complexity and
+resource costs. Record assumptions, budgets, publication headroom, concurrency and replan conditions
+in the owning plan. Reuse measurements or a representative small pilot to validate uncertain
+estimates before scaling. Streaming, indexing and bounded queues do not bound total work.
+Follow [the scale-planning owner](./docs/operations/bounded-inspection-and-review.md#plan-before-scaling)
+for project details; keep small tasks proportional and use existing ownership/review rather than a
+new permission procedure. Preserve required events, failures and existing cleanup boundaries.
+
 ## Evidence and Provenance
 
 Use exactly these evidence labels:

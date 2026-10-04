@@ -24,6 +24,12 @@ Only a small, independent single-file, single-assembly, or single-function rever
 unavailable, explicitly select `gpt-5.6-terra` with the same bounded handoff. A worker is not mandatory;
 never assign Terra the whole lane or run parallel writers in one worktree.
 
+Before a large or expanded static extraction, runtime acquisition or offline comparison, use the
+[scale-planning owner](./bounded-inspection-and-review.md#plan-before-scaling) to estimate scope,
+granularity, cardinality, time/space cost and publication headroom, then calibrate uncertain estimates
+before scaling. This complements the existing runtime-admission rules; it does not make an Unknown
+an acquisition queue, weaken evidence requirements or impose a new permission step.
+
 The self-contained handoff names:
 
 - the exact base and isolated worktree;
