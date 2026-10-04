@@ -5220,7 +5220,20 @@ def reward_consumer_binding(actual, context, source_root):
             join("result/state identity", envelope, state)
         # Range rejections are an accepted physical dependency, not reward commits.
         kinds = {e.get("Kind") for e in envelope.get("observations", [])}
-        if kinds & {"exp", "gold", "level", "after-turn", "kills", "battle-outcome"}:
+        if kinds & {
+            "exp",
+            "gold",
+            "level",
+            "after-turn",
+            "kills",
+            "battle-outcome",
+            "after-battle-join",
+            "battle-unlock-cleared",
+            "battle-completed-set",
+            "exploration-return-started",
+            "map-transferred",
+            "battle-returned",
+        }:
             eq("reward result accepted", None, envelope.get("failure", absent), index)
         previous = None
         for event in envelope.get("observations", []):
@@ -5442,7 +5455,15 @@ def reward_consumer_binding(actual, context, source_root):
                 and k <= projection.get("observationSequence", -1)
                 and e.get("Kind") in ("scene-prepared", "scene-step-started")
             ]
-            eq("reward host poll current token", max(phases) if phases else absent, token, token)
+            current = max(phases) if phases else absent
+            if (
+                token_event is None
+                and number(token)
+                and (current is absent or current < token)
+                and token <= projection.get("observationSequence", -1)
+            ):
+                current = absent  # A missing newer start is not an observed stale token.
+            eq("reward host poll current token", current, token, token)
         if stage == "signal-before-Present":
             completions = [
                 e
@@ -5457,6 +5478,90 @@ def reward_consumer_binding(actual, context, source_root):
                 else None,
                 token,
             )
+            for completion in completions:
+                if completion.get("Detail") != scene["phase"]:
+                    continue
+                # The signal is emitted before Present replaces the old view. Its
+                # token owns the completed phase, not the next phase in this result.
+                preceding = [
+                    e
+                    for e in events.values()
+                    if number(e.get("Sequence"))
+                    and e["Sequence"] < completion["Sequence"]
+                    and e.get("Kind")
+                    in (
+                        "scene-prepared",
+                        "scene-step-started",
+                        "scene-step-completed",
+                        "scene-ended",
+                    )
+                ]
+                start = max(preceding, key=lambda e: e["Sequence"]) if preceding else None
+                if (
+                    token_event is None
+                    and number(token)
+                    and (start is None or start["Sequence"] < token)
+                    and token < completion["Sequence"]
+                ):
+                    start = None
+                eq(
+                    "reward completion owns exact phase token",
+                    dict(
+                        Kind="scene-step-started",
+                        Sequence=token,
+                        Detail=scene["phase"],
+                        Actor=completion.get("Actor"),
+                    ),
+                    start if start else absent,
+                    token,
+                )
+                completion_clocks = dict(
+                    revision=completion.get("Revision"),
+                    observationSequence=completion.get("Sequence"),
+                )
+                precedes(
+                    "completion precedes before-Present projection", completion_clocks, projection
+                )
+                if token_event:
+                    precedes(
+                        "completed token precedes completion",
+                        dict(
+                            revision=token_event.get("Revision"),
+                            observationSequence=token_event.get("Sequence"),
+                        ),
+                        completion_clocks,
+                    )
+                occurrences = [
+                    s
+                    for s in context.get("scenes", [])
+                    if number(s.get("sequence"))
+                    and number((s.get("end") or {}).get("sequence"))
+                    and s["sequence"] < completion["Sequence"] < s["end"]["sequence"]
+                ]
+                check(
+                    "reward completion scene occurrence",
+                    True if len(occurrences) == 1 else False if occurrences else None,
+                    token,
+                )
+                for occurrence in occurrences:
+                    if token_event:
+                        precedes(
+                            "completed token belongs to scene occurrence",
+                            dict(
+                                revision=occurrence.get("revision"),
+                                observationSequence=occurrence.get("sequence"),
+                            ),
+                            dict(
+                                revision=token_event.get("Revision"),
+                                observationSequence=token_event.get("Sequence"),
+                            ),
+                        )
+                    end = occurrence.get("end") or {}
+                    precedes(
+                        "completion within scene occurrence",
+                        completion_clocks,
+                        dict(revision=end.get("revision"), observationSequence=end.get("sequence")),
+                    )
             eq("reward completion delivered", True, scene.get("completed", absent), token)
         host_inputs = [
             i
@@ -6355,6 +6460,23 @@ def reward_consumer_binding(actual, context, source_root):
                     i,
                 )
     eq("first party gold", gold if gold_known else absent, post.get("gold", absent))
+    for index, row in warps.items():
+        if number(first.get("index")) and index > first["index"]:
+            state = row.get("state") or {}
+            eq(
+                "source gold persists through return",
+                gold if gold_known else absent,
+                state.get("gold", absent),
+                index,
+            )
+            # Independent receipt persistence still detects a changed balance when
+            # source operands are absent. This outcome has no admitted gold operation.
+            eq(
+                "observed outcome gold persists through return",
+                post.get("gold", absent),
+                state.get("gold", absent),
+                index,
+            )
     outcome_events = [e for e in ordered_events if e.get("Kind") == "battle-outcome"]
     if outcome_events:
         precedes(
@@ -6473,6 +6595,7 @@ def reward_consumer_binding(actual, context, source_root):
         spellLearning="unreached: no source threshold at observed new level",
         defeat="unreached: leader lives and all placed enemies are dead",
         liveGrowthStats="composed initial source -> effect -> first party only",
+        damageExp="source-initial level1/2 allies versus level0 GIZMO; not a general EXP model",
     )
     result["value"] = merge([c["value"] for c in result["checks"]])
     result["unknown"] = list(dict.fromkeys(result["unknown"]))

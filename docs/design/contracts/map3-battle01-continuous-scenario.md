@@ -754,6 +754,12 @@ Growth uses the source curves and five ordered stat pairs, then derived ATT/DEF 
 current HP/MP remain unchanged at level-up. No source spell threshold is reached at the
 observed new level, and the stored/learned spell arrays must remain unchanged.
 
+This is not a general EXP model: the reused helper caps damage by remaining HP,
+whereas original `CalculateDamageExp` uses raw damage in its numerator. In this reached
+level1/2-allies versus level0-GIZMO cohort, lethal kill EXP and the action cap mask that
+difference. Other level differences and overkill operands require their own source
+comparison before extending this predicate's applicability.
+
 Kill credit belongs to the completed source action, and cleanup removes the dead target's
 placement before after-turn processing. Every reached after-turn call has status0 and
 no source recovery equipment; current resources stay unchanged. Faction/leader checks
@@ -769,12 +775,19 @@ The source after-battle JOIN and unlock/completed flag operations retain their o
 and effects through return. Missing or empty first-party evidence cannot be replaced
 silently with a later populated snapshot. The proper final attack decision remains
 outcome record68; the later dialogue summary is not its pre-action state.
+Each owned outcome/return operation must have an accepted result envelope. Later retained
+gold snapshots must agree with the lawful reward balance through return; this selected
+outcome contains no admitted intervening gold operation. A future gold-changing outcome
+requires its own accepted operation binding rather than an assumed stable balance.
 
 **Unknown:** immediate live agility and mutable base ATT are absent from the producer's
 battle view. The composed persistence claim does not invent those observations. Complete
 scene/resource consumption, turn generation, AI and field services remain separate.
-Reward projections bind phase token, result identity, host-input ownership and completion;
-they do not establish full rendering. Missing evidence contributes Unavailable, and known
+Reward projections bind phase token, result identity, host-input ownership and completion.
+`signal-before-Present` retains the just-completed phase token even when its result starts
+the next phase. The token must own that exact completion and scene occurrence on both
+clock axes; an earlier same-named phase cannot substitute for it.
+They do not establish full rendering. Missing evidence contributes Unavailable, and known
 wrong arithmetic, membership, order or identity remains FAIL beside unrelated missing
 fields. A scoped PASS leaves `milestonePass=false` and requires independent acceptance.
 

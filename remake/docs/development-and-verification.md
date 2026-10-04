@@ -3913,6 +3913,14 @@ results. HP events identify the recipient; they do not carry the attacking actor
 Actor. Known wrong effects must still fail
 when a separate field is missing. No tests of this verification program are introduced.
 
+Independent review controls also require a later before-Present Reward completion to
+reject an earlier scene's Reward token, a rejected outcome JOIN to fail even with missing
+first-party gold, and a corrupted return gold snapshot to fail. Preserve the original
+false-PASS/Unavailable results beside targeted corrections. Exact completion ownership
+retains the producer's before-Present semantics; owned outcome results require success,
+and gold is checked through return. EXP applicability remains the reached source-initial
+level1/2 allies versus level0 GIZMO cohort, not a general overkill/level-difference model.
+
 Run scoped Ruff, direct contracts/docs/private-boundary checks, the committed planner under
 the current verification policy and exact-head CI. Historical A FAIL, original elapsed
 Unknown and the completed normal-verification provenance failure remain unchanged. Main-gate
