@@ -81,9 +81,12 @@ or stable-observation boundary under
 
 ## Current Engineering Frontier
 
-The current C/D settings observations complete the winning/return route with intact bounded capture
-and unchanged inputs. They retain their own evidence alongside the frozen A/B reports; native
-completion does not itself close the settings matrix or full H4. See the
+Current mandatory acceptance uses default keyboard A under the
+[corrected product scope](../../docs/decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope).
+Existing C/D observations complete the winning/return route with intact bounded capture and unchanged
+inputs. C is supplemental; B/D are historical and excluded from the current gate. D's offline job was
+cancelled by scope, with partial evidence retained. Neither capture success nor A self-equality closes
+the remaining 13 required H4 children. The separate #517 speech choice remains applicable. See the
 [C/D capture and comparison boundary](./development-and-verification.md#current-cd-settings-capture),
 including preserved failed attempts and the completed local toolchain-provenance failure.
 

@@ -12,6 +12,10 @@
 
 ## Evidence and result rules
 
+The [current keyboard scope](../../decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope)
+controls older device/settings descriptions: A is required, C supplemental and B/D excluded from
+current execution and milestone totals. Retained historical comparisons do not add requirements.
+
 ### Modern-clock applicability
 
 The [accepted modern finite-music amendment](../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
@@ -28,7 +32,7 @@ That bounded acceptance does not supply all executable H4 bindings or continuous
 | 2–3 | Preserve mandatory spatial route, choices, story/caller effects and valid movement. Timing-dependent NPC phase and selected navigation history may differ. |
 | 4–5 | Preserve natural encounter and local initialization/battle/RNG rules at matched state. Original seed0x6DC1, actor2, selected score arrays, rounds/orders/103-turn winning history are historical comparisons, not required modern outcomes. |
 | 6–7 | Preserve natural victory, complete after-program, flags, return and stable usable field control. History-dependent rewards, levels, stats, items, RNG and gold420 are original facts, not unconditional modern endpoint requirements. |
-| 8–9 | Retain 7C assets, real consumption/completion and identical modern semantic input across9A settings. Finite music follows the accepted logical clock plus actual completion. |
+| 8–9 | Retain 7C assets and real consumption/completion for required keyboard A; compare supplemental settings separately under identical semantic input. Finite music follows the accepted logical clock plus actual completion. |
 | 10 | Explicitly report the modern clock and affected downstream differences; no blanket waiver of other defects. |
 
 Matched-state arithmetic and source-specific rules remain independently comparable. Old HEAL,
@@ -276,10 +280,10 @@ winning scene/outcome path. Complete original resource/order bindings and per-oc
 consumer/completion correspondence remain layer-9 requirements; the accepted capability and
 aggregate counters alone do not pass them. No original pixels or frame durations are required.
 
-9A runs report separate variant identities/settings and compare the same layer 2/3/5/7 gameplay
-decisions/state against the baseline: default and remapped keyboard/gamepad, standard and swapped
-Confirm/Cancel, reduced-flash and normal, instant and adjustable text. Report any unexecuted required
-variant as Unavailable. Swapping changes physical bindings, not command meaning. Reduced-flash must
+The [current keyboard scope](../../decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope)
+requires default keyboard A. B/D are excluded historical device profiles; C is an optional keyboard
+diagnostic, not an additional full-route gate. Supplemental settings comparisons retain their own
+identities and layer 2/3/5/7 differences. Swapping changes physical bindings, not command meaning. Reduced-flash must
 suppress the white overlay yet complete the same token/kind and state effect. Adjustable text's
 first Confirm reveals unfinished text without consuming the wait; subsequent Confirm acknowledges;
 instant text still requires acknowledgement, and choices preserve Yes/No. Original device cadence
@@ -291,7 +295,7 @@ Layer 10 separately reports the modern finite-music clock and affected history (
 controlled construction (1A/layers1–2); excluded optional interactions
 with mandatory route retained (2A/layers2–3); fixed evidenced seed/logical trace with manual agency
 and no live reseeding (4A/layers1,2,5,7); absent save surfaces and restart equivalence (6A/layers1,8);
-all 9A variants and their acknowledgement/state equivalence (layers2,3,5,7,9); and each explicitly
+the current required keyboard scope and separately reported supplemental settings (layers2,3,5,7,9); and each explicitly
 identified out-of-domain safe/Unsupported behavior (10A/affected layer). Out-of-domain safety cannot
 waive an in-domain required action. Private-only 7C handling is a product boundary, not a deviation.
 
@@ -445,11 +449,12 @@ without issuing gameplay Wait. Preserve accepted Left and then require legal ord
 reached modern cell. Original absolute terminal coordinates/resources are history diagnostics;
 local displacement, facing, collision and true input readiness remain required.
 
-The `matrix` command consumes all four named actual reports (A default keyboard, B default gamepad,
-C remapped keyboard and D remapped gamepad), compares configured roles and complete semantic input/
-observation/state with A, and retains each report's remaining required obligations. Missing variants
-are Unavailable; a pair PASS never substitutes for a complete matrix or full H4. Required consumer/
-resource/matched-state rule gaps cannot be waived by modern victory or settings equality.
+The `matrix --matrix-scope current-keyboard` command declares required A, excluded B/D and optional
+supplemental C independently of which reports are supplied. Only A contributes to current counts,
+required reports and remaining obligations. Missing, malformed or failed A cannot pass; its remaining
+13 required children still block H4. C's comparison, actual report failures and Unknowns remain visible
+separately. B/D history remains readable without entering the current gate. A's self-equality closes
+only the legacy-named matrix obligation for this explicit scope, not full H4 or all-settings parity.
 
 Physical consumption is established by actual synchronous dispatch intervals and submit results;
 automatic results retain their latest ordinal only as context. Reveal-only Confirm is a delivery
@@ -815,9 +820,10 @@ retained A02/B02 observations keep the whole map child Unavailable; selected bas
 of runtime door/flag/roof state. Entity/portrait and scene bindings retain their own results.
 
 The bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
-After the accepted capture-performance work, separately allocated current C/D native observations
+After the accepted capture-performance work, separately allocated C/D native observations
 complete the route with their own unchanged settings/start/party and intact bounded terminals.
 Successful observations remain frozen; compare their actual streams without repeating A/B or
 backfilling any session. The [current C/D owner](../../../remake/docs/development-and-verification.md#current-cd-settings-capture)
-records the comparison and matrix boundary. Native completion alone does not establish complete
-settings or H4 acceptance.
+records the comparison and scope boundary. D's later offline comparison was cancelled by user scope;
+its completed capture and partial comparison evidence remain retained. C is supplemental. Native
+completion alone does not establish current keyboard H4 acceptance or all-settings equivalence.
