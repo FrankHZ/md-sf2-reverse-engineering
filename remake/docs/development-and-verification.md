@@ -4085,6 +4085,15 @@ claim a distinct historical first-glyph read event, source hardware cadence or f
 Run scoped lint/contracts and the committed planner under current scope, then record exact-head CI.
 No SDK/full H4/route/cleanup or repeat native observation follows from these changes.
 
+The complete compact opening context also retains the existing host `reviewedMaterial` and
+`runtimeIdentities`; these join the frozen candidate without recollection. Validate the observer's
+kind/input/completion/terminal, every required named restoration flag, count/order/seen-set agreement
+and the observer/emulator frame equations relative to the R1 input epoch. Keep `outputRemoved=false`
+as normal evidence retention. Direct controls include failed completion with missing R1, foreign
+observed input, failed `gameFlags` restoration and a view frame inconsistent with its input/emulator
+epoch. Preserve the pre-correction context and independent failing counterexamples; never rerun the
+successful native attempt to repair a comparator omission.
+
 ### Historical A turn-order inventory
 
 The retained required-keyboard A inventory remains separate from the controlled proof above.

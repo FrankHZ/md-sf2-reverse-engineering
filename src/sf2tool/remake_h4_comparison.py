@@ -14473,6 +14473,17 @@ def admission_opening_binding(actual, context, source_root):
         "original restored selected scope",
         match(
             dict(
+                scopeArmed=True,
+                gameFlags=True,
+                combatantAllyRecords=True,
+                mapAndBattleState=True,
+                playerEntity=True,
+                forceAndParty=True,
+                followerState=True,
+                touchedEntities=True,
+                bootstrapFrame=True,
+                gold=True,
+                generatedRam=True,
                 callbacksCleared=True,
                 sessionStateRestored=True,
                 sessionCartPatches=True,
@@ -14482,7 +14493,127 @@ def admission_opening_binding(actual, context, source_root):
             (context.get("observed") or {}).get("restoration", absent),
         ),
     )
+    # These are the existing fixed-input producer fields. outputRemoved is not
+    # a restoration success flag: False intentionally retains the evidence.
+    candidate = context.get("candidate") or {}
+    host = context.get("host") or {}
+    observed = context.get("observed") or {}
+    diagnostic = observed.get("diagnostic") or {}
+    check(
+        "candidate fixed-input opening profile",
+        match(
+            dict(
+                InputFrames=655,
+                InputClock="first-r1-wait-next-frame",
+                Diagnostic=dict(
+                    kind="admission-opening-scalar-diagnostic",
+                    program=0x5145C,
+                    sourceCommit=UPSTREAM,
+                ),
+            ),
+            candidate,
+        ),
+    )
+    check(
+        "host executed reviewed candidate",
+        match(context.get("candidate", absent), host.get("reviewedMaterial", absent)),
+    )
+    check(
+        "host runtime matches candidate",
+        match(
+            {k: candidate.get(k, absent) for k in ("ExecutableSha256", "LuaLibrarySha256")},
+            host.get("runtimeIdentities", absent),
+        ),
+    )
+    check(
+        "observer completed opening",
+        match(
+            dict(
+                kind="bounded-original-observation",
+                stopReason="opening-script-return",
+                inputIdentity="991A51636102F00D837F605561538A39B60E7621370D523CFC412D52ECDDEB5E",
+                diagnostic=dict(
+                    kind="admission-opening-scalar-diagnostic", r1=True, programReturned=True
+                ),
+            ),
+            observed,
+        ),
+    )
+    check(
+        "observer input belongs to candidate",
+        match(candidate.get("InputSha256", absent), observed.get("inputIdentity", absent)),
+    )
+    check(
+        "observer completion joins host",
+        match(host.get("stopReason", absent), observed.get("stopReason", absent)),
+    )
     rows = context.get("records") or []
+    rows_available = context.get("records") is not None
+    check(
+        "producer count equals complete record set",
+        None if not rows_available else match(len(rows), diagnostic.get("records", absent)),
+    )
+    seen = diagnostic.get("seen")
+    keys = []
+    epochs = {"frame": [], "emulatorFrame": []}
+    for index, row in enumerate(rows):
+        kind = row.get("kind")
+        stage = (row.get("facts") or {}).get("stage")
+        check(
+            "producer record order and boundary",
+            match(dict(order=index + 1, boundary="callback-time"), row),
+        )
+        check("producer record phase", None if stage is None else stage in ("pre-r1", "admitted"))
+        check("producer record kind", None if kind is None else kind.startswith("opening:"))
+        if stage is not None and kind is not None:
+            key = stage + ":" + kind.removeprefix("opening:")
+            keys.append(key)
+            check(
+                "record retained in producer seen set", match(True, (seen or {}).get(key, absent))
+            )
+        input_frame = row.get("inputFrame")
+        if stage == "pre-r1":
+            check("pre-R1 record has no input epoch", match(False, row.get("inputFrame", absent)))
+        elif stage == "admitted":
+            for axis in epochs:
+                value = row.get(axis)
+                check(
+                    "admitted " + axis + " and input are nonnegative integers",
+                    merge(
+                        [
+                            None if v is None else type(v) is int and v >= 0
+                            for v in (value, input_frame)
+                        ]
+                    ),
+                )
+                if type(value) is int and type(input_frame) is int:
+                    epochs[axis].append(value - input_frame)
+        hook = ((candidate.get("Diagnostic") or {}).get("hooks") or {}).get(
+            kind.removeprefix("opening:") if kind else ""
+        )
+        if hook is not None:
+            check(
+                "record PC joins candidate hook",
+                match(hook.get("pc", absent), row.get("pc", absent)),
+            )
+    check("producer emitted each phase/hook once", len(keys) == len(set(keys)))
+    check(
+        "producer seen flags",
+        None if seen is None else merge([match(True, value) for value in seen.values()]),
+    )
+    check(
+        "producer seen set equals complete record set",
+        None
+        if not rows_available or seen is None or len(keys) != len(rows)
+        else set(seen) == set(keys),
+    )
+    for axis, values in epochs.items():
+        # Every admitted record carries an independent epoch equation. Known
+        # disagreements remain false even if the explicit R1 row is missing.
+        check(
+            "records agree on R1 " + axis + " epoch",
+            None if not values else all(v >= 0 and v == values[0] for v in values),
+        )
     selected = []
     for name, pc in (
         ("r1", 0x2591C),
@@ -14530,6 +14661,96 @@ def admission_opening_binding(actual, context, source_root):
             ),
         )
     check("R1 precedes controller delivery", match(0, selected[0].get("inputFrame", absent)))
+    r1, returned = selected[0], selected[-1]
+    for axis, values in epochs.items():
+        for value in values:
+            check("record epoch joins R1 " + axis, match(r1.get(axis, absent), value))
+    for row in rows:
+        if (row.get("facts") or {}).get("stage") == "pre-r1":
+            for axis, strict in (("order", True), ("frame", False), ("emulatorFrame", False)):
+                value, upper = row.get(axis), r1.get(axis)
+                check(
+                    "pre-R1 " + axis + " precedes admission",
+                    None
+                    if value is None or upper is None
+                    else value < upper
+                    if strict
+                    else value <= upper,
+                )
+    terminal = observed.get("terminal") or {}
+    terminal_state = returned.get("state") or {}
+    check("producer terminal is opening map", match(3, terminal.get("map", absent)))
+    # sample() is called twice in the same returned-script callback, before any
+    # frame advance or restoration. Require every named scalar on both sides.
+    terminal_fields = (
+        "map",
+        "layer",
+        "x",
+        "y",
+        "rawX",
+        "rawY",
+        "facing",
+        "mapEventWord",
+        "rngBytes",
+        "rngCopyByte",
+        "speechSfx",
+        "portrait",
+        "windowState",
+        "typewriting",
+        "input",
+        "flags",
+        "rawTime",
+    )
+    terminal_expected = {k: terminal_state.get(k, absent) for k in terminal_fields}
+    for name, fields in (
+        (
+            "flags",
+            (
+                "66",
+                "600",
+                "601",
+                "602",
+                "603",
+                "604",
+                "605",
+                "607",
+                "608",
+                "401",
+                "256",
+                "501",
+                "507",
+                "982",
+            ),
+        ),
+        ("rawTime", ("frame", "seconds", "secondsFrames")),
+    ):
+        terminal_expected[name] = {
+            k: (terminal_state.get(name) or {}).get(k, absent) for k in fields
+        }
+    check("producer terminal joins returned-script snapshot", match(terminal_expected, terminal))
+    check(
+        "returned script is candidate program",
+        match(
+            (candidate.get("Diagnostic") or {}).get("program", absent),
+            ((returned.get("facts") or {}).get("registers") or {}).get("A0", absent),
+        ),
+    )
+    check(
+        "returned script is final emitted record",
+        None
+        if not rows_available
+        else match("opening:program-return", rows[-1].get("kind", absent))
+        if rows
+        else False,
+    )
+    check(
+        "return closes producer record count",
+        match(diagnostic.get("records", absent), returned.get("order", absent)),
+    )
+    check(
+        "return consumes selected input prefix",
+        match(candidate.get("InputFrames", absent), returned.get("inputFrame", absent)),
+    )
     for row in selected[1:3]:
         check(
             "view default branch operands",

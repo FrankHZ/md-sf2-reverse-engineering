@@ -616,6 +616,21 @@ clear happens later. Frozen source/ROM/input/observer/runner/configuration ident
 status, restoration, admitted phases, source PCs and monotonic frame/input/order joins are required.
 These values no longer depend on backwards inference from later saved zeros.
 
+The observer kind/input identity/completed R1 and program-return flags must agree with the frozen
+candidate and the host's reviewed material, runtime identities and stop reason. All named scope
+restoration flags must pass; `outputRemoved=false` intentionally retains evidence. The producer's
+record count, contiguous order and seen-hook set must describe the complete compact record set.
+Its terminal snapshot must equal the returned-script record, before final frame completion and
+restoration. A partial record set beside a claim that it is complete is a contradiction; an absent
+record channel remains unavailable.
+
+Each admitted record independently implies `frame - inputFrame = R1.frame` and
+`emulatorFrame - inputFrame = R1.emulatorFrame`. The two epoch origins need not be equal.
+Known equations must agree even when the R1 row or another operand is missing. Independently
+sorted clock lists do not establish that relationship. The final return must close the producer
+record count and selected input prefix. Available failed completion/restoration/identity/epoch
+evidence takes precedence over unrelated missing fields.
+
 The separately registered historical session `99755635-cad5-4fff-bc88-b70fcc5f017b` has
 `samples[0]` at revision/sequence4 and tick0: map3, FieldInput, neutral cursor/wait/callers and
 mouth0/view0. The first physical left input joins that before-state and owns result0 at
