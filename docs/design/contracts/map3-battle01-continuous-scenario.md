@@ -570,7 +570,13 @@ original array locations. A candidate cannot define its own required inventory b
 
 **Confirmed:** each selected input joins its before token/cursor/readiness to its original result span,
 whole Submit revision and after snapshot. Actual W2 events must order draw/copy/wait/read/accept,
-with one service opportunity and caller continuation after acceptance. The accepted range256 model
+with one service opportunity and caller continuation after acceptance. Available event revisions
+must belong to the input/result revision interval and remain in nondecreasing order;
+internal events need not share the terminal Submit revision. The pinned, clean source is lowered by
+the existing `OriginalPrograms` compiler to check resumed producer/instruction/operation order and
+the terminal cursor. Source jumps preserve their distinct target programs. Nonterminal W2 resumes
+the remaining text at its existing producer; unsupported continuation paths remain **Unknown**.
+The accepted range256 model
 checks the draw and retained text-copy byte. Caller/service enablement, portrait state and view gates
 are read from the corresponding ready state; entity caller type alone is insufficient because Trap6
 can reactivate services. For text2292, the retained full ready state precedes its neutral poll; that
@@ -578,6 +584,8 @@ complete input/result edge carries the same token and gates to acceptance. Dupli
 one revision must agree on the relevant state, rather than count as multiple occurrences.
 
 The16 actual validation67 `started` receipts join by session and whole Submit result revision.
+Each accepting Submit must have exactly one matching start, including receipts outside the named
+sequence selection; an extra start is a contradiction, while missing playback remains **Unavailable**.
 The internal accepted-event revision is not the sound receipt revision. Fourteen indicator witnesses
 are same-submit states; the final2299/2303 occurrences use the subsequent2300/2304 input states,
 whose separate identities are retained. Source clear/resume and accepted behavior compose those two

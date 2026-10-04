@@ -3837,8 +3837,8 @@ Keep the independently accepted context separate from candidate data. It has `sc
 
 The current prepared selection is about2MiB plus a small context. The command enforces10MiB combined
 input and10MiB report limits, and a fresh output beneath this checkout's ignored `local/`. Plan120s
-and128MiB incremental memory; the small direct controls measured under3s and19MiB incremental peak
-working set. Input/result/sample/receipt indexes bound matching to this fixed cohort; full-capture
+and128MiB incremental memory; retain measured runtime and peak working set with each control run.
+Input/result/sample/receipt indexes bound matching to this fixed cohort; full-capture
 access uses original array positions. Do not reuse this scope as permission to import a larger route.
 Exit0/1/2 means PASS/FAIL/Unavailable; every report sets `milestonePass=false` and keeps the original
 internal-read and two intermediate-draw Unknowns explicit. The existing modern `compare` mode accepts
@@ -3846,7 +3846,13 @@ internal-read and two intermediate-draw Unknowns explicit. The existing modern `
 
 Direct controls cover occurrence deletion/duplication, foreign session/token/result/audio, crossed
 whole Submit revisions, wrong validation/caller/service/indicator/copy, premature caller resume and
-missing plus known contradictory evidence. A contradiction dominates missing; a missing witness is
+missing plus known contradictory evidence. Check all validation starts for each accepting Submit,
+event revision range/order, and source-derived resumed producer/instruction/operation order and
+terminal cursor. Include missing events, an extra validation start, an out-of-range event revision,
+a foreign resumed program, and the genuine source jumps and nonterminal-text continuations.
+The existing `OriginalPrograms` compiler reads pinned, clean source for a bounded continuation;
+unhandled source call/return/branch paths stay Unknown rather than forcing all events into one program.
+A contradiction dominates missing; a missing witness is
 not converted into a fabricated negative. Two575 labels are not unique keys, and the final two later
 indicator states must not become same-submit observations. Preserve failed reports and distinguish repeated projections of one revision from repeated
 occurrences. A resumed text's typewriting is not the transient restored W2 value. Existing PR618

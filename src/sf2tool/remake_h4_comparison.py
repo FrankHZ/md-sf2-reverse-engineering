@@ -4928,6 +4928,7 @@ def w2_consumer_binding(actual, context, source_root):
         len({(o.get("ordinal"), o.get("token")) for o in inventory}) == len(inventory),
     )
     texts = {}
+    continuation_programs = {}
     try:
         root = Path(source_root) if source_root is not None else None
         if root is None:
@@ -4953,8 +4954,101 @@ def w2_consumer_binding(actual, context, source_root):
             for line in script.splitlines()
             if re.match(r"^[0-9A-Fa-f]{4}=", line)
         }
+        clean = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+        ).returncode
+        check("pinned clean continuation source", pin == UPSTREAM and clean == 0)
+        if pin == UPSTREAM and clean == 0:
+            from sf2tool.remake_exploration_content import OriginalPrograms
+
+            compiler = OriginalPrograms(
+                {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, root
+            )
+            for path in (
+                "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+                "data/maps/entries/map03/mapsetups/s3_zoneevents.asm",
+                "data/battles/entries/battle01/cs_beforebattle.asm",
+            ):
+                compiler.register_file("disasm/" + path)
+            for symbol in (
+                "cs_5145C",
+                "Map3_EntityEvent0",
+                "Map3_EntityEvent15",
+                "byte_50E96",
+                "cs_5149A",
+                "bbcs_01",
+            ):
+                compiler.compile(symbol)
+            continuation_programs = {p["id"]: p for p in compiler.programs.values()}
     except (OSError, ValueError, subprocess.SubprocessError):
         check("pinned original text unavailable", None)
+
+    def continuation(owner):
+        text = texts.get(owner.get("text"))
+        if text is None or "{W2}" not in text:
+            return None, None
+        program, instruction = owner.get("program"), owner.get("instruction")
+        if not isinstance(instruction, (int, float)) or int(instruction) != instruction:
+            return None, None
+        instruction = int(instruction)
+        # Every selected W2 in these nonterminal texts has remaining text. The
+        # accepted 575 occurrences therefore resume text at the same producer.
+        if not text.endswith("{W2}"):
+            return [], dict(Program=program, Instruction=instruction)
+        instruction += 1
+        expected = []
+        details = {
+            "open-portrait": "OpenPortrait",
+            "wait-view": "WaitForView",
+            "text-cursor": "SetTextCursor",
+            "show-text": "ShowText",
+            "jump": "JumpProgram",
+            "set-flag": "WriteFlag",
+            "face": "SetEntityFacing",
+        }
+        # This is a bounded source continuation for the admitted cohort, not a
+        # second script interpreter. Unhandled call/return/branch paths are Unknown.
+        for _ in range(16):
+            instructions = continuation_programs.get(program, {}).get("instructions", [])
+            if not isinstance(instruction, int) or not 0 <= instruction < len(instructions):
+                return None, None
+            op = instructions[instruction]
+            if op.get("op") not in details:
+                return None, None
+            cursor = dict(Program=program, Instruction=instruction)
+            expected.append(dict(Program=cursor, Detail=details[op["op"]]))
+            if op["op"] in ("wait-view", "show-text", "face"):
+                return expected, cursor
+            if op["op"] == "jump":
+                program, instruction = op["target"]["program"], op["target"]["instruction"]
+            else:
+                instruction += 1
+        return None, None
+
+    def resumed_producers(expected, observed):
+        if expected is None:
+            return None
+        positions = {
+            (e["Program"]["Program"], e["Program"]["Instruction"]): i
+            for i, e in enumerate(expected)
+        }
+        indices, values = [], []
+        for event in observed:
+            producer = event.get("Program") or {}
+            if producer.get("Program") is None or producer.get("Instruction") is None:
+                values.append(None)
+                continue
+            position = positions.get((producer["Program"], producer["Instruction"]))
+            if position is None:
+                values.append(False)
+                continue
+            indices.append(position)
+            values.append(match(expected[position], event))
+        return merge(
+            values
+            + [indices == sorted(set(indices)), True if len(indices) == len(expected) else None]
+        )
 
     neutrals = context.get("neutral") or []
     selected_polls = inventory + neutrals
@@ -5292,6 +5386,24 @@ def w2_consumer_binding(actual, context, source_root):
             ordinal,
         )
         sequences = [e.get("Sequence") for e in events]
+        event_revisions = [e.get("Revision") for e in events]
+        available_revisions = [r for r in event_revisions if r is not None]
+        check(
+            "event revisions inside Submit progression",
+            merge(
+                [
+                    None if len(available_revisions) != len(event_revisions) else True,
+                    available_revisions == sorted(available_revisions),
+                    *[
+                        None
+                        if before.get("revision") is None or submission.get("revision") is None
+                        else before["revision"] < r <= submission["revision"]
+                        for r in available_revisions
+                    ],
+                ]
+            ),
+            ordinal,
+        )
         check(
             "event sequence inside Submit",
             None
@@ -5325,6 +5437,21 @@ def w2_consumer_binding(actual, context, source_root):
         check(
             "actual continuation token and wait",
             match(dict(token=owner.get("nextToken"), wait=owner.get("nextWait")), after),
+            ordinal,
+        )
+        expected_resume, terminal_cursor = continuation(owner)
+        check(
+            "source resumed producers and order",
+            resumed_producers(
+                expected_resume, [e for e in events if e.get("Kind") == "program-instruction"]
+            ),
+            ordinal,
+        )
+        check(
+            "source continuation terminal cursor",
+            None
+            if terminal_cursor is None
+            else match(terminal_cursor, after.get("cursor", absent)),
             ordinal,
         )
         check(
@@ -5398,6 +5525,32 @@ def w2_consumer_binding(actual, context, source_root):
                 ordinal,
             )
         audio_sequences = owner.get("validationSequences") or []
+        validation_starts = [
+            a
+            for a in actual.get("audioReceipts", [])
+            if (a.get("poll") or {}).get("sessionId") == session
+            and (a.get("receipt") or {}).get("Revision") == revision
+            and (a.get("receipt") or {}).get("Command") == 67
+            and (a.get("receipt") or {}).get("Operation") == "started"
+        ]
+        check(
+            "complete Submit validation start coverage",
+            None
+            if not validation_starts
+            else merge(
+                [
+                    len(validation_starts) == 1,
+                    *[
+                        match(
+                            audio_sequences[0] if audio_sequences else absent,
+                            (a.get("receipt") or {}).get("Sequence", absent),
+                        )
+                        for a in validation_starts
+                    ],
+                ]
+            ),
+            ordinal,
+        )
         check(
             "one expected validation receipt",
             None if not audio_sequences else len(audio_sequences) == 1,
@@ -5430,6 +5583,7 @@ def w2_consumer_binding(actual, context, source_root):
                 resultRevision=revision,
                 indicatorEvidence="later-state composition" if later else "same-submit",
                 sourceProgram=program,
+                sourceContinuation=expected_resume,
                 readyEvidence=ready_evidence,
             )
         )
