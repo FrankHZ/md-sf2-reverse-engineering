@@ -6410,8 +6410,35 @@ def _map_draw_cells(sample, expected_words, source, root):
                                 layer["offsetY"],
                             )
                             expected.append((key, covered, texture))
-    groups, selector_ok = {}, True
+    groups, selector_ok, missing_use = {}, True, False
+    required = {
+        "sourceX",
+        "sourceY",
+        "block",
+        "tile",
+        "words",
+        "layer",
+        "highPriority",
+        "pass",
+        "subject",
+        "overlay",
+        "offsetX",
+        "offsetY",
+        "resourceIdentity",
+        "selector",
+        "x",
+        "y",
+        "width",
+        "height",
+        "textureX",
+        "textureY",
+        "textureWidth",
+        "textureHeight",
+    }
     for use in layout["draw"]["uses"]:
+        if not required <= use.keys():
+            missing_use = True
+            continue
         key = (
             tuple(use[k] for k in ("sourceX", "sourceY", "block", "tile"))
             + (tuple(use["words"]),)
@@ -6458,12 +6485,17 @@ def _map_draw_cells(sample, expected_words, source, root):
             candidates.pop(found)
     extra = sum(map(len, groups.values()))
     return dict(
-        value=False if extra or not selector_ok else None if missing or missing_actor else True,
+        value=False
+        if extra or not selector_ok
+        else None
+        if missing or missing_actor or missing_use
+        else True,
         expected=len(expected),
         actual=len(layout["draw"]["uses"]),
         missing=missing,
         extra=extra,
         missingActor=missing_actor,
+        missingUse=missing_use,
         selectors=selector_ok,
     )
 
@@ -6895,6 +6927,15 @@ def map_consumer_binding(actual, context, source_root):
                     check(
                         "actual resource identity present",
                         True if use.get("resourceIdentity") else None,
+                        label,
+                    )
+                    check(
+                        "positive executed destination and texture extent",
+                        None
+                        if not {"width", "height", "textureWidth", "textureHeight"} <= use.keys()
+                        else all(
+                            use[k] > 0 for k in ("width", "height", "textureWidth", "textureHeight")
+                        ),
                         label,
                     )
                 except (KeyError, TypeError):
