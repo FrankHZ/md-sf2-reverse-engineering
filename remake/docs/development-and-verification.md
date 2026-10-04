@@ -3802,6 +3802,56 @@ planner/actual CI. This offline comparator slice needs no SDK/native/capture, ne
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
 actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
 
+### Scoped physical consumer comparison
+
+Use the [selected physical contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding)
+with the existing compact actual and independent context. It shares the modern physical child and
+does not require a full H4 run, SDK, host, emulator, world export or reference reconstruction.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 -m sf2tool.remake_h4_comparison physical `
+  --actual local/issue534/physical-binding-01/actual.json `
+  --physical-context local/issue534/physical-binding-01/context.json `
+  --text-source-root $pinnedSource `
+  --output local/physical-consumers/fresh-report.json
+```
+
+The context has `scope=retained-keyboard-A-physical`, `sessionId`, the producer/source revisions,
+`initialSampleIndex`, `profileDeclaration`, complete `census`, `battleBounds`, immutable-selection
+receipt and per-channel `indices`. Every census member retains original preparation index,
+revision/sequence, first physical draw sequence, actor/target, input ordinal and scene-end identity.
+Actual `warpRecords`, `inputRecords`, `sceneObservations` and `samples` retain original `_index`
+values; selected Submit observation arrays and input result intervals remain complete. Missing
+indices and contradictory repeated events cannot silently reduce coverage. Modern comparison
+accepts the same `--physical-context`; no separate physical oracle is used there.
+
+The one admitted raw selection traversed the registered 1,375,851,198-byte historical A once in
+25.8418791 seconds, with 3,522,560 bytes incremental peak memory and unchanged source size/mtime.
+It retained 3,966,366 bytes of JSONL; normalized actual is 3,895,810 bytes. The full battle census
+includes automatic enemies and nested next-preparation events, beyond the outcome companion's
+14 player decisions. It preserves the final attack's record68 association and all prior compact
+preflight failures. Reproduction uses these compact files; this recipe grants no new raw scan.
+
+Acquisition ceilings remain 120s/128MiB incremental, 2MiB per raw record, selected output10MiB with
+64KiB receipt headroom, normalized input/output10MiB, total new output24MiB. Preserve incomplete
+attempts and obtain a concrete revised allocation on a genuine cap/schema/identity failure.
+The scoped CLI limits actual plus context to10MiB, context to1MiB and report to10MiB; output must
+be fresh beneath the owning worktree's ignored `local/`. Exit0/1/2 means PASS/FAIL/Unavailable,
+and `milestonePass` remains false. Pinned source parsing reads only matched class/enemy/item
+operands and the battle01 compressed terrain, using the existing decoder; it does not rebuild assets.
+
+Direct controls cover wrong damage and live HP, premature effects, command-phase errors, RNG/seed
+changes, range, source identity, input press/result joins, missing operands/records, foreign session,
+wrong event order, census coverage and scene strike/token/reaction mismatches. Wrong HP or RNG must
+still fail without source operands; absence alone remains Unavailable. Preserve the first pilot's
+wrong helper-type exception, the later overbroad rejection/HP diagnostic failures and the missing
+press classification failure alongside corrected results. No tests of this verifier are introduced.
+Run scoped Ruff, direct contracts/docs/private-boundary checks, the committed planner interpreted
+under current verification policy, and exact-head CI. Existing normal-verification provenance FAIL,
+historical A FAIL and original elapsed-time Unknown remain unchanged. Independent main-gate
+acceptance owns obligation closure.
+
 ### Scoped HEAL consumer comparison
 
 The [selected HEAL contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding)

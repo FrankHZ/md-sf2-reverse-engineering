@@ -5073,6 +5073,1093 @@ def _heal_fairy_source_step(previous, seed, quarter, setup=False):
     return state, seed, draws
 
 
+def _physical_source_operands(source_root, item_ids):
+    """Read only the selected source tables; never use candidate damage as an oracle."""
+    from sf2tool.compression import decode_stack_compressed
+    from sf2tool.h2.battle_terrain import _parse_entries
+    from sf2tool.h3.growth import (
+        _parse_ally_starts,
+        _parse_class_prowess,
+        _parse_equates,
+        _parse_item_equip_effects,
+    )
+
+    root = Path(source_root)
+    root = root.resolve() if root.is_absolute() else repo_path(root)
+    require(
+        subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+        == UPSTREAM,
+        "physical source pin",
+    )
+    require(
+        subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+        ).returncode
+        == 0,
+        "physical source modifications",
+    )
+    disasm = root / "disasm"
+
+    def source(path):
+        return (disasm / path).read_text(encoding="utf-8")
+
+    equates = _parse_equates(disasm)
+    starts = _parse_ally_starts(disasm)
+    prowess = _parse_class_prowess(disasm, equates)
+    movers = re.findall(
+        r"^\s*movetype\s+(\w+)", source("data/stats/allies/classes/classdefs.asm"), re.M
+    )
+    enemies = re.split(
+        r"^\s*unknownByte\s+", source("data/stats/enemies/enemydefs.asm"), flags=re.M
+    )[1:]
+    placements = source("data/battles/spritesets/spriteset01.asm")
+    profiles = {}
+    for actor, x, y in re.findall(r"^\s*allyCombatant\s+(\d+),\s*(\d+),\s*(\d+)", placements, re.M):
+        class_code, _ = starts[int(actor)]
+        class_id = equates["CLASS_" + class_code]
+        profiles["ally-" + actor] = dict(
+            classCode=class_code,
+            prowess=prowess[class_id],
+            mover=movers[class_id],
+            placement=[int(x), int(y)],
+        )
+    for index, (code, x, y) in enumerate(
+        re.findall(r"^\s*enemyCombatant\s+(\w+),\s*(\d+),\s*(\d+)", placements, re.M)
+    ):
+        enemy_id = equates["ENEMY_" + code]
+        block = enemies[enemy_id]
+        expression = re.search(r"^\s*baseProwess\s+([^\s;]+)", block, re.M)[1]
+        value = 0
+        for term in expression.split("|"):
+            value |= equates["PROWESS_" + term]
+        profiles["enemy-" + str(index)] = dict(
+            enemyCode=code,
+            enemyId=enemy_id,
+            prowess=value,
+            mover=re.search(r"^\s*movetype\s+(\w+)", block, re.M)[1],
+            placement=[int(x), int(y)],
+        )
+    references, definitions = _parse_entries(source("data/battles/terrainentries.asm"))
+    terrain_path = dict(definitions)[references[1]]
+    terrain = decode_stack_compressed(
+        (disasm / terrain_path.replace("\\", "/")).read_bytes(), expected_output_bytes=2304
+    ).output
+    land = re.findall(
+        r"^\s*landEffectAndMoveCost\s+([^\s;]+)",
+        source("data/battles/global/landeffectsettingsandmovecosts.asm"),
+        re.M,
+    )
+    critical = []
+    for chance, shift in re.findall(
+        r"^\s*dc.b\s+(\d+),\s+(\w+)", source("data/stats/allies/classes/criticalhitdefs.asm"), re.M
+    ):
+        critical.append((int(chance), int(shift) if shift.isdigit() else equates[shift]))
+    items, text = {}, source("data/stats/items/itemdefs.asm")
+    for item in sorted(item_ids):
+        marker = re.search(rf"^\s*;\s*{item}:.*$", text, re.M)
+        require(marker is not None, "source equipped item")
+        tail = text[marker.end() :]
+        end = re.search(r"^\s*;\s*\d+:", tail, re.M)
+        block = tail[: end.start()] if end else tail
+        range_match = re.search(r"^\s*range\s+(\d+),\s*(\d+)", block, re.M)
+        effects, cursed = _parse_item_equip_effects(disasm, item, equates)
+        require(range_match is not None, "source weapon range")
+        items[item] = dict(
+            range=tuple(map(int, range_match.groups())),
+            effects=effects,
+            cursed=cursed,
+            weapon="WEAPON" in re.search(r"^\s*itemType\s+([^\s;]+)", block, re.M)[1],
+        )
+    return dict(
+        profiles=profiles,
+        terrain=terrain,
+        land=land,
+        critical=critical,
+        items=items,
+        equates=equates,
+        terrainPath=terrain_path,
+    )
+
+
+def _physical_source_action(source, actors, attacker, target, seed):
+    """Selected non-ailment, non-cursed source strike arithmetic and follow-up eligibility."""
+    hp = {actor: int(row["hp"]) for actor, row in actors.items()}
+    draws, strikes = [], []
+    profiles, equates = source["profiles"], source["equates"]
+    archers = {"ARCHER", "BRASS_GUNNER", "CENTAUR_ARCHER", "STEALTH_ARCHER"}
+    airborne = {"FLYING", "HOVERING"}
+
+    def range_for(actor):
+        words = [int(word) for word in actors[actor]["items"] if int(word) & 128]
+        require(len(words) <= 1, "physical selected equipment multiplicity")
+        if not words:
+            return (1, 1)
+        item = source["items"][words[0] & 127]
+        require(
+            item["weapon"]
+            and not item["cursed"]
+            and all(kind in ("NONE", "INCREASE_ATT") for kind, _ in item["effects"]),
+            "physical equipment requires a separate source effect",
+        )
+        return item["range"]
+
+    def in_range(actor, other):
+        distance = abs(actors[actor]["x"] - actors[other]["x"]) + abs(
+            actors[actor]["y"] - actors[other]["y"]
+        )
+        low, high = range_for(actor)
+        return low <= distance <= high
+
+    def roll(purpose, bound, actor, other):
+        nonlocal seed
+        before = seed
+        word, value = _rng_step(seed >> 16, (bound * 2) & 65535)
+        seed = (word << 16) | (seed & 65535)
+        value >>= 1
+        draws.append(
+            dict(
+                Kind="rng-" + purpose,
+                Actor={"Value": actor},
+                Target={"Value": other},
+                Before=before,
+                After=seed,
+                RandomRange=bound,
+                RandomValue=value,
+            )
+        )
+        return value
+
+    def strike(kind, actor, other, counter=False):
+        attacker_profile, defender_profile = profiles[actor], profiles[other]
+        attack, defense = actors[actor], actors[other]
+        before_hp = hp[other]
+        asleep = int(defense["status"]) & (
+            equates["STATUSEFFECT_SLEEP"] | equates["STATUSEFFECT_STUN"]
+        )
+        muddled = int(attack["status"]) & equates["STATUSEFFECT_MUDDLE"]
+        dodge_range = (
+            2
+            if muddled
+            else 8
+            if defender_profile["mover"] in airborne and attacker_profile["mover"] not in archers
+            else 32
+        )
+        dodged = False if asleep else roll("dodge", dodge_range, actor, other) == 0
+        damage, critical = 0, False
+        x, y = int(defense["x"]), int(defense["y"])
+        require(0 <= x < 48 and 0 <= y < 48, "physical source terrain coordinate")
+        tile = source["terrain"][y * 48 + x]
+        require(tile < 16, "physical source terrain category")
+        land = source["land"][equates["MOVETYPE_" + defender_profile["mover"]] * 16 + tile]
+        require(
+            land.startswith(("LE0|", "LE15|", "LE30|")),
+            "physical target occupies obstructed terrain",
+        )
+        multiplier = 256 if land.startswith("LE0|") else 230 if land.startswith("LE15|") else 205
+        if not dodged:
+            damage = max(1, int(attack["attack"]) - int(defense["defense"])) * multiplier // 256
+            if defender_profile["mover"] in airborne and attacker_profile["mover"] in archers:
+                damage += damage >> 2
+            setting = attacker_profile["prowess"] & 15
+            require(setting < 9, "physical ailment prowess requires a separate source effect")
+            chance, shift = source["critical"][setting]
+            critical = bool(chance and roll("critical", chance, actor, other) == 0)
+            if critical:
+                damage += damage >> shift
+            if counter:
+                damage >>= 1
+            spread = damage // 8 + 1
+            damage -= roll("spread-1", spread, actor, other)
+            damage -= roll("spread-2", spread, actor, other)
+            damage = max(1, damage)
+        hp[other] = max(0, before_hp - damage)
+        twice = response = False
+        if hp[other]:
+            twice = (
+                roll("double", (32, 16, 8, 4)[(attacker_profile["prowess"] >> 4) & 3], actor, other)
+                == 0
+            )
+            response = (
+                roll(
+                    "counter", (32, 16, 8, 4)[(defender_profile["prowess"] >> 6) & 3], actor, other
+                )
+                == 0
+            )
+        strikes.append(
+            dict(
+                kind=kind,
+                actor=actor,
+                target=other,
+                beforeHp=before_hp,
+                afterHp=hp[other],
+                damage=damage,
+                dodge=dodged,
+                critical=critical,
+                terrain=tile,
+                land=land,
+                multiplier=multiplier,
+            )
+        )
+        return twice, response
+
+    require(hp[attacker] > 0 and hp[target] > 0, "physical living actor and target")
+    legal_range = in_range(attacker, target)
+    range_for(target)
+    same_side = attacker.startswith("ally-") == target.startswith("ally-")
+    muddled = bool(int(actors[attacker]["status"]) & equates["STATUSEFFECT_MUDDLE"])
+    twice, counter = strike("physical-first", attacker, target)
+    if twice and hp[target] and not muddled and not same_side:
+        _, second_counter = strike("physical-second", attacker, target)
+        counter |= second_counter
+    blocked_enemy = profiles[target].get("enemyId") in {
+        equates["ENEMY_BURST_ROCK"],
+        equates["ENEMY_KRAKEN_HEAD"],
+        equates["ENEMY_PRISM_FLOWER"],
+        equates["ENEMY_ZEON_GUARD"],
+    }
+    counter_eligible = (
+        hp[target] > 0
+        and not muddled
+        and not same_side
+        and not blocked_enemy
+        and (profiles[attacker].get("enemyId") != equates["ENEMY_TAROS"])
+        and not int(actors[target]["status"])
+        & (equates["STATUSEFFECT_SLEEP"] | equates["STATUSEFFECT_STUN"])
+    )
+    if counter and counter_eligible and in_range(target, attacker):
+        strike("physical-counter", target, attacker, True)
+    return dict(draws=draws, strikes=strikes, rangeLegal=legal_range, seed=seed)
+
+
+def physical_consumer_binding(actual, context, source_root):
+    """Bind the selected physical census to source rules and persistent effects."""
+    result = dict(
+        value=None,
+        checks=[],
+        occurrences=[],
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            owner="docs/design/contracts/combat-resolution.md",
+            construction="docs/design/contracts/battle-action-construction.md",
+            rng="docs/design/contracts/randomness.md",
+            binding="source initial party/battle01 placements, matched operands and scene effects",
+        ),
+        unknown=[
+            "whole historical A RNG/AI and turn-generation trajectory",
+            "unreached physical branches and complete rendering/hardware timing",
+        ],
+    )
+    absent = object()
+    context = context or {}
+    session = context.get("sessionId")
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(expected, observed=absent):
+        if observed is absent:
+            return None
+        if isinstance(expected, dict):
+            return (
+                merge([match(v, observed.get(k, absent)) for k, v in expected.items()])
+                if isinstance(observed, dict)
+                else False
+            )
+        if isinstance(expected, list):
+            if not isinstance(observed, list):
+                return False
+            return merge(
+                [
+                    False
+                    if len(observed) > len(expected)
+                    else None
+                    if len(observed) < len(expected)
+                    else True
+                ]
+                + [match(x, y) for x, y in zip(expected, observed, strict=False)]
+            )
+        return (
+            type(observed) is bool and observed == expected
+            if isinstance(expected, bool)
+            else observed == expected
+        )
+
+    def ordered_match(expected, observed):
+        values, cursor = [], 0
+        for item in observed:
+            found = next(
+                (
+                    i
+                    for i in range(cursor, len(expected))
+                    if expected[i].get("Kind") == item.get("Kind")
+                ),
+                None,
+            )
+            if found is None:
+                values.append(False)
+                continue
+            if found != cursor:
+                values.append(None)
+            values.append(match(expected[found], item))
+            cursor = found + 1
+        if cursor != len(expected):
+            values.append(None)
+        return merge(values)
+
+    def check(name, value, occurrence=None):
+        result["checks"].append(dict(name=name, value=value, occurrence=occurrence))
+
+    def eq(name, expected, observed=absent, occurrence=None):
+        check(name, match(expected, observed), occurrence)
+
+    def number(value):
+        return (
+            isinstance(value, (int, float)) and not isinstance(value, bool) and value == int(value)
+        )
+
+    eq("selected scope", "retained-keyboard-A-physical", context.get("scope", absent))
+    check("independent session", bool(session) or None)
+    eq("source revision", UPSTREAM, context.get("upstream", absent))
+    receipt = context.get("selectionReceipt") or {}
+    eq("completed immutable selection", dict(sourceUnchanged=True, failure=None), receipt)
+    selected = {}
+    for channel in ("warpRecords", "inputRecords", "sceneObservations", "samples"):
+        wanted = set((context.get("indices") or {}).get(channel, []))
+        records = {}
+        order = []
+        for index, row in enumerate(actual.get(channel, [])):
+            index = row.get("_index", index)
+            if index not in wanted:
+                continue
+            order.append(index)
+            check(channel + " unique source index", index not in records)
+            records[index] = row
+        check(channel + " declared selection", bool(wanted) or None)
+        check(
+            channel + " complete selected indices",
+            True if set(records) == wanted and wanted else None,
+        )
+        check(channel + " source order", order == sorted(set(order)))
+        selected[channel] = records
+    warps = selected["warpRecords"]
+    events, event_rows = {}, {}
+    for index, row in warps.items():
+        envelope, state = row.get("result") or {}, row.get("state") or {}
+        for label, value in (("result", envelope), *(([("state", state)]) if state else [])):
+            eq(label + " session", session, value.get("sessionId", absent))
+            check(
+                label + " integer clocks",
+                merge(
+                    [
+                        number(value[k]) if k in value else None
+                        for k in ("revision", "observationSequence")
+                    ]
+                ),
+            )
+        if state:
+            eq(
+                "result/state clocks",
+                {k: envelope[k] for k in ("revision", "observationSequence") if k in envelope},
+                state,
+            )
+        if envelope.get("failure") is not None:
+            eq(
+                "retained rejected range attempt",
+                dict(
+                    failure=dict(Code="target-range", Field="target"),
+                    stopReason="Rejected",
+                    observations=[],
+                ),
+                envelope,
+            )
+        observed = envelope.get("observations")
+        if not isinstance(observed, list):
+            check("result observations", None)
+            continue
+        positions = []
+        for event in observed:
+            seq, revision = event.get("Sequence"), event.get("Revision")
+            valid = (
+                None
+                if "Sequence" not in event or "Revision" not in event
+                else number(seq) and number(revision)
+            )
+            check("event clocks", valid)
+            if not valid:
+                continue
+            positions.append(seq)
+            check(
+                "event inside result envelope",
+                seq <= envelope.get("observationSequence", -1)
+                and revision <= envelope.get("revision", -1),
+            )
+            if seq in events:
+                eq("repeated event identity and payload", events[seq], event)
+            else:
+                events[seq] = event
+                event_rows[seq] = index
+        check("event order within Submit", positions == sorted(set(positions)))
+        if positions:
+            eq(
+                "result terminal event axis",
+                positions[-1],
+                envelope.get("observationSequence", absent),
+            )
+    for row in selected["inputRecords"].values():
+        for side in ("before", "after"):
+            eq(
+                "input " + side + " session",
+                session,
+                (row.get(side) or {}).get("sessionId", absent),
+            )
+        check(
+            "input result interval",
+            number(row.get("resultStart"))
+            and number(row.get("resultEnd"))
+            and row["resultStart"] <= row["resultEnd"],
+        )
+    for row in selected["sceneObservations"].values():
+        eq("scene projection session", session, row.get("sessionId", absent))
+        eq("scene projection error", None, (row.get("scene") or {}).get("error", absent))
+
+    for event in events.values():
+        if event.get("Kind") not in {
+            "rng-" + kind
+            for kind in ("dodge", "critical", "spread-1", "spread-2", "double", "counter")
+        }:
+            continue
+        values = [event.get(k) for k in ("Before", "After", "RandomRange", "RandomValue")]
+        if not all(number(v) for v in values):
+            check("physical RNG arithmetic operands", None)
+            continue
+        before_seed, after_seed, bound, value = map(int, values)
+        check(
+            "physical RNG operand bounds",
+            0 <= before_seed <= 0xFFFFFFFF
+            and 0 <= after_seed <= 0xFFFFFFFF
+            and 0 < bound <= 65535
+            and 0 <= value < bound,
+        )
+        word, random = _rng_step(before_seed >> 16, (bound * 2) & 65535)
+        eq(
+            "physical RNG arithmetic",
+            dict(After=(word << 16) | (before_seed & 65535), RandomValue=random >> 1),
+            event,
+        )
+
+    source = None
+    try:
+        item_ids = {
+            int(word) & 127
+            for row in warps.values()
+            for actor in (row.get("state") or {}).get("actors") or []
+            for word in actor.get("items") or []
+            if int(word) & 128
+        }
+        source = _physical_source_operands(source_root, item_ids) if source_root else None
+        check("pinned independent source operands", True if source else None)
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        TypeError,
+        IndexError,
+        subprocess.SubprocessError,
+    ) as error:
+        check(
+            "pinned independent source operands",
+            False
+            if str(error) in ("physical source pin", "physical source modifications")
+            else None,
+        )
+        result["unknown"].append(str(error))
+    initial = (selected["samples"].get(context.get("initialSampleIndex")) or {}).get("state") or {}
+    eq("initial deployment session", session, initial.get("sessionId", absent))
+    eq(
+        "accepted source-initial party declaration",
+        context.get("profileDeclaration", absent),
+        (initial.get("initializationPolicy") or {}).get("Declaration", absent),
+    )
+    eq(
+        "source-initial party profile",
+        "private-local-map3-r1-party-v1",
+        context.get("profileDeclaration", absent),
+    )
+    if source:
+        initial_actors = {a.get("id"): a for a in initial.get("actors") or []}
+        check(
+            "source deployment roster",
+            set(initial_actors) == set(source["profiles"]) if initial_actors else None,
+        )
+        for actor, profile in source["profiles"].items():
+            row = initial_actors.get(actor, {})
+            eq(
+                "source deployment " + actor,
+                dict(x=profile["placement"][0], y=profile["placement"][1]),
+                row,
+            )
+            eq(
+                "source mover " + actor,
+                profile["mover"].replace("_", "").lower(),
+                str(row["mover"]).lower() if "mover" in row else absent,
+            )
+
+    result["rejectedRangeAttempts"] = []
+    for index, row in warps.items():
+        if not (row.get("result") or {}).get("failure"):
+            continue
+        state = row.get("state") or {}
+        result["rejectedRangeAttempts"].append(dict(index=index, failure=row["result"]["failure"]))
+        try:
+            actors = {a["id"]: a for a in state["actors"]}
+            actor, target = actors[state["actor"]], actors[state["candidate"]]
+            equipped = [int(w) & 127 for w in actor["items"] if int(w) & 128]
+            limits = source["items"][equipped[0]]["range"] if equipped else (1, 1)
+            distance = abs(state["previewX"] - target["x"]) + abs(state["previewY"] - target["y"])
+            check("rejected target is outside source range", not limits[0] <= distance <= limits[1])
+        except (KeyError, TypeError, IndexError):
+            check("rejected target range operands", None)
+
+    census = context.get("census") or []
+    check("independent complete physical census", bool(census) or None)
+    prepares = {e.get("sequence") for e in census}
+    actual_prepares = {
+        seq
+        for seq, e in events.items()
+        if e.get("Kind") == "scene-prepared"
+        and any(
+            x.get("Kind") in ("rng-dodge", "rng-critical")
+            for x in (warps[event_rows[seq]].get("result") or {}).get("observations", [])
+        )
+    }
+    check("physical preparation census has no extras", actual_prepares <= prepares)
+    check(
+        "physical preparation census coverage",
+        True if actual_prepares == prepares and prepares else None,
+    )
+    eq("physical census unique scenes", len(census), len(prepares))
+    for boundary in context.get("battleBounds") or []:
+        row = warps.get(boundary.get("index"), {})
+        for expected in boundary.get("events") or []:
+            eq(
+                "battle admission/outcome boundary",
+                expected,
+                next(
+                    (
+                        e
+                        for e in (row.get("result") or {}).get("observations", [])
+                        if e.get("Sequence") == expected.get("Sequence")
+                    ),
+                    absent,
+                ),
+            )
+    kinds = {
+        e.get("Kind")
+        for boundary in context.get("battleBounds") or []
+        for e in boundary.get("events") or []
+    }
+    check(
+        "battle has initialization and terminal boundary",
+        {"battle-initialized", "battle-outcome"} <= kinds if kinds else None,
+    )
+
+    physical_kinds = {
+        "rng-" + name for name in ("dodge", "critical", "spread-1", "spread-2", "double", "counter")
+    }
+    effect_kinds = {
+        "physical-first",
+        "physical-second",
+        "physical-counter",
+        "hp",
+        "dodge",
+        "critical",
+    }
+    covered = set()
+    for occurrence in census:
+        seq = occurrence.get("sequence")
+        index = occurrence.get("index")
+        row = warps.get(index, {})
+        state = row.get("state") or {}
+        envelope = row.get("result") or {}
+        end = (occurrence.get("end") or {}).get("sequence")
+        first = occurrence.get("firstDrawSequence")
+        eq(
+            "preparation identity",
+            dict(
+                Kind="scene-prepared",
+                Sequence=seq,
+                Revision=occurrence.get("revision"),
+                Actor=occurrence.get("actor"),
+            ),
+            events.get(seq, absent),
+            seq,
+        )
+        eq("preparation Submit has no failure", None, envelope.get("failure", absent), seq)
+        eq(
+            "preparation result revision",
+            occurrence.get("revision"),
+            envelope.get("revision", absent),
+            seq,
+        )
+        for draw in envelope.get("observations", []):
+            if draw.get("Kind") in physical_kinds:
+                eq(
+                    "construction draw revision",
+                    occurrence.get("revision"),
+                    draw.get("Revision", absent),
+                    seq,
+                )
+        eq("preparation source index", index, event_rows.get(seq, absent), seq)
+        eq(
+            "end identity",
+            dict(
+                Kind="scene-ended",
+                Sequence=end,
+                Revision=(occurrence.get("end") or {}).get("revision"),
+                Actor=occurrence.get("actor"),
+            ),
+            events.get(end, absent),
+            seq,
+        )
+        check(
+            "physical scene axes ordered",
+            first < seq < end if all(number(x) for x in (first, seq, end)) else None,
+            seq,
+        )
+        if not all(number(x) for x in (first, seq, end)):
+            continue
+        within = [e for k, e in sorted(events.items()) if seq < k < end]
+        effects = [e for e in within if e.get("Kind") in effect_kinds]
+        covered.update(e["Sequence"] for e in effects)
+        draws = [
+            e
+            for e in envelope.get("observations", [])
+            if first <= e.get("Sequence", -1) < seq and e.get("Kind") in physical_kinds
+        ]
+        before = (warps.get(index - 1) or {}).get("state") or {}
+        check("immediate preparation predecessor", True if before else None, seq)
+        actor = (occurrence.get("actor") or {}).get("Value")
+        target = (occurrence.get("target") or {}).get("Value")
+        actors = {a.get("id"): a for a in state.get("actors") or []}
+        prior_actors = {a.get("id"): a for a in before.get("actors") or []}
+        for actor_id in (actor, target):
+            current_actor = actors.get(actor_id, {})
+            check(
+                "physical actor alive " + str(actor_id),
+                current_actor["hp"] > 0 if number(current_actor.get("hp")) else None,
+                seq,
+            )
+            check(
+                "prior actor operands retained " + str(actor_id),
+                True if actor_id in prior_actors else None,
+                seq,
+            )
+            eq(
+                "deferred physical vitals and operands " + str(actor_id),
+                {
+                    k: prior_actors[actor_id][k]
+                    for k in ("hp", "attack", "defense", "status", "items")
+                    if k in prior_actors[actor_id]
+                }
+                if actor_id in prior_actors
+                else {},
+                current_actor,
+                seq,
+            )
+            check(
+                "required live physical operands " + str(actor_id),
+                True
+                if all(
+                    current_actor.get(k) is not None
+                    for k in ("hp", "attack", "defense", "status", "items", "mover", "x", "y")
+                )
+                else None,
+                seq,
+            )
+            if source and actor_id in source["profiles"]:
+                eq(
+                    "matched current source mover " + actor_id,
+                    source["profiles"][actor_id]["mover"].replace("_", "").lower(),
+                    str(current_actor["mover"]).lower() if "mover" in current_actor else absent,
+                    seq,
+                )
+        positions = {
+            a: dict(x=prior_actors[a].get("x"), y=prior_actors[a].get("y"))
+            for a in (actor, target)
+            if a in prior_actors
+        }
+        for movement in envelope.get("observations", []):
+            moving_actor = (movement.get("Actor") or {}).get("Value")
+            if (
+                movement.get("Kind") != "movement"
+                or moving_actor not in positions
+                or movement.get("Sequence", seq) >= seq
+            ):
+                continue
+            eq(
+                "physical movement starts at prior placement",
+                positions[moving_actor],
+                {
+                    "x": (movement.get("From") or {}).get("X"),
+                    "y": (movement.get("From") or {}).get("Y"),
+                },
+                seq,
+            )
+            positions[moving_actor] = {
+                "x": (movement.get("To") or {}).get("X"),
+                "y": (movement.get("To") or {}).get("Y"),
+            }
+        for actor_id, position in positions.items():
+            eq(
+                "physical range uses committed placement " + actor_id,
+                position,
+                actors.get(actor_id, {}),
+                seq,
+            )
+        ordinal = occurrence.get("inputOrdinal")
+        eq("preparation causal input ordinal", ordinal, row.get("inputOrdinal", absent), seq)
+        owners = [i for i in selected["inputRecords"].values() if i.get("ordinal") == ordinal]
+        check("preparation input occurrence retained", bool(owners) or None, seq)
+        if actor and actor.startswith("ally-"):
+            committing = [
+                i for i in owners if i.get("resultStart", -1) <= index < i.get("resultEnd", -1)
+            ]
+            check(
+                "player physical input-to-Submit", len(committing) == 1 if committing else None, seq
+            )
+            if committing:
+                eq(
+                    "player commit identity",
+                    dict(action="confirm", pressed=True),
+                    committing[0],
+                    seq,
+                )
+                eq(
+                    "player selected actor",
+                    actor,
+                    (committing[0].get("before") or {}).get("actor", absent),
+                    seq,
+                )
+                eq(
+                    "player before clocks",
+                    {
+                        k: before[k]
+                        for k in ("revision", "observationSequence", "mainSeed")
+                        if k in before
+                    },
+                    committing[0].get("before", absent),
+                    seq,
+                )
+                eq(
+                    "player after clocks",
+                    {
+                        k: state[k]
+                        for k in ("sessionId", "revision", "observationSequence", "mainSeed")
+                        if k in state
+                    },
+                    committing[0].get("after", absent),
+                    seq,
+                )
+        elif owners:
+            check(
+                "automatic preparation after causal input",
+                any(
+                    i.get("resultEnd", index + 1) <= index
+                    or i.get("resultStart", index + 1) <= index < i.get("resultEnd", -1)
+                    for i in owners
+                ),
+                seq,
+            )
+        seed = before.get("mainSeed")
+        for event in envelope.get("observations", []):
+            if event.get("Sequence", first) >= first:
+                break
+            if str(event.get("Kind", "")).startswith("rng-") and event.get("After") is not None:
+                seed = event["After"]
+        if draws and draws[0].get("Sequence") == first:
+            eq("matched physical seed input", seed, draws[0].get("Before", absent), seq)
+        else:
+            check("physical construction draws", None, seq)
+        for event in effects:
+            effect_row = warps[event_rows[event["Sequence"]]]
+            previous = (warps.get(event_rows[event["Sequence"]] - 1) or {}).get("state") or {}
+            submit_events = effect_row["result"].get("observations", [])
+            prior_phases = [
+                e
+                for e in submit_events
+                if e.get("Kind") == "scene-step-completed"
+                and e.get("Sequence", -1) < event["Sequence"]
+            ]
+            next_phases = [
+                e
+                for e in submit_events
+                if e.get("Kind") == "scene-step-started"
+                and e.get("Sequence", -1) > event["Sequence"]
+            ]
+            marker = event["Kind"].startswith("physical-")
+            markers = [
+                e
+                for e in effects
+                if e.get("Kind", "").startswith("physical-") and e["Sequence"] <= event["Sequence"]
+            ]
+            eq(
+                "physical effect Submit revision",
+                effect_row["result"].get("revision"),
+                event.get("Revision", absent),
+                seq,
+            )
+            if prior_phases and next_phases:
+                for label, phase, name in (
+                    (
+                        "preceding",
+                        prior_phases[-1],
+                        "ActionMessage" if marker else "ActionAnimation",
+                    ),
+                    ("following", next_phases[0], "ActionAnimation" if marker else "Reaction"),
+                ):
+                    eq(
+                        "physical effect " + label + " command",
+                        dict(Detail=name, Revision=event.get("Revision")),
+                        phase,
+                        seq,
+                    )
+                if markers:
+                    eq(
+                        "physical preceding command actor",
+                        markers[-1].get("Actor"),
+                        prior_phases[-1].get("Actor", absent),
+                        seq,
+                    )
+                    eq(
+                        "physical following command actor",
+                        markers[-1].get("Actor"),
+                        next_phases[0].get("Actor", absent),
+                        seq,
+                    )
+                else:
+                    check("physical action marker retained", None, seq)
+            else:
+                check("physical effect command boundaries", None, seq)
+            if event["Kind"] == "hp":
+                affected = (event.get("Actor") or {}).get("Value")
+                for label, snapshot, value in (
+                    ("before", previous, event.get("Before")),
+                    ("after", effect_row.get("state") or {}, event.get("After")),
+                ):
+                    actual_actor = next(
+                        (a for a in snapshot.get("actors") or [] if a.get("id") == affected), {}
+                    )
+                    eq("persistent HP " + label, value, actual_actor.get("hp", absent), seq)
+            if event["Kind"] == "dodge":
+                affected = (event.get("Actor") or {}).get("Value")
+                old = next((a for a in previous.get("actors") or [] if a.get("id") == affected), {})
+                new = next(
+                    (
+                        a
+                        for a in (effect_row.get("state") or {}).get("actors") or []
+                        if a.get("id") == affected
+                    ),
+                    {},
+                )
+                eq(
+                    "dodge preserves persistent HP",
+                    old.get("hp", absent),
+                    new.get("hp", absent),
+                    seq,
+                )
+            eq(
+                "effect Submit has no failure",
+                None,
+                effect_row["result"].get("failure", absent),
+                seq,
+            )
+            check(
+                "effect input lineage",
+                any(
+                    i.get("ordinal") == effect_row.get("inputOrdinal")
+                    for i in selected["inputRecords"].values()
+                )
+                or None,
+                seq,
+            )
+        carried = [
+            e
+            for e in envelope.get("observations", [])
+            if str(e.get("Kind", "")).startswith("rng-") and e.get("After") is not None
+        ]
+        if carried:
+            eq(
+                "preparation carried seed state",
+                carried[-1]["After"],
+                state.get("mainSeed", absent),
+                seq,
+            )
+        predicted = None
+        if source and actor in actors and target in actors and number(seed):
+            try:
+                predicted = _physical_source_action(source, actors, actor, target, int(seed))
+            except (ValueError, KeyError, TypeError, IndexError) as error:
+                result["unknown"].append(str(error))
+        if predicted is None:
+            check("source rule operands complete", None, seq)
+            continue
+        check("source physical range", predicted["rangeLegal"], seq)
+        check(
+            "eligible ordered physical RNG and seed effects",
+            ordered_match(predicted["draws"], draws),
+            seq,
+        )
+        expected_effects = []
+        for strike in predicted["strikes"]:
+            expected_effects.append(
+                dict(
+                    Kind=strike["kind"],
+                    Actor={"Value": strike["actor"]},
+                    Target={"Value": strike["target"]},
+                )
+            )
+            if strike["critical"]:
+                expected_effects.append(
+                    dict(
+                        Kind="critical",
+                        Actor={"Value": strike["actor"]},
+                        Target={"Value": strike["target"]},
+                    )
+                )
+            expected_effects.append(
+                dict(
+                    Kind="dodge" if strike["dodge"] else "hp",
+                    Actor={"Value": strike["target"]},
+                    Before=None if strike["dodge"] else strike["beforeHp"],
+                    After=None if strike["dodge"] else strike["afterHp"],
+                )
+            )
+        check(
+            "ordered first/second/counter and HP effects",
+            ordered_match(expected_effects, effects),
+            seq,
+        )
+        hp_events = [e for e in effects if e.get("Kind") == "hp"]
+        expected_hp = [e for e in expected_effects if e["Kind"] == "hp"]
+        if hp_events and len(hp_events) == len(expected_hp):
+            last_state_sequence = warps[event_rows[hp_events[-1]["Sequence"]]]["result"][
+                "observationSequence"
+            ]
+            affected = {(e.get("Actor") or {}).get("Value") for e in hp_events}
+            for boundary_row in warps.values():
+                boundary_state = boundary_row.get("state") or {}
+                clock = boundary_state.get("observationSequence")
+                if not number(clock) or not seq <= clock <= last_state_sequence:
+                    continue
+                live = {a.get("id"): a for a in boundary_state.get("actors") or []}
+                for target_id in affected:
+                    expected_hp_value = actors.get(target_id, {}).get("hp", absent)
+                    for actual_effect, expected_effect in zip(hp_events, expected_hp, strict=True):
+                        if (
+                            actual_effect["Sequence"] <= clock
+                            and expected_effect["Actor"]["Value"] == target_id
+                        ):
+                            expected_hp_value = expected_effect["After"]
+                    eq(
+                        "HP deferred until physical command and retained afterward",
+                        expected_hp_value,
+                        live.get(target_id, {}).get("hp", absent),
+                        seq,
+                    )
+        message_starts = [
+            e["Sequence"]
+            for e in within
+            if e.get("Kind") == "scene-step-started" and e.get("Detail") == "ActionMessage"
+        ]
+        eq("physical action message phases", len(predicted["strikes"]), len(message_starts), seq)
+        projections = [
+            p
+            for p in selected["sceneObservations"].values()
+            if number((p.get("scene") or {}).get("waitToken"))
+            and seq <= p["scene"]["waitToken"] < end
+        ]
+        for strike in predicted["strikes"]:
+            check(
+                "strike has actual scene projection " + strike["kind"],
+                any(p["scene"].get("actionKind") == strike["kind"] for p in projections) or None,
+                seq,
+            )
+        for projection in projections:
+            scene = projection["scene"]
+            token = scene["waitToken"]
+            token_event = events.get(token)
+            if token_event:
+                check(
+                    "scene token names a phase boundary",
+                    token_event.get("Kind") in ("scene-prepared", "scene-step-started"),
+                    seq,
+                )
+                expected_phase = (
+                    "Initialize"
+                    if token_event.get("Kind") == "scene-prepared"
+                    else token_event.get("Detail")
+                )
+                eq("scene phase token", expected_phase, scene.get("phase", absent), seq)
+                check(
+                    "scene token before projected clocks",
+                    token_event["Revision"] <= projection.get("revision", -1)
+                    and token_event["Sequence"] <= projection.get("observationSequence", -1),
+                    seq,
+                )
+            else:
+                check("scene phase token retained", None, seq)
+            strike_index = max(0, bisect_right(message_starts, token) - 1)
+            if strike_index >= len(predicted["strikes"]):
+                check("extra physical scene action phase", False, seq)
+                continue
+            strike = predicted["strikes"][strike_index]
+            eq(
+                "scene strike and reaction",
+                dict(
+                    actionKind=strike["kind"],
+                    reactionKind="Dodge" if strike["dodge"] else "Damage",
+                    reactionAmount=strike["damage"],
+                    displayedAlly=actor if actor.startswith("ally-") else target,
+                    displayedEnemy=target if actor.startswith("ally-") else actor,
+                ),
+                scene,
+                seq,
+            )
+        result["occurrences"].append(
+            dict(sequence=seq, actor=actor, target=target, strikes=predicted["strikes"])
+        )
+    result["fieldDeathProjectionDiagnostics"] = 0
+    for projection in selected["sceneObservations"].values():
+        scene = projection.get("scene") or {}
+        if (
+            scene.get("phase") in ("FieldSpin", "FieldExit", "FieldSettle")
+            and scene.get("visible") is False
+        ):
+            result["fieldDeathProjectionDiagnostics"] += 1
+            continue
+        token = scene.get("waitToken")
+        check(
+            "selected scene belongs to physical census",
+            any(
+                number(token)
+                and number(o.get("sequence"))
+                and number((o.get("end") or {}).get("sequence"))
+                and o["sequence"] <= token < o["end"]["sequence"]
+                for o in census
+            )
+            if census
+            else None,
+        )
+    actual_physical = {
+        k
+        for k, e in events.items()
+        if e.get("Kind") in ("physical-first", "physical-second", "physical-counter")
+    }
+    check("all physical effects belong to census", actual_physical <= covered)
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    return result
+
+
 def heal_consumer_binding(actual, context, source_root):
     """Selected PRST HEAL1 consumers under the accepted PR618 logical clock."""
     import copy
@@ -14962,6 +16049,7 @@ def compare_modern(
     w1_context=None,
     map_context=None,
     admission_context=None,
+    physical_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -14998,6 +16086,11 @@ def compare_modern(
     w1_consumers = w1_consumer_binding(actual, w1_context, text_source_root)
     w2_consumers = w2_consumer_binding(actual, w2_context, text_source_root)
     heal_consumers = heal_consumer_binding(actual, heal_context, text_source_root)
+    physical_consumers = (
+        physical_consumer_binding(actual, physical_context, text_source_root)
+        if physical_context is not None
+        else None
+    )
     map_consumers = (
         map_consumer_binding(actual, map_context, text_source_root)
         if map_context is not None
@@ -16132,6 +17225,22 @@ def compare_modern(
             "source live service gates and individual caller/effect mapping",
         ),
     ):
+        if (
+            name == "physical range/dodge/critical/spread/double/counter effects"
+            and physical_consumers is not None
+        ):
+            check(
+                5,
+                name,
+                True,
+                physical_consumers["value"],
+                actual_location,
+                original=physical_consumers["sourceRules"],
+                parent=rule_parent,
+                reason="Source physical rules, matched operands, complete selected census and "
+                "persistent scene effects; historical trajectory remains separate",
+            )
+            continue
         if name == "HEAL recovery/cost/fairy opportunity and seed effects":
             check(
                 5,
@@ -16798,6 +17907,7 @@ def compare_modern(
             w1ConsumerBinding=w1_consumers,
             w2ConsumerBinding=w2_consumers,
             healConsumerBinding=heal_consumers,
+            physicalConsumerBinding=physical_consumers,
             reachedMaterialJoins=materials["joins"],
             reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
@@ -17349,7 +18459,11 @@ def main():
             "heal",
             "map",
             "admission-seed",
+            "physical",
         ),
+    )
+    parser.add_argument(
+        "--physical-context", type=Path, help="Selected complete physical census and source indices"
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
@@ -17429,6 +18543,56 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.physical_context is None
+        or args.mode == "physical"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "Physical context applies only to physical or modern compare",
+    )
+    if args.physical_context is not None:
+        args.physical_context = (
+            args.physical_context
+            if args.physical_context.is_absolute()
+            else repo_path(args.physical_context)
+        ).resolve()
+        require(
+            args.physical_context.stat().st_size <= 1024 * 1024, "Physical context exceeds 1MiB"
+        )
+    if args.mode == "physical":
+        require(
+            args.actual is not None and args.physical_context is not None,
+            "physical requires selected actual and independent census context",
+        )
+        actual_path = args.actual if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.physical_context.stat().st_size <= 10 * 1024 * 1024,
+            "Physical compact selection exceeds 10MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "Physical output must be fresh beneath this worktree local/",
+        )
+        binding = physical_consumer_binding(
+            read(actual_path), read(args.physical_context), args.text_source_root
+        )
+        verdict = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-physical-consumer", result=verdict, milestonePass=False, binding=binding
+        )
+        require(
+            len(json.dumps(report).encode("utf-8")) <= 10 * 1024 * 1024,
+            "Physical report exceeds 10MiB",
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(result=verdict, occurrences=len(binding["occurrences"]), milestonePass=False)
+            )
+        )
+        raise SystemExit(0 if binding["value"] is True else 1 if binding["value"] is False else 2)
     require(args.admission_context is None or args.mode == "admission-seed"
             or args.mode == "compare" and args.profile == "modern-continuous",
             "Admission context applies only to admission-seed or modern compare")
@@ -17979,6 +19143,7 @@ def main():
                 read(args.w1_context) if args.w1_context else None,
                 read(args.map_context) if args.map_context else None,
                 read(args.admission_context) if args.admission_context else None,
+                read(args.physical_context) if args.physical_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
