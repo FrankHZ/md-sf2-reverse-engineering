@@ -3802,6 +3802,49 @@ planner/actual CI. This offline comparator slice needs no SDK/native/capture, ne
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
 actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
 
+### Scoped HEAL consumer comparison
+
+The [selected HEAL contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding)
+reuses the accepted HEAL rules and PR618 logical recovery proof. Use retained actual effects and
+live fairy observations; expected values never come from a remake-generated result or a later
+bracketing actor snapshot. Original prepared04 interrupt/cursor failures remain explicit diagnostics.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison heal `
+  --actual $selectedHealActual --heal-context $acceptedHealContext `
+  --text-source-root $pinnedSource --output local/heal-consumers/fresh-report.json
+```
+
+The selected actual object retains `warpRecords`, `sceneObservations` and `inputRecords` with their
+zero-based original `_index`. Keep result envelopes and complete events, minimal live caster/target
+stats, and scene phase/token/spell/message/healing fields. Every logical opportunity, including
+no-draw work, needs its actual state. Bind host-poll scene observations after Present; preserve
+signal-before-Present observations as a distinct category. A Submit's additional enemy/AI events
+must retain their separate identity and cannot contribute to the HEAL proof.
+
+Independent context has `scope="retained-keyboard-A-heal"`, `sessionId`, original `warpIndices`,
+`sceneIndices` and `inputIndices`, and three `occurrences`. Each occurrence retains actor/target,
+source target sprite, before/prepared/terminal result revisions, scene start/end sequences,
+physical confirmation ordinal/index/result index and the complete selected result-index inventory.
+Keep context separate from candidate data so deleting a candidate cannot redefine coverage.
+Full-capture channels use these indices directly; the predicate does not scan or materialize them.
+Modern `compare --heal-context` calls this identical child; do not run full H4 just to prove wiring.
+
+The authorized one-pass selection budget is120s/128MiB incremental memory, at most10MiB newly
+selected output and20MiB combined compact inputs. Read-only source size/mtime must agree before
+and after; record timing, peak memory and output size. Preserve partial output on budget failure
+and resolve the precise remaining boundary before another scan. The scoped command limits its
+combined input to20MiB, context to1MiB and report to10MiB, with a fresh worktree-local output.
+Exit0/1/2 means PASS/FAIL/Unavailable; every report keeps `milestonePass=false`.
+
+Direct controls cover wrong recovery/cost/reward, source caps, draw range/result and fairy state,
+missing draws/results/projections, duplicate and foreign identities, caller/order errors, physical
+acknowledgement and mixed missing-plus-known-wrong evidence. Preserve completed failures; correct
+them with affected controls. Use scoped Ruff, direct contracts/docs/private checks, committed planner
+and actual CI. No verifier unit tests, SDK/native/H3 acquisition, new route, full H4 or matrix are
+implied. Accepted audio, W2 and turn predicates keep their own boundaries.
+
 ### Scoped W2 consumer comparison
 
 Use the retained `current-A-w2.jsonl`, `current-A-w2-tail.jsonl`, `w2-occurrences.json` and selected A

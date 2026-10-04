@@ -558,6 +558,46 @@ terminal voices; wait tokens are not playback IDs. The selected A audio dependen
 below. Other original resource selectors/provenance and required dependent-consumer joins retain
 their separate Unknowns, without queuing acquisition or adding untaken branches as prerequisites.
 
+### Selected HEAL rule and consumer binding
+
+The `HEAL recovery/cost/fairy opportunity and seed effects` child uses the accepted
+[HEAL 1 rules](spell-resolution.md#confirmed-heal-1-subset) and
+[legal recovery-window proof](../../research/map3-messenger-acceptance.md#legal-heal-recovery-window-completion).
+Its selected required-keyboard A cohort contains three PRST HEAL 1 actions, including self-healing.
+This is an evidence inventory, not a gameplay restriction or a fixed opportunity quota.
+
+**Confirmed:** the scoped predicate binds spell/target selection and physical confirmation to the
+same session and Submit, checks deferred resources at preparation, and joins each immediate HP,
+MP and EXP effect to its live actor state. Recovery uses the living target's missing-HP cap;
+cost and reward use the independent source rules and the two actual reward draws. A later
+action-selection snapshot cannot stand in for these immediate effects because enemy actions may
+intervene. Each available operand is checked independently; missing target HP cannot mask wrong MP.
+
+Fairy setup and each logical opportunity use the pinned original setup/update/controller arithmetic,
+including motion, conditional draws, dust, stop and cleanup. Draws bind actor, event revision/sequence,
+range, result and seed carry to the actual before/after fairy state. No-draw opportunities also count
+as required evidence. Source cast bytes and target idle headers supply mandatory work; accepted
+logical text work uses the reached message as its caller operand. Text content fidelity retains its
+separate owner. Timed acknowledgement is input-before-service; presentation delivery adds no fairy
+work. Neither retained host frame counts nor the original CPU-interrupt count defines a quota.
+
+Actual post-Present `host-poll` observations supply the scene state. The `warpRecords.state.scene`
+projection can still describe the preceding scene and is not an after-state witness. Repeated
+projections of one revision must agree. A final Submit can also advance AI or start an enemy scene:
+the selected HEAL's ending event sequence bounds its effects; the whole Submit seed after unrelated
+work is not relabelled as the HEAL return seed.
+
+Missing selected results, projections or operands remain **Unavailable**; known contradictions
+produce **FAIL** even beside missing evidence. The [scoped command](../../../remake/docs/development-and-verification.md#scoped-heal-consumer-comparison)
+and modern child use the same predicate with independent context and original array indices.
+A scoped PASS always leaves `milestonePass=false` and closes no other child by itself.
+
+**Confirmed historical failure:** prepared04 CP2059–2091 contains three original interrupts versus
+two explicit logical recovery services; the later recovery-text seed/cursor comparison also failed.
+Those completed failures remain retained. **Unknown:** interrupted CPU context, complete historical
+window gates and whole original scene timing. The accepted logical-clock proof does not convert
+that history into a pass or establish the corrected whole-A RNG/AI trajectory or battle-scene fidelity.
+
 ### Composed W2 consumer binding
 
 The [accepted W2 policy](dialogue-system.md#w2-composed-semantic-acceptance) supplies the source,
