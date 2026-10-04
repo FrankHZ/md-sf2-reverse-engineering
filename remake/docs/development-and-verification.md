@@ -4326,9 +4326,10 @@ tiles. Removing the same item from requirement and use channels therefore cannot
 obligation. Retained first/occlusion tile operands supplement coverage independently of those channels.
 Missing occurrence operands are evaluated locally so later available contradictions still fail.
 **Unknown:** A02/B02 do not retain the current mutable working layout for door/flag/roof copy regions.
-Their whole map resource child remains Unavailable; entity/portrait and scene source/use children pass.
-A static base layout cannot replace those missing runtime operands. No fresh capture is allocated to
-fill them here.
+Their historical exact per-Submit diagnostic remains Unavailable. A static base layout cannot replace
+those missing runtime operands. The optional [composed mutable-map delivery](#composed-mutable-map-verification)
+input establishes its own behavior-class boundary without rewriting those reports. Entity/portrait
+and scene source/use children retain their results.
 
 The winning tracking observer uses the same 15-second no-progress boundary as the remaining
 before-body route, with actual logical state and mounted text delivery as progress. A fixed host-frame
@@ -4363,6 +4364,61 @@ and the matrix exclusions. Obsolete historical reports still preserve raw exact 
 current mandatory report-integrity checks; they cannot stand in for current reports. Freeze this
 bounded result in the same Draft PR. Complete settings/H4, missing original timing/history and #605
 performance acceptance remain separate.
+
+### Composed mutable-map verification
+
+The current keyboard-A mutable-map boundary is owned by the
+[continuous contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-mutable-map-delivery).
+Use the shared `map_consumer_binding` through the bounded standalone command:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison map `
+  --actual local/map-delivery/actual.json `
+  --map-context local/map-delivery/context.json `
+  --text-source-root $pinnedDisassembly `
+  --output local/map-delivery/report-new.json
+```
+
+Paths are selected per checkout; `$pinnedDisassembly` names the registered read-only pinned source.
+Prepare the input from retained compact selections and frozen native observations, not a new full
+route. Combined input and output each have a 10 MiB bound; output must be fresh under this worktree's
+ignored `local/`. Runtime and output are linear in selected history plus region/draw occurrences;
+the controlled rectangles bound cell work, and each observed draw has a 4096-use overflow limit.
+No SDK, emulator, full H4/matrix or new source acquisition is implied by this command.
+
+The selected actual carries `sessionId`, `mapHistory` change-run/event records and
+`mapHistoryReceipt` (completed scan, relevant counts and producer inventory). Each run retains
+`channel`, `first`, `last`, `count`, and `change`; each event row retains its index/identity and ordered
+events. Context carries `historicalSession` and `witnesses`, with `role` and frozen `samples` for
+`house`, `school`, `castle-walk`, and `castle-rebuild`. Original labels locate the named region states;
+they do not define gameplay legality. The source tables define expected regions and contents.
+Context can also carry the same compact `mapHistory`/`mapHistoryReceipt` when the ordinary actual
+capture supplies the session in a resource or modern comparison. New controlled sessions must remain
+distinct from the historical one and internally consistent; a passing report flag is not evidence.
+Join their layouts to the start and ordinary-input ready states, and bound transfer revision/sequence
+by the initiating input, warp start and resulting region state. Actor visibility and size are checked
+against viewport intersection and scaled 24-pixel bounds; pass allocation follows renderer actor and
+high-plane restoration order, independently of supplied mask passes. Older non-overlapping actor
+records can leave priority alternatives unresolved without inventing a mask observation.
+
+Supplying `--map-context` to `resources` or `compare --profile modern-continuous` calls the same
+predicate. It changes only the Map3/Map19 mutable-layout prerequisite; other resource checks and
+known historical contradictions still contribute. Omission retains the existing Unavailable
+boundary. Standalone PASS sets `milestonePass:false`; exact historical layout/draw diagnostics remain
+Unavailable. Do not rerun a large historical capture merely to demonstrate CLI wiring.
+
+Verification is direct: source decoding, complete applicability accounting, actual word/saved-state
+and draw-multiset joins, plus positive/missing/extra/wrong/session/coverage controls. Exercise an
+available contradiction alongside an earlier missing region and within a partially missing region.
+Include mutually changed actor/mask passes, hidden onscreen actors with removed masks, foreign but
+internally consistent snapshot sessions, out-of-order/out-of-range transfers, and missing actor
+fields alongside independently wrong draw geometry. Missing fields alone remain Unavailable.
+These are comparison controls, not new engine unit tests. Run affected Ruff, contract/private-boundary
+checks, normal public verification and the committed dependency planner. Preserve completed failing
+controls and native receipts; corrections rerun only the affected comparison/control, not successful
+native scenarios. Recollect only a concretely missing consumer observation when existing APIs expose
+it; production/API changes or broader acquisition need their own ownership decision.
 
 ### Selected offline resource comparison
 

@@ -1053,8 +1053,11 @@ coverage from retained geometry and source layout, and portrait identity/mirror/
 tiles from logical state and source decoding. Simultaneous omission from requirement and use channels
 remains a missing obligation. Each available occurrence is evaluated locally; a missing earlier
 operand must not mask a later contradiction. Missing current mutable working-layout operands in the
-retained A02/B02 observations keep the whole map child Unavailable; selected base layout is not proof
-of runtime door/flag/roof state. Entity/portrait and scene bindings retain their own results.
+retained A02/B02 observations keep their exact per-Submit diagnostic Unavailable; selected base layout
+is not proof of runtime door/flag/roof state. The separately supplied
+[composed delivery boundary](#composed-mutable-map-delivery) can discharge its named mutable-map
+classes. Without that evidence the map child remains Unavailable. Entity/portrait and scene bindings
+retain their own results.
 
 The bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
 After the accepted capture-performance work, separately allocated C/D native observations
@@ -1064,3 +1067,61 @@ backfilling any session. The [current C/D owner](../../../remake/docs/developmen
 records the comparison and scope boundary. D's later offline comparison was cancelled by user scope;
 its completed capture and partial comparison evidence remain retained. C is supplemental. Native
 completion alone does not establish current keyboard H4 acceptance or all-settings equivalence.
+
+### Composed mutable-map delivery
+
+The current keyboard-A delivery claim combines pinned original rules, complete retained
+event/sample applicability, and separate controlled mechanism/draw observations. It does not claim
+the historical capture recorded working-layout cells or coordinate draws at every Submit. Those
+channels remain **Unknown** (comparison value Unavailable), and previously published reports remain
+immutable. Original caller state reconstructed from source and sampled history remains **Inferred**.
+
+`map_consumer_binding` is the shared bounded predicate for the `map` command and the optional
+`--map-context` in resource and modern comparisons. It replaces only the mutable-layout prerequisite
+for the admitted Map3/Map19 classes; source atlas/texture, other maps, gameplay and other resource
+children retain their independent checks. A successful standalone map report is not full H4 or
+milestone acceptance. Any known source/actual contradiction dominates unrelated missing evidence.
+
+| Required behavior class | Source premise | Separate actual witness |
+| --- | --- | --- |
+| Map3 default/flag-off and house door/roof | `map03/3-flag-events.asm`, `4-step-events.asm`, `5-roof-events.asm`; flag506 remains clear in selected context | Ordinary door row0 copy, roof row0 save/clear/restore, repeated read/draw and flag-off load |
+| Map3 school mutation and preserving loads | Door row5 copies the source block; roof row9 saves/clears; current-map warp keeps working layout and busy/saved state | Ordinary school door, both stair transfers, retained opened door/saved roof, exit restore and fresh repeat draw |
+| Map19 walking roof | `map19/5-roof-events.asm` row1 selects the shared large roof destination | Base, ordinary entry clear/save and exit restore over the whole rectangle |
+| Map19 rebuild into roof | `mapload.asm` new-map path clears busy state and rebuilds; `ToggleRoofOnMapLoad` selects the first containing source rectangle | Ordinary Map19→Map20→Map19 transport; newly saved words equal original source, not inherited cleared words |
+
+Table row numbers above are zero-based; actual `RecordOrdinal` is one-based. Copy dimensions,
+destinations, source words and tile selectors come from the pinned tables and existing H2 decoders.
+`PerformMapBlockCopyScript` busy handling and the preserve/rebuild branch in
+`code/common/maps/mapload.asm` own the original mechanism. The controlled school path includes the
+source Sarah conversation (`Map3_EntityEvent0` → `cs_513D6`) and the first basement Zone7 line;
+stairs use their diagonal topology. Controlled starts do not override live actors or working cells.
+Map20 supplies transport only. Untaken flag506-on or alternate setups add no mandatory scenario.
+
+The applicability selection retains complete relevant change runs and ordered mutation/movement
+producers from both samples and Submit results. It accounts for every selected record and producer,
+checks source flag writers and default setup gates, and rejects uncovered door/roof classes.
+Other copy groups are classified as unchanged from source plus retained history, **Inferred** where
+intermediate caller operands are absent; sparse coordinate non-use alone proves no such exclusion.
+New reset/load/transfer operations or an uncovered class keep delivery Unavailable.
+
+Each controlled region binds map/session/revision/observation sequence, the complete working and
+intersecting saved-word inventories, busy ordinal, fresh request/draw identity and no overflow.
+Visible cells generate an independent expected draw multiset from source block words, logical plane
+origins, viewport and original sprite ink. It includes low/high priority, pass/subject, zero foreground
+suppression, clipped destination and texture coordinates. Positive float32 subpixel rectangles remain
+draws; coordinate comparison allows only 0.002 pixel serialization error. Offscreen cells require
+logical word validation but no invented draw. Missing required draws/operands remain Unavailable;
+extra draws or wrong source words, selectors, geometry, priority or session fail. A missing earlier
+region/use cannot suppress an available later contradiction. Repeated read/draw leaves the logical
+snapshot unchanged.
+
+Controlled observations join the case's start session and ordered ordinary-input/ready-state
+chain. Transfer revision and sequence must lie inside one ordinary input, after its warp start,
+and reach the state consumed by the corresponding preserve/rebuild region. Internally consistent
+layout/draw identities from a different session do not establish this lineage.
+
+Actor admission follows `ExplorationPresentation`: 24-by-24 source-pixel bounds scaled to the
+viewport determine screen intersection; actor passes start at four and advance for each actor and
+each applicable high-plane restoration. Reported visibility, dimensions and pass values must agree
+with these independently derived constraints. Missing actor operands restrict the affected mask
+claim; they do not suppress complete plane-draw geometry or other available contradictions.
