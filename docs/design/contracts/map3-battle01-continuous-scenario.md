@@ -619,21 +619,6 @@ Missing operands remain Unavailable; a wrong source, visit, subject, phase or te
 Older captures without these channels retain their missing evidence. The displayed private
 token/font/glyph child uses the complete reached binding below.
 
-The resource relation may use `sf2-resource-binding-counts-v1`: counted checks/family outcomes,
-compact requirement results, candidate multiplicities, every distinct operand variant and original
-capture locators replace repeated pair dictionaries. Logical check counts and candidate-pair counts
-are distinct from collection lengths and the old first-exception executed prefix. Preserve that
-prefix, repeated requirements, contradictory signatures and FAIL-before-Unavailable ordering.
-This representation does not change candidate identity, selector equality, required inventory or
-any temporal/equivalence predicate. Historical reports retain their reader.
-
-An explicit family/session/visit/observationSequence resource selection applies before materialization
-and retains independent predecessor/start/terminal context. Missing context remains Unavailable.
-Its report declares the scope and cannot satisfy an unselected child or the full H4 matrix, even when
-its selected resource predicates pass. The JSON plus named companion is independently readable;
-raw-capture locators declare provenance, not embedded raw evidence. Reproduction and bounded resource
-lifecycle follow the [selected offline resource route](../../../remake/docs/development-and-verification.md#selected-offline-resource-comparison).
-
 Every actually started audio cue must resolve uniquely through selected world audio, the pinned clean
 asset checkout and its existing reached or Town/JOIN provenance record. Compare raw PCM to runtime
 WAV PCM and the unchanged original capture interval; WAV-container digests are separate identities.
