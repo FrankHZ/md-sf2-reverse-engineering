@@ -5067,15 +5067,6 @@ def audio_consumer_binding(actual, context, source_root):
             if seq in events:
                 check("same logical event identity", events[seq] == event, sequence=seq)
             events[seq] = event
-    phases = {}
-    for row in actual.get("sceneObservations", []):
-        scene = row["scene"]
-        if scene.get("phase") in ("Initialize", "End"):
-            check(
-                "scene consumer identity",
-                row.get("sessionId") == session and scene.get("error") is None,
-            )
-            phases.setdefault(scene["waitToken"], []).append(row)
     phase_producers = {
         e["Sequence"]: e
         for e in events.values()
@@ -5083,6 +5074,15 @@ def audio_consumer_binding(actual, context, source_root):
         or e["Kind"] == "scene-step-started"
         and e["Detail"] == "End"
     }
+    phases = {}
+    for row in actual.get("sceneObservations", []):
+        scene = row["scene"]
+        if scene.get("phase") in ("Initialize", "End") or scene.get("waitToken") in phase_producers:
+            check(
+                "scene consumer identity",
+                row.get("sessionId") == session and scene.get("error") is None,
+            )
+            phases.setdefault(scene["waitToken"], []).append(row)
     check(
         "complete reached fade/scene dependency inventory",
         bool(phases)
@@ -5101,11 +5101,25 @@ def audio_consumer_binding(actual, context, source_root):
             )
             continue
         control, first, completed = controls[0], before[0], after[0]
-        phase = first["scene"]["phase"]
         producer = phase_producers.get(token)
         if producer is None:
             check("scene phase producer absent", None, token=token)
             continue
+        phase = "Initialize" if producer["Kind"] == "scene-prepared" else "End"
+        phase_fields = ("phase", "actionKind")
+        if any(key not in row["scene"] for row in rows_for_token for key in phase_fields):
+            check("actual phase consumer identity absent", None, token=token)
+            continue
+        check(
+            "actual completed phase retains the same consumer identity",
+            all(row["scene"]["phase"] == phase for row in rows_for_token)
+            and all(
+                row["scene"][key] == first["scene"][key]
+                for row in rows_for_token
+                for key in phase_fields
+            ),
+            token=token,
+        )
         release = events.get(token + 1)
         old = [
             i
@@ -5212,23 +5226,17 @@ def audio_consumer_binding(actual, context, source_root):
         actual_done = [
             e
             for e in events.values()
-            if e["Kind"] == "music-actual-completed"
-            and e["Detail"] == start["Cue"]
-            and e["Sequence"] > start["Revision"]
+            if e["Kind"] == "music-actual-completed" and e["Sequence"] > start["Revision"]
         ]
         returned = [
             e
             for e in events.values()
-            if e["Kind"] == "music-wait-returned"
-            and e["Detail"] == start["Cue"]
-            and e["Sequence"] > start["Revision"]
+            if e["Kind"] == "music-wait-returned" and e["Sequence"] > start["Revision"]
         ]
         eligible = [
             e
             for e in events.values()
-            if e["Kind"] == "music-previous-eligible"
-            and e["Detail"] == start["Cue"]
-            and e["Sequence"] > start["Revision"]
+            if e["Kind"] == "music-previous-eligible" and e["Sequence"] > start["Revision"]
         ]
         if not ended or not request or not waits or not actual_done or not returned or not eligible:
             check(
@@ -5238,6 +5246,13 @@ def audio_consumer_binding(actual, context, source_root):
             )
             continue
         helper, done, release, logical_done = waits[0], actual_done[0], returned[0], eligible[0]
+        check(
+            "finite completion and release retain this cue",
+            None
+            if any("Detail" not in e for e in actual_done + returned + eligible)
+            else all(e["Detail"] == start["Cue"] for e in actual_done + returned + eligible),
+            start=start["Sequence"],
+        )
         check(
             "wait remains owned by the requesting source program",
             request[0]["Program"]["Program"] == helper["Program"]["Program"],
@@ -5260,6 +5275,13 @@ def audio_consumer_binding(actual, context, source_root):
             and e["Detail"] == start["Cue"]
         ]
         armed = [e for e in progress if e["Kind"] == "music-wait-armed"]
+        check(
+            "helper logical progress belongs to this cue",
+            None
+            if any("Detail" not in e for e in progress)
+            else all(e["Detail"] == start["Cue"] for e in progress),
+            start=start["Sequence"],
+        )
         check(
             "accepted finite logical clock reaches end before release",
             assets[start["Cue"]].get("modernEndStep") == 505
@@ -5311,15 +5333,56 @@ def audio_consumer_binding(actual, context, source_root):
             start=start["Sequence"],
         )
         plain = [s["state"] for s in actual.get("samples", []) if s["label"] == "music-plain-input"]
+        polled = [s["state"] for s in actual.get("samples", []) if s["label"] == "music-plain-poll"]
+        acked = [
+            s["state"] for s in actual.get("samples", []) if s["label"] == "music-plain-accepted"
+        ]
         confirms = [
             r
             for r in actual.get("inputRecords", [])
             if r.get("pressed")
             and r.get("action") == "confirm"
             and plain
-            and r["before"].get("token") == plain[0]["token"]
+            and (
+                r["before"].get("token") == plain[0]["token"]
+                or polled
+                and r["before"].get("revision") == polled[0]["revision"]
+            )
         ]
         ready = [s["state"] for s in actual.get("samples", []) if s["label"] == "join-field-return"]
+        wait_fields = ("sessionId", "revision", "token", "wait", "simulationTick", "mainSeed")
+        if not confirms or not polled or not acked:
+            check("matching plain input wait identity absent", None, start=start["Sequence"])
+        else:
+            input_sides = (confirms[0]["before"], confirms[0]["after"])
+            check(
+                "plain input and samples belong to this session",
+                None
+                if any("sessionId" not in s for s in (*input_sides, polled[0], acked[0]))
+                else all(s["sessionId"] == session for s in (*input_sides, polled[0], acked[0])),
+                start=start["Sequence"],
+            )
+            if any(
+                key not in s
+                for s in (*input_sides, plain[0], polled[0], acked[0])
+                for key in wait_fields
+            ):
+                check("plain input before/after wait fields absent", None, start=start["Sequence"])
+                continue
+            check(
+                "plain Confirm belongs to the same before/after wait",
+                len(confirms) == len(polled) == len(acked) == 1
+                and all(s["sessionId"] == session for s in (*input_sides, polled[0], acked[0]))
+                and all(
+                    side[key] == sample[key]
+                    for side, sample in zip(input_sides, (polled[0], acked[0]), strict=True)
+                    for key in wait_fields
+                )
+                and polled[0]["token"] == plain[0]["token"]
+                and polled[0]["wait"] == "DialogueWait"
+                and acked[0]["wait"] == "TextCloseWait",
+                start=start["Sequence"],
+            )
         check(
             "restarted playback precedes plain input and caller return",
             None

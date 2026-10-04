@@ -3836,7 +3836,11 @@ Existing source-driver slot parsing is reused; no new registry, PCM copy or capt
 Direct counterexamples exercise receipt gaps, wrong session/PCM/timer/helper/generation, missing
 finite finish or actual phase completion, premature release, illegal stopped-slot replacement,
 co-loss of a fade and its actual phase while the logical producer survives, and a non-playing terminal
-loop. Missing selections and nonrequired C remain Unavailable. The accepted window-06 controlled tail
+loop. Actual completed phase/action identity must agree with its logical producer. Helper progress
+must retain that music cue, including armed/eligible events; foreign work cannot fill its clock.
+Plain Confirm before/after session, revision, token, wait, tick and RNG must match the retained
+poll/accepted samples. Contradictory records are checked rather than filtered away; missing identity
+fields remain Unavailable. Missing selections and nonrequired C remain Unavailable. The accepted window-06 controlled tail
 is read directly and its reveal/speech/input methods compared with its accepted Git object; historical
 C is not relabeled. Use affected lint/format, document checks, committed planner and actual CI.
 Do not run a full H4 comparison, route, matrix, normal/full aggregate or verification-helper tests for
