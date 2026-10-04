@@ -4114,10 +4114,14 @@ increment over the separately recorded baseline. A whole-capture resource run pe
 capture's logical bytes; an explicit family/session/visit/occurrence scope permits selected dependency
 bytes plus64MiB. Preflight reserves at least6GiB of physical space after conservative allocation.
 Count scratch, journals and publication together; compression does not satisfy the logical budget.
-Progress is coarse by stage. The `*.resources.json` receipt covers publication; also retain an external
-absolute-memory/peak-output receipt. On a budget miss, preserve the incomplete report/scratch and
-correct the responsible stage before another large run. On completed publication, reopen the bundle
-before removing only that new run's owned reader scratch. Existing evidence is never cleaned here.
+Progress is coarse by stage. Both JSON entries and their SQLite companions stay provisional until
+the detached report reopens and the complete publication set passes its budget check. A final check
+also covers entry promotion. The `*.resources.json` counters explicitly snapshot the stage before
+that receipt is written; final command output and an external absolute-memory/peak-output receipt
+cover its tail bytes and the complete run. On a budget miss, withdraw any promoted entries to
+`*.partial`, preserve their companions and scratch, and publish only an explicit incomplete entry.
+Correct the responsible stage before another large run. Remove only that new run's owned reader
+scratch after successful final publication. Existing evidence is never cleaned here.
 
 Use direct retained small positive/negative and scope/relocation drives, affected lint and document
 checks, the committed dependency plan and actual public CI. Preserve a completed normal-verification

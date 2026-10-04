@@ -1380,7 +1380,7 @@ def read(path):
     return value
 
 
-def write(path, value, *, resource_budget=None):
+def write(path, value, *, resource_budget=None, defer_publication=False):
     path = (Path(path) if Path(path).is_absolute() else repo_path(path)).resolve()
     require(
         path.is_relative_to(repo_path("local").resolve()) and not path.exists(),
@@ -1414,6 +1414,8 @@ def write(path, value, *, resource_budget=None):
         stream.write("\n")
         stream.flush()
         os.fsync(stream.fileno())
+    if defer_publication:
+        return partial
     partial.rename(path)
 
 
@@ -10482,20 +10484,36 @@ def main():
                 budget,
                 source_only=args.source_only,
             )
-            write(args.output, result, resource_budget=budget)
-            budget.checkpoint("publication complete", force=True)
-            # Reopen only the published bundle before removing this run's new scratch.
-            read(args.output)
-            budget.release_scratch()
-            write(
-                args.output.with_name(args.output.name + ".resources.json"),
+            provisional = write(
+                args.output, result, resource_budget=budget, defer_publication=True
+            )
+            # Reopen the detached bundle while its entry point is still provisional.
+            read(provisional)
+            budget.checkpoint("report prepared", force=True)
+            receipt_path = args.output.with_name(args.output.name + ".resources.json")
+            receipt_provisional = write(
+                receipt_path,
                 dict(
                     resources=budget.receipt(),
+                    accountingStage="before receipt publication",
                     report=args.output.name,
                     complete=not result.get("incomplete", False),
                 ),
+                resource_budget=budget,
+                defer_publication=True,
             )
+            # Include both JSON entries, both companions and scratch before promotion.
+            budget.checkpoint("publication prepared", force=True)
+            receipt_provisional.rename(receipt_path)
+            provisional.rename(args.output)
+            budget.checkpoint("publication complete", force=True)
+            budget.release_scratch()
         except ResourceBudgetExceeded as error:
+            # A final miss must withdraw any promoted entry; keep its companion and
+            # provisional payload as incomplete discovery artifacts, along with scratch.
+            for path in (args.output, args.output.with_name(args.output.name + ".resources.json")):
+                if path.exists():
+                    path.rename(path.with_name(path.name + ".partial"))
             result = dict(
                 profile="modern-resource-scope",
                 comparisonScope=scope,
