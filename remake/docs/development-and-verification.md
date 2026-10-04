@@ -2,6 +2,9 @@
 
 ## Scope
 
+Current product acceptance uses the [explicit default-keyboard scope](#current-keyboard-comparison-scope).
+Older four-variant recipes below are retained history, not authorization to run B/D or require C.
+
 This document owns current remake commands and verification selection. The user's test policy,
 recorded in [ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md), controls
 over older blanket gate and test-preservation recipes:
@@ -3511,6 +3514,19 @@ to `--actual` and `--outcome`; outcome records and summary are embedded channels
 JSON plus its separate outcome file remains readable. Existing comparison predicates, raw
 ordered differences, source provenance and Unavailable boundaries still apply.
 
+The complete H4 probe publishes its five retained snapshots (`admissionSnapshot`,
+`rawTextBoundary`, `musicLogicalEnd`, `musicPlainInput`, `joinReturn`) as separate
+`captureMetadata` records with `key` and `value`, then declares exactly those keys in terminal
+`captureMetadataKeys`. Each record still obeys the existing size and queue limits. The reader
+restores the original top-level fields, accepts the earlier inline terminal format, and rejects
+missing, duplicate, unknown or conflicting split fields. Generic short captures need no H4 metadata.
+Battle policy selection explicitly reads full current state for terrain; per-frame observations
+remain lightweight. Native integer flags and party IDs compare numerically with historical JSON
+numbers, preserving exact values, sequence order and nonnumeric types. Zone-return control retains
+only the four scalar timing operands it consumes; the stream retains the complete source record.
+Nod texture identities use decimal strings, like other native resource identities, preserving
+unsigned instance IDs without a signed conversion.
+
 The current-format reader uses Python's standard-library SQLite for private derived records
 and explicit ordinal/native/resource joins. Reads are detached values: complete a mutable record
 before publishing it. Group children within a working database remain explicitly appendable;
@@ -3628,13 +3644,13 @@ with `remaining[*].integrityErrors` identifying the inconsistency. Valid report 
 remain unchanged. Optional material/JOIN subsets and historical diagnostics do not enlarge the
 frozen required child set; retained reports lacking newer subset rows remain valid.
 
-Only `complete named continuous settings matrix` may close after all four named variants satisfy
-settings and gameplay equivalence. Every other required child and coverage parent still gates full
-acceptance, using FAIL before Unavailable before PASS. For a direct integrity reproduction, use
-in-memory copies of the retained A/B/C/D reports: omit their Unavailable assertion rows while
-retaining original summaries and coverage parents, then call `compare_matrix(paths, selected_reference)` with those copies
-substituted for `read`. The result must be FAIL with `milestonePass=false`; the unmodified reports
-remain four variant PASS / full Unavailable. Also inspect missing required families/children,
+Historically, `complete named continuous settings matrix` closed only after all four named variants satisfied
+settings and gameplay equivalence. The current keyboard scope supersedes that requirement. Every
+other required A child and coverage parent still gates acceptance, using FAIL before Unavailable
+before PASS. For a direct integrity reproduction, omit A's Unavailable assertion rows while retaining
+its original summaries and coverage parents, then call `compare_matrix(paths, selected_reference)`.
+The result must be FAIL with `milestonePass=false`; unmodified A retains 13 other Unavailable children.
+Also inspect missing required families/children,
 duplicate or conflicting rows/parents/summaries, known FAIL with missing evidence, and the single
 matrix-self closure on otherwise complete synthetic copies. Keep those synthetic cases separate
 from actual game evidence and preserve the source files and completed historical failures.
@@ -3916,9 +3932,9 @@ The bounded caller/resource allocation reuses the successful current A02/B02 obs
 Freeze the accepted party/start, source world with its two AB operations, cumulative scene45 and
 material selection. Keep fixed60, optional poll1 and the legal adaptive winning route. Successful
 captures are reused for offline corrections; every failed attempt retains its process, log, tested
-source/binaries and failure record. C/D and repeated successful A/B captures are held through
-independent integration and the separately owned performance work in Issue #605. No original runtime
-acquisition or complete H4 acceptance is implied.
+source/binaries and failure record. The subsequent [current C/D allocation](#current-cd-settings-capture)
+consumes the accepted performance work in Issue #605; successful A/B observations remain frozen.
+No original runtime acquisition or complete H4 acceptance is implied.
 
 The application publishes `ProgramControlReads` separately from semantic observations. Each actual
 call/return retains its full copied before/after stack and resulting cursor at the producing Commit.
@@ -4030,3 +4046,112 @@ and the matrix exclusions. Obsolete historical reports still preserve raw exact 
 current mandatory report-integrity checks; they cannot stand in for current reports. Freeze this
 bounded result in the same Draft PR. Complete settings/H4, missing original timing/history and #605
 performance acceptance remain separate.
+
+### Current keyboard comparison scope
+
+The [current product scope](../../docs/decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope)
+requires default keyboard A. Historical B/D reports remain readable but do not contribute to current
+counts, required reports or remaining obligations. Existing C is a supplemental keyboard diagnostic;
+its actual comparison FAIL/Unknown and raw differences remain separately visible. Remapping, swapped
+buttons, reduced flash and adjustable20 do not become mandatory full-route variants because they were
+implemented or captured. The explicitly selected #517 fast-text speech behavior remains required.
+
+`matrix` declares `scope`, `requiredVariants`, `excludedVariants` and `supplementalVariants` in its
+output. It does not infer requirements from the supplied files. A missing/failed/malformed baseline or
+missing required child cannot pass. Closing its legacy-named matrix row leaves A's 13 other required
+children open; neither self-equality nor a current-scope result claims complete H4 or all settings.
+
+Use the existing A10 report for a bounded scope check, with a fresh output:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison matrix --matrix-scope current-keyboard `
+  --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
+  --variant-report local/issue534/caller-resource-cohort-01/report-A-10.json `
+  --output local/issue534/settings-cd-current-01/matrix-keyboard-reproduction.json
+```
+
+Expected exit 2 / Unavailable: required A comparison PASS, 13 remaining required children. Supplying
+B/D cannot expand this scope or contaminate its gate; supplying C adds a separately labeled diagnostic.
+Historical four-profile results retain their original meaning and files, rather than becoming current
+requirements. Direct scope verification uses compact synthetic summaries and retained report entries,
+not raw stream import or resource joins. The plan allows at most about208MB of retained JSON input,
+1GiB peak memory, 2MiB output and a two-minute diagnostic threshold; network/model costs are not
+applicable. Unexpected materialization or growth requires replanning before expanding the run.
+
+### Current C/D settings capture
+
+These retained captures predate the keyboard-scope correction. The D offline job was first safely
+suspended and then **cancelled-by-scope**, exit1223, after matching its PID/image/command/creation
+identity through a held process handle. Preserve `D-suspend-01.json`, `D-cancel-01.json`, raw capture,
+partial SQLite/journal and logs; cancellation is not a completed comparison or PASS. Do not resume or
+rerun D. No gamepad implementation or historical evidence was deleted.
+
+The first old-comparator C job remains a supplemental diagnostic, with its loaded module content
+preserved by Git object `9a55fe2c:src/sf2tool/remake_h4_comparison.py` (last source change `85e926c7`),
+`C-runtime-comparator-9a55fe2c.py`, `C-runtime-helper-frozen.py` and `C-runtime-source-01.json` in the
+output root. Its helper has no late reload or subprocess comparator reentry. Subsequent on-disk
+matrix-scope edits do not relabel that running module. Pair generation, finish and report-companion
+publication are distinct stages; an unpublished report is not complete. The old full C/D reports and
+four-profile matrix are not prerequisites for this scope correction. Query-complexity work belongs
+to #610, outside this change; no new full comparison or native capture is authorized by this recipe.
+
+**Confirmed native capture:** `local/issue534/settings-cd-current-01/variant-C-05` at
+`85e926c71581fe37d95973209d96ff35e40ffd95` and `variant-D-01` at
+`31f3caf4bdf1ca3a2951e53d3d93f2d000f5d2f8` (only verification documentation changed)
+complete the ordinary winning route and Left/Down return at fixed60/poll1. C uses remapped keyboard,
+swapped Confirm/Cancel, adjustable20, reduced flash and reveal-only Confirm; D uses the admitted
+remapped gamepad/right stick with the same settings and natural reveal. Each process exits0 with
+zero host errors, unchanged settings/start/party and no remaining owned process. Their actual
+streams contain269932/293080 contiguous records and intact terminals; the five separate metadata
+records each remain below93KB and terminals below28KB. The maintained comparison reads the same
+`actual.jsonl` as actual and outcome. Successful C/D and retained A10/B02 are immutable inputs.
+
+Retain the completed discovery failures in this output root: C01 (202.170s) failed native numeric
+membership and the omitted zone-control state; C02 (68.111s) failed unsigned Nod texture identity
+conversion; C04 (169.172s, exit1) failed omitted policy terrain and oversized combined terminal.
+C03 did not launch: its preflight compared assembly bytes despite unchanged Application source and
+different build commit metadata. C05/D01 took248.191/324.231s. These failures are not interrupted or
+replaced by the successful captures. The fixes preserve input legality, adaptive commands,
+gameplay/RNG, all evidence fields and the original capture bounds.
+
+Direct verification includes16 native numeric controls,11 metadata shape/equality/negative cases,
+actual C05 terminal equivalence between inline/split formats, actual normal/lowered unsigned Nod
+identities, probe check-only, controlled Debug build and adapter compilation. Default planner
+selection is adapter-build/public-core/tooling-python, with no unclassified path or changed shared
+execution semantics; `--scope engine` correctly rejects the shared H4 comparator. The normal
+`uv run sf2 verify` completed148 checks plus document/index/ROM checks, then failed toolchain
+provenance because this worktree has no default `local/upstream/SF2DISASM`. Preserve that completed
+FAIL; the explicit accepted read-only source used by H4 does not satisfy the toolchain's owning-local
+checkout requirement. No new upstream copy, generic aggregate, performance benchmark or original
+runtime acquisition is part of this slice. Offline H4 comparison and remaining obligations retain
+their independent result.
+
+Reproduce offline with the existing explicitly selected read-only `$pinnedSource`, `$canonical`,
+`$tilesetMetadata` and `$paletteMetadata` from the material evidence owner. The retained C05 recipe uses its own
+process/settings/party/stream; D is cancelled and must not be rerun. Omit A-only normal05 baseline arguments. The frozen A report supplies
+the unchanged scene/resource selection and asset pins, not C/D observation facts:
+
+```powershell
+. ./local/private-inputs.ps1
+$run = 'local/issue534/settings-cd-current-01/variant-C-05' # retained supplemental recipe only
+$process = Get-Content -LiteralPath "$run/process.json" -Raw | ConvertFrom-Json
+$material = (Get-Content -LiteralPath 'local/issue534/caller-resource-cohort-01/report-A-10.json' -Raw |
+  ConvertFrom-Json).evidence.materialSelection
+uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous `
+  --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
+  --actual "$run/actual.jsonl" --outcome "$run/actual.jsonl" `
+  --settings "$run/settings.json" --host-log "$run/godot.log" --host-exit $process.exit `
+  --controlled-start "$run/inputs/party.json" `
+  --selected-world $process.selectedInputs.SF2_PRIVATE_EXPLORATION_CONTENT `
+  --selected-scene $material.scene --process-receipt "$run/process.json" `
+  --scene-evidence-root $material.sceneEvidenceRoot --asset-root $material.assetRoot `
+  --expected-asset-commit $material.assetCommit --expected-asset-tree $material.assetTree `
+  --expected-asset-manifest-sha256 $material.assetManifestSha256 `
+  --original-join-evidence-root local/issue534/h4-join-consumer-01/inputs/original-join-01 `
+  --text-source-root $pinnedSource --canonical-content $canonical `
+  --tileset-metadata $tilesetMetadata --palette-metadata $paletteMetadata `
+  --output local/issue534/settings-cd-current-01/report-C-reproduction.json
+```
+
+Choose a fresh output for each reproduction and preserve each JSON/SQLite report pair together.

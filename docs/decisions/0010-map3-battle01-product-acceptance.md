@@ -5,7 +5,7 @@
 - Decision date: 2026-08-19; acceptance amendment: 2026-09-19
 - Scope: product choices for the first Phase 4 playable milestone
 - Accepted profile: `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`
-- User acceptance: **Recorded for the exact profile above**
+- User acceptance: **Recorded profile, with the current keyboard-scope correction below controlling 9A**
 
 ## Context
 
@@ -22,9 +22,9 @@ but accepted `main` still does not establish the exact admitted state, natural r
 natural battle trace, after-battle program effects, or final observable state.
 
 This ADR preserves the bounded alternatives and the Design lane's original recommendation for
-decision history. The user explicitly selected the profile recorded above. `SELECTED` labels and the
-accepted-profile line define project state; any remaining `RECOMMENDED` label is historical advice,
-not an accepted choice.
+decision history. The current keyboard-scope correction controls conflicting 9A wording. A historical
+`SELECTED` label or an implemented feature does not establish independent user authorization for
+every device, setting or full-route acceptance variant. Other selected profile choices remain in force.
 
 ## Decision Boundary
 
@@ -148,7 +148,7 @@ Distinguish three kinds of progression:
   only after both the admitted logical end and actual player completion are satisfied.
 
 Service order is established per mode and caller, not by a universal global ordering. Under 9A,
-compare the same semantic Wait/acknowledgement stream across settings. A reveal-only Confirm and
+compare the same semantic Wait/acknowledgement stream when evaluating supplemental settings. A reveal-only Confirm and
 pure delivery delay do not add gameplay opportunities. The [continuous-scenario contract](../design/contracts/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
 owns admission and command-readiness details. Interactive wait rate and concrete scheduling remain
 implementation decisions requiring a bounded contract; this choice does not establish them.
@@ -176,7 +176,7 @@ This intentional deviation can change NPC states, shared RNG history, encounter 
 subsequent decisions and final battle resources. The old original whole-history seed/order/winning
 trace is retained as a historical diagnostic, not an unchanged golden required of this modern clock.
 Matched-state RNG arithmetic, local battle rules, mandatory route/story effects, manual agency,
-actual private content consumption and 9A equivalence remain required. A new modern continuous
+actual private content consumption and the current keyboard scope remain required. A new modern continuous
 winning trace needs independent review; this decision is neither that acceptance nor an H4 PASS.
 Preserve completed failures and Unknowns, including HEAL and next-actor discrepancies without
 attributing them to this clock absent causal evidence. No production reseed is authorized.
@@ -283,34 +283,38 @@ independent acceptance.
 
 ### 9. Accessibility and platform input mapping
 
-| Option | Product definition | Evidence and scope consequence |
+#### Current keyboard scope
+
+The user's 2026-10-04 scope correction removes gamepad B/D from current #534/#437 execution and
+mandatory acceptance. The required continuous baseline is **A, default keyboard**. The existing C
+capture is a reusable keyboard diagnostic/performance fixture; its existence does not authorize
+remapping, swapped Confirm/Cancel, reduced flash or a specific adjustable text speed as additional
+full-route gates. This correction controls older four-variant requirements in contracts and runbooks.
+
+| Surface | Requirement basis | Current acceptance role |
 | --- | --- | --- |
-| **9A — SELECTED** | Use remappable logical actions for keyboard and standard gamepad, configurable confirm/cancel convention, reduced-flash mode, and instant/adjustable text progression. | Modern product interface; automated checks observe logical behavior rather than original device scancodes or frame cadence. |
-| 9B | Fix a Genesis-style mapping and repeat model. | Requires unnecessary hardware/timing fidelity and reduces accessibility. |
-| 9C | Support one fixed keyboard mapping only. | Smaller adapter surface but not the recommended desktop product baseline. |
+| Default keyboard A | Current user scope, recorded through main-gate in #534 | Required baseline; all applicable route, rule, resource and consumer obligations still apply |
+| Gamepad B/D | User explicitly rejected its assumed inclusion | Excluded from current execution and milestone totals; retain historical reports and existing support |
+| C keyboard remapping | Former broad 9A text only; no independently established user selection | Supplemental diagnostic only |
+| C swapped Confirm/Cancel | Former broad 9A text only; no independently established user selection | Supplemental diagnostic only |
+| C reduced flash | Former broad 9A text only; no independently established user selection | Supplemental diagnostic only |
+| C adjustable text / 20 characters per second | Former 9A mentioned adjustable text; it did not establish this specific full-route requirement | Supplemental diagnostic only |
+| Fast-text speech Option A | Explicit [#517 user decision](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/517#issuecomment-5953279661) | Remains required at its real behavior boundary: omit skipped speech, preserve existing tails and normal source-specific confirmation |
 
-The selected default mapping is arrow keys or WASD plus Enter/Z for Confirm and Escape/X for Cancel;
-gamepad uses D-pad or left stick plus south-button Confirm and east-button Cancel. Every binding is
-remappable, including confirm/cancel convention. This is accepted product metadata, not original
-behavior.
+The default keyboard mapping uses arrows or WASD, Enter/Z for Confirm and Escape/X for Cancel.
+Existing remapping, standard-gamepad, swapped-button, reduced-flash and text settings are implemented
+capabilities with retained evidence; this scope correction does not remove them. A new required device
+or settings cohort needs an explicit product decision and a scale/resource plan.
 
-Under selected 9A, the configuration interface MAY be an external versioned settings file or launch
-configuration rather than an in-game Options screen. It MUST expose binding identity, confirm/cancel
-convention, reduced-flash state, and text-progression mode. The future automated acceptance surface
-MUST check:
+The comparator declares its fixed current keyboard scope rather than inferring requirements from
+provided reports. Missing, malformed or failed A cannot pass. A's remaining required H4 children
+still block the milestone even when A equals itself. B/D reports cannot populate current counts or
+remaining obligations. Optional C comparisons report their actual FAIL/Unknown and raw differences
+separately; current-scope results never claim all-settings equivalence.
 
-1. keyboard and gamepad bindings produce the same logical route decision;
-2. swapped Confirm/Cancel bindings preserve their configured semantic roles;
-3. reduced-flash mode reaches the same gameplay completion event without the suppressed flash cue;
-4. instant or adjusted text progression preserves acknowledgement and route results; and
-5. device mapping and repeat timing are absent from original-fidelity assertions.
-
-These checks use the same admitted semantic Wait/acknowledgement stream under the
-[evidenced gameplay wait policy](#evidenced-gameplay-waits-accepted-option-a); adjustable reveal
-duration and reveal-only Confirm do not become extra gameplay waits.
-
-The exact settings serialization and UI are implementation choices for Phase 4, but omission of the
-configuration surface or these observable checks is not implementation discretion if 9A is accepted.
+The [evidenced gameplay wait policy](#evidenced-gameplay-waits-accepted-option-a) remains unchanged.
+Reveal-only Confirm and display duration add no gameplay waits. The separate #517 choice below is
+not waived by removing an unsupported full-route settings requirement.
 
 ### 10. Intentional-deviation ledger
 

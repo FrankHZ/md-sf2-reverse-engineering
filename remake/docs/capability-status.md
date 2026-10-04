@@ -81,6 +81,15 @@ or stable-observation boundary under
 
 ## Current Engineering Frontier
 
+Current mandatory acceptance uses default keyboard A under the
+[corrected product scope](../../docs/decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope).
+Existing C/D observations complete the winning/return route with intact bounded capture and unchanged
+inputs. C is supplemental; B/D are historical and excluded from the current gate. D's offline job was
+cancelled by scope, with partial evidence retained. Neither capture success nor A self-equality closes
+the remaining 13 required H4 children. The separate #517 speech choice remains applicable. See the
+[C/D capture and comparison boundary](./development-and-verification.md#current-cd-settings-capture),
+including preserved failed attempts and the completed local toolchain-provenance failure.
+
 Bound victory/defeat/return programs now share field text/portrait readiness with their genuine
 outcome route, anchor and continuation. New outcome worlds initialize their own logical view and
 closed windows, preserving carried party/display/RNG. Outcome engine cases cover changed winning

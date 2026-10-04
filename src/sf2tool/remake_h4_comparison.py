@@ -591,6 +591,14 @@ def _read_capture(path):
     context = _ReaderContext(_STREAM_SCRATCH_ROOT or path.resolve().parent)
     _STREAM_CONTEXT = context
     channels, counts, descriptors, terminal = {}, {}, {}, None
+    metadata = {}
+    metadata_keys = {
+        "admissionSnapshot",
+        "rawTextBoundary",
+        "musicLogicalEnd",
+        "musicPlainInput",
+        "joinReturn",
+    }
     previous, descriptor_bytes = 0, 0
     with path.open("rb") as source:
         while raw := source.readline(_STREAM_RECORD_LIMIT + 1):
@@ -663,6 +671,16 @@ def _read_capture(path):
                         use["used"] = descriptors[selector["captureDescriptor"]]
                     channels["resourceUses"].append(dict(use, identity=payload["identity"]))
                 continue
+            if channel == "captureMetadata":
+                require(
+                    set(payload) == {"key", "value"}
+                    and isinstance(payload["key"], str)
+                    and payload["key"] in metadata_keys
+                    and payload["key"] not in metadata,
+                    "invalid/duplicate capture metadata key",
+                )
+                metadata[payload["key"]] = payload["value"]
+                continue
             if channel == "terminal":
                 terminal = payload
             else:
@@ -672,6 +690,22 @@ def _read_capture(path):
                 channels[channel].append(payload)
     require(terminal is not None and counts.get("header") == 1, "capture missing terminal/header")
     result = dict(terminal)
+    if metadata or "captureMetadataKeys" in result:
+        declared = result.pop("captureMetadataKeys", None)
+        require(
+            isinstance(declared, list)
+            and len(declared) == len(metadata_keys)
+            and all(isinstance(key, str) for key in declared)
+            and set(declared) == metadata_keys
+            and set(metadata) == metadata_keys,
+            "missing/invalid capture metadata declaration",
+        )
+        require(
+            not metadata_keys.intersection(result) and not metadata_keys.intersection(channels),
+            "capture metadata conflicts with terminal/channel",
+        )
+        for key in metadata_keys:
+            result[key] = metadata[key]
     result.update(channels)
     result["captureIntegrity"] = dict(
         records=previous,
@@ -8708,11 +8742,12 @@ def compare_modern(
     check(
         10,
         MATRIX_OBLIGATION,
-        "actual A-D matrix report",
+        "actual declared-scope matrix report",
         None,
         "coverage",
         missing_side="separate actual matrix report",
-        reason="The matrix command closes only this obligation after all four reports compare",
+        reason="The matrix command closes only the declared current keyboard scope; "
+        "historical device reports and supplemental settings do not expand it",
     )
     check(
         10,
@@ -9213,21 +9248,24 @@ def bounded_join_correspondence(base, other, ref):
     return result
 
 
-def compare_matrix(paths, ref):
+def compare_matrix(paths, ref, *, scope="current-keyboard"):
+    require(scope == "current-keyboard", "unsupported matrix scope")
     reports = [read(p) for p in paths]
     variants = [r.get("variant") for r in reports]
     require(len(variants) == len(set(variants)), "duplicate matrix variant")
-    required = ("A", "B", "C", "D")
+    required = ("A",)
+    supplemental = ("C",) if "C" in variants else ()
+    excluded = ("B", "D")
     require(
         all(
-            r.get("profile") == "modern-continuous" and r.get("variant") in required
+            r.get("profile") == "modern-continuous" and r.get("variant") in ("A", "B", "C", "D")
             for r in reports
         ),
         "matrix requires named modern reports",
     )
     checks = _bounded_list()
     base = next((r for r in reports if r.get("variant") == "A"), None)
-    for name in required:
+    for name in required + supplemental:
         report = next((r for r in reports if r.get("variant") == name), None)
         settings = report["evidence"]["settings"] if report else {}
         expected = dict(
@@ -9313,13 +9351,39 @@ def compare_matrix(paths, ref):
                 differences=differences,
                 rawOrderEqual=raw_equal,
                 causalCorrespondence=causal,
-                reason="Full named settings and state/occurrence equivalence to A; "
-                "missing variant is not a pair PASS",
+                reason="Declared keyboard scope requires A; C is supplemental. "
+                "Settings/occurrence equality does not close remaining H4 obligations",
             )
         )
-    counts = dict(Counter(c["result"] for c in checks))
-    integrity_errors = [modern_report_integrity(r, ref) for r in reports]
-    inherited_fail = any(r.get("result") == "FAIL" for r in reports) or any(integrity_errors)
+    required_checks = [c for c in checks if c["variant"] in required]
+    required_reports = [r for r in reports if r["variant"] in required]
+    supplemental_results = []
+    for check in checks:
+        if check["variant"] not in supplemental:
+            continue
+        report = next(r for r in reports if r["variant"] == check["variant"])
+        errors = modern_report_integrity(report, ref)
+        supplemental_results.append(
+            dict(
+                check,
+                comparisonResult=check["result"],
+                result=verdict(Counter((check["result"], report["result"]))),
+                reportResult=report["result"],
+                integrityErrors=errors,
+                coverageObligations=report.get("coverageObligations", []),
+                remainingAssertions=[
+                    a
+                    for a in report["assertions"]
+                    if a["applicability"] != "historical-diagnostic" and a["result"] != "PASS"
+                ],
+                milestoneApplicable=False,
+            )
+        )
+    counts = dict(Counter(c["result"] for c in required_checks))
+    integrity_errors = [modern_report_integrity(r, ref) for r in required_reports]
+    inherited_fail = any(r.get("result") == "FAIL" for r in required_reports) or any(
+        integrity_errors
+    )
     matrix_complete = not counts.get("FAIL") and not counts.get("Unavailable")
     remaining = [
         dict(
@@ -9334,10 +9398,10 @@ def compare_matrix(paths, ref):
             ],
             **({"integrityErrors": errors} if errors else {}),
         )
-        for r, errors in zip(reports, integrity_errors, strict=True)
+        for r, errors in zip(required_reports, integrity_errors, strict=True)
     ]
     incomplete = any(r["assertions"] for r in remaining) or any(
-        p["result"] != "PASS" for r in reports for p in r.get("coverageObligations", [])
+        p["result"] != "PASS" for r in required_reports for p in r.get("coverageObligations", [])
     )
     result = (
         "FAIL"
@@ -9348,13 +9412,30 @@ def compare_matrix(paths, ref):
     )
     return dict(
         profile="modern-continuous-matrix",
-        variants=checks,
+        scope=scope,
+        requiredVariants=list(required),
+        excludedVariants=list(excluded),
+        supplementalVariants=list(supplemental),
+        variants=required_checks,
+        supplemental=supplemental_results,
+        excludedReports=[
+            dict(
+                variant=r["variant"],
+                report=p.as_posix(),
+                result=r.get("result"),
+                counts=r.get("counts"),
+                reason="Historical device report outside current scope",
+            )
+            for p, r in zip(paths, reports, strict=True)
+            if r["variant"] in excluded
+        ],
         counts=counts,
         result=result,
         milestonePass=result == "PASS",
         remaining=remaining,
         requiredReports=[
-            dict(variant=r["variant"], result=r["result"], counts=r["counts"]) for r in reports
+            dict(variant=r["variant"], result=r["result"], counts=r["counts"])
+            for r in required_reports
         ],
     )
 
@@ -9373,6 +9454,7 @@ def main():
     parser.add_argument("--outcome", type=Path)
     parser.add_argument("--settings", type=Path)
     parser.add_argument("--variant-report", type=Path, action="append", default=[])
+    parser.add_argument("--matrix-scope", choices=("current-keyboard",), default="current-keyboard")
     parser.add_argument("--baseline-actual", type=Path)
     parser.add_argument("--baseline-outcome", type=Path)
     parser.add_argument(
@@ -9427,9 +9509,32 @@ def main():
     ref = reference(args.reference)
     if args.mode == "matrix":
         require(args.variant_report, "matrix requires actual variant reports")
-        result = compare_matrix(args.variant_report, ref)
+        result = compare_matrix(args.variant_report, ref, scope=args.matrix_scope)
         write(args.output, result)
-        print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
+        print(
+            json.dumps(
+                dict(
+                    **{
+                        k: result[k]
+                        for k in (
+                            "scope",
+                            "requiredVariants",
+                            "excludedVariants",
+                            "result",
+                            "counts",
+                            "milestonePass",
+                        )
+                    },
+                    supplemental=[
+                        {
+                            k: row[k]
+                            for k in ("variant", "result", "comparisonResult", "reportResult")
+                        }
+                        for row in result["supplemental"]
+                    ],
+                )
+            )
+        )
         raise SystemExit(
             1 if result["result"] == "FAIL" else 2 if result["result"] == "Unavailable" else 0
         )

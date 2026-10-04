@@ -42,6 +42,7 @@ var field_output: FileAccess
 var field_unavailable: Array[String] = []
 var guarded_wait_case := "portrait-event" in input_case or "field-projection" in input_case or "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
 var warp_records: Array = []
+var latest_zone_entry: Dictionary = {}
 var nod_pause_checked := false
 var camera_pause_checked := false
 var camera_draws: Array = []
@@ -729,7 +730,7 @@ func run() -> void:
     check(maximum_white == 0.0 if remapped else maximum_white > 0.95,
         "Reduced-flash suppresses white projection; standard mode performs it")
     check(before_battle.presentation.suppressedWhiteCues == (2 if remapped else 0), "Suppression recorded as product deviation")
-    check(before_battle.wait == "DialogueWait" and 15.0 in before_battle.flags, "Same acceptance route reaches before-battle dialogue")
+    check(before_battle.wait == "DialogueWait" and numeric_contains(before_battle.flags, 15), "Same acceptance route reaches before-battle dialogue")
     if remapped:
         var rate := 20.0 if OS.get_environment("SF2_INPUT_RATE").is_empty() else float(OS.get_environment("SF2_INPUT_RATE"))
         await create_timer(float(before_battle.totalCharacters) / rate + 0.1).timeout
@@ -1421,11 +1422,14 @@ func capture_error(reason: String) -> void:
 
 func finish_capture() -> void:
     disconnect_capture()
+    var metadata := {"admissionSnapshot":admission_snapshot,"rawTextBoundary":raw_boundary,
+        "musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return}
+    for name in metadata:
+        capture_row("captureMetadata", {"key":name,"value":metadata[name]}, [])
     if not capture_failed:
         capture.call("Complete",{"passed":failures.is_empty() and field_unavailable.is_empty(),"case":input_case,
             "h4Variant":h4_variant,"failures":failures,"unavailable":field_unavailable,
-            "maximumWhite":maximum_white,"completedWhite":completed_white,"admissionSnapshot":admission_snapshot,
-            "rawTextBoundary":raw_boundary,"musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return,
+            "maximumWhite":maximum_white,"completedWhite":completed_white,"captureMetadataKeys":metadata.keys(),
             "audioTerminal":JSON.parse_string(host.call("ReadAudioObservationJson")),"audioSequenceSeen":JSON.parse_string(host.call("ReadAudioObservationJson")).sequence})
     while not capture.call("IsFinished"): await process_frame
     if not capture.call("Succeeded"):
@@ -1503,6 +1507,13 @@ func record_result_facts(result: Dictionary) -> void:
     elif winning_case and s.has("stage"):
         # The admitted board is retained at first input; terrain is immutable.
         s.erase("terrain")
+    if result.observations.any(func(o): return o.Kind == "zone-entered"):
+        # Stream transport retains result identities in memory, not full historical states.
+        # Keep only the latest actual zone-entry operands needed by route control.
+        var movers: Array = s.get("entities", []).filter(func(e): return e.id == "entity-0")
+        latest_zone_entry = {} if movers.is_empty() else {"moving":movers[0].moving,
+            "actionCursor":movers[0].actionCursor,"eventCaller":s.eventCaller,
+            "entitiesRunning":s.entitiesRunning}
     capture_row("warpRecords",{"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":s}, warp_records)
 
 func observe_winning_view(node: Node) -> void:
@@ -1550,7 +1561,7 @@ func observe_raw_boundary(s: Dictionary) -> bool:
         s.logicalText.Open and not s.typewriting and s.cursor.Program == "cs-51614" and s.cursor.Instruction == 22,
         "Completed raw display is retained at SoundWait before any later instruction")
     check(s.eventCaller == "ZoneEventContext" and not s.canWaitAtInput and not s.canWaitForText and
-        600.0 in s.flags and 66.0 in s.flags and not 603.0 in s.flags, "JOIN prefix preserves caller and stops before return")
+        numeric_contains(s.flags, 600) and numeric_contains(s.flags, 66) and not numeric_contains(s.flags, 603), "JOIN prefix preserves caller and stops before return")
     check(s.randomSeedCopy == raw_entry.randomSeedCopy and s.portraitWindow == raw_entry.portraitWindow,
         "No implicit acknowledgement poll or portrait replacement")
     var unexpected_sound: bool = s.audio.receipts.any(func(r): return r.Sequence > raw_entry.audio.sequence and r.Operation == "started" and r.Command in [67,70,72,73,74])
@@ -1646,7 +1657,7 @@ func post_palace_route(s: Dictionary) -> void:
     s = await castle_route(s, false, "map20-to-map19-royal-return")
     check(issue == "", "Astral and tower route completed: " + issue)
     if issue != "": return
-    check(s.map == "map-21" and s.canWaitAtInput and 608.0 in s.flags and 401.0 in s.flags and 256.0 in s.flags,
+    check(s.map == "map-21" and s.canWaitAtInput and numeric_contains(s.flags, 608) and numeric_contains(s.flags, 401) and numeric_contains(s.flags, 256),
         "Astral acceptance and tower guard return ordinary field control")
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../../tests/fixtures/h3/map3-battle01-player-ready-v1.json"))
     for step in fixture.static.inputPlan.slice(0, -1):
@@ -1657,7 +1668,7 @@ func post_palace_route(s: Dictionary) -> void:
         if not await opening_settle(): return
         s = read_sample(step.waypoint)
     check(s.map == "map-40" and player(s).x == 14 * 384 and player(s).y == 13 * 384 and s.canWaitAtInput and
-        s.cursor == null and s.wait == null and s.eventCaller == null and not s.flags.has(399.0),
+        s.cursor == null and s.wait == null and s.eventCaller == null and not numeric_contains(s.flags, 399),
         "Unequal plane approach stops at Map40 field control before natural battle selection")
     read_sample("parallax-field-return")
     check(camera_exposure_checks > 0, "Actual unequal-plane draws expose consistent camera before and after")
@@ -1678,7 +1689,7 @@ func before_battle_windows(approach: Dictionary) -> void:
             "Before-battle retains the actual session, party and gold")
         if s.map == "map-57":
             check(s.continuation == "BeforeBattleFinished" and s.enteringBattle.Encounter == "battle-1" and
-                s.callers.is_empty() and s.eventCaller == null and not s.canWaitAtInput and not s.flags.has(451.0),
+                s.callers.is_empty() and s.eventCaller == null and not s.canWaitAtInput and not numeric_contains(s.flags, 451),
                 "Before-battle keeps its actual route and continuation without field input or early intro flag")
             if not scene_seen:
                 scene_seen = true
@@ -1785,7 +1796,7 @@ func before_battle_tracking(entry: Dictionary) -> void:
                 check(s.display.Current == s.display.Base and s.display.Period == entry.display.Period and
                     s.presentation.whiteOpacity == 0 and s.presentation.paletteBrightness == 1 and
                     s.portraitWork.Registered and s.cameraProjection.actors.size() > 0 and
-                    not s.battleMounted and not s.flags.has(451.0), "White restoration precedes real Chester portrait/input without early battle")
+                    not s.battleMounted and not numeric_contains(s.flags, 451), "White restoration precedes real Chester portrait/input without early battle")
                 var held := opening_semantic(s)
                 for idle_frame in range(3): await process_frame
                 check(opening_semantic(state()) == held and state().tickDebt == 0, "Chester input remains held without debt")
@@ -1883,7 +1894,7 @@ func remaining_before_battle(entry: Dictionary) -> void:
                 capture_row("battleEntryRecords",{"label":"before-body-terminal","reason":"first-battle-input",
                     "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":first}, battle_entry_records)
             check(first.sessionId == entry.sessionId and first.stage == "Movement" and first.round == 1 and
-                first.storyFlags.has(451.0) and valid_projection(first, true), "Actual loaded board owns first Movement input")
+                numeric_contains(first.storyFlags, 451) and valid_projection(first, true), "Actual loaded board owns first Movement input")
             check(effects.values().count("EntityEffect") == 1 and effects.values().count("Gesture") == 5 and
                 delivered.size() == effects.size() and paused and joined.size() == 6 and
                 loader == ["FadeOut", "BattleLoad", "FadeIn"] and mounted,
@@ -1938,7 +1949,7 @@ func remaining_before_battle(entry: Dictionary) -> void:
                 if entity.id in ["entity-129","entity-130","entity-131","entity-132","entity-133","entity-134"] and entity.Visible:
                     joined[entity.id] = entity.slot
         if s.mode == "Battle":
-            check(s.fade == null and not s.flags.has(451.0) and s.display == previous.display and
+            check(s.fade == null and not numeric_contains(s.flags, 451) and s.display == previous.display and
                 s.logicalView == previous.logicalView, "Modern loader preserves frozen field facade without field helper or early intro")
             if s.presentation.activeCue in ["FadeOut","BattleLoad","FadeIn"] and (loader.is_empty() or loader[-1] != s.presentation.activeCue):
                 loader.append(s.presentation.activeCue)
@@ -1972,7 +1983,7 @@ func opening_settle(castle_yes: bool = true) -> bool:
         if parallax_case and s.map == "map-21":
             if s.wait == "EntitySpriteWait" and s.cursor != null and s.cursor.Program == "cs-53ef4":
                 guard_sprite_wait = s
-            if s.flags.has(401.0) and guard_release.is_empty(): guard_release = s
+            if numeric_contains(s.flags, 401) and guard_release.is_empty(): guard_release = s
         if map_init_case and castle_started: observe_castle_frame(s)
         if s.failure != null: return observe_raw_boundary(s)
         if choice_case and not s.focused:
@@ -2037,13 +2048,13 @@ func opening_settle(castle_yes: bool = true) -> bool:
                 var following := read_sample("choice-following-text-input")
                 var returns: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "choice-returned"))
                 check(returns.size() == 1 and following.choice == null and not following.choiceProjection.visible and
-                    (89.0 in following.flags) == choice_yes and not 603.0 in following.flags and following.eventCaller == "ZoneEventContext",
+                    (numeric_contains(following.flags, 89)) == choice_yes and not numeric_contains(following.flags, 603) and following.eventCaller == "ZoneEventContext",
                     "Complete choice returns to the selected text with its zone caller retained")
                 choice_following = true
             if choice_yes and s.textId == 536:
                 var endpoint := read_sample("choice-yes-text536-input")
-                check(choice_following and not endpoint.fieldText.Wait2 and not 600.0 in endpoint.flags and not 66.0 in endpoint.flags and
-                    not 603.0 in endpoint.flags and endpoint.eventCaller == "ZoneEventContext", "Yes stops before Wait/Ack and JOIN")
+                check(choice_following and not endpoint.fieldText.Wait2 and not numeric_contains(endpoint.flags, 600) and not numeric_contains(endpoint.flags, 66) and
+                    not numeric_contains(endpoint.flags, 603) and endpoint.eventCaller == "ZoneEventContext", "Yes stops before Wait/Ack and JOIN")
                 if not raw_text_case: return true
         if "zone-nod" in input_case and s.wait == "NodWait":
             read_sample("nod-phase-" + str(s.token) + "-" + str(s.nod.Elapsed))
@@ -2130,7 +2141,7 @@ func opening_settle(castle_yes: bool = true) -> bool:
         if "camera" in input_case and s.textId == 531 and s.get("canWaitForText", false) and not choice_prefix:
             var endpoint := read_sample("camera-text531-input")
             check(not endpoint.fieldText.Wait2 and not endpoint.canWaitAtInput and endpoint.eventCaller == "ZoneEventContext" and
-                endpoint.cursor != null and endpoint.cursor.Instruction == 127 and not 603.0 in endpoint.flags,
+                endpoint.cursor != null and endpoint.cursor.Instruction == 127 and not numeric_contains(endpoint.flags, 603),
                 "Text531 input retains the Messenger zone/script caller before yes-no")
             check(endpoint.logicalView.TargetSlot == null and not endpoint.logicalView.Scrolling, "Camera remains held after both waits")
             var held := opening_semantic(endpoint)
@@ -2143,7 +2154,7 @@ func opening_settle(castle_yes: bool = true) -> bool:
             var returns: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "nod-returned"))
             check(returns.size() == 2, "Both nods returned before the genuine text521 W1 input")
             check(not endpoint.fieldText.Wait2 and not endpoint.canWaitAtInput and endpoint.eventCaller == "ZoneEventContext" and
-                endpoint.cursor != null and not 603.0 in endpoint.flags, "Text521 input retains the Messenger zone/script caller")
+                endpoint.cursor != null and not numeric_contains(endpoint.flags, 603), "Text521 input retains the Messenger zone/script caller")
             var held := opening_semantic(endpoint)
             for idle_frame in range(5): await process_frame
             check(opening_semantic(state()) == held and state().tickDebt == 0, "Text521 stops before any Wait or Ack")
@@ -2263,11 +2274,11 @@ func run_portrait_event() -> void:
             return
         if astral:
             var returned := read_sample("entity142-return")
-            check(returned.canWaitAtInput and returned.eventCaller == null and 602.0 in returned.flags and 261.0 in returned.flags,
+            check(returned.canWaitAtInput and returned.eventCaller == null and numeric_contains(returned.flags, 602) and numeric_contains(returned.flags, 261),
                 "Entity142 caller returns after setting flags261/602")
         if "zone-nod" in input_case and edge.waypoint == "map3-astral-zone" and edge.x == 57 and edge.y == 13:
             var returned := read_sample("second-zone7-return")
-            check(returned.canWaitAtInput and returned.eventCaller == null and 260.0 in returned.flags and not 603.0 in returned.flags,
+            check(returned.canWaitAtInput and returned.eventCaller == null and numeric_contains(returned.flags, 260) and not numeric_contains(returned.flags, 603),
                 "Second Zone7 returns before Messenger")
         if "zone-nod" in input_case and edge.waypoint == "map3-school-stairs-up":
             read_sample("nod-stair-reload-return")
@@ -2276,10 +2287,10 @@ func run_portrait_event() -> void:
                 join_return = read_sample("join-field-return")
                 check(not music_plain_input.is_empty() and join_return.canWaitAtInput and join_return.eventCaller == null and
                     join_return.cursor == null and join_return.wait == null and join_return.textWindow == "ClosedTextWindow" and
-                    join_return.portraitWindow == "ClosedPortraitWindow" and 600.0 in join_return.flags and
-                    66.0 in join_return.flags and 603.0 in join_return.flags,
+                    join_return.portraitWindow == "ClosedPortraitWindow" and numeric_contains(join_return.flags, 600) and
+                    numeric_contains(join_return.flags, 66) and numeric_contains(join_return.flags, 603),
                     "Complete JOIN returns first ordinary field control with flags, caller and windows settled")
-                check(join_return.partyLists == {"Joined":[0.0,1.0,2.0],"Active":[0.0,1.0],"Reserve":[2.0]},
+                check(numeric_equal(join_return.partyLists, {"Joined":[0,1,2],"Active":[0,1],"Reserve":[2]}),
                     "Complete JOIN retains joined, active and reserve membership")
                 if map_init_case:
                     castle_started = true
@@ -2288,7 +2299,7 @@ func run_portrait_event() -> void:
                     var final := read_sample("map-init-field-return")
                     check(final.map == "map-19" and final.canWaitAtInput and final.eventCaller == null and
                         final.cursor == null and final.wait == null and final.textWindow == "ClosedTextWindow" and
-                        final.portraitWindow == "ClosedPortraitWindow" and 604.0 in final.flags and 605.0 in final.flags,
+                        final.portraitWindow == "ClosedPortraitWindow" and numeric_contains(final.flags, 604) and numeric_contains(final.flags, 605),
                         "First palace completes with flags and closed lifecycle at usable Map19 control")
                     check(returned.sessionId == join_return.sessionId, "Palace route retains opening session")
                     if parallax_case: await post_palace_route(final)
@@ -2309,7 +2320,7 @@ func run_portrait_event() -> void:
             var endpoint := read_sample("choice-final")
             if not choice_yes:
                 check(choice_following and endpoint.canWaitAtInput and endpoint.eventCaller == null and endpoint.choice == null and
-                    not 89.0 in endpoint.flags and 603.0 in endpoint.flags and not 600.0 in endpoint.flags and not 66.0 in endpoint.flags,
+                    not numeric_contains(endpoint.flags, 89) and numeric_contains(endpoint.flags, 603) and not numeric_contains(endpoint.flags, 600) and not numeric_contains(endpoint.flags, 66),
                     "Decline returns ordinary field control without join/party writes or another input")
             finish_public()
             return
@@ -2323,7 +2334,7 @@ func run_portrait_event() -> void:
             check(returned.canWaitAtInput and returned.entityEvent == null and returned.textWindow == "ClosedTextWindow" and
                 returned.portraitWindow == "ClosedPortraitWindow" and not returned.logicalText.Open,
                 "Actual wrapper return closes both windows and releases control")
-            check(256.0 in returned.flags and actor.x == 41 * 384 and actor.y == 7 * 384 and actor.facing == actor_before.facing,
+            check(numeric_contains(returned.flags, 256) and actor.x == 41 * 384 and actor.y == 7 * 384 and actor.facing == actor_before.facing,
                 "Source movement, flag and facing restoration finish before control returns")
             check(returned.entitiesRunning == true, "Trap6 activation survives the script and close tail")
             var ready_ids: Array = samples.filter(func(r): return r.label.begins_with("opening-ready-")).map(func(r): return int(r.state.textId))
@@ -2341,14 +2352,14 @@ func run_portrait_event() -> void:
             var ready_ids: Array = samples.filter(func(r): return r.label.begins_with("opening-ready-")).map(func(r): return int(r.state.textId))
             check(ready_ids == [510,511,483,512,481,513], "Spatial route reaches the first introduction through actual W controls")
             check(returned.entitiesRunning == true and returned.audio.error == null, "Zone service and actual audio remain admitted")
-            check(not 602.0 in returned.flags and not 603.0 in returned.flags, "Stop before later Astral interactions and story flags")
+            check(not numeric_contains(returned.flags, 602) and not numeric_contains(returned.flags, 603), "Stop before later Astral interactions and story flags")
             var zone_entries: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "zone-entered"))
             check(zone_entries.size() >= 2, "Opening zone and introduction both use the generic source caller")
-            var introduction: Dictionary = zone_entries.back().state if not zone_entries.is_empty() else {}
-            if not introduction.is_empty():
-                var mover: Dictionary = introduction.entities.filter(func(e): return e.id == "entity-0")[0]
-                check(mover.moving and mover.actionCursor == 0 and introduction.eventCaller == "ZoneEventContext" and
-                    introduction.entitiesRunning, "Zone handler enters with preserved player movement and pending init actions")
+            check(not latest_zone_entry.is_empty(), "Actual latest zone-entry control operands are retained")
+            if not latest_zone_entry.is_empty():
+                check(latest_zone_entry.moving and latest_zone_entry.actionCursor == 0 and
+                    latest_zone_entry.eventCaller == "ZoneEventContext" and latest_zone_entry.entitiesRunning,
+                    "Zone handler enters with preserved player movement and pending init actions")
             if "zone-nod" not in input_case:
                 finish_public()
                 return
@@ -2382,7 +2393,7 @@ func run_opening_text() -> void:
             return
         read_sample("opening-field-return")
     var returned := read_sample("opening-returned")
-    check(601.0 in returned.flags and returned.textWindow == "ClosedTextWindow" and returned.portraitWindow == "ClosedPortraitWindow",
+    check(numeric_contains(returned.flags, 601) and returned.textWindow == "ClosedTextWindow" and returned.portraitWindow == "ClosedPortraitWindow",
         "Opening closes windows and completes the ordinary zone caller once")
     check(not returned.logicalText.Open and returned.canWaitAtInput, "Logical close joins actual field control")
     if "suppressed" in input_case:

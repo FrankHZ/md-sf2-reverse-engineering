@@ -359,7 +359,7 @@ internal sealed class ExplorationPresentation : IDisposable
                         entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
                         facing = entity.Motion.Facing, animationCounter = entity.Motion.AnimationCounter,
                         elapsed = sourceNod.Elapsed, lowered, visible,
-                        texture = texture.GetInstanceId(), normalTexture = Sprite(entity, false).GetInstanceId(),
+                        texture = texture.GetInstanceId().ToString(), normalTexture = Sprite(entity, false).GetInstanceId().ToString(),
                         width = texture.GetWidth(), height = texture.GetHeight() };
                 if (!visible) continue;
                 drawnActors?.Add((entity, texture, lowered));
