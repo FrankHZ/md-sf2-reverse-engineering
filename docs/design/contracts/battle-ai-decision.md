@@ -60,7 +60,7 @@ An adapter MUST preserve distinct ownership for:
 | commandset and command cursor | ordered command attempts; stop at first success |
 | action candidates | physical, spell, and item viability plus selected spell/item entries |
 | target candidates | per-family target bytes, priority bytes, and movement bytes |
-| thinking RNG | low-byte `RANDOM_SEED_COPY` stream, separate from the base RNG |
+| thinking RNG | base-address byte of `RANDOM_SEED_COPY` (the big-endian word's high byte), separate from the base RNG |
 | movement output | move string plus action field, including Stay-with-movement cases |
 | temporary battlefield state | obstruction bits installed for path selection and cleared on every control exit |
 | AI memory | last target, move count, and standby relative-position state |
@@ -178,8 +178,11 @@ and item lists are non-empty.
 - AQUA plus physical bypasses that roll and always casts AQUA;
 - when both spell and item are viable, physical is ignored even when viable.
 
-Spell-versus-item choice uses the thinking RNG, updating the low seed-copy byte as
+Spell-versus-item choice uses the thinking RNG, updating the base-address/high seed-copy byte as
 `(seed * 541 + 12345) & 0xFF` until below two; 0 selects spell and 1 selects item.
+The [randomness contract](randomness.md) binds that byte lane to the independent ten-case H3
+matrix; the older action-choice fixture's prose saying "low byte" does not change its actual
+base-address operand or the retained observations.
 
 Priorities are compared as signed bytes from an initial maximum of zero, so 128-255 can be ignored
 as negative. The returned priority is capped at 15, while every target tied at the original maximum
@@ -287,6 +290,23 @@ A future H4 adapter should compare:
 
 H4 MUST keep natural-play frequency, fairness, tactical intent, rendered behavior, and the itemized
 grouped runtime queue outside the accepted adapter until separately evidenced or designed.
+
+### Modern matched-input thinking boundary
+
+Bind the thinking assertion to an executed rule and its live input, not to the existence of a test
+or equality with an entire historical original action sequence. The original byte service and
+action-choice H3 seams above establish their own bounded rules; modern checks consume those rules
+under declared legal states. Keep original evidence and modern results distinct:
+
+| Actual engine behavior | Matched-input checks | Remaining boundary |
+| --- | --- | --- |
+| Inactive SourceOrders | `SourceEnemyAiTests.InactiveMovementUsesItsSourceAnchorMemoryAndIndependentThinkingChannel` checks range8/2/1 values7/0/0, destination/path, packed memory, retained last target, unchanged main seed and other24 thinking bits; high-byte variants include `$80/$FF`. `ImmediateIdleRetainsMemoryAndStillPerformsItsRealThinkingDraw` binds range8/value2 to Stay with retained memory. | Natural frequency and caller timing are not asserted. |
+| Active physical target competition | `TargetSelectionTests.CompetingAdjacentTargetsUseClassDefinitionsAndCommonCounterSettlement` and `NaturalContinuedThinkingChangesTargetWithoutResettingEitherStream` bind ordered per-target draws, source scoring/tie choice, last target, movement/action result and both resulting seeds; class/order/content variations retain their own tests. | This physical capability does not admit all spell/item/special commandsets. |
+| Field-to-battle lifetime | `SourceEnemyAiTests.FieldTextCopyReplacesInitialAiByteBeforeEntryAndAiKeepsItsUpdatedByte` executes W1/W2 through normal entry to automatic AI and checks convergence after overwritten initial bytes. The [randomness lifetime boundary](randomness.md#initial-byte-versus-live-caller-state) distinguishes live state from the last text-write diagnostic. | Original diamond-menu opportunities and the selected natural first-AI byte remain Unknown; older route captures are not corrected-executable evidence. |
+
+Run the affected engine behavior filter against these named classes. A passing rule/lifetime check
+does not itself publish an H4 row: the shared comparator still needs the selected actual consumer,
+matching input/rule applicability, observed output and explicit unsupported/Unknown boundaries.
 
 ## Evidence Matrix
 

@@ -198,7 +198,9 @@ public sealed class ExplorationTextWaitTests
             Assert.Equal(index == polls ? "accept" : "none", result.Observations[3].Detail);
             Assert.Equal(before.Story.SimulationTick + 1, session.Current.Story.SimulationTick);
             Assert.Equal(entry.Exploration!.AllEntities, session.Current.Exploration.AllEntities);
-            Assert.Equal(entry.Exploration.Party.ThinkingSeed, session.Current.Exploration.Party.ThinkingSeed);
+            Assert.Equal((entry.Exploration.Party.ThinkingSeed & 0x00FFFFFFu) | ((uint)draw.RandomValue!.Value << 24),
+                session.Current.Exploration.Party.ThinkingSeed);
+            Assert.Equal((byte)draw.RandomValue.Value, session.Current.CurrentRandomSeedCopy);
         }
         Assert.Equal(expected, session.Current.Exploration!.Party.MainSeed);
         Assert.Equal((byte)copy, session.Current.Story.RandomSeedCopy);
@@ -421,6 +423,9 @@ public sealed class ExplorationTextWaitTests
             var draw = result.Observations[0];
             Assert.Equal(before.Exploration!.Party.MainSeed, draw.Before);
             Assert.Equal((byte)draw.RandomValue!.Value, session.Current.Story.RandomSeedCopy);
+            Assert.Equal((byte)draw.RandomValue.Value, session.Current.CurrentRandomSeedCopy);
+            Assert.Equal((before.Exploration.Party.ThinkingSeed & 0x00FFFFFFu) | ((uint)draw.RandomValue.Value << 24),
+                session.Current.Exploration!.Party.ThinkingSeed);
             Assert.Equal(before.Story.SimulationTick + 1, session.Current.Story.SimulationTick);
             if (enabled) Assert.NotEqual(draw.After, session.Current.Exploration!.Party.MainSeed);
             else Assert.Equal(draw.After, session.Current.Exploration!.Party.MainSeed);
@@ -778,6 +783,8 @@ public sealed class ExplorationTextWaitTests
         // Independent LCG sequence: one poll, four radius-zero rejected NPC candidates, blink, mouth.
         Assert.Equal(0xECAB1234L, result.Observations[0].After);
         Assert.Equal((byte)236, result.Snapshot.Story.RandomSeedCopy);
+        Assert.Equal((byte)236, result.Snapshot.CurrentRandomSeedCopy);
+        Assert.Equal((party.ThinkingSeed & 0x00FFFFFFu) | 0xEC000000u, result.Snapshot.Exploration!.Party.ThinkingSeed);
         Assert.Equal(0x72EF1234L, result.Observations[3].Before);
         Assert.Equal(0xE0291234u, result.Snapshot.Exploration!.Party.MainSeed);
         Assert.Equal(snapshot.Story.SimulationTick + 1, result.Snapshot.Story.SimulationTick);

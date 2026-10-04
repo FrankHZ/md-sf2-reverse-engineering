@@ -86,6 +86,8 @@ public sealed class SessionSnapshot
     public EngineBattleState Battle => Active is ActiveBattle battle ? battle.Battle :
         throw new InvalidOperationException("The active mode is exploration.");
     public ExplorationState? Exploration => (Active as ActiveExploration)?.World;
+    public byte CurrentRandomSeedCopy => (byte)((Active is ActiveBattle battle
+        ? battle.Battle.ThinkingSeed : ((ActiveExploration)Active).World.Party.ThinkingSeed) >> 24);
     public BattleSelection? Selection => (Active as ActiveBattle)?.Selection;
     public SessionStopReason StopReason { get; }
     public bool CanWaitAtInput => Active is ActiveExploration field && StopReason == SessionStopReason.PlayerInput &&

@@ -1732,6 +1732,7 @@ public sealed class ExplorationSessionTests
         Assert.Equal(initial.SessionId, session.Current.SessionId);
         Assert.Equal(initial.Exploration!.PlayerEntity, session.Current.Exploration.PlayerEntity);
         Assert.Equal(initial.Exploration.Party.ThinkingSeed, session.Current.Exploration.Party.ThinkingSeed);
+        Assert.Equal(initial.CurrentRandomSeedCopy, session.Current.CurrentRandomSeedCopy);
         Accept(session, new WaitAtInput());
         npc = session.Current.Exploration.Entities[new("ferryman")];
         Assert.Equal((768 + (targetX - 2) * 96, 384 + (targetY - 1) * 96), ((int)npc.Motion.X, (int)npc.Motion.Y));
