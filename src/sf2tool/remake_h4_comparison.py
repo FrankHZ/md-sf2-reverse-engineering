@@ -2853,6 +2853,7 @@ def reached_visual_materials(
     *,
     source_only=False,
     budget=None,
+    map_binding=None,
 ):
     """Join reached texture selectors to existing source decoders and private exports."""
     result = dict(
@@ -2864,6 +2865,12 @@ def reached_visual_materials(
         joins=_bounded_list(),
         witnesses=_bounded_list(),
     )
+    if map_binding is not None:
+        result["mutableMapDelivery"] = map_binding
+        result["historicalMutableLayout"] = dict(
+            value=None,
+            reason="Historical per-Submit working layouts and coordinate draws were not recorded",
+        )
     scope = actual.get("resourceScope")
     enabled = (
         {"map", "entity", "scene"} if not scope or scope["family"] == "all" else {scope["family"]}
@@ -2885,6 +2892,9 @@ def reached_visual_materials(
                 row["locator"] = locator
             result["witnesses"].append(row)
             witness_counts[family, name, value] += 1
+
+    if map_binding is not None:
+        check("map", "complete mutable-map composed boundary", map_binding["value"])
 
     from contextlib import contextmanager
 
@@ -3022,6 +3032,9 @@ def reached_visual_materials(
                             )
 
     if not selection:
+        if map_binding is not None:
+            check("map", "independent map material selection absent", None)
+            return finish()
         return result
     try:
         selected_scene = selection[1]
@@ -3412,7 +3425,13 @@ def reached_visual_materials(
                         if px + width > 0 and py + width > 0 and px < 320 and py < 192:
                             recorded.append(dict(block=block, tile=tile, word=word))
             if unknown_layout:
-                check("map", "reached mutable region needs current working-layout operands", None)
+                check(
+                    "map",
+                    "reached mutable region composed delivery",
+                    map_binding["value"]
+                    if map_binding is not None and map_id in ("map-3", "map-19")
+                    else None,
+                )
             return recorded
 
         logical_inventory = _value_set()
@@ -3764,6 +3783,7 @@ def reached_materials(
     canonical_content=None,
     tileset_metadata=None,
     palette_metadata=None,
+    map_binding=None,
 ):
     """Offline material origin only; natural dispatch/consumer joins stay separate."""
     result = dict(
@@ -3773,7 +3793,13 @@ def reached_materials(
         checks=_bounded_list(),
         joins=_bounded_list(),
         visuals=reached_visual_materials(
-            actual, selection, source_root, canonical_content, tileset_metadata, palette_metadata
+            actual,
+            selection,
+            source_root,
+            canonical_content,
+            tileset_metadata,
+            palette_metadata,
+            map_binding=map_binding,
         ),
     )
     if not selection:
@@ -6184,6 +6210,975 @@ _W1_SOURCE_SYMBOLS = (
     "return_513B8",
     "return_53EDC",
 )
+
+
+def _map_source_regions(root, map_id):
+    """Decode only the named map and its three original copy tables."""
+    from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
+
+    folder = root / f"disasm/data/maps/entries/map{int(map_id[4:]):02d}"
+    words = decode_map_blocks((folder / "0-blocks.bin").read_bytes())[0]
+    layout = decode_map_layout((folder / "1-layout.bin").read_bytes(), len(words) // 9)[0]
+    tables = {}
+    for name, file, macro in (
+        ("flags", "3-flag-events.asm", "fbc"),
+        ("doors", "4-step-events.asm", "sbc"),
+        ("roofs", "5-roof-events.asm", "slbc"),
+    ):
+        source = (folder / file).read_text(encoding="utf-8")
+
+        def pair(suffix, macro=macro, source=source):
+            return [
+                tuple(map(int, m))
+                for m in re.findall(rf"\b{macro}{suffix}\s+(\d+),\s*(\d+)", source)
+            ]
+
+        tables[name] = [
+            dict(source=s, rect=(*d, *size))
+            for s, d, size in zip(pair("Source"), pair("Dest"), pair("Size"), strict=True)
+        ]
+        triggers = (
+            [int(v) for v in re.findall(r"\bfbcFlag\s+(\d+)", source)]
+            if name == "flags"
+            else pair("")
+        )
+        for row, trigger in zip(tables[name], triggers, strict=True):
+            row["trigger"] = trigger
+    return dict(layout=layout, blocks=[words[i : i + 9] for i in range(0, len(words), 9)], **tables)
+
+
+def _map_draw_cells(sample, expected_words, source, root):
+    """Independent cell inventory, original sprite ink and actual clipped draw multiset.
+
+    Match the existing float32 viewport boundary, including positive subpixel
+    rectangles. Never round away an extra or missing draw at a tile boundary.
+    """
+    from sf2tool.compression import decode_basic_compressed
+    from sf2tool.remake_asset_build import _render_player_frame
+
+    def f(value):
+        return struct.unpack("f", struct.pack("f", value))[0]
+
+    def add(a, b):
+        return f(f(a) + f(b))
+
+    def sub(a, b):
+        return f(f(a) - f(b))
+
+    def mul(a, b):
+        return f(f(a) * f(b))
+
+    def div(a, b):
+        return f(f(a) / f(b))
+
+    def rect(row):
+        return tuple(f(row[k]) for k in ("x", "y", "width", "height"))
+
+    def intersect(a, b):
+        x, y = max(a[0], b[0]), max(a[1], b[1])
+        right = min(add(a[0], a[2]), add(b[0], b[2]))
+        bottom = min(add(a[1], a[3]), add(b[1], b[3]))
+        return (x, y, sub(right, x), sub(bottom, y)) if right > x and bottom > y else None
+
+    layout, projection = sample["layout"], sample["projection"]
+    screen, scale = rect(projection), f(projection["scale"])
+    expected, missing_actor, ink_cache = [], False, {}
+    entries = None
+
+    def actor_ink(actor):
+        nonlocal entries
+        sprite, facing = int(actor["sprite"]), int(actor["facing"])
+        direction = 0 if facing == 1 else 2 if facing == 3 else 1
+        half = int(15 < actor["animationCounter"] < 128)
+        key = sprite, direction, half
+        if actor["lowered"] or actor["mosaicBlock"] is not None or actor["shiverOffsetX"]:
+            raise ValueError("mutable map witness has an unallocated actor transformation")
+        if key not in ink_cache:
+            if entries is None:
+                text = (root / "disasm/data/graphics/mapsprites/entries.asm").read_text(
+                    encoding="utf-8"
+                )
+                entries = (
+                    re.findall(r"\bdc\.l\s+(Mapsprite\d{3}_[012])", text),
+                    dict(re.findall(r'(Mapsprite\d{3}_[012]):\s*incbin\s+"([^"]+)"', text)),
+                )
+            references, paths = entries
+            payload = (root / "disasm" / paths[references[sprite * 3 + direction]]).read_bytes()
+            decoded = decode_basic_compressed(payload, expected_output_bytes=576).output
+            pixels = _render_player_frame(decoded[half * 288 : (half + 1) * 288], [(0, 0, 0)] * 16)
+            runs = []
+            for y in range(24):
+                x = 0
+                while x < 24:
+                    if not pixels[(y * 24 + x) * 4 + 3]:
+                        x += 1
+                        continue
+                    start = x
+                    x += 1
+                    while x < 24 and pixels[(y * 24 + x) * 4 + 3]:
+                        x += 1
+                    runs.append((start, y, x - start, 1))
+            ink_cache[key] = runs
+        mirror = facing in (0, 4, 7)
+        return [
+            (
+                add(actor["x"], mul(24 - x - w if mirror else x, scale)),
+                add(actor["y"], mul(y, scale)),
+                mul(w, scale),
+                mul(h, scale),
+            )
+            for x, y, w, h in ink_cache[key]
+        ]
+
+    for layer in projection["layers"]:
+        overlay, high = layer["name"].startswith("foreground"), layer["highPriority"]
+        for index, word in enumerate(expected_words):
+            sx = int(layout["x"] + index % layout["width"])
+            sy = int(layout["y"] + index // layout["width"])
+            block = int(word) & 1023
+            if overlay and block == 0:
+                continue
+            x, y = sx - layer["offsetX"], sy - layer["offsetY"]
+            block_rect = (
+                add(projection["x"], mul(sub(x * 24, layer["x"]), scale)),
+                add(projection["y"], mul(sub(y * 24, layer["y"]), scale)),
+                mul(24, scale),
+                mul(24, scale),
+            )
+            if not intersect(block_rect, screen):
+                continue
+            masks = [(None, int(layer["pass"]), [screen])]
+            if high:
+                for actor in projection["actors"]:
+                    if not actor["visible"] or not intersect(block_rect, rect(actor)):
+                        continue
+                    if actor.get("highPriority") is None:
+                        missing_actor = True
+                        continue
+                    if actor["highPriority"] != (actor["layer"] > 0):
+                        raise ValueError("actor priority disagrees with input-ready layer")
+                    if not actor["highPriority"]:
+                        masks.append(
+                            (
+                                actor["entity"],
+                                int(actor["pass"]) + (2 if overlay else 1),
+                                actor_ink(actor),
+                            )
+                        )
+            for tile in range(1 if high is None else 9):
+                tile_words = (
+                    source["blocks"][block] if high is None else [source["blocks"][block][tile]]
+                )
+                if high is not None and bool(tile_words[0] & 0x8000) != high:
+                    continue
+                tx, ty, size = (0, 0, 24) if high is None else (tile % 3 * 8, tile // 3 * 8, 8)
+                origin = (
+                    add(block_rect[0], mul(tx, scale)),
+                    add(block_rect[1], mul(ty, scale)),
+                    mul(size, scale),
+                    mul(size, scale),
+                )
+                clipped = intersect(origin, screen)
+                if not clipped:
+                    continue
+                for subject, pass_, regions in masks:
+                    for mask in regions:
+                        covered = intersect(clipped, mask)
+                        if covered:
+                            texture = (
+                                add(tx, div(sub(covered[0], origin[0]), scale)),
+                                add(ty, div(sub(covered[1], origin[1]), scale)),
+                                div(covered[2], scale),
+                                div(covered[3], scale),
+                            )
+                            key = (
+                                sx,
+                                sy,
+                                block,
+                                None if high is None else tile,
+                                tuple(tile_words),
+                                "occlusion"
+                                if subject
+                                else "foreground"
+                                if overlay
+                                else "background",
+                                high,
+                                pass_,
+                                subject,
+                                overlay,
+                                layer["offsetX"],
+                                layer["offsetY"],
+                            )
+                            expected.append((key, covered, texture))
+    groups, selector_ok = {}, True
+    for use in layout["draw"]["uses"]:
+        key = (
+            tuple(use[k] for k in ("sourceX", "sourceY", "block", "tile"))
+            + (tuple(use["words"]),)
+            + tuple(
+                use[k]
+                for k in (
+                    "layer",
+                    "highPriority",
+                    "pass",
+                    "subject",
+                    "overlay",
+                    "offsetX",
+                    "offsetY",
+                )
+            )
+        )
+        groups.setdefault(key, []).append(use)
+        selector_ok &= bool(use["resourceIdentity"]) and use["selector"] == dict(
+            kind="map-block", map=layout["map"], block=use["block"]
+        )
+    missing = 0
+    for key, covered, texture in expected:
+        candidates = groups.get(key, [])
+        found = next(
+            (
+                i
+                for i, use in enumerate(candidates)
+                if max(abs(a - b) for a, b in zip(covered, rect(use), strict=True)) < 0.002
+                and max(
+                    abs(a - b)
+                    for a, b in zip(
+                        texture,
+                        (use[k] for k in ("textureX", "textureY", "textureWidth", "textureHeight")),
+                        strict=True,
+                    )
+                )
+                < 0.002
+            ),
+            None,
+        )
+        if found is None:
+            missing += 1
+        else:
+            candidates.pop(found)
+    extra = sum(map(len, groups.values()))
+    return dict(
+        value=False if extra or not selector_ok else None if missing or missing_actor else True,
+        expected=len(expected),
+        actual=len(layout["draw"]["uses"]),
+        missing=missing,
+        extra=extra,
+        missingActor=missing_actor,
+        selectors=selector_ok,
+    )
+
+
+def map_consumer_binding(actual, context, source_root):
+    """Composed mutable-map delivery; never retrofill historical working layouts.
+
+    Source tables define every region and word. Complete selected caller history
+    defines applicability (Inferred where Submit operands were omitted). Separate
+    controlled sessions supply mechanism and actual draw witnesses. Other map
+    source/texture requirements remain the reached-material predicate's job.
+    """
+    result = dict(
+        value=None,
+        checks=[],
+        witnesses=[],
+        coverage=[],
+        historical=dict(
+            exactWorkingLayout=None, exactCoordinateDraw=None, callerContext="Inferred"
+        ),
+        sourceRules=dict(upstream=UPSTREAM, owner=OWNER, section="composed-mutable-map-delivery"),
+    )
+
+    def check(name, value, label=None):
+        result["checks"].append(dict(name=name, value=value, label=label))
+
+    def finish():
+        values = [c["value"] for c in result["checks"]]
+        result["value"] = (
+            False if False in values else None if None in values or not values else True
+        )
+        return result
+
+    context = context or {}
+    history = actual.get("mapHistory", context.get("mapHistory", []))
+    receipt = actual.get("mapHistoryReceipt", context.get("mapHistoryReceipt", {}))
+    session = context.get("historicalSession")
+    sessions = {s.get("state", {}).get("sessionId") for s in actual.get("samples", [])} - {None}
+    if actual.get("sessionId"):
+        sessions.add(actual["sessionId"])
+    sessions.update(actual.get("resourceScope", {}).get("contextSessions", []))
+    check(
+        "historical session boundary",
+        None if not sessions or not session else sessions == {session},
+    )
+    check(
+        "complete retained applicability selection",
+        None
+        if not receipt or session is None
+        else receipt.get("failure") is None
+        and receipt.get("sourceUnchanged") is True
+        and receipt.get("sessions") == [session],
+    )
+    check("historical context present", True if history else None)
+    root = (
+        (Path(source_root).resolve() if Path(source_root).is_absolute() else repo_path(source_root))
+        if source_root
+        else None
+    )
+    maps = {}
+    try:
+        if root is None:
+            raise FileNotFoundError("source root")
+        check(
+            "pinned original map source",
+            subprocess.check_output(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+            ).strip()
+            == UPSTREAM
+            and subprocess.run(
+                ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+            ).returncode
+            == 0,
+        )
+        maps = {m: _map_source_regions(root, m) for m in ("map-3", "map-19")}
+    except (OSError, subprocess.SubprocessError):
+        check("source operands available", None)
+    except (ValueError, IndexError):
+        check("source table shape", False)
+    if not maps:
+        return finish()
+
+    # Retained change runs cover their declared selected records without inventing
+    # values at omitted post-Submit fields. Missing ranges never imply no mutation.
+    states, events = [], []
+    for channel in ("samples", "warpRecords"):
+        current, count, previous = {}, 0, -1
+        for row in history:
+            if row.get("channel") != channel:
+                continue
+            try:
+                if row["kind"] == "run":
+                    first, last = row["first"][0], row["last"][0]
+                    check(
+                        "ordered complete context runs",
+                        first > previous and row["count"] == last - first + 1,
+                        channel,
+                    )
+                    current = dict(current, **row["change"])
+                    states.append((row["first"], current))
+                    count += row["count"]
+                    previous = last
+                elif row["kind"] == "events" and channel == "warpRecords":
+                    events.extend(row["events"])
+            except KeyError:
+                check("context operands", None, channel)
+        check(
+            "all selected context records accounted",
+            None
+            if channel not in receipt.get("relevant", {})
+            else True
+            if count == receipt["relevant"][channel]
+            else False
+            if count > receipt["relevant"][channel]
+            else None,
+            channel,
+        )
+    for _, state in states:
+        if state.get("map") not in maps:
+            continue
+        flags = state.get("flags")
+        if flags is not None:
+            alternate = (
+                {506, 543, 609} if state["map"] == "map-3" else {501, 506, 507, 543, 609, 982}
+            )
+            check(
+                "default source setup applicability",
+                not alternate.intersection(flags),
+                state["map"],
+            )
+    retained_kinds = {
+        "map-transferred",
+        "door-opened",
+        "warp-started",
+        "warp-program",
+        "full-fade-started",
+        "full-fade-completed",
+        "warp-visible",
+        "zone-entered",
+        "movement-started",
+        "movement-blocked",
+        "program-instruction",
+    }
+    event_counts = Counter(
+        (e.get("Kind"), e.get("Detail") if e.get("Kind") == "program-instruction" else None)
+        for e in events
+    )
+    expected_counts = {
+        (e["kind"], e["detail"]): e["count"]
+        for e in receipt.get("events", [])
+        if e["kind"] in retained_kinds
+    }
+    check(
+        "complete retained mutation and movement producers",
+        None
+        if not expected_counts
+        else False
+        if any(event_counts[k] > expected_counts.get(k, 0) for k in event_counts)
+        else True
+        if event_counts == expected_counts
+        else None,
+    )
+    for axis in ("Revision", "Sequence"):
+        values = [e.get(axis) for e in events]
+        check(
+            "ordered unique historical " + axis,
+            None if None in values else values == sorted(set(values)),
+        )
+    # Every retained mutator must resolve to original source. New mutator kinds
+    # require an explicit class; they cannot be silently classified as unchanged.
+    from sf2tool.remake_exploration_content import OriginalPrograms
+
+    compiler = OriginalPrograms(
+        {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, root
+    )
+    try:
+        for m in (3, 19):
+            for file in (root / f"disasm/data/maps/entries/map{m:02d}/mapsetups").glob("*.asm"):
+                compiler.register_file(file.relative_to(root).as_posix())
+        by_id = {symbol.lower().replace("_", "-"): symbol for symbol in compiler.raw}
+        for event in events:
+            if event.get("Kind") != "program-instruction":
+                continue
+            if event.get("Detail") in ("LoadSceneMap", "TransferToMap", "ReturnBattleMap"):
+                check("new layout mutation class needs coverage", None)
+            if event.get("Detail") == "WriteFlag":
+                location = event.get("Program") or {}
+                symbol = by_id.get(location.get("Program"))
+                if symbol is None:
+                    check("source flag writer available", None)
+                    continue
+                program = compiler.compile(symbol)
+                instruction = compiler.programs[program]["instructions"][
+                    int(location["Instruction"])
+                ]
+                check(
+                    "source flag effect leaves selected layout/setup gates unchanged",
+                    instruction["op"] == "set-flag"
+                    and instruction["flag"] not in {501, 506, 507, 543, 609, 982},
+                )
+    except KeyError:
+        check("source mutator operand absent", None)
+    except (ValueError, IndexError, OSError):
+        check("source mutator resolution", False)
+
+    school_entities = {"entity-0"}
+    npc = 128
+    for operation in compiler.raw.get("ms_map3_Entities", {}).get("operations", []):
+        if operation["opcode"] not in ("msFixedEntity", "msWalkingEntity"):
+            continue
+        sprite = operation["operandText"].split(",")[3].strip()
+        if sprite.startswith("ALLY_"):
+            school_entities.add("entity-" + str(compiler.number(sprite)))
+        else:
+            school_entities.add("entity-" + str(npc))
+            npc += 1
+    sources = {
+        "house": "map-3",
+        "school": "map-3",
+        "castle-walk": "map-19",
+        "castle-rebuild": "map-19",
+    }
+    wanted = {}
+
+    def region(role, label, table, ordinal, state, roof):
+        copy = maps[sources[role]][table][ordinal]
+        wanted[role, label] = (copy["rect"], state, roof, copy)
+
+    for label in ("door-before", "door-opened", "door-repeat-read", "door-revisited"):
+        region("house", label, "doors", 0, "base" if label == "door-before" else "copy", 1)
+    for label in (
+        "roof-restored",
+        "roof-repeat-read",
+        "roof-cleared",
+        "roof-clear-repeat",
+        "roof-restored-again",
+    ):
+        clear = label in ("roof-cleared", "roof-clear-repeat")
+        region("house", label, "roofs", 0, "clear" if clear else "base", 1 if clear else 0)
+    for label in ("flag-off-load", "flag-off-repeat"):
+        region("house", label, "flags", 0, "base", 6)
+    for label in (
+        "school-door-before",
+        "school-door-open",
+        "school-door-preserved-away",
+        "school-door-retained",
+    ):
+        region(
+            "school",
+            label,
+            "doors",
+            5,
+            "base" if label.endswith("before") else "copy",
+            0 if label.endswith(("before", "retained")) else 10,
+        )
+    for label in (
+        "school-roof-before",
+        "school-roof-clear",
+        "school-preserved-away",
+        "school-preserved-return",
+        "school-roof-restored",
+        "school-roof-repeat",
+    ):
+        clear = label in ("school-roof-clear", "school-preserved-away", "school-preserved-return")
+        region("school", label, "roofs", 9, "clear" if clear else "base", 10 if clear else 0)
+    for role, names in (
+        (
+            "castle-walk",
+            (
+                ("castle-base", "base", 0),
+                ("castle-clear", "clear", 2),
+                ("castle-restore", "base", 0),
+            ),
+        ),
+        (
+            "castle-rebuild",
+            (("castle-initial-inside", "clear", 1), ("castle-rebuilt-inside", "clear", 1)),
+        ),
+    ):
+        copy = maps["map-19"]["roofs"][0]
+        x, y, w, h = copy["rect"]
+        for prefix, state, roof in names:
+            for offset in range(0, h, 6):
+                wanted[role, f"{prefix}-{y + offset}"] = (
+                    (x, y + offset, w, min(6, h - offset)),
+                    state,
+                    roof,
+                    copy,
+                )
+    # Only this accepted cohort's observed classes are admitted. Unvisited tables
+    # are source/history Inferred base, never established by sparse draw absence.
+    roof_hits, door_hits = set(), set()
+    for _, state in states:
+        m = state.get("map")
+        if m not in maps or not state.get("cell") or None in state["cell"][:2]:
+            continue
+        cell = tuple(state["cell"][:2])
+        for i, row in enumerate(maps[m]["roofs"]):
+            if row["trigger"] == cell:
+                roof_hits.add((m, i))
+        for i, row in enumerate(maps[m]["doors"]):
+            if row["trigger"] == cell:
+                door_hits.add((m, i))
+    known_roofs = {("map-3", 0), ("map-3", 9), *(("map-19", i) for i in range(6))}
+    known_doors = {("map-3", 0), ("map-3", 5)}
+    check("every reached roof class covered", None if roof_hits - known_roofs else True)
+    check("every reached door class covered", None if door_hits - known_doors else True)
+    for m, source in maps.items():
+        for table in ("doors", "roofs", "flags"):
+            for i, row in enumerate(source[table]):
+                result["coverage"].append(
+                    dict(
+                        map=m,
+                        table=table,
+                        ordinal=i + 1,
+                        rect=row["rect"],
+                        applicability="Inferred",
+                        disposition="controlled-class"
+                        if (m, i)
+                        in (
+                            known_doors
+                            if table == "doors"
+                            else known_roofs
+                            if table == "roofs"
+                            else {("map-3", 0), ("map-3", 1)}
+                        )
+                        else "unchanged source/history",
+                    )
+                )
+    groups = context.get("witnesses", [])
+    check("no unexpected witness role", all(g.get("role") in sources for g in groups))
+    seen, role_sessions, identities = set(), {}, {}
+    for group in groups:
+        role = group.get("role")
+        if role not in sources:
+            continue
+        samples = group.get("samples", [])
+        if role != "house":
+            starts = [s for s in samples if s.get("label") == "start"]
+            ends = [s for s in samples if s.get("label") == "case-end"]
+            check(
+                "controlled case boundaries", True if len(starts) == len(ends) == 1 else None, role
+            )
+            if starts and ends:
+                case_events = ends[0].get("events", [])
+                destinations = [
+                    e.get("Detail") for e in case_events if e.get("Kind") == "map-transferred"
+                ]
+                expected_destinations = {
+                    "school": ["map-3", "map-3"],
+                    "castle-walk": [],
+                    "castle-rebuild": ["map-20", "map-19"],
+                }[role]
+                check(
+                    "complete preserving/rebuild transfer lineage",
+                    False
+                    if len(destinations) > len(expected_destinations)
+                    or any(d not in expected_destinations for d in destinations)
+                    else None
+                    if len(destinations) < len(expected_destinations)
+                    else destinations == expected_destinations,
+                    role,
+                )
+                check(
+                    "no blocked local input",
+                    not any(e.get("Kind") == "movement-blocked" for e in case_events),
+                    role,
+                )
+                initial_state = starts[0].get("state", {})
+                check("controlled initial map", initial_state.get("map") == sources[role], role)
+                for s in samples:
+                    state = s.get("state")
+                    if state and s.get("label") == "ordinary-input":
+                        check(
+                            "ordinary input state continuity",
+                            state.get("sessionId")
+                            == initial_state.get("sessionId")
+                            == s.get("before", {}).get("sessionId"),
+                            role,
+                        )
+                        check(
+                            "ordinary input reached readiness",
+                            state.get("failure") is None
+                            and state.get("stop") == "PlayerInput"
+                            and state.get("wait") is None,
+                            role,
+                        )
+        initial = [s["state"] for s in samples if s.get("label", "").startswith("layout-start")]
+        for sample in samples:
+            if "layout" not in sample:
+                continue
+            label, layout = sample.get("label"), sample["layout"]
+            key = role, label
+            if key not in wanted:
+                check("unexpected region witness", False, label)
+                continue
+            check("unique class/state witness", key not in seen, label)
+            seen.add(key)
+            # Available source/resource contradictions survive an unrelated missing
+            # layout, roof, actor or use operand earlier in this same region.
+            for use in (layout.get("draw") or {}).get("uses", []):
+                try:
+                    block, tile = use["block"], use["tile"]
+                    source = maps[sources[role]]
+                    valid = (
+                        isinstance(block, int)
+                        and 0 <= block < len(source["blocks"])
+                        and (tile is None or isinstance(tile, int) and 0 <= tile < 9)
+                    )
+                    check("valid original block/tile operand", valid, label)
+                    if not valid:
+                        continue
+                    words = (
+                        source["blocks"][block] if tile is None else [source["blocks"][block][tile]]
+                    )
+                    check(
+                        "available actual source words",
+                        None if "words" not in use else use["words"] == words,
+                        label,
+                    )
+                    check(
+                        "available actual resource selector",
+                        None
+                        if "selector" not in use
+                        else use["selector"]
+                        == dict(kind="map-block", map=sources[role], block=block),
+                        label,
+                    )
+                    check(
+                        "actual resource identity present",
+                        True if use.get("resourceIdentity") else None,
+                        label,
+                    )
+                except (KeyError, TypeError):
+                    check("draw use source operand absent", None, label)
+            try:
+                rect_, state, roof, copy = wanted[key]
+                map_id, source = sources[role], maps[sources[role]]
+                x, y, w, h = rect_
+                check(
+                    "source-derived region",
+                    layout["map"] == map_id
+                    and tuple(layout[k] for k in ("x", "y", "width", "height")) == rect_,
+                    label,
+                )
+                expected = [
+                    0
+                    if state == "clear"
+                    else source["layout"][(copy["source"][1] + dy) * 64 + copy["source"][0] + dx]
+                    if state == "copy"
+                    else source["layout"][(y + dy) * 64 + x + dx]
+                    for dy in range(h)
+                    for dx in range(w)
+                ]
+                check(
+                    "working words equal source operation",
+                    None if "words" not in layout else layout["words"] == expected,
+                    label,
+                )
+                actual_roof = layout["roof"]
+                check(
+                    "busy roof record",
+                    actual_roof is None
+                    if roof == 0
+                    else actual_roof is not None and actual_roof["RecordOrdinal"] == roof,
+                    label,
+                )
+                if actual_roof is not None:
+                    roof_copy = source["roofs"][int(actual_roof["RecordOrdinal"]) - 1]
+                    rx, ry, rw, rh = roof_copy["rect"]
+                    check(
+                        "source saved rectangle",
+                        tuple(
+                            actual_roof[k]
+                            for k in ("DestinationX", "DestinationY", "Width", "Height")
+                        )
+                        == roof_copy["rect"],
+                        label,
+                    )
+                    expected_saved = [
+                        dict(x=cx, y=cy, word=source["layout"][cy * 64 + cx])
+                        for cy in range(y, y + h)
+                        for cx in range(x, x + w)
+                        if rx <= cx < rx + rw
+                        and ry <= cy < ry + rh
+                        and roof_copy["source"][1] >= 128
+                    ]
+                    check(
+                        "saved original words and full intersecting inventory",
+                        actual_roof["saved"] == expected_saved,
+                        label,
+                    )
+                check("flag-off operand", 506 not in layout["flags"], label)
+                draw = layout["draw"]
+                check("actual draw present", True if draw else None, label)
+                if not draw:
+                    continue
+                identity = tuple(
+                    layout[k]
+                    for k in (
+                        "sessionId",
+                        "map",
+                        "revision",
+                        "observationSequence",
+                        "x",
+                        "y",
+                        "width",
+                        "height",
+                    )
+                )
+                check(
+                    "same snapshot consumer",
+                    identity
+                    == tuple(
+                        draw[k]
+                        for k in (
+                            "sessionId",
+                            "map",
+                            "revision",
+                            "observationSequence",
+                            "x",
+                            "y",
+                            "width",
+                            "height",
+                        )
+                    ),
+                    label,
+                )
+                check(
+                    "controlled session distinct from history",
+                    layout["sessionId"] != session,
+                    label,
+                )
+                role_key = (role, 1 if label.startswith("flag-off") else 0)
+                if role_key in role_sessions:
+                    check(
+                        "controlled case session continuity",
+                        role_sessions[role_key] == layout["sessionId"],
+                        label,
+                    )
+                role_sessions[role_key] = layout["sessionId"]
+                prior = identities.get(layout["sessionId"])
+                check(
+                    "fresh draw request and execution",
+                    prior is None or draw["request"] > prior[0] and draw["drawSequence"] > prior[1],
+                    label,
+                )
+                identities[layout["sessionId"]] = (draw["request"], draw["drawSequence"])
+                check(
+                    "bounded complete draw channel",
+                    draw["limit"] == 4096
+                    and draw["overflow"] is False
+                    and len(draw["uses"]) <= 4096,
+                    label,
+                )
+                projected = sample
+                if role == "house":
+                    start = initial[1 if label.startswith("flag-off") else 0]
+                    p = dict(start["mapViewport"], scale=start["mapViewport"]["height"] / 192)
+                    check("legacy uninitialized view witness", start["logicalView"] is None, label)
+                    foreground = draw["foreground"]
+                    layers = [
+                        dict(
+                            name="background",
+                            x=foreground["x"],
+                            y=foreground["y"],
+                            offsetX=0,
+                            offsetY=0,
+                            highPriority=None,
+                            pass_=0,
+                        )
+                    ]
+                    if foreground["enabled"]:
+                        layers.append(
+                            dict(
+                                name="foreground",
+                                x=foreground["x"],
+                                y=foreground["y"],
+                                offsetX=foreground["offsetX"],
+                                offsetY=foreground["offsetY"],
+                                highPriority=None,
+                                pass_=4 + sum(e["Visible"] for e in start["entities"]),
+                            )
+                        )
+                    for layer in layers:
+                        layer["pass"] = layer.pop("pass_")
+                    projected = dict(
+                        sample,
+                        projection={
+                            **{k: p[k] for k in ("x", "y", "width", "height", "scale")},
+                            "layers": layers,
+                            "actors": [],
+                        },
+                    )
+                else:
+                    s, p = sample["state"], sample["projection"]
+                    if role == "school":
+                        actor_ids = [a.get("entity") for a in p["actors"]]
+                        check(
+                            "source school population independent of draw uses",
+                            None
+                            if set(actor_ids) < school_entities
+                            else set(actor_ids) == school_entities
+                            and len(actor_ids) == len(school_entities),
+                            label,
+                        )
+                        check(
+                            "school unjoined source population gates",
+                            not {1, 2, 602, 603}.intersection(layout["flags"]),
+                            label,
+                        )
+                    check(
+                        "input-ready snapshot without failure",
+                        s["failure"] is None and s["wait"] is None and s["stop"] == "PlayerInput",
+                        label,
+                    )
+                    check(
+                        "projection session/revision",
+                        all(
+                            p[k] == layout[k] == s[k]
+                            for k in ("sessionId", "map", "revision", "observationSequence")
+                        ),
+                        label,
+                    )
+                    check(
+                        "actual viewport",
+                        all(
+                            abs(p[k] - s["mapViewport"][k]) < 0.002
+                            for k in ("x", "y", "width", "height")
+                        ),
+                        label,
+                    )
+                    check(
+                        "source viewport ratio",
+                        abs(p["width"] - 320 * p["scale"]) < 0.002
+                        and abs(p["height"] - 192 * p["scale"]) < 0.002,
+                        label,
+                    )
+                    view = s["logicalView"]
+                    expected_layers = [
+                        ("background", False, 0, "BX", "BY"),
+                        ("foreground", False, 1, "AX", "AY"),
+                        ("backgroundHigh", True, 2, "BX", "BY"),
+                        ("foregroundHigh", True, 3, "AX", "AY"),
+                    ]
+                    area = view["Area"]
+                    foreground = any(
+                        area[a] != area[b]
+                        for a, b in (
+                            ("ForegroundX", "BackgroundX"),
+                            ("ForegroundY", "BackgroundY"),
+                            ("ParallaxAX", "ParallaxBX"),
+                            ("ParallaxAY", "ParallaxBY"),
+                        )
+                    )
+                    if not foreground:
+                        expected_layers = [
+                            row for row in expected_layers if row[0].startswith("background")
+                        ]
+                    check(
+                        "complete source plane passes",
+                        len(p["layers"]) == len(expected_layers),
+                        label,
+                    )
+                    for layer, want in zip(p["layers"], expected_layers, strict=False):
+                        name, high, pass_, ax, ay = want
+                        check(
+                            "source layer/pass/priority/origin",
+                            layer["name"] == name
+                            and layer["highPriority"] is high
+                            and layer["pass"] == pass_
+                            and layer["offsetX"] == layer["offsetY"] == 0
+                            and layer["x"] == view[ax]["Position"] / 16
+                            and layer["y"] == view[ay]["Position"] / 16,
+                            label,
+                        )
+                detail = _map_draw_cells(projected, expected, source, root)
+                check("complete executed coordinate/resource multiset", detail["value"], label)
+                result["witnesses"].append(dict(role=role, label=label, **detail))
+            except KeyError:
+                check("witness operand absent", None, label)
+            except (ValueError, IndexError, TypeError, OSError):
+                check("malformed or contradictory witness", False, label)
+        by_label = {s.get("label"): s["layout"] for s in samples if "layout" in s}
+        repeats = (
+            (
+                ("door-opened", "door-repeat-read"),
+                ("roof-restored", "roof-repeat-read"),
+                ("roof-cleared", "roof-clear-repeat"),
+                ("flag-off-load", "flag-off-repeat"),
+            )
+            if role == "house"
+            else (("school-roof-restored", "school-roof-repeat"),)
+            if role == "school"
+            else ()
+        )
+        for before, after in repeats:
+            a, b = by_label.get(before), by_label.get(after)
+            check(
+                "read-only redraw leaves snapshot unchanged",
+                None
+                if a is None or b is None
+                else False
+                if any(a[k] != b[k] for k in a.keys() & b.keys() - {"draw"})
+                else None
+                if a.keys() != b.keys()
+                else True,
+                after,
+            )
+    check(
+        "every required source class/state has actual witness",
+        True if set(wanted) <= seen else None,
+    )
+    result["missingWitnesses"] = [list(k) for k in sorted(set(wanted) - seen)]
+    return finish()
 
 
 def w1_consumer_binding(actual, context, source_root):
@@ -12799,6 +13794,7 @@ def compare_modern(
     w2_context=None,
     heal_context=None,
     w1_context=None,
+    map_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -12835,6 +13831,11 @@ def compare_modern(
     w1_consumers = w1_consumer_binding(actual, w1_context, text_source_root)
     w2_consumers = w2_consumer_binding(actual, w2_context, text_source_root)
     heal_consumers = heal_consumer_binding(actual, heal_context, text_source_root)
+    map_consumers = (
+        map_consumer_binding(actual, map_context, text_source_root)
+        if map_context is not None
+        else None
+    )
     assertions = _bounded_list()
     obligations = {}
 
@@ -14080,6 +15081,7 @@ def compare_modern(
         canonical_content,
         tileset_metadata,
         palette_metadata,
+        map_consumers,
     )
     for row in materials["checks"]:
         check(
@@ -15066,6 +16068,7 @@ def compare_resources(
     budget,
     *,
     source_only=False,
+    map_context=None,
 ):
     actual_path = (
         Path(actual_path).resolve() if Path(actual_path).is_absolute() else repo_path(actual_path)
@@ -15096,6 +16099,9 @@ def compare_resources(
         header = json.loads(stream.readline(_STREAM_RECORD_LIMIT + 1))
     require(header.get("channel") == "header", "scoped comparison requires sealed JSONL capture")
     actual = _read_capture(actual_path, scope, budget)
+    map_binding = (
+        map_consumer_binding(actual, map_context, source_root) if map_context is not None else None
+    )
     budget.checkpoint("source preparation and independent inventory", force=True)
     binding = reached_visual_materials(
         actual,
@@ -15105,6 +16111,7 @@ def compare_resources(
         tileset_metadata,
         palette_metadata,
         budget=budget,
+        map_binding=map_binding,
     )
     selected = ("map", "entity", "scene") if scope["family"] == "all" else (scope["family"],)
     values = [binding[family] for family in selected]
@@ -15142,6 +16149,7 @@ def main():
             "w1",
             "w2",
             "heal",
+            "map",
         ),
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
@@ -15160,6 +16168,11 @@ def main():
     )
     parser.add_argument(
         "--w1-context", type=Path, help="Independent selected W1 occurrence and NPC history indices"
+    )
+    parser.add_argument(
+        "--map-context",
+        type=Path,
+        help="Bounded mutable-map historical applicability and separate controlled witnesses",
     )
     parser.add_argument("--host-log", type=Path)
     parser.add_argument("--host-exit", type=int)
@@ -15212,6 +16225,57 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.map_context is None
+        or args.mode in ("map", "resources")
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "Map context applies only to map, resources or modern compare",
+    )
+    if args.map_context is not None:
+        args.map_context = (
+            args.map_context.resolve()
+            if args.map_context.is_absolute()
+            else repo_path(args.map_context)
+        )
+        require(args.map_context.stat().st_size <= 10 * 1024 * 1024, "Map context exceeds 10 MiB")
+    if args.mode == "map":
+        require(
+            args.actual is not None and args.map_context is not None,
+            "map requires selected historical actual and controlled witness context",
+        )
+        actual_path = args.actual.resolve() if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.map_context.stat().st_size <= 10 * 1024 * 1024,
+            "Map selection exceeds 10 MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "Map output must be fresh beneath this worktree's local/",
+        )
+        binding = map_consumer_binding(
+            read(actual_path), read(args.map_context), args.text_source_root
+        )
+        verdict_value = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-map-composed-consumer",
+            comparisonScope="retained-keyboard-A-mutable-map",
+            result=verdict_value,
+            milestonePass=False,
+            binding=binding,
+        )
+        require(
+            len(json.dumps(report).encode("utf-8")) <= 10 * 1024 * 1024, "Map report exceeds 10 MiB"
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(result=verdict_value, milestonePass=False, witnesses=len(binding["witnesses"]))
+            )
+        )
+        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
     require(
         args.w1_context is None
         or args.mode == "w1"
@@ -15531,6 +16595,7 @@ def main():
                 scope,
                 budget,
                 source_only=args.source_only,
+                map_context=read(args.map_context) if args.map_context else None,
             )
             provisional = write(args.output, result, resource_budget=budget, defer_publication=True)
             # Reopen the detached bundle while its entry point is still provisional.
@@ -15658,6 +16723,7 @@ def main():
                 read(args.w2_context) if args.w2_context else None,
                 read(args.heal_context) if args.heal_context else None,
                 read(args.w1_context) if args.w1_context else None,
+                read(args.map_context) if args.map_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
