@@ -7253,6 +7253,28 @@ def w1_consumer_binding(actual, context, source_root):
             for e in events
             if str(e.get("Kind", "")).startswith("rng-") and e.get("Kind") != "rng-text-w1"
         ]
+        # Gate omission cannot hide an independently impossible observed draw.
+        # Check its known operation/range/arithmetic even when its admission or
+        # incoming service-chain seed still lacks an operand.
+        for observed_draw in observed_draws:
+            range_ = {"rng-portrait-blink": 120, "rng-portrait-mouth": 5}.get(
+                observed_draw.get("Kind")
+            )
+            check("known W1 service RNG operation", range_ is not None, ordinal)
+            if range_ is not None:
+                draw_seed, draw_value = random(observed_draw.get("Before"), range_)
+                check(
+                    "available service RNG arithmetic",
+                    match(
+                        dict(
+                            RandomRange=range_,
+                            After=draw_seed if draw_seed is not None else absent,
+                            RandomValue=draw_value if draw_value is not None else absent,
+                        ),
+                        observed_draw,
+                    ),
+                    ordinal,
+                )
         expected_kinds = [e["Kind"] for e in portrait_draws]
         observed_kinds = [e["Kind"] for e in observed_draws]
         service_gates_known = (
