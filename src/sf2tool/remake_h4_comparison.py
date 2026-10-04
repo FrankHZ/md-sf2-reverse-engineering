@@ -10342,7 +10342,10 @@ def compare_resources(
         actualObservations=dict(reachedVisualMaterialBinding=binding),
         captureIntegrity=actual["captureIntegrity"],
         provenance=dict(
-            capture=str(actual_path.relative_to(repo_path("."))), rawCaptureEmbedded=False
+            capture=str(actual_path.relative_to(repo_path(".")))
+            if actual_path.is_relative_to(repo_path("."))
+            else str(actual_path),
+            rawCaptureEmbedded=False,
         ),
         resources=budget.receipt(),
     )
@@ -10395,9 +10398,7 @@ def main():
     parser.add_argument("--expected-asset-commit")
     parser.add_argument("--expected-asset-tree")
     parser.add_argument("--expected-asset-manifest-sha256")
-    parser.add_argument(
-        "--resource-family", choices=("all", "map", "entity", "scene"), default="all"
-    )
+    parser.add_argument("--resource-family", choices=("all", "map", "entity", "scene"))
     parser.add_argument("--session-id")
     parser.add_argument("--visit", type=int)
     parser.add_argument("--occurrence", type=int, help="Exact logical observationSequence")
@@ -10426,7 +10427,8 @@ def main():
         args.mode == "resources"
         or not any(
             (
-                args.session_id,
+                args.resource_family is not None,
+                args.session_id is not None,
                 args.visit is not None,
                 args.occurrence is not None,
                 args.source_only,
@@ -10456,7 +10458,7 @@ def main():
         os.environ["TEMP"] = os.environ["TMP"] = str(temporary)
         actual_path = args.actual if args.actual.is_absolute() else repo_path(args.actual)
         scope = dict(
-            family=args.resource_family,
+            family=args.resource_family or "all",
             sessionId=args.session_id,
             visit=args.visit,
             observationSequence=args.occurrence,
@@ -10465,7 +10467,7 @@ def main():
             args.output.parent,
             actual_path.stat().st_size,
             args.source_only_private_bytes,
-            selected=args.resource_family != "all"
+            selected=scope["family"] != "all"
             or any(scope[key] is not None for key in ("sessionId", "visit", "observationSequence")),
         )
         try:
