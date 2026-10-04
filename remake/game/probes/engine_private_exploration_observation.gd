@@ -7,6 +7,135 @@ var view: Node
 var case_name := OS.get_environment("SF2_PRIVATE_EXPLORATION_CASE")
 var door_events: Array = []
 var fade_events: Array = []
+var layout_plan: Dictionary
+
+func _same_words(actual: Array, expected: Array) -> bool:
+    if actual.size() != expected.size(): return false
+    for index in range(actual.size()):
+        # JSON numbers and direct CLR dictionaries use different Variant numeric types.
+        if float(actual[index]) != float(expected[index]): return false
+    return true
+
+func _layout_read(label: String, rect: Array, expected: Array = [], require_draw := true) -> Dictionary:
+    var request: int = view.call("ObserveLayoutRegion", rect[0], rect[1], rect[2], rect[3])
+    var state: Dictionary = {}
+    for tick in range(12):
+        view.queue_redraw()
+        await process_frame
+        state = view.call("ReadLayoutRegion", rect[0], rect[1], rect[2], rect[3])
+        if state.draw != null and state.draw.request == request and state.draw.revision == state.revision: break
+    samples.append({"label":label,"layout":state})
+    _check(state.draw != null, label + ": actual draw is available")
+    if state.draw == null: return state
+    var draw: Dictionary = state.draw
+    _check(draw.request == request and draw.sessionId == state.sessionId and draw.map == state.map and draw.revision == state.revision and draw.observationSequence == state.observationSequence,
+        label + ": draw matches request and exact live snapshot")
+    _check(not draw.overflow, label + ": bounded draw did not overflow")
+    if not expected.is_empty(): _check(_same_words(state.words, expected), label + ": independent source operation matches working words")
+    var basis: Array = expected if not expected.is_empty() else state.words
+    for use in draw.uses:
+        var index := int(use.sourceY - rect[1]) * int(rect[2]) + int(use.sourceX - rect[0])
+        _check(index >= 0 and index < basis.size(), label + ": used cell is in requested rectangle")
+        if index < 0 or index >= basis.size(): continue
+        var block := int(basis[index]) & 1023
+        _check(use.block == block and use.selector.block == block and use.selector.map == state.map and use.resourceIdentity != "", label + ": actual texture uses independently selected block")
+        var words: Array = layout_plan.blocks[block] if use.tile == null else [layout_plan.blocks[block][int(use.tile)]]
+        _check(_same_words(use.words, words) and use.width > 0 and use.height > 0 and use.textureWidth > 0 and use.textureHeight > 0, label + ": drawn tile words and clipped region")
+    _check(not require_draw or not draw.uses.is_empty(), label + ": visible changed region has actual draw use")
+    return state
+
+func _layout_stable(label: String, rect: Array, before: Dictionary, expected: Array, require_draw := true) -> Dictionary:
+    var after := await _layout_read(label, rect, expected, require_draw)
+    _check(after.sessionId == before.sessionId and after.revision == before.revision and after.observationSequence == before.observationSequence and after.words == before.words,
+        label + ": repeat read and redraw do not mutate state")
+    if after.draw == null or before.draw == null: return after
+    _check(after.draw.request != before.draw.request and after.draw.drawSequence > before.draw.drawSequence, label + ": fresh draw cannot reuse old request")
+    return after
+
+func _layout_case() -> void:
+    layout_plan = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_LAYOUT_OPERANDS")))
+    var door_rect := [4, 8, 1, 1]
+    var roof_rect := [2, 32, 7, 8]
+    var flag_rect := [28, 22, 1, 2]
+    var flag_pre: Array = []
+    var flag_source: Array = []
+    # Each host reads a declared startup file through the real GameRoot. No live state setter.
+    var live_start := OS.get_environment("SF2_LAYOUT_CONTROLLED_START")
+    _check(OS.get_cmdline_user_args().has(live_start), "controlled input is the actual startup argument")
+    var selected := OS.get_environment("SF2_LAYOUT_CASES").split(",", false)
+    for index in range(layout_plan.starts.size()):
+        if not selected.is_empty() and not str(index) in selected: continue
+        var started := Time.get_ticks_msec()
+        var previous_bytes := JSON.stringify(samples).to_utf8_buffer().size()
+        var file := FileAccess.open(live_start, FileAccess.WRITE)
+        file.store_string(FileAccess.get_file_as_string(layout_plan.starts[index]))
+        file.close()
+        host = (load("res://Main.tscn") as PackedScene).instantiate()
+        root.add_child(host)
+        await process_frame
+        var initial := await _door_settle()
+        samples.append({"label":"layout-start-" + str(index), "state":initial})
+        _check(initial.map == "map-3" and initial.failure == null, "local layout controlled start succeeds")
+        if not _save(false): return
+        if initial.failure != null or not view.has_method("ObserveLayoutRegion"):
+            host.queue_free()
+            await process_frame
+            break
+        if index == 0:
+            var source: Dictionary = view.call("ReadLayoutRegion", 62, 0, 1, 1)
+            await _layout_read("door-before", door_rect)
+            var hidden: Dictionary = view.call("ReadLayoutRegion", 2, 32, 7, 8)
+            _check(hidden.roof != null, "inside-house controlled load retains saved roof")
+            var restored: Array = layout_plan.roofBaseWords
+            _check(_same_words(hidden.roof.saved.map(func(cell): return cell.word), restored), "saved roof matches independent source pre-load words")
+            var clear: Array = []; clear.resize(56); clear.fill(0)
+            _check(hidden.words == clear, "source roof-on-load clear retains exact saved pre-state")
+            await _press(KEY_DOWN)
+            await _door_settle()
+            var opened := await _layout_read("door-opened", door_rect, source.words)
+            await _layout_stable("door-repeat-read", door_rect, opened, source.words)
+            await _press(KEY_DOWN)
+            await _door_settle()
+            var roof := await _layout_read("roof-restored", roof_rect, restored)
+            await _layout_stable("roof-repeat-read", roof_rect, roof, restored)
+            await _press(KEY_UP)
+            await _door_settle()
+            var cleared := await _layout_read("roof-cleared", roof_rect, clear, false)
+            if cleared.draw == null:
+                _finish()
+                return
+            _check(cleared.draw.uses.is_empty(), "cleared overlay cells issue no texture draw")
+            var plane: Dictionary = cleared.draw.foreground
+            var left := floori(plane.x / 24) + int(plane.offsetX)
+            var top := floori(plane.y / 24) + int(plane.offsetY)
+            _check(plane.enabled and left < 9 and left + 14 > 2 and top < 40 and top + 9 > 32,
+                "cleared roof still intersects the actual foreground viewport")
+            _check(cleared.roof.saved == hidden.roof.saved, "roof reactivation saves the restored words")
+            await _layout_stable("roof-clear-repeat", roof_rect, cleared, clear, false)
+            await _layout_read("door-revisited", door_rect, source.words)
+            await _press(KEY_DOWN)
+            await _door_settle()
+            await _layout_read("roof-restored-again", roof_rect, restored)
+        elif index == 1:
+            var before := await _layout_read("flag-off-load", flag_rect)
+            flag_pre = before.words
+            var source: Dictionary = view.call("ReadLayoutRegion", 23, 23, 1, 2)
+            flag_source = source.words
+            await _layout_stable("flag-off-repeat", flag_rect, before, flag_pre)
+        else:
+            _check(flag_pre != flag_source, "flag copy changes its destination pre-state")
+            var after := await _layout_read("flag-on-load", flag_rect, flag_source)
+            _check(506.0 in after.flags, "flag506 selected at the controlled load")
+            await _layout_stable("flag-on-repeat", flag_rect, after, flag_source)
+        _check(Time.get_ticks_msec() - started < 90000, "each local case stays within 90 seconds")
+        _check(JSON.stringify(samples).to_utf8_buffer().size() - previous_bytes <= 10 * 1024 * 1024, "case output fits 10MiB")
+        if not _save(false): return
+        view.call("StopLayoutObservation")
+        host.queue_free()
+        await process_frame
+        await process_frame
+        if not failures.is_empty(): break
+    _finish()
 
 func _fade_result(payload: String) -> void:
     fade_events.append_array(JSON.parse_string(payload).observations)
@@ -131,6 +260,9 @@ func _press(key: Key) -> void:
     await process_frame
 
 func _run() -> void:
+    if case_name == "map-layout":
+        await _layout_case()
+        return
     if case_name == "sound-fade":
         # An explicitly supplied authored host reuses admitted PCM; no natural-route claim.
         host = load(OS.get_environment("SF2_FADE_FIXTURE_HOST")).new()
@@ -185,13 +317,17 @@ func _run() -> void:
             _check(false, "Unknown external reference case")
     _finish()
 
-func _finish() -> void:
+func _save(complete: bool) -> bool:
     var output := OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT")
     var file := FileAccess.open(output, FileAccess.WRITE)
     if file == null:
         push_error("External observer requires a writable output path")
         quit(2)
-        return
-    file.store_string(JSON.stringify({"passed": failures.is_empty(), "failures": failures, "samples": samples}, "  "))
+        return false
+    file.store_string(JSON.stringify({"complete": complete, "passed": complete and failures.is_empty(), "failures": failures, "samples": samples}, "  "))
     file.close()
+    return true
+
+func _finish() -> void:
+    if not _save(true): return
     quit(0 if failures.is_empty() else 1)

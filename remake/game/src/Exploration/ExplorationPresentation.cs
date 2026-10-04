@@ -30,6 +30,21 @@ internal sealed class ExplorationPresentation : IDisposable
     private WaitToken? _cue;
     private string? _cueResource;
     private long _drawSequence;
+    private Rect2I? _layoutRegion;
+    private int _layoutRequest;
+    private long _layoutDraw;
+    private List<object>? _layoutUses;
+    private bool _layoutOverflow;
+    private const int LayoutUseLimit = 4096;
+    internal object? LayoutDrawObservation { get; private set; }
+
+    internal int ObserveLayoutRegion(Rect2I? region)
+    {
+        _layoutRegion = region;
+        _layoutUses = null;
+        LayoutDrawObservation = null;
+        return ++_layoutRequest;
+    }
     private double _cueAge;
     private float _fadeStart;
     private EntityRef? _gesture;
@@ -289,6 +304,12 @@ internal sealed class ExplorationPresentation : IDisposable
 
     internal bool Draw(ExplorationState world, SessionSnapshot current)
     {
+        if (_layoutRegion is not null)
+        {
+            _layoutUses = [];
+            _layoutOverflow = false;
+            LayoutDrawObservation = null;
+        }
         var story = current.Story;
         if (_visuals is null) return false;
         try
@@ -496,6 +517,14 @@ internal sealed class ExplorationPresentation : IDisposable
             if (Streaming)
                 CaptureResources(world, current, backgroundDraw, foregroundDraw, backgroundHigh, foregroundHigh,
                     occlusionDraws!, drawnActors!, portraitIdentity, portraitExpected, portraitUse);
+            if (_layoutRegion is { } region)
+                LayoutDrawObservation = new { request = _layoutRequest, drawSequence = ++_layoutDraw,
+                    sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
+                    map = world.Map.Value, x = region.Position.X, y = region.Position.Y,
+                    width = region.Size.X, height = region.Size.Y, overflow = _layoutOverflow, limit = LayoutUseLimit,
+                    foreground = new { x = foreground.X, y = foreground.Y, offsetX = view is null ? offset.X : 0,
+                        offsetY = view is null ? offset.Y : 0, enabled = hasForeground, width = ViewWidth, height = ViewHeight },
+                    uses = _layoutUses };
             return true;
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
@@ -602,6 +631,19 @@ internal sealed class ExplorationPresentation : IDisposable
                             required!.Add(new(world.Map.Value, block, tile, word, sourceX, sourceY));
                         _owner.DrawTextureRectRegion(texture, covered,
                             new(tileOffset + (covered.Position - region.Position) / _scale, covered.Size / _scale));
+                        if (_layoutRegion is { } requested && requested.HasPoint(new(sourceX, sourceY)))
+                        {
+                            if (_layoutUses!.Count >= LayoutUseLimit) _layoutOverflow = true;
+                            else _layoutUses.Add(new { sourceX, sourceY, block, tile = highPriority is null ? (int?)null : tile,
+                                words = highPriority is null ? visual.Blocks[block].Select(value => (int)value).ToArray() : [word],
+                                resourceIdentity = texture.GetInstanceId().ToString(), selector = _resourceSelectors[texture],
+                                pass, overlay, layer = actor is not null ? "occlusion" : overlay ? "foreground" : "background",
+                                highPriority, subject = actor?.Entity.Value, offsetX = offset.X, offsetY = offset.Y,
+                                x = covered.Position.X, y = covered.Position.Y, width = covered.Size.X, height = covered.Size.Y,
+                                textureX = tileOffset.X + (covered.Position.X - region.Position.X) / _scale,
+                                textureY = tileOffset.Y + (covered.Position.Y - region.Position.Y) / _scale,
+                                textureWidth = covered.Size.X / _scale, textureHeight = covered.Size.Y / _scale });
+                        }
                         draws++;
                         if (used?.Add((block, tile, word)) == true)
                             resources!.Add(new(_resourceSelectors[texture], texture.GetInstanceId().ToString(), block, tile, word));
