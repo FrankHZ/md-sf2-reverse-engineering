@@ -6059,6 +6059,1572 @@ def heal_consumer_binding(actual, context, source_root):
     return result
 
 
+_W1_COHORT = (
+    ("cs-5145c", 12, 483),
+    ("byte-50f6a", 3, 481),
+    ("map3-zoneevent7", 5, 513),
+    ("byte-51052", 1, 501),
+    ("byte-50e96", 8, 516),
+    ("cs-5149a", 15, 519),
+    ("cs-5149a", 23, 520),
+    ("cs-5149a", 42, 521),
+    ("cs-5149a", 48, 522),
+    ("cs-5149a", 54, 523),
+    ("cs-5149a", 60, 524),
+    ("cs-5149a", 79, 525),
+    ("cs-5149a", 97, 527),
+    ("cs-5149a", 107, 528),
+    ("cs-5149a", 113, 529),
+    ("cs-5149a", 119, 530),
+    ("cs-5149a", 127, 531),
+    ("cs-51614", 3, 535),
+    ("cs-51614", 10, 536),
+    ("cs-51652", 7, 537),
+    ("cs-51652", 15, 538),
+    ("cs-51652", 21, 539),
+    ("cs-51652", 27, 540),
+    ("cs-51652", 33, 541),
+    ("cs-51652", 39, 542),
+    ("cs-53996", 16, 2176),
+    ("cs-53996", 22, 2177),
+    ("cs-53996", 30, 2178),
+    ("cs-53996", 36, 2179),
+    ("cs-53996", 46, 2180),
+    ("cs-53996", 53, 2181),
+    ("cs-53996", 70, 2182),
+    ("cs-53996", 84, 2183),
+    ("cs-53996", 91, 2184),
+    ("cs-53996", 100, 2185),
+    ("cs-53996", 108, 2186),
+    ("cs-53996", 116, 2187),
+    ("cs-53996", 124, 2188),
+    ("cs-53996", 132, 2189),
+    ("cs-53996", 135, 2190),
+    ("cs-53996", 141, 2191),
+    ("cs-53996", 151, 2192),
+    ("cs-53996", 158, 2193),
+    ("cs-53996", 167, 2194),
+    ("cs-53996", 175, 2195),
+    ("cs-53996", 182, 2196),
+    ("cs-52f0c", 3, 575),
+    ("cs-52f0c", 8, 576),
+    ("cs-52f24", 3, 577),
+    ("cs-52f40", 3, 578),
+    ("byte-53ec8", 1, 579),
+    ("byte-53ec8", 1, 579),
+    ("bbcs-01", 20, 2293),
+    ("bbcs-01", 31, 2294),
+    ("bbcs-01", 39, 2295),
+    ("bbcs-01", 46, 2296),
+    ("bbcs-01", 72, 2297),
+    ("bbcs-01", 79, 2298),
+    ("bbcs-01", 96, 2300),
+    ("bbcs-01", 105, 2301),
+    ("bbcs-01", 113, 2302),
+    ("bbcs-01", 150, 2304),
+    ("abcs-battle01", 14, 2305),
+    ("abcs-battle01", 46, 2306),
+    ("abcs-battle01", 56, 2307),
+    ("abcs-battle01", 75, 2308),
+    ("abcs-battle01", 83, 2309),
+    ("abcs-battle01", 96, 2310),
+)
+_W1_SOURCE_FILES = (
+    "data/battles/entries/battle01/cs_afterbattle.asm",
+    "data/battles/entries/battle01/cs_beforebattle.asm",
+    "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+    "data/maps/entries/map03/mapsetups/s3_zoneevents.asm",
+    "data/maps/entries/map03/mapsetups/s6_initfunction.asm",
+    "data/maps/entries/map03/mapsetups/scripts_1.asm",
+    "data/maps/entries/map19/mapsetups/s2_entityevents.asm",
+    "data/maps/entries/map20/mapsetups/s6_initfunction.asm",
+    "data/maps/entries/map21/mapsetups/s2_entityevents_506.asm",
+)
+_W1_SOURCE_SYMBOLS = (
+    "Map3_DefaultEntityEvent",
+    "Map3_DefaultZoneEvent",
+    "Map3_EntityEvent15",
+    "Map3_ZoneEvent4",
+    "Map3_ZoneEvent6",
+    "Map3_ZoneEvent7",
+    "Map3_ZoneEvent8",
+    "abcs_battle01",
+    "bbcs_01",
+    "byte_50E2C",
+    "byte_50E32",
+    "byte_50E96",
+    "byte_50F6A",
+    "byte_51052",
+    "byte_51390",
+    "byte_513A8",
+    "byte_53EC8",
+    "cs_513A0",
+    "cs_513BA",
+    "cs_513D6",
+    "cs_51454",
+    "cs_5145C",
+    "cs_5148C",
+    "cs_5149A",
+    "cs_51614",
+    "cs_51650",
+    "cs_51652",
+    "cs_52F0C",
+    "cs_52F24",
+    "cs_52F40",
+    "cs_53996",
+    "cs_53B60",
+    "cs_53EF4",
+    "loc_50F82",
+    "loc_50F88",
+    "ms_map3_InitFunction",
+    "return_50E42",
+    "return_50E64",
+    "return_50ED0",
+    "return_50F96",
+    "return_513B8",
+    "return_53EDC",
+)
+
+
+def w1_consumer_binding(actual, context, source_root):
+    """Bind the retained W1 cohort to source rules, whole inputs and live consumers.
+
+    Context selects identities only. Source supplies token/continuation and RNG
+    rules; actual snapshots supply operands. Missing evidence never supplies a
+    default gate, and a contradiction dominates an unrelated missing operand.
+    """
+    result = dict(
+        value=None,
+        checks=[],
+        occurrences=[],
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            owner="docs/design/contracts/dialogue-system.md",
+            section="reached-w1-consumer-binding",
+        ),
+        unknown=[
+            "original live service bytes/timing beyond the named text483 accepting read",
+            "intermediate portrait clocks/typewriting restoration before a source-bound close",
+            "branch-flag truth outside the W1 resume boundary",
+        ],
+    )
+    absent = object()
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(expected, observed=absent):
+        if expected is absent or observed is absent or observed is None and expected is not None:
+            return None
+        if isinstance(expected, dict):
+            if not isinstance(observed, dict):
+                return False
+            return merge([match(v, observed.get(k, absent)) for k, v in expected.items()])
+        if isinstance(expected, bool):
+            return type(observed) is bool and expected == observed
+        return expected == observed
+
+    def check(name, value, ordinal=None):
+        result["checks"].append(dict(name=name, value=value, ordinal=ordinal))
+
+    def one(name, candidates, ordinal=None):
+        check(name, None if not candidates else len(candidates) == 1, ordinal)
+        return candidates[0] if candidates else {}
+
+    def selected(channel, positions, container=actual):
+        rows = container.get(channel, [])
+        if not rows:
+            return []
+        if "_index" in rows[0]:
+            return rows
+        return [
+            dict(rows[int(i)], _index=int(i))
+            for i in sorted(set(positions))
+            if isinstance(i, (int, float)) and 0 <= i < len(rows)
+        ]
+
+    def rows_by_index(rows, label):
+        out = {}
+        for row in rows:
+            i = row.get("_index")
+            check(label + " unique original index", i not in out)
+            out[i] = row
+        return out
+
+    context = context or {}
+    supplement = context.get("actualSupplement") or {}
+    for key in ("outcomeRecords", "w1NpcHistory", "w1NpcWorld", "w1OutcomeFinal"):
+        if key in actual and key in supplement:
+            check("duplicate actual supplement agrees: " + key, actual[key] == supplement[key])
+    check(
+        "independent selected scope", match("retained-keyboard-A-w1", context.get("scope", absent))
+    )
+    session = context.get("sessionId")
+    check("independent session", True if isinstance(session, str) and session else None)
+    owners, polls = context.get("occurrences", []), context.get("polls", [])
+    check(
+        "independent occurrence inventory",
+        None
+        if not owners
+        else [
+            (
+                o.get("cursor", {}).get("Program"),
+                o.get("cursor", {}).get("Instruction"),
+                o.get("text"),
+            )
+            for o in owners
+        ]
+        == list(_W1_COHORT),
+    )
+    check(
+        "selected poll inventory",
+        None
+        if not polls
+        else len(polls) == 120 and sum(p.get("accepting") is True for p in polls) == 68,
+    )
+    check("unique occurrence tokens", len({o.get("token") for o in owners}) == len(owners))
+    check(
+        "unique poll edges",
+        len({p.get("resultIndex") for p in polls}) == len(polls)
+        and len({p.get("inputIndex") for p in polls}) == len(polls),
+    )
+    for owner in owners:
+        check("occurrence session identity", match(session, owner.get("sessionId", absent)))
+        owner_polls = [p for p in polls if p.get("token") == owner.get("token")]
+        check(
+            "one acceptance per selected token",
+            None if not owner_polls else sum(p.get("accepting") is True for p in owner_polls) == 1,
+        )
+    indices = context.get("indices", {})
+    inputs = rows_by_index(selected("inputRecords", indices.get("inputRecords", [])), "input")
+    records = rows_by_index(selected("warpRecords", indices.get("warpRecords", [])), "result")
+    samples = rows_by_index(selected("samples", indices.get("samples", [])), "sample")
+    outcomes = rows_by_index(
+        selected(
+            "outcomeRecords",
+            context.get("outcomeIndices", []),
+            actual if "outcomeRecords" in actual else supplement,
+        ),
+        "outcome",
+    )
+    states = {("samples", i): r.get("state", {}) for i, r in samples.items()}
+    states.update({("outcomeRecords", i): r.get("state", {}) for i, r in outcomes.items()})
+    for channel, indexed_rows in (
+        ("samples", samples),
+        ("warpRecords", records),
+        ("inputRecords", inputs),
+    ):
+        expected = set(indices.get(channel, []))
+        check(
+            channel + " selection coverage",
+            merge(
+                [
+                    None if not expected else not (set(indexed_rows) - expected),
+                    True if expected and expected <= set(indexed_rows) else None,
+                ]
+            ),
+        )
+    w1_operations = {"rng-text-w1", "text-w1-wait", "text-w1-input", "text-w1-accepted"}
+    w2_operations = {"rng-text-w2", "text-w2-wait", "text-w2-input", "text-w2-accepted"}
+    reached = [
+        i
+        for i, row in records.items()
+        if any(
+            e.get("Kind") in w1_operations
+            for e in (row.get("result") or {}).get("observations", [])
+        )
+    ]
+    wanted = {p.get("resultIndex") for p in polls}
+    check(
+        "complete candidate poll coverage",
+        merge(
+            [
+                None if not wanted else not (set(reached) - wanted),
+                True if wanted and set(reached) == wanted else None,
+            ]
+        ),
+    )
+    # A whole selected Submit binds its result envelope to its own state. This
+    # also covers reveal/typewriting/choice rows outside the inventoried W1 polls.
+    # Use an adjacent original result or the physical input's before state for
+    # the lower bound; a gap in the selection is not a fabricated predecessor.
+    input_starts = {}
+    for delivered in inputs.values():
+        if delivered.get("resultStart") is not None:
+            input_starts.setdefault(delivered["resultStart"], []).append(delivered)
+    for index_, selected_record in records.items():
+        selected_result = selected_record.get("result") or {}
+        selected_state = selected_record.get("state") or {}
+        ordinal = selected_record.get("inputOrdinal")
+        check(
+            "selected Submit result/state envelope",
+            match(
+                dict(
+                    boundary="submit",
+                    sessionId=session,
+                    failure=None,
+                    **{
+                        key: selected_state.get(key, absent)
+                        for key in ("revision", "observationSequence", "mode")
+                    },
+                ),
+                selected_result,
+            ),
+            ordinal,
+        )
+        check(
+            "selected Submit state session/failure",
+            match(dict(sessionId=session, failure=None), selected_state),
+            ordinal,
+        )
+        selected_events = selected_result.get("observations")
+        check(
+            "selected Submit observations present",
+            True if selected_events is not None else None,
+            ordinal,
+        )
+        selected_kinds = {event.get("Kind") for event in selected_events or []}
+        if index_ not in wanted and "text-seed-copy" in selected_kinds:
+            # The copy operation is shared by W1/W2. A retained W2 operation
+            # supplies its attribution; reveal/typewriting/choice is not a poll.
+            check(
+                "shared text copy has a selected poll owner",
+                True
+                if selected_kinds & w2_operations
+                else False
+                if selected_kinds
+                & {
+                    "text-revealed",
+                    "text-mandatory-service",
+                    "text-work-advanced",
+                    "choice-opened",
+                    "choice-sound",
+                    "choice-window-moving",
+                }
+                else None,
+                ordinal,
+            )
+        predecessors = []
+        if index_ - 1 in records:
+            predecessors.append(records[index_ - 1].get("state") or {})
+        predecessors.extend(
+            delivered.get("before") or {}
+            for delivered in input_starts.get(index_, [])
+            if delivered.get("inputOrdinal", delivered.get("ordinal")) == ordinal
+        )
+        for event_key, state_key in (("Revision", "revision"), ("Sequence", "observationSequence")):
+            upper = selected_result.get(state_key)
+            values = [event.get(event_key) for event in selected_events or []]
+            available = [value for value in values if value is not None]
+            checks = [
+                True if len(available) == len(values) else None,
+                available == sorted(set(available)),
+                None
+                if upper is None
+                else upper >= 0 and all(0 < value <= upper for value in available),
+            ]
+            for predecessor in predecessors:
+                lower = predecessor.get(state_key)
+                checks.append(
+                    None
+                    if lower is None or upper is None
+                    else lower <= upper and all(lower < value for value in available)
+                )
+            check("selected Submit event " + event_key + " envelope", merge(checks), ordinal)
+    programs, texts, names, compiler, layout, mutable = {}, {}, [], None, None, []
+    portrait_ids = {}
+    try:
+        root = Path(source_root) if source_root is not None else None
+        if root is not None:
+            root = root.resolve() if root.is_absolute() else repo_path(root)
+        if root is None:
+            raise ValueError("source unavailable")
+        pin = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        clean = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+        ).returncode
+        check("pinned original source", pin == UPSTREAM and clean == 0)
+        if pin == UPSTREAM and clean == 0:
+            from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
+            from sf2tool.remake_exploration_content import OriginalPrograms
+
+            compiler = OriginalPrograms(
+                {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, root
+            )
+            for relative in _W1_SOURCE_FILES:
+                compiler.register_file("disasm/" + relative)
+            for symbol in _W1_SOURCE_SYMBOLS:
+                compiler.compile(symbol)
+            programs = {p["id"]: p for p in compiler.programs.values()}
+            sprite = None
+            for row in compiler.source_operations(
+                "disasm/data/spritedialogproperties.asm", "table_MapspriteDialogueProperties"
+            ):
+                if row["opcode"] == "mapsprite":
+                    sprite = compiler.number("MAPSPRITE_" + row["operandText"])
+                elif row["opcode"] == "portrait" and sprite is not None:
+                    portrait_ids[sprite] = compiler.number("PORTRAIT_" + row["operandText"])
+                    if portrait_ids[sprite] >= 128:
+                        portrait_ids[sprite] -= 256
+            script = (root / "disasm/data/scripting/text/gamescript.txt").read_text(
+                encoding="utf-8"
+            )
+            texts = {
+                int(line[:4], 16): line[5:]
+                for line in script.splitlines()
+                if re.match(r"^[0-9A-Fa-f]{4}=", line)
+            }
+            names = re.findall(
+                r'"([^"]*)"',
+                (root / "disasm/data/stats/allies/allynames.asm").read_text(encoding="utf-8"),
+            )
+            folder = root / "disasm/data/maps/entries/map03"
+            blocks = decode_map_blocks((folder / "0-blocks.bin").read_bytes())[0]
+            layout = decode_map_layout((folder / "1-layout.bin").read_bytes(), len(blocks) // 9)[0]
+            for file, macro in (
+                ("3-flag-events.asm", "fbc"),
+                ("4-step-events.asm", "sbc"),
+                ("5-roof-events.asm", "slbc"),
+            ):
+                source = (folder / file).read_text(encoding="utf-8")
+                sizes = re.findall(rf"{macro}Size\s+(\d+),\s*(\d+)", source)
+                destinations = re.findall(rf"{macro}Dest\s+(\d+),\s*(\d+)", source)
+                mutable.extend(
+                    tuple(map(int, (*d, *s))) for d, s in zip(destinations, sizes, strict=True)
+                )
+    except (OSError, ValueError, subprocess.SubprocessError):
+        check("original operands available", None)
+
+    # The bounded history contains all motion/replacement producers through the
+    # second NPC consumer. Independent indices keep omission distinct from no write.
+    history = actual.get("w1NpcHistory", supplement.get("w1NpcHistory")) or {}
+    history_rows = rows_by_index(history.get("warpRecords", []), "NPC history")
+    history_indices = set(context.get("npcHistoryIndices", []))
+    check(
+        "NPC history coverage",
+        merge(
+            [
+                not (set(history_rows) - history_indices),
+                True if history_indices and history_indices <= set(history_rows) else None,
+            ]
+        ),
+    )
+    world = actual.get("w1NpcWorld", supplement.get("w1NpcWorld")) or {}
+    check(
+        "historical world provenance",
+        match(dict(commit=UPSTREAM, romSha256=ROM), world.get("provenance", absent)),
+    )
+    map3 = world.get("map3") or {}
+    check(
+        "historical map source layout",
+        None
+        if layout is None or "layout" not in map3
+        else layout == [v for row in map3["layout"] for v in row],
+    )
+    check("historical default setup", match(dict(id="map-3", setup=dict(default="ms-map3")), map3))
+    historical_programs = world.get("programs", [])
+    for p in historical_programs:
+        check(
+            "historical program equals independent source",
+            None if p.get("id") not in programs else p == programs[p["id"]],
+        )
+    check(
+        "historical program coverage",
+        merge(
+            [
+                not (
+                    {p.get("id") for p in historical_programs} - set(context.get("npcPrograms", []))
+                ),
+                len({p.get("id") for p in historical_programs}) == len(historical_programs),
+                True
+                if historical_programs
+                and {p.get("id") for p in historical_programs}
+                == set(context.get("npcPrograms", []))
+                else None,
+            ]
+        ),
+    )
+    admissions = history.get("samples", [])
+    check(
+        "map admission before NPC history",
+        None
+        if not admissions
+        else match(
+            dict(sessionId=session, map="map-3", flags=[0, 32]), admissions[0].get("state", absent)
+        ),
+    )
+    for admission in admissions:
+        flags = (admission.get("state") or {}).get("flags")
+        check(
+            "NPC default setup survives observed flags",
+            None if flags is None else not ({506, 543, 609} & set(flags)),
+        )
+    installations = {"entity-130": compiler.walking(20, 13, 3) if compiler else None}
+    npc_history_events = []
+    for ri, row in sorted(history_rows.items()):
+        check(
+            "NPC history session",
+            match(dict(sessionId=session, map="map-3"), row.get("state", absent)),
+        )
+        check(
+            "NPC history result identity",
+            match(
+                dict(
+                    sessionId=session,
+                    revision=(row.get("state") or {}).get("revision", absent),
+                    failure=None,
+                ),
+                row.get("result", absent),
+            ),
+        )
+        history_events = (row.get("result") or {}).get("observations", [])
+        for key, terminal in (("Sequence", "observationSequence"), ("Revision", "revision")):
+            observed_values = [event.get(key) for event in history_events]
+            available = [value for value in observed_values if value is not None]
+            limit = (row.get("result") or {}).get(terminal)
+            check(
+                "NPC producer " + key + " belongs to Submit",
+                merge(
+                    [
+                        True if len(available) == len(observed_values) else None,
+                        available == sorted(set(available)),
+                        None if limit is None else all(0 < value <= limit for value in available),
+                    ]
+                ),
+            )
+        for event in history_events:
+            cur = event.get("Program") or {}
+            instructions = programs.get(cur.get("Program"), {}).get("instructions", [])
+            n = cur.get("Instruction")
+            if event.get("Kind") == "program-instruction" and event.get("Detail") in (
+                "StartEntityMotion",
+                "SetEntityPosition",
+                "HideEntity",
+                "FollowEntity",
+                "LoadSceneMap",
+                "WriteFlag",
+                "SetEntityFacing",
+            ):
+                op = (
+                    instructions[int(n)]
+                    if isinstance(n, (int, float)) and 0 <= n < len(instructions)
+                    else {}
+                )
+                check("source-owned NPC history producer", True if op else None)
+                check(
+                    "NPC history producer kind",
+                    match(
+                        {
+                            "motion": "StartEntityMotion",
+                            "position": "SetEntityPosition",
+                            "hide": "HideEntity",
+                            "follow": "FollowEntity",
+                            "load-map": "LoadSceneMap",
+                            "set-flag": "WriteFlag",
+                            "face": "SetEntityFacing",
+                        }.get(op.get("op"), absent),
+                        event.get("Detail", absent),
+                    ),
+                )
+                if op.get("op") == "set-flag" and op.get("flag") in (506, 543, 609):
+                    check(
+                        "history does not select another map setup",
+                        match(False, op.get("value", absent)),
+                    )
+                npc_history_events.append((ri, op))
+    merchant = next((e for e in map3.get("entities", []) if e.get("id") == "entity-130"), {})
+    check(
+        "source merchant walking admission",
+        match(
+            dict(
+                actions=installations["entity-130"]
+                if installations["entity-130"] is not None
+                else absent
+            ),
+            merchant,
+        ),
+    )
+
+    def snapshot(refs, ordinal, label):
+        observed = [
+            states[(r.get("channel"), r.get("index"))]
+            for r in refs
+            if (r.get("channel"), r.get("index")) in states
+        ]
+        check(label + " present", True if observed else None, ordinal)
+        if observed:
+            check(
+                label + " duplicates agree",
+                merge([match(observed[0], s) for s in observed]),
+                ordinal,
+            )
+        return observed[0] if observed else {}
+
+    def random(seed, range_):
+        if seed is None:
+            return None, None
+        word, value = _rng_step(int(seed) >> 16, range_ * 2)
+        return (word << 16) | (int(seed) & 65535), value >> 1
+
+    def source_units(text):
+        out = []
+        for part in re.split(r"(\{[^}]+\})", text):
+            if part in ("{N}", "{W1}", "{W2}", "{D1}"):
+                out.append(
+                    (
+                        {"{N}": 1, "{W1}": 3, "{W2}": 4, "{D1}": 6}[part],
+                        "\n" if part == "{N}" else "",
+                    )
+                )
+                continue
+            if part.startswith("{NAME;"):
+                part = names[int(part[6:-1])]
+            elif part == "{LEADER}":
+                part = names[0]  # The selected original-language cohort's named leader.
+            elif part.startswith("{"):
+                return None
+            out.extend((0, ch) for ch in part)
+        return out
+
+    def resume_paths(cursor, open_portrait):
+        # Bounded source control flow only until the first blocking continuation.
+        # Both flag outcomes are legal here; flag truth has a separate owner.
+        details = {
+            "close-portrait": "ClosePortrait",
+            "close-text": "CloseText",
+            "open-portrait": "OpenPortrait",
+            "wait-view": "WaitForView",
+            "yes-no": "ChooseYesNo",
+            "branch-flag": "BranchFlag",
+            "jump": "JumpProgram",
+            "call": "CallProgram",
+            "motion": "StartEntityMotion",
+            "set-flag": "WriteFlag",
+            "position": "SetEntityPosition",
+            "end": "EndProgram",
+            "end-map-script": "EndProgram",
+        }
+        queue = [(cursor["Program"], int(cursor["Instruction"]) + 1, [])]
+        paths = []
+        while queue:
+            program, i, path = queue.pop()
+            instructions = programs.get(program, {}).get("instructions", [])
+            if len(path) >= 16 or not 0 <= i < len(instructions):
+                continue
+            op = instructions[i]
+            kind = op.get("op")
+            if kind not in details:
+                continue
+            cur = dict(Program=program, Instruction=i)
+            path = path + [dict(Program=cur, Detail=details[kind])]
+            wait = None
+            if kind == "close-portrait" and open_portrait:
+                wait = "PortraitMovementWait"
+            elif kind == "close-text":
+                wait = "TextCloseWait"
+            elif kind in ("wait-view", "end-map-script"):
+                wait = "ViewWait"
+            elif kind == "yes-no":
+                wait = "ChoiceWait"
+            elif kind == "motion" and op.get("wait"):
+                wait = "EntityWait"
+            elif kind == "end":
+                wait = "PortraitMovementWait" if open_portrait else "TextCloseWait"
+                cur = None
+            if wait:
+                paths.append((path, cur, wait))
+                continue
+            if kind in ("jump", "call", "branch-flag"):
+                target = op.get("target", {})
+                queue.append((target.get("program"), target.get("instruction", 0), path))
+                if kind == "branch-flag":
+                    queue.append((program, i + 1, path))
+            else:
+                queue.append((program, i + 1, path))
+        return paths
+
+    identity_keys = (
+        "sessionId",
+        "revision",
+        "observationSequence",
+        "simulationTick",
+        "mainSeed",
+        "token",
+        "cursor",
+        "wait",
+        "map",
+        "mode",
+    )
+    for poll in polls:
+        ordinal = poll.get("ordinal")
+        accepting = poll.get("accepting")
+        owner = one(
+            "one independent token occurrence",
+            [o for o in owners if o.get("token") == poll.get("token")],
+            ordinal,
+        )
+        cur, token = owner.get("cursor") or {}, poll.get("token")
+        inp = inputs.get(poll.get("inputIndex"), {})
+        before, after = inp.get("before") or {}, inp.get("after") or {}
+        check(
+            "physical input identity",
+            match(
+                dict(
+                    ordinal=ordinal,
+                    pressed=True,
+                    action="confirm" if accepting else "wait",
+                    delivery=dict(kind="key", code=4194309 if accepting else 86),
+                    before=dict(
+                        sessionId=session,
+                        token=token,
+                        cursor=cur,
+                        wait="FieldTextWait",
+                        canWaitForText=True,
+                        revision=poll.get("beforeRevision"),
+                    ),
+                ),
+                inp,
+            ),
+            ordinal,
+        )
+        record = records.get(poll.get("resultIndex"), {})
+        submit, state = record.get("result") or {}, record.get("state") or {}
+        start, end = inp.get("resultStart"), inp.get("resultEnd")
+        check(
+            "whole Submit in physical input span",
+            None if start is None or end is None else start <= poll["resultIndex"] < end,
+            ordinal,
+        )
+        check(
+            "whole Submit identity",
+            match(
+                dict(
+                    inputOrdinal=ordinal,
+                    result=dict(
+                        boundary="submit",
+                        sessionId=session,
+                        revision=poll.get("resultRevision"),
+                        failure=None,
+                    ),
+                    state=dict(sessionId=session, revision=poll.get("resultRevision")),
+                ),
+                record,
+            ),
+            ordinal,
+        )
+        span = (
+            [records.get(i, {}) for i in range(int(start), int(end))]
+            if start is not None and end is not None
+            else []
+        )
+        tail = span[-1].get("state", {}) if span else {}
+        check(
+            "input after joins complete delivery span",
+            match({k: tail.get(k, absent) for k in identity_keys}, after),
+            ordinal,
+        )
+        for extra in span[1:]:
+            extra_events = (extra.get("result") or {}).get("observations", [])
+            check(
+                "source choice delivery preserves W1 state",
+                match(
+                    {
+                        k: state.get(k, absent)
+                        for k in identity_keys
+                        if k not in ("revision", "observationSequence")
+                    },
+                    extra.get("state", absent),
+                ),
+                ordinal,
+            )
+            check(
+                "separate choice delivery identity",
+                match(
+                    dict(
+                        inputOrdinal=ordinal,
+                        result=dict(boundary="submit", sessionId=session, failure=None),
+                    ),
+                    extra,
+                ),
+                ordinal,
+            )
+            check(
+                "separate choice delivery has no text poll",
+                merge(
+                    [
+                        match("ChoiceWait", state.get("wait", absent)),
+                        *[
+                            None
+                            if e.get("Kind") is None
+                            else e["Kind"]
+                            in ("choice-opened", "choice-sound", "choice-window-moving")
+                            for e in extra_events
+                        ],
+                    ]
+                ),
+                ordinal,
+            )
+        ready = snapshot(poll.get("ready", []), ordinal, "ready")
+        post = snapshot(poll.get("after", []), ordinal, "after") if poll.get("after") else {}
+        check(
+            "ready joins input",
+            match({k: before.get(k, absent) for k in identity_keys}, ready),
+            ordinal,
+        )
+        if post:
+            check(
+                "after joins result",
+                match({k: after.get(k, absent) for k in identity_keys}, post),
+                ordinal,
+            )
+        check(
+            "one admitted logical service",
+            None
+            if before.get("simulationTick") is None or after.get("simulationTick") is None
+            else after["simulationTick"] == before["simulationTick"] + 1,
+            ordinal,
+        )
+        program = cur.get("Program")
+        suppressed = program in ("byte-50f6a", "byte-51052", "byte-53ec8")
+        caller = (
+            "EntityEventContext"
+            if suppressed or program in ("cs-52f0c", "cs-52f24", "cs-52f40")
+            else (
+                None if program in ("cs-53996", "bbcs-01", "abcs-battle01") else "ZoneEventContext"
+            )
+        )
+        check(
+            "source caller and W1 eligibility",
+            match(
+                dict(
+                    sessionId=session,
+                    token=token,
+                    cursor=cur,
+                    tickDebt=0,
+                    eventCaller=caller,
+                    entitiesRunning=not suppressed,
+                    typewriting=False,
+                    canWaitForText=True,
+                    logicalView=dict(HideWindows=False, Scrolling=False),
+                    wait="FieldTextWait",
+                    fieldText=dict(
+                        Text=owner.get("text"),
+                        Wait2=False,
+                        Revealed=True,
+                        LogicalDone=True,
+                        Phase=7,
+                        Token=dict(Value=token),
+                        End=owner.get("position"),
+                    ),
+                ),
+                ready,
+            ),
+            ordinal,
+        )
+        field = ready.get("fieldText") or {}
+        instructions = programs.get(program, {}).get("instructions", [])
+        n = cur.get("Instruction")
+        op = (
+            instructions[int(n)]
+            if isinstance(n, (int, float)) and 0 <= n < len(instructions)
+            else {}
+        )
+        check("source text producer", match(dict(op="show-text"), op), ordinal)
+        speaker = (
+            ((ready.get("entityEvent") or {}).get("Entity") or {}).get("Value")
+            if op.get("useEventSpeaker")
+            else op.get("speaker")
+        )
+        flags = op.get("speakerFlags", 0)
+        check(
+            "source speaker and flags",
+            match(dict(speaker=speaker, speakerFlags=flags), ready),
+            ordinal,
+        )
+        speaker_entity = next((e for e in ready.get("entities", []) if e.get("id") == speaker), {})
+        if speaker is None and flags == 255:
+            portrait_id = -1
+        elif speaker_entity.get("sprite") is not None and portrait_ids:
+            portrait_id = portrait_ids.get(speaker_entity["sprite"], -1)
+        else:
+            portrait_id = None
+        portrait_flags = flags
+        if program == "cs-51614" and n == 3:
+            # OpenPortraitWindow returns immediately for an already open window.
+            # The continued531 yes/no branch retains the original mirrored side.
+            parent_ops = programs.get("cs-5149a", {}).get("instructions", [])
+            branch = next(
+                (
+                    i
+                    for i, x in enumerate(parent_ops)
+                    if x.get("op") == "branch-flag"
+                    and (x.get("target") or {}).get("program") == program
+                ),
+                None,
+            )
+            preceding = (
+                [x for x in parent_ops[:branch] if x.get("op") == "show-text"]
+                if branch is not None
+                else []
+            )
+            portrait_flags = preceding[-1].get("speakerFlags") if preceding else None
+            donors = [o for o in owners if o.get("text") == 531]
+            donor_states = [
+                states.get((ref.get("channel"), ref.get("index")), {})
+                for o in donors
+                for p in polls
+                if p.get("token") == o.get("token")
+                for ref in p.get("ready", [])
+            ]
+            check(
+                "continued portrait source ancestry",
+                None
+                if not donor_states or not preceding
+                else preceding[-1].get("mode") == "continued"
+                and all(
+                    match(
+                        dict(
+                            portraitId=portrait_id,
+                            portraitFlags=portrait_flags,
+                            portraitWindow="OpenPortraitWindow",
+                        ),
+                        d,
+                    )
+                    is True
+                    for d in donor_states
+                ),
+                ordinal,
+            )
+        check(
+            "source portrait selection",
+            None
+            if portrait_id is None
+            else match(
+                dict(
+                    portraitId=None if portrait_id < 0 else portrait_id,
+                    portraitFlags=None if portrait_id < 0 else portrait_flags,
+                    portraitWindow="ClosedPortraitWindow"
+                    if portrait_id < 0
+                    else "OpenPortraitWindow",
+                ),
+                ready,
+            ),
+            ordinal,
+        )
+        expected_text = None
+        if op:
+            prior = instructions[: int(n) + 1]
+            resets = [i for i, x in enumerate(prior) if x.get("op") == "text-cursor"]
+            if resets:
+                i = resets[-1]
+                expected_text = (
+                    prior[i]["text"] + sum(x.get("op") == "show-text" for x in prior[i + 1 :]) - 1
+                )
+        check(
+            "source active text identity",
+            None if expected_text is None else match(expected_text, field.get("Text", absent)),
+            ordinal,
+        )
+        expected_units = source_units(texts[owner["text"]]) if owner.get("text") in texts else None
+        units = field.get("Units")
+        check(
+            "complete ordered source token stream",
+            None
+            if expected_units is None or units is None
+            else [(u.get("Kind"), u.get("Text")) for u in units] == expected_units,
+            ordinal,
+        )
+        end_unit = field.get("End")
+        check(
+            "selected W1 position",
+            None
+            if expected_units is None or end_unit is None
+            else 0 <= end_unit < len(expected_units) and expected_units[int(end_unit)][0] == 3,
+            ordinal,
+        )
+        events = submit.get("observations") or []
+        kinds = ["rng-text-w1", "text-seed-copy", "text-w1-wait", "text-w1-input"] + (
+            ["text-w1-accepted"] if accepting else []
+        )
+        found, positions = {}, []
+        for kind in kinds:
+            entries = [(i, e) for i, e in enumerate(events) if e.get("Kind") == kind]
+            found[kind] = one(kind, [e for _, e in entries], ordinal)
+            positions.extend(i for i, _ in entries)
+        check("mandatory draw/copy/wait/read order", positions == sorted(set(positions)), ordinal)
+        check(
+            "preamble before service",
+            None
+            if any(not found[k] for k in kinds[:3])
+            else [e.get("Kind") for e in events[:3]] == kinds[:3],
+            ordinal,
+        )
+        check(
+            "input mask",
+            match("accept" if accepting else "none", found["text-w1-input"].get("Detail", absent)),
+            ordinal,
+        )
+        check(
+            "neutral remains suspended",
+            accepting
+            or not any(
+                e.get("Kind") in ("program-instruction", "text-w1-accepted") for e in events
+            ),
+            ordinal,
+        )
+        seed, byte = random(before.get("mainSeed"), 256)
+        check(
+            "independent range256 draw",
+            match(
+                dict(
+                    Before=before.get("mainSeed", absent),
+                    After=seed if seed is not None else absent,
+                    RandomRange=256,
+                    RandomValue=byte if byte is not None else absent,
+                ),
+                found["rng-text-w1"],
+            ),
+            ordinal,
+        )
+        check(
+            "copy before all service RNG",
+            match(
+                byte if byte is not None else absent, found["text-seed-copy"].get("After", absent)
+            ),
+            ordinal,
+        )
+        # esc00/esc01 plus the selected walking stream admit only these two
+        # ready actors. Expected retries come from source collision gates below.
+        entities = ready.get("entities")
+        check("actual entity service operands", True if entities is not None else None, ordinal)
+        expected_entities = set(poll.get("entityIds", []))
+        observed_entities = [e.get("id") for e in entities or []]
+        check(
+            "complete live entity inventory",
+            merge(
+                [
+                    not (set(observed_entities) - expected_entities),
+                    len(observed_entities) == len(set(observed_entities)),
+                    True
+                    if expected_entities and set(observed_entities) == expected_entities
+                    else None,
+                ]
+            ),
+            ordinal,
+        )
+        for entity in entities or []:
+            check(
+                "entity live service gates present",
+                True
+                if all(
+                    k in entity
+                    for k in (
+                        "id",
+                        "slot",
+                        "x",
+                        "y",
+                        "targetX",
+                        "targetY",
+                        "actionCursor",
+                        "waitTimer",
+                        "moving",
+                        "flagsA",
+                        "flagsB",
+                    )
+                )
+                else None,
+                ordinal,
+            )
+        if entities is None or any(
+            not all(k in e for k in ("moving", "waitTimer", "flagsA")) for e in entities
+        ):
+            seed = None
+        candidates = (
+            [
+                e
+                for e in entities or []
+                if e.get("moving") is False
+                and isinstance(e.get("waitTimer"), (int, float))
+                and e["waitTimer"] >= 20
+                and isinstance(e.get("flagsA"), (int, float))
+                and int(e["flagsA"]) & 64
+            ]
+            if not suppressed
+            else []
+        )
+        npc_attempts = []
+        for entity in candidates:
+            actions = installations.get(entity.get("id"))
+            for ri, source_op in npc_history_events:
+                if ri >= poll.get("resultIndex", 0):
+                    break
+                if source_op.get("entity") == entity.get("id"):
+                    if source_op.get("op") == "motion":
+                        actions = source_op.get("actions")
+                    elif source_op.get("op") in ("hide", "follow"):
+                        actions = None
+            check(
+                "NPC installed source walking stream",
+                True if actions and any(x.get("op") == "random-walk" for x in actions) else None,
+                ordinal,
+            )
+            walk = next((x for x in actions or [] if x.get("op") == "random-walk"), {})
+            # entityscriptengine_2.asm:VInt_UpdateEntities calls
+            # UpdateEntityData before dispatching the action script. Admit the
+            # selected stationary edge from geometry/carried travel, not merely
+            # the projection's moving flag. Residual velocity is legal at rest;
+            # this does not claim that esc01 runs again once wait20 is reached.
+            check(
+                "NPC stationary geometry before source script",
+                match(
+                    dict(
+                        targetX=entity.get("x", absent),
+                        targetY=entity.get("y", absent),
+                        travelX=0,
+                        travelY=0,
+                    ),
+                    entity,
+                ),
+                ordinal,
+            )
+            check(
+                "NPC source wait20 gate",
+                match(
+                    dict(
+                        actionCursor=9,
+                        waitTimer=20,
+                        moving=False,
+                        flagsA=239,
+                        flagsB=64,
+                        speedX=0,
+                        speedY=0,
+                        accelerationX=1,
+                        accelerationY=1,
+                    ),
+                    entity,
+                ),
+                ordinal,
+            )
+            if not walk or layout is None or seed is None:
+                seed = None
+                continue
+            x, y = entity.get("x"), entity.get("y")
+            if x is None or y is None:
+                check("NPC live position", None, ordinal)
+                seed = None
+                continue
+            target = None
+            for _ in range(4):
+                seed, direction = random(seed, 4)
+                dx, dy = ((384, 0), (0, -384), (-384, 0), (0, 384))[direction]
+                tx, ty = x + dx, y + dy
+                radius_ok = (
+                    (direction != 0 or x < (walk["x"] + walk["radius"]) * 384)
+                    and (direction != 1 or y > (walk["y"] - walk["radius"]) * 384)
+                    and (direction != 2 or x > (walk["x"] - walk["radius"]) * 384)
+                    and (direction != 3 or y < (walk["y"] + walk["radius"]) * 384)
+                )
+                blocked = not radius_ok
+                cells = [(int(x // 384), int(y // 384)), (int(tx // 384), int(ty // 384))]
+                check(
+                    "NPC unchanged source collision cells",
+                    all(
+                        not any(
+                            mx <= cx < mx + mw and my <= cy < my + mh for mx, my, mw, mh in mutable
+                        )
+                        for cx, cy in cells
+                    ),
+                    ordinal,
+                )
+                # These admitted horizontal moves start on flat cells. A slope
+                # needs its own neighbor operand, never the flat-cell fallback.
+                check(
+                    "NPC admitted flat departure",
+                    direction in (1, 3) or layout[int(y // 384) * 64 + int(x // 384)] & 0xC000 == 0,
+                    ordinal,
+                )
+                tile = layout[int(ty // 384) * 64 + int(tx // 384)]
+                blocked |= tile >= 0xC000
+                occupancy = []
+                for other in entities or []:
+                    if other.get("id") == entity.get("id") or other.get("x") == 0x7000:
+                        continue
+                    ox, oy = other.get("targetX"), other.get("targetY")
+                    if ox is None or oy is None:
+                        check("NPC occupancy operand", None, ordinal)
+                        continue
+                    occupancy.append(abs(ox - tx) + abs(oy - ty) < 384)
+                blocked |= any(occupancy)
+                npc_attempts.append(
+                    dict(entity=entity.get("id"), direction=direction, tile=tile, blocked=blocked)
+                )
+                if not blocked:
+                    target = (tx, ty)
+                    break
+            actual_entity = one(
+                "NPC destination witness",
+                [e for e in post.get("entities", []) if e.get("id") == entity.get("id")],
+                ordinal,
+            )
+            if target:
+                check(
+                    "NPC source accepted destination",
+                    match(
+                        dict(
+                            x=x,
+                            y=y,
+                            targetX=target[0],
+                            targetY=target[1],
+                            moving=True,
+                            waitTimer=0,
+                            actionCursor=9,
+                            velocityX=0,
+                            velocityY=0,
+                        ),
+                        actual_entity,
+                    ),
+                    ordinal,
+                )
+            else:
+                check("NPC exhausted attempts", match(dict(moving=False), actual_entity), ordinal)
+        portrait = ready.get("portraitWork")
+        open_portrait = ready.get("portraitWindow") == "OpenPortraitWindow"
+        check(
+            "portrait mouth-control gate",
+            match(dict(MouthControl=0), ready.get("textSettings", absent)),
+            ordinal,
+        )
+        check(
+            "known portrait service state",
+            ready.get("portraitWindow") in ("OpenPortraitWindow", "ClosedPortraitWindow")
+            if "portraitWindow" in ready
+            else None,
+            ordinal,
+        )
+        portrait_draws = []
+        expected_portrait = None
+        if open_portrait:
+            check(
+                "registered portrait gate",
+                match(
+                    dict(Registered=True, Moving=False, Closing=False),
+                    portrait if portrait is not None else absent,
+                ),
+                ordinal,
+            )
+            if portrait is not None and all(
+                k in portrait for k in ("Blink", "Mouth", "EyesClosed", "MouthOpen")
+            ):
+                blink, mouth = int(portrait["Blink"]) - 1, int(portrait["Mouth"])
+                eyes = portrait["EyesClosed"]
+                mouth_open = portrait["MouthOpen"]
+                if blink == 3:
+                    eyes = True
+                if blink == 0:
+                    old = seed
+                    seed, value = random(seed, 120)
+                    blink = None if value is None else value + 30
+                    eyes = False
+                    portrait_draws.append(
+                        dict(
+                            Kind="rng-portrait-blink",
+                            Before=old,
+                            After=seed,
+                            RandomRange=120,
+                            RandomValue=value,
+                        )
+                    )
+                if mouth <= 5:
+                    old = seed
+                    seed, value = random(seed, 5)
+                    mouth = None if value is None else value + 10
+                    mouth_open = False
+                    portrait_draws.append(
+                        dict(
+                            Kind="rng-portrait-mouth",
+                            Before=old,
+                            After=seed,
+                            RandomRange=5,
+                            RandomValue=value,
+                        )
+                    )
+                expected_portrait = dict(
+                    Blink=blink, Mouth=mouth, EyesClosed=eyes, MouthOpen=mouth_open
+                )
+            else:
+                check("portrait clock operands", None, ordinal)
+                seed = None
+        else:
+            check(
+                "closed portrait registration",
+                None if "portraitWork" not in ready else portrait is None,
+                ordinal,
+            )
+        observed_draws = [
+            e
+            for e in events
+            if str(e.get("Kind", "")).startswith("rng-") and e.get("Kind") != "rng-text-w1"
+        ]
+        # Gate omission cannot hide an independently impossible observed draw.
+        # Check its known operation/range/arithmetic even when its admission or
+        # incoming service-chain seed still lacks an operand.
+        for observed_draw in observed_draws:
+            range_ = {"rng-portrait-blink": 120, "rng-portrait-mouth": 5}.get(
+                observed_draw.get("Kind")
+            )
+            check("known W1 service RNG operation", range_ is not None, ordinal)
+            if range_ is not None:
+                draw_seed, draw_value = random(observed_draw.get("Before"), range_)
+                check(
+                    "available service RNG arithmetic",
+                    match(
+                        dict(
+                            RandomRange=range_,
+                            After=draw_seed if draw_seed is not None else absent,
+                            RandomValue=draw_value if draw_value is not None else absent,
+                        ),
+                        observed_draw,
+                    ),
+                    ordinal,
+                )
+        expected_kinds = [e["Kind"] for e in portrait_draws]
+        observed_kinds = [e["Kind"] for e in observed_draws]
+        service_gates_known = (
+            ready.get("portraitWindow") == "ClosedPortraitWindow" or expected_portrait is not None
+        )
+        ranks = [expected_kinds.index(k) for k in observed_kinds if k in expected_kinds]
+        check("conditional RNG known order", ranks == sorted(ranks), ordinal)
+        check(
+            "complete conditional service draw inventory",
+            None
+            if not service_gates_known
+            else merge(
+                [
+                    not (set(observed_kinds) - set(expected_kinds)),
+                    len(observed_kinds) == len(set(observed_kinds)),
+                    True
+                    if observed_kinds == expected_kinds
+                    else None
+                    if not (set(observed_kinds) - set(expected_kinds))
+                    else False,
+                ]
+            ),
+            ordinal,
+        )
+        for expected in portrait_draws:
+            actual_draw = one(
+                "conditional " + expected["Kind"],
+                [e for e in observed_draws if e["Kind"] == expected["Kind"]],
+                ordinal,
+            )
+            check(
+                "independent portrait draw",
+                match(
+                    {k: v if v is not None else absent for k, v in expected.items()}, actual_draw
+                ),
+                ordinal,
+            )
+        read_positions = [i for i, e in enumerate(events) if e.get("Kind") == "text-w1-input"]
+        check(
+            "portrait RNG between copy and read",
+            None
+            if not read_positions
+            else all(
+                2 < i < read_positions[0] for i, e in enumerate(events) if e in observed_draws
+            ),
+            ordinal,
+        )
+        check(
+            "complete main seed after service",
+            match(seed if seed is not None else absent, after.get("mainSeed", absent)),
+            ordinal,
+        )
+        if accepting:
+            paths = (
+                (
+                    resume_paths(cur, False) + resume_paths(cur, True)
+                    if "portraitWindow" not in ready
+                    else resume_paths(cur, open_portrait)
+                )
+                if cur
+                else []
+            )
+            observed = [e for e in events if e.get("Kind") == "program-instruction"]
+            compatible = []
+            for path, terminal, wait in paths:
+                identities = {
+                    (e["Program"]["Program"], e["Program"]["Instruction"]): i
+                    for i, e in enumerate(path)
+                }
+                ranks = []
+                values = []
+                for e in observed:
+                    position = e.get("Program") or {}
+                    rank = identities.get((position.get("Program"), position.get("Instruction")))
+                    if rank is None:
+                        values.append(False)
+                    else:
+                        ranks.append(rank)
+                        values.append(match(path[rank], e))
+                values.extend(
+                    [
+                        ranks == sorted(set(ranks)),
+                        True if len(ranks) == len(path) else None,
+                        match(terminal, after.get("cursor", absent)),
+                        match(wait, after.get("wait", absent)),
+                    ]
+                )
+                compatible.append(merge(values))
+            check(
+                "source continuation producers and terminal",
+                True if True in compatible else None if None in compatible or not paths else False,
+                ordinal,
+            )
+            check(
+                "accepted token released",
+                None if after.get("token") is None else after["token"] != token,
+                ordinal,
+            )
+            accepts = [i for i, e in enumerate(events) if e.get("Kind") == "text-w1-accepted"]
+            check(
+                "accept before source continuation",
+                None
+                if not accepts or not read_positions
+                else accepts[0] == read_positions[0] + 1
+                and all(
+                    i > accepts[0]
+                    for i, e in enumerate(events)
+                    if e.get("Kind") == "program-instruction"
+                ),
+                ordinal,
+            )
+        else:
+            check(
+                "neutral retains exact consumer",
+                match(
+                    dict(token=token, cursor=cur, wait="FieldTextWait", canWaitForText=True), after
+                ),
+                ordinal,
+            )
+        closing = any(
+            e.get("Kind") == "portrait-window-moving" and e.get("Detail") == "close" for e in events
+        )
+        if open_portrait and not closing and post and expected_portrait is not None:
+            check(
+                "retained portrait clock state",
+                match(expected_portrait, post.get("portraitWork", absent)),
+                ordinal,
+            )
+        if closing:
+            check(
+                "source close boundary",
+                accepting and after.get("wait") == "PortraitMovementWait",
+                ordinal,
+            )
+            if post:
+                check(
+                    "source close unregisters portrait",
+                    match(dict(Registered=False, Closing=True), post.get("portraitWork", absent)),
+                    ordinal,
+                )
+        if poll.get("after"):
+            copy_state = post
+        else:
+            witness = context.get("copyWitnesses", {}).get(str(ordinal), {})
+            copy_state = (
+                states.get((witness.get("channel"), witness.get("index")), {})
+                if witness.get("channel") != "outcomeFinal"
+                else actual.get("w1OutcomeFinal", supplement.get("w1OutcomeFinal", {}))
+            )
+            check(
+                "later copy witness identity",
+                match(witness.get("identity", absent), copy_state),
+                ordinal,
+            )
+            check(
+                "later copy follows submit",
+                None
+                if copy_state.get("revision") is None or after.get("revision") is None
+                else copy_state["revision"] > after["revision"],
+                ordinal,
+            )
+            check(
+                "later witness retains copy before next W1 poll",
+                not any(
+                    p.get("beforeRevision", 0) >= poll.get("afterRevision", 0)
+                    and p.get("afterRevision", 0) <= copy_state.get("revision", 0)
+                    for p in polls
+                    if p is not poll
+                ),
+                ordinal,
+            )
+            check("close witness is compositional", closing, ordinal)
+        check(
+            "actual retained poll copy",
+            match(byte if byte is not None else absent, copy_state.get("randomSeedCopy", absent)),
+            ordinal,
+        )
+        if poll.get("after"):
+            check(
+                "same-submit typewriting restoration and debt",
+                match(
+                    dict(
+                        **(
+                            {}
+                            if accepting and closing
+                            else dict(
+                                typewriting=field.get("SavedTypewriting", absent)
+                                if accepting
+                                else False
+                            )
+                        ),
+                        tickDebt=0,
+                    ),
+                    post,
+                ),
+                ordinal,
+            )
+        revisions = [e.get("Revision") for e in events]
+        sequences = [e.get("Sequence") for e in events]
+        for label, values, low, high in (
+            ("revision", revisions, before.get("revision"), submit.get("revision")),
+            (
+                "sequence",
+                sequences,
+                before.get("observationSequence"),
+                submit.get("observationSequence"),
+            ),
+        ):
+            available = [v for v in values if v is not None]
+            check(
+                "Submit event " + label + " order",
+                merge(
+                    [
+                        True if len(available) == len(values) else None,
+                        available == sorted(set(available)),
+                        None
+                        if low is None or high is None
+                        else all(low < v <= high for v in available),
+                    ]
+                ),
+                ordinal,
+            )
+        result["occurrences"].append(
+            dict(
+                ordinal=ordinal,
+                token=token,
+                text=owner.get("text"),
+                accepting=accepting,
+                npcAttempts=npc_attempts,
+                copyEvidence="same-submit" if post else "later-state composition",
+            )
+        )
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    return result
+
+
 def w2_consumer_binding(actual, context, source_root):
     """PR618's composed predicate on explicitly selected historical A occurrences.
 
@@ -11232,6 +12798,7 @@ def compare_modern(
     palette_metadata=None,
     w2_context=None,
     heal_context=None,
+    w1_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -11265,6 +12832,7 @@ def compare_modern(
         except (OSError, ValueError, KeyError):
             audio_context = None
     audio_consumers = audio_consumer_binding(actual, audio_context, text_source_root)
+    w1_consumers = w1_consumer_binding(actual, w1_context, text_source_root)
     w2_consumers = w2_consumer_binding(actual, w2_context, text_source_root)
     heal_consumers = heal_consumer_binding(actual, heal_context, text_source_root)
     assertions = _bounded_list()
@@ -12704,6 +14272,19 @@ def compare_modern(
             "event",
         ),
     ):
+        if name == "W1 displayed token occurrence/accepting read/service gates":
+            check(
+                9,
+                name,
+                True,
+                w1_consumers["value"],
+                actual_location,
+                original=w1_consumers["sourceRules"],
+                parent=consumer_parent,
+                reason="Pinned source plus selected actual poll/copy/service/continuation binding; "
+                "original live service timing and intermediate removed clocks remain Unknown",
+            )
+            continue
         if name == "W2 accepting read/validation indicator and token return":
             check(
                 9,
@@ -13014,6 +14595,7 @@ def compare_modern(
             audioContiguous=audio_contiguous,
             audioLifecycle=audio_lifecycle,
             audioConsumerBinding=audio_consumers,
+            w1ConsumerBinding=w1_consumers,
             w2ConsumerBinding=w2_consumers,
             healConsumerBinding=heal_consumers,
             reachedMaterialJoins=materials["joins"],
@@ -13550,7 +15132,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "mode",
-        choices=("plan", "compare", "matrix", "resources", "audio", "turn-order", "w2", "heal"),
+        choices=(
+            "plan",
+            "compare",
+            "matrix",
+            "resources",
+            "audio",
+            "turn-order",
+            "w1",
+            "w2",
+            "heal",
+        ),
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
@@ -13565,6 +15157,9 @@ def main():
     )
     parser.add_argument(
         "--w2-context", type=Path, help="Accepted selected W2 occurrence inventory and session"
+    )
+    parser.add_argument(
+        "--w1-context", type=Path, help="Independent selected W1 occurrence and NPC history indices"
     )
     parser.add_argument("--host-log", type=Path)
     parser.add_argument("--host-exit", type=int)
@@ -13617,6 +15212,57 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.w1_context is None
+        or args.mode == "w1"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "W1 context applies only to w1 or modern compare mode",
+    )
+    if args.w1_context is not None:
+        args.w1_context = (
+            args.w1_context.resolve()
+            if args.w1_context.is_absolute()
+            else repo_path(args.w1_context)
+        )
+        require(args.w1_context.stat().st_size <= 1024 * 1024, "W1 context exceeds 1 MiB")
+    if args.mode == "w1":
+        require(
+            args.actual is not None and args.w1_context is not None,
+            "w1 requires selected actual and independent occurrence context",
+        )
+        actual_path = args.actual.resolve() if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.w1_context.stat().st_size <= 10 * 1024 * 1024,
+            "W1 selection exceeds 10 MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "W1 output must be fresh beneath this worktree's local/",
+        )
+        binding = w1_consumer_binding(
+            read(actual_path), read(args.w1_context), args.text_source_root
+        )
+        verdict_value = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-w1-consumer",
+            comparisonScope="retained-keyboard-A-w1",
+            result=verdict_value,
+            milestonePass=False,
+            binding=binding,
+        )
+        require(
+            len(json.dumps(report).encode("utf-8")) <= 10 * 1024 * 1024, "W1 report exceeds 10 MiB"
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(result=verdict_value, milestonePass=False, polls=len(binding["occurrences"]))
+            )
+        )
+        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
     require(
         args.w2_context is None
         or args.mode == "w2"
@@ -14011,6 +15657,7 @@ def main():
                 args.palette_metadata,
                 read(args.w2_context) if args.w2_context else None,
                 read(args.heal_context) if args.heal_context else None,
+                read(args.w1_context) if args.w1_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
