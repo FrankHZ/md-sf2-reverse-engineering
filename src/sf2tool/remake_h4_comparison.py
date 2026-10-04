@@ -4926,6 +4926,35 @@ def _heal_fairy_source_step(previous, seed, quarter, setup=False):
         )
         return state, seed, draws
     state = copy.deepcopy(previous)
+
+    def cleanup():
+        state.update(
+            Lifetime=0,
+            Control=0,
+            PendingDustX=0,
+            PendingDustY=0,
+            CleanupPending=True,
+            ActiveCount=0,
+        )
+        for f in state["Fairies"]:
+            for key in (
+                "Age",
+                "Phase",
+                "Angle",
+                "Speed",
+                "XFraction",
+                "YFraction",
+                "WingClock",
+                "WingFrame",
+                "DustClock",
+            ):
+                f[key] = 0
+            f["Active"] = False
+        state["Dust"] = [dict(Age=0, Frame=0, Clock=0, X=0, Y=0) for _ in state["Dust"]]
+
+    if state["Control"] > 2:
+        cleanup()
+        return state, seed, draws
     if not state["Control"] or not any(f["Age"] for f in state["Fairies"]):
         return state, seed, draws
     lifetime = 0 if state["Control"] == 2 else max(0, state["Lifetime"] - 1)
@@ -5013,30 +5042,8 @@ def _heal_fairy_source_step(previous, seed, quarter, setup=False):
                 else:
                     d.update(Clock=6, Frame=d["Frame"] + 1)
     state["ActiveCount"] = sum(bool(f["Age"]) for f in state["Fairies"])
-    if state["ActiveCount"] == 0 or state["Control"] > 2:
-        state.update(
-            Lifetime=0,
-            Control=0,
-            PendingDustX=0,
-            PendingDustY=0,
-            CleanupPending=True,
-            ActiveCount=0,
-        )
-        for f in state["Fairies"]:
-            for key in (
-                "Age",
-                "Phase",
-                "Angle",
-                "Speed",
-                "XFraction",
-                "YFraction",
-                "WingClock",
-                "WingFrame",
-                "DustClock",
-            ):
-                f[key] = 0
-            f["Active"] = False
-        state["Dust"] = [dict(Age=0, Frame=0, Clock=0, X=0, Y=0) for _ in state["Dust"]]
+    if state["ActiveCount"] == 0:
+        cleanup()
     return state, seed, draws
 
 
@@ -5107,7 +5114,7 @@ def heal_consumer_binding(actual, context, source_root):
         check(name, None if not rows else len(rows) == 1, ordinal)
         return rows[0] if rows else {}
 
-    def ordered_draws(expected, observed):
+    def ordered_kinds(expected, observed):
         positions = {e["Kind"]: i for i, e in enumerate(expected)}
         indices, values = [], []
         for event in observed:
@@ -5181,6 +5188,18 @@ def heal_consumer_binding(actual, context, source_root):
         ]
 
     warps = selected("warpRecords", "warpIndices")
+    expected_warps = context.get("warpIndices") or []
+    warp_indices = [w.get("_index") for w in warps]
+    check(
+        "selected action resource inventory",
+        merge(
+            [
+                True if expected_warps and warp_indices == expected_warps else None,
+                not any(i is not None and i not in expected_warps for i in warp_indices),
+                len(warp_indices) == len(set(warp_indices)),
+            ]
+        ),
+    )
     scenes = selected("sceneObservations", "sceneIndices")
     inputs = selected("inputRecords", "inputIndices")
     for ordinal, owner in enumerate(cohort):
@@ -5273,12 +5292,17 @@ def heal_consumer_binding(actual, context, source_root):
         scalar = dict(
             hp=hp, mp=mp, exp=exp, recovery=recovery, award=award, draws=scalar_draws, seed=seed
         )
-        events = [
-            (w, e)
-            for w in rows
-            for e in w.get("result", {}).get("observations", [])
-            if e.get("Sequence", end_sequence + 1) <= end_sequence
-        ]
+
+        def scoped_events(row, end=end, end_sequence=end_sequence):
+            return [
+                e
+                for e in row.get("result", {}).get("observations", [])
+                if row.get("result", {}).get("revision") != end
+                or e.get("Sequence") is None
+                or e["Sequence"] <= end_sequence
+            ]
+
+        events = [(w, e) for w in rows for e in scoped_events(w)]
         for kind in ("spell-selected", "target-selected"):
             candidates = [
                 w
@@ -5304,9 +5328,28 @@ def heal_consumer_binding(actual, context, source_root):
                     match(target, (chosen.get("state") or {}).get("target", missing)),
                     ordinal,
                 )
+        resources = {
+            "mp": (actor, mp, None if mp is None else mp - 3, "ActionMessage", "SpellCost"),
+            "hp": (
+                target,
+                hp,
+                None if recovery is None else hp + recovery,
+                "TargetEnter" if actor != target else "ActionAnimation",
+                "Reaction",
+            ),
+            "exp": (
+                actor,
+                exp,
+                None if exp is None or award is None else min(200, exp + award),
+                "ActorEnter" if actor != target else "SpellStop",
+                "Reward",
+            ),
+        }
+        effects = {}
         for kind in ("heal", "mp", "hp", "exp"):
             found = one(kind, [dict(w=w, e=e) for w, e in events if e.get("Kind") == kind], ordinal)
             wr, e = found.get("w", {}), found.get("e", {})
+            effects[kind] = found
             if not e:
                 check(kind + " effect unavailable", None, ordinal)
                 continue
@@ -5319,11 +5362,7 @@ def heal_consumer_binding(actual, context, source_root):
                 check("effect target", match(dict(Target=dict(Value=target)), e), ordinal)
             elif scalar:
                 field = {"mp": "mp", "hp": "hp", "exp": "exp"}[kind]
-                value = {
-                    "mp": None if mp is None else mp - 3,
-                    "hp": None if recovery is None else hp + recovery,
-                    "exp": None if exp is None or award is None else min(200, exp + award),
-                }[kind]
+                value = resources[kind][2]
                 check(
                     "source " + kind + " effect",
                     match(
@@ -5354,7 +5393,7 @@ def heal_consumer_binding(actual, context, source_root):
                 "source reward draws",
                 None
                 if not scalar["draws"]
-                else ordered_draws(
+                else ordered_kinds(
                     scalar["draws"],
                     [e for _, e in events if e.get("Kind") in ("rng-exp-plus", "rng-exp-minus")],
                 ),
@@ -5365,7 +5404,12 @@ def heal_consumer_binding(actual, context, source_root):
             "prepared Submit identity",
             match(
                 dict(
-                    result=dict(sessionId=session, revision=begin, failure=None),
+                    result=dict(
+                        sessionId=session,
+                        revision=begin,
+                        observationSequence=start_sequence,
+                        failure=None,
+                    ),
                     state=dict(
                         sessionId=session,
                         revision=begin,
@@ -5406,6 +5450,90 @@ def heal_consumer_binding(actual, context, source_root):
             ),
             ordinal,
         )
+
+        def event_envelope(
+            row,
+            es,
+            previous_revision,
+            previous_sequence,
+            ordinal=ordinal,
+            actor=actor,
+            target=target,
+        ):
+            r = row.get("result") or {}
+            revision = r.get("revision")
+
+            seqs = [e.get("Sequence") for e in es]
+            for e in es:
+                sequence = e.get("Sequence")
+                check(
+                    "event sequence inside Submit",
+                    merge(
+                        [
+                            None if sequence is None else sequence > 0,
+                            None
+                            if sequence is None or r.get("observationSequence") is None
+                            else sequence <= r["observationSequence"],
+                            None
+                            if sequence is None or previous_sequence is None
+                            else previous_sequence < sequence,
+                        ]
+                    ),
+                    ordinal,
+                    revision,
+                )
+                check(
+                    "event belongs to Submit interval",
+                    merge(
+                        [
+                            None if e.get("Revision") is None else e["Revision"] >= 0,
+                            None
+                            if e.get("Revision") is None or revision is None
+                            else e["Revision"] <= revision,
+                            None
+                            if e.get("Revision") is None or previous_revision is None
+                            else previous_revision < e["Revision"],
+                        ]
+                    ),
+                    ordinal,
+                    revision,
+                )
+                check(
+                    "event actor",
+                    match(
+                        dict(Value=target if e.get("Kind") == "hp" else actor),
+                        e.get("Actor", missing),
+                    ),
+                    ordinal,
+                    revision,
+                )
+            check(
+                "event sequence order",
+                None if any(x is None for x in seqs) else seqs == sorted(set(seqs)),
+                ordinal,
+                revision,
+            )
+
+        event_envelope(
+            prepared,
+            scoped_events(prepared),
+            inp.get("before", {}).get("revision"),
+            inp.get("before", {}).get("observationSequence"),
+        )
+        for wr, event in events:
+            if event.get("Kind") in ("rng-exp-plus", "rng-exp-minus"):
+                check(
+                    "reward draw prepared command",
+                    match(dict(Revision=begin), event),
+                    ordinal,
+                    begin,
+                )
+                check(
+                    "reward draw prepared Submit",
+                    match(begin, wr.get("result", {}).get("revision", missing)),
+                    ordinal,
+                    begin,
+                )
         projection = {}
         for s in scenes:
             if (
@@ -5459,6 +5587,114 @@ def heal_consumer_binding(actual, context, source_root):
                 )
             return first.get("scene") or {}
 
+        lifecycle_rows = [
+            w
+            for w in warps
+            if owner.get("beforeRevision") is not None
+            and begin is not None
+            and owner["beforeRevision"] < w.get("result", {}).get("revision", -1) < begin
+        ] + rows
+        for row in lifecycle_rows:
+            r = row.get("result") or {}
+            check(
+                "resource lifecycle state identity",
+                match(
+                    dict(
+                        result=dict(sessionId=session),
+                        state=dict(
+                            sessionId=session,
+                            revision=r.get("revision", missing),
+                            observationSequence=r.get("observationSequence", missing),
+                        ),
+                    ),
+                    row,
+                ),
+                ordinal,
+                r.get("revision"),
+            )
+        resource_boundaries = {}
+        for field, (who, initial, final, previous_phase, applied_phase) in resources.items():
+            boundary = one(
+                "source " + field + " phase boundary",
+                [
+                    dict(w=w, e=e)
+                    for w, e in events
+                    if e.get("Kind") == "scene-step-started" and e.get("Detail") == applied_phase
+                ],
+                ordinal,
+            )
+            command_row, command = boundary.get("w", {}), boundary.get("e", {})
+            boundary_revision = command_row.get("result", {}).get("revision")
+            resource_boundaries[field] = boundary_revision
+            effect_row, effect = effects[field].get("w", {}), effects[field].get("e", {})
+            effect_revision = effect_row.get("result", {}).get("revision")
+            check(
+                "source " + field + " effect command",
+                match(
+                    boundary_revision if boundary_revision is not None else missing,
+                    effect_revision if effect_revision is not None else missing,
+                ),
+                ordinal,
+            )
+            if boundary_revision is not None:
+                check(
+                    "source " + field + " preceding phase",
+                    match(previous_phase, scene_at(boundary_revision - 1).get("phase", missing)),
+                    ordinal,
+                )
+                check(
+                    "source " + field + " applied phase",
+                    match(applied_phase, scene_at(boundary_revision).get("phase", missing)),
+                    ordinal,
+                )
+            completed = one(
+                "source " + field + " previous command completion",
+                [e for e in scoped_events(command_row) if e.get("Kind") == "scene-step-completed"],
+                ordinal,
+            )
+            check(
+                "source " + field + " completed phase",
+                match(previous_phase, completed.get("Detail", missing)),
+                ordinal,
+            )
+            seqs = [e.get("Sequence") for e in (completed, effect, command)]
+            check(
+                "source " + field + " command effect order",
+                None if any(x is None for x in seqs) else seqs[0] < seqs[1] < seqs[2],
+                ordinal,
+            )
+            for row in lifecycle_rows:
+                r = row.get("result") or {}
+                revision = r.get("revision")
+                # The final Submit may already contain another action. Its final state is not
+                # a HEAL resource witness; the last in-scope state and effect remain checked.
+                if revision == end and (
+                    r.get("observationSequence") is None or r["observationSequence"] > end_sequence
+                ):
+                    continue
+                live = one(
+                    "live " + field + " lifecycle actor",
+                    [a for a in row.get("state", {}).get("actors", []) if a.get("id") == who],
+                    ordinal,
+                )
+                value = live.get(field, missing)
+                if boundary_revision is None:
+                    candidates = [
+                        match(v if v is not None else missing, value) for v in (initial, final)
+                    ]
+                    verdict = False if all(v is False for v in candidates) else None
+                else:
+                    expected = initial if revision < boundary_revision else final
+                    verdict = match(expected if expected is not None else missing, value)
+                check("deferred/retained " + field + " lifecycle", verdict, ordinal, revision)
+        for earlier, later in (("mp", "hp"), ("mp", "exp"), ("hp", "exp")):
+            a, b = resource_boundaries[earlier], resource_boundaries[later]
+            check(
+                "source " + earlier + " before " + later,
+                None if a is None or b is None else a < b,
+                ordinal,
+            )
+
         prior_scene = scene_at(begin)
         complete_work = inventory_complete and all(
             projection.get(r.get("result", {}).get("revision"))
@@ -5491,11 +5727,7 @@ def heal_consumer_binding(actual, context, source_root):
             if revision == begin:
                 continue
             s = row.get("state") or {}
-            es = [
-                e
-                for e in r.get("observations", [])
-                if e.get("Sequence", end_sequence + 1) <= end_sequence
-            ]
+            es = scoped_events(row)
             check(
                 "Submit/state session and result",
                 match(
@@ -5510,42 +5742,8 @@ def heal_consumer_binding(actual, context, source_root):
             )
             check("unique Submit revision", len(by_revision[revision]) == 1, ordinal, revision)
             previous_revision = (previous.get("result") or {}).get("revision")
-            seqs = [e.get("Sequence") for e in es]
-            for e in es:
-                sequence = e.get("Sequence")
-                previous_sequence = previous.get("result", {}).get("observationSequence")
-                check(
-                    "event sequence inside Submit",
-                    None
-                    if sequence is None
-                    or previous_sequence is None
-                    or r.get("observationSequence") is None
-                    else previous_sequence < sequence <= r["observationSequence"],
-                    ordinal,
-                    revision,
-                )
-                check(
-                    "event belongs to Submit interval",
-                    None
-                    if e.get("Revision") is None or previous_revision is None
-                    else previous_revision < e["Revision"] <= revision,
-                    ordinal,
-                    revision,
-                )
-                check(
-                    "event actor",
-                    match(
-                        dict(Value=target if e.get("Kind") == "hp" else actor),
-                        e.get("Actor", missing),
-                    ),
-                    ordinal,
-                    revision,
-                )
-            check(
-                "event sequence order",
-                None if any(x is None for x in seqs) else seqs == sorted(set(seqs)),
-                ordinal,
-                revision,
+            event_envelope(
+                row, es, previous_revision, previous.get("result", {}).get("observationSequence")
             )
             current_scene = scene_at(revision) if revision < end else prior_scene
             before_healing = prior_scene.get("healing") or {}
@@ -5702,7 +5900,7 @@ def heal_consumer_binding(actual, context, source_root):
                 actual_draws = [e for e in es if e.get("Kind", "").startswith("rng-fairy-")]
                 check(
                     "source conditional fairy draws",
-                    ordered_draws(expected_draws, actual_draws),
+                    ordered_kinds(expected_draws, actual_draws),
                     ordinal,
                     revision,
                 )
@@ -5747,8 +5945,10 @@ def heal_consumer_binding(actual, context, source_root):
             "source phase continuation",
             merge(
                 [
-                    match(phases, transitions) if complete_work else None,
-                    all(p in phases for p in transitions),
+                    ordered_kinds(
+                        [dict(Kind=p) for p in phases], [dict(Kind=p) for p in transitions]
+                    ),
+                    True if complete_work else None,
                 ]
             ),
             ordinal,

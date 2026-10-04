@@ -3840,7 +3840,12 @@ Exit0/1/2 means PASS/FAIL/Unavailable; every report keeps `milestonePass=false`.
 
 Direct controls cover wrong recovery/cost/reward, source caps, draw range/result and fairy state,
 missing draws/results/projections, duplicate and foreign identities, caller/order errors, physical
-acknowledgement and mixed missing-plus-known-wrong evidence. Preserve completed failures; correct
+acknowledgement and mixed missing-plus-known-wrong evidence. Resource controls include reordered
+MP/HP/EXP effects with coherent live values, premature or reverted resources between commands,
+preparation draw envelopes, missing phase markers and the mixed terminal Submit boundary. Phase
+identity and source command order determine effect timing; historical revision numbers do not.
+Controller cleanup controls verify no update/draw occurs before a direct cleanup dispatch.
+Preserve completed failures; correct
 them with affected controls. Use scoped Ruff, direct contracts/docs/private checks, committed planner
 and actual CI. No verifier unit tests, SDK/native/H3 acquisition, new route, full H4 or matrix are
 implied. Accepted audio, W2 and turn predicates keep their own boundaries.

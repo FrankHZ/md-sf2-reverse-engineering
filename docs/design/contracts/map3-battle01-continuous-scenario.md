@@ -572,9 +572,17 @@ MP and EXP effect to its live actor state. Recovery uses the living target's mis
 cost and reward use the independent source rules and the two actual reward draws. A later
 action-selection snapshot cannot stand in for these immediate effects because enemy actions may
 intervene. Each available operand is checked independently; missing target HP cannot mask wrong MP.
+MP is applied on entry to `SpellCost`, HP on entry to `Reaction`, then EXP on entry to `Reward`.
+Each effect must fall between the preceding command's completion and its own phase start, with
+matching actual scene projections. Live resources remain deferred before their respective commands
+and retain their applied values afterward throughout the selected action states. A missing boundary
+is Unavailable; a value inconsistent with either permitted resource state still contradicts the rule.
+Preparation reward draws also bind their event revision and sequence to the confirming Submit.
 
 Fairy setup and each logical opportunity use the pinned original setup/update/controller arithmetic,
-including motion, conditional draws, dust, stop and cleanup. Draws bind actor, event revision/sequence,
+including motion, conditional draws, dust, stop and cleanup. Controller values above two dispatch
+directly to cleanup before fairy/dust processing and cannot produce a final update draw.
+Draws bind actor, event revision/sequence,
 range, result and seed carry to the actual before/after fairy state. No-draw opportunities also count
 as required evidence. Source cast bytes and target idle headers supply mandatory work; accepted
 logical text work uses the reached message as its caller operand. Text content fidelity retains its
