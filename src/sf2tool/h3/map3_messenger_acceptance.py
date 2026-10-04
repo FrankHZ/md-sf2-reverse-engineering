@@ -972,6 +972,95 @@ HEAL_DIAGNOSTIC_STATUS = "HEAL-DIAGNOSTIC-COMPLETE-UNREVIEWED"
 HEAL_DIAGNOSTIC_LIMITS = {"frames": 2400, "batches": 256, "activeSeconds": 180}
 WARP_FIELD_RETURN_DIAGNOSTIC = "warp-field-return-diagnostic"
 WARP_FIELD_RETURN_STATUS = "WARP-FIELD-RETURN-DIAGNOSTIC-COMPLETE-UNREVIEWED"
+OPENING_DIAGNOSTIC = "admission-opening-scalar-diagnostic"
+
+
+def _opening_configuration(upstream, addresses, listing, rom):
+    """Passive first-consumer hooks; no new bootstrap or injected control values."""
+    paths = (
+        "code/common/scripting/text/textfunctions_1.asm",
+        "code/common/scripting/text/textfunctions_2.asm",
+        "code/common/maps/camerafunctions.asm",
+        "code/common/scripting/map/mapscriptengine_2.asm",
+        "data/maps/entries/map03/mapsetups/scripts_1.asm",
+        "sf2const.asm",
+    )
+    for name in paths:
+        pinned = subprocess.check_output(
+            ["git", "-C", str(upstream), "show", f"{r1.UPSTREAM_COMMIT}:disasm/{name}"],
+            text=True, encoding="utf-8",
+        )
+        if (upstream / DISASM / name).read_text(encoding="utf-8") != pinned:
+            raise ValueError(f"opening pinned source drift: {name}")
+    # Offsets are complete original instructions, checked against both H1 and ROM.
+    hooks = {
+        "mouth-glyph": ("loc_68E6", 0, "4A38B198"),
+        "mouth-delay": ("loc_65D8", 0, "4A38B198"),
+        "view-read": ("loc_46B4", 0, "4A78B194"),
+        "view-selected": ("loc_46BE", 0, "4A38A846"),
+        "w2-copy-before": ("loc_6472", 12, "11C7DFB0"),
+        "w2-copy-after": ("loc_6472", 16, "4CDF00C0"),
+        "view-clear-before": ("loc_4723E", 0, "4278B194"),
+        "view-clear-after": ("loc_4723E", 4, "4CDF7FFF"),
+    }
+    selected = {}
+    for kind, (symbol, offset, opcode) in hooks.items():
+        address = addresses[symbol] + offset
+        count = len(opcode) // 2
+        if (
+            _h1_bytes(listing, address, count) != opcode
+            or rom[address : address + count].hex().upper() != opcode
+        ):
+            raise ValueError(f"opening H1/ROM instruction drift: {kind}")
+        selected[kind] = {"pc": address, "symbol": symbol, "offset": offset, "opcode": opcode}
+    return {
+        "kind": OPENING_DIAGNOSTIC,
+        "inputPolicy": "registered-opening-frozen-prefix",
+        "hooks": selected,
+        "program": addresses["cs_5145C"],
+        "sourceCommit": r1.UPSTREAM_COMMIT,
+        "sourcePaths": list(paths),
+        "ram": r1._equates(
+            (upstream / DISASM / "sf2const.asm").read_text(encoding="utf-8"),
+            (
+                "MOUTH_CONTROL_TOGGLE",
+                "VIEW_SCROLLING_SPEED",
+                "PLAYER_1_INPUT",
+                "CURRENT_PLAYER_INPUT",
+                "VIEW_TARGET_ENTITY",
+                "VIEW_SCROLLING_PLANES_BITFIELD",
+                "MAP_AREA_LAYER_TYPE",
+                "VIEW_PLANE_A_PIXEL_X",
+                "VIEW_PLANE_A_PIXEL_Y",
+                "VIEW_PLANE_B_PIXEL_X",
+                "VIEW_PLANE_B_PIXEL_Y",
+                "MAP_AREA_LAYER1_STARTX",
+                "MAP_AREA_LAYER1_STARTY",
+                "MAP_AREA_LAYER1_ENDX",
+                "MAP_AREA_LAYER1_ENDY",
+                "MAP_AREA_LAYER1_AUTOSCROLL_X",
+                "MAP_AREA_LAYER1_AUTOSCROLL_Y",
+                "MAP_AREA_LAYER2_AUTOSCROLL_X",
+                "MAP_AREA_LAYER2_AUTOSCROLL_Y",
+                "MAP_AREA_LAYER1_PARALLAX_X",
+                "MAP_AREA_LAYER1_PARALLAX_Y",
+                "MAP_AREA_LAYER2_PARALLAX_X",
+                "MAP_AREA_LAYER2_PARALLAX_Y",
+                "PLANE_A_SCROLL_SPEED_X",
+                "PLANE_A_SCROLL_SPEED_Y",
+                "PLANE_B_SCROLL_SPEED_X",
+                "PLANE_B_SCROLL_SPEED_Y",
+            ),
+        ),
+        "limits": {
+            "frames": 12000,
+            "activeSeconds": 300,
+            "records": 2000,
+            "scalarBytes": 1048576,
+            "outputBytes": 67108864,
+            "workingSetBytes": 2147483648,
+        },
+    }
 
 
 def _warp_field_return_configuration() -> dict[str, Any]:
@@ -2583,7 +2672,31 @@ def prepare_map3_observation_candidate(
     if continuation == VICTORY_CONTINUATION and segment is None:
         raise ValueError("victory continuation requires explicit savestate-linked accounting")
     parent_pair, parent_metadata = None, None
-    if diagnostic_kind is not None:
+    if diagnostic_kind == OPENING_DIAGNOSTIC:
+        if (
+            interactive
+            or continuation
+            or segment
+            or resume_directory
+            or proposed_timeout_seconds != 300
+        ):
+            raise ValueError(
+                "opening diagnostic requires fresh fixed-input bootstrap and 300s limit"
+            )
+        for value in (
+            reviewed_prior_starts,
+            reviewed_prior_delivered_frames,
+            reviewed_prior_advancing_batches,
+        ):
+            if type(value) is not int or value < 0:
+                raise ValueError("opening diagnostic requires reviewed cumulative accounting")
+        if (
+            reviewed_prior_active_seconds is None
+            or not math.isfinite(reviewed_prior_active_seconds)
+            or reviewed_prior_active_seconds < 0
+        ):
+            raise ValueError("opening diagnostic requires reviewed prior active time")
+    elif diagnostic_kind is not None:
         if diagnostic_kind not in (HEAL_DIAGNOSTIC, WARP_FIELD_RETURN_DIAGNOSTIC):
             raise ValueError("unknown acquisition diagnostic")
         if continuation != VICTORY_CONTINUATION or not interactive:
@@ -2649,6 +2762,8 @@ def prepare_map3_observation_candidate(
             reviewed_prior_advancing_batches = totals["batches"]
     elif resume_directory is not None:
         raise ValueError("resume requires an explicit segment")
+    elif diagnostic_kind == OPENING_DIAGNOSTIC:
+        pass  # Fresh non-resumable observation; cumulative accounting checked above.
     elif reviewed_prior_starts is not None:
         raise ValueError("reviewed prior-start count requires explicit segmented acquisition")
     elif reviewed_prior_active_seconds is not None:
@@ -2940,6 +3055,13 @@ def prepare_map3_observation_candidate(
         )
     elif diagnostic_kind == WARP_FIELD_RETURN_DIAGNOSTIC:
         config["candidate"]["diagnostic"] = _warp_field_return_configuration()
+    elif diagnostic_kind == OPENING_DIAGNOSTIC:
+        config["candidate"]["diagnostic"] = _opening_configuration(
+            upstream_path, addresses, listing, rom
+        )
+        if len(frames) > 12000 - config["r1"]["harness"]["bootstrapFrameBudget"]:
+            raise ValueError("opening frozen input exceeds total frame budget")
+        config["cases"][0]["frameBudget"] = len(frames)
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
     config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
@@ -3072,6 +3194,25 @@ def prepare_map3_observation_candidate(
                 "fresh diagnostic completion and bootstrap restoration",
             ],
         )
+    elif diagnostic_kind == OPENING_DIAGNOSTIC:
+        report.update(
+            Diagnostic=config["candidate"]["diagnostic"],
+            RuntimeAuthorization="NONE; concrete pre-launch inspection required",
+            Terminal="cs_5145C original return; absent readers remain Unknown; no saved descendant",
+            HistoricalControlledStarts=reviewed_prior_starts,
+            FutureControlledOrdinal=reviewed_prior_starts + 1,
+            MaximumAdditionalStarts=1,
+            PriorAccounting=dict(
+                activeSeconds=reviewed_prior_active_seconds,
+                frames=reviewed_prior_delivered_frames,
+                batches=reviewed_prior_advancing_batches,
+            ),
+            RemainingUnknowns=[
+                "opening control readback",
+                "unreached consumer branches",
+                "native restoration",
+            ],
+        )
     # All validation precedes materialization; no shared launch helper is invoked.
     output.mkdir()
     (output / "input.json").write_bytes(input_bytes)
@@ -3175,6 +3316,7 @@ def run_map3_observation_candidate(
             None,
             HEAL_DIAGNOSTIC,
             WARP_FIELD_RETURN_DIAGNOSTIC,
+            OPENING_DIAGNOSTIC,
         ):
             raise ValueError("execution diagnostic must explicitly match preparation")
         selection = report.get("Segment")
@@ -3231,6 +3373,16 @@ def run_map3_observation_candidate(
         if canonical != report["RomSha256"] or canonical != r1.CANONICAL_ROM_SHA256:
             raise ValueError("candidate canonical ROM identity drift")
         timeout_seconds = report["ProposedWallTimeoutSeconds"]
+        if diagnostic_kind == OPENING_DIAGNOSTIC and (
+            interactive
+            or continuation
+            or segment
+            or timeout_seconds != 300
+            or report.get("MaximumAdditionalStarts") != 1
+            or report.get("FutureControlledOrdinal")
+            != report.get("HistoricalControlledStarts", -2) + 1
+        ):
+            raise ValueError("opening execution must match fresh bounded preparation")
         if type(timeout_seconds) is not int or timeout_seconds <= 0:
             raise ValueError("candidate is missing its reviewed positive wall-time limit")
         config = load_json(directory / "config.json")
@@ -3407,7 +3559,9 @@ def run_map3_observation_candidate(
         ):
             raise RuntimeError("candidate callback/terminal status did not complete cleanly")
         if observed.get("kind") != "bounded-original-observation" or (
-            not continuation and observed["terminal"]["map"] != 19
+            not continuation
+            and diagnostic_kind != OPENING_DIAGNOSTIC
+            and observed["terminal"]["map"] != 19
         ):
             raise ValueError("candidate terminal output differs from its selected boundary")
         if (
@@ -3416,7 +3570,17 @@ def run_map3_observation_candidate(
         ):
             raise ValueError("candidate cleanup did not complete")
         diagnostic["status"] = "OBSERVATION-COMPLETE-UNREVIEWED"
-        if diagnostic_kind == HEAL_DIAGNOSTIC:
+        if diagnostic_kind == OPENING_DIAGNOSTIC:
+            summary = observed.get("diagnostic", {})
+            if (observed.get("stopReason") != "opening-script-return"
+                    or summary.get("kind") != OPENING_DIAGNOSTIC
+                    or not summary.get("r1") or not summary.get("programReturned")
+                    or summary.get("records", 2001) > 2000
+                    or (runtime / "checkpoints.jsonl").stat().st_size > 1048576):
+                raise ValueError("opening scalar observation/terminal budget mismatch")
+            diagnostic["stopReason"] = observed["stopReason"]
+            diagnostic["status"] = "OPENING-DIAGNOSTIC-COMPLETE-UNREVIEWED"
+        elif diagnostic_kind == HEAL_DIAGNOSTIC:
             _assert_heal_diagnostic_output(runtime, report)
             diagnostic["stopReason"] = observed["stopReason"]
             diagnostic["status"] = HEAL_DIAGNOSTIC_STATUS

@@ -4016,6 +4016,84 @@ not a host startup. Actual engine checks select `TurnOrderRulesTests` and `Battl
 rerun a completed failing node narrowly. Use scoped Ruff, document checks, the committed plan and
 actual CI; no normal/full suite, complete H4 comparison, full route or settings matrix follows.
 
+### Scoped admission seed comparison
+
+Load the current ignored private-input configuration in the invoking process. The scoped command
+uses existing compact W2 actual data and an explicitly selected original/accepted-mechanism context:
+
+```powershell
+uv run python -X utf8 -m sf2tool.remake_h4_comparison admission-seed `
+  --actual local/issue534/w2-binding-01/actual.json `
+  --admission-context local/issue534/admission-binding-01/seed-context.json `
+  --text-source-root $pinnedSource `
+  --output local/issue534/admission-binding-01/seed-review.json
+```
+
+`$pinnedSource` is an explicitly selected read-only pinned source checkout. Output must be fresh
+under the current worktree's `local/`; selected actual/context input is capped at10MiB. The same
+predicate is used by modern comparison's optional `--admission-context`. A seed-only context replaces
+only the seed-copy child. An explicit `opening` selection also evaluates the separate opening-control
+child described below. Neither command grants full H4 acceptance.
+
+The private `select-seed.py` selects original checkpoint lines201/204/310/312/4011/4124 from
+registered `issue496/prepared-72`, retaining scalar facts, flag88, order and original line numbers.
+It reads6,924,228B and emits a compact context. Context includes the existing candidate identities,
+the historical A session, PR621 merge identity, retained correction TRX and adapter exit receipt.
+Use the [contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#admission-seed-copy-composition)
+for their distinct proof roles. Do not regenerate a corrected trace from test assertions.
+
+Direct controls exercise the real predicate: baseline; missing original loop/copy/behavior receipt;
+flag88 resume; original reader before write; foreign actual session/original cohort/correction;
+wrong source caller; changed copy; reversed draw/copy; and known wrong copy or flag88 beside a
+missing operand. Also check original frame/order agreement, both event axes, physical result-span
+ownership and input-after/result/state joins. Reverse revisions without reordering the array,
+use a negative/duplicate sequence, or contradict two ending channels while omitting the third.
+Contradictions must remain FAIL beside missing evidence. These are direct
+verification runs, not a new test suite of the comparator. Preserve completed PR621 failures and
+narrow corrections; no SDK/native/whole-route rerun follows merely from composing this evidence.
+
+#### Selected opening controls
+
+The admitted original start139 is retained under `admission-binding-01/opening-prepared-02`.
+Its source/configuration/runner/observer/input identities,11 records, completed status and restoration
+are owned by the [original readback](../../docs/research/map3-messenger-acceptance.md#controlled-opening-scalar-readback).
+Do not rerun that successful observation. `correction-01/audit-opening.py` checks retained results and
+the450 registered installation files without launching the emulator. It preserves the original
+preparation-budget failure and the native receipt's absent exact monotonic duration.
+
+The separately authorized one-pass historical A selector is
+`correction-01/select-opening-actual.py`, with its plan and receipt in the same private owner.
+It streamed1,005,792,097B of the registered1,375,851,198B input, stopped each channel at the opening
+boundary, and wrote49,056B of selected actual data in9.1947s/1,642,496B incremental peak. Source
+size/mtime remained unchanged. It recovered initial revision4 settings, first-input/result joins,
+and selected opening results; sparse results genuinely omit some per-glyph/view operands.
+Do not scan again to fill absent producer fields or substitute later settings for admission.
+
+`compose-opening.py` merges these selected fields with the existing seed evidence, rejecting
+contradictory overlaps. Actual/context total2,107,507B remains below10MiB. Reproduce the scoped
+comparison using `correction-01/composed-actual.json` and `composed-context.json` as the two inputs
+to `admission-seed`, with a fresh output. Its seed and opening results are separate, and an explicitly
+selected opening FAIL/Unavailable produces a nonzero exit. Any selected child FAIL takes precedence
+over another child's Unavailable result in the command's combined verdict and exit. Modern comparison uses the same function
+only for the opening child; no accepted service/map/audio/HEAL/turn predicate changes.
+
+Direct controls cover baseline, missing original/actual/context/settings, wrong mouth/view/input,
+foreign cohort/session, original order/frame/input-axis inversions, first input span and before/after
+joins, result/event axes, original exit/restoration failure, and known contradictions beside unrelated
+missing evidence. The opening child binds admission values and source-side readers; it does not
+claim a distinct historical first-glyph read event, source hardware cadence or full service replay.
+Run scoped lint/contracts and the committed planner under current scope, then record exact-head CI.
+No SDK/full H4/route/cleanup or repeat native observation follows from these changes.
+
+The complete compact opening context also retains the existing host `reviewedMaterial` and
+`runtimeIdentities`; these join the frozen candidate without recollection. Validate the observer's
+kind/input/completion/terminal, every required named restoration flag, count/order/seen-set agreement
+and the observer/emulator frame equations relative to the R1 input epoch. Keep `outputRemoved=false`
+as normal evidence retention. Direct controls include failed completion with missing R1, foreign
+observed input, failed `gameFlags` restoration and a view frame inconsistent with its input/emulator
+epoch. Preserve the pre-correction context and independent failing counterexamples; never rerun the
+successful native attempt to repair a comparator omission.
+
 ### Historical A turn-order inventory
 
 The retained required-keyboard A inventory remains separate from the controlled proof above.

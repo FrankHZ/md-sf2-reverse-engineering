@@ -3474,6 +3474,141 @@ No original run/capture was added. The eight first-warp scalar gaps, H4 5340PASS
 HEAL2vs3/later RNG failures, JOIN cross-clock Unknowns, index29/next-actor discrepancy,
 public aggregate/h3-witch nonruns and attempts21/41/61/67 cleanup Unknowns remain.
 
+### Prepared opening scalar diagnostic
+
+**Prepared, not observed:** `admission-opening-scalar-diagnostic` uses the existing fixed-input
+candidate, controlled R1 bootstrap and callback/status/restoration contract. It does not use a
+post-opening savestate, the victory continuation, or the interactive full-route rail. The registered
+prepared06..86 metadata inventory found80 candidates/70 pairs; root saves06/17/33/45/68 are at
+the later messenger frame8605. No pre-R1 state was identified in that bounded registration.
+
+The private `admission-binding-01/select-opening-input.py` reads only the registered prepared68
+input prefix through R1-relative frame655. Its recorded `cs_5145C` return is order2284,
+observer/emulator1010/1009. Input edges are Left at1, neutral31, Right151, neutral153, C393,
+neutral394, C514, neutral515, C635, neutral636. These are frozen observed inputs, not an adaptive
+route policy or assumed neutral controls. The diagnostic stops on the matched original opening
+script return, completing that emulated frame before existing restoration/exit. It does not
+continue to messenger when an optional reader was not reached; that reader stays **Unknown**.
+
+`_opening_configuration` compares the selected original source with the pinned Git objects and
+checks each hook instruction against both the existing H1 listing and canonical ROM. Hooks are
+installed before R1; first pre-R1 and first admitted records remain distinct:
+
+| Hook | Original boundary |
+| --- | --- |
+| `loc_68E6`, `loc_65D8` | before glyph/delay mouth tests |
+| `loc_46B4`, `loc_46BE` | before view override test and after speed selection |
+| `loc_6472+12`, `+16` | before/after W2 byte copy |
+| `loc_4723E`, `+4` | before/after script-return view clear |
+| first `WaitForEvent`; matched `cs_5145C` return | admitted input boundary and bounded endpoint |
+
+Each selected record retains PC/order/frame, admitted versus pre-R1 phase, both source-defined
+input bytes (`PLAYER_1_INPUT` for the glyph branch and `CURRENT_PLAYER_INPUT` for the delay
+branch), mouth/control bytes, view target/layer/active mask/area/parallax/autoscroll/plane positions
+and relevant registers. Both input values are read with byte width; they are not interchangeable.
+The override/read branch is not inferred from later zeros. Records are first-per-hook/per-phase,
+not per-frame capture. The ordinary full entity-array R1 export is omitted for this diagnostic;
+existing bootstrap state preservation and inherited-state validation still run.
+
+Bootstrap interventions are unchanged: CheckSram's stack return is redirected to scratch`FF6802`;
+the64-byte scratch/menu thunk supplies initial menu1 and difficulty0. Session-only ROM patches
+are the Witch menu alias at`100A8` (6 bytes), name-ally RTS at`1007C` (2), and DisplayText RTS
+at`6260` (2). The original NewGame/SaveGame/default-init path constructs the controlled start.
+At R1, cart patches and scratch are restored. No diagnostic write sets mouth, view override,
+copy byte, main seed or thinking image. Existing final core/scope restoration and temporary session
+ROM removal remain mandatory; they are not extra gameplay evidence. This is controlled admission,
+not an unmodified natural title flow.
+
+After loading private configuration, preparation uses
+`prepare_map3_observation_candidate(rom, pinned_source, input_path=prefix,
+output_directory=fresh_output, proposed_timeout_seconds=300,
+reviewed_prior_starts=138, reviewed_prior_active_seconds=15583.68017570005,
+reviewed_prior_delivered_frames=429625, reviewed_prior_advancing_batches=16332,
+diagnostic_kind=OPENING_DIAGNOSTIC)`. These retained cumulative totals must be refreshed against
+their owner before launch. Proposed ordinal139 has not executed. The prepared655-frame table plus
+the existing1800-frame bootstrap watchdog bounds this candidate to2455 frames, inside the allocated
+12000-frame ceiling. Other limits are300s,2000 scalar records/1MiB,64MiB total generated output and
+2GiB process working set. Source preparation already verifies shared-Lua syntax; it starts no emulator.
+
+The selected candidate is `local/issue534/admission-binding-01/opening-prepared-02`; retain
+`opening-prepared-01` as the pre-correction artifact. After independent
+pre-launch inspection and installation ownership/process checks, the execution API is
+`run_map3_observation_candidate(rom, candidate, diagnostic_kind=OPENING_DIAGNOSTIC)` with all other
+arguments at their noninteractive defaults. Reuse the registered verified installation with explicit
+worktree-local config/cwd/TEMP/writable roles; no alternate emulator/source copy. The launch plan
+uses the private `admission-binding-01/correction-01/run-opening.py --execute-reviewed` supervisor to monitor
+storage/peak working set at250ms intervals, in addition to the runner's wall/frame and Lua record
+caps. The supervisor's default invocation is inspection-only. A resource violation retains a failed
+attempt and does not claim successful emulator restoration. The successful run below does not test
+the resource-violation termination path; preparation itself is not a completed native gate.
+
+Preparation completed in23.7919s with247,746,560B incremental peak working set. The inherited H1
+preparation reads the existing24,062,653B listing; its measured peak **exceeds** the proposed128MiB
+offline budget. Preserve `opening-preparation-receipt-02.json`; do not claim budget PASS or repeat
+the preparation automatically. The earlier preparation failed before launch/materialization because
+the existing accounting guard rejected the new non-segment diagnostic; receipt01 is retained and
+that guard now accepts only this explicitly validated diagnostic.
+
+Pre-launch review found the missing delay-branch input byte. Its necessary instrumentation correction
+justifies the fresh candidate; it does not justify rerunning the old preparation to erase a failure.
+The prospective budget for this correction's unchanged H1 input is384MiB incremental/120s.
+`correction-01/preparation-receipt.json` records22.8582s and247,898,112B incremental peak, within
+that new allocation. The original128MiB overrun remains **FAIL**. No parser/toolchain expansion or
+native launch followed during preparation; native budgets are unchanged. Preparation alone establishes
+no original opening value, runtime compatibility/cleanup result or full H4 acceptance.
+
+### Controlled opening scalar readback
+
+**Confirmed (selected controlled observation):** `opening-prepared-02` ran once after independent
+admission at executor commit `dd83581f0d2b9cb0d7ddd31202820216cdbb34d4`, using the pinned source,
+USA ROM and registered BizHawk2.11.1/Genesis Plus GX. Its configuration identity is
+`C72A2547D51BBE97CBEB6D7DB51E5FCCDDD5507917735CB11554F8461D69DAF7`, observer
+`738E66DD261CAD1D2077E64EAC85E33A0CADC66C8712ED32F619A2818E747530`, runner
+`CC1823FDF94A29A3C415F4535C68799DF5D900C75DC6951C5260E0134289535E`, and input
+`991A51636102F00D837F605561538A39B60E7621370D523CFC412D52ECDDEB5E`.
+The candidate retains source/H1/ROM and execution-helper identities. Reproduction is the reviewed
+command above; do not overwrite or rerun the completed candidate. Inspect its
+`runtime/checkpoints.jsonl`, `observer.observed.json`, `observer.status.txt`, `host-status.json`
+and `launch-budget.json`, with `correction-01/audit-opening.py`/`opening-audit.json` for the
+bounded read-only audit and registered-installation comparison.
+
+| Selected seam | Order / callback frame / input frame | Observed operands |
+| --- | --- | --- |
+| Pre-R1 view read/selection | 1–2 / 329 / not admitted | override0; D7 remains24 |
+| R1 before input | 3 / 354 / 0 | mouth0 at`FFB198.b`, view0 at`FFB194.w`, copy0 at`FFDFB0.b`; both input bytes0 |
+| First admitted view read/selection | 4–5 / 355 / 1 | override0; D7 remains24; player/current input4; target0, layer0, active-plane mask0 |
+| First admitted glyph mouth read | 6 / 566 / 212 | mouth0; player/current input0; typewriting1 |
+| First W2 copy before/after | 7–8 / 661 / 307 | copy0→209, equal to D7 low byte209 |
+| Script-return view clear before/after | 9–10 / 1009 / 655 | override0→0 |
+| Matched `cs_5145C` return | 11 / 1009 / 655 | caller return PC`0x58C`; stop after this frame completes |
+
+At `loc_46B4`, override0 preserves D7; `loc_46BE` confirms24. Retained layer1/2 parallax values
+are256 and autoscroll bytes0. These operands support the selected default-speed branch, without
+imposing original pixel cadence on the remake. At `loc_68E6`, mouth0 permits the player-input
+test; input0 reaches `WaitForVInt`. Neutral input alone would not distinguish every mouth value,
+so retain the observed mouth byte itself.
+
+The delay-reader hook `loc_65D8` was not reached. Pinned `gamescript.txt` text510/511/483 has
+W2/W2/W1 respectively and no delay token; `symbol_delay1`/`symbol_delay3` is not required by this
+selected opening. Its unobserved execution remains **Unknown**, without a route extension or a
+fabricated delay record. R1 mouth/view values are directly observed in this controlled start;
+ancestry inference remains the limit for the unobserved natural title/reset path.
+
+The process exited0 without timeout/forced termination. Named callback/core/scope/cart-patch
+restoration fields passed; the canonical ROM was unchanged and the temporary session ROM was
+removed by its existing owner. Outputs remain retained (`outputRemoved=false`). Post-exit comparison
+of450 installed release members to the pinned archive passed. This proves this attempt's restoration,
+not historical attempts or failure-path cleanup.
+
+There were11 scalar records/16,547B, sampled peak working set847,978,496B and sampled peak generated
+bytes2,293,904, within the approved limits. One start raises retained starts138→139;
+655 admitted input frames and callback frame1009 are recorded, with no interactive batches added.
+The noninteractive receipt has no monotonic elapsed field: the file creation-to-final-receipt
+interval25.3233s is an estimate, not exact active time. Preserve prior15583.68017570005s plus
+this explicitly unmeasured increment; do not fabricate exact cumulative duration or rerun to obtain it.
+Prior429625 delivered frames and16332 batches remain distinct from bootstrap/callback numbering.
+This bounded result establishes no full H4 or obligation acceptance.
+
 ### Later blocks: complete source, no later runtime claim
 
 **Confirmed construction/source; Unknown reach and timing:** direct expansion of the documented

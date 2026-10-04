@@ -145,10 +145,13 @@ cross-clock schedule still **Unknown**; preserve the
 [diagnostic owner](../../../remake/docs/development-and-verification.md#retained-first-control-opportunity-alignment).
 The earlier5,000-frame timeout is a completed failure, not an interrupted run to restart.
 
-**Inferred (opening binding):** explicit speed2/mouth0/view override0 admission uses named source
-writers and later agreeing saved bytes. Public R1 chronology starts at CheckSram; preceding
-StartWitchScreen/reset ancestry is inferred. See the
-[binding evidence](../../research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding).
+**Confirmed (selected controlled opening):** the
+[bounded R1 readback](../../research/map3-messenger-acceptance.md#controlled-opening-scalar-readback)
+observes mouth0/view override0 before input and at their first applicable source readers, before
+the script-return view clear. This supplies direct evidence for those controlled admission values.
+**Inferred (natural ancestry):** preceding StartWitchScreen/reset ancestry remains outside that
+observation; the earlier speed2/settings construction and later saved-byte corroboration retain
+their [binding evidence](../../research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding).
 **Unknown:** complete original portrait/service timing outside that profile, hardware presentation
 and whole-route9A/H4 remain open. A speaker hint, portrait identity or cleared typewriting byte
 alone cannot admit an active or unknown portrait. The source-bound entity-event rules below
