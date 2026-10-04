@@ -3844,9 +3844,15 @@ operands and the battle01 compressed terrain, using the existing decoder; it doe
 Direct controls cover wrong damage and live HP, premature effects, command-phase errors, RNG/seed
 changes, range, source identity, input press/result joins, missing operands/records, foreign session,
 wrong event order, census coverage and scene strike/token/reaction mismatches. Wrong HP or RNG must
-still fail without source operands; absence alone remains Unavailable. Preserve the first pilot's
+still fail without source operands; absence alone remains Unavailable. Independent review controls
+also reject effects reassigned to existing future inputs, corrupt automatic-input after snapshots,
+foreign projection input ordinals and negative completion revisions even when the census is changed
+to agree. Positive clock values still require progression and result bounds. Reuse span/snapshot
+joins for player, automatic and effect results; join projections to result identity and host-input
+chronology, preserving host-poll and before-Present semantics. Preserve the first pilot's
 wrong helper-type exception, the later overbroad rejection/HP diagnostic failures and the missing
-press classification failure alongside corrected results. No tests of this verifier are introduced.
+press classification failure, initial CLI exit failure and independent review's four false-PASS
+counterexamples alongside corrected results. No tests of this verifier are introduced.
 Run scoped Ruff, direct contracts/docs/private-boundary checks, the committed planner interpreted
 under current verification policy, and exact-head CI. Existing normal-verification provenance FAIL,
 historical A FAIL and original elapsed-time Unknown remain unchanged. Independent main-gate

@@ -686,7 +686,10 @@ party/enemy identities; equipped item definitions bind range, and the original c
 terrain plus mover table bind land protection. Prowess and critical tables supply draw eligibility
 and ranges. Candidate damage and presentation sprites supply none of these expected parameters.
 The selected source-initial party declaration and initial placement/mover snapshots are required;
-this comparison does not establish an arbitrary missing deployment/profile join.
+this comparison does not establish an arbitrary missing deployment/profile join. The reviewed reached
+source subset is unpromoted SDMN/PRST/KNTE versus GIZMO, status0, ATT8–10/DEF4–5 and ATT-only
+weapons56/71/85. This does not establish promoted/altered-prowess, Gisarme, Burst Rock or special
+unarmed rules; unreached counters remain explicit.
 
 The predicate uses live ATT/DEF/HP, status, equipment, placement and full main-seed images. It checks
 ordered dodge/critical/spread/double/counter draws, sticky counter requests and follow-up eligibility,
@@ -699,9 +702,14 @@ known wrong arithmetic, identities or effects remain FAIL beside unrelated missi
 
 Session, result index, revision and observation sequence identify every retained boundary. A
 physical player confirmation binds through its input index and result interval; automatic actions
-retain their causal input ordinal and subsequent Submit/state chain. One Submit may finish one
-scene and prepare the next. Scene phase tokens bind projections to the proper strike and reaction,
-including signal-before-Present versus later polls. Preserved out-of-range target attempts are
+retain their causal input and subsequent Submit/state chain. Result source indices bind to the
+latest applicable input interval, with before/after snapshots joined to retained result/state
+boundaries; the mere existence of an ordinal proves no ownership. Both clock axes must be
+nonnegative and progress through input, event, result and completion boundaries. One Submit may
+finish one scene and prepare the next. Projections join an actual result snapshot and the latest
+input at their host update. Host polls require the current phase token; signal-before-Present
+projections require their corresponding completion. Tokens alone cannot establish input or result
+ownership. Scene phase tokens also bind the proper strike and reaction. Preserved out-of-range target attempts are
 checked against the source weapon range at the preview destination. FieldSpin/FieldExit/FieldSettle
 projections after scene completion remain diagnostics for the separate death/scene obligation.
 

@@ -5414,7 +5414,10 @@ def physical_consumer_binding(actual, context, source_root):
 
     def number(value):
         return (
-            isinstance(value, (int, float)) and not isinstance(value, bool) and value == int(value)
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and value >= 0
+            and value == int(value)
         )
 
     eq("selected scope", "retained-keyboard-A-physical", context.get("scope", absent))
@@ -5433,7 +5436,7 @@ def physical_consumer_binding(actual, context, source_root):
                 continue
             order.append(index)
             check(channel + " unique source index", index not in records)
-            records[index] = row
+            records[index] = dict(row, _index=index)
         check(channel + " declared selection", bool(wanted) or None)
         check(
             channel + " complete selected indices",
@@ -5442,6 +5445,140 @@ def physical_consumer_binding(actual, context, source_root):
         check(channel + " source order", order == sorted(set(order)))
         selected[channel] = records
     warps = selected["warpRecords"]
+    clock_keys = ("revision", "observationSequence")
+    identity_keys = ("sessionId", *clock_keys)
+    snapshot_keys = (*identity_keys, "mainSeed")
+
+    def clocks(name, snapshot):
+        eq(name + " session", session, snapshot.get("sessionId", absent))
+        check(
+            name + " nonnegative clocks",
+            merge([number(snapshot[k]) if k in snapshot else None for k in clock_keys]),
+        )
+
+    def precedes(name, before, after):
+        check(
+            name,
+            merge(
+                [
+                    before[k] <= after[k]
+                    if number(before.get(k)) and number(after.get(k))
+                    else False
+                    if k in before and k in after
+                    else None
+                    for k in clock_keys
+                ]
+            ),
+        )
+
+    def join(name, left, right, keys=identity_keys):
+        # Same pairwise span/snapshot mechanism used by W2/admission: another missing
+        # channel cannot hide a contradiction between two available identities.
+        for key in keys:
+            check(
+                name + " " + key, match(left[key], right.get(key, absent)) if key in left else None
+            )
+
+    input_rows = list(selected["inputRecords"].values())
+    declared_inputs = set((context.get("indices") or {}).get("inputRecords", []))
+    missing_inputs = declared_inputs - set(selected["inputRecords"])
+
+    def causal_result(index, row):
+        eligible = [
+            i for i in input_rows if number(i.get("resultStart")) and i["resultStart"] <= index
+        ]
+        later = [i for i in input_rows if number(i.get("resultStart")) and i["resultStart"] > index]
+        if not eligible:
+            check("causal result input available", None)
+            return
+        owner = eligible[-1]
+        next_index = later[0]["_index"] if later else max(declared_inputs, default=-1) + 1
+        ambiguous = any(owner["_index"] < i < next_index for i in missing_inputs)
+        check(
+            "result belongs to latest causal input",
+            None if ambiguous else match(owner.get("ordinal"), row.get("inputOrdinal", absent)),
+        )
+        envelope = row.get("result") or {}
+        precedes("causal input before precedes result", owner.get("before") or {}, envelope)
+        if number(owner.get("resultEnd")):
+            if index < owner["resultEnd"]:
+                precedes("direct result within input snapshots", envelope, owner.get("after") or {})
+                if index == owner["resultEnd"] - 1:
+                    join("direct result/input after", envelope, owner.get("after") or {})
+                    if row.get("state"):
+                        join(
+                            "direct state/input after",
+                            row["state"],
+                            owner.get("after") or {},
+                            snapshot_keys,
+                        )
+            else:
+                precedes(
+                    "automatic result follows completed input", owner.get("after") or {}, envelope
+                )
+        if later:
+            precedes("result precedes next physical input", envelope, later[0].get("before") or {})
+
+    previous_result = None
+    for row in warps.values():
+        envelope = row.get("result") or {}
+        if previous_result:
+            precedes("result clocks progress in source-index order", previous_result, envelope)
+        previous_result = envelope
+
+    previous_input = None
+    for row in input_rows:
+        before_input, after_input = row.get("before") or {}, row.get("after") or {}
+        clocks("input before", before_input)
+        clocks("input after", after_input)
+        precedes("input snapshot clocks progress", before_input, after_input)
+        if previous_input:
+            precedes(
+                "physical input clocks progress", previous_input.get("after") or {}, before_input
+            )
+            check(
+                "physical input result spans progress",
+                row.get("resultStart", -1) >= previous_input.get("resultEnd", 0),
+            )
+        previous_input = row
+        start, end = row.get("resultStart"), row.get("resultEnd")
+        if number(start) and number(end):
+            if start == end:
+                join(
+                    "empty input span preserves snapshot", before_input, after_input, snapshot_keys
+                )
+            for name, input_snapshot, result_index in (
+                ("before", before_input, start - 1),
+                ("after", after_input, end - 1),
+            ):
+                anchor = warps.get(result_index)
+                if anchor:
+                    join(
+                        "input " + name + " joins result boundary",
+                        input_snapshot,
+                        anchor.get("result") or {},
+                    )
+                    if anchor.get("state"):
+                        join(
+                            "input " + name + " joins state boundary",
+                            input_snapshot,
+                            anchor["state"],
+                            snapshot_keys,
+                        )
+
+    census_for_joins = context.get("census") or []
+    physical_rows = {
+        i: row
+        for i, row in warps.items()
+        if any(
+            number(o.get("index"))
+            and number((o.get("end") or {}).get("index"))
+            and o["index"] <= i <= o["end"]["index"]
+            for o in census_for_joins
+        )
+    }
+    for index, row in physical_rows.items():
+        causal_result(index, row)
     events, event_rows = {}, {}
     for index, row in warps.items():
         envelope, state = row.get("result") or {}, row.get("state") or {}
@@ -5505,19 +5642,116 @@ def physical_consumer_binding(actual, context, source_root):
                 positions[-1],
                 envelope.get("observationSequence", absent),
             )
-    for row in selected["inputRecords"].values():
-        for side in ("before", "after"):
-            eq(
-                "input " + side + " session",
-                session,
-                (row.get(side) or {}).get("sessionId", absent),
+    previous_event = None
+    for _, event in sorted(events.items()):
+        if previous_event:
+            check(
+                "event revision progresses with sequence",
+                event["Revision"] >= previous_event["Revision"],
             )
+        previous_event = event
+    for row in input_rows:
         check(
             "input result interval",
             number(row.get("resultStart"))
             and number(row.get("resultEnd"))
             and row["resultStart"] <= row["resultEnd"],
         )
+    for projection in selected["sceneObservations"].values():
+        scene = projection.get("scene") or {}
+        if (
+            scene.get("phase") in ("FieldSpin", "FieldExit", "FieldSettle")
+            and scene.get("visible") is False
+        ):
+            continue
+        clocks("physical projection", projection)
+        check(
+            "physical projection host clock",
+            number(projection.get("hostUpdate")) if "hostUpdate" in projection else None,
+        )
+        check(
+            "physical projection stage",
+            projection.get("projectionStage") in ("host-poll", "signal-before-Present")
+            if "projectionStage" in projection
+            else None,
+        )
+        matching = [
+            row
+            for row in physical_rows.values()
+            if all((row.get("result") or {}).get(k) == projection.get(k) for k in identity_keys)
+        ]
+        for row in physical_rows.values():
+            identity = row.get("result") or {}
+            if identity.get("observationSequence") == projection.get("observationSequence"):
+                eq(
+                    "projection revision joins known result sequence",
+                    identity.get("revision"),
+                    projection.get("revision", absent),
+                )
+        token = scene.get("waitToken")
+        if projection.get("projectionStage") == "host-poll" and token in events:
+            phases = [
+                k
+                for k, e in events.items()
+                if k <= projection.get("observationSequence", -1)
+                and e.get("Kind") in ("scene-prepared", "scene-step-started")
+            ]
+            check(
+                "host poll displays current phase token", token == max(phases) if phases else None
+            )
+        if projection.get("projectionStage") == "signal-before-Present":
+            completions = [
+                e
+                for row in matching
+                for e in (row.get("result") or {}).get("observations", [])
+                if e.get("Kind") == "scene-step-completed"
+            ]
+            check(
+                "before-Present projection belongs to completion",
+                any(e.get("Detail") == scene.get("phase") for e in completions)
+                if completions
+                else None,
+            )
+            eq("before-Present completion flag", True, scene.get("completed", absent))
+        check("physical projection result snapshot retained", bool(matching) or None)
+        for row in matching:
+            eq(
+                "projection belongs to actual result input",
+                row.get("inputOrdinal"),
+                projection.get("inputOrdinal", absent),
+            )
+        host_inputs = [
+            i
+            for i in input_rows
+            if number(i.get("hostUpdate"))
+            and number(projection.get("hostUpdate"))
+            and i["hostUpdate"] <= projection["hostUpdate"]
+        ]
+        if host_inputs:
+            owner = host_inputs[-1]
+            next_inputs = [i for i in input_rows if i["_index"] > owner["_index"]]
+            next_index = (
+                next_inputs[0]["_index"] if next_inputs else max(declared_inputs, default=-1) + 1
+            )
+            ambiguous = any(owner["_index"] < i < next_index for i in missing_inputs)
+            check(
+                "projection follows latest host input",
+                None
+                if ambiguous
+                else match(owner.get("ordinal"), projection.get("inputOrdinal", absent)),
+            )
+            precedes(
+                "projection follows input before snapshot", owner.get("before") or {}, projection
+            )
+            if next_inputs:
+                precedes(
+                    "projection precedes next input snapshot",
+                    projection,
+                    next_inputs[0].get("before") or {},
+                )
+        else:
+            check("projection causal host input retained", None)
+
     for row in selected["sceneObservations"].values():
         eq("scene projection session", session, row.get("sessionId", absent))
         eq("scene projection error", None, (row.get("scene") or {}).get("error", absent))
@@ -5683,6 +5917,30 @@ def physical_consumer_binding(actual, context, source_root):
         envelope = row.get("result") or {}
         end = (occurrence.get("end") or {}).get("sequence")
         first = occurrence.get("firstDrawSequence")
+        end_context = occurrence.get("end") or {}
+        end_index = end_context.get("index")
+        end_row = warps.get(end_index, {})
+        end_event = events.get(end)
+        eq("end source result index", end_index, event_rows.get(end, absent), seq)
+        if end_event:
+            check(
+                "scene completion follows preparation on both axes",
+                number(occurrence.get("revision"))
+                and number(end_event.get("Revision"))
+                and end_event["Revision"] > occurrence["revision"]
+                and end_event["Sequence"] > seq,
+                seq,
+            )
+            check(
+                "scene completion follows preparation result",
+                number(index) and number(end_index) and end_index >= index,
+                seq,
+            )
+            precedes(
+                "scene completion inside its result clocks",
+                {"revision": end_event["Revision"], "observationSequence": end_event["Sequence"]},
+                end_row.get("result") or {},
+            )
         eq(
             "preparation identity",
             dict(
@@ -5860,16 +6118,6 @@ def physical_consumer_binding(actual, context, source_root):
                     committing[0].get("after", absent),
                     seq,
                 )
-        elif owners:
-            check(
-                "automatic preparation after causal input",
-                any(
-                    i.get("resultEnd", index + 1) <= index
-                    or i.get("resultStart", index + 1) <= index < i.get("resultEnd", -1)
-                    for i in owners
-                ),
-                seq,
-            )
         seed = before.get("mainSeed")
         for event in envelope.get("observations", []):
             if event.get("Sequence", first) >= first:
@@ -5971,15 +6219,6 @@ def physical_consumer_binding(actual, context, source_root):
                 "effect Submit has no failure",
                 None,
                 effect_row["result"].get("failure", absent),
-                seq,
-            )
-            check(
-                "effect input lineage",
-                any(
-                    i.get("ordinal") == effect_row.get("inputOrdinal")
-                    for i in selected["inputRecords"].values()
-                )
-                or None,
                 seq,
             )
         carried = [
