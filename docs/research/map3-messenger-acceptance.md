@@ -977,9 +977,10 @@ The preceding `CloseDialogueWindow` returns before bsc0B without an intervening 
 **Inferred:** VInt245 interrupts numeric conversion during window construction, before the two
 explicit window waits; VInts246/247 serve those waits after script A6 restoration. This fits the
 temporary number-buffer A6 and the complete source path. The busy spin's entry A6 does not explain
-the observed `FFFFDE80` activation. A shorter busy interval is not excluded, and the movement-end
-helper is conditional, not a universal fixed-one-opportunity operation. No missing unconditional
-third wait is identified. Exact interrupted PCs and helper boundaries are not recorded.
+the observed `FFFFDE80` activation. This capture alone does not exclude a shorter busy interval;
+the legal HEAL caller's source invariant is established separately below. The movement-end helper
+is conditional, not a universal fixed-one-opportunity operation. No missing unconditional third
+wait is identified. Exact interrupted PCs and helper boundaries are not recorded.
 
 **Confirmed (make-idle):** CP3460–3727 spans `bsc05_makeAllyIdle`, frames32491–32517,
 orders86661–86980. It contains26 top-level VInts372–397 and26 fairy updates, all parent0/depth1.
@@ -1016,9 +1017,53 @@ graphics-gate values, and opportunity counts for changed entry timing or content
 support the attribution but do not establish exact instructions or a universal CPU-work tick cost.
 If stronger attribution is needed, the missing evidence is saved interrupt context and the disputed
 helper/gate boundaries at these named activations; this statement authorizes no new acquisition.
-The gameplay/RNG consequences and feasible semantic handling remain a separate unresolved question
-under [ADR0010 Option A/8D](../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a).
-The counts alone neither require hardware simulation nor waive result differences.
+The historical gameplay/RNG divergence remains a completed failure; the bounded recovery mapping
+below establishes mandatory modern logical work without attributing this difference to the finite
+music clock. It does not establish equality of the full original scene schedule. The counts alone
+neither require hardware simulation nor waive result differences.
+
+#### Legal HEAL recovery window completion
+
+**Confirmed (static source):** at pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, the successful ally HEAL recovery caller has a stronger
+invariant than an arbitrary call to `WaitForWindowMovementEnd`. Paths below are under `disasm/`:
+
+| Boundary | Source and consequence |
+| --- | --- |
+| Scene initialization | `code/gameflow/battle/battlescenes/initializebattlescene.asm:InitializeBattlescene` clears longwords from `BATTLESCENE_BACKGROUND_MODIFICATION_POINTER=$FFB3C0` through `$FFB597`, including busy byte `$FFB588` (`sf2const.asm`). `CreateBattlesceneMiniStatusWindows` resets all window entries, then creates only the ally/enemy ministatus slots0/1. `windowengine.asm:CreateWindow` initializes movement length/counter to1/1. |
+| Animation busy gate | `battlesceneengine_2.asm:SetupSpellanimation` dispatches the selected HealingFairy setup; `animation/healingfairy.asm` and `animation/update/healingfairy.asm` do not set `$FFB588`. The setters for other spell animations are not part of this admitted HEAL path. Starting from scene initialization, the bsc0B busy spin therefore has no pending HEAL work to drain. Fairy control `$FFB585` is a different field and must not be treated as this busy flag. |
+| Dialogue and target | `battleactions/battleactionsengine_1.asm` writes PerformAnimation, then SwitchTargets before ApplyActionEffect for each target. Both helpers write `bscHideTextBox`; `sf2battlescenemacros.asm` binds it to bsc12. `textfunctions_2.asm:CloseDialogueWindow` waits for global window movement, deletes its window and clears its index, or returns if no dialogue exists. No dialogue/portrait window is introduced by HEAL setup/update. |
+| Remaining window moves | `common/menus/ministatuswindow.asm` gives both ally/enemy open and close moves length1. A target switch can leave such a move pending, but cannot introduce a longer movement. BuildMiniStatusWindow's numeric width/bar work changes content, not this length. |
+| Recovery | `battleactions/castspell.asm:spellEffect_Heal` emits an ally reaction with mode2. `battlesceneengine_0.asm:bsc0B_executeAllyReaction` opens the ally window, then mode2 goes to SFX_HEALING/return, avoiding damage-animation sleeps. `DmaHpAndMpBarTiles` between the explicit waits only enqueues bar DMA; it starts no window movement. |
+
+Thus at the recovery MoveWindow boundary every occupied ministatus entry has length1 and counter0
+or1, the window service is installed, and the only newly reset counter is the requested ally move.
+In `common/windows/windowengine.asm:VInt_UpdateWindows`, the first service clears/recomputes the
+moving bits **before** advancing counter0→1. The second service sees length==counter and clears
+those bits. `WaitForWindowMovementEnd` still performs its own wait even if movement already
+finished. One explicit move wait plus one explicit completion wait therefore covers this caller's
+mandatory work. This proof does not apply to a foreign live window, disabled window service,
+another spell animation's busy flag, or an arbitrary injected window counter. Those are not added
+to HEAL's admitted caller by constructing a synthetic internal state.
+
+**Confirmed (bounded remake behavior):**
+`HealingFairyTests.RecoveryCompletesItsWindowServicesWithoutDeliveryAddingOrRemovingFairyWork`
+executes the actual recovery cursor with waiting-phase delays23,3 and2, and early/late delivery.
+The first service cannot complete recovery; the second completes it. Delay2 crosses the reentry
+draw boundary and carries the shared seed `00920000→07710000` (range16/value0); delays3/23 draw
+nothing. Further delivery or advancement after completion adds no fairy work. Existing
+`HealingRulesTests` cover capped/self/other-target recovery, deferred MP/reward effects and changed
+stats; `TimedInputTestsAcknowledgementBeforeItsNextFairyOpportunity` preserves the distinct
+bsc10 input-before-wait rule. Reproduce with the configured absolute SDK and the Engine.Tests
+project's filter `FullyQualifiedName~HealingRulesTests|FullyQualifiedName~HealingFairyTests`.
+
+The modern deterministic mapping retains these two explicit services and each state's real fairy
+draw conditions. Numeric conversion's CPU execution time adds no logical quota. This is a source
+completion proof, not a rule that every original recovery lasts two VInts. CP2059–2091 still has
+three, its CPU-interrupt attribution remains **Inferred**, and the interrupted PC/live bytes remain
+**Unknown**. The retained cursor comparison's lifetime/age and later seed mismatches remain **FAIL**;
+neither a fixed third update, a reseed, nor a changed fairy arithmetic is justified. Make-idle
+decompression timing and full-scene historical schedule equality are not closed by this proof.
 
 To reproduce this bounded readback without execution, set `$researchWorktree` to the evidence owner
 and `$pinnedUpstream` to its existing pinned source checkout. The output contains only the named
