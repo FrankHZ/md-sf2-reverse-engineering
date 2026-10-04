@@ -4044,7 +4044,10 @@ for their distinct proof roles. Do not regenerate a corrected trace from test as
 Direct controls exercise the real predicate: baseline; missing original loop/copy/behavior receipt;
 flag88 resume; original reader before write; foreign actual session/original cohort/correction;
 wrong source caller; changed copy; reversed draw/copy; and known wrong copy or flag88 beside a
-missing operand. Contradictions must remain FAIL beside missing evidence. These are direct
+missing operand. Also check original frame/order agreement, both event axes, physical result-span
+ownership and input-after/result/state joins. Reverse revisions without reordering the array,
+use a negative/duplicate sequence, or contradict two ending channels while omitting the third.
+Contradictions must remain FAIL beside missing evidence. These are direct
 verification runs, not a new test suite of the comparator. Preserve completed PR621 failures and
 narrow corrections; no SDK/native/whole-route rerun follows merely from composing this evidence.
 

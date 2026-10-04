@@ -1026,6 +1026,7 @@ def _opening_configuration(upstream, addresses, listing, rom):
                 "MOUTH_CONTROL_TOGGLE",
                 "VIEW_SCROLLING_SPEED",
                 "PLAYER_1_INPUT",
+                "CURRENT_PLAYER_INPUT",
                 "VIEW_TARGET_ENTITY",
                 "VIEW_SCROLLING_PLANES_BITFIELD",
                 "MAP_AREA_LAYER_TYPE",

@@ -3502,8 +3502,10 @@ installed before R1; first pre-R1 and first admitted records remain distinct:
 | `loc_4723E`, `+4` | before/after script-return view clear |
 | first `WaitForEvent`; matched `cs_5145C` return | admitted input boundary and bounded endpoint |
 
-Each selected record retains PC/order/frame, admitted versus pre-R1 phase, real input/control
-bytes, view target/layer/active mask/area/parallax/autoscroll/plane positions and relevant registers.
+Each selected record retains PC/order/frame, admitted versus pre-R1 phase, both source-defined
+input bytes (`PLAYER_1_INPUT` for the glyph branch and `CURRENT_PLAYER_INPUT` for the delay
+branch), mouth/control bytes, view target/layer/active mask/area/parallax/autoscroll/plane positions
+and relevant registers. Both input values are read with byte width; they are not interchangeable.
 The override/read branch is not inferred from later zeros. Records are first-per-hook/per-phase,
 not per-frame capture. The ordinary full entity-array R1 export is omitted for this diagnostic;
 existing bootstrap state preservation and inherited-state validation still run.
@@ -3528,12 +3530,13 @@ the existing1800-frame bootstrap watchdog bounds this candidate to2455 frames, i
 12000-frame ceiling. Other limits are300s,2000 scalar records/1MiB,64MiB total generated output and
 2GiB process working set. Source preparation already verifies shared-Lua syntax; it starts no emulator.
 
-The concrete candidate is `local/issue534/admission-binding-01/opening-prepared-01`. After independent
+The current candidate is `local/issue534/admission-binding-01/opening-prepared-02`; retain
+`opening-prepared-01` as the pre-correction artifact. After independent
 pre-launch inspection and installation ownership/process checks, the execution API is
 `run_map3_observation_candidate(rom, candidate, diagnostic_kind=OPENING_DIAGNOSTIC)` with all other
 arguments at their noninteractive defaults. Reuse the registered verified installation with explicit
 worktree-local config/cwd/TEMP/writable roles; no alternate emulator/source copy. The launch plan
-uses the private `admission-binding-01/run-opening.py --execute-reviewed` supervisor to monitor
+uses the private `admission-binding-01/correction-01/run-opening.py --execute-reviewed` supervisor to monitor
 storage/peak working set at250ms intervals, in addition to the runner's wall/frame and Lua record
 caps. The supervisor's default invocation is inspection-only. A resource violation retains a failed
 attempt and does not claim successful emulator restoration. Native enforcement remains unobserved
@@ -3544,8 +3547,15 @@ preparation reads the existing24,062,653B listing; its measured peak **exceeds**
 offline budget. Preserve `opening-preparation-receipt-02.json`; do not claim budget PASS or repeat
 the preparation automatically. The earlier preparation failed before launch/materialization because
 the existing accounting guard rejected the new non-segment diagnostic; receipt01 is retained and
-that guard now accepts only this explicitly validated diagnostic. No new H3 runtime result, original
-opening value, compatibility/cleanup result or full H4 acceptance is claimed.
+that guard now accepts only this explicitly validated diagnostic.
+
+Pre-launch review found the missing delay-branch input byte. Its necessary instrumentation correction
+justifies the fresh candidate; it does not justify rerunning the old preparation to erase a failure.
+The prospective budget for this correction's unchanged H1 input is384MiB incremental/120s.
+`correction-01/preparation-receipt.json` records22.8582s and247,898,112B incremental peak, within
+that new allocation. The original128MiB overrun remains **FAIL**. No parser/toolchain expansion or
+native launch followed; native budgets are unchanged. No new original opening value, runtime
+compatibility/cleanup result or full H4 acceptance is claimed.
 
 ### Later blocks: complete source, no later runtime claim
 

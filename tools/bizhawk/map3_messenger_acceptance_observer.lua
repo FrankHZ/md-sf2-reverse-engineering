@@ -2323,6 +2323,7 @@ local function install_candidate()
             local values, registers = {}, {}
             for name, address in pairs(c.diagnostic.ram) do
                 local byte = name == "MOUTH_CONTROL_TOGGLE" or name == "PLAYER_1_INPUT"
+                    or name == "CURRENT_PLAYER_INPUT"
                     or name == "VIEW_TARGET_ENTITY" or name == "VIEW_SCROLLING_PLANES_BITFIELD"
                     or name == "MAP_AREA_LAYER_TYPE" or name:match("AUTOSCROLL")
                 values[name] = byte and memory.read_u8(address, "M68K BUS")

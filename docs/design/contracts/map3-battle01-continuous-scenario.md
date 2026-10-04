@@ -581,8 +581,14 @@ executed assertions and compilation, not synthetic runtime events. Direct compar
 accepted source binds their current use; changed dependencies require renewed review.
 
 Historical A's selected text2292 input407/token23128/result13797 independently supplies the
-actual main draw/copy/wait/read order and copy arithmetic. Session, source caller, result state,
-range and event progression must agree. The old null/text-only latch and later active`12340000`
+actual main draw/copy/wait/read order and copy arithmetic. Original frame progression and strict
+observation order must agree with that source chain. The physical input span/ordinal must own the
+Submit; input-after, result and state must join on session/revision/observation sequence/mode,
+with matching snapshot operands. Event revisions must progress, sequences must strictly progress,
+both must lie after input-before and within every available ending channel, and the final event
+must close the Submit. A copy commit must follow its draw commit. Array position or a selected ID
+alone proves none of these relations. Known inversions/mismatches remain FAIL even when another
+channel or clock operand is absent. The old null/text-only latch and later active`12340000`
 remain a separate **historical FAIL**, even when the composed required child passes. A current
 wrong copy or foreign session fails the required predicate; unrelated missing evidence cannot
 hide it. Missing evidence remains **Unavailable**, including a missing copy despite later
