@@ -3,8 +3,8 @@
 The default legacy profile diagnoses first control and the first STAY/next actor.
 The modern profile evaluates the continuous winning route and named settings matrix;
 missing required original or host bindings keep full H4 acceptance incomplete.
-Use the accepted read-only reference projector for those profiles. The audio and
-turn-order and w2 modes evaluate selected dependencies without loading the whole H4 report.
+Use the accepted read-only reference projector for those profiles. The audio,
+turn-order, w2 and heal modes evaluate selected dependencies without loading the whole H4 report.
 All outputs remain private.
 """
 
@@ -4859,6 +4859,1204 @@ _W2_COHORT = (
     ("bbcs-01", 93, 2299),
     ("bbcs-01", 146, 2303),
 )
+
+
+def _heal_fairy_source_step(previous, seed, quarter, setup=False):
+    """Pinned healingfairy setup/update + controller word semantics, at one opportunity.
+
+    Source: setup 1A848, update 1C53E, graphics sub_179C/table_1840. This
+    independent matched-state rule uses actual inputs, never a captured output as expected.
+    """
+    import copy
+
+    draws = []
+
+    def draw(range_, purpose):
+        nonlocal seed
+        word, value = _rng_step(int(seed) >> 16, range_ * 2)
+        after = (word << 16) | (int(seed) & 65535)
+        draws.append(
+            dict(
+                Kind="rng-fairy-" + purpose,
+                Before=seed,
+                After=after,
+                RandomRange=range_,
+                RandomValue=value >> 1,
+            )
+        )
+        seed = after
+        return value >> 1
+
+    def signed(value):
+        value = int(value) & 65535
+        return value if value < 32768 else value - 65536
+
+    if setup:
+        y, delay, dust = (
+            draw(32, "setup-y") + 128,
+            draw(30, "setup-delay") + 1,
+            draw(12, "setup-dust") + 1,
+        )
+        state = dict(
+            Lifetime=65535,
+            Control=1,
+            ActiveCount=1,
+            CleanupPending=False,
+            PendingDustX=0,
+            PendingDustY=0,
+            Fairies=[
+                dict(
+                    Age=1,
+                    Active=True,
+                    Phase=7,
+                    Angle=0,
+                    Speed=0,
+                    XFraction=delay,
+                    YFraction=0,
+                    WingClock=0,
+                    WingFrame=0,
+                    DustClock=dust,
+                    X=384,
+                    Y=y,
+                    BodyFrame=1,
+                    Mirrored=False,
+                )
+            ],
+            Dust=[dict(Age=0, Frame=0, Clock=0, X=0, Y=0) for _ in range(23)],
+        )
+        return state, seed, draws
+    state = copy.deepcopy(previous)
+
+    def cleanup():
+        state.update(
+            Lifetime=0,
+            Control=0,
+            PendingDustX=0,
+            PendingDustY=0,
+            CleanupPending=True,
+            ActiveCount=0,
+        )
+        for f in state["Fairies"]:
+            for key in (
+                "Age",
+                "Phase",
+                "Angle",
+                "Speed",
+                "XFraction",
+                "YFraction",
+                "WingClock",
+                "WingFrame",
+                "DustClock",
+            ):
+                f[key] = 0
+            f["Active"] = False
+        state["Dust"] = [dict(Age=0, Frame=0, Clock=0, X=0, Y=0) for _ in state["Dust"]]
+
+    if state["Control"] > 2:
+        cleanup()
+        return state, seed, draws
+    if not state["Control"] or not any(f["Age"] for f in state["Fairies"]):
+        return state, seed, draws
+    lifetime = 0 if state["Control"] == 2 else max(0, state["Lifetime"] - 1)
+    state["Lifetime"] = lifetime
+    for f in state["Fairies"]:
+        if not f["Age"]:
+            continue
+        f["Age"] = (int(f["Age"]) + 1) & 65535
+        phase = int(f["Phase"])
+        if phase & 3 == 3:
+            if not lifetime:
+                f["Age"], f["Active"] = 0, False
+            else:
+                f["XFraction"] = signed(f["XFraction"] - 1)
+                if not f["XFraction"]:
+                    f.update(
+                        Age=2,
+                        Phase=(phase + 1) & 7,
+                        Angle=(230 + draw(16, "reentry")) << 4,
+                        Speed=240,
+                        XFraction=0,
+                        YFraction=0,
+                    )
+            continue
+        if f["Age"] in (44, 72):
+            phase = (phase + 1) & 65535
+            f.update(Phase=phase, BodyFrame=0 if f["Age"] == 44 else 1, Mirrored=bool(phase & 4))
+        speed = signed(f["Speed"] + (-20 if phase & 1 else 20))
+        if phase & 1:
+            speed = max(0, speed)
+        else:
+            f["Angle"] = (int(f["Angle"]) + 6) & 4095
+        f["Speed"] = speed & 65535
+        angle = int(f["Angle"]) >> 4
+        low, high = quarter[angle & 63], quarter[64 - (angle & 63)]
+        horizontal, vertical = ((high, -low), (-low, -high), (-high, low), (low, high))[
+            (angle & 255) >> 6
+        ]
+        for direction, coordinate, residual in (
+            (horizontal, "X", "XFraction"),
+            (vertical, "Y", "YFraction"),
+        ):
+            value = signed(((direction * speed) >> 8) + f[residual])
+            whole = abs(value) // 256 * (-1 if value < 0 else 1)
+            f[residual] = value - whole * 256
+            if coordinate == "X" and not phase & 4:
+                whole = -whole
+            f[coordinate] = (int(f[coordinate]) + whole) & 65535
+        f["WingClock"] = (int(f["WingClock"]) + 1) & 255
+        if f["WingClock"] >= 4:
+            f["WingClock"], f["WingFrame"] = 0, int(f["WingFrame"]) ^ 1
+        if not 96 <= f["X"] <= 384:
+            phase = (phase + 1) & 65535
+            f.update(
+                Phase=phase,
+                XFraction=1 + draw(28, "boundary-delay"),
+                X=384 if phase & 4 else 96,
+                Y=128 + draw(32, "boundary-y"),
+                Mirrored=not f["Mirrored"],
+            )
+        f["DustClock"] = (int(f["DustClock"]) - 1) & 65535
+        if not f["DustClock"]:
+            f["DustClock"] = 3 + draw(12, "dust")
+            state["PendingDustX"], state["PendingDustY"] = f["X"], f["Y"]
+    for d in state["Dust"]:
+        if not d["Age"]:
+            if state["PendingDustY"]:
+                d.update(
+                    Age=1,
+                    Frame=0,
+                    Clock=6,
+                    X=(int(state["PendingDustX"]) + 12) & 65535,
+                    Y=(int(state["PendingDustY"]) + 12) & 65535,
+                )
+                state["PendingDustX"] = state["PendingDustY"] = 0
+        else:
+            d.update(
+                Age=(int(d["Age"]) + 1) & 65535,
+                Y=(int(d["Y"]) + 1) & 65535,
+                Clock=(int(d["Clock"]) - 1) & 65535,
+            )
+            if not d["Clock"]:
+                if d["Frame"] == 4:
+                    d.update(Age=0, Frame=0, Clock=6, X=1, Y=1)
+                else:
+                    d.update(Clock=6, Frame=d["Frame"] + 1)
+    state["ActiveCount"] = sum(bool(f["Age"]) for f in state["Fairies"])
+    if state["ActiveCount"] == 0:
+        cleanup()
+    return state, seed, draws
+
+
+def heal_consumer_binding(actual, context, source_root):
+    """Selected PRST HEAL1 consumers under the accepted PR618 logical clock."""
+    import copy
+
+    result = dict(
+        value=None,
+        checks=[],
+        occurrences=[],
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            owner="docs/design/contracts/spell-resolution.md#confirmed-heal-1-subset",
+            clock="docs/research/map3-messenger-acceptance.md#legal-heal-recovery-window-completion",
+            fairy="disasm/code/gameflow/battle/battlescenes/animation/healingfairy.asm:1A848; "
+            "animation/update/healingfairy.asm:1C53E; updatespellanimation.asm",
+            motion="disasm/code/common/tech/graphics/graphics_1.asm:sub_179C; "
+            "disasm/data/tech/spellanimations.asm:table_1840",
+        ),
+        historical=dict(
+            prepared04="FAIL: CP2059..2091 original3 versus logical2; "
+            "later recovery-text seed mismatch",
+            scope="retained failure, not a mandatory third logical opportunity",
+        ),
+        unknown=[
+            "original interrupted PC/CPU timing and complete historical window gates",
+            "whole historical A carried RNG/AI trajectory and complete battle-scene fidelity",
+        ],
+    )
+    missing = object()
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(expected, observed=missing):
+        if expected is missing or observed is missing or observed is None and expected is not None:
+            return None
+        if isinstance(expected, dict):
+            return (
+                merge([match(v, observed.get(k, missing)) for k, v in expected.items()])
+                if isinstance(observed, dict)
+                else False
+            )
+        if isinstance(expected, list):
+            if not isinstance(observed, list):
+                return False
+            return merge(
+                [
+                    False
+                    if len(observed) > len(expected)
+                    else None
+                    if len(observed) < len(expected)
+                    else True
+                ]
+                + [match(e, a) for e, a in zip(expected, observed, strict=False)]
+            )
+        if isinstance(expected, bool):
+            return type(observed) is bool and expected == observed
+        return expected == observed
+
+    def check(name, value, occurrence=None, revision=None):
+        result["checks"].append(
+            dict(name=name, value=value, occurrence=occurrence, revision=revision)
+        )
+
+    def one(name, rows, ordinal):
+        check(name, None if not rows else len(rows) == 1, ordinal)
+        return rows[0] if rows else {}
+
+    def ordered_kinds(expected, observed):
+        positions = {e["Kind"]: i for i, e in enumerate(expected)}
+        indices, values = [], []
+        for event in observed:
+            if event.get("Kind") is None:
+                values.append(None)
+                continue
+            i = positions.get(event["Kind"])
+            if i is None:
+                values.append(False)
+            else:
+                indices.append(i)
+                values.append(match(expected[i], event))
+        return merge(
+            values
+            + [indices == sorted(set(indices)), True if len(indices) == len(expected) else None]
+        )
+
+    context = context or {}
+    check("accepted selected scope", match("retained-keyboard-A-heal", context.get("scope")))
+    session = context.get("sessionId")
+    check("independent session", bool(session) or None)
+    cohort = context.get("occurrences") or []
+    check(
+        "selected occurrence inventory",
+        None
+        if not cohort
+        else [(o.get("actor"), o.get("expectedTarget"), o.get("targetSprite")) for o in cohort]
+        == [("ally-1", "ally-0", 0), ("ally-1", "ally-2", 2), ("ally-1", "ally-1", 1)],
+    )
+    quarter, cast, idle = None, None, None
+    try:
+        root = Path(source_root) if source_root is not None else None
+        if root is not None:
+            root = root.resolve() if root.is_absolute() else repo_path(root)
+        if root is None:
+            raise ValueError("source unavailable")
+        pin = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        clean = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+        ).returncode
+        check("pinned clean source", pin == UPSTREAM and clean == 0)
+        data = (
+            (root / "disasm/data/tech/spellanimations.asm")
+            .read_text(encoding="utf-8")
+            .split("table_1840:", 1)[1]
+        )
+        quarter = [
+            int(x, 16) if x.startswith("0x") else int(x) for x in re.findall(r"dc\.w\s+(\d+)", data)
+        ][:65]
+        sprites = root / "disasm/data/graphics/battles/battlesprites/allies"
+        cast = (sprites / "animations/allyanimation001.bin").read_bytes()
+        idle = [
+            int.from_bytes((sprites / f"allybattlesprite{i:02}.bin").read_bytes()[:2], "big")
+            for i in range(3)
+        ]
+        check("source tables available", len(quarter) == 65 and len(cast) == 8 + cast[0] * 8)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        check("source rules unavailable", None)
+
+    def selected(channel, key):
+        records = actual.get(channel) or []
+        if not records or "_index" in records[0]:
+            return records
+        # Full captures use existing indexed channels; do not materialize them.
+        return [
+            dict(records[int(i)], _index=int(i))
+            for i in context.get(key, [])
+            if 0 <= i < len(records)
+        ]
+
+    warps = selected("warpRecords", "warpIndices")
+    expected_warps = context.get("warpIndices") or []
+    warp_indices = [w.get("_index") for w in warps]
+    check(
+        "selected action resource inventory",
+        merge(
+            [
+                True if expected_warps and warp_indices == expected_warps else None,
+                not any(i is not None and i not in expected_warps for i in warp_indices),
+                len(warp_indices) == len(set(warp_indices)),
+            ]
+        ),
+    )
+    scenes = selected("sceneObservations", "sceneIndices")
+    inputs = selected("inputRecords", "inputIndices")
+    for ordinal, owner in enumerate(cohort):
+        actor, target = owner.get("actor"), owner.get("expectedTarget")
+        begin, end = owner.get("preparedRevision"), owner.get("sceneEndResultRevision")
+        start_sequence, end_sequence = (
+            owner.get("sceneStartSequence"),
+            owner.get("sceneEndSequence"),
+        )
+        rows = [
+            w
+            for w in warps
+            if begin is not None
+            and end is not None
+            and begin <= (w.get("result") or {}).get("revision", -1) <= end
+        ]
+        expected_indices = owner.get("resultIndices") or []
+        indices = [w.get("_index") for w in rows]
+        inventory_complete = bool(expected_indices) and indices == expected_indices
+        check(
+            "actual Submit inventory",
+            merge(
+                [
+                    True if inventory_complete else None,
+                    not any(i is not None and i not in expected_indices for i in indices),
+                    len(indices) == len(set(indices)),
+                    [i for i in indices if i is not None]
+                    == sorted(i for i in indices if i is not None),
+                ]
+            ),
+            ordinal,
+        )
+        by_revision = {}
+        for w in rows:
+            by_revision.setdefault(w["result"]["revision"], []).append(w)
+        pre = one(
+            "preparation before state",
+            [
+                w
+                for w in warps
+                if (w.get("result") or {}).get("revision") == owner.get("beforeRevision")
+            ],
+            ordinal,
+        )
+        before = pre.get("state") or {}
+        actor_before = one(
+            "live caster", [a for a in before.get("actors", []) if a.get("id") == actor], ordinal
+        )
+        target_before = one(
+            "live target", [a for a in before.get("actors", []) if a.get("id") == target], ordinal
+        )
+        check(
+            "live pre-action session",
+            match(dict(sessionId=session, revision=owner.get("beforeRevision")), before),
+            ordinal,
+        )
+        hp, maximum = target_before.get("hp"), target_before.get("maxHp")
+        mp, exp = actor_before.get("mp"), actor_before.get("exp")
+        check(
+            "living target", None if hp is None or maximum is None else 0 < hp <= maximum, ordinal
+        )
+        check("sufficient MP", None if mp is None else mp >= 3, ordinal)
+        recovery = None if hp is None or maximum is None else min(15, maximum - hp)
+        seed = before.get("mainSeed")
+        scalar_draws = []
+        if seed is not None:
+            seed = int(seed)
+            for kind in ("rng-exp-plus", "rng-exp-minus"):
+                word, value = _rng_step(seed >> 16, 32)
+                after = (word << 16) | (seed & 65535)
+                scalar_draws.append(
+                    dict(
+                        Kind=kind,
+                        Actor=dict(Value=actor),
+                        Before=seed,
+                        After=after,
+                        RandomRange=16,
+                        RandomValue=value >> 1,
+                    )
+                )
+                seed = after
+        award = None
+        if recovery is not None and maximum and scalar_draws:
+            award = max(
+                1,
+                min(25, max(10, 25 * int(recovery) // int(maximum)))
+                + (scalar_draws[0]["RandomValue"] == 0)
+                - (scalar_draws[1]["RandomValue"] == 0),
+            )
+        scalar = dict(
+            hp=hp, mp=mp, exp=exp, recovery=recovery, award=award, draws=scalar_draws, seed=seed
+        )
+
+        def scoped_events(row, end=end, end_sequence=end_sequence):
+            return [
+                e
+                for e in row.get("result", {}).get("observations", [])
+                if row.get("result", {}).get("revision") != end
+                or e.get("Sequence") is None
+                or e["Sequence"] <= end_sequence
+            ]
+
+        events = [(w, e) for w in rows for e in scoped_events(w)]
+        for kind in ("spell-selected", "target-selected"):
+            candidates = [
+                w
+                for w in warps
+                if owner.get("beforeRevision", 0)
+                < w.get("result", {}).get("revision", -1)
+                < (begin or 0)
+                and (kind != "target-selected" or w["result"]["revision"] == begin - 1)
+                and any(e.get("Kind") == kind for e in w.get("result", {}).get("observations", []))
+            ]
+            chosen = one(kind, candidates, ordinal)
+            check(
+                "selected HEAL1 and actor",
+                match(
+                    dict(sessionId=session, actor=actor, spell=dict(Value="heal", Level=1)),
+                    chosen.get("state", missing),
+                ),
+                ordinal,
+            )
+            if kind == "target-selected":
+                check(
+                    "selected target",
+                    match(target, (chosen.get("state") or {}).get("target", missing)),
+                    ordinal,
+                )
+        resources = {
+            "mp": (actor, mp, None if mp is None else mp - 3, "ActionMessage", "SpellCost"),
+            "hp": (
+                target,
+                hp,
+                None if recovery is None else hp + recovery,
+                "TargetEnter" if actor != target else "ActionAnimation",
+                "Reaction",
+            ),
+            "exp": (
+                actor,
+                exp,
+                None if exp is None or award is None else min(200, exp + award),
+                "ActorEnter" if actor != target else "SpellStop",
+                "Reward",
+            ),
+        }
+        effects = {}
+        for kind in ("heal", "mp", "hp", "exp"):
+            found = one(kind, [dict(w=w, e=e) for w, e in events if e.get("Kind") == kind], ordinal)
+            wr, e = found.get("w", {}), found.get("e", {})
+            effects[kind] = found
+            if not e:
+                check(kind + " effect unavailable", None, ordinal)
+                continue
+            check(
+                "effect identity",
+                match(dict(Actor=dict(Value=target if kind == "hp" else actor)), e),
+                ordinal,
+            )
+            if kind == "heal":
+                check("effect target", match(dict(Target=dict(Value=target)), e), ordinal)
+            elif scalar:
+                field = {"mp": "mp", "hp": "hp", "exp": "exp"}[kind]
+                value = resources[kind][2]
+                check(
+                    "source " + kind + " effect",
+                    match(
+                        dict(
+                            Before=scalar[field] if scalar[field] is not None else missing,
+                            After=value if value is not None else missing,
+                        ),
+                        e,
+                    ),
+                    ordinal,
+                )
+                live = one(
+                    "effect state actor",
+                    [
+                        a
+                        for a in wr.get("state", {}).get("actors", [])
+                        if a.get("id") == e.get("Actor", {}).get("Value")
+                    ],
+                    ordinal,
+                )
+                check(
+                    "effect actually applied",
+                    match(e.get("After", missing), live.get(field, missing)),
+                    ordinal,
+                )
+        if scalar:
+            check(
+                "source reward draws",
+                None
+                if not scalar["draws"]
+                else ordered_kinds(
+                    scalar["draws"],
+                    [e for _, e in events if e.get("Kind") in ("rng-exp-plus", "rng-exp-minus")],
+                ),
+                ordinal,
+            )
+        prepared = one("prepared Submit", by_revision.get(begin, []), ordinal)
+        check(
+            "prepared Submit identity",
+            match(
+                dict(
+                    result=dict(
+                        sessionId=session,
+                        revision=begin,
+                        observationSequence=start_sequence,
+                        failure=None,
+                    ),
+                    state=dict(
+                        sessionId=session,
+                        revision=begin,
+                        mainSeed=seed if seed is not None else missing,
+                    ),
+                ),
+                prepared,
+            ),
+            ordinal,
+        )
+        for who, values in ((actor, dict(mp=mp, exp=exp)), (target, dict(hp=hp))):
+            live = one(
+                "prepared deferred resources",
+                [a for a in prepared.get("state", {}).get("actors", []) if a.get("id") == who],
+                ordinal,
+            )
+            check(
+                "resources remain deferred at preparation",
+                match({k: v if v is not None else missing for k, v in values.items()}, live),
+                ordinal,
+            )
+        confirms = [i for i in inputs if i.get("_index") == owner.get("inputIndex")]
+        inp = one("physical target confirmation", confirms, ordinal)
+        check(
+            "confirm result join",
+            match(
+                dict(
+                    action="confirm",
+                    pressed=True,
+                    ordinal=owner.get("initializeInput"),
+                    resultStart=owner.get("firstSubmitResultIndex"),
+                    before=dict(
+                        sessionId=session, revision=begin - 1 if begin is not None else missing
+                    ),
+                    after=dict(sessionId=session, revision=begin),
+                ),
+                inp,
+            ),
+            ordinal,
+        )
+
+        def event_envelope(
+            row,
+            es,
+            previous_revision,
+            previous_sequence,
+            ordinal=ordinal,
+            actor=actor,
+            target=target,
+        ):
+            r = row.get("result") or {}
+            revision = r.get("revision")
+
+            seqs = [e.get("Sequence") for e in es]
+            for e in es:
+                sequence = e.get("Sequence")
+                check(
+                    "event sequence inside Submit",
+                    merge(
+                        [
+                            None if sequence is None else sequence > 0,
+                            None
+                            if sequence is None or r.get("observationSequence") is None
+                            else sequence <= r["observationSequence"],
+                            None
+                            if sequence is None or previous_sequence is None
+                            else previous_sequence < sequence,
+                        ]
+                    ),
+                    ordinal,
+                    revision,
+                )
+                check(
+                    "event belongs to Submit interval",
+                    merge(
+                        [
+                            None if e.get("Revision") is None else e["Revision"] >= 0,
+                            None
+                            if e.get("Revision") is None or revision is None
+                            else e["Revision"] <= revision,
+                            None
+                            if e.get("Revision") is None or previous_revision is None
+                            else previous_revision < e["Revision"],
+                        ]
+                    ),
+                    ordinal,
+                    revision,
+                )
+                check(
+                    "event actor",
+                    match(
+                        dict(Value=target if e.get("Kind") == "hp" else actor),
+                        e.get("Actor", missing),
+                    ),
+                    ordinal,
+                    revision,
+                )
+            check(
+                "event sequence order",
+                None if any(x is None for x in seqs) else seqs == sorted(set(seqs)),
+                ordinal,
+                revision,
+            )
+
+        event_envelope(
+            prepared,
+            scoped_events(prepared),
+            inp.get("before", {}).get("revision"),
+            inp.get("before", {}).get("observationSequence"),
+        )
+        for wr, event in events:
+            if event.get("Kind") in ("rng-exp-plus", "rng-exp-minus"):
+                check(
+                    "reward draw prepared command",
+                    match(dict(Revision=begin), event),
+                    ordinal,
+                    begin,
+                )
+                check(
+                    "reward draw prepared Submit",
+                    match(begin, wr.get("result", {}).get("revision", missing)),
+                    ordinal,
+                    begin,
+                )
+        projection = {}
+        for s in scenes:
+            if (
+                begin is not None
+                and end is not None
+                and begin <= s.get("revision", -1) < end
+                and s.get("projectionStage") == "host-poll"
+            ):
+                projection.setdefault(s["revision"], []).append(s)
+
+        def scene_at(revision, projection=projection, ordinal=ordinal, by_revision=by_revision):
+            ss = projection.get(revision, [])
+            check("actual post-Present scene", True if ss else None, ordinal, revision)
+            if not ss:
+                return {}
+            first = ss[0]
+            keys = (
+                "phase",
+                "waitToken",
+                "actionKind",
+                "healing",
+                "spell",
+                "reactionKind",
+                "reactionAmount",
+                "message",
+            )
+            for s in ss:
+                check(
+                    "scene session and Submit",
+                    match(
+                        dict(
+                            sessionId=session,
+                            revision=revision,
+                            observationSequence=(by_revision.get(revision) or [{}])[0]
+                            .get("result", {})
+                            .get("observationSequence", missing),
+                            scene=dict(actionKind="heal", spell=dict(Value="heal", Level=1)),
+                        ),
+                        s,
+                    ),
+                    ordinal,
+                    revision,
+                )
+                check(
+                    "repeated projection state agrees",
+                    match(
+                        {k: first["scene"].get(k, missing) for k in keys}, s.get("scene", missing)
+                    ),
+                    ordinal,
+                    revision,
+                )
+            return first.get("scene") or {}
+
+        lifecycle_rows = [
+            w
+            for w in warps
+            if owner.get("beforeRevision") is not None
+            and begin is not None
+            and owner["beforeRevision"] < w.get("result", {}).get("revision", -1) < begin
+        ] + rows
+        for row in lifecycle_rows:
+            r = row.get("result") or {}
+            check(
+                "resource lifecycle state identity",
+                match(
+                    dict(
+                        result=dict(sessionId=session),
+                        state=dict(
+                            sessionId=session,
+                            revision=r.get("revision", missing),
+                            observationSequence=r.get("observationSequence", missing),
+                        ),
+                    ),
+                    row,
+                ),
+                ordinal,
+                r.get("revision"),
+            )
+        resource_boundaries = {}
+        for field, (who, initial, final, previous_phase, applied_phase) in resources.items():
+            boundary = one(
+                "source " + field + " phase boundary",
+                [
+                    dict(w=w, e=e)
+                    for w, e in events
+                    if e.get("Kind") == "scene-step-started" and e.get("Detail") == applied_phase
+                ],
+                ordinal,
+            )
+            command_row, command = boundary.get("w", {}), boundary.get("e", {})
+            boundary_revision = command_row.get("result", {}).get("revision")
+            resource_boundaries[field] = boundary_revision
+            effect_row, effect = effects[field].get("w", {}), effects[field].get("e", {})
+            effect_revision = effect_row.get("result", {}).get("revision")
+            check(
+                "source " + field + " effect command",
+                match(
+                    boundary_revision if boundary_revision is not None else missing,
+                    effect_revision if effect_revision is not None else missing,
+                ),
+                ordinal,
+            )
+            if boundary_revision is not None:
+                check(
+                    "source " + field + " preceding phase",
+                    match(previous_phase, scene_at(boundary_revision - 1).get("phase", missing)),
+                    ordinal,
+                )
+                check(
+                    "source " + field + " applied phase",
+                    match(applied_phase, scene_at(boundary_revision).get("phase", missing)),
+                    ordinal,
+                )
+            completed = one(
+                "source " + field + " previous command completion",
+                [e for e in scoped_events(command_row) if e.get("Kind") == "scene-step-completed"],
+                ordinal,
+            )
+            check(
+                "source " + field + " completed phase",
+                match(previous_phase, completed.get("Detail", missing)),
+                ordinal,
+            )
+            seqs = [e.get("Sequence") for e in (completed, effect, command)]
+            check(
+                "source " + field + " command effect order",
+                None if any(x is None for x in seqs) else seqs[0] < seqs[1] < seqs[2],
+                ordinal,
+            )
+            for row in lifecycle_rows:
+                r = row.get("result") or {}
+                revision = r.get("revision")
+                # The final Submit may already contain another action. Its final state is not
+                # a HEAL resource witness; the last in-scope state and effect remain checked.
+                if revision == end and (
+                    r.get("observationSequence") is None or r["observationSequence"] > end_sequence
+                ):
+                    continue
+                live = one(
+                    "live " + field + " lifecycle actor",
+                    [a for a in row.get("state", {}).get("actors", []) if a.get("id") == who],
+                    ordinal,
+                )
+                value = live.get(field, missing)
+                if boundary_revision is None:
+                    candidates = [
+                        match(v if v is not None else missing, value) for v in (initial, final)
+                    ]
+                    verdict = False if all(v is False for v in candidates) else None
+                else:
+                    expected = initial if revision < boundary_revision else final
+                    verdict = match(expected if expected is not None else missing, value)
+                check("deferred/retained " + field + " lifecycle", verdict, ordinal, revision)
+        for earlier, later in (("mp", "hp"), ("mp", "exp"), ("hp", "exp")):
+            a, b = resource_boundaries[earlier], resource_boundaries[later]
+            check(
+                "source " + earlier + " before " + later,
+                None if a is None or b is None else a < b,
+                ordinal,
+            )
+
+        prior_scene = scene_at(begin)
+        complete_work = inventory_complete and all(
+            projection.get(r.get("result", {}).get("revision"))
+            for r in rows
+            if r.get("result", {}).get("revision") < end
+        )
+        check(
+            "prepared scene token",
+            match(dict(phase="Initialize", waitToken=start_sequence), prior_scene),
+            ordinal,
+        )
+        if scalar:
+            check(
+                "prepared recovery",
+                match(
+                    recovery if recovery is not None else missing,
+                    prior_scene.get("reactionAmount", missing),
+                ),
+                ordinal,
+            )
+        phase_steps = {}
+        phase_messages = {}
+        transitions = []
+        draw_count = 0
+        opportunities = 0
+        previous = prepared
+        for row in rows:
+            r = row.get("result") or {}
+            revision = r.get("revision")
+            if revision == begin:
+                continue
+            s = row.get("state") or {}
+            es = scoped_events(row)
+            check(
+                "Submit/state session and result",
+                match(
+                    dict(
+                        result=dict(sessionId=session, failure=None),
+                        state=dict(sessionId=session, revision=revision),
+                    ),
+                    row,
+                ),
+                ordinal,
+                revision,
+            )
+            check("unique Submit revision", len(by_revision[revision]) == 1, ordinal, revision)
+            previous_revision = (previous.get("result") or {}).get("revision")
+            event_envelope(
+                row, es, previous_revision, previous.get("result", {}).get("observationSequence")
+            )
+            current_scene = scene_at(revision) if revision < end else prior_scene
+            before_healing = prior_scene.get("healing") or {}
+            after_healing = current_scene.get("healing") or {}
+            phase = prior_scene.get("phase")
+            phase_messages.setdefault(phase, prior_scene.get("message"))
+            logical = [e for e in es if e.get("Kind") == "scene-logical-step"]
+            delivery = [e for e in es if e.get("Kind") == "scene-delivery"]
+            check(
+                "one scene service or delivery",
+                None if not logical and not delivery else len(logical) + len(delivery) == 1,
+                ordinal,
+                revision,
+            )
+            if not logical and not delivery:
+                complete_work = False
+            for e in logical:
+                opportunities += 1
+                check(
+                    "actual caller before logical opportunity",
+                    None
+                    if previous_revision is None or revision != previous_revision + 1
+                    else match(before_healing.get("Caller", missing), e.get("Detail", missing)),
+                    ordinal,
+                    revision,
+                )
+                check(
+                    "logical opportunity has pending work",
+                    match(False, before_healing.get("LogicalComplete", missing)),
+                    ordinal,
+                    revision,
+                )
+                phase_steps.setdefault(phase, []).append(
+                    dict(
+                        caller=e.get("Detail"),
+                        remaining=before_healing.get("Remaining"),
+                        timed=before_healing.get("AtTimedInput"),
+                    )
+                )
+            for e in delivery:
+                if e.get("Detail") != "bsc10:input-before-vint":
+                    check(
+                        "delivery follows completed logical work",
+                        match(True, before_healing.get("LogicalComplete", missing)),
+                        ordinal,
+                        revision,
+                    )
+                check(
+                    "delivery actual caller",
+                    match(before_healing.get("Caller") or phase, e.get("Detail", missing)),
+                    ordinal,
+                    revision,
+                )
+                if e.get("Detail") == "bsc10:input-before-vint":
+                    key_input = one(
+                        "timed acknowledgement input",
+                        [
+                            i
+                            for i in inputs
+                            if i.get("resultStart", -1)
+                            <= row.get("_index", -2)
+                            < i.get("resultEnd", -1)
+                        ],
+                        ordinal,
+                    )
+                    check(
+                        "timed input precedes fairy opportunity",
+                        match(
+                            dict(
+                                action="confirm",
+                                pressed=True,
+                                ordinal=row.get("inputOrdinal"),
+                                delivery=dict(kind="key", code=4194309),
+                                before=dict(
+                                    sessionId=session,
+                                    revision=previous_revision,
+                                    mainSeed=previous.get("state", {}).get("mainSeed", missing),
+                                ),
+                                after=dict(
+                                    sessionId=session,
+                                    revision=revision,
+                                    mainSeed=s.get("mainSeed", missing),
+                                ),
+                            ),
+                            key_input,
+                        ),
+                        ordinal,
+                        revision,
+                    )
+                    check(
+                        "actual timed-input gate",
+                        match(True, before_healing.get("AtTimedInput", missing)),
+                        ordinal,
+                        revision,
+                    )
+            for e in es:
+                if e.get("Kind") == "scene-step-started":
+                    transitions.append(e.get("Detail"))
+            previous_seed = (previous.get("state") or {}).get("mainSeed")
+            expected_draws = []
+            expected_fairy = copy.deepcopy(before_healing.get("Fairy"))
+            expected_seed = previous_seed
+            try:
+                if (
+                    not before_healing
+                    or not after_healing
+                    or not logical
+                    and not delivery
+                    or previous_revision is None
+                    or revision != end
+                    and revision != previous_revision + 1
+                ):
+                    raise KeyError("missing adjacent scene/service")
+                if logical:
+                    caller = before_healing.get("Caller")
+                    stop_gate = {
+                        "bsc0D:toggle-drain": dict(Control=2, ActiveCount=1, CleanupPending=False),
+                        "ReinitializeSceneAfterSpell:wait": dict(
+                            Control=0, ActiveCount=0, CleanupPending=True
+                        ),
+                        "bsc0D:restore-wait": dict(Control=0, ActiveCount=0, CleanupPending=False),
+                    }.get(caller)
+                    if stop_gate is not None:
+                        check(
+                            "source stop/cleanup gate",
+                            match(stop_gate, expected_fairy),
+                            ordinal,
+                            revision,
+                        )
+                    if caller == "ReinitializeSceneAfterSpell:wait":
+                        expected_fairy["CleanupPending"] = False
+                    elif expected_fairy is not None and quarter is not None:
+                        expected_fairy, expected_seed, expected_draws = _heal_fairy_source_step(
+                            expected_fairy, int(previous_seed), quarter
+                        )
+                    if (
+                        before_healing.get("Caller") == "LoadSpellTileset:dma"
+                        and before_healing.get("Remaining") == 1
+                        and quarter is not None
+                    ):
+                        expected_fairy, expected_seed, expected_draws = _heal_fairy_source_step(
+                            None, int(previous_seed), quarter, True
+                        )
+                if current_scene.get("phase") == "SpellStop" and phase != "SpellStop":
+                    expected_fairy["Control"] = 2
+                if quarter is None or previous_seed is None:
+                    raise KeyError("source/seed absent")
+                check(
+                    "source fairy state transition",
+                    match(expected_fairy, after_healing.get("Fairy", missing)),
+                    ordinal,
+                    revision,
+                )
+                actual_draws = [e for e in es if e.get("Kind", "").startswith("rng-fairy-")]
+                check(
+                    "source conditional fairy draws",
+                    ordered_kinds(expected_draws, actual_draws),
+                    ordinal,
+                    revision,
+                )
+                if revision < end:
+                    check(
+                        "actual carried scene seed",
+                        match(expected_seed, s.get("mainSeed", missing)),
+                        ordinal,
+                        revision,
+                    )
+                draw_count += len(actual_draws)
+            except (KeyError, TypeError, ValueError, IndexError):
+                check("fairy transition operands unavailable", None, ordinal, revision)
+            for e in es:
+                if (
+                    e.get("Kind", "").startswith("rng-fairy-")
+                    and e.get("Before") is not None
+                    and e.get("RandomRange") is not None
+                ):
+                    word, value = _rng_step(int(e["Before"]) >> 16, int(e["RandomRange"]) * 2)
+                    check(
+                        "independent available fairy draw",
+                        match(
+                            dict(
+                                After=(word << 16) | (int(e["Before"]) & 65535),
+                                RandomValue=value >> 1,
+                            ),
+                            e,
+                        ),
+                        ordinal,
+                        revision,
+                    )
+            previous, prior_scene = row, current_scene
+        phases = (
+            ["ActionMessage", "SpellCost", "ActionAnimation"]
+            + (["TargetExit", "TargetEnter"] if actor != target else [])
+            + ["Reaction", "ResultMessage", "MakeIdle", "SpellStop"]
+            + (["ActorExit", "ActorEnter"] if actor != target else [])
+            + ["Reward", "RewardMessage", "End"]
+        )
+        check(
+            "source phase continuation",
+            merge(
+                [
+                    ordered_kinds(
+                        [dict(Kind=p) for p in phases], [dict(Kind=p) for p in transitions]
+                    ),
+                    True if complete_work else None,
+                ]
+            ),
+            ordinal,
+        )
+        required_work = [p for p in phases if p not in ("Reward", "RewardMessage", "End")]
+        for phase in dict.fromkeys(required_work + list(phase_steps)):
+            steps = phase_steps.get(phase, [])
+            expected = []
+
+            def wait(count, caller, expected=expected):
+                expected.extend(
+                    dict(caller=caller, remaining=n, timed=False) for n in range(count, 0, -1)
+                )
+
+            if phase in ("SpellCost", "Reaction"):
+                wait(1, "OpenAllyMiniStatus:move")
+                wait(1, "OpenAllyMiniStatus:movement-end")
+            elif phase in ("ActionMessage", "ResultMessage"):
+                wait(1, "ClearDialogueWindowLayout")
+                wait(1, "dialogue-layout-dma")
+                wait(1, "dialogue-window-move")
+                text = phase_messages.get(phase)
+                if text is None:
+                    check("message caller operands", None, ordinal)
+                    continue
+                for glyph in text:
+                    if glyph not in "\n|}":
+                        wait(1, "HandleBlinkingDialogueCursor")
+                        wait(1, "HandleDialogueTypewriting")
+                timed = sum(x["caller"] == "bsc10:input-before-vint" for x in steps)
+                check("source timed-input bound", timed <= 65, ordinal)
+                for n in range(timed):
+                    expected.append(
+                        dict(caller="bsc10:input-before-vint", remaining=65 - n, timed=True)
+                    )
+            elif phase == "ActionAnimation" and cast is not None:
+
+                def setup():
+                    for _ in range(4):
+                        wait(4, "cast-flash-on")
+                        wait(3, "cast-flash-off")
+                    wait(1, "LoadSpellTileset:dma")
+
+                if cast[1] == 0:
+                    setup()
+                for frame in range(1, cast[0]):
+                    if cast[8 + frame * 8] != 15:
+                        wait(1, "LoadAllyBattlespriteFrame:dma")
+                    if frame + 1 == cast[1]:
+                        setup()
+                    wait(cast[9 + frame * 8], "bsc01:frame-sleep")
+            elif phase == "MakeIdle" and idle is not None:
+                wait(1, "bsc05:idle-frame-before-dma")
+                wait(idle[int(owner["targetSprite"])], "bsc05:ally-idle-sleep")
+                wait(1, "bsc05:idle-frame-after-dma")
+            elif phase == "TargetExit":
+                wait(30, "SwitchTargets:wait")
+                wait(9, "SwitchAlly:exit")
+            elif phase == "TargetEnter":
+                wait(32, "SwitchAlly:enter")
+            elif phase == "ActorExit":
+                wait(30, "SwitchActor:wait")
+                wait(16, "SwitchActor:exit")
+            elif phase == "ActorEnter":
+                wait(8, "SwitchActor:enter")
+            elif phase == "SpellStop":
+                expected.extend(
+                    dict(caller="bsc0D:toggle-drain", remaining=0, timed=False)
+                    for x in steps
+                    if x["caller"] == "bsc0D:toggle-drain"
+                )
+                wait(1, "ReinitializeSceneAfterSpell:wait")
+                wait(1, "bsc0D:restore-wait")
+            else:
+                check("source phase work available", None, ordinal)
+                continue
+            check(
+                "source logical opportunities " + str(phase),
+                match(expected, steps) if complete_work else None,
+                ordinal,
+            )
+        check(
+            "fairy cleared before caller returns",
+            match(
+                dict(Control=0, ActiveCount=0, CleanupPending=False),
+                (prior_scene.get("healing") or {}).get("Fairy", missing),
+            ),
+            ordinal,
+        )
+        check(
+            "actual scene completion",
+            match(
+                [dict(Kind="scene-ended", Actor=dict(Value=actor), Sequence=end_sequence)],
+                [e for _, e in events if e.get("Kind") == "scene-ended"],
+            ),
+            ordinal,
+        )
+        result["occurrences"].append(
+            dict(
+                ordinal=ordinal,
+                actor=actor,
+                target=target,
+                opportunities=opportunities,
+                fairyDraws=draw_count,
+            )
+        )
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    return result
 
 
 def w2_consumer_binding(actual, context, source_root):
@@ -10033,6 +11231,7 @@ def compare_modern(
     tileset_metadata=None,
     palette_metadata=None,
     w2_context=None,
+    heal_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -10067,6 +11266,7 @@ def compare_modern(
             audio_context = None
     audio_consumers = audio_consumer_binding(actual, audio_context, text_source_root)
     w2_consumers = w2_consumer_binding(actual, w2_context, text_source_root)
+    heal_consumers = heal_consumer_binding(actual, heal_context, text_source_root)
     assertions = _bounded_list()
     obligations = {}
 
@@ -11167,6 +12367,19 @@ def compare_modern(
             "source live service gates and individual caller/effect mapping",
         ),
     ):
+        if name == "HEAL recovery/cost/fairy opportunity and seed effects":
+            check(
+                5,
+                name,
+                True,
+                heal_consumers["value"],
+                actual_location,
+                original=heal_consumers["sourceRules"],
+                parent=rule_parent,
+                reason="Source matched HEAL1 effects and actual logical opportunities; "
+                "prepared04 CPU-timing/cursor failures remain historical, not a third-tick quota",
+            )
+            continue
         item_reached = any(e["Kind"] == "item-consumed" for e in unique_events.values()) or any(
             row["state"].get("itemSlot") is not None
             for row in outcome.get("records", [])
@@ -11802,6 +13015,7 @@ def compare_modern(
             audioLifecycle=audio_lifecycle,
             audioConsumerBinding=audio_consumers,
             w2ConsumerBinding=w2_consumers,
+            healConsumerBinding=heal_consumers,
             reachedMaterialJoins=materials["joins"],
             reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
@@ -12335,7 +13549,8 @@ def compare_resources(
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "mode", choices=("plan", "compare", "matrix", "resources", "audio", "turn-order", "w2")
+        "mode",
+        choices=("plan", "compare", "matrix", "resources", "audio", "turn-order", "w2", "heal"),
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
@@ -12356,6 +13571,9 @@ def main():
     parser.add_argument("--outcome", type=Path)
     parser.add_argument("--settings", type=Path)
     parser.add_argument("--variant-report", type=Path, action="append", default=[])
+    parser.add_argument(
+        "--heal-context", type=Path, help="Accepted selected HEAL identities and source indices"
+    )
     parser.add_argument("--matrix-scope", choices=("current-keyboard",), default="current-keyboard")
     parser.add_argument("--baseline-actual", type=Path)
     parser.add_argument("--baseline-outcome", type=Path)
@@ -12413,6 +13631,62 @@ def main():
             else repo_path(args.w2_context)
         )
         require(args.w2_context.stat().st_size <= 10 * 1024 * 1024, "W2 context exceeds 10 MiB")
+    require(
+        args.heal_context is None
+        or args.mode == "heal"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "HEAL context applies only to heal or modern compare mode",
+    )
+    if args.heal_context is not None:
+        args.heal_context = (
+            args.heal_context.resolve()
+            if args.heal_context.is_absolute()
+            else repo_path(args.heal_context)
+        )
+        require(args.heal_context.stat().st_size <= 1024 * 1024, "HEAL context exceeds 1 MiB")
+    if args.mode == "heal":
+        require(
+            args.actual is not None and args.heal_context is not None,
+            "heal requires selected actual and independent occurrence context",
+        )
+        actual_path = args.actual.resolve() if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.heal_context.stat().st_size <= 20 * 1024 * 1024,
+            "HEAL compact selection exceeds 20 MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "HEAL output must be fresh beneath this worktree's local/",
+        )
+        binding = heal_consumer_binding(
+            read(actual_path), read(args.heal_context), args.text_source_root
+        )
+        verdict_value = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-heal-consumer",
+            comparisonScope="retained-keyboard-A-heal",
+            result=verdict_value,
+            milestonePass=False,
+            binding=binding,
+        )
+        require(
+            len(json.dumps(report).encode("utf-8")) <= 10 * 1024 * 1024,
+            "HEAL report exceeds 10 MiB",
+        )
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(
+                    result=verdict_value,
+                    milestonePass=False,
+                    occurrences=len(binding["occurrences"]),
+                )
+            )
+        )
+        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
     if args.mode == "w2":
         require(
             args.actual is not None and args.w2_context is not None,
@@ -12736,6 +14010,7 @@ def main():
                 args.tileset_metadata,
                 args.palette_metadata,
                 read(args.w2_context) if args.w2_context else None,
+                read(args.heal_context) if args.heal_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
