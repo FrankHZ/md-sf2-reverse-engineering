@@ -7,8 +7,11 @@ if candidate then candidate.diagnostic = config.candidate.diagnostic end
 if candidate then
     candidate.healDiagnostic = candidate.diagnostic and candidate.diagnostic.kind == "heal1-consumer-diagnostic"
     candidate.warpDiagnostic = candidate.diagnostic and candidate.diagnostic.kind == "warp-field-return-diagnostic"
+    candidate.openingDiagnostic = candidate.diagnostic and candidate.diagnostic.kind == "admission-opening-scalar-diagnostic"
 end
-assert(not candidate or not candidate.diagnostic or (acquisition and natural and segment and
+assert(not candidate or not candidate.diagnostic or
+    (candidate.openingDiagnostic and not acquisition and not natural and not segment
+        and candidate.diagnostic.inputPolicy == "registered-opening-frozen-prefix") or (acquisition and natural and segment and
     ((candidate.healDiagnostic and segment.resume and candidate.diagnostic.inputPolicy == "neutral-scene")
     or (candidate.warpDiagnostic and segment.ordinal == 1 and not segment.resume
         and candidate.diagnostic.inputPolicy == "left30-neutral120"))), "invalid acquisition diagnostic entry")
@@ -2286,6 +2289,10 @@ local function install_candidate()
         return result
     end
     function c.record(kind, facts)
+        if c.openingDiagnostic and not kind:match("^opening:") then return end
+        if c.openingDiagnostic then
+            assert(c.order < c.diagnostic.limits.records, "opening scalar record cap")
+        end
         c.lastCheckpoint = kind
         if natural and (kind == "operation:entry" or kind:match(":return$")
             or kind == "text:acknowledgement-read" or kind == "input:original-movement-acceptance"
@@ -2296,10 +2303,39 @@ local function install_candidate()
             inputFrame = c.epoch and frame_count - c.epoch or false,
             facts = facts, state = sample(),
             afterStop = natural and c.stopReason or nil,
-            order = acquisition and c.order or nil,
-            boundary = acquisition and (callback_active and "callback-time" or "host-loop") or nil,
-            emulatorFrame = acquisition and emu.framecount() or nil })
+            order = (acquisition or c.openingDiagnostic) and c.order or nil,
+            boundary = (acquisition or c.openingDiagnostic) and (callback_active and "callback-time" or "host-loop") or nil,
+            emulatorFrame = (acquisition or c.openingDiagnostic) and emu.framecount() or nil })
         file:write("\n"); file:close()
+        if c.openingDiagnostic then
+            local check = assert(io.open(config.candidate.checkpointPath, "rb"))
+            local size = check:seek("end"); check:close()
+            assert(size <= c.diagnostic.limits.scalarBytes, "opening scalar byte cap")
+        end
+    end
+    if c.openingDiagnostic then
+        c.opening = {kind=c.diagnostic.kind, seen={}, r1=false, programReturned=false}
+        function c.opening_emit(kind)
+            local stage = c.epoch and "admitted" or "pre-r1"
+            local key = stage .. ":" .. kind
+            if c.opening.seen[key] then return end
+            c.opening.seen[key] = true
+            local values, registers = {}, {}
+            for name, address in pairs(c.diagnostic.ram) do
+                local byte = name == "MOUTH_CONTROL_TOGGLE" or name == "PLAYER_1_INPUT"
+                    or name == "VIEW_TARGET_ENTITY" or name == "VIEW_SCROLLING_PLANES_BITFIELD"
+                    or name == "MAP_AREA_LAYER_TYPE" or name:match("AUTOSCROLL")
+                values[name] = byte and memory.read_u8(address, "M68K BUS")
+                    or memory.read_u16_be(address, "M68K BUS")
+            end
+            for _, name in ipairs({"D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "A0", "A6", "A7"}) do
+                registers[name] = reg(name)
+            end
+            c.record("opening:" .. kind, {stage=stage, values=values, registers=registers})
+        end
+        for kind, hook in pairs(c.diagnostic.hooks) do
+            add_callback(hook.pc, "candidate:opening:" .. kind, function() c.opening_emit(kind) end)
+        end
     end
     local function returned(kind, target, on_return)
         local stack = reg("A7") & 0xFFFFFF
@@ -3270,9 +3306,11 @@ local function install_candidate()
                 assert(memory.read_u8(base + ram.COMBATANT_OFFSET_SPELLS + index, "M68K BUS") == expected.spells[index + 1], "R1 spell drift")
             end
         end
-        local npcs, indexes = live_entities()
-        c.record("r1:inherited-status-and-live-entities", { allies = allies, entities = npcs,
-            entityIndexBytes = indexes, rawTimeNormalized = false })
+        if not c.openingDiagnostic then
+            local npcs, indexes = live_entities()
+            c.record("r1:inherited-status-and-live-entities", { allies = allies, entities = npcs,
+                entityIndexBytes = indexes, rawTimeNormalized = false })
+        end
         for _, patch in ipairs(config.r1.sessionPatches) do
             local ok, mismatch = restore_cart(patch)
             assert(ok, "admission service restoration mismatch: " .. patch.purpose)
@@ -3289,6 +3327,7 @@ local function install_candidate()
         assert(not first_mismatch("bootstrap-scratch", config.r1.harness.checkpointAddress, scope.generatedRam), "bootstrap scratch not restored")
         c.epoch, phase = frame_count, "candidate-route"
         c.emulatorEpoch = emu.framecount()
+        if c.openingDiagnostic then c.opening.r1 = true; c.opening_emit("r1") end
         if natural then c.checkpoint("r1") end
         c.record("r1:controlled-admission-ended", { patchesRestored = true, scratchRestored = true,
             retained = "NewGame/SaveGame/default Map3 state and inherited live NPC/RNG/raw time",
@@ -3337,6 +3376,14 @@ local function install_candidate()
         if natural then c.program_entry(target) end
         returned("script", target, function()
             if natural then c.program_return(target) end
+            if c.openingDiagnostic and target == c.diagnostic.program then
+                c.opening.programReturned = true
+                c.opening_emit("program-return")
+                c.opening.records = c.order
+                c.stopReason = "opening-script-return"
+                c.terminal = sample()
+                finish_pending = true
+            end
             if target == f.cs_51652 then c.gates.programReturned = true end
             if target == f.cs_53104 then c.gates.map19ProgramReturned = true end
         end)
@@ -4118,8 +4165,8 @@ local function write_observation(restoration)
             inputIdentity = config.candidate.inputIdentity, restoration = restoration,
             mode = acquisition and "interactive-acquisition" or nil,
             continuation = natural and natural.selection or nil,
-            stopReason = natural and candidate.stopReason or nil,
-            diagnostic = candidate.healDiagnostic and candidate.heal_summary() or (candidate.warpDiagnostic and candidate.warp_summary() or nil),
+            stopReason = (natural or candidate.openingDiagnostic) and candidate.stopReason or nil,
+            diagnostic = candidate.healDiagnostic and candidate.heal_summary() or (candidate.warpDiagnostic and candidate.warp_summary() or candidate.opening),
             completedFrame = natural and candidate.frameEnd or nil,
             inputIdentityMeaning = acquisition and "mode declaration; actual inputs in actual-inputs.jsonl" or nil })
         file:write("\n"); file:close()

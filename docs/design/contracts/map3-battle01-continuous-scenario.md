@@ -527,8 +527,9 @@ named flags/lists/readiness, candidate definitions and returned story flag/retur
 main draws use the existing original H3 generator model at each actual seed/range, independently of
 remake RNG code. That arithmetic comparison does not prove a source draw-to-effect association, AI
 thinking stream, service opportunity or whole action rule. The original `RANDOM_SEED_COPY=0` versus
-actual null and ancestry-inferred mouth/view gates remain explicit; first-use relevance is not yet
-proved. With the explicit sealed R1 witness and selected compiled content, walking admission binds
+actual null and ancestry-inferred mouth/view gates remain explicit. The independently selected
+[seed composition](#admission-seed-copy-composition) can decide initial-copy relevance; it does not
+resolve opening mouth/view. With the explicit sealed R1 witness and selected compiled content, walking admission binds
 the three pointers through the pinned allocator/template to semantic cursor/moving state and consumed
 wait behavior. The [walking source owner](../../research/map3-messenger-acceptance.md#walking-admission-continuation)
 supplies expected phases; remake start values and program names do not supply them. Without that
@@ -544,6 +545,52 @@ next-wait duration demonstrates consumption without fixing a sample index or ser
 `WaitingForMotion` boolean is Inferred; its observed wait/motion effects are Confirmed. This admission
 binding does not close the full awaited motion/gesture/fade or entity-consumer families, original natural
 timing, whole-route NPC/RNG scheduling or collision corpus.
+
+### Admission seed-copy composition
+
+The optional `admission_seed_binding` replaces only the required `admission seed-copy byte` child.
+It composes the selected original non-resume path, historical A's actual W2 delivery, and the
+accepted PR621 correction mechanism. It does not compare a corrected whole-A capture. Without the
+explicit evidence context, the original direct child retains its existing unavailable comparison.
+
+**Confirmed source and selected observations:** in pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, `BattleLoop` tests flag88. Its saved-battle branch
+bypasses the before-battle script, so merely finding a text write above a reader in the file is
+insufficient. Registered original `issue496/prepared-72` records flag88=false at `battle:loop`
+(checkpoint line201/order43737), enters `bbcs_01` (204/43740), calls the W2 main RNG with return
+PC`0x647E` (310/44324), returns its range256 draw (312/44326), returns that script (4011/55393),
+then dispatches an individual turn (4124/55652). The candidate's existing source/ROM/configuration/
+observer/runner identities bind this selection; it is not an arbitrary set of independent rows.
+
+`bbcs_01` starts at text2292, with an unconditional W2 before subsequent text/turn work. At
+`textfunctions_1.asm:loc_6472`, `GenerateRandomNumber` uses the main stream and writes its result
+byte at`0x647E` before input/service continuation. W1 and the diamond menu likewise overwrite the
+byte without using its previous value. Live symbolic copy readers in this pinned source are
+`GenerateRandomValueSigned`, reached through `GenerateRandomNumberUnderD6` from battle AI;
+`GenerateRandomValueUnsigned` has only the uncalled `WaitForRandomValueToMatch` wrapper. Together
+with the selected normal branch and completed script, this establishes a write before the relevant
+turn readers. It does not admit a resumed battle, a different caller, or unspecified indirect code.
+
+**Confirmed current mechanism:** accepted merge `bbf98c8ddbd04500d57165a958f78f86a9ff209b`
+replaces the active Party thinking-image high byte in `CopyTextSeed`, carries it through
+`BattleEntry`, and projects `CurrentRandomSeedCopy` separately from `Story.RandomSeedCopy`.
+Its three executed `FieldTextCopyReplacesInitialAiByteBeforeEntryAndAiKeepsItsUpdatedByte` cases
+cover ordinary W1/W2 acknowledgement, legal entry and the first automatic AI with two old high
+bytes and two preserved low24 images. The retained TRX and adapter exit receipt are evidence of
+executed assertions and compilation, not synthetic runtime events. Direct comparison with the
+accepted source binds their current use; changed dependencies require renewed review.
+
+Historical A's selected text2292 input407/token23128/result13797 independently supplies the
+actual main draw/copy/wait/read order and copy arithmetic. Session, source caller, result state,
+range and event progression must agree. The old null/text-only latch and later active`12340000`
+remain a separate **historical FAIL**, even when the composed required child passes. A current
+wrong copy or foreign session fails the required predicate; unrelated missing evidence cannot
+hide it. Missing evidence remains **Unavailable**, including a missing copy despite later
+convergence. Original R1 copy0 remains its observed value, not a value inferred from null.
+
+**Unknown:** original opening mouth/view, other24 thinking-image bits, later original first-AI
+value and corrected whole-route host trajectory. These obligations remain independent. A scoped
+PASS has `milestonePass=false`; main-gate alone accepts any obligation reduction.
 
 Remaining operation/rule/resource/consumer joins name their required operands and missing side.
 The source-PC to typed-instruction correspondence, matched action preconditions, per-resource

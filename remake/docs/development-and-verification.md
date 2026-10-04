@@ -4016,6 +4016,38 @@ not a host startup. Actual engine checks select `TurnOrderRulesTests` and `Battl
 rerun a completed failing node narrowly. Use scoped Ruff, document checks, the committed plan and
 actual CI; no normal/full suite, complete H4 comparison, full route or settings matrix follows.
 
+### Scoped admission seed comparison
+
+Load the current ignored private-input configuration in the invoking process. The scoped command
+uses existing compact W2 actual data and an explicitly selected original/accepted-mechanism context:
+
+```powershell
+uv run python -X utf8 -m sf2tool.remake_h4_comparison admission-seed `
+  --actual local/issue534/w2-binding-01/actual.json `
+  --admission-context local/issue534/admission-binding-01/seed-context.json `
+  --text-source-root $pinnedSource `
+  --output local/issue534/admission-binding-01/seed-review.json
+```
+
+`$pinnedSource` is an explicitly selected read-only pinned source checkout. Output must be fresh
+under the current worktree's `local/`; selected actual/context input is capped at10MiB. The same
+predicate is used by modern comparison's optional `--admission-context`. It replaces only the
+seed-copy child; opening mouth/view stays Unavailable. Neither command grants full H4 acceptance.
+
+The private `select-seed.py` selects original checkpoint lines201/204/310/312/4011/4124 from
+registered `issue496/prepared-72`, retaining scalar facts, flag88, order and original line numbers.
+It reads6,924,228B and emits a compact context. Context includes the existing candidate identities,
+the historical A session, PR621 merge identity, retained correction TRX and adapter exit receipt.
+Use the [contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#admission-seed-copy-composition)
+for their distinct proof roles. Do not regenerate a corrected trace from test assertions.
+
+Direct controls exercise the real predicate: baseline; missing original loop/copy/behavior receipt;
+flag88 resume; original reader before write; foreign actual session/original cohort/correction;
+wrong source caller; changed copy; reversed draw/copy; and known wrong copy or flag88 beside a
+missing operand. Contradictions must remain FAIL beside missing evidence. These are direct
+verification runs, not a new test suite of the comparator. Preserve completed PR621 failures and
+narrow corrections; no SDK/native/whole-route rerun follows merely from composing this evidence.
+
 ### Historical A turn-order inventory
 
 The retained required-keyboard A inventory remains separate from the controlled proof above.

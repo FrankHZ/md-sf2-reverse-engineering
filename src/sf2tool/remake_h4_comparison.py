@@ -14026,6 +14026,272 @@ def _capture_outcome(actual, outcome_path):
     )
 
 
+def admission_seed_binding(actual, context, source_root):
+    """Selected non-resume source path plus accepted PR621 executed mechanism.
+
+    The historical capture supplies text delivery, never a corrected active image.
+    Missing edges do not mask an independently available contradiction.
+    """
+    import xml.etree.ElementTree as ET
+
+    context = context or {}
+    result = dict(
+        value=None,
+        checks=[],
+        historical=dict(result="FAIL", reason="disconnected historical A latch"),
+        openingControls=None,
+        unknown=["original opening mouth/view", "original low24 image", "later first AI value"],
+    )
+    absent = object()
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(want, got=absent):
+        if want is absent or got is absent or got is None and want is not None:
+            return None
+        if isinstance(want, dict):
+            return (
+                merge([match(v, got.get(k, absent)) for k, v in want.items()])
+                if isinstance(got, dict)
+                else False
+            )
+        return type(got) is bool and got == want if isinstance(want, bool) else got == want
+
+    def check(name, value):
+        result["checks"].append(dict(name=name, value=value))
+
+    def one(name, rows):
+        check(name + " unique", None if not rows else len(rows) == 1)
+        return rows[0] if rows else {}
+
+    check(
+        "explicit composed scope",
+        match("retained-keyboard-A-admission-seed", context.get("scope", absent)),
+    )
+    session = context.get("sessionId")
+    check("historical session identity", match("99755635-cad5-4fff-bc88-b70fcc5f017b", session))
+    original = context.get("original") or {}
+    check("selected original lineage", match(dict(
+        SourceCommit=UPSTREAM, RomSha256=ROM,
+        ConfigurationSha256="C881181FB83770EA71E815DC8A2EF16F4476F52256A57EEDF5BA6FE4DE72178D",
+        ObserverSha256="8349604F919EB7071897CF9921ED51F951F5875A745B51289257B3F7CBB7D75B",
+        RunnerSha256="97D424459D190B843598642F078BBF0CEDE2C7787F8FC0EB5492255E263D1339",
+    ), original.get("candidate", absent)))
+    selected = {}
+    for name, kind, facts in (
+        ("loop", "battle:loop", dict(d1=1, f88=False)),
+        ("program", "script:entry", dict(target=0x494BC)),
+        ("writeCall", "rng:GenerateRandomNumber:entry", dict(returnPc=0x647E, target=0x1600)),
+        ("writeDraw", "rng:draw", dict(source="GenerateRandomNumber", before=dict(d6=256))),
+        ("return", "script:return", dict(target=0x494BC)),
+        ("turn", "battle:turn-dispatch", {}),
+    ):
+        row = original.get(name) or {}
+        selected[name] = row
+        check("original " + name, match(dict(kind=kind, facts=facts), row))
+        check(
+            "original non-resume flag at " + name,
+            match(False, (row.get("state") or {}).get("flags", {}).get("88", absent)),
+        )
+    ordered = [row.get("order") for row in selected.values()]
+    known_orders = [v for v in ordered if v is not None]
+    check(
+        "original write precedes turn readers",
+        merge(
+            [
+                True if len(known_orders) == len(ordered) else None,
+        all(a < b for a, b in zip(known_orders, known_orders[1:], strict=False)),
+            ]
+        ),
+    )
+    check(
+        "original W2 draw belongs to selected call",
+        None
+        if selected["writeCall"].get("order") is None or selected["writeDraw"].get("order") is None
+        else selected["writeDraw"]["order"] == selected["writeCall"]["order"] + 2,
+    )
+    # A returned selected bbcs_01 cannot bypass its first W2. The only live copy
+    # readers in this pinned source are battle AI; the unsigned wrapper has no
+    # caller. This premise applies to the observed flag88-clear branch only.
+    try:
+        root = Path(source_root) if source_root else None
+        if root is None:
+            raise FileNotFoundError("original source not selected")
+        root = root.resolve() if root.is_absolute() else repo_path(root)
+        pin = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        clean = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+        ).returncode
+        check("reviewed original source pin and clean code", pin == UPSTREAM and clean == 0)
+    except (OSError, subprocess.CalledProcessError):
+        check("reviewed original source pin and clean code", None)
+    result["sourceRule"] = dict(
+        commit=UPSTREAM, owner=OWNER, section="admission-seed-copy-composition",
+        branch="BattleLoop flag88 clear / Initialize",
+        writer="bbcs_01 text2292 -> ParseSpecialTextSymbol loc_6472 -> byte write at647E",
+        readers="battle AI -> GenerateRandomNumberUnderD6 -> GenerateRandomValueSigned",
+        unused="GenerateRandomValueUnsigned only called by uncalled WaitForRandomValueToMatch",
+    )
+
+    # Reuse the accepted occurrence's raw delivery channels, without rerunning
+    # the full W2 predicate or treating its old text latch as active state.
+    inp = one(
+        "historical beforebattle input",
+        [r for r in actual.get("inputRecords", []) if r.get("_index", r.get("index")) == 812],
+    )
+    submit = one(
+        "historical beforebattle result",
+        [r for r in actual.get("warpRecords", []) if r.get("_index", r.get("index")) == 13797],
+    )
+    before, envelope = inp.get("before") or {}, submit.get("result") or {}
+    check("selected W2 caller input", match(dict(ordinal=407, pressed=True, action="confirm",
+        before=dict(sessionId=session, token=23128, wait="FieldTextWait",
+                    cursor=dict(Program="bbcs-01", Instruction=17))), inp))
+    check(
+        "selected W2 result session",
+        match(dict(sessionId=session, revision=23291, failure=None), envelope),
+    )
+    check(
+        "selected W2 result state",
+        match(dict(sessionId=session, revision=23291), submit.get("state", absent)),
+    )
+    events = envelope.get("observations") or []
+    kinds = ["rng-text-w2", "text-seed-copy", "text-w2-wait", "text-w2-input", "text-w2-accepted"]
+    found, positions = {}, []
+    for kind in kinds:
+        rows = [(i, e) for i, e in enumerate(events) if e.get("Kind") == kind]
+        found[kind] = one(kind, [e for _, e in rows])
+        positions.extend(i for i, _ in rows)
+    check("actual draw copy wait read order", positions == sorted(positions))
+    check("write before service", None if len(positions) < 3 else positions[:3] == [0, 1, 2])
+    draw, copy = found["rng-text-w2"], found["text-seed-copy"]
+    check(
+        "range and input main seed",
+        match(dict(RandomRange=256, Before=before.get("mainSeed", absent)), draw),
+    )
+    if draw.get("Before") is not None:
+        word, value = _rng_step(int(draw["Before"]) >> 16, 512)
+        check(
+            "independent main draw arithmetic",
+            match(
+                dict(After=(word << 16) | (int(draw["Before"]) & 65535), RandomValue=value >> 1),
+                draw,
+            ),
+        )
+    else:
+        check("independent main draw arithmetic", None)
+    check(
+        "delivered copy byte",
+        None
+        if draw.get("RandomValue") is None
+        else match(draw["RandomValue"], copy.get("After", absent)),
+    )
+    check("accepting source read", match("accept", found["text-w2-input"].get("Detail", absent)))
+    for e in events:
+        revision = e.get("Revision")
+        check(
+            "event inside selected submit",
+            None
+            if revision is None or before.get("revision") is None
+            else before["revision"] < revision <= 23291,
+        )
+
+    accepted = "bbf98c8ddbd04500d57165a958f78f86a9ff209b"
+    check("accepted correction identity", match(accepted, context.get("correctionCommit", absent)))
+    # Direct comparison of owned proof dependencies, not a new hash manifest.
+    for path in (
+        "remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationDispatcher.cs",
+        "remake/src/Sf2.Remake.Application/Runtime/Exploration/BattleEntry.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/SourceEnemyAi.cs",
+        "remake/tests/Sf2.Remake.Engine.Tests/SourceEnemyAiTests.cs",
+    ):
+        try:
+            old = subprocess.check_output(
+                ["git", "-C", str(repo_path(".")), "show", accepted + ":" + path],
+                text=True,
+                encoding="utf-8",
+            )
+            # Changed proof dependencies require renewed review, not a claim that
+            # any source change is necessarily a behavior failure.
+            check(
+                "accepted mechanism dependency " + path,
+                True if repo_path(path).read_text(encoding="utf-8") == old else None,
+            )
+        except (OSError, subprocess.CalledProcessError):
+            check("accepted mechanism dependency " + path, None)
+    path = "remake/src/Sf2.Remake.Application/Runtime/SessionContract.cs"
+    try:
+        old = subprocess.check_output(
+            ["git", "-C", str(repo_path(".")), "show", accepted + ":" + path],
+            text=True,
+            encoding="utf-8",
+        )
+        pattern = r"public byte CurrentRandomSeedCopy\s*=>.*?;"
+        previous = re.findall(pattern, old, re.S)
+        check(
+            "current active-byte projection",
+            True
+            if len(previous) == 1
+            and previous == re.findall(pattern, repo_path(path).read_text(encoding="utf-8"), re.S)
+            else None,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        check("current active-byte projection", None)
+    path = "remake/game/src/Exploration/ExplorationSessionView.cs"
+    try:
+        old = subprocess.check_output(
+            ["git", "-C", str(repo_path(".")), "show", accepted + ":" + path],
+            text=True, encoding="utf-8",
+        )
+        pattern = (r"randomSeedCopy = current\?\.CurrentRandomSeedCopy, "
+                   r"lastTextSeedCopy = current\?\.Story\.RandomSeedCopy,")
+        check("host projects active byte separately from text latch",
+              True if re.search(pattern, old)
+              and re.search(pattern, repo_path(path).read_text(encoding="utf-8")) else None)
+        receipt = Path(context["correctionAdapterExit"])
+        receipt = receipt if receipt.is_absolute() else repo_path(receipt)
+        check("accepted adapter compile", receipt.stat().st_size < 32
+              and receipt.read_text(encoding="utf-8-sig").strip() == "0")
+    except (KeyError, OSError, subprocess.CalledProcessError):
+        check("accepted host mechanism evidence", None)
+    try:
+        trx_path = Path(context["correctionTrx"])
+        trx_path = trx_path if trx_path.is_absolute() else repo_path(trx_path)
+        require(trx_path.stat().st_size <= 64 * 1024, "seed correction TRX exceeds 64KiB")
+        trx = ET.fromstring(trx_path.read_bytes())
+        check("accepted behavior execution identity",
+              match("b4adba34-a764-4ebb-abcf-a3149653ffae", trx.get("id", absent)))
+        ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+        method = ("Sf2.Remake.Engine.Tests.SourceEnemyAiTests."
+                  "FieldTextCopyReplacesInitialAiByteBeforeEntryAndAiKeepsItsUpdatedByte")
+        expected = {
+            f'{method}(textToken: "{{{token}}}", preserved: {preserved})'
+            for token, preserved in (("W1", 3408025), ("W2", 3408025), ("W2", 11259375))
+        }
+        results = trx.findall("t:Results/t:UnitTestResult", ns)
+        names = [r.get("testName") for r in results]
+        check(
+            "accepted executed behavior cases",
+            False if set(names) - expected or len(set(names)) != len(names)
+            else True if set(names) == expected else None,
+        )
+        check("accepted behavior outcomes",
+              merge([match("Passed", r.get("outcome", absent)) for r in results]))
+    except (KeyError, OSError, ValueError, ET.ParseError):
+        check("accepted executed behavior evidence", None)
+    result["mechanism"] = dict(
+        commit=accepted,
+        kind="accepted executed assertions plus unchanged source",
+        actualEdge="ordinary text copy -> active Party image -> BattleEntry -> first AI read",
+        notObserved="no corrected historical-A or whole-route host trace",
+    )
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    return result
+
+
 def compare_modern(
     ref,
     actual_path,
@@ -14046,6 +14312,7 @@ def compare_modern(
     heal_context=None,
     w1_context=None,
     map_context=None,
+    admission_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -14085,6 +14352,11 @@ def compare_modern(
     map_consumers = (
         map_consumer_binding(actual, map_context, text_source_root)
         if map_context is not None
+        else None
+    )
+    admission_seed = (
+        admission_seed_binding(actual, admission_context, text_source_root)
+        if admission_context is not None
         else None
     )
     assertions = _bounded_list()
@@ -14425,13 +14697,26 @@ def compare_modern(
     check(
         1,
         "admission seed-copy byte",
-        admission["state"]["rngCopyByte"],
-        first.get("randomSeedCopy"),
+        True if admission_seed is not None else admission["state"]["rngCopyByte"],
+        admission_seed["value"] if admission_seed is not None else first.get("randomSeedCopy"),
         "samples[0].randomSeedCopy",
         admission["source"],
         parent=phase_parent,
-        reason="An absent latch is not zero; first-read/write relevance is not yet bound",
+        reason="Selected non-resume write before readers plus accepted active-byte mechanism"
+        if admission_seed is not None
+        else "An absent latch is not zero; first-read/write relevance is not yet bound",
     )
+    if admission_seed is not None:
+        check(
+            1,
+            "historical A disconnected seed-copy latch",
+            True,
+            False,
+            "historical text latch versus active ThinkingSeed",
+            applicability="historical-diagnostic",
+            parent=phase_parent,
+            reason="Old null/latch/active12340000 remains a defect after the PR621 correction",
+        )
     check(
         1,
         "opening mouth/view controls before first source write",
@@ -15834,6 +16119,7 @@ def compare_modern(
         coverageObligations=coverage,
         candidateDefinitions=candidate_definitions,
         actualObservations=dict(
+            admissionSeed=admission_seed,
             admissionInputConsistency=admission_identities,
             sceneRecords=len(scene_rows),
             visibleMountedResources=mounted_resources,
@@ -16401,6 +16687,7 @@ def main():
             "w2",
             "heal",
             "map",
+            "admission-seed",
         ),
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
@@ -16409,6 +16696,11 @@ def main():
     parser.add_argument("--evidence-root", type=Path)
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--actual", type=Path)
+    parser.add_argument(
+        "--admission-context",
+        type=Path,
+        help="Selected original non-resume path and accepted seed correction evidence",
+    )
     parser.add_argument(
         "--audio-context",
         type=Path,
@@ -16476,6 +16768,37 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(args.admission_context is None or args.mode == "admission-seed"
+            or args.mode == "compare" and args.profile == "modern-continuous",
+            "Admission context applies only to admission-seed or modern compare")
+    if args.admission_context is not None:
+        args.admission_context = (args.admission_context if args.admission_context.is_absolute()
+                                  else repo_path(args.admission_context)).resolve()
+        require(
+            args.admission_context.stat().st_size <= 1024 * 1024, "Admission context exceeds 1MiB"
+        )
+    if args.mode == "admission-seed":
+        require(args.actual is not None and args.admission_context is not None,
+                "admission-seed requires selected actual and independent context")
+        actual_path = args.actual if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.admission_context.stat().st_size <= 10 * 1024 * 1024,
+            "Admission selection exceeds 10MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "Admission output must be fresh beneath this worktree local/",
+        )
+        binding = admission_seed_binding(
+            read(actual_path), read(args.admission_context), args.text_source_root
+        )
+        verdict = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        write(args.output, dict(profile="modern-admission-seed-composition", result=verdict,
+                                milestonePass=False, binding=binding))
+        print(json.dumps(dict(result=verdict, openingControls="Unavailable", milestonePass=False)))
+        raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
     require(
         args.map_context is None
         or args.mode in ("map", "resources")
@@ -16975,6 +17298,7 @@ def main():
                 read(args.heal_context) if args.heal_context else None,
                 read(args.w1_context) if args.w1_context else None,
                 read(args.map_context) if args.map_context else None,
+                read(args.admission_context) if args.admission_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))

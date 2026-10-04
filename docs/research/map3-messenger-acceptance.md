@@ -3474,6 +3474,79 @@ No original run/capture was added. The eight first-warp scalar gaps, H4 5340PASS
 HEAL2vs3/later RNG failures, JOIN cross-clock Unknowns, index29/next-actor discrepancy,
 public aggregate/h3-witch nonruns and attempts21/41/61/67 cleanup Unknowns remain.
 
+### Prepared opening scalar diagnostic
+
+**Prepared, not observed:** `admission-opening-scalar-diagnostic` uses the existing fixed-input
+candidate, controlled R1 bootstrap and callback/status/restoration contract. It does not use a
+post-opening savestate, the victory continuation, or the interactive full-route rail. The registered
+prepared06..86 metadata inventory found80 candidates/70 pairs; root saves06/17/33/45/68 are at
+the later messenger frame8605. No pre-R1 state was identified in that bounded registration.
+
+The private `admission-binding-01/select-opening-input.py` reads only the registered prepared68
+input prefix through R1-relative frame655. Its recorded `cs_5145C` return is order2284,
+observer/emulator1010/1009. Input edges are Left at1, neutral31, Right151, neutral153, C393,
+neutral394, C514, neutral515, C635, neutral636. These are frozen observed inputs, not an adaptive
+route policy or assumed neutral controls. The diagnostic stops on the matched original opening
+script return, completing that emulated frame before existing restoration/exit. It does not
+continue to messenger when an optional reader was not reached; that reader stays **Unknown**.
+
+`_opening_configuration` compares the selected original source with the pinned Git objects and
+checks each hook instruction against both the existing H1 listing and canonical ROM. Hooks are
+installed before R1; first pre-R1 and first admitted records remain distinct:
+
+| Hook | Original boundary |
+| --- | --- |
+| `loc_68E6`, `loc_65D8` | before glyph/delay mouth tests |
+| `loc_46B4`, `loc_46BE` | before view override test and after speed selection |
+| `loc_6472+12`, `+16` | before/after W2 byte copy |
+| `loc_4723E`, `+4` | before/after script-return view clear |
+| first `WaitForEvent`; matched `cs_5145C` return | admitted input boundary and bounded endpoint |
+
+Each selected record retains PC/order/frame, admitted versus pre-R1 phase, real input/control
+bytes, view target/layer/active mask/area/parallax/autoscroll/plane positions and relevant registers.
+The override/read branch is not inferred from later zeros. Records are first-per-hook/per-phase,
+not per-frame capture. The ordinary full entity-array R1 export is omitted for this diagnostic;
+existing bootstrap state preservation and inherited-state validation still run.
+
+Bootstrap interventions are unchanged: CheckSram's stack return is redirected to scratch`FF6802`;
+the64-byte scratch/menu thunk supplies initial menu1 and difficulty0. Session-only ROM patches
+are the Witch menu alias at`100A8` (6 bytes), name-ally RTS at`1007C` (2), and DisplayText RTS
+at`6260` (2). The original NewGame/SaveGame/default-init path constructs the controlled start.
+At R1, cart patches and scratch are restored. No diagnostic write sets mouth, view override,
+copy byte, main seed or thinking image. Existing final core/scope restoration and temporary session
+ROM removal remain mandatory; they are not extra gameplay evidence. This is controlled admission,
+not an unmodified natural title flow.
+
+After loading private configuration, preparation uses
+`prepare_map3_observation_candidate(rom, pinned_source, input_path=prefix,
+output_directory=fresh_output, proposed_timeout_seconds=300,
+reviewed_prior_starts=138, reviewed_prior_active_seconds=15583.68017570005,
+reviewed_prior_delivered_frames=429625, reviewed_prior_advancing_batches=16332,
+diagnostic_kind=OPENING_DIAGNOSTIC)`. These retained cumulative totals must be refreshed against
+their owner before launch. Proposed ordinal139 has not executed. The prepared655-frame table plus
+the existing1800-frame bootstrap watchdog bounds this candidate to2455 frames, inside the allocated
+12000-frame ceiling. Other limits are300s,2000 scalar records/1MiB,64MiB total generated output and
+2GiB process working set. Source preparation already verifies shared-Lua syntax; it starts no emulator.
+
+The concrete candidate is `local/issue534/admission-binding-01/opening-prepared-01`. After independent
+pre-launch inspection and installation ownership/process checks, the execution API is
+`run_map3_observation_candidate(rom, candidate, diagnostic_kind=OPENING_DIAGNOSTIC)` with all other
+arguments at their noninteractive defaults. Reuse the registered verified installation with explicit
+worktree-local config/cwd/TEMP/writable roles; no alternate emulator/source copy. The launch plan
+uses the private `admission-binding-01/run-opening.py --execute-reviewed` supervisor to monitor
+storage/peak working set at250ms intervals, in addition to the runner's wall/frame and Lua record
+caps. The supervisor's default invocation is inspection-only. A resource violation retains a failed
+attempt and does not claim successful emulator restoration. Native enforcement remains unobserved
+until the admitted run; the prepared command is not a completed native gate.
+
+Preparation completed in23.7919s with247,746,560B incremental peak working set. The inherited H1
+preparation reads the existing24,062,653B listing; its measured peak **exceeds** the proposed128MiB
+offline budget. Preserve `opening-preparation-receipt-02.json`; do not claim budget PASS or repeat
+the preparation automatically. The earlier preparation failed before launch/materialization because
+the existing accounting guard rejected the new non-segment diagnostic; receipt01 is retained and
+that guard now accepts only this explicitly validated diagnostic. No new H3 runtime result, original
+opening value, compatibility/cleanup result or full H4 acceptance is claimed.
+
 ### Later blocks: complete source, no later runtime claim
 
 **Confirmed construction/source; Unknown reach and timing:** direct expansion of the documented
