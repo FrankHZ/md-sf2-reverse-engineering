@@ -196,6 +196,31 @@ The [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected
 and [verification route](../../remake/docs/development-and-verification.md#scoped-heal-consumer-comparison)
 retain logical-clock limits, complete comparison controls and the caller-owned selected-stream boundary.
 
+### H4 Battle-Scene Module Route
+
+The old `battle_scene_consumer_binding` entry passes the existing `read` callable explicitly to
+`scene_binding.battle_scene_consumer_binding(actual, context, source_root, read_document)`.
+The scoped CLI and modern child use that wrapper; direct observations inject the same document
+reader or a bounded candidate loader. All owners below live in `src/sf2tool/remake_h4/`.
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `scene_checks.py` | Family partial matching, clocks and one ordered aggregate check log. |
+| `scene_source.py` | Pinned animation/text bytes and read-only accepted material selectors. |
+| `scene_dependencies.py` | Capped repository-relative document loading, context/provenance admission and keyed union of fresh dependency projections. |
+| `scene_evidence.py` | Bounded JSONL reader and phase/event/projection/census joins. |
+| `scene_construction.py` | Independent source strikes, critical text operands and constructed phase obligations. |
+| `scene_rendering.py` | Mounted actors, animation, fairy/reaction and text; explicit `AnimationProgress` belongs to one phase. |
+| `scene_fielddeath.py` | Source death batches and field-actor resource/visibility observations. |
+| `scene_phases.py` | Owns each phase's progress and causal input, projection and completion checks. |
+| `scene_terminal.py` | Admitted terminal release, attach, return and field-control composition. |
+| `scene_binding.py` | Calls those owners in check order and returns the detached aggregate report. |
+
+Loading retains the existing reader's behavior and size/error boundaries. The caller owns any
+selected streams; these modules neither close them nor reopen the full capture. No owner imports
+the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-battle-scene-command-and-consumer-binding)
+and [verification route](../../remake/docs/development-and-verification.md#scoped-battle-scene-consumer-comparison).
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
