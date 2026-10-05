@@ -1617,6 +1617,13 @@ never against a matching value invented in the terminal record.
 
 ### Complete reached operation-flow binding
 
+The [operation-flow module owners](../../operations/bounded-inspection-and-review.md#h4-operation-flow-module-route)
+compose this same entry with explicit source/state/storage dependencies. Their structural acceptance
+uses a complete source-region map, bounded complete ordered reports and real interface/publication
+observations. Constructed controls and named source compilations are not a new historical A03 run
+or evidence of natural reach. PR604's final accepted evidence and four predicate repairs remain
+unchanged; historical calls4107/12608 still lack their required in-call stack observations.
+
 The five existing whole children below use one complete reached source/effect binding in
 `remake_h4_comparison.py:operation_flow_binding`:
 

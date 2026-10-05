@@ -4867,6 +4867,28 @@ legacy, JOIN and source results and their failures.
 
 ### Complete operation-flow comparison
 
+The existing comparator entry delegates to the [operation-flow module owners](../../docs/operations/bounded-inspection-and-review.md#h4-operation-flow-module-route),
+whose source-region map preserves every moved branch, closure bridge, ordered check and early exit.
+For this structural boundary, use complete old/new reports from compact source-derived/constructed
+controls, the actual wrapper/modern seam and real reader/list/map/sort/dict factories. Observe
+per-call/per-invocation isolation, caller-owned streams and detached publication. Source/program
+seeds from the older saved motion pilot do not become the corrected A03 world; newly constructed
+selection receipts and states have no historical process/channel identity.
+
+The private reproduction owner is `local/issue638/operation-flow-modules-01` (`controls.py`,
+`cases.py`, `compare.py`, `extras.py`, `interfaces.py` and the source-region map). Retain completed
+reports/failures and use fresh output destinations. Compare every ordered field while retaining
+one full baseline plus equality receipts for identical outputs. Keep missing-only, wrong-only and
+mixed cases distinct, including explicit-null camera, invocation-bounded callers, rebuild/preserve
+allocation with overrides, and independent shared-tail flags/counts with intervening writers.
+
+No new full historical A03 comparison, raw actual/world read, eager legacy script, native/SDK
+launch or acquisition is required for this extraction. Historical acceptance stays at PR604 merge
+`4d2251316fb19f5e6acfb2a7c023eeabca8df561` and final candidate
+`f569549a80411ba73dcb2eb42ee76554c366d3a9`; calls4107/12608 remain Unknown. Use affected Ruff,
+design-contract/research-index, document/private/scope checks, committed planning and actual CI.
+This scope adds no helper-unit, normal/full aggregate, route/matrix or full-H4 run.
+
 Use the complete modern material comparison above, with `--text-source-root $sourceRoot`,
 `--original-join-evidence-root $selectedWitness`, `--baseline-actual $normal05Actual` and
 `--baseline-outcome $normal05Outcome`. The explicitly selected read-only source checkout must be

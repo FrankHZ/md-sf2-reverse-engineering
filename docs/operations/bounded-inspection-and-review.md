@@ -463,6 +463,63 @@ and [verification scope](../../remake/docs/development-and-verification.md#compl
 retain that distinction. Unsupported runtime combinations stay Unknown even when their moved
 source bodies have complete structural correspondence.
 
+### H4 Operation-flow Module Route
+
+The existing `operation_flow_binding(actual, selection, source_root, motion, text)` entry and
+modern caller use `operation_flow_binding.py`. The wrapper explicitly injects the existing reader,
+bounded-list, occurrence-map, bounded-sort and occurrence-dict functions. The five family names,
+ordered checks/programs/warps arrays, False-over-missing reduction and source-error early finish
+are unchanged. Other comparison families and transport internals retain their owners.
+
+This correspondence covers the complete function at
+`9b77cf33d13dabf799b0ce0cc17d2916107702ea:src/sf2tool/remake_h4_comparison.py`, lines4891–6369;
+the two following separator lines stay in the comparator. Inspect that exact Git object against
+these current owners, including branches absent from the controlled observations.
+
+| Module in `src/sf2tool/remake_h4/` | Old regions | Body and state bridge |
+| --- | --- | --- |
+| `operation_flow_binding.py` | 4891–4892,5004–5005,5087–5120,5718–5723,5967–5968,6369 | Ordered composition, reached inventory, source successors, unmapped-instruction early continue and final finish. |
+| `operation_flow_checks.py` | 4893–4918 | Factory returns names/result and the same check/common/finish closures; every ledger is per call. |
+| `operation_flow_source.py` | 4919–4980 | Reader/selection/source/common inputs; returns world/programs/maps/normalized source root/tracked paths/compiler/routes and the existing parser functions. On the same caught errors, returns None so binding immediately calls the original finish closure. |
+| `operation_flow_indexes.py` | 4981–4991,5121–5133,5235–5248 | Event factory returns events/record ordinals/warp records/ordered events. State factory returns sorted native references and state-of/anchor closures. Entity/signature helpers move to module scope; snapshots are not copied into indexes. |
+| `operation_flow_programs.py` | 4992–5003,5006–5086 | Instruction-reader closure takes programs; reached-body validation receives the compiler/routes/tracked paths/parsers and appends to the original result/check ledger. |
+| `operation_flow_control.py` | 5134–5234 | Takes actual/events/instruction/names/check/map factory; returns control-read index after the original identity, interval and full-stack predicates. |
+| `operation_flow_flags.py` | 5249–5339 | Takes world/maps/ordered events/instruction/state lookups/map factory; returns flags-at/join-effect/write-flags closures. Choice index and party layout remain per call. |
+| `operation_flow_warps.py` | 5340–5482,5676–5717 | Source request inventory, route choice and field release retain their loops/early continues; returns warp requests and invokes initialization only under the original post-state guard. |
+| `operation_flow_initialization.py` | 5483–5675 | Receives one warp's request/transfer/post/target/route/flags plus source/state dependencies and callbacks; retains pose/facing, source allocation, preserve mode, overrides and independent latch checks. No state escapes. |
+| `operation_flow_branches.py` | 5724–5858 | Per-executed-instruction arguments retain branch evaluation, nested-return scan and invocation-bounded caller/control-read lookup; no later invocation can supply a missing stack. |
+| `operation_flow_roster.py` | 5859–5913 | Same flag replay, counted prefixes and follower installation, with explicit instruction/state/flag-writer callbacks. |
+| `operation_flow_choices.py` | 5914–5966 | Same yes/no guard, accepted/flag/return interval and independent actual flag effect. |
+| `operation_flow_outcome.py` | 5969–6098 | Receives actual/events/maps/warp requests/state lookup/motion/flag callbacks and storage factories; retains last living pose, transfer/fades/readiness, then invokes shared tail under the original guard. |
+| `operation_flow_tail.py` | 6099–6179 | Receives battle/outcome/return interval and independent state/flag callbacks; preserves ordered markers, flag effects, counted membership and intervening writers. |
+| `operation_flow_effects.py` | 6180–6255 | Retains before/after body loops, physical last-writer effects and HP/MP reset, then calls scene predicates for that same event. |
+| `operation_flow_scene.py` | 6256–6368 | Receives the same event/body/index/state/callback operands; preserves the distinct post-load service, physical-set retention and explicit-null camera/fallback rules. |
+
+No source local is renamed. The new admission tuple/None return is the explicit replacement for
+the original source block's enclosing early return. Other helper returns expose existing closure
+state, not new authorities. The compiler and source registrations stay local to admission and its
+binding call; the existing parser imports occur only inside the admitted source block. Check
+callbacks and mutable flag sets retain their original order/lifetimes. Storage factories stay
+caller-owned; publication uses the existing detached report bundle mechanism.
+
+The structural reproduction owner is `local/issue638/operation-flow-modules-01`: accepted-function
+source/region map, generated-body correspondence, complete ordered report baselines/equality
+receipts and actual interface observations. Saved older-world programs are only source seeds;
+named current pinned-source compilations and explicitly constructed maps/events/states form
+separate structural controls. Their local selection receipt is a control, not historical A03
+provenance. Keep source admission, missing-only, wrong-only and mixed contradictions distinct.
+No old raw actual/world, eager historical script or full A03 comparison is part of this acceptance.
+Input is bounded to10MiB, fresh scratch to40MiB and each observation to120s/128MiB private memory;
+calibrate with a representative small case before batching and retain full differences/failures.
+
+PR604's historical evidence remains at merge `4d2251316fb19f5e6acfb2a7c023eeabca8df561`, final
+candidate `f569549a80411ba73dcb2eb42ee76554c366d3a9`. Its camera, caller-interval, initialization
+and shared-tail repairs remain intact; calls4107/12608 remain Unknown at their historical missing
+in-call-stack boundary. Structural correspondence does not create new natural reach or full
+historical behavior evidence. The [operation-flow contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-operation-flow-binding)
+and [verification owner](../../remake/docs/development-and-verification.md#complete-operation-flow-comparison)
+retain those limits.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
