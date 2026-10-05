@@ -1229,10 +1229,68 @@ not original natural history, required A consumption or full H4 acceptance.
 live agility, extra-round action, processing order and candidate draw/unsorted-score facts. Initial
 definitions and reconstructed expected draws cannot manufacture the missing actual operands. That
 capture also predates the accepted text-copy/AI seed correction. The existing required
-`turn candidate score draws and tie/order result` child remains **Unavailable**; the scoped
-controlled proof does not backfill it. Natural trajectory equivalence and source boundaries beyond
+`turn candidate score draws and tie/order result` diagnostic remains **Unavailable** without the
+explicit composition below; the scoped controlled proof does not backfill it. Natural trajectory equivalence and source boundaries beyond
 the accepted seams remain **Unknown**. No new route, native/emulator launch, full H4 recomputation
 or matrix is implied, and the accepted audio binding remains independent.
+
+#### Composed current turn rule and queue consumption
+
+The optional `turn_order_consumer_binding` combines two independently required legs. The first
+reuses the accepted actual three-round generation proof above, compared with original rules,
+and direct tested/current generator, activation, state, queue and Application dependency
+comparisons. The second consumes historical actual installed queues as inputs to the original
+selection/skip/cursor/rollover/outcome rules. Those queues never supply expected generation.
+Only this explicit composition can supply the named current semantic child; the default historical
+diagnostic and its missing actual operands retain their separate result.
+
+**Confirmed (bounded executed comparison):** the retained selection contains twelve complete
+64-slot queue installations. Independently retained census/selection receipts and source channel
+indices define the consumer frontier. Each reached pre-sentinel slot requires its actual admitted
+action/commit or zero-HP skip. The observed frontier has 85 committed actions and five dead skips;
+these are inventory facts, not legality quotas. Earlier rounds reach the sentinel before rollover.
+The last reached slot has its real Victory and owning commit; actual enemy HP is zero at that
+boundary, so remaining living slots are justified by terminal outcome rather than a final-round
+exemption. The accepted source generation proof continues to govern signed sorting, stable ties,
+extra entries and participating sentinels through all 64 slots and exactly 62 passes.
+
+Supplied candidate records must cover the independent selected source indices, complete semantic
+census, installed queues, caller/input identities and available live-state leaves. Historical
+wrapper ordinals are explicitly one-based; captured channel indices are zero-based. Repeated
+publications require exact event identity/payload agreement and ordered owning events. A failed
+owning consumer, wrong slot/actor/live-dead state/cursor, phantom rollover or conflicting supplied
+queue is FAIL even beside missing generation evidence. Missing commits, skips, rollovers, input
+channels or state leaves remain Unavailable; removing them cannot shorten the expected frontier.
+Both logical clock axes must be nonnegative integral application clocks. Events progress in
+sequence/revision order within their owning result bounds; its last event closes the result sequence.
+Delivered poststate session/revision/sequence must equal that result. An empty attach projection is
+permitted only at the observer's before-view seam with the preceding result identity and exact
+republished events; a later unrelated state cannot substitute for a poststate. The initial queue
+sample joins the owning first-control result. Each physical input has an ordered, nonoverlapping
+source-index interval and progressing before/after clocks, bounded by the selected result neighbors
+and joined at supplied exact boundaries. Direct results belong inside that interval; automatic
+results follow its after state and precede the next input. Both require the causal input ordinal.
+Scene inputs without a selected actor remain part of this causal coverage. Missing clocks or
+boundaries remain Unavailable; negative/fractional clocks, inverted intervals or contradicted
+ownership are FAIL even when another leg is missing.
+An omitted snapshot HP/placement leaf reports missing observation without erasing a previously
+known value. A missing authoritative HP write instead invalidates the carried HP until a subsequent
+actual observation restores it; the earlier value cannot fill that missing mutation.
+Rejected target/input diagnostics that consume no slot remain recorded separately, and their
+poststate must preserve the queue. Movement, scene waits and Cancel do not consume an entry.
+
+Scoped `turn-order --turn-context` and modern `--turn-context` use the same predicate. Modern
+supplied channels are evaluated at the applicable retained seam; dependency evidence cannot fill
+a missing supplied queue/control/input channel or ignore a conflicting current record. See the
+[verification recipe](../../../remake/docs/development-and-verification.md#composed-turn-rule-and-consumer-verification).
+
+**Inferred:** unchanged accepted mechanisms and the separately evidenced retained callers support
+this current semantic composition. It is not a newly executed corrected whole-A trajectory.
+**Unknown:** historical A's omitted live agility/extra/order, individual draws/unsorted scores,
+corrected continuous actor/queue history, and original natural timing or status/multiple-extra
+boundaries beyond accepted seams. Old seed-latch, HEAL, terminal/provenance failures retain their
+own evidence and results. A standalone composed report has `milestonePass=false`; it does not
+close whole H4, the settings matrix or overall milestone acceptance.
 
 ### Composed reached audio consumer binding
 

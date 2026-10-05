@@ -4325,7 +4325,7 @@ uv run python -m sf2tool.remake_h4_comparison turn-order `
   --output local/turn-order/fresh-report.json
 ```
 
-The command accepts at most three selected generations and 1 MiB input, enforces a fresh output
+Without a turn context, the command accepts at most three selected generations and 1 MiB input, enforces a fresh output
 under this checkout's local/, and caps the report at 1 MiB. It reports a controlled comparison scope
 and `milestonePass=false`. These limits scope the pilot, not gameplay legality. The ordinary H4
 child keeps its missing actual generation/state boundary; a controlled report cannot close it.
@@ -4349,6 +4349,66 @@ estimate, not a measured peak. The changed shared observation DTO requires adapt
 not a host startup. Actual engine checks select `TurnOrderRulesTests` and `BattleAgilityTurnsTests`;
 rerun a completed failing node narrowly. Use scoped Ruff, document checks, the committed plan and
 actual CI; no normal/full suite, complete H4 comparison, full route or settings matrix follows.
+
+#### Composed turn rule and consumer verification
+
+The explicit [composed boundary](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-current-turn-rule-and-queue-consumption)
+uses the same scoped mode with a selected actual consumer input and independent context:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 -m sf2tool.remake_h4_comparison turn-order `
+  --actual $selectedTurnConsumers --turn-context $turnContext `
+  --text-source-root $pinnedSource --output local/turn-order/fresh-composed-report.json
+```
+
+The combined actual/context bundle is limited to 10 MiB; the fresh H-local report is limited to
+1 MiB including its serialized formatting. Comparison budgets remain 120 seconds / 128 MiB
+incremental. The result has separate generation and consumer legs, `historicalDiagnostic=Unavailable`
+and `milestonePass=false`. No raw capture, world/reference export, SDK/native/emulator/observer
+change, route, full H4 or matrix is needed.
+
+The context declares `scope=retained-keyboard-A-turn-composed`, original session/producer/source
+revision, accepted `generationCommit` and genuine `generationActual`, actual retained `queues`
+with source channel/index/one-based ordinal/round, independent `indices` and semantic `census`,
+completed `selectionReceipts` and `roundSelection`, source `factions`, independent
+`owningResultIndices`, `callerFields`/`inputOrdinals`, and available `stateFields`/`inputFields`.
+It references the PR622 executed generation proof,
+the prior fourteen-record/twelve-generation queue inventory, and the accepted compact AI/reward
+selections. Preparation selects only needed fields and reconciles overlapping result/state
+identities. Keep the scene inputs with null actors as well as manual-control inputs: they carry
+the ordinal and dispatch boundaries of automatic/scene results. Do not copy whole archives or
+reconstruct missing old generation from expected math.
+
+Selected actual channels use `evidenceScope=selected-turn-consumers` and explicit zero-based
+`_index` values. Modern supplied channels use their original channel indices at the same applicable
+seam. Both must provide their own installed queues, owning result acceptance, ordered events,
+live HP/cursor/selection states and causal inputs. Missing supplied evidence stays Unavailable;
+retained dependency records cannot fill it. The frontier is generated from the independent census
+and queues, with each missing witness retained as missing. Actual HP writes/death cleanup, queue
+admission and terminal enemy HP justify live action, dead skip and terminal remainder. The `heal`
+event is a named effect, not a caster HP write; actual `hp` observations govern HP propagation.
+No-event rejected inputs remain diagnostics and cannot advance the queue. Passing checks are
+grouped with counts/bounded identity examples; every failed/missing class remains in the verdict.
+Validate both clock domains before missing-leg exits, ordered event clocks/result bounds and the
+exact delivered poststate session/revision/sequence. The initial queue sample joins its first-control
+result. Only an empty attach projection with matching preceding result/events uses the observer's
+before-view exception. Input intervals are nonnegative integral source indices, ordered and
+nonoverlapping; before/after clocks progress, join supplied exact result boundaries and are bounded
+by selected neighbors. Direct/automatic results require their actual causal input ordinal and
+appropriate before/after/next-input bounds. Missing operands remain Unavailable; independently
+known negative/fractional clocks, wrong identities or inverted/contradicted intervals remain FAIL.
+Omitted snapshot HP/placement leaves preserve carried knowledge while reporting missing observation;
+missing authoritative HP writes invalidate it until a later actual observation supplies the value.
+
+Use direct genuine, omission, contradictory, foreign, duplicate/order and complete-frontier controls:
+missing commit/skip/rollover/terminal, shortened census, failed owning consumer, wrong consumer
+beside a missing controlled draw, terminal remainder, changed or absent supplied queue/state/input,
+and Cancel/wait cursor persistence. Add no verifier tests. Use scoped Ruff/range formatting,
+affected documents/contracts/private checks, the clean committed planner under current scope and
+actual CI. Reuse completed engine/adapter checks and all failures; no local SDK or normal/full
+aggregate rerun follows this comparator/document change. The independent main gate accepts the
+semantic child and retains full-route/H4/milestone decisions.
 
 ### Scoped admission seed comparison
 
