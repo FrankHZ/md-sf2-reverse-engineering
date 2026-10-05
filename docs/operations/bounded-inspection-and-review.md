@@ -359,6 +359,33 @@ consumer contradictions. Selected streams remain caller-owned; reports retain no
 No owner imports the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-current-turn-rule-and-queue-consumption)
 and [verification route](../../remake/docs/development-and-verification.md#composed-turn-rule-and-consumer-verification).
 
+### H4 Audio Module Route
+
+The old `audio_consumer_binding(actual, context, source_root)` entry explicitly passes the existing
+bounded-list factory to `audio_consumer.py`. `_audio_context` remains an alias to its selection owner.
+Scoped and modern callers use these entries; transport limits and publication ownership stay with
+the existing reader/writer.
+
+| Module in `src/sf2tool/remake_h4/` | Responsibility / handoff |
+| --- | --- |
+| `audio_context.py` | Reached script operands, producer session and metadata without PCM. |
+| `audio_source.py` | Pinned driver identity and active sound-slot classification. |
+| `audio_identity.py` | Selected metadata, complete receipt channel and producer session. |
+| `audio_playback.py` | Unique playback lifetimes, inherited timer and legitimate replacements. |
+| `audio_events.py` | Dependent logical event identity and selected session. |
+| `audio_scene.py` | Phase-owned fade, stop/restore and actual scene release. |
+| `audio_finite.py` | Source request, helper clock, actual finish, release and prior cue resume. |
+| `audio_confirm.py` | Same-session plain Confirm transition and caller return. |
+| `audio_consumer.py` | Ordered composition and three bounded report lists. |
+
+Each owner receives its evidence and report callback explicitly; none imports the monolith.
+WaitToken remains service context, not voice identity. Caller-owned selected streams are never
+closed by the comparison. Under streaming transport, publish through the existing writer before
+closing the report store; the published companion can then be reopened independently. Ordinary
+list reports remain detached. The [audio contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
+and [scoped verification](../../remake/docs/development-and-verification.md#scoped-audio-consumer-comparison)
+retain Option A, independent tail evidence and original hardware Unknowns.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

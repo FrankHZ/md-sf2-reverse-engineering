@@ -4730,6 +4730,15 @@ dependencies. `audio` evaluates the existing replacement/fade/stop/resume child 
 [contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
 owns the composed proof and remaining Unknowns. No route, emulator, native host or SDK build is needed.
 
+The [audio module route](../../docs/operations/bounded-inspection-and-review.md#h4-audio-module-route)
+owns source classification, selected identity, playback lifetimes, scene/finite releases and Confirm
+joins. The old three-argument entry passes its existing bounded-list factory explicitly; scoped and
+modern callers keep the same entry, and `_audio_context` aliases the selection owner. Compare complete
+ordered reports, including playback/release anchors. Verify caller-owned selected streams stay open,
+all three report lists use the existing factory, and published companion reports reopen after their
+original store closes. Exercise actual CLI exits 0/1/2 from repository and remake directories. These
+are direct tool observations, not verification-helper unit tests or full H4 acceptance.
+
 ```powershell
 . ./local/private-inputs.ps1
 uv run python -m sf2tool.remake_h4_comparison audio `
@@ -4760,7 +4769,9 @@ loop. Actual completed phase/action identity must agree with its logical produce
 must retain that music cue, including armed/eligible events; foreign work cannot fill its clock.
 Plain Confirm before/after session, revision, token, wait, tick and RNG must match the retained
 poll/accepted samples. Contradictory records are checked rather than filtered away; missing identity
-fields remain Unavailable. Missing selections and nonrequired C remain Unavailable. The accepted window-06 controlled tail
+fields remain Unavailable. Known phase/action, helper/completion cue or Confirm-session contradictions
+must still fail when another selected field is missing; retain complete before/after counterexamples
+for such mixed-evidence corrections. Missing selections and nonrequired C remain Unavailable. The accepted window-06 controlled tail
 is read directly and its reveal/speech/input methods compared with its accepted Git object; historical
 C is not relabeled. Use affected lint/format, document checks, committed planner and actual CI.
 Do not run a full H4 comparison, route, matrix, normal/full aggregate or verification-helper tests for
