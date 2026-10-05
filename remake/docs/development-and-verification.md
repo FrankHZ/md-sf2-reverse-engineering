@@ -4487,6 +4487,14 @@ actual CI; no normal/full suite, complete H4 comparison, full route or settings 
 
 #### Composed turn rule and consumer verification
 
+The [turn module route](../../docs/operations/bounded-inspection-and-review.md#h4-turn-module-route)
+names the source, generation, dependency and consumer owners. Direct observations may import
+`turn_order_binding` from `sf2tool.remake_h4.turn_generation` and `turn_order_consumer_binding`
+from `sf2tool.remake_h4.turn_consumer`; old imports remain the same callables. Preserve full ordered
+reports, grouped counts/examples, generation rounds, frontier and terminal fields when comparing.
+Selected streams remain caller-owned and detached reports survive closure. Relative paths resolve
+from the repository root, including invocation from `remake/`.
+
 The explicit [composed boundary](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-current-turn-rule-and-queue-consumption)
 uses the same scoped mode with a selected actual consumer input and independent context:
 
@@ -4557,10 +4565,11 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 import sf2tool.remake_h4_comparison as m
+from sf2tool.remake_h4 import turn_dependencies as dependencies
 a0 = json.loads(Path(sys.argv[1]).read_bytes())
 c0 = json.loads(Path(sys.argv[2]).read_bytes())
 dependency = 'remake/src/Sf2.Remake.Domain/Battles/Rules/TurnOrderRules.cs'
-original = m.repo_path
+original = dependencies.repo_path
 for mode in ('baseline', 'changed', 'missing', 'changed-plus-clock'):
     a, c = copy.deepcopy(a0), copy.deepcopy(c0)
     if mode == 'changed-plus-clock':
@@ -4573,7 +4582,7 @@ for mode in ('baseline', 'changed', 'missing', 'changed-plus-clock'):
         if str(path) == dependency and mode != 'baseline':
             return SimpleNamespace(read_bytes=read_dependency)
         return original(path)
-    with patch.object(m, 'repo_path', side_effect=selected_path):
+    with patch.object(dependencies, 'repo_path', side_effect=selected_path):
         r = m.turn_order_consumer_binding(a, c, sys.argv[3])
     print(json.dumps(dict(case=mode, value=r['value'], nonpass=[
         x for x in r['checks'] if x['value'] is not True][:8])))
