@@ -3999,6 +3999,17 @@ accepted predicates are outside this slice.
 
 ### Scoped battle-scene consumer comparison
 
+Direct observations call `sf2tool.remake_h4.scene_binding.battle_scene_consumer_binding` with an
+explicit document reader; the old entry passes its existing `read` callable. Selection/source aliases
+remain available. Use the [module route](../../docs/operations/bounded-inspection-and-review.md#h4-battle-scene-module-route)
+for state and loader ownership. Adapt retained candidate-reader controls at this explicit seam,
+without replacing module globals or executing historical writers. Reuse the accepted complete
+baseline after equality and compare all report fields, counts, order, occurrences and Unknowns.
+Keep absent-census animation diagnostics separate from movement equivalence: missing `rewardContext`
+previously reached an uninitialized animation variable; phase-local progress now retains the existing
+census contradictions as FAIL. A source-only omission still returns Unavailable. Observe those
+complete results and actual CLI diagnostics, without turning every missing dependency into FAIL.
+
 The [selected scene contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-battle-scene-command-and-consumer-binding)
 binds independent source construction/resources to actual scene consumption. Reuse the
 retained selection; a scoped comparison does not read the whole capture or run Godot:

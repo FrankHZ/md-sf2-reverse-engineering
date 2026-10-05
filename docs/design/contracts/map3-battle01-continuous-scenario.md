@@ -836,6 +836,12 @@ Reproduce with the [scoped reward route](../../../remake/docs/development-and-ve
 
 ### Selected battle-scene command and consumer binding
 
+Implementation follows the [battle-scene module route](../../operations/bounded-inspection-and-review.md#h4-battle-scene-module-route),
+with the existing reader supplied explicitly to the extracted composition. Animation sequence and
+observed-entry progress belong to each phase. Missing phase operands cannot inherit an earlier
+phase's sequence or raise an uninitialized-variable error in completion checks. Missing source alone
+remains Unavailable; independently contradictory census/coverage evidence still determines FAIL.
+
 The scoped `battle-scene` predicate evaluates the existing layer-9 child
 `battle scene command/resources/wait/effect/end consumer edges`. Its input is the retained
 modern A scene selection, joined by original indices to the accepted physical, HEAL,
