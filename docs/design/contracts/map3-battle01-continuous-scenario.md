@@ -1554,7 +1554,10 @@ inventories alongside actual joins, without fixed occurrence counts or an additi
 
 Field and battle use the same accepted modern configured-font boundary: the mounted FontFile face,
 family/style/index, size and system-fallback permission. Current mounted defaults are Open Sans
-SemiBold/SemiBold/face0, field16 and battle9. Original symbol/advance provenance and actual modern
+SemiBold/SemiBold/face0, field16 and battle9. Face index0 is numeric: integer0 and float0.0 are
+accepted, but boolean false is a contradiction despite Python numeric equality. An absent font/face
+list remains Unavailable; an absent face index within an observed face remains a contradiction.
+System-fallback permission must be boolean true. Original symbol/advance provenance and actual modern
 Label consumption are separate checks. Per-character fallback, exact shaping, original bitmap and
 pixel equality remain Unknown/outside this material assertion. Control-token identity proves no
 unobserved original W2 accepting read or control side effect.

@@ -542,7 +542,14 @@ not exercised by the bounded controls.
 | `text_material_battle.py` | 2515–2522,2526–2603,2707–2782 | Preparation/reaction intervals, local actor-name closure, consumer joins and independent required message inventory. |
 | `text_material_operands.py` | 2523–2525,2604–2706 | Stateless actor lookup and typed action/HP/EXP/gold/growth template selection; returns the existing tid/value/who/healing locals for the same reaction. |
 
-No original source local or predicate changes. Source admission keeps partial state after local
+The structural extraction changes no original source local or predicate. The configured-font
+predicate additionally rejects boolean `faceIndex` values: Python's `False == 0` previously admitted
+an explicit nonnumeric face. Integer0 and float0.0 remain accepted; missing-value handling and
+strict boolean `allowSystemFallback` are unchanged. Complete field/battle and mixed-absence
+counterexamples are retained separately under `local/issue638/text-material-font-type-01`;
+the original movement reports remain structural evidence only.
+
+Source admission keeps partial state after local
 absence so later independent font/content contradictions remain visible. Operand exceptions still
 reach the original enclosing battle catch. The original CRLF spriteset representation and raw
 lethal reaction Amount remain explicit. No rendered text chooses its own source template. Field

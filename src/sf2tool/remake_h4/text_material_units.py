@@ -12,6 +12,7 @@ def font(value, size):
         and all(
             f.get("family") == "Open Sans SemiBold"
             and f.get("style") == "SemiBold"
+            and not isinstance(f.get("faceIndex"), bool)
             and f.get("faceIndex") == 0
             and f.get("allowSystemFallback") is True
             for f in value["faces"]
