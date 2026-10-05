@@ -3985,6 +3985,16 @@ with `gameplayHeld`; the adapter uses its separate WaitHeld path. Bind the recor
 press/ready state and actual wait result, preserving that failed pilot. Do not rerun
 passing native cases to replace failures.
 
+Independent review of candidate `3c6a5e94` additionally reproduced three false PASS results:
+a foreign terminal case, consistently negative clock axes, and a V release after the first
+valid wait followed by illegal repeats. Foreign receipt plus a missing Draw also incorrectly
+became Unavailable. Preserve those original controls and rerun their exact four negatives
+plus the genuine baseline after correction. Receipt identity/single termination and absolute
+clock domains are checked before downstream missing fields. Wait ownership follows press,
+release and cancellation edges; the immediate action is distinguished from later repeats,
+and duplicate held presses do not rearm a canceled hold. Reuse all successful native/build
+observations; these comparator corrections require no new capture or SDK run.
+
 Direct controls cover premature registration, extra RNG, counters/gates/programs,
 disabled NPC effects, destination/collision/wait/travel, service count/order/continuation,
 projection and draw clocks, consistently foreign session/build identity, missing fields,

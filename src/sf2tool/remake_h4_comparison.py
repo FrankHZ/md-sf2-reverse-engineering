@@ -5617,6 +5617,55 @@ def _field_service_case(case, profile, checks=None):
     def check(name, value, row=None):
         checks.append(dict(name=name, value=value, row=row))
 
+    def clocks(name, value, keys, row):
+        value = value if isinstance(value, dict) else {}
+        for key in keys:
+            clock = value.get(key)
+            check(
+                name + ":" + key,
+                None
+                if key not in value
+                else isinstance(clock, (int, float))
+                and not isinstance(clock, bool)
+                and clock >= 0
+                and clock % 1 == 0,
+                row,
+            )
+
+    receipts = [i for i, r in enumerate(records) if r.get("kind") == "receipt"]
+    check("single terminal receipt boundary", receipts == [len(records) - 1] if receipts else None)
+    for index in receipts:
+        receipt = records[index]
+        check(
+            "terminal receipt case identity",
+            receipt["case"] == case["id"] if "case" in receipt else None,
+            index,
+        )
+    # Validate absolute clock domains before joins or missing downstream operands can
+    # short-circuit a row. Motion and portrait counters deliberately remain signed.
+    state_clocks = ("revision", "observationSequence", "simulationTick")
+    for index, row in enumerate(records):
+        if row.get("kind") == "result":
+            if row.get("before"):
+                clocks("before clock domain", row["before"], state_clocks, index)
+            clocks("after clock domain", row.get("after"), state_clocks, index)
+            facts = row.get("facts") or {}
+            clocks("result clock domain", facts, state_clocks[:2], index)
+            for event in facts.get("observations") or []:
+                clocks("event clock domain", event, ("Revision", "Sequence"), index)
+        elif row.get("kind") == "input":
+            clocks("input clock domain", row.get("before"), state_clocks, index)
+        elif row.get("kind") == "draw":
+            state = row.get("state") or {}
+            clocks("draw clock domain", state, state_clocks, index)
+            if state.get("portraitResourceProjection") is not None:
+                clocks(
+                    "resource clock domain",
+                    state["portraitResourceProjection"],
+                    state_clocks,
+                    index,
+                )
+
     check(
         "native exit and bounded process",
         process["exit"] == 0
@@ -5703,7 +5752,38 @@ def _field_service_case(case, profile, checks=None):
             all(initial_npc[e["id"]][k] == v for k, v in start.items()),
         )
     previous = None
+    input_position = 0
+    wait_down, wait_armed, wait_owner, wait_services = False, False, None, 0
+    wait_evidence = False
     for index, row in results:
+        for input_index in range(input_position, index):
+            observed_input = records[input_index]
+            if observed_input.get("kind") != "input":
+                continue
+            wait_evidence = True
+            if "key" not in observed_input:
+                check("input key available", None, input_index)
+                wait_armed = None
+                continue
+            pressed = observed_input.get("pressed")
+            if not isinstance(pressed, bool):
+                check(
+                    "input edge available",
+                    None if "pressed" not in observed_input else False,
+                    input_index,
+                )
+                wait_armed = None
+            elif observed_input.get("key") == 86:
+                if pressed and wait_down is False:
+                    wait_owner, wait_armed, wait_services = observed_input, True, 0
+                wait_down = pressed
+                if not pressed:
+                    wait_armed = False
+            elif pressed:
+                # A non-Wait action cancels the repeat; another V down while it is
+                # already held cannot rearm it without the real release edge.
+                wait_armed = False
+        input_position = index + 1
         prior, previous = previous, row.get("after")
         try:
             before, after, facts = row["before"], row["after"], row["facts"]
@@ -5713,6 +5793,27 @@ def _field_service_case(case, profile, checks=None):
                 ("text-w1-accepted", 4194309, "canWaitForText"),
             ):
                 if any(e["Kind"] == event_kind for e in events):
+                    if event_kind == "gameplay-wait":
+                        check(
+                            "ordinary input owns gameplay-wait",
+                            wait_owner["before"][ready] is True if wait_owner else None,
+                            index,
+                        )
+                        check(
+                            "live Wait press/release ownership",
+                            wait_armed if wait_evidence else None,
+                            index,
+                        )
+                        if wait_services:
+                            check(
+                                "held repeat ready state",
+                                before["waitingAtInput"] is True
+                                and before["canWaitAtInput"] is True
+                                and before["focused"] is True,
+                                index,
+                            )
+                        wait_services += 1
+                        continue
                     inputs = [
                         r
                         for r in records[:index]

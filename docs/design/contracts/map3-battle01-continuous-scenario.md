@@ -844,6 +844,15 @@ An entry result may contain multiple services only when it starts with observed
 unregistered, non-closing portrait work and ends registered and stationary. The complete
 ordered event list contains portrait-window services, exactly one registration after
 them, then the declared SetTextCursor/ShowText continuation at matching program locations.
+The capture has exactly one terminal receipt, after all observations, whose case identity
+matches the selected launch/process/profile. Revision, observation sequence and simulation
+tick are nonnegative integral domains in state, result, event, input and consumed resource
+observations; relative equality alone is insufficient. Signed motion and portrait counters
+retain their source domains. Gameplay wait owns a fresh V press: the immediate action
+needs the pressed ready state, while later repeats also require the live, uncancelled hold
+and observed repeat-ready/focused state. Release or another action ends repeat ownership;
+a still-held duplicate press cannot rearm it without a release and fresh press.
+
 Tick delta equals actual service count; no fixed count is a rule. Counters/eyes/mouth
 are unchanged and portrait RNG is absent. Disabled entities retain all relevant
 motion/cursor/timer/program state and seed. Enabled entry additionally requires the
