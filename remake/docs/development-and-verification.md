@@ -4982,10 +4982,15 @@ implemented or captured. The explicitly selected #517 fast-text speech behavior 
 
 `matrix` declares `scope`, `requiredVariants`, `excludedVariants` and `supplementalVariants` in its
 output. It does not infer requirements from the supplied files. A missing/failed/malformed baseline or
-missing required child cannot pass. Closing its legacy-named matrix row leaves A's 13 other required
-children open; neither self-equality nor a current-scope result claims complete H4 or all settings.
+missing required child cannot pass. In the retained A10 report, closing its legacy-named matrix
+row leaves thirteen other children Unavailable. Their later independently accepted local compositions
+are mapped in the [readiness ledger](../../docs/design/synthesis/map3-battle01-readiness.md#current-required-comparison-boundary).
+This historical scope reproduction neither consumes those optional contexts nor revises its source
+report; its Unavailable result is not a new failure of the accepted compositions. Overall closure
+requires independent review of parent coverage and shared evidence joins, not addition of PASS counts.
 
-Use the existing A10 report for a bounded scope check, with a fresh output:
+The retained historical scope check used A10 as follows. This is reproduction documentation,
+not authorization to rerun it during a compact closure audit:
 
 ```powershell
 . ./local/private-inputs.ps1
@@ -4995,7 +5000,8 @@ uv run python -m sf2tool.remake_h4_comparison matrix --matrix-scope current-keyb
   --output local/issue534/settings-cd-current-01/matrix-keyboard-reproduction.json
 ```
 
-Expected exit 2 / Unavailable: required A comparison PASS, 13 remaining required children. Supplying
+Historical reproduction result: exit 2 / Unavailable, required A scope comparison PASS and
+thirteen unavailable report children. Preserve that result alongside the accepted scoped proofs. Supplying
 B/D cannot expand this scope or contaminate its gate; supplying C adds a separately labeled diagnostic.
 Historical four-profile results retain their original meaning and files, rather than becoming current
 requirements. Direct scope verification uses compact synthetic summaries and retained report entries,

@@ -390,7 +390,14 @@ correction in the Issue handoff. A projected reference is never an H4 PASS.
 
 ## Remaining acceptance work
 
-**Unknown / OPEN original fields:** full R1 flags and fields beyond its serialized accounting,
+The [current acceptance map](../synthesis/map3-battle01-readiness.md#current-required-comparison-boundary)
+records independent acceptance of the thirteen bounded admission, rule, resource and consumer
+obligations. Their composed predicates below retain their exact evidence boundaries. Overall
+closure still requires main-gate review of required parent coverage, shared evidence dependencies
+and deviations. Historical/default reports remain unchanged; absent optional contexts can still
+produce Unavailable without invalidating an accepted explicit composition.
+
+**Preserved original projection limits (Unknown):** full R1 flags and fields beyond its serialized accounting,
 complete logical field-input effects beyond the accepted single Down extension, detailed AI
 memory/thinking draws, individual draw-to-effect mapping and timing normalization, cancel/reselect,
 unshimmed required dialogue and other incomplete 8D consumer boundaries. The bindings below
@@ -415,13 +422,13 @@ original next actor is Bowie while actual is Sarah; host exit 2 is the corrobora
 The accepted PR #526 post-victory extension is now optionally projected; that actual run did not reach it. NPC phase and
 timing/RNG mapping remain Unknown. This corrected comparison is still not H4 acceptance.
 
-**OPEN content/implementation:** 7C audio and complete reached asset provenance, missing snapshot/cue
-correlation, actual battle-scene consumers, remaining continuous-comparison coverage and applicable
-host/9A executions. The existing comparator has an accepted diagnostic result; remaining layers and
-variants are not complete.
-Medical Herb support and carried inventory observations are accepted in PR #521 (`78c201c3`);
-that bounded implementation does not constitute this continuous comparison. Audio (#517) and
-battle scenes (#523) remain separate OPEN implementation work.
+**Current integration review:** accepted resource, audio and scene proofs supply their named
+local obligations; the readiness map connects them to the retained continuous route and earlier
+text/motion/operation evidence. Medical Herb and carried inventory remain accepted bounded
+capabilities. The explicit #517 fast-text policy retains its controlled reveal-tail proof and
+historical C limitation. Issue status alone does not establish any of these consumer claims.
+Current required keyboard A, supplemental C and excluded B/D follow ADR0010; old variant gaps
+are not additional required executions. Required parent coverage and combined acceptance remain OPEN.
 Do not use current remake limitations to remove reached actions from the expected contract.
 Independent review accepts these comparison definitions with their precise open boundaries; this
 does not establish complete definition readiness or milestone readiness.
