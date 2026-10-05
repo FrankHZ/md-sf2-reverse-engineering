@@ -1414,6 +1414,12 @@ These are reproduced measurements, not required counts or legal-state restrictio
 channels/completions remain Unavailable; identity, ordering or illegal-stop contradictions are FAIL.
 Same-cue overlap without retained instance identity remains Unavailable rather than a FIFO guess.
 
+Known phase/action, helper/completion cue and Confirm-session contradictions remain FAIL when another
+selected identity field is absent. Missing-only observations stay Unavailable; no voice identity or
+missing completion is invented. The [audio module route](../../operations/bounded-inspection-and-review.md#h4-audio-module-route)
+separates these consumers while preserving ordered checks, playback/release anchors and the existing
+bounded report transport.
+
 The [accepted controlled reveal witness](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
 proves the Option A live-tail mechanism separately from A's omission of incremental speech. Its
 unchanged reveal/speech/input methods and current admitted PCM permit reuse. Historical C's natural
