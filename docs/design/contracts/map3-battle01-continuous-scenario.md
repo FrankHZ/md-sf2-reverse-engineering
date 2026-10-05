@@ -793,6 +793,81 @@ fields. A scoped PASS leaves `milestonePass=false` and requires independent acce
 
 Reproduce with the [scoped reward route](../../../remake/docs/development-and-verification.md#scoped-reward-and-outcome-comparison).
 
+### Selected battle-scene command and consumer binding
+
+The scoped `battle-scene` predicate evaluates the existing layer-9 child
+`battle scene command/resources/wait/effect/end consumer edges`. Its input is the retained
+modern A scene selection, joined by original indices to the accepted physical, HEAL,
+reward/outcome and AI selections. The reward census supplies scene coverage independently
+of candidate phase observations. Source command construction and sequence bytes are
+expected behavior; actual mounted resources, completion snapshots and physical inputs
+supply consumption evidence. The predicate does not promote current renderer code into
+an original-game oracle.
+
+The [scene contract](battle-scene-presentation.md) owns Initialize/Execute/End, actor-side
+selection, ally entry-zero skipping, enemy playback, frame-15 holds and command identities.
+The selected source animation files and message templates are read from the pinned
+SF2DISASM object. Physical source operands reuse the accepted parser and action reducer;
+raw damage remains distinct from capped HP loss. Critical text is selected from the independent
+source strike, with its critical effect checked separately; removing that event cannot turn
+an ordinary damage message into the expected critical message. HEAL uses its accepted
+caster/target and logical cursor, and reward messages use actual source-bound EXP/growth/gold operands.
+Zero stat growth emits no growth message. This cohort remains unpromoted SDMN/PRST/KNTE
+with weapons 71/85/56 against GIZMO, plus HEAL1; it adds no spear, item, promotion, defeat
+or unreached spell claim.
+
+Required joins include:
+
+- independent prepare/end coverage and ordered per-action phases, including multiple
+  strikes and end/next-initialize within one result;
+- exact session, producer, original index, both logical clocks, causal input ordinal and
+  host update; `signal-before-Present` retains the completed **old** token even when the
+  containing result starts a new phase;
+- mounted actor/background/ground/weapon resources, source animation selector, reached
+  frame order and offsets, weapon flips and sampled reaction states; all animation entries
+  and their final completion are required, while unsampled reaction ticks remain Unknown;
+- visible mounted message labels, source messages, ready text and the owning pressed
+  Confirm, without treating an acknowledgement phase as an automatic renderer completion;
+- exact-index HEAL cursor to actual fairy/dust resource, visibility and position, including
+  empty/cleaned-up effects; actual reaction/reward effects belong to the required transition
+  and agree with the owning actor state;
+- source field-death batch order, facing, exit resources, hidden cleanup, and subsequent
+  actual field attach, accepted return and delivered field control.
+
+Canonical raster provenance and audio generation/fade consumption retain their accepted
+PR606 and PR619 proofs. Physical/HEAL/reward/AI rule acceptance remains with their owning
+predicates. This child checks their shared identities and the additional scene-consumer
+edges; it does not rerun or replace those obligations. The executed consumer dependencies
+are compared directly with accepted `4311e009` before reusing their mechanism. Source
+changes outside these dependencies do not invalidate them merely by changing HEAD.
+
+**Confirmed:** the selected modern producer omits the old scene snapshot when the winning
+result enters Exploration before the field view has attached. Thus the final FieldSettle
+has an actual unfinished prestate and ordered completion/effect result, but no direct
+`completed=true` view snapshot. This bounded semantic terminal transition may compose:
+matching death batch/token, preceding delivered FieldExit and cleanup, already-hidden
+scene/dead nodes with no outstanding fairy effect, the actual **false** `inputDelivery`
+from the same-owner AI record, and the ordered settle/death-end/Victory/commit/program/fade
+path through attach, return and field input. Missing `inputDelivery` in another reduced
+copy is not false. Nested event revisions may precede the enclosing result's final
+revision; ordered ownership governs the join. Fixed token/index values or route counts
+never make a candidate eligible.
+
+The terminal internal completion flag remains **Inferred**, its delay **Unknown**, and
+`directCompletedSnapshot=false` remains explicit. Ordinary non-message phases still need
+actual completed projections and non-input ownership. An explicit `inputDelivery=true`
+contradicts an automatic completion. When the reduced owner omits that flag, its result
+must lie outside input dispatch spans and between consecutive independently enumerated
+inputs, with matching causal ordinal, logical clocks and host updates. Missing brackets
+remain Unavailable. The terminal commit and preceding action release retain the initial
+action actor from the independent physical census. Missing prerequisites produce
+Unavailable; a known wrong actor/token/clock/resource, visible dead node, failed result, competing writer, reordered
+end, input-delivered terminal or wrong field owner produces FAIL even alongside missing
+evidence. This is no proof of original frame timing, pixels, weapon layer/Y projection,
+a corrected whole-A route or a completed milestone. Historical seed-latch and HEAL timing
+failures remain. Main-gate owns independent acceptance and obligation closure.
+
+
 ### Selected field-service rule and consumer binding
 
 The optional `field_service_binding` supplies only the `field text/portrait/NPC

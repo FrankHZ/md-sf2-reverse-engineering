@@ -3927,6 +3927,64 @@ Unknown and the completed normal-verification provenance failure remain unchange
 owns independent integration and obligation closure; native/full routes and adjacent
 accepted predicates are outside this slice.
 
+### Scoped battle-scene consumer comparison
+
+The [selected scene contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-battle-scene-command-and-consumer-binding)
+binds independent source construction/resources to actual scene consumption. Reuse the
+retained selection; a scoped comparison does not read the whole capture or run Godot:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 -m sf2tool.remake_h4_comparison battle-scene `
+  --actual local/issue534/battle-scene-binding-01/selected-01/records.jsonl `
+  --scene-context local/issue534/battle-scene-binding-01/context.json `
+  --text-source-root $pinnedSource `
+  --output local/battle-scene/fresh-report.json
+```
+
+Resolve `$pinnedSource` through the private-input owner. Context scope is
+`retained-modern-A-battle-scene`, with `sessionId`, tested `producer`, `upstream`, the
+`selection` receipt, `materials` metadata and existing canonical `selectedScene`.
+`physicalActual`, `healActual`, `rewardActual` and `aiActual` reference the existing
+compact selections; `physicalContext`, `healContext` and `rewardContext` supply their
+independent census. Relative paths resolve from this checkout's repository root.
+The selected JSONL preserves `{index, record}`; full in-memory channels also retain their
+original array indices. HEAL cursors join their already retained original indices instead
+of being archived twice. Reduced actor lists merge by identity and agree on common fields;
+attach may republish the preceding submit's observations with matching clocks.
+
+Bounds: selection 8MiB, context/material metadata 512KiB, receipt 128KiB, each referenced
+compact input 10MiB and output 1MiB. Output must be fresh under this worktree's `local/`.
+The predicate aggregates repeated checks while retaining failing/missing examples and
+coverage; the report never embeds the private capture. The measured selected baseline
+uses about 89MiB incremental peak and one second; direct controls run serially under the
+128MiB/120-second per-process allocation. These are measurements, not gameplay limits.
+No raw traversal, acquisition, asset export, native/SDK launch, full H4 or matrix is needed.
+
+`compare --profile modern-continuous --scene-context ...` calls the same predicate and
+replaces only the named scene child. It does not substitute the selected observations
+for a supplied modern channel: current scene projections are checked against the same
+independent census and retained dependencies. Other obligation results and
+`milestonePass` retain their normal aggregation. Scoped exit codes are 0 PASS, 1 FAIL,
+2 Unavailable; scoped `milestonePass` is always false.
+
+Direct controls cover stale/foreign tokens, actors, clocks and causal inputs; animation,
+message, background, weapon, fairy and field-death resources/effects; missing phase and
+completion evidence; hidden or missing message labels; independent critical text/effect
+expectations; unready/non-Confirm acknowledgements; ordinary non-input completion and
+missing contiguous input brackets; terminal commit actor and non-input transport,
+cleanup, ordered end events, attach and returned field control. Missing source/evidence
+must not hide known contradictions. Test the ordinary FieldSettle missing-completion case
+separately: it cannot borrow the terminal composition. Keep all completed failures and
+rerun only corrected cases and affected gates. Do not add tests of this verifier.
+
+Acceptance uses scoped Ruff, direct contract/docs/private checks, the clean committed
+planner under the current verification scope, and exact-head CI. Previously accepted
+predicates and production consumers stay unchanged. The terminal flag is Inferred and
+delay Unknown; source natural timing, historical A seed latch and HEAL timing failures
+remain explicit. Freeze a clean Draft PR for main-gate's independent review.
+
+
 ### Scoped field-service comparison
 
 The [selected field-service contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding)

@@ -6424,6 +6424,1693 @@ def _field_service_case(case, profile, checks=None):
     )
 
 
+def _battle_scene_selection(path):
+    """Read the bounded retained scene selection without reopening the whole capture."""
+    path = Path(path)
+    path = path if path.is_absolute() else repo_path(path)
+    require(path.stat().st_size <= 8 * 1024 * 1024, "Scene selection exceeds 8MiB")
+    rows = []
+    with path.open(encoding="utf-8") as stream:
+        for line in stream:
+            require(len(line.encode("utf-8")) <= 2 * 1024 * 1024, "Scene row exceeds 2MiB")
+            row = json.loads(line)
+            rows.append(dict(row["record"], _index=row["index"]))
+    return dict(sceneObservations=rows)
+
+
+def _battle_scene_source(source_root, materials):
+    """Selected source sequence bytes, independently of the mounted frame observations."""
+    root = Path(source_root)
+    root = root if root.is_absolute() else repo_path(root)
+    require(
+        subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+        == UPSTREAM,
+        "scene source pin",
+    )
+    require(
+        subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+        ).returncode
+        == 0,
+        "scene source modifications",
+    )
+    disasm = root / "disasm"
+    texts = {
+        str(int(k, 16)): v
+        for k, v in re.findall(
+            r"^([0-9A-F]{4})=(.*)$",
+            (disasm / "data/scripting/text/gamescript.txt").read_text(encoding="utf-8"),
+            re.M,
+        )
+    }
+    sequences = {}
+    for visual in materials.get("actors", []):
+        side, sprite = visual["side"], visual["sprite"]
+        for purpose in visual["sequences"]:
+            # This accepted cohort has ordinary SDMN/PRST/KNTE weapons, not a spear.
+            index = sprite + ((40 if side == "ally" else 60) if purpose == "dodge" else 0)
+            folder = "allies" if side == "ally" else "enemies"
+            path = (
+                disasm
+                / f"data/graphics/battles/battlesprites/{folder}/animations"
+                / f"{side}animation{index:03}.bin"
+            )
+            data = path.read_bytes()
+            size = 8 if side == "ally" else 4
+            require(len(data) == size * (data[0] + 1), "scene animation source length")
+
+            def signed(n):
+                return n - 256 if n >= 128 else n
+
+            def weapon(raw):
+                return dict(frame=raw[0], layer=raw[1], x=signed(raw[2]), y=signed(raw[3]))
+
+            frames = []
+            for offset in range(size, len(data), size):
+                raw = data[offset : offset + size]
+                frames.append(
+                    dict(
+                        frame=raw[0],
+                        ticks=raw[1],
+                        x=signed(raw[2]),
+                        y=signed(raw[3]),
+                        weapon=weapon(raw[4:]) if side == "ally" else None,
+                    )
+                )
+            sequences[(side, sprite, purpose)] = dict(
+                index=index,
+                trigger=data[1],
+                spell=data[2],
+                terminate=data[3],
+                idleWeapon=weapon(data[4:8]) if side == "ally" else None,
+                frames=frames,
+            )
+    return sequences, texts
+
+
+def battle_scene_consumer_binding(actual, context, source_root):
+    """Compose accepted action/effect proofs with reached scene command consumers.
+
+    This is a retained modern-A proof, not original frame or timing parity. Sparse
+    host polls constrain sampled frames and completion, not unobserved intermediate ticks.
+    """
+    from collections import defaultdict
+
+    context = context or {}
+    absent = object()
+    checks = {}
+    result = dict(
+        value=None,
+        checks=[],
+        occurrences=[],
+        sourceRules=dict(
+            upstream=UPSTREAM,
+            owner="docs/design/contracts/battle-scene-presentation.md",
+            commands="ExecuteBattlesceneScript; InitializeBattlescene; "
+            "bsc00/01/0A/0B/0D/10; EndBattlescene",
+            construction="battlesceneScript_ApplyActionEffect/SwitchTargets/GiveExpAndGold/End",
+            dependencies=[
+                "PR606 resources",
+                "PR629 physical",
+                "PR625 HEAL",
+                "PR630 reward/outcome",
+                "PR631 AI transport",
+                "PR619 audio",
+                "PR560 field death",
+                "PR588 return",
+            ],
+        ),
+        unknown=[
+            "original natural command/frame/VInt/hardware timing and rendered pixels",
+            "unsampled intermediate reaction frames and weapon layer/Y projection",
+            "terminal FieldSettle internal completed flag is Inferred; delay is Unknown",
+            "historical A seed latch FAIL and HEAL timing FAIL are not corrected by this proof",
+        ],
+    )
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(want, got=absent):
+        if want is absent or got is absent:
+            return None
+        if isinstance(want, dict):
+            return (
+                merge([match(v, got.get(k, absent)) for k, v in want.items()])
+                if isinstance(got, dict)
+                else False
+            )
+        if isinstance(want, list):
+            if not isinstance(got, list):
+                return False
+            return merge(
+                [True if len(want) == len(got) else None if len(got) < len(want) else False]
+                + [match(a, b) for a, b in zip(want, got, strict=False)]
+            )
+        return (
+            type(got) is bool and got == want
+            if isinstance(want, bool)
+            else not isinstance(got, bool) and got == want
+        )
+
+    def check(name, value, where=None):
+        item = checks.setdefault(name, dict(name=name, value=True, count=0, examples=[]))
+        item["count"] += 1
+        item["value"] = merge([item["value"], value])
+        if value is not True and len(item["examples"]) < 8:
+            item["examples"].append(dict(occurrence=where, value=value))
+
+    def eq(name, want, got=absent, where=None):
+        check(name, match(want, got), where)
+
+    def number(n):
+        return isinstance(n, (int, float)) and not isinstance(n, bool) and n >= 0 and n == int(n)
+
+    def clocks(name, row, where=None):
+        eq(name + " session", session, row.get("sessionId", absent), where)
+        check(
+            name + " nonnegative clocks",
+            merge(
+                [number(row[k]) if k in row else None for k in ("revision", "observationSequence")]
+            ),
+            where,
+        )
+
+    def precedes(name, a, b, where=None):
+        check(
+            name,
+            merge(
+                [
+                    a[k] <= b[k]
+                    if number(a.get(k)) and number(b.get(k))
+                    else False
+                    if k in a and k in b
+                    else None
+                    for k in ("revision", "observationSequence")
+                ]
+            ),
+            where,
+        )
+
+    def identity(name, a, b, where=None):
+        for k in ("sessionId", "revision", "observationSequence"):
+            eq(name + " " + k, a.get(k, absent), b.get(k, absent), where)
+
+    def load(key, cap=10 * 1024 * 1024):
+        value = context.get(key)
+        if not value:
+            check(key + " available", None)
+            return {}
+        try:
+            path = Path(value)
+            path = path if path.is_absolute() else repo_path(path)
+            require(path.stat().st_size <= cap, "scene compact dependency exceeds cap")
+            return read(path)
+        except (OSError, ValueError):
+            check(key + " available", None)
+            return {}
+
+    session = context.get("sessionId")
+    producer = "4d1d1b05f143ed872ceca6ff258cfca2b4087d90"
+    eq("scope", "retained-modern-A-battle-scene", context.get("scope", absent))
+    eq("source pin", UPSTREAM, context.get("upstream", absent))
+    eq("tested producer", producer, context.get("producer", absent))
+    check("independent session", bool(session) or None)
+    receipt = load("selection", 128 * 1024)
+    eq(
+        "completed selection",
+        dict(sourceUnchanged=True, failure=None, producer=producer, sessionId=session),
+        receipt,
+    )
+    reward_context = load("rewardContext", 512 * 1024)
+    physical_context = load("physicalContext", 512 * 1024)
+    heal_context = load("healContext", 512 * 1024)
+    census = reward_context.get("scenes", [])
+    check("independent scene census", bool(census) or None)
+    eq("receipt independent census", census, receipt.get("sceneCensus", absent))
+    for dep in (reward_context, physical_context, heal_context):
+        eq("dependency session", session, dep.get("sessionId", absent))
+    for dep in (reward_context, physical_context):
+        eq("dependency producer", producer, dep.get("producer", absent))
+        eq("dependency source", UPSTREAM, dep.get("upstream", absent))
+    materials = load("materials", 512 * 1024)
+    selected_materials = load("selectedScene", 512 * 1024)
+    eq(
+        "accepted material metadata",
+        {k: v for k, v in selected_materials.items() if k != "rasters"},
+        materials,
+    )
+    check("accepted material selection available", bool(selected_materials) or None)
+    eq(
+        "accepted material source selection",
+        dict(byteEqual={"battle-scenes.json": True, "field-death-provenance.json": True}),
+        materials.get("sourceSelection", {}),
+    )
+    if not materials and selected_materials:
+        materials = selected_materials
+    sequences, texts = {}, {}
+    try:
+        sequences, texts = _battle_scene_source(source_root, materials)
+        for visual in materials.get("actors", []):
+            for purpose, sequence in visual.get("sequences", {}).items():
+                eq(
+                    "selected animation equals pinned source",
+                    sequences[(visual["side"], visual["sprite"], purpose)],
+                    sequence,
+                )
+        for k, text in materials.get("texts", {}).items():
+            eq("selected message equals pinned source", texts.get(k, absent), text, k)
+    except (OSError, TypeError, subprocess.CalledProcessError):
+        check("selected original source available", None)
+    except (ValueError, KeyError, IndexError):
+        check("selected original source integrity", False)
+    # Reuse the accepted executed bodies; do not turn modern code into an original oracle.
+    accepted = "4311e009a4b1eb92ff16415856b8c5638a0fc17d"
+    for path in (
+        "remake/game/src/Battles/BattleSceneView.cs",
+        "remake/game/src/Battles/BattleSessionView.cs",
+        "remake/src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/BattleSceneRules.cs",
+    ):
+        try:
+            old = subprocess.check_output(
+                ["git", "-C", str(repo_path(".")), "show", accepted + ":" + path],
+                text=True,
+                encoding="utf-8",
+            )
+            check(
+                "accepted executed consumer dependency",
+                True if old == repo_path(path).read_text(encoding="utf-8") else None,
+                path,
+            )
+        except (OSError, subprocess.CalledProcessError):
+            check("accepted executed consumer dependency", None, path)
+
+    warps, inputs, healing, events, owners = {}, {}, {}, {}, {}
+
+    def combine(name, target, row, where):
+        for k, v in row.items():
+            if k not in target:
+                target[k] = v
+            elif isinstance(v, dict) and isinstance(target[k], dict):
+                combine(name, target[k], v, where)
+            elif k == "actors" and isinstance(v, list) and isinstance(target[k], list):
+                # HEAL selects only allies; merge keyed partial actor projections.
+                by_id = {a.get("id"): a for a in target[k]}
+                for actor_row in v:
+                    actor_id = actor_row.get("id")
+                    if actor_id in by_id:
+                        combine(name, by_id[actor_id], actor_row, where)
+                    else:
+                        target[k].append(actor_row)
+            else:
+                eq(name, target[k], v, where)
+
+    for key in ("rewardActual", "physicalActual", "healActual", "aiActual"):
+        bundle = load(key)
+        for n, row in enumerate(bundle.get("warpRecords", [])):
+            index = row.get("_index", n)
+            envelope = row.get("result") or {}
+            clocks("result", envelope, index)
+            stored = warps.setdefault(index, dict(result={}, state={}))
+            # Selected copies carry subsets of events; union only their exact common identities.
+            combine(
+                "shared result fields",
+                stored["result"],
+                {k: v for k, v in envelope.items() if k != "observations"},
+                index,
+            )
+            combine(
+                "shared result transport",
+                stored,
+                {k: v for k, v in row.items() if k not in ("result", "state")},
+                index,
+            )
+            combine("shared actual state", stored["state"], row.get("state") or {}, index)
+            previous = None
+            for event in envelope.get("observations", []):
+                seq = event.get("Sequence")
+                check("event clocks", number(seq) and number(event.get("Revision")), index)
+                if not number(seq):
+                    continue
+                if previous is not None:
+                    check(
+                        "ordered events in owning result",
+                        seq > previous["Sequence"]
+                        and event.get("Revision", -1) >= previous.get("Revision", 0),
+                        index,
+                    )
+                previous = event
+                precedes(
+                    "event inside result",
+                    dict(revision=event.get("Revision"), observationSequence=seq),
+                    envelope,
+                    seq,
+                )
+                if seq in events:
+                    eq("same event payload", events[seq], event, seq)
+                    if owners[seq] != index:
+                        # The attach result republishes the last submit's observations.
+                        eq(
+                            "republished event is attach",
+                            "attach",
+                            envelope.get("boundary", absent),
+                            seq,
+                        )
+                        identity(
+                            "attach repeats submit identity",
+                            warps[owners[seq]]["result"],
+                            envelope,
+                            seq,
+                        )
+                else:
+                    events[seq], owners[seq] = event, index
+        for n, row in enumerate(bundle.get("inputRecords", [])):
+            index = row.get("_index", n)
+            combine("shared input fields", inputs.setdefault(index, {}), row, index)
+        if key == "healActual":
+            healing = {
+                r.get("_index", n): r for n, r in enumerate(bundle.get("sceneObservations", []))
+            }
+    # Retained dependencies constrain a modern caller's own channels; they cannot
+    # fill a hole in the candidate. The scoped JSONL intentionally contains only scenes.
+    if "warpRecords" in actual:
+        current = {r.get("_index", n): r for n, r in enumerate(actual["warpRecords"])}
+        for index, reference in warps.items():
+            row = current.get(index)
+            check("candidate selected result present", True if row is not None else None, index)
+            if row is None:
+                continue
+            eq("candidate shared result", reference["result"], row.get("result", absent), index)
+            for k in ("inputOrdinal", "inputDelivery", "projection"):
+                if k in reference:
+                    eq("candidate result transport", reference[k], row.get(k, absent), index)
+            observed_events = {
+                e.get("Sequence"): e for e in row.get("result", {}).get("observations", [])
+            }
+            for seq, event in events.items():
+                if owners[seq] == index:
+                    eq(
+                        "candidate effect dependency",
+                        event,
+                        observed_events.get(seq, absent),
+                        index,
+                    )
+            for seq, event in observed_events.items():
+                if seq in events:
+                    eq("candidate shared effect", events[seq], event, index)
+                elif event.get("Kind", "").startswith(("scene-", "field-death-")):
+                    check("candidate extra scene writer", False, index)
+            state = row.get("state") or {}
+            for k in (
+                "sessionId",
+                "revision",
+                "observationSequence",
+                "mode",
+                "map",
+                "stop",
+                "wait",
+            ):
+                if k in reference["state"]:
+                    eq(
+                        "candidate state boundary",
+                        reference["state"][k],
+                        state.get(k, absent),
+                        index,
+                    )
+            actors = {a.get("id"): a for a in state.get("actors", [])}
+            for actor_row in reference["state"].get("actors", []):
+                eq(
+                    "candidate actor effect",
+                    actor_row,
+                    actors.get(actor_row.get("id"), absent),
+                    index,
+                )
+        if "inputRecords" not in actual:
+            check("candidate physical input channel", None)
+    if "inputRecords" in actual:
+        current = {r.get("_index", n): r for n, r in enumerate(actual["inputRecords"])}
+        for index, reference in inputs.items():
+            eq(
+                "candidate actual input ownership",
+                {k: v for k, v in reference.items() if k != "_index"},
+                current.get(index, absent),
+                index,
+            )
+    ordered = sorted(events)
+    warps = dict(sorted(warps.items()))
+    inputs = dict(sorted(inputs.items()))
+    for (_, left), (b, right) in zip(list(warps.items()), list(warps.items())[1:], strict=False):
+        precedes("result source chronology", left["result"], right["result"], b)
+    for index, row in inputs.items():
+        for side in ("before", "after"):
+            clocks("input " + side, row.get(side) or {}, index)
+        precedes("input span", row.get("before") or {}, row.get("after") or {}, index)
+        check(
+            "input result interval",
+            number(row.get("resultStart"))
+            and number(row.get("resultEnd"))
+            and row["resultStart"] <= row["resultEnd"],
+            index,
+        )
+
+    starts, pairs, active = {}, [], None
+    for seq in ordered:
+        e = events[seq]
+        if e.get("Kind") in ("scene-prepared", "scene-step-started"):
+            check("one active phase", active is None, seq)
+            active = seq
+            starts[seq] = e
+        elif e.get("Kind") == "scene-step-completed":
+            check("completion has phase start", True if active is not None else None, seq)
+            if active is not None:
+                start = starts[active]
+                phase = "Initialize" if start["Kind"] == "scene-prepared" else start.get("Detail")
+                eq("completion phase", phase, e.get("Detail", absent), seq)
+                eq("completion actor", start.get("Actor", absent), e.get("Actor", absent), seq)
+                pairs.append(dict(token=active, phase=phase, start=start, end=e, owner=owners[seq]))
+            active = None
+    check("all phases complete", True if active is None else None)
+    bytoken = defaultdict(list)
+    previous = None
+    selected = []
+    for n, row in enumerate(actual.get("sceneObservations", [])):
+        index = row.get("_index", n)
+        if (
+            number(receipt.get("firstIndex"))
+            and number(receipt.get("lastIndex"))
+            and not receipt["firstIndex"] <= index <= receipt["lastIndex"]
+        ):
+            continue
+        selected.append(index)
+        clocks("scene", row, index)
+        check("scene host clock", number(row.get("hostUpdate")), index)
+        if previous:
+            check(
+                "scene index and host order",
+                index > previous["_index"]
+                and row.get("hostUpdate", -1) >= previous.get("hostUpdate", 0),
+                index,
+            )
+            precedes("scene clock order", previous, row, index)
+        previous = dict(row, _index=index)
+        s = row.get("scene") or {}
+        eq("mounted scene error", None, s.get("error", absent), index)
+        if index in healing:
+            h = healing[index]
+            identity("HEAL original index join", h, row, index)
+            for k in ("inputOrdinal", "hostUpdate", "projectionStage"):
+                eq("HEAL transport join", h.get(k, absent), row.get(k, absent), index)
+            if "healing" in s:
+                eq(
+                    "HEAL cursor equality",
+                    h.get("scene", {}).get("healing", absent),
+                    s["healing"],
+                    index,
+                )
+        token = s.get("waitToken")
+        if token is None:
+            eq("unmounted phase", None, s.get("phase", absent), index)
+            eq("unmounted visibility", False, s.get("visible", absent), index)
+            continue
+        check("scene token exists", True if token in starts else None, index)
+        bytoken[token].append(dict(row, _index=index))
+    if number(receipt.get("firstIndex")) and number(receipt.get("lastIndex")):
+        wanted_indices = set(range(int(receipt["firstIndex"]), int(receipt["lastIndex"]) + 1))
+        check(
+            "selected independent indices",
+            False
+            if set(selected) - wanted_indices
+            else None
+            if wanted_indices - set(selected)
+            else True,
+        )
+    else:
+        check("selected independent indices", None)
+    actual_prepared = [e for e in events.values() if e.get("Kind") == "scene-prepared"]
+    eq(
+        "independent preparation coverage",
+        [c["sequence"] for c in census],
+        [e["Sequence"] for e in sorted(actual_prepared, key=lambda e: e["Sequence"])],
+    )
+    for c in census:
+        for anchor, kind in ((c, "scene-prepared"), (c.get("end") or {}, "scene-ended")):
+            seq = anchor.get("sequence")
+            eq(
+                "census event",
+                dict(Kind=kind, Sequence=seq, Revision=anchor.get("revision")),
+                events.get(seq, absent),
+                seq,
+            )
+            eq("census source result", anchor.get("index", absent), owners.get(seq, absent), seq)
+
+    # Resource identities come from accepted source-bound material selection, not a candidate frame.
+    visuals = {(v["side"], v["sprite"]): v for v in materials.get("actors", [])}
+
+    def visual(actor):
+        if not isinstance(actor, str):
+            return {}
+        return (
+            visuals.get(("ally", int(actor[5:])), {})
+            if actor.startswith("ally-")
+            else visuals.get(("enemy", 22), {})
+        )
+
+    def picked(values, index):
+        return values[index] if 0 <= index < len(values) else absent
+
+    def name(actor):
+        if isinstance(actor, str) and actor.startswith("ally-"):
+            return picked(materials.get("memberNames", []), int(actor[5:]))
+        return "GIZMO"
+
+    def actor(e, key="Actor"):
+        return (e.get(key) or {}).get("Value")
+
+    def render(text_id, who=None, amount=0, spell=""):
+        text = texts.get(str(text_id))
+        if text is None or amount is None or name(who) is absent:
+            return absent
+        return re.sub(
+            r"\{D[0-9]+\}",
+            "",
+            text.replace("{NAME}", name(who))
+            .replace("{#}", str(int(amount)))
+            .replace("{SPELL}", spell)
+            .replace("{N}", "\n"),
+        )
+
+    physical_source = None
+    try:
+        physical_source = _physical_source_operands(source_root, {56, 71, 85})
+    except (OSError, TypeError, subprocess.CalledProcessError):
+        check("physical source message operands available", None)
+    except (ValueError, KeyError):
+        check("physical source message operands valid", False)
+    predicted_strikes = {}
+    for c in physical_context.get("census", []):
+        if physical_source is None:
+            continue
+        try:
+            state = warps[c["index"]]["state"]
+            actors = {a["id"]: a for a in state["actors"]}
+            seed = events[c["firstDrawSequence"]]["Before"]
+            prediction = _physical_source_action(
+                physical_source, actors, actor(c, "actor"), actor(c, "target"), int(seed)
+            )
+            predicted_strikes[c["sequence"]] = prediction["strikes"]
+        except (KeyError, TypeError, ValueError):
+            check("physical source message operands available", None, c.get("sequence"))
+    scene_info = {}
+    for c in census:
+        first, last = c["sequence"], c["end"]["sequence"]
+        scene_events = [events[q] for q in ordered if first < q < last]
+        actions = [
+            e
+            for e in scene_events
+            if e.get("Kind") in ("physical-first", "physical-second", "physical-counter", "heal")
+        ]
+        expected_actions = predicted_strikes.get(first)
+        if expected_actions is not None:
+            eq(
+                "source action actor/target order",
+                [
+                    dict(Kind=x["kind"], Actor={"Value": x["actor"]}, Target={"Value": x["target"]})
+                    for x in expected_actions
+                ],
+                actions,
+                first,
+            )
+        else:
+            h = next(
+                (
+                    h
+                    for h in heal_context.get("occurrences", [])
+                    if h.get("sceneStartSequence") == first
+                ),
+                None,
+            )
+            if h:
+                eq(
+                    "accepted HEAL actor/target",
+                    [
+                        dict(
+                            Kind="heal",
+                            Actor={"Value": h["actor"]},
+                            Target={"Value": h["expectedTarget"]},
+                        )
+                    ],
+                    actions,
+                    first,
+                )
+        expected_phases = ["Initialize"]
+        phase_info = []
+        for action in actions:
+            a, target, kind = actor(action), actor(action, "Target"), action["Kind"]
+            next_action = next(
+                (e["Sequence"] for e in actions if e["Sequence"] > action["Sequence"]), last
+            )
+            reaction_events = [
+                e for e in scene_events if action["Sequence"] < e["Sequence"] < next_action
+            ]
+            hp = next(
+                (e for e in reaction_events if e["Kind"] == "hp" and actor(e) == target), None
+            )
+            dodge = any(e["Kind"] == "dodge" for e in reaction_events)
+            critical_events = [e for e in reaction_events if e["Kind"] == "critical"]
+            recovery = kind == "heal"
+            critical = False if recovery else None
+            amount = hp["After"] - hp["Before"] if recovery and hp else 0
+            if not recovery:
+                strike = next(
+                    (
+                        x
+                        for x in predicted_strikes.get(first, [])
+                        if (x["kind"], x["actor"], x["target"]) == (kind, a, target)
+                    ),
+                    None,
+                )
+                check(
+                    "source strike operands present", True if strike else None, action["Sequence"]
+                )
+                amount = strike["damage"] if strike else None
+                if strike:
+                    critical = strike["critical"]
+                    eq(
+                        "source critical effect",
+                        [dict(Kind="critical", Actor={"Value": a}, Target={"Value": target})]
+                        if critical
+                        else [],
+                        critical_events,
+                        action["Sequence"],
+                    )
+                    eq(
+                        "source strike effect kind",
+                        "Dodge" if strike["dodge"] else "Damage",
+                        "Dodge" if dodge else "Damage",
+                        action["Sequence"],
+                    )
+                    if not strike["dodge"]:
+                        eq(
+                            "source deferred HP effect",
+                            dict(
+                                Actor={"Value": target},
+                                Before=strike["beforeHp"],
+                                After=strike["afterHp"],
+                            ),
+                            hp if hp else absent,
+                            action["Sequence"],
+                        )
+            info = dict(
+                actor=a,
+                target=target,
+                kind=kind,
+                hp=hp,
+                recovery=recovery,
+                reaction="Recovery" if recovery else "Dodge" if dodge else "Damage",
+                amount=amount,
+                critical=critical,
+            )
+            phases = ["ActionMessage"] + (["SpellCost"] if recovery else []) + ["ActionAnimation"]
+            if recovery and a != target:
+                phases += ["TargetExit", "TargetEnter"]
+            phases += ["Reaction", "ResultMessage"]
+            if recovery:
+                phases += ["MakeIdle", "SpellStop"]
+                if a != target:
+                    phases += ["ActorExit", "ActorEnter"]
+            elif hp and hp.get("After") == 0:
+                phases += ["DeathMessage"]
+            expected_phases += phases
+            phase_info += [(p, info) for p in phases]
+        exp = [e for e in scene_events if e["Kind"] == "exp"]
+        growth = [
+            e
+            for e in scene_events
+            if e["Kind"]
+            in (
+                "level",
+                "level-max-hp",
+                "level-max-mp",
+                "level-base-attack",
+                "level-defense",
+                "level-agility",
+            )
+            and (e["Kind"] == "level" or e.get("After", 0) > e.get("Before", 0))
+        ]
+        growth.sort(key=lambda e: (0 if e["Kind"] == "level" else 1, e["Sequence"]))
+        # Construction gold precedes scene-prepared, within its owning result.
+        gold = [
+            e
+            for e in events.values()
+            if owners[e["Sequence"]] == c["index"] and e["Kind"] == "gold"
+        ]
+        if exp:
+            expected_phases += ["Reward", "RewardMessage"] + ["GrowthMessage"] * len(growth)
+        if gold:
+            expected_phases += ["GoldMessage"]
+        expected_phases += ["End"]
+        reached = [p for p in pairs if first <= p["token"] < last]
+        eq("source constructed phase order", expected_phases, [p["phase"] for p in reached], first)
+        check("source action evidence", bool(actions) or None, first)
+        current = phase_info[0][1] if phase_info else {}
+        queue = iter(phase_info)
+        growth_index = 0
+        for p in reached:
+            if p["phase"] in {x[0] for x in phase_info}:
+                _, current = next(queue, (None, current))
+            info = dict(current, scene=first, exp=exp, gold=gold)
+            if p["phase"] == "GrowthMessage":
+                info["growth"] = growth[growth_index] if growth_index < len(growth) else {}
+                growth_index += 1
+            scene_info[p["token"]] = info
+            effect = (
+                info.get("hp")
+                if p["phase"] == "Reaction"
+                else info["exp"][0]
+                if p["phase"] == "Reward" and info["exp"]
+                else None
+            )
+            if effect:
+                eq(
+                    "effect belongs to required consumer transition",
+                    owners[p["token"]],
+                    owners[effect["Sequence"]],
+                    p["token"],
+                )
+                check(
+                    "effect precedes presentation of its result",
+                    effect["Sequence"] < p["token"],
+                    p["token"],
+                )
+                post = {
+                    x.get("id"): x
+                    for x in warps[owners[effect["Sequence"]]]["state"].get("actors", [])
+                }
+                eq(
+                    "effect applied to owning actor state",
+                    effect["After"],
+                    post.get(actor(effect), {}).get(
+                        "hp" if effect["Kind"] == "hp" else "exp", absent
+                    ),
+                    p["token"],
+                )
+        result["occurrences"].append(dict(sequence=first, end=last, phases=len(reached)))
+    result_by_sequence = {r["result"].get("observationSequence"): (i, r) for i, r in warps.items()}
+    field_batches = {}
+    for c in census:
+        first, end = c["sequence"], c["end"]["sequence"]
+        next_scene = next((x["sequence"] for x in census if x["sequence"] > end), float("inf"))
+        field = [
+            p for p in pairs if end < p["token"] < next_scene and p["phase"].startswith("Field")
+        ]
+        deaths = list(
+            dict.fromkeys(
+                actor(events[q])
+                for q in ordered
+                if first < q < end and events[q]["Kind"] == "hp" and events[q].get("After") == 0
+            )
+        )
+        eq(
+            "source death batch phases",
+            ["FieldSpin"] * 12 + ["FieldExit"] * 3 + ["FieldSettle"] if deaths else [],
+            [p["phase"] for p in field],
+            first,
+        )
+        for n, p in enumerate(field):
+            field_batches[p["token"]] = dict(
+                scene=first,
+                actors=deaths,
+                phases=field,
+                step=n if n < 12 else n - 12 if n < 15 else 0,
+            )
+
+    declared_inputs = set((reward_context.get("indices") or {}).get("inputRecords", []))
+    check(
+        "independent input interval coverage",
+        True if declared_inputs and declared_inputs <= inputs.keys() else None,
+    )
+    terminal = []
+    for pair in pairs:
+        token, phase, end, owner = pair["token"], pair["phase"], pair["end"], pair["owner"]
+        rows = bytoken.get(token, [])
+        check("required phase projection", bool(rows) or None, token)
+        envelope = warps[owner]["result"]
+        eq(
+            "required phase start accepted",
+            None,
+            warps[owners[token]]["result"].get("failure", absent),
+            token,
+        )
+        eq("required completion accepted", None, envelope.get("failure", absent), token)
+        if not phase.endswith("Message"):
+            # A renderer completion is outside physical input dispatch. Some retained
+            # copies omit inputDelivery: use the complete original input-index census
+            # and its two bracketing snapshots, never a default false transport flag.
+            if "inputDelivery" in warps[owner]:
+                eq(
+                    "ordinary completion non-input transport",
+                    False,
+                    warps[owner]["inputDelivery"],
+                    token,
+                )
+            direct = [
+                i
+                for i in inputs.values()
+                if number(i.get("resultStart"))
+                and number(i.get("resultEnd"))
+                and i["resultStart"] <= owner < i["resultEnd"]
+            ]
+            check("automatic completion outside input dispatch", not direct, token)
+            earlier = [
+                (n, i)
+                for n, i in inputs.items()
+                if number(i.get("resultEnd")) and i["resultEnd"] <= owner
+            ]
+            later = [
+                (n, i)
+                for n, i in inputs.items()
+                if number(i.get("resultStart")) and i["resultStart"] > owner
+            ]
+            if earlier and later:
+                before_index, before_input = earlier[-1]
+                after_index, after_input = later[0]
+                contiguous = (
+                    after_index == before_index + 1
+                    and before_index in declared_inputs
+                    and after_index in declared_inputs
+                )
+                check("completion contiguous input bracket", True if contiguous else None, token)
+                if contiguous:
+                    eq(
+                        "automatic completion latest causal input",
+                        before_input.get("ordinal", absent),
+                        warps[owner].get("inputOrdinal", absent),
+                        token,
+                    )
+                    precedes(
+                        "completion after prior input dispatch",
+                        before_input.get("after") or {},
+                        envelope,
+                        token,
+                    )
+                    precedes(
+                        "completion before following input dispatch",
+                        envelope,
+                        after_input.get("before") or {},
+                        token,
+                    )
+                    for r in rows:
+                        if r.get("scene", {}).get("completed") is True:
+                            hosts = [
+                                x.get("hostUpdate", absent) for x in (before_input, r, after_input)
+                            ]
+                            check(
+                                "completion host input bracket",
+                                None
+                                if any(x is absent for x in hosts)
+                                else all(number(x) for x in hosts)
+                                and hosts[0] <= hosts[1] <= hosts[2],
+                                token,
+                            )
+            else:
+                check("completion contiguous input bracket", None, token)
+        batch = field_batches.get(token)
+        info = scene_info.get(token, {})
+        complete = []
+        last_frame = -1
+        played = set()
+        for row in rows:
+            index, s = row["_index"], row["scene"]
+            eq("actual phase for token", phase, s.get("phase", absent), index)
+            eq("required scene visibility", batch is None, s.get("visible", absent), index)
+            if phase.endswith("Message"):
+                eq(
+                    "actual message label visible",
+                    True,
+                    (s.get("messageFont") or {}).get("visible", absent),
+                    index,
+                )
+            if number(row.get("observationSequence")):
+                preceding = [q for q in starts if q <= row["observationSequence"]]
+                if row.get("projectionStage") == "host-poll":
+                    anchor = result_by_sequence.get(row["observationSequence"])
+                    check("poll owning result present", True if anchor else None, index)
+                    if anchor:
+                        identity("poll result identity", anchor[1]["result"], row, index)
+                        eq(
+                            "poll result causal input",
+                            anchor[1].get("inputOrdinal", absent),
+                            row.get("inputOrdinal", absent),
+                            index,
+                        )
+                    eq(
+                        "poll belongs to latest phase",
+                        max(preceding) if preceding else absent,
+                        token,
+                        index,
+                    )
+                elif row.get("projectionStage") == "signal-before-Present":
+                    check(
+                        "old view belongs to owning completion",
+                        end["Sequence"] <= row["observationSequence"]
+                        and owner == result_by_sequence.get(row["observationSequence"], (None,))[0],
+                        index,
+                    )
+                else:
+                    check("known projection seam", False, index)
+            causal_inputs = [
+                i
+                for i in inputs.values()
+                if i.get("hostUpdate", float("inf")) <= row.get("hostUpdate", -1)
+            ]
+            if causal_inputs:
+                eq(
+                    "projection latest causal input",
+                    causal_inputs[-1].get("ordinal", absent),
+                    row.get("inputOrdinal", absent),
+                    index,
+                )
+            else:
+                check("projection latest causal input", None, index)
+            if row.get("projectionStage") == "signal-before-Present" and not phase.endswith(
+                "Message"
+            ):
+                eq("delivered non-message completion flag", True, s.get("completed", absent), index)
+            if s.get("completed") is True:
+                complete.append(row)
+                eq(
+                    "completed projection seam",
+                    "signal-before-Present",
+                    row.get("projectionStage", absent),
+                    index,
+                )
+                identity("completed owning result", envelope, row, index)
+                eq(
+                    "completed causal ordinal",
+                    warps[owner].get("inputOrdinal", absent),
+                    row.get("inputOrdinal", absent),
+                    index,
+                )
+            if batch:
+                step = batch["step"]
+                eq(
+                    "source field death operands",
+                    dict(
+                        actors=batch["actors"],
+                        step=step,
+                        facing=(11 - step) & 3 if phase == "FieldSpin" else 1 + step,
+                        delay=3 if phase == "FieldSpin" else 8 if phase == "FieldExit" else 10,
+                    ),
+                    s.get("fieldDeath", absent),
+                    index,
+                )
+                eq(
+                    "no remaining fairy effect at field death",
+                    [],
+                    s.get("fairySprites", absent),
+                    index,
+                )
+                actors = {a.get("id"): a for a in row.get("fieldActors", [])}
+                for dead in batch["actors"]:
+                    a = actors.get(dead, {})
+                    eq("dead actor HP", 0, a.get("hp", absent), index)
+                    check(
+                        "dead actor remains in roster census",
+                        dead in row["fieldActorIds"]
+                        if "fieldActorIds" in row
+                        else dead in {a.get("id") for a in row["fieldActors"]}
+                        if "fieldActors" in row
+                        else None,
+                        index,
+                    )
+                    sprite = a.get("sprite") or {}
+                    if phase == "FieldSettle":
+                        eq(
+                            "settled dead node hidden",
+                            dict(visible=False, visibleInTree=False),
+                            sprite,
+                            index,
+                        )
+                    else:
+                        eq(
+                            "death node consumed",
+                            dict(visible=True, visibleInTree=True, texturePresent=True),
+                            sprite,
+                            index,
+                        )
+                        selector = sprite.get("resourceSelector") or {}
+                        if phase == "FieldExit":
+                            eq(
+                                "field exit sprite identity",
+                                dict(sprite=63, direction=step, frame=0),
+                                selector,
+                                index,
+                            )
+                            eq(
+                                "field exit resource",
+                                picked(materials.get("fieldDeath", {}).get("exitFrames", []), step),
+                                selector.get("raster", absent),
+                                index,
+                            )
+                        elif phase == "FieldSpin":
+                            facing = (11 - step) & 3
+                            original_sprite = next(
+                                (
+                                    v["sprite"]
+                                    for v in materials.get("fieldDeath", {}).get("allies", [])
+                                    if dead == "ally-" + str(v["character"])
+                                ),
+                                materials.get("fieldDeath", {})
+                                .get("enemies", [{}])[0]
+                                .get("sprite", absent),
+                            )
+                            eq(
+                                "spin original sprite identity",
+                                dict(
+                                    sprite=original_sprite,
+                                    direction=0 if facing == 1 else 2 if facing == 3 else 1,
+                                    frame=0,
+                                    raster=None,
+                                ),
+                                selector,
+                                index,
+                            )
+                            eq("spin facing consumed", facing, sprite.get("facing", absent), index)
+                continue
+            if not info:
+                check("phase independently assigned to scene", None, token)
+                continue
+            a, target = info.get("actor"), info.get("target")
+            ally = (
+                (
+                    target
+                    if phase
+                    in (
+                        "TargetEnter",
+                        "Reaction",
+                        "ResultMessage",
+                        "MakeIdle",
+                        "SpellStop",
+                        "ActorExit",
+                    )
+                    else a
+                )
+                if info.get("recovery")
+                else a
+                if str(a).startswith("ally-")
+                else target
+            )
+            enemy = None if info.get("recovery") else target if str(a).startswith("ally-") else a
+            eq(
+                "source displayed actors",
+                dict(
+                    displayedAlly=ally,
+                    displayedEnemy=enemy,
+                    enemyVisible=enemy is not None,
+                    actionKind=info.get("kind"),
+                    reactionKind=info.get("reaction"),
+                    reactionAmount=info["amount"] if info.get("amount") is not None else absent,
+                    item=None,
+                    spellAnimationSelector=4 if info.get("recovery") else None,
+                ),
+                s,
+                index,
+            )
+            eq(
+                "source spell selector",
+                dict(Level=1, Value="heal") if info.get("recovery") else None,
+                s.get("spell", absent),
+                index,
+            )
+            for layer, resource in (
+                ("background", materials.get("background", absent)),
+                ("backgroundWrap", materials.get("background", absent)),
+                ("ground", materials.get("ground", absent)),
+            ):
+                eq(
+                    "mounted canonical " + layer,
+                    dict(resource=resource, texturePresent=True, visible=True),
+                    s.get(layer, absent),
+                    index,
+                )
+            for side, who in (("ally", ally), ("enemy", enemy)):
+                if who is None:
+                    eq("absent enemy resource", None, s.get("enemyResource", absent), index)
+                    continue
+                v = visual(who)
+                frame = s.get(side + "Frame")
+                if number(frame) and frame < len(v.get("frames", [])):
+                    eq(
+                        "mounted actor frame resource",
+                        v["frames"][int(frame)],
+                        s.get(side + "Resource", absent),
+                        index,
+                    )
+                else:
+                    check(
+                        "mounted actor frame index",
+                        False if frame is not None and v else None,
+                        index,
+                    )
+            motion_actor = a if phase == "ActionAnimation" else target
+            purpose = "cast" if info.get("recovery") else "attack"
+            animation = (
+                phase == "ActionAnimation"
+                or phase == "Reaction"
+                and info.get("reaction") == "Dodge"
+            )
+            if phase == "Reaction":
+                purpose = "dodge"
+            mv = visual(motion_actor)
+            source_sequence = (
+                sequences.get((mv.get("side"), mv.get("sprite"), purpose)) if animation else None
+            )
+            frame_index = s.get("frameIndex")
+            if not (animation and mv.get("side") == "ally" and number(frame_index)):
+                av = visual(ally)
+                idle = sequences.get(("ally", av.get("sprite"), "idle"))
+                if idle and idle.get("idleWeapon"):
+                    w = idle["idleWeapon"]
+                    wf = int(w["frame"])
+                    eq(
+                        "source idle weapon binding",
+                        dict(
+                            weaponResource=av["weaponFrames"][wf & 7],
+                            weaponVisible=True,
+                            weaponFlipH=bool(wf & 16),
+                            weaponFlipV=bool(wf & 32),
+                            weaponX=s.get("allyX", 136) + w["x"],
+                        ),
+                        s,
+                        index,
+                    )
+                else:
+                    check("source idle weapon available", None, index)
+            if animation:
+                eq(
+                    "action animation source selector",
+                    source_sequence["index"]
+                    if source_sequence and phase == "ActionAnimation"
+                    else None
+                    if phase != "ActionAnimation"
+                    else absent,
+                    s.get("animationIndex", absent),
+                    index,
+                )
+                frames = (
+                    source_sequence["frames"][1 if mv.get("side") == "ally" else 0 :]
+                    if source_sequence
+                    else []
+                )
+                if number(frame_index):
+                    check("sequence frame order", frame_index >= last_frame, index)
+                    last_frame = frame_index
+                    played.add(int(frame_index))
+                    check(
+                        "source frame range",
+                        frame_index < len(frames) if source_sequence else None,
+                        index,
+                    )
+                    if frame_index < len(frames):
+                        entry = frames[int(frame_index)]
+                        # Hold-15 preserves the last source frame even across unsampled ticks.
+                        source_frame = next(
+                            (
+                                f["frame"]
+                                for f in reversed(frames[: int(frame_index) + 1])
+                                if f["frame"] != 15
+                            ),
+                            0,
+                        )
+                        side = mv["side"]
+                        eq(
+                            "source sequence frame consumed",
+                            source_frame,
+                            s.get(side + "Frame", absent),
+                            index,
+                        )
+                        eq(
+                            "source frame offsets",
+                            {
+                                side + "X": (136 if side == "ally" else 16) + entry["x"],
+                                side + "Y": (64 if side == "ally" else 48) + entry["y"],
+                            },
+                            s,
+                            index,
+                        )
+                        if side == "ally" and entry["weapon"]:
+                            w = entry["weapon"]
+                            wf = int(w["frame"])
+                            eq(
+                                "source weapon frame/flip/offset",
+                                dict(
+                                    weaponResource=mv["weaponFrames"][wf & 7],
+                                    weaponVisible=True,
+                                    weaponFlipH=bool(wf & 16),
+                                    weaponFlipV=bool(wf & 32),
+                                    weaponX=136 + entry["x"] + w["x"],
+                                ),
+                                s,
+                                index,
+                            )
+                elif frame_index != -1:
+                    check("source frame range", False if frame_index is not None else None, index)
+            if info.get("recovery") and index not in healing:
+                check("required exact HEAL cursor", None, index)
+            elif info.get("recovery"):
+                cursor = healing[index].get("scene", {}).get("healing") or {}
+                fairy = cursor.get("Fairy") or {}
+                needed = {}
+
+                def put(node, resource, x, y, mirror=False, needed=needed):
+                    needed[node] = dict(
+                        name=node,
+                        binding=dict(resource=resource, texturePresent=True, visible=True),
+                        x=x - 128,
+                        y=y - 128,
+                        mirror=mirror,
+                    )
+
+                if fairy.get("Control"):
+                    for n, f in enumerate(fairy.get("Fairies", [])):
+                        if f.get("Active"):
+                            for part, key, frame in (
+                                ("Body", "bodies", "BodyFrame"),
+                                ("Wings", "wings", "WingFrame"),
+                            ):
+                                put(
+                                    "Fairy" + part + str(n),
+                                    picked(
+                                        materials.get("healing", {}).get(key, []), int(f[frame])
+                                    ),
+                                    f["X"],
+                                    f["Y"],
+                                    f["Mirrored"],
+                                )
+                    for n, dust in enumerate(fairy.get("Dust", [])):
+                        if dust.get("Age"):
+                            put(
+                                "FairyDust" + str(n),
+                                picked(
+                                    materials.get("healing", {}).get("dust", []), int(dust["Frame"])
+                                ),
+                                dust["X"],
+                                dust["Y"],
+                            )
+                mounted = {f.get("name"): f for f in s.get("fairySprites", [])}
+                check(
+                    "fairy required node census",
+                    False
+                    if mounted.keys() - needed.keys()
+                    else None
+                    if needed.keys() - mounted.keys()
+                    else True,
+                    index,
+                )
+                for node, expected in needed.items():
+                    eq(
+                        "fairy cursor to mounted resource/effect",
+                        expected,
+                        mounted.get(node, absent),
+                        index,
+                    )
+            if phase == "Reaction" and info.get("reaction") == "Damage":
+                rs = s.get("reactionState")
+                draws = [
+                    events[q]
+                    for q in ordered
+                    if owners[q] == owners[token]
+                    and events[q]["Kind"] in ("rng-reaction-x", "rng-reaction-y")
+                ]
+                if number(rs):
+                    check("reaction source state range", rs < len(draws) // 2, index)
+                    if rs < len(draws) // 2:
+                        x, y = draws[2 * int(rs) : 2 * int(rs) + 2]
+                        origin = 2 if str(target).startswith("ally-") else 3
+                        dx = (x["RandomValue"] - origin) * 2
+                        dy = -(y["RandomValue"] - origin) * 2
+                        eq(
+                            "sampled source reaction offsets",
+                            dict(enemyX=16 + dx, enemyY=48 + dy),
+                            s,
+                            index,
+                        )
+                        if str(target).startswith("ally-"):
+                            eq(
+                                "sampled ally reaction layer offsets",
+                                dict(
+                                    allyX=136 + dx, allyY=64 + dy, groundX=136 + dx, backgroundX=dx
+                                ),
+                                s,
+                                index,
+                            )
+                elif rs != -1:
+                    check("reaction source state range", False if rs is not None else None, index)
+                if s.get("completed") is True:
+                    eq("reaction reaches final source state", 11, rs, index)
+            if not info.get("recovery"):
+                eq("no stray fairy consumer", [], s.get("fairySprites", absent), index)
+            # Source text identities plus independently accepted effect operands.
+            text_id, who, amount, spell = None, target, info.get("amount", 0), ""
+            if phase == "ActionMessage" or info.get("recovery") and phase == "SpellCost":
+                text_id = (
+                    274
+                    if info.get("recovery")
+                    else 293
+                    if info["kind"] == "physical-second"
+                    else 292
+                    if info["kind"] == "physical-counter"
+                    else 273
+                )
+                who = a
+                if info.get("recovery"):
+                    amount, spell = 1, "HEAL"
+            elif (
+                phase == "ResultMessage"
+                or info.get("recovery")
+                and phase in ("MakeIdle", "SpellStop")
+            ):
+                text_id = (
+                    298
+                    if info.get("recovery")
+                    else 286
+                    if info["reaction"] == "Dodge"
+                    else (287 if str(a).startswith("ally-") else 288)
+                    if info["critical"]
+                    else 284
+                )
+            elif phase == "DeathMessage":
+                text_id = 291 if str(target).startswith("ally-") else 290
+            elif phase == "RewardMessage" and info["exp"]:
+                e = info["exp"][0]
+                text_id, who, amount = 263, actor(e), e["After"] - e["Before"]
+            elif phase == "GoldMessage" and info["gold"]:
+                text_id, amount = 393, sum(e["After"] - e["Before"] for e in info["gold"])
+            elif phase == "GrowthMessage" and info.get("growth"):
+                e = info["growth"]
+                text_id = {
+                    "level": 244,
+                    "level-max-hp": 266,
+                    "level-max-mp": 267,
+                    "level-base-attack": 268,
+                    "level-defense": 269,
+                    "level-agility": 270,
+                }[e["Kind"]]
+                who, amount = (
+                    actor(e),
+                    e["After"] if e["Kind"] == "level" else e["After"] - e["Before"],
+                )
+            eq(
+                "source message and effect operands",
+                render(text_id, who, amount, spell) if text_id is not None else "",
+                s.get("message", absent),
+                index,
+            )
+
+        if phase.endswith("Message"):
+            accepting = [
+                i
+                for i in inputs.values()
+                if number(i.get("resultStart"))
+                and number(i.get("resultEnd"))
+                and i["resultStart"] <= owner < i["resultEnd"]
+            ]
+            check("message has owning physical input", bool(accepting) or None, token)
+            for inp in accepting:
+                eq("message accepted Confirm", dict(action="confirm", pressed=True), inp, token)
+                before = inp.get("before") or {}
+                visible, total = (
+                    before.get("sceneVisibleCharacters"),
+                    before.get("sceneTotalCharacters"),
+                )
+                check(
+                    "message ready before accepting input",
+                    visible < 0 or visible >= total
+                    if isinstance(visible, (int, float)) and number(total)
+                    else None,
+                    token,
+                )
+                eq(
+                    "message result input owner",
+                    inp.get("ordinal", absent),
+                    warps[owner].get("inputOrdinal", absent),
+                    token,
+                )
+                check(
+                    "message phase live before input",
+                    token <= before["observationSequence"] < end["Sequence"]
+                    if number(before.get("observationSequence"))
+                    else None,
+                    token,
+                )
+                precedes("message completion after input before", before, envelope, token)
+                precedes(
+                    "message completion before input after", envelope, inp.get("after") or {}, token
+                )
+        elif not complete:
+            if (
+                phase == "FieldSettle"
+                and batch
+                and (
+                    envelope.get("mode") == "Exploration"
+                    or warps[owner].get("projection") == "field-view-pending"
+                )
+            ):
+                terminal.append(pair)
+            else:
+                check("actual non-message completion", None, token)
+        elif phase == "ActionAnimation" or phase == "Reaction" and info.get("reaction") == "Dodge":
+            if source_sequence:
+                check(
+                    "every source animation entry observed",
+                    set(range(len(frames))) == played or None,
+                    token,
+                )
+                eq(
+                    "completed last animation entry",
+                    len(frames) - 1,
+                    complete[-1]["scene"].get("frameIndex", absent),
+                    token,
+                )
+
+    for pair in terminal:
+        token, owner = pair["token"], pair["owner"]
+        batch = field_batches[token]
+        row = warps[owner]
+        envelope = row["result"]
+        eq("terminal actual non-input transport", False, row.get("inputDelivery", absent), token)
+        eq(
+            "terminal pending field transport",
+            "field-view-pending",
+            row.get("projection", absent),
+            token,
+        )
+        eq("terminal Exploration result", "Exploration", envelope.get("mode", absent), token)
+        ending = [events[q] for q in ordered if owners[q] == owner and q >= pair["end"]["Sequence"]]
+        if ending:
+            identity(
+                "terminal final nested result boundary",
+                dict(
+                    sessionId=session,
+                    revision=ending[-1].get("Revision"),
+                    observationSequence=ending[-1].get("Sequence"),
+                ),
+                envelope,
+                token,
+            )
+        initial_actor = next(
+            (
+                c.get("actor", absent)
+                for c in physical_context.get("census", [])
+                if c.get("sequence") == batch["scene"]
+            ),
+            absent,
+        )
+        eq(
+            "terminal independent action actor",
+            initial_actor,
+            events.get(batch["scene"], {}).get("Actor", absent),
+            token,
+        )
+        for q in ordered:
+            if batch["scene"] < q < token and events[q]["Kind"] in (
+                "scene-ended",
+                "field-death-started",
+            ):
+                eq(
+                    "terminal action release actor",
+                    initial_actor,
+                    events[q].get("Actor", absent),
+                    q,
+                )
+        expected_end = [
+            dict(
+                Kind="scene-step-completed", Detail="FieldSettle", Actor=pair["start"].get("Actor")
+            ),
+            dict(Kind="field-death-ended", Actor=pair["start"].get("Actor")),
+            dict(Kind="battle-outcome", Detail="Victory"),
+            dict(Kind="action-committed", Actor=initial_actor),
+            dict(Kind="outcome-program-started", Detail="Victory"),
+            dict(Kind="program-instruction", Detail="SetTextCursor"),
+            dict(Kind="program-instruction", Detail="ResetPartyBattleStats"),
+            dict(Kind="program-instruction", Detail="SetCameraEntity"),
+            dict(Kind="full-fade-started", Detail="FadeOut"),
+        ]
+        cursor = 0
+        for event in ending:
+            candidate = next(
+                (
+                    n
+                    for n in range(cursor, len(expected_end))
+                    if expected_end[n]["Kind"] == event.get("Kind")
+                ),
+                None,
+            )
+            if candidate is None:
+                check("terminal ordered release without competing writer", False, token)
+                continue
+            if candidate > cursor:
+                check("terminal required release events present", None, token)
+            eq("terminal source release operand", expected_end[candidate], event, token)
+            cursor = candidate + 1
+        check(
+            "terminal required release events present",
+            True if cursor == len(expected_end) else None,
+            token,
+        )
+        prior = batch["phases"][-2] if len(batch["phases"]) >= 2 else {}
+        eq("terminal preceding phase", "FieldExit", prior.get("phase", absent), token)
+        prior_rows = bytoken.get(prior.get("token"), [])
+        check(
+            "terminal prior exit delivered",
+            any(r["scene"].get("completed") is True for r in prior_rows) or None,
+            token,
+        )
+        cleanup = [
+            events[q]
+            for q in ordered
+            if prior.get("end", {}).get("Sequence", float("inf")) < q < token
+            and events[q]["Kind"] == "death-cleanup"
+        ]
+        eq("terminal prior cleanup census", batch["actors"], [actor(e) for e in cleanup], token)
+        before_rows = bytoken.get(token, [])
+        check("terminal prestate present", bool(before_rows) or None, token)
+        for r in before_rows:
+            eq("terminal prestate unfinished", False, r["scene"].get("completed", absent), token)
+            precedes("terminal prestate before completion", r, envelope, token)
+            eq(
+                "terminal uninterrupted causal input",
+                row.get("inputOrdinal", absent),
+                r.get("inputOrdinal", absent),
+                token,
+            )
+            for inp in inputs.values():
+                if (
+                    r.get("hostUpdate", float("inf")) < inp.get("hostUpdate", -1)
+                    and inp.get("resultStart", float("inf")) <= owner
+                ):
+                    check("terminal no intervening physical input", False, token)
+        attached = [
+            (i, r)
+            for i, r in warps.items()
+            if i > owner
+            and r["result"].get("boundary") == "attach"
+            and r["result"].get("observationSequence") == envelope.get("observationSequence")
+        ]
+        check("terminal actual field attach", bool(attached) or None, token)
+        for i, r in attached:
+            eq("terminal attach accepted", None, r["result"].get("failure", absent), i)
+            identity("terminal attach/result identity", envelope, r["result"], i)
+            eq("terminal attach field mode", "Exploration", r["result"].get("mode", absent), i)
+        check(
+            "terminal has no intervening writer",
+            not any(token < q < pair["end"]["Sequence"] for q in ordered),
+            token,
+        )
+        returned = [
+            events[q]
+            for q in ordered
+            if q > pair["end"]["Sequence"] and events[q]["Kind"] == "battle-returned"
+        ]
+        check("terminal accepted returned boundary", bool(returned) or None, token)
+        for e in returned:
+            return_row = warps[owners[e["Sequence"]]]
+            eq("returned result accepted", None, return_row["result"].get("failure", absent), token)
+            state = return_row["state"]
+            eq(
+                "returned field ownership",
+                dict(
+                    mode="Exploration",
+                    map="map-57",
+                    stop="PlayerInput",
+                    wait=None,
+                    sessionId=session,
+                ),
+                state,
+                token,
+            )
+            identity("returned state/result", return_row["result"], state, token)
+            pressed = [
+                i
+                for i in inputs.values()
+                if i.get("pressed") is True and i.get("resultStart", -1) > owners[e["Sequence"]]
+            ]
+            check("returned actual field control", bool(pressed) or None, token)
+            if pressed:
+                first = pressed[0]
+                delivered = warps.get(first.get("resultStart"), {})
+                eq(
+                    "returned input accepted",
+                    dict(failure=None, mode="Exploration", sessionId=session),
+                    delivered.get("result", absent),
+                    token,
+                )
+                check(
+                    "returned input actual movement request",
+                    any(
+                        owners[q] == first.get("resultStart")
+                        and events[q]["Kind"] == "movement-requested"
+                        for q in ordered
+                    )
+                    or None,
+                    token,
+                )
+                if first.get("resultEnd") == first.get("resultStart", -2) + 1:
+                    identity(
+                        "returned input endpoint/result",
+                        first.get("after") or {},
+                        delivered.get("result") or {},
+                        token,
+                    )
+                eq(
+                    "returned physical input map",
+                    "map-57",
+                    first.get("before", {}).get("map", absent),
+                    token,
+                )
+                precedes("return before field input", state, first.get("before") or {}, token)
+        result.setdefault("compositions", []).append(
+            dict(
+                token=token,
+                kind="terminal-no-new-visual-effect",
+                completed="Inferred",
+                delay="Unknown",
+                directCompletedSnapshot=False,
+            )
+        )
+
+    result["checks"] = list(checks.values())
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    result["coverage"] = dict(
+        scenes=len(census),
+        phases=len(pairs),
+        selected=len(selected),
+        terminalCompositions=len(terminal),
+    )
+    return result
+
+
 def field_service_binding(actual, context, source_root):
     """Original service rules composed with bounded current input/state/Draw executions.
 
@@ -20257,6 +21944,7 @@ def compare_modern(
     reward_context=None,
     ai_context=None,
     field_context=None,
+    scene_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -20301,6 +21989,11 @@ def compare_modern(
     ai_consumers = (
         ai_consumer_binding(actual, ai_context, text_source_root)
         if ai_context is not None
+        else None
+    )
+    scene_consumers = (
+        battle_scene_consumer_binding(actual, scene_context, text_source_root)
+        if scene_context is not None
         else None
     )
     field_consumers = (
@@ -21853,6 +23546,23 @@ def compare_modern(
             "event",
         ),
     ):
+        if (
+            name == "battle scene command/resources/wait/effect/end consumer edges"
+            and scene_consumers is not None
+        ):
+            check(
+                9,
+                name,
+                True,
+                scene_consumers["value"],
+                actual_location,
+                original=scene_consumers["sourceRules"],
+                parent=consumer_parent,
+                reason="Selected source command/resources and actual phase completion/input/effect "
+                "joins; terminal no-visual-effect composition retains Inferred completed and "
+                "Unknown delay. Historical A failures remain.",
+            )
+            continue
         if name == "W1 displayed token occurrence/accepting read/service gates":
             check(
                 9,
@@ -22184,6 +23894,7 @@ def compare_modern(
             physicalConsumerBinding=physical_consumers,
             rewardConsumerBinding=reward_consumers,
             fieldServiceBinding=field_consumers,
+            battleSceneConsumerBinding=scene_consumers,
             reachedMaterialJoins=materials["joins"],
             reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
@@ -22739,7 +24450,13 @@ def main():
             "reward",
             "ai",
             "field-service",
+            "battle-scene",
         ),
+    )
+    parser.add_argument(
+        "--scene-context",
+        type=Path,
+        help="Retained modern scene selection and accepted compact dependencies",
     )
     parser.add_argument(
         "--physical-context", type=Path, help="Selected complete physical census and source indices"
@@ -22837,6 +24554,45 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.scene_context is None
+        or args.mode == "battle-scene"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "Scene context applies only to battle-scene or modern compare",
+    )
+    if args.scene_context is not None:
+        args.scene_context = (
+            args.scene_context
+            if args.scene_context.is_absolute()
+            else repo_path(args.scene_context)
+        ).resolve()
+        require(args.scene_context.stat().st_size <= 512 * 1024, "Scene context exceeds 512KiB")
+    if args.mode == "battle-scene":
+        require(
+            args.actual is not None and args.scene_context is not None,
+            "battle-scene requires selected JSONL actual and independent context",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "Scene output must be fresh beneath worktree local/",
+        )
+        binding = battle_scene_consumer_binding(
+            _battle_scene_selection(args.actual), read(args.scene_context), args.text_source_root
+        )
+        verdict = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-battle-scene-composed",
+            result=verdict,
+            milestonePass=False,
+            binding=binding,
+        )
+        require(len(json.dumps(report).encode("utf-8")) <= 1024 * 1024, "Scene report exceeds 1MiB")
+        write(args.output, report)
+        print(json.dumps(dict(result=verdict, coverage=binding["coverage"], milestonePass=False)))
+        raise SystemExit(0 if binding["value"] is True else 1 if binding["value"] is False else 2)
     require(
         args.field_context is None
         or args.mode == "field-service"
@@ -23579,6 +25335,7 @@ def main():
                 read(args.reward_context) if args.reward_context else None,
                 read(args.ai_context) if args.ai_context else None,
                 read(args.field_context) if args.field_context else None,
+                read(args.scene_context) if args.scene_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
