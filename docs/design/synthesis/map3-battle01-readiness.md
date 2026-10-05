@@ -73,17 +73,17 @@ transport/observer failures are not interrupted runs and are not erased by final
 | Victory, after-program, flag and return spine | PASS bounded original evidence | 67 reached operation pairs and selected final chain; not a full presentation claim |
 | Exact neutral settled endpoint | PASS bounded original evidence | Contract endpoint and original terminal; remaining full records must be consumed from private evidence |
 | Bounded RA-12 ordinary input/effect | PASS bounded original evidence | PR #526: one Down read and settled displacement from Map57 `(5,12)` to `(5,13)`; separate terminal, not resumable and not part of the PR #504 projector binding |
-| Full controllable 5B | OPEN | Remaining continuous input/control and state assertions; bounded RA-12 evidence does not establish the whole 5B endpoint |
+| Full controllable 5B | Bounded actual return accepted; integration review OPEN | Retain the ordinary continuous winning/return and delivered field-control proof; the separate original RA-12 extension keeps its own lineage |
 | Continuous contract and ten-layer definitions | Accepted definitions; missing bindings OPEN | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; bounded offline bindings available; remaining field gaps and complete definition readiness OPEN |
-| Original expected fields complete for every applicable assertion | OPEN | Admission, matched-state rule/RNG effects and required resource/consumer boundaries remain incomplete under the current applicability owner; historical whole-run fields are not automatically new acquisition obligations |
+| Original expected fields complete for every applicable assertion | Accepted bounded definitions; integration review OPEN | Use the accepted source and controlled compositions below. Historical missing fields stay explicit and are not automatically current acquisition requirements |
 | Save policy 6A | SELECTED; continuous H4 execution OPEN | Absent user persistence surfaces; restart to admitted state |
-| 7C content/provenance | OPEN | Complete reached original scene inventory, especially original audio; authored JoinCue chords or mute cannot pass. Modern HUD/theme/input glyphs/fonts follow accepted authorship/license and 9A, not a ROM-original-font requirement |
-| 8D semantic presentation | OPEN | Required identity/order, real host use, completion/ack and readiness; bounded scene/resource bindings do not close all battle-scene command/wait/effect/end consumers |
+| 7C content/provenance | Local resource proofs accepted; integration review OPEN | Reuse reached visual/audio provenance and mutable-map delivery at their declared scope. Private content remains untracked; authored JoinCue chords or mute cannot substitute for required original audio |
+| 8D semantic presentation | Local consumer obligations accepted; integration review OPEN | Accepted text, motion, operation, audio and scene bindings retain their declared composition limits; overall parent coverage is pending review |
 | Existing settings and bounded direct observations | PASS bounded implementation; supplemental/history | [Settings owner](../../../remake/docs/development-and-verification.md#native-9a-observation); implementation does not authorize additional required variants |
 | Current keyboard scope / 10A deviations | Scope comparison PASS; full H4 OPEN | Required A only; C diagnostic, B/D excluded. A self-equality closes only the declared scope row, not remaining obligations or arbitrary settings equivalence |
 | Required reached action support | PASS bounded implementation; continuous comparison OPEN | PR #521 (`78c201c3`) accepts ordinary Medical Herb selection/live inventory and host inventories/itemSlot observations; compare the winning original actions separately |
-| Actual continuous comparison | Unavailable; milestone NOT READY | Retained A10 under current scope: one scope comparison PASS, thirteen required children Unavailable; historical PR #533 failures remain below |
-| All applicable H4 layers executed successfully | OPEN | Required admission, matched-state rules/RNG, map-resource and consumer gaps remain; successful capture or reduced execution scope is not H4 acceptance |
+| Actual continuous comparison | Accepted local compositions; closure audit pending | The thirteen local obligations below have independent acceptance. Retained A10/matrix results remain unchanged; they are not a current combined PASS |
+| All applicable H4 layers executed successfully | OPEN integration acceptance | Account for all required parent/child assertions, shared evidence identities and deviations at the accepted composed boundary; individual scoped PASS reports are insufficient |
 | Independent milestone readiness acceptance | OPEN | Main-gate; neither Issue closure nor a bounded implementation PASS is sufficient |
 | Separate implementation-start authorization | PASS | User authorization in [Remake README](../../../remake/README.md); does not accept this milestone |
 | Public distribution | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate rights/licensed replacement decision; private assets remain untracked |
@@ -118,8 +118,8 @@ fidelity waiver. Missing evidence/content cannot be recategorized as a deviation
 | --- | --- |
 | Research | PR #526 independently accepts the bounded RA-12 input/effect. Other selected original fields, input normalization, RNG and presentation gaps remain as defined by their owners |
 | Design | Keep current applicability and the keyboard acceptance boundary aligned with the contract; original PR #526 extension remains separate from the PR #504 projector |
-| Remake/content | Audio/private provenance (#517), mutable map resources and required scene consumers remain bounded by their current owners; #523's closed Issue state does not itself prove consumer closure |
-| H4 executor | Resolve the current required keyboard assertions using accepted evidence and selected-scope comparisons; preserve failures and Unavailable. #610 owns offline resource-reduction cost, not gameplay acceptance |
+| Remake/content | Reuse accepted audio/private resources, mutable-map delivery and scene consumer proofs at their named dependencies. #517 Option A retains its controlled reveal-tail mechanism and historical C limit |
+| H4 executor | Reconcile the accepted local obligations with required parent coverage and shared evidence identities; preserve failures and Unavailable. Any additional integration check needs a bounded plan |
 | Main-gate | Independently accept definitions, evidence closures and eventual complete H4 result; serialize integration |
 
 Accepted [outcome implementation](../../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return)
@@ -132,15 +132,45 @@ current keyboard milestone. No new capture follows from this ledger.
 
 ### Current required comparison boundary
 
-**Confirmed:** the accepted current-scope matrix reads retained A10, passes its one required scope
-comparison and leaves thirteen required children Unavailable (`milestonePass=false`). They group into
-two admission obligations, six matched-state rule/RNG/draw-to-effect obligations, one mutable-map
-resource obligation and four text/scene/audio consumer obligations. The exact assertions and
-reproduction command belong to the [verification owner](../../../remake/docs/development-and-verification.md#current-keyboard-comparison-scope).
-Do not turn these counts into thirteen automatic capture jobs or infer closure from another native
-winning route. The existing C capture is supplemental; D's retained capture and cancelled offline
-comparison are historical. C has no completed full report. #610 must first address offline
-comparison growth; original evidence and all completed failures remain preserved.
+**Confirmed:** the thirteen local obligations previously absent from retained A10 now have
+independently accepted source/consumer compositions. Their owning contracts define current scope:
+
+| Required child | Accepted owner and boundary |
+| --- | --- |
+| Admission seed-copy byte | [Seed composition](../contracts/map3-battle01-continuous-scenario.md#admission-seed-copy-composition): non-resume write-before-read plus current copy mechanism |
+| Opening mouth/view controls | [Controlled opening](../contracts/map3-battle01-continuous-scenario.md#controlled-opening-control-binding): selected original callback/receipt lineage |
+| Turn score/order | [Turn composition](../contracts/map3-battle01-continuous-scenario.md#composed-current-turn-rule-and-queue-consumption): genuine generation and complete retained queue consumption |
+| Physical effects | [Physical rules](../contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding): reached source operands and actual effect ownership |
+| HEAL cost/recovery/fairy | [HEAL](../contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding): selected logical opportunities and actual consumers |
+| Rewards/after-turn/outcome | [Rewards](../contracts/map3-battle01-continuous-scenario.md#selected-reward-growth-and-outcome-consumer-binding): source rewards, growth, return effects |
+| AI decisions/memory/movement | [AI](../contracts/map3-battle01-continuous-scenario.md#selected-ai-rule-and-consumer-binding): source decisions with accepted seed mechanism |
+| Field service draw/effect gates | [Field services](../contracts/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding): bounded source and actual service cases |
+| Mutable map resources | [Map delivery](../contracts/map3-battle01-continuous-scenario.md#composed-mutable-map-delivery): ordinary-input lineage, working layout and actual draw |
+| W1 token/read/service | [W1](../contracts/map3-battle01-continuous-scenario.md#selected-w1-consumer-binding): occurrence, service and input ownership |
+| W2 accepting read/token return | [W2](../contracts/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding): selected validation and source continuation |
+| Scene command/resource/wait/effect/end | [Scenes](../contracts/map3-battle01-continuous-scenario.md#selected-battle-scene-command-and-consumer-binding): visible consumers, completion ownership and bounded terminal composition |
+| Audio dependent consumer edges | [Audio](../contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding): reached playback/replacement/fade/stop/resume and release |
+
+Reuse the accepted continuous winning/return route and its actual field control, plus the
+[displayed text](../contracts/map3-battle01-continuous-scenario.md#complete-reached-displayed-text-material-binding),
+[motion](../contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding),
+[operation](../contracts/map3-battle01-continuous-scenario.md#complete-reached-operation-flow-binding)
+and [resource cohort](../../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
+proofs. The separate [Option A speech policy](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+uses its accepted controlled reveal-tail evidence; historical C's unsampled interval remains Unknown.
+
+**OPEN integration boundary:** the scoped reports retain `milestonePass=false`. Retained A10 and
+its current-keyboard matrix still describe their original Unavailable children. No combined report
+has been accepted by substituting thirteen PASS labels. Overall acceptance must account for the
+required parents/children and shared source, producer, session, occurrence and input/effect joins,
+including the accepted controlled compositions and separately reported deviations. A missing
+integration check needs one minimum scope/budget/dependency plan; it does not imply another route,
+full H4, matrix or native run. Main-gate owns that decision and final readiness acceptance.
+
+Historical seed-latch, HEAL timing, provenance and review failures remain preserved. Terminal
+internal completion remains **Inferred** and its delay **Unknown**; historical missing turn-generation
+operands and corrected whole-A history remain explicit. These limits do not reopen accepted
+compositions. C remains supplemental and B/D excluded under the current keyboard scope.
 
 ### Conditional runtime questions
 
