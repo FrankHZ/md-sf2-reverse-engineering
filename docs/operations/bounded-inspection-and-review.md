@@ -127,6 +127,33 @@ owns compact controls and unchanged CLI usage; the
 [scenario contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding)
 owns accepted semantics and evidence limits.
 
+### H4 AI and Seed Module Route
+
+The existing `ai` CLI and modern AI child use `ai_binding.ai_consumer_binding`; the existing
+comparison module retains that import and the direct `_ai_source_rules`/`_ai_source_decision`
+observation aliases. Its `admission_seed_binding` alias still serves field-service, modern and the
+scoped admission-seed CLI. Opening controls remain a separate family.
+
+| Owner under `src/sf2tool/remake_h4/` | Responsibility and interface |
+| --- | --- |
+| `ai_source.py` | `source_rules(source_root)` augments the existing physical source tables with AI declarations; `source_decision(source, actors, who, seed)` calculates original effects and logical paths. |
+| `ai_checks.py` | AI-specific subset/subsequence/missing matching and `AiChecks(session)` ordered check log/clock comparisons. A shorter retained list may be a subsequence; this is different from physical pairwise matching. |
+| `ai_evidence.py` | `select_evidence(actual, context, checks, producer)` returns rows/events/owners/census; `check_state_continuity(...)` binds source declarations and thinking/memory/region last writers across retained gaps. |
+| `ai_decisions.py` | `compare_decisions(rows, events, owners, census, source, checks)` checks actual caller operands, source effects and their movement/action delivery; returns occurrence summaries and Unknowns. |
+| `ai_binding.py` | Composes selection, source checks, decisions, accepted seed proof and consumer dependencies, then preserves ordered check compression and historical/current report roles. |
+| `admission_seed.py` | `admission_seed_binding(actual, context, source_root)` owns the existing original-write/historical-delivery/accepted-execution seed composition, with its own matching semantics. |
+
+AI binding depends on evidence/decisions/checks/source and the independent seed module. AI source
+reuses physical source read-only; both families consume existing foundational parsers/RNG/path tools.
+Seed imports no comparison family or monolith. Channel transport stays owned by the caller, and
+consumer/source dependency reads and accepted TRX/adapter receipts retain their existing lifetimes.
+The private historical seed latch remains FAIL even when the current composed mechanism passes.
+Direct observations use the new source/check owners; changing an old alias is not forwarded as a
+mutable override. Use the [AI](../../remake/docs/development-and-verification.md#scoped-ai-consumer-comparison)
+and [seed](../../remake/docs/development-and-verification.md#scoped-admission-seed-comparison)
+verification routes. Other families and transport/report/CLI decomposition remain future bounded
+slices; neither this extraction nor a matching historical result closes those responsibilities.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

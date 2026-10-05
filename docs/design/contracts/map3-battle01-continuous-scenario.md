@@ -567,6 +567,11 @@ timing, whole-route NPC/RNG scheduling or collision corpus.
 
 ### Admission seed-copy composition
 
+Implementation is [`admission_seed.py`](../../../src/sf2tool/remake_h4/admission_seed.py), shared through
+the existing comparison-module import by AI, field-service, modern and scoped CLI consumers. The
+[AI/seed dependency route](../../operations/bounded-inspection-and-review.md#h4-ai-and-seed-module-route)
+preserves the distinct historical latch and accepted current mechanism proof roles below.
+
 The optional `admission_seed_binding` replaces only the required `admission seed-copy byte` child.
 It composes the selected original non-resume path, historical A's actual W2 delivery, and the
 accepted PR621 correction mechanism. It does not compare a corrected whole-A capture. Without the
@@ -978,6 +983,12 @@ fields. Independent integration and remaining-obligation closure belong to main-
 Reproduce using the [scoped field-service route](../../../remake/docs/development-and-verification.md#scoped-field-service-comparison).
 
 ### Selected AI rule and consumer binding
+
+Implementation is [`ai_binding.py`](../../../src/sf2tool/remake_h4/ai_binding.py), with source rules,
+evidence/state joins and decision delivery separated by the
+[AI/seed module route](../../operations/bounded-inspection-and-review.md#h4-ai-and-seed-module-route).
+The existing comparison-module CLI/import entry remains available; the AI matching contract is not
+replaced by physical matching.
 
 The optional `ai_consumer_binding` supplies only the `AI thinking draw/choice/memory
 and movement decision` child. Scoped `ai` and modern `--ai-context` use the same
