@@ -1561,6 +1561,14 @@ idle state. The modern matrix retains each session's own evidence; new A cannot 
 
 ### Complete reached field motion and consumer binding
 
+The comparator entry delegates to the [field motion module owners](../../operations/bounded-inspection-and-review.md#h4-field-motion-module-route)
+with explicit reader and bounded storage dependencies. Source admission, occurrence inventory,
+held waits, release/handoff, restoration and draw applicability preserve the same ordered checks,
+per-occurrence state and False-over-missing aggregation. The structural extraction's saved pilot
+and constructed controls establish only the named source/interface equivalence. They do not rerun
+or replace PR603's accepted full historical A-02 evidence, establish new positive full-route
+coverage, or change any gameplay or comparison predicate below.
+
 The two existing whole children `awaited entity motion/gesture/fade before caller return` and
 `entity motion/gesture/fade consumer start/completion before resume` use the same complete reached
 inventory. Logical `program-instruction`, dedicated `nod-started` and `full-fade-started` producers

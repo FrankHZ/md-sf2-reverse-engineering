@@ -409,6 +409,60 @@ remain detached after closure. Preserve the [controlled opening contract](../des
 and [scoped verification](../../remake/docs/development-and-verification.md#selected-opening-controls):
 original/actual sessions and clocks differ; sparse evidence never invents a first glyph or timing.
 
+### H4 Field Motion Module Route
+
+`field_motion_binding(actual, selection, source_root)` remains the comparator entry used by
+`compare_modern`. Its wrapper injects the existing `read`, `_bounded_list`, `_occurrence_map`,
+`_bounded_sorted` and `_group_rows` functions explicitly. These retain caller-owned storage;
+motion modules do not import the comparator or introduce a transport adapter.
+
+The source correspondence below covers the complete function at
+`4dfa055699839a81c5259d5fad854a386fd48dfe:src/sf2tool/remake_h4_comparison.py`, lines4877–6163.
+Use `git show` for that exact object and compare each region with its named current owner.
+Line intervals include adjoining blank lines and control headers; every old line has one owner.
+This is the structural acceptance boundary, including branches absent from retained pilot rows.
+
+| Module in `src/sf2tool/remake_h4/` | Old regions | Body / explicit state bridge |
+| --- | --- | --- |
+| `motion_binding.py` | 4877–4878,5126–5221,5311–5312,5411,5729–5755,6147–6163 | Composition, readiness, missing typed-producer early `continue`, nonawaited installation, dependent ordering and aggregation remain here. |
+| `motion_checks.py` | 4879–4892,5120–5125 | Factory returns the same result and `check`, `common`, `aggregate`, `operand` closures; checks append in original order. |
+| `motion_programs.py` | 4893–4899,4984–5062 | `target` moves to module scope. Factory takes programs/compiler/tracked source and returns instruction/source-value closures and source spans; both caches remain per call. |
+| `motion_source.py` | 4900–4957 | Takes selection/source/reader/common; returns programs/compiler/tracked source after the same identity checks and catches. |
+| `motion_events.py` | 4958–4983,5115–5119 | Takes actual/common/map/sort/group factories; returns warp records, record index, ordered events, release/token/boundary indexes and the occurrence lookup closure `following`. |
+| `motion_inventory.py` | 5063–5111 | Takes ordered events/records/index/instruction/common/list factory; returns producers. Warp/transfer/last-location state stays local. |
+| `motion_wait.py` | 5112–5114,5222–5310 | `entity` moves to module scope. Held-wait checks take entry/record/event/role/states/location/instruction/subject/token and callbacks. |
+| `motion_commands.py` | 5313–5410 | Takes release indexes and occurrence operands/callback; mutates the same occurrence's motion operands and returns `end`. |
+| `motion_completion.py` | 5412–5569,5674 | Takes occurrence evidence, `following`, callbacks/list factory; retains handoff order, delegates fade/shiver under the original guards, returns `end`. |
+| `motion_fade.py` | 5570–5673 | Takes states/instruction/helper/token/callbacks/list factory; saved-entry, continuity, period and palette computations are unchanged. |
+| `motion_shiver.py` | 5675–5728 | Takes entry/states/event index/end/records/actual/token/subject/callback; retains minimum-revision sample/battle-entry fallback and restoration order. |
+| `motion_draws.py` | 5756–5770,5818–5853,6124–6146 | Takes rows/role/instruction/subject/states/token/callbacks/list factory. Owns applicability, used list and phase set per occurrence; retains generic-loader plain-list replacement. |
+| `motion_phases.py` | 5771–5817 | Factory takes effect/subject/token and returns the unchanged `semantic_phases` closure with its original captured defaults. |
+| `motion_projection.py` | 5854–6123 | Takes draws/subject/token/instruction/role/effect/phase closure/used list/phase set/callbacks. Preserves the complete draw loop, early `continue`s, float32 intersection and phase predicates; mutates the caller's used list and phase set. |
+
+No source local or predicate is renamed. `struct` moves with the float32 predicate. Definitions of
+pure helpers and closure construction move to their owners; source computations, check order,
+missing-versus-contradictory handling, aggregate filters and transport calls do not change. The only
+new returns replace the explicit bridges above; there is no cross-call cache or shared occurrence
+state. The list/map/group/sort dependencies are passed to the owners that previously invoked them.
+
+Structural observations use only saved complete world programs/provenance and retained pilot rows,
+plus explicitly constructed controls. The world payload is a documented read view of the original
+selected path; normalize the receipt's relative selection against its original producer root and
+retain its original bytes and mapping. Shape-derived channel assignments and constructed events
+are controlled inputs, never historical channel/index evidence. Compare complete ordered reports,
+real entry/modern wiring, factory injection, per-call/per-occurrence state and detached stream
+publication. The private reproduction owner is `local/issue638/motion-modules-01` (`observe.py`,
+`interfaces.py`, `boundaries.py`, source-region map and full paired reports). New scratch is bounded
+to40MiB and each process to120s/128MiB. No additional raw actual/world reads, capture selection,
+frame database or acquisition is part of this acceptance.
+
+This structural change makes no semantic repair or new full historical A-02 PASS claim. PR603's
+accepted behavioral evidence remains at merge object `ed8591713ccf6329307de78ed7fecf43623be35f`;
+its completed failures remain unchanged. The [motion contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding)
+and [verification scope](../../remake/docs/development-and-verification.md#complete-field-motion-consumer-comparison)
+retain that distinction. Unsupported runtime combinations stay Unknown even when their moved
+source bodies have complete structural correspondence.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

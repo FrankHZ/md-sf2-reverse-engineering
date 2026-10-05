@@ -2819,6 +2819,24 @@ retains the other outstanding families.
 
 ## Complete field motion consumer comparison
 
+The maintained entry is composed by the [motion module owners](../../docs/operations/bounded-inspection-and-review.md#h4-field-motion-module-route).
+For its structural extraction, compare complete ordered reports on the saved bounded pilot and
+explicitly constructed missing/contradictory controls, audit the entire source-region map and
+exercise the real modern entry, all five injected dependencies, occurrence isolation and stream
+publication. The private direct recipes are `local/issue638/motion-modules-01/observe.py`,
+`interfaces.py` and `boundaries.py`; use fresh ignored destinations for repeat observations.
+Shape-derived rows carry controlled channel assignments, not invented historical indices. Reuse
+saved complete world programs/provenance through the original-path read view, retaining the
+original process receipt and resolving its relative world path against its producer root.
+
+This acceptance omits a new full historical A-02 run and permits no additional raw actual/world
+reads or selection pass. Source-body equivalence covers unexercised branches; runtime behavior
+outside the named controlled cases remains Unknown. The accepted PR603 evidence at
+`ed8591713ccf6329307de78ed7fecf43623be35f` and its failures stay unchanged. Use affected lint,
+design-contract/research-index checks, direct document/private/scope checks, committed planning
+and actual CI. This structural scope does not require helper tests, a native/SDK launch, full H4,
+route/matrix, normal/full aggregate or a new environment.
+
 The maintained modern comparator binds exactly the existing two whole field-motion/gesture/fade
 children described by the [continuous contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding).
 `actualObservations.fieldMotionBinding` retains the independently inventoried producers, source
