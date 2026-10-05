@@ -3829,6 +3829,48 @@ values; selected Submit observation arrays and input result intervals remain com
 indices and contradictory repeated events cannot silently reduce coverage. Modern comparison
 accepts the same `--physical-context`; no separate physical oracle is used there.
 
+To reproduce the selected numeric/boolean counterexample directly, run this after the same-process
+private-input setup and selection of `$pinnedSource`. Each call uses a fresh in-memory copy of the
+compact selection; neither input file is rewritten. The genuine baseline and equal numeric/null
+representations return `true`, type/null contradictions return `false`, missing-only controls return
+`null` (Unavailable), and a contradiction with another missing field still returns `false`.
+
+```powershell
+$physicalControl = @'
+import copy, json, sys
+from pathlib import Path
+from sf2tool.remake_h4_comparison import physical_consumer_binding
+p = Path('local/issue534/physical-binding-01')
+a0 = json.loads((p / 'actual.json').read_bytes())
+c0 = json.loads((p / 'context.json').read_bytes())
+def reaction(a):
+    return next(p['scene'] for p in a['sceneObservations']
+                if p['_index'] == 1703 and p['scene']['waitToken'] == 28901)
+for name in ('baseline', 'number-as-bool', 'bool-as-number', 'equal-number',
+             'null-as-zero', 'missing-observed', 'missing-expected', 'mixed'):
+    a, c = copy.deepcopy(a0), copy.deepcopy(c0)
+    if name in ('number-as-bool', 'mixed'):
+        reaction(a)['reactionAmount'] = False
+    if name == 'bool-as-number': c['selectionReceipt']['sourceUnchanged'] = 1
+    if name == 'equal-number': reaction(a)['reactionAmount'] = 0
+    if name == 'null-as-zero': c['selectionReceipt']['failure'] = 0
+    if name == 'missing-observed': reaction(a).pop('reactionAmount')
+    if name in ('missing-expected', 'mixed'): c.pop('profileDeclaration')
+    result = physical_consumer_binding(a, c, sys.argv[1])
+    print(json.dumps(dict(case=name, value=result['value'],
+        nonpass=list(dict.fromkeys(x['name'] for x in result['checks']
+                                 if x['value'] is not True))[:6])))
+'@
+uv run --locked python -X utf8 -c $physicalControl $pinnedSource
+```
+
+This is a bounded direct control of the complete physical child, not a maintained verifier/test
+suite or a full modern/CLI-schema acceptance claim. Numeric equivalence does not relax the separate
+integer-domain checks. Explicit null cannot replace zero or either side's missing marker. Reuse
+the retained physical clock/input/projection controls with fresh output names; keep their prior
+failures and the original type counterexample. Object subset, list-length and ordered-event
+semantics retain the [physical contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding).
+
 The one admitted raw selection traversed the registered 1,375,851,198-byte historical A once in
 25.8418791 seconds, with 3,522,560 bytes incremental peak memory and unchanged source size/mtime.
 It retained 3,966,366 bytes of JSONL; normalized actual is 3,895,810 bytes. The full battle census

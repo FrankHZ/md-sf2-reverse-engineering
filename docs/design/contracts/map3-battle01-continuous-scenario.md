@@ -717,6 +717,16 @@ HP stays deferred until its command and is checked in the surrounding selected l
 has no HP-valued event; its persistent HP must remain unchanged. Missing operands are Unavailable;
 known wrong arithmetic, identities or effects remain FAIL beside unrelated missing evidence.
 
+Physical value matching distinguishes JSON booleans from numbers in both directions, including
+nested object/list leaves: `false` cannot match `0`, and `true` cannot match `1`. Equal numeric
+representations such as `1`/`1.0` retain equality; the separate integer-domain/clock checks still
+apply. Explicit `null` matches only explicit `null` where the caller permits it. A missing expected
+or observed operand uses the missing marker and yields Unavailable, rather than becoming `null`,
+zero or a contradiction. Objects match the required subset. A shorter observed list is Unavailable,
+a longer one is FAIL, and a contradictory paired leaf is FAIL even beside a missing leaf. Ordered
+event callers retain their kind/order and missing-event rules; no other comparison family's
+matching semantics are changed by this physical contract.
+
 Session, result index, revision and observation sequence identify every retained boundary. A
 physical player confirmation binds through its input index and result interval; automatic actions
 retain their causal input and subsequent Submit/state chain. Result source indices bind to the
