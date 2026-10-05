@@ -4308,6 +4308,16 @@ uses the existing compact retained-A selection, original outcome records69–74,
 and the bounded map3/NPC-history supplement. No SDK, host, emulator, full H4, matrix or repeated raw
 capture scan is needed.
 
+The [module route](../../docs/operations/bounded-inspection-and-review.md#h4-w1-module-route)
+names the selected input, source and service owners. Direct observations can import
+`w1_consumer_binding` from `sf2tool.remake_h4.w1_binding`; the signature remains
+`(actual, context, source_root)` and the old import is the same callable. Full-capture containers
+use indexed selection without timeline iteration. Already selected streams belong to the caller,
+and the complete report remains readable after they close. Relative source/input paths resolve
+from the repository root, including CLI invocation from `remake/`. Compare full ordered checks,
+poll occurrences and Unknowns, retaining the Submit/event, stationary NPC and mixed service
+counterexamples below.
+
 ```powershell
 . ./local/private-inputs.ps1
 uv run python -X utf8 -m sf2tool.remake_h4_comparison w1 `
