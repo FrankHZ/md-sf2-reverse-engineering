@@ -4376,7 +4376,9 @@ completed `selectionReceipts` and `roundSelection`, source `factions`, independe
 It references the PR622 executed generation proof,
 the prior fourteen-record/twelve-generation queue inventory, and the accepted compact AI/reward
 selections. Preparation selects only needed fields and reconciles overlapping result/state
-identities. Do not copy whole archives or reconstruct missing old generation from expected math.
+identities. Keep the scene inputs with null actors as well as manual-control inputs: they carry
+the ordinal and dispatch boundaries of automatic/scene results. Do not copy whole archives or
+reconstruct missing old generation from expected math.
 
 Selected actual channels use `evidenceScope=selected-turn-consumers` and explicit zero-based
 `_index` values. Modern supplied channels use their original channel indices at the same applicable
@@ -4388,6 +4390,16 @@ admission and terminal enemy HP justify live action, dead skip and terminal rema
 event is a named effect, not a caster HP write; actual `hp` observations govern HP propagation.
 No-event rejected inputs remain diagnostics and cannot advance the queue. Passing checks are
 grouped with counts/bounded identity examples; every failed/missing class remains in the verdict.
+Validate both clock domains before missing-leg exits, ordered event clocks/result bounds and the
+exact delivered poststate session/revision/sequence. The initial queue sample joins its first-control
+result. Only an empty attach projection with matching preceding result/events uses the observer's
+before-view exception. Input intervals are nonnegative integral source indices, ordered and
+nonoverlapping; before/after clocks progress, join supplied exact result boundaries and are bounded
+by selected neighbors. Direct/automatic results require their actual causal input ordinal and
+appropriate before/after/next-input bounds. Missing operands remain Unavailable; independently
+known negative/fractional clocks, wrong identities or inverted/contradicted intervals remain FAIL.
+Omitted snapshot HP/placement leaves preserve carried knowledge while reporting missing observation;
+missing authoritative HP writes invalidate it until a later actual observation supplies the value.
 
 Use direct genuine, omission, contradictory, foreign, duplicate/order and complete-frontier controls:
 missing commit/skip/rollover/terminal, shortened census, failed owning consumer, wrong consumer

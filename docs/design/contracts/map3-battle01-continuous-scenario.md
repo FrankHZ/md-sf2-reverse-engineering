@@ -1261,6 +1261,21 @@ publications require exact event identity/payload agreement and ordered owning e
 owning consumer, wrong slot/actor/live-dead state/cursor, phantom rollover or conflicting supplied
 queue is FAIL even beside missing generation evidence. Missing commits, skips, rollovers, input
 channels or state leaves remain Unavailable; removing them cannot shorten the expected frontier.
+Both logical clock axes must be nonnegative integral application clocks. Events progress in
+sequence/revision order within their owning result bounds; its last event closes the result sequence.
+Delivered poststate session/revision/sequence must equal that result. An empty attach projection is
+permitted only at the observer's before-view seam with the preceding result identity and exact
+republished events; a later unrelated state cannot substitute for a poststate. The initial queue
+sample joins the owning first-control result. Each physical input has an ordered, nonoverlapping
+source-index interval and progressing before/after clocks, bounded by the selected result neighbors
+and joined at supplied exact boundaries. Direct results belong inside that interval; automatic
+results follow its after state and precede the next input. Both require the causal input ordinal.
+Scene inputs without a selected actor remain part of this causal coverage. Missing clocks or
+boundaries remain Unavailable; negative/fractional clocks, inverted intervals or contradicted
+ownership are FAIL even when another leg is missing.
+An omitted snapshot HP/placement leaf reports missing observation without erasing a previously
+known value. A missing authoritative HP write instead invalidates the carried HP until a subsequent
+actual observation restores it; the earlier value cannot fill that missing mutation.
 Rejected target/input diagnostics that consume no slot remain recorded separately, and their
 poststate must preserve the queue. Movement, scene waits and Cancel do not consume an entry.
 

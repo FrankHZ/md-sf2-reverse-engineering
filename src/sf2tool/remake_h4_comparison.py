@@ -17127,6 +17127,48 @@ def turn_order_consumer_binding(actual, context, source_root):
     def actor(event):
         return (event.get("Actor") or {}).get("Value")
 
+    def number(value):
+        # Godot JSON retains long clocks as integral floats. Booleans, fractions,
+        # negative values and values outside the application long domain are wrong.
+        return type(value) in (int, float) and 0 <= value <= 2**63 - 1 and value % 1 == 0
+
+    clock_keys = ("revision", "observationSequence")
+
+    def clocks(name, snapshot, index, keys=clock_keys):
+        check(
+            name + " clock domain",
+            merge([None if snapshot.get(k) is None else number(snapshot[k]) for k in keys]),
+            index=index,
+        )
+
+    def precedes(name, before, after, index):
+        check(
+            name,
+            merge(
+                [
+                    before[k] <= after[k]
+                    if number(before.get(k)) and number(after.get(k))
+                    else None
+                    if before.get(k) is None or after.get(k) is None
+                    else False
+                    for k in clock_keys
+                ]
+            ),
+            index=index,
+        )
+
+    def join(name, before, after, index):
+        check(
+            name,
+            merge(
+                [
+                    match(before.get(k, absent), after.get(k, absent))
+                    for k in ("sessionId", *clock_keys)
+                ]
+            ),
+            index=index,
+        )
+
     check(
         "explicit composed scope",
         match("retained-keyboard-A-turn-composed", context.get("scope", absent)),
@@ -17206,6 +17248,232 @@ def turn_order_consumer_binding(actual, context, source_root):
                 channel=channel,
                 index=index,
             )
+    # Check available clock contradictions before generation/census applicability.
+    # A missing independent operand must not hide an invalid delivered identity.
+    previous = None
+    previous_clock = {}
+    for index, row in channels["warpRecords"].items():
+        if not row and index not in (indices.get("warpRecords") or []):
+            continue
+        body, state = row.get("result") or {}, row.get("state") or {}
+        clocks("result", body, index)
+        if previous is not None:
+            precedes("result clocks progress in source-index order", previous_clock, body, index)
+        events = body.get("observations")
+        check(
+            "result observation channel",
+            None if events is None else isinstance(events, list),
+            index=index,
+        )
+        last = None
+        for event in events or []:
+            clocks("event", event, index, ("Revision", "Sequence"))
+            ec = dict(revision=event.get("Revision"), observationSequence=event.get("Sequence"))
+            precedes("event clocks bounded by owning result", ec, body, index)
+            if last is not None:
+                precedes("ordered event clock axes", last, ec, index)
+                check(
+                    "strict ordered event sequence",
+                    ec["observationSequence"] > last["observationSequence"]
+                    if number(ec["observationSequence"]) and number(last["observationSequence"])
+                    else None,
+                    index=index,
+                )
+            elif previous is not None and body.get("boundary") != "attach":
+                precedes("new events follow preceding result", previous_clock, ec, index)
+                check(
+                    "new event sequence follows preceding result",
+                    ec["observationSequence"] > previous_clock["observationSequence"]
+                    if number(ec["observationSequence"])
+                    and number(previous_clock.get("observationSequence"))
+                    else None,
+                    index=index,
+                )
+            last = ec
+        if last is not None:
+            end = body.get("observationSequence")
+            sequence = last["observationSequence"]
+            check(
+                "last event closes result sequence",
+                None
+                if end is None
+                or sequence is None
+                or number(end)
+                and number(sequence)
+                and sequence < end
+                else match(end, sequence),
+                index=index,
+            )
+        if body.get("boundary") == "attach":
+            # The observer publishes attach before building its view, and may
+            # republish the preceding Submit. Only that evidenced seam permits {}.
+            join("attach republishes preceding result identity", previous or {}, body, index)
+            check(
+                "attach republishes preceding events",
+                match(
+                    (previous or {}).get("observations", absent),
+                    events if events is not None else absent,
+                ),
+                index=index,
+            )
+        if state or body.get("boundary") != "attach":
+            clocks("delivered poststate", state, index)
+            join("delivered poststate owns result identity", body, state, index)
+        previous = body
+        previous_clock.update({k: body[k] for k in clock_keys if number(body.get(k))})
+    for index, row in channels["samples"].items():
+        if not row and index not in (indices.get("samples") or []):
+            continue
+        state = row.get("state") or {}
+        clocks("sample", state, index)
+        check("sample session", match(session, state.get("sessionId", absent)), index=index)
+
+    warps = {index: row for index, row in channels["warpRecords"].items() if row}
+    warp_keys = sorted(warps)
+    input_rows = [
+        (index, row)
+        for index, row in channels["inputRecords"].items()
+        if row or index in (indices.get("inputRecords") or [])
+    ]
+    previous_input = None
+    valid_inputs = []
+    for index, row in input_rows:
+        before, after = row.get("before") or {}, row.get("after") or {}
+        for side, snapshot in (("before", before), ("after", after)):
+            clocks("input " + side, snapshot, index)
+            check(
+                "input " + side + " session",
+                match(session, snapshot.get("sessionId", absent)),
+                index=index,
+            )
+        precedes("input snapshots progress", before, after, index)
+        clocks("input source span", row, index, ("resultStart", "resultEnd"))
+        start, end = row.get("resultStart"), row.get("resultEnd")
+        span = start <= end if number(start) and number(end) else None
+        check("ordered input source span", span, index=index)
+        if previous_input is not None:
+            precedes(
+                "physical input clocks progress", previous_input.get("after") or {}, before, index
+            )
+            prev_end = previous_input.get("resultEnd")
+            check(
+                "physical input spans do not overlap",
+                start >= prev_end if number(start) and number(prev_end) else None,
+                index=index,
+            )
+        previous_input = row
+        if span is not True:
+            continue
+        valid_inputs.append((index, row))
+        if start == end:
+            check(
+                "empty input span preserves snapshot",
+                merge(
+                    [match(before, after)]
+                    + [
+                        before[k] == after[k]
+                        for k in ("actor", "stage", "map")
+                        if k in before and k in after
+                    ]
+                ),
+                index=index,
+            )
+        for side, snapshot, anchor in (("before", before, start - 1), ("after", after, end - 1)):
+            pos = bisect_right(warp_keys, anchor) - 1
+            if anchor in warps:
+                join(
+                    "input " + side + " joins selected result boundary",
+                    snapshot,
+                    warps[anchor].get("result") or {},
+                    index,
+                )
+                state = warps[anchor].get("state") or {}
+                if state:
+                    join(
+                        "input " + side + " joins delivered state boundary", snapshot, state, index
+                    )
+                    check(
+                        "input " + side + " shared state leaves",
+                        merge(
+                            [match({k: snapshot[k] for k in snapshot.keys() & state.keys()}, state)]
+                            + [
+                                snapshot[k] == state[k]
+                                for k in ("actor", "stage", "map")
+                                if k in snapshot and k in state
+                            ]
+                        ),
+                        index=index,
+                    )
+            else:
+                # Selection may omit the direct result. Available neighbors still
+                # bound its source position on BOTH axes; they cannot replace it.
+                if pos >= 0:
+                    precedes(
+                        "input boundary follows preceding selected result",
+                        warps[warp_keys[pos]].get("result") or {},
+                        snapshot,
+                        index,
+                    )
+                if pos + 1 < len(warp_keys):
+                    precedes(
+                        "input boundary precedes next selected result",
+                        snapshot,
+                        warps[warp_keys[pos + 1]].get("result") or {},
+                        index,
+                    )
+    census = context.get("census") or []
+    first_owner = min((c[0] for c in census), default=None)
+    last_owner = max((c[0] for c in census), default=None)
+    input_starts = [row["resultStart"] for _, row in valid_inputs]
+    ordered_starts = input_starts == sorted(input_starts)
+    valid_input_indices = {n for n, _ in valid_inputs}
+    missing_inputs = [i for i in indices.get("inputRecords") or [] if i not in valid_input_indices]
+    for index, row in warps.items():
+        if first_owner is None or not first_owner <= index <= last_owner:
+            continue
+        pos = bisect_right(input_starts, index) - 1 if ordered_starts else -1
+        check("selected result has causal input", True if pos >= 0 else None, index=index)
+        if pos < 0:
+            continue
+        input_index, owner = valid_inputs[pos]
+        next_input = valid_inputs[pos + 1] if pos + 1 < len(valid_inputs) else None
+        next_index = (
+            next_input[0] if next_input else max(indices.get("inputRecords") or [input_index]) + 1
+        )
+        ambiguous = (
+            next_index > input_index + 1
+            or any(input_index < i < next_index for i in missing_inputs)
+            or next_input is None
+            and number(row.get("inputOrdinal"))
+            and number(owner.get("ordinal"))
+            and row["inputOrdinal"] > owner["ordinal"]
+        )
+        check(
+            "selected result belongs to causal input ordinal",
+            None
+            if ambiguous
+            else match(owner.get("ordinal", absent), row.get("inputOrdinal", absent)),
+            index=index,
+        )
+        body = row.get("result") or {}
+        precedes("causal input before precedes result", owner.get("before") or {}, body, index)
+        direct = index < owner["resultEnd"]
+        precedes(
+            "direct result within input span" if direct else "automatic result follows input after",
+            body if direct else owner.get("after") or {},
+            owner.get("after") or {} if direct else body,
+            index,
+        )
+        if "inputDelivery" in row:
+            check(
+                "result delivery agrees with direct input span",
+                None if ambiguous else match(direct, row["inputDelivery"]),
+                index=index,
+            )
+        if next_input:
+            precedes(
+                "result precedes next causal input", body, next_input[1].get("before") or {}, index
+            )
     queues = {}
     for installed in context.get("queues") or []:
         round_, channel, index = (
@@ -17232,7 +17500,6 @@ def turn_order_consumer_binding(actual, context, source_root):
             round=round_,
         )
     check("independent installed rounds", True if queues else None)
-    census = context.get("census") or []
     check("independent semantic census", True if census else None)
     expected = {c[2]: c for c in census}
     check(
@@ -17331,13 +17598,18 @@ def turn_order_consumer_binding(actual, context, source_root):
             "owning ordered events",
             None
             if events is None
-            else all(e.get("Sequence") is not None for e in events)
-            and [e["Sequence"] for e in events] == sorted({e["Sequence"] for e in events}),
+            else merge(
+                [None if e.get("Sequence") is None else number(e["Sequence"]) for e in events]
+                + [
+                    [e["Sequence"] for e in events if number(e.get("Sequence"))]
+                    == sorted({e["Sequence"] for e in events if number(e.get("Sequence"))})
+                ]
+            ),
             index=index,
         )
         for event in events or []:
             sequence = event.get("Sequence")
-            if sequence is None:
+            if not number(sequence):
                 continue
             if sequence in supplied:
                 check(
@@ -17390,8 +17662,15 @@ def turn_order_consumer_binding(actual, context, source_root):
     initial = (channels["samples"].get((indices.get("samples") or [None])[0]) or {}).get(
         "state"
     ) or {}
+    first_control = next((c for c in census if c[3] == "player-control"), None)
+    join(
+        "initial queue sample joins owning first control result",
+        initial,
+        (warps.get(first_control[0], {}).get("result") or {}) if first_control else {},
+        (indices.get("samples") or [None])[0],
+    )
     for a in initial.get("actors") or []:
-        hp[a.get("id")] = a.get("hp", absent)
+        hp[a.get("id")] = a["hp"] if a.get("hp") is not None else absent
         positions[a.get("id")] = (a.get("x", absent), a.get("y", absent))
     factions = context.get("factions") or {}
     check(
@@ -17459,11 +17738,11 @@ def turn_order_consumer_binding(actual, context, source_root):
                     match(hp.get(name, absent), event.get("Before", absent)),
                     sequence=sequence,
                 )
-                hp[name] = event.get("After", absent)
+                hp[name] = event["After"] if event.get("After") is not None else absent
             elif kind == "death-cleanup":
                 name = c[4]
                 check("cleanup follows zero HP", match(0, hp.get(name, absent)), sequence=sequence)
-                positions[name] = (None, None)
+                positions[name] = (None, None) if event else (absent, absent)
             elif kind in (
                 "player-control",
                 "regions-tested-cleared",
@@ -17582,8 +17861,19 @@ def turn_order_consumer_binding(actual, context, source_root):
                     index=index,
                 )
                 for name, a in state_actors.items():
-                    hp[name] = a.get("hp", absent)
-                    positions[name] = (a.get("x", absent), a.get("y", absent))
+                    # An omitted observation leaf does not erase prior knowledge.
+                    # A missing authoritative hp event After above DOES invalidate
+                    # the ledger until an actual subsequent observation restores it.
+                    if a.get("hp") is not None:
+                        hp[name] = a["hp"]
+                    old_position = positions.get(name, (absent, absent))
+                    check(
+                        "delivered placement leaves observed",
+                        merge([True if k in a else None for k in ("x", "y")]),
+                        index=index,
+                        actor=name,
+                    )
+                    positions[name] = (a.get("x", old_position[0]), a.get("y", old_position[1]))
         if sequence in image_keys:
             hp_images[sequence] = dict(hp)
     check("complete terminal frontier", terminal_support if terminal is not None else None)
@@ -17605,7 +17895,7 @@ def turn_order_consumer_binding(actual, context, source_root):
     for index, row in required_rows.items():
         state = row.get("state") or {}
         sequence = (row.get("result") or {}).get("observationSequence")
-        pos = bisect_right(keys, sequence) - 1 if sequence is not None else -1
+        pos = bisect_right(keys, sequence) - 1 if number(sequence) else -1
         if state.get("round") is not None and pos >= 0:
             r, slot = state_at[keys[pos]]
             check(
@@ -17650,7 +17940,7 @@ def turn_order_consumer_binding(actual, context, source_root):
             state = row.get(side) or {}
             values.append(match(session, state.get("sessionId", absent)))
             sequence = state.get("observationSequence")
-            pos = bisect_right(keys, sequence) - 1 if sequence is not None else -1
+            pos = bisect_right(keys, sequence) - 1 if number(sequence) else -1
             if pos >= 0 and state.get("actor") is not None:
                 r, slot = state_at[keys[pos]]
                 queue = queues.get(r)
@@ -17700,15 +17990,13 @@ def turn_order_consumer_binding(actual, context, source_root):
             check(
                 "additional independently available supplied leaves", merge(available), index=index
             )
-        if sequence is None and (events or state.get("round") is not None):
+        if not number(sequence) and (events or state.get("round") is not None):
             check("additional supplied applicability", None, index=index)
             continue
         applicable = (
-            sequence is not None
+            number(sequence)
             and lower <= sequence <= upper
-            or any(
-                e.get("Sequence") is not None and lower <= e["Sequence"] <= upper for e in events
-            )
+            or any(number(e.get("Sequence")) and lower <= e["Sequence"] <= upper for e in events)
         )
         if not applicable:
             continue
@@ -17719,7 +18007,7 @@ def turn_order_consumer_binding(actual, context, source_root):
             values.append(match(session, state["sessionId"]))
         if "turnOrder" in state and state.get("round") in queues:
             values.append(match(queues[state["round"]], state["turnOrder"]))
-        if state.get("round") is not None and sequence is not None:
+        if state.get("round") is not None and number(sequence):
             pos = bisect_right(keys, sequence) - 1
             if pos >= 0:
                 r, slot = state_at[keys[pos]]
@@ -17736,7 +18024,7 @@ def turn_order_consumer_binding(actual, context, source_root):
                     )
         for event in events:
             seq = event.get("Sequence")
-            if seq is None:
+            if not number(seq):
                 values.append(None)
             elif lower <= seq <= upper:
                 values.append(seq in expected)
