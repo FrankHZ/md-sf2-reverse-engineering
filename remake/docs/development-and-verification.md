@@ -3987,6 +3987,13 @@ seed-context classification failures, and the two controls corrected to mutate a
 movement and the physical-first target. Targeted reruns check each correction. Initial
 memory/seed last-writer checks extend through selected gaps. Missing clocks/action indices
 remain Unavailable; negative clocks and known wrong effects still fail.
+Independent review additionally requires rejected automatic-arrival and physical-first
+owning results to fail, including the rejected-arrival case with seed proof missing.
+Preserve those original false-PASS/Unavailable results and the wrong delivered-regions
+counterexample beside their targeted corrections. Required movement/action/commit results
+must be accepted. Ordered region-test writes bind the actual poststate and later caller
+continuity, including the observed clear0 followed by region-test7 in one result; unrelated
+rejected-input diagnostics are not reclassified as AI failures.
 No verifier unit tests or aggregate/native/full-route runs are required.
 Run narrow Ruff, contract/docs/private checks, the committed planner interpreted under
 current verification policy, and exact-head CI. Historical A FAIL, original elapsed

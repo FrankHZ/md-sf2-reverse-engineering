@@ -841,6 +841,12 @@ starts/arrivals, movement completion and the committed position. A Stay action m
 move; no-movement Stay has no movement-finished event. Physical choice also binds the
 actual first-strike target, reusing accepted physical envelopes by exact identity;
 scene preparation alone carries no target and cannot prove delivery.
+Every required automatic movement, scene/action and commit consumer must belong to an
+accepted result, including reused physical envelopes. A rejected consumer remains FAIL
+when another prerequisite is missing; unrelated rejected-input diagnostics remain retained.
+The tested-regions mask follows ordered clear and later region-test writes through the
+owning poststate and intervening retained states. A later legitimate writer supersedes
+clear-to-zero; a clear marker alone does not prove the delivered mask.
 
 **Confirmed current mechanism dependency:** accepted PR621 merge
 `bbf98c8ddbd04500d57165a958f78f86a9ff209b` executed

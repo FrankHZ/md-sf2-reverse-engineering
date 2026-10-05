@@ -5543,11 +5543,33 @@ def ai_consumer_binding(actual, context, source_root):
                 owners[seq] = index
         if any(
             str(e.get("Kind", "")).startswith(
-                ("ai-", "thinking-", "source-standby", "regions-tested-cleared")
+                ("ai-", "thinking-", "source-standby", "regions-tested")
+            )
+            or (
+                str(e.get("Kind", "")).startswith("battle-movement-")
+                and e.get("Detail") == "Automatic"
+            )
+            or (
+                e.get("Kind")
+                in {
+                    "movement",
+                    "stay-selected",
+                    "scene-prepared",
+                    "physical-first",
+                    "scene-ended",
+                    "after-turn",
+                    "action-committed",
+                }
+                and str(who(e) or "").startswith("enemy-")
             )
             for e in envelope.get("observations", [])
         ):
-            eq("AI operation accepted", None, envelope.get("failure", absent), index)
+            eq(
+                "AI decision or required consumer accepted",
+                None,
+                envelope.get("failure", absent),
+                index,
+            )
     census = context.get("census") or []
     declared = {r[2]: r for r in census if r[3] != "FAILED-RESULT"}
     check("independent AI census", True if declared else None)
@@ -5719,6 +5741,7 @@ def ai_consumer_binding(actual, context, source_root):
         for x in initial.get("aiMemory") or []
     }
     live_image = initial.get("thinkingSeed", absent)
+    live_regions = initial.get("regionsTested", absent)
     last_sequence = initial.get("observationSequence")
     if number(last_sequence):
         for index, row in rows.items():
@@ -5729,6 +5752,16 @@ def ai_consumer_binding(actual, context, source_root):
                 if not last_sequence < seq <= end:
                     continue
                 event = events.get(seq, {})
+                if kind in ("regions-tested", "regions-tested-cleared"):
+                    if kind == "regions-tested-cleared":
+                        eq(
+                            "continuous tested regions last writer",
+                            live_regions,
+                            event.get("Before", absent),
+                            seq,
+                        )
+                        eq("source tested regions clear", 0, event.get("After", absent), seq)
+                    live_regions = event.get("After", absent)
                 if kind == "thinking-rng":
                     eq(
                         "continuous thinking last writer",
@@ -5762,6 +5795,12 @@ def ai_consumer_binding(actual, context, source_root):
                     "thinking image through retained gaps",
                     live_image,
                     state.get("thinkingSeed", absent),
+                    index,
+                )
+                eq(
+                    "tested regions delivered through retained gaps",
+                    live_regions,
+                    state.get("regionsTested", absent),
                     index,
                 )
                 for actor in state["actors"]:
@@ -5804,7 +5843,15 @@ def ai_consumer_binding(actual, context, source_root):
                 previous_sequence < r[2] < seq and r[3] == "thinking-rng" for r in missing_effects
             ):
                 seed = absent
+            if any(
+                previous_sequence < r[2] < seq
+                and r[3] in ("regions-tested", "regions-tested-cleared")
+                for r in missing_effects
+            ):
+                tested = absent
             previous_sequence = seq
+            if kind == "regions-tested":
+                tested = e.get("After", absent)
             if kind == "regions-tested-cleared":
                 eq("tested regions input", tested, e.get("Before", absent), seq)
                 eq("tested regions cleared", 0, e.get("After", absent), seq)
