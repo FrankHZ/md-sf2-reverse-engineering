@@ -5073,6 +5073,1058 @@ def _heal_fairy_source_step(previous, seed, quarter, setup=False):
     return state, seed, draws
 
 
+def _ai_source_rules(source_root):
+    from sf2tool.h2.battle_ai import _parse_action_choice, _parse_standby
+
+    root = Path(source_root)
+    s = _physical_source_operands(root, [])
+    d = root / "disasm"
+    ai = d / "code/gameflow/battle/ai"
+    s["standby"] = _parse_standby(
+        d,
+        (ai / "determineaistandbymovement_1.asm").read_text(),
+        (ai / "determineaistandbymovement_2.asm").read_text(),
+    )
+    s["choice"] = _parse_action_choice(d)
+    text = (d / "data/battles/spritesets/spriteset01.asm").read_text()
+    s["orders"] = {
+        f"enemy-{i}": list(map(int, m))
+        for i, m in enumerate(
+            re.findall(
+                r"enemyCombatant[^\n]*\n\s*combatantAiAndItem[^\n]*\n"
+                r"\s*combatantBehavior NONE, (\d+), NONE, (\d+), (\d+),",
+                text,
+            )
+        )
+    }
+    return s
+
+
+def _ai_source_decision(s, actors, who, seed):
+    from sf2tool.h2.battlefield import build_weighted_movement_model
+    from sf2tool.h3.random_services import _signed_byte_step
+
+    a = actors[who]
+    origin = (int(a["x"]), int(a["y"]))
+    word = int(a["activationWord"])
+    memory = int(a["aiMemory"])
+    effects = []
+    eq = s["equates"]
+    profile = s["profiles"][who]
+    mover = eq["MOVETYPE_" + profile["mover"]]
+    costs = [
+        -1 if entry == "OBSTRUCTED" else int(entry.split("|")[1])
+        for entry in s["land"][mover * 16 : (mover + 1) * 16]
+    ]
+    live = [x for x in actors.values() if x["hp"] > 0 and x["x"] is not None and x["y"] is not None]
+    targets = sorted(
+        [x for x in live if x["id"].startswith("ally-")], key=lambda x: int(x["id"].split("-")[1])
+    )
+    assert who.startswith("enemy-") and a["hp"] > 0 and a["status"] == 0
+    assert a["primaryOrder"] == a["secondaryOrder"] == 255 and a["commandset"] in (6, 7)
+    assert a["items"] == [127] * 4 and a["spells"] == [63] * 4
+    assert all(x["status"] == 0 for x in live), "matched status0 target domain"
+
+    def pos(x):
+        return int(x["x"]), int(x["y"])
+
+    def offset(p):
+        return p[1] * 48 + p[0]
+
+    def grid(start, budget, block=False):
+        terrain = list(s["terrain"])
+        if block:
+            for x in targets:
+                terrain[offset(pos(x))] |= 128
+        g = build_weighted_movement_model(terrain, costs, start_offset=offset(start), budget=budget)
+        return {int(k): v for k, v in g["reachableCosts"].items()}
+
+    def occupied(p):
+        return any(pos(x) == p and (int(x["activationWord"]) & 8) == 0 for x in live)
+
+    def attack_position(g, p, radius):
+        best = None
+        value = 255
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius + abs(dy), radius - abs(dy) + 1):
+                if abs(dx) + abs(dy) != radius:
+                    continue
+                xy = p[0] + dx, p[1] + dy
+                if not all(0 <= v < 48 for v in xy):
+                    continue
+                cost = g.get(offset(xy))
+                if cost == 0:
+                    return xy
+                if cost is not None and cost < value and not occupied(xy):
+                    best, value = xy, cost
+        return best
+
+    def walk(g, start, stop):
+        current = offset(start)
+        previous = 0
+        path = [start]
+        while g[current] > stop:
+            threshold = g[current] - 1
+            mask = 0
+            for delta, bit in ((1, 1), (-1, 4), (-48, 2), (48, 8)):
+                neighbor = current + delta
+                if neighbor in g and g[neighbor] <= threshold:
+                    assert (
+                        abs(neighbor % 48 - current % 48) + abs(neighbor // 48 - current // 48) == 1
+                    ), "source flat-grid edge"
+                    mask |= bit
+                    threshold = g[neighbor]
+            choice = mask ^ previous if mask & previous and mask ^ previous else mask
+            assert choice, "no descending source move-string"
+            direction = next(i for i in range(4) if choice & (1 << i))
+            previous = 1 << direction
+            current += (1, -48, -1, 48)[direction]
+            path.append((current % 48, current // 48))
+            assert len(path) <= 2304
+        return path
+
+    def route(g, destination):
+        return list(reversed(walk(g, destination, 0)))
+
+    def effect(kind, before=None, after=None, target=None, **extra):
+        effects.append(
+            dict(
+                Kind=kind,
+                Actor={"Value": who},
+                Target=None if target is None else {"Value": target},
+                Before=before,
+                After=after,
+                **extra,
+            )
+        )
+
+    def roll(bound, target=None):
+        nonlocal seed
+        before = seed
+        word = seed >> 16
+        for _ in range(256):
+            word = _signed_byte_step(word)
+            value = word >> 8
+            if bound <= 1:
+                value = 0
+                break
+            if value < bound:
+                break
+        else:
+            raise ValueError("thinking RNG cycle")
+        seed = (word << 16) | (seed & 65535)
+        effect("thinking-rng", before, seed, target, RandomRange=bound, RandomValue=value)
+        return value
+
+    if not word & 1:
+        draw = roll(8)
+        destination = origin
+        path = [origin]
+        if draw not in s["standby"]["immediateStayRolls"]:
+            pr, sr, _ = s["orders"][who]
+            if pr != 15 or sr != 15:
+                g = grid(origin, int(a["move"]) * 2)
+                if memory & 15 == 0:
+                    memory = 4 if roll(2) == 0 else 3
+                count, old = memory & 15, memory >> 4
+                table = next(
+                    t["coordinates"]
+                    for t in s["standby"]["movementTables"]
+                    if t["moveCount"] == count
+                )
+                candidates = []
+                for i, (dx, dy) in enumerate(table):
+                    xy = int(a["anchorX"]) + dx, int(a["anchorY"]) + dy
+                    if (
+                        all(0 <= v < 48 for v in xy)
+                        and attack_position(g, xy, 0) is not None
+                        and i != old
+                    ):
+                        candidates.append((i, xy))
+                if candidates:
+                    index, destination = candidates[roll(len(candidates))]
+                    memory = (index << 4) | count
+                    path = route(g, destination)
+                else:
+                    memory = 0
+        effect("ai-memory", int(a["aiMemory"]), memory)
+        effect("source-standby")
+        return dict(
+            effects=effects,
+            seed=seed,
+            memory=memory,
+            lastTarget=a["lastTarget"],
+            path=path,
+            kind="standby",
+            target=None,
+        )
+    if a["commandset"] == 7:
+        effect("ai-command-move-order1", after=-1)
+    legal = grid(origin, int(a["move"]) * 2, True)
+    candidates = []
+    for target in targets:
+        position = attack_position(legal, pos(target), 1)
+        if position is not None:
+            candidates.append((target, position, legal[offset(position)]))
+    if candidates:
+        effect("ai-command-attack1", after=0)
+        priorities = {}
+        assert word >> 12 == 2, "script3 activation column"
+        for i in reversed(range(len(candidates))):
+            target, position, cost = candidates[i]
+            target_mover = eq["MOVETYPE_" + s["profiles"][target["id"]]["mover"]]
+            terrain = s["terrain"][offset(pos(target))]
+            land = s["land"][target_mover * 16 + terrain]
+            multiplier = (
+                256 if land.startswith("LE0|") else 230 if land.startswith("LE15|") else 205
+            )
+            potential = max(int(a["attack"]) - int(target["defense"]), 1) * multiplier // 256
+            draw = roll(3, target["id"])
+            priority = 1 + 15 * (potential >= target["hp"]) if draw == 0 else max(19 - 2 * cost, 1)
+            priorities[i] = priority
+            effect("ai-candidate", cost, priority, target["id"])
+        maximum = max(priorities.values())
+        cohort = [i for i in reversed(range(len(candidates))) if priorities[i] == maximum]
+        if maximum >= 15:
+            table = s["choice"]["criticalEnemyClassTieBreak"]
+            order = table["classOrderTables"][table["movetypePointerTargets"][mover]]
+            ranks = {
+                i: order.index(eq["CLASS_" + s["profiles"][candidates[i][0]["id"]]["classCode"]])
+                for i in cohort
+            }
+            cohort = [i for i in cohort if ranks[i] == min(ranks.values())]
+        chosen = cohort[0]
+        for i in cohort:
+            if candidates[i][2] >= candidates[chosen][2]:
+                chosen = i
+        target, destination, _ = candidates[chosen]
+        effect("ai-target", maximum, min(maximum, 15), target["id"])
+        return dict(
+            effects=effects,
+            seed=seed,
+            memory=memory,
+            lastTarget=target["id"],
+            path=route(legal, destination),
+            kind="attack",
+            target=target["id"],
+        )
+    for kind in ("ai-command-attack1", "ai-command-heal1", "ai-command-support"):
+        effect(kind, after=-1)
+    raw = grid(origin, 128)
+    target_costs = [raw[offset(pos(x))] for x in targets]
+    assert target_costs and all(0 <= v < 128 for v in target_costs), (
+        "move target class-reorder domain"
+    )
+    selected = min(range(len(targets)), key=lambda i: target_costs[i])
+    target = targets[selected]
+    reverse = grid(pos(target), 128)
+    preliminary = walk(reverse, origin, max(0, reverse[offset(origin)] - 4))
+    destination = (
+        origin
+        if len(preliminary) == 1
+        else attack_position(legal, preliminary[-1], 0)
+        or attack_position(legal, preliminary[-1], 1)
+        or origin
+    )
+    effect("ai-move-target", target_costs[selected], legal[offset(destination)], target["id"])
+    effect("ai-move-stay" if destination == origin else "ai-move", target=target["id"])
+    effect("ai-command-move1", after=0)
+    return dict(
+        effects=effects,
+        seed=seed,
+        memory=memory,
+        lastTarget=a["lastTarget"],
+        path=route(legal, destination),
+        kind="pursuit",
+        target=None,
+    )
+
+
+def ai_consumer_binding(actual, context, source_root):
+    """Matched historical callers plus the accepted current seed transport mechanism."""
+    import copy
+
+    context = context or {}
+    result = dict(
+        value=None,
+        checks=[],
+        occurrences=[],
+        historical=dict(result="FAIL", reason="historical A disconnected seed latch"),
+        unknown=[
+            "corrected complete route and its new AI choices are not observed",
+            "render interpolation/path projection was not captured",
+            "original natural first-AI last writer; turn-score/order; other commandsets",
+        ],
+    )
+    absent = object()
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def check(name, value, occurrence=None):
+        result["checks"].append(dict(name=name, value=value, occurrence=occurrence))
+
+    def match(want, got=absent):
+        if want is absent or got is absent:
+            return None
+        if isinstance(want, dict):
+            return (
+                merge([match(v, got.get(k, absent)) for k, v in want.items()])
+                if isinstance(got, dict)
+                else False
+            )
+        if isinstance(want, list):
+            if not isinstance(got, list):
+                return False
+            if len(got) < len(want):
+                # A retained subsequence proves absence, not a shifted-value contradiction.
+                remaining = iter(want)
+                for item in got:
+                    if not any(match(candidate, item) is not False for candidate in remaining):
+                        return False
+                return None
+            return merge(
+                [True if len(want) == len(got) else None if len(got) < len(want) else False]
+                + [match(x, y) for x, y in zip(want, got, strict=False)]
+            )
+        return got == want and (
+            type(got) is bool
+            if isinstance(want, bool)
+            else not isinstance(got, bool)
+            if isinstance(want, (int, float))
+            else True
+        )
+
+    def eq(name, want, got=absent, occurrence=None):
+        check(name, match(want, got), occurrence)
+
+    def number(x):
+        return isinstance(x, (int, float)) and not isinstance(x, bool) and x >= 0 and x == int(x)
+
+    def clocks(name, row):
+        eq(name + " session", context.get("sessionId", absent), row.get("sessionId", absent))
+        for k in ("revision", "observationSequence"):
+            check(name + " " + k, number(row[k]) if row.get(k) is not None else None)
+
+    def before(name, left, right):
+        check(
+            name,
+            merge(
+                [
+                    left[k] <= right[k]
+                    if number(left.get(k)) and number(right.get(k))
+                    else None
+                    if left.get(k) is None or right.get(k) is None
+                    else False
+                    for k in ("revision", "observationSequence")
+                ]
+            ),
+        )
+
+    def event_clock(e):
+        return dict(revision=e.get("Revision"), observationSequence=e.get("Sequence"))
+
+    def who(e, key="Actor"):
+        return (e.get(key) or {}).get("Value")
+
+    semantic = {
+        "regions-tested",
+        "regions-tested-cleared",
+        "region-program-none",
+        "spawn-modes-admitted",
+        "activation-word",
+        "movement",
+        "stay-selected",
+        "player-control",
+        "dead-entry-skipped",
+        "after-turn",
+        "action-committed",
+        "scene-prepared",
+        "scene-ended",
+        "battle-selected",
+        "battle-initialized",
+        "battle-loaded",
+        "battle-outcome",
+        "battle-returned",
+    }
+
+    def relevant(kind):
+        return kind in semantic or bool(
+            kind and kind.startswith(("ai-", "thinking-", "source-standby", "battle-movement-"))
+        )
+
+    eq("declared composed scope", "retained-keyboard-A-ai-composed", context.get("scope", absent))
+    eq("source pin", UPSTREAM, context.get("upstream", absent))
+    producer = "4d1d1b05f143ed872ceca6ff258cfca2b4087d90"
+    accepted = "bbf98c8ddbd04500d57165a958f78f86a9ff209b"
+    eq("retained producer", producer, context.get("producer", absent))
+    eq(
+        "completed immutable supplement",
+        dict(failure=None, sourceUnchanged=True),
+        context.get("selectionReceipt", absent),
+    )
+    rows = {}
+    for position, row in enumerate(actual.get("warpRecords", [])):
+        index = row.get("_index", position)
+        if index in (context.get("indices") or {}).get("warpRecords", []):
+            check("unique original result index", index not in rows, index)
+            rows[index] = row
+    check(
+        "selected result coverage",
+        True
+        if set(rows) == set((context.get("indices") or {}).get("warpRecords", [])) and rows
+        else None,
+    )
+    check("selected source order", list(rows) == sorted(rows))
+    for row in context.get("actionRecords") or []:
+        index = row.get("_index")
+        if not number(index):
+            check("reused action original index", None if index is None else False)
+            continue
+        if index in rows:
+            eq(
+                "reused action envelope agrees",
+                rows[index].get("result"),
+                row.get("result", absent),
+                index,
+            )
+        else:
+            rows[index] = row
+    rows = dict(sorted(rows.items()))
+    events = {}
+    owners = {}
+    prior = None
+    for index, row in rows.items():
+        envelope = row.get("result") or {}
+        state = row.get("state") or {}
+        clocks("result", envelope)
+        if prior:
+            before("result chronology", prior, envelope)
+        prior = envelope
+        if state:
+            clocks("state", state)
+            eq(
+                "result/state identity",
+                {
+                    k: envelope.get(k, absent)
+                    for k in ("sessionId", "revision", "observationSequence")
+                },
+                state,
+                index,
+            )
+        previous = None
+        for e in envelope.get("observations", []):
+            seq = e.get("Sequence")
+            ec = event_clock(e)
+            check(
+                "event clocks",
+                merge(
+                    [None if e.get(k) is None else number(e[k]) for k in ("Sequence", "Revision")]
+                ),
+                index,
+            )
+            before("event within owning result", ec, envelope)
+            if not number(seq):
+                continue
+            if previous:
+                before("ordered event revisions", event_clock(previous), ec)
+                check(
+                    "strict event sequence",
+                    seq > previous["Sequence"]
+                    if number(seq) and number(previous.get("Sequence"))
+                    else False,
+                    index,
+                )
+            previous = e
+            if seq in events:
+                eq("duplicate payload", events[seq], e, seq)
+            else:
+                events[seq] = e
+                owners[seq] = index
+        if any(
+            str(e.get("Kind", "")).startswith(
+                ("ai-", "thinking-", "source-standby", "regions-tested-cleared")
+            )
+            for e in envelope.get("observations", [])
+        ):
+            eq("AI operation accepted", None, envelope.get("failure", absent), index)
+    census = context.get("census") or []
+    declared = {r[2]: r for r in census if r[3] != "FAILED-RESULT"}
+    check("independent AI census", True if declared else None)
+    check("unique semantic census", len(declared) == sum(r[3] != "FAILED-RESULT" for r in census))
+    for seq, e in events.items():
+        if relevant(e.get("Kind")):
+            check("no unaccounted semantic event", seq in declared, seq)
+    for index, revision, seq, kind, actor, target in census:
+        if kind == "FAILED-RESULT":
+            eq(
+                "retained failure census",
+                actor,
+                (rows.get(index, {}).get("result") or {}).get("failure", absent),
+                index,
+            )
+            continue
+        eq(
+            "census event identity",
+            dict(
+                Sequence=seq,
+                Revision=revision,
+                Kind=kind,
+                Actor=None if actor is None else {"Value": actor},
+                Target=None if target is None else {"Value": target},
+            ),
+            events.get(seq, absent),
+            seq,
+        )
+        if seq in events:
+            eq(
+                "semantic owning envelope",
+                True,
+                any(
+                    x == events[seq]
+                    for x in (rows.get(index, {}).get("result") or {}).get("observations", [])
+                )
+                if index in rows
+                else absent,
+                seq,
+            )
+    inputs = context.get("inputs") or []
+    check("causal inputs retained", bool(inputs) or None)
+    expected_inputs = context.get("inputIndices")
+    missing_inputs = set(expected_inputs or []) - {i.get("_index") for i in inputs}
+    check("input census retained", True if expected_inputs else None)
+    if expected_inputs:
+        eq("input census", expected_inputs, [i.get("_index", absent) for i in inputs])
+    for n, i in enumerate(inputs):
+        start = i.get("before") or {}
+        end = i.get("after") or {}
+        clocks("input before", start)
+        clocks("input after", end)
+        before("input clocks", start, end)
+        if n:
+            before("input chronology", inputs[n - 1].get("after") or {}, start)
+        check(
+            "input span",
+            number(i.get("resultStart"))
+            and number(i.get("resultEnd"))
+            and i["resultStart"] <= i["resultEnd"],
+        )
+    for index, row in rows.items():
+        earlier = [i for i in inputs if number(i.get("resultStart")) and i["resultStart"] <= index]
+        if not earlier:
+            continue
+        i = earlier[-1]
+        envelope = row.get("result") or {}
+        owner = row.get("inputOrdinal", absent)
+        next_input_index = min(
+            (x.get("_index", float("inf")) for x in inputs if x.get("resultStart", -1) > index),
+            default=float("inf"),
+        )
+        input_gap = any(i.get("_index", -1) < k < next_input_index for k in missing_inputs)
+        eq("latest causal input", absent if input_gap else i.get("ordinal", absent), owner, index)
+        if input_gap:
+            continue
+        if index in (context.get("indices") or {}).get("warpRecords", []):
+            eq(
+                "direct versus automatic delivery",
+                index < i.get("resultEnd", 0),
+                row.get("inputDelivery", absent),
+                index,
+            )
+        before("input precedes result", i.get("before") or {}, envelope)
+        if index < i.get("resultEnd", 0):
+            before("direct input encloses result", envelope, i.get("after") or {})
+        else:
+            before("automatic result follows input", i.get("after") or {}, envelope)
+        later = [x for x in inputs if number(x.get("resultStart")) and x["resultStart"] > index]
+        if later:
+            before("result before next input", envelope, later[0].get("before") or {})
+    source = None
+    try:
+        source = _ai_source_rules(source_root) if source_root else None
+    except (OSError, subprocess.CalledProcessError):
+        pass
+    except (ValueError, AssertionError) as error:
+        check("source contradiction", False)
+        result["unknown"].append(str(error))
+    check("source operands", True if source else None)
+    samples = {r.get("_index", n): r for n, r in enumerate(actual.get("samples") or [])}
+    initial = (samples.get(context.get("battleSample")) or {}).get("state") or {}
+    clocks("initial battle", initial)
+    if source:
+        # Adapter surface names identify the original terrain IDs, including the padding sentinel.
+        surfaces = {
+            0: "Impassable",
+            8: "Impassable",
+            1: "Open",
+            2: "Open",
+            3: "Brush",
+            4: "Deep",
+            5: "Rough",
+            6: "Rough",
+            7: "Barrier",
+            255: "Barrier",
+        }
+        eq(
+            "source initial terrain",
+            [surfaces[v] for v in source["terrain"]],
+            initial.get("terrain", absent),
+        )
+        eq("source battle viewport", dict(mapWidth=16, mapHeight=20), initial)
+    # Match actual local state to independently parsed profiles; no route/round quota.
+    for index, row in rows.items():
+        if index not in (context.get("indices") or {}).get("warpRecords", []):
+            continue
+        roster = (row.get("state") or {}).get("actors")
+        if source and roster is not None:
+            eq(
+                "complete source actor roster",
+                sorted(source["profiles"]),
+                sorted(a.get("id", "") for a in roster),
+                index,
+            )
+            eq("battle identity", "map57", row["state"].get("map", absent), index)
+        for a in roster or []:
+            name = a.get("id")
+            profile = (source or {}).get("profiles", {}).get(name)
+            if not profile:
+                continue
+            eq(
+                "source mover",
+                profile["mover"].lower(),
+                str(a["mover"]).lower() if "mover" in a else absent,
+                index,
+            )
+            if name.startswith("enemy-"):
+                pr, sr, word = source["orders"][name]
+                eq(
+                    "source AI declaration",
+                    dict(
+                        anchorX=profile["placement"][0],
+                        anchorY=profile["placement"][1],
+                        primaryOrder=255,
+                        secondaryOrder=255,
+                        commandset=word >> 4,
+                    ),
+                    a,
+                    index,
+                )
+    # All thinking/memory writes are in the independent census. Carry their last writer
+    # across selected gaps, including no-op and non-AI rows, rather than trusting a later
+    # caller snapshot as a fresh memory authority.
+    memory_chain = {
+        x.get("actor"): dict(
+            aiMemory=x.get("memory", absent), lastTarget=x.get("lastTarget", absent)
+        )
+        for x in initial.get("aiMemory") or []
+    }
+    live_image = initial.get("thinkingSeed", absent)
+    last_sequence = initial.get("observationSequence")
+    if number(last_sequence):
+        for index, row in rows.items():
+            end = (row.get("result") or {}).get("observationSequence")
+            if not number(end) or end < last_sequence:
+                continue
+            for _, _, seq, kind, actor, _ in sorted(census, key=lambda r: r[2]):
+                if not last_sequence < seq <= end:
+                    continue
+                event = events.get(seq, {})
+                if kind == "thinking-rng":
+                    eq(
+                        "continuous thinking last writer",
+                        live_image,
+                        event.get("Before", absent),
+                        seq,
+                    )
+                    live_image = event.get("After", absent)
+                if kind in ("ai-memory", "ai-target"):
+                    if kind == "ai-memory":
+                        eq(
+                            "continuous memory last writer",
+                            memory_chain.get(actor, {}).get("aiMemory", absent),
+                            event.get("Before", absent),
+                            seq,
+                        )
+                    field = "aiMemory" if kind == "ai-memory" else "lastTarget"
+                    memory_chain.setdefault(actor, {})[field] = (
+                        event.get("After", absent)
+                        if kind == "ai-memory"
+                        else who(event, "Target")
+                        if event
+                        else absent
+                    )
+            last_sequence = end
+            state = row.get("state") or {}
+            if state.get("actors") and index in (context.get("indices") or {}).get(
+                "warpRecords", []
+            ):
+                eq(
+                    "thinking image through retained gaps",
+                    live_image,
+                    state.get("thinkingSeed", absent),
+                    index,
+                )
+                for actor in state["actors"]:
+                    if str(actor.get("id", "")).startswith("enemy-"):
+                        eq(
+                            "memory through retained gaps",
+                            memory_chain.get(actor["id"], absent),
+                            actor,
+                            index,
+                        )
+    ordered = sorted(events.values(), key=lambda e: e.get("Sequence", -1))
+    decisions = []
+    for index, row in rows.items():
+        envelope = row.get("result") or {}
+        es = envelope.get("observations") or []
+        if not any(e.get("Kind") == "regions-tested-cleared" for e in es):
+            continue
+        prior_state = rows.get(index - 1, {}).get("state") or {}
+        actors = {x.get("id"): copy.deepcopy(x) for x in prior_state.get("actors") or []}
+        seed = prior_state.get("thinkingSeed", absent)
+        check("immediate caller actors", True if actors else None, index)
+        check(
+            "immediate caller thinking image", number(seed) if seed is not absent else None, index
+        )
+        check("immediate caller tested regions", "regionsTested" in prior_state or None, index)
+        tested = prior_state.get("regionsTested", absent)
+        missing_effects = [r for r in census if r[0] == index and r[2] not in events]
+        previous_sequence = prior_state.get("observationSequence", -1)
+        row_has_main_draw = any(
+            str(e.get("Kind", "")).startswith(("rng-", "round-rng")) for e in es
+        )
+        for n, e in enumerate(es):
+            actor = who(e)
+            seq = e.get("Sequence")
+            kind = e.get("Kind")
+            unit = actors.get(actor, {})
+            if not number(seq):
+                continue
+            if any(
+                previous_sequence < r[2] < seq and r[3] == "thinking-rng" for r in missing_effects
+            ):
+                seed = absent
+            previous_sequence = seq
+            if kind == "regions-tested-cleared":
+                eq("tested regions input", tested, e.get("Before", absent), seq)
+                eq("tested regions cleared", 0, e.get("After", absent), seq)
+                tested = 0
+                following = []
+                for f in es[n + 1 :]:
+                    if f.get("Kind") == "regions-tested-cleared":
+                        break
+                    if str(f.get("Kind", "")).startswith(("ai-", "thinking-", "source-standby")):
+                        following.append(f)
+                for key in (
+                    "aiMemory",
+                    "lastTarget",
+                    "activationWord",
+                    "primaryOrder",
+                    "secondaryOrder",
+                    "anchorX",
+                    "anchorY",
+                    "move",
+                ):
+                    check("caller " + key, True if key in unit else None, seq)
+                if source and actors and number(seed):
+                    try:
+                        expected = _ai_source_decision(source, actors, actor, int(seed))
+                        eq("source ordered AI effects", expected["effects"], following, seq)
+                        expected.update(
+                            sequence=seq, revision=e.get("Revision"), actor=actor, index=index
+                        )
+                        decisions.append(expected)
+                    except (KeyError, TypeError, StopIteration):
+                        check("source decision operands", None, seq)
+                    except (AssertionError, ValueError) as error:
+                        check("caller in admitted source domain", False, seq)
+                        result["unknown"].append(str(error))
+                else:
+                    check("source decision operands", None, seq)
+            if kind == "thinking-rng":
+                eq("thinking draw live input", seed, e.get("Before", absent), seq)
+                if number(e.get("Before")) and number(e.get("RandomRange")):
+                    from sf2tool.h3.random_services import _signed_byte_step
+
+                    bound = int(e["RandomRange"])
+                    image = int(e["Before"])
+                    word = image >> 16
+                    check("thinking image domain", image <= 0xFFFFFFFF and 0 < bound < 128, seq)
+                    if image <= 0xFFFFFFFF and 0 < bound < 128:
+                        for _ in range(256):
+                            word = _signed_byte_step(word)
+                            value = word >> 8
+                            if bound <= 1:
+                                value = 0
+                                break
+                            if value < bound:
+                                break
+                        eq(
+                            "source thinking draw and preserved other24 bits",
+                            dict(After=(word << 16) | (image & 65535), RandomValue=value),
+                            e,
+                            seq,
+                        )
+                else:
+                    check("thinking draw operands", None, seq)
+                seed = e.get("After", absent)
+            if actor in actors:
+                if kind == "movement" and isinstance(e.get("To"), dict):
+                    unit["x"] = e["To"].get("X")
+                    unit["y"] = e["To"].get("Y")
+                if kind == "ai-memory":
+                    eq(
+                        "memory live input",
+                        unit.get("aiMemory", absent),
+                        e.get("Before", absent),
+                        seq,
+                    )
+                    unit["aiMemory"] = e.get("After", absent)
+                if kind == "ai-target":
+                    unit["lastTarget"] = who(e, "Target")
+                if kind == "activation-word":
+                    unit["activationWord"] = e.get("After", absent)
+        if any(r[2] > previous_sequence and r[3] == "thinking-rng" for r in missing_effects):
+            seed = absent
+        for _, _, _, kind, actor, _ in missing_effects:
+            if actor in actors and kind in ("ai-memory", "ai-target"):
+                actors[actor]["aiMemory" if kind == "ai-memory" else "lastTarget"] = absent
+        post = row.get("state") or {}
+        eq("AI thinking image delivered", seed, post.get("thinkingSeed", absent), index)
+        if not row_has_main_draw:
+            eq(
+                "AI preserves independent main image",
+                prior_state.get("mainSeed", absent),
+                post.get("mainSeed", absent),
+                index,
+            )
+        current = {x.get("id"): x for x in post.get("actors") or []}
+        memories = {x.get("actor"): x for x in post.get("aiMemory") or []}
+        eq("unique memory actors", len(post.get("aiMemory") or []), len(memories), index)
+        for actor, a in actors.items():
+            if actor.startswith("enemy-"):
+                eq(
+                    "memory/target actor state delivered",
+                    {k: a.get(k, absent) for k in ("aiMemory", "lastTarget")},
+                    current.get(actor, absent),
+                    index,
+                )
+                eq(
+                    "independent memory projection",
+                    dict(memory=a.get("aiMemory", absent), lastTarget=a.get("lastTarget", absent)),
+                    memories.get(actor, absent),
+                    index,
+                )
+    for decision in decisions:
+        seq = decision["sequence"]
+        actor = decision["actor"]
+        commit_sequences = sorted(
+            r[2] for r in census if r[2] > seq and r[3] == "action-committed" and r[4] == actor
+        )
+        end = commit_sequences[0] if commit_sequences else float("inf")
+        commit = events.get(end)
+        check("AI decision consumed by action commit", True if commit else None, seq)
+        tail = [e for e in ordered if seq < e["Sequence"] <= end and who(e) == actor]
+        next_ai = [e for e in tail if e.get("Kind") == "regions-tested-cleared"]
+        check("commit before next same-actor decision", not next_ai, seq)
+        path = decision["path"]
+        pairs = list(zip(path, path[1:], strict=False))
+        for kind in ("battle-movement-segment-started", "battle-movement-segment-arrived"):
+            delivered = [e for e in tail if e.get("Kind") == kind]
+            expected = [
+                dict(
+                    Kind=kind,
+                    Actor={"Value": actor},
+                    Detail="Automatic",
+                    From=dict(X=a[0], Y=a[1]),
+                    To=dict(X=b[0], Y=b[1]),
+                )
+                for a, b in pairs
+            ]
+            eq("source logical path " + kind, expected, delivered, seq)
+        starts = [e for e in tail if e.get("Kind") == "battle-movement-segment-started"]
+        arrivals = [e for e in tail if e.get("Kind") == "battle-movement-segment-arrived"]
+        previous = event_clock(dict(Revision=decision["revision"], Sequence=seq))
+        for start in starts:
+            before("segment starts after previous boundary", previous, event_clock(start))
+            arrive = next(
+                (
+                    e
+                    for e in arrivals
+                    if e.get("From") == start.get("From") and e.get("To") == start.get("To")
+                ),
+                None,
+            )
+            if arrive:
+                before("segment arrives after start", event_clock(start), event_clock(arrive))
+                previous = event_clock(arrive)
+        finish = [e for e in tail if e.get("Kind") == "battle-movement-finished"]
+        if pairs:
+            eq(
+                "logical movement completion",
+                [
+                    dict(
+                        Actor={"Value": actor},
+                        Detail="Automatic",
+                        From=dict(X=path[0][0], Y=path[0][1]),
+                        To=dict(X=path[-1][0], Y=path[-1][1]),
+                    )
+                ],
+                finish,
+                seq,
+            )
+            if finish:
+                before("finish follows arrival", previous, event_clock(finish[0]))
+        else:
+            eq("Stay has no movement completion", [], finish, seq)
+        prepared = [e for e in tail if e.get("Kind") == "scene-prepared"]
+        eq(
+            "chosen action prepared",
+            [dict(Actor={"Value": actor})] if decision["kind"] == "attack" else [],
+            prepared,
+            seq,
+        )
+        strikes = [e for e in tail if e.get("Kind") == "physical-first"]
+        eq(
+            "chosen target consumed by physical strike",
+            [dict(Actor={"Value": actor}, Target={"Value": decision["target"]})]
+            if decision["kind"] == "attack"
+            else [],
+            strikes,
+            seq,
+        )
+        if prepared and finish:
+            before(
+                "movement finishes before physical preparation",
+                event_clock(finish[0]),
+                event_clock(prepared[0]),
+            )
+        if commit:
+            post = rows.get(owners[commit["Sequence"]], {}).get("state") or {}
+            a = next((a for a in post.get("actors") or [] if a.get("id") == actor), absent)
+            eq(
+                "consumed position memory and target",
+                dict(
+                    x=path[-1][0],
+                    y=path[-1][1],
+                    aiMemory=decision["memory"],
+                    lastTarget=decision["lastTarget"],
+                ),
+                a,
+                seq,
+            )
+        result["occurrences"].append(
+            {
+                k: decision[k]
+                for k in (
+                    "sequence",
+                    "revision",
+                    "actor",
+                    "index",
+                    "kind",
+                    "path",
+                    "target",
+                    "memory",
+                    "seed",
+                    "lastTarget",
+                )
+            }
+        )
+    # Existing admitted seed composition owns original write/caller and exact PR621 TRX.
+    seed_context = context.get("seedContext") or {}
+    eq("accepted seed correction identity", accepted, seed_context.get("correctionCommit", absent))
+    seed_binding = (
+        admission_seed_binding(context["seedActual"], seed_context, source_root)
+        if context.get("seedActual") and seed_context
+        else dict(value=None, checks=[dict(name="seed composition evidence", value=None)])
+    )
+    result["seedMechanism"] = seed_binding
+    check("accepted executed seed mechanism", seed_binding["value"])
+    paths = [
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/" + name + ".cs"
+        for name in (
+            "SourceEnemyAi",
+            "AiStandbyRules",
+            "AiMovementRules",
+            "EnemyPhysicalDecision",
+            "BattleRandom",
+            "PhysicalTargetRules",
+            "WeightedMovement",
+            "BattleMovement",
+        )
+    ]
+    paths += ["remake/src/Sf2.Remake.Application/Runtime/Exploration/BattleEntry.cs"]
+    paths += [
+        "remake/src/Sf2.Remake.Application/Runtime/Battles/" + name + ".cs"
+        for name in (
+            "BattleMovementContinuation",
+            "BattleActionCommitter",
+            "BattleSceneContinuation",
+            "BattleCommandDispatcher",
+            "BattleAdvancer",
+        )
+    ]
+    paths += [
+        "remake/src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/BattleInitializationRules.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs",
+        "remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs",
+    ]
+    for path in paths:
+        try:
+            old = subprocess.check_output(
+                ["git", "-C", str(repo_path(".")), "show", producer + ":" + path],
+                text=True,
+                encoding="utf-8",
+            )
+            accepted_text = subprocess.check_output(
+                ["git", "-C", str(repo_path(".")), "show", accepted + ":" + path],
+                text=True,
+                encoding="utf-8",
+            )
+            current = repo_path(path).read_text(encoding="utf-8")
+            if path.endswith("/BattleAdvancer.cs"):
+                # Reviewed intervening delta only adds round-generation diagnostics. Compare
+                # the complete queued-actor dispatch/AI delivery/failure continuation below it.
+                marker = "                var actor = BattleTurnFlow.QueuedActor(battle);"
+                old, accepted_text, current = (
+                    text[text.index(marker) :] for text in (old, accepted_text, current)
+                )
+            if path.endswith("/BattleTurnFlow.cs"):
+                # Start/validation through seed and memory initialization are unchanged;
+                # generated turn slots below this boundary are a separate obligation.
+                marker = "    internal static EngineBattleState GenerateRound("
+                old, accepted_text, current = (
+                    text[: text.index(marker)] for text in (old, accepted_text, current)
+                )
+            check(
+                "producer/accepted/current consumer mechanism " + path,
+                True if old == accepted_text == current else None,
+            )
+        except (OSError, ValueError, subprocess.CalledProcessError):
+            check("consumer mechanism " + path, None)
+    result["composition"] = dict(
+        historical="matched local state only; historical latch remains FAIL",
+        current="accepted PR621 text copy/entry/first AI seam plus unchanged decision consumers",
+        excluded="corrected route/order/choices and rendered interpolation",
+        reviewedDelta="BattleAdvancer/BattleTurnFlow expose generated turn data; TurnOrderRules "
+        "records candidates/draws/unsorted slots. Per-caller AI operands and the unchanged "
+        "queued-actor dispatch are compared; turn generation remains a separate obligation.",
+    )
+    result["value"] = merge([x["value"] for x in result["checks"]])
+    passed = {}
+    nonpass = []
+    for item in result["checks"]:
+        if item["value"] is True:
+            passed[item["name"]] = passed.get(item["name"], 0) + 1
+        else:
+            nonpass.append(item)
+    result["checks"] = [dict(name=k, value=True, count=v) for k, v in passed.items()] + nonpass
+    result["unknown"] = list(dict.fromkeys(result["unknown"]))
+    return result
+
+
 def reward_consumer_binding(actual, context, source_root):
     """Source rewards at retained action operands, through first persistent party state."""
     from sf2tool.h3.growth import _calculate_gain, _parse_growth_curves, _parse_stats_block
@@ -17825,6 +18877,7 @@ def compare_modern(
     admission_context=None,
     physical_context=None,
     reward_context=None,
+    ai_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -17864,6 +18917,11 @@ def compare_modern(
     physical_consumers = (
         physical_consumer_binding(actual, physical_context, text_source_root)
         if physical_context is not None
+        else None
+    )
+    ai_consumers = (
+        ai_consumer_binding(actual, ai_context, text_source_root)
+        if ai_context is not None
         else None
     )
     reward_consumers = (
@@ -19048,6 +20106,23 @@ def compare_modern(
                 parent=rule_parent,
                 reason="Source reward/growth rules at matched action operands, ordered lifecycle "
                 "and composed first Party.Progress; no immediate live agility/base-attack claim",
+            )
+            continue
+        if (
+            name == "AI thinking draw/choice/memory and movement decision"
+            and ai_consumers is not None
+        ):
+            check(
+                5,
+                name,
+                True,
+                ai_consumers["value"],
+                actual_location,
+                original=dict(owner="docs/design/contracts/battle-ai-decision.md", source=UPSTREAM),
+                parent=rule_parent,
+                reason="Original rules at matched historical callers and logical consumers; "
+                "accepted current seed mechanism is a separate composition dependency; "
+                "historical latch remains FAIL",
             )
             continue
         item_reached = any(e["Kind"] == "item-consumed" for e in unique_events.values()) or any(
@@ -20258,6 +21333,7 @@ def main():
             "admission-seed",
             "physical",
             "reward",
+            "ai",
         ),
     )
     parser.add_argument(
@@ -20267,6 +21343,11 @@ def main():
         "--reward-context",
         type=Path,
         help="Selected reward/lifecycle census and first party boundary",
+    )
+    parser.add_argument(
+        "--ai-context",
+        type=Path,
+        help="Selected AI census, caller inputs and accepted seed mechanism evidence",
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
@@ -20346,6 +21427,52 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.ai_context is None
+        or args.mode == "ai"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "AI context applies only to ai or modern compare",
+    )
+    if args.ai_context is not None:
+        args.ai_context = (
+            args.ai_context if args.ai_context.is_absolute() else repo_path(args.ai_context)
+        ).resolve()
+        require(args.ai_context.stat().st_size <= 1024 * 1024, "AI context exceeds 1MiB")
+    if args.mode == "ai":
+        require(
+            args.actual is not None and args.ai_context is not None,
+            "ai requires selected actual and independent context",
+        )
+        actual_path = args.actual if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.ai_context.stat().st_size <= 10 * 1024 * 1024,
+            "AI compact bundle exceeds 10MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "AI output must be fresh beneath this worktree local/",
+        )
+        binding = ai_consumer_binding(
+            read(actual_path), read(args.ai_context), args.text_source_root
+        )
+        verdict = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-ai-consumer-composed",
+            result=verdict,
+            milestonePass=False,
+            binding=binding,
+        )
+        require(len(json.dumps(report).encode("utf-8")) <= 1024 * 1024, "AI report exceeds 1MiB")
+        write(args.output, report)
+        print(
+            json.dumps(
+                dict(result=verdict, occurrences=len(binding["occurrences"]), milestonePass=False)
+            )
+        )
+        raise SystemExit(0 if binding["value"] is True else 1 if binding["value"] is False else 2)
     require(
         args.reward_context is None
         or args.mode == "reward"
@@ -20996,6 +22123,7 @@ def main():
                 read(args.admission_context) if args.admission_context else None,
                 read(args.physical_context) if args.physical_context else None,
                 read(args.reward_context) if args.reward_context else None,
+                read(args.ai_context) if args.ai_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))

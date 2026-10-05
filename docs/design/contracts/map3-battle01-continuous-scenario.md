@@ -793,6 +793,83 @@ fields. A scoped PASS leaves `milestonePass=false` and requires independent acce
 
 Reproduce with the [scoped reward route](../../../remake/docs/development-and-verification.md#scoped-reward-and-outcome-comparison).
 
+### Selected AI rule and consumer binding
+
+The optional `ai_consumer_binding` supplies only the `AI thinking draw/choice/memory
+and movement decision` child. Scoped `ai` and modern `--ai-context` use the same
+predicate. Its claim composes matched historical caller state with the accepted
+current seed transport mechanism; it does not establish a corrected continuous route.
+
+**Confirmed selected observations:** historical producer
+`4d1d1b05f143ed872ceca6ff258cfca2b4087d90` contains 50 AI decisions in 46 owning
+results: 27 standby, 12 pursuit and 11 physical attacks, with 79 thinking draws,
+27 memory effects, 24 scored candidates and 11 selected targets. The complete selected
+movement census contains 150 starts, 150 arrivals and 103 finishes across player and
+automatic work. These are evidence inventory facts, never legality or route quotas.
+Original indices, complete result envelopes, failed operations, immediate predecessor
+states, both clocks and causal input ownership survive selection. Missing events or
+first-read operands cannot be replaced with a later adequate snapshot.
+
+Expected rules come from pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, the existing H2 parsers and the accepted
+[AI decision](battle-ai-decision.md), [navigation](battlefield-navigation.md) and
+[randomness](randomness.md) contracts. Named original sources are
+`determineaistandbymovement_1/2.asm`, `thinkingairng.asm`,
+`attack/prioritizetargets.asm`, `command/move.asm`,
+`battlefield/determineattackposition.asm`, `battlefield/buildmovestringfunctions.asm`
+and Battle01's `spriteset01.asm`, terrain and class/movement tables. Candidate engine
+outputs and candidate AI implementation supply no expected score, target or path.
+
+The bounded admitted branch has source GIZMO commandsets 6/7, no primary/secondary
+orders, no usable items/spells, living status0 callers, and ATTACK1 script3 when a
+physical candidate exists. Source activation and memory are read at each actual caller;
+script3's activation column is checked explicitly. This is not a proof of all original
+difficulty selectors or other commandsets. The model checks standby anchor offsets and
+eligibility, rejection-sampled thinking draws, candidate order, potential-damage scores,
+source class tie breaks, target selection, pursuit and move-string order. Potential
+damage is the AI score operand; actual strike damage belongs to the physical child.
+
+**Confirmed composed consumers:** each thinking draw updates the source high byte of
+the thinking image and preserves the other 24 bits. The independent main image remains
+unchanged across an AI-only result; a result that also generates a round retains its
+separate main draw boundary. Caller memory/last target, ordered effects and immediate
+actor plus memory projections agree.
+Last-writer checks carry thinking and memory effects from the first battle snapshot
+through intervening selected gaps and non-AI results; each later snapshot must agree.
+Source paths bind ordered automatic segment
+starts/arrivals, movement completion and the committed position. A Stay action may
+move; no-movement Stay has no movement-finished event. Physical choice also binds the
+actual first-strike target, reusing accepted physical envelopes by exact identity;
+scene preparation alone carries no target and cannot prove delivery.
+
+**Confirmed current mechanism dependency:** accepted PR621 merge
+`bbf98c8ddbd04500d57165a958f78f86a9ff209b` executed
+`FieldTextCopyReplacesInitialAiByteBeforeEntryAndAiKeepsItsUpdatedByte` for W1/W2 with
+preserved low24 value3408025 and W2 with11259375, each with initial high bytes03/12.
+The retained execution `b4adba34-a764-4ebb-abcf-a3149653ffae` passes all three cases:
+copy4E through normal entry, thinking ranges8/2/2 and values0/1/0, destination(4,6),
+memory13 hex, and the updated active AI byte independent of the text diagnostic latch.
+The accepted adapter compile also passed. The existing admission-seed predicate verifies
+these exact results, original copy/caller evidence and current copy/entry/projection code.
+
+Relevant AI, initialization, state, movement and action consumers are compared directly
+between producer, accepted correction and current files. `BattleAdvancer` and
+`BattleTurnFlow` subsequently expose round-generation diagnostics; `TurnOrderRules`
+records candidates, draws and unsorted slots. The queued-actor dispatch and seed/memory
+initialization regions remain unchanged. Per-caller composition consumes the observed
+actor/state; it does not infer turn order from those diagnostics. A changed proof
+dependency requires renewed review and yields Unavailable, not automatic reuse.
+
+**FAIL retained:** historical A's disconnected seed latch is still FAIL. Its local
+matched-state AI checks cannot relabel that row. **Unknown:** the corrected complete
+route, resulting actor order/new choices, original natural first-AI last writer,
+unrecorded rendered path/interpolation, other AI branches and complete presentation.
+Turn-score/order remains a separate obligation. Missing necessary caller/memory evidence
+is Unavailable; independently known wrong values, identity or ordering remain FAIL even
+beside missing fields. A scoped PASS leaves `milestonePass=false`.
+
+Reproduce using the [scoped AI route](../../../remake/docs/development-and-verification.md#scoped-ai-consumer-comparison).
+
 ### Selected HEAL rule and consumer binding
 
 The `HEAL recovery/cost/fairy opportunity and seed effects` child uses the accepted
