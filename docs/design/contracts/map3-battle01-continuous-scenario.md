@@ -630,6 +630,11 @@ domains: the selected controlled original R1 and its first source readers, and h
 initial state and physical input boundary. They do not share a session or clock. PR621's accepted
 seed mechanism remains separate; no corrected whole-A execution is implied.
 
+The [opening module route](../../operations/bounded-inspection-and-review.md#h4-opening-admission-module-route)
+preserves ordered checks and those proof boundaries. Numeric opening operands reject boolean
+substitutes while retaining integer/float equality; expected booleans remain strict. None and
+missing evidence retain their existing meaning, and available contradictions take precedence.
+
 **Confirmed (bounded original observation):** the
 [controlled opening scalar readback](../../research/map3-messenger-acceptance.md#controlled-opening-scalar-readback)
 observes mouth0/view0 at R1 before input, then mouth0 at the first glyph reader and view0 at the first

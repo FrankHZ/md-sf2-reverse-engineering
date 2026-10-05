@@ -4649,6 +4649,20 @@ narrow corrections; no SDK/native/whole-route rerun follows merely from composin
 
 #### Selected opening controls
 
+The [opening module route](../../docs/operations/bounded-inspection-and-review.md#h4-opening-admission-module-route)
+separates original identity/restoration, producer epochs, scalar readback, terminal joins and actual
+admission/input/settings. `admission_opening_binding` remains the same callable at its old import;
+the scoped admission-seed and modern callers retain the separate seed child. Preserve complete
+ordered reports when changing these owners. Verify both children and the combined exit precedence,
+including a missing child beside a failed child, from repository and remake working directories.
+Caller-owned selected streams stay open and returned reports survive their closure.
+
+Complete-predicate controls distinguish boolean substitutes from numeric opening operands, preserve
+integer/float equivalence and strict expected booleans, and retain None/mixed-evidence behavior.
+Keep original and corrected reports separate for a demonstrated matching defect. These are direct
+observations; no verification-helper unit suite, original acquisition or installation audit rerun
+follows from a module change.
+
 The admitted original start139 is retained under `admission-binding-01/opening-prepared-02`.
 Its source/configuration/runner/observer/input identities,11 records, completed status and restoration
 are owned by the [original readback](../../docs/research/map3-messenger-acceptance.md#controlled-opening-scalar-readback).
