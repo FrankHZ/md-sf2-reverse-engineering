@@ -386,6 +386,29 @@ list reports remain detached. The [audio contract](../design/contracts/map3-batt
 and [scoped verification](../../remake/docs/development-and-verification.md#scoped-audio-consumer-comparison)
 retain Option A, independent tail evidence and original hardware Unknowns.
 
+### H4 Opening Admission Module Route
+
+`admission_opening_binding(actual, context, source_root)` remains the old import alias to
+`opening_binding.py`. Scoped admission-seed and modern callers use that alias. The accepted
+`admission_seed.py` child remains separate from the opening proof and its value matching.
+
+| Module in `src/sf2tool/remake_h4/` | Responsibility / handoff |
+| --- | --- |
+| `opening_checks.py` | Opening-specific values, absence, unique selection and ordered checks. |
+| `opening_identity.py` | Original candidate/host/observer identities, completion and named restoration. |
+| `opening_records.py` | Complete producer count/order/seen set and independent R1 epoch equations. |
+| `opening_readback.py` | Selected original scalar seams, progression and R1 joins. |
+| `opening_terminal.py` | Returned-script snapshot, program, count and selected input prefix. |
+| `opening_source.py` | Mouth/view reader operands and pinned no-delay source path. |
+| `opening_actual.py` | Historical A admission, physical input, Submit and selected settings. |
+| `opening_binding.py` | Ordered composition of the two distinct proof domains. |
+
+Each owner receives its evidence and opening check ledger explicitly. No owner imports the
+monolith or shares a matcher with another family. Selected streams remain caller-owned and reports
+remain detached after closure. Preserve the [controlled opening contract](../design/contracts/map3-battle01-continuous-scenario.md#controlled-opening-control-binding)
+and [scoped verification](../../remake/docs/development-and-verification.md#selected-opening-controls):
+original/actual sessions and clocks differ; sparse evidence never invents a first glyph or timing.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
