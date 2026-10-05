@@ -14,8 +14,9 @@ are not current instructions. Preserve completed results instead of rerunning wo
 For engine work start at [remake](../remake/README.md) and
 [ADR 0019](./decisions/0019-state-and-content-driven-remake-engine.md). The direction is adopted;
 M1 implements common-session authored battles with engine behavior tests and actual input/state
-observations. The connected private world reaches Battle 01 outcome and return, while accepted
-8D/H4 remains incomplete under the [current keyboard scope](./decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope). Selection is owned by the
+observations. The private Map 3-through-Battle 01 victory and usable-return milestone is accepted
+at the [current composed 8D/H4 boundary](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
+Verification selection is owned by the
 [verification owner](../remake/docs/development-and-verification.md), not inferred from old ADR recipes.
 
 ## Operations

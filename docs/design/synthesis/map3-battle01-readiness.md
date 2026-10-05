@@ -1,6 +1,6 @@
 # Map 3 to Battle 01 Readiness Ledger
 
-- Status: **NOT READY** for continuous-milestone acceptance; not a default blocker for separately authorized implementation.
+- Status: **Accepted current private continuous milestone** at the [composed boundary below](#accepted-current-milestone).
 - Current acceptance owners: [modern continuous comparison](../../../remake/docs/development-and-verification.md#current-keyboard-comparison-scope) and [capability status](../../../remake/docs/capability-status.md#current-engineering-frontier). Original evidence and completed historical failures retain the owners below.
 - Milestone: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md); profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md).
 - Start policy: [ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md); engine direction: [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md).
@@ -24,7 +24,8 @@ manual agency, actual content use and consumer boundaries remain required. Do no
 explanation for a historical discrepancy merely from the clock decision.
 
 This ledger accounts for evidence and acceptance; the linked contract owns exact comparison rules.
-Original evidence, definition delivery/review and actual remake H4 PASS are three distinct states.
+Original evidence, definition review, executable report verdicts and composed milestone acceptance
+remain distinct claims.
 No unmerged Research or Remake result contributes to this ledger. The contract does not register
 fixtures, schemas or index associations. Godot acceptance reads the running state/input/projection;
 screenshots are prohibited. No normal/full/native suites are warranted by this documentation change.
@@ -64,27 +65,27 @@ transport/observer failures are not interrupted runs and are not erased by final
 
 ## Readiness Checklist
 
-| Gate | Current result | Owner / exact remaining boundary |
+| Gate | Current result | Owner / exact retained boundary |
 | --- | --- | --- |
 | Milestone, engine and product choices | PASS | ADR0008/0009/0010; no new product decision here |
-| Controlled admission | PASS bounded | [Admission contract](../contracts/map3-controlled-admission.md); selected status/full item slots/NPC/RNG now have [offline bindings](../contracts/map3-battle01-continuous-scenario.md#offline-reference-bindings); full R1 flags and other omitted fields remain OPEN |
+| Controlled admission | PASS bounded | [Admission contract](../contracts/map3-controlled-admission.md); selected status/full item slots/NPC/RNG now have [offline bindings](../contracts/map3-battle01-continuous-scenario.md#offline-reference-bindings); full R1 flags and other omitted original fields remain Unknown |
 | Natural mandatory route and encounter admission | PASS bounded original evidence | Final acquisition; actual actor 2; not the R2d bridge |
-| Winning actions and consumed results | PASS bounded original evidence | Selected winning chain; committed actions/seed/main-draw records are bound offline; full field-input normalization, individual draw-to-effect and cancel/reselect remain OPEN |
+| Winning actions and consumed results | PASS bounded original evidence | Selected winning chain; committed actions/seed/main-draw records are bound offline; full original field-input normalization, individual draw-to-effect and cancel/reselect remain Unknown beyond the accepted seams |
 | Victory, after-program, flag and return spine | PASS bounded original evidence | 67 reached operation pairs and selected final chain; not a full presentation claim |
 | Exact neutral settled endpoint | PASS bounded original evidence | Contract endpoint and original terminal; remaining full records must be consumed from private evidence |
 | Bounded RA-12 ordinary input/effect | PASS bounded original evidence | PR #526: one Down read and settled displacement from Map57 `(5,12)` to `(5,13)`; separate terminal, not resumable and not part of the PR #504 projector binding |
-| Full controllable 5B | Bounded actual return accepted; integration review OPEN | Retain the ordinary continuous winning/return and delivered field-control proof; the separate original RA-12 extension keeps its own lineage |
-| Continuous contract and ten-layer definitions | Accepted definitions; missing bindings OPEN | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; bounded offline bindings available; remaining field gaps and complete definition readiness OPEN |
-| Original expected fields complete for every applicable assertion | Accepted bounded definitions; integration review OPEN | Use the accepted source and controlled compositions below. Historical missing fields stay explicit and are not automatically current acquisition requirements |
-| Save policy 6A | SELECTED; continuous H4 execution OPEN | Absent user persistence surfaces; restart to admitted state |
-| 7C content/provenance | Local resource proofs accepted; integration review OPEN | Reuse reached visual/audio provenance and mutable-map delivery at their declared scope. Private content remains untracked; authored JoinCue chords or mute cannot substitute for required original audio |
-| 8D semantic presentation | Local consumer obligations accepted; integration review OPEN | Accepted text, motion, operation, audio and scene bindings retain their declared composition limits; overall parent coverage is pending review |
+| Full controllable 5B | Accepted composed boundary | Ordinary continuous winning/return and delivered field-control proof; the separate original RA-12 extension keeps its own lineage |
+| Continuous contract and ten-layer definitions | Accepted current requirement map | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; historical projection gaps retain their named limits |
+| Expected evidence for every current applicable assertion | Accepted source and controlled compositions | The complete current map is accepted below; this does not supply omitted historical original fields |
+| Save policy 6A | Accepted | Absent user persistence surfaces; restart to admitted state |
+| 7C content/provenance | Accepted composed boundary | Reached visual/audio provenance and mutable-map delivery at their declared scope. Private content remains untracked; authored JoinCue chords or mute cannot substitute for required original audio |
+| 8D semantic presentation | Accepted composed boundary | Text, motion, operation, audio and scene bindings plus independently checked parent coverage and shared dependencies; original hardware timing remains outside scope |
 | Existing settings and bounded direct observations | PASS bounded implementation; supplemental/history | [Settings owner](../../../remake/docs/development-and-verification.md#native-9a-observation); implementation does not authorize additional required variants |
-| Current keyboard scope / 10A deviations | Scope comparison PASS; full H4 OPEN | Required A only; C diagnostic, B/D excluded. A self-equality closes only the declared scope row, not remaining obligations or arbitrary settings equivalence |
-| Required reached action support | PASS bounded implementation; continuous comparison OPEN | PR #521 (`78c201c3`) accepts ordinary Medical Herb selection/live inventory and host inventories/itemSlot observations; compare the winning original actions separately |
-| Actual continuous comparison | Accepted local compositions; closure audit pending | The thirteen local obligations below have independent acceptance. Retained A10/matrix results remain unchanged; they are not a current combined PASS |
-| All applicable H4 layers executed successfully | OPEN integration acceptance | Account for all required parent/child assertions, shared evidence identities and deviations at the accepted composed boundary; individual scoped PASS reports are insufficient |
-| Independent milestone readiness acceptance | OPEN | Main-gate; neither Issue closure nor a bounded implementation PASS is sufficient |
+| Current keyboard scope / 10A deviations | Accepted | Required A only; C diagnostic, B/D excluded. Scope self-equality proves only the scope row; explicit deviations and shared evidence are independently reviewed below |
+| Required reached action support | Accepted composed boundary | Ordinary Medical Herb/live inventory support and the selected winning action/rule/consumer comparisons retain their separate owners |
+| Actual continuous comparison | Accepted composed boundary | Existing executed continuous route and comparisons plus the local obligations below; retained A10/matrix and scoped report verdicts are unchanged |
+| All applicable H4 layers | Accepted independently reviewed composition | Required parent/child assertions, shared evidence identities and deviations accounted for; no fresh full executable H4 report |
+| Independent milestone readiness acceptance | Accepted | Main-gate decision at the boundary below; based on evidence and integration inspection, not Issue status or PASS counts |
 | Separate implementation-start authorization | PASS | User authorization in [Remake README](../../../remake/README.md); does not accept this milestone |
 | Public distribution | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate rights/licensed replacement decision; private assets remain untracked |
 
@@ -99,7 +100,7 @@ are: (1) admission/provenance, (2) logical input/route, (3) world/story transiti
 Each assertion retains expected source and actual observation separately. Missing original fields or
 private inputs yield Unavailable with the missing side/field, never PASS, zero-filled expectations or
 implicit exclusion. Mismatches and observed unsupported required actions are FAIL. Unknown original
-fields leave definition readiness OPEN. Whole-run PASS requires every assertion and deviation in the
+fields leave their original-field definitions OPEN. Whole-run report PASS requires every assertion and deviation in the
 explicit current scope. Supplemental or excluded reports cannot change required totals. Production legality must depend on state/content, not a fixed actor sequence,
 round count or reference receipt history. Existing subsystem fixtures remain their own owners.
 
@@ -119,8 +120,8 @@ fidelity waiver. Missing evidence/content cannot be recategorized as a deviation
 | Research | PR #526 independently accepts the bounded RA-12 input/effect. Other selected original fields, input normalization, RNG and presentation gaps remain as defined by their owners |
 | Design | Keep current applicability and the keyboard acceptance boundary aligned with the contract; original PR #526 extension remains separate from the PR #504 projector |
 | Remake/content | Reuse accepted audio/private resources, mutable-map delivery and scene consumer proofs at their named dependencies. #517 Option A retains its controlled reveal-tail mechanism and historical C limit |
-| H4 executor | Reconcile the accepted local obligations with required parent coverage and shared evidence identities; preserve failures and Unavailable. Any additional integration check needs a bounded plan |
-| Main-gate | Independently accept definitions, evidence closures and eventual complete H4 result; serialize integration |
+| H4 executor | Preserve the accepted composition, exact dependencies, failures and Unavailable reports; no further evidence work is required absent a concrete new defect |
+| Main-gate | Own independent acceptance and serialized integration; the current private milestone is accepted below |
 
 Accepted [outcome implementation](../../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return)
 and R4a comparison prove their bounded common-session/static-spine behavior, not natural original
@@ -159,13 +160,31 @@ and [resource cohort](../../../remake/docs/development-and-verification.md#calle
 proofs. The separate [Option A speech policy](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
 uses its accepted controlled reveal-tail evidence; historical C's unsampled interval remains Unknown.
 
-**OPEN integration boundary:** the scoped reports retain `milestonePass=false`. Retained A10 and
-its current-keyboard matrix still describe their original Unavailable children. No combined report
-has been accepted by substituting thirteen PASS labels. Overall acceptance must account for the
-required parents/children and shared source, producer, session, occurrence and input/effect joins,
-including the accepted controlled compositions and separately reported deviations. A missing
-integration check needs one minimum scope/budget/dependency plan; it does not imply another route,
-full H4, matrix or native run. Main-gate owns that decision and final readiness acceptance.
+### Accepted current milestone
+
+**Confirmed:** on 2026-10-05 main-gate independently accepted the complete current private
+Map 3 → Battle 01 victory → usable 5B return milestone against accepted base
+`acaaba60a49357b8842e152d5e490981fe19d0c1`, under the existing default-keyboard-A,
+modern deterministic clock, 7C/8D/10A boundary. This changes no product scope.
+
+Acceptance composes the executed continuous winning/return route and parent evidence, each accepted
+child above, unchanged tested/current dependencies, the accepted Option A controlled reveal-tail
+behavior and explicit deviations. Independent compact inspection checked shared source, producer,
+session, occurrence, input and effect relationships, parent/child coverage and integrity. Common
+physical/reward/turn results and selected reward/audio scene projections have no checked conflict;
+all eight retained parent declarations and thirteen formerly missing children are accounted for.
+The [parent integrity review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/606#issuecomment-5965838128)
+and [keyboard-scope review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/609#issuecomment-5976283697)
+remain exact accepted dependencies. The [verification route](../../../remake/docs/development-and-verification.md#accepted-composition-review)
+identifies retained supporting inspections and reproduction commands. This is substantive acceptance
+of the complete current requirement map; PASS counts, source shape, Issue status and self-equality
+alone do not establish it. No known in-scope defect remains identified.
+
+Historical A10/default/matrix reports keep their original Unavailable verdicts and
+`milestonePass=false`; scoped outputs also remain false. No fresh full executable modern report or
+corrected whole-A trajectory was generated. The accepted result is the independently reviewed
+composition of existing executed comparisons and whole-route/parent evidence. It does not accept
+hardware 8C, full-game parity or public distribution, or relabel any historical artifact PASS.
 
 Historical seed-latch, HEAL timing, provenance and review failures remain preserved. Terminal
 internal completion remains **Inferred** and its delay **Unknown**; historical missing turn-generation
@@ -176,8 +195,10 @@ compositions. C remains supplemental and B/D excluded under the current keyboard
 
 Only a named missing original semantic assertion can justify separately admitted observation under
 ADRs0014/0016 and [ADR0015](../../decisions/0015-original-reference-replay-and-h4-boundary.md).
-Current questions are unresolved selected input/RNG/state fields and required 8D consumption/ack
-boundaries. The bounded RA-12 Down/effect is accepted in PR #526. Reuse accepted static rules and bounded observations first. The
+Historical input/RNG/state and original presentation gaps retain their scientific limits; the
+accepted current requirement map has no identified missing in-scope assertion. Further evidence
+work requires a concrete new defect. The bounded RA-12 Down/effect is accepted in PR #526.
+Reuse accepted static rules and bounded observations first. The
 [Research presentation audit](../../research/map3-battle01-audit.md#presentation-sufficiency-under-8d)
 records DisplayText bypass; a program return does not prove unshimmed delivery. Persistent music
 requires start/replacement/stop where reached, not a fictitious end event. This ledger authorizes no
@@ -233,5 +254,5 @@ rerun with their [verification owner](../../../remake/docs/development-and-verif
 ROMs, saves, traces, captures, complete text/graphics/audio and generated exports remain private,
 ignored and local; do not publish their absolute paths or require them in public CI. Public reporting
 contains only licensed/minimal semantic facts and safe provenance/results. The full private inventory
-and resource bindings must be checked locally before 7C can pass. Documentation-only acceptance uses
+and resource bindings retain their accepted local 7C proofs. Documentation-only acceptance uses
 scope/link/bilingual semantic checks; no original or remake output is generated by this slice.

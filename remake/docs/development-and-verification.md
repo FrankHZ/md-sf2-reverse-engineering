@@ -2870,8 +2870,9 @@ evidence; corrected reports use fresh destinations and the same immutable clean 
 
 The candidate comparison closes these two children only. The retained text-material A's22 and
 B/C/D's37 remaining-child results stay attached to their own immutable observations. Independent
-review decides acceptance of the new candidate; all five broad families and full H4 remain
-Unavailable. Run affected Python lint, direct document/private/diff checks, committed dependency
+review owns acceptance of this bounded candidate; its retained five broad families/full-report
+result remains Unavailable. Current milestone acceptance is recorded in the
+[composition review](#accepted-composition-review). Run affected Python lint, direct document/private/diff checks, committed dependency
 planning and actual CI. Reuse accepted unchanged binaries; no normal/full/H3/engine/adapter rerun
 is required solely for this offline comparison and GDScript correction.
 
@@ -3800,7 +3801,9 @@ equivalence fields to the accepted A report; keep old sessions' absent fields Un
 legacy applicability must remain unchanged. Use affected lint/design-contract checks and committed
 planner/actual CI. This offline comparator slice needs no SDK/native/capture, new source acquisition,
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
-actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
+actor/weapon subset alone leave other resource families and operation/consumer assertions
+unavailable in that retained report. Their current composed acceptance is recorded
+[below](#accepted-composition-review).
 
 ### Scoped physical consumer comparison
 
@@ -4682,7 +4685,7 @@ observed focus/service recovery) remain completed failures, not successful conti
 The bounded direct readback gives four operation-flow children PASS with 2,244 PASS / 17 Unavailable
 assertions and no required FAIL. The route/setup/caller child remains Unavailable because calls
 at4107 and12608 lack retained in-call stack operands. Fifteen other children and the matrix
-obligation remain open; full H4 remains Unavailable. Historical matrix evidence retains its own
+obligation remain open in that retained report; its full H4 verdict remains Unavailable. Historical matrix evidence retains its own
 content and observation boundary.
 Nine normal05 pre-AB checkpoints and Left remain exact. Gameplay equivalence changes only its raw
 inputs/observations components: six post-AB input locations carry the two source PC additions,
@@ -4986,8 +4989,10 @@ missing required child cannot pass. In the retained A10 report, closing its lega
 row leaves thirteen other children Unavailable. Their later independently accepted local compositions
 are mapped in the [readiness ledger](../../docs/design/synthesis/map3-battle01-readiness.md#current-required-comparison-boundary).
 This historical scope reproduction neither consumes those optional contexts nor revises its source
-report; its Unavailable result is not a new failure of the accepted compositions. Overall closure
-requires independent review of parent coverage and shared evidence joins, not addition of PASS counts.
+report; its Unavailable result is not a new failure of the accepted compositions. Main-gate has
+accepted the complete current private milestone through independent review of parent coverage,
+shared evidence joins and explicit deviations, as recorded in the
+[accepted boundary](../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
 
 The retained historical scope check used A10 as follows. This is reproduction documentation,
 not authorization to rerun it during a compact closure audit:
@@ -5008,6 +5013,50 @@ requirements. Direct scope verification uses compact synthetic summaries and ret
 not raw stream import or resource joins. The plan allows at most about208MB of retained JSON input,
 1GiB peak memory, 2MiB output and a two-minute diagnostic threshold; network/model costs are not
 applicable. Unexpected materialization or growth requires replanning before expanding the run.
+
+### Accepted composition review
+
+The [readiness owner](../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+records final independent acceptance against `acaaba60a49357b8842e152d5e490981fe19d0c1`.
+Review the existing continuous route/return and parent evidence, each linked child contract's
+source/consumer proof and its reproduction recipe, plus unchanged current dependencies and explicit
+deviations. The exact accepted [parent integrity](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/606#issuecomment-5965838128)
+and [keyboard scope](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/609#issuecomment-5976283697)
+reviews remain dependencies. No fresh full executable modern report or corrected whole-A trajectory
+was produced; historical A10/default/matrix Unavailable and scoped `milestonePass=false` remain intact.
+
+Retained private supporting inspections are under worktree-local
+`local/issue534/integration-check-01/`: `compatibility-final.json` and `edge-parent-table.md` account
+for checked/reused/unavailable joins; `parent-accounting.json` identifies exact proof/dependency
+objects. Independent `root-pilot.json`, `root-scenes.json` and `root-parents.json` confirm common
+physical/reward/turn compatibility, selected reward/audio scene matches and complete parent/child
+accounting. These compact inspections supplement the named accepted evidence; their scripts are
+retained local reproducers, not a maintained verifier or replacement evidence registry.
+
+For a concrete review need, the corresponding read-only reproductions from the owning repository
+root require retained compact inputs and a fresh output name. This documentation does not request
+another run or authorize raw import, a route/matrix/full H4 run, native/SDK work or cleanup:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 local/issue534/integration-check-01/overlap.py review-pilot.json
+uv run python -X utf8 local/issue534/integration-check-01/scene-overlaps-corrected.py review-scenes.json
+uv run python -X utf8 local/issue534/integration-check-01/parent-accounting.py review-parents.json
+```
+
+The retained handoff identifies other focused result/input/receipt inspectors and their exact
+outputs. Use corrected scene matching; the old `scene-receipt-overlaps.json` has a valid receipt
+comparison but an invalid later scene result, preserved with its correction. Missing audio original
+array indices remain missing; logical/host/token groups supply the declared scene join. W2/audio
+share accepted receipt evidence, not direct result overlap. Terminal internal completion remains
+Inferred and its delay Unknown; missing historical turn operands, original timing and seed/HEAL/
+provenance failures keep their owners. C remains supplemental and B/D excluded.
+
+Resource history is preserved: the earlier whole-module AST inspection reached 163,532,800 bytes,
+exceeding its 128 MiB bound. Integration inspection used about 128 MiB cumulative reads against an
+80 MiB estimate; independent root review added 29,133,140 bytes separately. Integration and root
+per-command limits held. These completed results do not require repeated evidence work absent a
+concrete new defect. No historical evidence or failed result is replaced by the accepted composition.
 
 ### Current C/D settings capture
 

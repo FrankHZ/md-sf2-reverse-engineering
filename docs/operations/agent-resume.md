@@ -34,10 +34,9 @@ and dependencies are worktree and handoff state, not a second tracked source of 
   what is runnable, diagnostic, admitted-but-unconsumed, Unsupported, or Unknown.
 - Research coverage, evidence gaps and cadence belong to
   [`research/source-coverage.md`](../research/source-coverage.md); work scheduling and assignments
-  belong to Issues/Project. The continuous Map 3-through-completion-of-Battle 01 milestone and H4
-  result remain incomplete eventual acceptance
-  work, not an automatic runtime-closure queue or default implementation prerequisite for an
-  authorized bounded slice.
+  belong to Issues/Project. The private continuous Map 3-through-Battle 01 victory and usable-return
+  milestone is accepted at the [current composed 8D/H4 boundary](../design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
+  Its retained historical report limits do not create an automatic runtime-closure queue.
 - Private ROMs, extracted assets, runtime captures, downloaded tools, and generated binaries remain
   local and untracked.
 - [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md) records the adopted
@@ -68,7 +67,7 @@ Read the smallest owning surface that can answer or govern the task:
 | Evidence-bound subsystem contract | Closest [`design/contracts/`](../design/contracts/) owner and its accepted research dependencies |
 | Cross-subsystem or player-facing synthesis | [`design/documentation-roadmap.md`](../design/documentation-roadmap.md) and the closest [`design/synthesis/`](../design/synthesis/) owner |
 | Engine implementation or migration | [`remake/README.md`](../../remake/README.md), [architecture](../../remake/docs/architecture.md), [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md), and the directly consumed behavior contracts |
-| Eventual playable milestone or fidelity claim | [ADR 0009](../decisions/0009-first-phase4-playable-slice.md), [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md), and the named readiness/capability owner; 8D/H4 remains incomplete; the old replay path and hardware-exact capture are not prerequisites |
+| Playable milestone or fidelity claim | [Current accepted boundary](../design/synthesis/map3-battle01-readiness.md#accepted-current-milestone), [ADR 0009](../decisions/0009-first-phase4-playable-slice.md), [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md), and the named capability owner; historical reports retain their results; the old replay path and hardware-exact capture are not prerequisites |
 | Verification selection | [Remake scope/current-command distinction](../../remake/docs/development-and-verification.md#scope) for engine/docs; [ADR 0012](../decisions/0012-dependency-aware-partitioned-verification.md) for research; inspect `uv run sf2 verify plan --base origin/main --head HEAD` on a clean committed head |
 | Large artifact or diff inspection; PR handoff or review | [`bounded-inspection-and-review.md`](./bounded-inspection-and-review.md) |
 | Global documentation routing or decision inventory | [`../README.md`](../../README.md), [`docs/README.md`](../README.md), and the affected index owners |
