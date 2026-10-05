@@ -684,7 +684,11 @@ their separate Unknowns, without queuing acquisition or adding untaken branches 
 
 The optional `physical_consumer_binding` replaces only the required
 `physical range/dodge/critical/spread/double/counter effects` child. Its scoped command and
-modern `--physical-context` entry share the same predicate. Independent context supplies the
+modern `--physical-context` entry share the same predicate. The implementation is
+[`physical_binding.py`](../../../src/sf2tool/remake_h4/physical_binding.py), with the
+[responsibility/dependency route](../../operations/bounded-inspection-and-review.md#h4-physical-module-route)
+separating source calculation, evidence joins and scene effects; the existing CLI/import entry is
+retained. Independent context supplies the
 complete retained battle census and original channel indices; candidate omissions cannot redefine
 which attacks require evidence. Scenario ordinals, a known winner and fixed damage totals are not
 rules of combat.
