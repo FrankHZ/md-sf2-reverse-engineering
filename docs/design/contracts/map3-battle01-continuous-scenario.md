@@ -1689,6 +1689,12 @@ for the admitted Map3/Map19 classes; source atlas/texture, other maps, gameplay 
 children retain their independent checks. A successful standalone map report is not full H4 or
 milestone acceptance. Any known source/actual contradiction dominates unrelated missing evidence.
 
+The [mutable-map module owners](../../operations/bounded-inspection-and-review.md#h4-mutable-map-module-route)
+separate retained applicability, controlled input/transfer lineage, source layout reconstruction
+and actual Draw consumption. The old binding/source/draw imports remain aliases. Per-binding
+identity tracking and per-draw sprite ink retain their original lifetimes and check order; the
+module boundary adds no historical observation or delivery class.
+
 | Required behavior class | Source premise | Separate actual witness |
 | --- | --- | --- |
 | Map3 default/flag-off and house door/roof | `map03/3-flag-events.asm`, `4-step-events.asm`, `5-roof-events.asm`; flag506 remains clear in selected context | Ordinary door row0 copy, roof row0 save/clear/restore, repeated read/draw and flag-off load |

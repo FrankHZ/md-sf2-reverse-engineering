@@ -5033,6 +5033,17 @@ ignored `local/`. Runtime and output are linear in selected history plus region/
 the controlled rectangles bound cell work, and each observed draw has a 4096-use overflow limit.
 No SDK, emulator, full H4/matrix or new source acquisition is implied by this command.
 
+The [module route](../../docs/operations/bounded-inspection-and-review.md#h4-mutable-map-module-route)
+names the source, history, delivery, layout and Draw owners. Direct observations can import
+`map_consumer_binding` from `sf2tool.remake_h4.map_binding`; its signature remains
+`(actual, context, source_root)` and the old import is the same callable. Source-region and
+draw-cell observation aliases remain available. Inputs are selected objects, including
+caller-owned streams; the binding neither closes them nor reads a raw capture. Full reports
+remain readable after the caller closes those streams. Source paths resolve from the repository
+root when relative, including invocation from `remake/`; CLI outputs remain worktree-local.
+Compare complete checks, witness details, coverage and historical fields when changing these
+boundaries, including the independent actor/plane and transfer-lineage controls below.
+
 The selected actual carries `sessionId`, `mapHistory` change-run/event records and
 `mapHistoryReceipt` (completed scan, relevant counts and producer inventory). Each run retains
 `channel`, `first`, `last`, `count`, and `change`; each event row retains its index/identity and ordered
