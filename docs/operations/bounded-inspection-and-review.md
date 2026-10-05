@@ -221,6 +221,33 @@ selected streams; these modules neither close them nor reopen the full capture. 
 the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-battle-scene-command-and-consumer-binding)
 and [verification route](../../remake/docs/development-and-verification.md#scoped-battle-scene-consumer-comparison).
 
+### H4 Field-Service Module Route
+
+The existing `field_service_binding` and `_field_case_input` wrappers pass their real `read`
+callable to `field_binding.field_service_binding(actual, context, source_root, read_document)`
+and `field_evidence.case_input(case, read_document)`. Scoped and modern callers retain those
+entries; direct source/case observation imports remain aliases. All modules live in
+`src/sf2tool/remake_h4/` and none imports the monolith.
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `field_values.py` | Strict value equality and partial predecessor joining; contradictions dominate missing evidence. |
+| `field_source.py` | Seeded RNG, portrait counters, structural action programs and NPC motion; owns motion/counter/service constants. |
+| `field_evidence.py` | One capped native case, repository-relative private paths and explicit document reader. |
+| `field_admission.py` | Terminal receipt, absolute clocks, bounded process and declared initial actor state. |
+| `field_wait.py` | One case's Wait press/release/cancellation owner and repeated-service readiness. |
+| `field_state.py` | Declared events, typed operands, result identity and predecessor joins. |
+| `field_services.py` | Ordered draws, service evolution and the admitted unregistered entry batch. |
+| `field_projection.py` | Portrait lifecycle and actual input/Draw-to-resource joins. |
+| `field_case.py` | Per-case ordered checks, coverage and detached report; retains the row exception boundary. |
+| `field_binding.py` | Independent context, accepted dependencies, case admission and family aggregation. |
+
+Case checks and Wait state are created for each invocation. The evidence loader opens and closes
+bounded text files locally; injected document readers retain their own lifetime policy. Existing
+in-memory cases remain caller-owned. Neither path extends the observed boundary or reads a raw
+archive. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding)
+and [verification route](../../remake/docs/development-and-verification.md#scoped-field-service-comparison).
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

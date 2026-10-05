@@ -4085,6 +4085,17 @@ uv run python -X utf8 -m sf2tool.remake_h4_comparison field-service `
 Resolve `$pinnedSource` through the private-input owner. The actual descriptor has
 `scope=field-service-local-composition-v1` and `fieldServiceCases`; each names its original
 profile, JSONL observation, process/launch receipt, tested view source and native error log.
+
+The [module route](../../docs/operations/bounded-inspection-and-review.md#h4-field-service-module-route)
+separates case admission, Wait ownership, source service evolution and Draw consumption.
+Direct observations may call `sf2tool.remake_h4.field_binding.field_service_binding` with
+an explicit fourth `read_document` argument, or use the existing three-argument wrapper.
+`field_evidence.case_input(case, read_document)` has the same bounded path/error behavior as
+`_field_case_input`; document readers remain caller-owned. Relative evidence paths resolve
+from the repository root, including when invoked from `remake/`. Compare complete reports,
+check order, coverage and Unknowns when changing these boundaries; preserve the final receipt,
+clock and Wait-release negative controls below.
+
 The independent context declares compact `profiles`, selected `sessions`, `assemblies`,
 `nativeBase`, accepted `serviceTrx`, and the existing `seedActual`/`seedContext`.
 `historicalSessionId` and `actualSupplement` bind modern `--field-context` applicability;
