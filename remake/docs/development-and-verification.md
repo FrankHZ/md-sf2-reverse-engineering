@@ -4224,6 +4224,15 @@ main-gate review owns integration and obligation closure.
 
 ### Scoped HEAL consumer comparison
 
+Direct observations use `sf2tool.remake_h4.heal_binding.heal_consumer_binding` and
+`sf2tool.remake_h4.heal_source.fairy_source_step`; existing imports/CLI remain available. The
+[HEAL module route](../../docs/operations/bounded-inspection-and-review.md#h4-heal-module-route)
+identifies source, resource, opportunity and work owners. For extraction review, reuse a retained
+complete baseline after equality, compare full reports in bounded batches, and preserve the constants
+following the old HEAL function. Check numeric spell-level boolean counterexamples separately from
+movement, including integer/float equivalence, expected booleans, explicit `None` and mixed missing
+plus contradiction. Complete reports must retain check order, historical failures and Unknowns.
+
 The [selected HEAL contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding)
 reuses the accepted HEAL rules and PR618 logical recovery proof. Use retained actual effects and
 live fairy observations; expected values never come from a remake-generated result or a later
