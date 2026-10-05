@@ -1328,6 +1328,12 @@ selection/skip/cursor/rollover/outcome rules. Those queues never supply expected
 Only this explicit composition can supply the named current semantic child; the default historical
 diagnostic and its missing actual operands retain their separate result.
 
+The [turn module owners](../../operations/bounded-inspection-and-review.md#h4-turn-module-route)
+separate source generation, executed-proof applicability, supplied clocks/evidence, HP knowledge
+and queue progression. Generation matching remains strict; consumer matching retains integral
+JSON clock representations. Ordered grouped checks retain their counts and bounded examples.
+Module boundaries add no source reach or evidence to missing operands.
+
 The seven tested/current dependency guards retain their exact accepted-object/current-file byte
 comparisons. Equal readable dependencies preserve the existing generation/consumer verdict.
 Changed bytes invalidate reuse of the executed proof and yield Unavailable with a renewal reason;

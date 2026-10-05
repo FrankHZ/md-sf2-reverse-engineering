@@ -327,6 +327,38 @@ already selected streams remain caller-owned and reports retain no handles. No o
 monolith or supplies missing timing. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding)
 and [verification route](../../remake/docs/development-and-verification.md#scoped-w2-consumer-comparison).
 
+### H4 Turn Module Route
+
+The old `_source_turn_order`, `turn_order_binding` and `turn_order_consumer_binding` imports
+remain aliases to the owners below in `src/sf2tool/remake_h4/`. Scoped and modern callers use
+those aliases. Generation and consumer matching intentionally have different numeric rules.
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `turn_source.py` | Independent RNG, full 64-slot buffer and signed 62-pass source generation. |
+| `turn_generation_checks.py` | Strict generation values and ordered identity-keyed records. |
+| `turn_generation_candidates.py` | Independent live roster and recorded candidate coverage. |
+| `turn_generation_draws.py` | Draw identities, arithmetic and candidate seed chains. |
+| `turn_generation_scores.py` | Local candidate scores and sorting at recorded operands. |
+| `turn_generation.py` | Executed generation/source composition and selected round coverage. |
+| `turn_consumer_checks.py` | Consumer matching, grouped counts/eight-example cap and clock joins. |
+| `turn_dependencies.py` | Executed proof applicability and seven tested/current dependency reads. |
+| `turn_selection.py` | Supplied channel indices and required selected records. |
+| `turn_result_clocks.py` | Result/event/sample clock domains, bounds and delivered identity. |
+| `turn_input_clocks.py` | Input spans, causal ordinals and direct/automatic clock bounds. |
+| `turn_installation.py` | Retained installed queues and independent semantic census. |
+| `turn_evidence.py` | Owning event joins, repeated publications and nonconsuming diagnostics. |
+| `turn_hp.py` | HP/placement knowledge, authoritative writes and missing observations. |
+| `turn_frontier.py` | Queue progression, dead skips, sentinel rollover and terminal support. |
+| `turn_projection.py` | Wait/input projections and additional supplied evidence applicability. |
+| `turn_consumer.py` | Ordered generation/dependency/consumer composition and final report. |
+
+`HPKnowledge` owns only HP and placement; checks own only values/reporting. Source, independent
+context and supplied evidence remain explicit operands. Dependency Unavailable does not stop
+consumer contradictions. Selected streams remain caller-owned; reports retain no handles.
+No owner imports the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-current-turn-rule-and-queue-consumption)
+and [verification route](../../remake/docs/development-and-verification.md#composed-turn-rule-and-consumer-verification).
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
