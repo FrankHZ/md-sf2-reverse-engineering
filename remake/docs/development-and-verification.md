@@ -3970,7 +3970,9 @@ independent census and retained dependencies. Other obligation results and
 
 Direct controls cover stale/foreign tokens, actors, clocks and causal inputs; animation,
 message, background, weapon, fairy and field-death resources/effects; missing phase and
-completion evidence; unready/non-Confirm acknowledgements; terminal non-input transport,
+completion evidence; hidden or missing message labels; independent critical text/effect
+expectations; unready/non-Confirm acknowledgements; ordinary non-input completion and
+missing contiguous input brackets; terminal commit actor and non-input transport,
 cleanup, ordered end events, attach and returned field control. Missing source/evidence
 must not hide known contradictions. Test the ordinary FieldSettle missing-completion case
 separately: it cannot borrow the terminal composition. Keep all completed failures and

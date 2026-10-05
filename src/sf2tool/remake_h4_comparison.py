@@ -7077,8 +7077,9 @@ def battle_scene_consumer_binding(actual, context, source_root):
                 (e for e in reaction_events if e["Kind"] == "hp" and actor(e) == target), None
             )
             dodge = any(e["Kind"] == "dodge" for e in reaction_events)
-            critical = any(e["Kind"] == "critical" for e in reaction_events)
+            critical_events = [e for e in reaction_events if e["Kind"] == "critical"]
             recovery = kind == "heal"
+            critical = False if recovery else None
             amount = hp["After"] - hp["Before"] if recovery and hp else 0
             if not recovery:
                 strike = next(
@@ -7094,6 +7095,15 @@ def battle_scene_consumer_binding(actual, context, source_root):
                 )
                 amount = strike["damage"] if strike else None
                 if strike:
+                    critical = strike["critical"]
+                    eq(
+                        "source critical effect",
+                        [dict(Kind="critical", Actor={"Value": a}, Target={"Value": target})]
+                        if critical
+                        else [],
+                        critical_events,
+                        action["Sequence"],
+                    )
                     eq(
                         "source strike effect kind",
                         "Dodge" if strike["dodge"] else "Damage",
@@ -7235,6 +7245,11 @@ def battle_scene_consumer_binding(actual, context, source_root):
                 step=n if n < 12 else n - 12 if n < 15 else 0,
             )
 
+    declared_inputs = set((reward_context.get("indices") or {}).get("inputRecords", []))
+    check(
+        "independent input interval coverage",
+        True if declared_inputs and declared_inputs <= inputs.keys() else None,
+    )
     terminal = []
     for pair in pairs:
         token, phase, end, owner = pair["token"], pair["phase"], pair["end"], pair["owner"]
@@ -7248,6 +7263,78 @@ def battle_scene_consumer_binding(actual, context, source_root):
             token,
         )
         eq("required completion accepted", None, envelope.get("failure", absent), token)
+        if not phase.endswith("Message"):
+            # A renderer completion is outside physical input dispatch. Some retained
+            # copies omit inputDelivery: use the complete original input-index census
+            # and its two bracketing snapshots, never a default false transport flag.
+            if "inputDelivery" in warps[owner]:
+                eq(
+                    "ordinary completion non-input transport",
+                    False,
+                    warps[owner]["inputDelivery"],
+                    token,
+                )
+            direct = [
+                i
+                for i in inputs.values()
+                if number(i.get("resultStart"))
+                and number(i.get("resultEnd"))
+                and i["resultStart"] <= owner < i["resultEnd"]
+            ]
+            check("automatic completion outside input dispatch", not direct, token)
+            earlier = [
+                (n, i)
+                for n, i in inputs.items()
+                if number(i.get("resultEnd")) and i["resultEnd"] <= owner
+            ]
+            later = [
+                (n, i)
+                for n, i in inputs.items()
+                if number(i.get("resultStart")) and i["resultStart"] > owner
+            ]
+            if earlier and later:
+                before_index, before_input = earlier[-1]
+                after_index, after_input = later[0]
+                contiguous = (
+                    after_index == before_index + 1
+                    and before_index in declared_inputs
+                    and after_index in declared_inputs
+                )
+                check("completion contiguous input bracket", True if contiguous else None, token)
+                if contiguous:
+                    eq(
+                        "automatic completion latest causal input",
+                        before_input.get("ordinal", absent),
+                        warps[owner].get("inputOrdinal", absent),
+                        token,
+                    )
+                    precedes(
+                        "completion after prior input dispatch",
+                        before_input.get("after") or {},
+                        envelope,
+                        token,
+                    )
+                    precedes(
+                        "completion before following input dispatch",
+                        envelope,
+                        after_input.get("before") or {},
+                        token,
+                    )
+                    for r in rows:
+                        if r.get("scene", {}).get("completed") is True:
+                            hosts = [
+                                x.get("hostUpdate", absent) for x in (before_input, r, after_input)
+                            ]
+                            check(
+                                "completion host input bracket",
+                                None
+                                if any(x is absent for x in hosts)
+                                else all(number(x) for x in hosts)
+                                and hosts[0] <= hosts[1] <= hosts[2],
+                                token,
+                            )
+            else:
+                check("completion contiguous input bracket", None, token)
         batch = field_batches.get(token)
         info = scene_info.get(token, {})
         complete = []
@@ -7257,6 +7344,13 @@ def battle_scene_consumer_binding(actual, context, source_root):
             index, s = row["_index"], row["scene"]
             eq("actual phase for token", phase, s.get("phase", absent), index)
             eq("required scene visibility", batch is None, s.get("visible", absent), index)
+            if phase.endswith("Message"):
+                eq(
+                    "actual message label visible",
+                    True,
+                    (s.get("messageFont") or {}).get("visible", absent),
+                    index,
+                )
             if number(row.get("observationSequence")):
                 preceding = [q for q in starts if q <= row["observationSequence"]]
                 if row.get("projectionStage") == "host-poll":
@@ -7825,13 +7919,38 @@ def battle_scene_consumer_binding(actual, context, source_root):
                 envelope,
                 token,
             )
+        initial_actor = next(
+            (
+                c.get("actor", absent)
+                for c in physical_context.get("census", [])
+                if c.get("sequence") == batch["scene"]
+            ),
+            absent,
+        )
+        eq(
+            "terminal independent action actor",
+            initial_actor,
+            events.get(batch["scene"], {}).get("Actor", absent),
+            token,
+        )
+        for q in ordered:
+            if batch["scene"] < q < token and events[q]["Kind"] in (
+                "scene-ended",
+                "field-death-started",
+            ):
+                eq(
+                    "terminal action release actor",
+                    initial_actor,
+                    events[q].get("Actor", absent),
+                    q,
+                )
         expected_end = [
             dict(
                 Kind="scene-step-completed", Detail="FieldSettle", Actor=pair["start"].get("Actor")
             ),
             dict(Kind="field-death-ended", Actor=pair["start"].get("Actor")),
             dict(Kind="battle-outcome", Detail="Victory"),
-            dict(Kind="action-committed"),
+            dict(Kind="action-committed", Actor=initial_actor),
             dict(Kind="outcome-program-started", Detail="Victory"),
             dict(Kind="program-instruction", Detail="SetTextCursor"),
             dict(Kind="program-instruction", Detail="ResetPartyBattleStats"),

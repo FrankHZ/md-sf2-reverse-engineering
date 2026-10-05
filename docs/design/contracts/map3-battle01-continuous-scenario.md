@@ -808,8 +808,10 @@ The [scene contract](battle-scene-presentation.md) owns Initialize/Execute/End, 
 selection, ally entry-zero skipping, enemy playback, frame-15 holds and command identities.
 The selected source animation files and message templates are read from the pinned
 SF2DISASM object. Physical source operands reuse the accepted parser and action reducer;
-raw damage remains distinct from capped HP loss. HEAL uses its accepted caster/target and
-logical cursor, and reward messages use actual source-bound EXP/growth/gold operands.
+raw damage remains distinct from capped HP loss. Critical text is selected from the independent
+source strike, with its critical effect checked separately; removing that event cannot turn
+an ordinary damage message into the expected critical message. HEAL uses its accepted
+caster/target and logical cursor, and reward messages use actual source-bound EXP/growth/gold operands.
 Zero stat growth emits no growth message. This cohort remains unpromoted SDMN/PRST/KNTE
 with weapons 71/85/56 against GIZMO, plus HEAL1; it adds no spear, item, promotion, defeat
 or unreached spell claim.
@@ -824,8 +826,8 @@ Required joins include:
 - mounted actor/background/ground/weapon resources, source animation selector, reached
   frame order and offsets, weapon flips and sampled reaction states; all animation entries
   and their final completion are required, while unsampled reaction ticks remain Unknown;
-- source messages, ready text and the owning pressed Confirm, without treating an
-  acknowledgement phase as an automatic renderer completion;
+- visible mounted message labels, source messages, ready text and the owning pressed
+  Confirm, without treating an acknowledgement phase as an automatic renderer completion;
 - exact-index HEAL cursor to actual fairy/dust resource, visibility and position, including
   empty/cleaned-up effects; actual reaction/reward effects belong to the required transition
   and agree with the owning actor state;
@@ -853,8 +855,13 @@ never make a candidate eligible.
 
 The terminal internal completion flag remains **Inferred**, its delay **Unknown**, and
 `directCompletedSnapshot=false` remains explicit. Ordinary non-message phases still need
-actual completed projections. Missing prerequisites produce Unavailable; a known wrong
-actor/token/clock/resource, visible dead node, failed result, competing writer, reordered
+actual completed projections and non-input ownership. An explicit `inputDelivery=true`
+contradicts an automatic completion. When the reduced owner omits that flag, its result
+must lie outside input dispatch spans and between consecutive independently enumerated
+inputs, with matching causal ordinal, logical clocks and host updates. Missing brackets
+remain Unavailable. The terminal commit and preceding action release retain the initial
+action actor from the independent physical census. Missing prerequisites produce
+Unavailable; a known wrong actor/token/clock/resource, visible dead node, failed result, competing writer, reordered
 end, input-delivered terminal or wrong field owner produces FAIL even alongside missing
 evidence. This is no proof of original frame timing, pixels, weapon layer/Y projection,
 a corrected whole-A route or a completed milestone. Historical seed-latch and HEAL timing
