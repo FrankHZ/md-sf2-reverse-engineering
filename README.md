@@ -26,11 +26,11 @@ project decisions belong in their owning tracked documents.
   project now contains plain-C# Domain and Application assemblies, validated public/private Content
   adapters, and a Godot host. Its current authored and private-local Map 3 through Battle 01 capabilities
   and retained Unknowns are summarized by the [remake capability owner](./remake/docs/capability-status.md).
-  The accepted first playable milestone is still one continuous scenario from Map 3 through
-  completion of Battle 01 under
-  [ADR 0009](./docs/decisions/0009-first-phase4-playable-slice.md). Its Research/Design closures,
-  main-gate readiness, and H4 result remain incomplete eventual acceptance work, not default
-  prerequisites for the authorized bounded implementation. No distributable asset strategy or MCP
+  The private continuous Map 3-through-Battle 01 victory and usable-return milestone is accepted
+  under the current keyboard A, modern-clock and 8D semantic scope. The
+  [readiness owner](./docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+  records the composed acceptance and retained report limits. Full-game, hardware-exact parity and
+  public distribution remain outside this acceptance. No distributable asset strategy or MCP
   implementation has been selected.
 
 The [state/content-driven engine direction](./docs/decisions/0019-state-and-content-driven-remake-engine.md)
@@ -38,8 +38,7 @@ is adopted. The common session now runs two authored battle packages through mov
 HEAL/STAY, automatic AI waiting and natural rounds, and the connected private world runs the Map 3
 opening through Battle 01 outcome and return. The transitional reference implementation was retired at
 [M5](./docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation); only
-[controlled comparison inputs](./remake/reference/README.md) remain. A1–A8 closure, natural continuity
-and 8D/H4 remain open under the [current keyboard acceptance scope](./docs/decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope). Tests cover actual engine behavior; reference/probe/gate
+[controlled comparison inputs](./remake/reference/README.md) remain. Tests cover actual engine behavior; reference/probe/gate
 programs are used directly without another test layer. Old tests may migrate or retire by behavior.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
@@ -275,13 +274,11 @@ contract. A future remake must use placeholders or properly licensed assets for 
 - **Phase 3 — Game Design Reconstruction:** connected player-facing rules, maps, roster space, numerical curves,
    battle simulation, and explicit modernization choices — partially prepared by current design
    synthesis; upper-layer decisions remain future work.
-- **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.2 .NET/C# baseline and first continuous
-  Map 3-through-Battle 01-completion milestone are accepted as the eventual acceptance target;
-  Research/Design gap audits, main-gate readiness, and H4 remain open for that target. The user
-  explicitly authorized a bounded implementation start on 2026-08-28 under ADR 0016. The current
-  `remake/` includes bounded authored and private-local Map 3 through Battle 01 runtime capabilities
-  across the four accepted layers, without claiming the eventual milestone, original presentation, or H4. Those
-  eventual acceptance gaps are not default prerequisites for continuing an authorized bounded slice.
+- **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.2 .NET/C# baseline and private continuous
+  Map 3-through-Battle 01 victory and usable-return milestone are accepted at the
+  [current composed boundary](./docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
+  The current `remake/` contains bounded authored and private-local capabilities across the four
+  accepted layers; broader implementation follows its capability owners.
 - **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,
    distribution, and release QA — not started.
 

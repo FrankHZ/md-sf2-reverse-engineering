@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Continuous Scenario Contract
 
-- Status: **Accepted comparison definitions**; bounded offline reference bindings are available; remaining bindings and H4 execution are OPEN.
-- Accepted evidence base: `57d6cc296b77283eb5ee8a00b5121ecdfd132e1a`, including PR #504's neutral
+- Status: **Accepted current private milestone by independent composition review**; [readiness owner](../synthesis/map3-battle01-readiness.md#accepted-current-milestone) records the complete current scope and unchanged historical report limits.
+- Historical original/first-comparison evidence base: `57d6cc296b77283eb5ee8a00b5121ecdfd132e1a`, including PR #504's neutral
   endpoint, PR #526's accepted bounded post-victory Down extension, PR #528's retained first
   comparison, and PR #533's corrected selected-R1 inputs and comparison. PR #504 acquisition source
   remains `9c3ea03ac5f5b467ee744f1ac624870da2408443`. PR #526 owns the original extension; PR #528/#533 own the actual comparison results.
@@ -77,7 +77,8 @@ is required; gameplay-affecting timing, causal order and input blocking remain i
 admits evidenced player waiting into the external logical input stream. It retains the shared main
 RNG and matched-state rule comparisons; selected whole-history assertions follow the applicability
 table above. This section defines
-policy; original schedule bindings and implementation conformance remain OPEN.
+policy; current selected service/consumer bindings participate in the accepted composition below.
+Original schedules beyond those seams remain Unknown.
 
 Every admitted Wait must identify an eligible input consumer/occurrence, source caller or service,
 enable state and phase, start/end boundaries, and ordering with other active services. A logical
@@ -181,7 +182,7 @@ The mappings in the next section identify actual existing surfaces and missing c
 | 4 — natural encounter | Selected CheckBattle/load/start/first-control records; R2c/R2d field shapes only: battle ID, before/start programs, F88/F451, region flags 90–105, party/combatants, position/stats/status/equipment, activation/spawn, turn scores/order/cursor, first actor and readiness guards | Natural route creates Battle01 and completes programs before manual control. Compare local initialization rules; actor2 and history-dependent selected values remain original diagnostics under the modern clock. Clear blocking script/modal/transfer/action/target/scroll state. Original window count 2/palette mode 5 are allowed nonblocking presentation, not mandatory host byte values. |
 | 5 — battle | Selected action/checkpoint/scene records and R3a–R3d/local rules: round/order/actor/control, movement origin/path/destination, action/resource/slot/target, AI choice/memory, RNG before/range/value/after, follow-up kind, per-target HP/MP/status/death, item removal, EXP/level/stats/spells/gold/drop, after-turn and outcome | At matched state/input, compare each reached rule and consumed effect, including costs and RNG. The original whole winning history is diagnostic under the modern clock. Compare HP before WriteBattlesceneScript with consumed EndBattlescene, not temporary script-calculation HP. Pair each RNG draw/effect where evidenced; gaps in draw mapping remain OPEN even if endpoint HP matches. Do not hardcode round 14 or actor history as gameplay legality. |
 | 6 — victory/return | Selected final segment plus R4a: winning condition, eligible-party healing, reached after-program operations/effects, joins, F401/F501, controller result, transfer/setup selection | Require natural victory and full reached operation entry/return pairing, shared tail before enclosing return, then clear/set flags, D4=1 equivalent and exploration handoff. `ms_Void` at source `0x477E8` is Map57's exact fallback selection. One completed return cannot replace after-program consumption. |
-| 7 — endpoint | Accepted bounded original endpoint and RA-12 input/effect evidence; optional PR #526 extension projection is bound when explicitly supplied, while actual comparison remains open | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. After the actual endpoint is settled, accept the independently evidenced Down and compare its actual displacement/state effect. PR #588 observes returned control and Left; the named Down comparison and two independently identified settled host-update boundaries remain separate H4 assertions. |
+| 7 — endpoint | Accepted bounded original endpoint and RA-12 input/effect evidence; optional PR #526 extension projection is bound when explicitly supplied; current actual return acceptance belongs to the composed milestone | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. After the actual endpoint is settled, accept the independently evidenced Down and compare its actual displacement/state effect. PR #588 observes returned control and Left; the named Down comparison and two independently identified settled host-update boundaries remain separate H4 assertions. |
 | 8 — save/7C | 6A restart rule; private asset inventory and ROM/source/extraction provenance for every reached original scene dialogue/map/sprite/portrait/animation/music/SFX identity and binding | No user save/load/suspend/checkpoint surface; restart reconstructs layer 1. Every consumed original scene resource resolves to admitted original private content. Missing private input is Unavailable; an authored substitute for required original scene content fails 7C when observed. MUSIC_JOIN/MUSIC_SAD_JOIN chord loops and host mute do not satisfy original audio. Public distribution remains outside scope. |
 | 9 — 8D presentation | Reached program/operation and scene/dialogue/animation/audio resource identities, dispatch/consumer/ack boundaries, blocking and resulting state from accepted source plus bounded observations | Match semantic identity and causal order; observe actual host use and completion/ack as defined below. Request/mailbox pairs, program return or a counter alone cannot PASS delivery. Missing original consumption evidence is OPEN; missing host evidence is Unavailable. No screenshots. |
 | 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A; inventory below | Emit a separate named result for every accepted deviation and its expected behavior, even when PASS. No implicit exclusions, missing-input waiver or newly invented deviation. |
@@ -239,7 +240,7 @@ claim of complete observer coverage. Reuse them before adding machinery:
 | [SessionContract.cs](../../../remake/src/Sf2.Remake.Application/Runtime/SessionContract.cs) | `CommandEnvelope` SessionId/ExpectedRevision/Actor/Command; `SessionResult` Failure/StopReason/Observations; `SessionSnapshot` Mode/Active/Story/Selection. `SessionObservation` Sequence/Revision/Kind/Actor/Target/Before/After/From/To/RandomRange/RandomValue/Program supplies ordered semantic changes. Match by source meaning; sequence numbers need only be monotonic, not equal original callback counts. Capture every result, not only the latest snapshot. |
 | [ExplorationSessionView.ReadObservationJson](../../../remake/game/src/Exploration/ExplorationSessionView.cs) | `sessionId`, `map`, `party`, `partyLists`, `gold`, `flags`, `mainSeed`, `entities` position/facing/moving/busy, `cursor`, `wait`, `token`, `stop`, `battleMounted`, `textId`, `speaker`, `speakerFlags`, `visibleCharacters`, `totalCharacters`, `observations`, failure fields. Normalize `map-57` to source map 57 using content identity. Story wait/cursor absence plus settled entities and released battle view support readiness; they do not alone prove input delivery or all stats. |
 | [BattleSessionView.ReadObservationJson](../../../remake/game/src/Battles/BattleSessionView.cs) | `round`, `turnOrder`, `queueCursor`, `actor`, `stage`, `target`, `spell`, `itemSlot`, `inventories` (actor plus carried item words), `previewX/Y`, `actors`, `mainSeed`, `thinkingSeed`, `gold`, `regionFlags`, `aiMemory`, `observations`, failure fields. Use typed snapshot state for values omitted by host projection. Accepted PR #521 supplies `SelectItem` and live carried inventory/slot observations, including consumption after ordinary healing-item use. Do not fabricate per-draw or scene-consumption records. |
-| [ExplorationPresentation](../../../remake/game/src/Exploration/ExplorationPresentation.cs) and exploration projection | `presentation.activeCue`, `completedCueToken/Kind`, sprite request/ready fields, gesture/fade/mosaic counters, `soundStarts/Fades`, `error`. Pair token/kind with the real `CompletePresentation`, actual resource/node and state transition. Aggregate counters do not identify a cue or prove full playback/asset provenance; missing correlations remain OPEN implementation work. |
+| [ExplorationPresentation](../../../remake/game/src/Exploration/ExplorationPresentation.cs) and exploration projection | `presentation.activeCue`, `completedCueToken/Kind`, sprite request/ready fields, gesture/fade/mosaic counters, `soundStarts/Fades`, `error`. Pair token/kind with the real `CompletePresentation`, actual resource/node and state transition. Aggregate counters do not identify a cue or prove full playback/asset provenance; missing correlations must remain Unavailable in the affected comparison. |
 | [Existing outcome probe](../../../remake/game/probes/engine_battle01_outcome_observation.gd), [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation) | Reuse actual input, single-session, wait/token, after-program, return and movement observation methods. Their previous PASS is bounded implementation evidence, not this winning original trace or continuous H4 PASS. Physical driver/hot-plug and complete export remain unverified. |
 
 ## Presentation and accessibility assertions
@@ -392,9 +393,10 @@ correction in the Issue handoff. A projected reference is never an H4 PASS.
 
 The [current acceptance map](../synthesis/map3-battle01-readiness.md#current-required-comparison-boundary)
 records independent acceptance of the thirteen bounded admission, rule, resource and consumer
-obligations. Their composed predicates below retain their exact evidence boundaries. Overall
-closure still requires main-gate review of required parent coverage, shared evidence dependencies
-and deviations. Historical/default reports remain unchanged; absent optional contexts can still
+obligations. Their composed predicates below retain their exact evidence boundaries. Main-gate has
+accepted the complete current milestone after independently reviewing required parent coverage,
+shared evidence dependencies and deviations at the [accepted boundary](../synthesis/map3-battle01-readiness.md#accepted-current-milestone).
+Historical/default reports remain unchanged; absent optional contexts can still
 produce Unavailable without invalidating an accepted explicit composition.
 
 **Preserved original projection limits (Unknown):** full R1 flags and fields beyond its serialized accounting,
@@ -422,18 +424,23 @@ original next actor is Bowie while actual is Sarah; host exit 2 is the corrobora
 The accepted PR #526 post-victory extension is now optionally projected; that actual run did not reach it. NPC phase and
 timing/RNG mapping remain Unknown. This corrected comparison is still not H4 acceptance.
 
-**Current integration review:** accepted resource, audio and scene proofs supply their named
+**Accepted current integration:** resource, audio and scene proofs supply their named
 local obligations; the readiness map connects them to the retained continuous route and earlier
 text/motion/operation evidence. Medical Herb and carried inventory remain accepted bounded
 capabilities. The explicit #517 fast-text policy retains its controlled reveal-tail proof and
 historical C limitation. Issue status alone does not establish any of these consumer claims.
 Current required keyboard A, supplemental C and excluded B/D follow ADR0010; old variant gaps
-are not additional required executions. Required parent coverage and combined acceptance remain OPEN.
+are not additional required executions. Required parent coverage, unchanged current dependencies
+and shared occurrence/input/effect compatibility have independent acceptance. The complete current
+private milestone is accepted under keyboard A, the modern clock and 7C/8D/10A semantics.
+This is composed acceptance of existing executed comparisons and continuous route/parent evidence;
+no fresh full executable modern report or corrected whole-A trajectory was generated. Historical
+A10/default/matrix results and scoped `milestonePass=false` values remain unchanged. Hardware 8C,
+full-game parity and public distribution remain outside this acceptance.
 Do not use current remake limitations to remove reached actions from the expected contract.
-Independent review accepts these comparison definitions with their precise open boundaries; this
-does not establish complete definition readiness or milestone readiness.
-The [readiness ledger](../synthesis/map3-battle01-readiness.md) tracks closure; main-gate independently
-reviews acceptance. The offline reference projection does not execute H4 or launch native acquisition.
+The [readiness ledger](../synthesis/map3-battle01-readiness.md#accepted-current-milestone) owns the
+final acceptance basis and retained Unknowns; the [review route](../../../remake/docs/development-and-verification.md#accepted-composition-review)
+locates supporting inspections. The offline reference projection does not execute H4 or launch native acquisition.
 
 ## Executable modern applicability comparison
 
@@ -459,7 +466,8 @@ local displacement, facing, collision and true input readiness remain required.
 The `matrix --matrix-scope current-keyboard` command declares required A, excluded B/D and optional
 supplemental C independently of which reports are supplied. Only A contributes to current counts,
 required reports and remaining obligations. Missing, malformed or failed A cannot pass; its remaining
-13 required children still block H4. C's comparison, actual report failures and Unknowns remain visible
+13 unavailable children still prevent that retained report from passing. Their accepted compositions
+are accounted for in the current readiness owner. C's comparison, actual report failures and Unknowns remain visible
 separately. B/D history remains readable without entering the current gate. A's self-equality closes
 only the legacy-named matrix obligation for this explicit scope, not full H4 or all-settings parity.
 
@@ -491,7 +499,8 @@ matched-state rule/RNG mapping, complete reached resource provenance and require
 bindings remain missing in those sessions. Settings equality does not close their eight obligations.
 The separately observed new A session supplies admission definitions and actual mounted-resource/audio
 records; those fields do not backfill A-D02. Its three item parents pass, while five original phase,
-operation, rule, resource and consumer parents remain open. Full H4 is still incomplete.
+operation, rule, resource and consumer parents remain open in that retained report. Later composed
+acceptance is recorded by the readiness owner; none of these historical results is relabelled.
 
 ### Admission and required child obligations
 
@@ -542,7 +551,8 @@ With the explicit sealed R1 witness and selected compiled content, walking admis
 the three pointers through the pinned allocator/template to semantic cursor/moving state and consumed
 wait behavior. The [walking source owner](../../research/map3-messenger-acceptance.md#walking-admission-continuation)
 supplies expected phases; remake start values and program names do not supply them. Without that
-selection these existing children remain Unavailable. Full H4 remains incomplete.
+selection these existing report children remain Unavailable; the current accepted composition
+retains the explicit selections and their independent evidence.
 
 The existing walking motion/readiness child compares active axes and direction, carried total travel
 and remaining distance in tile units, configured speed/acceleration operands, acceleration/deceleration,
@@ -1354,7 +1364,7 @@ seeds are evidence locators, never production restrictions.
 
 The comparator adds bounded JOIN playback/restart and caller subsets. Complete selected A audio
 replacement/fade/stop/resume uses the composed binding above; other operation/consumer/rule obligations
-and resource families keep full H4 incomplete. Unseen original helper
+and resource families retain their separate accepted owners in the current requirement map. Unseen original helper
 return order is Inferred; original music completion and channel/F0/queue/residual/interleaving remain
 Unknown. Modern finite music remains the accepted deviation.
 
@@ -1406,8 +1416,9 @@ causal wait and consumer completion remain operation/consumer assertions. Those 
 require a different historical battle trajectory to establish material origin. Optional selections
 never backfill older sessions. Missing evidence is Unavailable; contradictory observed content or
 identity is FAIL. The complete displayed-text material child passes for the named continuous A.
-Three other resource families and five broad parents keep full H4 incomplete. After matrix
-self-closure, A has22 remaining children; retained B/C/D each have37 and are not backfilled.
+In that historical report, three other resource families and five broad parents remain incomplete.
+After matrix self-closure, its A has22 remaining children; retained B/C/D each have37 and are not
+backfilled. These report results remain distinct from current composed acceptance.
 
 ### Complete reached displayed-text material binding
 
@@ -1564,7 +1575,8 @@ and entity loading. Preserve their real service, effect and PC consequences. The
 pre-after-program checkpoints and modern Left baseline remain exact in the bounded corrected A
 observation; there is no evidence requiring a Left-baseline change. The historical A/B/C/D matrix
 retains its own content identity. Corrected A cannot form a current same-content matrix with old
-B/C/D; current cohort and full H4 remain Unavailable. Reproduction and current evidence are owned by
+B/C/D; those retained cohort/full-report results remain Unavailable. Current keyboard scope does
+not require those variants. Reproduction and evidence for this operation comparison are owned by
 the [operation-flow verification route](../../../remake/docs/development-and-verification.md#complete-operation-flow-comparison).
 
 For the bounded JOIN, actual finite playback may finish before logical helper work. The logical

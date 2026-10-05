@@ -55,9 +55,11 @@ records supported behavior, responsibility directories and remaining private/pro
 
 The [capability matrix](./docs/capability-status.md) owns runnable support and Unknowns. The
 [Map 3 implementation/reference record](./docs/map03-playability-plan.md) owns existing controlled
-routes, inputs and their limits; it is not the next-feature queue. ADR 0009's continuous Map 3 through
-completed Battle 01 remains the eventual reference milestone. The accepted 8C/H4 target remains
-incomplete, including natural continuity and original presentation. Engine migration does not waive it.
+routes, inputs and their limits; it is not the next-feature queue. The private continuous Map 3 through
+Battle 01 victory and usable-return milestone is accepted under keyboard A, the modern deterministic
+clock and 8D semantics. The [readiness owner](../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+records the composed H4 acceptance and unchanged historical reports. Hardware 8C, full-game parity
+and public distribution remain outside that acceptance.
 
 ## Start Here
 
