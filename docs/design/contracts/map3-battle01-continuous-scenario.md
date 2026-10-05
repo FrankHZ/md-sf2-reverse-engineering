@@ -1516,6 +1516,13 @@ backfilled. These report results remain distinct from current composed acceptanc
 
 ### Complete reached displayed-text material binding
 
+The comparator entry uses the [text material module owners](../../operations/bounded-inspection-and-review.md#h4-text-material-module-route)
+with explicit reader and bounded storage dependencies. Source admission retains partial operands
+after the same caught errors; typed battle operand exceptions retain the enclosing occurrence
+boundary. Ordered checks, independent required inventories and False-over-missing aggregation are
+unchanged. The structural source/interface observations use bounded source-derived/constructed
+controls and do not replace PR601's accepted historical A evidence or extend any claim below.
+
 The existing displayed-text/token/font/glyph child joins the selected world and scene from the
 same-run process receipt to a read-only, explicitly selected SF2DISASM checkout at the accepted pin.
 All imported text and member names must equal that source. ASCII symbols and advances use the
