@@ -2620,6 +2620,21 @@ route, screenshot, emulator, export or broad/helper test is part of this observa
 
 ## Continuous text material comparison
 
+The real comparator entry delegates to the [text material module owners](../../docs/operations/bounded-inspection-and-review.md#h4-text-material-module-route).
+The explicit reader/storage interfaces preserve source admission, independent field/battle required
+inventories, typed reaction operands, ordered reports and publication lifetime. Structural acceptance
+uses the complete source correspondence and bounded source-derived/constructed controls under
+`local/issue638/text-material-modules-01`, including the real modern caller and detached publication.
+Those controls establish extraction equivalence only; they do not represent historical A, natural
+reach or a new full comparison. The retained complete A and its failures below are unchanged;
+its eager historical recipes are not the structural slice's acceptance commands.
+
+The configured-font check rejects boolean `faceIndex` values while retaining numeric0/0.0 and
+the existing missing-value and strict `allowSystemFallback` rules. Separate complete before/after
+reports under `local/issue638/text-material-font-type-01` cover both consumers and missing-plus-boolean
+contradictions. This corrects an existing false PASS independently of the preserved movement proof;
+it does not rerun or revise the accepted historical A comparison.
+
 `remake_h4_comparison` accepts `--text-source-root` as an explicit read-only pinned SF2DISASM
 checkout. Relative selections resolve from the repository root, including package working
 directories. Existing same-run world/scene/process and scene/asset provenance selections remain

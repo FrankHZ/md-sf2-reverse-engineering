@@ -520,6 +520,57 @@ historical behavior evidence. The [operation-flow contract](../design/contracts/
 and [verification owner](../../remake/docs/development-and-verification.md#complete-operation-flow-comparison)
 retain those limits.
 
+### H4 Text-material Module Route
+
+The existing `text_material_binding(actual, outcome, selection, source_root)` entry and modern
+caller delegate to `text_material_binding.py`. Its explicit dependencies are the existing reader,
+bounded-list, occurrence-map/set/dict and bounded-sort factories. The ordered checks, field/battle
+joins, independent required inventories and False-over-missing reduction retain their original
+owners and lifetimes. Other comparison families and transport internals are outside this route.
+
+The complete source correspondence is
+`0ec02f9a206f90432b566f6ceb710e29da3a538f:src/sf2tool/remake_h4_comparison.py`, lines2239–2785;
+the following separator lines stay in the comparator. Review every mapped body, including branches
+not exercised by the bounded controls.
+
+| Module in `src/sf2tool/remake_h4/` | Old regions | Body and state bridge |
+| --- | --- | --- |
+| `text_material_binding.py` | 2239–2253,2369–2379,2783–2785 | Per-call result/check closure, absent-selection return, first-occurrence event index, ordered composition and final reduction. |
+| `text_material_source.py` | 2269–2368 | Reader/selection/source/check inputs; returns partial world/texts/member names/enemy selectors/ASCII map/advances even after the original caught source errors. |
+| `text_material_units.py` | 2254–2268,2380–2406 | Stateless configured-font predicate and a per-call unit-reader closure over admitted names/map/advances. |
+| `text_material_field.py` | 2407–2514 | Source span inventory, accepting-event continuation and field/outcome consumer joins, with explicit event index/unit reader/result/check/storage arguments. |
+| `text_material_battle.py` | 2515–2522,2526–2603,2707–2782 | Preparation/reaction intervals, local actor-name closure, consumer joins and independent required message inventory. |
+| `text_material_operands.py` | 2523–2525,2604–2706 | Stateless actor lookup and typed action/HP/EXP/gold/growth template selection; returns the existing tid/value/who/healing locals for the same reaction. |
+
+The structural extraction changes no original source local or predicate. The configured-font
+predicate additionally rejects boolean `faceIndex` values: Python's `False == 0` previously admitted
+an explicit nonnumeric face. Integer0 and float0.0 remain accepted; missing-value handling and
+strict boolean `allowSystemFallback` are unchanged. Complete field/battle and mixed-absence
+counterexamples are retained separately under `local/issue638/text-material-font-type-01`;
+the original movement reports remain structural evidence only.
+
+Source admission keeps partial state after local
+absence so later independent font/content contradictions remain visible. Operand exceptions still
+reach the original enclosing battle catch. The original CRLF spriteset representation and raw
+lethal reaction Amount remain explicit. No rendered text chooses its own source template. Field
+and battle required inventories remain independent of their consumer channels.
+
+Readers and storage factories remain caller-owned. Checks and actual joins use their original
+bounded append stores; required inventories retain the existing small-list/spill behavior. No
+module closes a reader or takes over publication. The existing detached report bundle remains
+readable after the input context closes. Mutable indexes, span state and reaction locals are per
+call; no module adds a cache, generic dependency object or reverse comparator import.
+
+Structural reproduction belongs to `local/issue638/text-material-modules-01`: exact source/region
+and generated-body maps, complete ordered old/new control reports, equality receipts and real
+entry/storage/publication observations. Controls use pinned source-derived text/font operands and
+explicitly constructed world/scene/receipt/event/state channels. They are not historical A or
+natural-reach evidence. The registered private font passes the existing fixture identity before
+control derivation; no raw historical actual/world, eager recipe or full A comparison is read/run.
+The [text material contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-displayed-text-material-binding)
+and [verification owner](../../remake/docs/development-and-verification.md#continuous-text-material-comparison)
+retain PR601's accepted evidence, omissions/mixed counterexamples, completed failures and Unknowns.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

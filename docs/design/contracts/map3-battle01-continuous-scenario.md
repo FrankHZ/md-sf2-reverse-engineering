@@ -1516,6 +1516,13 @@ backfilled. These report results remain distinct from current composed acceptanc
 
 ### Complete reached displayed-text material binding
 
+The comparator entry uses the [text material module owners](../../operations/bounded-inspection-and-review.md#h4-text-material-module-route)
+with explicit reader and bounded storage dependencies. Source admission retains partial operands
+after the same caught errors; typed battle operand exceptions retain the enclosing occurrence
+boundary. Ordered checks, independent required inventories and False-over-missing aggregation are
+unchanged. The structural source/interface observations use bounded source-derived/constructed
+controls and do not replace PR601's accepted historical A evidence or extend any claim below.
+
 The existing displayed-text/token/font/glyph child joins the selected world and scene from the
 same-run process receipt to a read-only, explicitly selected SF2DISASM checkout at the accepted pin.
 All imported text and member names must equal that source. ASCII symbols and advances use the
@@ -1547,7 +1554,10 @@ inventories alongside actual joins, without fixed occurrence counts or an additi
 
 Field and battle use the same accepted modern configured-font boundary: the mounted FontFile face,
 family/style/index, size and system-fallback permission. Current mounted defaults are Open Sans
-SemiBold/SemiBold/face0, field16 and battle9. Original symbol/advance provenance and actual modern
+SemiBold/SemiBold/face0, field16 and battle9. Face index0 is numeric: integer0 and float0.0 are
+accepted, but boolean false is a contradiction despite Python numeric equality. An absent font/face
+list remains Unavailable; an absent face index within an observed face remains a contradiction.
+System-fallback permission must be boolean true. Original symbol/advance provenance and actual modern
 Label consumption are separate checks. Per-character fallback, exact shaping, original bitmap and
 pixel equality remain Unknown/outside this material assertion. Control-token identity proves no
 unobserved original W2 accepting read or control side effect.
