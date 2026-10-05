@@ -176,6 +176,26 @@ imports the monolith. Use the [reward verification route](../../remake/docs/deve
 with the joined input including return; the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-reward-growth-and-outcome-consumer-binding)
 retains the reached-cohort EXP limit and missing/contradiction precedence.
 
+### H4 HEAL Module Route
+
+The scoped `heal` CLI and modern child share `heal_binding.heal_consumer_binding`; the old import
+remains available. Owners under `src/sf2tool/remake_h4/` preserve HEAL-specific missing-value semantics.
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `heal_checks.py` | Partial value/list/event matching and the single ordered `HealChecks` log. Numeric operands exclude booleans; explicit `None` remains unavailable. |
+| `heal_source.py` | Pinned motion/cast/idle tables and `fairy_source_step`, the independent setup/update/controller calculation. |
+| `heal_evidence.py` | Indexed channel/occurrence selection, event envelopes and `SceneProjections` post-Present identity joins; no transport ownership. |
+| `heal_preparation.py` | Source scalar obligations, spell/target selection, effect records and prepared Submit; returns scalars, resource tuples, effects and events. |
+| `heal_resources.py` | MP→HP→EXP phase order, live deferral and retention; reads preparation outputs. |
+| `heal_opportunities.py` | Locally owns previous scene/seed while reducing services and delivery; returns phase work, final scene and occurrence counters. |
+| `heal_work.py` | Source phase/caller obligations, fairy cleanup and scene completion. |
+| `heal_binding.py` | Composes those checks in their original order and returns the detached report. |
+
+The [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding)
+and [verification route](../../remake/docs/development-and-verification.md#scoped-heal-consumer-comparison)
+retain logical-clock limits, complete comparison controls and the caller-owned selected-stream boundary.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

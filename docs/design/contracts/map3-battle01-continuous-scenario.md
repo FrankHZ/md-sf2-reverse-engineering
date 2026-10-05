@@ -1078,6 +1078,13 @@ Reproduce using the [scoped AI route](../../../remake/docs/development-and-verif
 
 ### Selected HEAL rule and consumer binding
 
+Implementation is [`heal_binding.py`](../../../src/sf2tool/remake_h4/heal_binding.py), composed through
+the [HEAL module route](../../operations/bounded-inspection-and-review.md#h4-heal-module-route).
+Numeric evidence accepts equal integer/float values but rejects booleans: `true` cannot replace
+spell level `1` in either selected state or a scene projection. Boolean fields likewise require
+booleans. Explicit `None` for a required operand retains HEAL's Unavailable meaning; a numeric-type
+contradiction remains FAIL beside missing evidence.
+
 The `HEAL recovery/cost/fairy opportunity and seed effects` child uses the accepted
 [HEAL 1 rules](spell-resolution.md#confirmed-heal-1-subset) and
 [legal recovery-window proof](../../research/map3-messenger-acceptance.md#legal-heal-recovery-window-completion).
