@@ -66,6 +66,67 @@ applies them to Godot and offline comparison.
   writes must preserve every necessary event within that second. Bound buffers and total output,
   and retain overflow, writer-error and terminal-integrity behavior.
 
+## Source Size and Responsibility
+
+New or extracted handwritten source must stay below 1,000 physical lines; aim for 300–800 where
+that responsibility warrants it and plan a split before the limit. Small entry points and specific
+value contracts can be shorter. Count physical lines, not statements: do not compress code, remove
+useful comments, move a giant function intact, split by numbered parts, or create a catch-all helper
+to satisfy the limit. Explicit generated/vendor code is excluded; naming handwritten code generated
+is not an exemption.
+
+An existing oversized file must not gain responsibilities or net growth. Extract the touched
+responsibility in a bounded review; unrelated legacy files remain a migration backlog, not a global
+prerequisite. Review dependency direction, state/resource ownership, real import/CLI consumers and
+semantic differences before moving code. Keep compatibility only for actual consumers; avoid reverse
+imports, circular dependencies, wildcard forwarding and mutable shared globals. Shared matching must
+have demonstrably identical subset, ordering, partial and missing-value rules.
+
+The initial enforcement is a direct changed-source review, alongside existing lint; no new CI
+framework is required. Before staging, include newly added files in the count. On the staged diff:
+
+```powershell
+$changedSource = git diff --cached --name-only --diff-filter=AM -- '*.py' '*.cs'
+foreach ($path in $changedSource) {
+    [pscustomobject]@{ Path = $path; Lines = (Get-Content -LiteralPath $path).Count }
+}
+git diff --cached --numstat
+```
+
+The reviewer checks each new/extracted file against the limit and compares existing oversized files
+to the accepted base for net growth and responsibility changes. Record the exact count/diff with the
+handoff, not a growing history in agent guidance. Preserve complete old/new selected results,
+including check order, occurrences, Unknowns and missing-versus-contradiction precedence; a matching
+PASS alone is insufficient. Budget full-result output before batching controls. When repeated full
+results exceed a per-command output budget, use smaller sequential batches and lossless local
+snapshots, retaining completed results and failures.
+
+### H4 Physical Module Route
+
+The maintained CLI remains `python -m sf2tool.remake_h4_comparison`; its `physical` mode and
+`compare_modern` use the same `physical_consumer_binding`. The monolith still owns transport,
+resource lifetime, other families, report publication and CLI. Subsequent #638 slices must decompose
+those owners independently; this representative family does not complete that migration.
+
+| Owner under `src/sf2tool/remake_h4/` | Responsibility and interface |
+| --- | --- |
+| `physical_source.py` | `source_operands(source_root, item_ids)` verifies/reads pinned tables; `source_action(source, actors, attacker, target, seed)` calculates original draws/strikes. Existing AI, scene and reward consumers retain the old module's explicit aliases. |
+| `physical_checks.py` | Physical-only subset/list/ordered matching, missing sentinel and `PhysicalChecks(session)` ordered check log/clock joins. No other family's matcher is consolidated here. |
+| `physical_evidence.py` | `select_evidence(actual, context, checks)` consumes channel iterables and returns selected channel maps, events and event-to-result indexes; checks input/result/projection causality. |
+| `physical_occurrences.py` | `compare_occurrences(selected, events, event_rows, census, source, checks)` checks scene preparation, predicted rules, persistent effects and reactions; returns occurrence summaries, Unknowns and covered effect sequences. |
+| `physical_binding.py` | `physical_consumer_binding(actual, context, source_root)` orchestrates selection, source admission, census and occurrence checks and assembles the existing report. |
+
+The dependency direction is binding → evidence/occurrences → checks/source → existing foundational
+RNG/path/reference owners. No extracted module imports the monolith. Channel selection retains only
+the declared rows while the caller's stream is open; new modules neither open nor close its SQLite
+context. Source file reads and subprocess lifetimes remain local to operand loading. Reports contain
+ordinary detached values and preserve ordering. Direct observations import their actual owner;
+private closure-extraction or monkeypatch techniques do not require compatibility machinery. The
+[physical verification entry](../../remake/docs/development-and-verification.md#scoped-physical-consumer-comparison)
+owns compact controls and unchanged CLI usage; the
+[scenario contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding)
+owns accepted semantics and evidence limits.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

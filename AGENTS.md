@@ -263,6 +263,11 @@ verification. Keep private/generated artifacts out of Git and public CI.
 
 ## Change Discipline
 
+Keep new or extracted handwritten source below 1,000 physical lines, with responsibilities small
+enough to review independently. When touching oversized source, extract the affected responsibility
+without adding net growth; apply the [source review rules](docs/operations/bounded-inspection-and-review.md#source-size-and-responsibility)
+for thresholds, exclusions and direct checks.
+
 - Make one narrow, reviewable change with one clear owner and acceptance boundary.
 - Size engine slices around a coherent rule or user behavior. A reference case, exact round, receipt
   count, character sequence, or named scenario endpoint does not define gameplay legality. Review

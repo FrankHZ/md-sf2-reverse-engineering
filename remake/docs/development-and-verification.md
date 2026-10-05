@@ -3807,6 +3807,14 @@ unavailable in that retained report. Their current composed acceptance is record
 
 ### Scoped physical consumer comparison
 
+The implementation route is [H4 physical modules](../../docs/operations/bounded-inspection-and-review.md#h4-physical-module-route).
+The CLI and `sf2tool.remake_h4_comparison.physical_consumer_binding` import remain available;
+direct physical observations now import `sf2tool.remake_h4.physical_binding`. Value/ordered matching
+observations import `match`, `ordered_match` and `absent` from `sf2tool.remake_h4.physical_checks`,
+instead of extracting the old function's private closures. Source operands/action live in
+`physical_source`; AI/scene/reward consumers retain explicit aliases in the existing entry module.
+
+
 Use the [selected physical contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding)
 with the existing compact actual and independent context. It shares the modern physical child and
 does not require a full H4 run, SDK, host, emulator, world export or reference reconstruction.
@@ -3839,7 +3847,7 @@ representations return `true`, type/null contradictions return `false`, missing-
 $physicalControl = @'
 import copy, json, sys
 from pathlib import Path
-from sf2tool.remake_h4_comparison import physical_consumer_binding
+from sf2tool.remake_h4.physical_binding import physical_consumer_binding
 p = Path('local/issue534/physical-binding-01')
 a0 = json.loads((p / 'actual.json').read_bytes())
 c0 = json.loads((p / 'context.json').read_bytes())
@@ -3870,6 +3878,15 @@ integer-domain checks. Explicit null cannot replace zero or either side's missin
 the retained physical clock/input/projection controls with fresh output names; keep their prior
 failures and the original type counterexample. Object subset, list-length and ordered-event
 semantics retain the [physical contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding).
+
+For extraction review, compare the complete ordered result before/after, including every check,
+occurrence, source rule, diagnostic and Unknown. Reuse the retained #534 physical controls, #629
+clock/input/projection counterexamples and #637 value controls; write fresh local results in batches
+of at most 16 for the initial 1MiB output budget. Lossless compression is permitted; truncated
+nonpass summaries alone do not establish equivalence. Check the retained CLI's PASS/FAIL/Unavailable
+exit codes (0/1/2), real source/import aliases and a selected SQLite-backed channel observation whose
+caller closes the context after comparison. This is direct verification, not a new verifier test
+suite; it grants no full-route rerun or cleanup of historical inputs/results/failures.
 
 The one admitted raw selection traversed the registered 1,375,851,198-byte historical A once in
 25.8418791 seconds, with 3,522,560 bytes incremental peak memory and unchanged source size/mtime.
