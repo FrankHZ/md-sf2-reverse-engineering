@@ -248,6 +248,33 @@ in-memory cases remain caller-owned. Neither path extends the observed boundary 
 archive. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding)
 and [verification route](../../remake/docs/development-and-verification.md#scoped-field-service-comparison).
 
+### H4 Mutable-Map Module Route
+
+`map_consumer_binding` remains the same callable at the old import and in
+`map_binding`; scoped map/resource and modern callers use that alias. `_map_source_regions`
+and `_map_draw_cells` remain direct observation aliases. These owners in
+`src/sf2tool/remake_h4/` consume selected objects and the explicit source root:
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `map_source.py` | Named source tables/layout/blocks, retained mutators and school population. |
+| `map_history.py` | Historical session, complete selected ranges/producers and source-class coverage. |
+| `map_cohort.py` | Source-derived region obligations for the admitted delivery roles. |
+| `map_delivery.py` | Controlled input/ready-state chain and bounded transfer lineage. |
+| `map_layout.py` | Available use facts, reconstructed working/saved words and snapshot execution identity. |
+| `map_projection.py` | Legacy/current viewport planes and independent actor census. |
+| `map_geometry.py` | Existing float32 arithmetic and positive-area clipping. |
+| `map_actors.py` | Renderer-derived actor admission and source sprite ink for one draw inventory. |
+| `map_draw.py` | Expected plane/mask cells and actual coordinate/resource multiset. |
+| `map_witness.py` | Ordered region comparisons, per-binding identities and repeated-read continuity. |
+| `map_binding.py` | Source admission, aggregate check log and composition of those owners. |
+
+`SpriteInk` retains only the existing per-draw source table and alpha-run cache; each draw gets
+a fresh instance. Selected streams remain caller-owned, and reports are detached from them.
+No module imports the monolith or changes material/texture prerequisites. Actor missingness
+does not bypass independent plane geometry. See the [delivery contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-mutable-map-delivery)
+and [verification route](../../remake/docs/development-and-verification.md#composed-mutable-map-verification).
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
