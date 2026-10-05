@@ -17063,6 +17063,707 @@ def turn_order_binding(actual, source_root):
     return finish()
 
 
+def turn_order_consumer_binding(actual, context, source_root):
+    """Compose accepted executed generation rules with retained queue consumers.
+
+    Retained queues are inputs to the consumer rule, never expected generation.
+    Supplied channels must independently cover the declared census and states.
+    """
+    from bisect import bisect_right
+
+    context = context or {}
+    result = dict(
+        value=None,
+        checks=[],
+        frontier=[],
+        diagnostics=[],
+        historicalDiagnostic="Unavailable",
+        sourceRules=dict(
+            upstream=UPSTREAM, owner="docs/design/contracts/battle-control-lifecycle.md"
+        ),
+    )
+    absent = object()
+    groups = {}
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def match(expected, observed=absent):
+        if expected is absent or observed is absent or observed is None and expected is not None:
+            return None
+        if isinstance(expected, dict):
+            return (
+                False
+                if not isinstance(observed, dict)
+                else merge([match(v, observed.get(k, absent)) for k, v in expected.items()])
+            )
+        if isinstance(expected, list):
+            if not isinstance(observed, list):
+                return False
+            return merge(
+                [
+                    False
+                    if len(observed) > len(expected)
+                    else None
+                    if len(observed) < len(expected)
+                    else True
+                ]
+                + [match(e, a) for e, a in zip(expected, observed, strict=False)]
+            )
+        if isinstance(expected, (int, float)) and not isinstance(expected, bool):
+            return type(observed) in (int, float) and observed == expected
+        return observed == expected and (not isinstance(expected, bool) or type(observed) is bool)
+
+    def check(name, value, **identity):
+        key = name, value
+        if key not in groups:
+            groups[key] = dict(name=name, value=value, count=0, examples=[])
+            result["checks"].append(groups[key])
+        group = groups[key]
+        group["count"] += 1
+        if identity and len(group["examples"]) < 8:
+            group["examples"].append(identity)
+
+    def actor(event):
+        return (event.get("Actor") or {}).get("Value")
+
+    check(
+        "explicit composed scope",
+        match("retained-keyboard-A-turn-composed", context.get("scope", absent)),
+    )
+    check(
+        "original producer",
+        match("4d1d1b05f143ed872ceca6ff258cfca2b4087d90", context.get("producer", absent)),
+    )
+    check("source revision", match(UPSTREAM, context.get("upstream", absent)))
+    session = context.get("sessionId")
+    check("independent session", True if isinstance(session, str) and session else None)
+    generation = turn_order_binding(context.get("generationActual") or {}, source_root)
+    result["generation"] = generation
+    generation_rows = (context.get("generationActual") or {}).get("rounds")
+    check(
+        "bounded accepted generation selection",
+        None if not generation_rows else len(generation_rows) <= 3,
+    )
+    check("accepted actual generation/source leg", generation["value"])
+    tested = context.get("generationCommit")
+    check(
+        "accepted tested generation revision",
+        match("742e4306dc706f5ddd1fce1fa1168c70cf889477", tested),
+    )
+    for path in (
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/TurnOrderRules.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs",
+        "remake/src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs",
+        "remake/src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs",
+        "remake/src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs",
+        "remake/src/Sf2.Remake.Application/Runtime/SessionContract.cs",
+    ):
+        try:
+            old = subprocess.check_output(
+                ["git", "-C", str(repo_path(".")), "show", f"{tested}:{path}"]
+            )
+            check(
+                "tested/current dependency " + path,
+                old == repo_path(path).read_bytes().replace(b"\r\n", b"\n"),
+            )
+        except (OSError, subprocess.CalledProcessError):
+            check("tested/current dependency " + path, None)
+    indices = context.get("indices") or {}
+    channels = {}
+    selected = actual.get("evidenceScope") == "selected-turn-consumers"
+    for channel in ("samples", "warpRecords", "inputRecords"):
+        indexed = {}
+        source_order = []
+        for ordinal, row in enumerate(actual.get(channel) or []):
+            index = row.get("_index", absent) if selected else row.get("_index", ordinal)
+            if index is absent:
+                check("supplied source index absent", None, channel=channel)
+                continue
+            if type(index) is not int or index < 0:
+                check("supplied source index type", False, channel=channel)
+                continue
+            check(
+                "unique supplied source index", index not in indexed, channel=channel, index=index
+            )
+            indexed[index] = row
+            source_order.append(index)
+        check(
+            "supplied channel source order", source_order == sorted(source_order), channel=channel
+        )
+        channels[channel] = indexed
+        required = indices.get(channel)
+        check(
+            "independent channel inventory",
+            None if required is None else len(required) == len(set(required)),
+            channel=channel,
+        )
+        for index in required or []:
+            check(
+                "supplied selected record",
+                True if index in indexed else None,
+                channel=channel,
+                index=index,
+            )
+    queues = {}
+    for installed in context.get("queues") or []:
+        round_, channel, index = (
+            installed.get("round"),
+            installed.get("channel"),
+            installed.get("index"),
+        )
+        check(
+            "explicit one-based/zero-based join",
+            match(index + 1, installed.get("ordinal", absent)) if type(index) is int else None,
+        )
+        queue = installed.get("queue")
+        check(
+            "independent full64 installed queue",
+            None if queue is None else isinstance(queue, list) and len(queue) == 64,
+            round=round_,
+        )
+        check("unique installed round", round_ not in queues, round=round_)
+        queues[round_] = queue
+        state = (channels.get(channel, {}).get(index) or {}).get("state") or {}
+        check(
+            "supplied installation at retained seam",
+            match(dict(sessionId=session, round=round_, queueCursor=0, turnOrder=queue), state),
+            round=round_,
+        )
+    check("independent installed rounds", True if queues else None)
+    census = context.get("census") or []
+    check("independent semantic census", True if census else None)
+    expected = {c[2]: c for c in census}
+    check(
+        "admitted source consumer kinds",
+        all(
+            c[3]
+            in (
+                "round-started",
+                "round-rng",
+                "player-control",
+                "regions-tested-cleared",
+                "action-committed",
+                "after-turn",
+                "dead-entry-skipped",
+                "ai-stay",
+                "battle-outcome",
+                "hp",
+                "heal",
+                "death-cleanup",
+            )
+            for c in census
+        ),
+    )
+    check(
+        "unique ordered census identities",
+        len(expected) == len(census) and list(expected) == sorted(expected),
+    )
+    round_sequences = (context.get("roundSelection") or {}).get("roundSequences")
+    check(
+        "independent completed round selection",
+        match(round_sequences, [c[2] for c in census if c[3] in ("round-started", "round-rng")])
+        if round_sequences is not None
+        else None,
+    )
+    for receipt in context.get("selectionReceipts") or []:
+        check("completed retained selection", match(None, receipt.get("failure", absent)))
+        for kind in sorted({c[3] for c in census}):
+            count = (receipt.get("eventKinds") or {}).get(kind)
+            if count is not None:
+                check(
+                    "independent census count " + kind, count == sum(c[3] == kind for c in census)
+                )
+    check("retained selection receipt", True if context.get("selectionReceipts") else None)
+    supplied, publications = {}, {}
+    required_rows = {}
+    census_kinds = {c[3] for c in census}
+    owning_indices = context.get("owningResultIndices")
+    check(
+        "independent owning-result inventory",
+        None if owning_indices is None else {c[0] for c in census}.issubset(owning_indices),
+    )
+    for index in indices.get("warpRecords") or []:
+        row = channels["warpRecords"].get(index)
+        if row is None:
+            continue
+        required_rows[index] = row
+        body, state = row.get("result") or {}, row.get("state") or {}
+        owning = (
+            index in {c[0] for c in census}
+            or index in (owning_indices or [])
+            or any(e.get("Kind") in census_kinds for e in body.get("observations") or [])
+        )
+        if not owning and body.get("failure") is not None:
+            result["diagnostics"].append(
+                dict(index=index, failure=body["failure"], turnConsumed=False)
+            )
+        check(
+            "owning result/state acceptance and identity",
+            merge(
+                [
+                    match(session, body.get("sessionId", absent)),
+                    match(None, body.get("failure", absent)) if owning else True,
+                    match(session, state["sessionId"]) if "sessionId" in state else True,
+                    match(None, state["failure"]) if owning and "failure" in state else True,
+                    match(
+                        (context.get("callerFields") or {}).get(str(index), {}),
+                        {
+                            k: row.get(k, absent)
+                            for k in (context.get("callerFields") or {}).get(str(index), {})
+                        },
+                    ),
+                ]
+            ),
+            index=index,
+        )
+        state_fields = (context.get("stateFields") or {}).get(str(index))
+        check(
+            "supplied state leaves at applicable seam",
+            None
+            if state_fields is None
+            else merge([True if key in state else None for key in state_fields]),
+            index=index,
+        )
+        events = body.get("observations")
+        check(
+            "owning ordered events",
+            None
+            if events is None
+            else all(e.get("Sequence") is not None for e in events)
+            and [e["Sequence"] for e in events] == sorted({e["Sequence"] for e in events}),
+            index=index,
+        )
+        for event in events or []:
+            sequence = event.get("Sequence")
+            if sequence is None:
+                continue
+            if sequence in supplied:
+                check(
+                    "repeated publication payload agrees",
+                    match(supplied[sequence], event),
+                    sequence=sequence,
+                )
+            else:
+                supplied[sequence] = event
+            publications.setdefault(sequence, set()).add(index)
+            if event.get("Kind") in census_kinds:
+                check(
+                    "consumer belongs to independent census",
+                    sequence in expected,
+                    sequence=sequence,
+                )
+    for sequence, c in expected.items():
+        event = supplied.get(sequence)
+        check(
+            "selected event owning source index",
+            None if event is None else c[0] in publications[sequence],
+            sequence=sequence,
+        )
+        check(
+            "selected event identity",
+            match(
+                dict(
+                    Revision=c[1],
+                    Sequence=c[2],
+                    Kind=c[3],
+                    Actor=None if c[4] is None else dict(Value=c[4]),
+                    Target=None if c[5] is None else dict(Value=c[5]),
+                ),
+                event if event is not None else absent,
+            ),
+            sequence=sequence,
+        )
+    for index, row in channels["warpRecords"].items():
+        state = row.get("state") or {}
+        if "turnOrder" in state and state.get("round") in queues:
+            check(
+                "available supplied queue at declared round",
+                match(queues[state["round"]], state["turnOrder"]),
+                index=index,
+            )
+    if not census:
+        result["value"] = merge([c["value"] for c in result["checks"]])
+        return result
+    round_, cursor, terminal, terminal_support, hp, positions = 0, 0, None, None, {}, {}
+    initial = (channels["samples"].get((indices.get("samples") or [None])[0]) or {}).get(
+        "state"
+    ) or {}
+    for a in initial.get("actors") or []:
+        hp[a.get("id")] = a.get("hp", absent)
+        positions[a.get("id")] = (a.get("x", absent), a.get("y", absent))
+    factions = context.get("factions") or {}
+    check(
+        "source faction identity namespaces",
+        None
+        if not factions
+        else all(
+            value
+            == (
+                "Ally" if key.startswith("ally-") else "Enemy" if key.startswith("enemy-") else None
+            )
+            for key, value in factions.items()
+        ),
+    )
+    hp_images = {}
+    image_keys = {
+        (row.get("result") or {}).get("observationSequence") for row in required_rows.values()
+    }
+    entered = set()
+    consumed = set()
+    timeline = sorted(set(supplied) | set(expected))
+    state_at = {}
+
+    def queued():
+        queue = queues.get(round_)
+        return (
+            absent
+            if queue is None or not 0 <= cursor < len(queue)
+            else queue[cursor].get("actor", absent)
+        )
+
+    for sequence in timeline:
+        c = expected.get(sequence)
+        event = supplied.get(sequence) or {}
+        if c is not None:
+            kind, whom = c[3], actor(event)
+            target = queued()
+            if kind == "round-started":
+                check(
+                    "source sentinel permits next round",
+                    True if round_ == 0 else match(None, target),
+                    sequence=sequence,
+                )
+                check("no round after terminal", terminal is None, sequence=sequence)
+                check(
+                    "source consecutive round",
+                    match(round_ + 1, event.get("After", absent)),
+                    sequence=sequence,
+                )
+                round_ += 1
+                cursor = 0
+                check(
+                    "declared round input exists",
+                    True if round_ in queues else None,
+                    sequence=sequence,
+                )
+            elif kind == "round-rng":
+                check(
+                    "round queue installed", True if round_ in queues else None, sequence=sequence
+                )
+            elif kind == "hp":
+                name = c[4]
+                check(
+                    "live HP before update",
+                    match(hp.get(name, absent), event.get("Before", absent)),
+                    sequence=sequence,
+                )
+                hp[name] = event.get("After", absent)
+            elif kind == "death-cleanup":
+                name = c[4]
+                check("cleanup follows zero HP", match(0, hp.get(name, absent)), sequence=sequence)
+                positions[name] = (None, None)
+            elif kind in (
+                "player-control",
+                "regions-tested-cleared",
+                "after-turn",
+                "action-committed",
+                "dead-entry-skipped",
+                "ai-stay",
+                "heal",
+            ):
+                check(
+                    "source queued identity at consumer",
+                    match(target, whom if event else absent),
+                    sequence=sequence,
+                )
+                if kind == "dead-entry-skipped":
+                    check(
+                        "source dead skip requires zero HP",
+                        match(0, hp.get(c[4], absent)),
+                        sequence=sequence,
+                    )
+                elif kind in ("player-control", "regions-tested-cleared", "ai-stay"):
+                    value = hp.get(c[4], absent)
+                    check(
+                        "source action/control requires living caller",
+                        None if value is absent else type(value) in (int, float) and value > 0,
+                        sequence=sequence,
+                    )
+                    position = positions.get(c[4], (absent, absent))
+                    check(
+                        "source action/control requires placement",
+                        None if absent in position else all(v is not None for v in position),
+                        sequence=sequence,
+                    )
+                    entered.add((round_, cursor))
+                elif kind in ("action-committed", "heal"):
+                    check(
+                        "action follows admitted queue entry",
+                        True if (round_, cursor) in entered else None,
+                        sequence=sequence,
+                    )
+                if kind in ("action-committed", "dead-entry-skipped", "ai-stay"):
+                    check(
+                        "no duplicated slot consumption",
+                        (round_, cursor) not in consumed,
+                        sequence=sequence,
+                    )
+                    consumed.add((round_, cursor))
+                    result["frontier"].append(
+                        dict(
+                            round=round_,
+                            slot=cursor,
+                            sequence=sequence,
+                            kind=kind,
+                            actor=whom,
+                            observed=bool(event),
+                        )
+                    )
+                    if terminal is None:
+                        cursor += 1
+            elif kind == "battle-outcome":
+                check("unique real terminal", terminal is None, sequence=sequence)
+                check(
+                    "actual Victory terminal",
+                    match("Victory", event.get("Detail", absent)),
+                    sequence=sequence,
+                )
+                enemy_values = [
+                    match(0, hp.get(name, absent))
+                    for name, faction in factions.items()
+                    if faction == "Enemy"
+                ]
+                enemy_support = merge(enemy_values) if enemy_values else None
+                check("terminal source enemy HP", enemy_support, sequence=sequence)
+                terminal_support = merge(
+                    [
+                        match("Victory", event.get("Detail", absent)),
+                        enemy_support,
+                    ]
+                )
+                terminal = sequence
+        state_at[sequence] = (round_, cursor)
+        for index in publications.get(sequence, ()):
+            row = required_rows[index]
+            body, state = row.get("result") or {}, row.get("state") or {}
+            if sequence != body.get("observationSequence"):
+                continue
+            if state.get("round") is not None:
+                check(
+                    "delivered cursor/round through waits and inputs",
+                    match(dict(round=round_, queueCursor=cursor), state),
+                    index=index,
+                )
+                if state.get("actor") is not None:
+                    check(
+                        "delivered selection owns queued entry",
+                        match(queued(), state["actor"]),
+                        index=index,
+                    )
+                state_actors = {a.get("id"): a for a in state.get("actors") or []}
+                check(
+                    "live roster covers independent factions",
+                    None
+                    if not state_actors
+                    else merge([True if name in state_actors else None for name in factions]),
+                    index=index,
+                )
+                check(
+                    "delivered HP agrees with ordered writes",
+                    merge(
+                        [
+                            match(hp[name], a.get("hp", absent))
+                            for name, a in state_actors.items()
+                            if name in hp
+                        ]
+                    ),
+                    index=index,
+                )
+                for name, a in state_actors.items():
+                    hp[name] = a.get("hp", absent)
+                    positions[name] = (a.get("x", absent), a.get("y", absent))
+        if sequence in image_keys:
+            hp_images[sequence] = dict(hp)
+    check("complete terminal frontier", terminal_support if terminal is not None else None)
+    for round_number, queue in queues.items():
+        for slot, entry in enumerate(queue or []):
+            if entry.get("actor") is None:
+                break
+            reached = (round_number, slot) in consumed
+            if not reached:
+                check(
+                    "unconsumed slots justified only by terminal",
+                    None
+                    if terminal_support is None
+                    else terminal_support and round_number == round_ and slot > cursor,
+                    round=round_number,
+                    slot=slot,
+                )
+    keys = sorted(state_at)
+    for index, row in required_rows.items():
+        state = row.get("state") or {}
+        sequence = (row.get("result") or {}).get("observationSequence")
+        pos = bisect_right(keys, sequence) - 1 if sequence is not None else -1
+        if state.get("round") is not None and pos >= 0:
+            r, slot = state_at[keys[pos]]
+            check(
+                "zero-event/wait result retains queue frontier",
+                match(dict(round=r, queueCursor=slot), state),
+                index=index,
+            )
+            image = hp_images.get(sequence)
+            check(
+                "supplied wait/input roster HP at its frontier",
+                None
+                if image is None
+                else merge(
+                    [
+                        match(image.get(a.get("id"), absent), a.get("hp", absent))
+                        for a in state.get("actors") or []
+                    ]
+                ),
+                index=index,
+            )
+    for index in indices.get("inputRecords") or []:
+        row = channels["inputRecords"].get(index) or {}
+        values = [
+            match(
+                (context.get("inputOrdinals") or {}).get(str(index), absent),
+                row.get("ordinal", absent),
+            )
+        ]
+        fields = (context.get("inputFields") or {}).get(str(index))
+        values.append(
+            None
+            if fields is None
+            else merge(
+                [
+                    True if key in (row.get(side) or {}) else None
+                    for side, names in fields.items()
+                    for key in names
+                ]
+            )
+        )
+        for side in ("before", "after"):
+            state = row.get(side) or {}
+            values.append(match(session, state.get("sessionId", absent)))
+            sequence = state.get("observationSequence")
+            pos = bisect_right(keys, sequence) - 1 if sequence is not None else -1
+            if pos >= 0 and state.get("actor") is not None:
+                r, slot = state_at[keys[pos]]
+                queue = queues.get(r)
+                values.append(
+                    match(
+                        absent
+                        if queue is None or not 0 <= slot < len(queue)
+                        else queue[slot].get("actor", absent),
+                        state["actor"],
+                    )
+                )
+        check("input owns live queue without consuming on cancel/wait", merge(values), index=index)
+    # Supplied modern channels may contain more records than the compact selection.
+    # At its applicable seam, available evidence must not be ignored or replaced
+    # by retained dependency records.
+    lower = min((c[2] for c in census if c[3] == "round-started"), default=None)
+    upper = max(expected, default=None)
+    for index, row in channels["warpRecords"].items():
+        if index in required_rows:
+            continue
+        body, state = row.get("result") or {}, row.get("state") or {}
+        sequence = state.get("observationSequence", body.get("observationSequence"))
+        events = [e for e in body.get("observations") or [] if e.get("Kind") in census_kinds]
+        if lower is None or upper is None:
+            continue
+        available = []
+        for value in (body, state):
+            if "sessionId" in value:
+                available.append(match(session, value["sessionId"]))
+        queue = queues.get(state.get("round"))
+        if queue is not None and "turnOrder" in state:
+            available.append(match(queue, state["turnOrder"]))
+        slot = state.get("queueCursor")
+        if (
+            queue is not None
+            and isinstance(slot, (int, float))
+            and slot == int(slot)
+            and state.get("actor") is not None
+        ):
+            available.append(
+                match(
+                    absent if not 0 <= slot < len(queue) else queue[int(slot)].get("actor", absent),
+                    state["actor"],
+                )
+            )
+        if available:
+            check(
+                "additional independently available supplied leaves", merge(available), index=index
+            )
+        if sequence is None and (events or state.get("round") is not None):
+            check("additional supplied applicability", None, index=index)
+            continue
+        applicable = (
+            sequence is not None
+            and lower <= sequence <= upper
+            or any(
+                e.get("Sequence") is not None and lower <= e["Sequence"] <= upper for e in events
+            )
+        )
+        if not applicable:
+            continue
+        values = [match(session, body.get("sessionId", absent))]
+        if events:
+            values.append(match(None, body.get("failure", absent)))
+        if "sessionId" in state:
+            values.append(match(session, state["sessionId"]))
+        if "turnOrder" in state and state.get("round") in queues:
+            values.append(match(queues[state["round"]], state["turnOrder"]))
+        if state.get("round") is not None and sequence is not None:
+            pos = bisect_right(keys, sequence) - 1
+            if pos >= 0:
+                r, slot = state_at[keys[pos]]
+                values.append(match(dict(round=r, queueCursor=slot), state))
+                if state.get("actor") is not None:
+                    queue = queues.get(r)
+                    values.append(
+                        match(
+                            absent
+                            if queue is None or not 0 <= slot < len(queue)
+                            else queue[slot].get("actor", absent),
+                            state["actor"],
+                        )
+                    )
+        for event in events:
+            seq = event.get("Sequence")
+            if seq is None:
+                values.append(None)
+            elif lower <= seq <= upper:
+                values.append(seq in expected)
+                if seq in expected:
+                    c = expected[seq]
+                    values.append(
+                        match(
+                            dict(
+                                Revision=c[1],
+                                Sequence=c[2],
+                                Kind=c[3],
+                                Actor=None if c[4] is None else dict(Value=c[4]),
+                                Target=None if c[5] is None else dict(Value=c[5]),
+                            ),
+                            event,
+                        )
+                    )
+                    if seq in supplied:
+                        values.append(match(supplied[seq], event))
+        check("additional supplied evidence at applicable seam", merge(values), index=index)
+    result["terminal"] = dict(
+        sequence=terminal, round=round_, cursor=cursor, value=terminal_support
+    )
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    return result
+
+
 def audio_consumer_binding(actual, context, source_root):
     """Compose accepted audio rules with complete selected playback/release edges.
 
@@ -21945,6 +22646,7 @@ def compare_modern(
     ai_context=None,
     field_context=None,
     scene_context=None,
+    turn_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -21994,6 +22696,11 @@ def compare_modern(
     scene_consumers = (
         battle_scene_consumer_binding(actual, scene_context, text_source_root)
         if scene_context is not None
+        else None
+    )
+    turn_consumers = (
+        turn_order_consumer_binding(actual, turn_context, text_source_root)
+        if turn_context is not None
         else None
     )
     field_consumers = (
@@ -23140,6 +23847,20 @@ def compare_modern(
             "source live service gates and individual caller/effect mapping",
         ),
     ):
+        if name == "turn candidate score draws and tie/order result" and turn_consumers is not None:
+            check(
+                5,
+                name,
+                True,
+                turn_consumers["value"],
+                actual_location,
+                original=turn_consumers["sourceRules"],
+                parent=rule_parent,
+                reason="Accepted actual generation/source rules plus independently complete "
+                "retained queue consumers at supplied seams; historical generation and corrected "
+                "whole-A trajectory remain unavailable",
+            )
+            continue
         if (
             name == "physical range/dodge/critical/spread/double/counter effects"
             and physical_consumers is not None
@@ -23893,6 +24614,7 @@ def compare_modern(
             healConsumerBinding=heal_consumers,
             physicalConsumerBinding=physical_consumers,
             rewardConsumerBinding=reward_consumers,
+            turnOrderConsumerBinding=turn_consumers,
             fieldServiceBinding=field_consumers,
             battleSceneConsumerBinding=scene_consumers,
             reachedMaterialJoins=materials["joins"],
@@ -24459,6 +25181,11 @@ def main():
         help="Retained modern scene selection and accepted compact dependencies",
     )
     parser.add_argument(
+        "--turn-context",
+        type=Path,
+        help="Explicit accepted generation and independently selected queue-consumer composition",
+    )
+    parser.add_argument(
         "--physical-context", type=Path, help="Selected complete physical census and source indices"
     )
     parser.add_argument(
@@ -24551,6 +25278,18 @@ def main():
     parser.add_argument("--source-only", action="store_true")
     parser.add_argument("--source-only-private-bytes", type=int)
     args = parser.parse_args()
+    require(
+        args.turn_context is None
+        or args.mode == "turn-order"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "turn context requires scoped turn-order or modern comparison",
+    )
+    if args.turn_context is not None:
+        args.turn_context = (
+            args.turn_context if args.turn_context.is_absolute() else repo_path(args.turn_context)
+        )
+        require(args.turn_context.stat().st_size <= 10 * 1024 * 1024, "Turn context exceeds 10 MiB")
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
@@ -25051,7 +25790,20 @@ def main():
             args.actual is not None, "turn-order requires selected actual generation/state records"
         )
         actual_path = args.actual.resolve() if args.actual.is_absolute() else repo_path(args.actual)
-        require(actual_path.stat().st_size <= 1024 * 1024, "turn-order selection exceeds 1 MiB")
+        context_path = (
+            (
+                args.turn_context.resolve()
+                if args.turn_context.is_absolute()
+                else repo_path(args.turn_context)
+            )
+            if args.turn_context is not None
+            else None
+        )
+        require(
+            actual_path.stat().st_size + (context_path.stat().st_size if context_path else 0)
+            <= (10 if context_path else 1) * 1024 * 1024,
+            "turn-order input exceeds its controlled/composed bundle limit",
+        )
         require(
             args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
             "turn-order output must be fresh beneath this worktree's local/",
@@ -25061,26 +25813,34 @@ def main():
             len(actual.get("rounds") or []) <= 3,
             "turn-order scope exceeds three selected generations",
         )
-        binding = turn_order_binding(actual, args.text_source_root)
+        binding = (
+            turn_order_consumer_binding(actual, read(context_path), args.text_source_root)
+            if context_path
+            else turn_order_binding(actual, args.text_source_root)
+        )
         verdict_value = (
             "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
         )
         report = dict(
             profile="modern-turn-order-rule",
-            comparisonScope="controlled-application",
+            comparisonScope="composed-current-turn" if context_path else "controlled-application",
             result=verdict_value,
             milestonePass=False,
             actual=actual_path.as_posix(),
             binding=binding,
         )
         require(
-            len(json.dumps(report).encode("utf-8")) <= 1024 * 1024,
+            len(json.dumps(report, indent=2).encode("utf-8")) + 1 <= 1024 * 1024,
             "turn-order report exceeds 1 MiB",
         )
         write(args.output, report)
         print(
             json.dumps(
-                dict(result=verdict_value, milestonePass=False, rounds=len(binding["rounds"]))
+                dict(
+                    result=verdict_value,
+                    milestonePass=False,
+                    rounds=len(binding.get("generation", binding).get("rounds", [])),
+                )
             )
         )
         raise SystemExit(2 if binding["value"] is None else 0 if binding["value"] else 1)
@@ -25336,6 +26096,7 @@ def main():
                 read(args.ai_context) if args.ai_context else None,
                 read(args.field_context) if args.field_context else None,
                 read(args.scene_context) if args.scene_context else None,
+                read(args.turn_context) if args.turn_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
