@@ -3927,6 +3927,79 @@ Unknown and the completed normal-verification provenance failure remain unchange
 owns independent integration and obligation closure; native/full routes and adjacent
 accepted predicates are outside this slice.
 
+### Scoped AI consumer comparison
+
+The [selected AI contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-ai-rule-and-consumer-binding)
+uses retained caller/movement evidence and pinned original rule parsers. Run:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 -m sf2tool.remake_h4_comparison ai `
+  --actual local/issue534/ai-binding-01/actual.json `
+  --ai-context local/issue534/ai-binding-01/context.json `
+  --text-source-root $pinnedSource `
+  --output local/ai-consumers/fresh-report.json
+```
+
+Resolve `$pinnedSource` through the local private-input owner. Context declares
+`scope=retained-keyboard-A-ai-composed`, session, producer/source revisions, original
+`indices`, `battleSample`, semantic `census`, completed selection receipt, retained
+`inputs` with independent `inputIndices`, and the accepted `seedActual`/`seedContext`.
+`actionRecords` reuses the accepted physical first-strike owning envelopes by original
+index/session/clocks. Their compact projections omit the supplementary static AI fields
+and input-delivery flag; causal input intervals still bind their result ownership.
+Supplement-owned rows require their retained delivery flag. Modern `--ai-context`
+replaces only the AI child with this same predicate.
+
+Source-rule comparison uses the actual immediate caller roster, memory, thinking image,
+activation/orders/anchors and original terrain/movement tables. It checks every declared
+semantic occurrence and preserves missing-versus-wrong evidence. Logical movement is
+composed from ordered segment effects and committed position, not an unrecorded render
+path. The current seed-lifetime dependency reuses the exact accepted PR621 behavior TRX
+and adapter exit through the admission-seed predicate, plus focused producer/accepted/current
+consumer comparisons. It authorizes no SDK rerun or corrected route observation.
+
+Reproduction reads the retained compact supplement; this recipe authorizes no raw scan.
+The initial selection completed with a cap FAIL after12.9697317s,7,696,384B incremental
+peak and4,060,849B payload: an admission marker incorrectly enabled the entire
+pre-initialization actor bridge. Preserve that failure, its partial records and the
+already retained text-copy interval. The one authorized correction starts bridges at
+initialized/loaded/outcome/returned seams and retains all AI/movement/failure owning
+envelopes and neighbors. It completed in17.5820325s with16,936,960B incremental peak,
+3,552,557B selected payload, two samples and459 results; normalized input is3,536,920B.
+Source metadata stayed unchanged. No further raw pass is allocated.
+
+Selection limits are120s/128MiB incremental and2MiB per raw record, selected5MiB
+including128KiB receipt reserve, normalized5MiB, context/report1MiB and3MiB publication
+headroom; total retained AI directory cap20MiB includes the prior failure/preflight.
+Each serial input/output bundle stays within10MiB. The scoped CLI enforces actual plus
+context10MiB, context1MiB, report1MiB and a fresh output beneath this worktree's ignored
+`local/`. Exit0/1/2 means PASS/FAIL/Unavailable; `milestonePass` remains false.
+
+Use direct controls for source RNG/lane preservation, memory before/after/exit, commands,
+candidate order and target delivery, missing records/fields/inputs, source/session identity,
+clocks, movement segments/commit, terrain, seed-execution evidence and wrong-plus-missing
+combinations. Preserve completed pilot failures alongside corrections: the initial
+target-delivery check assumed a target on `scene-prepared`, the next applied supplement
+field requirements to compact physical rows, and a later check used the wrong terrain
+surface mapping. Also retain the direct controls' missing-target propagation and absent
+seed-context classification failures, and the two controls corrected to mutate automatic
+movement and the physical-first target. Targeted reruns check each correction. Initial
+memory/seed last-writer checks extend through selected gaps. Missing clocks/action indices
+remain Unavailable; negative clocks and known wrong effects still fail.
+Independent review additionally requires rejected automatic-arrival and physical-first
+owning results to fail, including the rejected-arrival case with seed proof missing.
+Preserve those original false-PASS/Unavailable results and the wrong delivered-regions
+counterexample beside their targeted corrections. Required movement/action/commit results
+must be accepted. Ordered region-test writes bind the actual poststate and later caller
+continuity, including the observed clear0 followed by region-test7 in one result; unrelated
+rejected-input diagnostics are not reclassified as AI failures.
+No verifier unit tests or aggregate/native/full-route runs are required.
+Run narrow Ruff, contract/docs/private checks, the committed planner interpreted under
+current verification policy, and exact-head CI. Historical A FAIL, original elapsed
+Unknown and completed normal-verification provenance failure remain unchanged. Independent
+main-gate review owns integration and obligation closure.
+
 ### Scoped HEAL consumer comparison
 
 The [selected HEAL contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding)
