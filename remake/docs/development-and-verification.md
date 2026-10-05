@@ -3922,6 +3922,14 @@ acceptance owns obligation closure.
 
 ### Scoped reward and outcome comparison
 
+Direct observations import `reward_consumer_binding` from `sf2tool.remake_h4.reward_binding`;
+the old import and CLI below remain available. The [reward module route](../../docs/operations/bounded-inspection-and-review.md#h4-reward-module-route)
+separates evidence, source obligations, the persistent resource ledger and return consumers.
+For extraction review, use `joined-actual.json` (the older `actual.json` lacks return), retain the
+accepted complete baseline after checking its current equality, and compare every serialized field,
+check/count/order, occurrence and Unknown in small batches. Include return-gold, rejected JOIN,
+stale completion-token and missing-plus-contradiction controls; a matching PASS alone is insufficient.
+
 The [selected reward contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-reward-growth-and-outcome-consumer-binding)
 uses existing compact retained evidence and pinned source rules. It shares the modern
 reward child; no full H4 run, world export, SDK, host or original-runtime launch is needed.

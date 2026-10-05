@@ -758,6 +758,11 @@ change historical FAILs or authorize main-gate to skip independent acceptance.
 
 ### Selected reward, growth and outcome consumer binding
 
+Implementation is [`reward_binding.py`](../../../src/sf2tool/remake_h4/reward_binding.py), using the
+[reward module route](../../operations/bounded-inspection-and-review.md#h4-reward-module-route) for
+source obligations, evidence/ledger and return-consumer ownership. Existing CLI/import entry and
+this contract's reached-cohort limits remain unchanged.
+
 The optional `reward_consumer_binding` supplies only the required
 `EXP/gold/growth/spell learning and after-turn/outcome effects` child. Scoped `reward`
 and modern `--reward-context` use the same predicate. Source initial profiles, live

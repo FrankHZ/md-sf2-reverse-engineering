@@ -154,6 +154,28 @@ and [seed](../../remake/docs/development-and-verification.md#scoped-admission-se
 verification routes. Other families and transport/report/CLI decomposition remain future bounded
 slices; neither this extraction nor a matching historical result closes those responsibilities.
 
+### H4 Reward Module Route
+
+The existing `reward` CLI and modern child retain `reward_consumer_binding`, now imported from
+`reward_binding.py`. All owners below live in `src/sf2tool/remake_h4/` and keep reward matching local.
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `reward_checks.py` | Reward value/list/count/clock contracts and the ordered `RewardChecks` log. |
+| `reward_evidence.py` | `select_evidence` returns selected channels, events, owning indexes and census after input/result/projection checks. |
+| `reward_source.py` | `load_source` returns pinned operand tables, initial mutable party progress and Unknowns; partial source failure retains available operands for independent receipt checks. |
+| `reward_scenes.py` | `compare_scenes` derives EXP/gold/kill obligations from matched scene operands, with occurrence summaries and Unknowns; physical rules are reused read-only. |
+| `reward_ledger.py` | `reduce_rewards` updates the one progress dictionary in event order and returns EXP/kill/gold balances plus Unknowns. |
+| `reward_outcome.py` | `compare_outcome` reads those balances/progress and checks first Party.Progress, healing, gold/JOIN/flags through return. |
+| `reward_binding.py` | Calls those owners in check order and preserves nonpass-first report compression and applicability. |
+
+Operand mappings contain source tables/initial expectations only; progress is initialized by source
+admission, mutated by the ledger, then read by outcome checks. Scene obligations and final balances
+carry only their named reward/resource values. No module owns the caller's channel transport or
+imports the monolith. Use the [reward verification route](../../remake/docs/development-and-verification.md#scoped-reward-and-outcome-comparison)
+with the joined input including return; the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-reward-growth-and-outcome-consumer-binding)
+retains the reached-cohort EXP limit and missing/contradiction precedence.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
