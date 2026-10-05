@@ -11009,7 +11009,7 @@ def physical_consumer_binding(actual, context, source_root):
         return False if False in values else None if None in values else True
 
     def match(expected, observed=absent):
-        if observed is absent:
+        if expected is absent or observed is absent:
             return None
         if isinstance(expected, dict):
             return (
@@ -11030,11 +11030,10 @@ def physical_consumer_binding(actual, context, source_root):
                 ]
                 + [match(x, y) for x, y in zip(expected, observed, strict=False)]
             )
-        return (
-            type(observed) is bool and observed == expected
-            if isinstance(expected, bool)
-            else observed == expected
-        )
+        # JSON booleans are not numbers, despite Python's bool/int equality.
+        if isinstance(expected, bool) or isinstance(observed, bool):
+            return type(expected) is bool and type(observed) is bool and observed == expected
+        return observed == expected
 
     def ordered_match(expected, observed):
         values, cursor = [], 0
