@@ -1227,6 +1227,13 @@ not gameplay legality or a generic text-ID admission rule. Its independent occur
 retain the accepted source program/instruction/text correspondence, session, ordinal, token and
 original array locations. A candidate cannot define its own required inventory by dropping records.
 
+The [W2 module owners](../../operations/bounded-inspection-and-review.md#h4-w2-module-route)
+separate independent source continuation, selected joins, caller/service, indicator and validation
+comparisons. The old binding and cohort constant remain aliases. W2 operand matching preserves
+equal integer/float representations but rejects boolean substitutes for numeric evidence, including
+the cleared indicator. Boolean expectations remain strict, missing operands remain Unavailable,
+and an independent contradiction still produces FAIL.
+
 **Confirmed:** each selected input joins its before token/cursor/readiness to its original result span,
 whole Submit revision and after snapshot. Actual W2 events must order draw/copy/wait/read/accept,
 with one service opportunity and caller continuation after acceptance. Available event revisions

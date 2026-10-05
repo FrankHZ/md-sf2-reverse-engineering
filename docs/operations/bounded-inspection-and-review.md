@@ -302,6 +302,31 @@ accessed only at selected positions; already selected streams remain caller-owne
 no stream handles. No module imports the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-w1-consumer-binding)
 and [verification route](../../remake/docs/development-and-verification.md#scoped-w1-consumer-comparison).
 
+### H4 W2 Module Route
+
+`w2_consumer_binding` remains the same callable at its old import and in `w2_binding`, used by
+the scoped CLI and modern comparison. `_W2_COHORT` remains an alias. Owners live in
+`src/sf2tool/remake_h4/`:
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `w2_checks.py` | W2 partial matching, per-binding absence marker and ordered check log. |
+| `w2_source.py` | Independent cohort, pinned clean text/program compilation and bounded continuation. |
+| `w2_selection.py` | Accepted context, indexed selected channels and accepting/neutral poll inventory. |
+| `w2_input.py` | Physical input, whole Submit snapshot and retained neutral readiness joins. |
+| `w2_caller.py` | Source caller/live gates and displayed W2 token span. |
+| `w2_service.py` | Draw/copy/read order, internal Submit bounds and neutral retention. |
+| `w2_continuation.py` | Accepting token release and source resumed producer/order/terminal comparison. |
+| `w2_indicator.py` | Retained copy and distinct same-submit or later-state indicator witnesses. |
+| `w2_validation.py` | All matching validation starts and whole Submit receipt identity. |
+| `w2_binding.py` | Ordered composition and complete report. |
+
+`W2Source` holds only independent source operands; `W2Checks` owns only matching and reporting.
+Helpers pass explicit selected operands and results. Full-capture channels use indexed selection;
+already selected streams remain caller-owned and reports retain no handles. No owner imports the
+monolith or supplies missing timing. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding)
+and [verification route](../../remake/docs/development-and-verification.md#scoped-w2-consumer-comparison).
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:

@@ -4375,6 +4375,14 @@ The `w2` mode evaluates only the
 [composed W2 child](../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding);
 no SDK, native host, original capture, whole-A scan, full H4 or matrix is needed.
 
+The [W2 module route](../../docs/operations/bounded-inspection-and-review.md#h4-w2-module-route)
+names the source, selection and comparison owners. Direct observations may import
+`w2_consumer_binding` from `sf2tool.remake_h4.w2_binding`; the old import is the same callable
+with signature `(actual, context, source_root)`. Selected streams remain caller-owned and reports
+remain readable after they close. Compare complete ordered checks, occurrence identities and
+Unknowns, including numeric/boolean, missing and mixed evidence. Relative input/source paths
+resolve from the repository root, including invocation from `remake/`.
+
 ```powershell
 . ./local/private-inputs.ps1
 uv run python -m sf2tool.remake_h4_comparison w2 `
