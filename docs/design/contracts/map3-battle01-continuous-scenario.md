@@ -923,6 +923,12 @@ service draw-to-effect gates` child. Scoped `field-service` and modern
 mechanism composition; it does not reconstruct historical stripped callbacks or
 establish a corrected continuous route. A scoped PASS keeps `milestonePass=false`.
 
+The implementation lives in the [field-service module owners](../../operations/bounded-inspection-and-review.md#h4-field-service-module-route).
+The old entry supplies its document reader explicitly. Receipt/clock admission precedes per-row
+comparison; one case owns its Wait edge state, check order and coverage. Strict value equality
+remains separate from partial predecessor joining, so missing operands cannot erase an already
+observed contradiction. Source evolution and actual Draw resource consumption keep separate owners.
+
 **Confirmed source rules:** pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6` owns
 `code/common/tech/randomnumbergenerator.asm:GenerateRandomNumber`,
