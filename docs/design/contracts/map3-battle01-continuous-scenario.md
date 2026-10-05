@@ -554,6 +554,10 @@ supplies expected phases; remake start values and program names do not supply th
 selection these existing report children remain Unavailable; the current accepted composition
 retains the explicit selections and their independent evidence.
 
+The [walking module owners](../../operations/bounded-inspection-and-review.md#h4-join-and-walking-module-route)
+retain independent source, phase, normalized motion and consumed-gate contributions. Their structural
+source/interface controls do not add historical admission or natural-reach evidence.
+
 The existing walking motion/readiness child compares active axes and direction, carried total travel
 and remaining distance in tile units, configured speed/acceleration operands, acceleration/deceleration,
 collision/obstruction and auto-facing gates. Total travel is not reconstructed from remaining distance.
@@ -1436,6 +1440,12 @@ consumer children and full H4 keep their independent result. The
 evaluates this child without rebuilding the full H4 report or running the route/matrix.
 
 ### Bounded plain JOIN consumer binding
+
+The [JOIN module owners](../../operations/bounded-inspection-and-review.md#h4-join-and-walking-module-route)
+preserve the real entry, four-file admission, partial results and False-over-missing finalization on
+every exit. Source/row and actual consumer state remain per call; readers and report publication
+remain caller-owned. Structural controls do not replace the accepted witness or complete historical
+comparison, and introduce no new gameplay or original music-completion claim.
 
 The existing plain JOIN child may pass only with the explicit sealed
 [winning-lineage witness](../../research/map3-messenger-acceptance.md#winning-lineage-plain-join-witness)

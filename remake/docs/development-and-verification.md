@@ -4827,6 +4827,14 @@ completion/channel/F0/queue/interleaving Unknowns.
 
 ### Offline plain JOIN consumer comparison
 
+The real JOIN entry delegates to the [JOIN/walking module owners](../../docs/operations/bounded-inspection-and-review.md#h4-join-and-walking-module-route).
+The complete source map and bounded ordered controls under `local/issue638/join-walking-modules-01`
+verify structural equivalence, real CLI/modern dispatch and caller-owned reader/publication lifetime.
+The four compact witness files retain their existing seals and byte identity in a worktree-local
+selection. Constructed reference operands and actual/content channels prove only the extraction
+boundary; they do not replace the retained full comparison below. No raw historical capture/world,
+large reference/report, eager recipe or full historical run is required for structural acceptance.
+
 Add `--original-join-evidence-root $selectedWitness` to the complete modern material comparison
 above. Select the four-file, byte-identical prepared68 witness explicitly in this worktree's ignored
 inputs, retaining `candidate.json` and the three `runtime/` relative filenames named by the
@@ -4851,6 +4859,11 @@ extraction/export, broad normal/full suite or verification-helper tests are requ
 boundary. Preserve completed historical failures and full H4 Unavailable.
 
 ### Offline walking admission comparison
+
+The [walking module route](../../docs/operations/bounded-inspection-and-review.md#h4-join-and-walking-module-route)
+preserves the independent source/phase/motion/gate contributions and per-slot exception boundaries.
+Its bounded source-derived/constructed controls remain separate from the accepted historical
+admission evidence and earlier missing-plus-contradiction corrections described below.
 
 Use the complete modern material comparison and the same explicitly selected, sealed
 `--original-join-evidence-root` witness above. Its R1 checkpoint supplies the three live walking
