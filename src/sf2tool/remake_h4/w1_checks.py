@@ -25,6 +25,8 @@ class W1Checks:
             return merge([self.match(v, observed.get(k, absent)) for k, v in expected.items()])
         if isinstance(expected, bool):
             return type(observed) is bool and expected == observed
+        if isinstance(expected, (int, float)) and isinstance(observed, bool):
+            return False
         return expected == observed
 
     def check(self, name, value, ordinal=None):

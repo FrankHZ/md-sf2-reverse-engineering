@@ -1159,6 +1159,9 @@ ordered checks preserve missingness independently from known contradictions; mod
 add no service timing, transient close state or wider branch-flag evidence.
 When the source text producer is unavailable, its speaker/flags comparison remains Unavailable;
 missing source cannot invent a default speaker. Independent input/session contradictions still fail.
+Numeric W1 operands accept equal integer/float representations, but never boolean substitutes
+for zero or one. Boolean expectations likewise require booleans; missing numeric operands remain
+Unavailable, and an independently observed contradiction still produces FAIL.
 
 **Confirmed:** the executable predicate checks mandatory range256 draw/copy/wait/read order,
 conditional portrait draws, the retained copy byte, eligible logical service and source continuation.
