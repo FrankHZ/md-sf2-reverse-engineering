@@ -4127,6 +4127,14 @@ main-gate owns independent integration and obligation closure.
 
 ### Scoped AI consumer comparison
 
+Implementation follows the [AI/seed module route](../../docs/operations/bounded-inspection-and-review.md#h4-ai-and-seed-module-route).
+Direct consumers import `ai_consumer_binding` from `sf2tool.remake_h4.ai_binding`; direct original-rule
+observations import `source_rules`/`source_decision` from `ai_source`, and value observations use
+`ai_checks`. The old comparison-module imports remain available, while the CLI below is unchanged.
+AI shorter-list matching accepts a retained subsequence as missing evidence; do not substitute the
+physical pairwise matcher. Private controls that patched the monolith's source helper should instead
+run the actual uncached source path; no mutable forwarding compatibility is provided.
+
 The [selected AI contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-ai-rule-and-consumer-binding)
 uses retained caller/movement evidence and pinned original rule parsers. Run:
 
@@ -4156,6 +4164,14 @@ composed from ordered segment effects and committed position, not an unrecorded 
 path. The current seed-lifetime dependency reuses the exact accepted PR621 behavior TRX
 and adapter exit through the admission-seed predicate, plus focused producer/accepted/current
 consumer comparisons. It authorizes no SDK rerun or corrected route observation.
+
+For extraction review, reuse the compact AI mutations, the retained movement/action/region review
+counterexamples and direct seed controls. Compare complete serialized results before/after, including
+`historical`, `seedMechanism`, occurrence order, compressed PASS counts, nonpass order and Unknowns.
+Begin with one uncached baseline to measure current cost, retain it, then use batches of at most eight
+controls under the initial 1MiB report/128MiB incremental-memory/120s budgets. The retained baseline
+is for implementation equivalence, not new original-game evidence. Inspect actual import aliases and
+selected stream lifetime, and run the real CLI PASS/FAIL/Unavailable exits without a full H4 run.
 
 Reproduction reads the retained compact supplement; this recipe authorizes no raw scan.
 The initial selection completed with a cap FAIL after12.9697317s,7,696,384B incremental
@@ -4524,6 +4540,12 @@ aggregate rerun follows this comparator/document change. The independent main ga
 semantic child and retains full-route/H4/milestone decisions.
 
 ### Scoped admission seed comparison
+
+The unchanged seed composition now lives in `sf2tool.remake_h4.admission_seed`; direct observations
+import `admission_seed_binding` there. The old import remains the same callable for field-service,
+modern and scoped CLI consumers. Its matching and historical/current proof roles stay independent
+from AI and physical matching; the [module route](../../docs/operations/bounded-inspection-and-review.md#h4-ai-and-seed-module-route)
+records that dependency boundary. Extracting this dependency does not change opening controls.
 
 Load the current ignored private-input configuration in the invoking process. The scoped command
 uses existing compact W2 actual data and an explicitly selected original/accepted-mechanism context:
