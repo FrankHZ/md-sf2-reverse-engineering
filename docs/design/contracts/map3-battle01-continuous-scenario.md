@@ -1152,6 +1152,17 @@ These counts identify evidence; they impose no gameplay quota. Source text, prod
 control-token position remain distinct from the script's running text cursor. Original indices,
 session, physical input, token, before revision and whole Submit result identify every consumer.
 
+The [W1 module owners](../../operations/bounded-inspection-and-review.md#h4-w1-module-route)
+separate selection/envelopes, source text, NPC/portrait service and retained-state composition.
+The old binding and source-cohort constants remain aliases. The family-specific matcher and
+ordered checks preserve missingness independently from known contradictions; module boundaries
+add no service timing, transient close state or wider branch-flag evidence.
+When the source text producer is unavailable, its speaker/flags comparison remains Unavailable;
+missing source cannot invent a default speaker. Independent input/session contradictions still fail.
+Numeric W1 operands accept equal integer/float representations, but never boolean substitutes
+for zero or one. Boolean expectations likewise require booleans; missing numeric operands remain
+Unavailable, and an independently observed contradiction still produces FAIL.
+
 **Confirmed:** the executable predicate checks mandatory range256 draw/copy/wait/read order,
 conditional portrait draws, the retained copy byte, eligible logical service and source continuation.
 Every selected Submit, including reveal/typewriting and separate choice delivery, joins its result

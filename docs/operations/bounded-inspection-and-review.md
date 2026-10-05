@@ -275,6 +275,33 @@ No module imports the monolith or changes material/texture prerequisites. Actor 
 does not bypass independent plane geometry. See the [delivery contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-mutable-map-delivery)
 and [verification route](../../remake/docs/development-and-verification.md#composed-mutable-map-verification).
 
+### H4 W1 Module Route
+
+`w1_consumer_binding` is the same callable at the old import and in `w1_binding`;
+the scoped CLI and modern comparison use that alias. The three `_W1_*` source-cohort
+constants remain available there. Owners live in `src/sf2tool/remake_h4/`:
+
+| Module | Responsibility / handoff |
+| --- | --- |
+| `w1_checks.py` | W1's partial matcher, absence marker and ordered check log for one binding. |
+| `w1_selection.py` | Independent cohort and indexed selected input/result/state operands. |
+| `w1_envelopes.py` | Complete Submit/event bounds and W1/W2 operation attribution. |
+| `w1_source.py` | Pinned cohort/programs/text/portraits/layout, RNG and bounded continuation rules. |
+| `w1_history.py` | NPC provenance, producer history and source walking installations. |
+| `w1_input.py` | Physical input, complete choice delivery and ready/post snapshot joins. |
+| `w1_text.py` | Source caller/speaker/portrait ancestry and displayed token stream. |
+| `w1_npc.py` | Stationary geometry, source retries/collision and destination effects. |
+| `w1_services.py` | Poll draw/copy/read order and conditional portrait RNG. |
+| `w1_continuation.py` | Accepting continuation or neutral consumer retention. |
+| `w1_retained.py` | Close boundary, later copy, restoration and final event clocks. |
+| `w1_binding.py` | Ordered composition with explicit per-poll seed/effect returns. |
+
+`W1Source` contains only independent source operands; `W1Checks` owns only matching and reporting.
+Family matching remains distinct from strict field equality. Indexed full-capture containers are
+accessed only at selected positions; already selected streams remain caller-owned. Reports retain
+no stream handles. No module imports the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-w1-consumer-binding)
+and [verification route](../../remake/docs/development-and-verification.md#scoped-w1-consumer-comparison).
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
