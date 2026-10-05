@@ -790,6 +790,11 @@ public sealed partial class ExplorationSessionView : Control
                 layer = entity.Motion.Layer, animationCounter = entity.Motion.AnimationCounter, waitTimer = entity.Motion.WaitTimer,
                 moving = entity.Motion.IsMoving, busy = entity.Busy, isScriptIdle = entity.IsScriptIdle,
                 entity.Visible, actionCursor = entity.ActionCursor, speedX = entity.Motion.XSpeed, flagsA = entity.Motion.FlagsA, flagsB = entity.Motion.FlagsB,
+                waitingForMotion = entity.WaitingForMotion,
+                actionProgram = entity.Actions?.Actions.Select(action => new
+                {
+                    kind = action.GetType().Name, operands = (object)action,
+                }),
             }),
             observations = _result?.Observations,
             audio = full ? _audio?.ObservePlayback() : _audio?.ObserveState(),

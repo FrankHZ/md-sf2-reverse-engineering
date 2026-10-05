@@ -793,6 +793,84 @@ fields. A scoped PASS leaves `milestonePass=false` and requires independent acce
 
 Reproduce with the [scoped reward route](../../../remake/docs/development-and-verification.md#scoped-reward-and-outcome-comparison).
 
+### Selected field-service rule and consumer binding
+
+The optional `field_service_binding` supplies only the `field text/portrait/NPC
+service draw-to-effect gates` child. Scoped `field-service` and modern
+`--field-context` use the same predicate. This is a bounded original-rule/current-
+mechanism composition; it does not reconstruct historical stripped callbacks or
+establish a corrected continuous route. A scoped PASS keeps `milestonePass=false`.
+
+**Confirmed source rules:** pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` owns
+`code/common/tech/randomnumbergenerator.asm:GenerateRandomNumber`,
+`code/common/menus/portraitfunctions.asm:VInt_PerformPortraitBlinking`, and
+`code/common/scripting/entity/entityscriptengine_2.asm:VInt_UpdateEntities`,
+`esc00_wait`, `esc01_waitUntilDestination`, and `esc06_walkRandomly`.
+The independent model reuses the research RNG primitive and H3 physical-motion
+arithmetic. Candidate engine output supplies no expected seed, destination or counter.
+Physical movement precedes action dispatch; arrival releases the motion wait before
+signed timer dispatch. Random walking makes at most four ordered attempts with radius,
+flat-map and other-entity destination rejection. Portrait blink precedes mouth;
+unregistered work consumes neither counter nor portrait RNG. Registered blink closes
+at3, opens/reset-draws at0; typing mouth opens at5, closes/reset-draws at0; non-typing
+mouth holds above5 and closes/reset-draws at or below5.
+
+**Confirmed current mechanism:** accepted PR618 object
+`0fe122f548a9a2f882ea3cc524d3937bde7e34b9` and execution
+`0f1e82ee-33fd-4aa3-a3c5-af025ad1dd54` retain individually passed portrait counter,
+poll-copy, nod, held-camera, event-tail and admission cases. The binding checks their
+identities/outcomes and unchanged entity-action, portrait, physical-motion and research
+model dependencies. Current seed transport separately reuses the accepted PR621
+execution and existing admission-seed predicate described above. Accepted W1/W2, text
+material, awaited motion/operation, map and audio claims retain their existing owners;
+they do not imply unavailable per-callback reads.
+
+**Confirmed bounded actual effects:** lawful authored packages load through Content,
+GameSession and GameRoot. Ordinary input/result/Draw observations bind independent
+profile, session, build, entity slot, structural action program, action cursor,
+`waitingForMotion`, collision inputs, effective caller gate and both clocks. Portrait
+cases exercise disabled/enabled entities, registration/closure, typing/non-typing,
+blink/mouth resets and actual eye/mouth tile/resource consumption. NPC cases cover
+radius rejection, stationary entity obstruction, flat wall rejection and arrival
+followed by wait2 release. Ordered service/writer events and source-computed net seed,
+destination, travel, velocity, timer and cursor must agree. Every changed eye/mouth
+state and portrait closure requires its actual Draw before the next result.
+The admitted NPC domain has one random actor, a stationary controlled player and at
+most a stationary blocker; slopes, followers, hidden actors, multiple random actors
+and wider signed timer cases remain outside this proof.
+
+An entry result may contain multiple services only when it starts with observed
+unregistered, non-closing portrait work and ends registered and stationary. The complete
+ordered event list contains portrait-window services, exactly one registration after
+them, then the declared SetTextCursor/ShowText continuation at matching program locations.
+The capture has exactly one terminal receipt, after all observations, whose case identity
+matches the selected launch/process/profile. Revision, observation sequence and simulation
+tick are nonnegative integral domains in state, result, event, input and consumed resource
+observations; relative equality alone is insufficient. Signed motion and portrait counters
+retain their source domains. Gameplay wait owns a fresh V press: the immediate action
+needs the pressed ready state, while later repeats also require the live, uncancelled hold
+and observed repeat-ready/focused state. Release or another action ends repeat ownership;
+a still-held duplicate press cannot rearm it without a release and fresh press.
+
+Tick delta equals actual service count; no fixed count is a rule. Counters/eyes/mouth
+are unchanged and portrait RNG is absent. Disabled entities retain all relevant
+motion/cursor/timer/program state and seed. Enabled entry additionally requires the
+single declared stationary radius0 random-walk/jump loop: four source-derived radius
+rejections per service, with the ordered net seed effect. Arbitrary continuation,
+changed gates/programs, premature registration or extra RNG fails this exception.
+Registered/text multi-service results remain Unavailable.
+
+**Inferred:** intermediate NPC attempts and internal per-service reads within the
+admitted entry batch follow the named source and accepted mechanisms; only their
+bounded net effects are directly observed. **Unknown:** historical stripped callback
+states, natural original first-read/timing and wider NPC/collision domains. Historical
+A's disconnected seed latch remains **FAIL**. Missing necessary observations contribute
+Unavailable; independently wrong values, order or identity remain FAIL alongside missing
+fields. Independent integration and remaining-obligation closure belong to main-gate.
+
+Reproduce using the [scoped field-service route](../../../remake/docs/development-and-verification.md#scoped-field-service-comparison).
+
 ### Selected AI rule and consumer binding
 
 The optional `ai_consumer_binding` supplies only the `AI thinking draw/choice/memory

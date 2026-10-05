@@ -3927,6 +3927,84 @@ Unknown and the completed normal-verification provenance failure remain unchange
 owns independent integration and obligation closure; native/full routes and adjacent
 accepted predicates are outside this slice.
 
+### Scoped field-service comparison
+
+The [selected field-service contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding)
+composes pinned original rules, accepted executed mechanisms and bounded current native
+input/state/Draw observations. Reuse the retained six cases; no raw-A selection or
+continuous route is needed:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 -m sf2tool.remake_h4_comparison field-service `
+  --actual local/issue534/field-service-native-01/actual.json `
+  --field-context local/issue534/field-service-native-01/context-v2.json `
+  --text-source-root $pinnedSource `
+  --output local/field-service/fresh-report.json
+```
+
+Resolve `$pinnedSource` through the private-input owner. The actual descriptor has
+`scope=field-service-local-composition-v1` and `fieldServiceCases`; each names its original
+profile, JSONL observation, process/launch receipt, tested view source and native error log.
+The independent context declares compact `profiles`, selected `sessions`, `assemblies`,
+`nativeBase`, accepted `serviceTrx`, and the existing `seedActual`/`seedContext`.
+`historicalSessionId` and `actualSupplement` bind modern `--field-context` applicability;
+that route replaces only the field child with this same predicate. The local structural
+program observation serializes concrete action types/operands plus `waitingForMotion`;
+null programs remain distinct. It adds no engine rule, event stream or clock policy.
+
+The retained cases are portrait-disabled-06, portrait-enabled-01, npc-radius-01,
+npc-entity-01, npc-wall-01 and npc-phase-01. Their source/current comparisons and actual
+projection checks pass. Release adapter and Debug builds passed for the exact additive
+view source:13.347s,796,549,120B aggregate peak,222,624B incremental build storage.
+No engine aggregate is required by this observation-only change. Reuse these runs while
+the declared dependencies remain unchanged.
+
+Native allocation is serial: driver30s/240 services/768 records plus receipt,2MiB JSONL
+with8KiB reserved for its receipt; launcher45s/1.5GiB aggregate process-tree peak;
+profile768KiB, logs512KiB and metadata128KiB. Total retained native/profile/log/comparison
+allocation24MiB includes failures and4MiB publication headroom; planning has a separate
+3MiB cap. Each compact input/output bundle stays below10MiB. Comparison allocation is
+120s/128MiB incremental, each case report512KiB; CLI context/report hard limits are1MiB.
+The CLI reads one bounded original case at a time and writes a fresh report under this
+worktree's ignored `local/`; exit0/1/2 means PASS/FAIL/Unavailable. Its bounded joins may
+scan preceding records quadratically in the capped record count; no raw archive is read.
+
+Preserve all completed attempts. The first four portrait pilots failed before service;
+the fourth diagnosed `entity-sprite-binding`, falsifying focus/main-loop explanations.
+Legal player sprite setup through the existing operation corrected the authored input.
+Pilot01's aggregate memory is Unknown; its parent-only sample is not aggregate evidence.
+Pilot05 completed Unavailable at the unregistered entry batch; the accepted semantic
+composition is a separate narrower claim. The initial successful-capture comparison
+failed because JSON serialized integral numbers as floats; normalization on read corrected
+it without changing evidence. The first direct control run misclassified a missing
+`waitingForMotion` leaf as a later predecessor contradiction. Its corrected join preserves
+missing evidence as Unavailable and known contradictions as FAIL. Retain those original
+results and targeted corrections. The input-ownership pilot incorrectly equated V wait
+with `gameplayHeld`; the adapter uses its separate WaitHeld path. Bind the recorded V
+press/ready state and actual wait result, preserving that failed pilot. Do not rerun
+passing native cases to replace failures.
+
+Independent review of candidate `3c6a5e94` additionally reproduced three false PASS results:
+a foreign terminal case, consistently negative clock axes, and a V release after the first
+valid wait followed by illegal repeats. Foreign receipt plus a missing Draw also incorrectly
+became Unavailable. Preserve those original controls and rerun their exact four negatives
+plus the genuine baseline after correction. Receipt identity/single termination and absolute
+clock domains are checked before downstream missing fields. Wait ownership follows press,
+release and cancellation edges; the immediate action is distinguished from later repeats,
+and duplicate held presses do not rearm a canceled hold. Reuse all successful native/build
+observations; these comparator corrections require no new capture or SDK run.
+
+Direct controls cover premature registration, extra RNG, counters/gates/programs,
+disabled NPC effects, destination/collision/wait/travel, service count/order/continuation,
+projection and draw clocks, consistently foreign session/build identity, missing fields,
+missing transition Draw and registered batches. Wrong-plus-missing controls must remain
+FAIL, including missing accepted seed proof. Scoped Ruff, design-contract checks,
+private/diff scope, the committed planner under the current policy and exact-head CI
+complete this tooling slice. Adjacent predicates remain frozen. Historical A FAIL,
+original timing Unknown and the completed normal-verification provenance failure remain;
+main-gate owns independent integration and obligation closure.
+
 ### Scoped AI consumer comparison
 
 The [selected AI contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-ai-rule-and-consumer-binding)

@@ -5340,6 +5340,1337 @@ def _ai_source_decision(s, actors, who, seed):
     )
 
 
+def _field_equal(expected, actual):
+    """Observation JSON keeps booleans distinct from integral numeric values."""
+    if isinstance(expected, dict):
+        return (
+            isinstance(actual, dict)
+            and expected.keys() == actual.keys()
+            and all(_field_equal(v, actual[k]) for k, v in expected.items())
+        )
+    if isinstance(expected, list):
+        return (
+            isinstance(actual, list)
+            and len(expected) == len(actual)
+            and all(_field_equal(a, b) for a, b in zip(expected, actual, strict=True))
+        )
+    return expected == actual and (
+        isinstance(actual, bool)
+        if isinstance(expected, bool)
+        else not isinstance(actual, bool)
+        if isinstance(expected, (int, float))
+        else True
+    )
+
+
+def _field_rng(seed: int, bound: int) -> tuple[int, int]:
+    word, product = _rng_step(seed >> 16, (bound * 2) & 0xFFFF)
+    return (word << 16) | (seed & 0xFFFF), product >> 1
+
+
+def _field_join(left, right):
+    """Join partial observations: a missing leaf cannot erase a known contradiction."""
+    if isinstance(left, dict) and isinstance(right, dict):
+        values = [_field_join(left[k], right[k]) for k in left.keys() & right.keys()]
+        if left.keys() != right.keys():
+            values.append(None)
+    elif isinstance(left, list) and isinstance(right, list):
+        values = [_field_join(a, b) for a, b in zip(left, right, strict=False)]
+        if len(left) != len(right):
+            values.append(None)
+    else:
+        return _field_equal(left, right)
+    return False if False in values else None if None in values else True
+
+
+def _field_portrait(seed: int, work: dict | None, typing: bool) -> dict:
+    if work is None or not work["registered"]:
+        return dict(seed=seed, work=work, draws=[])
+    w = dict(work)
+    events = []
+
+    def consume(bound: int, kind: str) -> int:
+        nonlocal seed
+        before = seed
+        seed, value = _field_rng(seed, bound)
+        events.append(dict(kind=kind, before=before, after=seed, range=bound, value=value))
+        return value
+
+    w["blink"] = ((int(w["blink"]) - 1 + 32768) & 0xFFFF) - 32768
+    if w["blink"] == 3:
+        w["eyesClosed"] = True
+    if w["blink"] == 0:
+        w["eyesClosed"] = False
+        w["blink"] = consume(120, "blink") + 30
+    if typing:
+        w["mouth"] = ((int(w["mouth"]) - 1 + 32768) & 0xFFFF) - 32768
+        if w["mouth"] == 5:
+            w["mouthOpen"] = True
+    if (typing and w["mouth"] == 0) or (not typing and w["mouth"] <= 5):
+        w["mouthOpen"] = False
+        w["mouth"] = consume(5, "mouth") + 10
+    return dict(seed=seed, work=w, draws=events)
+
+
+_FIELD_MOTION = dict(
+    x="x",
+    y="y",
+    targetX="xDest",
+    targetY="yDest",
+    velocityX="xVelocity",
+    velocityY="yVelocity",
+    travelX="xTravel",
+    travelY="yTravel",
+    speedX="xSpeed",
+    speedY="ySpeed",
+    accelerationX="xAccel",
+    accelerationY="yAccel",
+    flagsA="flagsA",
+    flagsB="flagsB",
+    facing="facing",
+    layer="layer",
+    animationCounter="animCounter",
+    waitTimer="waitTimer",
+)
+
+_FIELD_COUNTERS = dict(Blink="blink", Mouth="mouth", EyesClosed="eyesClosed", MouthOpen="mouthOpen")
+
+_FIELD_SERVICES = {
+    "portrait-window-service",
+    "text-mandatory-service",
+    "text-w1-wait",
+    "gameplay-wait",
+    "simulation-tick",
+}
+
+
+def _field_action_program(actions):
+    result = []
+    for a in actions:
+        op = a["op"]
+        kind, operands = {
+            "idle": ("IdleEntityAction", {}),
+            "random-walk": (
+                "RandomWalkEntity",
+                dict(Origin=dict(X=a.get("x"), Y=a.get("y")), Radius=a.get("radius")),
+            ),
+            "jump": ("JumpEntityAction", dict(Instruction=a.get("instruction"))),
+            "wait": ("WaitEntityTicks", dict(Ticks=a.get("ticks"))),
+            "flags": (
+                "ChangeEntityFlags",
+                dict(FlagsB=a.get("field") == "b", Mask=a.get("mask"), Value=a.get("value")),
+            ),
+        }[op]
+        result.append(dict(kind=kind, operands=operands))
+    return result + [dict(kind="StopEntityActions", operands={})]
+
+
+def _field_npc_tick(entities, seed, layout):
+    import copy
+
+    from sf2tool.h3.entity_movement import _core_tick
+
+    entities = copy.deepcopy(entities)
+    paths = []
+    for e in entities:
+        if e["id"] == "traveler":
+            # This bounded stationary controlled player has no RNG/action program.
+            if e["actionProgram"] is not None or e["moving"]:
+                raise ValueError("controlled player outside stationary cohort")
+            continue
+        motion = {v: int(e[k]) for k, v in _FIELD_MOTION.items()}
+        _core_tick(motion, layout[int(e["targetY"]) // 384][int(e["targetX"]) // 384])
+        e.update({k: motion[v] for k, v in _FIELD_MOTION.items()})
+        moving = e["x"] != e["targetX"] or e["y"] != e["targetY"]
+        if e["waitingForMotion"] and moving:
+            paths.append("motion-wait")
+            continue
+        e["waitingForMotion"] = False
+        program = e["actionProgram"]
+        if program is None:
+            continue
+        for _ in range(8):
+            instruction = program[int(e["actionCursor"])]
+            kind, a = instruction["kind"], instruction["operands"]
+            if kind == "JumpEntityAction":
+                e["actionCursor"] = a["Instruction"]
+                e["waitTimer"] = 0
+                continue
+            if kind == "IdleEntityAction":
+                e["waitTimer"] = e["waitTimer"] + 1 if e["waitTimer"] < 1 else 1
+                paths.append("idle")
+                break
+            if kind == "WaitEntityTicks":
+                if not 0 <= a["Ticks"] < 128 or not 0 <= e["waitTimer"] < 128:
+                    raise ValueError("wait outside bounded signed-byte cohort")
+                if e["waitTimer"] < a["Ticks"]:
+                    e["waitTimer"] += 1
+                    paths.append("timer-pending")
+                    break
+                e["waitTimer"] = 0
+                e["actionCursor"] += 1
+                paths.append("timer-release")
+                continue
+            if kind == "ChangeEntityFlags":
+                key = "flagsB" if a["FlagsB"] else "flagsA"
+                e[key] = (int(e[key]) & ~int(a["Mask"])) | (int(a["Value"]) & int(a["Mask"]))
+                e["waitTimer"] = 0
+                e["actionCursor"] += 1
+                continue
+            if kind != "RandomWalkEntity":
+                raise ValueError("NPC action outside declared source cohort")
+            for _ in range(4):
+                seed, direction = _field_rng(seed, 4)
+                x, y, r = e["x"], e["y"], a["Radius"]
+                ox, oy = a["Origin"]["X"], a["Origin"]["Y"]
+                outside = (
+                    x >= (ox + r) * 384,
+                    y <= (oy - r) * 384,
+                    x <= (ox - r) * 384,
+                    y >= (oy + r) * 384,
+                )[direction]
+                if outside:
+                    paths.append("radius-rejected")
+                    continue
+                dx, dy = ((1, 0), (0, -1), (-1, 0), (0, 1))[direction]
+                tx, ty = int(x) // 384 + dx, int(y) // 384 + dy
+                if not 0 <= tx < len(layout[0]) or not 0 <= ty < len(layout):
+                    raise ValueError("candidate outside flat layout")
+                if int(e["flagsA"]) & 0x40 and layout[ty][tx] >= 0xC000:
+                    paths.append("map-rejected")
+                    continue
+                if int(e["flagsA"]) & 0x20 and any(
+                    q["slot"] != e["slot"]
+                    and q["Visible"]
+                    and abs(q["targetX"] - tx * 384) + abs(q["targetY"] - ty * 384) < 384
+                    for q in entities
+                ):
+                    paths.append("entity-rejected")
+                    continue
+                e.update(
+                    targetX=tx * 384,
+                    targetY=ty * 384,
+                    travelX=abs(tx * 384 - x),
+                    travelY=abs(ty * 384 - y),
+                    velocityX=dx * e["speedX"],
+                    velocityY=dy * e["speedY"],
+                    waitTimer=0,
+                    waitingForMotion=True,
+                )
+                paths.append("walk-accepted")
+                break
+            e["actionCursor"] += 1
+            break
+        else:
+            raise ValueError("action composition budget")
+    return entities, seed, paths
+
+
+def _field_case_input(case):
+    """Read one bounded original native case; no normalized copy of its event stream."""
+    if "records" in case:
+        return case
+
+    def selected(name, limit):
+        p = Path(case[name])
+        p = p.resolve() if p.is_absolute() else repo_path(p).resolve()
+        require(p.is_relative_to(repo_path("local").resolve()), "field case outside local/")
+        require(p.stat().st_size <= limit, "field case input cap")
+        return p
+
+    profile = read(selected("profilePath", 768 * 1024))
+    profile = dict(
+        start=profile["start"],
+        battle=dict(start=dict(mainSeed=profile["battle"]["start"]["mainSeed"])),
+        world=dict(
+            maps=profile["world"]["maps"],
+            programs=profile["world"]["programs"],
+            portraits=[
+                {k: v for k, v in p.items() if k != "raster"}
+                for p in profile["world"]["presentation"]["portraits"]
+            ],
+        ),
+    )
+    records = [
+        json.loads(line, parse_float=lambda s: int(float(s)) if float(s).is_integer() else float(s))
+        for line in selected("recordsPath", 2 * 1024 * 1024)
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    return dict(
+        case,
+        profile=profile,
+        records=records,
+        process=read(selected("processPath", 128 * 1024)),
+        launch=read(selected("launchPath", 128 * 1024)),
+        testedView=selected("testedViewPath", 128 * 1024).read_text(encoding="utf-8"),
+        errors=selected("errorsPath", 512 * 1024).read_text(encoding="utf-8").strip(),
+    )
+
+
+def _field_service_case(case, profile, checks=None):
+    process = case.get("process") or {}
+    records = case.get("records") or []
+    checks = [] if checks is None else checks
+    coverage = Counter()
+
+    def check(name, value, row=None):
+        checks.append(dict(name=name, value=value, row=row))
+
+    def clocks(name, value, keys, row):
+        value = value if isinstance(value, dict) else {}
+        for key in keys:
+            clock = value.get(key)
+            check(
+                name + ":" + key,
+                None
+                if key not in value
+                else isinstance(clock, (int, float))
+                and not isinstance(clock, bool)
+                and clock >= 0
+                and clock % 1 == 0,
+                row,
+            )
+
+    receipts = [i for i, r in enumerate(records) if r.get("kind") == "receipt"]
+    check("single terminal receipt boundary", receipts == [len(records) - 1] if receipts else None)
+    for index in receipts:
+        receipt = records[index]
+        check(
+            "terminal receipt case identity",
+            receipt["case"] == case["id"] if "case" in receipt else None,
+            index,
+        )
+    # Validate absolute clock domains before joins or missing downstream operands can
+    # short-circuit a row. Motion and portrait counters deliberately remain signed.
+    state_clocks = ("revision", "observationSequence", "simulationTick")
+    for index, row in enumerate(records):
+        if row.get("kind") == "result":
+            if row.get("before"):
+                clocks("before clock domain", row["before"], state_clocks, index)
+            clocks("after clock domain", row.get("after"), state_clocks, index)
+            facts = row.get("facts") or {}
+            clocks("result clock domain", facts, state_clocks[:2], index)
+            for event in facts.get("observations") or []:
+                clocks("event clock domain", event, ("Revision", "Sequence"), index)
+        elif row.get("kind") == "input":
+            clocks("input clock domain", row.get("before"), state_clocks, index)
+        elif row.get("kind") == "draw":
+            state = row.get("state") or {}
+            clocks("draw clock domain", state, state_clocks, index)
+            if state.get("portraitResourceProjection") is not None:
+                clocks(
+                    "resource clock domain",
+                    state["portraitResourceProjection"],
+                    state_clocks,
+                    index,
+                )
+
+    check(
+        "native exit and bounded process",
+        process["exit"] == 0
+        and process["stopped"] is None
+        and process["inputUnchanged"] is True
+        and 0 < process["seconds"] <= 45
+        and 0 < process["peakBytes"] <= 1536 * 1024 * 1024,
+    )
+    check("native stderr", not case.get("errors"))
+    check("native error channel available", True if "errors" in case else None)
+    check(
+        "completed capture receipt", records[-1]["kind"] == "receipt" and records[-1]["exit"] == 0
+    )
+    results = [(i, x) for i, x in enumerate(records) if x["kind"] == "result"]
+    initial = results[0][1]["after"]
+    session = initial["sessionId"]
+    check("selected session identity", session == case.get("sessionId"))
+    check("capture row completeness", True if records[-1].get("rows") == len(records) - 1 else None)
+    check("bounded capture rows", len(records) <= 769)
+    check("bounded driver elapsed", 0 < records[-1]["elapsedUsec"] <= 30_000_000)
+    terminal = results[-1][1]["after"]
+    check(
+        "ordinary completed field endpoint",
+        terminal["portraitWindow"] == "ClosedPortraitWindow"
+        and terminal["wait"] is None
+        and terminal["cursor"] is None
+        and terminal["canWaitAtInput"] is True,
+    )
+    expected_entities = profile["world"]["maps"][0]["entities"]
+    programs = {p["id"]: p for p in profile["world"]["programs"]}
+    initial_npc = {e["id"]: e for e in initial["entities"] if e["id"] != "traveler"}
+    check("declared actor census", set(initial_npc) == {e["id"] for e in expected_entities})
+    check("declared main seed", initial["mainSeed"] == profile["battle"]["start"]["mainSeed"])
+    for e in expected_entities:
+        check(
+            "declared structural program:" + e["id"],
+            _field_equal(
+                _field_action_program(e["actions"]), initial_npc[e["id"]]["actionProgram"]
+            ),
+        )
+        start = dict(
+            x=e["position"]["x"] * 384,
+            y=e["position"]["y"] * 384,
+            targetX=e["position"]["x"] * 384,
+            targetY=e["position"]["y"] * 384,
+            velocityX=0,
+            velocityY=0,
+            travelX=0,
+            travelY=0,
+            speedX=e["speed"],
+            speedY=e["speed"],
+            accelerationX=0,
+            accelerationY=0,
+            flagsA=32 if e["obstruction"] else 0,
+            flagsB=64,
+            facing=e["facing"],
+            layer=0,
+            animationCounter=0,
+            waitTimer=0,
+            actionCursor=0,
+            waitingForMotion=False,
+        )
+        for phase in profile["start"].get("entityPhases", []):
+            if phase["entity"] != e["id"]:
+                continue
+            mapping = dict(
+                xDestination="targetX",
+                yDestination="targetY",
+                xVelocity="velocityX",
+                yVelocity="velocityY",
+                xTravel="travelX",
+                yTravel="travelY",
+                xSpeed="speedX",
+                ySpeed="speedY",
+                xAcceleration="accelerationX",
+                yAcceleration="accelerationY",
+            )
+            start.update({mapping.get(k, k): v for k, v in phase["motion"].items()})
+            start.update(
+                actionCursor=phase["actionCursor"], waitingForMotion=phase["waitingForMotion"]
+            )
+        check(
+            "declared initial NPC motion/cursor:" + e["id"],
+            all(initial_npc[e["id"]][k] == v for k, v in start.items()),
+        )
+    previous = None
+    input_position = 0
+    wait_down, wait_armed, wait_owner, wait_services = False, False, None, 0
+    wait_evidence = False
+    for index, row in results:
+        for input_index in range(input_position, index):
+            observed_input = records[input_index]
+            if observed_input.get("kind") != "input":
+                continue
+            wait_evidence = True
+            if "key" not in observed_input:
+                check("input key available", None, input_index)
+                wait_armed = None
+                continue
+            pressed = observed_input.get("pressed")
+            if not isinstance(pressed, bool):
+                check(
+                    "input edge available",
+                    None if "pressed" not in observed_input else False,
+                    input_index,
+                )
+                wait_armed = None
+            elif observed_input.get("key") == 86:
+                if pressed and wait_down is False:
+                    wait_owner, wait_armed, wait_services = observed_input, True, 0
+                wait_down = pressed
+                if not pressed:
+                    wait_armed = False
+            elif pressed:
+                # A non-Wait action cancels the repeat; another V down while it is
+                # already held cannot rearm it without the real release edge.
+                wait_armed = False
+        input_position = index + 1
+        prior, previous = previous, row.get("after")
+        try:
+            before, after, facts = row["before"], row["after"], row["facts"]
+            events = facts["observations"]
+            for event_kind, key, ready in (
+                ("gameplay-wait", 86, "canWaitAtInput"),
+                ("text-w1-accepted", 4194309, "canWaitForText"),
+            ):
+                if any(e["Kind"] == event_kind for e in events):
+                    if event_kind == "gameplay-wait":
+                        check(
+                            "ordinary input owns gameplay-wait",
+                            wait_owner["before"][ready] is True if wait_owner else None,
+                            index,
+                        )
+                        check(
+                            "live Wait press/release ownership",
+                            wait_armed if wait_evidence else None,
+                            index,
+                        )
+                        if wait_services:
+                            check(
+                                "held repeat ready state",
+                                before["waitingAtInput"] is True
+                                and before["canWaitAtInput"] is True
+                                and before["focused"] is True,
+                                index,
+                            )
+                        wait_services += 1
+                        continue
+                    inputs = [
+                        r
+                        for r in records[:index]
+                        if r["kind"] == "input" and r.get("pressed") is True
+                    ]
+                    check(
+                        "ordinary input owns " + event_kind,
+                        inputs[-1]["key"] == key and inputs[-1]["before"][ready] is True
+                        if inputs
+                        else None,
+                        index,
+                    )
+            allowed_kinds = _FIELD_SERVICES | {
+                "program-instruction",
+                "entity-sprite-ready",
+                "portrait-window-moving",
+                "portrait-service-registered",
+                "portrait-closed",
+                "text-work-advanced",
+                "text-revealed",
+                "rng-text-w1",
+                "text-seed-copy",
+                "text-w1-input",
+                "text-w1-accepted",
+                "rng-portrait-blink",
+                "rng-portrait-mouth",
+            }
+            check(
+                "complete declared event/writer family",
+                all(e["Kind"] in allowed_kinds for e in events),
+                index,
+            )
+            instruction_kinds = {
+                "sprite": "SetEntitySprite",
+                "open-portrait": "OpenPortrait",
+                "close-portrait": "ClosePortrait",
+                "text-cursor": "SetTextCursor",
+                "show-text": "ShowText",
+                "close-text": "CloseText",
+                "end": "EndProgram",
+            }
+            for event in events:
+                if event["Kind"] == "program-instruction":
+                    loc = event["Program"]
+                    check(
+                        "legal instruction cursor",
+                        isinstance(loc["Instruction"], int)
+                        and not isinstance(loc["Instruction"], bool)
+                        and loc["Instruction"] >= 0,
+                        index,
+                    )
+                    declared = programs[loc["Program"]]["instructions"][int(loc["Instruction"])]
+                    check(
+                        "declared program operation",
+                        event["Detail"] == instruction_kinds.get(declared["op"]),
+                        index,
+                    )
+            for state in (before, after):
+                if not state:
+                    continue
+                operands = [
+                    state[k]
+                    for k in ("revision", "observationSequence", "simulationTick", "mainSeed")
+                ]
+                operands += [
+                    e[k]
+                    for e in state["entities"]
+                    for k in (*_FIELD_MOTION, "slot", "actionCursor")
+                ]
+                operands += (
+                    [state["portraitWork"][k] for k in ("Blink", "Mouth")]
+                    if state["portraitWork"]
+                    else []
+                )
+                check(
+                    "integral service operands",
+                    all(
+                        isinstance(v, (int, float)) and not isinstance(v, bool) and v == int(v)
+                        for v in operands
+                    ),
+                    index,
+                )
+                check(
+                    "typed live gates",
+                    None
+                    if any("waitingForMotion" not in e for e in state["entities"])
+                    else isinstance(state["typewriting"], bool)
+                    and all(
+                        isinstance(e["waitingForMotion"], bool) and isinstance(e["Visible"], bool)
+                        for e in state["entities"]
+                    ),
+                    index,
+                )
+                check(
+                    "portrait state admission",
+                    (
+                        state["portraitWork"] is None
+                        and state["portraitWindow"] == "ClosedPortraitWindow"
+                    )
+                    or (
+                        isinstance(state["portraitWork"], dict)
+                        and state["portraitWindow"] == "OpenPortraitWindow"
+                        and all(
+                            isinstance(state["portraitWork"][k], bool)
+                            for k in ("Registered", "Closing", "EyesClosed", "MouthOpen")
+                        )
+                    ),
+                    index,
+                )
+                check(
+                    "motion gate agrees with coordinates",
+                    all(
+                        isinstance(e["moving"], bool)
+                        and e["moving"] == (e["x"] != e["targetX"] or e["y"] != e["targetY"])
+                        for e in state["entities"]
+                    ),
+                    index,
+                )
+                check(
+                    "unique ordered actor slots",
+                    [e["slot"] for e in state["entities"]]
+                    == sorted({e["slot"] for e in initial["entities"]})
+                    and {e["id"] for e in state["entities"]}
+                    == {e["id"] for e in initial["entities"]},
+                    index,
+                )
+            for entity in after["entities"]:
+                if entity["id"] in initial_npc:
+                    check(
+                        "unchanged bound action program:" + entity["id"],
+                        entity["actionProgram"] == initial_npc[entity["id"]]["actionProgram"],
+                        index,
+                    )
+            check(
+                "result identity",
+                all(
+                    facts[k] == after[k]
+                    for k in ("sessionId", "revision", "observationSequence", "mode")
+                )
+                and after["sessionId"] == session,
+                index,
+            )
+            check(
+                "accepted and error-free",
+                facts["failure"] is None and after["failure"] is None,
+                index,
+            )
+            if prior is not None:
+                check(
+                    "result predecessor",
+                    _field_join(
+                        {
+                            k: before[k]
+                            for k in (
+                                "sessionId",
+                                "revision",
+                                "observationSequence",
+                                "simulationTick",
+                                "mainSeed",
+                                "entities",
+                                "portraitWork",
+                                "typewriting",
+                                "cursor",
+                            )
+                            if k in before
+                        },
+                        {
+                            k: prior[k]
+                            for k in (
+                                "sessionId",
+                                "revision",
+                                "observationSequence",
+                                "simulationTick",
+                                "mainSeed",
+                                "entities",
+                                "portraitWork",
+                                "typewriting",
+                                "cursor",
+                            )
+                            if k in prior
+                        },
+                    ),
+                    index,
+                )
+            if not before:
+                continue
+            first_work, last_work = before["portraitWork"], after["portraitWork"]
+            opening = any(
+                e["Kind"] == "portrait-window-moving" and e["Detail"] == "open" for e in events
+            )
+            closing = any(
+                e["Kind"] == "portrait-window-moving" and e["Detail"] == "close" for e in events
+            )
+            registered = any(e["Kind"] == "portrait-service-registered" for e in events)
+            closed = any(e["Kind"] == "portrait-closed" for e in events)
+            if opening:
+                check(
+                    "source portrait initialization",
+                    first_work is None
+                    and last_work is not None
+                    and all(
+                        _field_equal(v, last_work[k])
+                        for k, v in dict(
+                            Registered=False,
+                            Closing=False,
+                            Blink=20,
+                            Mouth=6,
+                            EyesClosed=False,
+                            MouthOpen=False,
+                        ).items()
+                    ),
+                    index,
+                )
+            elif first_work is not None and last_work is not None:
+                check(
+                    "ordered registration/closure gate",
+                    last_work["Registered"]
+                    is (False if closing else True if registered else first_work["Registered"])
+                    and last_work["Closing"] is (True if closing else first_work["Closing"]),
+                    index,
+                )
+            elif first_work is not None:
+                check(
+                    "source closed window boundary",
+                    closed
+                    and first_work["Closing"] is True
+                    and first_work["Registered"] is False
+                    and after["portraitWindow"] == "ClosedPortraitWindow",
+                    index,
+                )
+            else:
+                check("no unannounced portrait admission", last_work is None, index)
+            if first_work is not None and (
+                last_work is None
+                or any(first_work[k] != last_work[k] for k in ("EyesClosed", "MouthOpen"))
+            ):
+                next_result = next((i for i, _ in results if i > index), len(records))
+                drawn = [
+                    r["state"] for r in records[index + 1 : next_result] if r["kind"] == "draw"
+                ]
+                check(
+                    "changed portrait consumed before next result",
+                    True
+                    if any(
+                        all(
+                            s[k] == after[k]
+                            for k in (
+                                "sessionId",
+                                "revision",
+                                "observationSequence",
+                                "simulationTick",
+                                "token",
+                                "portraitWork",
+                            )
+                        )
+                        for s in drawn
+                    )
+                    else None,
+                    index,
+                )
+            check(
+                "complete result event span",
+                after["observationSequence"] - before["observationSequence"] == len(events)
+                and after["revision"] - before["revision"] == len(events),
+                index,
+            )
+            check(
+                "ordered event clocks",
+                all(
+                    before["observationSequence"] < e["Sequence"] <= after["observationSequence"]
+                    and before["revision"] < e["Revision"] <= after["revision"]
+                    for e in events
+                )
+                and all(
+                    a["Sequence"] < b["Sequence"] and a["Revision"] < b["Revision"]
+                    for a, b in zip(events, events[1:], strict=False)
+                ),
+                index,
+            )
+            services = [e for e in events if e["Kind"] in _FIELD_SERVICES]
+            n = int(after["simulationTick"] - before["simulationTick"])
+            check("complete service count", n == len(services), index)
+            if not n:
+                check("nonservice seed unchanged", before["mainSeed"] == after["mainSeed"], index)
+                if first_work is not None and last_work is not None:
+                    check(
+                        "nonservice counters unchanged",
+                        all(_field_equal(first_work[k], last_work[k]) for k in _FIELD_COUNTERS),
+                        index,
+                    )
+                check(
+                    "nonservice no RNG",
+                    not any(e["Kind"].startswith("rng-") for e in events),
+                    index,
+                )
+                continue
+            coverage["service"] += n
+            seed = int(before["mainSeed"])
+            poll = [e for e in events if e["Kind"] == "rng-text-w1"]
+            if poll:
+                updated, value = _field_rng(seed, 256)
+                check(
+                    "source W1 prefix",
+                    len(poll) == 1
+                    and all(
+                        poll[0][k] == v
+                        for k, v in dict(
+                            Before=seed, After=updated, RandomRange=256, RandomValue=value
+                        ).items()
+                    )
+                    and events.index(poll[0]) < events.index(services[0]),
+                    index,
+                )
+                seed = updated
+                check("accepted current live seed copy", after["randomSeedCopy"] == value, index)
+            gate = before["entitiesRunning"]
+            if before["cursor"] is not None:
+                caller = programs[before["cursor"]["Program"]]
+                check(
+                    "declared caller service gate",
+                    gate is caller.get("entitiesRunning", True),
+                    index,
+                )
+            if gate is None:
+                check(
+                    "ordinary field caller gate",
+                    before["cursor"] is None
+                    and before["wait"] is None
+                    and before["canWaitAtInput"],
+                    index,
+                )
+                gate = True
+            entities = before["entities"]
+            work = before["portraitWork"]
+            expected_draws = []
+            if n > 1:
+                allowed = (
+                    work is not None and work["Registered"] is False and work["Closing"] is False
+                )
+                if not allowed:
+                    check("intermediate registered/text operands unavailable", None, index)
+                    continue
+                check("unregistered entry batch admission", True, index)
+                if gate:
+                    random_actors = [e for e in entities if e["id"] != "traveler"]
+                    check("bounded entry NPC census", len(random_actors) == 1, index)
+                    for actor in random_actors:
+                        program = actor["actionProgram"]
+                        expected_program = _field_action_program(
+                            [
+                                dict(
+                                    op="random-walk",
+                                    x=actor["x"] / 384,
+                                    y=actor["y"] / 384,
+                                    radius=0,
+                                ),
+                                dict(op="jump", instruction=0),
+                            ]
+                        )
+                        check(
+                            "stationary radius-zero entry program",
+                            _field_equal(expected_program, program)
+                            and actor["actionCursor"] in (0, 1)
+                            and actor["waitingForMotion"] is False
+                            and actor["x"] == actor["targetX"]
+                            and actor["y"] == actor["targetY"]
+                            and actor["travelX"]
+                            == actor["travelY"]
+                            == actor["velocityX"]
+                            == actor["velocityY"]
+                            == 0,
+                            index,
+                        )
+                check(
+                    "exact entry continuation",
+                    [e["Kind"] for e in events]
+                    == ["portrait-window-service"] * n
+                    + ["portrait-service-registered", "program-instruction", "program-instruction"]
+                    and [e["Detail"] for e in events[-2:]] == ["SetTextCursor", "ShowText"],
+                    index,
+                )
+                cursor = before["cursor"]
+                instructions = programs[cursor["Program"]]["instructions"]
+                start = cursor["Instruction"]
+                check(
+                    "source-declared entry instructions",
+                    instructions[start] == dict(op="open-portrait", entity="ferryman", flags=0)
+                    and instructions[start + 1] == dict(op="text-cursor", text=100)
+                    and instructions[start + 2]
+                    == dict(
+                        op="show-text", mode="single", speaker="ferryman", explicitWindows=True
+                    ),
+                    index,
+                )
+                check(
+                    "exact continuation locations",
+                    events[-2]["Program"] == dict(Program=cursor["Program"], Instruction=start + 1)
+                    and events[-1]["Program"]
+                    == dict(Program=cursor["Program"], Instruction=start + 2)
+                    and after["cursor"] == events[-1]["Program"]
+                    and after["wait"] == "FieldTextWait"
+                    and after["fieldText"]["Phase"] == 0,
+                    index,
+                )
+                check(
+                    "entry exit gate",
+                    after["portraitWork"]["Registered"] is True
+                    and after["portraitWork"]["Y"] == after["portraitWork"]["DestinationY"]
+                    and after["entitiesRunning"] == gate,
+                    index,
+                )
+                coverage["unregistered-entry-batch"] += 1
+            for _ in range(n):
+                if gate:
+                    entities, seed, paths = _field_npc_tick(
+                        entities, seed, profile["world"]["maps"][0]["layout"]
+                    )
+                    coverage.update(paths)
+                else:
+                    coverage["entities-disabled"] += 1
+                lower = (
+                    None
+                    if work is None
+                    else dict(
+                        registered=work["Registered"],
+                        **{v: work[k] for k, v in _FIELD_COUNTERS.items()},
+                    )
+                )
+                expected = _field_portrait(seed, lower, before["typewriting"])
+                seed = expected["seed"]
+                expected_draws.extend(expected["draws"])
+                if work is not None:
+                    for k, v in _FIELD_COUNTERS.items():
+                        work = {**work, k: expected["work"][v]}
+                    coverage[
+                        "portrait-unregistered"
+                        if not work["Registered"]
+                        else "portrait-typing"
+                        if before["typewriting"]
+                        else "portrait-not-typing"
+                    ] += 1
+            check("source main seed effect", after["mainSeed"] == seed, index)
+            got_draws = [
+                dict(
+                    kind=e["Kind"].removeprefix("rng-portrait-"),
+                    before=e["Before"],
+                    after=e["After"],
+                    range=e["RandomRange"],
+                    value=e["RandomValue"],
+                )
+                for e in events
+                if e["Kind"].startswith("rng-portrait-")
+            ]
+            check("ordered source portrait draws", _field_equal(expected_draws, got_draws), index)
+            coverage.update("draw-" + e["kind"] for e in expected_draws)
+            if work is not None and after["portraitWork"] is not None:
+                check(
+                    "source portrait counters/effects",
+                    all(_field_equal(work[k], after["portraitWork"][k]) for k in _FIELD_COUNTERS),
+                    index,
+                )
+            expected_by_id = {e["id"]: e for e in entities}
+            for e in after["entities"]:
+                if e["id"] == "traveler" and gate:
+                    continue
+                keys = tuple(_FIELD_MOTION) + (
+                    "actionCursor",
+                    "waitingForMotion",
+                    "actionProgram",
+                    "slot",
+                    "Visible",
+                    "sprite",
+                )
+                check(
+                    "source NPC gate/motion/script:" + e["id"],
+                    all(_field_equal(expected_by_id[e["id"]][k], e[k]) for k in keys),
+                    index,
+                )
+        except (KeyError, ValueError, TypeError, IndexError) as error:
+            check("missing/outside comparison operands:" + str(error), None, index)
+    for index, row in enumerate(records):
+        if row["kind"] == "input":
+            state = row["before"]
+            check("input belongs to admitted session", state["sessionId"] == session, index)
+            earlier = [x["after"] for i, x in results if i < index]
+            check(
+                "input joins actual preceding result",
+                bool(earlier)
+                and all(
+                    state[k] == earlier[-1][k]
+                    for k in (
+                        "revision",
+                        "observationSequence",
+                        "simulationTick",
+                        "token",
+                        "wait",
+                        "mainSeed",
+                    )
+                ),
+                index,
+            )
+        if row["kind"] != "draw":
+            continue
+        try:
+            s = row["state"]
+            work = s["portraitWork"]
+            resource = s["portraitResourceProjection"]
+            check("actual draw error-free", s["failure"] is None, index)
+            earlier = [x["after"] for i, x in results if i < index]
+            check(
+                "draw joins actual preceding result",
+                bool(earlier)
+                and all(
+                    s[k] == earlier[-1][k]
+                    for k in (
+                        "sessionId",
+                        "revision",
+                        "observationSequence",
+                        "simulationTick",
+                        "token",
+                        "portraitWork",
+                    )
+                ),
+                index,
+            )
+            if work is None:
+                check("closed actual portrait resource", resource is None, index)
+                coverage["closed-draw"] += 1
+                continue
+            projection = s["portraitProjection"]
+            tiles = list(range(64))
+            portrait_asset = next(p for p in profile["world"]["portraits"] if p["portrait"] == 7)
+            for changes in (
+                portrait_asset["eyes"] if work["EyesClosed"] else [],
+                portrait_asset["mouth"] if work["MouthOpen"] else [],
+            ):
+                for x, y, alternate_x, alternate_y in changes:
+                    tiles[y * 8 + x] = alternate_y * 8 + alternate_x
+            check(
+                "actual portrait draw identity",
+                all(
+                    resource[k] == s[k]
+                    for k in (
+                        "sessionId",
+                        "revision",
+                        "observationSequence",
+                        "simulationTick",
+                        "token",
+                    )
+                )
+                and s["sessionId"] == session,
+                index,
+            )
+            check(
+                "source mapped tile projection",
+                projection["id"] == 7
+                and projection["flags"] == 0
+                and projection["eyesClosed"] == work["EyesClosed"]
+                and projection["mouthOpen"] == work["MouthOpen"]
+                and projection["tiles"] == tiles
+                and resource["selector"]
+                == dict(
+                    kind="portrait",
+                    portrait=7,
+                    mirror=False,
+                    eyes=work["EyesClosed"],
+                    mouth=work["MouthOpen"],
+                    tiles=tiles,
+                )
+                and resource["texturePresent"] is True
+                and bool(resource["resourceIdentity"])
+                and (resource["width"], resource["height"]) == (48, 56),
+                index,
+            )
+            coverage["eyes-closed" if work["EyesClosed"] else "eyes-open"] += 1
+            coverage["mouth-open" if work["MouthOpen"] else "mouth-closed"] += 1
+        except (KeyError, TypeError) as error:
+            check("missing actual projection:" + str(error), None, index)
+    if process["case"].startswith("portrait"):
+        for name in (
+            "draw-blink",
+            "draw-mouth",
+            "portrait-unregistered",
+            "portrait-typing",
+            "portrait-not-typing",
+            "eyes-closed",
+            "eyes-open",
+            "mouth-open",
+            "mouth-closed",
+            "closed-draw",
+        ):
+            check("required branch:" + name, coverage[name] > 0)
+    check("bounded service count", coverage["service"] <= 240)
+    verdict = (
+        "FAIL"
+        if any(c["value"] is False for c in checks)
+        else "Unavailable"
+        if any(c["value"] is None for c in checks)
+        else "PASS"
+    )
+    return dict(
+        result=verdict,
+        scope="single authored source/current mechanism case; not whole field child",
+        case=process["case"],
+        checks=[c for c in checks if c["value"] is not True],
+        passedByRule=dict(Counter(c["name"] for c in checks if c["value"] is True)),
+        coverage=dict(coverage),
+    )
+
+
+def field_service_binding(actual, context, source_root):
+    """Original service rules composed with bounded current input/state/Draw executions.
+
+    Historical callback reads stay Unknown. The only admitted multi-service boundary
+    is an unregistered portrait entry with no portrait effect and constrained continuation.
+    """
+    import xml.etree.ElementTree as ET
+
+    result = dict(
+        value=None,
+        checks=[],
+        cases=[],
+        sourceRules=dict(
+            commit=UPSTREAM,
+            symbols=[
+                "GenerateRandomNumber",
+                "VInt_PerformPortraitBlinking",
+                "VInt_UpdateEntities",
+                "esc00_wait",
+                "esc01_waitUntilDestination",
+                "esc06_walkRandomly",
+            ],
+            owner="docs/design/contracts/map3-battle01-continuous-scenario.md",
+        ),
+        unknown=[
+            "historical stripped per-callback state and original natural reads/timing",
+            "intermediate NPC attempts are Inferred; only the bounded net effect is observed",
+            "registered/text multi-service batches and wider NPC/collision domains",
+        ],
+        historical=dict(result="FAIL", reason="historical A disconnected seed latch unchanged"),
+    )
+
+    def check(name, value):
+        result["checks"].append(dict(name=name, value=value))
+
+    def merge(values):
+        return False if False in values else None if None in values else True
+
+    def local_input(name, limit):
+        p = Path(context[name])
+        p = p.resolve() if p.is_absolute() else repo_path(p).resolve()
+        require(p.is_relative_to(repo_path("local").resolve()), "field evidence outside local/")
+        require(p.stat().st_size <= limit, "field evidence input cap")
+        return p
+
+    if not isinstance(context, dict):
+        check("independent declared field context", None)
+        return result
+    try:
+        root = Path(source_root)
+        root = root.resolve() if root.is_absolute() else repo_path(root)
+        check(
+            "pinned original source",
+            subprocess.check_output(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+            ).strip()
+            == UPSTREAM,
+        )
+        check(
+            "original source unchanged",
+            subprocess.run(
+                ["git", "-C", str(root), "diff", "--quiet", UPSTREAM, "--", "disasm"], check=False
+            ).returncode
+            == 0,
+        )
+    except (OSError, TypeError, subprocess.CalledProcessError):
+        check("original source available", None)
+    try:
+        if "fieldServiceCases" not in actual:
+            sessions = {r.get("state", {}).get("sessionId") for r in actual.get("samples", [])}
+            check("historical applicability session", context["historicalSessionId"] in sessions)
+            actual = read(local_input("actualSupplement", 8 * 1024 * 1024))
+        check(
+            "bounded current evidence scope",
+            actual.get("scope") == "field-service-local-composition-v1",
+        )
+        # Reviewed PR618 counters/order plus PR621's active seed transport. Compare
+        # implementation dependencies directly; unrelated Git advances do not invalidate.
+        accepted = "0fe122f548a9a2f882ea3cc524d3937bde7e34b9"
+        for path in (
+            "remake/src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs",
+            "remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationPortraitRunner.cs",
+            "remake/src/Sf2.Remake.Domain/Maps/EntityMotion.cs",
+            "src/sf2tool/h3/entity_movement.py",
+        ):
+            old = subprocess.check_output(
+                ["git", "-C", str(repo_path(".")), "show", accepted + ":" + path],
+                text=True,
+                encoding="utf-8",
+            )
+            check(
+                "accepted service dependency " + path,
+                True if repo_path(path).read_text(encoding="utf-8") == old else None,
+            )
+        seed = admission_seed_binding(
+            context.get("seedActual") or {}, context.get("seedContext") or {}, source_root
+        )
+        result["seedMechanism"] = seed
+        check("accepted executed current seed transport", seed["value"])
+        trx = ET.fromstring(local_input("serviceTrx", 256 * 1024).read_bytes())
+        check(
+            "accepted service execution identity",
+            trx.get("id") == "0f1e82ee-33fd-4aa3-a3c5-af025ad1dd54",
+        )
+        methods = dict(
+            PortraitCountersUseSourceTypewritingAndOrderedIndependentRng=5,
+            PollCopySurvivesNpcThenBlinkAndMouthDraws=4,
+            HeldCameraUsesCommonLiveEntityWindowPortraitAndRandomService=2,
+            NodServicesLiveEntitiesThenWindowAndPortraitWithoutOverwritingPollCopy=2,
+            PortraitEventCarriesTextTailAndScriptActivationThroughRealReturn=2,
+            PortraitAdmissionUsesLiveSpeakerAndRepeatedFlagBranch=2,
+        )
+        executions = []
+        for method, count in methods.items():
+            prefix = "Sf2.Remake.Engine.Tests.ExplorationTextWaitTests." + method + "("
+            tests = [
+                t
+                for t in trx.iter()
+                if t.tag.endswith("UnitTestResult") and t.get("testName", "").startswith(prefix)
+            ]
+            check(
+                "accepted executed " + method,
+                None
+                if len(tests) < count
+                else len(tests) == count
+                and len({t.get("testName") for t in tests}) == count
+                and all(t.get("outcome") == "Passed" for t in tests),
+            )
+            executions.extend(t.get("executionId") for t in tests)
+        result["serviceExecutions"] = executions
+    except (KeyError, OSError, ValueError, TypeError, subprocess.CalledProcessError, ET.ParseError):
+        check("accepted composition evidence available", None)
+    profiles = context.get("profiles") or {}
+    supplied = actual.get("fieldServiceCases") or []
+    ids = [c.get("id") for c in supplied]
+    check(
+        "declared case coverage",
+        False
+        if len(set(ids)) != len(ids) or set(ids) - set(profiles)
+        else True
+        if set(ids) == set(profiles) and profiles
+        else None,
+    )
+    coverage = Counter()
+    sessions = []
+    assemblies = None
+    for case in supplied:
+        if case.get("id") not in profiles:
+            continue
+        case_checks = []
+        try:
+            case = _field_case_input(case)
+            profile = profiles[case["id"]]
+            check(
+                "native source identity:" + case["id"],
+                case["launch"]["head"] == context.get("nativeBase"),
+            )
+            check(
+                "independently selected session:" + case["id"],
+                case["sessionId"] == context["sessions"][case["id"]],
+            )
+            check(
+                "independently selected build:" + case["id"],
+                _field_equal(case["launch"]["assemblies"], context["assemblies"]),
+            )
+            check("launch case identity:" + case["id"], case["launch"]["case"] == case["id"])
+            check(
+                "actual observer source:" + case["id"],
+                True
+                if case["testedView"]
+                == repo_path("remake/game/src/Exploration/ExplorationSessionView.cs").read_text(
+                    encoding="utf-8"
+                )
+                else None,
+            )
+            if assemblies is None:
+                assemblies = case["launch"]["assemblies"]
+            check(
+                "same built runtime across cases:" + case["id"],
+                case["launch"]["assemblies"] == assemblies and len(assemblies) == 4,
+            )
+            check(
+                "case profile matches independent declaration:" + case["id"],
+                _field_equal(profile, case.get("profile")),
+            )
+            check(
+                "process case identity:" + case["id"],
+                case.get("process", {}).get("case") == case["id"],
+            )
+            sessions.append(case.get("sessionId"))
+            binding = _field_service_case(case, profile, case_checks)
+            result["cases"].append(binding)
+            coverage.update(binding["coverage"])
+            check(
+                "source/current case:" + case["id"],
+                True
+                if binding["result"] == "PASS"
+                else False
+                if binding["result"] == "FAIL"
+                else None,
+            )
+        except (KeyError, OSError, ValueError, TypeError, IndexError, OverflowError):
+            case_checks.append(dict(name="required case operand unavailable", value=None))
+            check(
+                "case operands available:" + str(case.get("id")),
+                merge([c["value"] for c in case_checks]),
+            )
+            result["cases"].append(
+                dict(
+                    case=case.get("id"),
+                    checks=case_checks,
+                    coverage={},
+                    result="FAIL"
+                    if any(c["value"] is False for c in case_checks)
+                    else "Unavailable",
+                )
+            )
+    check(
+        "distinct actual sessions",
+        bool(sessions) and None not in sessions and len(sessions) == len(set(sessions)),
+    )
+    for branch in (
+        "entities-disabled",
+        "radius-rejected",
+        "entity-rejected",
+        "map-rejected",
+        "motion-wait",
+        "timer-pending",
+        "timer-release",
+        "walk-accepted",
+        "portrait-unregistered",
+        "portrait-typing",
+        "portrait-not-typing",
+        "draw-blink",
+        "draw-mouth",
+        "eyes-open",
+        "eyes-closed",
+        "mouth-open",
+        "mouth-closed",
+        "closed-draw",
+    ):
+        check("required source branch:" + branch, True if coverage[branch] else None)
+    result["coverage"] = dict(coverage)
+    result["value"] = merge([c["value"] for c in result["checks"]])
+    return result
+
+
 def ai_consumer_binding(actual, context, source_root):
     """Matched historical callers plus the accepted current seed transport mechanism."""
     import copy
@@ -18925,6 +20256,7 @@ def compare_modern(
     physical_context=None,
     reward_context=None,
     ai_context=None,
+    field_context=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -18969,6 +20301,11 @@ def compare_modern(
     ai_consumers = (
         ai_consumer_binding(actual, ai_context, text_source_root)
         if ai_context is not None
+        else None
+    )
+    field_consumers = (
+        field_service_binding(actual, field_context, text_source_root)
+        if field_context is not None
         else None
     )
     reward_consumers = (
@@ -20172,6 +21509,25 @@ def compare_modern(
                 "historical latch remains FAIL",
             )
             continue
+        if (
+            name == "field text/portrait/NPC service draw-to-effect gates"
+            and field_consumers is not None
+        ):
+            check(
+                5,
+                name,
+                True,
+                field_consumers["value"],
+                actual_location,
+                original=field_consumers["sourceRules"],
+                parent=rule_parent,
+                reason=(
+                    "Original rules, accepted executed dependencies and bounded current "
+                    "input/state/Draw effects; historical stripped reads and intermediate "
+                    "NPC attempts remain separate"
+                ),
+            )
+            continue
         item_reached = any(e["Kind"] == "item-consumed" for e in unique_events.values()) or any(
             row["state"].get("itemSlot") is not None
             for row in outcome.get("records", [])
@@ -20827,6 +22183,7 @@ def compare_modern(
             healConsumerBinding=heal_consumers,
             physicalConsumerBinding=physical_consumers,
             rewardConsumerBinding=reward_consumers,
+            fieldServiceBinding=field_consumers,
             reachedMaterialJoins=materials["joins"],
             reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
@@ -21381,6 +22738,7 @@ def main():
             "physical",
             "reward",
             "ai",
+            "field-service",
         ),
     )
     parser.add_argument(
@@ -21395,6 +22753,11 @@ def main():
         "--ai-context",
         type=Path,
         help="Selected AI census, caller inputs and accepted seed mechanism evidence",
+    )
+    parser.add_argument(
+        "--field-context",
+        type=Path,
+        help="Declared source/current field-service composition inputs",
     )
     parser.add_argument("--profile", choices=("legacy", "modern-continuous"), default="legacy")
     parser.add_argument("--reference", type=Path)
@@ -21474,6 +22837,50 @@ def main():
     global _STREAM_SCRATCH_ROOT
     args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
     _STREAM_SCRATCH_ROOT = args.output.parent
+    require(
+        args.field_context is None
+        or args.mode == "field-service"
+        or args.mode == "compare"
+        and args.profile == "modern-continuous",
+        "Field context applies only to field-service or modern compare",
+    )
+    if args.field_context is not None:
+        args.field_context = (
+            args.field_context
+            if args.field_context.is_absolute()
+            else repo_path(args.field_context)
+        ).resolve()
+        require(args.field_context.stat().st_size <= 1024 * 1024, "Field context exceeds 1MiB")
+    if args.mode == "field-service":
+        require(
+            args.actual is not None and args.field_context is not None,
+            "field-service requires actual and independent context",
+        )
+        actual_path = args.actual if args.actual.is_absolute() else repo_path(args.actual)
+        require(
+            actual_path.stat().st_size + args.field_context.stat().st_size <= 10 * 1024 * 1024,
+            "Field compact bundle exceeds 10MiB",
+        )
+        require(
+            args.output.is_relative_to(repo_path("local").resolve()) and not args.output.exists(),
+            "Field output must be fresh beneath worktree local/",
+        )
+        binding = field_service_binding(
+            read(actual_path), read(args.field_context), args.text_source_root
+        )
+        verdict = (
+            "Unavailable" if binding["value"] is None else "PASS" if binding["value"] else "FAIL"
+        )
+        report = dict(
+            profile="modern-field-service-composed",
+            result=verdict,
+            milestonePass=False,
+            binding=binding,
+        )
+        require(len(json.dumps(report).encode("utf-8")) <= 1024 * 1024, "Field report exceeds 1MiB")
+        write(args.output, report)
+        print(json.dumps(dict(result=verdict, cases=len(binding["cases"]), milestonePass=False)))
+        raise SystemExit(0 if binding["value"] is True else 1 if binding["value"] is False else 2)
     require(
         args.ai_context is None
         or args.mode == "ai"
@@ -22171,6 +23578,7 @@ def main():
                 read(args.physical_context) if args.physical_context else None,
                 read(args.reward_context) if args.reward_context else None,
                 read(args.ai_context) if args.ai_context else None,
+                read(args.field_context) if args.field_context else None,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
