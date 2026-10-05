@@ -1271,6 +1271,16 @@ selection/skip/cursor/rollover/outcome rules. Those queues never supply expected
 Only this explicit composition can supply the named current semantic child; the default historical
 diagnostic and its missing actual operands retain their separate result.
 
+The seven tested/current dependency guards retain their exact accepted-object/current-file byte
+comparisons. Equal readable dependencies preserve the existing generation/consumer verdict.
+Changed bytes invalidate reuse of the executed proof and yield Unavailable with a renewal reason;
+failed tested-object and current-file reads report Unavailable separately with their read reason
+and error type. Neither condition proves a gameplay contradiction or supplies a PASS. Wrong
+producer/source/tested identity, forged selection or independently observed queue/clock/HP/input
+contradictions remain FAIL. Consumer checks continue beside unavailable dependencies, and the
+combined result retains both diagnoses with FAIL precedence. Unexpected non-I/O exceptions are
+not reclassified as missing proof.
+
 **Confirmed (bounded executed comparison):** the retained selection contains twelve complete
 64-slot queue installations. Independently retained census/selection receipts and source channel
 indices define the consumer frontier. Each reached pre-sentinel slot requires its actual admitted

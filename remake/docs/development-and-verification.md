@@ -4446,6 +4446,57 @@ known negative/fractional clocks, wrong identities or inverted/contradicted inte
 Omitted snapshot HP/placement leaves preserve carried knowledge while reporting missing observation;
 missing authoritative HP writes invalidate it until a later actual observation supplies the value.
 
+The seven tested/current source guards distinguish a byte difference from a failed read of the
+tested Git object or current file. Each unavailable check names its dependency and records the
+reason/error type in its bounded examples. Byte equality remains mandatory for proof reuse; a
+source-only difference requires renewed review and yields Unavailable, without claiming actual
+behavior failed. Wrong producer/source/tested identities or forged receipts remain FAIL, and
+consumer contradictions are still evaluated beside an unavailable dependency.
+
+For a direct complete-predicate control, select the retained
+`consumer-clock-correction-01/actual.json` and `context.json` as `$selectedTurnConsumers` and
+`$turnContext` through their owning environment, and select `$pinnedSource`. After same-process
+private-input setup, this substitutes only one dependency read in memory. It does not edit a
+protected production file, Git object or retained input. Expected results are `true`, `null`,
+`null`, `false`; the last result retains both the unavailable dependency and clock contradiction.
+
+```powershell
+$dependencyControl = @'
+import copy, json, sys
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+import sf2tool.remake_h4_comparison as m
+a0 = json.loads(Path(sys.argv[1]).read_bytes())
+c0 = json.loads(Path(sys.argv[2]).read_bytes())
+dependency = 'remake/src/Sf2.Remake.Domain/Battles/Rules/TurnOrderRules.cs'
+original = m.repo_path
+for mode in ('baseline', 'changed', 'missing', 'changed-plus-clock'):
+    a, c = copy.deepcopy(a0), copy.deepcopy(c0)
+    if mode == 'changed-plus-clock':
+        row = next(r for r in a['warpRecords'] if r['_index'] == 16477)
+        row['result']['revision'] = row['state']['revision'] = -1
+    def read_dependency():
+        if mode == 'missing': raise FileNotFoundError('direct missing dependency')
+        return original(dependency).read_bytes() + b'// direct changed-read control\n'
+    def selected_path(path='.'):
+        if str(path) == dependency and mode != 'baseline':
+            return SimpleNamespace(read_bytes=read_dependency)
+        return original(path)
+    with patch.object(m, 'repo_path', side_effect=selected_path):
+        r = m.turn_order_consumer_binding(a, c, sys.argv[3])
+    print(json.dumps(dict(case=mode, value=r['value'], nonpass=[
+        x for x in r['checks'] if x['value'] is not True][:8])))
+'@
+uv run --locked python -X utf8 -c $dependencyControl $selectedTurnConsumers $turnContext $pinnedSource
+```
+
+Reuse the existing standalone generation input and retained consumer clock/input/HP controls with
+fresh output names. Direct changed/missing controls should cover all seven guards, failed tested
+reads and mixed queue/HP/input/identity/selection contradictions as well. Preserve both diagnostics;
+do not short-circuit consumer evaluation or turn an unexpected non-I/O exception into Unavailable.
+No helper-test suite, production-source mutation or new environment is needed for these controls.
+
 Use direct genuine, omission, contradictory, foreign, duplicate/order and complete-frontier controls:
 missing commit/skip/rollover/terminal, shortened census, failed owning consumer, wrong consumer
 beside a missing controlled draw, terminal remainder, changed or absent supplied queue/state/input,
