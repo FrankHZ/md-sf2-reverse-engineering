@@ -101,6 +101,43 @@ PASS alone is insufficient. Budget full-result output before batching controls. 
 results exceed a per-command output budget, use smaller sequential batches and lossless local
 snapshots, retaining completed results and failures.
 
+### H4 Remaining Migration and Resource Process
+
+The remaining #638 responsibilities migrate to C#: resource judgment/reduction first, then remaining
+transport, budgets, report orchestration and CLI, with documentation navigation still in scope.
+Already extracted Python comparison families remain accepted Python owners until actual later use
+justifies revisiting them. The existing `sf2` facade may continue to invoke those families.
+
+`tools/h4-comparison/` is an independent verification executable with no production-engine reference.
+`ResourceComparison.cs` owns resource source/pair events and ordered requirement reduction;
+`Operands.cs` owns only their operand operations; `Program.cs` handles the fixed resource-phase stream.
+`src/sf2tool/h4_dotnet.py` owns one child per reached-resource phase and the existing Python caller
+retains source decoding, SQLite variants/prefix counts and report publication. Selected decoded
+sprite/portrait entries cross once per phase; candidate batches have at most256 rows and target1MiB
+encoded data (a single row may exceed that target). No raw capture or whole relation crosses the pipe.
+
+Review the canonical old regions at commit `9683a98b5472fb0aceb43c9a21299a87a10c9d93`,
+`src/sf2tool/remake_h4_comparison.py`: `_resource_source_events`2259–2297,
+`_resource_pair_events`2300–2335 and `_reduce_resource_requirement`2338–2383, plus their
+`reached_visual_materials` caller. The reproduction owner below retains the complete source regions.
+
+| Original responsibility | Current correspondence and acceptance boundary |
+| --- | --- |
+| Source sprite/portrait presence and full decode equality | `ResourceComparison.Source`; selected source entries remain independent of actual bound selectors. |
+| Portrait tuple evaluation, unpacking, alternate arithmetic and tile assignment | `Source` and `Operands`; both change sets evaluate before either loop, assignment value before index, negative indexing and Python numeric equality remain. |
+| Map/entity/portrait bound selector and short-circuit value | `ResourceComparison.Pair`; missing, null, false/zero, truthy values and malformed containers retain distinct paths. |
+| Caught KeyError/IndexError/ValueError/TypeError with partial events | `Source`/`Pair`; `AttributeError` and numeric-conversion `OverflowError` still propagate. Child/protocol failures are infrastructure exceptions, not Unavailable evidence. |
+| Source recipe memoization | `Recipe` keys retain recursive numeric normalization and sorted object keys; no candidate multiplicity enters the cache. |
+| First error scan and first locator | `scan` plus the bridge's ordered SQLite iterator; scan stops before evaluating later rows. |
+| Prefix multiplicity and ordered checks/counts | Python `prefix_count` supplies weights to `accumulate`; C# reduces existing distinct variants, never raw candidate pairs. |
+| Partial failing events, final diagnostic, total/executed counts | `finish`; the Python caller attaches the unchanged identity, key and requirement locator. |
+
+Use the [resource-tool workflow](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
+for build and direct verification. Controls use constructed, bounded inputs and complete ordered
+outputs, including malformed prefixes, duplicate/skew variants, repeated calls, actual caller/process,
+detached publication and child-budget failures. They do not replace original-game evidence or reopen
+historical full-route acceptance. Preserve discovered port/control/build failures beside corrections.
+
 ### H4 Physical Module Route
 
 The maintained CLI remains `python -m sf2tool.remake_h4_comparison`; its `physical` mode and

@@ -212,6 +212,13 @@ def _h3_command(command: str) -> str:
 
 PARTITIONS = (
     VerificationPartition(
+        "h4-comparison-build",
+        "affected",
+        "Standalone H4 resource comparison tool; no production or engine-test dependency.",
+        ("uv run python -m sf2tool.h4_dotnet build",),
+        external_gates=("Public checks / h4-comparison-build",),
+    ),
+    VerificationPartition(
         "engine-unit",
         "remake",
         "Actual engine behavior unit tests and their product build.",
@@ -696,15 +703,12 @@ def _plan_engine_paths(
     for partition_id in include_partitions:
         _selection_entry(selected, partition_id, "explicit --include-partition")
     for path in paths:
+        if path in {"src/sf2tool/verification_plan.py", ".github/workflows/public-checks.yml"}:
+            _selection_entry(selected, "h4-comparison-build", path)
         if path.endswith(".md") or path in RETIRED_ENGINE_TEST_PATHS:
             continue
         if path in ENGINE_WIRING_PATHS or path == ".github/workflows/public-checks.yml":
-            for partition in (
-                "engine-unit",
-                "adapter-build",
-                "research-public",
-            ):
-                _selection_entry(selected, partition, path)
+            _select_all(selected, ("engine-unit", "adapter-build", "research-public"), path)
         elif path.startswith("remake/tests/Sf2.Remake.Engine.Tests/"):
             _selection_entry(selected, "engine-unit", path)
         elif path.startswith("remake/tests/"):
@@ -783,6 +787,10 @@ def plan_paths(
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
+        if normalized in {
+            "src/sf2tool/verification_plan.py", ".github/workflows/public-checks.yml"
+        }:
+            _selection_entry(selected, "h4-comparison-build", normalized)
         if normalized in ENGINE_EVIDENCE_INPUTS:
             # Preserve the owning research selection and the actual engine consumer.
             _selection_entry(selected, "engine-unit", normalized)
@@ -790,12 +798,7 @@ def plan_paths(
             "src/sf2tool/remake_exploration_content.py",
             "src/sf2tool/remake_battle_scene_content.py",
         }:
-            for partition in (
-                "engine-unit",
-                "adapter-build",
-                "research-public",
-            ):
-                _selection_entry(selected, partition, normalized)
+            _select_all(selected, ("engine-unit", "adapter-build", "research-public"), normalized)
             continue
         if normalized in RETIRED_ENGINE_TEST_PATHS:
             continue
@@ -854,12 +857,7 @@ def plan_paths(
             continue
 
         if normalized == ".github/workflows/public-checks.yml":
-            for partition in (
-                "engine-unit",
-                "adapter-build",
-                "research-public",
-            ):
-                _selection_entry(selected, partition, normalized)
+            _select_all(selected, ("engine-unit", "adapter-build", "research-public"), normalized)
             continue
 
         if normalized.startswith("src/sf2tool/h2/") and normalized.endswith(".py"):
@@ -971,14 +969,18 @@ def plan_paths(
             continue
 
         if normalized == "src/sf2tool/verification_plan.py":
-            for partition in (
-                "engine-unit",
-                "adapter-build",
-                "research-public",
-            ):
-                _selection_entry(selected, partition, normalized)
+            _select_all(selected, ("engine-unit", "adapter-build", "research-public"), normalized)
             _select_dependents(selected, root, normalized)
             continue
+
+        if normalized.startswith("tools/h4-comparison/") or normalized in {
+            "src/sf2tool/h4_dotnet.py", "src/sf2tool/remake_h4_comparison.py",
+            "src/sf2tool/dotnet_environment.py",
+        }:
+            _selection_entry(selected, "h4-comparison-build", normalized)
+            if normalized != "src/sf2tool/dotnet_environment.py":
+                _selection_entry(selected, "research-public", normalized)
+                continue
 
         if normalized.startswith("src/sf2tool/") and normalized.endswith(".py"):
             _selection_entry(selected, "tooling-python", normalized)

@@ -941,6 +941,10 @@ class _ResourceBudget:
         self.selected, self.selected_bytes = selected, 0
         self.started, self.last = time.monotonic(), 0
         self.peak_logical, self.peak_private = 0, 0
+        self.child_current = 0
+        self.child_peak = self.combined_peak = self.conservative_peak = 0
+        self.child_parent_peak = 0
+        self.child_measurements_complete = True
         self.headroom = shutil.disk_usage(root).free
         self.limit = 64 * 1024 * 1024 if selected else input_bytes
         if self.headroom < input_bytes + 6 * 1024**3:
@@ -955,6 +959,31 @@ class _ResourceBudget:
         if logical > self.limit:
             raise ResourceBudgetExceeded("resource comparison exceeded logical byte budget")
         return logical
+
+    def child_started(self):
+        self.child_current = None
+        self.child_parent_peak = 0
+
+    def observe_child(self, memory, *, exited=False):
+        # Never throttled: even a child shorter than five seconds must be charged.
+        parent = _private_bytes()
+        if memory is None or parent is None:
+            self.child_measurements_complete = False
+            self.child_current = 0 if exited else None
+            raise ResourceBudgetExceeded("resource child private-memory observation unavailable")
+        current, peak = memory
+        self.child_peak = max(self.child_peak, peak)
+        self.child_current = 0 if exited else current
+        self.peak_private = max(self.peak_private, parent)
+        if not exited:
+            self.child_parent_peak = max(self.child_parent_peak, parent)
+            self.combined_peak = max(self.combined_peak, parent + current)
+        # Independent peaks form a conservative bound, not a simultaneous peak.
+        conservative = self.child_parent_peak + peak
+        self.conservative_peak = max(self.conservative_peak, conservative)
+        if self.baseline is not None and conservative - self.baseline > 256 * 1024**2:
+            raise ResourceBudgetExceeded("resource comparison exceeded combined private memory")
+        self.checkpoint("resource child")
 
     def checkpoint(self, stage, *, force=False):
         now = time.monotonic()
@@ -997,6 +1026,11 @@ class _ResourceBudget:
             selectedDependencyBytes=self.selected_bytes,
             sourceOnlyPrivateBytes=self.baseline,
             sampledPeakPrivateBytes=self.peak_private,
+            sampledPeakCombinedPrivateBytes=self.combined_peak,
+            peakResourceChildPrivateBytes=self.child_peak,
+            conservativePhasePrivateBytes=self.conservative_peak,
+            resourceChildCurrentPrivateBytes=self.child_current,
+            resourceChildMeasurementsComplete=self.child_measurements_complete,
             incrementalPrivateByteLimit=256 * 1024**2,
             initialPhysicalFreeBytes=self.headroom,
             finalPhysicalFreeBytes=shutil.disk_usage(self.root).free,
@@ -2256,133 +2290,6 @@ def text_material_binding(actual, outcome, selection, source_root):
     )
 
 
-def _resource_source_events(kind, want, sprites, source_sprites, portraits, source_portraits):
-    events = []
-    error = None
-    try:
-        if kind == "entity":
-            events.append(
-                (
-                    "reached sprite original pointer/palette/decode",
-                    sprites.get(want["sprite"]) == source_sprites.get(want["sprite"])
-                    and want["sprite"] in source_sprites,
-                )
-            )
-        elif kind != "map":
-            events.append(
-                (
-                    "reached portrait original decode/tile composition",
-                    portraits.get(want["portrait"]) == source_portraits.get(want["portrait"])
-                    and want["portrait"] in source_portraits,
-                )
-            )
-            original = source_portraits.get(want["portrait"])
-            # Retain the legacy container's exception boundary as well as its operands.
-            tiles = _bounded_list(range(64))
-            if original:
-                for changes in (
-                    original["eyes"] if want["eyes"] else [],
-                    original["mouth"] if want["mouth"] else [],
-                ):
-                    for x, y, alternate_x, alternate_y in changes:
-                        tiles[y * 8 + x] = alternate_y * 8 + alternate_x
-            events.append(
-                (
-                    "portrait source alternate tile selection",
-                    None if original is None else want["tiles"] == tiles,
-                )
-            )
-    except (KeyError, IndexError, ValueError, TypeError) as caught:
-        error = type(caught).__name__
-    return events, error
-
-
-def _resource_pair_events(required, used, source_recipe):
-    events = []
-    error = None
-    valid = None
-    try:
-        kind, want, bound = required["kind"], required["expected"], used["used"]
-        if kind == "map":
-            bound = bound.get("selector")
-            valid = (
-                None
-                if bound is None
-                else bound
-                == dict(
-                    kind="map-block",
-                    map=required["identity"]["map"],
-                    block=want["block"],
-                )
-                and used["used"].get("word") == want["word"]
-            )
-        elif kind == "entity":
-            valid = None if bound is None else bound == dict(kind="entity", **want)
-        else:
-            valid = (
-                None
-                if bound is None
-                else bound.get("texturePresent")
-                and (bound.get("selector") == dict(kind="portrait", **want))
-            )
-        source_events, error = source_recipe(kind, want) if kind != "map" else ([], None)
-        events.extend(source_events)
-        if error is None:
-            events.append(("bound texture selector matches logical source requirement", valid))
-    except (KeyError, IndexError, ValueError, TypeError) as caught:
-        error = type(caught).__name__
-    # AttributeError was outside both old exception boundaries and still propagates.
-    return events, valid, error
-
-
-def _reduce_resource_requirement(required, relation, source_recipe):
-    key = _resource_key(required, required=True)
-    stop, failure = None, None
-    for _, _, first, used in relation.variants(key):
-        events, _, error = _resource_pair_events(required, used, source_recipe)
-        if error is not None:
-            stop, failure = first, (events, error, used["_captureLocator"])
-            break
-    counts, checks, executed = Counter(), [], 0
-    for signature, count, first, used in relation.variants(key):
-        if stop is not None and first >= stop:
-            break
-        if stop is not None:
-            count = relation.prefix_count(key, signature, stop)
-        if not count:
-            continue
-        events, value, error = _resource_pair_events(required, used, source_recipe)
-        require(error is None, "resource exception prefix changed")
-        for name, outcome in events:
-            checks.append((name, outcome, count, used["_captureLocator"]))
-        counts[False if value == False else None if value is None else True] += count  # noqa: E712
-        executed += count
-    if failure is not None:
-        events, error, witness = failure
-        for name, value in events:
-            checks.append((name, value, 1, witness))
-        checks.append(
-            (
-                "required texture join operand absent"
-                if error == "KeyError"
-                else "required texture join malformed " + error,
-                None if error == "KeyError" else False,
-                1,
-                witness,
-            )
-        )
-    total = sum(count for _, count, _, _ in relation.variants(key))
-    return dict(
-        candidatePairCount=total,
-        executedPairCount=executed,
-        counts=dict(PASS=counts[True], FAIL=counts[False], Unavailable=counts[None]),
-        legacyStop=None
-        if failure is None
-        else dict(firstOrdinal=stop, error=failure[1], locator=failure[2]),
-        checks=checks,
-    )
-
-
 def reached_visual_materials(
     actual,
     selection,
@@ -3210,59 +3117,50 @@ def reached_visual_materials(
         result["requirementCount"] = len(requirements)
         result["candidatePairCount"] = 0
         result["executedPairCount"] = 0
-        source_recipes = {}
+        from sf2tool.h4_dotnet import ResourceComparison
 
-        def source_recipe(kind, want):
-            key = _join_key((kind, want))
-            if key not in source_recipes:
-                source_recipes[key] = _resource_source_events(
-                    kind,
-                    want,
-                    sprites,
-                    source_sprites,
-                    portraits,
-                    source_portraits,
+        with ResourceComparison(
+            sprites, source_sprites, portraits, source_portraits, budget=budget
+        ) as resources:
+            for requirement_index, required in enumerate(requirements):
+                if uses.budget is not None and requirement_index % 256 == 0:
+                    uses.budget.checkpoint("indexed requirement reduction")
+                locator = required.get(
+                    "_captureLocator", dict(channel="resourceRequirements", index=requirement_index)
                 )
-            return source_recipes[key]
-
-        for requirement_index, required in enumerate(requirements):
-            if uses.budget is not None and requirement_index % 256 == 0:
-                uses.budget.checkpoint("indexed requirement reduction")
-            locator = required.get(
-                "_captureLocator", dict(channel="resourceRequirements", index=requirement_index)
-            )
-            with evaluated(
-                "map" if required.get("kind") == "map" else "entity", "required texture join"
-            ):
-                kind, want = required["kind"], required["expected"]
-                family = "map" if kind == "map" else "entity"
-                key = _resource_key(required, required=True)
-                candidate_count = sum(count for _, count, _, _ in uses.variants(key))
-                result["candidatePairCount"] += candidate_count
-                if kind == "map":
-                    visual = maps[required["identity"]["map"]]
-                    check(
-                        family,
-                        "required logical block/tile source word",
-                        0 <= want["block"] < len(visual["blocks"])
-                        and visual["blocks"][int(want["block"])][int(want["tile"])] == want["word"],
+                with evaluated(
+                    "map" if required.get("kind") == "map" else "entity", "required texture join"
+                ):
+                    kind, want = required["kind"], required["expected"]
+                    family = "map" if kind == "map" else "entity"
+                    key = _resource_key(required, required=True)
+                    candidate_count = sum(count for _, count, _, _ in uses.variants(key))
+                    result["candidatePairCount"] += candidate_count
+                    if kind == "map":
+                        visual = maps[required["identity"]["map"]]
+                        check(
+                            family,
+                            "required logical block/tile source word",
+                            0 <= want["block"] < len(visual["blocks"])
+                            and visual["blocks"][int(want["block"])][int(want["tile"])]
+                            == want["word"],
+                        )
+                    check(family, "required actual texture use", True if candidate_count else None)
+                    compact = resources.reduce(required, uses, key)
+                    for name, value, count, witness in compact.pop("checks"):
+                        weight = count
+                        check(family, name, value, witness)
+                    weight = 1
+                    compact.update(
+                        kind=kind,
+                        identity=required["identity"],
+                        expected=want,
+                        candidateKey=key,
+                        locator=locator,
                     )
-                check(family, "required actual texture use", True if candidate_count else None)
-                compact = _reduce_resource_requirement(required, uses, source_recipe)
-                for name, value, count, witness in compact.pop("checks"):
-                    weight = count
-                    check(family, name, value, witness)
-                weight = 1
-                compact.update(
-                    kind=kind,
-                    identity=required["identity"],
-                    expected=want,
-                    candidateKey=key,
-                    locator=locator,
-                )
-                result["executedPairCount"] += compact["executedPairCount"]
-                result["joins"].append(compact)
-            weight, locator = 1, None
+                    result["executedPairCount"] += compact["executedPairCount"]
+                    result["joins"].append(compact)
+                weight, locator = 1, None
         result["candidateVariants"] = _bounded_list(uses.published_variants())
 
         # Source recipe for the accepted three-raster extension, separate from base42.

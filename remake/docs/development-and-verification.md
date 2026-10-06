@@ -5204,6 +5204,59 @@ controls and native receipts; corrections rerun only the affected comparison/con
 native scenarios. Recollect only a concretely missing consumer observation when existing APIs expose
 it; production/API changes or broader acquisition need their own ownership decision.
 
+### C# resource comparison tool
+
+The reached-resource source/pair judgments and requirement reduction run in
+[`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
+[`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
+SQLite selection/prefix counts and detached report publisher remain the public route. Already
+extracted Python families remain in Python. Remaining #638 transport/budget/report/CLI work migrates
+in later bounded C# slices; documentation navigation is still outstanding.
+
+After loading the ignored environment in the same shell, build once for the current checkout:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run --locked python -m sf2tool.h4_dotnet build
+```
+
+The bridge resolves paths from the repository, so the same module command works from `remake/`.
+It uses the existing `shared_dotnet_environment`, the pinned SDK10.0.204 and its .NET10 runtime,
+locked restore and no package references, apphost, production solution or engine dependencies.
+Build/restore outputs, NuGet caches and TEMP remain worktree-local; SDK CLI home remains the explicit
+shared selection. Build is explicit; a missing assembly fails with this command, never an automatic
+SDK install or runtime rebuild. `Public checks / h4-comparison-build` builds this actual project.
+
+One scoped child serves the full resource-reduction phase. Only selected decoded source entries
+cross once; two ordered, byte-bounded variant passes retain the old first-error/prefix behavior.
+Source recipe memoization avoids repeated raster equality. The unchanged report format retains all
+ordered checks, multiplicities, locators and PASS/FAIL/Unavailable counts. Python-compatible operand
+operations preserve numeric/boolean equality here; this port does not apply other families' stricter
+typed policy. Missing keys, explicit nulls, malformed containers, nonfinite JSON-reader operands and
+fatal exceptions retain their own boundaries. See the
+[source correspondence](../../docs/operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process).
+
+The resource budget now observes the child at every response and shutdown, outside the five-second
+progress throttle. `sampledPeakPrivateBytes` retains its Python meaning;
+`sampledPeakCombinedPrivateBytes` records simultaneous parent/child samples;
+`conservativePhasePrivateBytes` is the maximum phase-local sum of independently observed parent and
+child peaks. That conservative bound enforces the existing256MiB increment over the unchanged
+source-only baseline. `peakResourceChildPrivateBytes` survives exit, current child memory returns
+to zero, and sequential children are not summed as concurrent residents. A missing measurement fails
+explicitly rather than reporting a measured zero. Existing time/disk/publication rules still apply.
+
+The private bounded reproduction owner is `local/issue638/csharp-resources-01`: `controls.py`,
+`edges.py`, `integration.py`, `budget_process.py` and their complete receipts. These compare the
+canonical old functions with the actual bridge/tool using constructed inputs, including real
+`reached_visual_materials`/SQLite/publication calls with a clearly constructed decoded-source adapter.
+Original pin failures remain failures. Controls are direct verification, not a helper test suite or a
+new historical capture. Initial limits are10MiB fixture input,120s per control batch,256MiB observed
+Python/child private memory and40MiB evidence scratch; build has separate300s/2GiB/1GiB limits.
+Record actual bytes, launches and distinct-variant cost; these samples do not establish a general
+worst-case bound. Preserve old #610 malformed-key/scope/publication failures, the completed normal
+148PASS followed by upstream-provenance FAIL, and historical C05/A Unknowns. No full C05/H4, native,
+H3 or generic aggregate rerun is implied.
+
 ### Selected offline resource comparison
 
 `remake_h4_comparison resources` selects only the reached visual resource binding. Supply the same
@@ -5281,7 +5334,8 @@ scratch after successful final publication. Existing evidence is never cleaned h
 
 Use direct retained small positive/negative and scope/relocation drives, affected lint and document
 checks, the committed dependency plan and actual public CI. Preserve a completed normal-verification
-failure; this offline-only allocation does not authorize a generic aggregate, SDK/native/H3/full run.
+failure; the standalone comparison build above is the only SDK work required for its tooling change.
+This offline allocation does not authorize a generic aggregate, native/H3/full run.
 
 ### Current keyboard comparison scope
 

@@ -21,6 +21,7 @@ jobs:
       engine: ${{ steps.paths.outputs.engine }}
       adapter: ${{ steps.paths.outputs.adapter }}
       research: ${{ steps.paths.outputs.research }}
+      h4: ${{ steps.paths.outputs.h4 }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,7 +46,11 @@ jobs:
           $engine = $false
           $adapter = $false
           $research = $false
+          $h4 = $false
           foreach ($changedPath in $changedPaths) {
+            if ($changedPath -like 'tools/h4-comparison/*' -or $changedPath -in @('src/sf2tool/h4_dotnet.py', 'src/sf2tool/remake_h4_comparison.py', 'src/sf2tool/dotnet_environment.py', 'src/sf2tool/verification_plan.py', '.github/workflows/public-checks.yml')) {
+              $h4 = $true
+            }
             if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_exploration_content.py', 'src/sf2tool/remake_battle_scene_content.py', 'remake/reference/inputs/map3-programs.json')) {
               $engine = $true
               $adapter = $true
@@ -75,6 +80,7 @@ jobs:
           "engine=$($engine.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "adapter=$($adapter.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "research=$($research.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "h4=$($h4.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
   engine-unit:
     needs: scope
@@ -174,3 +180,32 @@ jobs:
         run: uv run sf2 design-contracts test
       - name: Verify research index
         run: uv run sf2 research-index test
+
+  h4-comparison-build:
+    needs: scope
+    if: needs.scope.outputs.h4 == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 5
+    env:
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"
+      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home
+      DOTNET_CLI_USE_MSBUILD_SERVER: "0"
+      MSBUILDDISABLENODEREUSE: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - name: Set up pinned SDK and runtime
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.204
+      - name: Build standalone comparison tool through controlled launcher
+        shell: pwsh
+        run: |
+          $env:DOTNET_BIN = (Get-Command dotnet -CommandType Application).Source
+          uv run --locked python -m sf2tool.h4_dotnet build
