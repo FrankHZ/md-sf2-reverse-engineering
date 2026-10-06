@@ -1742,6 +1742,15 @@ is not proof of runtime door/flag/roof state. The separately supplied
 classes. Without that evidence the map child remains Unavailable. Entity/portrait and scene bindings
 retain their own results.
 
+The reached resource source/pair judgments and counted requirement reduction are implemented by
+the independent [C# comparison tool](../../../remake/docs/development-and-verification.md#c-resource-comparison-tool).
+The Python caller still selects source decoders, relation variants and prefix counts, then publishes
+the same ordered resource report. This implementation boundary preserves original-source independence,
+numeric equality, partial exception prefixes and exact multiplicities; it adds no original runtime
+observation and does not turn the retained mutable-layout Unknowns into acceptance. The
+[source correspondence](../../operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process)
+owns the bounded port review.
+
 The bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
 After the accepted capture-performance work, separately allocated C/D native observations
 complete the route with their own unchanged settings/start/party and intact bounded terminals.
