@@ -2,10 +2,9 @@
 
 - Status: **Confirmed repository governance guidance**; this document is not evidence about the
   original game and does not select a remake engine, product, platform, or commercial direction.
-- Record date: 2026-08-01
 - Scope: organize sourced contracts into concise player-facing explanations without changing their
-  evidence labels; future remake choices still require explicit decisions and H4 acceptance
-  boundaries.
+  evidence labels; distinguish original evidence, accepted remake choices and future work at their
+  owning decision and acceptance boundaries.
 
 ## Authoring Language Policy
 
@@ -25,6 +24,20 @@ Non-English localization from the canonical English source proceeds as a dedicat
 glossary's rules, with terminology consistency, link integrity, evidence-label preservation, and
 fixture-trace QA. A zh-CN mirror under `docs/design/zh-CN/` is a derivative; the English source
 remains the review baseline unless a localization batch defines another explicit policy.
+
+**Confirmed current sequencing decision:** Chinese synchronization under
+[the design-documentation epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
+is deferred until the selected theme's English source is stable. Stability means its substantive
+English revisions have been independently accepted and merged, and no planned rewrite remains for
+that theme in this round. Main-gate records that readiness before dispatching a separately scoped
+translation batch. [#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434) remains
+deferred; completing the baseline calibration alone does not dispatch it or establish stability for
+all themes. Chinese translation and continuing synchronization remain eventual epic deliverables.
+
+During this English round, preserve existing Chinese mirrors, glossary and translation metadata,
+including known drift and retained diagnostic failures. Do not refresh source anchors to conceal
+drift or claim global translation PASS. A later translation batch must translate and review the
+substantive content before using the existing source-anchoring checks.
 
 ## Design Information Architecture
 
@@ -78,6 +91,49 @@ reviewers.
 
 ## Current Baseline and Near-Term Synthesis
 
+**Current scope agreement — Standard.** Several document owners and later design batches depend on
+a consistent entry baseline. The reader outcome is a traceable explanation of how play moves through
+exploration, interaction/story, battle admission, actions/results and return, with original evidence,
+accepted remake choices, historical results and remaining Unknowns clearly distinguished. Follow the
+[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+Issues/Project coordinate execution, while this roadmap owns the current agreement.
+
+The finite English entry-plus-overview round has two separately accepted outcomes:
+
+1. [Baseline calibration #667](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/667):
+   align this roadmap and the English Design index with the accepted private milestone; establish
+   scope, sequencing and translation deferral. Evidence contracts, readiness, implementation owners,
+   Chinese files, glossary, translation index and agent guidance remain read-only for this outcome.
+2. A separately scoped revision of the existing [Gameplay Overview](synthesis/gameplay-overview.md):
+   explain exploration → interaction/story → battle admission → actions/results → return using
+   accepted contracts, preserving their claim boundaries and linking their numerical/evidence tables
+   rather than duplicating them. This baseline ticket does not start that revision.
+
+Tactical-loop, progression/resource and story/persistence revisions are subsequent candidates,
+requiring separate scope and dispatch; they are not automatic work in this round. Further map and
+roster explanations remain subject to the entry criteria below.
+[#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
+[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) and
+[#617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/617) retain separate product and
+architecture outcomes. This round selects no new art/UI/UX direction and adds no original research,
+engine implementation, capture, schema, evidence ledger or validation machinery.
+
+The planning allowance is **4 agent-hours cumulatively** for entry calibration, overview and their
+reviews, provisional rather than a delivery guarantee. Baseline calibration is bounded to **90
+minutes execution plus 30 minutes independent review**, including corrections, with at most **5 MiB
+of local text-only scratch** and no new runtime data. Stop affected expansion and report for replanning
+if broader contract changes, evidence disagreements, new product choices, new validation machinery
+or a budget overrun become necessary; a new slice does not reset the cumulative allowance.
+
+Baseline acceptance directly compares proposed prose with the
+[accepted milestone](synthesis/map3-battle01-readiness.md#accepted-current-milestone) and
+[verification composition owner](../../remake/docs/development-and-verification.md#accepted-composition-review).
+Read the complete diff, check changed links/anchors, run `git diff --check` and `git diff --name-only`,
+and confirm exact ownership and the private-content boundary. This documentation-only outcome runs
+no emulator, Python/.NET/Godot/H3 suites, comparison rebuilds, translation checker or new tests.
+Freeze the committed/pushed Draft PR with actual CI state for independent main-gate review; passing
+these direct checks does not independently accept the milestone or close the whole documentation epic.
+
 **Confirmed repository baseline:** existing contracts cover combat, maps, level-up, spells, services,
 save/input/window, dialogue, party/roster state, and randomness. They are listed in the
 [design index](../README.md#design) and trace back to research and fixture owners. This roadmap does
@@ -100,10 +156,27 @@ an active slice is revising its owner contract or when its required answers rema
 
 [Map Design Principles](synthesis/map-design-principles.md) also exists as a bounded structural
 explanation; it does not establish player-route quality or authorial intent. The
-[Map 3 to Battle 01 readiness ledger](synthesis/map3-battle01-readiness.md) owns continuous-milestone
-gaps and remains **NOT READY**. The [Phase 4 bootstrap plan](synthesis/phase4-bootstrap-plan.md) is a
-historical pre-start proposal, not current implementation guidance. Current engine direction and
-implemented/unsupported capabilities belong to
+[Map 3 to Battle 01 readiness ledger](synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+owns the **accepted current private Map 3 → Battle 01 victory → usable 5B return milestone**.
+Acceptance composes existing executed continuous-route/return evidence and independently reviewed
+source/consumer proofs under default keyboard A, the modern deterministic clock and the 7C/8D/10A
+boundary. C is supplemental; gamepad B/D are excluded. The
+[verification composition owner](../../remake/docs/development-and-verification.md#accepted-composition-review)
+retains exact dependencies and reproduction routes. This accepts gameplay and presentation semantics,
+including actual consumers, completion and input readiness, without asserting hardware equality,
+full-game parity or public-distribution rights.
+
+Original observations retain their own [bounded frontier](synthesis/map3-battle01-readiness.md#accepted-original-frontier).
+Historical A10/default/matrix reports remain Unavailable with `milestonePass=false`; scoped outputs
+also remain false. No fresh full executable modern report or corrected whole-A trajectory was
+produced. Historical seed-latch, HEAL timing, provenance and review failures remain preserved.
+Terminal internal completion remains **Inferred**, its delay **Unknown**, and omitted historical
+turn-generation operands and original timing retain their owner-defined limits. These scientific
+limits do not reopen accepted compositions or create an automatic runtime queue; further evidence
+work requires a concrete new defect.
+
+The [Phase 4 bootstrap plan](synthesis/phase4-bootstrap-plan.md) remains a historical pre-start
+proposal. Current engine direction and implemented/unsupported capabilities belong to
 [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md) and the
 [remake capability ledger](../../remake/docs/capability-status.md); implementation progress is not
 original-game evidence.

@@ -111,7 +111,13 @@ Source, ROM, fixture and runtime provenance live in these owners. Use the source
 
 ## Design
 
-Contracts are implementation-neutral; synthesis consumes accepted research. Neither becomes evidence for original behavior. English remains the authoring baseline. The glossary and existing `sf2 zh-meta` commands own design translation and reviewed source re-anchoring.
+Contracts express implementation-neutral original behavior; synthesis explains accepted research and
+separately identified remake choices. Remake implementation does not establish original evidence.
+Start with the [roadmap's current English-first agreement](./design/documentation-roadmap.md#current-baseline-and-near-term-synthesis):
+entry calibration precedes a separately scoped gameplay overview revision. Later thematic revisions
+require separate dispatch. [Chinese synchronization is deferred](./design/documentation-roadmap.md#authoring-language-policy)
+until each selected English theme is independently accepted and stable; existing drift remains explicit.
+The glossary and existing `sf2 zh-meta` commands retain ownership of eventual translation QA.
 
 - [`glossary.md`](./design/glossary.md)
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md)
@@ -120,7 +126,8 @@ Contracts are implementation-neutral; synthesis consumes accepted research. Neit
 - [`progression-and-economy.md`](./design/synthesis/progression-and-economy.md)
 - [`story-progression.md`](./design/synthesis/story-progression.md)
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
-- [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md)
+- [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
+  accepted current private milestone; original Unknowns and historical report failures retain their owners
 - [`phase4-bootstrap-plan.md`](./design/synthesis/phase4-bootstrap-plan.md)
 - [`ally-definition-data.md`](./design/contracts/ally-definition-data.md)
 - [`enemy-definition-data.md`](./design/contracts/enemy-definition-data.md)
