@@ -11,8 +11,6 @@ All outputs remain private.
 from __future__ import annotations
 
 import argparse
-import base64
-import hashlib
 import itertools
 import json
 import os
@@ -2388,163 +2386,21 @@ def _reached_visual_materials(
             check(family, "source decoding prerequisite absent", None)
         return finish()
     try:
-        import io
-        from types import SimpleNamespace
+        from sf2tool.h4_visual_source import VisualSources
 
-        from sf2tool.compression import decode_basic_compressed
-        from sf2tool.h2.map_import import MANIFEST, _canonical_bytes
-        from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
-        from sf2tool.remake_asset_build import (
-            _MAP3_ATLAS,
-            _MAP19_20_ATLAS,
-            _MAP21_ATLAS,
-            _MAP40_ATLAS,
-            _MAP57_ATLAS,
-            ACCEPTED_PALETTE_METADATA_SHA256,
-            ACCEPTED_TILESET_METADATA_SHA256,
-            PLAYER_PALETTE_ADDRESS,
-            PLAYER_POINTER_TABLE_ADDRESS,
-            _build_world_atlas_source,
-            _combine_player_halves,
-            _render_player_frame,
-            _scale_rgba_nearest,
+        sources = VisualSources(
+            resources, read, dict(upstream=UPSTREAM, rom=ROM), _RecordSpool
+        ).prepare(
+            selection, source_root, canonical_content, tileset_metadata, palette_metadata,
+            scope, source_only, enabled, budget, _private_bytes,
         )
-        from sf2tool.remake_exploration_content import OriginalPrograms, prepare_visuals
-        from sf2tool.texture_extract import md_palette_color, write_png_rgba
-
-        paths = [p.resolve() if p.is_absolute() else repo_path(p) for p in selection[:5]]
-        world_path, scene_path, process_path, scene_root, asset_root = paths
-        source_root = source_root.resolve() if source_root.is_absolute() else repo_path(source_root)
-        document, scene, process = read(world_path), read(scene_path), read(process_path)
-        world, presentation = document["world"], document["world"]["presentation"]
-        selected_maps = set(scope["maps"]) if scope is not None and not source_only else None
-        world_maps = [m for m in world["maps"] if selected_maps is None or m["id"] in selected_maps]
-        binding = all(
-            repo_path(process["selectedInputs"][key]).resolve() == path
-            for key, path in (
-                ("SF2_PRIVATE_EXPLORATION_CONTENT", world_path),
-                ("SF2_PRIVATE_BATTLE_SCENE_CONTENT", scene_path),
-            )
-        )
-        pin = (
-            document["provenance"]["commit"] == UPSTREAM
-            and document["provenance"]["romSha256"] == ROM
-        )
-        source_pin = (
-            subprocess.check_output(
-                ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
-            ).strip()
-            == UPSTREAM
-        )
-        source_pin &= (
-            subprocess.run(
-                ["git", "-C", str(source_root), "diff", "--quiet", UPSTREAM, "--", "disasm"],
-                check=False,
-            ).returncode
-            == 0
-        )
-        rom_path = private_input_path(ROM_INPUT_IDENTITY)
-        rom = rom_path.read_bytes()
-        for family in ("map", "entity", "scene"):
-            check(
-                family,
-                "same-run source and selection pins",
-                binding and pin and source_pin and hashlib.sha256(rom).hexdigest().upper() == ROM,
-            )
-        canonical_content = (
-            canonical_content.resolve()
-            if canonical_content.is_absolute()
-            else repo_path(canonical_content)
-        )
-        canonical = read(canonical_content)
-        canonical_valid = (
-            hashlib.sha256(_canonical_bytes(canonical)).hexdigest().upper()
-            == read(MANIFEST)["outputSha256"]
-        )
-        check("map", "accepted canonical source layout/blocksets", canonical_valid)
-        manifest = read(asset_root / "manifests/presentation-assets-v1.json")
-        assets = {a["assetId"]: a for a in manifest["assets"]}
-        families = {
-            m: family
-            for family in (_MAP3_ATLAS, _MAP19_20_ATLAS, _MAP21_ATLAS, _MAP40_ATLAS, _MAP57_ATLAS)
-            for m in family.map_indices
-        }
-        atlas_bindings = {
-            row["id"]: families[int(row["id"].split("-")[-1])].asset_id for row in world_maps
-        }
-        compiler = OriginalPrograms(canonical, source_root)
-        compiler.programs = {p["id"]: p for p in world["programs"]}
-        expected = prepare_visuals(
-            compiler, canonical, world_maps, rom_path, asset_root, selection[7], atlas_bindings
-        )
-        maps = {
-            m["map"]: m
-            for m in presentation["maps"]
-            if selected_maps is None or m["map"] in selected_maps
-        }
-        source_maps = {m["map"]: m for m in expected["maps"]}
-        sprites = {m["sprite"]: m for m in presentation["sprites"]}
-        source_sprites = {m["sprite"]: m for m in expected["sprites"]}
-        portraits = {m["portrait"]: m for m in presentation["portraits"]}
-        source_portraits = {m["portrait"]: m for m in expected["portraits"]}
-        canonical_maps = {m["id"]: m for m in canonical["maps"]}
-        canonical_layouts = {m["id"]: m for m in canonical["resources"]["layouts"]}
-        for row in world_maps if "map" in enabled else ():
-            original = canonical_maps[int(row["id"].split("-")[-1])]
-            layout = canonical_layouts[original["references"]["layout"]]
-            check(
-                "map",
-                "selected layout original words " + row["id"],
-                [word for line in row["layout"] for word in line] == layout["words"],
-            )
-        tileset_metadata = (
-            tileset_metadata.resolve()
-            if tileset_metadata.is_absolute()
-            else repo_path(tileset_metadata)
-        )
-        palette_metadata = (
-            palette_metadata.resolve()
-            if palette_metadata.is_absolute()
-            else repo_path(palette_metadata)
-        )
-        tilesets, palettes = read(tileset_metadata), read(palette_metadata)
-        check(
-            "map",
-            "accepted private atlas metadata identities",
-            hashlib.sha256(tileset_metadata.read_bytes()).hexdigest().upper()
-            == ACCEPTED_TILESET_METADATA_SHA256
-            and hashlib.sha256(palette_metadata.read_bytes()).hexdigest().upper()
-            == ACCEPTED_PALETTE_METADATA_SHA256,
-        )
-        for name, visual in maps.items() if "map" in enabled else ():
-            family = families[int(name.split("-")[-1])]
-            decoded = _build_world_atlas_source(rom, tilesets, palettes, family)
-            source_bytes = (asset_root / family.source_file).read_bytes()
-            png = base64.b64decode(visual["atlas"]["data"], validate=True)
-            encoded = io.BytesIO()
-            # The existing deterministic writer needs only its write_bytes sink.
-            write_png_rgba(
-                SimpleNamespace(write_bytes=encoded.write),
-                128 * visual["scale"],
-                320 * visual["scale"],
-                _scale_rgba_nearest(decoded.rgba_pixels, 128, 320, visual["scale"]),
-            )
-            source_valid = (
-                source_bytes == decoded.source_bundle
-                and hashlib.sha256(source_bytes).hexdigest().upper()
-                == assets[family.asset_id]["source"]["sha256"]
-            )
-            source_valid &= png == encoded.getvalue()
-            check(
-                "map",
-                "atlas source recipe and canonical selectors " + name,
-                source_valid and visual == source_maps.get(name),
-            )
-
-        if budget is not None:
-            budget.checkpoint("source loaded", force=True)
         if source_only:
-            return dict(sourceOnly=True, prepared=True, sourceOnlyPrivateBytes=_private_bytes())
+            return dict(
+                sourceOnly=True, prepared=True, sourceOnlyPrivateBytes=sources.source_only_private
+            )
+        world, process, maps = sources.state.world, sources.state.process, sources.state.maps
+        sprites, source_sprites = sources.state.sprites, sources.state.source_sprites
+        portraits, source_portraits = sources.state.portraits, sources.state.source_portraits
         requirements = actual.get("resourceRequirements", [])
         uses = actual.get("resourceUses", [])
         if not isinstance(uses, _ResourceRelation):
@@ -2609,14 +2465,7 @@ def _reached_visual_materials(
                 candidate_count = sum(count for _, count, _, _ in uses.variants(key))
                 result["candidatePairCount"] += candidate_count
                 if kind == "map":
-                    visual = maps[required["identity"]["map"]]
-                    check(
-                        family,
-                        "required logical block/tile source word",
-                        0 <= want["block"] < len(visual["blocks"])
-                        and visual["blocks"][int(want["block"])][int(want["tile"])]
-                        == want["word"],
-                    )
+                    sources.word(required, weight, locator)
                 check(family, "required actual texture use", True if candidate_count else None)
                 compact = resources.reduce(required, uses, key)
                 for name, value, count, witness in compact.pop("checks"):
@@ -2639,42 +2488,7 @@ def _reached_visual_materials(
         with evaluated("scene", "field-death source"):
             if "scene" not in enabled:
                 return finish()
-            field = read(scene_path.parent / "field-death-provenance.json")
-            field_valid = (
-                field["upstreamCommit"] == UPSTREAM
-                and field["romSha256"] == ROM
-                and field["effectSprite"] == 63
-            )
-            field_valid &= field["allyAssignments"] == [
-                dict(character=r["character"], sprite=r["sprite"])
-                for r in compiler.initial_ally_sprites()[:3]
-            ]
-            field_valid &= (
-                rom[field["enemyTableAddress"] + field["enemyId"]] == field["enemySprite"] == 103
-            )
-            palette = [
-                md_palette_color(int.from_bytes(rom[i : i + 2], "big"))
-                for i in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
-            ]
-            for direction, span in enumerate(field["spans"]):
-                entry = PLAYER_POINTER_TABLE_ADDRESS + (63 * 3 + direction) * 4
-                address = int.from_bytes(rom[entry : entry + 4], "big")
-                decoded = decode_basic_compressed(rom[address:], expected_output_bytes=576)
-                pixels = bytes(
-                    _combine_player_halves(
-                        _render_player_frame(decoded.output[:288], palette),
-                        _render_player_frame(decoded.output[288:], palette),
-                    )
-                )
-                raster = scene["rasters"][scene["fieldDeath"]["exitFrames"][direction]]
-                field_valid &= span == dict(
-                    pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed
-                )
-                field_valid &= (
-                    base64.b64decode(raster["data"], validate=True) == pixels
-                    and hashlib.sha256(pixels).hexdigest().upper() == raster["sha256"]
-                )
-            check("scene", "field death original ROM spans and assignments", field_valid)
+            sources.field_death()
         return finish()
     except (FileNotFoundError, KeyError, subprocess.CalledProcessError):
         for family in ("map", "entity", "scene"):
