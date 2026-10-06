@@ -10,6 +10,7 @@ SceneObservations? scenes = null;
 ResourceContext? context = null;
 ResourceValidation? validation = null;
 ResourceInventory? inventory = null;
+MaterialOrigins? materials = null;
 try
 {
     while (Console.ReadLine() is { } line)
@@ -40,6 +41,7 @@ try
                     "report-witnesses" => RequiredReport().Drain(true),
                     string op when op.StartsWith("identity-", StringComparison.Ordinal) => IdentityOperation(op, message),
                     string op when op.StartsWith("inventory-", StringComparison.Ordinal) => InventoryOperation(op, message),
+                    string op when op.StartsWith("materials-", StringComparison.Ordinal) => (materials ??= new MaterialOrigins()).Handle(op, message),
                     _ => comparison.Handle(message)
                 };
             }
@@ -52,7 +54,8 @@ try
             }
         }
         Reply(Operands.Dict(("result", result)),
-            ((string)Operands.At(message, "op")!).StartsWith("inventory-", StringComparison.Ordinal));
+            ((string)Operands.At(message, "op")!).StartsWith("inventory-", StringComparison.Ordinal)
+            || ((string)Operands.At(message, "op")!).StartsWith("materials-", StringComparison.Ordinal));
     }
     return 0;
 }

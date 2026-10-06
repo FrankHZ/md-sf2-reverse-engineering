@@ -5208,8 +5208,8 @@ it; production/API changes or broader acquisition need their own ownership decis
 
 The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations,
 occurrence admission, scope/session/latest-visit identity, actual texture validation, independent
-logical inventory/layer geometry and counted
-checks/witness/family finalization run in
+logical inventory/layer geometry, counted checks/witness/family finalization and the separate
+scene/audio material-origin judgments run in
 [`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
 [`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
 SQLite selection/prefix counts and detached report publisher remain the public route. Already
@@ -5371,6 +5371,44 @@ function and cached module; its storage/operation traces agreed. Entity-scoped r
 complete affected reports without weakening order assertions. Do not rerun completed broad batches
 to replace these receipts. These are bounded implementation observations, not original route or
 decoder acceptance; previous source-pin, build-memory and historical C05/A limitations remain.
+
+Scene/audio material origins use `src/sf2tool/h4_materials.py` with `SceneMaterials`, `AudioMaterials`,
+`MaterialOrigins` and `MaterialReport` in the same independent executable. The existing visual child
+finishes before the single material-phase child. Python retains explicit selected-root containment,
+Git/fingerprint/base64/WAV/preflight IO, bounded storage and publication; C# owns the predicates,
+ordered uncompressed checks/joins and False/None/empty-family reductions. This phase does not use
+the resource counted report or inventory storage acknowledgement protocol. The correspondence owner
+above maps the complete canonical function and short-circuit/catch boundaries.
+
+The private reproduction owner is `local/issue638/csharp-materials-01`. Load the ignored environment
+and build as above, then run `uv run --locked python local/issue638/csharp-materials-01/<driver>.py
+<fresh-name>` from the repository root. Drivers are direct observations, not verifier unit tests:
+
+- `pilot.py`:42 authored tiny PNG records and an eight-frame authored WAV, complete reports,
+  accepted-pin mismatch, no selection and detached publication. Synthetic matching pins and the
+  explicit inspection adapter are constructed control inputs, never accepted original evidence.
+- `controls.py`: scene/source/raster/mounted drift and absence, cue cardinality, timer selection,
+  PCM/range/format/metadata, selected path containment and caught/uncaught operand boundaries.
+- `integration.py`:256 mounted observations and512 receipts, absent later cue and a field failure
+  after the first result page; complete ordered reports and detached SQLite publication.
+- `partial.py`: actual append failures before/after effects and after page boundaries; preserve
+  the exact prior check/join writes and caught versus fatal behavior.
+- `stream.py`: real JSONL reader/SQLite/composed visual/material report and detached readback.
+  Also run from `remake/` using `../local/issue638/csharp-materials-01/stream.py <fresh-name>`.
+- `io_order.py`: selected file-read order, reached/suppressed read failure, invalid WAV, Git failure
+  and a false capture cut suppressing malformed selected PCM decoding.
+- `selected_audio.py`: two unique cues, equal cut bytes with contradictory capture format and the
+  remaining asset absence classifications.
+- `protocol.py`: sequence/offset/count/nonprogress/row/control/error/drain faults, child exit and
+  the existing combined-memory budget; none may publish a successful report.
+
+`measure.py <receipt-name> <command...>` records time, live-process simultaneous private memory,
+individual peaks and build-cache growth. Preserve the initial name-collision build failure, the
+first pilot's path setup that reached only the error branch, and the subsequent syntax failure;
+the corrected pilot requires scene/audio success before broader controls. Keep these receipts
+beside the later results; do not rerun completed broad controls just to replace them. The same
+10MiB input/40MiB evidence/120s/256MiB control and300s/2GiB/1GiB build ceilings apply. Report selected
+dimensions, source/header amplification, both sequential child lifetimes and measured costs.
 
 ### Selected offline resource comparison
 

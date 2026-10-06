@@ -196,6 +196,10 @@ def _resource_reply(operation, reply):
         from sf2tool.h4_inventory import validate_reply
 
         validate_reply(operation, result)
+    elif operation.startswith("materials-"):
+        from sf2tool.h4_materials import validate_reply
+
+        validate_reply(operation, result)
     else:
         malformed()
     return result

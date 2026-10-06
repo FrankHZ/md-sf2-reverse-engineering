@@ -229,6 +229,37 @@ outputs, including malformed prefixes, duplicate/skew variants, repeated calls, 
 detached publication and child-budget failures. They do not replace original-game evidence or reopen
 historical full-route acceptance. Preserve discovered port/control/build failures beside corrections.
 
+The scene/audio material-origin binding has a separate uncompressed report. Review the complete
+`reached_materials` at accepted commit `3471eafd38627d9624d2d688de17039fd40f456e`, lines2690–3066;
+the wrapper preserves the accepted `reached_visual_materials` composition before this phase.
+
+| Canonical region | Current owner and preserved boundary |
+| --- | --- |
+| Composition, selection and identity2690–2763 | `h4_materials.py` retains selected paths/readers; `SceneMaterials` applies binding/world predicates and ordered checks. Missing selection starts no material child. |
+| Frozen source/fingerprint/base2764–2829 | Python reads the named files and four pinned Git/current components through the existing fingerprint algorithm. Fixed C# continuation decisions retain source/manifest/stat short circuits, historical CRLF identity and subset/span checks. |
+| Raster origins2830–2853 | `SceneMaterials` builds asset/raster identities, scale2 cardinality and source/derivation/hash/size/dimension checks. Python retains base64 decoding and required digest measurements. |
+| Mounted joins/finalization2854–2891 | C# selects visible non-death scenes and background/actor/weapon admission. Python completes eager selection before joins; scene and actor reductions finalize only after ordered joins drain. |
+| Checkout/provenance/starts2892–2936 | Existing Python preflight/readers remain authoritative IO. `AudioMaterials` checks source pins and started admission before any cue work. |
+| Cue cardinality2937–2953 | C# scans consumed world/catalog/provenance headers in original order. Deferred source iteration errors retain their reached boundary; absent origins stay distinct from duplicates. |
+| WAV/capture/PCM2954–3001 | Python reads only the selected runtime/capture and measures byte lengths/first difference. C# decides format, exact byte equality, source hash, range, PCM/hash/loop/command metadata; fixed continuations preserve conditional file reads and decoding. |
+| Receipts/finalization3002–3050 | C# applies exact timer, named cue and unique finite fallback, then ordered per-start checks/joins. Unique cue admission proves whole-row equality of a candidate iff its source index equals the selected index. |
+| Catch boundaries3051–3066 | `MaterialOrigins` drains preceding rows before operand/factual errors return. Python retains the existing catch classes; `MaterialReport` owns absence/drift classification and partial family state. |
+
+`MaterialReport` preserves every check/join and duplicate; it never uses counted resource reduction.
+`MaterialOperands` supplies only deferred factual operands and scalar/byte-measurement interpretation.
+One lazily started material child follows the completed visual child; no per-raster/cue/receipt child
+is created. Fixed result pages have at most256 rows and target1MiB with the existing single-row
+exception. Sequence, offset, announced total, continuation shape and stable drain metadata are
+validated; protocol/budget/process failure prevents successful publication. A failing caller append
+retains its actual written prefix without replay; no inventory acknowledgement machinery is changed.
+Only consumed operands cross the pipe; raw PCM/captures, whole worlds and visual reports remain
+caller-owned. Comparison work is O(base fields + rasters + mounted nodes + C×(A+L+P+R)), where C is
+distinct reached cues, A/L/P the three audio header counts and R started receipts. WAV/decode/hash
+work follows each selected cue's original short circuits; transport bounds do not bound total work.
+The [verification route](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
+names direct complete-report, IO-order, partial-write, stream/publication and fault controls. These
+constructed observations add no original runtime/decoder acceptance or resolution of existing Unknowns.
+
 ### H4 Physical Module Route
 
 The maintained CLI remains `python -m sf2tool.remake_h4_comparison`; its `physical` mode and
