@@ -407,23 +407,26 @@ def _run(b, actual, selection, read, bounded_list, bounded_sorted, inspect, fing
         b.admitted(actual.get("sceneObservations", []), "scene", "mounted-filter", "scene")
     )
     for batch in _batches(
-        dict(
-            index=i,
-            row=_selected(
-                row,
-                (
-                    "background",
-                    "backgroundWrap",
-                    "ground",
-                    "allyResource",
-                    "enemyResource",
-                    "weaponResource",
-                    "enemyVisible",
-                    "weaponVisible",
+        (
+            dict(
+                index=i,
+                row=_selected(
+                    row,
+                    (
+                        "background",
+                        "backgroundWrap",
+                        "ground",
+                        "allyResource",
+                        "enemyResource",
+                        "weaponResource",
+                        "enemyVisible",
+                        "weaponVisible",
+                    ),
                 ),
-            ),
-        )
-        for i, row in mounted
+            )
+            for i, row in mounted
+        ),
+        flush_on_error=True,
     ):
         b.scene("mounted", rows=batch)
     b.scene("scene-finish")
@@ -566,25 +569,28 @@ def _audio(
                 b.audio("pcm-digest", digest=_digest(pcm))
         b.audio("valid-finish")
         for batch in _batches(
-            dict(
-                index=i,
-                row=_selected(
-                    row,
-                    (
-                        "Cue",
-                        "RequestedTimerB",
-                        "Command",
-                        "TimerB",
-                        "PcmSha256",
-                        "SampleRate",
-                        "Channels",
-                        "SampleFrames",
-                        "LoopBegin",
-                        "LoopEnd",
+            (
+                dict(
+                    index=i,
+                    row=_selected(
+                        row,
+                        (
+                            "Cue",
+                            "RequestedTimerB",
+                            "Command",
+                            "TimerB",
+                            "PcmSha256",
+                            "SampleRate",
+                            "Channels",
+                            "SampleFrames",
+                            "LoopBegin",
+                            "LoopEnd",
+                        ),
                     ),
-                ),
-            )
-            for i, row in starts
+                )
+                for i, row in starts
+            ),
+            flush_on_error=True,
         ):
             b.audio("receipts", rows=batch)
     b.audio("audio-finish", any=bool(starts))

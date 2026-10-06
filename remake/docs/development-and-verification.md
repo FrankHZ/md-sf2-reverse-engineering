@@ -5393,6 +5393,10 @@ and build as above, then run `uv run --locked python local/issue638/csharp-mater
   after the first result page; complete ordered reports and detached SQLite publication.
 - `partial.py`: actual append failures before/after effects and after page boundaries; preserve
   the exact prior check/join writes and caught versus fatal behavior.
+- `read_prefix.py`:260 admitted rows in real SQLite storage; inject KeyError/ValueError after
+  row0/256 during mounted or per-cue receipt consumption and compare the complete retained prefix.
+  Keep the root's failing read-prefix receipts; its initial130-row probe never entered the spool
+  and is not injected-failure coverage. Admission and cue discovery retain their eager boundaries.
 - `stream.py`: real JSONL reader/SQLite/composed visual/material report and detached readback.
   Also run from `remake/` using `../local/issue638/csharp-materials-01/stream.py <fresh-name>`.
 - `io_order.py`: selected file-read order, reached/suppressed read failure, invalid WAV, Git failure

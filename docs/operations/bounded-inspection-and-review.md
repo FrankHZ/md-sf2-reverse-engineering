@@ -252,6 +252,9 @@ is created. Fixed result pages have at most256 rows and target1MiB with the exis
 exception. Sequence, offset, announced total, continuation shape and stable drain metadata are
 validated; protocol/budget/process failure prevents successful publication. A failing caller append
 retains its actual written prefix without replay; no inventory acknowledgement machinery is changed.
+Mounted-row and per-cue receipt consumption flush an already-read batch prefix before propagating
+a later bounded-store read failure. Eager mounted/started admission and cue discovery must still
+finish before their dependent contributions begin; their failures do not flush consumption work.
 Only consumed operands cross the pipe; raw PCM/captures, whole worlds and visual reports remain
 caller-owned. Comparison work is O(base fields + rasters + mounted nodes + C×(A+L+P+R)), where C is
 distinct reached cues, A/L/P the three audio header counts and R started receipts. WAV/decode/hash
