@@ -54,8 +54,10 @@ internal static class SceneOperands
             previousDigit = true;
             if (char.IsHighSurrogate(text[i])) i++;
         }
-        if (!previousDigit || (digitLimit != 0 && digits.Length > digitLimit))
-            throw new OperandError("ValueError");
+        if (!previousDigit) throw new OperandError("ValueError");
+        if (digitLimit != 0 && digits.Length > digitLimit)
+            throw new OperandError("ValueError", $"Exceeds the limit ({digitLimit} digits) for integer string conversion: "
+                + $"value has {digits.Length} digits; use sys.set_int_max_str_digits() to increase the limit");
         return BigInteger.Parse(digits.ToString(), CultureInfo.InvariantCulture) * sign;
     }
 
@@ -116,7 +118,7 @@ internal static class SceneOperands
         return sign + digits.Insert(exponent + 1, ".");
     }
 
-    private static string Repr(object? value)
+    public static string Repr(object? value)
     {
         if (value is not string text) return Str(value);
         var quote = text.Contains('\'') && !text.Contains('"') ? '"' : '\'';

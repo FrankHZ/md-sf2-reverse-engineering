@@ -1743,14 +1743,19 @@ classes. Without that evidence the map child remains Unavailable. Entity/portrai
 retain their own results.
 
 The reached resource source/pair judgments, requirement reduction, fairy/field-death scene
-observations and counted check/witness/family state are implemented by
+observations, occurrence/scope/session/latest-visit identity, actual texture predicates and counted
+check/witness/family state are implemented by
 the independent [C# comparison tool](../../../remake/docs/development-and-verification.md#c-resource-comparison-tool).
 The Python caller still selects source decoders, runs inventory predicates, selects relation variants
 and prefix counts, then publishes the same ordered resource report. Per-occurrence, fairy-instance,
 dust and actor exception boundaries retain partial contributions. Counted checks preserve enabled
 families, first-seen order, explicit identity versus locator and eight witnesses per check/outcome;
 empty, unavailable and contradicted family states remain distinct. One scoped child shares this state
-with resource reduction and closes on early/source-only returns. This implementation boundary preserves original-source independence,
+with resource reduction and closes on early/source-only returns. Ordered source map transitions and
+independent session/projection context determine resource identity. Named draw pass and source-word
+priority precede phase membership; surviving actual uses cannot supply their own logical inventory.
+Python's existing phase sets and visit sorter remain storage boundaries. Late grouped-row failures
+retain prior checks and the current weight/locator. This implementation boundary preserves original-source independence,
 numeric equality, partial exception prefixes and exact multiplicities; it adds no original runtime
 observation and does not turn the retained mutable-layout Unknowns into acceptance. The
 [source correspondence](../../operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process)

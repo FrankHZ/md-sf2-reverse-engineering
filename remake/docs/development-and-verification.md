@@ -5206,8 +5206,9 @@ it; production/API changes or broader acquisition need their own ownership decis
 
 ### C# resource comparison tool
 
-The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations
-and counted checks/witness/family finalization run in
+The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations,
+occurrence admission, scope/session/latest-visit identity, actual texture validation and counted
+checks/witness/family finalization run in
 [`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
 [`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
 SQLite selection/prefix counts and detached report publisher remain the public route. Already
@@ -5299,6 +5300,35 @@ unavailable memory observation and propagated original fatal exceptions. Preserv
 protocol-discovery failure and first-build memory limitation, plus the demonstrated non-string-scope
 port failure and its corrected full reports; these are not whole historical or
 PR657-suite reruns. Complete receipts and actual resource costs belong in the slice handoff.
+
+The occurrence/identity/texture continuation is reproduced under the private
+`local/issue638/csharp-resource-identity-01` owner. `common.py` loads the complete accepted caller
+at the commit named in the source correspondence; its constructed decoder adapter retains source
+pin FAILs. `pilot.py` precedes expanded controls with tiny and skewed repeated uses. Run `controls.py
+<fresh-run-name>` for the selected complete report/exception comparisons, `edges.py <fresh-run-name>`
+for real-reader/detached publication and multi-page/byte-bounded visits, and `correction.py
+<fresh-run-name>` for the corrected conversion diagnostics. The latter also runs from `remake/`
+using the `../local/...` path. `late_failure.py <fresh-run-name> assert` injects a later validation
+decode failure after a real SQLite group; `protocol.py <fresh-run-name>` exercises new-operation
+reply corruption and child exit. `nan_context.py <fresh-run-name> assert` compares shared NaN session
+and program keys through the real reader and detached publication. Use `uv run --locked python` after loading the ignored environment;
+keep each reproduction's inputs and complete ordered outputs in a fresh ignored directory.
+
+Context transfer contains program IDs/instruction map fields, ordered warp operands and selected
+session/projection metadata. Grouped-use passes never expand raw multiplicity. The existing Python
+visit sorter and requirement-phase sets remain storage boundaries; all selected admission, temporal,
+scope and texture judgments run in C#. Preserve partial check contributions, current weight/locator
+on late iterator errors, and the exact outer conversion diagnostics. An iterator error flushes its
+already-read prefix before propagation; a successful pass resets weight/locator. The independent
+logical inventory and source decoders remain outside this slice.
+
+Retain discovered conversion/late-failure mismatches beside their corrected narrow results; do not
+rerun completed broad batches just to replace their receipts. The resource limits above still apply.
+The initial external sampler summed held process handles, including exited processes; preserve that
+receipt separately from live parent/child budget observations. Subsequent external measurements
+count only processes still running and report sequential peak sums separately. No missing observation
+is a measured zero. These bounded controls establish neither historical route acceptance nor a
+general worst-case memory bound.
 
 ### Selected offline resource comparison
 
