@@ -5501,7 +5501,11 @@ uv run python -X utf8 local/issue638/csharp-report-integrity-01/measure.py <rece
 `controls.py` covers ordered variants A–D, missing/duplicate/reparented/historical children,
 parent/summary contradictions, strict milestone booleans, malformed rows and reference short
 circuits. Preserve its completed tuple-child mismatch; `corrections.py` covers that correction and
-related tuple/Counter/verdict boundaries. `types_final.py` covers tuple row collections and native
+related tuple/Counter/verdict boundaries. Preserve the five late native mapping-key mismatches in
+`map-keys-01`; `map_keys.py` and `container_correction.py` cover their correction, nested tuple/map
+types, formatting/row errors and mapped spool equality. Container type facts retain non-string keys
+without Python deciding equality. `cancel_fault.py` preserves the primary source error even when
+cancellation acknowledgement and iterator cleanup both fail. `types_final.py` covers tuple row collections and native
 flag keys. `lazy.py` retains the initial missing Probe context/store driver failures;
 `lazy_correction.py` reruns only their affected cases and retains the overstrict early-close-order
 assertion. These are driver limitations, distinct from the corrected tuple transport defect.

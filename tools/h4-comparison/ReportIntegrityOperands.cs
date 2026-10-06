@@ -6,6 +6,22 @@ namespace H4Comparison;
 internal sealed class ReportIntegrityOperands
 {
     private sealed record TupleValue(List<object?> Items);
+    private sealed record MappingValue(List<object?> Pairs)
+    {
+        public Dictionary<CounterKey, object?> Index { get; } = Pairs.Cast<List<object?>>()
+            .ToDictionary(pair => new CounterKey(pair[0]), pair => pair[1]);
+    }
+    private static bool IsMap(object? value) => value is MappingValue or Dictionary<string, object?>;
+    private static IEnumerable<(object? Key, object? Value)> Entries(object? value) => value is MappingValue map
+        ? map.Pairs.Cast<List<object?>>().Select(pair => (pair[0], pair[1]))
+        : ((Dictionary<string, object?>)value!).Select(pair => ((object?)pair.Key, pair.Value));
+    private static int MapCount(object? value) => value is MappingValue map ? map.Index.Count : ((Dictionary<string, object?>)value!).Count;
+    private static bool MapLookup(object? value, object? key, out object? found)
+    {
+        if (value is MappingValue map) return map.Index.TryGetValue(new CounterKey(key), out found);
+        if (key is string text) return ((Dictionary<string, object?>)value!).TryGetValue(text, out found);
+        found = null; return false;
+    }
     public VisualSourceOperands Reader { get; } = new();
     private bool cancelled;
     public void Cancel() { cancelled = true; Reader.Cancel(); }
@@ -13,26 +29,32 @@ internal sealed class ReportIntegrityOperands
     public object? Prepare(object? envelope)
     {
         var value = Reader.Prepare(At(envelope, "source"));
-        return RestoreTuples(value, At(envelope, "tuples"));
+        return RestoreContainers(value, At(envelope, "containers"));
     }
-    private static object? RestoreTuples(object? value, object? paths)
+    private static object? RestoreContainers(object? value, object? paths)
     {
         foreach (var raw in (List<object?>)paths!)
         {
-            var path = (List<object?>)raw!;
-            if (path.Count == 0) { value = new TupleValue((List<object?>)value!); continue; }
+            var path = (List<object?>)At(raw, "path")!;
+            object Wrap(object? items) => At(raw, "kind") switch
+            {
+                "tuple" => new TupleValue((List<object?>)items!),
+                "mapping" => new MappingValue((List<object?>)items!),
+                _ => throw new InvalidDataException("Unknown report container type")
+            };
+            if (path.Count == 0) { value = Wrap(value); continue; }
             var parent = value;
             foreach (var key in path.Take(path.Count - 1))
                 parent = key is string name ? At(parent, name) : ((List<object?>)parent!)[(int)(BigInteger)key!];
             if (path[^1] is string field)
             {
                 var map = (Dictionary<string, object?>)parent!;
-                map[field] = new TupleValue((List<object?>)map[field]!);
+                map[field] = Wrap(map[field]);
             }
             else
             {
                 var list = (List<object?>)parent!; var index = (int)(BigInteger)path[^1]!;
-                list[index] = new TupleValue((List<object?>)list[index]!);
+                list[index] = Wrap(list[index]);
             }
         }
         return value;
@@ -40,23 +62,23 @@ internal sealed class ReportIntegrityOperands
     public void Reply(object? message)
     {
         // Reader.Reply prepares source references before resuming the pending read.
-        // Restore tuple types after that preparation, in the same continuation.
+        // Restore native container types before resuming the same continuation.
         var envelope = At(message, "value");
         var prepared = Prepare(envelope);
         Reader.Reply(Dict(("sequence", At(message, "sequence")),
             ("value", Dict(("value", prepared), ("references", new List<object?>())))));
     }
-    private static string TypeName(object? value) => value is TupleValue ? "tuple" : VisualSourceOperands.TypeName(value);
+    private static string TypeName(object? value) => value is TupleValue ? "tuple" : value is MappingValue ? "dict" : VisualSourceOperands.TypeName(value);
     private static object? Items(object? value) => value is TupleValue tuple ? tuple.Items : value;
     public async ValueTask<bool> Same(object? a, object? b)
     {
         if (a is TupleValue || b is TupleValue)
             return a is TupleValue at && b is TupleValue bt && await Same(at.Items, bt.Items);
-        if (a is Dictionary<string, object?> am && b is Dictionary<string, object?> bm)
+        if (IsMap(a) || IsMap(b))
         {
-            if (am.Count != bm.Count) return false;
-            foreach (var (key, value) in am)
-                if (!bm.TryGetValue(key, out var other) || !ReferenceEquals(value, other) && !await Same(value, other)) return false;
+            if (!IsMap(a) || !IsMap(b) || MapCount(a) != MapCount(b)) return false;
+            foreach (var (key, value) in Entries(a))
+                if (!MapLookup(b, key, out var other) || !ReferenceEquals(value, other) && !await Same(value, other)) return false;
             return true;
         }
         var aList = a is List<object?>; var bList = b is List<object?>;
@@ -87,20 +109,21 @@ internal sealed class ReportIntegrityOperands
             await Release(a, leftCursor);
         }
     }
-    public static object? GetField(object? value, string key, object? fallback = null) => value is Dictionary<string, object?> map
-        ? map.GetValueOrDefault(key, fallback)
+    public static object? GetField(object? value, string key, object? fallback = null) => IsMap(value)
+        ? MapLookup(value, key, out var found) ? found : fallback
         : throw new OperandError("AttributeError", $"'{TypeName(value)}' object has no attribute 'get'");
     public ValueTask<object?> Field(object? value, string key)
     {
-        if (value is Dictionary<string, object?> map && !map.ContainsKey(key)) throw new OperandError("KeyError", key);
+        if (IsMap(value)) return MapLookup(value, key, out var found) ? ValueTask.FromResult(found)
+            : throw new OperandError("KeyError", key);
         if (value is TupleValue) throw new OperandError("TypeError", "tuple indices must be integers or slices, not str");
         return Reader.Field(value, key);
     }
     public async IAsyncEnumerable<object?> Rows(object? value)
     {
-        if (value is Dictionary<string, object?> map)
+        if (IsMap(value))
         {
-            foreach (var key in map.Keys) yield return key;
+            foreach (var (key, _) in Entries(value)) yield return key;
             yield break;
         }
         if (value is string text)
@@ -123,11 +146,11 @@ internal sealed class ReportIntegrityOperands
         }
         finally { await Release(value, cursor); }
     }
-    public async ValueTask<bool> TruthValue(object? value) => value is null or BigInteger or double or bool or string
+    public async ValueTask<bool> TruthValue(object? value) => value is MappingValue map ? map.Index.Count != 0 : value is null or BigInteger or double or bool or string
         or List<object?> or Dictionary<string, object?> ? Truth(value) : await Reader.Length(Items(value)) != BigInteger.Zero;
     public async IAsyncEnumerable<object?> FirstThree(object? value)
     {
-        if (value is Dictionary<string, object?>) throw new OperandError("AllySliceKeyError");
+        if (IsMap(value)) throw new OperandError("AllySliceKeyError");
         if (value is null or BigInteger or double or bool)
             throw new OperandError("TypeError", $"'{TypeName(value)}' object is not subscriptable");
         value = Items(value);
@@ -138,12 +161,13 @@ internal sealed class ReportIntegrityOperands
     {
         TupleValue tuple => "(" + string.Join(", ", tuple.Items.Select(Repr)) + (tuple.Items.Count == 1 ? "," : "") + ")",
         List<object?> list => "[" + string.Join(", ", list.Select(Repr)) + "]",
-        Dictionary<string, object?> map => "{" + string.Join(", ", map.Select(p => Repr(p.Key) + ": " + Repr(p.Value))) + "}",
+        MappingValue or Dictionary<string, object?> => "{" + string.Join(", ", Entries(value).Select(p => Repr(p.Key) + ": " + Repr(p.Value))) + "}",
         _ => SceneOperands.Str(value)
     };
     private static string Repr(object? value) => value is string ? SceneOperands.Repr(value) : Text(value);
     public static string Concat(string prefix, object? value) => value is TupleValue
         ? throw new OperandError("TypeError", "can only concatenate str (not \"tuple\") to str")
+        : value is MappingValue ? throw new OperandError("TypeError", "can only concatenate str (not \"dict\") to str")
         : VisualSourceOperands.AppendName(prefix, value);
     private static bool KeyEqual(object? a, object? b) => a is TupleValue || b is TupleValue
         ? a is TupleValue at && b is TupleValue bt && at.Items.Count == bt.Items.Count
@@ -151,6 +175,7 @@ internal sealed class ReportIntegrityOperands
         : Equal(a, b);
     private static int KeyHash(object? value)
     {
+        if (value is MappingValue) throw new OperandError("TypeError", "unhashable type: 'dict'");
         if (value is not TupleValue tuple) return VisualSourceOperands.SourceKey(value).GetHashCode();
         var hash = new HashCode();
         foreach (var item in tuple.Items) hash.Add(KeyHash(item));

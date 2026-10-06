@@ -319,7 +319,7 @@ variant additions, admission/endpoint flags and retained inherited slots. `Repor
 classification, ordered duplicate/missing-child diagnostics, assertion/parent/summary consistency,
 FAIL-before-Unavailable verdict precedence and strict boolean milestone acceptance.
 `ReportIntegrityOperands.cs` preserves the consumed Python equality, Counter, formatting and error
-semantics; tuple type facts remain distinct from JSON lists. The two existing public Python functions
+semantics; tuple and native mapping-key type facts survive JSON transport. The two existing public Python functions
 are thin calls through `h4_report_integrity.py`, which selects fields, serves factual bounded reads
 and reconstructs the ordered dictionary of tuples or error list. Report construction, matrix
 algorithms, reader/storage, publication and the matrix's Python `verdict` remain separate owners.

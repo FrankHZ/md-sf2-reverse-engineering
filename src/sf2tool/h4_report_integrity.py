@@ -189,21 +189,28 @@ class ReportIntegrity:
         return value
 
     def operands(self, value):
-        # JSON arrays erase tuple/list distinctions. Retain type facts separately;
-        # bounded sequences still use the accepted demand-read reference codec.
-        tuples = []
+        # JSON erases tuple/list and native mapping-key types. Retain factual
+        # container tags; bounded sequences keep the accepted reference codec.
+        containers = []
 
         def visit(value, path):
             if isinstance(value, dict):
-                return {key: visit(item, [*path, key]) for key, item in value.items()}
+                if all(isinstance(key, str) for key in value):
+                    return {key: visit(item, [*path, key]) for key, item in value.items()}
+                items = [
+                    [visit(key, [*path, i, 0]), visit(item, [*path, i, 1])]
+                    for i, (key, item) in enumerate(value.items())
+                ]
+                containers.append(dict(path=path, kind="mapping"))
+                return items
             if isinstance(value, (list, tuple)):
                 items = [visit(item, [*path, i]) for i, item in enumerate(value)]
                 if isinstance(value, tuple):
-                    tuples.append(path)
+                    containers.append(dict(path=path, kind="tuple"))
                 return items
             return value
 
-        return dict(source=self.codec.operands(visit(value, [])), tuples=tuples)
+        return dict(source=self.codec.operands(visit(value, [])), containers=containers)
 
     def exchange(self, mode, **values):
         iterators, positions = {}, {}
