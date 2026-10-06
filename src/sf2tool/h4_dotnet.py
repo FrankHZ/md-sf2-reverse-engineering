@@ -17,6 +17,80 @@ class ResourceProcessError(RuntimeError):
     """A failed comparison process is not unavailable original evidence."""
 
 
+def _resource_reply(operation, reply):
+    """Validate protocol structure before caller evidence handlers see any data."""
+
+    def malformed():
+        raise ResourceProcessError(f"Malformed H4 resource reply for {operation}")
+
+    def count(value):
+        return type(value) is int and value >= 0
+
+    if not isinstance(reply, dict):
+        malformed()
+    if set(reply) == {"operandError"}:
+        name = reply["operandError"]
+        error = (
+            {
+                "AttributeError": AttributeError,
+                "KeyError": KeyError,
+                "TypeError": TypeError,
+                "ValueError": ValueError,
+                "IndexError": IndexError,
+                "OverflowError": OverflowError,
+            }.get(name)
+            if isinstance(name, str)
+            else None
+        )
+        if error is None:
+            malformed()
+        raise error("H4 resource operand: " + name)
+    if set(reply) != {"result"}:
+        malformed()
+    result = reply["result"]
+    if operation in ("sources", "source", "begin", "accumulate"):
+        if result is not None:
+            malformed()
+    elif operation == "scan":
+        if result is not None and not count(result):
+            malformed()
+    elif operation == "finish":
+        fields = {"candidatePairCount", "executedPairCount", "counts", "legacyStop", "checks"}
+        if not isinstance(result, dict) or not fields <= result.keys():
+            malformed()
+        counts, checks, stop = result["counts"], result["checks"], result["legacyStop"]
+        if (
+            not count(result["candidatePairCount"])
+            or not count(result["executedPairCount"])
+            or not isinstance(counts, dict)
+            or not {"PASS", "FAIL", "Unavailable"} <= counts.keys()
+            or not all(count(counts[name]) for name in ("PASS", "FAIL", "Unavailable"))
+            or not isinstance(checks, list)
+        ):
+            malformed()
+        for check in checks:
+            # Outcome and locator are original operands, not protocol type tags.
+            if (
+                not isinstance(check, list)
+                or len(check) != 4
+                or not isinstance(check[0], str)
+                or not count(check[2])
+                or check[2] == 0
+            ):
+                malformed()
+        if stop is not None and (
+            not isinstance(stop, dict)
+            or not {"firstOrdinal", "error", "locator"} <= stop.keys()
+            or not count(stop["firstOrdinal"])
+            or not isinstance(stop["error"], str)
+            or stop["error"] not in ("KeyError", "IndexError", "ValueError", "TypeError")
+        ):
+            malformed()
+    else:
+        malformed()
+    return result
+
+
 def _child_memory(process):
     if os.name != "nt":
         return None
@@ -170,19 +244,7 @@ class ResourceComparison:
             self.observe_memory()
         except (OSError, ValueError) as error:
             raise ResourceProcessError("H4 resource process transport failed") from error
-        if "operandError" in reply:
-            error = {
-                "AttributeError": AttributeError,
-                "KeyError": KeyError,
-                "TypeError": TypeError,
-                "ValueError": ValueError,
-                "IndexError": IndexError,
-                "OverflowError": OverflowError,
-            }.get(reply["operandError"])
-            if error is None:
-                raise ResourceProcessError("Unknown H4 operand error")
-            raise error("H4 resource operand: " + reply["operandError"])
-        return reply["result"]
+        return _resource_reply(message["op"], reply)
 
     def reduce(self, required, relation, key):
         self.exchange(dict(op="begin", required=required))

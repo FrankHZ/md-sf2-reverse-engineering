@@ -5236,6 +5236,13 @@ typed policy. Missing keys, explicit nulls, malformed containers, nonfinite JSON
 fatal exceptions retain their own boundaries. See the
 [source correspondence](../../docs/operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process).
 
+The bridge validates each response envelope and its operation's result structure before returning
+to evidence handlers, including finish counters, check entries and optional exception-prefix records.
+Malformed process replies raise `ResourceProcessError`, stop the owned child and prevent successful
+report publication; they cannot become missing/malformed original evidence. Explicit recognized
+`operandError` replies retain their named Python exceptions. Check outcomes and locators remain
+original operands, so protocol validation does not narrow their accepted evidence semantics.
+
 The resource budget now observes the child at every response and shutdown, outside the five-second
 progress throttle. `sampledPeakPrivateBytes` retains its Python meaning;
 `sampledPeakCombinedPrivateBytes` records simultaneous parent/child samples;
