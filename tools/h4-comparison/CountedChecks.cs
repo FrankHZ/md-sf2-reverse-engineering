@@ -43,9 +43,12 @@ internal sealed class CountedChecks(IEnumerable<object?> enabled)
     }
 
     public void Evaluated(string family, string name, Action action)
+        => Evaluated(family, name, BigInteger.One, null, action);
+
+    public void Evaluated(string family, string name, BigInteger weight, object? locator, Action action)
     {
         try { action(); }
-        catch (OperandError error) when (error.Caught) { Error([family], name, error.Kind, BigInteger.One); }
+        catch (OperandError error) when (error.Caught) { Error([family], name, error.Kind, weight, locator); }
     }
 
     public void Accept(object? record)

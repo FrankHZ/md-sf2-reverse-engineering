@@ -111,7 +111,9 @@ justifies revisiting them. The existing `sf2` facade may continue to invoke thos
 `tools/h4-comparison/` is an independent verification executable with no production-engine reference.
 `ResourceComparison.cs` owns resource source/pair events and ordered requirement reduction;
 `SceneObservations.cs` owns reached fairy/field-death observations; `CountedChecks.cs` owns their
-shared counted report. `Operands.cs` and `SceneOperands.cs` supply the respective Python operand
+shared counted report. `ResourceContext.cs` owns source-program map transitions, sessions and scope
+context; `ResourceValidation.cs` owns occurrence, resource identity and actual texture predicates.
+`Operands.cs`, `SceneOperands.cs` and `ResourceOperands.cs` supply the respective Python operand
 operations; `Program.cs` handles the fixed stream. `src/sf2tool/h4_dotnet.py` defers startup until the
 first exchange, then shares one child across scenes, checks and reduction for the binding call.
 The Python caller retains source decoding, inventory predicates, SQLite variants/prefix counts and
@@ -156,6 +158,30 @@ drains feed the existing SQLite-backed publication lists, without a duplicate fu
 The selected scene definition includes only healing/field-death operands; scene rows exclude other
 top-level channels. Fixed acknowledgments, final metadata and every drain are typed protocol replies;
 a malformed envelope, non-progressing drain or inconsistent final row count fails the operation.
+
+The occurrence/identity/texture source boundary is the complete `_reached_visual_materials` at
+accepted commit `34f295212a846309d27cb99082bc3eb5f7fa37ec`: occurrence admission/counting2559–2586,
+program/visit/session/scope context2588–2625, resource identity2626–2641 and texture validation2964–3006.
+Requirement-phase preparation2656–2661 and its later projection additions remain Python storage
+operations, shared with the unchanged logical inventory. Neither that inventory nor `layer_tiles`
+is part of this port.
+
+| Original responsibility | Current correspondence and acceptance boundary |
+| --- | --- |
+| Requirement admission and weighted occurrence validation | `ResourceValidation.Available` returns admission bits for the original Python requirement rows; grouped uses retain SQLite multiplicity and first locator. |
+| Programs, map transfers and LoadSceneMap lookup | `ResourceContext` receives program IDs and instruction map fields, then ordered warp events; duplicate keys, source instruction lookup, integer conversion and assignment evaluation order remain. |
+| Sessions and explicit selected-scope context | `ResourceContext.Session/BeginScope` scans samples, consumer boundaries and warp records in order. The separate projection scan preserves short-circuit behavior and preceding scope checks; it transports only empty/nonempty projection shape. |
+| Latest map visit and same-session identity | The existing `_bounded_sorted` orders the emitted compact visit keys. `ResourceContext.Latest` performs the original right-bisect lookup; `ResourceValidation.Identity` owns absence versus contradiction and per-row exception boundaries. |
+| Named layer/pass, integral source word and high priority | `ResourceValidation.Texture` applies these predicates before consulting phase membership; weighted partial contributions remain ordered. |
+| Requirement-phase membership | Python retains the existing `_join_key` sets and bounded lookups, including logical-inventory additions. Fixed group/phase facts cross the pipe; C# decides missing group versus contradictory phase. Lookup errors are deferred until that predicate is reached. |
+| Late validation iterator failure | The identity bridge flushes already-read rows before propagating the error and preserves the current Python weight/locator for the existing outer handler. Normal completion resets them; resource reducer batching retains its existing default behavior. |
+
+Program metadata is released after warp collection; context state is released after identity checks.
+Python retains the bounded visit-key sequence for its existing inventory. These compact keys are the
+only temporal state shared back to Python; no full capture, source world or phase-set array is copied.
+Detailed operand errors on these fixed operations preserve the outer report's original diagnostic
+text. Other operations retain the accepted exception envelope. Typed admission masks must have the
+input batch's length; malformed replies remain infrastructure failures.
 
 Use the [resource-tool workflow](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
 for build and direct verification. Controls use constructed, bounded inputs and complete ordered

@@ -2556,89 +2556,19 @@ def _reached_visual_materials(
         uses.flush()
         result["actualUseCount"] = uses.count
 
-        def available_rows(rows, requirement):
-            for row in rows:
-                family = "map" if row.get("kind") == "map" else "entity"
-                with evaluated(family, "resource occurrence"):
-                    i = row["identity"]
-                    for key in ("sessionId", "visit", "map", "phase", "observationSequence"):
-                        i[key]
-                    row["kind"]
-                    row["expected" if requirement else "used"]
-                    yield row
-
-        requirements = _bounded_list(available_rows(requirements, True))
-
-        def counted_uses(category):
+        def validation_state(count, current_locator):
             nonlocal weight, locator
-            for row, count in uses.validations(category):
-                weight, locator = count, row["_captureLocator"]
-                if category == "occurrence":
-                    yield from available_rows((row,), False)
-                else:
-                    yield row
-            weight, locator = 1, None
+            weight, locator = count, current_locator
 
-        # Availability is distinct from identity and texture validation. The latter
-        # predicates read different operands; grouping them together amplifies state
-        # sequence × tile cardinality even without the requirement/use Cartesian join.
-        for _ in counted_uses("occurrence"):
-            pass
-
-        programs = {p["id"]: p for p in world["programs"]}
-        visits = {0: read(repo_path(process["selectedStart"]))["start"]["map"]}
-        for delivery in actual.get("warpRecords", []):
-            for event in delivery.get("result", {}).get("observations", []):
-                if event.get("Kind") == "map-transferred":
-                    visits[event["Sequence"]] = event["Detail"]
-                elif event.get("Detail") == "LoadSceneMap" and event.get("Program"):
-                    loc = event["Program"]
-                    visits[event["Sequence"]] = programs[loc["Program"]]["instructions"][
-                        int(loc["Instruction"])
-                    ]["map"]
-        visit_sequences = _bounded_sorted(visits)
-        sessions = {
-            row["state"]["sessionId"]
-            for channel in ("samples", "consumerBoundaries", "warpRecords")
-            for row in actual.get(channel, [])
-            if row.get("state", {}).get("sessionId")
-        }
-        if scope is not None:
-            sessions.update(scope["contextSessions"])
-            for family in enabled:
-                check(
-                    family,
-                    "selected scope retains independent session context",
-                    True if sessions else None,
-                )
-                if family in ("map", "entity"):
-                    check(
-                        family,
-                        "selected scope retains independent current projection context",
-                        True
-                        if any(
-                            row.get("state", {}).get("cameraProjection")
-                            for channel in ("samples", "consumerBoundaries", "warpRecords")
-                            for row in actual.get(channel, [])
-                        )
-                        else None,
-                    )
-        for row in itertools.chain(requirements, counted_uses("identity")):
-            with evaluated("map" if row.get("kind") == "map" else "entity", "resource identity"):
-                i = row["identity"]
-                family = "map" if row["kind"] == "map" else "entity"
-                check(
-                    family,
-                    "same-session resource delivery identity",
-                    None if not sessions else len(sessions) == 1 and i["sessionId"] in sessions,
-                )
-                position = bisect_right(visit_sequences, i["observationSequence"]) - 1
-                visit = visit_sequences[position] if position >= 0 else None
-                check(
-                    family,
-                    "actual use belongs to its latest logical map visit",
-                    i["visit"] == visit and i["map"] == visits.get(visit),
-                )
+        requirements = _bounded_list(resources.available_requirements(requirements))
+        resources.validate_uses(uses, "occurrence", state=validation_state)
+        resources.identity_programs(world["programs"])
+        resources.identity_map(read(repo_path(process["selectedStart"]))["start"]["map"])
+        resources.identity_warps(actual.get("warpRecords", []))
+        visit_sequences = _bounded_sorted(resources.visit_keys())
+        resources.identity_order(visit_sequences)
+        resources.identity_context(actual, scope)
+        resources.identity_checks(requirements, uses, state=validation_state)
         for family in ("map", "entity"):
             check(family, "independent reached requirement channel", True if requirements else None)
         field_maps = {
@@ -2961,49 +2891,16 @@ def _reached_visual_materials(
         result["projectionUseCount"] = uses.count - result["actualUseCount"]
 
         uses.flush()
-        for used in counted_uses("texture"):
-            with evaluated("map" if used.get("kind") == "map" else "entity", "actual texture use"):
-                if "_keyError" in used:
-                    error = used["_keyError"]
-                    check(
-                        "map" if used["kind"] == "map" else "entity",
-                        "actual texture use operand absent"
-                        if error == "KeyError"
-                        else "actual texture use malformed " + error,
-                        None if error == "KeyError" else False,
-                    )
-                    continue
-                i = used["identity"]
-                family = "map" if used["kind"] == "map" else "entity"
-                if used["kind"] == "map":
-                    high = used.get("highPriority")
-                    word = used["used"]["word"]
-                    name, draw_pass = used.get("layer"), used.get("pass")
-                    valid_pass = (
-                        {
-                            "background": 0,
-                            "foreground": 1,
-                            "backgroundHigh": 2,
-                            "foregroundHigh": 3,
-                        }.get(name)
-                        == draw_pass
-                        if name != "occlusion"
-                        else draw_pass >= 5
-                    )
-                    check(
-                        "map",
-                        "actual source tile priority and named layer pass",
-                        valid_pass
-                        and word == int(word)
-                        and (high is None or bool(int(word) & 0x8000) == high),
-                    )
-                check(
-                    family,
-                    "actual use phase has independent logical requirements",
-                    None
-                    if _join_key((i["visit"], used["kind"])) not in phase_groups
-                    else _join_key((i["visit"], used["kind"], i["phase"])) in requirement_phases,
-                )
+        def phase_membership(used):
+            i = used["identity"]
+            group = _join_key((i["visit"], used["kind"])) in phase_groups
+            return dict(
+                group=group,
+                phase=_join_key((i["visit"], used["kind"], i["phase"])) in requirement_phases
+                if group else None,
+            )
+
+        resources.validate_uses(uses, "texture", phase_membership, state=validation_state)
         result["requirementCount"] = len(requirements)
         result["candidatePairCount"] = 0
         result["executedPairCount"] = 0

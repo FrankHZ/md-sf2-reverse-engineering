@@ -46,7 +46,13 @@ def _resource_reply(operation, reply):
 
     if not isinstance(reply, dict):
         malformed()
-    if set(reply) == {"operandError"}:
+    detailed = operation.startswith("identity-") and set(reply) == {
+        "operandError",
+        "operandMessage",
+    }
+    if set(reply) == {"operandError"} or detailed:
+        if detailed and not isinstance(reply["operandMessage"], str):
+            malformed()
         name = reply["operandError"]
         error = (
             {
@@ -62,7 +68,7 @@ def _resource_reply(operation, reply):
         )
         if error is None:
             malformed()
-        raise error("H4 resource operand: " + name)
+        raise error(reply["operandMessage"] if detailed else "H4 resource operand: " + name)
     if set(reply) != {"result"}:
         malformed()
     result = reply["result"]
@@ -75,11 +81,41 @@ def _resource_reply(operation, reply):
         "report-records",
         "scene-start",
         "scene-rows",
+        "identity-start",
+        "identity-programs",
+        "identity-map",
+        "identity-warps",
+        "identity-warp-finish",
+        "identity-visit-order",
+        "identity-sessions",
+        "identity-scope-finish",
+        "identity-requirement-checks",
+        "identity-uses-occurrence",
+        "identity-uses-checks",
+        "identity-textures",
+        "identity-release",
     ):
         if result is not None:
             malformed()
     elif operation == "scan":
         if result is not None and not count(result):
+            malformed()
+    elif operation in ("identity-scope", "identity-projections"):
+        if not isinstance(result, bool):
+            malformed()
+    elif operation == "identity-requirements":
+        if not isinstance(result, list) or not all(isinstance(v, bool) for v in result):
+            malformed()
+    elif operation == "identity-visit-keys":
+        if (
+            not isinstance(result, dict)
+            or set(result) != {"rows", "done"}
+            or not isinstance(result["rows"], list)
+            or not isinstance(result["done"], bool)
+            or any(isinstance(v, (list, dict)) for v in result["rows"])
+            or not result["rows"]
+            and not result["done"]
+        ):
             malformed()
     elif operation == "report-finish":
         if (
@@ -211,17 +247,26 @@ def _wire_message(message):
     return result
 
 
-def _batches(rows):
+def _batches(rows, *, flush_on_error=False):
     batch, size = [], 0
-    for row in rows:
-        charge = len(json.dumps(row, ensure_ascii=True).encode("utf-8"))
-        if batch and (len(batch) >= 256 or size + charge > 1024 * 1024):
+    try:
+        for row in rows:
+            charge = len(json.dumps(row, ensure_ascii=True).encode("utf-8"))
+            if batch and (len(batch) >= 256 or size + charge > 1024 * 1024):
+                yield batch
+                batch, size = [], 0
+            batch.append(row)
+            size += charge
+    except Exception:
+        if flush_on_error and batch:
             yield batch
-            batch, size = [], 0
-        batch.append(row)
-        size += charge
+        raise
     if batch:
         yield batch
+
+
+def _selected(value, names):
+    return {k: value[k] for k in names if k in value} if isinstance(value, dict) else value
 
 
 def build():
@@ -270,6 +315,7 @@ class ResourceComparison:
         self.defer_start = defer_start
         self.enabled = None
         self.pending, self.pending_bytes = [], 0
+        self.identity_started = False
 
     def __enter__(self):
         return self if self.defer_start else self._start()
@@ -454,6 +500,137 @@ class ResourceComparison:
             checks=bounded_list(rows("report-checks", metadata["checkCount"])),
             witnesses=bounded_list(rows("report-witnesses", metadata["witnessCount"])),
         )
+
+    def _identity(self, operation, **values):
+        self.flush_checks()
+        if not self.identity_started:
+            self.exchange(
+                dict(
+                    op="identity-start",
+                    enabled=list(self.enabled),
+                    integerDigitLimit=sys.get_int_max_str_digits(),
+                )
+            )
+            self.identity_started = True
+        return self.exchange(dict(op=operation, **values))
+
+    def _identity_batches(self, operation, rows):
+        for batch in _batches(rows, flush_on_error=True):
+            self._identity(operation, rows=batch)
+
+    def available_requirements(self, rows):
+        for batch in _batches(rows, flush_on_error=True):
+            # Admission reads presence only; retain original rows in the caller.
+            selected = []
+            for row in batch:
+                value = _selected(row, ("kind", "identity", "expected"))
+                if isinstance(value, dict) and "expected" in value:
+                    value["expected"] = None
+                selected.append(value)
+            admitted = self._identity("identity-requirements", rows=selected)
+            if len(admitted) != len(batch):
+                raise ResourceProcessError("Resource admission row count changed")
+            for row, accepted in zip(batch, admitted, strict=True):
+                if accepted:
+                    yield row
+
+    def validate_uses(self, relation, category, membership=None, *, state):
+        def rows():
+            for row, count in relation.validations(category):
+                state(count, row["_captureLocator"])
+                record = dict(row=row, weight=count)
+                if membership is not None:
+                    # Storage lookup errors must be evaluated after the C# tile
+                    # predicate, not ahead of it while preparing this batch.
+                    try:
+                        record["membership"] = membership(row)
+                    except (KeyError, IndexError, ValueError, TypeError) as error:
+                        record["membership"] = dict(error=type(error).__name__, message=str(error))
+                yield record
+
+        operation = {
+            "occurrence": "identity-uses-occurrence",
+            "identity": "identity-uses-checks",
+            "texture": "identity-textures",
+        }[category]
+        self._identity_batches(operation, rows())
+        state(1, None)
+
+    def identity_programs(self, programs):
+        def projected():
+            for row in programs:
+                value = _selected(row, ("id", "instructions"))
+                if isinstance(value, dict) and isinstance(value.get("instructions"), list):
+                    value["instructions"] = [_selected(i, ("map",)) for i in value["instructions"]]
+                yield value
+
+        self._identity_batches("identity-programs", projected())
+
+    def identity_map(self, map_id):
+        self._identity("identity-map", map=map_id)
+
+    def identity_warps(self, rows):
+        def projected():
+            for row in rows:
+                value = _selected(row, ("result",))
+                if isinstance(value, dict) and "result" in value:
+                    result = _selected(value["result"], ("observations",))
+                    value["result"] = result
+                    if isinstance(result, dict) and isinstance(result.get("observations"), list):
+                        result["observations"] = [
+                            _selected(e, ("Kind", "Detail", "Sequence", "Program"))
+                            for e in result["observations"]
+                        ]
+                yield value
+
+        self._identity_batches("identity-warps", projected())
+        self._identity("identity-warp-finish")
+
+    def visit_keys(self):
+        while True:
+            batch = self._identity("identity-visit-keys")
+            yield from batch["rows"]
+            if batch["done"]:
+                return
+
+    def identity_order(self, sequence):
+        self._identity_batches("identity-visit-order", sequence)
+
+    def identity_context(self, actual, scope):
+        def states(fields):
+            for channel in ("samples", "consumerBoundaries", "warpRecords"):
+                for row in actual.get(channel, []):
+                    value = _selected(row, ("state",))
+                    if isinstance(value, dict) and "state" in value:
+                        value["state"] = _selected(value["state"], fields)
+                        state = value["state"]
+                        if isinstance(state, dict) and "cameraProjection" in state:
+                            projection = state["cameraProjection"]
+                            # This predicate reads only emptiness, never projection
+                            # fields. Preserve that shape without copying actors,
+                            # layer geometry or texture data into a context scan.
+                            if isinstance(projection, dict):
+                                state["cameraProjection"] = {"present": None} if projection else {}
+                            elif isinstance(projection, list):
+                                state["cameraProjection"] = [None] if projection else []
+                            elif isinstance(projection, str):
+                                state["cameraProjection"] = projection[:1]
+                    yield value
+
+        self._identity_batches("identity-sessions", states(("sessionId",)))
+        if self._identity("identity-scope", scope=_selected(scope, ("contextSessions",))):
+            for batch in _batches(states(("cameraProjection",)), flush_on_error=True):
+                if self._identity("identity-projections", rows=batch):
+                    break
+            self._identity("identity-scope-finish")
+
+    def identity_checks(self, requirements, uses, *, state):
+        self._identity_batches(
+            "identity-requirement-checks",
+            (_selected(r, ("kind", "identity")) for r in requirements),
+        )
+        self.validate_uses(uses, "identity", state=state)
+        self._identity("identity-release")
 
     def select_sources(self, required):
         # Selection only; C# owns presence, equality and alternate-tile judgments.

@@ -5,9 +5,10 @@ namespace H4Comparison;
 
 // Only the operations exercised by resource predicates. Missing fields must throw;
 // .get and truth tests deliberately retain Python's different null/empty behavior.
-internal sealed class OperandError(string kind) : Exception(kind)
+internal sealed class OperandError(string kind, string? detail = null) : Exception(kind)
 {
     public string Kind { get; } = kind;
+    public string? Detail { get; } = detail;
     public bool Caught => Kind is "KeyError" or "IndexError" or "ValueError" or "TypeError";
 }
 

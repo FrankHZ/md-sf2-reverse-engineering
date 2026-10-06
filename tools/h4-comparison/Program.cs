@@ -7,6 +7,8 @@ Console.OutputEncoding = new UTF8Encoding(false);
 ResourceComparison? comparison = null;
 CountedChecks? report = null;
 SceneObservations? scenes = null;
+ResourceContext? context = null;
+ResourceValidation? validation = null;
 try
 {
     while (Console.ReadLine() is { } line)
@@ -35,13 +37,15 @@ try
                     "report-finish" => RequiredReport().Finish(),
                     "report-checks" => RequiredReport().Drain(false),
                     "report-witnesses" => RequiredReport().Drain(true),
+                    string op when op.StartsWith("identity-", StringComparison.Ordinal) => IdentityOperation(op, message),
                     _ => comparison.Handle(message)
                 };
             }
             catch (OperandError e)
             {
                 // Fatal Python operand errors still propagate at the Python caller.
-                Reply(Operands.Dict(("operandError", e.Kind)));
+                Reply(e.Detail is null ? Operands.Dict(("operandError", e.Kind))
+                    : Operands.Dict(("operandError", e.Kind), ("operandMessage", e.Detail)));
                 continue;
             }
         }
@@ -81,6 +85,57 @@ object? RecordScenes(object? message)
     if (scenes is null) throw new InvalidDataException("Resource scene definition not selected");
     foreach (var row in Operands.Iterate(Operands.At(message, "rows"))) scenes.Accept(row);
     return null;
+}
+
+object? IdentityOperation(string op, object? message)
+{
+    if (op == "identity-start")
+    {
+        if (context is not null) throw new InvalidDataException("Resource identity already started");
+        var limit = (int)(System.Numerics.BigInteger)Operands.At(message, "integerDigitLimit")!;
+        context = new ResourceContext(RequiredReport(), Operands.Iterate(Operands.At(message, "enabled")), limit);
+        validation = new ResourceValidation(RequiredReport(), context, limit);
+        return null;
+    }
+    if (context is null || validation is null) throw new InvalidDataException("Resource identity not started");
+    switch (op)
+    {
+        case "identity-map": context.StartMap(Operands.At(message, "map")); return null;
+        case "identity-warp-finish": context.FinishWarps(); return null;
+        case "identity-visit-keys": return context.VisitKeys();
+        case "identity-scope": return context.BeginScope(Operands.At(message, "scope"));
+        case "identity-scope-finish": context.FinishScope(); return null;
+        case "identity-release": context.Release(); return null;
+    }
+    List<object?> admitted = [];
+    var projected = false;
+    foreach (var record in Operands.Iterate(Operands.At(message, "rows")))
+    {
+        switch (op)
+        {
+            case "identity-programs": context.Program(record); break;
+            case "identity-warps": context.Warp(record); break;
+            case "identity-visit-order": context.OrderedVisit(record); break;
+            case "identity-sessions": context.Session(record); break;
+            case "identity-projections": projected = context.Projection(record); break;
+            case "identity-requirements":
+                admitted.Add(validation.Available(record, true, System.Numerics.BigInteger.One, null)); break;
+            case "identity-requirement-checks": validation.Identity(record, System.Numerics.BigInteger.One, null); break;
+            case "identity-uses-occurrence":
+            case "identity-uses-checks":
+            case "identity-textures":
+                var row = Operands.At(record, "row");
+                var weight = (System.Numerics.BigInteger)Operands.At(record, "weight")!;
+                var locator = Operands.At(row, "_captureLocator");
+                if (op == "identity-uses-occurrence") validation.Available(row, false, weight, locator);
+                else if (op == "identity-uses-checks") validation.Identity(row, weight, locator);
+                else validation.Texture(row, weight, locator, Operands.At(record, "membership"));
+                break;
+            default: throw new InvalidDataException("Unknown resource identity operation");
+        }
+        if (projected) break;
+    }
+    return op == "identity-requirements" ? admitted : op == "identity-projections" ? projected : null;
 }
 
 static void Reply(object? result)
