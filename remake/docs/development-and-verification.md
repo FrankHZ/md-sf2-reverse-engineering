@@ -5310,7 +5310,8 @@ for real-reader/detached publication and multi-page/byte-bounded visits, and `co
 <fresh-run-name>` for the corrected conversion diagnostics. The latter also runs from `remake/`
 using the `../local/...` path. `late_failure.py <fresh-run-name> assert` injects a later validation
 decode failure after a real SQLite group; `protocol.py <fresh-run-name>` exercises new-operation
-reply corruption and child exit. Use `uv run --locked python` after loading the ignored environment;
+reply corruption and child exit. `nan_context.py <fresh-run-name> assert` compares shared NaN session
+and program keys through the real reader and detached publication. Use `uv run --locked python` after loading the ignored environment;
 keep each reproduction's inputs and complete ordered outputs in a fresh ignored directory.
 
 Context transfer contains program IDs/instruction map fields, ordered warp operands and selected
