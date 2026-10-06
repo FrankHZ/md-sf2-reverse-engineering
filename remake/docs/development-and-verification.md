@@ -5583,12 +5583,16 @@ uv run python -X utf8 local/issue638/csharp-report-assembly-01/measure.py <recei
   aggregation compatibility, not a valid gameplay verdict fixture.
 - `protocol.py`: phase/template/count/key/read/release/child-exit/cancel-ack faults block publication,
   preserve storage prefixes, stop children and retain the primary source error on cancel failure.
+  `protocol_cleanup.py` adds the exceptional cleanup-order observation: rejected source requests
+  retain their registry until the suspended child exits, then release it. Preserve the earlier
+  lifecycle audit finding that unconditional exchange-finally reset cleared that registry too early.
 - `scope.py`: exact AST comparison outside the allocated regions, including unchanged gameplay,
   nested missing, outer metadata/equivalence and final rejection; new handwritten owners stay below1000 lines.
 
 Each complete modern caller uses one assembly child and its existing separate integrity child.
-Source registries reset only at completed/cancelled operation boundaries after C# drops its operand
-reader; multi-check lifetime observations are required when that boundary changes. Standalone
+Successful operations reset source registries after C# drops its operand reader; failed operations
+retain them until session exit stops the child. Multi-check and exceptional cleanup-order observations
+are required when that boundary changes. Standalone
 production use gains no automatic report-size admission cap. Controlled descriptors retain fresh
 ceilings of10MiB cumulative inputs,40MiB evidence,120s/control and256MiB live Python+C#, with
 300s/2GiB/1GiB new-cache limits for the existing locked build. Count all selected fixtures and

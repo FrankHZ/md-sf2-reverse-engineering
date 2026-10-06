@@ -208,22 +208,26 @@ class ReportAssembly:
         return self
 
     def __exit__(self, *args):
-        return self.transport.__exit__(*args)
+        try:
+            return self.transport.__exit__(*args)
+        finally:
+            self._reset_sources()
+
+    def _reset_sources(self):
+        self.transport.codec = VisualSources(
+            self.transport.child, None, {}, (self.sequence_type, _SelectedSequence)
+        )
 
     def begin(self, actual_path, outcome_path, host_log):
         self.paths = {"actual": actual_path, "outcome": outcome_path, "host-log": host_log}
         self.assertions, self.obligations = self.bounded_list(), {}
 
     def _exchange(self, operation, **values):
-        try:
-            return self.transport._source_exchange(
-                "assembly-" + operation, values, family="assembly"
-            )
-        finally:
-            # The operation has completed/cancelled. C# retains no source references.
-            self.transport.codec = VisualSources(
-                self.transport.child, None, {}, (self.sequence_type, _SelectedSequence)
-            )
+        result = self.transport._source_exchange("assembly-" + operation, values, family="assembly")
+        # Successful operations drop their C# reader before returning. On failure, keep
+        # references until __exit__ stops any child suspended at a rejected request.
+        self._reset_sources()
+        return result
 
     def _call(self, operation, **values):
         if not self.started:

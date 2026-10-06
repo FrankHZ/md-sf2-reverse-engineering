@@ -373,8 +373,9 @@ container-length and registered spool facts cover the report data domain; arbitr
 object truth/equality protocols are not a new interoperability contract.
 
 Assembly reuses the private validated integrity source exchange, with fixed operation families and
-separate result validators. Each completed/cancelled operation drops its codec registry and C#
-operand reader before the next operation. Only primitive check state and hashable Counter keys
+separate result validators. Each successful operation drops its C# operand reader before its Python
+codec registry resets. On errors, Python retains the registry until session exit stops the child,
+including a child suspended at a rejected protocol request. Only primitive check state and hashable Counter keys
 survive; no deferred source reference survives a registry reset. Existing release continuations
 bound live cursors by active nesting. Python remains the sole assertion/group SQLite authority.
 Transport uses at most256 count rows per page, targeting1MiB with a single-row exception. Total
