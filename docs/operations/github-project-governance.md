@@ -136,12 +136,49 @@ boundary. Completing child slices does not by itself complete the milestone acce
 named acceptance owner closes it. Prefer the existing accepted targets, e.g. the ADR 0009/0010
 Map 3–Battle 01 milestone; do not renumber the historical phases.
 
+### Product Constraint Workflow
+
+Before choosing tools or splitting work, name the product, research or operational decision the
+result will support. A request to verify fidelity does not by itself authorize a general comparison
+platform or complete-trajectory acquisition. Apply this workflow through the existing Issue,
+dispatch and independent review; a small change needs only a short paragraph, not a separate plan.
+
+1. **Constrain the outcome.** Main-gate records the decision or user-visible behavior, minimum
+   sufficient evidence, non-goals and Unknowns that can remain without blocking that decision.
+   Link the accepted contract rather than inventing a broader completeness target. Research may
+   deliver a bounded finding; it need not manufacture a gameplay change to justify its value.
+2. **Choose and budget the method.** Prefer existing evidence, small actual-engine behavior tests
+   and focused observations appropriate to the claim. Explain why a simpler method is insufficient
+   before adding acquisition or verification infrastructure. Budget implementation, execution,
+   storage, review, integration and maintenance together, including supporting work. Record a
+   cumulative allowance for the outcome and concrete stop/replan thresholds; dividing it into
+   slices or issuing a replacement task does not reset that allowance. Use the existing
+   [scale-planning owner](./bounded-inspection-and-review.md#plan-before-scaling) for estimates.
+3. **Prove the method before expansion.** Where cost or diagnostic value is uncertain, run the
+   smallest representative pilot covering the difficult boundary, a failure and insufficient
+   evidence. Check whether its output changes the intended decision, diagnoses failures and can
+   be rerun affordably after an implementation change. Main-gate records a continue, narrow,
+   replace or stop decision before expanding; a successful happy path alone is insufficient.
+4. **Reassess cumulative value.** At slice review, compare the product/research result with total
+   effort and new interfaces, state owners, protocols and maintenance obligations. Smaller files,
+   more passing checks or more captured data do not establish reduced complexity or useful progress.
+   A budget/threshold breach, an unplanned cross-system model or data platform, or repeated work
+   repairing verification without advancing the intended decision stops that expansion and
+   triggers replanning. Do not silently raise limits or schedule the next slice to justify sunk cost.
+5. **Close the bounded outcome.** Report delivered behavior/findings, remaining uncertainty and
+   supporting-system cost separately. Main-gate chooses and explains the smallest sufficient next
+   step within authorization; it does not delegate routine engineering decisions back to the user.
+   A change to the user's requested outcome, accepted fidelity or explicit budget needs the user's
+   decision. Retain failures and required evidence: narrower scope cannot turn missing evidence into
+   PASS or silently weaken a contract. Deferred work is explicit and is not an automatic future queue.
+
 ### Issue Anatomy
 
 Every executable Issue carries, in its body:
 
 ```text
 Goal
+Product constraint (decision, minimum evidence, non-goals, cumulative budget, stop/replan thresholds)
 Accepted base / Context
 Owned paths and shared-path needs
 Acceptance criteria and commands
@@ -174,7 +211,8 @@ Main-gate-authored changes still require another independent reviewer.
 
 #### Dispatch and Execution
 
-Before dispatch, main-gate checks the Issue's scope, dependencies, authorization and competing owners,
+Before dispatch, main-gate checks the Issue's [product constraint](#product-constraint-workflow),
+scope, dependencies, authorization and competing owners,
 then selects an available isolated worktree under [the environment rules below](#worktree-selection-and-retirement).
 Create the task with the Issue number and outcome in its title. The initial message names the Issue,
 selected checkout, accepted base, local ownership constraints, stopping condition, and exact main-gate
