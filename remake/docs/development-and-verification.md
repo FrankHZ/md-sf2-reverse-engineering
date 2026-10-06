@@ -5209,13 +5209,15 @@ it; production/API changes or broader acquisition need their own ownership decis
 The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations,
 occurrence admission, scope/session/latest-visit identity, actual texture validation, independent
 logical inventory/layer geometry, visual source/layout/atlas/required-word/field-death qualification,
-counted checks/witness/family finalization, modern required-child/report-integrity validation and
+counted checks/witness/family finalization, modern assertion/coverage assembly and
+required-child/report-integrity validation and
 the separate scene/audio material-origin judgments run in
 [`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
 [`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
 SQLite selection/prefix counts and detached report publisher remain the public route. Already
-extracted Python families remain in Python. Remaining #638 transport/budget/report/CLI work migrates
-in later bounded C# slices; documentation navigation is still outstanding.
+extracted Python families remain in Python. Work on #638 stops after this assembly slice; remaining
+transport/budget/outer-report/CLI migration and documentation navigation are deferred. The Issue
+remains open and the overall refactor is not complete.
 
 After loading the ignored environment in the same shell, build once for the current checkout:
 
@@ -5479,7 +5481,7 @@ consumed report/reference facts and factual deferred reads. `RequiredObligations
 `ReportIntegrity.cs` and `ReportIntegrityOperands.cs` own family construction, ordered integrity
 checks and their operand semantics. A complete integrity invocation uses one child, including its
 required-child calculation; standalone family calculation uses one child. Matrix aggregation's
-Python `verdict`, report construction, source acquisition and publication are unchanged.
+Python `verdict`, outer report construction, source acquisition and publication remain separate owners.
 
 Reproduce the bounded migration controls from the retained
 `local/issue638/csharp-report-integrity-01/` descriptors after building. `common.py` loads only the
@@ -5538,6 +5540,62 @@ standalone integrity calls have no new automatic cap, while an explicitly suppli
 budget retains its child observation and cancellation behavior. No full modern/matrix acquisition,
 H4/native/Godot/H3 or aggregate suite is implied. Preserve original C05/A Unknowns, previous accepted
 receipts and completed upstream-provenance failures. This migration does not accept whole-route H4.
+
+### H4 report assembly controls
+
+`compare_modern` supplies one explicit private assembly session through its decorator. The session
+uses `h4_report_assembly.py` and `ReportAssembly.cs` for check classification, coverage and summary;
+existing file/SQLite reads, assertion/group writes, outer metadata and final integrity rejection
+remain in Python. The [source map](../../docs/operations/bounded-inspection-and-review.md#h4-modern-assertion-and-coverage-assembly)
+defines the exact boundary. The private source-exchange extraction is shared only with integrity;
+each family retains its own reply validator and public entry points.
+
+The retained reproduction owner is `local/issue638/csharp-report-assembly-01`. `common.py` loads
+the actual nested-check, coverage and summary regions from Git object
+`3ac49ad651f3d9aa011d55b8eb6c21333e47d54c`. One authored `pilot-01/inputs.json` covers eight checks
+and three parents. The earlier integrity pilot descriptor is reused read-only for shared-helper
+and caller seams; there is no new capture/source acquisition. Preserve complete ordered structures,
+exception types/messages, reached reads and raw SQLite prefixes, not just matching verdicts.
+
+After loading the ignored environment and building the existing tool above, run only the affected
+descriptor into a fresh output, for example:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 local/issue638/csharp-report-assembly-01/measure.py <receipt> `
+  uv run python -X utf8 local/issue638/csharp-report-assembly-01/lazy_storage.py <fresh-output>
+```
+
+- `pilot.py` and `controls.py`: applicability/null transitions, missing reasons, provenance/file
+  fallbacks, ordered parents/first layer, native numeric/container equality and Counter keys.
+- `lazy_storage.py`: actual spool read/close order, skipped tails, late source failures, assertion
+  and group append/readback failure prefixes, required-copy and count-read errors.
+- `lifetime.py`: one and sixteen successive early-mismatch checks with real nested spools; compare
+  demanded reads and live cursors, zero codec references and weak-reference survivors after each
+  check. Both sides retain peak4 cursors in each case and close all readers.
+- `shared_integrity.py`: only the affected normal, paged, nested-release, source cancellation and
+  malformed-release controls against the accepted Python exchange; prior broad batches are not repeated.
+- `callers.py`: actual initialization, first six admission checks, nested missing adapter, coverage,
+  summary and final rejection statements. Authored remaining child checks complete the contract.
+  Compare full publication/detached readback and rejection before publication. `callers_package.py`
+  repeats only the complete publication case from `remake/` with the `../local/...` driver path.
+- `pages.py`:260 distinct authored stored result labels exercise bounded Counter paging; this is
+  aggregation compatibility, not a valid gameplay verdict fixture.
+- `protocol.py`: phase/template/count/key/read/release/child-exit/cancel-ack faults block publication,
+  preserve storage prefixes, stop children and retain the primary source error on cancel failure.
+- `scope.py`: exact AST comparison outside the allocated regions, including unchanged gameplay,
+  nested missing, outer metadata/equivalence and final rejection; new handwritten owners stay below1000 lines.
+
+Each complete modern caller uses one assembly child and its existing separate integrity child.
+Source registries reset only at completed/cancelled operation boundaries after C# drops its operand
+reader; multi-check lifetime observations are required when that boundary changes. Standalone
+production use gains no automatic report-size admission cap. Controlled descriptors retain fresh
+ceilings of10MiB cumulative inputs,40MiB evidence,120s/control and256MiB live Python+C#, with
+300s/2GiB/1GiB new-cache limits for the existing locked build. Count all selected fixtures and
+generated work databases conservatively; record live-tree peaks separately from summed process
+peaks. No prior retention exception carries over. No full H4/matrix/native/Godot/H3 or helper-test
+aggregate follows from this slice. Preserve prior report-integrity failures, C05/A Unknowns and
+completed upstream-provenance failures; these controls establish tool compatibility only.
 
 ### Selected offline resource comparison
 

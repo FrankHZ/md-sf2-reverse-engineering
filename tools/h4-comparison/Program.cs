@@ -13,6 +13,7 @@ ResourceInventory? inventory = null;
 MaterialOrigins? materials = null;
 VisualSource? visualSource = null;
 ReportIntegrity? integrity = null;
+ReportAssembly? assembly = null;
 try
 {
     while (Console.ReadLine() is { } line)
@@ -46,6 +47,7 @@ try
                     string op when op.StartsWith("materials-", StringComparison.Ordinal) => (materials ??= new MaterialOrigins()).Handle(op, message),
                     string op when op.StartsWith("visual-", StringComparison.Ordinal) => VisualOperation(op, message),
                     string op when op.StartsWith("integrity-", StringComparison.Ordinal) => (integrity ??= new ReportIntegrity()).Handle(op, message),
+                    string op when op.StartsWith("assembly-", StringComparison.Ordinal) => (assembly ??= new ReportAssembly()).Handle(op, message),
                     _ => comparison.Handle(message)
                 };
             }

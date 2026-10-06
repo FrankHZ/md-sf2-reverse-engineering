@@ -49,7 +49,7 @@ def _resource_reply(operation, reply):
     if operation.startswith("integrity-") and reply == {"operandError": "AllySliceKeyError"}:
         raise KeyError(slice(None, 3, None))
     detailed = operation.startswith(
-        ("identity-", "inventory-", "visual-", "integrity-")
+        ("identity-", "inventory-", "visual-", "integrity-", "assembly-")
     ) and set(reply) == {
         "operandError",
         "operandMessage",
@@ -211,6 +211,10 @@ def _resource_reply(operation, reply):
         validate_reply(operation, result)
     elif operation.startswith("visual-"):
         from sf2tool.h4_visual_source import validate_reply
+
+        validate_reply(operation, result)
+    elif operation.startswith("assembly-"):
+        from sf2tool.h4_report_assembly import validate_reply
 
         validate_reply(operation, result)
     elif operation.startswith("integrity-"):

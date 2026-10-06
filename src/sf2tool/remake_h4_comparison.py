@@ -26,6 +26,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2tool.h3.rng import _rng_step
+from sf2tool.h4_report_assembly import assembly_session as _assembly_session
 from sf2tool.paths import repo_path
 from sf2tool.remake_asset_build import (
     ACCEPTED_UPSTREAM_REPOSITORY,
@@ -2686,6 +2687,7 @@ def _capture_outcome(actual, outcome_path):
     )
 
 
+@_assembly_session(_RecordSpool, _bounded_list, _group_rows, OWNER)
 def compare_modern(
     ref,
     actual_path,
@@ -2713,6 +2715,8 @@ def compare_modern(
     field_context=None,
     scene_context=None,
     turn_context=None,
+    *,
+    _assembly=None,
 ):
     actual = read(actual_path)
     outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
@@ -2794,62 +2798,9 @@ def compare_modern(
         if admission_context is not None and "opening" in admission_context
         else None
     )
-    assertions = _bounded_list()
-    obligations = {}
-
-    def check(
-        layer,
-        name,
-        expected,
-        value,
-        location,
-        original=None,
-        applicability="applicable",
-        reason="semantic assertion",
-        parent=None,
-        missing_side=None,
-        actual_file=None,
-    ):
-        # Applicability precedes evaluation. Original diagnostics keep their raw mismatch.
-        if value is None and applicability == "applicable":
-            applicability = "required-unobserved"
-            if reason == "semantic assertion":
-                reason = "Actual field absent at " + location
-        result = (
-            "Unavailable"
-            if value is None or applicability == "required-unobserved"
-            else "PASS"
-            if value == expected
-            else "FAIL"
-        )
-        assertions.append(
-            dict(
-                layer=layer,
-                assertion=name,
-                applicability=applicability,
-                original=original
-                or dict(owner=OWNER, commit="87528953c6ee6d2631e24663a6d2e846be4c22ce"),
-                actual=dict(
-                    file=actual_file
-                    or (
-                        outcome_path
-                        if location.startswith("outcome.")
-                        else host_log
-                        if location.startswith("host-log")
-                        else actual_path
-                    ).as_posix(),
-                    record=location,
-                ),
-                expected=expected,
-                actualValue=value,
-                result=result,
-                reason=reason,
-                **({"parent": parent} if parent else {}),
-                **({"missingSide": missing_side or "actual"} if result == "Unavailable" else {}),
-            )
-        )
-        if parent:
-            _group_rows(obligations, parent).append(assertions[-1])
+    _assembly.begin(actual_path, outcome_path, host_log)
+    assertions = _assembly.assertions
+    check = _assembly.check
 
     first = samples[0]["state"]
     admission = ref["admission"]
@@ -4578,42 +4529,9 @@ def compare_modern(
         for row in outcome.get("records", [])
         if row.get("label") == "action-selected"
     )
-    coverage = _bounded_list()
-    for name, children in obligations.items():
-        required_children = _bounded_list(
-            c for c in children if c["applicability"] != "historical-diagnostic"
-        )
-        child_counts = dict(Counter(child["result"] for child in required_children))
-        parent_result = verdict(child_counts)
-        coverage.append(
-            dict(
-                layer=children[0]["layer"],
-                assertion=name,
-                applicability="required-unobserved"
-                if parent_result == "Unavailable"
-                else "applicable",
-                original=dict(
-                    owner=OWNER, binding="required reached winning-profile child obligations"
-                ),
-                actual=dict(file=actual_path.as_posix(), record="assertions[parent=" + name + "]"),
-                expected="all applicable required children PASS",
-                actualValue=child_counts,
-                result=parent_result,
-                reason="Closed required child set is owned by the continuous contract; "
-                "candidate input equality cannot substitute for missing actual/source bindings",
-                children=[child["assertion"] for child in required_children],
-                historicalChildren=[
-                    child["assertion"]
-                    for child in children
-                    if child["applicability"] == "historical-diagnostic"
-                ],
-            )
-        )
-    required_rows = _bounded_list(
-        a for a in assertions if a["applicability"] != "historical-diagnostic"
-    )
-    counts = dict(Counter(a["result"] for a in required_rows))
-    result = verdict(counts)
+    coverage = _assembly.coverage()
+    summary = _assembly.summary()
+    counts, result = summary["counts"], summary["result"]
     report = dict(
         profile="modern-continuous",
         variant=actual.get("h4Variant"),
@@ -4692,13 +4610,9 @@ def compare_modern(
             operationFlowBinding=operation_flow,
         ),
         counts=counts,
-        historicalCounts=dict(
-            Counter(
-                a["result"] for a in assertions if a["applicability"] == "historical-diagnostic"
-            )
-        ),
+        historicalCounts=_assembly.historical_counts(),
         result=result,
-        milestonePass=result == "PASS",
+        milestonePass=summary["milestonePass"],
         rejections=rejections,
         deliveryNotifications=deliveries,
         equivalence=dict(
