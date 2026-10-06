@@ -46,7 +46,7 @@ def _resource_reply(operation, reply):
 
     if not isinstance(reply, dict):
         malformed()
-    detailed = operation.startswith(("identity-", "inventory-")) and set(reply) == {
+    detailed = operation.startswith(("identity-", "inventory-", "visual-")) and set(reply) == {
         "operandError",
         "operandMessage",
     }
@@ -62,6 +62,11 @@ def _resource_reply(operation, reply):
                 "ValueError": ValueError,
                 "IndexError": IndexError,
                 "OverflowError": OverflowError,
+                **(
+                    {"OSError": OSError, "FileNotFoundError": FileNotFoundError}
+                    if operation.startswith("visual-")
+                    else {}
+                ),
             }.get(name)
             if isinstance(name, str)
             else None
@@ -198,6 +203,10 @@ def _resource_reply(operation, reply):
         validate_reply(operation, result)
     elif operation.startswith("materials-"):
         from sf2tool.h4_materials import validate_reply
+
+        validate_reply(operation, result)
+    elif operation.startswith("visual-"):
+        from sf2tool.h4_visual_source import validate_reply
 
         validate_reply(operation, result)
     else:

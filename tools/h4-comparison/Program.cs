@@ -11,6 +11,7 @@ ResourceContext? context = null;
 ResourceValidation? validation = null;
 ResourceInventory? inventory = null;
 MaterialOrigins? materials = null;
+VisualSource? visualSource = null;
 try
 {
     while (Console.ReadLine() is { } line)
@@ -42,6 +43,7 @@ try
                     string op when op.StartsWith("identity-", StringComparison.Ordinal) => IdentityOperation(op, message),
                     string op when op.StartsWith("inventory-", StringComparison.Ordinal) => InventoryOperation(op, message),
                     string op when op.StartsWith("materials-", StringComparison.Ordinal) => (materials ??= new MaterialOrigins()).Handle(op, message),
+                    string op when op.StartsWith("visual-", StringComparison.Ordinal) => VisualOperation(op, message),
                     _ => comparison.Handle(message)
                 };
             }
@@ -67,6 +69,17 @@ catch (Exception e)
 }
 
 CountedChecks RequiredReport() => report ?? throw new InvalidDataException("Resource report not started");
+object? VisualOperation(string op, object? message)
+{
+    if (op == "visual-start")
+    {
+        if (visualSource is not null) throw new InvalidDataException("Visual sources already selected");
+        visualSource = new VisualSource(RequiredReport(), Operands.At(message, "pins"), Operands.At(message, "selectedMaps"),
+            (int)(System.Numerics.BigInteger)Operands.At(message, "integerDigitLimit")!);
+        return null;
+    }
+    return (visualSource ?? throw new InvalidDataException("Visual sources not selected")).Handle(op, message);
+}
 object? StartReport(object? message)
 {
     if (report is not null) throw new InvalidDataException("Resource report already started");

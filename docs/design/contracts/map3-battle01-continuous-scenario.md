@@ -1766,6 +1766,17 @@ observation and does not turn the retained mutable-layout Unknowns into acceptan
 [source correspondence](../../operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process)
 owns the bounded port review.
 
+Visual source qualification shares that same child and counted report. C# checks selected source
+bindings/pins, logical layout words, atlas metadata/recipe/visual equality, required block/tile words
+and the field-death extension's original spans and assignments. Python retains explicit selected
+file/Git/ROM reads and the established canonical/texture/compression decoders. Complete logical
+fields and encoded atlas text retain their equality semantics; byte measurements do not replace
+logical comparison with a new digest. Source-only preparation and the source-loaded memory boundary
+retain decoded state. Required-word checks precede actual-use/reduction inside their existing catch;
+field-death checks retain the three-frame extension distinct from base42 and continue later decodes
+after earlier false checks. Conditional IO and late read/decoder failure prefixes remain part of
+this offline contract. Constructed port controls add no original decoder or runtime acceptance.
+
 The separate `reached_materials` scene/audio origin report also uses that independent C# tool after
 the visual binding completes. Python retains selected file/Git/preflight/WAV reads and byte
 measurements. C# owns frozen base42/source/fingerprint/raster predicates, visible background and

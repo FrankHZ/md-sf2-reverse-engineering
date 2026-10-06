@@ -229,6 +229,41 @@ outputs, including malformed prefixes, duplicate/skew variants, repeated calls, 
 detached publication and child-budget failures. They do not replace original-game evidence or reopen
 historical full-route acceptance. Preserve discovered port/control/build failures beside corrections.
 
+Visual source qualification uses the complete `_reached_visual_materials` at accepted commit
+`b2747f473ab9b45791d639a3c0edd84c504b9c4d` as its canonical source. `h4_visual_source.py` retains
+selected path/Git/file/ROM/base64/hash operations and existing source decoder calls. `VisualSource`,
+`FieldDeathSource` and `VisualSourceOperands` own qualification in the already shared visual child;
+there is no additional child per source, map or frame.
+
+| Canonical region | Current owner and preserved boundary |
+| --- | --- |
+| Enclosing admission2321–2389 | Existing wrapper, enabled-family selection, scene observations, absent selection/prerequisites and counted report remain in the caller. |
+| Source selection/pins2415–2453 | Python resolves selected paths and reads world/scene/process; C# selects consumed map IDs, compares bindings and pins, and publishes the same three family checks. Git HEAD/diff and ROM read remain unconditional; hashing follows the original conjunction. |
+| Canonical/decoder preparation2454–2499 | Python retains canonical bytes/digest, asset lookup, compiler and `prepare_visuals`; C# checks the canonical manifest and flattened logical layout words. Real deferred layout iteration uses the accepted inventory operand envelope at the original check boundary. |
+| Metadata/atlas2500–2542 | Both metadata JSON reads precede qualification; C# controls the conditional palette digest and asset-source digest access. Python decodes source/base64/PNG through existing adapters. C# combines exact byte measurements, complete non-payload visual structure and encoded atlas-text equality. |
+| Source-loaded/source-only2544–2547 | Python retains prepared decoder/source state through the existing budget checkpoint and source-only return. Its physical-memory number is an observation, not a deterministic comparison value. |
+| Required source word2610–2619 | Native selected-map lookup remains inside the original per-requirement catch. C# applies numeric range, integer/index and word equality with the current weight/locator before actual-use checks and reduction. |
+| Field-death source2638–2677 | C# checks source pins, first-three ally assignments, enemy sprite103, exact span dictionaries and decoded raster/digest facts. Python retains the63-based pointer recipe,16-color palette,576-byte decode and two288-byte halves. False cumulative checks do not skip later decodes; each byte comparison controls its own digest access. |
+| Outer catch/finalization2678 onward | Existing caller distinguishes missing source prerequisites from contradictions and retains preceding checks. Required-word and field-death errors stay inside their original evaluated scopes. |
+
+Source definitions cross once without raw ROM/raster payloads; layout/visual equality is not replaced
+by new hashes. Encoded atlas text remains distinct from decoded PNG equality, including field
+presence and type. Python keeps objects consumed later by the accepted identity/inventory/reducer;
+those owners and `reached_materials` are unchanged. Work is linear in selected layouts, blocks,
+metadata/atlas bytes and field spans, plus reached requirements and existing decoder work. Atlas
+decode/scale/encode buffers coexist with the retained ROM and source objects at the memory checkpoint.
+
+The [verification route](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
+names full ordered caller reports, actual IO order, late SQLite/decoder failures, detached publication
+and protocol/budget controls. Preserve the initial late-layout failures: eagerly transporting an
+unconsumed layout changed its exception boundary. Selection now sends only each consumed identifier;
+layout qualification uses the existing deferred iteration mechanism. Constructed adapters establish
+port correspondence only. Original source-pin failures, field-raster malformed-base64 fatal behavior
+and historical runtime Unknowns remain explicit. The retained control fixture copies exceeded the
+10MiB cumulative selected-input budget; this is a resource-plan miss, not a passing budget gate.
+The approved12MiB finishing allocation permits retained copies and small stream/fault descriptors
+only; all later controls reuse existing sources and retain the original evidence/runtime ceilings.
+
 The scene/audio material-origin binding has a separate uncompressed report. Review the complete
 `reached_materials` at accepted commit `3471eafd38627d9624d2d688de17039fd40f456e`, lines2690–3066;
 the wrapper preserves the accepted `reached_visual_materials` composition before this phase.

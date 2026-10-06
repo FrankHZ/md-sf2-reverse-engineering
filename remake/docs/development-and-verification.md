@@ -5208,7 +5208,8 @@ it; production/API changes or broader acquisition need their own ownership decis
 
 The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations,
 occurrence admission, scope/session/latest-visit identity, actual texture validation, independent
-logical inventory/layer geometry, counted checks/witness/family finalization and the separate
+logical inventory/layer geometry, visual source/layout/atlas/required-word/field-death qualification,
+counted checks/witness/family finalization and the separate
 scene/audio material-origin judgments run in
 [`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
 [`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
@@ -5413,6 +5414,48 @@ the corrected pilot requires scene/audio success before broader controls. Keep t
 beside the later results; do not rerun completed broad controls just to replace them. The same
 10MiB input/40MiB evidence/120s/256MiB control and300s/2GiB/1GiB build ceilings apply. Report selected
 dimensions, source/header amplification, both sequential child lifetimes and measured costs.
+
+Visual source qualification uses `h4_visual_source.py` and `VisualSource`/`FieldDeathSource` in the
+existing visual child. Python retains explicit IO and existing decoders; C# owns selection/pin,
+logical layout, atlas recipe, required-word and field-death predicates and ordered checks. The
+source-loaded budget baseline includes retained prepared source/decoder state. No source-only or
+early return leaks the child. This does not change the accepted inventory, identity, reduction,
+scene-observation or separate scene/audio origin owners.
+
+The private reproduction owner is `local/issue638/csharp-visual-source-01`. Load the ignored
+environment and build as above; invoke `uv run --locked python
+local/issue638/csharp-visual-source-01/<driver>.py <fresh-name>` from the repository root:
+
+- `pilot.py`: tiny complete/detached report, source-only, absent selection and prerequisites.
+- `controls.py`: enabled/scoped families, real pin mismatch, layout/metadata/atlas/raw-text drift,
+  required-word range/conversion and field-death assignment/span/raster absence and malformed input.
+- `late_layout.py` and `nested_layout.py`: actual SQLite-backed layouts with late outer/nested
+  reads. Compare complete retained reports for KeyError/ValueError/OSError/FileNotFoundError.
+- `io_decoder.py`: selected byte-read order, short-circuited hashes, false field pins still decoding,
+  and second atlas/field decode failures retaining the earlier checks.
+- `stream.py`:260 requirements and260 uses through the real JSONL reader/SQLite, complete reports
+  and detached readback. Also invoke from `remake/` with the driver path prefixed by `../`.
+- `protocol.py`: malformed boolean/null/admission/count/operation/error replies, exited child and
+  combined-memory budget failure; none may publish a successful report.
+
+These direct observations use authored ROM/pixel bytes and explicit constructed decoder adapters,
+including synthetic matching pins where required to reach later checks. They do not reproduce the
+original decoder/runtime. Source-only memory values are retained and compared as positive measured
+integers; all deterministic report fields and ordered checks compare exactly. Existing malformed
+field-raster base64 is fatal in both callers through the accepted counted-error protocol; that owner
+is outside this slice. Keep the original-pin mismatch and historical C05/A/#610 failures/Unknowns.
+
+Use `measure.py <receipt-name> <command...>` for corrected live-tree memory/time receipts. Preserve
+the initial C# name-collision build/lint failure and two completed late-layout mismatches beside
+their narrow corrections; do not rerun the completed broad controls. Dimensions are at most two
+64×64 layouts, two9-word blocks per map, three576-byte field frames and260 repeated requirement/use
+rows. The eight IO controls mistakenly retained separate authored fixtures: cumulative source
+copies11,067,223B exceeded the10MiB budget by581,463B. Preserve and report this budget miss; subsequent
+stream/fault controls reuse an existing source fixture. The independently approved12MiB cumulative
+retention exception covers existing copies and small stream/fault descriptors only, with no further
+source copying or acquisition. Keep40MiB total evidence,120s/control and
+256MiB live Python+C# ceilings, with300s/2GiB/1GiB cache limits for the existing locked build. A
+passing behavioral comparison does not convert the cumulative input-budget exception into PASS.
 
 ### Selected offline resource comparison
 
