@@ -103,18 +103,21 @@ snapshots, retaining completed results and failures.
 
 ### H4 Remaining Migration and Resource Process
 
-The remaining #638 responsibilities migrate to C#: resource judgment/reduction first, then remaining
-transport, budgets, report orchestration and CLI, with documentation navigation still in scope.
+The remaining #638 responsibilities migrate to C#: inventory judgment, transport, budgets, report
+orchestration and CLI, with documentation navigation still in scope.
 Already extracted Python comparison families remain accepted Python owners until actual later use
 justifies revisiting them. The existing `sf2` facade may continue to invoke those families.
 
 `tools/h4-comparison/` is an independent verification executable with no production-engine reference.
 `ResourceComparison.cs` owns resource source/pair events and ordered requirement reduction;
-`Operands.cs` owns only their operand operations; `Program.cs` handles the fixed resource-phase stream.
-`src/sf2tool/h4_dotnet.py` owns one child per reached-resource phase and the existing Python caller
-retains source decoding, SQLite variants/prefix counts and report publication. Selected decoded
-sprite/portrait entries cross once per phase; candidate batches have at most256 rows and target1MiB
-encoded data (a single row may exceed that target). No raw capture or whole relation crosses the pipe.
+`SceneObservations.cs` owns reached fairy/field-death observations; `CountedChecks.cs` owns their
+shared counted report. `Operands.cs` and `SceneOperands.cs` supply the respective Python operand
+operations; `Program.cs` handles the fixed stream. `src/sf2tool/h4_dotnet.py` defers startup until the
+first exchange, then shares one child across scenes, checks and reduction for the binding call.
+The Python caller retains source decoding, inventory predicates, SQLite variants/prefix counts and
+report publication. Selected decoded sprite/portrait entries cross once per call. Input checks,
+scene rows, candidate batches and drained report rows have at most256 rows and target1MiB encoded
+data (a single row may exceed that target). No raw capture or whole relation crosses the pipe.
 
 Review the canonical old regions at commit `9683a98b5472fb0aceb43c9a21299a87a10c9d93`,
 `src/sf2tool/remake_h4_comparison.py`: `_resource_source_events`2259–2297,
@@ -131,6 +134,28 @@ Review the canonical old regions at commit `9683a98b5472fb0aceb43c9a21299a87a10c
 | First error scan and first locator | `scan` plus the bridge's ordered SQLite iterator; scan stops before evaluating later rows. |
 | Prefix multiplicity and ordered checks/counts | Python `prefix_count` supplies weights to `accumulate`; C# reduces existing distinct variants, never raw candidate pairs. |
 | Partial failing events, final diagnostic, total/executed counts | `finish`; the Python caller attaches the unchanged identity, key and requirement locator. |
+
+For the remaining nested resource judgments, use the complete `reached_visual_materials` at accepted
+commit `fcc8d22ab32b8a504947d7cc28abbc113a16fad1`: `check`2329–2341,
+`evaluated`2348–2357 (including its decorator), `finish`2359–2380 and `scene_uses`2382–2479.
+The caller's early returns and captured `enabled`, `weight`, `locator`, `counted`, `witness_counts`
+and `result` state are part of this comparison, not independent function examples.
+
+| Original responsibility | Current correspondence and acceptance boundary |
+| --- | --- |
+| Enabled-family filtering, equality-to-false normalization and current weight | `CountedChecks.Check`; non-string scopes match no string family. False/zero, null and all other values normalize separately. A zero-weight first occurrence still creates its key. |
+| First-seen counted keys and eight witnesses per key/outcome | `CountedChecks` retains insertion order and global witness order; explicit identity and current locator remain separate optional fields. |
+| Python predicate exception boundary | `ResourceComparison.evaluated` forwards the caught class and current closure weight/locator; `CountedChecks.Error` owns absent versus malformed classification for each dependent family. Fatal classes propagate. |
+| Fairy active/dust age, integer frames and mount texture/visibility | `SceneObservations.Accept` with per-instance and per-dust `Evaluated`; a body assigned before a failing wing remains required. `SceneOperands` preserves indexing, conversion and short-circuit operand values. |
+| Field-death channel, spin/exit mounts and each actor's texture | `SceneObservations.Accept` retains occurrence/actor boundaries, first matching ally, enemy fallback, phase/facing/frame selection and operand evaluation order. Python-style string conversion is restricted to this scene join. |
+| Family totals and empty/unavailable/contradicted verdicts | `CountedChecks.Finish` followed by bounded drains; the Python caller updates the existing result, preserving mutable-map metadata and its independent contribution. |
+| No selection, source-only and prerequisite exits | The wrapper closes the deferred child on every exit. No selection without map checks starts no child; source-only preserves its original return shape and Python-only private-memory baseline. Pending report records need no finalization when that report is discarded. |
+
+Each call owns its state; no child or counted state survives to another call. Final check/witness
+drains feed the existing SQLite-backed publication lists, without a duplicate full report array.
+The selected scene definition includes only healing/field-death operands; scene rows exclude other
+top-level channels. Fixed acknowledgments, final metadata and every drain are typed protocol replies;
+a malformed envelope, non-progressing drain or inconsistent final row count fails the operation.
 
 Use the [resource-tool workflow](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
 for build and direct verification. Controls use constructed, bounded inputs and complete ordered
