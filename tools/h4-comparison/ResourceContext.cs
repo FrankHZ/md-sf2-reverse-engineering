@@ -7,9 +7,26 @@ namespace H4Comparison;
 
 internal sealed class ResourceContext(CountedChecks checks, IEnumerable<object?> enabled, int digitLimit)
 {
-    private readonly Dictionary<Key, object?> programs = [];
-    private readonly Dictionary<Key, (object? Sequence, object? Map)> visits = [];
-    private readonly HashSet<Key> sessions = [];
+    // Python hash collections accept the identical object before testing equality,
+    // including a shared JSON NaN. Keep this context rule separate from the older
+    // resource reducer's key contract; scalar NaN equality remains false.
+    private readonly struct ContextKey(object? value) : IEquatable<ContextKey>
+    {
+        private readonly object? value = value;
+        public bool Equals(ContextKey other) => ReferenceEquals(value, other.value) || Equal(value, other.value);
+        public override bool Equals(object? other) => other is ContextKey key && Equals(key);
+        public override int GetHashCode() => new Key(value).GetHashCode();
+    }
+
+    private static ContextKey ContextHash(object? value)
+    {
+        HashKey(value); // Preserve the detailed unhashable-operand diagnostic.
+        return new ContextKey(value);
+    }
+
+    private readonly Dictionary<ContextKey, object?> programs = [];
+    private readonly Dictionary<ContextKey, (object? Sequence, object? Map)> visits = [];
+    private readonly HashSet<ContextKey> sessions = [];
     private readonly List<object?> order = [];
     private IEnumerator<(object? Sequence, object? Map)>? visitReader;
     private object? pendingVisit;
@@ -20,13 +37,13 @@ internal sealed class ResourceContext(CountedChecks checks, IEnumerable<object?>
     private bool projectionKnown;
 
     public int SessionCount => sessions.Count;
-    public bool HasSession(object? value) => sessions.Contains(HashKey(value));
+    public bool HasSession(object? value) => sessions.Contains(ContextHash(value));
 
-    public void Program(object? row) => programs[HashKey(Field(row, "id"))] = row;
+    public void Program(object? row) => programs[ContextHash(Field(row, "id"))] = row;
 
     private void Visit(object? sequence, object? map)
     {
-        var key = HashKey(sequence);
+        var key = ContextHash(sequence);
         visits[key] = visits.TryGetValue(key, out var old) ? (old.Sequence, map) : (sequence, map);
     }
 
@@ -44,7 +61,7 @@ internal sealed class ResourceContext(CountedChecks checks, IEnumerable<object?>
             else if (Equal(Get(entry, "Detail"), "LoadSceneMap") && Truth(Get(entry, "Program")))
             {
                 var loc = Field(entry, "Program");
-                var key = HashKey(Field(loc, "Program"));
+                var key = ContextHash(Field(loc, "Program"));
                 if (!programs.TryGetValue(key, out var program)) throw new OperandError("KeyError");
                 var instructions = Field(program, "instructions");
                 var instruction = Integer(Field(loc, "Instruction"), digitLimit);
@@ -96,20 +113,20 @@ internal sealed class ResourceContext(CountedChecks checks, IEnumerable<object?>
             else lo = middle + 1;
         }
         var visit = lo > 0 ? order[lo - 1] : null;
-        return (visit, visits.TryGetValue(HashKey(visit), out var found) ? found.Map : null);
+        return (visit, visits.TryGetValue(ContextHash(visit), out var found) ? found.Map : null);
     }
 
     public void Session(object? row)
     {
         var state = Default(row, "state", Dict());
         var session = Get(state, "sessionId");
-        if (Truth(session)) sessions.Add(HashKey(session));
+        if (Truth(session)) sessions.Add(ContextHash(session));
     }
 
     public bool BeginScope(object? scope)
     {
         if (scope is null) return false;
-        foreach (var session in Items(Field(scope, "contextSessions"))) sessions.Add(HashKey(session));
+        foreach (var session in Items(Field(scope, "contextSessions"))) sessions.Add(ContextHash(session));
         return NextScope();
     }
 
