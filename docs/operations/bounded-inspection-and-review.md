@@ -253,6 +253,20 @@ those owners and `reached_materials` are unchanged. Work is linear in selected l
 metadata/atlas bytes and field spans, plus reached requirements and existing decoder work. Atlas
 decode/scale/encode buffers coexist with the retained ROM and source objects at the memory checkpoint.
 
+Bounded sequences nested in visual definitions, assignments or other selected source operands stay
+in the Python reader. Complete native dictionary/list structure and opaque sequence references cross
+the pipe; C# requests a sequence length, next item or indexed item only when the original predicate
+reaches it. One suspended source predicate resumes from each factual reply without replay, storage
+mutation or another child. Dictionary cardinality/order, list-versus-bounded equality dispatch,
+strict iteration and source-word indexing retain their own short circuits. Encoded atlas-text
+equality is evaluated at its original dictionary field, before any later lazy field. Skipped fields
+and unequal lengths do not open an iterator; unequal elements do not read the remaining tail.
+Python cancels a suspended predicate before propagating a source-read exception to the existing
+catch, and closes per-operation iterators on success or failure. Sequence/reference/cursor replies
+are validated before use. This source-only continuation does not change the accepted inventory
+protocol or underlying reader. Preserve the root's seven serialization/early-read counterexamples
+and their injection counts beside the narrow corrected observations.
+
 The [verification route](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
 names full ordered caller reports, actual IO order, late SQLite/decoder failures, detached publication
 and protocol/budget controls. Preserve the initial late-layout failures: eagerly transporting an

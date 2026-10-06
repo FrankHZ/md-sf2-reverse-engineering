@@ -2388,7 +2388,9 @@ def _reached_visual_materials(
     try:
         from sf2tool.h4_visual_source import VisualSources
 
-        sources = VisualSources(resources, read, dict(upstream=UPSTREAM, rom=ROM)).prepare(
+        sources = VisualSources(
+            resources, read, dict(upstream=UPSTREAM, rom=ROM), _RecordSpool
+        ).prepare(
             selection, source_root, canonical_content, tileset_metadata, palette_metadata,
             scope, source_only, enabled, budget, _private_bytes,
         )

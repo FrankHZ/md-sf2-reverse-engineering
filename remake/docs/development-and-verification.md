@@ -5437,6 +5437,17 @@ local/issue638/csharp-visual-source-01/<driver>.py <fresh-name>` from the reposi
   and detached readback. Also invoke from `remake/` with the driver path prefixed by `../`.
 - `protocol.py`: malformed boolean/null/admission/count/operation/error replies, exited child and
   combined-memory budget failure; none may publish a successful report.
+- `correction_cases.py`: the seven independent-review counterexamples using real SQLite outer/inner
+  visual blocks, skipped extra fields, field assignments and reached ValueError/FileNotFoundError.
+  Both arms must reach each intended error; skipped fields must have zero reads.
+- `correction_narrow.py`: detached/source-only/disabled-map boundaries, unequal first block or
+  length, atlas encoded-text/null short circuits, assignment read errors and skipped span extras.
+  Compare exact read prefixes and require every opened iterator to close.
+- `correction_faults.py`: malformed demand-read sequence/reference/action/cursor replies must
+  prevent publication and stop the child; its `cursor-source` case rejects a changed source within
+  an active cursor. These controls reuse the existing source fixture.
+- `correction_shapes.py`: normal behavior and malformed bounded sequence rows/provenance/IDs/span
+  values retain the original field-access, unhashable-key and equality exception boundaries.
 
 These direct observations use authored ROM/pixel bytes and explicit constructed decoder adapters,
 including synthetic matching pins where required to reach later checks. They do not reproduce the
@@ -5456,6 +5467,9 @@ retention exception covers existing copies and small stream/fault descriptors on
 source copying or acquisition. Keep40MiB total evidence,120s/control and
 256MiB live Python+C# ceilings, with300s/2GiB/1GiB cache limits for the existing locked build. A
 passing behavioral comparison does not convert the cumulative input-budget exception into PASS.
+Keep the worker's original80/eight and independent review's15/five passing observations, plus the
+seven independent-review failures, unchanged. The source continuation correction reruns only those
+seven failures and the affected narrow controls; it does not reopen the completed broad batches.
 
 ### Selected offline resource comparison
 

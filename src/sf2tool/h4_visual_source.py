@@ -10,7 +10,7 @@ import subprocess
 import sys
 from types import SimpleNamespace
 
-from sf2tool.h4_dotnet import ResourceProcessError, _batches, _selected
+from sf2tool.h4_dotnet import ResourceProcessError, _selected
 from sf2tool.h4_inventory import _pack
 from sf2tool.h4_materials import _measure
 from sf2tool.paths import repo_path
@@ -41,16 +41,35 @@ _EMPTY = {
     "visual-field-span",
     "visual-field-digest",
     "visual-field-finish",
+    "visual-cancel",
 }
 
 
 def validate_reply(operation, result):
+    if isinstance(result, dict) and set(result) == {"sourceRead"}:
+        row = result["sourceRead"]
+        if (
+            isinstance(row, dict)
+            and set(row) == {"sequence", "source", "action", "index", "cursor"}
+            and type(row["sequence"]) is int and row["sequence"] > 0
+            and type(row["source"]) is int and row["source"] >= 0
+            and row["action"] in ("length", "next", "index")
+            and (type(row["index"]) is int or row["action"] == "index"
+                 and isinstance(row["index"], str))
+            and type(row["cursor"]) is int and row["cursor"] >= 0
+            and (row["action"] != "next" or row["index"] >= 0 and row["cursor"] > 0)
+            and (row["action"] == "next" or row["cursor"] == 0)
+            and (row["action"] != "length" or row["index"] == 0)
+        ):
+            return
+        raise ResourceProcessError("Malformed visual source read request")
     valid = (
         operation in _BOOLEAN
         and type(result) is bool
         or operation in _EMPTY
         and result is None
-        or operation == "visual-select"
+        or operation == "visual-read" and (result is None or type(result) is bool)
+        or operation in ("visual-select", "visual-read")
         and isinstance(result, list)
         and len(result) <= 256
         and all(type(value) is bool for value in result)
@@ -81,12 +100,79 @@ def _visual(value):
 
 
 class VisualSources:
-    def __init__(self, resources, read, pins):
+    def __init__(self, resources, read, pins, sequence_type):
         self.resources, self.read, self.pins = resources, read, pins
+        self.sequence_type = sequence_type
+        self.sequences, self.sequence_ids = [], {}
+
+    def operands(self, value):
+        references = []
+
+        def visit(value, path):
+            if isinstance(value, self.sequence_type):
+                index = self.sequence_ids.get(id(value))
+                if index is None:
+                    index = len(self.sequences)
+                    self.sequence_ids[id(value)] = index
+                    self.sequences.append(value)
+                references.append(dict(path=path, source=index, type=type(value).__name__))
+                return None
+            if isinstance(value, dict):
+                return {key: visit(item, [*path, key]) for key, item in value.items()}
+            if isinstance(value, list):
+                return [visit(item, [*path, i]) for i, item in enumerate(value)]
+            return value
+
+        return dict(value=visit(value, []), references=references)
 
     def send(self, operation, **values):
         self.resources.flush_checks()
-        return self.resources.exchange(dict(op="visual-" + operation, **values))
+        # Start has only fixed primitive configuration; subsequent source operands may
+        # contain the caller's bounded sequences, including nested unused fields.
+        message = dict(op="visual-" + operation, **values) if operation == "start" else dict(
+            op="visual-" + operation, operands=self.operands(values)
+        )
+        iterators, positions = {}, {}
+        sequence = 0
+        try:
+            result = self.resources.exchange(message)
+            while isinstance(result, dict):
+                request = result["sourceRead"]
+                sequence += 1
+                index = request["source"]
+                if request["sequence"] != sequence or index >= len(self.sequences):
+                    raise ResourceProcessError("Visual source read sequence/reference changed")
+                source, action = self.sequences[index], request["action"]
+                try:
+                    if action == "length":
+                        value = len(source)
+                    elif action == "index":
+                        value = source[request["index"]]
+                    else:
+                        cursor = request["cursor"]
+                        if positions.get(cursor, (index, 0)) != (index, request["index"]):
+                            raise ResourceProcessError("Visual source iterator position changed")
+                        if cursor not in iterators:
+                            iterators[cursor] = iter(source)
+                        try:
+                            value = dict(done=False, value=next(iterators[cursor]))
+                        except StopIteration:
+                            value = dict(done=True, value=None)
+                        positions[cursor] = (index, None if value["done"] else request["index"] + 1)
+                except (KeyError, IndexError, TypeError, ValueError, AttributeError,
+                        OverflowError, OSError):
+                    self.resources.exchange(dict(op="visual-cancel"))
+                    raise
+                result = self.resources.exchange(dict(
+                    op="visual-read", sequence=sequence, value=self.operands(value)
+                ))
+            validate_reply("visual-" + operation, result)
+            return result
+        finally:
+            for iterator in iterators.values():
+                close = getattr(iterator, "close", None)
+                if close is not None:
+                    close()
 
     def select(self, rows, key):
         # Select each source header before requesting the next source row. Layouts
@@ -227,8 +313,8 @@ class VisualSources:
                     else None,
                 )
 
-        for batch in _batches(definitions()):
-            self.send("definitions", rows=batch)
+        for definition in definitions():
+            self.send("definitions", rows=[definition])
         for row in world_maps if "map" in enabled else ():
             original = canonical_maps[int(row["id"].split("-")[-1])]
             layout = canonical_layouts[original["references"]["layout"]]
