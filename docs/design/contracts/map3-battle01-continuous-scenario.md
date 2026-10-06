@@ -558,6 +558,12 @@ The [walking module owners](../../operations/bounded-inspection-and-review.md#h4
 retain independent source, phase, normalized motion and consumed-gate contributions. Their structural
 source/interface controls do not add historical admission or natural-reach evidence.
 
+At these walking joins, numeric operands and boolean fields remain distinct: `actionCursor`,
+content numeric operands and raw motion/gate coordinates cannot use booleans, and `moving` must
+use an actual boolean. Valid numeric integer/float equality is retained. A present type contradiction
+contributes False independently before arithmetic normalization; another missing/None contribution
+cannot erase it. Existing missing-value and exact content-template comparison boundaries remain.
+
 The existing walking motion/readiness child compares active axes and direction, carried total travel
 and remaining distance in tile units, configured speed/acceleration operands, acceleration/deceleration,
 collision/obstruction and auto-facing gates. Total travel is not reconstructed from remaining distance.

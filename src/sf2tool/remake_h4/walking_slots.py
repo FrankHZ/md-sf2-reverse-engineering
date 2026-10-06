@@ -1,10 +1,11 @@
 """R1 pointer/template, phase and consumed walking gate joins by physical slot."""
 
-from .walking_motion import actual_movement, movement
+from .field_values import _field_equal
+from .walking_motion import actual_movement, movement, numeric_motion
 
 
 def matches(expected, value):
-    return None if value is None else expected == value
+    return None if value is None else _field_equal(expected, value)
 
 
 def walking_slots(
@@ -63,17 +64,22 @@ def walking_slots(
             content_ok = None
             try:
                 template = next(e for e in map3["entities"] if e["id"] == f"entity-{character}")
-                content_ok = template["actions"] == expected_actions + [
-                    dict(op="random-walk", x=center[0], y=center[1], radius=center[2]),
-                    dict(op="wait", ticks=next_wait),
-                    dict(op="jump", instruction=8),
-                ]
+                content_ok = _field_equal(
+                    expected_actions
+                    + [
+                        dict(op="random-walk", x=center[0], y=center[1], radius=center[2]),
+                        dict(op="wait", ticks=next_wait),
+                        dict(op="jump", instruction=8),
+                    ],
+                    template["actions"],
+                )
             except (KeyError, StopIteration):
                 pass
             values[2] = content_ok
             motion_parts.append(content_ok)
             observed = next((e for e in initial.get("entities", []) if e["slot"] == slot), {})
             admission = next((e for e in admitted.get("entities", []) if e["slot"] == slot), {})
+            motion_parts.extend(numeric_motion(state) for state in (observed, admission))
             cursor = 0 if offset == 0 else 9
             moving = (word(0), word(2)) != (word(12), word(14))
             for state in (observed, admission):
@@ -139,6 +145,10 @@ def walking_slots(
                         matches(0 if moving else raw[31] + delta, after.get("waitTimer"))
                     )
                     if moving:
+                        gate_parts.extend(
+                            not isinstance(after.get(key), bool)
+                            for key in ("x", "y", "targetX", "targetY")
+                        )
                         gate_parts.extend(
                             (
                                 matches(word(12), after.get("targetX")),

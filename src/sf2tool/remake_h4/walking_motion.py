@@ -1,5 +1,27 @@
 """Source and actual walking motion normalized by independent contribution."""
 
+_MOTION_OPERANDS = (
+    "x",
+    "y",
+    "targetX",
+    "targetY",
+    "velocityX",
+    "velocityY",
+    "travelX",
+    "travelY",
+    "accelerationX",
+    "accelerationY",
+    "speedX",
+    "speedY",
+    "flagsA",
+    "flagsB",
+)
+
+
+def numeric_motion(e):
+    """Keep present boolean contradictions before arithmetic erases their type."""
+    return not any(isinstance(e.get(key), bool) for key in _MOTION_OPERANDS)
+
 
 def movement(x, y, dx, dy, vx, vy, tx, ty, ax, ay, sx, sy, flags_a, flags_b):
     def sign(value):
@@ -39,23 +61,7 @@ def movement(x, y, dx, dy, vx, vy, tx, ty, ax, ay, sx, sy, flags_a, flags_b):
 
 def actual_movement(e):
     return movement(
-        *(
-            e.get(k)
-            for k in (
-                "x",
-                "y",
-                "targetX",
-                "targetY",
-                "velocityX",
-                "velocityY",
-                "travelX",
-                "travelY",
-                "accelerationX",
-                "accelerationY",
-                "speedX",
-                "speedY",
-            )
-        ),
+        *(e.get(key) for key in _MOTION_OPERANDS[:12]),
         int(e["flagsA"]) if e.get("flagsA") is not None else None,
         int(e["flagsB"]) if e.get("flagsB") is not None else None,
     )

@@ -600,7 +600,18 @@ The helper returns replace only enclosing early finalization: witness false or g
 None immediately invokes the original finalizer; caller returns directly to it. The two original
 plain-value assignments publish at the same points, so later missing data or caught errors cannot
 erase a known contradiction or close partial evidence. Walking passes unused later operands as
-None only when its existing `later` guard excludes their use. No comparison predicate changes.
+None only when its existing `later` guard excludes their use. The structural extraction changes no
+comparison predicate; its frozen reports remain separate from the typed-operand correction below.
+
+Walking's scalar and complete content-template comparisons reuse the existing `_field_equal`
+predicate from `field_values.py`, with walking's own None contribution handling. This preserves
+numeric integer/float equality and exact container shape/order while separating numeric operands
+from boolean fields. Raw actual/admission motion operands contribute a type contradiction before
+normalization can erase it; consumed movement coordinates do the same before progress arithmetic.
+These independent False contributions survive other missing operands. The correction changes no
+source seal, JOIN rule, diagnostic normalization, missing-template rule or historical evidence.
+Complete before/after type controls belong to `local/issue638/walking-types-01`, separately from
+the original structural reports.
 
 All mutable state and closures remain per call. Row iteration and bounded storage are caller-owned;
 modules do not close readers or publish reports. The existing detached bundle remains readable

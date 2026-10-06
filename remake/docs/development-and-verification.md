@@ -4865,6 +4865,13 @@ preserves the independent source/phase/motion/gate contributions and per-slot ex
 Its bounded source-derived/constructed controls remain separate from the accepted historical
 admission evidence and earlier missing-plus-contradiction corrections described below.
 
+Separate typed-operand controls under `local/issue638/walking-types-01` retain complete before/after
+reports for cursor, moving, raw motion, content template and consumed-gate comparisons. Boolean
+substitutes for numeric operands and numeric substitutes for moving are contradictions; valid
+integer/float equality and existing missing/None contributions remain. Type contradictions enter
+before normalization and cannot be hidden by another missing operand. The unchanged JOIN reports
+and existing witness seals are checked directly; the completed structural batch is not repeated.
+
 Use the complete modern material comparison and the same explicitly selected, sealed
 `--original-join-evidence-root` witness above. Its R1 checkpoint supplies the three live walking
 records; the [research owner](../../docs/research/map3-messenger-acceptance.md#walking-admission-continuation)
