@@ -571,6 +571,68 @@ The [text material contract](../design/contracts/map3-battle01-continuous-scenar
 and [verification owner](../../remake/docs/development-and-verification.md#continuous-text-material-comparison)
 retain PR601's accepted evidence, omissions/mixed counterexamples, completed failures and Unknowns.
 
+### H4 JOIN and Walking Module Route
+
+The real `plain_join_binding` and `walking_admission_binding` entries delegate to the JOIN and
+walking owners below. JOIN explicitly receives the existing reader, row iterator, requirement
+check and bounded-list factory; walking receives the reader, row iterator and bounded-list factory.
+The modern caller and its CLI selection path retain those same entries. Other comparison families,
+reference validation and transport policy remain in their existing owners.
+
+The complete correspondence is
+`1a0c6c94cacb2c4a5765c41962d424692737b8ef:src/sf2tool/remake_h4_comparison.py`,
+JOIN lines3696–4322 and walking lines4569–4880. Following separator lines stay in the comparator.
+Review every mapped body, including branches not exercised by the bounded controls.
+
+| Module in `src/sf2tool/remake_h4/` | Old regions | Body and state bridge |
+| --- | --- | --- |
+| `join_binding.py` | 3696–3732 | Worktree-local selection and per-call result/plain value/finalize closure. Explicit `set_plain` publishes the original consumer assignments into that closure. |
+| `join_witness.py` | 3733–3817 | Existing pair/material/raw seals, identities and selected original row predicates. Returns admission status to the same finalizer on early exits. |
+| `join_consumer.py` | 3818–3859,3914–4005,4320–4322 | Ordered actual samples, held interval, event lookup, input delivery and original catch/finalize boundary. |
+| `join_generation.py` | 3860–3913 | Late generation or early source request/helper lookup, returning the generation and source-operation closure with its selected program state. |
+| `join_audio.py` | 4006–4210 | Finite completion/restart interval and early/late helper predicates. Returns helper token/receipt interval only after the same guards; publishes updated plain input value before later exceptions. |
+| `join_caller.py` | 4211–4319 | Source tail, tick/follower/position/flag effects and actual anchors; missing caller operands return to immediate finalization. |
+| `walking_binding.py` | 4569–4677,4875–4880 | Per-call contribution lists/finalizer, R1 and content identity, eligible later sample and no-reinstall evidence. |
+| `walking_motion.py` | 4678–4712,4791–4813 | Same independent source/actual normalized motion contributions; no velocity-magnitude or frame-timing requirement. |
+| `walking_slots.py` | 4713–4790,4814–4874 | Physical/index/pointer/template joins, admission phase, independent motion and consumed gate contributions, preserving each slot's catch boundary. |
+
+The helper returns replace only enclosing early finalization: witness false or generation/audio
+None immediately invokes the original finalizer; caller returns directly to it. The two original
+plain-value assignments publish at the same points, so later missing data or caught errors cannot
+erase a known contradiction or close partial evidence. Walking passes unused later operands as
+None only when its existing `later` guard excludes their use. The structural extraction changes no
+comparison predicate; its frozen reports remain separate from the typed-operand correction below.
+
+Walking's scalar and complete content-template comparisons reuse the existing `_field_equal`
+predicate from `field_values.py`, with walking's own None contribution handling. This preserves
+numeric integer/float equality and exact container shape/order while separating numeric operands
+from boolean fields. Raw actual/admission motion operands contribute a type contradiction before
+normalization can erase it; consumed movement coordinates do the same before progress arithmetic.
+These independent False contributions survive other missing operands. The correction changes no
+source seal, JOIN rule, diagnostic normalization, missing-template rule or historical evidence.
+Complete before/after type controls belong to `local/issue638/walking-types-01`, separately from
+the original structural reports.
+
+All mutable state and closures remain per call. Row iteration and bounded storage are caller-owned;
+modules do not close readers or publish reports. The existing detached bundle remains readable
+after the input context closes. Source addresses/row ordinals locate the admitted witness and do
+not define gameplay legality. Original music completion remains Unknown and walking's hidden
+motion gate remains Inferred.
+
+Structural reproduction belongs to `local/issue638/join-walking-modules-01`: complete source/region
+and generated-body maps, ordered old/new reports, equality receipts and actual entry/lifetime
+observations. The four compact immutable witness files are selected byte-identically under this
+worktree's ignored inputs after their existing seals and identities pass. Embedded foreign paths
+are not followed. Reference operands, actual channels and content controls are explicitly
+constructed or derived from selected sealed rows; they are not a full accepted reference or
+historical capture comparison. The CLI seam uses its real argument parser and modern caller with
+controlled reference/outcome/settings dependencies, stopping after the two owned bindings.
+No whole raw actual/world, large reference/report, eager historical script or full run is read/run.
+The [JOIN verification route](../../remake/docs/development-and-verification.md#offline-plain-join-consumer-comparison)
+and [walking route](../../remake/docs/development-and-verification.md#offline-walking-admission-comparison)
+preserve the accepted historical evidence, partial-finalization and independent-contribution
+corrections, completed failures and Unknowns.
+
 ## Inspect Identity and Shape First
 
 For a clean committed candidate, reproduce its identity and changed shape before opening content:
