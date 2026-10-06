@@ -3,7 +3,7 @@ using static H4Comparison.Operands;
 
 namespace H4Comparison;
 
-// Only the visual-source predicates use these demand reads. The Python owner
+// Visual source and report integrity share these demand reads. The Python owner
 // retains its existing bounded sequences; no comparison verdict crosses the pipe.
 internal sealed class VisualSourceOperands
 {
@@ -33,6 +33,7 @@ internal sealed class VisualSourceOperands
     }
 
     public void Start() { sequence = cursor = 0; }
+    public int AllocateCursor() => ++cursor;
     public object Request => request ?? throw new InvalidDataException("Missing visual source continuation");
     public void Reply(object? message)
     {
@@ -66,7 +67,7 @@ internal sealed class VisualSourceOperands
         ? throw new OperandError("TypeError") : ResourceOperands.Less(a, b);
     public static BigInteger SourceInteger(object? value, int digits) => value is Source
         ? throw new OperandError("TypeError") : ResourceOperands.Integer(value, digits);
-    private async ValueTask<(bool Done, object? Value)> Next(object? value, int index, int iterator)
+    public async ValueTask<(bool Done, object? Value)> Next(object? value, int index, int iterator)
     {
         if (value is Source source)
         {
@@ -75,6 +76,13 @@ internal sealed class VisualSourceOperands
         }
         var list = (List<object?>)value!;
         return index >= list.Count ? (true, null) : (false, list[index]);
+    }
+
+    // Used only by report integrity; accepted visual operations keep their lifecycle.
+    public async ValueTask Release(object? value, int iterator)
+    {
+        if (value is Source source && await Read(source, "release", BigInteger.Zero, iterator) is not null)
+            throw new InvalidDataException("Report source release acknowledgement changed");
     }
 
     public async ValueTask<bool> Same(object? a, object? b)
@@ -87,7 +95,7 @@ internal sealed class VisualSourceOperands
             // Python list comparison delegates to the bounded sequence's __eq__.
             if (a is not Source) (a, b) = (b, a);
             if (await Length(a) != await Length(b)) return false;
-            var leftCursor = ++cursor; var rightCursor = ++cursor;
+            var leftCursor = AllocateCursor(); var rightCursor = AllocateCursor();
             for (var i = 0; ; i++)
             {
                 var left = await Next(a, i, leftCursor);
@@ -127,13 +135,15 @@ internal sealed class VisualSourceOperands
         string text => text.EnumerateRunes().Count(),
         _ => throw new OperandError("TypeError", $"object of type '{TypeName(value)}' has no len()")
     };
-    private static string TypeName(object? value) => value switch
+    public static string TypeName(object? value) => value switch
     {
         null => "NoneType", bool => "bool", BigInteger => "int", double => "float",
         string => "str", List<object?> => "list", Dictionary<string, object?> => "dict",
+        Source source => source.Type,
         _ => throw new InvalidDataException("Unknown visual source operand")
     };
     public static string AppendName(string prefix, object? value) => value is string text ? prefix + text
+        : value is Source ? throw new InvalidDataException("Unknown visual source operand")
         : throw new OperandError("TypeError", $"can only concatenate str (not \"{TypeName(value)}\") to str");
 
     public async ValueTask<bool> VisualEqual(object? definition)

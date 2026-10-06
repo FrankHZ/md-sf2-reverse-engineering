@@ -5209,8 +5209,8 @@ it; production/API changes or broader acquisition need their own ownership decis
 The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations,
 occurrence admission, scope/session/latest-visit identity, actual texture validation, independent
 logical inventory/layer geometry, visual source/layout/atlas/required-word/field-death qualification,
-counted checks/witness/family finalization and the separate
-scene/audio material-origin judgments run in
+counted checks/witness/family finalization, modern required-child/report-integrity validation and
+the separate scene/audio material-origin judgments run in
 [`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
 [`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
 SQLite selection/prefix counts and detached report publisher remain the public route. Already
@@ -5470,6 +5470,70 @@ passing behavioral comparison does not convert the cumulative input-budget excep
 Keep the worker's original80/eight and independent review's15/five passing observations, plus the
 seven independent-review failures, unchanged. The source continuation correction reruns only those
 seven failures and the affected narrow controls; it does not reopen the completed broad batches.
+
+### H4 report integrity controls
+
+The existing `modern_required_children(variant, ref)` and `modern_report_integrity(report, ref)`
+entry points require the built comparison executable above. `h4_report_integrity.py` supplies only
+consumed report/reference facts and factual deferred reads. `RequiredObligations.cs`,
+`ReportIntegrity.cs` and `ReportIntegrityOperands.cs` own family construction, ordered integrity
+checks and their operand semantics. A complete integrity invocation uses one child, including its
+required-child calculation; standalone family calculation uses one child. Matrix aggregation's
+Python `verdict`, report construction, source acquisition and publication are unchanged.
+
+Reproduce the bounded migration controls from the retained
+`local/issue638/csharp-report-integrity-01/` descriptors after building. `common.py` loads only the
+three canonical functions from accepted Git object `a13586ca8d3b3cceebfa287a5f97d894cf7a04b2`;
+`pilot-01/inputs.json` is one authored four-ally/two-flag/three-entity descriptor and a valid report,
+reused without source acquisition. The comparison records complete ordered outputs or exact
+exception type/message, not merely final PASS. If canonical loading crosses unchanged frozenset
+constants, retain their imported iteration order; an AST snapshot suppressor must not rewrite
+function bodies or disable its own result writer.
+
+Run only the affected descriptor into a fresh destination, for example:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 local/issue638/csharp-report-integrity-01/measure.py <receipt> `
+  uv run python -X utf8 local/issue638/csharp-report-integrity-01/iterators.py <fresh-output>
+```
+
+`controls.py` covers ordered variants A–D, missing/duplicate/reparented/historical children,
+parent/summary contradictions, strict milestone booleans, malformed rows and reference short
+circuits. Preserve its completed tuple-child mismatch; `corrections.py` covers that correction and
+related tuple/Counter/verdict boundaries. `types_final.py` covers tuple row collections and native
+flag keys. `lazy.py` retains the initial missing Probe context/store driver failures;
+`lazy_correction.py` reruns only their affected cases and retains the overstrict early-close-order
+assertion. These are driver limitations, distinct from the corrected tuple transport defect.
+
+`iterators.py` observes actual SQLite readers for1 and16 early mismatches and one nested cancellation:
+the original migration had old peak concurrent iterators3/3/3 versus new3/33/3. Preserve this
+measured resource regression. Report-only release continuations correct it to3/3/3, with identical
+demanded reads and outcomes and zero remaining iterators. Live cursors are bounded by active nesting,
+while selected report state still grows with report size. `lazy_release.py` reruns only the four
+affected nested/equality/cancel controls. `release_faults.py` rejects wrong-source, wrong-order,
+unknown, malformed, duplicate and reused cursors before publication, and proves secondary cleanup
+failures cannot mask the primary source error. Operation-finally remains failure cleanup; accepted
+visual operations retain their existing protocol. `seams.py` covers root-cwd detached report
+readback, multi-page errors, the unchanged final `compare_modern` validation/return statements and
+actual `_matrix_join_occurrence` rejection before evidence IO. Preserve its failed visual hypothesis
+and setup control: a native spool implements `__radd__`, and natural visual names have earlier
+mapping-key or `.split` constraints. That direct seam is not canonical visual equivalence evidence.
+`detached.py` repeats only the applicable detached observation from package cwd.
+
+`protocol.py` records each injected mode/offset/count/row/read-sequence/cursor/error/exit/memory
+failure before the next control. All block publication and leave stopped children. Preserve its
+initial finalizer/receipt driver failure; the corrected receipt run also demonstrates the explicitly
+retained shared visual `InvalidDataException` with an initialized child. The actual source-row
+`GetField` control owns the new report type-name behavior. No new visual predicate is accepted.
+
+Fresh slice ceilings are10MiB cumulative selected inputs,40MiB evidence,120s/control and256MiB live
+Python+C#; the existing locked build has300s/2GiB/1GiB new-cache ceilings. The preceding visual slice's
+12MiB retention exception does not carry over. These limits govern the controlled descriptors;
+standalone integrity calls have no new automatic cap, while an explicitly supplied existing resource
+budget retains its child observation and cancellation behavior. No full modern/matrix acquisition,
+H4/native/Godot/H3 or aggregate suite is implied. Preserve original C05/A Unknowns, previous accepted
+receipts and completed upstream-provenance failures. This migration does not accept whole-route H4.
 
 ### Selected offline resource comparison
 

@@ -2618,120 +2618,9 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
 
 def modern_required_children(variant, ref):
     """Frozen winning-profile children; observed subsets do not enlarge this set."""
-    ally_ids = [a["id"] for a in ref["admission"]["accounting"]["allies"][:3]]
-    families = {
-        None: (
-            "map",
-            "x",
-            "y",
-            "facing",
-            "gold",
-            "mainSeed",
-            *(f"ally-{ally}.{field}" for ally in ally_ids for field in ("Hp", "Mp", "Status")),
-            "admission roster",
-            "one continuous session",
-            "monotonic observed sequence",
-            "full result stream",
-            "ordinary route and probe assertions",
-            "mandatory reached checkpoints",
-            "natural battle first control",
-            "adaptive actions and consumed outcome",
-            "whole after/return order",
-            "victory flags/program/return",
-            "accepted original Down extension selection",
-            "returned actual field input",
-            *(
-                label + " two settled host updates"
-                for label in ("first-return", "before-down", "after-down")
-            ),
-            "ordinary Down displacement",
-            "clean actual process",
-            "actual physical/consumer input records",
-            "configured device and release observations",
-            MATRIX_OBLIGATION,
-            "modern finite-music deviation declaration",
-            "observed input dispatch intervals",
-            "host delivery adds no gameplay or RNG service",
-            *(("actual reveal-only Confirm",) if variant == "C" else ()),
-            *(("natural reveal before Confirm",) if variant == "D" else ()),
-        ),
-        "complete mandatory operation-to-consumption mapping": (
-            "after-program join/flag/return causal order",
-            "taken route/setup/caller branch operands and occurrence",
-            "awaited entity motion/gesture/fade before caller return",
-            "dialogue speaker/control-token occurrence and choice effect",
-            "route roster/flag writes at their source branch",
-            "warp destination/setup initialization before field release",
-            "before/after operation effects and shared-tail return pairing",
-        ),
-        "matched-state rule/RNG/draw-to-effect comparisons": (
-            "repeated logical sequence identifies the same observation",
-            "recorded main draw operands are available",
-            "turn candidate score draws and tie/order result",
-            "physical range/dodge/critical/spread/double/counter effects",
-            "HEAL recovery/cost/fairy opportunity and seed effects",
-            "EXP/gold/growth/spell learning and after-turn/outcome effects",
-            "AI thinking draw/choice/memory and movement decision",
-            "field text/portrait/NPC service draw-to-effect gates",
-        ),
-        "complete reached 7C resource/provenance inventory": (
-            "reached map3/19/20/21/40/57 atlas and layer identities",
-            "reached entity sprites/portraits/gesture resource identities",
-            "displayed text tokens/font/glyph private binding",
-            "scene actor/weapon/healing/death resources",
-            "scene background/ground actual resource identity",
-            "reached audio command/timer/PCM provenance and playback lifecycle",
-        ),
-        "required unshimmed ack and scene consumer binding": (
-            "W1 displayed token occurrence/accepting read/service gates",
-            "W2 accepting read/validation indicator and token return",
-            "plain JOIN input after matching finite completion",
-            "entity motion/gesture/fade consumer start/completion before resume",
-            "battle scene command/resources/wait/effect/end consumer edges",
-            "audio replacement/fade/stop/resume dependent consumer edges",
-        ),
-        "complete relevant admission phase/field mapping": (
-            "admission joined",
-            "admission active",
-            "admission logical consumer readiness",
-            "admission seed-copy byte",
-            "opening mouth/view controls before first source write",
-            "admission occupied physical slots",
-            "effective admission class/level/maxima/stats/spells definition identity",
-            "walking motion gate/velocity/travel/flags correspondence",
-            *(
-                f"admission walking slot {slot} {field}"
-                for slot in (5, 6, 8)
-                for field in ("wait timer", "cursor/moving source binding")
-            ),
-            *(f"ally-{ally} candidate class/stats/spell words" for ally in ally_ids),
-        ),
-    }
-    for ally in ally_ids:
-        parent = f"ally-{ally}.items"
-        families[parent] = tuple(
-            parent + "." + field
-            for field in (
-                "effective four-slot words",
-                "candidate definition slots",
-                "admission loadout identity",
-            )
-        )
-    for parent, prefix, state in (
-        ("complete relevant admission phase/field mapping", "admission", ref["admission"]),
-        (
-            "complete mandatory operation-to-consumption mapping",
-            "returned story",
-            ref["endpoint"],
-        ),
-    ):
-        families[parent] += tuple(f"{prefix} flag {flag}" for flag in state["state"]["flags"])
-    families["complete relevant admission phase/field mapping"] += tuple(
-        f"admission slot {e['physical']} position/destination/facing/layer"
-        for e in ref["inherited"]["entities"]
-        if not (e["actionScript"] == 0 and e["x"] == e["y"] == 0x7000)
-    )
-    return families
+    from sf2tool.h4_report_integrity import required_children
+
+    return required_children(variant, ref, sequence_type=_RecordSpool)
 
 
 def verdict(counts):
@@ -2740,70 +2629,9 @@ def verdict(counts):
 
 def modern_report_integrity(report, ref):
     """Reject omitted obligations and contradictory serialization, not absent evidence."""
-    errors = []
-    if report.get("comparisonScope", "full") != "full":
-        errors.append("selected-scope report cannot satisfy full H4 obligations")
-    assertions = report.get("assertions", [])
-    parents = report.get("coverageObligations", [])
-    required = [a for a in assertions if a.get("applicability") != "historical-diagnostic"]
-    historical = [a for a in assertions if a.get("applicability") == "historical-diagnostic"]
-    names = Counter(a.get("assertion") for a in assertions)
-    parent_names = Counter(p.get("assertion") for p in parents)
-    for name, count in names.items():
-        if count != 1:
-            errors.append("duplicate assertion: " + str(name))
-    for name, count in parent_names.items():
-        if count != 1:
-            errors.append("duplicate coverage parent: " + str(name))
-    for parent, children in modern_required_children(report.get("variant"), ref).items():
-        if parent is not None and parent_names[parent] != 1:
-            errors.append("missing required family: " + parent)
-        for name in children:
-            matches = [
-                a for a in required if a.get("assertion") == name and a.get("parent") == parent
-            ]
-            if len(matches) != 1:
-                errors.append("missing required child: " + name)
-    for row in assertions:
-        if row.get("applicability") not in (
-            "applicable",
-            "required-unobserved",
-            "historical-diagnostic",
-        ):
-            errors.append("invalid applicability: " + str(row.get("assertion")))
-        expected_result = (
-            "Unavailable"
-            if row.get("actualValue") is None or row.get("applicability") == "required-unobserved"
-            else "PASS"
-            if row.get("expected") == row.get("actualValue")
-            else "FAIL"
-        )
-        if row.get("result") != expected_result:
-            errors.append("inconsistent assertion result: " + str(row.get("assertion")))
-        if row.get("parent") and parent_names[row["parent"]] != 1:
-            errors.append("missing assertion parent: " + row["parent"])
-    for parent in parents:
-        children = [a for a in required if a.get("parent") == parent.get("assertion")]
-        old = [a for a in historical if a.get("parent") == parent.get("assertion")]
-        counts = dict(Counter(a.get("result") for a in children))
-        if (
-            parent.get("children") != [a.get("assertion") for a in children]
-            or parent.get("historicalChildren") != [a.get("assertion") for a in old]
-            or parent.get("actualValue") != counts
-            or parent.get("result") != verdict(counts)
-            or parent.get("applicability")
-            != ("required-unobserved" if verdict(counts) == "Unavailable" else "applicable")
-        ):
-            errors.append("inconsistent coverage parent: " + str(parent.get("assertion")))
-    counts = dict(Counter(a.get("result") for a in required))
-    if (
-        report.get("counts") != counts
-        or report.get("result") != verdict(counts)
-        or report.get("milestonePass") is not (verdict(counts) == "PASS")
-        or report.get("historicalCounts") != dict(Counter(a.get("result") for a in historical))
-    ):
-        errors.append("inconsistent report summary")
-    return errors
+    from sf2tool.h4_report_integrity import report_integrity
+
+    return report_integrity(report, ref, sequence_type=_RecordSpool)
 
 
 def walking_admission_binding(ref, actual, evidence_root, world_path, original_binding):

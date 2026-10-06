@@ -312,6 +312,44 @@ The [verification route](../../remake/docs/development-and-verification.md#c-res
 names direct complete-report, IO-order, partial-write, stream/publication and fault controls. These
 constructed observations add no original runtime/decoder acceptance or resolution of existing Unknowns.
 
+### H4 Report Obligations and Integrity
+
+`RequiredObligations.cs` owns the ordered modern required-child families, first-three ally IDs,
+variant additions, admission/endpoint flags and retained inherited slots. `ReportIntegrity.cs` owns
+classification, ordered duplicate/missing-child diagnostics, assertion/parent/summary consistency,
+FAIL-before-Unavailable verdict precedence and strict boolean milestone acceptance.
+`ReportIntegrityOperands.cs` preserves the consumed Python equality, Counter, formatting and error
+semantics; tuple type facts remain distinct from JSON lists. The two existing public Python functions
+are thin calls through `h4_report_integrity.py`, which selects fields, serves factual bounded reads
+and reconstructs the ordered dictionary of tuples or error list. Report construction, matrix
+algorithms, reader/storage, publication and the matrix's Python `verdict` remain separate owners.
+
+One standalone required-child call owns one controlled child. One integrity call computes its own
+families in that same child; neither a verdict nor a row starts another process. Existing
+`compare_modern`, matrix validation and `_matrix_join_occurrence` call sites retain their sequencing
+and rejection boundaries. No whole capture, equivalence graph or unused row fields cross the pipe.
+The shared demand reader exposes its existing next/type operations and a single cursor allocator;
+report traversal and nested equality cannot reuse an active cursor. The visual label helper retains
+its accepted malformed-source exception; exposing source type names does not change that helper.
+
+Ordered assertions are traversed at the original four passes and parents at two passes. Nested
+sequence equality requests only the consumed prefix. Report-only release continuations close
+completed or abandoned iteration/comparison cursors before independent comparisons accumulate.
+Python validates the source/cursor binding, active nesting order and monotonic cursor allocation;
+unknown, duplicate, unrelated or reused releases cannot close another cursor or publish success.
+Operation-finally retains failure cleanup and does not mask an active source error. Accepted visual
+operations do not use this release extension. For A assertions,
+C required names and P parents, comparison time remains O(A×C + A×P), selected state O(A+P+C+errors),
+with live cursors bounded by active nesting/iteration rather than the number of comparisons. Result pages
+have at most256 rows and target1MiB, with the existing single-row exception; this bounds transport,
+not total work. Standalone callers do not acquire a new automatic budget: controlled observations
+use the declared slice limits, and an explicitly supplied existing resource budget observes the
+child. Do not infer a general large-report admission limit from this bounded migration.
+
+Use the [verification route](../../remake/docs/development-and-verification.md#h4-report-integrity-controls)
+for full ordered old/new controls, delayed reads, detached readback and actual caller rejection seams.
+These observations verify tool compatibility, not original gameplay or whole-matrix acceptance.
+
 ### H4 Physical Module Route
 
 The maintained CLI remains `python -m sf2tool.remake_h4_comparison`; its `physical` mode and

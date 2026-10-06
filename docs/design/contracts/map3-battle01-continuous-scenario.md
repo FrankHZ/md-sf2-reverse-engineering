@@ -513,6 +513,17 @@ its `missingSide`, original owner/binding and actual record location. The matrix
 rows alongside remaining child assertions. Neither deleting an opaque placeholder nor selecting only
 easy children closes a parent.
 
+The modern report validator rejects selected scope, duplicate or missing required names,
+contradictory child results, inconsistent ordered parent membership/counts and inconsistent report
+summaries. Historical diagnostics remain outside required counts. FAIL takes precedence over
+Unavailable; `milestonePass` must be the exact boolean implied by the required verdict. These rules
+are owned by the independent C# report-integrity tool through the unchanged Python entry points;
+see the [controlled verification route](../../../remake/docs/development-and-verification.md#h4-report-integrity-controls).
+Family construction and validation use selected reference/report metadata and preserve ordered
+errors and lazy-read failures. Existing modern/matrix callers still reject integrity failures before
+successful publication or occurrence-evidence acquisition. Tool compatibility does not supply any
+missing original observation or change the eight gameplay evidence boundaries.
+
 `--controlled-start` explicitly selects a **candidate** party definition. `candidateDefinitions`
 records its file/actor/slot values separately from actual admission override/progress. Modern effective
 loadout resolution is explicit `SourceLoadout`, then `Progress.SourceLoadout`, then the same-run loaded
