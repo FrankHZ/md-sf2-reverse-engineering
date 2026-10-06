@@ -62,6 +62,7 @@ Read the smallest owning surface that can answer or govern the task:
 
 | Task | Required owner |
 | --- | --- |
+| Outcome scope, verification investment or supporting-tool expansion | [Product Constraint Workflow](./github-project-governance.md#product-constraint-workflow), before tool selection or slice dispatch |
 | Ordinary Phase 2 evidence slice | [`phase2-lane-runbook.md`](./phase2-lane-runbook.md), [ADR 0004](../decisions/0004-single-terra-worker-with-root-acceptance.md), its Worker Acceptance Checklist, the closest [`research/`](../research/) owner, and only the bounded sources named in the slice |
 | Research coverage, aggregate frontier, or cadence | [`research/source-coverage.md`](../research/source-coverage.md), [ADR 0003](../decisions/0003-static-first-batched-runtime-research.md), and [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md) |
 | Evidence-bound subsystem contract | Closest [`design/contracts/`](../design/contracts/) owner and its accepted research dependencies |
