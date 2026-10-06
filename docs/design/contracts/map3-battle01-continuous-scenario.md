@@ -1766,6 +1766,16 @@ observation and does not turn the retained mutable-layout Unknowns into acceptan
 [source correspondence](../../operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process)
 owns the bounded port review.
 
+The separate `reached_materials` scene/audio origin report also uses that independent C# tool after
+the visual binding completes. Python retains selected file/Git/preflight/WAV reads and byte
+measurements. C# owns frozen base42/source/fingerprint/raster predicates, visible background and
+actor/weapon joins, unique reached audio origins, capture/PCM metadata and receipt timer policy.
+Every ordered check/join and duplicate survives; False, unavailable and empty-family results remain
+distinct. Conditional IO and partial exception prefixes follow the original caller, including
+earlier scene joins surviving later audio failures. This is offline material-origin correspondence;
+natural dispatch, consumer timing, audio playback and original runtime Unknowns retain their
+existing independent acceptance boundaries.
+
 The bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
 After the accepted capture-performance work, separately allocated C/D native observations
 complete the route with their own unchanged settings/start/party and intact bounded terminals.

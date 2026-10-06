@@ -22,7 +22,6 @@ import subprocess
 import sys
 import time
 import uuid
-import wave
 from bisect import bisect_right
 from collections import Counter
 from collections.abc import Sequence
@@ -34,7 +33,7 @@ from sf2tool.remake_asset_build import (
     ACCEPTED_UPSTREAM_REPOSITORY,
     _composite_generator_fingerprint,
 )
-from sf2tool.remake_assets import AssetPreflightError, inspect_asset_checkout
+from sf2tool.remake_assets import inspect_asset_checkout
 from sf2tool.remake_h4.admission_seed import admission_seed_binding
 from sf2tool.remake_h4.ai_binding import ai_consumer_binding
 from sf2tool.remake_h4.ai_source import (
@@ -2695,8 +2694,12 @@ def reached_materials(
     tileset_metadata=None,
     palette_metadata=None,
     map_binding=None,
+    *,
+    budget=None,
 ):
     """Offline material origin only; natural dispatch/consumer joins stay separate."""
+    from sf2tool.h4_materials import run
+
     result = dict(
         scene=None,
         audio=None,
@@ -2711,359 +2714,31 @@ def reached_materials(
             tileset_metadata,
             palette_metadata,
             map_binding=map_binding,
+            budget=budget,
         ),
     )
     if not selection:
         return result
-
-    def check(name, value, source):
-        result["checks"].append(dict(name=name, value=value, source=source))
-        return value
-
-    def verdict(values):
-        return False if False in values else None if None in values else True
-
-    def relative_file(root, name):
-        path = (root / name).resolve()
-        require(path.is_relative_to(root), "material file escapes explicit selected root")
-        return path
-
-    try:
-        world_path, scene_path, process_path, scene_root, asset_root, commit, tree, manifest_pin = (
-            selection
-        )
-        world_path, scene_path, process_path, scene_root, asset_root = (
-            p.resolve() if p.is_absolute() else repo_path(p)
-            for p in (world_path, scene_path, process_path, scene_root, asset_root)
-        )
-        process = read(process_path)
-        selected = process.get("selectedInputs", {})
-        binding = (
-            all(
-                repo_path(selected[key]).resolve() == path
-                for key, path in (
-                    ("SF2_PRIVATE_EXPLORATION_CONTENT", world_path),
-                    ("SF2_PRIVATE_BATTLE_SCENE_CONTENT", scene_path),
-                )
-            )
-            if all(
-                selected.get(key)
-                for key in ("SF2_PRIVATE_EXPLORATION_CONTENT", "SF2_PRIVATE_BATTLE_SCENE_CONTENT")
-            )
-            else None
-        )
-        check("same-run explicit world/scene selection", binding, "process.selectedInputs")
-        world, scene = read(world_path), read(scene_path)
-        world_identity = check(
-            "selected world original identity",
-            world["provenance"]["commit"] == UPSTREAM
-            and world["provenance"]["romSha256"] == ROM
-            and world["provenance"]["repository"] == ACCEPTED_UPSTREAM_REPOSITORY,
-            "world.provenance",
-        )
-        scene_manifest = read(scene_root / "manifests/presentation-assets-v1.json")
-        source_path = scene_root / "source/battle-scenes/selection.json"
-        source, report = read(source_path), read(scene_root / "candidate-report.json")
-        base = read(scene_root / "battle-scenes.json")
-
-        def digest(data):
-            return hashlib.sha256(data).hexdigest().upper()
-
-        historical = {
-            name: subprocess.check_output(
-                ["git", "show", f"{SCENE_GENERATOR_COMMIT}:{name}"], cwd=repo_path("")
-            )
-            for name in SCENE_GENERATOR_COMPONENTS
-        }
-        fingerprints = dict(
-            gitLf=_composite_generator_fingerprint(historical),
-            historicalCrlf=_composite_generator_fingerprint(
-                {name: data.replace(b"\n", b"\r\n") for name, data in historical.items()}
-            ),
-            current=_composite_generator_fingerprint(
-                {name: repo_path(name).read_bytes() for name in SCENE_GENERATOR_COMPONENTS}
-            ),
-        )
-        scene_checks = [binding, world_identity]
-        scene_checks.append(
-            check(
-                "scene bundle original pins and recorded file identities",
-                source["upstreamCommit"] == report["upstreamCommit"] == UPSTREAM
-                and source["romSha256"] == report["romSha256"] == ROM
-                and source["upstreamRepository"] == ACCEPTED_UPSTREAM_REPOSITORY
-                and digest(source_path.read_bytes())
-                == report["sourceSha256"]
-                == SCENE_SOURCE_SHA256
-                and digest((scene_root / "manifests/presentation-assets-v1.json").read_bytes())
-                == report["manifestSha256"]
-                == SCENE_MANIFEST_SHA256
-                and (scene_root / "battle-scenes.json").stat().st_size
-                == report["sceneContentBytes"]
-                and len(scene_manifest["assets"]) == report["assetCount"] == 42,
-                "scene-source candidate-report/manifest/source selection",
-            )
-        )
-        scene_checks.append(
-            check(
-                "recorded historical scene extractor fingerprint",
-                fingerprints["historicalCrlf"] == report["generatorArtifactSha256"],
-                dict(
-                    commit=SCENE_GENERATOR_COMMIT,
-                    components=SCENE_GENERATOR_COMPONENTS,
-                    representation="historical CRLF checkout",
-                    fingerprints=fingerprints,
-                ),
-            )
-        )
-        scene_checks.append(
-            check(
-                "selected scene base content equality",
-                all(scene.get(k) == v for k, v in base.items() if k != "rasters")
-                and all(scene["rasters"].get(k) == v for k, v in base["rasters"].items())
-                and all(
-                    len(base64.b64decode(span["data"], validate=True)) == span["byteLength"]
-                    for span in source["spans"]
-                ),
-                "selected scene -> frozen base42 and original ROM spans",
-            )
-        )
-        assets = {a["assetId"]: a for a in scene_manifest["assets"]}
-        raster_valid = {}
-        for name, raster in base["rasters"].items():
-            asset = assets.get("battle.scene." + name.replace("/", "."))
-            bucket = [b for b in asset["buckets"] if b["scale"] == 2] if asset else []
-            payload = base64.b64decode(raster["data"], validate=True)
-            raster_valid[name] = bool(
-                asset
-                and len(bucket) == 1
-                and asset["source"]
-                == dict(assetId="source.battle.scene.selection", sha256=report["sourceSha256"])
-                and asset["derivation"]["generatorArtifactSha256"]
-                == report["generatorArtifactSha256"]
-                and digest(payload) == raster["sha256"] == bucket[0]["sha256"]
-                and len(payload) == bucket[0]["byteLength"]
-                and (raster["width"], raster["height"]) == (bucket[0]["width"], bucket[0]["height"])
-            )
-        scene_checks.append(
-            check(
-                "base42 embedded PNG/manifest identities",
-                len(raster_valid) == 42 and all(raster_valid.values()),
-                "scene rasters -> scale2 buckets/source/derivation",
-            )
-        )
-        mounted = _bounded_list(
-            (
-                (i, r["scene"])
-                for i, r in enumerate(actual.get("sceneObservations", []))
-                if r["scene"].get("visible") and not r["scene"].get("fieldDeath")
-            )
-        )
-        backgrounds, actors = [], []
-        for i, row in mounted:
-            for key in ("background", "backgroundWrap", "ground"):
-                node = row.get(key, {})
-                if node.get("visible"):
-                    name = node.get("resource")
-                    backgrounds.append(bool(node.get("texturePresent") and raster_valid.get(name)))
-                    result["joins"].append(
-                        dict(
-                            record=f"sceneObservations[{i}].scene.{key}",
-                            resource=name,
-                            source="scene-source/base42",
-                        )
-                    )
-            for key in ("allyResource", "enemyResource", "weaponResource"):
-                if key == "enemyResource" and not row.get("enemyVisible"):
-                    continue
-                if key == "weaponResource" and not row.get("weaponVisible"):
-                    continue
-                if name := row.get(key):
-                    actors.append(bool(raster_valid.get(name)))
-                    result["joins"].append(
-                        dict(
-                            record=f"sceneObservations[{i}].scene.{key}",
-                            resource=name,
-                            source="scene-source/base42",
-                        )
-                    )
-        result["scene"] = verdict(scene_checks + backgrounds) if backgrounds else None
-        result["actorWeapon"] = verdict(scene_checks + actors) if actors else None
-
-        inspection = inspect_asset_checkout(
-            str(asset_root),
-            expected_commit=commit,
-            expected_tree=tree,
-            expected_manifest_sha256=manifest_pin,
-        )
-        catalog = json.loads(inspection.manifest_bytes)
-        audio_checks = [binding, world_identity]
-        audio_checks.append(
-            check(
-                "explicit pinned clean asset checkout",
-                True,
-                dict(commit=commit, tree=tree, manifestSha256=manifest_pin),
-            )
-        )
-        provenance = []
-        for name, key in (
-            ("audio-reached-inventory-provenance.json", "records"),
-            ("audio-town-join-provenance.json", "assets"),
-        ):
-            owner = read(asset_root / "manifests" / name)
-            audio_checks.append(
-                check(
-                    "audio source pins " + name,
-                    owner["romSha256"] == ROM
-                    and owner["sf2disasmCommit"] == UPSTREAM
-                    and owner["emulator"]
-                    == dict(
-                        name="BizHawk",
-                        version="2.11.1",
-                        core="Genplus-gx",
-                        commit="bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5",
-                    ),
-                    "manifests/" + name,
-                )
-            )
-            provenance.extend((name, i, r) for i, r in enumerate(owner[key]))
-        audio = world["world"]["presentation"]["audio"]
-        starts = _bounded_list(
-            (
-                (i, r["receipt"])
-                for i, r in enumerate(actual.get("audioReceipts", []))
-                if r["receipt"]["Operation"] == "started"
-            )
-        )
-        for cue in _bounded_sorted({r["Cue"] for _, r in starts}):
-            selected_audio = [a for a in audio if a["cue"] == cue]
-            library = [a for a in catalog["assets"] if a["kind"] == "audio" and a["cue"] == cue]
-            records = [(n, i, r) for n, i, r in provenance if r["asset"]["cue"] == cue]
-            unique = len(selected_audio) == len(library) == len(records) == 1
-            available = bool(selected_audio and library and records)
-            audio_checks.append(
-                check(
-                    "unique reached audio origin " + cue,
-                    unique if available else None,
-                    "world audio -> library catalog -> provenance record",
-                )
-            )
-            if not unique:
-                continue
-            selected_audio, asset = selected_audio[0], library[0]
-            owner_name, owner_index, record = records[0]
-            runtime = asset["runtime"]
-            with wave.open(str(relative_file(asset_root, runtime["runtimePath"])), "rb") as wav:
-                pcm = wav.readframes(wav.getnframes())
-                format_equal = (
-                    wav.getsampwidth(),
-                    wav.getnchannels(),
-                    wav.getframerate(),
-                    wav.getnframes(),
-                ) == (2, runtime["channels"], runtime["sampleRate"], runtime["sampleFrames"])
-            capture_path = relative_file(asset_root, record["sourcePath"])
-            with wave.open(str(capture_path), "rb") as capture:
-                begin, end = record["captureStartSample"], record["captureEndSample"]
-                capture.setpos(begin)
-                cut_equal = capture.readframes(end - begin) == pcm and (
-                    capture.getsampwidth(),
-                    capture.getnchannels(),
-                    capture.getframerate(),
-                ) == (2, runtime["channels"], runtime["sampleRate"])
-            valid = (
-                record["asset"] == asset
-                and format_equal
-                and cut_equal
-                and digest(capture_path.read_bytes()) == asset["source"]["sha256"]
-                and end - begin == runtime["sampleFrames"]
-                and base64.b64decode(selected_audio["pcm16"], validate=True) == pcm
-                and digest(pcm) == selected_audio["sha256"]
-                and all(
-                    selected_audio[k] == runtime[k]
-                    for k in ("sampleRate", "channels", "sampleFrames", "loopBegin", "loopEnd")
-                )
-                and (selected_audio["command"], selected_audio["timerB"])
-                == (asset["command"], asset["timerB"])
-            )
-            audio_checks.append(
-                check(
-                    "reached original capture cut/runtime PCM " + cue,
-                    valid,
-                    dict(
-                        file="manifests/" + owner_name,
-                        record=owner_index,
-                        assetId=asset["assetId"],
-                        captureStartSample=begin,
-                        captureEndSample=end,
-                        loopBegin=runtime["loopBegin"],
-                        loopEnd=runtime["loopEnd"],
-                    ),
-                )
-            )
-            for i, receipt in ((i, r) for i, r in starts if r["Cue"] == cue):
-                requested = receipt.get("RequestedTimerB")
-                choices = [a for a in audio if a["command"] == receipt["Command"]]
-                exact = [a for a in choices if a["timerB"] == requested]
-                finite = [a for a in choices if a["loopBegin"] is None]
-                policy = requested is None or (
-                    len(exact) == 1
-                    and exact[0] == selected_audio
-                    or not exact
-                    and len(finite) == 1
-                    and finite[0] == selected_audio
-                )
-                valid = policy and all(
-                    receipt[a] == selected_audio[b]
-                    for a, b in (
-                        ("Command", "command"),
-                        ("TimerB", "timerB"),
-                        ("PcmSha256", "sha256"),
-                        ("SampleRate", "sampleRate"),
-                        ("Channels", "channels"),
-                        ("SampleFrames", "sampleFrames"),
-                        ("LoopBegin", "loopBegin"),
-                        ("LoopEnd", "loopEnd"),
-                    )
-                )
-                audio_checks.append(
-                    check(
-                        f"audio start material selection receipt{i}",
-                        valid,
-                        "SessionAudio.Select exact timer/unique finite policy",
-                    )
-                )
-                result["joins"].append(
-                    dict(
-                        record=f"audioReceipts[{i}].receipt",
-                        cue=cue,
-                        assetId=asset["assetId"],
-                        requestedTimerB=requested,
-                        assetTimerB=asset["timerB"],
-                        provenance=owner_name,
-                        sourceRecord=owner_index,
-                        selection="exact"
-                        if requested == asset["timerB"]
-                        else "named cue"
-                        if requested is None
-                        else "unique finite fallback",
-                    )
-                )
-        result["audio"] = verdict(audio_checks) if starts else None
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        check("selected material input availability", None, "explicit selected inputs")
-    except AssetPreflightError as error:
-        # The existing validator distinguishes absence from an observed drift.
-        unavailable = error.code in (
-            "RepositoryUnavailable",
-            "PayloadUnavailable",
-            "SchemaUnavailable",
-        )
-        check("asset checkout " + error.code, None if unavailable else False, error.field)
-        result["audio"] = None if unavailable else False
-    except KeyError:
-        check("selected material field availability", None, "explicit selected inputs")
-    except (ValueError, wave.Error) as error:
-        check("selected material evidence shape", False, type(error).__name__)
-    return result
+    return run(
+        actual,
+        selection,
+        result,
+        read=read,
+        bounded_list=_bounded_list,
+        bounded_sorted=_bounded_sorted,
+        inspect=inspect_asset_checkout,
+        fingerprint=_composite_generator_fingerprint,
+        pins=dict(
+            upstream=UPSTREAM,
+            rom=ROM,
+            repository=ACCEPTED_UPSTREAM_REPOSITORY,
+            sourceSha256=SCENE_SOURCE_SHA256,
+            manifestSha256=SCENE_MANIFEST_SHA256,
+            generatorCommit=SCENE_GENERATOR_COMMIT,
+            components=SCENE_GENERATOR_COMPONENTS,
+        ),
+        budget=budget,
+    )
 
 
 def plain_join_binding(ref, actual, evidence_root, world_path):
