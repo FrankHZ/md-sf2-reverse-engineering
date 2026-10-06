@@ -192,7 +192,7 @@ maps/portraits, visit sequence, enabled families and composed map binding remain
 
 | Canonical region | Current owner and preserved boundary |
 | --- | --- |
-| Requirement channel and field-map coverage2572–2584 | `ResourceInventory.Start/RowsCore/Coverage`; Python retains native map sets. Actual uses cannot establish completeness. |
+| Requirement channel and field-map coverage2572–2584 | `ResourceInventory.Start/RowsCore/Coverage`; Python retains native map sets, using the existing wire identity token to distinguish different NaN objects. Actual uses cannot establish completeness. |
 | Phase/group and entity keys2586–2609 | `RowsCore`; `h4_inventory.Inventory.apply` retains `_join_key` and the original sorted Python JSON string inside entity keys. Inventory wire numbers preserve integral floats and negative zero before that string is formed. |
 | Portrait/tile requirements and definitions2611–2650 | `RequiredPortrait/RequiredTile/RowsCore`; the two per-row evaluated scopes remain distinct from fatal preparation. Python retains indexed sets and source references. |
 | Layer geometry2652–2702 | `InventoryGeometry.Layer`; overlaps/first precede generated tiles, occlusion bypasses geometry, and the full layer precedes tile membership. Preserve64×64 boundaries,9×15 cells,24px blocks/8px tiles, foreground zero, priority, clipping and mutable contributions. |

@@ -30,8 +30,15 @@ internal sealed class ResourceInventory(CountedChecks checks, ResourceContext vi
     private InventoryScope Scope(string name, string[] families, int parent = -1) => new(++scopeId, families, name, parent);
     private static object? Fetch(Dictionary<MapKey, object?> rows, object? key) =>
         rows.TryGetValue(Hash(key), out var value) ? value : throw new OperandError("KeyError");
-    private InventoryStep Write(string kind, object? key, InventoryScope scope) =>
-        new(Dict(("kind", kind), ("key", key)), scope);
+    private InventoryStep Write(string kind, object? key, InventoryScope scope)
+    {
+        var payload = Dict(("kind", kind), ("key", key));
+        // Native map sets distinguish different NaN objects. Reuse the existing
+        // input identity token rather than merging them through JSON's NaN literal.
+        if (kind is "field-map" or "observed-map" && key is double n && double.IsNaN(n))
+            payload.Add("nanIdentity", NonFiniteIdentity(key));
+        return new InventoryStep(payload, scope);
+    }
     private InventoryStep Check(string family, string name, object? value, InventoryScope scope, object? identity = null) =>
         new(Dict(("kind", "check")), scope, _ => checks.Check(family, name, value, BigInteger.One, identity: identity));
     private InventoryStep Member(string kind, object? key, string family, string name, InventoryScope scope) =>

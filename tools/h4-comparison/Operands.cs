@@ -98,6 +98,9 @@ internal static class Operands
         }
     }
 
+    public static string NonFiniteIdentity(object value) => nonFiniteValues
+        .First(pair => ReferenceEquals(pair.Value, value)).Key;
+
     public static object? At(object? value, string key) => value switch
     {
         Dictionary<string, object?> map => map.TryGetValue(key, out var item) ? item : throw new OperandError("KeyError"),

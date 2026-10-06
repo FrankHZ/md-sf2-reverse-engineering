@@ -5350,6 +5350,8 @@ with these direct drivers and a fresh output-directory name:
   that throw before or after an effect; compare full reports, storage state and operation order.
 - `late.py <fresh-name>` and `numeric_keys.py <fresh-name>`: top-level/nested iterator prefixes and
   integral-float entity-key representation, with original failures retained beside corrections.
+- `nan_maps.py <fresh-name>`: identical versus distinct NaN objects in native field/observed map
+  sets; preserve the discovered distinct-object coverage failure and corrected full reports.
 - `protocol.py <fresh-name>`: invalid prefixes, cardinality, stale/duplicate/out-of-order receipts,
   impossible errors, nonprogress and child exit; no successful report publication.
 - `integration.py <fresh-name>`: repeated geometry,260 distinct entities, composed mutable-map

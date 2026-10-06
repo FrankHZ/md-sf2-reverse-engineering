@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from collections.abc import Sequence
 
@@ -77,7 +78,22 @@ def validate_reply(operation, result):
             ):
                 malformed()
         elif kind in ("field-map", "observed-map"):
-            if set(row) != {"kind", "key"}:
+            if set(row) not in ({"kind", "key"}, {"kind", "key", "nanIdentity"}):
+                malformed()
+            if "nanIdentity" in row and not (
+                isinstance(row["key"], float)
+                and math.isnan(row["key"])
+                and isinstance(row["nanIdentity"], str)
+                and row["nanIdentity"].startswith("nan:")
+                and row["nanIdentity"][4:].isascii()
+                and row["nanIdentity"][4:].isdigit()
+            ):
+                malformed()
+            if (
+                isinstance(row["key"], float)
+                and math.isnan(row["key"])
+                and "nanIdentity" not in row
+            ):
                 malformed()
         elif kind == "definition":
             if (
@@ -187,6 +203,8 @@ class Inventory:
             self.operand_error(row)
         key = row["key"]
         if kind in ("field-map", "observed-map"):
+            if "nanIdentity" in row:
+                key = ("nan", row["nanIdentity"])
             (self.field_maps if kind == "field-map" else self.observed_maps).add(key)
         elif kind == "definition":
             if row["index"] >= len(self.definition_rows):
