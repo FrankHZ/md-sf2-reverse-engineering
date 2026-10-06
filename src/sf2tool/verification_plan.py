@@ -700,8 +700,7 @@ def _plan_engine_paths(
     paths: tuple[str, ...], include_partitions: tuple[str, ...]
 ) -> dict[str, object]:
     selected: dict[str, dict[str, set[str]]] = {}
-    for partition_id in include_partitions:
-        _selection_entry(selected, partition_id, "explicit --include-partition")
+    _select_all(selected, include_partitions, "explicit --include-partition")
     for path in paths:
         if path in {"src/sf2tool/verification_plan.py", ".github/workflows/public-checks.yml"}:
             _selection_entry(selected, "h4-comparison-build", path)
@@ -782,8 +781,7 @@ def plan_paths(
     selected: dict[str, dict[str, set[str]]] = {}
     unclassified: set[str] = set()
     _selection_entry(selected, "public-core", "always-run commit gate")
-    for partition_id in include_partitions:
-        _selection_entry(selected, partition_id, "explicit --include-partition")
+    _select_all(selected, include_partitions, "explicit --include-partition")
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
