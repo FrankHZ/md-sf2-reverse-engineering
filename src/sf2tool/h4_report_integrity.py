@@ -212,13 +212,13 @@ class ReportIntegrity:
 
         return dict(source=self.codec.operands(visit(value, [])), containers=containers)
 
-    def exchange(self, mode, **values):
+    def _source_exchange(self, operation, values, *, family="integrity"):
+        if family not in ("integrity", "assembly"):
+            raise ValueError("Unknown report operation family")
         iterators, positions = {}, {}
         sequence = last_cursor = 0
         try:
-            result = self.child.exchange(
-                dict(op="integrity-" + mode, operands=self.operands(values))
-            )
+            result = self.child.exchange(dict(op=operation, operands=self.operands(values)))
             while isinstance(result, dict) and "sourceRead" in result:
                 row = result["sourceRead"]
                 sequence += 1
@@ -269,24 +269,14 @@ class ReportIntegrity:
                     OSError,
                 ) as error:
                     try:
-                        self.child.exchange(dict(op="integrity-cancel"))
+                        self.child.exchange(dict(op=family + "-cancel"))
                     except Exception as cancellation:
-                        error.add_note(f"H4 integrity cancellation failed: {cancellation}")
+                        error.add_note(f"H4 {family} cancellation failed: {cancellation}")
                     raise
                 result = self.child.exchange(
-                    dict(op="integrity-read", sequence=sequence, value=self.operands(value))
+                    dict(op=family + "-read", sequence=sequence, value=self.operands(value))
                 )
-            offset, total, output = 0, result["total"], []
-            while True:
-                if result["mode"] != mode or result["offset"] != offset or result["total"] != total:
-                    raise ResourceProcessError("Report integrity drain changed")
-                output.extend(result["rows"])
-                offset += len(result["rows"])
-                if offset > total or result["done"] and offset != total:
-                    raise ResourceProcessError("Report integrity result count changed")
-                if result["done"]:
-                    return output
-                result = self.child.exchange(dict(op="integrity-drain"))
+            return result
         finally:
             active_error, close_error = sys.exception(), None
             for iterator in iterators.values():
@@ -299,6 +289,20 @@ class ReportIntegrity:
                             close_error = error
             if active_error is None and close_error is not None:
                 raise close_error
+
+    def exchange(self, mode, **values):
+        result = self._source_exchange("integrity-" + mode, values)
+        offset, total, output = 0, result["total"], []
+        while True:
+            if result["mode"] != mode or result["offset"] != offset or result["total"] != total:
+                raise ResourceProcessError("Report integrity drain changed")
+            output.extend(result["rows"])
+            offset += len(result["rows"])
+            if offset > total or result["done"] and offset != total:
+                raise ResourceProcessError("Report integrity result count changed")
+            if result["done"]:
+                return output
+            result = self.child.exchange(dict(op="integrity-drain"))
 
     def required(self, variant, ref):
         rows = self.exchange("required", variant=variant, reference=self.reference(ref))

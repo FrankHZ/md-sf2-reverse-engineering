@@ -103,8 +103,9 @@ snapshots, retaining completed results and failures.
 
 ### H4 Remaining Migration and Resource Process
 
-The remaining #638 responsibilities migrate to C#: transport, budgets, report
-orchestration and CLI, with documentation navigation still in scope.
+The allocated #638 migration stops after modern assertion/coverage assembly. Remaining transport,
+budgets, outer report orchestration, CLI and documentation navigation are deferred; they are not an
+automatic next-slice queue. Issue #638 remains open without claiming the whole refactor complete.
 Already extracted Python comparison families remain accepted Python owners until actual later use
 justifies revisiting them. The existing `sf2` facade may continue to invoke those families.
 
@@ -321,7 +322,7 @@ FAIL-before-Unavailable verdict precedence and strict boolean milestone acceptan
 `ReportIntegrityOperands.cs` preserves the consumed Python equality, Counter, formatting and error
 semantics; tuple and native mapping-key type facts survive JSON transport. The two existing public Python functions
 are thin calls through `h4_report_integrity.py`, which selects fields, serves factual bounded reads
-and reconstructs the ordered dictionary of tuples or error list. Report construction, matrix
+and reconstructs the ordered dictionary of tuples or error list. Outer report construction, matrix
 algorithms, reader/storage, publication and the matrix's Python `verdict` remain separate owners.
 
 One standalone required-child call owns one controlled child. One integrity call computes its own
@@ -350,12 +351,49 @@ Use the [verification route](../../remake/docs/development-and-verification.md#h
 for full ordered old/new controls, delayed reads, detached readback and actual caller rejection seams.
 These observations verify tool compatibility, not original gameplay or whole-matrix acceptance.
 
+### H4 Modern Assertion and Coverage Assembly
+
+`ReportAssembly.cs` owns check classification, source/path fallback decisions, ordered coverage
+counts and report verdicts. `h4_report_assembly.py` supplies reached facts, existing storage effects
+and raw selected fields. The existing modern caller uses one lazy assembly session; its final
+integrity call retains its separate child and rejection boundary. No assertion starts a process.
+
+| Canonical region in `3ac49ad651f3d9aa011d55b8eb6c21333e47d54c` | Current owner and preserved boundary |
+| --- | --- |
+| `compare_modern` initialization/nested check2797–2857 | Session begins at the same position. C# owns null/applicability, `value == expected`, result/reason/missing-side and provenance/file fallback. Python selects paths only when requested. |
+| Coverage and required summary4581–4616 | Existing group insertion order and first-child layer; C# admits required/historical rows, counts native result keys and applies FAIL-before-Unavailable precedence. Python retains required-row copies and name projections. |
+| Final count/result/milestone fields4694–4703 | Historical traversal remains at its original keyword position. C# returns counts/verdict and exact boolean milestone; outer metadata/equivalence remain unchanged. |
+| Nested `missing` and remaining comparison calls | Same caller code. No gameplay/source comparison, matrix or extracted-family migration is included. |
+
+Assertion append precedes the second parent-truth read, group creation and assertion readback/group
+append. Partial writes and reached source/storage errors remain visible without rollback. Required
+names precede historical names; actual-path selection precedes malformed parent-name concatenation.
+Unused payload/provenance graphs do not cross the pipe merely to decide their truth. Native scalar,
+container-length and registered spool facts cover the report data domain; arbitrary custom Python
+object truth/equality protocols are not a new interoperability contract.
+
+Assembly reuses the private validated integrity source exchange, with fixed operation families and
+separate result validators. Each successful operation drops its C# operand reader before its Python
+codec registry resets. On errors, Python retains the registry until session exit stops the child,
+including a child suspended at a rejected protocol request. Only primitive check state and hashable Counter keys
+survive; no deferred source reference survives a registry reset. Existing release continuations
+bound live cursors by active nesting. Python remains the sole assertion/group SQLite authority.
+Transport uses at most256 count rows per page, targeting1MiB with a single-row exception. Total
+work remains O(assertions + reached payload visits), and counters grow with distinct result keys;
+page bounds do not bound report size or total storage. This ownership change claims neither whole
+comparator complexity reduction nor a measured production performance improvement.
+
+The [assembly verification route](../../remake/docs/development-and-verification.md#h4-report-assembly-controls)
+owns complete ordered results, IO/partial-write observations, multi-check lifetime, caller/detached
+publication, paging and protocol failures. Existing original-game Unknowns and historical failures
+remain unchanged.
+
 ### H4 Physical Module Route
 
 The maintained CLI remains `python -m sf2tool.remake_h4_comparison`; its `physical` mode and
 `compare_modern` use the same `physical_consumer_binding`. The monolith still owns transport,
-resource lifetime, other families, report publication and CLI. Subsequent #638 slices must decompose
-those owners independently; this representative family does not complete that migration.
+resource lifetime, other families, report publication and CLI. Further #638 decomposition is deferred;
+this representative family does not complete that migration.
 
 | Owner under `src/sf2tool/remake_h4/` | Responsibility and interface |
 | --- | --- |

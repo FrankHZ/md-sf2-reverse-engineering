@@ -524,6 +524,15 @@ errors and lazy-read failures. Existing modern/matrix callers still reject integ
 successful publication or occurrence-evidence acquisition. Tool compatibility does not supply any
 missing original observation or change the eight gameplay evidence boundaries.
 
+Modern assertion classification and ordered coverage/summary assembly also use the C# comparison
+tool through one caller-owned session. It preserves applicability before equality, `value == expected`
+operand order, provenance/path fallbacks, first-child layer, required versus historical membership,
+and assertion-before-group append effects. Python retains file/SQLite IO, outer report metadata and
+publication; final integrity rejection remains mandatory. The
+[assembly controls](../../../remake/docs/development-and-verification.md#h4-report-assembly-controls)
+cover complete reports, partial failures, source lifetime and detached caller publication. This
+tool ownership change accepts no additional original behavior or gameplay evidence.
+
 `--controlled-start` explicitly selects a **candidate** party definition. `candidateDefinitions`
 records its file/actor/slot values separately from actual admission override/progress. Modern effective
 loadout resolution is explicit `SourceLoadout`, then `Progress.SourceLoadout`, then the same-run loaded

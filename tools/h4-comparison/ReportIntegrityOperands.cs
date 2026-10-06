@@ -68,7 +68,11 @@ internal sealed class ReportIntegrityOperands
         Reader.Reply(Dict(("sequence", At(message, "sequence")),
             ("value", Dict(("value", prepared), ("references", new List<object?>())))));
     }
-    private static string TypeName(object? value) => value is TupleValue ? "tuple" : value is MappingValue ? "dict" : VisualSourceOperands.TypeName(value);
+    public static string TypeName(object? value) => value is TupleValue ? "tuple" : value is MappingValue ? "dict" : VisualSourceOperands.TypeName(value);
+    public static bool IsDeferred(object? value) => value is not (null or bool or BigInteger or double or string
+        or List<object?> or Dictionary<string, object?> or TupleValue or MappingValue);
+    public static object KeyFact(object? value) => value is TupleValue tuple
+        ? Dict(("tuple", tuple.Items.Select(KeyFact).ToList())) : Dict(("value", value));
     private static object? Items(object? value) => value is TupleValue tuple ? tuple.Items : value;
     public async ValueTask<bool> Same(object? a, object? b)
     {
