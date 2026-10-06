@@ -9,6 +9,7 @@ CountedChecks? report = null;
 SceneObservations? scenes = null;
 ResourceContext? context = null;
 ResourceValidation? validation = null;
+ResourceInventory? inventory = null;
 try
 {
     while (Console.ReadLine() is { } line)
@@ -38,6 +39,7 @@ try
                     "report-checks" => RequiredReport().Drain(false),
                     "report-witnesses" => RequiredReport().Drain(true),
                     string op when op.StartsWith("identity-", StringComparison.Ordinal) => IdentityOperation(op, message),
+                    string op when op.StartsWith("inventory-", StringComparison.Ordinal) => InventoryOperation(op, message),
                     _ => comparison.Handle(message)
                 };
             }
@@ -49,7 +51,8 @@ try
                 continue;
             }
         }
-        Reply(Operands.Dict(("result", result)));
+        Reply(Operands.Dict(("result", result)),
+            ((string)Operands.At(message, "op")!).StartsWith("inventory-", StringComparison.Ordinal));
     }
     return 0;
 }
@@ -105,7 +108,7 @@ object? IdentityOperation(string op, object? message)
         case "identity-visit-keys": return context.VisitKeys();
         case "identity-scope": return context.BeginScope(Operands.At(message, "scope"));
         case "identity-scope-finish": context.FinishScope(); return null;
-        case "identity-release": context.Release(); return null;
+        case "identity-release": context.Release(keepOrder: true); return null;
     }
     List<object?> admitted = [];
     var projected = false;
@@ -138,9 +141,29 @@ object? IdentityOperation(string op, object? message)
     return op == "identity-requirements" ? admitted : op == "identity-projections" ? projected : null;
 }
 
-static void Reply(object? result)
+object? InventoryOperation(string op, object? message)
+{
+    if (op == "inventory-start")
+    {
+        if (inventory is not null || context is null) throw new InvalidDataException("Inventory lifetime");
+        inventory = new ResourceInventory(RequiredReport(), context, message);
+        inventory.Start(); return null;
+    }
+    if (inventory is null) throw new InvalidDataException("Inventory not started");
+    switch (op)
+    {
+        case "inventory-sources": inventory.Sources(Operands.At(message, "rows")); return null;
+        case "inventory-coverage": inventory.Coverage(Operands.At(message, "complete")); return null;
+        case "inventory-finish": inventory.Finish(Operands.At(message, "any")); return null;
+        case "inventory-rows": return inventory.Rows((string)Operands.At(message, "channel")!, Operands.At(message, "rows"));
+        case "inventory-ack": return inventory.Acknowledge(message);
+        default: throw new InvalidDataException("Unknown inventory operation");
+    }
+}
+
+static void Reply(object? result, bool inventoryNumbers = false)
 {
     using var buffer = new MemoryStream();
-    using (var writer = new Utf8JsonWriter(buffer)) Operands.Write(writer, result);
+    using (var writer = new Utf8JsonWriter(buffer)) Operands.Write(writer, result, inventoryNumbers);
     Console.WriteLine(Encoding.UTF8.GetString(buffer.ToArray()));
 }

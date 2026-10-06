@@ -103,7 +103,7 @@ snapshots, retaining completed results and failures.
 
 ### H4 Remaining Migration and Resource Process
 
-The remaining #638 responsibilities migrate to C#: inventory judgment, transport, budgets, report
+The remaining #638 responsibilities migrate to C#: transport, budgets, report
 orchestration and CLI, with documentation navigation still in scope.
 Already extracted Python comparison families remain accepted Python owners until actual later use
 justifies revisiting them. The existing `sf2` facade may continue to invoke those families.
@@ -113,10 +113,14 @@ justifies revisiting them. The existing `sf2` facade may continue to invoke thos
 `SceneObservations.cs` owns reached fairy/field-death observations; `CountedChecks.cs` owns their
 shared counted report. `ResourceContext.cs` owns source-program map transitions, sessions and scope
 context; `ResourceValidation.cs` owns occurrence, resource identity and actual texture predicates.
+`ResourceInventory.cs` owns independent logical inventory and generated requirements;
+`InventoryGeometry.cs` owns layer and portrait geometry, with `InventoryOperands.cs` supplying
+numeric and deferred sequence operations. `InventoryBatch.cs` retains bounded pending inventory
+operations until the existing Python storage acknowledges their actual effects.
 `Operands.cs`, `SceneOperands.cs` and `ResourceOperands.cs` supply the respective Python operand
 operations; `Program.cs` handles the fixed stream. `src/sf2tool/h4_dotnet.py` defers startup until the
 first exchange, then shares one child across scenes, checks and reduction for the binding call.
-The Python caller retains source decoding, inventory predicates, SQLite variants/prefix counts and
+The Python caller retains source decoding, SQLite inventory/variants/prefix counts and
 report publication. Selected decoded sprite/portrait entries cross once per call. Input checks,
 scene rows, candidate batches and drained report rows have at most256 rows and target1MiB encoded
 data (a single row may exceed that target). No raw capture or whole relation crosses the pipe.
@@ -162,9 +166,8 @@ a malformed envelope, non-progressing drain or inconsistent final row count fail
 The occurrence/identity/texture source boundary is the complete `_reached_visual_materials` at
 accepted commit `34f295212a846309d27cb99082bc3eb5f7fa37ec`: occurrence admission/counting2559–2586,
 program/visit/session/scope context2588–2625, resource identity2626–2641 and texture validation2964–3006.
-Requirement-phase preparation2656–2661 and its later projection additions remain Python storage
-operations, shared with the unchanged logical inventory. Neither that inventory nor `layer_tiles`
-is part of this port.
+Requirement-phase preparation2656–2661 and its projection additions retain Python storage;
+their calculation and the logical inventory follow the separate correspondence below.
 
 | Original responsibility | Current correspondence and acceptance boundary |
 | --- | --- |
@@ -176,12 +179,49 @@ is part of this port.
 | Requirement-phase membership | Python retains the existing `_join_key` sets and bounded lookups, including logical-inventory additions. Fixed group/phase facts cross the pipe; C# decides missing group versus contradictory phase. Lookup errors are deferred until that predicate is reached. |
 | Late validation iterator failure | The identity bridge flushes already-read rows before propagating the error and preserves the current Python weight/locator for the existing outer handler. Normal completion resets them; resource reducer batching retains its existing default behavior. |
 
-Program metadata is released after warp collection; context state is released after identity checks.
-Python retains the bounded visit-key sequence for its existing inventory. These compact keys are the
+Program metadata is released after warp collection; sessions/maps release after identity checks.
+Ordered visit keys survive through inventory, then release. These compact keys are the
 only temporal state shared back to Python; no full capture, source world or phase-set array is copied.
 Detailed operand errors on these fixed operations preserve the outer report's original diagnostic
 text. Other operations retain the accepted exception envelope. Typed admission masks must have the
 input batch's length; malformed replies remain infrastructure failures.
+
+The independent inventory source is the complete `_reached_visual_materials` at accepted commit
+`9131eca05973429aaffdda37069590b2f9d5bb64`, lines2572–2891. Captured requirements, uses, decoded
+maps/portraits, visit sequence, enabled families and composed map binding remain independent inputs.
+
+| Canonical region | Current owner and preserved boundary |
+| --- | --- |
+| Requirement channel and field-map coverage2572–2584 | `ResourceInventory.Start/RowsCore/Coverage`; Python retains native map sets. Actual uses cannot establish completeness. |
+| Phase/group and entity keys2586–2609 | `RowsCore`; `h4_inventory.Inventory.apply` retains `_join_key` and the original sorted Python JSON string inside entity keys. Inventory wire numbers preserve integral floats and negative zero before that string is formed. |
+| Portrait/tile requirements and definitions2611–2650 | `RequiredPortrait/RequiredTile/RowsCore`; the two per-row evaluated scopes remain distinct from fatal preparation. Python retains indexed sets and source references. |
+| Layer geometry2652–2702 | `InventoryGeometry.Layer`; overlaps/first precede generated tiles, occlusion bypasses geometry, and the full layer precedes tile membership. Preserve64×64 boundaries,9×15 cells,24px blocks/8px tiles, foreground zero, priority, clipping and mutable contributions. |
+| Logical and required layer sets2704–2716 | Existing Python `_value_set` instances populated by acknowledged operations; no second C# inventory set. |
+| State/visit/phase traversal2717–2737 | `State` consumes samples, consumer boundaries and warps in order; revision/map admission precedes `LatestSequence`, phase and layer operands. |
+| Layer/tile obligations2738–2767 | `State/Layer` and `InventoryBatch`; layer writes use the outer draw scope, tile writes the inner layer scope. Dedup never skips later geometry. |
+| Entities and projected uses2768–2849 | `Entity/Generated`; retain position/culling, facing, animation, nod, first matching actor, selector presence, identity/locator and ordered writes. |
+| Portrait obligations2850–2885 | `Portrait` and `InventoryGeometry.Portrait`; retain identity/flags, both alternate lists, tile assignment, inner pose error and following identity check. |
+| Final inventory and generated count2886–2891 | `Finish` classifies existing logical membership; the caller retains `uses.count - actualUseCount`. |
+
+The storage boundary is stronger than a membership-only exchange: a generated-use append can fail
+after the logical key and requirement have been written. Python applies logical key → requirement
+append → use append → required-entity key → phase → group in original order. C# publishes the check
+only after acknowledgement. An inner operand failure retains the actual prefix, skips the rest of
+that evaluated scope and continues; a fatal failure stops later writes. Neither a failed operation
+nor an acknowledged prefix is retried or rolled back. Read-only calculation may be staged, including
+an actor error irrelevant when its key is already satisfied. This fixed inventory contract introduces
+no generic storage/RPC/transaction API.
+
+Pending operations have at most256 rows and target1MiB encoded payload, with the existing single-row
+exception. Monotonic batch IDs, full receipt shape, exact prefix cardinality and failing-operation
+classification validate before checks publish. Retained suffixes resume after the original catch
+boundary; completed payloads retire. Impossible, duplicate, stale or out-of-order receipts and
+non-progressing responses fail closed. Selected lazy sequences retain their decoded prefix and
+deferred error so nested iterator failures follow earlier logical checks rather than occurring during
+transport preparation. Only consumed fields cross; selected geometry/portrait sources cross once
+per call. Repeated geometry still costs up to9×15×9 tile candidates per standard layer per state,
+plus retained rows and mutable-region scans. Dedup and transport limits do not bound total work;
+measure that amplification and live Python/child memory in the allocated pilot.
 
 Use the [resource-tool workflow](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
 for build and direct verification. Controls use constructed, bounded inputs and complete ordered

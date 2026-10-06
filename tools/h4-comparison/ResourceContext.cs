@@ -103,7 +103,7 @@ internal sealed class ResourceContext(CountedChecks checks, IEnumerable<object?>
 
     public void OrderedVisit(object? key) => order.Add(key);
 
-    public (object? Sequence, object? Map) Latest(object? sequence)
+    public object? LatestSequence(object? sequence)
     {
         var lo = 0; var hi = order.Count;
         while (lo < hi)
@@ -112,7 +112,12 @@ internal sealed class ResourceContext(CountedChecks checks, IEnumerable<object?>
             if (Less(sequence, order[middle])) hi = middle;
             else lo = middle + 1;
         }
-        var visit = lo > 0 ? order[lo - 1] : null;
+        return lo > 0 ? order[lo - 1] : null;
+    }
+
+    public (object? Sequence, object? Map) Latest(object? sequence)
+    {
+        var visit = LatestSequence(sequence);
         return (visit, visits.TryGetValue(ContextHash(visit), out var found) ? found.Map : null);
     }
 
@@ -161,9 +166,10 @@ internal sealed class ResourceContext(CountedChecks checks, IEnumerable<object?>
         NextScope();
     }
 
-    public void Release()
+    public void Release(bool keepOrder = false)
     {
-        programs.Clear(); visits.Clear(); sessions.Clear(); order.Clear();
+        programs.Clear(); visits.Clear(); sessions.Clear();
+        if (!keepOrder) order.Clear();
         pendingVisit = null;
         visitReader?.Dispose(); families.Dispose();
     }

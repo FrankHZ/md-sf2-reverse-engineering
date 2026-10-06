@@ -5207,7 +5207,8 @@ it; production/API changes or broader acquisition need their own ownership decis
 ### C# resource comparison tool
 
 The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations,
-occurrence admission, scope/session/latest-visit identity, actual texture validation and counted
+occurrence admission, scope/session/latest-visit identity, actual texture validation, independent
+logical inventory/layer geometry and counted
 checks/witness/family finalization run in
 [`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
 [`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
@@ -5319,8 +5320,8 @@ session/projection metadata. Grouped-use passes never expand raw multiplicity. T
 visit sorter and requirement-phase sets remain storage boundaries; all selected admission, temporal,
 scope and texture judgments run in C#. Preserve partial check contributions, current weight/locator
 on late iterator errors, and the exact outer conversion diagnostics. An iterator error flushes its
-already-read prefix before propagation; a successful pass resets weight/locator. The independent
-logical inventory and source decoders remain outside this slice.
+already-read prefix before propagation; a successful pass resets weight/locator. Source decoders
+remain Python owners; independent inventory follows the workflow below.
 
 Retain discovered conversion/late-failure mismatches beside their corrected narrow results; do not
 rerun completed broad batches just to replace their receipts. The resource limits above still apply.
@@ -5329,6 +5330,45 @@ receipt separately from live parent/child budget observations. Subsequent extern
 count only processes still running and report sequential peak sums separately. No missing observation
 is a measured zero. These bounded controls establish neither historical route acceptance nor a
 general worst-case memory bound.
+
+Independent inventory uses the same child through `src/sf2tool/h4_inventory.py`. C# computes keys,
+geometry and generated rows; Python applies existing SQLite/native-set mutations and returns an
+ordered accepted prefix or failing operation. Partial writes are retained without replay/rollback.
+Checks publish only after acknowledgement. This fixed protocol preserves inner entity/tile/portrait
+versus outer draw/preparation failures without introducing a storage framework. See the complete
+canonical mapping and protocol limits in the source-correspondence owner above.
+
+The private reproduction owner is `local/issue638/csharp-inventory-01`. `common.py` loads the complete
+accepted caller named in that mapping; decoded-source adapters retain their source-pin failures.
+After loading the ignored environment and building the current tool, use `uv run --locked python`
+with these direct drivers and a fresh output-directory name:
+
+- `pilot.py <fresh-name>`: tiny map/entity/portrait, repeated priority layers and negative camera.
+- `controls.py <fresh-name>`: independent requirements, geometry, culling, poses and malformed operands.
+- `correction.py <fresh-name>`: nonempty retained-first operand versus empty/missing-field controls.
+- `partial_writes.py <fresh-name>`: prior successful item,256-item boundary, set/add/append mutations
+  that throw before or after an effect; compare full reports, storage state and operation order.
+- `late.py <fresh-name>` and `numeric_keys.py <fresh-name>`: top-level/nested iterator prefixes and
+  integral-float entity-key representation, with original failures retained beside corrections.
+- `protocol.py <fresh-name>`: invalid prefixes, cardinality, stale/duplicate/out-of-order receipts,
+  impossible errors, nonprogress and child exit; no successful report publication.
+- `integration.py <fresh-name>`: repeated geometry,260 distinct entities, composed mutable-map
+  contributions, actual SQLite membership and detached publication; also run from `remake/` with
+  `../local/.../integration.py`.
+
+`boundary_probe.py` retains the original three success/ValueError/OSError mutation observations;
+`boundary_migrated.py` compares their full reports, storage snapshots and sequence. Preserve its
+baseline outputs. `measure.py` samples only live processes for simultaneous private memory and
+labels the sum of individual peaks separately. Limits remain10MiB selected input,40MiB evidence,
+120s/256MiB per control batch and300s/2GiB/1GiB for build time/live memory/new cache. Record input
+dimensions, repeated geometry work, distinct keys/uses, measured batches and children in the handoff.
+The initial71-case control retained one nonempty-first projection failure, then narrow corrected
+controls; late-iterator and numeric-key discovery failures also remain. The first partial-write
+driver used an all-family literal whose compiled set iteration differed between the loaded canonical
+function and cached module; its storage/operation traces agreed. Entity-scoped reruns compare the
+complete affected reports without weakening order assertions. Do not rerun completed broad batches
+to replace these receipts. These are bounded implementation observations, not original route or
+decoder acceptance; previous source-pin, build-memory and historical C05/A limitations remain.
 
 ### Selected offline resource comparison
 

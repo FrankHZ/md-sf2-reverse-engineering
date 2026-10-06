@@ -46,7 +46,7 @@ def _resource_reply(operation, reply):
 
     if not isinstance(reply, dict):
         malformed()
-    detailed = operation.startswith("identity-") and set(reply) == {
+    detailed = operation.startswith(("identity-", "inventory-")) and set(reply) == {
         "operandError",
         "operandMessage",
     }
@@ -192,6 +192,10 @@ def _resource_reply(operation, reply):
             or stop["error"] not in ("KeyError", "IndexError", "ValueError", "TypeError")
         ):
             malformed()
+    elif operation.startswith("inventory-"):
+        from sf2tool.h4_inventory import validate_reply
+
+        validate_reply(operation, result)
     else:
         malformed()
     return result
