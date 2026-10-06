@@ -260,8 +260,11 @@ class ReportIntegrity:
                     AttributeError,
                     OverflowError,
                     OSError,
-                ):
-                    self.child.exchange(dict(op="integrity-cancel"))
+                ) as error:
+                    try:
+                        self.child.exchange(dict(op="integrity-cancel"))
+                    except Exception as cancellation:
+                        error.add_note(f"H4 integrity cancellation failed: {cancellation}")
                     raise
                 result = self.child.exchange(
                     dict(op="integrity-read", sequence=sequence, value=self.operands(value))
