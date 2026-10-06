@@ -199,6 +199,12 @@ new engine design or treats remake functionality as original-game evidence.
 Future `docs/design/` synthesis documents may selectively use the following structure. This describes
 document shape, not a parallel workspace or a mandatory full GDD template.
 
+**Confirmed authoring guidance:** organize design documents by coherent subject matter, reader flow
+and maintainable ownership. Include the explanation needed to make the bounded subject understandable;
+do not impose line, word or page caps, split documents solely for length, or remove necessary
+explanation to meet a brevity target. The handwritten-source line limit does not apply to design
+Markdown. Effort budgets bound work expansion, not document length.
+
 1. **Audience and judgment boundary.** Identify the reader—researcher, fidelity implementer, or
    player-facing explainer—and the supported and unsupported judgments. Original-game claims retain
    **Confirmed**, **Inferred**, or **Unknown** at the source-owner layer.
