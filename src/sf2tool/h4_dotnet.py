@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from contextlib import contextmanager
 
 from sf2tool.dotnet_environment import shared_dotnet_environment
 from sf2tool.paths import repo_path
@@ -25,6 +26,23 @@ def _resource_reply(operation, reply):
 
     def count(value):
         return type(value) is int and value >= 0
+
+    def totals(value):
+        return (
+            isinstance(value, dict)
+            and {"PASS", "FAIL", "Unavailable"} <= value.keys()
+            and all(count(value[key]) for key in ("PASS", "FAIL", "Unavailable"))
+        )
+
+    def counted_row(row):
+        return (
+            isinstance(row, dict)
+            and {"family", "name", "value", "count"} <= row.keys()
+            and isinstance(row["family"], str)
+            and isinstance(row["name"], str)
+            and (row["value"] is None or isinstance(row["value"], bool))
+            and count(row["count"])
+        )
 
     if not isinstance(reply, dict):
         malformed()
@@ -48,11 +66,63 @@ def _resource_reply(operation, reply):
     if set(reply) != {"result"}:
         malformed()
     result = reply["result"]
-    if operation in ("sources", "source", "begin", "accumulate"):
+    if operation in (
+        "sources",
+        "source",
+        "begin",
+        "accumulate",
+        "report-start",
+        "report-records",
+        "scene-start",
+        "scene-rows",
+    ):
         if result is not None:
             malformed()
     elif operation == "scan":
         if result is not None and not count(result):
+            malformed()
+    elif operation == "report-finish":
+        if (
+            not isinstance(result, dict)
+            or not {"summary", "checkCount", "witnessCount"} <= result.keys()
+            or not count(result["checkCount"])
+            or not count(result["witnessCount"])
+        ):
+            malformed()
+        summary = result["summary"]
+        if (
+            not isinstance(summary, dict)
+            or not {"map", "entity", "scene", "familyCounts", "witnessPolicy"} <= summary.keys()
+        ):
+            malformed()
+        families, policy = summary["familyCounts"], summary["witnessPolicy"]
+        if (
+            not isinstance(families, dict)
+            or not {"map", "entity", "scene"} <= families.keys()
+            or any(not totals(families[f]) for f in ("map", "entity", "scene"))
+            or any(
+                summary[f] is not None and not isinstance(summary[f], bool)
+                for f in ("map", "entity", "scene")
+            )
+            or not isinstance(policy, dict)
+            or set(policy) != {"limitPerCheckOutcome", "retained", "candidateVariants"}
+            or type(policy["limitPerCheckOutcome"]) is not int
+            or policy["limitPerCheckOutcome"] != 8
+            or not count(policy["retained"])
+            or policy["retained"] != result["witnessCount"]
+            or policy["candidateVariants"] != "all distinct operands retained"
+        ):
+            malformed()
+    elif operation in ("report-checks", "report-witnesses"):
+        if (
+            not isinstance(result, dict)
+            or set(result) != {"rows", "done"}
+            or not isinstance(result["rows"], list)
+            or not isinstance(result["done"], bool)
+            or not all(counted_row(row) for row in result["rows"])
+            or not result["rows"]
+            and not result["done"]
+        ):
             malformed()
     elif operation == "finish":
         fields = {"candidatePairCount", "executedPairCount", "counts", "legacyStop", "checks"}
@@ -176,7 +246,16 @@ def build():
 class ResourceComparison:
     """The lifetime is one reached-resource phase, never a row or requirement."""
 
-    def __init__(self, sprites, source_sprites, portraits, source_portraits, *, budget=None):
+    def __init__(
+        self,
+        sprites,
+        source_sprites,
+        portraits,
+        source_portraits,
+        *,
+        budget=None,
+        defer_start=False,
+    ):
         self.sources = dict(
             sprites=sprites,
             sourceSprites=source_sprites,
@@ -188,8 +267,14 @@ class ResourceComparison:
         self.process = self.errors = None
         self.budget = budget
         self.peak_private = 0
+        self.defer_start = defer_start
+        self.enabled = None
+        self.pending, self.pending_bytes = [], 0
 
     def __enter__(self):
+        return self if self.defer_start else self._start()
+
+    def _start(self):
         environment = shared_dotnet_environment(os.environ, repo_path("."))
         assembly = repo_path("local/h4-comparison/bin/net10.0/H4Comparison.dll")
         if not assembly.is_file():
@@ -197,7 +282,7 @@ class ResourceComparison:
                 "Build the H4 resource tool: python -m sf2tool.h4_dotnet build"
             )
         scratch = repo_path("local/h4-comparison")
-        self.errors = tempfile.TemporaryFile(dir=scratch)
+        self.errors = tempfile.TemporaryFile(dir=scratch)  # noqa: SIM115 - closed by __exit__
         try:
             self.process = subprocess.Popen(
                 [environment["DOTNET_BIN"], str(assembly)],
@@ -211,6 +296,8 @@ class ResourceComparison:
             if self.budget is not None:
                 self.budget.child_started()
             self.exchange(dict(op="sources", sources={name: [] for name in self.sources}))
+            if self.enabled is not None:
+                self.exchange(dict(op="report-start", enabled=list(self.enabled)))
         except BaseException as error:
             self.__exit__(*sys.exc_info())
             if isinstance(error, OSError):
@@ -226,6 +313,8 @@ class ResourceComparison:
             self.budget.observe_child(memory, exited=exited)
 
     def exchange(self, message):
+        if self.process is None:
+            self._start()
         try:
             for part in json.JSONEncoder(ensure_ascii=True, separators=(",", ":")).iterencode(
                 _wire_message(message)
@@ -247,6 +336,7 @@ class ResourceComparison:
         return _resource_reply(message["op"], reply)
 
     def reduce(self, required, relation, key):
+        self.flush_checks()
         self.exchange(dict(op="begin", required=required))
         stop = None
         variants = relation.variants(key)
@@ -276,6 +366,94 @@ class ResourceComparison:
             rows.close()
         total = sum(count for _, count, _, _ in relation.variants(key))
         return self.exchange(dict(op="finish", total=total))
+
+    def _record(self, row):
+        size = len(json.dumps(row, ensure_ascii=True).encode("utf-8"))
+        if self.pending and (len(self.pending) >= 256 or self.pending_bytes + size > 1024 * 1024):
+            self.flush_checks()
+        self.pending.append(row)
+        self.pending_bytes += size
+
+    def check(self, family, name, value, identity=None, *, weight=1, locator=None):
+        self._record(
+            dict(
+                kind="check",
+                family=family,
+                name=name,
+                value=value,
+                identity=identity,
+                weight=weight,
+                locator=locator,
+            )
+        )
+
+    @contextmanager
+    def evaluated(self, family, name, state):
+        try:
+            yield
+        except (KeyError, IndexError, ValueError, TypeError) as error:
+            weight, locator = state()
+            self._record(
+                dict(
+                    kind="error",
+                    families=list(family) if isinstance(family, tuple) else [family],
+                    name=name,
+                    error=type(error).__name__,
+                    weight=weight,
+                    locator=locator,
+                )
+            )
+
+    def flush_checks(self):
+        if self.pending:
+            self.exchange(dict(op="report-records", rows=self.pending))
+            self.pending, self.pending_bytes = [], 0
+
+    def scene_uses(self, scene, rows):
+        # Keep missing/null/malformed shapes; only remove fields never read by this phase.
+        def select(value, names):
+            return {k: value[k] for k in names if k in value} if isinstance(value, dict) else value
+
+        selected = select(scene, ("healing", "fieldDeath"))
+        if isinstance(selected, dict):
+            for key, names in (
+                ("healing", ("bodies", "wings", "dust")),
+                ("fieldDeath", ("allies", "enemies", "exitFrames")),
+            ):
+                if key in selected:
+                    selected[key] = select(selected[key], names)
+        self.flush_checks()
+        self.exchange(
+            dict(
+                op="scene-start",
+                scene=selected,
+                present=bool(rows),
+                integerDigitLimit=sys.get_int_max_str_digits(),
+            )
+        )
+        for batch in _batches(select(row, ("scene", "fieldActors")) for row in rows):
+            self.exchange(dict(op="scene-rows", rows=batch))
+
+    def finish_report(self, bounded_list):
+        self.flush_checks()
+        metadata = self.exchange(dict(op="report-finish"))
+
+        def rows(operation, expected):
+            total = 0
+            while True:
+                batch = self.exchange(dict(op=operation))
+                total += len(batch["rows"])
+                if total > expected or batch["done"] and total != expected:
+                    raise ResourceProcessError("Resource report row count changed during drain")
+                yield from batch["rows"]
+                if batch["done"]:
+                    return
+
+        return dict(
+            metadata["summary"],
+            checks=bounded_list(rows("report-checks", metadata["checkCount"])),
+            witnesses=bounded_list(rows("report-witnesses", metadata["witnessCount"])),
+        )
 
     def select_sources(self, required):
         # Selection only; C# owns presence, equality and alternate-tile judgments.

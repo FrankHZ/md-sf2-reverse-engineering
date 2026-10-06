@@ -5206,7 +5206,8 @@ it; production/API changes or broader acquisition need their own ownership decis
 
 ### C# resource comparison tool
 
-The reached-resource source/pair judgments and requirement reduction run in
+The reached-resource source/pair judgments, requirement reduction, fairy/field-death observations
+and counted checks/witness/family finalization run in
 [`tools/h4-comparison`](../../tools/h4-comparison/H4Comparison.csproj), through
 [`h4_dotnet.py`](../../src/sf2tool/h4_dotnet.py). The existing Python resource CLI, source decoders,
 SQLite selection/prefix counts and detached report publisher remain the public route. Already
@@ -5227,8 +5228,10 @@ Build/restore outputs, NuGet caches and TEMP remain worktree-local; SDK CLI home
 shared selection. Build is explicit; a missing assembly fails with this command, never an automatic
 SDK install or runtime rebuild. `Public checks / h4-comparison-build` builds this actual project.
 
-One scoped child serves the full resource-reduction phase. Only selected decoded source entries
-cross once; two ordered, byte-bounded variant passes retain the old first-error/prefix behavior.
+One deferred scoped child serves the binding call, sharing scene observations and counted report
+state with resource reduction. No-selection paths without map checks start no child. Source-only
+and early returns close any started child while preserving their existing report shape. Only selected
+decoded source entries cross once; two ordered, byte-bounded variant passes retain the old first-error/prefix behavior.
 Source recipe memoization avoids repeated raster equality. The unchanged report format retains all
 ordered checks, multiplicities, locators and PASS/FAIL/Unavailable counts. Python-compatible operand
 operations preserve numeric/boolean equality here; this port does not apply other families' stricter
@@ -5237,7 +5240,12 @@ fatal exceptions retain their own boundaries. See the
 [source correspondence](../../docs/operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process).
 
 The bridge validates each response envelope and its operation's result structure before returning
-to evidence handlers, including finish counters, check entries and optional exception-prefix records.
+to evidence handlers, including acknowledgments, finish counters, check entries, optional
+exception-prefix records, report metadata and check/witness drains. Drains feed the existing bounded
+publication lists in first-seen/global witness order; they must make progress and publish exactly the
+announced row counts. Check and scene batches, like candidate/drain batches, are limited to256 rows
+and target1MiB, with a single oversized row permitted. Scene projection sends only consumed
+definition fields and scene/actor row channels, retaining missing, null and malformed shapes.
 Malformed process replies raise `ResourceProcessError`, stop the owned child and prevent successful
 report publication; they cannot become missing/malformed original evidence. Explicit recognized
 `operandError` replies retain their named Python exceptions. Check outcomes and locators remain
@@ -5263,6 +5271,34 @@ Record actual bytes, launches and distinct-variant cost; these samples do not es
 worst-case bound. Preserve old #610 malformed-key/scope/publication failures, the completed normal
 148PASS followed by upstream-provenance FAIL, and historical C05/A Unknowns. No full C05/H4, native,
 H3 or generic aggregate rerun is implied.
+
+The scene/count continuation has its own private reproduction owner,
+`local/issue638/csharp-observations-01`. `old-source.json` retains the complete nested regions from
+the accepted commit named in the source correspondence. After the controlled build, its direct
+commands from the repository root are:
+
+```powershell
+uv run --locked python local/issue638/csharp-observations-01/pilot.py
+uv run --locked python local/issue638/csharp-observations-01/controls.py
+uv run --locked python local/issue638/csharp-observations-01/integration.py <fresh-run-name>
+uv run --locked python local/issue638/csharp-observations-01/failures.py
+uv run --locked python local/issue638/csharp-observations-01/scope_edges.py <fresh-run-name> assert
+```
+
+These retained local drivers create fresh scratch; select fresh output names/directories before
+reproduction. The pilot precedes the expanded controls and includes repeated scene rows. Controls
+compare the complete old/new caller results across malformed/partial fairy and actor paths, numeric
+and string operands, scopes, multiple rows and early returns. Integration checks weighted counts,
+late exception weight/locator, normalization, enabled-family filtering, witness caps/order,
+multi-batch drains, source-only and shared scene/reducer lifetime, then closes the input and reads
+the detached publication. It also runs from `remake/` using `../local/.../integration.py`.
+The dynamic source-only private-byte reading is asserted separately; it is not expected to equal
+another process-time reading. Constructed decoder adapters retain source pin FAILs and establish no
+original decoder or route claim. Fault controls exercise the new reply operations, child exit,
+unavailable memory observation and propagated original fatal exceptions. Preserve the earlier
+protocol-discovery failure and first-build memory limitation, plus the demonstrated non-string-scope
+port failure and its corrected full reports; these are not whole historical or
+PR657-suite reruns. Complete receipts and actual resource costs belong in the slice handoff.
 
 ### Selected offline resource comparison
 

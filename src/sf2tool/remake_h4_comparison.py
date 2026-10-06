@@ -2302,6 +2302,36 @@ def reached_visual_materials(
     budget=None,
     map_binding=None,
 ):
+    from sf2tool.h4_dotnet import ResourceComparison
+
+    with ResourceComparison({}, {}, {}, {}, budget=budget, defer_start=True) as resources:
+        return _reached_visual_materials(
+            actual,
+            selection,
+            source_root,
+            canonical_content,
+            tileset_metadata,
+            palette_metadata,
+            source_only=source_only,
+            budget=budget,
+            map_binding=map_binding,
+            resources=resources,
+        )
+
+
+def _reached_visual_materials(
+    actual,
+    selection,
+    source_root,
+    canonical_content=None,
+    tileset_metadata=None,
+    palette_metadata=None,
+    *,
+    source_only=False,
+    budget=None,
+    map_binding=None,
+    resources,
+):
     """Join reached texture selectors to existing source decoders and private exports."""
     result = dict(
         map=None,
@@ -2322,161 +2352,21 @@ def reached_visual_materials(
     enabled = (
         {"map", "entity", "scene"} if not scope or scope["family"] == "all" else {scope["family"]}
     )
-    counted = Counter()
-    witness_counts = Counter()
+    resources.enabled = enabled
     weight, locator = 1, None
 
     def check(family, name, value, identity=None):
-        if family not in enabled:
-            return
-        value = False if value == False else None if value is None else True  # noqa: E712
-        counted[family, name, value] += weight
-        if value is not True and witness_counts[family, name, value] < 8:
-            row = dict(family=family, name=name, value=value, count=weight)
-            if identity is not None:
-                row["identity"] = identity
-            if locator is not None:
-                row["locator"] = locator
-            result["witnesses"].append(row)
-            witness_counts[family, name, value] += 1
+        resources.check(family, name, value, identity, weight=weight, locator=locator)
 
     if map_binding is not None:
         check("map", "complete mutable-map composed boundary", map_binding["value"])
 
-    from contextlib import contextmanager
-
-    @contextmanager
     def evaluated(family, name):
-        try:
-            yield
-        except KeyError:
-            for dependent in family if isinstance(family, tuple) else (family,):
-                check(dependent, name + " operand absent", None)
-        except (IndexError, ValueError, TypeError) as error:
-            for dependent in family if isinstance(family, tuple) else (family,):
-                check(dependent, name + " malformed " + type(error).__name__, False)
+        return resources.evaluated(family, name, lambda: (weight, locator))
 
     def finish():
-        result["checks"] = [
-            dict(family=f, name=n, value=v, count=c) for (f, n, v), c in counted.items()
-        ]
-        result["witnessPolicy"] = dict(
-            limitPerCheckOutcome=8,
-            retained=len(result["witnesses"]),
-            candidateVariants="all distinct operands retained",
-        )
-        result["familyCounts"] = {}
-        for family in ("map", "entity", "scene"):
-            values = Counter()
-            for (f, _, value), count in counted.items():
-                if f == family:
-                    values[value] += count
-            result["familyCounts"][family] = dict(
-                PASS=values[True], FAIL=values[False], Unavailable=values[None]
-            )
-            result[family] = (
-                False if values[False] else None if values[None] or not values else True
-            )
+        result.update(resources.finish_report(_bounded_list))
         return result
-
-    def scene_uses(scene):
-        scene_rows = actual.get("sceneObservations", [])
-        check("scene", "reached scene observation channel", True if scene_rows else None)
-        for row in scene_rows:
-            with evaluated("scene", "scene occurrence"):
-                scene_state = row["scene"]
-                fairy = (scene_state.get("healing") or {}).get("Fairy")
-                if scene_state.get("visible") and fairy and fairy.get("Control"):
-                    needed = {}
-                    for i, instance in enumerate(fairy["Fairies"]):
-                        with evaluated("scene", "fairy instance"):
-                            if instance["Active"]:
-                                needed["FairyBody" + str(i)] = scene["healing"]["bodies"][
-                                    int(instance["BodyFrame"])
-                                ]
-                                needed["FairyWings" + str(i)] = scene["healing"]["wings"][
-                                    int(instance["WingFrame"])
-                                ]
-                    for i, dust in enumerate(fairy["Dust"]):
-                        with evaluated("scene", "fairy dust"):
-                            if dust["Age"]:
-                                needed["FairyDust" + str(i)] = scene["healing"]["dust"][
-                                    int(dust["Frame"])
-                                ]
-                    mounted = {s["name"]: s for s in scene_state.get("fairySprites", [])}
-                    for name, resource in needed.items():
-                        node = mounted.get(name, {}).get("binding")
-                        check(
-                            "scene",
-                            "required fairy mounted texture " + name,
-                            None
-                            if node is None
-                            else node.get("resource") == resource
-                            and node.get("texturePresent")
-                            and node.get("visible"),
-                        )
-                if scene_state.get("fieldDeath"):
-                    actors = row.get("fieldActors")
-                    check(
-                        "scene",
-                        "actual field-death consumer channel",
-                        True if actors is not None else None,
-                    )
-                    if scene_state["phase"] in ("FieldSpin", "FieldExit"):
-                        mounted = {a["id"]: a.get("sprite") for a in actors or []}
-                        for dead in scene_state["fieldDeath"]["actors"]:
-                            node = mounted.get(dead)
-                            check(
-                                "scene",
-                                "required dead actor remains projected during its source effect",
-                                None
-                                if node is None
-                                else node.get("visible") and node.get("texturePresent"),
-                            )
-                    for actor in actors or []:
-                        with evaluated("scene", "field actor"):
-                            sprite = actor.get("sprite")
-                            if not sprite or not sprite.get("visible"):
-                                continue
-                            selector = sprite.get("resourceSelector")
-                            facing = sprite["facing"]
-                            direction = 0 if facing == 1 else 2 if facing == 3 else 1
-                            ally = next(
-                                (
-                                    a["sprite"]
-                                    for a in scene["fieldDeath"]["allies"]
-                                    if actor["id"] == "ally-" + str(a["character"])
-                                ),
-                                None,
-                            )
-                            original_sprite = (
-                                ally
-                                if ally is not None
-                                else scene["fieldDeath"]["enemies"][0]["sprite"]
-                            )
-                            expected_sprite = (
-                                63
-                                if actor["id"] in scene_state["fieldDeath"]["actors"]
-                                and scene_state["phase"] == "FieldExit"
-                                else original_sprite
-                            )
-                            check(
-                                "scene",
-                                "actual field-death assigned texture",
-                                None
-                                if selector is None
-                                else selector
-                                == dict(
-                                    sprite=expected_sprite,
-                                    direction=direction,
-                                    frame=sprite["walkingFrame"],
-                                    raster=scene["fieldDeath"]["exitFrames"][direction]
-                                    if expected_sprite == 63
-                                    else None,
-                                )
-                                and sprite.get("texturePresent")
-                                and sprite.get("visibleInTree"),
-                            )
 
     if not selection:
         if map_binding is not None:
@@ -2489,7 +2379,7 @@ def reached_visual_materials(
             selected_scene.resolve() if selected_scene.is_absolute() else repo_path(selected_scene)
         )
         if "scene" in enabled:
-            scene_uses(read(selected_scene))
+            resources.scene_uses(read(selected_scene), actual.get("sceneObservations", []))
     except FileNotFoundError:
         check("scene", "selected scene definition absent", None)
     except (KeyError, IndexError, ValueError, TypeError):
@@ -3117,50 +3007,49 @@ def reached_visual_materials(
         result["requirementCount"] = len(requirements)
         result["candidatePairCount"] = 0
         result["executedPairCount"] = 0
-        from sf2tool.h4_dotnet import ResourceComparison
-
-        with ResourceComparison(
-            sprites, source_sprites, portraits, source_portraits, budget=budget
-        ) as resources:
-            for requirement_index, required in enumerate(requirements):
-                if uses.budget is not None and requirement_index % 256 == 0:
-                    uses.budget.checkpoint("indexed requirement reduction")
-                locator = required.get(
-                    "_captureLocator", dict(channel="resourceRequirements", index=requirement_index)
-                )
-                with evaluated(
-                    "map" if required.get("kind") == "map" else "entity", "required texture join"
-                ):
-                    kind, want = required["kind"], required["expected"]
-                    family = "map" if kind == "map" else "entity"
-                    key = _resource_key(required, required=True)
-                    candidate_count = sum(count for _, count, _, _ in uses.variants(key))
-                    result["candidatePairCount"] += candidate_count
-                    if kind == "map":
-                        visual = maps[required["identity"]["map"]]
-                        check(
-                            family,
-                            "required logical block/tile source word",
-                            0 <= want["block"] < len(visual["blocks"])
-                            and visual["blocks"][int(want["block"])][int(want["tile"])]
-                            == want["word"],
-                        )
-                    check(family, "required actual texture use", True if candidate_count else None)
-                    compact = resources.reduce(required, uses, key)
-                    for name, value, count, witness in compact.pop("checks"):
-                        weight = count
-                        check(family, name, value, witness)
-                    weight = 1
-                    compact.update(
-                        kind=kind,
-                        identity=required["identity"],
-                        expected=want,
-                        candidateKey=key,
-                        locator=locator,
+        resources.sources.update(
+            sprites=sprites, sourceSprites=source_sprites,
+            portraits=portraits, sourcePortraits=source_portraits,
+        )
+        for requirement_index, required in enumerate(requirements):
+            if uses.budget is not None and requirement_index % 256 == 0:
+                uses.budget.checkpoint("indexed requirement reduction")
+            locator = required.get(
+                "_captureLocator", dict(channel="resourceRequirements", index=requirement_index)
+            )
+            with evaluated(
+                "map" if required.get("kind") == "map" else "entity", "required texture join"
+            ):
+                kind, want = required["kind"], required["expected"]
+                family = "map" if kind == "map" else "entity"
+                key = _resource_key(required, required=True)
+                candidate_count = sum(count for _, count, _, _ in uses.variants(key))
+                result["candidatePairCount"] += candidate_count
+                if kind == "map":
+                    visual = maps[required["identity"]["map"]]
+                    check(
+                        family,
+                        "required logical block/tile source word",
+                        0 <= want["block"] < len(visual["blocks"])
+                        and visual["blocks"][int(want["block"])][int(want["tile"])]
+                        == want["word"],
                     )
-                    result["executedPairCount"] += compact["executedPairCount"]
-                    result["joins"].append(compact)
-                weight, locator = 1, None
+                check(family, "required actual texture use", True if candidate_count else None)
+                compact = resources.reduce(required, uses, key)
+                for name, value, count, witness in compact.pop("checks"):
+                    weight = count
+                    check(family, name, value, witness)
+                weight = 1
+                compact.update(
+                    kind=kind,
+                    identity=required["identity"],
+                    expected=want,
+                    candidateKey=key,
+                    locator=locator,
+                )
+                result["executedPairCount"] += compact["executedPairCount"]
+                result["joins"].append(compact)
+            weight, locator = 1, None
         result["candidateVariants"] = _bounded_list(uses.published_variants())
 
         # Source recipe for the accepted three-raster extension, separate from base42.
