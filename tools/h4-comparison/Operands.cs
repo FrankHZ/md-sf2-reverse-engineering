@@ -29,7 +29,7 @@ internal static class Operands
         _ => throw new InvalidDataException("Invalid resource operand")
     };
 
-    public static void Write(Utf8JsonWriter writer, object? value)
+    public static void Write(Utf8JsonWriter writer, object? value, bool inventoryNumbers = false)
     {
         switch (value)
         {
@@ -41,14 +41,18 @@ internal static class Operands
             case long n: writer.WriteNumberValue(n); break;
             case double n when !double.IsFinite(n):
                 writer.WriteRawValue(double.IsNaN(n) ? "NaN" : n > 0 ? "Infinity" : "-Infinity", skipInputValidation: true); break;
+            // Inventory entity keys include Python json.dumps before key normalization.
+            // Preserve the float type (including -0.0) only on this new wire surface.
+            case double n when inventoryNumbers && Math.Truncate(n) == n:
+                writer.WriteRawValue(SceneOperands.Str(n)); break;
             case double n: writer.WriteNumberValue(n); break;
             case IDictionary<string, object?> map:
                 writer.WriteStartObject();
-                foreach (var (k, v) in map) { writer.WritePropertyName(k); Write(writer, v); }
+                foreach (var (k, v) in map) { writer.WritePropertyName(k); Write(writer, v, inventoryNumbers); }
                 writer.WriteEndObject(); break;
             case IEnumerable<object?> items:
                 writer.WriteStartArray();
-                foreach (var item in items) Write(writer, item);
+                foreach (var item in items) Write(writer, item, inventoryNumbers);
                 writer.WriteEndArray(); break;
             default: throw new InvalidDataException("Unsupported resource output operand");
         }
@@ -93,6 +97,9 @@ internal static class Operands
             else ((List<object?>)parent!)[(int)(BigInteger)path[^1]!] = value;
         }
     }
+
+    public static string NonFiniteIdentity(object value) => nonFiniteValues
+        .First(pair => ReferenceEquals(pair.Value, value)).Key;
 
     public static object? At(object? value, string key) => value switch
     {
