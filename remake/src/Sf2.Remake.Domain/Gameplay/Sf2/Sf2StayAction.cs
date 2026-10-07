@@ -19,7 +19,7 @@ internal sealed class Sf2StayAction : IBattleActionRule
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef target) => throw new BattleRuleException("stay-target", "target");
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef? target)
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
     {
         _ = RequireAction(battle, actor, action);
         if (target is not null) throw new BattleRuleException("stay-target", "target");

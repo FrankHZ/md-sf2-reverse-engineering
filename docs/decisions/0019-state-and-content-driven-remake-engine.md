@@ -390,7 +390,7 @@ a new second-hit success can also request it. Target death cancels the follow-up
 are consumed when their target survives but cannot dispatch another attack. Actor/target reversal
 and each draw's seed images/range/value are explicit semantic observations, not scenario predicates.
 
-[BattleRewards](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRewards.cs) owns effective-level
+[BattleRewards](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/BattleRewards.cs) owns effective-level
 damage/kill EXP, the per-action cap, configured halving, ordered two-roll award and gold/kill/defeat
 caps. Damage EXP truncates per hit before accumulation. Enemy counter damage does not earn EXP for
 the original player. A surviving ally who attacked receives one award, including an ally counter

@@ -35,11 +35,11 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         BattleActionRef action, ActorRef target) =>
         RequireTarget(battle, actor, destination, RequireAction(battle, actor, action).Item!, target);
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef? target)
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
     {
         _ = RequireAction(battle, actor, action);
         return Prepare(battle, actor, destination, action.ItemSlot!.Value,
-            target ?? throw new BattleRuleException("invalid-heal-target", "target"));
+            target ?? throw new BattleRuleException("invalid-heal-target", "target"), progression);
     }
 
     internal static HealingItemDefinition RequireItem(EngineBattleState battle, ActorRef actorRef, int slot)
@@ -62,34 +62,25 @@ internal sealed class Sf2ItemAction : IBattleActionRule
             item.MinimumRange, item.MaximumRange, target);
 
     internal static BattleActionResolution Prepare(
-        EngineBattleState battle, ActorRef actorRef, MapPosition destination, int slot, ActorRef targetRef)
+        EngineBattleState battle, ActorRef actorRef, MapPosition destination, int slot, ActorRef targetRef, IBattleProgressionRule progression)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
         var item = RequireItem(battle, actorRef, slot);
         var actor = battle.GetActor(actorRef);
         var target = RequireTarget(battle, actorRef, destination, item, targetRef);
         int recovery = Math.Min(item.Power, target.MaxHp - target.Hp);
-        int accumulated = actor.Definition.ClassRule == BattleClassRule.UnpromotedPriest
-            ? HealingRules.Experience(recovery, target.MaxHp) : 0;
-        uint seed = battle.MainSeed;
-        List<PhysicalRoll> rolls = [];
-        // Same-side actions skip battle EXP halving, including the non-healer minimum.
-        int award = BattleRewards.Award(accumulated, false, ref seed, rolls);
+        BattleReaction[] reactions = [new(actorRef, targetRef, "item-use", BattleReactionKind.Recovery,
+            target.Hp, (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)];
+        var award = BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Item, reactions);
         List<BattleEffect> effects = [];
         var items = actor.SourceLoadout!.Items.ToList();
         ushort consumed = items[slot];
         items.RemoveAt(slot); items.Add(127);
         var consumedActor = actor.With(sourceLoadout: new(items, actor.SourceLoadout.Spells));
         effects.Add(new("item-consumed", actorRef, consumed, slot));
-        effects.AddRange(rolls.Select(roll => new BattleEffect("rng-" + roll.Purpose, actorRef,
-            roll.Before, roll.After, roll.Range, roll.Result)));
-        uint validationSeed = seed;
-        _ = BattleGrowthRules.Award(consumedActor, award, ref validationSeed, []);
+        effects.AddRange(award.Effects);
         var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
-            ? consumedActor.With(position: destination) : a), mainSeed: seed);
-        return new(prepared, actorRef, destination,
-            [new(actorRef, targetRef, "item-use", BattleReactionKind.Recovery,
-                target.Hp, (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)],
-            new(actorRef, award), effects.AsReadOnly(), [], item);
+            ? consumedActor.With(position: destination) : a), mainSeed: award.Seed);
+        return new(prepared, actorRef, destination, reactions, new(actorRef, award.Amount), effects.AsReadOnly(), [], item);
     }
 }

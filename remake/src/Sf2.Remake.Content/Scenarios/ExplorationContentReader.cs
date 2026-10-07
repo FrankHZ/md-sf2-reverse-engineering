@@ -34,10 +34,10 @@ internal static class ExplorationContentReader
         Object(root, "document", "formatVersion", "package", "battle", "world", "start");
         _ = Number(root, "formatVersion", 8, 8);
         var battle = AuthoredScenarioPackageReader.DecodeBattle(root.GetProperty("battle"));
-        return Read(Id(root, "package"), root.GetProperty("world"), root.GetProperty("start"), battle);
+        return Read(Id(root, "package"), root.GetProperty("world"), root.GetProperty("start"), battle, authored: true);
     }
 
-    internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null)
+    internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null, bool authored = false)
     {
         ObjectOptional(world, "world", "partyFlags", ["maps", "programs", "texts",
             .. world.TryGetProperty("textFont", out _) ? new[] { "textFont" } : System.Array.Empty<string>(),
@@ -207,19 +207,34 @@ internal static class ExplorationContentReader
             Require(programEntry.Instruction == 0 && definition.Programs.ContainsKey(programEntry.Program),
                 "program-entry", "start.program");
         var encounters = (world.TryGetProperty("growth", out var growth)
-            ? BattleGrowthReader.Bind(growth, battle.Definition) : battle.Definition.Encounters.Values).ToArray();
+            ? authored ? BattleGrowthReader.BindAuthored(growth, battle.Definition) : BattleGrowthReader.Bind(growth, battle.Definition)
+            : battle.Definition.Encounters.Values).ToArray();
         foreach (var map in maps.Where(map => map.Battle?.Outcome is not null))
         {
-            Require(battle.Definition.PrivateDefinitions is { Encounter.Scene.EnemyLeaderPresent: false },
+            Require(authored ? provenance is null && battle.Definition.PrivateDefinitions is null :
+                battle.Definition.PrivateDefinitions is { Encounter.Scene.EnemyLeaderPresent: false },
                 "outcome-source", "map.battle.outcome", true);
             var route = map.Battle!;
             Require(definition.Programs[route.Outcome!.DefeatedProgram.Program].Instructions.All(instruction => instruction is EndProgram or ReturnProgram),
                 "defeated-program", "map.battle.outcome.defeated", true);
             int index = System.Array.FindIndex(encounters, encounter => encounter.Encounter == route.Encounter);
             var encounter = encounters[index];
-            var leader = encounter.Deployments.SingleOrDefault(row => row.Faction == BattleFaction.Ally && row.Definition.Physical?.Leader == true);
+            var leaders = encounter.Deployments.Where(row => row.Faction == BattleFaction.Ally && row.Definition.Physical?.Leader == true).ToArray();
+            Require(leaders.Length == 1, "outcome-roster", "map.battle.outcome");
+            var leader = leaders[0];
             var firstEnemy = encounter.Deployments.FirstOrDefault(row => row.Faction == BattleFaction.Enemy);
             Require(leader is not null && firstEnemy is not null, "outcome-roster", "map.battle.outcome");
+            if (authored)
+            {
+                Require(encounter.Deployments.All(row => row.Faction != BattleFaction.Enemy || row.Definition.Physical?.Leader != true),
+                    "outcome-enemy-leader", "map.battle.outcome", true);
+                Require(partyFlags is not null && route.Outcome.JoinMember < partyFlags.MemberCount,
+                    "outcome-join-member", "map.battle.outcome.joinMember");
+                var egress = definition.Maps[route.Outcome.EgressMap];
+                Require(egress.Traversal.IsWithinActiveArea(route.Outcome.EgressPosition) &&
+                    !OriginalMapTraversal.IsBlocked(egress.Layout, route.Outcome.EgressPosition),
+                    "outcome-egress", "map.battle.outcome.egress");
+            }
             encounters[index] = new(encounter.Encounter, encounter.Map, encounter.Width, encounter.Height, encounter.Terrain,
                 encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, firstEnemy!.Actor), encounter.HealingItems.Values);
         }

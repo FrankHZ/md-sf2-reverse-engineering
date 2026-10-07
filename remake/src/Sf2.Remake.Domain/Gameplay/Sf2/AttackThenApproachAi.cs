@@ -22,16 +22,16 @@ internal sealed class AttackThenApproachAi : IBattleDecisionRule
             throw new BattleRuleException("ai-action-categories", "start.actors.items", true);
     }
     public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical) =>
-        Resolve(battle, actor, physical, preflight: false);
+        Resolve(battle, actor, physical);
 
     // Explicit source-default overload for standalone policy comparisons.
     internal static BattleAutomaticAction Resolve(EngineBattleState current, ActorRef actor) =>
-        Resolve(current, actor, new Sf2PhysicalAction());
+        BattleDecisionRules.Decide(new AttackThenApproachAi(), current, actor, new Sf2PhysicalAction(), new Sf2BattleProgressionRule());
 
     internal static BattleAutomaticAction Resolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, bool preflight = true)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
     {
-        if (EnemyPhysicalDecision.TryResolve(current, actorRef, physical, preflight) is { } attack)
+        if (EnemyPhysicalDecision.TryResolve(current, actorRef, physical) is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
 
         // In this admitted empty spellbook/item/status branch ATTACK1, HEAL1 and SUPPORT

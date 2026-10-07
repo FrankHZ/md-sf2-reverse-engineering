@@ -61,6 +61,86 @@ failure, necessary code/import restart, observed contamination, or test of start
 justify a bounded restart or isolated instance; record the reason. A new slice or comparison does not
 justify copying the project, extracting another editor, or building a debug framework.
 
+## Replaceable Progression and Outcome Observation
+
+Use the ordinary host and
+[`engine_progression_outcome_observation.gd`](../game/probes/engine_progression_outcome_observation.gd)
+with the two small `remake/content/authored/progression-outcome-{victory,defeat}.json` packages.
+The observer extends the existing exploration observer, submits actual keys and reads the current
+battle/field view plus ordered result signals. No state setter, direct receipt or screenshot supplies
+acceptance. Select `RuleCompositions.ForGame()=>Sf2()` or `AuthoredProgressionOutcome()` in C#, then
+rebuild/restart the same installed host; both factories use the identical inputs. Restore `Sf2()`
+and rebuild before handoff. The EXPECT variables below describe the observer's expectation only.
+
+The victory route interacts on quay, enters arena through its program, acknowledges before text,
+then confirms movement, physical action, target and commit. Its leader begins at EXP99/level1 and
+HP10, companion dead and enemy HP1. Defeat instead uses Stay and a real automatic lethal attack.
+Observe separate construction/HP/reward/growth/death publications, actual outcome dialogue,
+living-only victory recovery before explicit reset, join/unlock/completion ordering, return fades,
+two settled field reads and one actual west movement. Defeat has no victory tail.
+
+Independent expectations follow the accepted main LCG high-word recurrence `(13*s+7)&65535`,
+unchanged low word `0x1234`, six living turn draws for victory/nine for defeat, four lethal strike
+draws, source two award draws (authored zero),24 reaction draws and ten growth draws. The authored
+curves use cumulative `floor(256*(i+1)/29)` with successive increments and projected-start29.
+These produce five +1 gains, keeping current HP/MP10/0 until recovery; they are not values learned
+from the observer. Thinking seed stays `0xBEEF0042` in these cases.
+
+| Case | First control seed | Construction seed | Pre-growth seed | Final seed | EXP/level; returned gold |
+| --- | --- | --- | --- | --- | --- |
+| SF2 victory | 3361018420 | 3657634356 | 3529183796 | 3330085428 | award49;99→148→48/2;84 |
+| Authored victory | 3361018420 | 2486768180 | 147919412 | 2535658036 | award7;99→106→6/2;84 |
+| Either defeat | 1182405172 | 305009204 | no growth | 2930119220 | no award; source gold36, authored63 |
+
+Run each case serially from the owning checkout with a fresh ignored destination. The controlled
+SDK environment comes from [local private inputs](../../docs/operations/local-private-inputs.md)
+and the [locked SDK workflow](#locked-net-workflow). The restart is needed to select compiled policy
+and ordinary fixture startup; no separate installation/project is created.
+
+```powershell
+$ErrorActionPreference = 'Stop'
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+Push-Location -LiteralPath remake
+try {
+    & $env:DOTNET_BIN restore game/Sf2.Remake.Godot.csproj --locked-mode
+    if ($LASTEXITCODE -ne 0) { throw 'restore failed' }
+    & $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+    if ($LASTEXITCODE -ne 0) { throw 'build failed' }
+} finally { Pop-Location }
+$policy = 'sf2' # or authored, matching the compiled factory
+$outcome = 'victory' # or defeat
+$run = Join-Path (Get-Location).Path "local/progression-observation/$policy-$outcome-01"
+if (Test-Path -LiteralPath $run) { throw 'Choose a fresh output directory' }
+New-Item -ItemType Directory -Path $run | Out-Null
+foreach ($key in @('APPDATA','LOCALAPPDATA','TEMP','TMP')) {
+    $dir = Join-Path $run $key.ToLowerInvariant()
+    New-Item -ItemType Directory -Path $dir | Out-Null
+    [Environment]::SetEnvironmentVariable($key,$dir,'Process')
+}
+$env:SF2_OBSERVATION_EXPECT_POLICY = $policy
+$env:SF2_OBSERVATION_EXPECT_OUTCOME = $outcome
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $run 'observation.json'
+$package = (Resolve-Path -LiteralPath "remake/content/authored/progression-outcome-$outcome.json").Path
+& $godotBinary --headless --path remake/game --log-file (Join-Path $run 'godot.log') `
+    --script res://probes/engine_progression_outcome_observation.gd -- --authored-package $package `
+    *> (Join-Path $run 'process.log')
+$nativeExit = $LASTEXITCODE
+$nativeExit | Set-Content -LiteralPath (Join-Path $run 'process.exit') -Encoding utf8NoBOM
+```
+
+Require exit0, `passed:true`, no observer failures and no Godot errors in either log. The four bounded
+cases pass with current source/factory semantics; this does not establish private HEAL/world/growth
+assets or replay the private outcome route. Existing CP2059–2091 and #675/#676 failures remain with
+their original owners. Engine behavior assertions cover source caps/spells/equipment, selected
+preflight, post-fairy growth, malformed policies and reached-stage retry. Run `uv run sf2 verify engine`
+and `uv run sf2 verify adapter`; after a completed failing aggregate, correct with affected files,
+retaining the original result. No full Python/H3/H4 or private whole-route run is implied.
+
+Resource boundary: two inputs in tens of KiB, one action per victory or Stay plus automatic action
+per defeat,120-second hard observer deadline and under5 MiB expected output per case. Retain stage
+samples/events only; a private resource dependency or new observation surface requires replanning.
+
 ## Observation and Comparison Planning
 
 Before a large or expanded capture/comparison, apply the

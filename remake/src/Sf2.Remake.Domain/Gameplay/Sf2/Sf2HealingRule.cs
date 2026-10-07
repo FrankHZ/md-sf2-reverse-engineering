@@ -27,24 +27,18 @@ internal sealed class Sf2HealingRule : IHealingRule
         MapPosition destination, HealingSpellDefinition spell, ActorRef targetRef) =>
         HealingTargetRules.RequireTarget(battle, actorRef, destination, spell.MinimumRange, spell.MaximumRange, targetRef);
     public BattleActionResolution Prepare(
-        EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef)
+        EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef, IBattleProgressionRule progression)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
         var spell = RequireSpell(battle, actorRef, spellRef);
         var actor = battle.GetActor(actorRef);
         var target = RequireTarget(battle, actorRef, destination, spell, targetRef);
-        var resolution = HealingRules.ResolvePriest(new(target.Hp, target.MaxHp, actor.Mp,
-            actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true), spell.Power, spell.MpCost, battle.MainSeed));
-        List<BattleEffect> effects = [
-            new("rng-exp-plus", actorRef, resolution.PlusRoll.Before, resolution.PlusRoll.After, 16, resolution.PlusRoll.Value),
-            new("rng-exp-minus", actorRef, resolution.MinusRoll.Before, resolution.MinusRoll.After, 16, resolution.MinusRoll.Value)];
-        uint validationSeed = resolution.MainAfter;
-        _ = BattleGrowthRules.Award(actor, resolution.AwardedExp, ref validationSeed, []);
+        int recovery = Math.Min(spell.Power, target.MaxHp - target.Hp);
+        BattleReaction[] reactions = [new(actorRef, targetRef, "heal", BattleReactionKind.Recovery, target.Hp,
+            (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)];
+        var award = BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Healing, reactions);
         var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
-            ? a.With(position: destination) : a), mainSeed: resolution.MainAfter);
-        return new(prepared, actorRef, destination,
-            [new(actorRef, targetRef, "heal", BattleReactionKind.Recovery, target.Hp, resolution.HpAfter,
-                target.Mp, target.Mp, Amount: resolution.Recovery)], new(actorRef, resolution.AwardedExp),
-            effects.AsReadOnly(), [], Spell: spell);
+            ? a.With(position: destination) : a), mainSeed: award.Seed);
+        return new(prepared, actorRef, destination, reactions, new(actorRef, award.Amount), award.Effects, [], Spell: spell);
     }
 }

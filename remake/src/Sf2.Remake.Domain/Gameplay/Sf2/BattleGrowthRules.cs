@@ -1,4 +1,6 @@
-namespace Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Battles;
+
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal static class BattleGrowthRules
 {
@@ -9,7 +11,7 @@ internal static class BattleGrowthRules
     internal static BattleActorState Credit(BattleActorState actor, int amount, List<BattleEffect> effects)
     {
         int previous = actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true);
-        int total = Math.Min(200, previous + amount);
+        int total = (int)Math.Min(200L, (long)previous + amount);
         effects.Add(new("exp", actor.Actor, previous, total));
         return actor.With(exp: (byte)total);
     }

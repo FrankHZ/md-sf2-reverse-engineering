@@ -108,6 +108,8 @@ internal static class BattleMovementContinuation
                     new(BattleActionKind.Physical), victim);
                 return BattleSceneContinuation.Begin(current, prepared, observations);
             }
+            catch (BattlePolicyFault error)
+            { return Failed(SessionStopReason.Faulted, BattleChoices.Failure(error)); }
             catch (BattleActionRuleFault error)
             { return Failed(SessionStopReason.Faulted, BattleChoices.Failure(error)); }
             catch (BattleRuleException error)
@@ -119,8 +121,14 @@ internal static class BattleMovementContinuation
         // gameplay command could change occupancy while its continuation lived.
         var moved = current.Battle.With(actors: current.Battle.Actors.Select(a =>
             a.Actor == actor ? a.With(position: destination) : a));
-        var committed = BattleActionCommitter.Publish(current, moved, actor, destination, [], observations).WithStory(current.Story);
-        return new(committed, observations.AsReadOnly(), committed.StopReason);
+        try
+        {
+            var committed = BattleActionCommitter.Publish(current, moved, actor, destination, [], observations, rules).WithStory(current.Story);
+            return new(committed, observations.AsReadOnly(), committed.StopReason);
+        }
+        catch (BattlePolicyFault error) { return Failed(SessionStopReason.Faulted, BattleChoices.Failure(error)); }
+        catch (BattleRuleException error)
+        { return Failed(error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted, BattleChoices.Failure(error)); }
 
         SessionResult Failed(SessionStopReason reason, SessionFailure failure) =>
             new(new(current.SessionId, current.Revision, current.ObservationSequence, current.Active, current.Story, reason),

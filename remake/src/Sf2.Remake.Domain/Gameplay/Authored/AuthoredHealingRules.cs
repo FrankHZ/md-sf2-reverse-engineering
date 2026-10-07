@@ -23,35 +23,30 @@ internal abstract class AuthoredHealingRule : IHealingRule
         HealingTargetRules.RequireTarget(battle, actor, destination, spell.MinimumRange, spell.MaximumRange, target);
 
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actorRef, MapPosition destination,
-        SpellRef spellRef, ActorRef targetRef)
+        SpellRef spellRef, ActorRef targetRef, IBattleProgressionRule progression)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
         var spell = RequireSpell(battle, actorRef, spellRef);
         var actor = battle.GetActor(actorRef);
         var target = RequireTarget(battle, actorRef, destination, spell, targetRef);
-        return Calculate(battle, actor, target, destination, spell);
+        return Calculate(battle, actor, target, destination, spell, progression);
     }
     protected abstract BattleActionResolution Calculate(EngineBattleState battle, BattleActorState actor,
-        BattleActorState target, MapPosition destination, HealingSpellDefinition spell);
+        BattleActorState target, MapPosition destination, HealingSpellDefinition spell, IBattleProgressionRule progression);
 }
 
 internal sealed class CappedHealingRule : AuthoredHealingRule
 {
     public override string Identity => "authored-capped-healing";
     protected override BattleActionResolution Calculate(EngineBattleState battle, BattleActorState actor,
-        BattleActorState target, MapPosition destination, HealingSpellDefinition spell)
+        BattleActorState target, MapPosition destination, HealingSpellDefinition spell, IBattleProgressionRule progression)
     {
-        var result = HealingRules.ResolvePriest(new(target.Hp, target.MaxHp, actor.Mp,
-            actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true),
-            spell.Power, spell.MpCost, battle.MainSeed));
-        uint validationSeed = result.MainAfter;
-        _ = BattleGrowthRules.Award(actor, result.AwardedExp, ref validationSeed, []);
+        int recovery = Math.Min(spell.Power, target.MaxHp - target.Hp);
+        BattleReaction[] reactions = [new(actor.Actor, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
+            (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)];
+        var award = BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Healing, reactions);
         return new(battle.With(actors: battle.Actors.Select(a => a.Actor == actor.Actor ? a.With(position: destination) : a),
-                mainSeed: result.MainAfter), actor.Actor, destination,
-            [new(actor.Actor, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp, result.HpAfter,
-                target.Mp, target.Mp, Amount: result.Recovery)], new(actor.Actor, result.AwardedExp),
-            [new("rng-exp-plus", actor.Actor, result.PlusRoll.Before, result.PlusRoll.After, 16, result.PlusRoll.Value),
-             new("rng-exp-minus", actor.Actor, result.MinusRoll.Before, result.MinusRoll.After, 16, result.MinusRoll.Value)], [], Spell: spell);
+            mainSeed: award.Seed), actor.Actor, destination, reactions, new(actor.Actor, award.Amount), award.Effects, [], Spell: spell);
     }
 }
 
@@ -66,7 +61,7 @@ internal sealed class HalfMissingHealingRule : AuthoredHealingRule
         return target;
     }
     protected override BattleActionResolution Calculate(EngineBattleState battle, BattleActorState actor,
-        BattleActorState target, MapPosition destination, HealingSpellDefinition spell)
+        BattleActorState target, MapPosition destination, HealingSpellDefinition spell, IBattleProgressionRule progression)
     {
         int recovery = Math.Min(spell.Power, (target.MaxHp - target.Hp + 1) / 2);
         return new(battle.With(actors: battle.Actors.Select(a => a.Actor == actor.Actor ? a.With(position: destination) : a)),

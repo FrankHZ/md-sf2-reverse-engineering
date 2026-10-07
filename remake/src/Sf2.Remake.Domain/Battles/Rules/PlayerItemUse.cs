@@ -9,5 +9,5 @@ internal static class PlayerItemUse
     internal static BattleActionResolution PrepareSourceDefault(EngineBattleState battle, ActorRef actor,
         MapPosition destination, int slot, ActorRef target) =>
         BattleActionRules.Prepare(new Sf2ItemAction(), battle, actor, destination,
-            new(BattleActionKind.Item, ItemSlot: slot), target);
+            new(BattleActionKind.Item, ItemSlot: slot), target, new Sf2BattleProgressionRule());
 }

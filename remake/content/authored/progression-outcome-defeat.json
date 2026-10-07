@@ -1,0 +1,1189 @@
+{
+  "formatVersion": 8,
+  "package": "progression-outcome-defeat",
+  "battle": {
+    "formatVersion": 7,
+    "package": "progression-defeat",
+    "profile": "public-authored",
+    "ruleProfile": "sf2-semantic-subset-v1",
+    "start": {
+      "encounter": "arena-battle",
+      "initialVitals": "authored-controlled",
+      "mainSeed": 3609140,
+      "thinkingSeed": 3203334210,
+      "gold": 73,
+      "actors": [
+        {
+          "actor": "leader",
+          "hp": 1,
+          "mp": 0,
+          "exp": 99,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        },
+        {
+          "actor": "companion",
+          "hp": 7,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        },
+        {
+          "actor": "enemy",
+          "hp": 20,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        }
+      ]
+    },
+    "terrains": [
+      {
+        "id": "open",
+        "legend": {
+          ".": {
+            "surface": "open",
+            "protection": "none"
+          }
+        },
+        "rows": [
+          "......",
+          "......",
+          "......",
+          "......",
+          "......",
+          "......"
+        ]
+      }
+    ],
+    "maps": [
+      {
+        "id": "arena",
+        "terrain": "open"
+      }
+    ],
+    "spells": [],
+    "actors": [
+      {
+        "id": "leader",
+        "classRule": "unpromoted-swordsman",
+        "level": 1,
+        "maxHp": 40,
+        "maxMp": 0,
+        "attack": 30,
+        "defense": 4,
+        "agility": 63,
+        "extraRoundAction": false,
+        "move": 3,
+        "items": [],
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-16",
+            "damageBonus": "quarter"
+          },
+          "promoted": false,
+          "leader": true,
+          "gold": 0,
+          "special": "none"
+        }
+      },
+      {
+        "id": "companion",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 12,
+        "maxMp": 0,
+        "attack": 30,
+        "defense": 4,
+        "agility": 1,
+        "extraRoundAction": false,
+        "move": 3,
+        "items": [],
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-16",
+            "damageBonus": "quarter"
+          },
+          "promoted": false,
+          "leader": false,
+          "gold": 0,
+          "special": "none"
+        }
+      },
+      {
+        "id": "enemy",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 20,
+        "maxMp": 0,
+        "attack": 30,
+        "defense": 4,
+        "agility": 40,
+        "extraRoundAction": false,
+        "move": 3,
+        "items": [],
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-16",
+            "damageBonus": "quarter"
+          },
+          "promoted": false,
+          "leader": false,
+          "gold": 11,
+          "special": "none"
+        }
+      }
+    ],
+    "encounters": [
+      {
+        "id": "arena-battle",
+        "map": "arena",
+        "rewards": {
+          "halvedExperience": false
+        },
+        "placements": [
+          {
+            "actor": "leader",
+            "faction": "ally",
+            "processingOrder": 0,
+            "control": "player",
+            "aiStrategy": null,
+            "x": 2,
+            "y": 2
+          },
+          {
+            "actor": "companion",
+            "faction": "ally",
+            "processingOrder": 1,
+            "control": "player",
+            "aiStrategy": null,
+            "x": 4,
+            "y": 4
+          },
+          {
+            "actor": "enemy",
+            "faction": "enemy",
+            "processingOrder": 2,
+            "control": "automatic",
+            "aiStrategy": "attack-then-approach",
+            "x": 3,
+            "y": 2
+          }
+        ]
+      }
+    ]
+  },
+  "world": {
+    "maps": [
+      {
+        "id": "quay",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [
+          {
+            "id": "ferryman",
+            "position": {
+              "x": 2,
+              "y": 1
+            },
+            "facing": 2,
+            "speed": 96,
+            "visible": true,
+            "obstruction": true
+          }
+        ],
+        "events": [
+          {
+            "kind": "interact",
+            "entity": "ferryman",
+            "program": {
+              "program": "enter",
+              "instruction": 0
+            },
+            "requiredFlag": null,
+            "requiredValue": true
+          }
+        ],
+        "onLoad": null,
+        "battle": null,
+        "setup": null,
+        "basePalette": {
+          "color2": 546,
+          "color3": 1092
+        }
+      },
+      {
+        "id": "arena",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [],
+        "events": [],
+        "onLoad": {
+          "program": "arrival",
+          "instruction": 0
+        },
+        "battle": {
+          "encounter": "arena-battle",
+          "unlockedFlag": 401,
+          "completedFlag": 501,
+          "introFlag": 451,
+          "before": {
+            "program": "before",
+            "instruction": 0
+          },
+          "start": null,
+          "outcome": {
+            "after": {
+              "program": "after",
+              "instruction": 0
+            },
+            "joinMember": 1,
+            "defeated": {
+              "program": "empty",
+              "instruction": 0
+            },
+            "defeat": {
+              "program": "defeat",
+              "instruction": 0
+            },
+            "return": {
+              "program": "return-field",
+              "instruction": 0
+            },
+            "victoryFacing": 3,
+            "egress": {
+              "map": "quay",
+              "position": {
+                "x": 3,
+                "y": 3
+              },
+              "facing": 3
+            }
+          }
+        },
+        "setup": null,
+        "basePalette": {
+          "color2": 546,
+          "color3": 1092
+        }
+      }
+    ],
+    "programs": [
+      {
+        "id": "enter",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 401,
+            "value": true
+          },
+          {
+            "op": "transfer",
+            "map": "arena",
+            "position": {
+              "x": 2,
+              "y": 2
+            },
+            "facing": 3,
+            "loadMode": "rebuild"
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "arrival",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 400,
+            "value": true
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "before",
+        "instructions": [
+          {
+            "op": "text-cursor",
+            "text": 100
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "after",
+        "instructions": [
+          {
+            "op": "text-cursor",
+            "text": 101
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "reset-party-battle-stats"
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "defeat",
+        "instructions": [
+          {
+            "op": "text-cursor",
+            "text": 102
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "empty",
+        "instructions": [
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "return-field",
+        "instructions": [
+          {
+            "op": "present",
+            "kind": "FadeOut",
+            "resource": "black",
+            "entity": null,
+            "position": null
+          },
+          {
+            "op": "battle-return-map"
+          },
+          {
+            "op": "present",
+            "kind": "FadeIn",
+            "resource": "black",
+            "entity": null,
+            "position": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      }
+    ],
+    "texts": [
+      {
+        "id": 100,
+        "text": "Prepare for the encounter."
+      },
+      {
+        "id": 101,
+        "text": "Victory. Everyone will recover before returning."
+      },
+      {
+        "id": 102,
+        "text": "Defeat. Return to the quay."
+      }
+    ],
+    "partyFlags": {
+      "memberCount": 2,
+      "joinedStart": 0,
+      "activeStart": 32,
+      "capacity": 2
+    },
+    "growth": [
+      {
+        "actor": "leader",
+        "classId": 0,
+        "stats": [
+          {
+            "start": 40,
+            "projected": 69,
+            "curve": [
+              [
+                8,
+                8
+              ],
+              [
+                17,
+                9
+              ],
+              [
+                26,
+                9
+              ],
+              [
+                35,
+                9
+              ],
+              [
+                44,
+                9
+              ],
+              [
+                52,
+                8
+              ],
+              [
+                61,
+                9
+              ],
+              [
+                70,
+                9
+              ],
+              [
+                79,
+                9
+              ],
+              [
+                88,
+                9
+              ],
+              [
+                97,
+                9
+              ],
+              [
+                105,
+                8
+              ],
+              [
+                114,
+                9
+              ],
+              [
+                123,
+                9
+              ],
+              [
+                132,
+                9
+              ],
+              [
+                141,
+                9
+              ],
+              [
+                150,
+                9
+              ],
+              [
+                158,
+                8
+              ],
+              [
+                167,
+                9
+              ],
+              [
+                176,
+                9
+              ],
+              [
+                185,
+                9
+              ],
+              [
+                194,
+                9
+              ],
+              [
+                203,
+                9
+              ],
+              [
+                211,
+                8
+              ],
+              [
+                220,
+                9
+              ],
+              [
+                229,
+                9
+              ],
+              [
+                238,
+                9
+              ],
+              [
+                247,
+                9
+              ],
+              [
+                256,
+                9
+              ]
+            ]
+          },
+          {
+            "start": 0,
+            "projected": 29,
+            "curve": [
+              [
+                8,
+                8
+              ],
+              [
+                17,
+                9
+              ],
+              [
+                26,
+                9
+              ],
+              [
+                35,
+                9
+              ],
+              [
+                44,
+                9
+              ],
+              [
+                52,
+                8
+              ],
+              [
+                61,
+                9
+              ],
+              [
+                70,
+                9
+              ],
+              [
+                79,
+                9
+              ],
+              [
+                88,
+                9
+              ],
+              [
+                97,
+                9
+              ],
+              [
+                105,
+                8
+              ],
+              [
+                114,
+                9
+              ],
+              [
+                123,
+                9
+              ],
+              [
+                132,
+                9
+              ],
+              [
+                141,
+                9
+              ],
+              [
+                150,
+                9
+              ],
+              [
+                158,
+                8
+              ],
+              [
+                167,
+                9
+              ],
+              [
+                176,
+                9
+              ],
+              [
+                185,
+                9
+              ],
+              [
+                194,
+                9
+              ],
+              [
+                203,
+                9
+              ],
+              [
+                211,
+                8
+              ],
+              [
+                220,
+                9
+              ],
+              [
+                229,
+                9
+              ],
+              [
+                238,
+                9
+              ],
+              [
+                247,
+                9
+              ],
+              [
+                256,
+                9
+              ]
+            ]
+          },
+          {
+            "start": 30,
+            "projected": 59,
+            "curve": [
+              [
+                8,
+                8
+              ],
+              [
+                17,
+                9
+              ],
+              [
+                26,
+                9
+              ],
+              [
+                35,
+                9
+              ],
+              [
+                44,
+                9
+              ],
+              [
+                52,
+                8
+              ],
+              [
+                61,
+                9
+              ],
+              [
+                70,
+                9
+              ],
+              [
+                79,
+                9
+              ],
+              [
+                88,
+                9
+              ],
+              [
+                97,
+                9
+              ],
+              [
+                105,
+                8
+              ],
+              [
+                114,
+                9
+              ],
+              [
+                123,
+                9
+              ],
+              [
+                132,
+                9
+              ],
+              [
+                141,
+                9
+              ],
+              [
+                150,
+                9
+              ],
+              [
+                158,
+                8
+              ],
+              [
+                167,
+                9
+              ],
+              [
+                176,
+                9
+              ],
+              [
+                185,
+                9
+              ],
+              [
+                194,
+                9
+              ],
+              [
+                203,
+                9
+              ],
+              [
+                211,
+                8
+              ],
+              [
+                220,
+                9
+              ],
+              [
+                229,
+                9
+              ],
+              [
+                238,
+                9
+              ],
+              [
+                247,
+                9
+              ],
+              [
+                256,
+                9
+              ]
+            ]
+          },
+          {
+            "start": 4,
+            "projected": 33,
+            "curve": [
+              [
+                8,
+                8
+              ],
+              [
+                17,
+                9
+              ],
+              [
+                26,
+                9
+              ],
+              [
+                35,
+                9
+              ],
+              [
+                44,
+                9
+              ],
+              [
+                52,
+                8
+              ],
+              [
+                61,
+                9
+              ],
+              [
+                70,
+                9
+              ],
+              [
+                79,
+                9
+              ],
+              [
+                88,
+                9
+              ],
+              [
+                97,
+                9
+              ],
+              [
+                105,
+                8
+              ],
+              [
+                114,
+                9
+              ],
+              [
+                123,
+                9
+              ],
+              [
+                132,
+                9
+              ],
+              [
+                141,
+                9
+              ],
+              [
+                150,
+                9
+              ],
+              [
+                158,
+                8
+              ],
+              [
+                167,
+                9
+              ],
+              [
+                176,
+                9
+              ],
+              [
+                185,
+                9
+              ],
+              [
+                194,
+                9
+              ],
+              [
+                203,
+                9
+              ],
+              [
+                211,
+                8
+              ],
+              [
+                220,
+                9
+              ],
+              [
+                229,
+                9
+              ],
+              [
+                238,
+                9
+              ],
+              [
+                247,
+                9
+              ],
+              [
+                256,
+                9
+              ]
+            ]
+          },
+          {
+            "start": 63,
+            "projected": 92,
+            "curve": [
+              [
+                8,
+                8
+              ],
+              [
+                17,
+                9
+              ],
+              [
+                26,
+                9
+              ],
+              [
+                35,
+                9
+              ],
+              [
+                44,
+                9
+              ],
+              [
+                52,
+                8
+              ],
+              [
+                61,
+                9
+              ],
+              [
+                70,
+                9
+              ],
+              [
+                79,
+                9
+              ],
+              [
+                88,
+                9
+              ],
+              [
+                97,
+                9
+              ],
+              [
+                105,
+                8
+              ],
+              [
+                114,
+                9
+              ],
+              [
+                123,
+                9
+              ],
+              [
+                132,
+                9
+              ],
+              [
+                141,
+                9
+              ],
+              [
+                150,
+                9
+              ],
+              [
+                158,
+                8
+              ],
+              [
+                167,
+                9
+              ],
+              [
+                176,
+                9
+              ],
+              [
+                185,
+                9
+              ],
+              [
+                194,
+                9
+              ],
+              [
+                203,
+                9
+              ],
+              [
+                211,
+                8
+              ],
+              [
+                220,
+                9
+              ],
+              [
+                229,
+                9
+              ],
+              [
+                238,
+                9
+              ],
+              [
+                247,
+                9
+              ],
+              [
+                256,
+                9
+              ]
+            ]
+          }
+        ],
+        "spells": []
+      }
+    ]
+  },
+  "start": {
+    "map": "quay",
+    "player": "traveler",
+    "position": {
+      "x": 1,
+      "y": 1
+    },
+    "facing": 0,
+    "speed": 96,
+    "flags": [
+      0,
+      32,
+      399
+    ],
+    "display": {
+      "period": 1,
+      "base": {
+        "color2": 546,
+        "color3": 1092
+      },
+      "current": {
+        "color2": 546,
+        "color3": 1092
+      },
+      "visibility": "base-restored"
+    }
+  }
+}

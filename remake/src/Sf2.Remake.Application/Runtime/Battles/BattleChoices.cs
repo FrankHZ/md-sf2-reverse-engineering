@@ -28,6 +28,9 @@ public sealed record BattleChoicesSnapshot(Guid SessionId, long Revision, ActorR
 
 internal static class BattleChoices
 {
+    internal static SessionFailure Failure(BattlePolicyFault error) =>
+        new(SessionFailureKind.InvariantFailure, "battle-policy-failure", "rules", $"{error.Identity}: {error.Operation}");
+
     internal static SessionFailure Failure(BattleRuleException error) =>
         new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.IllegalCommand,
             error.Code, error.Field, error.Code.Replace('-', ' '));
@@ -95,7 +98,7 @@ internal static class BattleChoices
     {
         _ = RequireAction(rules, battle, actor, action);
         if (target is { } victim) _ = RequireTarget(rules, battle, actor, destination, action, victim, content, requireContent);
-        return BattleActionRules.Prepare(rules.Action(action), battle, actor, destination, action, target);
+        return BattleActionRules.Prepare(rules.Action(action), battle, actor, destination, action, target, rules.Progression);
     }
 
     internal static BattleChoicesSnapshot Query(SessionSnapshot current, SessionRules rules,

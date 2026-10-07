@@ -22,10 +22,10 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         BattleActionRef action, ActorRef target)
     { _ = RequireAction(battle, actor, action); return RequireTarget(battle, actor, destination, target); }
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef? target)
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
     {
         _ = RequireAction(battle, actor, action);
-        return Prepare(battle, actor, destination, target ?? throw new BattleRuleException("physical-target", "target"));
+        return Prepare(battle, actor, destination, target ?? throw new BattleRuleException("physical-target", "target"), progression);
     }
     public int EstimateDamage(EngineBattleState battle, ActorRef actor, ActorRef target)
     {
@@ -74,7 +74,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     }
 
     internal static BattleActionResolution Prepare(
-        EngineBattleState current, ActorRef actorRef, MapPosition destination, ActorRef targetRef)
+        EngineBattleState current, ActorRef actorRef, MapPosition destination, ActorRef targetRef, IBattleProgressionRule progression)
     {
         BattleMovement.RequireStop(current, actorRef, destination);
         _ = RequireActor(current, actorRef);
@@ -82,7 +82,6 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         var target = RequireTarget(current, actorRef, destination, targetRef);
         ushort actorHp = actor.Hp, targetHp = target.Hp;
         uint seed = current.MainSeed;
-        int accumulated = 0;
         var effects = new List<BattleEffect>();
         var reactions = new List<BattleReaction>();
 
@@ -114,17 +113,13 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         {
             // Only a surviving ally who actually attacked earns an award (including a counter).
             if (ally.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
-            var awardRolls = new List<PhysicalRoll>();
-            int award = BattleRewards.Award(accumulated, current.Definition.Rewards!.HalvedExperience, ref seed, awardRolls);
-            AddRolls(awardRolls, ally.Actor);
-            reward = new(ally.Actor, award);
-            // Admission is atomic even when the later giveExp needs unsupported growth.
-            // This validation draw is not published; replay uses its then-current seed.
-            uint validationSeed = seed;
-            _ = BattleGrowthRules.Award(ally, award, ref validationSeed, []);
+            var award = BattleProgressionRules.Award(progression, current.With(mainSeed: seed), ally, BattleActionKind.Physical, reactions.AsReadOnly());
+            seed = award.Seed;
+            effects.AddRange(award.Effects);
+            reward = new(ally.Actor, award.Amount);
         }
-        uint? gold = enemyDead ? BattleRewards.Gold(current.Gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true),
-            enemy.Definition.Physical!.Gold) : current.Gold;
+        uint? gold = enemyDead ? BattleProgressionRules.Invoke(progression.Identity, "gold", () => progression.Gold(
+            current.Gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true), enemy.Definition.Physical!.Gold)) : current.Gold;
         if (enemyDead)
         {
             effects.Add(new("gold", ally.Actor, current.Gold, gold));
@@ -168,14 +163,6 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             }
             if (counter) actorHp = strike.Hp;
             else targetHp = strike.Hp;
-            if (attacker.IsAlly)
-            {
-                int killExp = BattleRewards.KillExperience(attacker.Level, profile.Promoted, defender.Level);
-                // Each hit truncates its damage EXP separately, then adds to one capped action
-                // accumulator. Enemy strikes never earn ally EXP, regardless of action direction.
-                accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(strike.Damage, defender.MaxHp, killExp));
-                if (strike.Hp == 0) accumulated = Math.Min(49, accumulated + killExp);
-            }
             return strike;
         }
 
@@ -203,7 +190,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) Resolve(
         EngineBattleState current, ActorRef actor, MapPosition destination, ActorRef target)
     {
-        var action = Prepare(current, actor, destination, target);
+        var progression = new Sf2BattleProgressionRule();
+        var action = BattleActionRules.Prepare(new Sf2PhysicalAction(), current, actor, destination, new(BattleActionKind.Physical), target, progression);
         var battle = action.Prepared;
         var deaths = BattleDeathBatch.Empty;
         foreach (var reaction in action.Reactions)
@@ -212,8 +200,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             battle = action.ApplyReaction(battle, reaction);
             deaths = deaths.Append(before, battle.GetActor(reaction.Target));
         }
-        var reward = action.ApplyReward(battle);
-        var cleaned = deaths.Clean(reward.Battle, action.FirstAlly);
+        var reward = action.ApplyReward(battle, progression);
+        var cleaned = deaths.Clean(reward.Battle, action.FirstAlly, progression);
         return (cleaned.Battle, Array.AsReadOnly<BattleEffect>([
             .. action.ConstructionEffects, .. reward.Effects, .. cleaned.Effects]));
     }

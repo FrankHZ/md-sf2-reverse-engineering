@@ -7,8 +7,10 @@ internal static class BattleActionCommitter
 {
     // Called only after an entire player or enemy ACTION has resolved on temporary state.
     internal static SessionSnapshot Publish(SessionSnapshot current, EngineBattleState battle,
-        ActorRef actor, MapPosition destination, IReadOnlyList<BattleEffect> effects, List<SessionObservation> observations, bool defeatedHookHandled = false)
+        ActorRef actor, MapPosition destination, IReadOnlyList<BattleEffect> effects, List<SessionObservation> observations, SessionRules rules, bool defeatedHookHandled = false)
     {
+        var outcome = BattleOutcomeSelection.Check(rules.Outcome, battle);
+        bool hook = !defeatedHookHandled && BattleOutcomeSelection.DefeatedHook(rules.Outcome, battle);
         long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
         var origin = current.Battle.GetActor(actor).Position;
         if (!defeatedHookHandled && origin != destination)
@@ -16,13 +18,12 @@ internal static class BattleActionCommitter
         foreach (var effect in effects.Where(effect => effect.Kind is not ("death-cleanup" or "kills" or "defeats")))
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After,
                 RandomRange: effect.RandomRange, RandomValue: effect.RandomValue, Target: effect.Target));
-        if (!defeatedHookHandled && BattleOutcomeRules.DefeatedHook(battle))
+        if (hook)
             observations.Add(new(++sequence, revision, "enemy-defeated-program-none"));
         foreach (var effect in effects.Where(effect => effect.Kind is "death-cleanup" or "kills" or "defeats"))
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));
         // Every admitted action has status-free, ATT-only equipment semantics. Its after-turn
         // pass changes no resources or RNG; publish it once for player and automatic actions.
-        var outcome = BattleOutcomeRules.Check(battle);
         if (outcome is null) observations.Add(new(++sequence, revision, "after-turn", actor));
         else observations.Add(new(++sequence, revision, "battle-outcome", Detail: outcome.Value.ToString()));
         if (battle.MainSeed != current.Battle.MainSeed)

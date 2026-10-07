@@ -13,7 +13,9 @@ public sealed class SessionRules
 
     internal SessionRules(string identity, IHealingRule healing, IPhysicalActionRule physical,
         IBattleActionRule item, IBattleActionRule stay,
-        IEnumerable<KeyValuePair<BattleStrategyRef, IBattleDecisionRule>>? decisions = null)
+        IEnumerable<KeyValuePair<BattleStrategyRef, IBattleDecisionRule>>? decisions = null,
+        IBattleProgressionRule? progression = null, IBattleOutcomeRule? outcome = null,
+        Exploration.IOutcomeReturnPolicy? outcomeReturn = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identity);
         ArgumentNullException.ThrowIfNull(healing);
@@ -29,8 +31,14 @@ public sealed class SessionRules
         }
         _decisions = new ReadOnlyDictionary<BattleStrategyRef, IBattleDecisionRule>(resolved);
         Identity = identity; Healing = healing; Physical = physical;
+        Progression = progression ?? RuleCompositions.SourceProgression();
+        Outcome = outcome ?? RuleCompositions.SourceOutcome();
+        OutcomeReturn = outcomeReturn ?? RuleCompositions.SourceOutcomeReturn();
         Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), item, stay]);
     }
+    internal IBattleProgressionRule Progression { get; }
+    internal IBattleOutcomeRule Outcome { get; }
+    internal Exploration.IOutcomeReturnPolicy OutcomeReturn { get; }
     public string Identity { get; }
     internal IHealingRule Healing { get; }
     internal IPhysicalActionRule Physical { get; }
@@ -97,7 +105,7 @@ public sealed class SessionRules
             BattleActionRef action, ActorRef target) => healing.RequireTarget(battle, actor, destination,
                 RequireAction(battle, actor, action).Spell!, target);
         public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-            BattleActionRef action, ActorRef? target) => healing.Prepare(battle, actor, destination,
-                action.Spell!.Value, target ?? throw new BattleRuleException("invalid-heal-target", "target"));
+            BattleActionRef action, ActorRef? target, IBattleProgressionRule progression) => healing.Prepare(battle, actor, destination,
+                action.Spell!.Value, target ?? throw new BattleRuleException("invalid-heal-target", "target"), progression);
     }
 }

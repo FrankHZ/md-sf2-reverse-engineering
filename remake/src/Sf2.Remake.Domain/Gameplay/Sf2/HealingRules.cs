@@ -34,9 +34,11 @@ internal static class HealingRules
 
         int recovery = Math.Min(input.AdjustedPower, input.TargetMaxHp - input.TargetHp);
         int accumulated = Experience(recovery, input.TargetMaxHp);
-        var plus = BattleRandom.NextMain(input.MainSeed, 16);
-        var minus = BattleRandom.NextMain(plus.After, 16);
-        int award = Math.Max(1, accumulated + (plus.Value == 0 ? 1 : 0) - (minus.Value == 0 ? 1 : 0));
+        uint seed = input.MainSeed;
+        List<PhysicalRoll> rolls = [];
+        int award = BattleRewards.Award(accumulated, false, ref seed, rolls);
+        var plus = new MainRandomDraw(16, rolls[0].Before, rolls[0].After, rolls[0].Result);
+        var minus = new MainRandomDraw(16, rolls[1].Before, rolls[1].After, rolls[1].Result);
         return new(recovery, accumulated, award, (byte)(input.ActorMp - input.MpCost),
             (byte)Math.Min(200, input.ActorExp + award), (ushort)(input.TargetHp + recovery), plus, minus);
     }

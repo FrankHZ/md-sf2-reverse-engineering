@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -6,6 +7,22 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleGrowthTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SelectedSourceGrowthPublishesMatchingSpellAndStatFacts(bool capped)
+    {
+        var before = Actor(199, capped ? (byte)40 : (byte)1, learn: true);
+        var rule = new Sf2BattleProgressionRule();
+        var credit = BattleProgressionRules.Credit(rule, before, int.MaxValue);
+        Assert.Equal((byte)200, credit.Actor.Exp);
+        var grown = BattleProgressionRules.Grow(rule, credit.Actor, 0x1234);
+        Assert.Equal((byte)100, grown.Actor.Exp);
+        Assert.Equal(capped ? 40 : 2, grown.Actor.Level);
+        Assert.Equal(before.Hp, grown.Actor.Hp);
+        Assert.Equal(capped ? 0 : 1, grown.Effects.Count(effect => effect.Kind == "spell-learned"));
+    }
+
     private static BattleActorState Actor(byte exp = 99, byte level = 1, bool learn = false,
         byte[]? packedSpells = null, SpellRef[]? knownSpells = null)
     {

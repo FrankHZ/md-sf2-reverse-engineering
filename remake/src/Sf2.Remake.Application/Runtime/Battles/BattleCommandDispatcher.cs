@@ -76,6 +76,8 @@ internal static class BattleCommandDispatcher
             }
         }
         catch (BattleRuleException error) { return Reject(current, error.Code, error.Field, error.Unsupported); }
+        catch (BattlePolicyFault error)
+        { return new(current, [], current.StopReason, BattleChoices.Failure(error)); }
         catch (BattleActionRuleFault error) { return new(current, [], SessionStopReason.Faulted, BattleChoices.Failure(error)); }
 
         bool CanSelect(BattleActionKind kind) => selection.Stage == BattleSelectionStage.ActionChoice ||
@@ -119,6 +121,6 @@ internal static class BattleCommandDispatcher
             return BattleSceneContinuation.Begin(current, action, [], sceneContent: sceneContent);
         var observations = new List<SessionObservation>();
         return BattleAdvancer.Advance(BattleActionCommitter.Publish(current, action.Prepared, selection.Actor,
-            selection.Preview.Destination, action.CompletionEffects, observations), observations, rules);
+            selection.Preview.Destination, action.CompletionEffects, observations, rules), observations, rules);
     }
 }
