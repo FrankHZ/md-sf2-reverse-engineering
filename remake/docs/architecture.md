@@ -614,14 +614,14 @@ output/scratch limits exceeded. These trigger diagnosis/replanning, not weakened
 or an assertion that performance is already adequate. Establish an observed working budget before
 calling the parent performance criterion satisfied.
 
-Stop affected expansion and report a smaller alternative if slice 1 exceeds 22 engineering/review
-hours, any later slice exceeds its upper range, the cumulative estimate exceeds 96 hours, a second
-state/transaction system or runtime becomes necessary, an unplanned effect language appears, or two
-successive corrections repair verification without advancing the chosen behavior. An unavailable
-private comparison does not authorize new acquisition. Main-gate may narrow/defer an affected family
-with explicit Epic acceptance impact; changing the user's outcome/fidelity/budget requires the user's
-decision. Source-service deferrals above must be explicitly accepted before claiming bounded #617
-closure; otherwise keep the Epic open for a separately scoped decision.
+Design quality and total implementation, review, debugging and maintenance effort take precedence
+over minimizing one run's spend. The provisional effort/storage estimates and pilot tripwires above
+are reassessment signals, not design acceptance targets or reasons to omit necessary analysis.
+Main-gate adjusts estimates as routine engineering judgment, including extra work that prevents
+rework; this does not automatically require user approval. Stop for actual scope departures such as
+a second state authority, new runtime/framework or unauthorized acquisition. Changed user outcomes,
+fidelity or explicit user limits still require the user's decision. Source-service deferrals must
+be accepted explicitly before bounded #617 closure; otherwise keep the Epic open for that decision.
 
 Each accepted slice is a recoverable Git boundary: integrate only after independent checks and
 retain its prior behavior/failure evidence. Before merge, correct or discard only that topic; after
