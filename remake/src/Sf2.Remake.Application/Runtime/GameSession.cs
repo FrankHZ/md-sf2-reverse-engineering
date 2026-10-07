@@ -41,8 +41,14 @@ public sealed class GameSession
             return new SessionStartFailed(new(SessionFailureKind.ContentError, "missing-encounter", "start.encounter", "missing encounter"));
         try
         {
+            rules = rules.Bind(definition.Encounters.Values, start.Actors);
             var result = BattleAdvancer.Start(encounter, start, rules);
             return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
+        }
+        catch (BattleDecisionRuleFault error)
+        {
+            return new SessionStartFailed(new(SessionFailureKind.InvariantFailure, "decision-rule-failure",
+                "rules.decisions", $"{error.Identity}: {error.Operation}"));
         }
         catch (BattleRuleException error)
         {
@@ -59,8 +65,14 @@ public sealed class GameSession
         ArgumentNullException.ThrowIfNull(start);
         try
         {
+            rules = rules.Bind(definition.Encounters.Values, start.Party.Actors);
             var result = ExplorationDispatcher.Start(definition, start, rules);
             return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
+        }
+        catch (BattleDecisionRuleFault error)
+        {
+            return new SessionStartFailed(new(SessionFailureKind.InvariantFailure, "decision-rule-failure",
+                "rules.decisions", $"{error.Identity}: {error.Operation}"));
         }
         catch (BattleRuleException error)
         {

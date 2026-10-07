@@ -25,7 +25,7 @@ public sealed class PrivateBattleInitializationTests
         var region = new BattleActivationRegion(regionId, [new(2, 2), new(4, 2), new(4, 4), new(2, 4)]);
         var battle = new BattleDefinition("varied-entry", new("unrelated-map"), 12, 12, terrain,
             [new(player, BattleFaction.Ally, allyId, BattleControl.Player, null, new(2, 2), new(null, 0, 15, 15, 0)),
-             new(enemy, BattleFaction.Enemy, 130, BattleControl.Automatic, BattleAiStrategy.SourceOrders, new(8, 8), new(0x3000, spawn, primary, secondary, 0x60, 6, 255, 255))],
+             new(enemy, BattleFaction.Enemy, 130, BattleControl.Automatic, new BattleStrategyRef("source-orders"), new(8, 8), new(0x3000, spawn, primary, secondary, 0x60, 6, 255, 255))],
             [new(new("heal", 1), 3, 15, 0, 1)], initialization: new([region], program));
         var start = new BattleStartInput("varied-entry", [new(player.Actor, 8, 2, null, null, null, 0, null), new(enemy.Actor, 3, 1, null, null, null, 0, null)],
             0x00005678, 0xBEEF4321, null, Policy);

@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Sf2.Remake.Application.Content.Scenarios;
@@ -21,7 +22,7 @@ internal static class BattleGrowthReader
                 .Select(deployment => deployment.Definition).FirstOrDefault(actor => actor.Actor == reference);
             Require(actor is not null, "growth-actor", "world.growth.actor");
             byte classId = (byte)Number(row, "classId", 0, 31);
-            Require(actor!.SourceClassId == classId, "growth-class", "world.growth.classId", true);
+            Require(Sf2ClassRules.SourceClass(actor!.ClassRule) == classId, "growth-class", "world.growth.classId", true);
             Require(actor.SourceLoadout is not null, "growth-loadout", "world.growth.actor", true);
             int bonus = actor.SourceLoadout!.Items.Where(word => (word & 128) != 0)
                 .SelectMany(word => definitions.Items[(byte)(word & 127)].EquipEffects)

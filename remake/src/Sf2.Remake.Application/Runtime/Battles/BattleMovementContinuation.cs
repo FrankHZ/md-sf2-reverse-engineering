@@ -50,6 +50,12 @@ internal static class BattleMovementContinuation
         foreach (var effect in action.Effects)
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After,
                 RandomRange: effect.RandomRange, RandomValue: effect.RandomValue, Target: effect.Target));
+        if (action.QueueOnly)
+        {
+            var ended = new SessionSnapshot(current.SessionId, revision, sequence,
+                BattleTurnFlow.ConsumeEntry(action.Battle), null, SessionStopReason.SimulationWait).WithStory(current.Story);
+            return new(ended, observations.AsReadOnly(), ended.StopReason);
+        }
         var decided = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(action.Battle, null), current.Story, SessionStopReason.SimulationWait);
         if (action.Path.Count <= 1)

@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
@@ -97,7 +98,7 @@ public sealed class SourceEnemyAiTests
         var empty = new BattleSourceLoadout([127, 127, 127, 127], [63, 63, 63, 63]);
         var enemyDefinition = new BattleActorDefinition(Enemy, BattleClassRule.Ordinary, 2, 16, 0, 11, 8, 5, false, 2, [], mover: mover, sourceLoadout: empty);
         var allyDefinition = new BattleActorDefinition(new("other-party"), BattleClassRule.UnpromotedKnight, 1, 20, 0, 12, 9, 8, false, 7, [], mover: BattleMover.Centaur, sourceLoadout: empty);
-        var enemy = new BattleDeploymentDefinition(enemyDefinition, BattleFaction.Enemy, 190, BattleControl.Automatic, BattleAiStrategy.SourceOrders,
+        var enemy = new BattleDeploymentDefinition(enemyDefinition, BattleFaction.Enemy, 190, BattleControl.Automatic, new BattleStrategyRef("source-orders"),
             new(5, 5), new(0x2000, 0, primaryRegion, 15, (byte)(commandset << 4), commandset, 255, 255));
         var ally = new BattleDeploymentDefinition(allyDefinition, BattleFaction.Ally, 22, BattleControl.Player, null, allyPosition ?? new(16, 16));
         List<BattleDeploymentDefinition> deployments = [enemy, ally];

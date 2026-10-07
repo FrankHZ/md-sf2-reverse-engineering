@@ -8,7 +8,70 @@ internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Ac
     bool Critical = false, int Amount = 0);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
-    MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null);
+    MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false)
+{
+    internal void Validate(EngineBattleState before, ActorRef actorRef)
+    {
+        static void Require(bool valid)
+        { if (!valid) throw new InvalidOperationException("Invalid automatic decision."); }
+        var actor = before.GetActor(actorRef);
+        Require(ReferenceEquals(Battle.Definition, before.Definition) && Battle.MainSeed == before.MainSeed &&
+            Battle.Round == before.Round && Battle.Cursor == before.Cursor && Battle.Gold == before.Gold &&
+            ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && Battle.Queue.SequenceEqual(before.Queue) &&
+            Battle.Actors.Count == before.Actors.Count && actor.Control == BattleControl.Automatic &&
+            actor.Hp > 0 && actor.Position is not null);
+        Require(before.Regions is null ? Battle.Regions is null : Battle.Regions is { } regions &&
+            regions.Flags.SequenceEqual(before.Regions.Flags) && (regions.Tested == before.Regions.Tested || regions.Tested == 0));
+        for (int index = 0; index < before.Actors.Count; index++)
+        {
+            var old = before.Actors[index]; var candidate = Battle.Actors[index];
+            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp &&
+                candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position &&
+                candidate.Kills == old.Kills && candidate.Defeats == old.Defeats && candidate.Attack == old.Attack &&
+                candidate.Status == old.Status && Equals(candidate.Progress, old.Progress) &&
+                ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
+            if (old.Actor != actorRef)
+                Require(candidate.LastTarget == old.LastTarget && candidate.AiMemory == old.AiMemory &&
+                    candidate.ActivationWord == old.ActivationWord);
+            else if (candidate.LastTarget != old.LastTarget)
+                Require(Target is not null && candidate.LastTarget == Target);
+        }
+        Require(Path.Count > 0 && Path[0] == actor.Position && Path[^1] == Destination &&
+            before.Definition.Contains(Destination));
+        int cost = 0;
+        for (int index = 1; index < Path.Count; index++)
+        {
+            var position = Path[index];
+            Require(before.Definition.Contains(position) && BattleRange.Contains(Path[index - 1], position, 1, 1));
+            int step = BattleTerrainRules.MovementCost(before.Definition.Terrain[position.Y * 48 + position.X], actor.Definition.Mover);
+            Require(step > 0); cost += step;
+            // Physical routes block living opponents; no-target source movement owns its occupancy policy.
+            if (Target is not null)
+                Require(!before.Actors.Any(unit => unit.Hp > 0 && unit.Faction != actor.Faction &&
+                    unit.Position == position));
+        }
+        Require(cost <= actor.Definition.Move * 2 && !before.Actors.Any(unit =>
+            unit.Actor != actorRef && unit.Hp > 0 && unit.Position == Destination));
+        if (Target is { } target)
+            Require(before.Actors.Any(unit => unit.Actor == target && unit.Hp > 0 && unit.Position is not null &&
+                unit.Faction != actor.Faction));
+        uint seed = before.ThinkingSeed;
+        foreach (var effect in Effects)
+        {
+            Require(!string.IsNullOrWhiteSpace(effect.Kind) && effect.Actor == actorRef &&
+                (effect.Target is null || before.Actors.Any(unit => unit.Actor == effect.Target)));
+            if (effect.RandomRange is null)
+            { Require(effect.RandomValue is null && !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)); continue; }
+            Require(effect.Kind == "thinking-rng" && effect.RandomRange <= byte.MaxValue);
+            var draw = BattleRandom.NextThinkingWord((ushort)(seed >> 16), (byte)effect.RandomRange!.Value);
+            uint after = ((uint)draw.After << 16) | (seed & 65535);
+            Require(effect.Before == seed && effect.After == after && effect.RandomValue == draw.Value);
+            seed = after;
+        }
+        Require(Battle.ThinkingSeed == seed);
+        if (QueueOnly) Require(ReferenceEquals(Battle, before) && Path.Count == 1 && Target is null);
+    }
+}
 
 // Construction and replay are separate source boundaries. Prepared state contains movement,
 // construction RNG, gold and inventory; reactions and giveExp have not run yet.

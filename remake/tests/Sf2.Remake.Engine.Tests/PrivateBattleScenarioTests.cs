@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
@@ -68,22 +69,32 @@ public sealed class PrivateBattleScenarioTests
             Assert.Equal(row.GetProperty("spells").EnumerateArray().Select(value => value.GetByte()), definition.SourceLoadout.Spells);
             if (id == 1 || id >= 128) Assert.Equal(row.GetProperty("activationBitfield").GetUInt16(), actor.ActivationWord);
             else Assert.Null(actor.ActivationWord); // Original observed zero does not authorize a universal start default.
-            if (id < 128) Assert.Equal(row.GetProperty("class").GetByte(), definition.SourceClassId);
-            else { Assert.Equal((byte)7, definition.Attack); Assert.Equal(BattleAiStrategy.SourceOrders, actor.AiStrategy); }
+            if (id < 128) Assert.Equal(row.GetProperty("class").GetByte(), Sf2ClassRules.SourceClass(definition.ClassRule));
+            else { Assert.Equal((byte)7, definition.Attack); Assert.Equal(new BattleStrategyRef("source-orders"), actor.AiStrategy); }
             Assert.Null(actor.Exp); Assert.Null(actor.Kills); Assert.Null(actor.Defeats); Assert.Null(actor.LastTarget); Assert.Equal((byte)0, actor.AiMemory);
         }
         Assert.Null(battle.Gold);
         Assert.Equal(new[] { BattleMover.Regular, BattleMover.Healer, BattleMover.Centaur }, battle.Actors.Take(3).Select(a => a.Definition.Mover));
         Assert.All(battle.Actors.Skip(3), a => Assert.Equal(BattleMover.Hovering, a.Definition.Mover));
         Assert.Equal(2304, source.Encounter.Terrain.Count);
-        var original = session.Current.Battle; var selected = session.Current.Selection.Actor;
+        var original = session.Current.Battle;
         var moved = FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
         Assert.Equal(new MapPosition(9, 17), moved.Snapshot.Selection!.Preview.Destination); Assert.Same(original, moved.Snapshot.Battle);
         Accept(session, new Confirm()); var cancelled = FinishMovement(session, Accept(session, new Cancel()));
         Assert.Equal(new MapPosition(9, 18), cancelled.Snapshot.Selection!.Preview.Destination); Assert.Same(original, cancelled.Snapshot.Battle);
-        Accept(session, new Confirm()); Accept(session, new SelectSpell(new("heal", 1))); Accept(session, new SelectTarget(selected));
-        var before = session.Current; var rejected = Send(session, new Confirm());
-        Assert.Equal("unspecified-exp", rejected.Failure!.Code); Assert.Same(before, session.Current);
+        Accept(session, new Confirm());
+        // This reader selected no private HEAL scene sidecar. The semantic choice boundary
+        // rejects the target at that missing consumer capability before resource preparation.
+        Assert.Null(admitted.Definition.BattleScenes);
+        Accept(session, new SelectSpell(new("heal", 1)));
+        var before = session.Current; var rejected = Send(session, new SelectTarget(before.Selection!.Actor));
+        Assert.Equal(SessionFailureKind.UnsupportedCapability, rejected.Failure!.Kind);
+        Assert.Equal("healing-scene-content", rejected.Failure.Code); Assert.Same(before, session.Current);
+        Assert.Empty(rejected.Observations);
+        Assert.Equal((before.Battle.MainSeed, before.Battle.ThinkingSeed, before.Battle.Gold),
+            (rejected.Snapshot.Battle.MainSeed, rejected.Snapshot.Battle.ThinkingSeed, rejected.Snapshot.Battle.Gold));
+        Assert.Equal(before.Battle.Actors.Select(actor => (actor.Hp, actor.Mp, actor.Exp)),
+            rejected.Snapshot.Battle.Actors.Select(actor => (actor.Hp, actor.Mp, actor.Exp)));
         FinishMovement(session, Accept(session, new Cancel()));
         Stay(session); // Actual next entry is the Centaur ally; no per-character controller.
         Assert.Equal(new ActorRef("ally-2"), session.Current.Selection!.Actor);

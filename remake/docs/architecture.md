@@ -10,7 +10,7 @@ It is an implementation guide, not a replacement for the normative decisions in
 The [architecture and verification audit](./architecture-audit.md) records findings at its named
 historical baseline and the user's modern-engine direction. Its A1–A8 are not a fresh defect list.
 The [logic-separation plan](#replaceable-gameplay-logic-plan) below owns the finite #617 scope.
-Its HEAL and admitted-action slices are implemented; AI/progression/story replacement remains planned.
+Its HEAL, admitted-action and automatic-decision slices are implemented; progression/story replacement remains planned.
 Implementation and authored demonstrations do not establish new original-game evidence.
 
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
@@ -43,9 +43,9 @@ The existing class definition supplies source identity only for admitted named c
 identity rejects a reached critical comparison. Regular movement fixes the class table; content
 cannot supply an independent rank. Source thinking, scoring and selection have one production owner.
 `AttackThenApproachAi` sequences that decision and its zero-target continuation: unavailable
-HEAL1/SUPPORT fail, then MOVE1 succeeds with movement or origin Stay. `AiMovementRules` owns the shared
-stable cost selector, source decreasing-cost walk and radius station search used by authored and
-private pursuit/standby. The existing movement commit and action publisher apply
+HEAL1/SUPPORT fail, then MOVE1 succeeds with movement or origin Stay. `Gameplay/Sf2/AiMovementRules` owns source stable cost and radius station selection;
+shared `BattleMovement.Walk`/`MoveString` retain the decreasing-cost route primitives used by movement
+and source pursuit/standby. The existing movement commit and action publisher apply
 the chosen destination once. MOVE1 draws no RNG and leaves last-target memory and resources unchanged;
 physical rewards are required only on the reached attack branch. High or incomplete target costs
 remain Unsupported, as does wider AI. Private region activation has its separate bounded owner below.
@@ -65,12 +65,12 @@ actor definitions and session starts do not duplicate those roles. The definitio
 once for stable round RNG, AI candidates and adapter selection. Runtime actors derive faction/order
 from their deployment; queue entries identify actors by `ActorRef` with a nullable sentinel. Faction drives
 healing/opposition/rewards independently of order. Deployments also own `BattleControl` separately from
-`BattleAiStrategy`; intrinsic actor definitions carry neither assignment. Player requires no strategy;
-automatic authored actors explicitly select Stay or AttackThenApproach. Private source orders remain
+`BattleStrategyRef`; intrinsic actor definitions carry neither assignment. Player requires no strategy;
+automatic actors select an immutable content key resolved in `SessionRules` before start. Private source orders remain
 SourceOrders and use the bounded source standby/activation/set6/set7 continuation. Shared deployment validation at Content
 admission and reusable start preserves ally/player and enemy/automatic bounds plus physical/spellbook/
-MOV requirements. The advancer consumes explicit combinations and never defaults an unknown policy to
-Stay. The native view projects each actor’s current AI memory and immutable source anchor; there is no second control copy.
+MOV requirements. All encounters, including unreached/dead deployments, bind against the selected composition. The
+advancer invokes the resolved decision without policy-name switches or a missing-binding Stay fallback. The native view projects each actor’s current AI memory and immutable source anchor; there is no second control copy.
 Actor definitions separately own numerical `Agility` (0–127) and boolean `ExtraRoundAction`.
 Live-start capacity and shared generation consume explicit eligibility; only private Content decodes
 the raw source byte's low seven bits and high-bit eligibility. The ordinary three draws and optional two draws at the
@@ -308,7 +308,8 @@ architecture unless they reduce responsibility concentration or change amplifica
 
 **Accepted design for [#617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/617),
 with the bounded HEAL and semantic-action implementations in [#674](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/674)
-and [#675](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/675).** Rigor is
+and [#675](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/675), plus automatic decisions
+in [#676](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/676).** Rigor is
 **High**: action policy, source compatibility, shared RNG, content admission and presentation cross
 owners; a wrong commit boundary would cause expensive behavioral rework. This means finite scope,
 explicit dependencies and independent acceptance, not a new rules platform.
@@ -322,8 +323,8 @@ The [accepted gameplay overview](../../docs/design/synthesis/gameplay-overview.m
 connected product; it does not extend the runnable capability frontier.
 
 The implemented slices deliver selected HEAL/physical/Herb/Stay rules, immutable session composition,
-disposable semantic choices, finite preparation validation and the existing staged scene consumer. AI
-policy, progression/outcome and source story replacement still require their dependent slices and
+disposable semantic choices, finite preparation validation, resolved automatic-decision bindings and
+the existing staged movement/scene consumer. Progression/outcome and source story replacement still require their dependent slices and
 independent review; no additional action family is admitted.
 #438 art/UI/UX awaits user discussion; this plan
 supplies semantic affordances only. #638 remains paused and Chinese synchronization is deferred.
@@ -368,10 +369,10 @@ The ownership traces that constrain the replacement API are:
   seed after that work, not the discarded preflight seed. [`BattleActionCommitter.Publish`](../src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs)
   owns final action/after-turn/outcome/queue completion, not every earlier scene-state publication.
   `GameSession` alone assigns the authoritative snapshot.
-- **AI:** [`EnemyPhysicalDecision.TryResolve`](../src/Sf2.Remake.Domain/Battles/Rules/EnemyPhysicalDecision.cs)
+- **AI:** [`EnemyPhysicalDecision.TryResolve`](../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemyPhysicalDecision.cs)
   scores reachable targets in reverse processing order with thinking RNG, records last-target state,
   and discards a physical preparation used for admission. [`BattleMovementContinuation`](../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs)
-  delivers movement before actual physical preparation. [`SourceEnemyAi.Resolve`](../src/Sf2.Remake.Domain/Battles/Rules/SourceEnemyAi.cs)
+  delivers movement before actual physical preparation. [`SourceEnemyAi.Resolve`](../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceEnemyAi.cs)
   additionally owns activation/standby/memory and set6/set7 branches. Scoring RNG, construction RNG
   and later scene RNG cannot be collapsed into one speculative calculation.
 - **Growth/outcome:** [`BattleGrowthRules.Credit/Grow`](../src/Sf2.Remake.Domain/Battles/Rules/BattleGrowthRules.cs)
@@ -467,9 +468,55 @@ movement delivery, stops the automatic continuation, and publishes no damage or 
 
 The current `SourceEnemyAi`/`AttackThenApproachAi` policies pass the selected physical rule through
 estimate, discarded preflight and actual post-movement execution. Their priorities, movement,
-activation/memory and thinking RNG are unchanged; replacing those policies remains #676. Reward,
+activation/memory and thinking RNG are preserved through the selected decision seam below. Reward,
 growth and outcome policy remain #677. The [verification owner](./development-and-verification.md#semantic-action-selection-observation)
 records actual choices/presenter checks and independent source-stage RNG expectations.
+
+### Implemented automatic decisions
+
+[`BattleStrategyRef`](../src/Sf2.Remake.Domain/Battles/State/BattleStrategyRef.cs) is a content key,
+independent of control/faction/processing order. Content parses the key without selecting C# code.
+[`SessionRules`](../src/Sf2.Remake.Application/Runtime/SessionRules.cs) snapshots an explicit composition
+into an immutable key-to-rule map; session start checks every encounter, including dead/unreached
+actors and battles that programs may enter later. Unknown, duplicate and missing bindings reject
+before a session publishes. Selected deployment/start admission retains the physical-only empty
+spellbook/item/MOV restriction and source initialization requirement; common status, faction, order,
+provenance and supported source commandset/loadout guards remain at their existing boundaries.
+
+[`IBattleDecisionRule`](../src/Sf2.Remake.Domain/Battles/Rules/IBattleDecisionRule.cs) receives the live
+immutable battle, actor and the same selected physical calculator used by player/query/scene work.
+The scheduler calls the resolved rule; it owns neither target scoring nor strategy-name branches.
+Source `AttackThenApproachAi`/`SourceEnemyAi`, scoring/priority and standby/pursuit helpers live in
+`Domain/Gameplay/Sf2`. [`Sf2ClassRules`](../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ClassRules.cs) is the
+single named-class/source-ID mapping used by AI and private growth admission; AI rank remains in
+`PhysicalTargetRules`. Shared decreasing-cost walk/move-string primitives remain in `BattleMovement`.
+
+The finite `BattleAutomaticAction.Validate` authority admits only the selected actor's decision
+memory/last target/activation and carried thinking draws, plus the existing tested-region clear.
+It preserves definition/deployments, positions, resources, main seed, queue/round, accounting and
+unrelated actors. Routes require matching endpoints, adjacent traversable steps within MOV budget,
+an unoccupied destination and a live opposing physical target. Source occupancy/commandset policy
+still belongs to the selected source rule. `QueueOnly` expresses the existing no-action Stay result;
+it requires the unchanged battle and origin-only route, then consumes one queue entry without an
+action publication. Source MOVE1 origin Stay retains ordinary movement/action completion instead.
+
+A selected physical target receives one discarded preflight before movement. Thinking and decision
+memory publish once with the route, while actual physical construction waits for movement completion.
+No preflight's future main seed is retained, no completion reruns thinking, and the same physical
+instance handles estimate/preflight/execution. Throwing rules or malformed decisions become typed
+InvariantFailure with identity/operation; unsupported source capability stays explicit. Failure
+before decision publication retains earlier actions and the current queue item; a later construction
+failure preserves the committed decision/delivery. The accepted HEAL release distinction between
+same-step rejection and a subsequent automatic failure is unchanged.
+
+`RuleCompositions.AuthoredFirstLegal()` and `AuthoredLowestHp()` bind the same `authored-priority`
+reference in [`decision-rule-demo.json`](../content/authored/decision-rule-demo.json) to different
+ordinary C# algorithms. FirstLegal selects the first reachable physical target by processing order;
+LowestHp selects lowest current HP with that same stable tie. Both use selected physical range/target
+admission, the existing movement grid/preview and the common presenter; neither copies source scoring.
+These are authored demonstration policies, not fidelity profiles or added source action families.
+`ForGame()=>Sf2()` is the restored default. [Verification](./development-and-verification.md#replaceable-automatic-decision-observation)
+owns rebuild/restart selection, actual consumer recipes and independent RNG expectations.
 
 ### Selected module and composition design
 
@@ -521,7 +568,7 @@ GameSession -> ordered state/scene projection -> Godot -> completion token
 
 ### Implementable API and transaction boundary
 
-HEAL and finite action names below are implemented; AI/progression/story seams remain proposed. Reuse the existing state, reference,
+HEAL, finite actions and AI names below are implemented; progression/story seams remain proposed. Reuse the existing state, reference,
 command, resolution, wait and failure types; do not add copies whose only purpose is forwarding.
 
 | Seam | Inputs/result and owner | Required behavior |
@@ -529,7 +576,7 @@ command, resolution, wait and failure types; do not add copies whose only purpos
 | HEAL rule (first slice) | Internal `IHealingRule`: spell admission, target query/check and preparation over `EngineBattleState`, `ActorRef`, provisional `MapPosition`, `SpellRef`, optional target; preparation returns the existing `BattleActionResolution`. | The same selected implementation owns query and confirm legality/formula. No RNG in queries. Default implementation moves `PlayerHealing`/`HealingRules`; helpers are not duplicated. |
 | Action selection (implemented) | `BattleSelection.ActionReference` and `SelectBattleAction` carry a typed action reference and immutable option/target data. `GameSession.QueryBattleChoices` returns choices for its current session/revision/actor/stage/origin, selection step, enabled status and `SessionFailure` reason. | Options carry stable action/spell/item identities, display labels, supported presentation kind and ordered candidate `ActorRef`s/range. Preserve `SelectSpell`/`SelectItem` as semantic inputs while callers migrate. Query is disposable; `CommandEnvelope` and confirm remain authoritative. |
 | Action preparation/application | Selected action implementation returns existing prepared/reaction/reward structure; engine preparation validates it before `Begin`. Existing scene continuation and publication apply it. | Validate actor/target references, destination, supported reaction/consumer, HP/MP bounds and permitted field changes. Reject unrelated actor/queue/definition/story changes and malformed effects before publication. Do not execute string observations or accept arbitrary callbacks that mutate the session. |
-| AI (slice 3) | Internal `IBattleDecisionRule` consumes the immutable battle/actor plus selected action rules; returns the existing `BattleAutomaticAction` shape with candidate state, path and target. | Stable tie order and separate RNG streams; no hidden strategy state. Memory/last target/activation stay in actor/region state. Scheduler owns turn/wait/publication, not strategy selection or target scoring. |
+| AI (implemented) | Internal `IBattleDecisionRule` consumes the immutable battle/actor plus selected action rules; returns the existing `BattleAutomaticAction` shape with candidate state, path and target. | Stable tie order and separate RNG streams; no hidden strategy state. Memory/last target/activation stay in actor/region state. Scheduler owns turn/wait/publication, not strategy selection or target scoring. |
 | Progress/outcome (slice 4) | Selected progression functions use current actor, award, copied seed and existing effects; selected outcome policy uses current battle/story plus admitted outcome content. | Keep credit, later growth, outcome check and story return as separate calls at their existing commit seams. Policies choose rules/results; generic runner executes the continuation. |
 | Source story operation (slice 5) | Internal `ISourceStoryPolicy` takes the current definition/snapshot, `StoryInstruction` and `ProgramLocation`, returning the existing active/story candidate or a `BattleRuleException`. | Only the explicitly source-specific instruction delegates. Generic branch/call/return/wait does not ask a rule-name registry. Missing support fails at the exact PC; policy cannot advance/publish the facade. |
 
@@ -587,7 +634,7 @@ cannot close the Epic. This table is the coverage boundary, not a backlog for ev
 | --- | --- | --- |
 | HEAL admission, recovery/EXP algorithm and ally/range targets | Independent selected C# action rule, slice 1. | Existing HEAL1–3 and two authored strategies; no new source spell capability. |
 | Physical strike/reversal/double/counter/reward calculation, physical targets and terrain protection; Medical Herb effects/inventory encoding; Stay/action dispatch | Independent action implementations, slice 2; reuse one shared physical calculator for player and AI. Source decoding remains Content/module policy. | Existing supported physical and consumable branches only. Semantic item/target projection replaces raw Godot policy. |
-| Attack-then-approach, standby/source set6/set7, target priority/class mapping, strategy bindings and runtime memory | Independent decision implementations, slice 3. Replace core AI enum dispatch with immutable resolved strategy bindings; retain faction/control/order as state. | Existing source orders retain guards. A second authored priority algorithm proves replacement; no new enemy command families. |
+| Attack-then-approach, standby/source set6/set7, target priority/class mapping, strategy bindings and runtime memory | Implemented independent decisions and immutable resolved strategy references replace core AI enum dispatch; faction/control/order remain state. | Existing source orders retain guards. A second authored priority algorithm proves replacement; no new enemy command families. |
 | EXP/kill/gold rules, growth curves/learning, defeat/victory, recovery and return/join/flag policy | Selected C# progression and outcome policies, slice 4; tables/route programs remain content. | Existing growth and ordinary outcome/return behavior only; preserve leader-loss precedence, unknown accounting rejection and delayed growth RNG. |
 | Conditional story, call targets, flags, dialogue and waits | Externally authored typed programs, slice 5 proves alternate branch/call/wait content through the same runner. | No arbitrary-language interpreter; algorithmic source compatibility remains named C#. |
 | Retired Map3 scratch exception and source outcome-return conditions | Exact guarded source-policy implementation, slice 5 (return policy already selected by slice 4). | Preserve true entity retirement and source context; do not translate the four inactive scratch stores into new visible effects. |
@@ -614,7 +661,7 @@ have one writer at a time. No stacked unaccepted implementation is assumed.
 | --- | --- | --- |
 | 1 — replace HEAL through the real session and presenter | Implemented by `IHealingRule`, `SessionRules`, `QueryBattleChoices` and finite `ValidateHealing`, using the existing view/scene. | Default source behavior and two authored algorithms cover query → select → confirm → staged cost/recovery/reward → completion. Malformed rule output, stale/illegal input and missing capability publish no partial preparation/RNG. `PlayerHealing` is removed. Independent main-gate integration remains separate. |
 | 2 — complete the admitted action/target interface | Implemented on slice 1's seam: selected physical, Herb and Stay; semantic inventory/action references replace adapter target/raw-word policy. | Player and AI share one physical action calculation. Preserve reaction order, consumption, gold/death/queue boundaries. Queries and commit agree; unsupported items remain explicit. No action- or rule-name dispatch in Godot. Retire migration-only adapters. |
-| 3 — select AI without scheduler strategy switches | Depends on slices 1–2. Resolve actor strategy bindings, move admitted source/approach algorithms and class priority mapping. | Two authored algorithms choose different legal actions/targets from the same state without scheduler/UI edits. Repeatable thinking/main seed and memory, target ties, zero-target branch, illegal result and failed-action queue retention. Preserve source standby/activation acceptance. |
+| 3 — select AI without scheduler strategy switches | Implemented on slices 1–2: `IBattleDecisionRule`, immutable `BattleStrategyRef` bindings, source modules, shared movement primitives and `Sf2ClassRules`. | Two authored algorithms choose different legal actions/targets from the same state without scheduler/UI edits. Repeatable thinking/main seed and memory, target ties, zero-target branch, illegal result and failed-action queue retention. Preserve source standby/activation acceptance. |
 | 4 — select progression and outcome policy | Depends on slices 1–3. Move award/growth and ordinary victory/defeat/recovery/return choices at their existing call sites. | Growth uses the live post-scene seed; EXP/growth message order, pending failure, defeat precedence, gold/recovery and usable program return remain real behavior. An authored alternate reward/outcome policy changes behavior without editing continuation machinery. |
 | 5 — replace conditional story and isolate the exact source exception | Depends on slice 4's return seam. Move scratch policy, prove alternate external programs and finish authoring/semantic-interface documentation. | Different flag/choice branches execute different effects with call/return and an actual wait; stale/duplicate completion and unsupported PC preserve earlier commits. Wrong scratch context still fails; correct retirement remains. Review all S1–S5 and explicit deferrals before Epic acceptance. |
 
@@ -693,8 +740,9 @@ engines. New interfaces must have actual migrated consumers; no permanent old/ne
 
 The correctness pilot uses the two authored variants and their necessary behavior tests and actual
 consumer intervals. Query target filtering should be O(A) time/output for A actors; preparation
-retains current action complexity and O(A) immutable-state copies. AI retains its existing grid/
-candidate work rather than adding a state copy per target or cell. Resolve rule selection once per
+retains current action complexity and O(A) immutable-state copies. Source AI retains its existing grid/candidate work. The bounded authored selector scans/sorts at
+most G=2304 cells per target: O(A G log G) time and O(G+A) transient space, then makes one selected
+state/path copy. Neither algorithm adds a state copy per target or cell. Resolve rule selection once per
 session, without per-frame file reads or reflection. Expect authored inputs around 1 MiB or less,
 compact summaries on the order of 10 MiB and short-lived observation scratch around 100 MiB; these
 are sizing assumptions, not fixed quotas. Reuse worktree build/import caches and existing tool

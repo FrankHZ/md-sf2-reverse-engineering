@@ -14,7 +14,6 @@ public enum BattleActionKind { Stay, Healing, Physical, Item }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight }
 public enum BattleControl { Player, Automatic }
-public enum BattleAiStrategy { Stay, AttackThenApproach, SourceOrders }
 public enum BattleFaction { Ally, Enemy }
 
 public sealed class PhysicalCriticalRule
@@ -54,11 +53,6 @@ public sealed class BattleActorDefinition
     }
     public ActorRef Actor { get; }
     public BattleClassRule ClassRule { get; }
-    internal byte? SourceClassId => ClassRule switch
-    {
-        BattleClassRule.UnpromotedSwordsman => 0, BattleClassRule.UnpromotedWarrior => 2,
-        BattleClassRule.UnpromotedPriest => 4, BattleClassRule.UnpromotedKnight => 1, _ => null,
-    };
     public byte Level { get; }
     public ushort MaxHp { get; }
     public byte MaxMp { get; }
@@ -93,7 +87,7 @@ public sealed class BattleActorState
     public BattleActorDefinition Definition => Deployment.Definition;
     public BattleFaction Faction => Deployment.Faction;
     public BattleControl Control => Deployment.Control;
-    public BattleAiStrategy? AiStrategy => Deployment.AiStrategy;
+    public BattleStrategyRef? AiStrategy => Deployment.AiStrategy;
     public int ProcessingOrder => Deployment.ProcessingOrder;
     public bool IsAlly => Faction == BattleFaction.Ally;
     public ActorRef Actor => Definition.Actor;
@@ -127,7 +121,7 @@ public sealed class BattleActorState
 }
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,
-    int ProcessingOrder, BattleControl Control, BattleAiStrategy? AiStrategy, MapPosition Position,
+    int ProcessingOrder, BattleControl Control, BattleStrategyRef? AiStrategy, MapPosition Position,
     BattleDeploymentInitialization? Initialization = null)
 {
     public ActorRef Actor => Definition.Actor;

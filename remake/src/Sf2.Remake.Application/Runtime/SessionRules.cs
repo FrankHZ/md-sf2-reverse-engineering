@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.Application.Gameplay;
@@ -11,13 +12,22 @@ public sealed class SessionRules
         : this(identity, healing, RuleCompositions.SourcePhysical(), RuleCompositions.SourceItem(), RuleCompositions.SourceStay()) { }
 
     internal SessionRules(string identity, IHealingRule healing, IPhysicalActionRule physical,
-        IBattleActionRule item, IBattleActionRule stay)
+        IBattleActionRule item, IBattleActionRule stay,
+        IEnumerable<KeyValuePair<BattleStrategyRef, IBattleDecisionRule>>? decisions = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identity);
         ArgumentNullException.ThrowIfNull(healing);
         ArgumentNullException.ThrowIfNull(physical); ArgumentNullException.ThrowIfNull(item); ArgumentNullException.ThrowIfNull(stay);
         if (physical.Kind != BattleActionKind.Physical || item.Kind != BattleActionKind.Item || stay.Kind != BattleActionKind.Stay)
             throw new ArgumentException("Invalid action rule binding.");
+        var resolved = new Dictionary<BattleStrategyRef, IBattleDecisionRule>();
+        foreach (var binding in decisions ?? RuleCompositions.SourceDecisions())
+        {
+            if (string.IsNullOrWhiteSpace(binding.Key.Value) || binding.Value is null ||
+                string.IsNullOrWhiteSpace(binding.Value.Identity)) _bindingFailure = "ai-binding";
+            else if (!resolved.TryAdd(binding.Key, binding.Value)) _bindingFailure = "duplicate-ai-binding";
+        }
+        _decisions = new ReadOnlyDictionary<BattleStrategyRef, IBattleDecisionRule>(resolved);
         Identity = identity; Healing = healing; Physical = physical;
         Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), item, stay]);
     }
@@ -26,6 +36,39 @@ public sealed class SessionRules
     internal IPhysicalActionRule Physical { get; }
     internal IReadOnlyList<IBattleActionRule> Actions { get; }
     internal IBattleActionRule Action(BattleActionRef action) => Actions.Single(rule => rule.Kind == action.Kind);
+
+    private readonly IReadOnlyDictionary<BattleStrategyRef, IBattleDecisionRule> _decisions;
+    // Retain configuration errors for the typed session-start boundary, before any publication.
+    private readonly string? _bindingFailure;
+
+    internal SessionRules Bind(IEnumerable<BattleDefinition> encounters, IEnumerable<BattleActorStartInput>? inputs = null)
+    {
+        if (_bindingFailure is { } code) throw new BattleRuleException(code, "rules.decisions", true);
+        foreach (var encounter in encounters)
+            foreach (var deployment in encounter.Deployments)
+            {
+                BattleTurnFlow.ValidateDeployment(deployment);
+                if (deployment.Control != BattleControl.Automatic) continue;
+                var rule = Decision(deployment.AiStrategy!.Value);
+                BattleDecisionRules.Invoke(rule, "deployment-admission", () =>
+                { rule.RequireDeployment(deployment); return true; });
+                if (inputs?.FirstOrDefault(input => input.Actor == deployment.Actor) is { } input)
+                    RequireStart(deployment, input);
+            }
+        return this;
+    }
+
+    internal IBattleDecisionRule Decision(BattleStrategyRef strategy) =>
+        _decisions.TryGetValue(strategy, out var rule) ? rule :
+            throw new BattleRuleException("ai-strategy", "placements.aiStrategy", true);
+
+    internal void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input)
+    {
+        if (deployment.Control != BattleControl.Automatic) return;
+        var rule = Decision(deployment.AiStrategy!.Value);
+        BattleDecisionRules.Invoke(rule, "start-admission", () =>
+        { rule.RequireStart(deployment, input); return true; });
+    }
 
     // The accepted spell strategy participates in the same finite action contract.
     // There is one selected calculator, shared by query, confirmation and scene preparation.

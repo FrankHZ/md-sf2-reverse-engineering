@@ -1,13 +1,14 @@
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
-namespace Sf2.Remake.Domain.Battles;
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal static class EnemyPhysicalDecision
 {
     // Already-active ATTACK1 / script3, physical-only. This is
     // a successful first command of source commandset06, not a replacement fallback policy.
     internal static BattleAutomaticAction? TryResolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, bool preflight = true)
     {
         var actor = current.GetActor(actorRef);
         var grid = BattleMovement.Grid(current, actorRef);
@@ -38,7 +39,7 @@ internal static class EnemyPhysicalDecision
             var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
             uint after = ((uint)draw.After << 16) | (thinking & 65535);
             byte priority = PhysicalTargetRules.ScriptThree((byte)candidate.Cost, Math.Max(0, candidate.Target.Hp - potential), draw.Value);
-            priorities[index] = new((byte)candidate.Cost, priority, candidate.Target.Definition.SourceClassId);
+            priorities[index] = new((byte)candidate.Cost, priority, Sf2ClassRules.SourceClass(candidate.Target.Definition.ClassRule));
             decisions.Add(new("thinking-rng", actorRef, thinking, after, 3, draw.Value, candidate.Target.Actor));
             decisions.Add(new("ai-candidate", actorRef, candidate.Cost, priority, Target: candidate.Target.Actor));
             thinking = after;
@@ -53,9 +54,9 @@ internal static class EnemyPhysicalDecision
         // Pure admission preview preserves the existing all-or-nothing Unsupported
         // boundary (including random-dependent reward/growth capability). Discard it:
         // no construction seed, damage or reward becomes live before movement ends.
-        _ = BattleActionRules.Prepare(physical, prepared, actorRef, selected.Position,
+        if (preflight) _ = BattleActionRules.Prepare(physical, prepared, actorRef, selected.Position,
             new(BattleActionKind.Physical), selected.Target.Actor);
-        var path = BattleMovement.Route(actor.Position!, AiMovementRules.MoveString(grid, actor.Position!,
+        var path = BattleMovement.Route(actor.Position!, BattleMovement.MoveString(grid, actor.Position!,
             selected.Position, current.Definition.Width, current.Definition.Height));
         return new(prepared, Array.AsReadOnly<BattleEffect>([
             .. decisions,

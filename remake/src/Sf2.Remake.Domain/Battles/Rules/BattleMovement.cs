@@ -31,7 +31,7 @@ internal static class BattleMovement
 
     internal static IReadOnlyList<MapPosition> ReturnPath(EngineBattleState battle, ActorRef actor, MapPosition from)
     {
-        var (destination, directions) = AiMovementRules.Walk(Grid(battle, actor), from, 0,
+        var (destination, directions) = Walk(Grid(battle, actor), from, 0,
             battle.Definition.Width, battle.Definition.Height);
         if (destination != battle.GetActor(actor).Position)
             throw new BattleRuleException("movement-return", "movement.path", true);
@@ -92,7 +92,7 @@ internal static class BattleMovement
         {
             if (!battle.Definition.Contains(destination) || aiGrid.CostAt(destination) is not { } cost || cost > battle.GetActor(actor).Definition.Move * 2)
                 throw new BattleRuleException("ai-move-path", "ai.move.path", true);
-            _ = AiMovementRules.MoveString(aiGrid, battle.GetActor(actor).Position!, destination, battle.Definition.Width, battle.Definition.Height);
+            _ = MoveString(aiGrid, battle.GetActor(actor).Position!, destination, battle.Definition.Width, battle.Definition.Height);
         }
         if (battle.Actors.Any(a => a.Actor != actor && a.Hp > 0 && a.Position == destination))
             throw new BattleRuleException("occupied-destination", "destination");
@@ -102,6 +102,47 @@ internal static class BattleMovement
     {
         RequireStop(battle, actor, destination, aiGrid);
         return battle.With(actors: battle.Actors.Select(a => a.Actor == actor ? a.With(position: destination) : a));
+    }
+    internal static IReadOnlyList<byte> MoveString(WeightedMovementGrid grid, MapPosition origin, MapPosition destination, int width, int height)
+    {
+        var (reached, backtrack) = Walk(grid, destination, 0, width, height);
+        if (reached != origin) throw new BattleRuleException("ai-move-path", "ai.move.path", true);
+        return Array.AsReadOnly(backtrack.SkipLast(1).Reverse().Select(direction => (byte)(direction ^ 2)).Append((byte)255).ToArray());
+    }
+
+    internal static (MapPosition Destination, IReadOnlyList<byte> MoveString) Walk(
+        WeightedMovementGrid grid, MapPosition origin, int targetCost, int width, int height)
+    {
+        if (!Within(origin) || targetCost < 0 || grid.CostAt(origin) is not { } startCost || targetCost > startCost)
+            throw PathFailure();
+        int current = origin.Y * 48 + origin.X;
+        var directions = new List<byte>(); int previousMask = 0;
+        while (grid.CostAtOffset(current) > targetCost)
+        {
+            int cost = grid.CostAtOffset(current) ?? throw PathFailure();
+            int threshold = cost - 1, mask = 0;
+            foreach ((int delta, int bit) in new[] { (1, 1), (-1, 4), (-48, 2), (48, 8) })
+            {
+                int neighbor = current + delta;
+                if (neighbor is < 0 or >= 2304 || Math.Abs(neighbor % 48 - current % 48) +
+                    Math.Abs(neighbor / 48 - current / 48) != 1) continue;
+                if (grid.CostAtOffset(neighbor) is { } value && value <= threshold)
+                {
+                    mask |= bit; threshold = value; // Source retains earlier bits as threshold decreases.
+                }
+            }
+            int choice = (mask & previousMask) != 0 && (mask ^ previousMask) != 0 ? mask ^ previousMask : mask;
+            if (choice == 0) throw PathFailure();
+            byte direction = (byte)((choice & 1) != 0 ? 0 : (choice & 2) != 0 ? 1 : (choice & 4) != 0 ? 2 : 3);
+            current += direction switch { 0 => 1, 1 => -48, 2 => -1, _ => 48 };
+            if (!Within(new(current % 48, current / 48)) || grid.CostAtOffset(current) is not { } nextCost || nextCost >= cost)
+                throw PathFailure();
+            previousMask = 1 << direction; directions.Add(direction);
+        }
+        return (new(current % 48, current / 48), Array.AsReadOnly(directions.Append((byte)255).ToArray()));
+
+        bool Within(MapPosition position) => position.X >= 0 && position.X < width && position.Y >= 0 && position.Y < height;
+        static BattleRuleException PathFailure() => new("ai-move-path", "ai.move.path", true);
     }
     private static int Offset(MapPosition position) => position.Y * 48 + position.X;
 }

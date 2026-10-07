@@ -1,4 +1,5 @@
-namespace Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Battles;
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal enum PhysicalPriorityTable { Regular, Flying }
 internal readonly record struct PhysicalTargetPriority(byte Movement, byte Priority, byte? ClassId);

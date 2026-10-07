@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
@@ -209,11 +210,11 @@ public sealed class CommandsetContinuationTests
         foreach (var (x, y, cost) in new[] { (7, 3, 6), (8, 3, 4), (7, 2, 2), (8, 2, 0) })
         { total[y * 48 + x] = (byte)cost; movable[y * 48 + x] = 0; }
         var grid = new WeightedMovementGrid(total, movable, []);
-        var walk = AiMovementRules.Walk(grid, new(7, 3), 2, 16, 20);
+        var walk = BattleMovement.Walk(grid, new(7, 3), 2, 16, 20);
         Assert.Equal(new MapPosition(8, 2), walk.Destination);
         Assert.Equal(new byte[] { 0, 1, 255 }, walk.MoveString);
-        Assert.Equal(new byte[] { 255 }, AiMovementRules.Walk(grid, new(8, 2), 0, 16, 20).MoveString);
-        Assert.Throws<BattleRuleException>(() => AiMovementRules.Walk(grid, new(7, 3), 2, 8, 20));
+        Assert.Equal(new byte[] { 255 }, BattleMovement.Walk(grid, new(8, 2), 0, 16, 20).MoveString);
+        Assert.Throws<BattleRuleException>(() => BattleMovement.Walk(grid, new(7, 3), 2, 8, 20));
     }
 
     private static void Configure(JsonNode d, int y)
