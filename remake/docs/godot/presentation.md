@@ -10,7 +10,7 @@ and [host observations](../verification/host.md).
 [`Main.tscn`](../../game/Main.tscn) instantiates [`GameRoot`](../../game/src/GameRoot.cs).
 The project references only Application, Content and Domain. Startup accepts one of
 `--authored-package <path>`, `--private-battle-start <path>` or `--private-exploration-start <path>`,
-plus optional `--input-settings <path>`. No session-entry option selects the authored practice yard,
+plus optional `--input-settings <path>`. When no session-entry option is supplied, startup selects the authored practice yard,
 including when only input settings are supplied. Unknown/positional, duplicate, conflicting and
 missing-path options fail explicitly before creating a session. Diagnostic observer settings belong
 to external probes, not game argument routing.
