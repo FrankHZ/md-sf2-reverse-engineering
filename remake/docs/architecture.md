@@ -543,6 +543,18 @@ than changed constants. They are demonstration rules, not proposed SF2 balance c
 existing supported HEAL scene family, cost once, and retain later scene RNG/order. The default SF2
 implementation remains the existing source behavior, independently asserted.
 
+The first slice also owns the narrow `PlayerItemUse.cs` call-site adaptation: it currently calls
+both `PlayerHealing.RequireTarget` and `HealingRules.Experience`. Extract the existing living
+same-side/range/self-destination target check once into
+`Domain/Gameplay/Sf2/HealingTargetRules.cs`; the default HEAL implementation and Herb call that
+maintained helper directly. Move the existing scalar `HealingRules` once into the same module and
+adapt Herb's EXP call to that owner. Herb must not call the session-selected HEAL strategy: changing
+the authored spell variant must not change Herb targeting, recovery, EXP, inventory or RNG behavior.
+Remove `PlayerHealing.cs` in slice 1 only after its dispatcher, Herb, `HealingRulesTests` and
+`HealingFairyTests` callers migrate; retain no forwarding class. The target/scalar helpers remain
+single-owned shared policy while HEAL and Herb consume them, including after Herb's slice 2 migration.
+`MedicalHerbTests` supplies the affected action-behavior regression boundary, not tests of the helper.
+
 Run both variants through the ordinary authored content reader and session, not a fake dispatcher.
 Observe the same actual Godot presenter through ordinary input and its current state/projection/error
 endpoint. Existing keyboard shortcuts can choose semantic options; no new UI design is required.
@@ -570,10 +582,11 @@ refactor, or require a fresh full route merely to replace old red results.
 
 ### Cumulative resources, pilot decisions and recovery
 
-Planning is bounded to 120 active minutes plus 45 minutes independent review/corrections, text-only
-outputs at most 5 MiB, no runtime launches. The implementation estimates below are **Inferred planning
-ranges**, not measured delivery promises or authorization to spend the entire allowance. Main-gate
-owns the cumulative total across child tasks; task replacement does not reset it.
+This investigation remains source-only, with no runtime launches. Its original effort/text-scratch
+estimates and the implementation estimates below are **Inferred planning ranges**, not acceptance
+limits or reasons to omit necessary boundary analysis. Consider implementation, review, debugging,
+integration and ongoing maintenance together; main-gate adjusts estimates using actual discoveries
+and avoided rework, without a separate cost process or repeated per-task accounting.
 
 | Slice | Engineering hours | Narrow verification, independent review and integration hours | Main uncertainty |
 | --- | --- | --- | --- |
@@ -582,40 +595,36 @@ owns the cumulative total across child tasks; task replacement does not reset it
 | 3 | 8–14 | 3–5 | Strategy binding and preserving independent thinking RNG/preflight. |
 | 4 | 8–14 | 3–5 | Live growth seed and source outcome/program composition. |
 | 5 | 6–10 | 3–5 | Source exception provenance, conditional wait and final documentation. |
-| **Finite total** | **42–70** | **16–26** | **58–96 hours**, including supporting work; no separate platform budget. |
+| **Finite total** | **42–70** | **16–26** | **58–96 hours** initially estimated, including supporting work; uncertainty may justify revision. |
 
 Expected code footprint is roughly 1.5–3k existing handwritten lines moved/reworked across the five
 families and 0.6–1.2k net new contract/query/behavior-test lines, uncertain by about 50%. This is not a
 line target. Keep new/extracted source under1,000 physical lines; if a touched oversized file needs
 extraction, move the affected responsibility without net growth. No extra project, package dependency,
-background service, durable protocol, cache or database is budgeted. Maintenance consists of the
+background service, durable protocol, cache or database is proposed. Maintenance consists of the
 finite strategy seams and authoring examples within existing projects/tests, not maintaining two
 engines. New interfaces must have actual migrated consumers; no permanent old/new calculator pair.
 
-Pilot with at most two authored packages totaling 1 MiB, serial execution, at most 1,000 rule/query
-calls per representative case and one short actual-consumer interval per variant. Query target
-filtering is O(A) time/output for A actors; preparation should retain current action complexity and
-O(A) immutable-state copies. AI retains its existing grid/candidate work rather than adding a query
-copy per cell or pair. Rule selection resolves once per session; no per-frame file reads or reflection.
-Expect compact summaries at most 10 MiB per slice / 50 MiB total, transient observation scratch at most
-100 MiB per slice. Use existing worktree build/import caches; reserve 2 GiB incremental disk headroom,
-replan if additional caches exceed that instead of copying installations. No new network data or
-paid API use is required beyond normal Git/CI and execution-agent usage; model cost is unmeasured
-and remains part of the host's normal account budget.
+The correctness pilot uses the two authored variants and their necessary behavior tests and actual
+consumer intervals. Query target filtering should be O(A) time/output for A actors; preparation
+retains current action complexity and O(A) immutable-state copies. AI retains its existing grid/
+candidate work rather than adding a state copy per target or cell. Resolve rule selection once per
+session, without per-frame file reads or reflection. Expect authored inputs around 1 MiB or less,
+compact summaries on the order of 10 MiB and short-lived observation scratch around 100 MiB; these
+are sizing assumptions, not fixed quotas. Reuse worktree build/import caches and existing tool
+installations. No new network data, paid API, capture database or benchmark infrastructure is needed.
 
-The first implementation pilot records build/restart/verification wall time, representative rule
-call/allocation and process peak-memory deltas against the same existing authored case, using short
-counters or existing process measurements without frame dumps or a benchmark framework. Record
-measurement method/noise; do not claim performance from interface shape. Main-gate reviews success,
-malformed/throwing rule, and missing-consumer diagnostics before expanding. Initial tripwires are:
-more than 2× the comparable rule-call/allocation or build/check baseline after excluding measurement
-noise, more than 128 MiB unexplained incremental process memory, an observation exceeding 120 s, or
-output/scratch limits exceeded. These trigger diagnosis/replanning, not weakened behavior acceptance
-or an assertion that performance is already adequate. Establish an observed working budget before
-calling the parent performance criterion satisfied.
+Prefer timing/allocation information already exposed by necessary builds, behavior tests and the
+actual consumer pilot. Add targeted performance measurement only for an identified credible
+regression, such as copying battle state for every queried target; measure that operation against
+the existing case rather than imposing a generic rule-call microbenchmark or fixed call count.
+Runtime correctness, useful replacement boundaries and diagnosable failures are acceptance criteria.
+Do not claim measured performance from source shape, or require an unrelated benchmark to accept a
+sound design. Main-gate reviews the real success, rule-failure and missing-consumer behavior before
+expanding; material cost or complexity discoveries inform its engineering reassessment.
 
 Design quality and total implementation, review, debugging and maintenance effort take precedence
-over minimizing one run's spend. The provisional effort/storage estimates and pilot tripwires above
+over minimizing one run's spend. The provisional effort/storage estimates above
 are reassessment signals, not design acceptance targets or reasons to omit necessary analysis.
 Main-gate adjusts estimates as routine engineering judgment, including extra work that prevents
 rework; this does not automatically require user approval. Stop for actual scope departures such as
