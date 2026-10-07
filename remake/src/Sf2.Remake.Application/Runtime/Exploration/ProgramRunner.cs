@@ -16,8 +16,12 @@ internal static class ProgramRunner
         return new(token, text, end, end < tokens.Count);
     }
 
+    // Source-default entry for standalone program comparisons.
     internal static SessionResult Run(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations,
-        IReadOnlyList<ProgramControlRead>? prefixReads = null)
+        IReadOnlyList<ProgramControlRead>? prefixReads = null) => Run(definition, current, observations, Gameplay.RuleCompositions.Sf2(), prefixReads);
+
+    internal static SessionResult Run(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations,
+        SessionRules rules, IReadOnlyList<ProgramControlRead>? prefixReads = null)
     {
         List<ProgramControlRead> reads = prefixReads?.ToList() ?? [];
         SessionResult Finish(SessionResult result) => result with { ProgramControlReads = reads.AsReadOnly() };
@@ -48,7 +52,7 @@ internal static class ProgramRunner
                     }
                     if (current.Story.Continuation == ProgramContinuation.BattleStartFinished)
                     {
-                        var result = BattleAdvancer.Advance(current, observations);
+                        var result = BattleAdvancer.Advance(current, observations, rules);
                         return Finish(result with { Snapshot = result.Snapshot.WithStory(current.Story.Copy(null,
                             continuation: ProgramContinuation.FieldInput)) });
                     }

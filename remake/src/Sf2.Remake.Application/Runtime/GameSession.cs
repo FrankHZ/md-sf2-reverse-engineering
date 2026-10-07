@@ -41,7 +41,7 @@ public sealed class GameSession
             return new SessionStartFailed(new(SessionFailureKind.ContentError, "missing-encounter", "start.encounter", "missing encounter"));
         try
         {
-            var result = BattleAdvancer.Start(encounter, start);
+            var result = BattleAdvancer.Start(encounter, start, rules);
             return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
         }
         catch (BattleRuleException error)
@@ -59,7 +59,7 @@ public sealed class GameSession
         ArgumentNullException.ThrowIfNull(start);
         try
         {
-            var result = ExplorationDispatcher.Start(definition, start);
+            var result = ExplorationDispatcher.Start(definition, start, rules);
             return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
         }
         catch (BattleRuleException error)
@@ -89,13 +89,13 @@ public sealed class GameSession
             (tick.Ticks != 1 || (current.BattleScene is { Healing: not null } healingScene
                 ? tick.Wait != healingScene.Token : tick.Wait is not null)))
             return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
-        var result = movementActive ? BattleMovementContinuation.Submit(current, envelope.Command)
-            : sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command)
-            : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command)
+        var result = movementActive ? BattleMovementContinuation.Submit(current, envelope.Command, Rules)
+            : sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command, Rules)
+            : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command, Rules)
             : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, Definition.BattleScenes, Definition.PrivateDefinitions is not null);
         if (!programActive && !ReferenceEquals(result.Snapshot, current))
             result = result with { Snapshot = result.Snapshot.WithStory(current.Story) };
-        if (result.Failure is null && !programActive) result = BattleOutcome.Begin(Definition, result);
+        if (result.Failure is null && !programActive) result = BattleOutcome.Begin(Definition, result, Rules);
         _current = result.Snapshot;
         return result;
     }

@@ -1,4 +1,6 @@
-namespace Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Battles;
+
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal sealed record PhysicalRoll(string Purpose, ushort Range, uint Before, uint After, ushort Result);
 internal sealed record PhysicalStrike(bool Dodged, bool Critical, int Damage, ushort Hp,

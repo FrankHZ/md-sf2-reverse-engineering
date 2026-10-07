@@ -269,10 +269,13 @@ internal static class BattleSceneContinuation
         return Result(current, action.Prepared, scene, revision, sequence, observations);
     }
 
-    internal static SessionResult Submit(SessionSnapshot current, SessionCommand command)
+    internal static SessionResult Submit(SessionSnapshot current, SessionCommand command) =>
+        Submit(current, command, Gameplay.RuleCompositions.Sf2());
+
+    internal static SessionResult Submit(SessionSnapshot current, SessionCommand command, SessionRules rules)
     {
         var scene = current.BattleScene!;
-        if (scene.Healing is not { } healing) return Continue(current, command);
+        if (scene.Healing is not { } healing) return Continue(current, command, rules);
         bool advancing = command is AdvanceSimulation { Ticks: 1 } advance && advance.Wait == scene.Token && !healing.LogicalComplete;
         bool acknowledge = command is Acknowledge ack && ack.Wait == scene.Token && scene.RequiresAcknowledgement &&
             (healing.AtTimedInput || healing.LogicalComplete);
@@ -299,12 +302,16 @@ internal static class BattleSceneContinuation
         var ready = new SessionSnapshot(current.SessionId, current.Revision, sequence,
             new ActiveBattle(battle, null, updated), current.Story, current.StopReason);
         var result = Continue(ready, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token)
-            : new CompletePresentation(scene.Token, scene.CompletionKind));
-        if (result.Failure is not null) return result with { Snapshot = current, Observations = [] };
+            : new CompletePresentation(scene.Token, scene.CompletionKind), rules);
+        // A rejected current scene step returns its input snapshot: discard only
+        // this tentative logical/delivery update. Release may already have committed
+        // the action and advanced into automatic work; retain that downstream state.
+        if (result.Failure is not null && ReferenceEquals(result.Snapshot, ready))
+            return result with { Snapshot = current, Observations = [] };
         return result with { Observations = observations.Concat(result.Observations).ToArray() };
     }
 
-    private static SessionResult Continue(SessionSnapshot current, SessionCommand command)
+    private static SessionResult Continue(SessionSnapshot current, SessionCommand command, SessionRules rules)
     {
         var scene = current.BattleScene!;
         bool accepted = command switch
@@ -448,7 +455,7 @@ internal static class BattleSceneContinuation
                 new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
             var committed = BattleActionCommitter.Publish(ended, battle, scene.Action.Actor,
                 scene.Action.Destination, [], observations, defeatedHookHandled: true).WithStory(current.Story);
-            return BattleAdvancer.Advance(committed, observations);
+            return BattleAdvancer.Advance(committed, observations, rules);
         }
     }
 

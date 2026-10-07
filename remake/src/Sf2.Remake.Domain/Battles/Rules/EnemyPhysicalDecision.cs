@@ -7,7 +7,7 @@ internal static class EnemyPhysicalDecision
     // Already-active ATTACK1 / script3, physical-only. This is
     // a successful first command of source commandset06, not a replacement fallback policy.
     internal static BattleAutomaticAction? TryResolve(
-        EngineBattleState current, ActorRef actorRef)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
     {
         var actor = current.GetActor(actorRef);
         var grid = BattleMovement.Grid(current, actorRef);
@@ -19,7 +19,8 @@ internal static class EnemyPhysicalDecision
                 candidates.Add((target, position, grid.CostAt(position)!.Value));
         }
         if (candidates.Count == 0) return null;
-        _ = PhysicalBattleAction.RequireActor(current, actorRef);
+        _ = BattleActionRules.Invoke(physical, "ai-admission", () =>
+            physical.RequireAction(current, actorRef, new(BattleActionKind.Physical)));
         var priorities = new PhysicalTargetPriority[candidates.Count];
         var decisions = new List<BattleEffect>();
         uint thinking = current.ThinkingSeed;
@@ -28,10 +29,12 @@ internal static class EnemyPhysicalDecision
         for (int index = candidates.Count - 1; index >= 0; index--)
         {
             var candidate = candidates[index];
-            if (candidate.Target.Definition.Physical is null)
-                throw new BattleRuleException("physical-definition", "target.physical", true);
-            int potential = PhysicalStrikeRules.LandDamage(actor.Attack, candidate.Target.Defense,
-                BattleTerrainRules.LandMultiplier(current.Definition.Terrain[candidate.Target.Position!.Y * 48 + candidate.Target.Position.X], candidate.Target.Definition.Mover));
+            int potential = BattleActionRules.Invoke(physical, "ai-estimate", () =>
+            {
+                int damage = physical.EstimateDamage(current, actorRef, candidate.Target.Actor);
+                if (damage < 0) throw new InvalidOperationException("Invalid physical estimate.");
+                return damage;
+            });
             var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
             uint after = ((uint)draw.After << 16) | (thinking & 65535);
             byte priority = PhysicalTargetRules.ScriptThree((byte)candidate.Cost, Math.Max(0, candidate.Target.Hp - potential), draw.Value);
@@ -50,7 +53,8 @@ internal static class EnemyPhysicalDecision
         // Pure admission preview preserves the existing all-or-nothing Unsupported
         // boundary (including random-dependent reward/growth capability). Discard it:
         // no construction seed, damage or reward becomes live before movement ends.
-        _ = PhysicalBattleAction.Prepare(prepared, actorRef, selected.Position, selected.Target.Actor);
+        _ = BattleActionRules.Prepare(physical, prepared, actorRef, selected.Position,
+            new(BattleActionKind.Physical), selected.Target.Actor);
         var path = BattleMovement.Route(actor.Position!, AiMovementRules.MoveString(grid, actor.Position!,
             selected.Position, current.Definition.Width, current.Definition.Height));
         return new(prepared, Array.AsReadOnly<BattleEffect>([

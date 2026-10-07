@@ -4,53 +4,99 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattlePresentationKind { Healing }
+public enum BattlePresentationKind { Healing, Physical, Item, None }
 public sealed record BattleTargetChoice(ActorRef Actor, bool Enabled, SessionFailure? Reason);
+public sealed record BattleActionChoice(BattleActionRef Action, string Label, BattlePresentationKind Presentation,
+    byte? MinimumRange, byte? MaximumRange, bool Empty, bool Enabled, SessionFailure? Reason,
+    IReadOnlyList<BattleTargetChoice> Targets);
 public sealed record BattleSpellChoice(SpellRef Spell, string Label, BattlePresentationKind Presentation,
     byte? MinimumRange, byte? MaximumRange, bool Enabled, SessionFailure? Reason,
     IReadOnlyList<BattleTargetChoice> Targets);
+public sealed record BattleItemChoice(int Slot, string Label, bool Empty, bool Enabled, SessionFailure? Reason,
+    IReadOnlyList<BattleTargetChoice> Targets);
 public sealed record BattleChoicesSnapshot(Guid SessionId, long Revision, ActorRef? Actor,
-    BattleSelectionStage? Stage, MapPosition? Origin, IReadOnlyList<BattleSpellChoice> Spells,
-    SessionFailure? Failure = null);
+    BattleSelectionStage? Stage, MapPosition? Origin, IReadOnlyList<BattleActionChoice> Actions,
+    SessionFailure? Failure = null)
+{
+    public IReadOnlyList<BattleSpellChoice> Spells => Array.AsReadOnly(Actions.Where(option => option.Action.Spell is not null)
+        .Select(option => new BattleSpellChoice(option.Action.Spell!.Value, option.Label, option.Presentation,
+            option.MinimumRange, option.MaximumRange, option.Enabled, option.Reason, option.Targets)).ToArray());
+    public IReadOnlyList<BattleItemChoice> Items => Array.AsReadOnly(Actions.Where(option => option.Action.ItemSlot is not null)
+        .Select(option => new BattleItemChoice(option.Action.ItemSlot!.Value, option.Label, option.Empty,
+            option.Enabled, option.Reason, option.Targets)).ToArray());
+}
 
-// Only HEAL is migrated here. Item/physical/Stay projection belongs to slice 2.
 internal static class BattleChoices
 {
-    internal static T Invoke<T>(SessionRules rules, string operation, Func<T> call)
-    {
-        try { return call(); }
-        catch (BattleRuleException) { throw; }
-        catch (Exception) { throw new HealingRuleFault(rules.Healing.Identity, operation); }
-    }
-
     internal static SessionFailure Failure(BattleRuleException error) =>
         new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.IllegalCommand,
             error.Code, error.Field, error.Code.Replace('-', ' '));
 
-    internal static HealingSpellDefinition RequireSpell(SessionRules rules, EngineBattleState battle,
-        ActorRef actor, SpellRef spellRef) => Invoke(rules, "spell-admission", () =>
+    internal static SessionFailure Failure(BattleActionRuleFault error) =>
+        new(SessionFailureKind.InvariantFailure, error.Kind == BattleActionKind.Healing ? "healing-rule-invariant" : "action-rule-invariant",
+            $"rules.{error.Kind.ToString().ToLowerInvariant()}.{error.Operation}",
+            $"Action rule {error.Identity} failed at {error.Operation}.");
+
+    internal static BattleActionAdmission RequireAction(SessionRules rules, EngineBattleState battle,
+        ActorRef actor, BattleActionRef action)
     {
-        var spell = rules.Healing.RequireSpell(battle, actor, spellRef);
-        if (!battle.GetActor(actor).Spells.Contains(spellRef) ||
-            !battle.Definition.Spells.TryGetValue(spellRef, out var admitted) || spell != admitted)
-            throw new InvalidOperationException("Invalid admitted spell.");
-        if (spellRef.Level is < 1 or > 3)
-            throw new BattleRuleException("healing-animation", "spell.level", true);
-        if (battle.GetActor(actor).Mp < spell.MpCost)
-            throw new BattleRuleException("insufficient-mp", "actor.mp");
-        return spell;
-    });
+        if (!Enum.IsDefined(action.Kind)) throw new BattleRuleException("unknown-action", "action", true);
+        var rule = rules.Action(action);
+        return BattleActionRules.Invoke(rule, "action-admission", () =>
+        {
+            RequireReference(battle, actor, action);
+            var admission = rule.RequireAction(battle, actor, action);
+            if (action.Kind == BattleActionKind.Healing &&
+                (admission.Spell is not { } spell || !battle.Definition.Spells.TryGetValue(action.Spell!.Value, out var known) || known != spell ||
+                    admission.MinimumRange != spell.MinimumRange || admission.MaximumRange != spell.MaximumRange) ||
+                action.Kind == BattleActionKind.Item &&
+                (admission.Item is not { } item || !battle.Definition.HealingItems.TryGetValue(item.ItemId, out var knownItem) || knownItem != item ||
+                    admission.MinimumRange != item.MinimumRange || admission.MaximumRange != item.MaximumRange) ||
+                action.Kind == BattleActionKind.Stay && (admission.MinimumRange is not null || admission.MaximumRange is not null) ||
+                action.Kind != BattleActionKind.Healing && admission.Spell is not null ||
+                action.Kind != BattleActionKind.Item && admission.Item is not null)
+                throw new InvalidOperationException("Invalid action admission.");
+            return admission;
+        });
+    }
+
+    private static void RequireReference(EngineBattleState battle, ActorRef actor, BattleActionRef action)
+    {
+        bool valid = action.Kind switch
+        {
+            BattleActionKind.Healing => action.ItemSlot is null && action.Spell is { } spell &&
+                battle.GetActor(actor).Spells.Contains(spell),
+            BattleActionKind.Item => action.Spell is null && action.ItemSlot is { } slot && slot >= 0 &&
+                slot < (battle.GetActor(actor).SourceLoadout?.Items.Count ?? 0),
+            _ => action.Spell is null && action.ItemSlot is null,
+        };
+        if (!valid) throw new BattleRuleException(action.Kind == BattleActionKind.Item ? "item-slot" : "spell-not-known", "action");
+    }
 
     internal static BattleActorState RequireTarget(SessionRules rules, EngineBattleState battle, ActorRef actor,
-        MapPosition destination, HealingSpellDefinition spell, ActorRef target, BattleSceneDefinition? content,
-        bool requireContent) => Invoke(rules, "target-admission", () =>
+        MapPosition destination, BattleActionRef action, ActorRef target, BattleSceneDefinition? content,
+        bool requireContent)
     {
-        var patient = rules.Healing.RequireTarget(battle, actor, destination, spell, target);
-        if (!ReferenceEquals(patient, battle.GetActor(target)))
-            throw new InvalidOperationException("Invalid admitted target.");
-        HealingSceneCursor.RequireContent(battle, actor, target, content, requireContent);
-        return patient;
-    });
+        _ = RequireAction(rules, battle, actor, action);
+        var rule = rules.Action(action);
+        return BattleActionRules.Invoke(rule, "target-admission", () =>
+        {
+            var patient = rule.RequireTarget(battle, actor, destination, action, target);
+            if (!ReferenceEquals(patient, battle.GetActor(target))) throw new InvalidOperationException("Invalid admitted target.");
+            if (action.Kind == BattleActionKind.Healing)
+                HealingSceneCursor.RequireContent(battle, actor, target, content, requireContent);
+            return patient;
+        });
+    }
+
+    internal static BattleActionResolution Prepare(SessionRules rules, EngineBattleState battle, ActorRef actor,
+        MapPosition destination, BattleActionRef action, ActorRef? target, BattleSceneDefinition? content = null,
+        bool requireContent = false)
+    {
+        _ = RequireAction(rules, battle, actor, action);
+        if (target is { } victim) _ = RequireTarget(rules, battle, actor, destination, action, victim, content, requireContent);
+        return BattleActionRules.Prepare(rules.Action(action), battle, actor, destination, action, target);
+    }
 
     internal static BattleChoicesSnapshot Query(SessionSnapshot current, SessionRules rules,
         BattleSceneDefinition? content, bool requireContent)
@@ -60,49 +106,71 @@ internal static class BattleChoices
             return new(current.SessionId, current.Revision, null, null, null, [],
                 new(SessionFailureKind.IllegalCommand, "not-player-control", "phase", "not player control"));
         var battle = current.Battle;
-        List<BattleSpellChoice> options = [];
-        foreach (var spellRef in battle.GetActor(selection.Actor).Spells)
+        List<BattleActionChoice> options = [];
+        foreach (var rule in rules.Actions)
         {
-            SessionFailure? failure = null;
-            HealingSpellDefinition? spell = null;
-            List<BattleTargetChoice> targets = [];
+            BattleActionOffer[] offers;
             try
             {
-                BattleMovement.RequireStop(battle, selection.Actor, selection.Preview.Destination);
-                spell = RequireSpell(rules, battle, selection.Actor, spellRef);
-                var candidates = Invoke(rules, "target-query", () =>
+                offers = BattleActionRules.Invoke(rule, "action-query", () =>
                 {
-                    var result = rules.Healing.QueryTargets(battle, selection.Actor).ToArray();
-                    if (result.Distinct().Count() != result.Length || result.Any(actor => !battle.Actors.Any(row => row.Actor == actor)))
-                        throw new InvalidOperationException("Invalid target query.");
+                    var result = rule.QueryActions(battle, selection.Actor).ToArray();
+                    if (result.Select(offer => offer.Action).Distinct().Count() != result.Length ||
+                        result.Any(offer => offer.Action.Kind != rule.Kind))
+                        throw new InvalidOperationException("Invalid action query.");
+                    foreach (var offer in result) RequireReference(battle, selection.Actor, offer.Action);
                     return result;
                 });
-                foreach (var actor in candidates)
-                {
-                    SessionFailure? reason = null;
-                    try { _ = RequireTarget(rules, battle, selection.Actor, selection.Preview.Destination,
-                        spell, actor, content, requireContent); }
-                    catch (BattleRuleException error) { reason = Failure(error); }
-                    catch (HealingRuleFault error) { reason = error.Failure; }
-                    targets.Add(new(actor, reason is null, reason));
-                }
-                if (!targets.Any(target => target.Enabled))
-                    failure = targets.FirstOrDefault(target => target.Reason?.Kind == SessionFailureKind.UnsupportedCapability)?.Reason
-                        ?? targets.FirstOrDefault(target => target.Reason?.Kind == SessionFailureKind.InvariantFailure)?.Reason
-                        ?? new(SessionFailureKind.IllegalCommand, "no-healing-target", "target", "no healing target");
             }
-            catch (BattleRuleException error) { failure = Failure(error); }
-            catch (HealingRuleFault error) { failure = error.Failure; }
-            options.Add(new(spellRef, $"{spellRef.Value.ToUpperInvariant()} {spellRef.Level}", BattlePresentationKind.Healing,
-                spell?.MinimumRange, spell?.MaximumRange, failure is null, failure, targets.AsReadOnly()));
+            catch (BattleRuleException error) { return Failed(Failure(error)); }
+            catch (BattleActionRuleFault error) { return Failed(Failure(error)); }
+            foreach (var offer in offers)
+            {
+                SessionFailure? failure = null;
+                BattleActionAdmission? admission = null;
+                List<BattleTargetChoice> targets = [];
+                try
+                {
+                    BattleMovement.RequireStop(battle, selection.Actor, selection.Preview.Destination);
+                    admission = RequireAction(rules, battle, selection.Actor, offer.Action);
+                    var candidates = BattleActionRules.Invoke(rule, "target-query", () =>
+                    {
+                        var result = rule.QueryTargets(battle, selection.Actor, offer.Action).ToArray();
+                        if (result.Distinct().Count() != result.Length || result.Any(actor => !battle.Actors.Any(row => row.Actor == actor)))
+                            throw new InvalidOperationException("Invalid target query.");
+                        return result;
+                    });
+                    foreach (var actor in candidates)
+                    {
+                        SessionFailure? reason = null;
+                        try { _ = RequireTarget(rules, battle, selection.Actor, selection.Preview.Destination,
+                            offer.Action, actor, content, requireContent); }
+                        catch (BattleRuleException error) { reason = Failure(error); }
+                        catch (BattleActionRuleFault error) { reason = Failure(error); }
+                        targets.Add(new(actor, reason is null, reason));
+                    }
+                    if (offer.Action.Kind != BattleActionKind.Stay && !targets.Any(target => target.Enabled))
+                        failure = targets.FirstOrDefault(target => target.Reason?.Kind == SessionFailureKind.UnsupportedCapability)?.Reason
+                            ?? targets.FirstOrDefault(target => target.Reason?.Kind == SessionFailureKind.InvariantFailure)?.Reason
+                            ?? new(SessionFailureKind.IllegalCommand, offer.Action.Kind == BattleActionKind.Healing ? "no-healing-target" : "no-action-target", "target", "no action target");
+                }
+                catch (BattleRuleException error) { failure = Failure(error); }
+                catch (BattleActionRuleFault error) { failure = Failure(error); }
+                var presentation = rule.Kind switch
+                {
+                    BattleActionKind.Healing => BattlePresentationKind.Healing,
+                    BattleActionKind.Physical => BattlePresentationKind.Physical,
+                    BattleActionKind.Item => BattlePresentationKind.Item,
+                    _ => BattlePresentationKind.None,
+                };
+                options.Add(new(offer.Action, offer.Label, presentation, admission?.MinimumRange, admission?.MaximumRange,
+                    offer.Empty, failure is null, failure, targets.AsReadOnly()));
+            }
         }
         return new(current.SessionId, current.Revision, selection.Actor, selection.Stage,
             selection.Preview.Destination, options.AsReadOnly());
-    }
-}
 
-internal sealed class HealingRuleFault(string identity, string operation) : Exception
-{
-    internal SessionFailure Failure => new(SessionFailureKind.InvariantFailure, "healing-rule-invariant",
-        $"rules.healing.{operation}", $"HEAL rule {identity} failed at {operation}.");
+        BattleChoicesSnapshot Failed(SessionFailure failure) => new(current.SessionId, current.Revision,
+            selection.Actor, selection.Stage, selection.Preview.Destination, options.AsReadOnly(), failure);
+    }
 }

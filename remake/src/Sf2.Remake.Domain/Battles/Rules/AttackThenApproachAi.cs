@@ -1,14 +1,19 @@
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Domain.Battles;
 
 // Already-active physical attack, then approach: the admitted source commandset 06 / script 3 branch.
 internal static class AttackThenApproachAi
 {
+    // Explicit source-default overload for standalone policy comparisons.
+    internal static BattleAutomaticAction Resolve(EngineBattleState current, ActorRef actor) =>
+        Resolve(current, actor, new Sf2PhysicalAction());
+
     internal static BattleAutomaticAction Resolve(
-        EngineBattleState current, ActorRef actorRef)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
     {
-        if (EnemyPhysicalDecision.TryResolve(current, actorRef) is { } attack)
+        if (EnemyPhysicalDecision.TryResolve(current, actorRef, physical) is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
 
         // In this admitted empty spellbook/item/status branch ATTACK1, HEAL1 and SUPPORT

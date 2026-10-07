@@ -16,6 +16,7 @@ public enum SessionAction { Stay, Heal, PhysicalAttack, Item }
 public abstract record SessionCommand;
 public sealed record Move(ExplorationDirection Direction) : SessionCommand;
 public sealed record ChooseAction(SessionAction Action) : SessionCommand;
+public sealed record SelectBattleAction(BattleActionRef Action) : SessionCommand;
 public sealed record SelectSpell(SpellRef Spell) : SessionCommand;
 public sealed record SelectItem(int Slot) : SessionCommand;
 public sealed record SelectTarget(ActorRef Target) : SessionCommand;
@@ -56,6 +57,14 @@ public sealed class BattleSelection
     public int? ItemSlot { get; }
     public SpellRef? Spell { get; }
     public ActorRef? Target { get; }
+    public BattleActionRef? ActionReference => Action switch
+    {
+        SessionAction.Heal when Spell is { } spell => new(BattleActionKind.Healing, spell),
+        SessionAction.Item when ItemSlot is { } slot => new(BattleActionKind.Item, ItemSlot: slot),
+        SessionAction.PhysicalAttack => new(BattleActionKind.Physical),
+        SessionAction.Stay => new(BattleActionKind.Stay),
+        _ => null,
+    };
 }
 
 public abstract record ActiveSessionState;

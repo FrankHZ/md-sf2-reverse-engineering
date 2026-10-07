@@ -7,7 +7,10 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class ExplorationDispatcher
 {
-    internal static SessionResult Start(ScenarioDefinition definition, ExplorationStartInput start)
+    internal static SessionResult Start(ScenarioDefinition definition, ExplorationStartInput start) =>
+        Start(definition, start, Gameplay.RuleCompositions.Sf2());
+
+    internal static SessionResult Start(ScenarioDefinition definition, ExplorationStartInput start, SessionRules rules)
     {
         if (definition.Exploration is null || !definition.Exploration.Maps.TryGetValue(start.Map, out var map))
             throw new BattleRuleException("missing-map", "start.map");
@@ -41,10 +44,13 @@ internal static class ExplorationDispatcher
             display: start.Display, textSettings: start.TextSettings);
         story = ExplorationTextRunner.Initialize(world, story);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
-            SessionStopReason.SimulationWait), []);
+            SessionStopReason.SimulationWait), [], rules);
     }
 
-    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, SessionCommand command)
+    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, SessionCommand command) =>
+        Submit(definition, current, command, Gameplay.RuleCompositions.Sf2());
+
+    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, SessionCommand command, SessionRules rules)
     {
         if (current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted)
             return Reject(current, "session-stopped", "command");
@@ -212,7 +218,7 @@ internal static class ExplorationDispatcher
                         {
                             current = Service(definition, current, observations, "music-helper-service");
                             current = ExplorationMusicRunner.Finish(current, observations);
-                            if (current.Story.Wait?.Token != helper.Token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait?.Token != helper.Token) return ProgramRunner.Run(definition, current, observations, rules);
                             if (current.Story.Wait is MusicWait { LogicalDone: true }) return ProgramRunner.Result(current, observations);
                             continue;
                         }
@@ -220,7 +226,7 @@ internal static class ExplorationDispatcher
                         {
                             current = Service(definition, current, observations, "choice-mandatory-service");
                             current = ExplorationChoiceRunner.Advance(current, observations);
-                            if (current.Story.Wait?.Token != boundChoice.Token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait?.Token != boundChoice.Token) return ProgramRunner.Run(definition, current, observations, rules);
                             if (current.Story.Wait is ChoiceWait { Work.Automatic: false }) return ProgramRunner.Result(current, observations);
                             continue;
                         }
@@ -231,7 +237,7 @@ internal static class ExplorationDispatcher
                             current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, progressed),
                                 observations, progressed.Elapsed == 10 ? "nod-lowered" : progressed.Elapsed == 30 ? "nod-restored" : "nod-progress");
                             current = FinishNod(current, observations);
-                            if (current.Story.Wait?.Token != nod.Token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait?.Token != nod.Token) return ProgramRunner.Run(definition, current, observations, rules);
                             if (progressed.LogicalDone) return ProgramRunner.Result(current, observations);
                             continue;
                         }
@@ -243,7 +249,7 @@ internal static class ExplorationDispatcher
                             {
                                 current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
                                     clearEventCaller: true), observations, "zone-finished");
-                                return ProgramRunner.Run(definition, current, observations);
+                                return ProgramRunner.Run(definition, current, observations, rules);
                             }
                             continue;
                         }
@@ -251,7 +257,7 @@ internal static class ExplorationDispatcher
                         {
                             current = Service(definition, current, observations, "portrait-window-service");
                             current = ExplorationPortraitRunner.Advance(current, observations);
-                            if (current.Story.Wait?.Token != portraitWait.Token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait?.Token != portraitWait.Token) return ProgramRunner.Run(definition, current, observations, rules);
                             continue;
                         }
                         if (current.Story.Wait is FieldTextWait or ViewWait or TextCloseWait)
@@ -265,7 +271,7 @@ internal static class ExplorationDispatcher
                             var servicedStory = ExplorationTextRunner.AfterService(current.Story);
                             current = ProgramRunner.Commit(current, current.Active, servicedStory,
                                 observations, "text-work-advanced");
-                            if (current.Story.Wait?.Token != token) return ProgramRunner.Run(definition, current, observations,
+                            if (current.Story.Wait?.Token != token) return ProgramRunner.Run(definition, current, observations, rules,
                                 returningScript ? [ProgramRunner.ControlRead(current, returnSource!.Value, "ScriptReturn", callersBefore)] : null);
                             if (current.Story.Wait is FieldTextWait { LogicalDone: true }) return ProgramRunner.Result(current, observations);
                             continue;
@@ -278,7 +284,7 @@ internal static class ExplorationDispatcher
                                 ? MapTransfer.FadeTick(definition, current, observations)
                                 : MapTransfer.LoadTick(definition, current, observations);
                             if (current.Story.Wait?.Token != token)
-                                return ProgramRunner.Run(definition, current, observations);
+                                return ProgramRunner.Run(definition, current, observations, rules);
                             if (current.Story.Wait is FullFadeWait { LogicalDone: true })
                                 return ProgramRunner.Result(current, observations);
                             continue;
@@ -316,16 +322,16 @@ internal static class ExplorationDispatcher
                                     current = ProgramRunner.Commit(current, active, story, observations, "warp-started");
                                     current = MapTransfer.BeginWarp(definition, current, warp, observations);
                                 }
-                                return ProgramRunner.Run(definition, current, observations);
+                                return ProgramRunner.Run(definition, current, observations, rules);
                             }
                             current = ProgramRunner.Commit(current, active, story, observations,
                                 field.Moved ? "movement-started" : "movement-blocked");
                             if (field.Event is { Kind: ExplorationEventKind.SourceZone } zone)
                             {
                                 current = MapEventDispatcher.EnterZone(current, zone, entityUpdates, observations);
-                                return ProgramRunner.Run(definition, current, observations);
+                                return ProgramRunner.Run(definition, current, observations, rules);
                             }
-                            if (!field.Moved) return ProgramRunner.Run(definition, current, observations);
+                            if (!field.Moved) return ProgramRunner.Run(definition, current, observations, rules);
                             continue;
                         }
                         EntityWaitRelease? releasedEntityWait = null;
@@ -352,9 +358,9 @@ internal static class ExplorationDispatcher
                         // Existing field input does not interrupt background ticks. Completing a
                         // wait or resuming a program still yields at its next control boundary.
                         if (story.Wait is null && !existingFieldInput)
-                            return ProgramRunner.Run(definition, current, observations);
+                            return ProgramRunner.Run(definition, current, observations, rules);
                     }
-                    return existingFieldInput ? ProgramRunner.Run(definition, current, observations)
+                    return existingFieldInput ? ProgramRunner.Run(definition, current, observations, rules)
                         : ProgramRunner.Result(current, observations);
                 default:
                     if (current.Story.Wait is not null || current.Story.Cursor is not null || current.Exploration is null)
@@ -362,13 +368,13 @@ internal static class ExplorationDispatcher
                     if ((command is Sf2.Remake.Application.Runtime.Move or Sf2.Remake.Application.Runtime.Interact) && current.Exploration.Definition.InputProgram is { } inputProgram)
                     {
                         current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(inputProgram), observations, "map-input-program");
-                        return ProgramRunner.Run(definition, current, observations);
+                        return ProgramRunner.Run(definition, current, observations, rules);
                     }
                     if (command is Move move) return Move(definition, current, move, observations);
-                    if (command is Interact interact) return Interact(definition, current, interact, observations);
+                    if (command is Interact interact) return Interact(definition, current, interact, observations, rules);
                     return Reject(current, "exploration-command", "command");
             }
-            return ProgramRunner.Run(definition, current, observations);
+            return ProgramRunner.Run(definition, current, observations, rules);
         }
         catch (MapTransfer.FadeServiceFailure error) { return ProgramRunner.Failure(error.Snapshot, observations, error.Failure); }
         catch (BattleRuleException error) { return ProgramRunner.Failure(current, observations, error); }
@@ -400,7 +406,7 @@ internal static class ExplorationDispatcher
     }
 
     private static SessionResult Interact(ScenarioDefinition definition, SessionSnapshot current, Interact command,
-        List<SessionObservation> observations)
+        List<SessionObservation> observations, SessionRules rules)
     {
         var world = current.Exploration!;
         if (!world.Entities.TryGetValue(command.Entity, out var entity) || !entity.Visible)
@@ -415,7 +421,7 @@ internal static class ExplorationDispatcher
                 current.Story.Flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue));
         if (entry?.Program is not { } program) return Reject(current, "no-interaction", "entity");
         current = MapEventDispatcher.Interact(definition, current, entry, command.Entity, observations);
-        return ProgramRunner.Run(definition, current, observations);
+        return ProgramRunner.Run(definition, current, observations, rules);
     }
 
     private static SessionSnapshot FinishNod(SessionSnapshot current, List<SessionObservation> observations)

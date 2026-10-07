@@ -44,7 +44,7 @@ internal static class BattleMovementContinuation
     }
 
     internal static SessionResult BeginAutomatic(SessionSnapshot current, ActorRef actor,
-        BattleAutomaticAction action, List<SessionObservation> observations)
+        BattleAutomaticAction action, List<SessionObservation> observations, SessionRules rules)
     {
         long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
         foreach (var effect in action.Effects)
@@ -53,14 +53,17 @@ internal static class BattleMovementContinuation
         var decided = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(action.Battle, null), current.Story, SessionStopReason.SimulationWait);
         if (action.Path.Count <= 1)
-            return FinishAutomatic(decided, actor, action.Destination, action.Target, observations);
+            return FinishAutomatic(decided, actor, action.Destination, action.Target, observations, rules);
         observations.Add(new(++sequence, revision, "battle-movement-segment-started", actor,
             From: action.Path[0], To: action.Path[1], Detail: BattleMovementPurpose.Automatic.ToString()));
         return Result(current, action.Battle, null, new(actor, action.Path, 0, new(sequence),
             BattleMovementPurpose.Automatic, action.Target), revision, sequence, observations);
     }
 
-    internal static SessionResult Submit(SessionSnapshot current, SessionCommand command)
+    internal static SessionResult Submit(SessionSnapshot current, SessionCommand command) =>
+        Submit(current, command, Gameplay.RuleCompositions.Sf2());
+
+    internal static SessionResult Submit(SessionSnapshot current, SessionCommand command, SessionRules rules)
     {
         var movement = current.BattleMovement!;
         if (command is not CompletePresentation completion || completion.Wait != movement.Token ||
@@ -81,23 +84,41 @@ internal static class BattleMovementContinuation
             From: movement.Path[0], To: movement.To, Detail: movement.Purpose.ToString()));
         var finished = Result(current, current.Battle, current.Selection, null, revision, sequence, observations);
         if (movement.Purpose != BattleMovementPurpose.Automatic) return finished;
-        var automatic = FinishAutomatic(finished.Snapshot, movement.Actor, movement.To, movement.Target, observations);
-        return automatic.Snapshot.BattleScene is not null ? automatic : BattleAdvancer.Advance(automatic.Snapshot, observations);
+        var automatic = FinishAutomatic(finished.Snapshot, movement.Actor, movement.To, movement.Target, observations, rules);
+        return automatic.Failure is not null || automatic.Snapshot.BattleScene is not null
+            ? automatic : BattleAdvancer.Advance(automatic.Snapshot, observations, rules);
     }
 
     private static SessionResult FinishAutomatic(SessionSnapshot current, ActorRef actor, MapPosition destination,
-        ActorRef? target, List<SessionObservation> observations)
+        ActorRef? target, List<SessionObservation> observations, SessionRules rules)
     {
         // The decision and its preflight ran once before movement. Only now does
         // actual action construction publish its main RNG and scene/reward work.
         if (target is { } victim)
-            return BattleSceneContinuation.Begin(current, PhysicalBattleAction.Prepare(current.Battle, actor, destination, victim), observations);
+        {
+            try
+            {
+                var prepared = BattleChoices.Prepare(rules, current.Battle, actor, destination,
+                    new(BattleActionKind.Physical), victim);
+                return BattleSceneContinuation.Begin(current, prepared, observations);
+            }
+            catch (BattleActionRuleFault error)
+            { return Failed(SessionStopReason.Faulted, BattleChoices.Failure(error)); }
+            catch (BattleRuleException error)
+            {
+                return Failed(error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted, BattleChoices.Failure(error));
+            }
+        }
         // The exact source path/stop was admitted before delivery. No other
         // gameplay command could change occupancy while its continuation lived.
         var moved = current.Battle.With(actors: current.Battle.Actors.Select(a =>
             a.Actor == actor ? a.With(position: destination) : a));
         var committed = BattleActionCommitter.Publish(current, moved, actor, destination, [], observations).WithStory(current.Story);
         return new(committed, observations.AsReadOnly(), committed.StopReason);
+
+        SessionResult Failed(SessionStopReason reason, SessionFailure failure) =>
+            new(new(current.SessionId, current.Revision, current.ObservationSequence, current.Active, current.Story, reason),
+                observations.AsReadOnly(), reason, failure);
     }
 
     private static SessionResult Result(SessionSnapshot current, EngineBattleState battle, BattleSelection? selection,

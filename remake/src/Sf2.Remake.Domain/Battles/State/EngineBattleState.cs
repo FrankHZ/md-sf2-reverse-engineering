@@ -10,6 +10,8 @@ namespace Sf2.Remake.Domain.Battles;
 
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
+public enum BattleActionKind { Stay, Healing, Physical, Item }
+public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight }
 public enum BattleControl { Player, Automatic }
 public enum BattleAiStrategy { Stay, AttackThenApproach, SourceOrders }

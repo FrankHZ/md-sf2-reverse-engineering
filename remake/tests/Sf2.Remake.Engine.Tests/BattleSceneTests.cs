@@ -87,7 +87,7 @@ public sealed class BattleSceneTests
             original.Round, original.Queue, original.Cursor, original.Gold);
         var current = new SessionSnapshot(before.SessionId, before.Revision, before.ObservationSequence,
             new ActiveBattle(battle, before.Selection), before.Story, before.StopReason);
-        var action = PhysicalBattleAction.Prepare(battle, actor, battle.GetActor(actor).Position!, target);
+        var action = PhysicalBattleAction.PrepareSourceDefault(battle, actor, battle.GetActor(actor).Position!, target);
         var result = BattleSceneContinuation.Begin(current, action, []);
         var events = result.Observations.ToList();
         while (result.Snapshot.BattleScene is { } scene)

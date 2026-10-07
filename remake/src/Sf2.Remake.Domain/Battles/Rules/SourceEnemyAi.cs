@@ -1,11 +1,16 @@
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Domain.Battles;
 
 internal static class SourceEnemyAi
 {
+    // Explicit source-default overload for standalone policy comparisons.
+    internal static BattleAutomaticAction Resolve(EngineBattleState current, ActorRef actor) =>
+        Resolve(current, actor, new Sf2PhysicalAction());
+
     internal static BattleAutomaticAction Resolve(
-        EngineBattleState current, ActorRef actorRef)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
     {
         var actor = current.GetActor(actorRef);
         if (actor.IsAlly || actor.Position is null || actor.Hp == 0 || actor.Status != 0 ||
@@ -53,7 +58,7 @@ internal static class SourceEnemyAi
             throw new BattleRuleException("source-occupancy-word", "actors.activationWord", true);
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
-        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef) is { } attack)
+        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical) is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([
                 .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
