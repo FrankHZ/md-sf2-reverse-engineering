@@ -39,7 +39,7 @@ internal static class ProgramRunner
                     }
                     if (current.Story.Continuation is ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished)
                     {
-                        current = BattleOutcome.Continue(definition, current, observations);
+                        current = BattleOutcome.Continue(definition, current, observations, rules);
                         continue;
                     }
                     if (current.Story.Continuation == ProgramContinuation.OutcomeMapLoaded)
@@ -88,7 +88,7 @@ internal static class ProgramRunner
                 switch (instruction)
                 {
                     case ResetPartyBattleStats:
-                        active = new ActiveExploration(current.Exploration!.WithParty(BattleOutcome.Heal(definition, current.Exploration.Party, all: true)));
+                        active = new ActiveExploration(current.Exploration!.WithParty(OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration.Party, all: true)));
                         break;
                     case ReturnBattleMap:
                         story = story.Copy(story.Cursor, clearWarp: true);
@@ -373,6 +373,7 @@ internal static class ProgramRunner
                     instruction is EndProgram && story.Wait is not ViewWait { ScriptReturn: true })
                     reads.Add(ControlRead(current, cursor, instruction.GetType().Name, callersBefore));
             }
+            catch (BattlePolicyFault error) { return Finish(Failure(current, observations, error)); }
             catch (BattleRuleException error) { return Finish(Failure(current, observations, error)); }
         }
         return Finish(Result(Stop(current, SessionStopReason.SimulationWait), observations));
@@ -422,6 +423,9 @@ internal static class ProgramRunner
         new(current.SessionId, current.Revision, current.ObservationSequence, current.Active, current.Story, reason);
     internal static SessionResult Result(SessionSnapshot current, List<SessionObservation> observations) =>
         new(current, observations.AsReadOnly(), current.StopReason);
+    internal static SessionResult Failure(SessionSnapshot current, List<SessionObservation> observations, BattlePolicyFault error) =>
+        new(current, observations.AsReadOnly(), SessionStopReason.Faulted,
+            BattleChoices.Failure(error));
     internal static SessionResult Failure(SessionSnapshot current, List<SessionObservation> observations, BattleRuleException error)
     {
         var reason = error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted;

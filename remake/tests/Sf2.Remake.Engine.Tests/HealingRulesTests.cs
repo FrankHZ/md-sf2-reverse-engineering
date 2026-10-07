@@ -20,7 +20,7 @@ public sealed class HealingRulesTests
                 ? a.With(position: new(origin.X + 1, origin.Y)) : a));
         }
         var before = battle.GetActor(actor); var patient = battle.GetActor(target);
-        var action = new Sf2HealingRule().Prepare(battle, actor, before.Position!, new("mend", 1), target);
+        var action = new Sf2HealingRule().Prepare(battle, actor, before.Position!, new("mend", 1), target, new Sf2BattleProgressionRule());
         Assert.Equal(before.Mp, action.Prepared.GetActor(actor).Mp);
         Assert.Equal(patient.Hp, action.Prepared.GetActor(target).Hp);
         Assert.Equal(before.Exp, action.Prepared.GetActor(actor).Exp);
@@ -34,7 +34,7 @@ public sealed class HealingRulesTests
         Assert.Equal(Math.Min(patient.MaxHp, patient.Hp + 15), healed.GetActor(target).Hp);
         Assert.Equal(before.Mp - 3, healed.GetActor(actor).Mp);
         Assert.Equal(before.Exp, healed.GetActor(actor).Exp);
-        var credited = action.CreditReward(healed);
+        var credited = action.CreditReward(healed, new Sf2BattleProgressionRule());
         Assert.True(credited.Battle.GetActor(actor).Exp > before.Exp);
         Assert.Equal(healed.MainSeed, credited.Battle.MainSeed);
         Assert.Equal(battle.GetActor(actor).Mp, before.Mp);

@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using System.Text.Json;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;

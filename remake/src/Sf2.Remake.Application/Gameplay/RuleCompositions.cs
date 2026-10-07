@@ -22,6 +22,12 @@ public static class RuleCompositions
             new(new("stay"), new StayBattleDecision()),
             new(new("attack-then-approach"), new AttackThenApproachAi()),
             new(new("source-orders"), new SourceEnemyAi())]);
+    public static SessionRules AuthoredProgressionOutcome() => new("authored-progression-outcome", new Sf2HealingRule(),
+        SourcePhysical(), SourceItem(), SourceStay(), progression: new AuthoredBattleProgressionRule(),
+        outcomeReturn: new Authored.AuthoredOutcomeReturnPolicy());
+    internal static IBattleProgressionRule SourceProgression() => new Sf2BattleProgressionRule();
+    internal static IBattleOutcomeRule SourceOutcome() => new BattleOutcomeRules();
+    internal static Runtime.Exploration.IOutcomeReturnPolicy SourceOutcomeReturn() => new Sf2.Sf2OutcomeReturnPolicy();
     internal static IPhysicalActionRule SourcePhysical() => new Sf2PhysicalAction();
     internal static IBattleActionRule SourceItem() => new Sf2ItemAction();
     internal static IBattleActionRule SourceStay() => new Sf2StayAction();

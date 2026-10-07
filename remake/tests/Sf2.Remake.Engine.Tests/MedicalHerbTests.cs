@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
@@ -209,7 +210,7 @@ public sealed class MedicalHerbTests
         var actor = new BattleActorState(original.Deployment with { Definition = definition }, 95, 8, 0, original.Position, 0, 0);
         var battle = initial.With(actors: initial.Actors.Select(a => a.Actor == actor.Actor ? actor : a), mainSeed: 0x12345678);
         var action = PlayerItemUse.PrepareSourceDefault(battle, actor.Actor, actor.Position!, 1, actor.Actor);
-        var replay = action.ApplyReward(action.ApplyReaction(action.Prepared, action.Reactions.Single()));
+        var replay = action.ApplyReward(action.ApplyReaction(action.Prepared, action.Reactions.Single()), new Sf2BattleProgressionRule());
         var after = replay.Battle; var effects = action.ConstructionEffects.Concat(replay.Effects).ToArray();
         Assert.Equal((byte)expectedExp, after.GetActor(actor.Actor).Exp);
         Assert.Equal(0x04B65678u, after.MainSeed); // pinned generator: 0x1234 -> 0xECAB -> 0x04B6

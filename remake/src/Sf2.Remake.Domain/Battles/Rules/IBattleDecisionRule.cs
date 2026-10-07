@@ -14,13 +14,14 @@ internal static class BattleDecisionRules
     {
         try { return call(); }
         catch (BattleRuleException) { throw; }
+        catch (BattlePolicyFault) { throw; }
         catch (BattleActionRuleFault) { throw; }
         catch (BattleDecisionRuleFault) { throw; }
         catch (Exception) { throw new BattleDecisionRuleFault(rule.Identity, operation); }
     }
 
     internal static BattleAutomaticAction Decide(IBattleDecisionRule rule, EngineBattleState battle,
-        ActorRef actor, IPhysicalActionRule physical) => Invoke(rule, "decide", () =>
+        ActorRef actor, IPhysicalActionRule physical, IBattleProgressionRule progression) => Invoke(rule, "decide", () =>
         {
             var decision = rule.Decide(battle, actor, physical);
             decision.Validate(battle, actor);
@@ -31,7 +32,7 @@ internal static class BattleDecisionRules
                 try
                 {
                     _ = BattleActionRules.Prepare(physical, decision.Battle, actor, decision.Destination,
-                        new(BattleActionKind.Physical), target);
+                        new(BattleActionKind.Physical), target, progression);
                 }
                 catch (BattleRuleException error) when (!error.Unsupported)
                 { throw new BattleDecisionRuleFault(rule.Identity, "decision-admission"); }

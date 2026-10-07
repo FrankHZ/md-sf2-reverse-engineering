@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -125,12 +126,12 @@ public sealed class BattleSceneTests
             battle = battle.With(actors: battle.Actors.Select(a => a.Actor == id ? after : a));
         }
         Assert.Equal(ids, batch.Actors);
-        var cleaned = batch.Clean(battle, firstAlly);
+        var cleaned = batch.Clean(battle, firstAlly, new Sf2BattleProgressionRule());
         Assert.Equal(2, cleaned.Battle.GetActor(firstAlly).Kills!.Value);
         Assert.Equal(1, cleaned.Battle.GetActor(firstAlly).Defeats!.Value);
         Assert.Equal(ids, cleaned.Effects.Where(e => e.Kind == "death-cleanup").Select(e => e.Actor));
         Assert.All(ids, id => Assert.Null(cleaned.Battle.GetActor(id).Position));
-        Assert.Empty(batch.Clean(cleaned.Battle, firstAlly).Effects);
+        Assert.Empty(batch.Clean(cleaned.Battle, firstAlly, new Sf2BattleProgressionRule()).Effects);
     }
 
     [Theory]
@@ -256,8 +257,10 @@ public sealed class BattleSceneTests
         Assert.Same(advanced, session.Current);
     }
 
-    [Fact]
-    public void HealingGrowthStartsFromTheSeedCarriedThroughFairyRetirement()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void HealingGrowthStartsFromTheSeedCarriedThroughFairyRetirement(bool authored)
     {
         var admitted = Admitted(); var definition = admitted.Definition.Encounters.Values.Single();
         var actor = definition.Deployments[0].Actor;
@@ -270,7 +273,9 @@ public sealed class BattleSceneTests
         var input = admitted.Start;
         var session = Assert.IsType<SessionStarted>(GameSession.Start(new ScenarioDefinition("healing-growth", [encounter]),
             new BattleStartInput(input.Encounter, input.Actors.Select(row => row.Actor == actor ? row with { Exp = 99 } : row),
-                input.MainSeed, input.ThinkingSeed, input.Gold))).Session;
+                input.MainSeed, input.ThinkingSeed, input.Gold), authored
+                    ? Sf2.Remake.Application.Gameplay.RuleCompositions.AuthoredProgressionOutcome()
+                    : Sf2.Remake.Application.Gameplay.RuleCompositions.Sf2())).Session;
         Accept(session, new Confirm()); Accept(session, new SelectSpell(new("mend", 1)));
         Accept(session, new SelectTarget(actor)); var prepared = Accept(session, new Confirm());
         while (session.Current.BattleScene!.Phase != BattleScenePhase.RewardMessage) Step(session);

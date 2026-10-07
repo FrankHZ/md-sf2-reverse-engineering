@@ -12,7 +12,18 @@ internal static class BattleGrowthReader
     internal static IEnumerable<BattleDefinition> Bind(JsonElement rows, ScenarioDefinition scenario)
     {
         Require(scenario.PrivateDefinitions is not null, "growth-source", "world.growth", true);
-        var definitions = scenario.PrivateDefinitions!;
+        return BindRows(rows, scenario, authored: false);
+    }
+
+    internal static IEnumerable<BattleDefinition> BindAuthored(JsonElement rows, ScenarioDefinition scenario)
+    {
+        Require(scenario.PrivateDefinitions is null, "authored-growth-source", "world.growth");
+        return BindRows(rows, scenario, authored: true);
+    }
+
+    private static IEnumerable<BattleDefinition> BindRows(JsonElement rows, ScenarioDefinition scenario, bool authored)
+    {
+        Require(rows.ValueKind == JsonValueKind.Array, "array-required", "world.growth");
         var growth = new Dictionary<ActorRef, BattleGrowthDefinition>();
         foreach (var row in rows.EnumerateArray())
         {
@@ -24,8 +35,17 @@ internal static class BattleGrowthReader
             byte classId = (byte)Number(row, "classId", 0, 31);
             Require(Sf2ClassRules.SourceClass(actor!.ClassRule) == classId, "growth-class", "world.growth.classId", true);
             Require(actor.SourceLoadout is not null, "growth-loadout", "world.growth.actor", true);
-            int bonus = actor.SourceLoadout!.Items.Where(word => (word & 128) != 0)
-                .SelectMany(word => definitions.Items[(byte)(word & 127)].EquipEffects)
+            if (authored)
+            {
+                Require(scenario.Encounters.Values.SelectMany(encounter => encounter.Deployments)
+                    .Where(deployment => deployment.Actor == reference).All(deployment => deployment.Faction == BattleFaction.Ally),
+                    "authored-growth-faction", "world.growth.actor", true);
+                Require(actor.SourceLoadout!.Items.All(word => (word & 128) == 0),
+                    "authored-growth-equipment", "world.growth.actor", true);
+                Require(!Array(row, "spells").Any(), "authored-growth-spells", "world.growth.spells", true);
+            }
+            int bonus = authored ? 0 : actor.SourceLoadout!.Items.Where(word => (word & 128) != 0)
+                .SelectMany(word => scenario.PrivateDefinitions!.Items[(byte)(word & 127)].EquipEffects)
                 .Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter);
             Require(bonus >= 0 && bonus <= actor.Attack, "growth-base-attack", "world.growth.actor", true);
             var stats = Array(row, "stats").Select(stat =>

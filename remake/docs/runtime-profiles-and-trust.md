@@ -33,6 +33,31 @@ selections belong only to the external
 options and do not change ordinary routing. Runtime state and both RNG channels still begin only
 through the same Content/Application entry.
 
+### Authored growth and ordinary outcomes
+
+The existing v8 `{package,battle,world,start}` envelope (nested battle v7) admits optional
+`world.growth` through a distinct authored binding. Each row has `actor`, matching source `classId`,
+five `stats` rows in HP/MP/base ATT/DEF/AGI order and empty `spells`. Each stat has `start`, `projected`
+and `curve`: either empty or29 `[cumulative,increment]` pairs whose deltas agree and end at256.
+Every deployment of that actor must be allied, with a supported unpromoted named class, no equipped
+item and zero inferred equipment bonus. Authored spell-learning schedules/equipment are explicitly
+unsupported; known spells are preserved. Existing private growth keeps its private-definition guard
+and admitted source equipment/spell mappings.
+
+An authored `world.maps[].battle.outcome` uses the existing `after`, `defeated`, `defeat`, `return`,
+`joinMember`, `victoryFacing` and `egress` fields. It requires exactly one allied physical leader,
+an enemy roster without enemy leaders, the existing no-op defeated program, valid program references,
+join membership within `partyFlags`, and traversable in-bounds egress. Private source/provenance
+checks remain on the private entry; this authored entry cannot relabel a private package.
+Nonempty defeated programs, enemy-leader outcomes and wider egress/status behavior are not admitted.
+
+[`progression-outcome-victory`](../content/authored/progression-outcome-victory.json) and
+[`progression-outcome-defeat`](../content/authored/progression-outcome-defeat.json) are small authored
+examples. Ordinary interaction, before dialogue, one battle action and real after/defeat/return
+programs exercise the same session and presenter. Their curves, entities and text are project-authored.
+They establish neither original natural continuity nor a successful private outcome observation.
+Algorithm selection remains compiled C# composition, separate from this content/trust admission.
+
 ## Public Authored
 
 `AuthoredScenarioPackageReader` accepts the closed `formatVersion: 7` package with map/terrain, actor/spell and encounter
@@ -101,7 +126,7 @@ double/counter rules. Broader speed formulas, arbitrary action counts and new st
 The ordinary source entry delegates to `GameSession.Start(definition, start)`, so a previously admitted
 definition can serve another explicit start with the same boundary checks and fresh runtime actors.
 Definitions never supply hidden session resources. Ordinary spell power remains already adjusted;
-full-recovery and level-up remain unsupported. The session reads no files/ROM after admission and
+full-recovery remains unsupported; level-up requires the admitted v8 growth described below. The session reads no files/ROM after admission and
 carries its seeds forward. The default loads the tracked yard; `--authored-package <path>` selects
 another bounded package, without an authored-export or original-fidelity claim. Further private AI/action migration follows the
 [ordered boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
@@ -135,8 +160,8 @@ its battlefield position to null. Ordinary first/second/reversed-counter hits re
 and publish as one action. Each hit truncates damage EXP before adding to the per-action accumulator;
 only a surviving ally who attacked receives EXP and award RNG, including an ally counter during an
 enemy action. Killing the original enemy actor by counter still awards that ally. Ordinary ally death
-increments capped defeats; enemy death credits one kill/gold award. A reached level-up, leader defeat
-or terminal faction outcome returns Unsupported before any hit or movement is published. The two physical configurations
+increments capped defeats; enemy death credits one kill/gold award. Missing required growth or an
+unadmitted terminal outcome returns Unsupported before preparation publishes. The two physical configurations
 [`stone-court`](../content/authored/stone-court.json) and [`river-post`](../content/authored/river-post.json)
 are controlled authored inputs, not original private admission or original enemy reward tables.
 

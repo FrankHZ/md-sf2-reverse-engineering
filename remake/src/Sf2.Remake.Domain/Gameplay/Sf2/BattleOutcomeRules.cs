@@ -1,7 +1,13 @@
-namespace Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Battles;
 
-internal static class BattleOutcomeRules
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
+
+internal sealed class BattleOutcomeRules : IBattleOutcomeRule
 {
+    public string Identity => "sf2-outcome";
+    BattleOutcomeKind? IBattleOutcomeRule.Check(EngineBattleState battle) => Check(battle);
+    bool IBattleOutcomeRule.DefeatedHook(EngineBattleState battle) => DefeatedHook(battle);
+
     internal static BattleOutcomeKind? Check(EngineBattleState battle)
     {
         if (battle.Definition.Outcome is not { } route) return null;

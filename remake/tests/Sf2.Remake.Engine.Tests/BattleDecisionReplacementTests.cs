@@ -312,8 +312,8 @@ public sealed class BattleDecisionReplacementTests
         public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef target) =>
             _source.RequireTarget(battle, actor, destination, action, target);
         public int EstimateDamage(EngineBattleState battle, ActorRef actor, ActorRef target) => _source.EstimateDamage(battle, actor, target);
-        public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef? target)
-        { Preparations++; return _source.Prepare(battle, actor, destination, action, target); }
+        public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
+        { Preparations++; return _source.Prepare(battle, actor, destination, action, target, progression); }
     }
 
     private sealed class BrokenDecision(string fault) : IBattleDecisionRule

@@ -196,7 +196,8 @@ public sealed class BattleActionChoiceTests
             initial.MainSeed, initial.ThinkingSeed, initial.Round, initial.Queue, initial.Cursor, initial.Gold,
             regions: new(new bool[16], 7));
         var rule = new SmallPhysicalRule();
-        var selected = SourceEnemyAi.Resolve(battle, new("raider"), rule);
+        var selected = BattleDecisionRules.Decide(new SourceEnemyAi(), battle, new("raider"), rule,
+            new Sf2BattleProgressionRule());
         var source = SourceEnemyAi.Resolve(battle, new("raider"));
         Assert.NotEmpty(rule.Estimates); Assert.Single(rule.Preparations);
         Assert.Equal(source.Battle.ThinkingSeed, selected.Battle.ThinkingSeed);
@@ -429,7 +430,7 @@ public sealed class BattleActionChoiceTests
         public int EstimateDamage(EngineBattleState battle, ActorRef actor, ActorRef target)
         { Estimates.Add((actor, target)); return estimate; }
         public virtual BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-            BattleActionRef action, ActorRef? targetRef)
+            BattleActionRef action, ActorRef? targetRef, IBattleProgressionRule progression)
         {
             var target = targetRef!.Value;
             _ = RequireTarget(battle, actor, destination, action, target);
@@ -461,9 +462,9 @@ public sealed class BattleActionChoiceTests
         public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) => _source.QueryTargets(battle, actor, action);
         public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef target) => _source.RequireTarget(battle, actor, destination, action, target);
         public int EstimateDamage(EngineBattleState battle, ActorRef actor, ActorRef target) => ((IPhysicalActionRule)_source).EstimateDamage(battle, actor, target);
-        public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination, BattleActionRef reference, ActorRef? target)
+        public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination, BattleActionRef reference, ActorRef? target, IBattleProgressionRule progression)
         {
-            var action = _source.Prepare(battle, actor, destination, reference, target);
+            var action = _source.Prepare(battle, actor, destination, reference, target, progression);
             return fault switch
             {
                 "foreign" => action with { Prepared = action.Prepared.With(actors: action.Prepared.Actors.Select(row => row.Actor == actor ? row : row.With(hp: 1))) },

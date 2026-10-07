@@ -39,7 +39,7 @@ internal static class BattleAdvancer
         {
             try
             {
-                if (BattleOutcomeRules.Check(battle) is not null)
+                if (BattleOutcomeSelection.Check(rules.Outcome, battle) is not null)
                     return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait),
                         observations.AsReadOnly(), SessionStopReason.SimulationWait);
                 if (BattleTurnFlow.AtRoundEnd(battle))
@@ -85,11 +85,16 @@ internal static class BattleAdvancer
                 var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
                 if (actor.Control != BattleControl.Automatic || actor.AiStrategy is not { } strategy)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
-                var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical);
+                var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression);
                 var delivery = BattleMovementContinuation.BeginAutomatic(beforeAction.WithStory(current.Story), actor.Actor, action, observations, rules);
                 if (delivery.Failure is not null || delivery.Snapshot.BattleMovement is not null || delivery.Snapshot.BattleScene is not null) return delivery;
                 var committed = delivery.Snapshot;
                 battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
+            }
+            catch (BattlePolicyFault error)
+            {
+                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                    observations.AsReadOnly(), SessionStopReason.Faulted, BattleChoices.Failure(error));
             }
             catch (BattleDecisionRuleFault error)
             {

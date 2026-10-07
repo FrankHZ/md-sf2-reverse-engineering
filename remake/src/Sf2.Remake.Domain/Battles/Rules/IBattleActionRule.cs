@@ -17,7 +17,7 @@ internal interface IBattleActionRule
     BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef target);
     BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef? target);
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression);
 }
 
 internal interface IPhysicalActionRule : IBattleActionRule
@@ -31,18 +31,21 @@ internal static class BattleActionRules
     {
         try { return call(); }
         catch (BattleRuleException) { throw; }
+        catch (BattlePolicyFault) { throw; }
         catch (BattleActionRuleFault) { throw; }
         catch (Exception) { throw new BattleActionRuleFault(rule.Kind, rule.Identity, operation); }
     }
 
     internal static BattleActionResolution Prepare(IBattleActionRule rule, EngineBattleState battle,
-        ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef? target) =>
+        ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef? target, IBattleProgressionRule progression) =>
         Invoke(rule, "prepare", () =>
         {
             var admission = rule.RequireAction(battle, actor, action);
             if (target is { } victim) _ = rule.RequireTarget(battle, actor, destination, action, victim);
-            var prepared = rule.Prepare(battle, actor, destination, action, target);
+            var prepared = rule.Prepare(battle, actor, destination, action, target, progression);
             prepared.Validate(battle, actor, destination, action, target, admission);
+            if (prepared.Reward is { } reward)
+                BattleProgressionRules.Preflight(progression, prepared.Prepared.GetActor(reward.Actor), reward.Amount, prepared.Prepared.MainSeed);
             return prepared;
         });
 }

@@ -305,7 +305,7 @@ public sealed class HealingRuleReplacementTests
     {
         public override string Identity => "random-recovery-test";
         protected override BattleActionResolution Calculate(EngineBattleState battle, BattleActorState actor,
-            BattleActorState target, MapPosition destination, HealingSpellDefinition spell)
+            BattleActorState target, MapPosition destination, HealingSpellDefinition spell, IBattleProgressionRule progression)
         {
             var draw = BattleRandom.NextMain(battle.MainSeed, spell.Power);
             int recovery = Math.Min(target.MaxHp - target.Hp, 1 + draw.Value);
@@ -337,10 +337,10 @@ public sealed class HealingRuleReplacementTests
                 "target-result" => battle.GetActor(new("dummy-a")),
                 _ => _source.RequireTarget(battle, actor, destination, spell, target),
             };
-        public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination, SpellRef spell, ActorRef target)
+        public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination, SpellRef spell, ActorRef target, IBattleProgressionRule progression)
         {
             Preparations++;
-            var action = _source.Prepare(battle, actor, destination, spell, target); // Local random work already happened.
+            var action = _source.Prepare(battle, actor, destination, spell, target, progression); // Local random work already happened.
             return fault switch
             {
                 "throw" => throw new InvalidOperationException("private detail must not leak"),

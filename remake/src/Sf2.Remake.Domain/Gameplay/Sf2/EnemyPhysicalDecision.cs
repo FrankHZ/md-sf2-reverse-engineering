@@ -8,7 +8,7 @@ internal static class EnemyPhysicalDecision
     // Already-active ATTACK1 / script3, physical-only. This is
     // a successful first command of source commandset06, not a replacement fallback policy.
     internal static BattleAutomaticAction? TryResolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, bool preflight = true)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
     {
         var actor = current.GetActor(actorRef);
         var grid = BattleMovement.Grid(current, actorRef);
@@ -51,11 +51,6 @@ internal static class EnemyPhysicalDecision
         var selected = candidates[selection.Index];
         var prepared = current.With(thinkingSeed: thinking,
             actors: current.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: selected.Target.Actor) : a));
-        // Pure admission preview preserves the existing all-or-nothing Unsupported
-        // boundary (including random-dependent reward/growth capability). Discard it:
-        // no construction seed, damage or reward becomes live before movement ends.
-        if (preflight) _ = BattleActionRules.Prepare(physical, prepared, actorRef, selected.Position,
-            new(BattleActionKind.Physical), selected.Target.Actor);
         var path = BattleMovement.Route(actor.Position!, BattleMovement.MoveString(grid, actor.Position!,
             selected.Position, current.Definition.Width, current.Definition.Height));
         return new(prepared, Array.AsReadOnly<BattleEffect>([

@@ -313,6 +313,13 @@ internal static class BattleSceneContinuation
 
     private static SessionResult Continue(SessionSnapshot current, SessionCommand command, SessionRules rules)
     {
+        try { return ContinueStep(current, command, rules); }
+        catch (BattlePolicyFault error) { return new(current, [], current.StopReason, BattleChoices.Failure(error)); }
+        catch (BattleRuleException error) { return BattleCommandDispatcher.Reject(current, error.Code, error.Field, error.Unsupported); }
+    }
+
+    private static SessionResult ContinueStep(SessionSnapshot current, SessionCommand command, SessionRules rules)
+    {
         var scene = current.BattleScene!;
         bool accepted = command switch
         {
@@ -384,7 +391,7 @@ internal static class BattleSceneContinuation
                 if (index + 1 < scene.Action.Reactions.Count) { index++; next = BattleScenePhase.ActionMessage; }
                 else if (scene.Action.Reward is not null)
                 {
-                    var reward = scene.Action.CreditReward(battle);
+                    var reward = scene.Action.CreditReward(battle, rules.Progression);
                     battle = reward.Battle;
                     foreach (var effect in reward.Effects) observations.Add(Observe(effect, ++sequence, revision));
                     next = BattleScenePhase.Reward;
@@ -395,7 +402,7 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.RewardMessage:
                 var before = battle.GetActor(scene.RewardActor!.Value);
                 (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) grown;
-                try { grown = scene.Action.ApplyGrowth(battle); }
+                try { grown = scene.Action.ApplyGrowth(battle, rules.Progression); }
                 catch (BattleRuleException error) { return BattleCommandDispatcher.Reject(current, error.Code, error.Field, error.Unsupported); }
                 battle = grown.Battle;
                 foreach (var effect in grown.Effects) observations.Add(Observe(effect, ++sequence, revision));
@@ -409,7 +416,7 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.GoldMessage: next = BattleScenePhase.End; break;
             case BattleScenePhase.End:
                 observations.Add(new(++sequence, revision, "scene-ended", scene.Action.Actor));
-                if (BattleOutcomeRules.DefeatedHook(battle))
+                if (BattleOutcomeSelection.DefeatedHook(rules.Outcome, battle))
                     observations.Add(new(++sequence, revision, "enemy-defeated-program-none"));
                 if (deaths.Actors.Count == 0) return Release();
                 next = BattleScenePhase.FieldSpin; fieldStep = 0;
@@ -427,7 +434,7 @@ internal static class BattleSceneContinuation
                 if (fieldStep < 2) { fieldStep++; next = BattleScenePhase.FieldExit; }
                 else
                 {
-                    var cleanup = deaths.Clean(battle, scene.Action.FirstAlly);
+                    var cleanup = deaths.Clean(battle, scene.Action.FirstAlly, rules.Progression);
                     battle = cleanup.Battle;
                     foreach (var effect in cleanup.Effects) observations.Add(Observe(effect, ++sequence, revision));
                     next = BattleScenePhase.FieldSettle; fieldStep = 0;
@@ -454,7 +461,7 @@ internal static class BattleSceneContinuation
             var ended = new SessionSnapshot(current.SessionId, revision, sequence,
                 new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
             var committed = BattleActionCommitter.Publish(ended, battle, scene.Action.Actor,
-                scene.Action.Destination, [], observations, defeatedHookHandled: true).WithStory(current.Story);
+                scene.Action.Destination, [], observations, rules, defeatedHookHandled: true).WithStory(current.Story);
             return BattleAdvancer.Advance(committed, observations, rules);
         }
     }

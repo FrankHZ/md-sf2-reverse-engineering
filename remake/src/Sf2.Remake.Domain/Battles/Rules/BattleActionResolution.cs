@@ -150,12 +150,10 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
 
     private void ValidateReward(EngineBattleState before, ActorRef? eligible)
     {
-        Require(Reward is null || eligible is { } actor && Reward.Actor == actor && Reward.Amount is > 0 and <= 200);
+        Require(Reward is null || eligible is { } actor && Reward.Actor == actor && Reward.Amount > 0);
         if (Reward is not { } reward) return;
         var recipient = before.GetActor(reward.Actor);
         if (recipient.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
-        uint seed = Prepared.MainSeed;
-        _ = BattleGrowthRules.Award(recipient, reward.Amount, ref seed, []);
     }
 
     private void ValidatePhysical(EngineBattleState before, ActorRef actorRef, MapPosition destination, ActorRef targetRef)
@@ -189,7 +187,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         if (enemyDead && before.Gold is null) throw new BattleRuleException("unspecified-gold", "battle.gold", true);
         if (enemyDead && ally.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
         if (allyDead && ally.Defeats is null) throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
-        Require(enemyDead ? Prepared.Gold >= before.Gold && Prepared.Gold <= 9_999_999 : Prepared.Gold == before.Gold);
+        Require(enemyDead ? Prepared.Gold is not null : Prepared.Gold == before.Gold);
         ValidateState(before, actorRef, destination, allowGold: enemyDead);
         ValidateReward(before, !allyDead && Reactions.Any(reaction => reaction.Actor == ally.Actor) ? ally.Actor : null);
         List<BattleEffect> facts = [];
@@ -255,7 +253,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
             reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp);
         Require(actor.Mp >= spell.MpCost);
-        Require(Reward is null || Reward.Actor == actorRef && Reward.Amount is > 0 and <= 200);
+        Require(Reward is null || Reward.Actor == actorRef && Reward.Amount > 0);
         uint seed = before.MainSeed;
         // The rule owns draw count, purpose and range. This boundary checks that
         // construction contains only random facts and carries the actual chain.
@@ -269,7 +267,6 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             seed = draw.After;
         }
         Require(Prepared.MainSeed == seed);
-        if (Reward is { } reward) _ = BattleGrowthRules.Award(actor, reward.Amount, ref seed, []);
     }
 
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
@@ -280,31 +277,25 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
             ? actor.With(mp: checked((byte)(actor.Mp - Spell!.MpCost))) : actor));
 
-    internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current)
+    internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)
     {
-        if (Reward is not { } reward) return (current, Array.Empty<BattleEffect>());
-        uint seed = current.MainSeed;
-        List<BattleEffect> effects = [];
-        var actor = BattleGrowthRules.Award(current.GetActor(reward.Actor), reward.Amount, ref seed, effects);
-        return (current.With(mainSeed: seed, actors: current.Actors.Select(row => row.Actor == actor.Actor ? actor : row)),
-            effects.AsReadOnly());
+        var credit = CreditReward(current, rule);
+        var growth = ApplyGrowth(credit.Battle, rule);
+        return (growth.Battle, Array.AsReadOnly<BattleEffect>([.. credit.Effects, .. growth.Effects]));
     }
 
-    internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) CreditReward(EngineBattleState current)
+    internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) CreditReward(EngineBattleState current, IBattleProgressionRule rule)
     {
         if (Reward is not { } reward) return (current, Array.Empty<BattleEffect>());
-        List<BattleEffect> effects = [];
-        var actor = BattleGrowthRules.Credit(current.GetActor(reward.Actor), reward.Amount, effects);
-        return (current.With(actors: current.Actors.Select(row => row.Actor == actor.Actor ? actor : row)), effects.AsReadOnly());
+        var result = BattleProgressionRules.Credit(rule, current.GetActor(reward.Actor), reward.Amount);
+        return (current.With(actors: current.Actors.Select(row => row.Actor == reward.Actor ? result.Actor : row)), result.Effects);
     }
 
-    internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyGrowth(EngineBattleState current)
+    internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyGrowth(EngineBattleState current, IBattleProgressionRule rule)
     {
         if (Reward is not { } reward) return (current, Array.Empty<BattleEffect>());
-        uint seed = current.MainSeed;
-        List<BattleEffect> effects = [];
-        var actor = BattleGrowthRules.Grow(current.GetActor(reward.Actor), ref seed, effects);
-        return (current.With(mainSeed: seed, actors: current.Actors.Select(row => row.Actor == actor.Actor ? actor : row)), effects.AsReadOnly());
+        var result = BattleProgressionRules.Grow(rule, current.GetActor(reward.Actor), current.MainSeed);
+        return (current.With(mainSeed: result.Seed, actors: current.Actors.Select(row => row.Actor == reward.Actor ? result.Actor : row)), result.Effects);
     }
 
     internal ActorRef FirstAlly => Prepared.GetActor(Reactions[0].Actor).IsAlly

@@ -10,5 +10,5 @@ internal interface IHealingRule
     BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
         HealingSpellDefinition spell, ActorRef target);
     BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        SpellRef spell, ActorRef target);
+        SpellRef spell, ActorRef target, IBattleProgressionRule progression);
 }

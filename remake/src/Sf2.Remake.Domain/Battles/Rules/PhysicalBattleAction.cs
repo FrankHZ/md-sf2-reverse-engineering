@@ -10,7 +10,7 @@ internal static class PhysicalBattleAction
     internal static BattleActionResolution PrepareSourceDefault(EngineBattleState battle, ActorRef actor,
         MapPosition destination, ActorRef target) =>
         BattleActionRules.Prepare(new Sf2PhysicalAction(), battle, actor, destination,
-            new(BattleActionKind.Physical), target);
+            new(BattleActionKind.Physical), target, new Sf2BattleProgressionRule());
 
     internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ResolveSourceDefault(
         EngineBattleState battle, ActorRef actor, MapPosition destination, ActorRef target) =>

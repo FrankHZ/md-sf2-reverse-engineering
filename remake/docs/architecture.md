@@ -10,7 +10,7 @@ It is an implementation guide, not a replacement for the normative decisions in
 The [architecture and verification audit](./architecture-audit.md) records findings at its named
 historical baseline and the user's modern-engine direction. Its A1–A8 are not a fresh defect list.
 The [logic-separation plan](#replaceable-gameplay-logic-plan) below owns the finite #617 scope.
-Its HEAL, admitted-action and automatic-decision slices are implemented; progression/story replacement remains planned.
+Its HEAL, admitted-action, automatic-decision and progression/outcome slices are implemented; source story replacement remains planned.
 Implementation and authored demonstrations do not establish new original-game evidence.
 
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
@@ -324,8 +324,8 @@ connected product; it does not extend the runnable capability frontier.
 
 The implemented slices deliver selected HEAL/physical/Herb/Stay rules, immutable session composition,
 disposable semantic choices, finite preparation validation, resolved automatic-decision bindings and
-the existing staged movement/scene consumer. Progression/outcome and source story replacement still require their dependent slices and
-independent review; no additional action family is admitted.
+the existing staged movement/scene consumer, plus selected progression/outcome policies.
+Source story replacement and independent integration remain; no additional action family is admitted.
 #438 art/UI/UX awaits user discussion; this plan
 supplies semantic affordances only. #638 remains paused and Chinese synchronization is deferred.
 
@@ -375,8 +375,8 @@ The ownership traces that constrain the replacement API are:
   delivers movement before actual physical preparation. [`SourceEnemyAi.Resolve`](../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceEnemyAi.cs)
   additionally owns activation/standby/memory and set6/set7 branches. Scoring RNG, construction RNG
   and later scene RNG cannot be collapsed into one speculative calculation.
-- **Growth/outcome:** [`BattleGrowthRules.Credit/Grow`](../src/Sf2.Remake.Domain/Battles/Rules/BattleGrowthRules.cs)
-  separates EXP credit from post-message growth. [`BattleOutcomeRules`](../src/Sf2.Remake.Domain/Battles/Rules/BattleOutcomeRules.cs)
+- **Growth/outcome:** [`BattleGrowthRules.Credit/Grow`](../src/Sf2.Remake.Domain/Gameplay/Sf2/BattleGrowthRules.cs)
+  separates EXP credit from post-message growth. [`BattleOutcomeRules`](../src/Sf2.Remake.Domain/Gameplay/Sf2/BattleOutcomeRules.cs)
   selects defeat/victory and the defeated hook; [`BattleOutcome.Begin/Continue/Heal`](../src/Sf2.Remake.Application/Runtime/Exploration/BattleOutcome.cs)
   selects programs/return anchors, recovery, join/flags and defeat gold. These are policies called by
   common continuation machinery, not all generic lifecycle mechanics.
@@ -469,7 +469,7 @@ movement delivery, stops the automatic continuation, and publishes no damage or 
 The current `SourceEnemyAi`/`AttackThenApproachAi` policies pass the selected physical rule through
 estimate, discarded preflight and actual post-movement execution. Their priorities, movement,
 activation/memory and thinking RNG are preserved through the selected decision seam below. Reward,
-growth and outcome policy remain #677. The [verification owner](./development-and-verification.md#semantic-action-selection-observation)
+growth and outcome policy use the selected seams below. The [verification owner](./development-and-verification.md#semantic-action-selection-observation)
 records actual choices/presenter checks and independent source-stage RNG expectations.
 
 ### Implemented automatic decisions
@@ -517,6 +517,40 @@ admission, the existing movement grid/preview and the common presenter; neither 
 These are authored demonstration policies, not fidelity profiles or added source action families.
 `ForGame()=>Sf2()` is the restored default. [Verification](./development-and-verification.md#replaceable-automatic-decision-observation)
 owns rebuild/restart selection, actual consumer recipes and independent RNG expectations.
+
+### Implemented progression and outcome policies
+
+`SessionRules` retains one [`IBattleProgressionRule`](../src/Sf2.Remake.Domain/Battles/Rules/IBattleProgressionRule.cs),
+[`IBattleOutcomeRule`](../src/Sf2.Remake.Domain/Battles/Rules/IBattleOutcomeRule.cs) and
+[`IOutcomeReturnPolicy`](../src/Sf2.Remake.Application/Runtime/Exploration/IOutcomeReturnPolicy.cs).
+The progression policy computes eligible physical/counter, HEAL and Herb awards, gold/counters,
+credit and growth. SF2 arithmetic lives under `Domain/Gameplay/Sf2`; action preparation no longer
+calculates source award draws before consulting a replacement. Half-missing HEAL still has no reward.
+The common action and AI preflight receives the same selected policy, validates its finite output
+on discarded state, and never publishes preview resources or RNG.
+
+Credit precedes EXP text; growth follows acknowledgement using the then-live seed, including HEAL
+fairy work. Common validators constrain actor identity, allowed state mutations, matching facts,
+admitted spell mappings and a complete main-seed chain. Source caps and numerical draw schedules
+belong to source assertions. Malformed/throwing policies report `InvariantFailure` with identity and
+operation. A reached credit/growth/death/outcome failure retains the current stage, prior commits,
+token and queue. Program policy faults retain the accepted cursor; retry resumes without replaying
+acknowledged text or credit. Existing unsupported AI stop behavior is unchanged.
+
+The source outcome policy owns leader-loss precedence and the defeated hook. The source return
+policy selects programs/anchors, living/immortal recovery, completed-flag skip, join/flag decisions
+and defeat gold. `BattleOutcome` and `ProgramRunner` still publish and execute the existing stages.
+One validated finish decision precedes join/flag publications; no later policy call can discard that
+partially published tail. No new continuation state or generic effect interpreter is introduced.
+
+`AuthoredProgressionOutcome()` demonstrates fixed7 eligible awards with no award draws and a
+saturating10-gold defeat cost. It preserves source growth and ordinary return machinery. The two
+small public v8 packages reach real victory/growth and defeat from ordinary field interaction;
+their bounded admission and exclusions are in [trust](./runtime-profiles-and-trust.md#authored-growth-and-ordinary-outcomes).
+The [native recipe](./development-and-verification.md#replaceable-progression-and-outcome-observation)
+uses the same packages under both factories and observes real return movement. This is authored
+replaceability evidence, not new original-game or private-route evidence. `ForGame()=>Sf2()` remains
+the default. Source story compatibility replacement belongs to the remaining slice.
 
 ### Selected module and composition design
 
@@ -568,7 +602,7 @@ GameSession -> ordered state/scene projection -> Godot -> completion token
 
 ### Implementable API and transaction boundary
 
-HEAL, finite actions and AI names below are implemented; progression/story seams remain proposed. Reuse the existing state, reference,
+HEAL, finite actions, AI and progression/outcome names below are implemented; the story seam remains proposed. Reuse the existing state, reference,
 command, resolution, wait and failure types; do not add copies whose only purpose is forwarding.
 
 | Seam | Inputs/result and owner | Required behavior |

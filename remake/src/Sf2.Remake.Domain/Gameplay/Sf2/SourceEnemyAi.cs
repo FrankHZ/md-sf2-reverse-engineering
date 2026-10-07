@@ -17,14 +17,14 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
 
     }
     public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical) =>
-        Resolve(battle, actor, physical, preflight: false);
+        Resolve(battle, actor, physical);
 
     // Explicit source-default overload for standalone policy comparisons.
     internal static BattleAutomaticAction Resolve(EngineBattleState current, ActorRef actor) =>
-        Resolve(current, actor, new Sf2PhysicalAction());
+        BattleDecisionRules.Decide(new SourceEnemyAi(), current, actor, new Sf2PhysicalAction(), new Sf2BattleProgressionRule());
 
     internal static BattleAutomaticAction Resolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, bool preflight = true)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
     {
         var actor = current.GetActor(actorRef);
         if (actor.IsAlly || actor.Position is null || actor.Hp == 0 || actor.Status != 0 ||
@@ -72,7 +72,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
             throw new BattleRuleException("source-occupancy-word", "actors.activationWord", true);
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
-        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical, preflight) is { } attack)
+        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical) is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([
                 .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));

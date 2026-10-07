@@ -11,7 +11,7 @@ internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors)
             ? new(Array.AsReadOnly<ActorRef>([.. Actors, after.Actor])) : this;
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) Clean(
-        EngineBattleState battle, ActorRef firstAlly)
+        EngineBattleState battle, ActorRef firstAlly, IBattleProgressionRule rule)
     {
         List<BattleEffect> effects = [];
         foreach (var id in Actors)
@@ -22,7 +22,8 @@ internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors)
             var owner = dead.IsAlly ? dead : battle.GetActor(firstAlly);
             ushort before = (dead.IsAlly ? owner.Defeats : owner.Kills)
                 ?? throw new BattleRuleException("unspecified-death-accounting", "actor", true);
-            ushort after = dead.IsAlly ? BattleRewards.Defeats(before) : BattleRewards.Kills(before);
+            ushort after = BattleProgressionRules.Invoke(rule.Identity, "death-accounting", () =>
+                dead.IsAlly ? rule.Defeats(before) : rule.Kills(before));
             battle = battle.With(actors: battle.Actors.Select(a => a.Actor != owner.Actor ? a :
                 dead.IsAlly ? a.With(defeats: after) : a.With(kills: after)));
             effects.Add(new(dead.IsAlly ? "defeats" : "kills", owner.Actor, before, after));
