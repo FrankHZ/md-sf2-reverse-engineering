@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
@@ -22,7 +23,7 @@ internal static class PlayerItemUse
 
     internal static BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor,
         MapPosition destination, HealingItemDefinition item, ActorRef target) =>
-        PlayerHealing.RequireTarget(battle, actor, destination,
+        HealingTargetRules.RequireTarget(battle, actor, destination,
             item.MinimumRange, item.MaximumRange, target);
 
     internal static BattleActionResolution Prepare(

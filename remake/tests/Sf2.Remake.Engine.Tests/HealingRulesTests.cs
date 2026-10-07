@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Battles;
 using Xunit;
 
@@ -19,11 +20,12 @@ public sealed class HealingRulesTests
                 ? a.With(position: new(origin.X + 1, origin.Y)) : a));
         }
         var before = battle.GetActor(actor); var patient = battle.GetActor(target);
-        var action = PlayerHealing.Prepare(battle, actor, before.Position!, new("mend", 1), target);
+        var action = new Sf2HealingRule().Prepare(battle, actor, before.Position!, new("mend", 1), target);
         Assert.Equal(before.Mp, action.Prepared.GetActor(actor).Mp);
         Assert.Equal(patient.Hp, action.Prepared.GetActor(target).Hp);
         Assert.Equal(before.Exp, action.Prepared.GetActor(actor).Exp);
         Assert.Equal(2, action.ConstructionEffects.Count);
+        Assert.Equal(new[] { "rng-exp-plus", "rng-exp-minus" }, action.ConstructionEffects.Select(effect => effect.Kind));
         Assert.All(action.ConstructionEffects, effect => Assert.Equal((ushort)16, effect.RandomRange));
         var cast = action.ApplySpellCost(action.Prepared);
         Assert.Equal(before.Mp - 3, cast.GetActor(actor).Mp);

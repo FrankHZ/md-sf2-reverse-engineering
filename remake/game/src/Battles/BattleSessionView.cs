@@ -133,7 +133,7 @@ public sealed partial class BattleSessionView : Control
     {
         if (_started) throw new InvalidOperationException("A view starts one session only.");
         _started = true;
-        var outcome = GameSession.Start(source);
+        var outcome = GameSession.Start(source, Sf2.Remake.Application.Gameplay.RuleCompositions.ForGame());
         if (outcome is SessionStarted started)
         {
             Attach(started.Session, started.Result);
@@ -213,19 +213,23 @@ public sealed partial class BattleSessionView : Control
         }
         else if (action == GameAction.Spell && _session.Current.Selection is { } selection)
         {
-            var spells = _session.Current.Battle.GetActor(selection.Actor).Spells;
-            if (spells.Count == 0) return;
+            var spells = _session.QueryBattleChoices().Spells.Select(option => option.Spell).ToArray();
+            if (spells.Length == 0) return;
             int index = spells.ToList().FindIndex(spell => spell == (_spellCandidate ?? selection.Spell));
-            _spellCandidate = spells[(index + 1) % spells.Count];
+            _spellCandidate = spells[(index + 1) % spells.Length];
             Send(new SelectSpell(_spellCandidate.Value));
             if (_result?.Failure is null) Send(new SelectTarget(selection.Actor));
         }
         else if (action == GameAction.Target && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.Item or SessionAction.PhysicalAttack } targeting)
         {
-            var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.IsAlly == (targeting.Action != SessionAction.PhysicalAttack)).ToArray();
+            // Only HEAL has migrated to semantic choices; the other actions retain
+            // their explicit slice-2 boundary.
+            var targets = targeting.Action == SessionAction.Heal
+                ? _session.QueryBattleChoices().Spells.Single(option => option.Spell == targeting.Spell).Targets.Select(target => target.Actor).ToArray()
+                : _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.IsAlly == (targeting.Action != SessionAction.PhysicalAttack)).Select(a => a.Actor).ToArray();
             if (targets.Length == 0) return;
-            int selected = Array.FindIndex(targets, a => a.Actor == (_targetCandidate ?? targeting.Target));
-            Send(new SelectTarget(targets[(selected + 1) % targets.Length].Actor));
+            int selected = Array.FindIndex(targets, a => a == (_targetCandidate ?? targeting.Target));
+            Send(new SelectTarget(targets[(selected + 1) % targets.Length]));
         }
         else return;
     }
@@ -277,9 +281,9 @@ public sealed partial class BattleSessionView : Control
         _roster.Text = projection.Roster;
         var selection = _session.Current.Selection;
         _spells.Text = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
-            _session.Current.Battle.GetActor(selection.Actor).Spells.Select(spell =>
-                $"{spell.Value.ToUpperInvariant()} {spell.Level}" + (spell == selection.Spell ? " · selected" : "") +
-                (spell == _spellCandidate && _result!.Failure is not null ? " · unavailable" : "")));
+            _session.QueryBattleChoices().Spells.Select(option =>
+                option.Label + (option.Spell == selection.Spell ? " · selected" : "") +
+                (option.Enabled ? "" : $" · unavailable: {option.Reason!.Code}")));
         var inventory = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor).SourceLoadout?.Items;
         _items.Text = inventory is null ? "" : $"Items ({_input.Hint(GameAction.Item)} to cycle):\n" + string.Join("\n",
             inventory.Select((word, slot) => $"{slot + 1}: " + ((word & 127) == 127 ? "Empty" :
@@ -350,6 +354,7 @@ public sealed partial class BattleSessionView : Control
         return new
         {
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
+            rules = _session?.Rules.Identity, healingChoices = _session?.QueryBattleChoices(),
             scene = _scene.Observe(), observationSequence = current?.ObservationSequence,
             initializationPolicy = current?.Battle.StartPolicy,
             regionFlags = current?.Battle.Regions?.Flags, regionsTested = current?.Battle.Regions?.Tested,

@@ -33,8 +33,24 @@ public sealed record HealingSceneCursor
     public int CastFrame => LogicalComplete ? -1 : Work[Index].Frame;
     public int Opportunity => LogicalComplete ? 0 : Work[Index].Count - Remaining;
 
+    internal static void RequireContent(EngineBattleState battle, ActorRef actorRef, ActorRef targetRef,
+        BattleSceneDefinition? content, bool required)
+    {
+        if (content is null)
+        {
+            if (required) throw new BattleRuleException("healing-scene-content", "battleScenes.healing", true);
+            return;
+        }
+        if (content.Healing is null ||
+            !content.Allies.TryGetValue(battle.GetActor(actorRef).Definition.ClassRule, out var visual) ||
+            !visual.Sequences.ContainsKey("cast") || visual.IdleTicks <= 0 ||
+            !content.Allies.TryGetValue(battle.GetActor(targetRef).Definition.ClassRule, out var targetVisual) || targetVisual.IdleTicks <= 0)
+            throw new BattleRuleException("healing-scene-content", "battleScenes.healing", true);
+    }
+
     internal static HealingSceneCursor Create(BattleActionResolution action, BattleSceneDefinition? content)
     {
+        RequireContent(action.Prepared, action.Actor, action.Reactions[0].Target, content, false);
         var actor = action.Prepared.GetActor(action.Actor);
         var target = action.Prepared.GetActor(action.Reactions[0].Target);
         // Authored packages have an intentionally small authored gesture; private
@@ -46,10 +62,9 @@ public sealed record HealingSceneCursor
         string actionText = "{NAME} cast\n{SPELL} level {#}!", recoveryText = "{NAME} recovered\n{#} hit points.";
         if (content is not null)
         {
-            if (content.Healing is null || !content.Allies.TryGetValue(actor.Definition.ClassRule, out var visual) ||
-                !visual.Sequences.TryGetValue("cast", out cast!) || visual.IdleTicks <= 0 ||
-                !content.Allies.TryGetValue(target.Definition.ClassRule, out var targetVisual) || targetVisual.IdleTicks <= 0)
-                throw new BattleRuleException("healing-scene-content", "battleScenes.healing", true);
+            var visual = content.Allies[actor.Definition.ClassRule];
+            var targetVisual = content.Allies[target.Definition.ClassRule];
+            cast = visual.Sequences["cast"];
             casterIdle = visual.IdleTicks; targetIdle = targetVisual.IdleTicks;
             actionText = content.Texts[274]; recoveryText = content.Texts[298];
         }
@@ -285,6 +300,7 @@ internal static class BattleSceneContinuation
             new ActiveBattle(battle, null, updated), current.Story, current.StopReason);
         var result = Continue(ready, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token)
             : new CompletePresentation(scene.Token, scene.CompletionKind));
+        if (result.Failure is not null) return result with { Snapshot = current, Observations = [] };
         return result with { Observations = observations.Concat(result.Observations).ToArray() };
     }
 
@@ -371,7 +387,9 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.Reward: next = BattleScenePhase.RewardMessage; break;
             case BattleScenePhase.RewardMessage:
                 var before = battle.GetActor(scene.RewardActor!.Value);
-                var grown = scene.Action.ApplyGrowth(battle);
+                (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) grown;
+                try { grown = scene.Action.ApplyGrowth(battle); }
+                catch (BattleRuleException error) { return BattleCommandDispatcher.Reject(current, error.Code, error.Field, error.Unsupported); }
                 battle = grown.Battle;
                 foreach (var effect in grown.Effects) observations.Add(Observe(effect, ++sequence, revision));
                 growthNotices = GrowthNotices(before, battle.GetActor(before.Actor));

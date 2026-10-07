@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Application.Runtime.Battles;
 using Xunit;
@@ -132,7 +133,7 @@ public sealed class HealingFairyTests
     {
         var battle = EngineTestContent.Start().Current.Battle;
         var actor = new ActorRef("medic-a");
-        var action = PlayerHealing.Prepare(battle, actor, battle.GetActor(actor).Position!, new("mend", 1), actor);
+        var action = new Sf2HealingRule().Prepare(battle, actor, battle.GetActor(actor).Position!, new("mend", 1), actor);
         var setup = HealingFairy.Begin(1, action.Prepared.MainSeed, actor);
         return (HealingSceneCursor.Create(action, null) with { Fairy = setup.State }, setup.Seed);
     }

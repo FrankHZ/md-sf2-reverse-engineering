@@ -1,10 +1,11 @@
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Battles;
 
-namespace Sf2.Remake.Domain.Battles;
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
-internal static class PlayerHealing
+internal sealed class Sf2HealingRule : IHealingRule
 {
-    internal static HealingSpellDefinition RequireSpell(EngineBattleState battle, ActorRef actorRef, SpellRef spellRef)
+    public HealingSpellDefinition RequireSpell(EngineBattleState battle, ActorRef actorRef, SpellRef spellRef)
     {
         var actor = battle.GetActor(actorRef);
         if (!actor.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
@@ -18,24 +19,14 @@ internal static class PlayerHealing
         return spell;
     }
 
-    internal static BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
+    public string Identity => "sf2-healing";
+    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor) =>
+        HealingTargetRules.QueryTargets(battle, actor);
+
+    public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
         MapPosition destination, HealingSpellDefinition spell, ActorRef targetRef) =>
-        RequireTarget(battle, actorRef, destination, spell.MinimumRange, spell.MaximumRange, targetRef);
-
-    internal static BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
-        MapPosition destination, byte minimumRange, byte maximumRange, ActorRef targetRef)
-    {
-        var actor = battle.GetActor(actorRef);
-        var target = battle.Actors.SingleOrDefault(a => a.Actor == targetRef);
-        if (target is null || target.Hp == 0 || target.Faction != actor.Faction)
-            throw new BattleRuleException("invalid-heal-target", "target");
-        var targetPosition = targetRef == actorRef ? destination : target.Position!;
-        if (!BattleRange.Contains(destination, targetPosition, minimumRange, maximumRange))
-            throw new BattleRuleException("target-range", "target");
-        return target;
-    }
-
-    internal static BattleActionResolution Prepare(
+        HealingTargetRules.RequireTarget(battle, actorRef, destination, spell.MinimumRange, spell.MaximumRange, targetRef);
+    public BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);

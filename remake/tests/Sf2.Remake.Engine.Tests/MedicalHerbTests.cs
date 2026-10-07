@@ -12,6 +12,43 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class MedicalHerbTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SelectedHealingAlgorithmCannotChangeHerbTargetsInventoryRecoveryAwardOrRng(bool half)
+    {
+        var document = Package(); document["start"]!["actors"]![1]!["hp"] = 1;
+        document["items"]![0]!["maximumRange"] = 2;
+        var rules = half ? Sf2.Remake.Application.Gameplay.RuleCompositions.AuthoredHealingB()
+            : Sf2.Remake.Application.Gameplay.RuleCompositions.AuthoredHealingA();
+        var source = Session(document);
+        var selected = Assert.IsType<SessionStarted>(GameSession.Start(Reader(document), rules)).Session;
+        foreach (var session in new[] { source, selected })
+        {
+            Accept(session, new Confirm()); Accept(session, new SelectItem(0));
+            var before = session.Current;
+            Assert.Equal("invalid-heal-target", Send(session, new SelectTarget(new("dummy-a"))).Failure!.Code);
+            Assert.Same(before, session.Current);
+            Accept(session, new SelectTarget(new("guard-a")));
+        }
+        var expected = FinishBattleScenes(source, Accept(source, new Confirm()));
+        var actual = FinishBattleScenes(selected, Accept(selected, new Confirm()));
+        Assert.Equal(11, actual.Snapshot.Battle.GetActor(new("guard-a")).Hp);
+        Assert.Equal(20, actual.Snapshot.Battle.GetActor(new("medic-a")).Mp);
+        Assert.Equal(expected.Snapshot.Battle.MainSeed, actual.Snapshot.Battle.MainSeed);
+        Assert.Equal(expected.Snapshot.Battle.ThinkingSeed, actual.Snapshot.Battle.ThinkingSeed);
+        Assert.Equal(expected.Snapshot.Battle.GetActor(new("medic-a")).Exp, actual.Snapshot.Battle.GetActor(new("medic-a")).Exp);
+        Assert.Equal(new ushort[] {6, 0, 127, 127}, actual.Snapshot.Battle.GetActor(new("medic-a")).SourceLoadout!.Items);
+        Assert.Equal(expected.Observations.Select(row => (row.Kind, row.Actor, row.Target, row.Before, row.After, row.RandomRange, row.RandomValue)),
+            actual.Observations.Select(row => (row.Kind, row.Actor, row.Target, row.Before, row.After, row.RandomRange, row.RandomValue)));
+        // Full HP remains a valid Herb target under the injured-only spell variant.
+        selected = Assert.IsType<SessionStarted>(GameSession.Start(Reader(Package()), rules)).Session;
+        var actor = selected.Current.Selection!.Actor;
+        var finished = Use(selected, 0, actor);
+        Assert.Equal(100, finished.Snapshot.Battle.GetActor(actor).Hp);
+        Assert.Equal(2, ConstructionRolls(finished).Count());
+    }
+
     private static JsonNode Package()
     {
         var document = Document();

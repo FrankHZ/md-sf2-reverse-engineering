@@ -42,7 +42,7 @@ over older blanket gate and test-preservation recipes:
 - Documentation-only changes use direct link/anchor/fence/table/example, scope and private-boundary
   checks. They do not require a new normal/full, .NET, Godot or H3 run.
 
-The engine unit project covers actual Domain/Application/Content behavior for four authored battle
+The engine unit project covers actual Domain/Application/Content behavior for authored battle
 packages, two connected exploration packages and the bounded private entries, with scoped engine/adapter entries and public jobs. The native observation directly drives
 the same session with Godot input and reads real state/HUD/nodes; it emits no images. Main-gate owns required-check configuration during integration; a candidate must report its
 actual CI outcome and that configuration boundary explicitly.
@@ -1851,6 +1851,61 @@ boundary fixture with `ActorRef` identities, a real order255 and separate null s
 existing reference methods `BaselineTestsThreeRegionsWithoutActivatingThemAndComputesTheAcceptedRound`
 and `RoundGenerationRetainsTheIndependentSeedCopyWithoutUsingIt` exercise the actual source projection;
 no old aggregate or new H3 observation is required.
+
+## Replaceable HEAL observation
+
+The bounded [HEAL seam](./architecture.md#implemented-heal-seam) uses the same authored reader,
+session query/command path and actual Godot presenter for two C# algorithms. Default direct session
+starts keep SF2; both ordinary Godot source-start entries use `RuleCompositions.ForGame()`.
+A project author changes that method to `AuthoredHealingA()` or `AuthoredHealingB()`, rebuilds the
+Debug adapter and restarts the owned instance because its compiled composition changed. No package
+name, environment variable or view branch selects gameplay. Return `ForGame()` to `Sf2()` and rebuild
+after the demonstration when default source behavior is wanted.
+
+`remake/content/authored/healing-rule-demo.json` initializes HP30/max40, MP8/cost3, EXP0, power10 and
+an adjacent full-HP ally. A recovers10/awards10 with two construction award draws; B recovers5,
+awards0 and omits those draws. Both charge MP once and retain the existing later fairy/scene work.
+The actual query/target input exposes full-HP legality for A and `target-not-injured` for B. This
+demonstrates authored algorithm replacement, not an original rebalance or timing/fidelity claim.
+
+After loading the existing ignored environment in the launching process and choosing the factory:
+
+```powershell
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+$env:SF2_RUN_OUTPUT = $variantRunDirectory # separate ignored worktree-local A/B destinations
+$env:SF2_OBSERVATION_CASE = 'healing-rule'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'healing-rule.json'
+$packagePath = (Resolve-Path -LiteralPath 'remake/content/authored/healing-rule-demo.json').Path
+& $env:GODOT_BIN --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+```
+
+The existing observer delegates this responsibility to `engine_healing_rule_observation.gd` to keep
+its source below1,000 lines. It drives actual movement/cancel, spell/self/other selection and message
+input, waits for actual movement/presenter completion, and reads query/state/HUD/nodes/errors.
+Mandatory scene work and completion come from the running consumer; no state setter or synthetic
+completion supplies acceptance. It retains named stage changes and semantic events, checks single
+MP/HP/turn publication and every carried RNG draw, emits no images, and exits nonzero on failure.
+A/B observations pass this bounded path; the ignored reports retain their selected compiled identity
+and prior observer failures. They do not prove private source presentation or broader equivalence.
+The explicit `--log-file` also keeps Godot's runtime log out of its default Windows user-data location.
+
+Use `uv run sf2 verify engine` for engine behavior and `uv run sf2 verify adapter` for compilation.
+During correction, run only the affected behavior filter:
+
+```powershell
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --no-restore --configuration Release --filter 'FullyQualifiedName~HealingRuleReplacementTests|FullyQualifiedName~HealingRulesTests|FullyQualifiedName~HealingFairyTests|FullyQualifiedName~MedicalHerbTests|FullyQualifiedName~EngineSessionTests|FullyQualifiedName~SpellSelectionTests|FullyQualifiedName~BattleSceneTests'
+```
+
+`HealingRuleReplacementTests` covers real Content/session choices, default source assertions,
+variant effects, stale actor/history, illegal targets/resources, malformed/throwing rules, missing
+private cast support and later failure retention. Existing scene tests retain token/replay and
+post-fairy growth-seed assertions. `MedicalHerbTests` independently runs Herb under both selected
+spell variants, preserving target legality, capped recovery, inventory, EXP and RNG. Unknown source
+EXP remains rejected at preparation; query does not construct an award or spend draws. The completed
+engine-suite discovery failure and its focused corrections remain in the slice handoff; no local
+whole-suite rerun is required merely to replace that red aggregate record. Preserve the historical
+CP2059–2091 cursor FAIL under [HEAL scene verification](#heal-scene-verification).
 
 ## Authored Battle Observation
 
