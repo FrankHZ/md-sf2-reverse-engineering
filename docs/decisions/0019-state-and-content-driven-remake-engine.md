@@ -4,7 +4,7 @@
 - Proposal date: 2026-09-13
 - Scope: runtime authority, content admission, program execution, verification, and incremental migration
 - Accepted evidence base: `41be8d415322769d4f81cef77998fe35707a3e5e`
-- Problem owner: [architecture and verification audit](../../remake/docs/architecture-audit.md)
+- Problem owner: [architecture and verification audit](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/architecture-audit.md)
 
 ## Current acceptance scope
 
@@ -158,7 +158,7 @@ setup. The [native no-image observation](../../remake/game/probes/engine_battle_
 executed directly under Godot 4.7.2 .NET for both packages: real movement/cancel/HEAL/STAY input,
 ordered effects and carried seeds, automatic next control/round, projected HUD/node positions and
 attributed range/unsupported failures passed without process errors. The
-[verification owner](../../remake/docs/development-and-verification.md#authored-battle-observation)
+[verification owner](../../remake/docs/verification/battles.md#authored-battle-observation)
 contains exact commands. This establishes the bounded M1 path, not completion of A1–A8, original
 Map 3/Battle 01 continuity, 8C or H4.
 
@@ -201,7 +201,7 @@ independent existing RNG/resource expectations, separate session actors and unch
 Another selected encounter resolves its own deployment from the same package. Invalid JSON and typed
 starts fail at the actual binding boundary. Existing physical/AI/action tests retain their independent
 integer, reward/death, ordering and whole-action failure expectations with the migrated input paths.
-The [native start observations](../../remake/docs/development-and-verification.md#authored-start-state-observation)
+The [native start observations](../../remake/docs/verification/battles.md#authored-start-state-observation)
 use real input, existing nodes and complete state checkpoints across all four packages and a differing
 controlled start; no screenshots, session setters or reference aggregate are required.
 
@@ -232,7 +232,7 @@ the same calculator; no second turn algorithm or production source-ID alias is i
 real Content/session targeting, opposing movement, HEAL rejection, physical death/rewards and next
 control with explicit allegiance, high/sparse orders and reordered JSON. Existing independent signed
 turn/RNG and AI tie expectations remain; the affected original first-round comparisons exercise the
-actual reference mapping. The [native recipe](../../remake/docs/development-and-verification.md#authored-faction-and-order-observation)
+actual reference mapping. The [native recipe](../../remake/docs/verification/battles.md#authored-faction-and-order-observation)
 uses the existing adapter/probe with four packages and changed-order input, without screenshots.
 
 ### Numerical agility and extra round action
@@ -258,7 +258,7 @@ and private import stay lossless. **Confirmed (engine):**
 [`BattleAgilityTurnsTests`](../../remake/tests/Sf2.Remake.Engine.Tests/BattleAgilityTurnsTests.cs) exercise
 otherwise-identical definitions, real Content failures, live/dead start capacity and natural two-entry
 consumption across rounds. Existing signed0/127 boundary expectations and death/counter comparisons
-remain unchanged. The [native extra-turn observation](../../remake/docs/development-and-verification.md#authored-extra-round-action-observation)
+remain unchanged. The [native extra-turn observation](../../remake/docs/verification/battles.md#authored-extra-round-action-observation)
 uses actual input and existing queue/state/node observations, without screenshots or state injection.
 
 ### Supported physical critical rules
@@ -283,7 +283,7 @@ truncation, death/accounting and whole-action failure retain their accepted beha
 varies both semantic pairs through real Content/player/enemy attacks and reversed counters, including
 actual critical damage, exact draw ranges/seeds and rewards, and rejects incomplete or unsupported
 configuration. Existing first/second/counter/death tests and grouped source comparisons remain.
-The [physical observation recipes](../../remake/docs/development-and-verification.md#physical-critical-configuration)
+The [physical observation recipes](../../remake/docs/verification/battles.md#physical-critical-configuration)
 use the existing Godot input/state probe; no adapter observation or gameplay authority changes.
 
 ### Independent control and automatic strategy
@@ -315,7 +315,7 @@ physical attack constructs after its actual movement delivery. Both RNG streams,
 rewards/death, failed queue entry and earlier committed work retain their existing contracts.
 `BattleAdvancer` handles player input and invokes the resolved `IBattleDecisionRule`; it has no
 strategy-name dispatch or unknown-binding Stay fallback. Godot's existing AI-memory projection reads
-the same deployment/state. The [implemented decision seam](../../remake/docs/architecture.md#implemented-automatic-decisions)
+the same deployment/state. The [implemented decision seam](../../remake/docs/domain/gameplay-rules.md#implemented-automatic-decisions)
 owns authored FirstLegal/LowestHp replacement and finite candidate/transaction validation.
 
 **Confirmed (engine):** [BattleControlAiTests](../../remake/tests/Sf2.Remake.Engine.Tests/BattleControlAiTests.cs)
@@ -323,7 +323,7 @@ starts the same actor definition in separate player, automatic Stay and automati
 executes their different outcomes, preserves independent sessions and rejects missing/incompatible
 configuration at real Content and reusable start boundaries. Existing attack, pursuit/origin-Stay,
 startup/next-control, array-order and atomic failure cases retain independent expected states/seeds.
-The [control/AI observation recipes](../../remake/docs/development-and-verification.md#independent-control-and-ai-strategy)
+The [control/AI observation recipes](../../remake/docs/verification/battles.md#independent-control-and-ai-strategy)
 use actual inputs and the existing probe; related source comparisons run as a group.
 
 ### Semantic terrain and supported ground rules
@@ -363,7 +363,7 @@ The reference land-effect mappings and already-semantic physical scalar operands
 changes referenced surface through actual movement/commit and protection through actual AI target
 choice/physical settlement; existing weighted, occupied, row-boundary, critical and moved-counter
 cases keep independent expected arithmetic/seeds. Invalid/unresolved terrain fails real admission.
-The [terrain observations](../../remake/docs/development-and-verification.md#semantic-terrain-observation)
+The [terrain observations](../../remake/docs/verification/battles.md#semantic-terrain-observation)
 use the existing no-image input/state probe and grouped movement/pursuit/physical reference comparisons.
 
 Remaining raw mappings have concrete consumers: `BattleActorDefinition.SourceClassId` projects the
@@ -400,7 +400,7 @@ Thinking RNG is unchanged by explicitly configured Stay AI; a counter does not c
 counterattacker's queued ordinary turn.
 
 Content accepts optional typed actor `physical` and encounter `rewards` definitions. The exact
-[schema and capability boundary](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
+[schema and capability boundary](../../remake/docs/content/profiles-and-trust.md#public-authored)
 keeps effective stats explicit and admits no equipment or status branches. Explicit
 `start.actors.defeats` supplies 0–9999 prior defeats without a hidden default. Unsupported movetypes,
 critical rules and special rules reject at admission. The `stone-court` and `river-post` packages differ in actors,
@@ -560,13 +560,13 @@ use the real Content/session path across both physical packages, enemy-first sta
 positions, weighted costs, MOV/occupancy correction, origin Stay, missing reached rewards and atomic
 unreachable rejection. Actual next-round input reaches physical attack/counter with independently
 specified RNG and resource results. Existing reference pursuit/standby/physical methods consume the
-shared rules. [Direct native observations](../../remake/docs/development-and-verification.md#commandset06-continuation-observation)
+shared rules. [Direct native observations](../../remake/docs/verification/battles.md#commandset06-continuation-observation)
 drive real input and check complete checkpoints, live state and clean logs. **Unknown:** wider AI,
 initialized common private entry, natural original continuity/presentation and8C/H4. M2 and A1–A8 remain incomplete.
 
 ### Private battle admission dependency boundary
 
-The M2 private migration follows the [current user direction](../../remake/docs/architecture-audit.md#current-user-direction)
+The M2 private migration follows the [current user direction](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/architecture-audit.md#current-user-direction)
 and the [three content boundaries](#typed-content-and-capability-admission). **Confirmed (implementation
 inspection):** `Map3Root` selects `PrivateOriginalBattle01StartupReader`; `PrivateBattle01Ui.Apply`
 then calls the reference session's Prepare → Initialize → FirstRound → FirstControl chain. Preparation
@@ -690,7 +690,7 @@ actual movement/cancel and the reached Unsupported boundaries. Public-only skips
 acceptance. [`PrivateBattleInitializationTests`](../../remake/tests/Sf2.Remake.Engine.Tests/PrivateBattleInitializationTests.cs)
 varies definitions, party identity, stats, regions, movers and unsupported prerequisites. A single
 related original initialization/first-round/control/movement group and the existing no-image Godot
-input/state probe exercise the real consumers. The [verification owner](../../remake/docs/development-and-verification.md#private-initialized-entry-observation)
+input/state probe exercise the real consumers. The [verification owner](../../remake/docs/verification/battles.md#private-initialized-entry-observation)
 provides the mandatory-private and native commands. The H3 non-natural R2a→R2b bridge and this entry's
 controlled intro skip remain explicit provenance; natural Map3 start/program/presentation continuity
 is not established by this comparison.
@@ -734,7 +734,7 @@ low words. [`PrivateSourceAiTests`](../../remake/tests/Sf2.Remake.Engine.Tests/P
 requires the actual seven inputs and drives common commands from the unactivated initialized entry
 through six enemy standby turns, player-triggered activation, set7 pursuit and the next player.
 It continues through the actual first physical cohort to Bowie control, then checks that unknown EXP
-rejects his selected attack without publishing any part of it. The [native observation](../../remake/docs/development-and-verification.md#private-initialized-entry-observation)
+rejects his selected attack without publishing any part of it. The [native observation](../../remake/docs/verification/battles.md#private-initialized-entry-observation)
 drives the same movement/cancel/STAY controls in Godot without state setters or images.
 
 `AiStandbyRules` owns the regular source eligibility, immutable-anchor candidate patterns, evolving
@@ -779,7 +779,7 @@ source context. Broader M2 capabilities, A1–A8 closure and 8C/H4 remain incomp
 
 ## Current M3 Common Program and Exploration Group
 
-The [exploration/program owner](../../remake/docs/exploration-programs.md) defines the implemented
+The [exploration/program owner](../../remake/docs/application/session-and-programs.md) defines the implemented
 Content/start shapes, immutable state, instruction transactions, waits, motion, map transfer and
 original-source boundaries. Two distinct authored packages execute the full exploration → program
 → transfer → before/init/load/start → existing battle-control group through the same `GameSession`.
@@ -802,11 +802,11 @@ Complete legacy opening, castle/palace/Astral/tower and Map40 pending-admission 
 their final movement/presentation callers are removed. M5 then retired the remaining independent
 comparisons, frozen context DTOs and legacy geometry/presentation consumers. This does not close
 original natural Map3-to-Battle01 continuity, A1–A8 or 8C/H4. The
-[execution owner](../../remake/docs/exploration-programs.md) identifies the current boundaries.
+[execution owner](../../remake/docs/application/session-and-programs.md) identifies the current boundaries.
 
 ## Ordinary Godot Host Boundary
 
-G1/G2/G5 from the [Godot audit](../../remake/docs/godot-game-audit.md) are implemented at the actual
+G1/G2/G5 from the [Godot audit](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/godot-game-audit.md) are implemented at the actual
 project/scene/caller boundary. Ordinary `game/Main.tscn` instantiates `GameRoot`, whose compile graph
 contains the common view/composition and only Domain/Application/Content references. No Reference,
 legacy Map3 composition or smoke driver is required by this game build. Default and explicit authored
@@ -824,7 +824,7 @@ verification-test suite was introduced.
 assembly references establish the dependency boundary. Actual process launches observe default,
 explicit authored/private-common, unknown, missing, duplicate and conflicting arguments; existing
 input/state observations exercise continuous common private play. The
-[verification owner](../../remake/docs/development-and-verification.md#ordinary-host-startup)
+[verification owner](../../remake/docs/verification/host.md#ordinary-host-startup)
 provides reproduction commands. Ordinary export configuration excludes probes, while complete
 ordinary package/export contents remain unverified. G3/G4 follow actual program/content consumers;
 G6 and bounded private step3 are implemented by the common player action interface documented above. Original natural continuity and full ADR0009/0010 remain incomplete.
@@ -847,7 +847,7 @@ Normal post-messenger Map3 reload consumes the accepted inactive-window-scratch 
 exact source instruction with closed windows and actual entity142 retirement. A live alias still
 executes move-out. Other missing aliases/contexts remain Unsupported; no player or entity255 fallback
 exists. The source join and renderer limits belong to the
-[execution owner](../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return).
+[execution owner](../../remake/docs/application/session-and-programs.md#battle01-outcome-after-program-and-return).
 
 The ordinary Godot view stays on the same session, holds battle presentation through the actual
 fade/load, performs sprite waits/mosaic-out and the selected modern defeat cue, then returns to real
@@ -1122,7 +1122,7 @@ The current executable examples are
 [`garden-watch`](../../remake/content/authored/garden-watch.json),
 [`stone-court`](../../remake/content/authored/stone-court.json) and
 [`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v7 documents
-through the real reader; the [profile owner](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
+through the real reader; the [profile owner](../../remake/docs/content/profiles-and-trust.md#public-authored)
 describes their closed fields and supported domains. Their `actors` contain definitions, encounter
 `placements` own faction, stable processing order, control/AI strategy and deployment coordinates, and `start.actors` bind explicit per-session values by
 actor reference. A start override changes one controlled deployment without altering the definition.
@@ -1310,7 +1310,7 @@ duplicate assertions running in both projects once that family is migrated.
 
 Deleting a test does not delete its historical Git object or completed run record. Preserve prior
 failures, exact failing nodes when any, skipped boundaries, and whether processes completed in the
-handoff/owning evidence. The old [test suite audit](../../remake/docs/test-suite-audit.md) is a
+handoff/owning evidence. The old [test suite audit](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/test-suite-audit.md) is a
 historical diagnostic, not a permanent retention rule or numerical acceptance target.
 
 ## Remote CI and local verification cutover
@@ -1377,7 +1377,7 @@ Cutover is part of M0/M1, not a backlog item after the engine is declared comple
    [ADR 0012](0012-dependency-aware-partitioned-verification.md),
    [ADR 0017](0017-heavy-boundaries-light-internals.md), `remake/README.md`,
    [development and verification](../../remake/docs/development-and-verification.md),
-   [test suite audit](../../remake/docs/test-suite-audit.md), and any engine routing references in
+   [test suite audit](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/test-suite-audit.md), and any engine routing references in
    `docs/operations/agent-resume.md`. Review the Phase 2 runbook's shared gate references but keep
    research lane requirements with their owner. Replace blanket preservation/all-suite/meta-test
    obligations for the new engine and label retired gate recipes as historical, so a resumed agent
@@ -1399,7 +1399,7 @@ exactly as observed; cutover does not justify replaying legacy normal/full/.NET/
 
 The current stage order is to finish the new-engine migration, then complete
 [ADR 0009](./0009-first-phase4-playable-slice.md) verification, and then undertake modern art, UI and
-UX redesign through the existing [presentation owner](../../remake/docs/presentation-and-assets.md).
+UX redesign through the existing [presentation owner](../../remake/docs/godot/presentation.md).
 ADR 0009 requires the complete continuous Map 3 → Battle 01 completion scenario and its accepted
 continuity, endpoint and evidence targets. Migration completion does not mean ADR 0009 has passed;
 this order does not weaken ADR 0009/0010 acceptance or start the later visual redesign.

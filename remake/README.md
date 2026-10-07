@@ -6,71 +6,40 @@ Original research, runtime implementation, and reference verification have separ
 
 ## Current Status
 
-The production Domain/Application/Content path runs configurable project-authored battle packages through
-one common session. Format-v7 packages separate immutable definitions/deployments from explicit
-per-session resources, counters, seeds and optional controlled placement overrides. Deployments own
-explicit faction, stable processing order, player/automatic control and a separate required AI policy
-for automatic actors; intrinsic actor definitions carry no controller. Queue identity and side checks
-no longer infer either from a source slot. Numerical agility and explicit extra-round-action eligibility are separate fields in actor
-definitions, consumed by the same turn calculator and queue. Physical definitions select explicit
-critical probability/bonus pairs consumed by player, enemy and counter hits through one rule owner. The same admitted
-definition can start independent sessions through the common validated entry. Terrain row glyphs
-reference explicit surface/protection definitions; shared mover rules drive movement,
-placement, AI and actual target damage. Occupancy remains separate, and source reference adapters
-feed the same weighted movement kernel. The common private entry now loads the selected original
-encounter and pinned enemy/class/item/spell definitions with an external controlled party/start input.
-It initializes STARTING placements, heals resources under the declared policy, adjusts source enemy
-ATT once, activates regions and generates the actual first queue before player movement/cancel.
-Required regular, healer, Centaur and hovering movers use the common terrain rules. Unknown accounting
-remains null. Actual player commands now continue through inactive source standby, region activation
-and set6/set7 pursuit to the next player, carrying each enemy’s source anchor/memory and both RNG
-channels. Actual private physical/HEAL actions, death accounting, source growth and Battle01 outcomes
-now continue through the full after-program or ordinary defeat program back to usable exploration;
-the [execution owner](./docs/exploration-programs.md#battle01-outcome-after-program-and-return)
-records the selected source, controlled input and unsupported boundaries.
-Godot’s ordinary `game/Main.tscn` instantiates `GameRoot` and builds with only Domain/Application/Content.
-Default and explicit authored/private-common starts use this entry; invalid options produce a startup
-diagnostic without selecting another route. [Startup and diagnostics](./docs/development-and-verification.md#ordinary-host-startup)
-are separate from gameplay. Godot hosts real movement/action input and projects semantic results. The
-transitional reference assembly, its `reference/game` host and the legacy test projects were retired at
-[M5](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation);
-[`reference/`](./reference/README.md) now holds only external controlled comparison inputs.
+One common `GameSession` runs configurable authored battle/exploration packages and the connected
+private Map 3 through Battle 01 world. Content admits reusable immutable definitions and separate
+controlled starts. Domain supplies deterministic movement, admitted actions, progression and rules;
+Application owns program execution, waits, automatic turns, staged effects and return. Godot submits
+semantic input and presents current state. Production has no Reference or verification dependency.
 
-[ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the adopted direction
-to common commands, live state and configurable typed content, resumable programs, and separate
-reference runners. M1 provides typed content admission, provisional movement/cancellation, atomic
-HEAL/STAY and automatic next-actor/round progression with carried RNG. The
-[M2 physical capability](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
-adds ordinary first/second/counter attacks, EXP/gold, death accounting and continuation. A bounded
-configured attack-then-approach strategy scores competing targets through the accepted commandset06/
-script3 rules, applies source class/movement ties, and uses the same physical action and publication mechanisms, including ally counter rewards
-and carried thinking/main RNG. Required class data is validated at the reached comparison; missing
-growth or outcome metadata and unsupported effects reject atomically at their owning boundary.
-The connected private world supplies the required growth and Battle01 outcome definitions. With no attack target, the
-empty spell/item branch continues through failed HEAL1/SUPPORT to MOVE1, preserving RNG and resources
-and ending that turn even when movement resolves to origin Stay. Incomplete or high target costs
-remain Unsupported. The
-[current boundary](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
-records supported behavior, responsibility directories and remaining private/program migration.
+The accepted finite rule-composition scope lets a project author replace admitted action algorithms,
+automatic decisions, progression/outcomes and source-story policy in C#, or author conditional typed
+programs, then rebuild/start a new session. Refresh/activation/control, movement-cost tables and
+field/scene logical services remain fixed source-specific algorithms. The
+[architecture route](./docs/architecture.md) explains these boundaries; the
+[capability owner](./docs/capability-status.md) records runnable, Unsupported and Unknown behavior.
 
-The [capability matrix](./docs/capability-status.md) owns runnable support and Unknowns. The
-[Map 3 implementation/reference record](./docs/map03-playability-plan.md) owns existing controlled
-routes, inputs and their limits; it is not the next-feature queue. The private continuous Map 3 through
-Battle 01 victory and usable-return milestone is accepted under keyboard A, the modern deterministic
-clock and 8D semantics. The [readiness owner](../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
-records the composed H4 acceptance and unchanged historical reports. Hardware 8C, full-game parity
-and public distribution remain outside that acceptance.
+The private continuous Map 3 through Battle 01 victory and usable-return milestone is accepted under
+keyboard A, the modern deterministic clock and composed 8D/H4 semantics. The
+[readiness owner](../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+records independent acceptance and unchanged historical reports. Natural original reach, hardware 8C,
+full-game parity and public distribution remain outside that acceptance. The
+[retained evidence route](./docs/evidence/retained-comparisons.md) preserves failed comparisons,
+source/provenance and the retired reference implementation without turning them into current run plans.
 
 ## Start Here
 
 | Work | Read |
 | --- | --- |
-| Engine behavior or architecture | [Architecture](./docs/architecture.md), [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md), and the consumed behavior contract |
-| Current capability or controlled reference | [Capability status](./docs/capability-status.md), then the named Map 3/reference owner |
-| Content and profile admission | [Runtime profiles and trust](./docs/runtime-profiles-and-trust.md) |
+| Architecture and state ownership | [Architecture](./docs/architecture.md), [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md), and the consumed behavior contract |
+| Rule authoring and algorithms | [Domain gameplay rules](./docs/domain/gameplay-rules.md) |
+| Session, exploration and story execution | [Application session and programs](./docs/application/session-and-programs.md) |
+| Current capability or controlled reference | [Capability status](./docs/capability-status.md), then the named behavior/evidence owner |
+| Content and profile admission | [Runtime profiles and trust](docs/content/profiles-and-trust.md) |
 | Build, unit tests, reference or adapter observation | [Development and verification](./docs/development-and-verification.md) |
-| Godot presentation or local asset work | [Presentation and assets](./docs/presentation-and-assets.md) |
-| Old tests during migration | [Test audit scope](./docs/test-suite-audit.md#current-repair-status) and ADR 0019's migration table |
+| Godot input and rendering | [Host/presentation](./docs/godot/presentation.md), [audio](./docs/godot/audio.md), [battle scenes](./docs/godot/battle-scenes.md) |
+| Local asset preparation | [Content presentation assets](./docs/content/presentation-assets.md) |
+| Historical comparisons and remaining Unknowns | [Retained evidence](./docs/evidence/retained-comparisons.md); current test policy is in the verification guide |
 
 ## Runtime Profiles
 
@@ -88,7 +57,7 @@ profiles were retired with the reference host at M5.
 
 The separate local product-art repository and its manifest/runtime payloads remain private inputs.
 Use the existing `sf2tool.remake_assets` checkout/export command only when the owning asset change or
-launch needs it. [Presentation and assets](./docs/presentation-and-assets.md#local-product-asset-pack)
+launch needs it. [Presentation and assets](docs/content/presentation-assets.md#local-product-asset-pack)
 owns the admitted pack, current identities, candidate derivation, mounting and distribution boundary.
 Reuse accepted inputs and the selected Godot installation; a new topic or verification check does not
 require another checkout, extraction, SDK, project copy, or asset export.

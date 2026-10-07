@@ -176,7 +176,8 @@ local/                  Ignored ROMs, saves, traces, upstream checkouts, and gen
 The tracked `remake/` path now exists for the explicitly authorized bounded Phase 4 implementation.
 It currently contains concrete Domain, Application, Content, and thin Godot layers. Its architecture,
 runtime profiles and trust boundaries, capability status, and verification workflow are owned under
-[`remake/docs/`](./remake/docs/); new paths are still added only when a concrete slice owns them.
+[the remake architecture route](./remake/docs/architecture.md), with separate Domain, Application,
+Content, Godot and verification owners; new paths are added only when a concrete responsibility owns them.
 
 Research explains evidence. Evidence-bound design contracts express implementation-neutral behavior.
 Cross-subsystem design synthesis connects accepted owners. Decision records own project choices. A

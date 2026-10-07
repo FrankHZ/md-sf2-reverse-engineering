@@ -357,7 +357,7 @@ Report this omission explicitly even when it conforms to the accepted expected b
 not waive same-semantic-Wait/Ack state equivalence, normal-reveal speech, actual completion,
 private-content provenance or unrelated 7C/8D obligations. Product acceptance is not observation
 coverage or full H4 PASS; the [continuous contract](../design/contracts/map3-battle01-continuous-scenario.md)
-and [audio owner](../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+and [audio owner](../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)
 retain the actual evidence boundaries.
 
 Private-only original-asset handling and the prohibition on public distribution are product and

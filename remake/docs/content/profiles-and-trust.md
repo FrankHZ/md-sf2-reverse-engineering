@@ -1,15 +1,20 @@
 # Runtime Profiles and Trust
 
+Content owns external bytes, paths, source identity, closed formats and validated immutable
+definitions. Profiles select admission and permitted claims; they do not fork gameplay authority.
+See [architecture](../architecture.md), [rule composition](../domain/gameplay-rules.md) and
+[asset preparation](presentation-assets.md).
+
 ## Purpose
 
 Runtime profiles declare where content comes from, which trust checks are required, and which product
 claims are permitted. Profile selection changes outer composition; it does not fork Domain rules or
 make Godot an evidence owner. Authored packages, the initialized private battle entry and the connected
 private world all use the common session. The divergent public-synthetic/private-local readers and
-session paths identified by the [architecture audit](./architecture-audit.md) were retired at
-[M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
-Private source trust checks are not universal gameplay predicates. The accepted 8C/H4 target remains
-incomplete.
+session paths identified by the [architecture audit](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/architecture-audit.md) were retired at
+[M5](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
+Private source trust checks are not universal gameplay predicates. The [composed private milestone](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+is accepted at its stated modern-clock/keyboard-A/8D boundary; full hardware 8C parity remains Unknown.
 
 ## Profile Summary
 
@@ -23,13 +28,14 @@ The runtime always displays the appropriate disclosure:
 - `AUTHORED BATTLE` with controlled-start help
 - `PRIVATE CONTROLLED BATTLE` with Unknown accounting shown explicitly
 
-The ordinary project is `remake/game`, whose GameRoot accepts only `--authored-package <path>`,
-`--private-battle-start <path>` or `--private-exploration-start <path>`, once and mutually exclusively. No arguments selects the authored yard.
+The ordinary project is `remake/game`, whose GameRoot accepts `--authored-package <path>`,
+`--private-battle-start <path>` or `--private-exploration-start <path>`, once and mutually exclusively,
+plus optional `--input-settings <path>`. With no session-entry option it selects the authored yard.
 Unknown or positional arguments, duplicate/conflicting options and missing paths return explicit
 startup ContentError without creating a session or switching routes. The legacy `public-synthetic` and
 `private-local` profile options were retired with the reference host at M5. Diagnostic environment
 selections belong only to the external
-[observer](./development-and-verification.md#ordinary-host-startup); they are not game
+[observer](../verification/host.md#ordinary-host-startup); they are not game
 options and do not change ordinary routing. Runtime state and both RNG channels still begin only
 through the same Content/Application entry.
 
@@ -51,8 +57,8 @@ join membership within `partyFlags`, and traversable in-bounds egress. Private s
 checks remain on the private entry; this authored entry cannot relabel a private package.
 Nonempty defeated programs, enemy-leader outcomes and wider egress/status behavior are not admitted.
 
-[`progression-outcome-victory`](../content/authored/progression-outcome-victory.json) and
-[`progression-outcome-defeat`](../content/authored/progression-outcome-defeat.json) are small authored
+[`progression-outcome-victory`](../../content/authored/progression-outcome-victory.json) and
+[`progression-outcome-defeat`](../../content/authored/progression-outcome-defeat.json) are small authored
 examples. Ordinary interaction, before dialogue, one battle action and real after/defeat/return
 programs exercise the same session and presenter. Their curves, entities and text are project-authored.
 They establish neither original natural continuity nor a successful private outcome observation.
@@ -60,8 +66,8 @@ Algorithm selection remains compiled C# composition, separate from this content/
 
 ### Story content and source policy selection
 
-The public v8 story examples [A](../content/authored/story-rule-demo-a.json) and
-[B](../content/authored/story-rule-demo-b.json) reuse ordinary typed branch/call/text/tick/return
+The public v8 story examples [A](../../content/authored/story-rule-demo-a.json) and
+[B](../../content/authored/story-rule-demo-b.json) reuse ordinary typed branch/call/text/tick/return
 operations and the existing reader. All call/jump/branch references are checked at admission,
 including untaken targets. Their text, flags and entity effects are project-authored and grant no
 source-fidelity or private distribution claim.
@@ -78,7 +84,7 @@ continues to require its own provenance/resources and never selects an authored 
 This is trusted project source composition, not a security sandbox for arbitrary mods. A public
 file does not prove source reach by choosing source-like IDs or flags; constructed source-context
 tests are explicitly SF2-policy tests. No new package format, source capability, algorithm-name
-loader or live policy switch is admitted. See the [author workflow](./architecture.md#rule-author-workflow-and-diagnostics).
+loader or live policy switch is admitted. See the [author workflow](../domain/gameplay-rules.md#rule-author-workflow-and-diagnostics).
 
 ## Public Authored
 
@@ -151,7 +157,7 @@ Definitions never supply hidden session resources. Ordinary spell power remains 
 full-recovery remains unsupported; level-up requires the admitted v8 growth described below. The session reads no files/ROM after admission and
 carries its seeds forward. The default loads the tracked yard; `--authored-package <path>` selects
 another bounded package, without an authored-export or original-fidelity claim. Further private AI/action migration follows the
-[ordered boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
+[ordered boundary](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
 
 Physical capability is optional per actor: `physical` is a closed object with `movementType`
 (currently `regular`), `critical`, boolean `promoted` and `leader`, enemy reward `gold`
@@ -184,7 +190,7 @@ only a surviving ally who attacked receives EXP and award RNG, including an ally
 enemy action. Killing the original enemy actor by counter still awards that ally. Ordinary ally death
 increments capped defeats; enemy death credits one kill/gold award. Missing required growth or an
 unadmitted terminal outcome returns Unsupported before preparation publishes. The two physical configurations
-[`stone-court`](../content/authored/stone-court.json) and [`river-post`](../content/authored/river-post.json)
+[`stone-court`](../../content/authored/stone-court.json) and [`river-post`](../../content/authored/river-post.json)
 are controlled authored inputs, not original private admission or original enemy reward tables.
 
 The enemy-only `control: automatic`, `aiStrategy: attack-then-approach` selects the already-active
@@ -224,7 +230,7 @@ selection. The Flying priority table serves private hovering movers only; it doe
 The `public-synthetic` profile (a tracked project-authored Map 3 package with export smoke) and the
 legacy `private-local` profile (canonical-import traversal, project-authored base view and battle
 bridge, local HUD preview) belonged to the reference host retired at
-[M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
+[M5](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
 Their readers, receipts and options no longer exist. The tracked authored packages remain the
 redistribution-safe public content.
 
@@ -258,7 +264,7 @@ Private compressed source bytes and extraction metadata remain offline. The runt
 selected exports, the prepared world and the controlled start; none is committed, printed, embedded in
 a public package, or exported by the current private runtime. Diagnostics are typed and path-free.
 
-Use the repository's [Local Private Input Layout](../../docs/operations/local-private-inputs.md) for
+Use the repository's [Local Private Input Layout](../../../docs/operations/local-private-inputs.md) for
 machine-private input routing. Worktree-local writable state remains isolated even when immutable shared
 inputs are registered centrally.
 
@@ -273,7 +279,8 @@ claim:
 - original camera, layer/priority composition, animation cadence, text layout, audio or final pixels;
 - VRAM, CRAM, VInt, DMA, timing, or other 8C hardware observations;
 - save/load, persistence, or complete private-content support; or
-- H4 or milestone acceptance.
+- full executable H4 report or hardware-parity acceptance. The composed milestone has its separate
+  [accepted boundary](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
 
 An absent capability remains Unsupported or Unknown at its owning contract. Private bytes alone never
 authorize a fidelity claim.
@@ -287,7 +294,7 @@ separate accepted rights and content decision.
 
 ## Private Initialized Common Battle
 
-[`PrivateBattleScenarioReader`](../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
+[`PrivateBattleScenarioReader`](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
 reads seven explicit absolute paths. `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and
 `SF2_PRIVATE_BATTLE01_TERRAIN` retain the existing encounter trust boundary. `SF2_PRIVATE_STATIC_DATA`
 and `SF2_PRIVATE_ENEMY_DATA` select the existing pinned static-data and enemy-promotion exports.
@@ -298,7 +305,7 @@ the pinned upstream revision. The controlled JSON path comes from `--private-bat
 it through `SF2_PRIVATE_CONTROLLED_START`. Partial/missing selections, drift or conflicting profiles
 reject visibly without fallback or private path leakage. Files are read-only; no active snapshot is imported.
 
-The external [PlayerReady comparison input](../reference/inputs/battle01-player-ready.json) is a closed
+The external [PlayerReady comparison input](../../reference/inputs/battle01-player-ready.json) is a closed
 format1 object. It declares party class/level, effective equipped stats, current/max HP/MP, four packed
 item words and spell slots, status, independent seeds, nullable accounting and the controlled policy.
 All keys are required; null EXP/kills/defeats/gold means Unknown, never zero. Supported living/status0
@@ -326,7 +333,7 @@ NONE as255 and leaves unresolved order expressions explicit. Nonempty move-order
 status/neutral occupancy and nonempty enemy action categories stop before partial publication.
 Selected class prowess, adjacent ATT-only weapons, unpromoted HEAL1–3 and enemy gold now bind to common
 actions, death/rewards and one no-effect after-turn pass. The external
-[action input](../reference/inputs/battle01-actions.json) supplies controlled initial accounting; the
+[action input](../../reference/inputs/battle01-actions.json) supplies controlled initial accounting; the
 PlayerReady input retains Unknown values and rejects only operations that need them. No source bonus
 is applied twice, no live accounting is filled, and unsupported spell references stay visible. The
 connected world adds Battle01 growth and outcome programs; broader spawn/region programs and other

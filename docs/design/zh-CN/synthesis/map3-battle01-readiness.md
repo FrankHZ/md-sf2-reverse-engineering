@@ -2,7 +2,7 @@
 # Map 3 至 Battle 01 就绪台账
 
 - 状态：连续里程碑验收**未就绪**；不默认阻塞另行授权的实现。
-- 当前验收所有者：[现代连续比较](../../../../remake/docs/development-and-verification.md#current-keyboard-comparison-scope)与[能力状态](../../../../remake/docs/capability-status.md#current-engineering-frontier)。原版证据与已完成的历史失败继续由下文各自所有者维护。
+- 当前验收所有者：[现代连续比较](../../../../remake/docs/evidence/retained-comparisons.md#current-keyboard-comparison-scope)与[能力状态](../../../../remake/docs/capability-status.md#current-engineering-frontier)。原版证据与已完成的历史失败继续由下文各自所有者维护。
 - 里程碑：[ADR 0009](../../../decisions/0009-first-phase4-playable-slice.md)；画像：[ADR 0010](../../../decisions/0010-map3-battle01-product-acceptance.md)。
 - 启动政策：[ADR 0016](../../../decisions/0016-remake-start-evidence-deferral.md)；引擎方向：[ADR 0019](../../../decisions/0019-state-and-content-driven-remake-engine.md)。
 - 定义所有者：[连续场景合同](../contracts/map3-battle01-continuous-scenario.md)。
@@ -47,7 +47,7 @@
 | 6A save 政策 | 已选择；连续 H4 执行 OPEN | 无用户 persistence surface；restart 回到准入状态 |
 | 7C 内容/溯源 | OPEN | 完整 reached 原版场景清单，尤其原版音频；authored JoinCue chords 或 mute 不能 PASS。现代 HUD/theme/input glyphs/fonts 按已接受作者/许可与 9A 检查，不要求 ROM 原版字体 |
 | 8D 呈现语义 | OPEN | 必需 identity/order、real host use、completion/ack/readiness；有界场景/资源绑定不能关闭全部战斗场景 command/wait/effect/end 消费者 |
-| 已有设置与有界直接观测 | 有界实现 PASS；补充或历史证据 | [设置所有者](../../../../remake/docs/development-and-verification.md#native-9a-observation)；已有实现不授权额外必需 variants |
+| 已有设置与有界直接观测 | 有界实现 PASS；补充或历史证据 | [设置所有者](../../../../remake/docs/verification/host.md#native-9a-observation)；已有实现不授权额外必需 variants |
 | 当前键盘范围 / 10A deviations | 范围比较 PASS；完整 H4 OPEN | 仅 A 必需，C 为诊断，B/D 排除。A 自比较只关闭已声明范围行，不关闭剩余义务，也不证明任意设置等价 |
 | 必需 reached action 支持 | PASS bounded implementation；连续比较 OPEN | PR #521（`78c201c3`）已接受普通 Medical Herb selection/live inventory 及 host inventories/itemSlot 观测；仍须单独比较获胜原版动作 |
 | 实际连续比较 | Unavailable；里程碑 NOT READY | 当前范围读取保留的 A10：一个范围比较 PASS，十三个必需子项 Unavailable；PR #533 的历史失败保留在下文 |
@@ -79,12 +79,12 @@
 | H4 executor | 用已接受证据与局部范围比较解决当前必需键盘断言；保留失败/Unavailable。#610 负责离线资源归约开销，不负责玩法验收 |
 | Main-gate | 独立接受定义、证据闭合与最终完整 H4；串行整合 |
 
-已接受[胜利返回实现](../../../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return)与 R4a 比较仅证明有界 common-session/static-spine 行为，不定义原版 expected 或本 H4 run。[能力台账](../../../../remake/docs/capability-status.md)保留其他 unsupported consumers。除非选定路线需要，不扩展到 EGRESS 或无关 item/menu branch。已有 remapped/swapped input 与 paired flash/text 观测仍是有界证据；其未覆盖的设备/export 不扩大当前键盘里程碑。本文不引发新采集。
+已接受[胜利返回实现](../../../../remake/docs/application/session-and-programs.md#battle01-outcome-after-program-and-return)与 R4a 比较仅证明有界 common-session/static-spine 行为，不定义原版 expected 或本 H4 run。[能力台账](../../../../remake/docs/capability-status.md)保留其他 unsupported consumers。除非选定路线需要，不扩展到 EGRESS 或无关 item/menu branch。已有 remapped/swapped input 与 paired flash/text 观测仍是有界证据；其未覆盖的设备/export 不扩大当前键盘里程碑。本文不引发新采集。
 
 <a id="current-required-comparison-boundary"></a>
 ### 当前必需比较边界
 
-**Confirmed**（**已确认**）：已接受的当前范围矩阵读取保留的 A10，一个必需范围比较通过，十三个必需子项仍为 Unavailable（`milestonePass=false`）。它们分为两个准入义务、六个同状态规则/RNG/draw-to-effect 义务、一个可变地图资源义务和四个文字/场景/音频消费者义务。精确断言及复现命令由[验证所有者](../../../../remake/docs/development-and-verification.md#current-keyboard-comparison-scope)维护。不要将这些数量变成十三次自动采集，也不能从另一条 native 获胜路线推断闭合。已有 C capture 为补充证据；D 的保留 capture 和已取消离线比较属于历史。C 尚无完整比较报告。#610 必须先解决离线比较膨胀，保留原版证据和全部已完成失败。
+**Confirmed**（**已确认**）：已接受的当前范围矩阵读取保留的 A10，一个必需范围比较通过，十三个必需子项仍为 Unavailable（`milestonePass=false`）。它们分为两个准入义务、六个同状态规则/RNG/draw-to-effect 义务、一个可变地图资源义务和四个文字/场景/音频消费者义务。精确断言及复现命令由[验证所有者](../../../../remake/docs/evidence/retained-comparisons.md#current-keyboard-comparison-scope)维护。不要将这些数量变成十三次自动采集，也不能从另一条 native 获胜路线推断闭合。已有 C capture 为补充证据；D 的保留 capture 和已取消离线比较属于历史。C 尚无完整比较报告。#610 必须先解决离线比较膨胀，保留原版证据和全部已完成失败。
 
 <a id="conditional-runtime-questions"></a>
 ### 条件式 runtime 问题

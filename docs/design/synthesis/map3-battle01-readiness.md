@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **Accepted current private continuous milestone** at the [composed boundary below](#accepted-current-milestone).
-- Current acceptance owners: [modern continuous comparison](../../../remake/docs/development-and-verification.md#current-keyboard-comparison-scope) and [capability status](../../../remake/docs/capability-status.md#current-engineering-frontier). Original evidence and completed historical failures retain the owners below.
+- Current acceptance owners: [modern continuous comparison](../../../remake/docs/evidence/retained-comparisons.md#current-keyboard-comparison-scope) and [capability status](../../../remake/docs/capability-status.md#current-engineering-frontier). Original evidence and completed historical failures retain the owners below.
 - Milestone: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md); profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md).
 - Start policy: [ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md); engine direction: [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md).
 - Definition owner: [Continuous Scenario Contract](../contracts/map3-battle01-continuous-scenario.md).
@@ -80,7 +80,7 @@ transport/observer failures are not interrupted runs and are not erased by final
 | Save policy 6A | Accepted | Absent user persistence surfaces; restart to admitted state |
 | 7C content/provenance | Accepted composed boundary | Reached visual/audio provenance and mutable-map delivery at their declared scope. Private content remains untracked; authored JoinCue chords or mute cannot substitute for required original audio |
 | 8D semantic presentation | Accepted composed boundary | Text, motion, operation, audio and scene bindings plus independently checked parent coverage and shared dependencies; original hardware timing remains outside scope |
-| Existing settings and bounded direct observations | PASS bounded implementation; supplemental/history | [Settings owner](../../../remake/docs/development-and-verification.md#native-9a-observation); implementation does not authorize additional required variants |
+| Existing settings and bounded direct observations | PASS bounded implementation; supplemental/history | [Settings owner](../../../remake/docs/verification/host.md#native-9a-observation); implementation does not authorize additional required variants |
 | Current keyboard scope / 10A deviations | Accepted | Required A only; C diagnostic, B/D excluded. Scope self-equality proves only the scope row; explicit deviations and shared evidence are independently reviewed below |
 | Required reached action support | Accepted composed boundary | Ordinary Medical Herb/live inventory support and the selected winning action/rule/consumer comparisons retain their separate owners |
 | Actual continuous comparison | Accepted composed boundary | Existing executed continuous route and comparisons plus the local obligations below; retained A10/matrix and scoped report verdicts are unchanged |
@@ -123,7 +123,7 @@ fidelity waiver. Missing evidence/content cannot be recategorized as a deviation
 | H4 executor | Preserve the accepted composition, exact dependencies, failures and Unavailable reports; no further evidence work is required absent a concrete new defect |
 | Main-gate | Own independent acceptance and serialized integration; the current private milestone is accepted below |
 
-Accepted [outcome implementation](../../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return)
+Accepted [outcome implementation](../../../remake/docs/application/session-and-programs.md#battle01-outcome-after-program-and-return)
 and R4a comparison prove their bounded common-session/static-spine behavior, not natural original
 expected values or this H4 run. The [capability ledger](../../../remake/docs/capability-status.md)
 retains other unsupported consumers. Do not expand scope to EGRESS or unrelated item/menu branches
@@ -156,8 +156,8 @@ Reuse the accepted continuous winning/return route and its actual field control,
 [displayed text](../contracts/map3-battle01-continuous-scenario.md#complete-reached-displayed-text-material-binding),
 [motion](../contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding),
 [operation](../contracts/map3-battle01-continuous-scenario.md#complete-reached-operation-flow-binding)
-and [resource cohort](../../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
-proofs. The separate [Option A speech policy](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+and [resource cohort](../../../remake/docs/evidence/retained-comparisons.md#caller-and-reached-visual-resource-cohort)
+proofs. The separate [Option A speech policy](../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)
 uses its accepted controlled reveal-tail evidence; historical C's unsampled interval remains Unknown.
 
 ### Accepted current milestone
@@ -175,7 +175,7 @@ physical/reward/turn results and selected reward/audio scene projections have no
 all eight retained parent declarations and thirteen formerly missing children are accounted for.
 The [parent integrity review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/606#issuecomment-5965838128)
 and [keyboard-scope review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/609#issuecomment-5976283697)
-remain exact accepted dependencies. The [verification route](../../../remake/docs/development-and-verification.md#accepted-composition-review)
+remain exact accepted dependencies. The [verification route](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
 identifies retained supporting inspections and reproduction commands. This is substantive acceptance
 of the complete current requirement map; PASS counts, source shape, Issue status and self-equality
 alone do not establish it. No known in-scope defect remains identified.

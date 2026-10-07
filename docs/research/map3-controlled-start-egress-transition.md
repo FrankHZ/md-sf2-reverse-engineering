@@ -122,7 +122,7 @@ use the existing first-warp probe, owned Godot 4.7.2 project/installation, accep
 world/party/assets and unchanged PR564 display binding. Both exit 0, pass with no
 failures/unavailable, and preserve identical 97 ordered events and selected gameplay
 fields at all 85 result records. Entry, load and visible-return state are read from
-the running instance. The [verification owner](../../remake/docs/development-and-verification.md#first-warp-motion-phase-observation)
+the running instance. The [verification owner](../../remake/docs/verification/field-programs.md#first-warp-motion-phase-observation)
 owns the launch/readback commands; no original emulator was launched.
 
 The comparison reads accepted PR567 `checkpoints.jsonl:2` for inherited R1 entities
@@ -230,7 +230,7 @@ control invariant, not a claim that the original reruns the prelude every VInt.
 Move preview uses the same controlled collision policy without publishing settings
 or advancing time. A blocked move commits only facing; a pending move or rejected
 warp binding preserves Motion until the actual service. The behavior tests and
-[verification receipt](../../remake/docs/development-and-verification.md#ordinary-source-population-control-handoff)
+[verification receipt](../../remake/docs/verification/field-programs.md#ordinary-source-population-control-handoff)
 cover custom player slots, nondefault settings, retained travel, ordered NPC/RNG work,
 player-only retirement, other owners and preview admission.
 
@@ -300,7 +300,7 @@ return, flag601 is set, the player is at(4,4) with usable control and flagsAEF, 
 entity128/slot3 is at(5,4) in walking cursor0/wait30 with timer1. Its Y velocity-32 and
 zero remaining Y travel are retained. The run exits0 without session failures or
 Godot errors; tick142/seed75DA are observed receipt values, not expected quotas or
-an original-phase equivalence claim. The [verification owner](../../remake/docs/development-and-verification.md#source-idle-and-caller-verification)
+an original-phase equivalence claim. The [verification owner](../../remake/docs/verification/field-programs.md#source-idle-and-caller-verification)
 records the fresh content, three-way producer comparison and exact readback.
 
 **Unknown:** this does not identify the earlier first-warp active-NPC divergence point,
@@ -430,7 +430,7 @@ exploration file above, `mapload.asm:LoadMap`, `displayinit.asm:InitializeDispla
 `battlevints.asm:SetBaseVIntFunctions`, and `fadingcommands.asm:ExecuteFading`.
 Interruptions between those CPU phases are not enumerated by the explicit waits.
 The producing pass alone cannot establish a fixed transition tick budget or the
-post-warp seed. The [remake verification owner](../../remake/docs/development-and-verification.md#ordinary-field-action-and-warp-service)
+post-warp seed. The [remake verification owner](../../remake/docs/verification/field-programs.md#ordinary-field-action-and-warp-service)
 separates implemented finite services from that remaining CPU-phase gap.
 
 ## Finite full-black helpers and visible return
@@ -532,7 +532,7 @@ branch is an onLoad synchronous full-black FadeIn that has completed both its
 logical services and actual visible delivery. Equal-but-black returns are
 explicitly Unsupported. White, partial, tint and asynchronous map-load composition
 remain Unsupported in this transition context. No implicit white restore is
-licensed by this source evidence. The [verification owner](../../remake/docs/development-and-verification.md#ordinary-warp-visible-return)
+licensed by this source evidence. The [verification owner](../../remake/docs/verification/field-programs.md#ordinary-warp-visible-return)
 records engine and real host acceptance without claiming hardware timing or H4
 closure. Original-emulator evidence was read, not recaptured.
 

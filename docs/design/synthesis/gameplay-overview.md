@@ -286,7 +286,7 @@ unchanged original golden or establish full-game presentation.
 The accepted composition includes gameplay and reached presentation semantics: actual content use,
 commands/effects, completion, acknowledgement and input readiness. It excludes pixel/frame/waveform/
 chip and original hardware-clock equality. Private content is local only; acceptance grants no public
-distribution right. The [composition review](../../../remake/docs/development-and-verification.md#accepted-composition-review)
+distribution right. The [composition review](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
 owns exact dependencies and reproduction routes.
 
 Historical A10/default/matrix reports remain Unavailable with `milestonePass=false`, and scoped outputs
@@ -315,7 +315,7 @@ The following are **Confirmed accepted remake decisions**, not inferred original
   keyboard C is supplemental and gamepad B/D are excluded from current milestone comparison.
   Existing remapping, swapped buttons, reduced flash and adjustable text do not create extra required
   full-route variants simply because they exist. The milestone still requires manual player agency.
-- **Fast text and speech:** the [accepted omission policy](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+- **Fast text and speech:** the [accepted omission policy](../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)
   skips speech for omitted character reveals in instant/reveal-all text, preserves an already-playing
   speech tail across reveal, and retains legitimate later cue replacement. Reveal-only input emits
   no acknowledgement or gameplay opportunity. The accepted controlled reveal-tail witness proves
@@ -345,7 +345,7 @@ means choosing a remake behavior. A direction can need more than one kind of wor
 | Tactical rules and encounters | Local control, movement/target, resolution and outcome owners linked by [Tactical Battle Loop](tactical-battle-loop.md), plus accepted reached Battle 01 compositions. | Which unobserved action, AI, terrain or encounter branches matter for the next bounded behavior? Can the accepted contracts support that behavior together? | Organize existing action/encounter content. A concrete missing original rule needs research; broader action scope or rebalance needs a product decision. A general simulator is not implied. |
 | Items, magic, services and economy | Bounded spell/item/reward flows in [Progression and Economy](progression-and-economy.md), [spells](../contracts/spell-resolution.md) and [services](../contracts/service-interactions.md), including Church runtime seams. | Where and when are services admitted, what survives later reload, and what campaign context supports a resource or curve explanation? | Synthesis can join existing definitions and transaction rules. New admission/persistence or campaign claims need research; modern service UX or economy changes need a product decision. |
 | Persistence and re-entry | Original slots and in-process save/suspend boundaries in [save-system](../contracts/save-system.md); current milestone excludes user persistence. | What original state survives the complete lifecycle, and what modern save/recovery behavior should be offered? | Original survival/failure behavior needs research if required by a fidelity claim. Modern storage and recovery require a product decision before implementation; usable field return already has its separate accepted boundary. |
-| Interface, feedback and accessibility | Reached consumer semantics and accepted input/text/music choices in the [current milestone](map3-battle01-readiness.md#accepted-current-milestone) and [presentation owner](../../../remake/docs/presentation-and-assets.md). | Which wider information, accessibility, asset and input experience is wanted beyond this private keyboard slice? | Synthesis can explain accepted feedback and deviations. Wider UX/art/input coverage requires product choices; original presentation research is justified only by a concrete required semantic gap, not every hardware Unknown. |
+| Interface, feedback and accessibility | Reached consumer semantics and accepted input/text/music choices in the [current milestone](map3-battle01-readiness.md#accepted-current-milestone) and [presentation owner](../../../remake/docs/godot/presentation.md). | Which wider information, accessibility, asset and input experience is wanted beyond this private keyboard slice? | Synthesis can explain accepted feedback and deviations. Wider UX/art/input coverage requires product choices; original presentation research is justified only by a concrete required semantic gap, not every hardware Unknown. |
 
 The user accepts this overview before main-gate plans later research/documentation tickets by
 direction. Chinese synchronization remains deferred until the selected English sources are stable.

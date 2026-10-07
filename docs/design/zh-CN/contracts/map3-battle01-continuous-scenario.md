@@ -80,7 +80,7 @@
 | 9 — 8D presentation | reached program/operation 与 scene/dialogue/animation/audio resource identities、dispatch/consumer/ack boundaries、blocking/resulting state，来自 accepted source 与 bounded observation | 匹配语义 identity/因果顺序；按下节观测实际 host use 与 completion/ack。request/mailbox pair、程序 return 或 counter 单独不能使 delivery PASS。缺原版消费证据 OPEN；缺 host 观测 Unavailable。不使用截图。 |
 | 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A 与下述清单 | 每个已接受 deviation 及其 expected behavior 独立命名输出，即使 PASS。不允许隐含排除、缺输入豁免或新增未接受 deviation。 |
 
-Layer 8 区分原版场景内容与现代界面资源。按既有[呈现所有者](../../../../remake/docs/presentation-and-assets.md#fonts-theme-and-input-glyphs)与 9A 边界，现代 HUD/theme、语义 input glyphs 和 fonts 检查已接受作者/许可、准入 asset binding 及配置的 input/accessibility 行为；不额外要求 ROM 原版字体或 UI 资源。这是既有边界，不新增 deviation，也不豁免原版场景 dialogue/graphics/animation/music/SFX 溯源。
+Layer 8 区分原版场景内容与现代界面资源。按既有[呈现所有者](../../../../remake/docs/content/presentation-assets.md#fonts-theme-and-input-glyphs)与 9A 边界，现代 HUD/theme、语义 input glyphs 和 fonts 检查已接受作者/许可、准入 asset binding 及配置的 input/accessibility 行为；不额外要求 ROM 原版字体或 UI 资源。这是既有边界，不新增 deviation，也不豁免原版场景 dialogue/graphics/animation/music/SFX 溯源。
 
 <a id="exact-observed-endpoint"></a>
 ## 精确已观测端点
@@ -110,7 +110,7 @@ movement/camera settled，map-event word/typewriting/pending returns/active cons
 | [ExplorationSessionView.ReadObservationJson](../../../../remake/game/src/Exploration/ExplorationSessionView.cs) | `sessionId`、`map`、`party`、`partyLists`、`gold`、`flags`、`mainSeed`、`entities` position/facing/moving/busy、`cursor`、`wait`、`token`、`stop`、`battleMounted`、`textId`、`speaker`、`speakerFlags`、`visibleCharacters`、`totalCharacters`、`observations`、failure fields。按 content identity 将 `map-57` 映射为 map 57。无 story wait/cursor、entity settled、battle view released 支持 readiness，但单独不证明 input delivery 或全部 stats。 |
 | [BattleSessionView.ReadObservationJson](../../../../remake/game/src/Battles/BattleSessionView.cs) | `round`、`turnOrder`、`queueCursor`、`actor`、`stage`、`target`、`spell`、`itemSlot`、`inventories`（actor 与持有物品字）、`previewX/Y`、`actors`、`mainSeed`、`thinkingSeed`、`gold`、`regionFlags`、`aiMemory`、`observations`、failure fields。PR #521 已接受 `SelectItem`、live carried inventory/slot 及普通 healing-item 使用后的消耗。host 投影缺值时使用 typed snapshot，不可伪造 per-draw/scene-consumption record。 |
 | [ExplorationPresentation](../../../../remake/game/src/Exploration/ExplorationPresentation.cs) 与 exploration projection | `presentation.activeCue`、`completedCueToken/Kind`、sprite request/ready、gesture/fade/mosaic counters、`soundStarts/Fades`、`error`。token/kind 必须关联真实 `CompletePresentation`、actual resource/node、state transition。aggregate counter 不标识 cue，也不证明完整播放/asset provenance；缺 correlation 保持实现 OPEN。 |
-| [既有 outcome probe](../../../../remake/game/probes/engine_battle01_outcome_observation.gd)、[9A 所有者](../../../../remake/docs/development-and-verification.md#native-9a-observation) | 复用 actual input、single-session、wait/token、after-program、return、movement 观测方法。既有 PASS 是有界实现证据，不是本获胜原版 trace 或连续 H4 PASS。physical driver/hot-plug 和完整 export 未验证。 |
+| [既有 outcome probe](../../../../remake/game/probes/engine_battle01_outcome_observation.gd)、[9A 所有者](../../../../remake/docs/verification/host.md#native-9a-observation) | 复用 actual input、single-session、wait/token、after-program、return、movement 观测方法。既有 PASS 是有界实现证据，不是本获胜原版 trace 或连续 H4 PASS。physical driver/hot-plug 和完整 export 未验证。 |
 
 <a id="presentation-and-accessibility-assertions"></a>
 ## 呈现与无障碍断言

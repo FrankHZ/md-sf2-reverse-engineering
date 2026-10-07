@@ -18,6 +18,9 @@ observations. The private Map 3-through-Battle 01 victory and usable-return mile
 at the [current composed 8D/H4 boundary](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
 Verification selection is owned by the
 [verification owner](../remake/docs/development-and-verification.md), not inferred from old ADR recipes.
+The [current architecture route](../remake/docs/architecture.md) separates Domain rules, Application
+programs, Content trust and Godot presentation; [retained comparisons](../remake/docs/evidence/retained-comparisons.md)
+locate historical failures and exact Git evidence without making old audits current work queues.
 
 ## Operations
 

@@ -188,7 +188,7 @@ The mappings in the next section identify actual existing surfaces and missing c
 | 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A; inventory below | Emit a separate named result for every accepted deviation and its expected behavior, even when PASS. No implicit exclusions, missing-input waiver or newly invented deviation. |
 
 Layer 8 distinguishes original scene content from modern interface resources. Under the existing
-[presentation owner](../../../remake/docs/presentation-and-assets.md#fonts-theme-and-input-glyphs)
+[presentation owner](../../../remake/docs/content/presentation-assets.md#fonts-theme-and-input-glyphs)
 and 9A boundary, modern HUD/theme, semantic input glyphs and fonts are checked for their accepted
 authorship/license, admitted asset binding and configured input/accessibility behavior. They need
 not be ROM-original fonts or UI resources. This applies the existing boundary, adds no deviation,
@@ -241,7 +241,7 @@ claim of complete observer coverage. Reuse them before adding machinery:
 | [ExplorationSessionView.ReadObservationJson](../../../remake/game/src/Exploration/ExplorationSessionView.cs) | `sessionId`, `map`, `party`, `partyLists`, `gold`, `flags`, `mainSeed`, `entities` position/facing/moving/busy, `cursor`, `wait`, `token`, `stop`, `battleMounted`, `textId`, `speaker`, `speakerFlags`, `visibleCharacters`, `totalCharacters`, `observations`, failure fields. Normalize `map-57` to source map 57 using content identity. Story wait/cursor absence plus settled entities and released battle view support readiness; they do not alone prove input delivery or all stats. |
 | [BattleSessionView.ReadObservationJson](../../../remake/game/src/Battles/BattleSessionView.cs) | `round`, `turnOrder`, `queueCursor`, `actor`, `stage`, `target`, `spell`, `itemSlot`, `inventories` (actor plus carried item words), `previewX/Y`, `actors`, `mainSeed`, `thinkingSeed`, `gold`, `regionFlags`, `aiMemory`, `observations`, failure fields. Use typed snapshot state for values omitted by host projection. Accepted PR #521 supplies `SelectItem` and live carried inventory/slot observations, including consumption after ordinary healing-item use. Do not fabricate per-draw or scene-consumption records. |
 | [ExplorationPresentation](../../../remake/game/src/Exploration/ExplorationPresentation.cs) and exploration projection | `presentation.activeCue`, `completedCueToken/Kind`, sprite request/ready fields, gesture/fade/mosaic counters, `soundStarts/Fades`, `error`. Pair token/kind with the real `CompletePresentation`, actual resource/node and state transition. Aggregate counters do not identify a cue or prove full playback/asset provenance; missing correlations must remain Unavailable in the affected comparison. |
-| [Existing outcome probe](../../../remake/game/probes/engine_battle01_outcome_observation.gd), [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation) | Reuse actual input, single-session, wait/token, after-program, return and movement observation methods. Their previous PASS is bounded implementation evidence, not this winning original trace or continuous H4 PASS. Physical driver/hot-plug and complete export remain unverified. |
+| [Existing outcome probe](../../../remake/game/probes/engine_battle01_outcome_observation.gd), [9A owner](../../../remake/docs/verification/host.md#native-9a-observation) | Reuse actual input, single-session, wait/token, after-program, return and movement observation methods. Their previous PASS is bounded implementation evidence, not this winning original trace or continuous H4 PASS. Physical driver/hot-plug and complete export remain unverified. |
 
 ## Presentation and accessibility assertions
 
@@ -276,7 +276,7 @@ release, and no input release while blocking scene work remains. Missing origina
 bindings remain OPEN; missing actual observation is Unavailable, while observed omission of a
 required scene is FAIL. The current [BattleSessionView](../../../remake/game/src/Battles/BattleSessionView.cs) mounts
 `BattleSceneView` and observes reached private scene, healing and field-death consumers under the
-[presentation owner](../../../remake/docs/presentation-and-assets.md). PR #588 confirms its ordinary
+[presentation owner](../../../remake/docs/godot/presentation.md). PR #588 confirms its ordinary
 winning scene/outcome path. Complete original resource/order bindings and per-occurrence actual
 consumer/completion correspondence remain layer-9 requirements; the accepted capability and
 aggregate counters alone do not pass them. No original pixels or frame durations are required.
@@ -309,7 +309,7 @@ or wait for omitted speech. Do not require cue67 for every Ack or a tail to fini
 Report omission conformance separately from same-semantic-Wait/Ack state equivalence and actual
 audio lifecycle coverage. An accepted omission cannot turn unavailable normal-reveal speech,
 completion or resource provenance into PASS. The
-[audio owner](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+[audio owner](../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)
 records bounded observations and the remaining reveal-tail observation limit.
 
 ## Offline reference bindings
@@ -439,7 +439,7 @@ A10/default/matrix results and scoped `milestonePass=false` values remain unchan
 full-game parity and public distribution remain outside this acceptance.
 Do not use current remake limitations to remove reached actions from the expected contract.
 The [readiness ledger](../synthesis/map3-battle01-readiness.md#accepted-current-milestone) owns the
-final acceptance basis and retained Unknowns; the [review route](../../../remake/docs/development-and-verification.md#accepted-composition-review)
+final acceptance basis and retained Unknowns; the [review route](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
 locates supporting inspections. The offline reference projection does not execute H4 or launch native acquisition.
 
 ## Executable modern applicability comparison
@@ -518,7 +518,7 @@ contradictory child results, inconsistent ordered parent membership/counts and i
 summaries. Historical diagnostics remain outside required counts. FAIL takes precedence over
 Unavailable; `milestonePass` must be the exact boolean implied by the required verdict. These rules
 are owned by the independent C# report-integrity tool through the unchanged Python entry points;
-see the [controlled verification route](../../../remake/docs/development-and-verification.md#h4-report-integrity-controls).
+see the [controlled verification route](../../../remake/docs/evidence/retained-comparisons.md#h4-report-integrity-controls).
 Family construction and validation use selected reference/report metadata and preserve ordered
 errors and lazy-read failures. Existing modern/matrix callers still reject integrity failures before
 successful publication or occurrence-evidence acquisition. Tool compatibility does not supply any
@@ -529,7 +529,7 @@ tool through one caller-owned session. It preserves applicability before equalit
 operand order, provenance/path fallbacks, first-child layer, required versus historical membership,
 and assertion-before-group append effects. Python retains file/SQLite IO, outer report metadata and
 publication; final integrity rejection remains mandatory. The
-[assembly controls](../../../remake/docs/development-and-verification.md#h4-report-assembly-controls)
+[assembly controls](../../../remake/docs/evidence/retained-comparisons.md#h4-report-assembly-controls)
 cover complete reports, partial failures, source lifetime and detached caller publication. This
 tool ownership change accepts no additional original behavior or gameplay evidence.
 
@@ -545,7 +545,7 @@ forced to zero. A pre-first-command snapshot can identify the actual session's a
 deployment/actor and definition operands against its explicitly selected frozen input. Field startup
 does not instantiate a battle actor; effective items use the precedence above, with later actual
 loaded/ready actors corroborating only that same session. This actual observation requires no new
-original route. See the [observation owner](../../../remake/docs/development-and-verification.md#same-session-actual-observation).
+original route. See the [observation owner](../../../remake/docs/evidence/retained-comparisons.md#same-session-actual-observation).
 
 The closed required child families for the reached winning profile are:
 
@@ -867,7 +867,7 @@ They do not establish full rendering. Missing evidence contributes Unavailable, 
 wrong arithmetic, membership, order or identity remains FAIL beside unrelated missing
 fields. A scoped PASS leaves `milestonePass=false` and requires independent acceptance.
 
-Reproduce with the [scoped reward route](../../../remake/docs/development-and-verification.md#scoped-reward-and-outcome-comparison).
+Reproduce with the [scoped reward route](../../../remake/docs/evidence/retained-comparisons.md#scoped-reward-and-outcome-comparison).
 
 ### Selected battle-scene command and consumer binding
 
@@ -1032,7 +1032,7 @@ A's disconnected seed latch remains **FAIL**. Missing necessary observations con
 Unavailable; independently wrong values, order or identity remain FAIL alongside missing
 fields. Independent integration and remaining-obligation closure belong to main-gate.
 
-Reproduce using the [scoped field-service route](../../../remake/docs/development-and-verification.md#scoped-field-service-comparison).
+Reproduce using the [scoped field-service route](../../../remake/docs/evidence/retained-comparisons.md#scoped-field-service-comparison).
 
 ### Selected AI rule and consumer binding
 
@@ -1121,7 +1121,7 @@ Turn-score/order remains a separate obligation. Missing necessary caller/memory 
 is Unavailable; independently known wrong values, identity or ordering remain FAIL even
 beside missing fields. A scoped PASS leaves `milestonePass=false`.
 
-Reproduce using the [scoped AI route](../../../remake/docs/development-and-verification.md#scoped-ai-consumer-comparison).
+Reproduce using the [scoped AI route](../../../remake/docs/evidence/retained-comparisons.md#scoped-ai-consumer-comparison).
 
 ### Selected HEAL rule and consumer binding
 
@@ -1168,7 +1168,7 @@ the selected HEAL's ending event sequence bounds its effects; the whole Submit s
 work is not relabelled as the HEAL return seed.
 
 Missing selected results, projections or operands remain **Unavailable**; known contradictions
-produce **FAIL** even beside missing evidence. The [scoped command](../../../remake/docs/development-and-verification.md#scoped-heal-consumer-comparison)
+produce **FAIL** even beside missing evidence. The [scoped command](../../../remake/docs/evidence/retained-comparisons.md#scoped-heal-consumer-comparison)
 and modern child use the same predicate with independent context and original array indices.
 A scoped PASS always leaves `milestonePass=false` and closes no other child by itself.
 
@@ -1248,7 +1248,7 @@ portrait clocks/typewriting restoration removed by close, and branch-flag truth 
 boundary. The continuation check admits source branch paths to their first blocking consumer; it does
 not replace the operation-flow flag contract. This selected historical-A proof does not establish a
 corrected whole-route RNG/AI trajectory, all NPC scheduling, battle-scene timing or another H4 child.
-The [scoped command](../../../remake/docs/development-and-verification.md#scoped-w1-consumer-comparison)
+The [scoped command](../../../remake/docs/evidence/retained-comparisons.md#scoped-w1-consumer-comparison)
 and modern child share one predicate; a scoped PASS always retains `milestonePass=false` and requires
 independent main-gate review before child closure.
 
@@ -1295,7 +1295,7 @@ re-enabled typewriting, so its value is not relabelled as the transient restored
 
 Known contradictions produce **FAIL** even when another required edge is missing. Missing input,
 result, caller gate, copy, indicator or validation evidence remains **Unavailable**. The same predicate
-is used by the [scoped command](../../../remake/docs/development-and-verification.md#scoped-w2-consumer-comparison)
+is used by the [scoped command](../../../remake/docs/evidence/retained-comparisons.md#scoped-w2-consumer-comparison)
 and the modern comparison's W2 child when explicit context is provided; absent context cannot pass.
 Full-capture use reads only the context's named sample/input/result indices, without materializing the
 whole timeline. A scoped PASS evaluates only this W2 child and always leaves `milestonePass=false`;
@@ -1326,7 +1326,7 @@ state, seed progression, event kind/order/sequence and queue consumption retain 
 mechanisms. The current admitted activation path consumes no seed before generation. No replay,
 stored generation history, per-frame trace channel or second state authority supplies these facts.
 
-The [scoped comparison](../../../remake/docs/development-and-verification.md#scoped-turn-order-rule-comparison)
+The [scoped comparison](../../../remake/docs/evidence/retained-comparisons.md#scoped-turn-order-rule-comparison)
 derives eligibility, ordered draws, scores, signed stable ordering and the exit seed from the
 independently read live state roster and accepted original rules. It binds actual generation
 session/round/revision/sequence, candidate coverage, each draw, both full buffers and the actual
@@ -1417,7 +1417,7 @@ poststate must preserve the queue. Movement, scene waits and Cancel do not consu
 Scoped `turn-order --turn-context` and modern `--turn-context` use the same predicate. Modern
 supplied channels are evaluated at the applicable retained seam; dependency evidence cannot fill
 a missing supplied queue/control/input channel or ignore a conflicting current record. See the
-[verification recipe](../../../remake/docs/development-and-verification.md#composed-turn-rule-and-consumer-verification).
+[verification recipe](../../../remake/docs/evidence/retained-comparisons.md#composed-turn-rule-and-consumer-verification).
 
 **Inferred:** unchanged accepted mechanisms and the separately evidenced retained callers support
 this current semantic composition. It is not a newly executed corrected whole-A trajectory.
@@ -1455,14 +1455,14 @@ missing completion is invented. The [audio module route](../../operations/bounde
 separates these consumers while preserving ordered checks, playback/release anchors and the existing
 bounded report transport.
 
-The [accepted controlled reveal witness](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+The [accepted controlled reveal witness](../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)
 proves the Option A live-tail mechanism separately from A's omission of incremental speech. Its
 unchanged reveal/speech/input methods and current admitted PCM permit reuse. Historical C's natural
 reveal interval remains Unknown and is not backfilled; C is outside the current required A scope.
 Generic SoundFade was not reached in this source inventory and retains its authored service witness.
 Original JOIN completion/channel/F0/queue/interleaving and hardware timing remain Unknown. Other
 consumer children and full H4 keep their independent result. The
-[scoped audio command](../../../remake/docs/development-and-verification.md#scoped-audio-consumer-comparison)
+[scoped audio command](../../../remake/docs/evidence/retained-comparisons.md#scoped-audio-consumer-comparison)
 evaluates this child without rebuilding the full H4 report or running the route/matrix.
 
 ### Bounded plain JOIN consumer binding
@@ -1502,7 +1502,7 @@ The completed first D attempt stopped before battle at text 2297 with actual `Ad
 `presentation-unavailable` / `audio-command-ambiguous`, even though `SessionResult.failure` was null.
 The old catalog lacked exact speech 70/73 at Timer B 189 and contained multiple other candidates.
 The two independently reviewed finite PCM additions and actual D playback are owned by the
-[audio boundary](../../../remake/docs/presentation-and-assets.md#audio-boundary). The corrected
+[audio boundary](../../../remake/docs/godot/audio.md#audio-boundary). The corrected
 additive selection completes D; production selector and input/clock policy remain unchanged.
 Historical original trajectory mismatches and the failed D report are retained. Two original
 isolated exports (49.3339547 seconds / 2,400 dump frames) are separate from the unchanged retained
@@ -1732,7 +1732,7 @@ observation; there is no evidence requiring a Left-baseline change. The historic
 retains its own content identity. Corrected A cannot form a current same-content matrix with old
 B/C/D; those retained cohort/full-report results remain Unavailable. Current keyboard scope does
 not require those variants. Reproduction and evidence for this operation comparison are owned by
-the [operation-flow verification route](../../../remake/docs/development-and-verification.md#complete-operation-flow-comparison).
+the [operation-flow verification route](../../../remake/docs/evidence/retained-comparisons.md#complete-operation-flow-comparison).
 
 For the bounded JOIN, actual finite playback may finish before logical helper work. The logical
 progress must still reach the selected end step, arm before sampling and finish a complete
@@ -1766,7 +1766,7 @@ The reached resource source/pair judgments, requirement reduction, fairy/field-d
 observations, occurrence/scope/session/latest-visit identity, actual texture predicates, independent
 logical inventory/layer geometry and counted
 check/witness/family state are implemented by
-the independent [C# comparison tool](../../../remake/docs/development-and-verification.md#c-resource-comparison-tool).
+the independent [C# comparison tool](../../../remake/docs/evidence/retained-comparisons.md#c-resource-comparison-tool).
 The Python caller still selects source decoders, owns inventory storage, selects relation variants
 and prefix counts, then publishes the same ordered resource report. Per-occurrence, fairy-instance,
 dust and actor exception boundaries retain partial contributions. Counted checks preserve enabled
@@ -1811,7 +1811,7 @@ The bounded A/B correspondence passes while raw strict mismatch evidence remains
 After the accepted capture-performance work, separately allocated C/D native observations
 complete the route with their own unchanged settings/start/party and intact bounded terminals.
 Successful observations remain frozen; compare their actual streams without repeating A/B or
-backfilling any session. The [current C/D owner](../../../remake/docs/development-and-verification.md#current-cd-settings-capture)
+backfilling any session. The [current C/D owner](../../../remake/docs/evidence/retained-comparisons.md#current-cd-settings-capture)
 records the comparison and scope boundary. D's later offline comparison was cancelled by user scope;
 its completed capture and partial comparison evidence remain retained. C is supplemental. Native
 completion alone does not establish current keyboard H4 acceptance or all-settings equivalence.

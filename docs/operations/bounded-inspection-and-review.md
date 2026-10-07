@@ -226,7 +226,7 @@ per call. Repeated geometry still costs up to9×15×9 tile candidates per standa
 plus retained rows and mutable-region scans. Dedup and transport limits do not bound total work;
 measure that amplification and live Python/child memory in the allocated pilot.
 
-Use the [resource-tool workflow](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
+Use the [resource-tool workflow](../../remake/docs/evidence/retained-comparisons.md#c-resource-comparison-tool)
 for build and direct verification. Controls use constructed, bounded inputs and complete ordered
 outputs, including malformed prefixes, duplicate/skew variants, repeated calls, actual caller/process,
 detached publication and child-budget failures. They do not replace original-game evidence or reopen
@@ -270,7 +270,7 @@ are validated before use. This source-only continuation does not change the acce
 protocol or underlying reader. Preserve the root's seven serialization/early-read counterexamples
 and their injection counts beside the narrow corrected observations.
 
-The [verification route](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
+The [verification route](../../remake/docs/evidence/retained-comparisons.md#c-resource-comparison-tool)
 names full ordered caller reports, actual IO order, late SQLite/decoder failures, detached publication
 and protocol/budget controls. Preserve the initial late-layout failures: eagerly transporting an
 unconsumed layout changed its exception boundary. Selection now sends only each consumed identifier;
@@ -311,7 +311,7 @@ Only consumed operands cross the pipe; raw PCM/captures, whole worlds and visual
 caller-owned. Comparison work is O(base fields + rasters + mounted nodes + C×(A+L+P+R)), where C is
 distinct reached cues, A/L/P the three audio header counts and R started receipts. WAV/decode/hash
 work follows each selected cue's original short circuits; transport bounds do not bound total work.
-The [verification route](../../remake/docs/development-and-verification.md#c-resource-comparison-tool)
+The [verification route](../../remake/docs/evidence/retained-comparisons.md#c-resource-comparison-tool)
 names direct complete-report, IO-order, partial-write, stream/publication and fault controls. These
 constructed observations add no original runtime/decoder acceptance or resolution of existing Unknowns.
 
@@ -349,7 +349,7 @@ not total work. Standalone callers do not acquire a new automatic budget: contro
 use the declared slice limits, and an explicitly supplied existing resource budget observes the
 child. Do not infer a general large-report admission limit from this bounded migration.
 
-Use the [verification route](../../remake/docs/development-and-verification.md#h4-report-integrity-controls)
+Use the [verification route](../../remake/docs/evidence/retained-comparisons.md#h4-report-integrity-controls)
 for full ordered old/new controls, delayed reads, detached readback and actual caller rejection seams.
 These observations verify tool compatibility, not original gameplay or whole-matrix acceptance.
 
@@ -385,7 +385,7 @@ work remains O(assertions + reached payload visits), and counters grow with dist
 page bounds do not bound report size or total storage. This ownership change claims neither whole
 comparator complexity reduction nor a measured production performance improvement.
 
-The [assembly verification route](../../remake/docs/development-and-verification.md#h4-report-assembly-controls)
+The [assembly verification route](../../remake/docs/evidence/retained-comparisons.md#h4-report-assembly-controls)
 owns complete ordered results, IO/partial-write observations, multi-check lifetime, caller/detached
 publication, paging and protocol failures. Existing original-game Unknowns and historical failures
 remain unchanged.
@@ -411,7 +411,7 @@ the declared rows while the caller's stream is open; new modules neither open no
 context. Source file reads and subprocess lifetimes remain local to operand loading. Reports contain
 ordinary detached values and preserve ordering. Direct observations import their actual owner;
 private closure-extraction or monkeypatch techniques do not require compatibility machinery. The
-[physical verification entry](../../remake/docs/development-and-verification.md#scoped-physical-consumer-comparison)
+[physical verification entry](../../remake/docs/evidence/retained-comparisons.md#scoped-physical-consumer-comparison)
 owns compact controls and unchanged CLI usage; the
 [scenario contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-physical-rule-and-consumer-binding)
 owns accepted semantics and evidence limits.
@@ -438,8 +438,8 @@ Seed imports no comparison family or monolith. Channel transport stays owned by 
 consumer/source dependency reads and accepted TRX/adapter receipts retain their existing lifetimes.
 The private historical seed latch remains FAIL even when the current composed mechanism passes.
 Direct observations use the new source/check owners; changing an old alias is not forwarded as a
-mutable override. Use the [AI](../../remake/docs/development-and-verification.md#scoped-ai-consumer-comparison)
-and [seed](../../remake/docs/development-and-verification.md#scoped-admission-seed-comparison)
+mutable override. Use the [AI](../../remake/docs/evidence/retained-comparisons.md#scoped-ai-consumer-comparison)
+and [seed](../../remake/docs/evidence/retained-comparisons.md#scoped-admission-seed-comparison)
 verification routes. Other families and transport/report/CLI decomposition remain future bounded
 slices; neither this extraction nor a matching historical result closes those responsibilities.
 
@@ -461,7 +461,7 @@ The existing `reward` CLI and modern child retain `reward_consumer_binding`, now
 Operand mappings contain source tables/initial expectations only; progress is initialized by source
 admission, mutated by the ledger, then read by outcome checks. Scene obligations and final balances
 carry only their named reward/resource values. No module owns the caller's channel transport or
-imports the monolith. Use the [reward verification route](../../remake/docs/development-and-verification.md#scoped-reward-and-outcome-comparison)
+imports the monolith. Use the [reward verification route](../../remake/docs/evidence/retained-comparisons.md#scoped-reward-and-outcome-comparison)
 with the joined input including return; the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-reward-growth-and-outcome-consumer-binding)
 retains the reached-cohort EXP limit and missing/contradiction precedence.
 
@@ -482,7 +482,7 @@ remains available. Owners under `src/sf2tool/remake_h4/` preserve HEAL-specific 
 | `heal_binding.py` | Composes those checks in their original order and returns the detached report. |
 
 The [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-heal-rule-and-consumer-binding)
-and [verification route](../../remake/docs/development-and-verification.md#scoped-heal-consumer-comparison)
+and [verification route](../../remake/docs/evidence/retained-comparisons.md#scoped-heal-consumer-comparison)
 retain logical-clock limits, complete comparison controls and the caller-owned selected-stream boundary.
 
 ### H4 Battle-Scene Module Route
@@ -508,7 +508,7 @@ reader or a bounded candidate loader. All owners below live in `src/sf2tool/rema
 Loading retains the existing reader's behavior and size/error boundaries. The caller owns any
 selected streams; these modules neither close them nor reopen the full capture. No owner imports
 the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-battle-scene-command-and-consumer-binding)
-and [verification route](../../remake/docs/development-and-verification.md#scoped-battle-scene-consumer-comparison).
+and [verification route](../../remake/docs/evidence/retained-comparisons.md#scoped-battle-scene-consumer-comparison).
 
 ### H4 Field-Service Module Route
 
@@ -535,7 +535,7 @@ Case checks and Wait state are created for each invocation. The evidence loader 
 bounded text files locally; injected document readers retain their own lifetime policy. Existing
 in-memory cases remain caller-owned. Neither path extends the observed boundary or reads a raw
 archive. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding)
-and [verification route](../../remake/docs/development-and-verification.md#scoped-field-service-comparison).
+and [verification route](../../remake/docs/evidence/retained-comparisons.md#scoped-field-service-comparison).
 
 ### H4 Mutable-Map Module Route
 
@@ -562,7 +562,7 @@ and `_map_draw_cells` remain direct observation aliases. These owners in
 a fresh instance. Selected streams remain caller-owned, and reports are detached from them.
 No module imports the monolith or changes material/texture prerequisites. Actor missingness
 does not bypass independent plane geometry. See the [delivery contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-mutable-map-delivery)
-and [verification route](../../remake/docs/development-and-verification.md#composed-mutable-map-verification).
+and [verification route](../../remake/docs/evidence/retained-comparisons.md#composed-mutable-map-verification).
 
 ### H4 W1 Module Route
 
@@ -589,7 +589,7 @@ constants remain available there. Owners live in `src/sf2tool/remake_h4/`:
 Family matching remains distinct from strict field equality. Indexed full-capture containers are
 accessed only at selected positions; already selected streams remain caller-owned. Reports retain
 no stream handles. No module imports the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#selected-w1-consumer-binding)
-and [verification route](../../remake/docs/development-and-verification.md#scoped-w1-consumer-comparison).
+and [verification route](../../remake/docs/evidence/retained-comparisons.md#scoped-w1-consumer-comparison).
 
 ### H4 W2 Module Route
 
@@ -614,7 +614,7 @@ the scoped CLI and modern comparison. `_W2_COHORT` remains an alias. Owners live
 Helpers pass explicit selected operands and results. Full-capture channels use indexed selection;
 already selected streams remain caller-owned and reports retain no handles. No owner imports the
 monolith or supplies missing timing. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding)
-and [verification route](../../remake/docs/development-and-verification.md#scoped-w2-consumer-comparison).
+and [verification route](../../remake/docs/evidence/retained-comparisons.md#scoped-w2-consumer-comparison).
 
 ### H4 Turn Module Route
 
@@ -646,7 +646,7 @@ those aliases. Generation and consumer matching intentionally have different num
 context and supplied evidence remain explicit operands. Dependency Unavailable does not stop
 consumer contradictions. Selected streams remain caller-owned; reports retain no handles.
 No owner imports the monolith. See the [contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-current-turn-rule-and-queue-consumption)
-and [verification route](../../remake/docs/development-and-verification.md#composed-turn-rule-and-consumer-verification).
+and [verification route](../../remake/docs/evidence/retained-comparisons.md#composed-turn-rule-and-consumer-verification).
 
 ### H4 Audio Module Route
 
@@ -672,7 +672,7 @@ WaitToken remains service context, not voice identity. Caller-owned selected str
 closed by the comparison. Under streaming transport, publish through the existing writer before
 closing the report store; the published companion can then be reopened independently. Ordinary
 list reports remain detached. The [audio contract](../design/contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
-and [scoped verification](../../remake/docs/development-and-verification.md#scoped-audio-consumer-comparison)
+and [scoped verification](../../remake/docs/evidence/retained-comparisons.md#scoped-audio-consumer-comparison)
 retain Option A, independent tail evidence and original hardware Unknowns.
 
 ### H4 Opening Admission Module Route
@@ -695,7 +695,7 @@ retain Option A, independent tail evidence and original hardware Unknowns.
 Each owner receives its evidence and opening check ledger explicitly. No owner imports the
 monolith or shares a matcher with another family. Selected streams remain caller-owned and reports
 remain detached after closure. Preserve the [controlled opening contract](../design/contracts/map3-battle01-continuous-scenario.md#controlled-opening-control-binding)
-and [scoped verification](../../remake/docs/development-and-verification.md#selected-opening-controls):
+and [scoped verification](../../remake/docs/evidence/retained-comparisons.md#selected-opening-controls):
 original/actual sessions and clocks differ; sparse evidence never invents a first glyph or timing.
 
 ### H4 Field Motion Module Route
@@ -748,7 +748,7 @@ frame database or acquisition is part of this acceptance.
 This structural change makes no semantic repair or new full historical A-02 PASS claim. PR603's
 accepted behavioral evidence remains at merge object `ed8591713ccf6329307de78ed7fecf43623be35f`;
 its completed failures remain unchanged. The [motion contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding)
-and [verification scope](../../remake/docs/development-and-verification.md#complete-field-motion-consumer-comparison)
+and [verification scope](../../remake/docs/evidence/retained-comparisons.md#complete-field-motion-consumer-comparison)
 retain that distinction. Unsupported runtime combinations stay Unknown even when their moved
 source bodies have complete structural correspondence.
 
@@ -806,7 +806,7 @@ candidate `f569549a80411ba73dcb2eb42ee76554c366d3a9`. Its camera, caller-interva
 and shared-tail repairs remain intact; calls4107/12608 remain Unknown at their historical missing
 in-call-stack boundary. Structural correspondence does not create new natural reach or full
 historical behavior evidence. The [operation-flow contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-operation-flow-binding)
-and [verification owner](../../remake/docs/development-and-verification.md#complete-operation-flow-comparison)
+and [verification owner](../../remake/docs/evidence/retained-comparisons.md#complete-operation-flow-comparison)
 retain those limits.
 
 ### H4 Text-material Module Route
@@ -857,7 +857,7 @@ explicitly constructed world/scene/receipt/event/state channels. They are not hi
 natural-reach evidence. The registered private font passes the existing fixture identity before
 control derivation; no raw historical actual/world, eager recipe or full A comparison is read/run.
 The [text material contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-displayed-text-material-binding)
-and [verification owner](../../remake/docs/development-and-verification.md#continuous-text-material-comparison)
+and [verification owner](../../remake/docs/evidence/retained-comparisons.md#continuous-text-material-comparison)
 retain PR601's accepted evidence, omissions/mixed counterexamples, completed failures and Unknowns.
 
 ### H4 JOIN and Walking Module Route
@@ -917,8 +917,8 @@ constructed or derived from selected sealed rows; they are not a full accepted r
 historical capture comparison. The CLI seam uses its real argument parser and modern caller with
 controlled reference/outcome/settings dependencies, stopping after the two owned bindings.
 No whole raw actual/world, large reference/report, eager historical script or full run is read/run.
-The [JOIN verification route](../../remake/docs/development-and-verification.md#offline-plain-join-consumer-comparison)
-and [walking route](../../remake/docs/development-and-verification.md#offline-walking-admission-comparison)
+The [JOIN verification route](../../remake/docs/evidence/retained-comparisons.md#offline-plain-join-consumer-comparison)
+and [walking route](../../remake/docs/evidence/retained-comparisons.md#offline-walking-admission-comparison)
 preserve the accepted historical evidence, partial-finalization and independent-contribution
 corrections, completed failures and Unknowns.
 

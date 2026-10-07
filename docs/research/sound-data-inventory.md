@@ -267,7 +267,7 @@ Capture provenance is retained in private asset commit `7219d9c6ac2e72d86b3d62b2
 `join-pilot-02`), with the original `result-audit.json` and channel CSV retained under #517.
 It used BizHawk 2.11.1 / Genplus-gx `bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`, pinned source
 above and USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
-The [private audio owner](../../remake/docs/presentation-and-assets.md) retains separate PCM
+The [private audio owner](../../remake/docs/godot/presentation.md) retains separate PCM
 provenance/delivery acceptance. Neither its duration nor the captured 582/583 frame offsets defines
 an entity budget. Wall-clock timing and the natural channel state at SoundWait entry remain **Unknown**.
 

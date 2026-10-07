@@ -52,8 +52,8 @@ The original first-channel ordinal505 is reused as an explicitly chosen modern s
 It is not505 VInts, entity updates or a PCM-derived duration. Original timer reload/poll phase,
 queue transport and interrupt alignment remain Unknown. Missing finite profiles retain explicit
 `field-music-progress-unbound` Unsupported. Looping music and existing unbound playback retain
-their separate scope. [Execution](../../../remake/docs/exploration-programs.md#modern-finite-music)
-and [verification](../../../remake/docs/development-and-verification.md#modern-finite-music-observation)
+their separate scope. [Execution](../../../remake/docs/application/session-and-programs.md#modern-finite-music)
+and [verification](../../../remake/docs/verification/field-programs.md#modern-finite-music-observation)
 own the implementation and actual host evidence.
 
 ## Original Static Purpose

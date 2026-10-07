@@ -133,7 +133,7 @@ or a budget overrun become necessary; a new slice does not reset the cumulative 
 
 Baseline acceptance directly compares proposed prose with the
 [accepted milestone](synthesis/map3-battle01-readiness.md#accepted-current-milestone) and
-[verification composition owner](../../remake/docs/development-and-verification.md#accepted-composition-review).
+[verification composition owner](../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review).
 Read the complete diff, check changed links/anchors, run `git diff --check` and `git diff --name-only`,
 and confirm exact ownership and the private-content boundary. This documentation-only outcome runs
 no emulator, Python/.NET/Godot/H3 suites, comparison rebuilds, translation checker or new tests.
@@ -175,7 +175,7 @@ owns the **accepted current private Map 3 → Battle 01 victory → usable 5B re
 Acceptance composes existing executed continuous-route/return evidence and independently reviewed
 source/consumer proofs under default keyboard A, the modern deterministic clock and the 7C/8D/10A
 boundary. C is supplemental; gamepad B/D are excluded. The
-[verification composition owner](../../remake/docs/development-and-verification.md#accepted-composition-review)
+[verification composition owner](../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
 retains exact dependencies and reproduction routes. This accepts gameplay and presentation semantics,
 including actual consumers, completion and input readiness, without asserting hardware equality,
 full-game parity or public-distribution rights.

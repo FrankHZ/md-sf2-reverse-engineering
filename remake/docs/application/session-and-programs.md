@@ -1,4 +1,36 @@
-# Common exploration and resumable programs
+# Session and Resumable Programs
+
+Application owns command admission, continuation and snapshot publication across exploration,
+battle, scene work and return. [Domain rules](../domain/gameplay-rules.md) supply selected algorithms;
+[Content](../content/profiles-and-trust.md) supplies admitted immutable definitions and explicit starts.
+
+| Work | Read |
+| --- | --- |
+| State publication and failures | [Session authority](#session-authority) |
+| Typed content and conditional authoring | [Definitions](#definitions-and-execution), [authoring](#authoring-conditional-programs), [source policy](#source-story-policy) |
+| Dialogue and field input | [Portrait/plain wait](#portrait-lifecycle-and-plain-current-input-wait), [W1](#w1-in-a-suppressed-entity-event), [bound text](#bound-field-text-work), [yes/no](#source-bound-yesno-lifecycle) |
+| Field services | [Camera](#source-bound-camera), [nod](#source-bound-nod), [music](#modern-finite-music), [raw text](#raw-field-display) |
+| Connected source programs | [Opening](#original-map-3-opening), [castle/tower](#castle-palace-astral-and-tower), [battle entry](#battle01-admission-and-first-input), [outcome/return](#battle01-outcome-after-program-and-return) |
+| Original limits | [Remaining source boundaries](#remaining-source-boundaries) |
+
+## Session Authority
+
+`Runtime.GameSession.Start` accepts either an `IScenarioSource` or admitted definition/start pair.
+It reads external content once and binds `SessionRules` before creating live actors. One `Submit`
+checks the command envelope and dispatches the explicit `ActiveBattle` / `ActiveExploration` mode.
+`GameSession` alone assigns Current. `ExplorationDispatcher`, `ProgramRunner`, `EntityActionRunner`,
+`MapTransfer`, `BattleAdvancer` and scene/movement/outcome continuations compute the next result.
+
+`SessionSnapshot` carries the active state and shared `StoryState`; it does not store a reference
+trajectory or scenario-specific receipt chain. Mode-specific access is explicit. Keep immutable
+observations and preserve unrelated state when transitioning. A failed preparation retains the
+previous state; later failure retains already published effects, current cursor/callers and waits.
+`SessionFailure` distinguishes IllegalCommand, UnsupportedCapability, ContentError, InvariantFailure
+and AdapterError. Selected-policy failures include identity/operation and source-story PC context.
+
+The [field/program verification owner](../verification/field-programs.md) holds preparation and
+actual-input/state recipes. Native projection belongs to [Godot](../godot/presentation.md), not to
+these execution rules.
 
 ## Current capability
 
@@ -9,7 +41,7 @@ runs entity actions, a call/return and a timer, transfers maps, executes map ini
 hooks, initializes the encounter and reaches first player control. Declining returns field input.
 Neither package identity nor an expected route/receipt admits a command.
 
-Exploration and return consume the same [logical input/settings owner](./development-and-verification.md#logical-input-and-accessibility-adr-0010-9a) as battle. Confirm talks/acknowledges/accepts and Cancel declines. Text reveal stays in the adapter; W1 delivery reports its completion separately from player acknowledgement, including automatic completion of a trailing span. Reduced-flash suppresses the reached white overlay while completing its real token/kind through the existing presentation service, an intentional 9A deviation.
+Exploration and return consume the same [logical input/settings owner](../verification/host.md#logical-input-and-accessibility-adr-0010-9a) as battle. Confirm talks/acknowledges/accepts and Cancel declines. Text reveal stays in the adapter; W1 delivery reports its completion separately from player acknowledgement, including automatic completion of a trailing span. Reduced-flash suppresses the reached white overlay while completing its real token/kind through the existing presentation service, an intentional 9A deviation.
 
 `GameSession` remains the sole snapshot publisher. `ExplorationDispatcher`, `ProgramRunner`,
 `EntityActionRunner`, `SceneEntities`, `MapTransfer`, `BattleEntry` and `BattleOutcome` compute immutable results. The active payload is either
@@ -66,10 +98,10 @@ link targets with `{program,instruction}`, and select the entry through an ordin
 whole-program start. The reader admits all targets, including untaken branches, before creating a
 session. No C# implementation name or package-name branch selects the executed instructions.
 Content is read once: restart after a JSON edit; compiled rule edits also require the
-[rule author workflow](./architecture.md#rule-author-workflow-and-diagnostics).
+[rule author workflow](../domain/gameplay-rules.md#rule-author-workflow-and-diagnostics).
 
-[Story A](../content/authored/story-rule-demo-a.json) and
-[story B](../content/authored/story-rule-demo-b.json) use the same quay, player, ferryman interaction,
+[Story A](../../content/authored/story-rule-demo-a.json) and
+[story B](../../content/authored/story-rule-demo-b.json) use the same quay, player, ferryman interaction,
 marker and ordinary battle definition. A's `invitation` branches when live flag40 is set to
 `repeat`; its initial fallthrough calls `first-a` and sets40. B reverses the condition: when40
 is clear it branches to `first-visit-b`, calls `first-b` and sets40; its later fallthrough calls
@@ -90,7 +122,7 @@ For the compiled demonstration choose `RuleCompositions.AuthoredStory()` before 
 files run unchanged through the same runner and composition, with real Confirm inputs followed by
 West movement. Source-only compatibility is unsupported under that composition; ordinary programs
 do not invoke it. The host's committed default remains SF2, which also executes ordinary authored
-programs. [Verification](./development-and-verification.md#replaceable-story-observation) gives the
+programs. [Verification](../verification/field-programs.md#replaceable-story-observation) gives the
 short observer and exact recipe. This is project-authored replacement evidence, not original-game
 reach, frame timing, private presentation completeness or a no-compile algorithm platform.
 
@@ -142,10 +174,10 @@ no busy player and no pending entity sprite readiness. Calls may remain on the s
 executes the existing entity service once when enabled, retaining physical-slot order and shared
 RNG rules; a disabled service produces no entity draw. `Acknowledge` returns immediately with no
 accepting-poll tick, then executes subsequent explicit operations. Generic `AdvanceSimulation`
-is rejected at this admitted consumer. The [host contract and reproduction](./development-and-verification.md#plain-text-input-gameplay-wait)
+is rejected at this admitted consumer. The [host contract and reproduction](../verification/field-programs.md#plain-text-input-gameplay-wait)
 cover reveal, delivery and input rearm.
 
-The [natural JOIN observation](../../docs/research/map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)
+The [natural JOIN observation](../../../docs/research/map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)
 confirms its named helper entry/return. **Unknown:** joint logical audio/service progress, the complete
 enabled VInt table and portrait counter chronology. The current program's entity setting is
 the admitted engine service state, not a sampled original service table. W2, active/unknown portrait
@@ -189,7 +221,7 @@ Generic elapsed `AdvanceSimulation` is rejected for all W1 delivery/input states
 reveal text without polling; accepting W1 does not play generic SFX67. Plain JOIN and choice
 semantics remain with their separate owners.
 
-**Confirmed (source):** the [reached W1 contract](../../docs/design/contracts/dialogue-system.md#reached-w1-consumer-binding)
+**Confirmed (source):** the [reached W1 contract](../../../docs/design/contracts/dialogue-system.md#reached-w1-consumer-binding)
 owns `textfunctions_1.asm:symbol_wait1/loc_659C/loc_65B4` and the distinct W2 tail at pinned
 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. The bounded ordinary caller is
 `mapsetupsfunctions_1.asm:RunMapSetupEntityEvent` → `map03/mapsetups/s2_entityevents.asm:Map3_EntityEvent2`,
@@ -202,7 +234,7 @@ the source setter; this reached Map3 path contains no setter. The later retained
 
 **Confirmed (remake):** ordinary physical facing/Interact after the existing three-step opening
 setup reaches this caller and the required gates, then 0/1/3 optional Waits plus actual Ack give
-1/2/4 polls. [Verification and limits](./development-and-verification.md#w1-entity-event-input)
+1/2/4 polls. [Verification and limits](../verification/field-programs.md#w1-entity-event-input)
 record the actual settings comparison and preserved failures. **Unknown:** original opening
 W2/typewrite/entity timing, general portrait/service tables and whole-route 9A/H4 remain open.
 
@@ -233,7 +265,7 @@ Source cutscene motion waits require script idle, so a following caller may run 
 travel remains; ordinary field movement and authored default waits retain their physical/busy
 completion rule. No active infinite idle loop or second state authority is involved.
 
-The [idle/caller source owner](../../docs/research/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
+The [idle/caller source owner](../../../docs/research/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
 records the Zone6 leading-wait consumer and the boundaries. Ordinary player control still
 supersedes its old action/follower continuation and establishes controlled motion settings after
 movement at the next existing service. Follower installation clears Actions; source phase
@@ -321,9 +353,9 @@ HandleDialogueTypewriting, HandleBlinkingDialogueCursor, sub_6AD2/sub_6AE0, Clos
 scrolling, sprites, windows, map animations. Only the admitted gameplay effects are modeled;
 no additional interrupt RNG or CPU-time padding is invented.
 
-The [binding evidence](../../docs/research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding)
+The [binding evidence](../../../docs/research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding)
 separates source facts, later saved bytes and inferred opening ancestry. The
-[verification owner](./development-and-verification.md#bound-opening-field-text-observation)
+[verification owner](../verification/field-programs.md#bound-opening-field-text-observation)
 records actual settings comparisons and unresolved boundaries. Pending #517 speech policy remains;
 this consumer retains existing actual speech projection and grants no policy waiver.
 
@@ -366,8 +398,8 @@ during its close; a Trap6 caller retains activation through its close.
 and `code/common/scripting/map/mapscriptengine_2.asm:loc_47234` support this bounded service order.
 The wrapper binds `mapsetupsfunctions_1.asm:loc_4765E/loc_476A8/loc_476C4`.
 Trap9 appends the portrait after the installed base services; no global interrupt scheduler is
-introduced. The [research binding](../../docs/research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
-and [native observation](development-and-verification.md#bound-portrait-entity-event-observation)
+introduced. The [research binding](../../../docs/research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
+and [native observation](../verification/field-programs.md#bound-portrait-entity-event-observation)
 retain provenance and the actual caller-return boundary. The source-zone section below admits the first introduction; later camera/JOIN/battle consumers
 and original hardware/DMA timing remain outside this admission.
 
@@ -390,8 +422,8 @@ with the caller until arrival; script-idle/Busy are not the return condition.
 
 The current actual admission is the first Astral introduction at(58,13), including affected
 opening Zone6 and Sarah from the original bound start. No route, text, speaker, flag value or
-seed selects this runtime mechanism. The [source binding](../../docs/research/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
-and [actual observation](development-and-verification.md#source-zone-caller-observation)
+seed selects this runtime mechanism. The [source binding](../../../docs/research/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
+and [actual observation](../verification/field-programs.md#source-zone-caller-observation)
 record its limits. Later text500/501/F602, the second zone branch, camera, choice, JOIN and battle
 consumers remain separate. This extends no original runtime or distribution claim.
 
@@ -429,7 +461,7 @@ physical record. Missing source-table keys represent FF tombstones and survive s
 same-map preservation; only rebuilding population initializes fresh zero entries. Out-of-table
 selectors and references outside the 49 normal records stop as Unsupported. Authored maps without
 source population keep strict named-ID resolution. The accepted
-[lookup contract](../../docs/design/contracts/map-exploration.md) owns the source boundary.
+[lookup contract](../../../docs/design/contracts/map-exploration.md) owns the source boundary.
 
 Ordered door copies run before traversal; flag copies run at rebuild; roof activation/restoration
 uses the shared layout reducers and signed area overlays. Source map255 same-map reload preserves
@@ -446,7 +478,7 @@ source bodies `cs_51652`, `cs_53104`, `cs_53996`, `cs_52F0C`, `cs_52F40` and `cs
 their native event/init callers and entity action streams. All six complete in the connected group.
 
 **Confirmed:** the common-session group comparison starts at R1 and uses the accepted
-[castle H2 graph](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) only as test navigation
+[castle H2 graph](../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) only as test navigation
 and expected facts. The engine reads actual source programs. Gate guards move out and back before
 the caller sets F604. Palace execution returns Bowie to (23,39), minister131 to (20,39), removes
 Astral130's aliases and then lets the caller set F605. A repeat visit runs the source repeat init
@@ -494,7 +526,7 @@ portrait services, with no poll/copy or fake acknowledgement. Held logical-input
 unadmitted; reveal/Ack cannot supply it. Other unbound controls remain Unsupported. Explicit
 sourceFF/null/no-event-speaker narration is admitted without replacing a retained portrait or
 inferring its absence; actual speech uses the null speaker and remains silent. Explicit closes
-still own removal. [Dialogue provenance/limits](../../docs/design/contracts/dialogue-system.md#bound-neutral-text-delay-and-narration).
+still own removal. [Dialogue provenance/limits](../../../docs/design/contracts/dialogue-system.md#bound-neutral-text-delay-and-narration).
 
 The map-init camera profile includes source layer255 with zero foreground/background offsets,
 unity parallax and zero autoscroll. It follows A rather than B, retaining identical initialized
@@ -505,7 +537,7 @@ Initialization quantizes before scaling/offset; destination and speed transforms
 axes. Ordinary actors subtract the area main plane; entity Layer still controls window priority.
 Foreground presence includes parallax differences. Other view profiles, outcome windows and camera-entity retain their explicit limits.
 Before-battle scene/windows use the separate bounded lifecycle below.
-[Source contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle).
+[Source contract](../../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle).
 
 Actual engine cases cover nested camera and open/closed text returns, portrait registration/close,
 readiness and unsupported contexts, first/repeat flag branches and a distinct authored foreground
@@ -514,7 +546,7 @@ opening/JOIN, guard out/back/F604, Map19 init, full first palace/F605 and Map19 
 Source255 A/B origins and actual tile/actor projections agree through init/scroll; sourceFF narration
 requests no speech. Matching semantic readbacks preserve the accepted JOIN prefix and gameplay
 across delivery. The bounded first palace route is described in
-[verification](./development-and-verification.md#bound-map-initialization-observation). Original
+[verification](../verification/field-programs.md#bound-map-initialization-observation). Original
 natural timing and full modern Battle01/H4 acceptance remain **Unknown**.
 **Confirmed, bounded modern host:** the retained opening/JOIN and first-palace checkpoint continues
 through Astral refusal/re-prompt/acceptance, tower guard sprite completion before F401/F256,
@@ -552,8 +584,8 @@ service, scrolls each axis independently and evaluates window hiding before scro
 entity→view/window→portrait service carries the live entity flag, shared RNG and poll-copy byte.
 Dialogue and nested returns retain the held camera. Actual ordinary field-control return restores
 the player's physical slot without clearing pending scrolling, positions or counter. The
-[source contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
-and [static provenance](../../docs/research/map3-messenger-acceptance.md#source-bound-camera-lifecycle)
+[source contract](../../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
+and [static provenance](../../../docs/research/map3-messenger-acceptance.md#source-bound-camera-lifecycle)
 own these rules and their source limits.
 
 All bound draws use B logical positions/16 for base and layer0 actors, and A positions/16 for
@@ -573,7 +605,7 @@ culling; observation compares only matching source-state draws. Focus/visibility
 the common clock with no accumulated debt. Unbound centering, clamping, smoothing and completion
 remain unchanged.
 
-[Native acceptance](development-and-verification.md#source-bound-camera-observation) covers the
+[Native acceptance](../verification/field-programs.md#source-bound-camera-observation) covers the
 whole accepted prefix and both Messenger destinations, stopping at text531 W1 before Wait/Ack.
 The camera stays held; zone/script return and F603 remain pending. Physical tracking uses the
 bound target rule below. Explicit speed, cursor/pulsating overrides, profiles outside the admitted
@@ -586,7 +618,7 @@ With explicit field text/view settings, a nod validates the admitted field conte
 selects the transformed sprite, elapsed30 restores normal selection, and elapsed40 waits for actual
 completion before animation0 and caller continuation. Services retain the current entity flag and
 entity→view/window→portrait order, shared RNG and prior poll copy. Adjacent nods retain their own
-40 opportunities. This implements the [bounded source contract](../../docs/design/contracts/map-exploration.md#bound-field-nod-lifecycle),
+40 opportunities. This implements the [bounded source contract](../../../docs/design/contracts/map-exploration.md#bound-field-nod-lifecycle),
 not a natural hardware-frame count.
 
 The adapter mounts the existing normal/transformed sprite resources and draws the semantic phase,
@@ -594,7 +626,7 @@ without a wall-clock gesture timer or per-frame acknowledgement. The existing to
 joins logical completion; an early receipt cannot skip services and a late one cannot add them.
 Focus loss or hidden view suspends automatic work and clears debt. `nodProjection` records the
 actual actor, slot, sprite, facing, phase, texture selection, dimensions and viewport visibility.
-The [native observation](development-and-verification.md#source-bound-nod-observation) reaches both
+The [native observation](../verification/field-programs.md#source-bound-nod-observation) reaches both
 Messenger nods from the unchanged start and stops at text521 W1 before Ack with the zone still active.
 
 Unbound nods retain their 40/60-second presentation timeline, altered band from10/60 to30/60,
@@ -655,7 +687,7 @@ Astral135 text2292/W2 confirmation to2293/W1 input. These operands identify obse
 No tick/seed, route endpoint or instruction index controls production legality. Bound white palette
 services follow the rule below; the bound before-body/first-input acceptance is described below.
 The older unbound full Battle01 admission is separate evidence; modern carried-party/RNG admission
-and original natural cadence remain open. [Source/semantic contract](../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
+and original natural cadence remain open. [Source/semantic contract](../../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
 
 ### Bound physical camera tracking
 
@@ -678,8 +710,8 @@ Ordinary W1 Ack, portrait unregister/close, text close and source Sleep10 preced
 installation/motion. Later portrait/text opening and input retain the real before continuation and
 route. Idle input presentation performs no camera service. Bound white palette uses the finite
 service below; complete before-body,
-later effects and battle admission are separate. [Observation](development-and-verification.md#bound-physical-camera-tracking-observation)
-and [contract](../../docs/design/contracts/map-exploration.md#bound-physical-camera-target) own this boundary.
+later effects and battle admission are separate. [Observation](../verification/field-programs.md#bound-physical-camera-tracking-observation)
+and [contract](../../../docs/design/contracts/map-exploration.md#bound-physical-camera-target) own this boundary.
 Independent ordinary native readback reaches tracked motion and three later W1s before the white
 Unsupported. Its raw observer FAIL from two expected-stop assertions is preserved separately from
 semantic readback PASS; the corrected observer has not been executed.
@@ -689,7 +721,7 @@ semantic readback PASS; the corrected observer has not been executed.
 **Confirmed, bounded:** the same R1 session continues from Map21 `(5,15)` through the accepted
 46-input Map21/40 extension, the marked Map40 exit, complete `bbcs_01`, source new-battle
 initialization, `LoadBattle` presentation, empty start hook and the first actual battle input.
-The [admission evidence owner](../../docs/research/map3-battle01-admission.md) and its H2/H3 fixtures
+The [admission evidence owner](../../../docs/research/map3-battle01-admission.md) and its H2/H3 fixtures
 own the original facts. The pinned `mainloop.asm`, `battleloop_1.asm`, `loadBattle.asm`,
 `cs_beforebattle.asm`, map script engine and map entity allocator supply executable content.
 The ordinary program never reads those comparison fixtures.
@@ -773,15 +805,15 @@ must be set and F64/F640 clear, selecting (32,13)/UP. This is a controlled egres
 for the original campaign's natural producer.
 
 Normal Map3 reload retains the real `cs_513BA` hide and removed entity142 alias. At exactly
-`byte_513A8:1`, the [accepted source contract](../../docs/design/contracts/map-exploration.md) permits
+`byte_513A8:1`, the [accepted source contract](../../../docs/design/contracts/map-exploration.md) permits
 the four writes into inactive window scratch to have no further map/entity/camera effect: windows
 are empty, old presentation work has drained, and a new window is rebuilt before publication.
 The common renderer has no emulated DMA queue. The selected
-[`Sf2StoryPolicy`](../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryPolicy.cs) requires exactly
+[`Sf2StoryPolicy`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryPolicy.cs) requires exactly
 `byte-513a8:1`, Map3, MapLoaded/OutcomeMapLoaded, a closed window and F603. A still-live142 alias
 receives the real `Hide` move-out, retaining aliases. A removed alias requires F1 and a real hidden
 entity142 tombstone at X/Y0x7000. Missing records, other call sites and active windows are rejected.
-The [typed source family and finite candidate](./architecture.md#implemented-conditional-story-and-source-compatibility)
+The [typed source family and finite candidate](#source-story-policy)
 leave PC/stack/wait/revision publication with the generic runner. Explicitly authored compositions
 reject this operation at its PC; the private produced opcode remains unchanged.
 
@@ -814,187 +846,6 @@ DTOs, legacy geometry/visual bindings, the reference host and the `map3-post-ope
 input together with `SF2_REFERENCE_POST_OPENING_START`. Whole-flow comparisons use common commands and
 actual native input. The separate private probe retains the Map21 guard and missing-presentation
 comparisons. A1–A8 closure and 8C/H4 are not reported.
-
-## Reproduction
-
-Use the current worktree's retained environment, SDK/Godot and registered private input selectors.
-Choose fresh ignored output paths. The canonical import (`uv run sf2 h2 map-import`) reads the H1
-listing `build/sf2build-h1.lst`, so run the H1 rebuild with `-KeepBuildArtifacts` and install its
-listing, symbols and binary under the conventional `sf2build-h1.*` names first; the frozen H1/H2
-PowerShell rails require PowerShell 7. The ordinary host needs a world prepared with `--rom-path` and
-`--presentation-root`: without presentation data its first sprite mount stops with the adapter error
-`entity-sprite-binding`. Preparation and actual opening launch are:
-
-```powershell
-uv run --locked python -m sf2tool.remake_exploration_content `
-  --canonical $env:SF2_PRIVATE_CANONICAL_MAP_IMPORT `
-  --upstream $selectedUpstreamRoot `
-  --selection remake/reference/inputs/map3-programs.json `
-  --rom-path $registeredRomPath --presentation-root $selectedPresentationRoot `
-  --output $env:SF2_PRIVATE_EXPLORATION_CONTENT
-
-$env:SF2_PRIVATE_CONTROLLED_START = (Resolve-Path -LiteralPath 'remake/reference/inputs/map3-opening-party.json').Path
-& $godotBinary --path remake/game -- --private-exploration-start (Resolve-Path -LiteralPath 'remake/reference/inputs/map3-opening-start.json').Path
-```
-
-The existing private encounter/static/enemy/gold selections are also required. Program data never
-reads reference fixtures. For the native comparison, build the ordinary Debug project first and run:
-
-```powershell
-$env:SF2_PRIVATE_EXPLORATION_CASE = 'map3-opening' # or map3-decline
-$env:SF2_PRIVATE_EXPLORATION_PLAN = (Resolve-Path -LiteralPath 'tests/fixtures/h3/map3-battle01-natural-route-v1.json').Path
-$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'opening.json'
-& $godotBinary --headless --path remake/game --fixed-fps 60 `
-  --script res://probes/engine_map3_opening_observation.gd -- `
-  --private-exploration-start (Resolve-Path -LiteralPath 'remake/reference/inputs/map3-opening-start.json').Path
-```
-
-Require exit0, `passed: true`, both real sound counters, actual gesture draws, stable input and no
-script/process errors. The observer waits briefly for the independent audio thread's stop/free queue
-before headless exit; that wait does not advance game state. No screenshots or state setters are used.
-
-```powershell
-uv run sf2 verify engine
-uv run sf2 verify adapter
-$env:SF2_REQUIRE_PRIVATE_TESTS = '1'
-& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
-  --configuration Release --no-restore --filter 'FullyQualifiedName~PrivateExplorationTests'
-```
-
-The owning engine project copies R1/R2/R2a comparison fixtures and explicit starts. Private input
-checks run only with their required input configuration; public runs report their skips. Use the
-committed `verify plan --scope engine` selection and proportionate direct checks. Completed failing
-runs remain recorded; rerun their corrected nodes rather than replaying the aggregate. The
-remaining narrow observer is `engine_private_exploration_observation.gd`, with `map21-guard`
-or the authored missing-presentation case.
-
-For the connected castle group, use the same R1 start and R2 input-plan environment with
-`--script res://probes/engine_castle_tower_observation.gd`. The observer continues the same live
-instance, reads the H2 castle graph for navigation, revisits the palace, declines/re-prompts Astral,
-and writes an adjacent `.castle.json` with checkpoints, actual palette brightness, priority and the
-guard's pending/completed sprite service state. `map3-decline` first refuses and later joins Sarah
-through actual input. Run the ordinary host at fixed60 and30 FPS, require `passed:true` and exit0,
-and retain any completed failures in the local report. The final input sequence repeats the guard
-interaction and walks the released passage, then checks stable PlayerInput.
-No observer supplies an expected endpoint, completion flag, entity alias or session replacement.
-
-For complete Battle01 admission, keep those same retained environment and R1 input selections and
-replace the script with `res://probes/engine_battle01_admission_observation.gd`. Run fixed60 and30
-FPS. The observer explicitly sets the root window to 960×640 before starting the route; headless
-`--resolution` alone can leave the actual viewport at 64×64. Success requires the observed 960×640
-viewport at battle load, first control and after cancel, a positive map viewport inside it with zoom
-at least 1, and a positive preview inside the map when control is available. The adjacent
-`.admission.json` retains the expected size and actual loaded/ready geometry; the main output retains
-the final geometry. A completed 64×64 run is insufficient for this projection acceptance.
-The observer reuses the opening/castle route and reads the existing PlayerReady static input
-plan only for navigation. Its adjacent `.admission.json` records actual effects, load-before-input,
-first battle projection and real confirmation/cancel. Require exit0, `passed: true`, nonzero mosaic
-and shiver draws, white/load observations and no Godot script/process errors. Direct comparisons use:
-
-```powershell
-& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
-  --no-restore --filter 'FullyQualifiedName~BattleEntryProgramTests'
-```
-
-`BattleEntryProgramTests` covers scene replacement and sprite waits, camera/shiver ownership,
-first/seen/completed selection, input gating and initialization failure. With the registered private
-bindings, `PrivateBattleEntryProgramTests` covers continuous R1 admission, the independently seeded
-H3 comparison, live membership/formation/resources and the F88 boundary. These are engine behavior
-checks; they do not test the observers or replay the legacy aggregate.
-
-For the complete outcome group, use `res://probes/engine_battle01_outcome_observation.gd` with the
-same retained project, R1 start and opening navigation selection. Set `SF2_BATTLE_OUTCOME_CASE` to
-`victory` or `defeat`. The external observer chooses normal movement/action/target keys from the
-live battle, then checks source programs, flags, actual presentation, 960×640 geometry and return
-movement. It does not restore an expected seed, HP, roster, endpoint or program cursor. Fixed60/30
-FPS may reach different battle seeds because real presentation allows background entity ticks.
-The adjacent `.outcome.json` and normal output retain actual observations. Require `passed:true`,
-exit0 and no Godot errors. Direct engine checks are `BattleOutcomeProgramTests`,
-`PrivateBattleOutcomeProgramTests` and `BattleGrowthTests`; the private continuous victory also
-crosses a real level threshold. It reads the accepted R4a static spine
-(`sf2-map3-battle01-victory-return-static-v1`) for the unlocked/completed flags, the Battle01 join
-row and the after-program, clear, set, SwitchMap and exploration order; that static spine proves
-source order, not natural original execution. Preserve completed failures and rerun their affected nodes only.
-
-## Ordinary Medical Herb battle action
-
-The common battle session accepts `SelectItem(slot)`, `SelectTarget(actor)` and `Confirm`
-from ordinary action choice. `Cancel` returns to provisional movement. Item reselection
-clears the previous target. Invalid slots, empty inventory, unsupported item effects,
-dead/opposing/out-of-range targets and failed reward/growth admission publish no partial
-movement, HP, inventory or RNG change. Reusing an old command envelope cannot consume twice.
-The shared target validator measures from the provisional destination, including self-targets.
-
-`BattleActorState.SourceLoadout` is the live ordered four-slot loadout. Definition loadouts
-supply initial content only; explicit `BattleActorStartInput.SourceLoadout` carries later
-state. Growth retains that live inventory while changing learned spells, and `BattleOutcome`
-passes it into the exploration party on both victory and defeat. Resource resets heal HP/MP
-without replenishing items. `item-consumed` records the original item word in `Before` and
-the chosen zero-based slot in `After`; the resulting snapshot exposes the arranged inventory.
-HP recovery now executes through the [Medical Herb scene](./presentation-and-assets.md#medical-herb-scenes),
-after construction has consumed inventory. EXP/growth and turn release wait for their scene commands.
-Application owns single-side target/actor switching; SFX113 and the source NONE/Nothing selection do
-not imply fairy or physical recoil draws. There is no separate inventory service or field inventory UI.
-
-### Original source and effect boundary
-
-**Confirmed static:** the pinned SF2DISASM revision
-`c834c652b6862bc5679fd7f69a38a7093206efc6` supplies these dependencies beneath `disasm/`:
-
-| Source / symbol | Consumed rule |
-| --- | --- |
-| `data/stats/items/itemdefs.asm`, item 0 at `table_ItemDefinitions` (`0x16EA6`) | Medical Herb is CONSUMABLE, with no equip effects; use spell HEALIN-1 and item range 0–1. |
-| `data/stats/spells/spelldefs.asm`, HEALIN-1 | Base ID 16, MP cost 0, teammate healing, range 0–1, radius 0, power 10. |
-| `code/gameflow/battle/battleactions/useitem.asm`, `battlesceneScript_UseItem` (`0xBBB8`) | Select the held item definition, unpack use spell and delegate to its spell effect. |
-| `castspell.asm`, `spellEffect_Heal`; `calculatespelldamage.asm`, `AdjustSpellPower` (same battleactions directory) | Recovery is `min(power, missing HP)`. Item actions skip the spell-only promotion multiplier. HEALIN recovery has no variance draw. |
-| `earnexp.asm`, `battlesceneScript_CalculateHealingExp`; `giveexpandgold.asm`, `battlesceneScript_GiveExpAndGold` | Ally healer classes contribute `min(25, max(10, floor(25 * recovered / maxHp)))`; other classes contribute zero. Same-side actions skip battle halving. Two range-16 draws add/subtract one on zero, with final minimum one. |
-| `breakuseditem.asm`, `battlesceneScript_BreakUsedItem` (`0xBBE6`); `code/common/stats/itemstats.asm`, `RemoveItemBySlot` / `RemoveAndArrangeItems` | Non-equipment consumes without a break roll, shifts subsequent full item words down one slot and appends NOTHING (127). Identity lookup masks the low seven bits; retained words preserve flags. |
-
-The [item-definition](../../docs/design/contracts/item-definition-data.md),
-[spell-definition](../../docs/design/contracts/spell-definition-data.md),
-[spell-resolution](../../docs/design/contracts/spell-resolution.md) and
-[action-construction](../../docs/design/contracts/battle-action-construction.md) contracts
-own the accepted boundaries. **Confirmed native:** the
-[original herb observations](../../docs/research/map3-messenger-acceptance.md#native-herb-observation-and-completed-branch-recovery)
-and winning continuation record the reached item/slot/HEALIN/consumption family. Their bounded
-HP facts include 6→11, 9→12, 3→12 and 4→11; these are missing-HP clamps, not four different
-item powers. `MedicalHerbTests` checks those minimal facts separately from controlled RNG cases.
-It does not relabel authored tests as an original trace replay.
-
-Private Content admits only the selected Medical Herb definition into this item family.
-Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
-not herbs. The current class model admits PRST healing EXP and the existing non-healer
-classes. VICR/MMNK class admission, broader item families, Equip/Give/Drop, field inventory,
-AI healing-item choice and save/load remain unsupported. Exact original presentation timing remains Unknown. The existing
-physical-only AI policy rejects a nonempty item loadout at start. This does not close the
-continuous H4 milestone or establish successful native-original cancellation.
-
-### Ordinary controls and reproduction
-
-I / gamepad Back selects and cycles held slots; Tab cycles living allied targets, Enter commits
-and Escape cancels. The inventory HUD shows slot, item name, selection and rejected attempts.
-`bindings.item` in the existing version-1 input settings remaps both keyboard and gamepad.
-The adapter initially targets self after selection; legality and all resource changes stay
-in the common session.
-
-Authored format-7 packages may supply an optional root `items` list of
-`{id, name, effect: "consumable-healing", power, minimumRange, maximumRange}` definitions.
-IDs are 0–126; 127 is the empty slot. `actors[].items` contains up to four ordered item words,
-padded with 127. This supports independently authored powers/ranges without changing private
-source admission. There is no new public schema or original asset in that format.
-
-For affected item/scene changes, use the locked SDK's `dotnet test --filter`
-`'FullyQualifiedName~MedicalHerbTests|FullyQualifiedName~BattleSceneTests'`, followed by
-`uv run sf2 verify adapter` and the committed engine-scope planner. Existing completed failures remain
-in their named handoff; these commands do not request a full slow-suite rerun.
-
-The [scene owner](./presentation-and-assets.md#medical-herb-scenes) gives the current private candidate
-and ordinary-input native reproduction. Its existing observer reads actual session inventory/HP,
-scene nodes, wait tokens and audio receipts. Source-world startup covers full-HP use after the real
-entry program heals the party; a separate controlled battle start covers wounded recovery. Authored
-item legality/changed-content assertions remain in `MedicalHerbTests`. The older scalar item observer
-is not the scene acceptance command. Preserve failed and successful outputs separately. No original
-emulator, screenshot or continuous H4 comparison is implied.
 
 ## Source-bound yes/no lifecycle
 
@@ -1054,9 +905,9 @@ admitted EventCaller portrait. **Unknown:** incoming original global24/6 repeat/
 release-spin CPU interrupts, debug turbo, gold-window lifecycle, exact menu raster and hardware
 DMA timing. These exclusions do not prevent both answers in the declared fresh semantic stream.
 JOIN's audio/input/live-service coupling remains separate. See the
-[source contract](../../docs/design/contracts/map-exploration.md#source-bound-choice-consumer),
-[original provenance](../../docs/research/map3-messenger-acceptance.md#source-bound-choice-lifecycle)
-and [observation owner](./development-and-verification.md#source-bound-choice-observation).
+[source contract](../../../docs/design/contracts/map-exploration.md#source-bound-choice-consumer),
+[original provenance](../../../docs/research/map3-messenger-acceptance.md#source-bound-choice-lifecycle)
+and [observation owner](../verification/field-programs.md#source-bound-choice-observation).
 
 ## Raw field display
 
@@ -1078,15 +929,15 @@ remains at that instruction. No PresentationWait is created and actual finite-au
 cannot release gameplay through previous-music, plain input or script return. Existing PCM playback
 and unbound presentation observations retain their previous applicability.
 
-The [source contract](../../docs/design/contracts/map-exploration.md#raw-field-text-and-the-music-boundary)
-and [provenance](../../docs/research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
+The [source contract](../../../docs/design/contracts/map-exploration.md#raw-field-text-and-the-music-boundary)
+and [provenance](../../../docs/research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
 separate this supported raw-text rule from the unknown sound-to-service clock. The known505 driver
-updates are not a duration in entity services. See [verification](./development-and-verification.md#raw-field-text-observation)
+updates are not a duration in entity services. See [verification](../verification/field-programs.md#raw-field-text-observation)
 for behavior and native expected-boundary acceptance.
 
 ## Modern Finite Music
 
-The [accepted modern policy](../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+The [accepted modern policy](../../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
 uses optional finite audio metadata `modernEndStep`; the private lowerer emits505 for command19.
 The reader permits a positive endpoint only on non-looping music. Ordinary playback needs no profile.
 `MusicProgress` retains cue, semantic generation, previous stack, map/area, progress, actual completion
@@ -1116,8 +967,9 @@ Plain input after the helper keeps the raw window without revealing it anew. A g
 the existing one-service input-first rule without a W1/W2 copy. Bound plain Ack is silent; only
 accepted W2 requests validation67. Ack, close/Sleep10, follower/position
 instructions and script/Zone return reuse their owners. No production rule names text447, cs-51614
-or a selected seed. [Verification](./development-and-verification.md#modern-finite-music-observation)
-owns behavior cases and the full bounded native JOIN return; full continuous victory/H4 stays open.
+or a selected seed. [Verification](../verification/field-programs.md#modern-finite-music-observation)
+owns behavior cases and the bounded native JOIN return. The [current composed milestone](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+has separate acceptance; this JOIN observation alone does not prove full-route or hardware parity.
 
 ### Bound white palette
 
@@ -1141,8 +993,8 @@ coverage is not source map-only palette pixel equivalence.
 The white-helper observation ends at Chester2297 W1 after all six white helpers and their
 intervening source waits. It does not establish the following bound mosaic/shiver, complete before
 body, battle load/input or winning trace. The bound continuation is described below; the next genuine
-Unsupported blocker is **Unknown** until observed. See [verification](development-and-verification.md#bound-white-palette-observation)
-and [source/semantic rule](../../docs/design/contracts/map-exploration.md#bound-map-white-finite-service).
+Unsupported blocker is **Unknown** until observed. See [verification](../verification/field-programs.md#bound-white-palette-observation)
+and [source/semantic rule](../../../docs/design/contracts/map-exploration.md#bound-map-white-finite-service).
 
 ### Bound before-body and battle entry
 
@@ -1157,6 +1009,50 @@ ordinary first-queue RNG draws without adding a field opportunity.
 
 Bound generic `PresentationWait`, including mosaic/shiver and retained-profile loader delivery,
 now uses the existing visibility/focus suspension and zero-debt resume. Effect completion/restoration
-and unbound/music policy are unchanged. The [contract](../../docs/design/contracts/map-exploration.md#bound-before-body-and-battle-loader-ownership)
+and unbound/music policy are unchanged. The [contract](../../../docs/design/contracts/map-exploration.md#bound-before-body-and-battle-loader-ownership)
 distinguishes this modern loader policy from original LoadBattle opportunities. **Confirmed (bounded remake):** the ordinary full bound
-before-body and first-input observation passes through the [verification route](development-and-verification.md#bound-before-body-and-battle-entry-observation).
+before-body and first-input observation passes through the [verification route](../verification/field-programs.md#bound-before-body-and-battle-entry-observation).
+
+## Source Story Policy
+
+The existing public v8 reader admits [story A](../../content/authored/story-rule-demo-a.json) and
+[story B](../../content/authored/story-rule-demo-b.json), including all untaken branch/call targets.
+An ordinary interaction branches on live flag40, calls an external first/again program, then calls
+a nested pause program. That program presents its own text and waits30 logical services before
+returning. The called program then changes a flag and entity position/visibility; its caller toggles
+flag40 and returns field control. Both outcomes execute in each package in one session. Package
+names never choose runner algorithms. [The program owner](#authoring-conditional-programs)
+describes the actual effects and content editing steps.
+
+[`SourceStoryInstruction`](../../src/Sf2.Remake.Application/Content/Scenarios/StoryProgram.cs) is a typed
+source-only family. Only this family delegates to the selected
+[`ISourceStoryPolicy`](../../src/Sf2.Remake.Application/Runtime/Exploration/ISourceStoryPolicy.cs).
+The SF2 [instruction](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryInstructions.cs) and
+[policy](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryPolicy.cs) own the existing retired Map3
+operation. The reader maps the unchanged opcode; private produced bytes and schema are unchanged.
+`ProgramRunner` knows neither this exact source operation nor its map/program/flag guards.
+
+The policy returns only a `SourceStoryCandidate`: no active-state change, or one retired existing
+physical entity record. `SourceStoryRules` checks that record against the existing `Hide` result
+at its actual slot; it preserves every other record, aliases, layout, party and world metadata.
+It does not resolve a record's other logical alias again. The candidate cannot contain story state,
+PC, stack, wait, seed, revision or observations. The runner alone advances/commits the instruction.
+All original exact context, live-alias hide and removed-alias tombstone guards remain in SF2.
+This is the accepted conditional inactive-scratch abstraction, not a new visible scratch effect.
+
+Every explicitly authored factory selects
+[`AuthoredStoryPolicy`](../../src/Sf2.Remake.Application/Gameplay/Authored/AuthoredStoryPolicy.cs), which
+rejects source-only instructions at the reached PC. Direct source-default starts and `ForGame`
+remain SF2. Content profile does not automatically select executable policy; see
+[trust/selection](../content/profiles-and-trust.md#story-content-and-source-policy-selection).
+Ordinary branch/call/return/text/tick operations are independent of that policy and unchanged.
+Existing callers already pass the same `SessionRules` through field and battle-outcome continuations.
+
+Expected source errors retain code/field/category and add policy/operation/PC to the message.
+Malformed candidates or unexpected exceptions use the existing InvariantFailure policy diagnostic
+with the same context and no private exception detail. Earlier committed instructions, the reached
+PC and stack remain. A rejected or duplicate completion cannot apply a later effect or return a caller.
+[Behavior tests](../../tests/Sf2.Remake.Engine.Tests/StoryPolicyReplacementTests.cs) and
+[short actual observations](../verification/field-programs.md#replaceable-story-observation)
+cover content replacement, failure retention and usable control; source-context tests do not claim
+private natural reach, original timing or measured performance.
