@@ -59,6 +59,47 @@ reached dialogue or choosing an answer automatically. Existing field input does 
 background action batch; completing a foreground wait still yields at the newly reached input or
 program boundary before further ticks are submitted.
 
+### Authoring conditional programs
+
+Use the existing public v8 envelope and typed operations. Edit `world.programs[].instructions`,
+link targets with `{program,instruction}`, and select the entry through an ordinary map event or
+whole-program start. The reader admits all targets, including untaken branches, before creating a
+session. No C# implementation name or package-name branch selects the executed instructions.
+Content is read once: restart after a JSON edit; compiled rule edits also require the
+[rule author workflow](./architecture.md#rule-author-workflow-and-diagnostics).
+
+[Story A](../content/authored/story-rule-demo-a.json) and
+[story B](../content/authored/story-rule-demo-b.json) use the same quay, player, ferryman interaction,
+marker and ordinary battle definition. A's `invitation` branches when live flag40 is set to
+`repeat`; its initial fallthrough calls `first-a` and sets40. B reverses the condition: when40
+is clear it branches to `first-visit-b`, calls `first-b` and sets40; its later fallthrough calls
+`again-b` and clears40. A's repeat calls `again-a` and also clears40. The branch condition, targets,
+called programs and effects are external data; both outcomes run through the same runner.
+Each called program calls `pause-a` or `pause-b`, leaving two real return addresses on the stack.
+The pause displays its package's text, waits for real acknowledgement, waits30 logical services,
+then returns to the called program's later effects and finally to field input.
+
+| Content/branch | Before dialogue/timer | After nested pause returns |
+| --- | --- | --- |
+| A, flag40 clear | Set41, hide marker at(4,3) | Set42, position(4,2), show marker, return and set40 |
+| A, flag40 set | Set43, show marker at(4,2) | Set44, position(3,2), hide marker, return and clear40 |
+| B, flag40 clear | Set51, hide marker at(4,3) | Set52, position(3,4), show marker, return and set40 |
+| B, flag40 set | Set53, show marker at(3,4) | Set54, position(4,4), hide marker, return and clear40 |
+
+For the compiled demonstration choose `RuleCompositions.AuthoredStory()` before startup. The two
+files run unchanged through the same runner and composition, with real Confirm inputs followed by
+West movement. Source-only compatibility is unsupported under that composition; ordinary programs
+do not invoke it. The host's committed default remains SF2, which also executes ordinary authored
+programs. [Verification](./development-and-verification.md#replaceable-story-observation) gives the
+short observer and exact recipe. This is project-authored replacement evidence, not original-game
+reach, frame timing, private presentation completeness or a no-compile algorithm platform.
+
+While `ShowText` or `WaitProgramTicks` is pending, its PC remains at that blocking instruction;
+no later flag/entity effect executes. The engine releases the exact token, advances that PC and
+returns each nested caller in order. Unsupported reached instructions or selected source-policy
+errors retain prior effects, cursor and callers; malformed references reject before start.
+Wrong, stale and duplicate completions cannot skip the wait or replay a later effect.
+
 ### Portrait lifecycle and plain current-input wait
 
 `StoryState.PortraitWindow` is persistent Unknown, Closed or Open (portrait identity and packed
@@ -735,9 +776,14 @@ Normal Map3 reload retains the real `cs_513BA` hide and removed entity142 alias.
 `byte_513A8:1`, the [accepted source contract](../../docs/design/contracts/map-exploration.md) permits
 the four writes into inactive window scratch to have no further map/entity/camera effect: windows
 are empty, old presentation work has drained, and a new window is rebuilt before publication.
-The common renderer has no emulated DMA queue. The engine requires this normal reload continuation,
-closed window, source cursor/flags and real hidden entity record. A still-live alias receives the
-real move-out operation. Missing records, other call sites and active windows are rejected.
+The common renderer has no emulated DMA queue. The selected
+[`Sf2StoryPolicy`](../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryPolicy.cs) requires exactly
+`byte-513a8:1`, Map3, MapLoaded/OutcomeMapLoaded, a closed window and F603. A still-live142 alias
+receives the real `Hide` move-out, retaining aliases. A removed alias requires F1 and a real hidden
+entity142 tombstone at X/Y0x7000. Missing records, other call sites and active windows are rejected.
+The [typed source family and finite candidate](./architecture.md#implemented-conditional-story-and-source-compatibility)
+leave PC/stack/wait/revision publication with the generic runner. Explicitly authored compositions
+reject this operation at its PC; the private produced opcode remains unchanged.
 
 Godot keeps the battle projection until the actual fade/load hands over to the scene, renders
 mosaic-out and sprite replacement, and plays a distinct project-authored defeat cue. Sprite changes

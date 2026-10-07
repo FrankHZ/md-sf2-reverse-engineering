@@ -141,6 +141,91 @@ Resource boundary: two inputs in tens of KiB, one action per victory or Stay plu
 per defeat,120-second hard observer deadline and under5 MiB expected output per case. Retain stage
 samples/events only; a private resource dependency or new observation surface requires replanning.
 
+## Replaceable Story Observation
+
+The [story A](../content/authored/story-rule-demo-a.json) and
+[story B](../content/authored/story-rule-demo-b.json) public v8 packages establish external conditional
+content replacement through the ordinary host. A branches on set flag40 into `repeat`; B branches
+on clear40 into `first-visit-b`. Each executes both outcomes through two real interactions, with
+different called programs, flags and marker positions. The nested pause presents its own actual
+dialogue, consumes acknowledgement and30 logical services before later effects execute. Both
+callers return; idle control is stable and real West input moves the player afterward.
+The [content owner](./exploration-programs.md#authoring-conditional-programs) specifies expected effects
+before execution. No producer, new endpoint, private state injection or package-name rule dispatch is used.
+
+[`StoryPolicyReplacementTests`](../tests/Sf2.Remake.Engine.Tests/StoryPolicyReplacementTests.cs)
+assert the four valid branch paths, exact nested return addresses, later-effect blocking through
+the penultimate tick, old/duplicate/wrong completion, bad untaken branch/nested call admission,
+unsupported reached PC and selected-rule error retention after earlier effects.
+[`BattleOutcomeProgramTests`](../tests/Sf2.Remake.Engine.Tests/BattleOutcomeProgramTests.cs)
+explicitly selects SF2 for the scratch operation: exact instruction/map/continuation/window/F603,
+live alias, F1/hidden0x7000 tombstone and wrong-context matrix. A differently mapped physical record
+keeps its actual slot/aliases during retirement. Authored policy rejects even a correct constructed
+source context. These are engine behavior assertions, not reader/observer infrastructure tests.
+
+After loading `local/private-inputs.ps1` in the launching process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Use the existing `uv` environment, shared installed SDK/
+Godot and worktree-local build/cache state. Run `uv run sf2 verify engine` and affected
+`uv run sf2 verify adapter`; corrections use the following filter and preserve completed results:
+
+```powershell
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --no-restore --configuration Release `
+  --filter '(FullyQualifiedName~StoryPolicyReplacementTests|FullyQualifiedName~BattleOutcomeProgramTests|FullyQualifiedName~ExplorationContentTests)&FullyQualifiedName!~PrivateBattleOutcomeProgramTests'
+```
+
+For the bounded native pair, select `RuleCompositions.AuthoredStory()` in `ForGame()` for both
+inputs, rebuild the existing project, then start the same installed editor serially with the new
+observer. There is no retained debug process in this recipe; restart is required to select the
+compiled composition/input. If reusing a live owned instance, finish/stop its bounded case first.
+Use fresh worktree-local output directories; keep earlier failures/results. For example from this
+checkout's repository root (select `b` and a fresh run name for the second case):
+
+```powershell
+$repo = (& git rev-parse --show-toplevel).Trim()
+. (Join-Path $repo 'local/private-inputs.ps1')
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$variant = 'a'
+$case = Join-Path $repo "local/issue678/native/$variant-NN"
+if (Test-Path -LiteralPath $case) { throw 'Preserve prior run' }
+New-Item -ItemType Directory -Path $case | Out-Null
+foreach ($key in @('APPDATA','LOCALAPPDATA','TEMP','TMP')) {
+  $dir = Join-Path $case $key.ToLowerInvariant()
+  New-Item -ItemType Directory -Path $dir | Out-Null
+  [Environment]::SetEnvironmentVariable($key, $dir, 'Process')
+}
+# From remake/ so global.json owns the SDK; only needed when building the selection.
+Set-Location -LiteralPath (Join-Path $repo 'remake')
+& $env:DOTNET_BIN restore game/Sf2.Remake.Godot.csproj --locked-mode
+& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+Set-Location -LiteralPath $repo
+$env:SF2_OBSERVATION_EXPECT_STORY = $variant # External expectations only.
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $case 'observation.json'
+$package = Join-Path $repo "remake/content/authored/story-rule-demo-$variant.json"
+$arguments = @('--headless','--path','remake/game','--log-file',(Join-Path $case 'godot.log'),
+  '--script','res://probes/engine_story_rule_observation.gd','--','--authored-package',$package)
+& $env:GODOT_BIN @arguments
+$nativeExit = $LASTEXITCODE
+```
+
+[`engine_story_rule_observation.gd`](../game/probes/engine_story_rule_observation.gd) extends the
+existing exploration observer's input/read/output helpers; the base observer is unchanged. It reads
+actual view dialogue/entity/flag/wait/caller projection and ordered `SessionResultObserved` records,
+with real key events and a110-second timeout. Expected branch flags/coordinates and return PCs are
+derived from the authored programs. Require exit0, `passed:true`, empty failures and no Godot errors
+in both outputs/logs. Restore `ForGame()=>Sf2()` and rebuild Debug before freezing the source-default
+candidate. A JSON edit requires restart/admission; a C# selection requires compile and restart.
+
+**Confirmed — bounded authored native pair:** both branch outcomes per package, nested call/return,
+real dialogue/timer, post-wait effects and returned movement passed through the same compiled
+composition and host. The two inputs are about20KiB together; selected observations are about212KiB
+per case, below the estimated5MiB/case and two-minute deadline. These measurements describe this
+short pair only; runtime equivalence and general performance remain **Unknown**. The initial A
+observer failure from integer-versus-JSON-float membership/caller comparison and an incorrect timer
+PC expectation is retained in the local handoff; engine behavior was unchanged. This pair does not
+exercise source scratch through native state injection, prove private natural reach or replace the
+completed private HEAL CP2059–2091 failures/full-world limitations. No full-route/H4 gate follows.
+
 ## Observation and Comparison Planning
 
 Before a large or expanded capture/comparison, apply the

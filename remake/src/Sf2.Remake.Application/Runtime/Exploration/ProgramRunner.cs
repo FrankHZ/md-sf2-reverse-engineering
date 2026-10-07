@@ -96,22 +96,14 @@ internal static class ProgramRunner
                         current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
                             MapLoadMode.Rebuild, story, observations);
                         continue;
-                    case RetiredMap3EntityScratch:
-                        var reloaded = current.Exploration!;
-                        if (cursor != new ProgramLocation("byte-513a8", 1) || reloaded.Map.Value != "map-3" || current.Story.Continuation is not (ProgramContinuation.MapLoaded or ProgramContinuation.OutcomeMapLoaded) ||
-                            current.Story.TextWindow is not ClosedTextWindow || !current.Story.Flags.Contains(603))
-                            throw new BattleRuleException("inactive-window-scratch-context", "program.retiredMap3Entity", true);
-                        if (reloaded.TryResolveEntity(new("entity-142"), out var existing))
+                    case SourceStoryInstruction source:
+                        try { active = SourceStoryRules.Apply(rules.SourceStory, definition, current, source, cursor); }
+                        catch (BattleRuleException error)
                         {
-                            active = new ActiveExploration(reloaded.Hide(existing, removeAliases: false));
-                            break;
+                            var failed = Failure(current, observations, error);
+                            return Finish(failed with { Failure = failed.Failure! with
+                                { Message = $"{rules.SourceStory.Identity}: {source.GetType().Name} at {cursor.Program}:{cursor.Instruction}; {failed.Failure.Message}" } });
                         }
-                        if (!current.Story.Flags.Contains(1) || !reloaded.AllEntities.Any(entity =>
-                                entity.Entity.Value == "entity-142" && !entity.Visible && entity.Motion.X == 0x7000 && entity.Motion.Y == 0x7000))
-                            throw new BattleRuleException("inactive-window-scratch-context", "program.retiredMap3Entity", true);
-                        // Accepted #425: normal reload drains the old presentation work and clears
-                        // windows; the first later window is rebuilt before publication. The real
-                        // preceding hide/FF tombstone stays; these four stores affect inactive scratch.
                         break;
                     case EndProgram { SourceMapScript: true } when current.Story.TextSettings is not null:
                         if (current.Story.TextWindow is OpenTextWindow)

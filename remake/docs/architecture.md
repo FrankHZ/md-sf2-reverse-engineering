@@ -10,7 +10,8 @@ It is an implementation guide, not a replacement for the normative decisions in
 The [architecture and verification audit](./architecture-audit.md) records findings at its named
 historical baseline and the user's modern-engine direction. Its A1–A8 are not a fresh defect list.
 The [logic-separation plan](#replaceable-gameplay-logic-plan) below owns the finite #617 scope.
-Its HEAL, admitted-action, automatic-decision and progression/outcome slices are implemented; source story replacement remains planned.
+Its HEAL, admitted-action, automatic-decision, progression/outcome and conditional-story slices are implemented.
+Main-gate has independently accepted the bounded #617 scope, including its fixed-service exclusions.
 Implementation and authored demonstrations do not establish new original-game evidence.
 
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
@@ -308,8 +309,10 @@ architecture unless they reduce responsibility concentration or change amplifica
 
 **Accepted design for [#617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/617),
 with the bounded HEAL and semantic-action implementations in [#674](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/674)
-and [#675](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/675), plus automatic decisions
-in [#676](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/676).** Rigor is
+and [#675](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/675), automatic decisions
+in [#676](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/676), progression/outcomes
+in [#677](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/677), and conditional story
+in [#678](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/678).** Rigor is
 **High**: action policy, source compatibility, shared RNG, content admission and presentation cross
 owners; a wrong commit boundary would cause expensive behavioral rework. This means finite scope,
 explicit dependencies and independent acceptance, not a new rules platform.
@@ -324,8 +327,10 @@ connected product; it does not extend the runnable capability frontier.
 
 The implemented slices deliver selected HEAL/physical/Herb/Stay rules, immutable session composition,
 disposable semantic choices, finite preparation validation, resolved automatic-decision bindings and
-the existing staged movement/scene consumer, plus selected progression/outcome policies.
-Source story replacement and independent integration remain; no additional action family is admitted.
+the existing staged movement/scene consumer, selected progression/outcome policies, external
+conditional programs and a selected source-story compatibility policy. Main-gate independently
+accepted these outcomes with the fixed-service exclusions below. Broader replacement requires a
+future scoped decision; no additional action family is admitted.
 #438 art/UI/UX awaits user discussion; this plan
 supplies semantic affordances only. #638 remains paused and Chinese synchronization is deferred.
 
@@ -348,7 +353,7 @@ Broader runtime equivalence and performance remain **Unknown**. These observatio
 | S1: formula and rule selection | `GameSession.Start/Submit` reads/adopts a definition once. `BattleCommandDispatcher.Commit` called `PlayerHealing.Prepare`; `PlayerHealing` called `HealingRules.ResolvePriest` and preflighted growth. `HealingRules` owned proportional EXP and the ordered two award draws. There was no injected rule selection. | Move the existing algorithm into the selected implementation; do not copy a second calculator or merely externalize its constants. JSON programs already exist and should remain the story authoring path. |
 | S2: action, target and UI coupling | [`SessionContract`](../src/Sf2.Remake.Application/Runtime/SessionContract.cs) fixes Stay/Heal/PhysicalAttack/Item. Dispatcher selection/target/commit branches select their calculators. [`BattleSessionView`](../game/src/Battles/BattleSessionView.cs) constructs candidates from HP/IsAlly/action, cycles raw inventory words using `& 127`, and attempts self-target after spell/item selection. | Application must query the selected rules and return semantic choices. Current submission rechecks range: broad UI candidates are not proof of an existing legality bug. |
 | S3: capability versus legality | `PlayerHealing.RequireSpell` combines learned spell/MP checks with `healing-class` and level-based `healing-animation` Unsupported. [`AuthoredScenarioPackageReader.DecodeBattle`](../src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs) admits level 1–4 definitions but only heal/non-full-recovery effect data. `HealingSceneCursor.Create` checks the private cast/idle resources. | Separate a rule's legal conditions from implemented effect/scene support. Preserve HEAL4 and missing private-consumer rejection; moving a check does not implement the missing capability. |
-| S4: source story exception | [`ExplorationContentReader.ReadInstruction`](../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) decodes `retired-map3-entity-scratch` into [`RetiredMap3EntityScratch`](../src/Sf2.Remake.Application/Content/Scenarios/StoryProgram.cs). [`ProgramRunner.Run`](../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) checks `byte-513a8:1`, map, continuation, closed window, flags and a real entity retirement/tombstone. | Move this exact compatibility policy behind a selected source-policy call. Keep every guard and the actual hide effect; it is not a disposable route assertion. Ordinary branch/call/wait instructions already execute real programs. |
+| S4: source story exception | At the named pre-migration object, `ExplorationContentReader.ReadInstruction` decodes `retired-map3-entity-scratch` into `RetiredMap3EntityScratch` in `Content/Scenarios/StoryProgram.cs`; `ProgramRunner.Run` checks `byte-513a8:1`, map, continuation, closed window, flags and a real entity retirement/tombstone. The type's current owner is [the SF2 module](../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryInstructions.cs). | The selected source-story seam below now owns the exact compatibility operation and guards. Ordinary branch/call/wait still executes through the common runner. |
 | S5: state, definition and AI coupling | [`EngineBattleState`](../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) includes class/AI enums, class-to-source identity, healing-only definitions and immutable actor/deployment state. [`BattleAdvancer.Advance`](../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) switches AI enum to `SourceEnemyAi`/`AttackThenApproachAi`; `BattleTurnFlow.ValidateDeployment` and Content repeat strategy admission. | Retain immutable state and control/faction/order separation. Resolve rule bindings at composition, remove strategy dispatch from the scheduler, and relocate source class mapping. A general spell/status/property-bag model is not needed for the finite implemented set. |
 
 The ownership traces that constrain the replacement API are:
@@ -550,7 +555,51 @@ their bounded admission and exclusions are in [trust](./runtime-profiles-and-tru
 The [native recipe](./development-and-verification.md#replaceable-progression-and-outcome-observation)
 uses the same packages under both factories and observes real return movement. This is authored
 replaceability evidence, not new original-game or private-route evidence. `ForGame()=>Sf2()` remains
-the default. Source story compatibility replacement belongs to the remaining slice.
+the default. The source-story compatibility seam is described below.
+
+### Implemented conditional story and source compatibility
+
+The existing public v8 reader admits [story A](../content/authored/story-rule-demo-a.json) and
+[story B](../content/authored/story-rule-demo-b.json), including all untaken branch/call targets.
+An ordinary interaction branches on live flag40, calls an external first/again program, then calls
+a nested pause program. That program presents its own text and waits30 logical services before
+returning. The called program then changes a flag and entity position/visibility; its caller toggles
+flag40 and returns field control. Both outcomes execute in each package in one session. Package
+names never choose runner algorithms. [The program owner](./exploration-programs.md#authoring-conditional-programs)
+describes the actual effects and content editing steps.
+
+[`SourceStoryInstruction`](../src/Sf2.Remake.Application/Content/Scenarios/StoryProgram.cs) is a typed
+source-only family. Only this family delegates to the selected
+[`ISourceStoryPolicy`](../src/Sf2.Remake.Application/Runtime/Exploration/ISourceStoryPolicy.cs).
+The SF2 [instruction](../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryInstructions.cs) and
+[policy](../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2StoryPolicy.cs) own the existing retired Map3
+operation. The reader maps the unchanged opcode; private produced bytes and schema are unchanged.
+`ProgramRunner` knows neither this exact source operation nor its map/program/flag guards.
+
+The policy returns only a `SourceStoryCandidate`: no active-state change, or one retired existing
+physical entity record. `SourceStoryRules` checks that record against the existing `Hide` result
+at its actual slot; it preserves every other record, aliases, layout, party and world metadata.
+It does not resolve a record's other logical alias again. The candidate cannot contain story state,
+PC, stack, wait, seed, revision or observations. The runner alone advances/commits the instruction.
+All original exact context, live-alias hide and removed-alias tombstone guards remain in SF2.
+This is the accepted conditional inactive-scratch abstraction, not a new visible scratch effect.
+
+Every explicitly authored factory selects
+[`AuthoredStoryPolicy`](../src/Sf2.Remake.Application/Gameplay/Authored/AuthoredStoryPolicy.cs), which
+rejects source-only instructions at the reached PC. Direct source-default starts and `ForGame`
+remain SF2. Content profile does not automatically select executable policy; see
+[trust/selection](./runtime-profiles-and-trust.md#story-content-and-source-policy-selection).
+Ordinary branch/call/return/text/tick operations are independent of that policy and unchanged.
+Existing callers already pass the same `SessionRules` through field and battle-outcome continuations.
+
+Expected source errors retain code/field/category and add policy/operation/PC to the message.
+Malformed candidates or unexpected exceptions use the existing InvariantFailure policy diagnostic
+with the same context and no private exception detail. Earlier committed instructions, the reached
+PC and stack remain. A rejected or duplicate completion cannot apply a later effect or return a caller.
+[Behavior tests](../tests/Sf2.Remake.Engine.Tests/StoryPolicyReplacementTests.cs) and
+[short actual observations](./development-and-verification.md#replaceable-story-observation)
+cover content replacement, failure retention and usable control; source-context tests do not claim
+private natural reach, original timing or measured performance.
 
 ### Selected module and composition design
 
@@ -602,7 +651,7 @@ GameSession -> ordered state/scene projection -> Godot -> completion token
 
 ### Implementable API and transaction boundary
 
-HEAL, finite actions, AI and progression/outcome names below are implemented; the story seam remains proposed. Reuse the existing state, reference,
+HEAL, finite actions, AI, progression/outcome and source-story seams below are implemented. Reuse the existing state, reference,
 command, resolution, wait and failure types; do not add copies whose only purpose is forwarding.
 
 | Seam | Inputs/result and owner | Required behavior |
@@ -611,8 +660,8 @@ command, resolution, wait and failure types; do not add copies whose only purpos
 | Action selection (implemented) | `BattleSelection.ActionReference` and `SelectBattleAction` carry a typed action reference and immutable option/target data. `GameSession.QueryBattleChoices` returns choices for its current session/revision/actor/stage/origin, selection step, enabled status and `SessionFailure` reason. | Options carry stable action/spell/item identities, display labels, supported presentation kind and ordered candidate `ActorRef`s/range. Preserve `SelectSpell`/`SelectItem` as semantic inputs while callers migrate. Query is disposable; `CommandEnvelope` and confirm remain authoritative. |
 | Action preparation/application | Selected action implementation returns existing prepared/reaction/reward structure; engine preparation validates it before `Begin`. Existing scene continuation and publication apply it. | Validate actor/target references, destination, supported reaction/consumer, HP/MP bounds and permitted field changes. Reject unrelated actor/queue/definition/story changes and malformed effects before publication. Do not execute string observations or accept arbitrary callbacks that mutate the session. |
 | AI (implemented) | Internal `IBattleDecisionRule` consumes the immutable battle/actor plus selected action rules; returns the existing `BattleAutomaticAction` shape with candidate state, path and target. | Stable tie order and separate RNG streams; no hidden strategy state. Memory/last target/activation stay in actor/region state. Scheduler owns turn/wait/publication, not strategy selection or target scoring. |
-| Progress/outcome (slice 4) | Selected progression functions use current actor, award, copied seed and existing effects; selected outcome policy uses current battle/story plus admitted outcome content. | Keep credit, later growth, outcome check and story return as separate calls at their existing commit seams. Policies choose rules/results; generic runner executes the continuation. |
-| Source story operation (slice 5) | Internal `ISourceStoryPolicy` takes the current definition/snapshot, `StoryInstruction` and `ProgramLocation`, returning the existing active/story candidate or a `BattleRuleException`. | Only the explicitly source-specific instruction delegates. Generic branch/call/return/wait does not ask a rule-name registry. Missing support fails at the exact PC; policy cannot advance/publish the facade. |
+| Progress/outcome (implemented) | Selected progression functions use current actor, award, copied seed and existing effects; selected outcome policy uses current battle/story plus admitted outcome content. | Keep credit, later growth, outcome check and story return as separate calls at their existing commit seams. Policies choose rules/results; generic runner executes the continuation. |
+| Source story operation (implemented) | Internal `ISourceStoryPolicy` takes the current definition/snapshot, `SourceStoryInstruction` and `ProgramLocation`, returning only a finite entity-retirement candidate or a `BattleRuleException`. | Only the source-specific instruction family delegates. Generic branch/call/return/wait does not ask a rule-name registry. Missing support fails at the exact PC; policy cannot advance/publish the facade or supply arbitrary active/story state. |
 
 An enabled query option means eligible for preparation under the known prerequisites, not a promise
 that every reached random-dependent branch is supported. Query and confirm share those prerequisite
@@ -670,11 +719,11 @@ cannot close the Epic. This table is the coverage boundary, not a backlog for ev
 | Physical strike/reversal/double/counter/reward calculation, physical targets and terrain protection; Medical Herb effects/inventory encoding; Stay/action dispatch | Independent action implementations, slice 2; reuse one shared physical calculator for player and AI. Source decoding remains Content/module policy. | Existing supported physical and consumable branches only. Semantic item/target projection replaces raw Godot policy. |
 | Attack-then-approach, standby/source set6/set7, target priority/class mapping, strategy bindings and runtime memory | Implemented independent decisions and immutable resolved strategy references replace core AI enum dispatch; faction/control/order remain state. | Existing source orders retain guards. A second authored priority algorithm proves replacement; no new enemy command families. |
 | EXP/kill/gold rules, growth curves/learning, defeat/victory, recovery and return/join/flag policy | Selected C# progression and outcome policies, slice 4; tables/route programs remain content. | Existing growth and ordinary outcome/return behavior only; preserve leader-loss precedence, unknown accounting rejection and delayed growth RNG. |
-| Conditional story, call targets, flags, dialogue and waits | Externally authored typed programs, slice 5 proves alternate branch/call/wait content through the same runner. | No arbitrary-language interpreter; algorithmic source compatibility remains named C#. |
-| Retired Map3 scratch exception and source outcome-return conditions | Exact guarded source-policy implementation, slice 5 (return policy already selected by slice 4). | Preserve true entity retirement and source context; do not translate the four inactive scratch stores into new visible effects. |
+| Conditional story, call targets, flags, dialogue and waits | Implemented external typed programs: both A/B packages execute both flag branches and nested call/text/tick/return through the same runner. | No arbitrary-language interpreter; algorithmic source compatibility remains named C#. |
+| Retired Map3 scratch exception and source outcome-return conditions | Implemented exact guarded selected SF2 story policy and separate outcome-return policy. | Preserve true entity retirement and source context; explicitly authored compositions reject the operation. The four inactive scratch stores supply no new visible effect. |
 | Actor state, main/thinking seeds, queue cursor, program PC/stack/waits, revisions, observation order, staged effects and completion tokens | Retained engine mechanism. Rule-selected candidates are validated/published by the existing engine. | No second state store, speculative live mutation or alternate publication facade. |
 | RNG recurrence, integer helpers, Manhattan geometry, weighted movement/path representation and fixed turn-order primitive | Retained deterministic primitives. Policy decides operands/call order; source arithmetic remains explicit. | This plan does not promise interchangeable RNG generators, pathfinding algorithms or turn schedulers. They are fixed mechanism contracts for this engine. |
-| New-battle refresh/activation/control word policy, terrain movement-cost table, field motion/text/music and battle-scene logical service algorithms | Explicitly deferred replacement seams; preserve current owners/behavior. Selected rules may call these supported primitives without duplicating them. | They remain source-specific engine services. #617 may close only with this bounded replaceability limit accepted; an assertion that **all** gameplay/source policy is replaceable remains false. Broader decoupling needs a new scoped decision, not automatic expansion here. |
+| New-battle refresh/activation/control word policy, terrain movement-cost table, field motion/text/music and battle-scene logical service algorithms | Explicitly deferred replacement seams; preserve current owners/behavior. Selected rules may call these supported primitives without duplicating them. | They remain fixed source-specific services within the independently accepted bounded #617 scope. An assertion that **all** gameplay/source policy is replaceable remains false. Broader decoupling requires a future scoped decision. |
 | Definition/source identity, package schema, public/private admission and selected class/spell/item data | Content retains parsing/provenance; slices 1–3 separate binding from runtime strategy. Keep finite typed healing/physical definitions and source metadata. | S5 is resolved for algorithm selection and state authority, not a universal ability/class system. Unsupported effects/statuses still stop explicitly. |
 | Runtime language, no-compile authoring, hot reload, broader UI, full-game capabilities | Deferred/excluded as stated in the agreement. | No dependency for the selected compile/restart workflow; new intent must reopen design rather than silently expand it. |
 
@@ -685,19 +734,19 @@ Keeping their fixed contracts avoids that expansion; it does not make them imple
 
 ### Dependency-ordered implementation and acceptance
 
-Slices are tracked by #674–#678. The HEAL and admitted-action slices are implemented; subsequent slices require the
-preceding independently accepted result, refreshed exact path ownership,
-and a continue/narrow/stop decision; proposed interface filenames are provisional until then.
+Slices are tracked by #674–#678. Main-gate independently accepted all five finite implementations
+and the explicit fixed-service limits. Git integration remains main-gate-owned.
+Each slice consumes the preceding independently accepted result and exact transferred path ownership.
 All shared contracts, default composition, `GameSession`, Content readers, views, tests and this owner
 have one writer at a time. No stacked unaccepted implementation is assumed.
 
 | Slice | Complete behavior and dependencies | Acceptance and retirement |
 | --- | --- | --- |
-| 1 — replace HEAL through the real session and presenter | Implemented by `IHealingRule`, `SessionRules`, `QueryBattleChoices` and finite `ValidateHealing`, using the existing view/scene. | Default source behavior and two authored algorithms cover query → select → confirm → staged cost/recovery/reward → completion. Malformed rule output, stale/illegal input and missing capability publish no partial preparation/RNG. `PlayerHealing` is removed. Independent main-gate integration remains separate. |
+| 1 — replace HEAL through the real session and presenter | Implemented by `IHealingRule`, `SessionRules`, `QueryBattleChoices` and finite `ValidateHealing`, using the existing view/scene. | Default source behavior and two authored algorithms cover query → select → confirm → staged cost/recovery/reward → completion. Malformed rule output, stale/illegal input and missing capability publish no partial preparation/RNG. `PlayerHealing` is removed. Integration is main-gate-owned. |
 | 2 — complete the admitted action/target interface | Implemented on slice 1's seam: selected physical, Herb and Stay; semantic inventory/action references replace adapter target/raw-word policy. | Player and AI share one physical action calculation. Preserve reaction order, consumption, gold/death/queue boundaries. Queries and commit agree; unsupported items remain explicit. No action- or rule-name dispatch in Godot. Retire migration-only adapters. |
 | 3 — select AI without scheduler strategy switches | Implemented on slices 1–2: `IBattleDecisionRule`, immutable `BattleStrategyRef` bindings, source modules, shared movement primitives and `Sf2ClassRules`. | Two authored algorithms choose different legal actions/targets from the same state without scheduler/UI edits. Repeatable thinking/main seed and memory, target ties, zero-target branch, illegal result and failed-action queue retention. Preserve source standby/activation acceptance. |
-| 4 — select progression and outcome policy | Depends on slices 1–3. Move award/growth and ordinary victory/defeat/recovery/return choices at their existing call sites. | Growth uses the live post-scene seed; EXP/growth message order, pending failure, defeat precedence, gold/recovery and usable program return remain real behavior. An authored alternate reward/outcome policy changes behavior without editing continuation machinery. |
-| 5 — replace conditional story and isolate the exact source exception | Depends on slice 4's return seam. Move scratch policy, prove alternate external programs and finish authoring/semantic-interface documentation. | Different flag/choice branches execute different effects with call/return and an actual wait; stale/duplicate completion and unsupported PC preserve earlier commits. Wrong scratch context still fails; correct retirement remains. Review all S1–S5 and explicit deferrals before Epic acceptance. |
+| 4 — select progression and outcome policy | Implemented on slices 1–3: selected award/growth and ordinary victory/defeat/recovery/return choices at their existing call sites. | Growth uses the live post-scene seed; EXP/growth message order, pending failure, defeat precedence, gold/recovery and usable program return remain real behavior. An authored alternate reward/outcome policy changes behavior without editing continuation machinery. |
+| 5 — replace conditional story and isolate the exact source exception | Implemented on slice 4's return seam: guarded source policy, alternate external programs and authoring/semantic-interface guidance. | Both flag outcomes per package execute different effects with nested call/return and actual text/tick waits. Stale/duplicate completion, unsupported PC and rule failure preserve prior commits/callers. Wrong scratch context fails; real retirement remains. Main-gate independently accepted S1–S5 with the explicit fixed-service exclusions. |
 
 **First vertical slice:** choose HEAL over Stay (no meaningful formula/RNG/consumer proof), Herb
 (source inventory encoding adds a second concern), or physical (multi-hit/reversal/death expands the
@@ -745,6 +794,81 @@ The historical [HEAL cursor comparison](./development-and-verification.md#heal-s
 retains its completed recovery CP2059–2091 failure; historical composition reports remain unavailable
 at their own limits. Do not reinterpret either as an interrupted run, fix the golden to match a
 refactor, or require a fresh full route merely to replace old red results.
+
+### Rule author workflow and diagnostics
+
+Start from the implemented contract and an existing example in the four production assemblies:
+
+| Author's change | Contract and example | Selection |
+| --- | --- | --- |
+| HEAL eligibility, targets, recovery or award preparation | [`IHealingRule`](../src/Sf2.Remake.Domain/Battles/Rules/IHealingRule.cs), `Gameplay/Authored/AuthoredHealingRules.cs` | Pass the implementation as the healing argument in `SessionRules`; the finite action adapter uses that same object. |
+| Physical, item or Stay offers/targets/preparation | [`IBattleActionRule`/`IPhysicalActionRule`](../src/Sf2.Remake.Domain/Battles/Rules/IBattleActionRule.cs), `Gameplay/Sf2/Sf2PhysicalAction.cs`, `Sf2ItemAction.cs`, `Sf2StayAction.cs` | Bind the corresponding constructor argument. Keep query, confirm and physical estimate/preflight on the selected implementation. |
+| Automatic priority/decision | [`IBattleDecisionRule`](../src/Sf2.Remake.Domain/Battles/Rules/IBattleDecisionRule.cs), `Gameplay/Authored/AuthoredBattleDecisionRules.cs` | Bind the content's `BattleStrategyRef` once in the explicit factory's decision list; unknown/duplicate bindings reject at start. |
+| Credit, counters, gold or later growth | [`IBattleProgressionRule`](../src/Sf2.Remake.Domain/Battles/Rules/IBattleProgressionRule.cs), `Gameplay/Authored/AuthoredBattleProgressionRule.cs` | Pass `progression:`; preserve the separate credit and live post-scene growth calls. |
+| Victory/defeat/hook and recovery/return choice | [`IBattleOutcomeRule`](../src/Sf2.Remake.Domain/Battles/Rules/IBattleOutcomeRule.cs), [`IOutcomeReturnPolicy`](../src/Sf2.Remake.Application/Runtime/Exploration/IOutcomeReturnPolicy.cs), `Gameplay/Authored/AuthoredOutcomeReturnPolicy.cs` | Pass `outcome:` and/or `outcomeReturn:`; common programs, scene/queue and staged publication remain the consumers. |
+| Story branch, call, flag, text and wait | [External typed-program authoring](./exploration-programs.md#authoring-conditional-programs) | Change admitted JSON and restart. Both demo files run through `AuthoredStory()` without changing runner or view. |
+| Source-only retired scratch compatibility | [`ISourceStoryPolicy`](../src/Sf2.Remake.Application/Runtime/Exploration/ISourceStoryPolicy.cs), `Gameplay/Sf2/Sf2StoryPolicy.cs` | `sourceStory:` selects the named policy. `AuthoredStoryPolicy` rejects this family; it is not a custom-opcode extension language. |
+
+Implement a C# rule under the existing `Domain/Gameplay/Authored` or `Application/Gameplay/Authored`
+module as appropriate. Reuse numerical/state primitives and an admitted reaction/presenter family.
+The rule receives immutable state and returns only the contract's finite candidate. It must not keep
+future state/RNG in object fields or mutate the session. Ordinary integer widths, deterministic
+ordering and the separate seed channels still matter. Unsupported effects require a separately
+scoped capability change; deleting a capability guard or returning a source-name string cannot add one.
+
+Add an explicit factory in [`RuleCompositions`](../src/Sf2.Remake.Application/Gameplay/RuleCompositions.cs).
+For example, a new HEAL implementation can use
+`new("my-game", new MyHealingRule(), SourcePhysical(), SourceItem(), SourceStay(), sourceStory: new Authored.AuthoredStoryPolicy())`.
+Other optional constructor arguments select the seams above. Their defaults remain SF2; choose each
+intended variant explicitly. A project author changes `ForGame()` to that factory for the ordinary
+host, or passes it to `GameSession.Start(source, rules)` in a behavior test. The same composition is
+retained throughout the session. Content's `ruleProfile`, package IDs and strategy keys do not discover
+or instantiate C# classes. There is no runtime environment switch or mutable policy setter.
+
+Write small engine assertions for changed valid actors/states/content, not just the demonstration
+endpoint: query/confirmation agreement, allowed candidates, exact RNG/commit boundaries, malformed or
+throwing selected rules, and stale/duplicate completion. Run the affected engine tests and adapter
+build with the [protected locked workflow](./development-and-verification.md#locked-net-workflow).
+Build the existing Godot project in Debug, then restart the ordinary host with its admitted input.
+Rebuilding does not replace a running session's rules; JSON is read/admitted once as well, so content
+edits also need a fresh start. Use the existing short observer for the affected presenter/flow.
+Restore the intended default factory and rebuild before freezing a source-default candidate.
+No new assembly, language, installation, view setter or probe case is needed to choose a factory.
+
+Diagnose at the boundary that owns the failure:
+
+| Result | Meaning and next inspection |
+| --- | --- |
+| ContentError before start | Inspect package shape, all references, provenance/profile and start input. A rule cannot repair rejected Content. |
+| IllegalCommand | Inspect the current envelope session/revision/actor, selected action/destination/target and enabled/reason query. A previous query is not authority to confirm. |
+| UnsupportedCapability | Inspect the precise rule or consumer capability: source accounting, admitted spell/item/status, source story context or missing private scene binding. Keep the guard and unmet boundary explicit. |
+| InvariantFailure with rule identity/operation | Inspect the selected implementation and finite result at the named commit seam; source-story diagnostics also name the exact program/PC. Earlier committed effects, live token and caller context remain. Exception details are not published. |
+| AdapterError | Inspect actual projection/resource/delivery and adapter errors. A pending completion token remains pending; do not report successful delivery to unblock it. |
+
+### Semantic interface handoff to #438
+
+This is the current Application/adapter contract for future art/UI work, with no UX or layout choice:
+
+| Surface | Consumer obligation |
+| --- | --- |
+| `QueryBattleChoices()` | Consume the immutable `BattleChoicesSnapshot` session/revision/actor/stage/origin and ordered `Actions`. Each action supplies its typed reference, label, presenter kind, range, Empty, Enabled, Reason and ordered target references with their own Enabled/Reason. `Spells` and `Items` derive from those same offers. |
+| Inventory | Present the returned slot/label/Empty/reason. Raw source words remain engine/content data; the view never masks item bits or infers usable items. Slot identity participates in the typed action and is rechecked at commit. |
+| Selection and confirmation | Submit semantic `SelectBattleAction`/`SelectSpell`/`SelectItem`, `SelectTarget`, Move/Confirm/Cancel through the current `CommandEnvelope`. The engine owns live target legality and preparation. Requery after state changes; a disabled candidate or missing consumer retains its diagnostic. |
+| State and effect projection | Render the current single-session snapshot and ordered scene/program requests. Selecting an existing presenter by `BattlePresentationKind` or cue kind is allowed; selecting rules by package/module/strategy name, calculating target factions/ranges or replaying observation strings as effects is not. |
+| Completion/input | Submit actual matching token/kind delivery, acknowledgement, text reveal and eligible Wait separately. The engine owns PC/stack/timers, resource publication, queue and control release. Duplicate/stale completion rejects; displaying text does not acknowledge it or finish a timer. |
+| Diagnostics | Display the typed failure and relevant context; preserve the reached pending scene/program state. Rule, Content and adapter failures have the separate ownership described above. |
+
+The actual [`BattleSessionView`](../game/src/Battles/BattleSessionView.cs) already consumes semantic
+offers/targets/inventory through this interface. Domain has no outward Application/Content/Godot
+dependency; Content admits data and its typed source opcode, while factories alone select concrete
+implementations. The generic scheduler/runner and Godot have no new policy-name switches.
+There is one current snapshot authority and one selected calculator per migrated seam.
+S1 is resolved for implemented formulas; S2 for semantic actions/targets/inventory; S3 retains explicit
+legality-versus-consumer support; S4 has the guarded source-story policy; S5 separates rule binding
+from state/control/faction/order for the finite admitted set. Fixed refresh/activation/control,
+movement-cost, field text/music/motion and battle-scene source-service algorithms remain the
+explicit exclusions in the independently accepted bounded scope. #438 remains open for UI/UX
+discussion with the user; Git integration and Epic closure remain main-gate responsibilities.
 
 ### Cumulative resources, pilot decisions and recovery
 
@@ -797,8 +921,9 @@ are reassessment signals, not design acceptance targets or reasons to omit neces
 Main-gate adjusts estimates as routine engineering judgment, including extra work that prevents
 rework; this does not automatically require user approval. Stop for actual scope departures such as
 a second state authority, new runtime/framework or unauthorized acquisition. Changed user outcomes,
-fidelity or explicit user limits still require the user's decision. Source-service deferrals must
-be accepted explicitly before bounded #617 closure; otherwise keep the Epic open for that decision.
+fidelity or explicit user limits still require the user's decision. The fixed source-service
+exclusions are part of main-gate's independently accepted bounded #617 scope; broader replacement
+requires a future scoped decision.
 
 Each accepted slice is a recoverable Git boundary: integrate only after independent checks and
 retain its prior behavior/failure evidence. Before merge, correct or discard only that topic; after

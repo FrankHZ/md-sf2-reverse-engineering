@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;

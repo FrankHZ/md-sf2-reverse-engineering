@@ -58,6 +58,28 @@ programs exercise the same session and presenter. Their curves, entities and tex
 They establish neither original natural continuity nor a successful private outcome observation.
 Algorithm selection remains compiled C# composition, separate from this content/trust admission.
 
+### Story content and source policy selection
+
+The public v8 story examples [A](../content/authored/story-rule-demo-a.json) and
+[B](../content/authored/story-rule-demo-b.json) reuse ordinary typed branch/call/text/tick/return
+operations and the existing reader. All call/jump/branch references are checked at admission,
+including untaken targets. Their text, flags and entity effects are project-authored and grant no
+source-fidelity or private distribution claim.
+
+The Content profile and the compiled rule composition are separate selections. `ForGame()` and
+direct default starts retain `RuleCompositions.Sf2()`; they can consume ordinary authored programs.
+Every explicitly authored factory, including `AuthoredStory()`, selects `AuthoredStoryPolicy`,
+which reports Unsupported for any reached `SourceStoryInstruction`. The SF2 composition selects
+the named source policy and enforces the exact existing scratch context/retirement guards. The
+reader maps the unchanged `retired-map3-entity-scratch` opcode to its typed source instruction;
+it does not select the policy or execute a handler registry. The accepted private source entry
+continues to require its own provenance/resources and never selects an authored fallback.
+
+This is trusted project source composition, not a security sandbox for arbitrary mods. A public
+file does not prove source reach by choosing source-like IDs or flags; constructed source-context
+tests are explicitly SF2-policy tests. No new package format, source capability, algorithm-name
+loader or live policy switch is admitted. See the [author workflow](./architecture.md#rule-author-workflow-and-diagnostics).
+
 ## Public Authored
 
 `AuthoredScenarioPackageReader` accepts the closed `formatVersion: 7` package with map/terrain, actor/spell and encounter
