@@ -208,18 +208,18 @@ Domain rules and Application story policy using the existing inward dependency. 
 validated definitions, not executable C# names or factories.
 
 A single immutable `SessionRules` composition in Application holds the selected Domain rule bundle
-and story policy. `GameSession.Start` accepts it and retains it for the session; existing overloads
-may delegate to one explicit default factory. That default is a composition decision, never a branch
+and story policy. `GameSession.Start` accepts it and retains it for the session; default overloads
+delegate to one explicit SF2 factory. That default is a composition decision, never a branch
 inside arithmetic, dispatch, query, scheduler or view. Existing direct-start callers keep working;
-Godot's two source-start entries use the same composition. New project-authored implementation files
+Godot's root and standalone battle-view source starts use the same composition. New project-authored implementation files
 and their composition factory can be compiled in the existing projects. A caller selects a factory
 before start, not a package-name switch during play. There is no mutable global current profile.
 
 Retain a diagnostic identity for the selected composition independently of the content's format/trust
-profile. The first authored demonstrations select a C# factory in ordinary startup composition and
+profile. The authored demonstrations select a C# factory in ordinary startup composition and
 rebuild; they need no new package schema or runtime selector. Authored variants must not be reported
 as SF2 fidelity. A private source entry keeps its admitted default rule/resource contract; it cannot
-silently select an authored fallback. Later immutable action/AI content keys resolve once against the
+silently select an authored fallback. Immutable action/AI content keys resolve once against the
 selected bundle, with missing/duplicate bindings rejected at start, not discovered through reflection.
 
 Do not create empty policy interfaces for future families. A new seam needs an actual consumer;
@@ -260,7 +260,7 @@ may still reject during preparation without publishing its speculative draws. Ke
 distinct from a stale or illegal selection. Queries must not run the whole scene, consume RNG, or
 cache a prepared result whose seed could later be mistaken for live state.
 
-The first action uses existing typed preparation, not a universal effect algebra. Its result needs
+Action preparation uses the existing typed result, not a universal effect algebra. Its result needs
 structural validation because an injected implementation can return an impossible transition even
 when trusted project code is not malicious. Validate allowed deltas at this real authority boundary;
 do not copy whole state into a new editable request object or add a separate validation service.
