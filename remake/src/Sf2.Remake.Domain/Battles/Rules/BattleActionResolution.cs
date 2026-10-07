@@ -45,6 +45,10 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             Require(before.Definition.Contains(position) && BattleRange.Contains(Path[index - 1], position, 1, 1));
             int step = BattleTerrainRules.MovementCost(before.Definition.Terrain[position.Y * 48 + position.X], actor.Definition.Mover);
             Require(step > 0); cost += step;
+            // Physical routes block living opponents; no-target source movement owns its occupancy policy.
+            if (Target is not null)
+                Require(!before.Actors.Any(unit => unit.Hp > 0 && unit.Faction != actor.Faction &&
+                    unit.Position == position));
         }
         Require(cost <= actor.Definition.Move * 2 && !before.Actors.Any(unit =>
             unit.Actor != actorRef && unit.Hp > 0 && unit.Position == Destination));

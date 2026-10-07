@@ -205,6 +205,91 @@ public sealed class BattleDecisionReplacementTests
         Assert.NotNull(Send(session, new AdvanceSimulation()).Failure); Assert.Same(stopped, session.Current);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void PhysicalRoutesRejectOpposingTransitAndRetainFriendlyTransitToTheSameReachableStop(bool opponent)
+    {
+        var document = Document("decision-rule-demo");
+        var blocker = opponent ? Lookout : new ActorRef("scavenger");
+        var placement = document["encounters"]![0]!["placements"]!.AsArray()
+            .Single(row => row!["actor"]!.GetValue<string>() == blocker.Value)!;
+        placement["x"] = 4; placement["y"] = 4;
+        var physical = new CountedPhysical();
+        var rule = new PhysicalRouteDecision();
+        var session = Open(document, Rules(rule, physical)); var before = session.Current.Battle;
+        var destination = new MapPosition(3, 4);
+        // The stop is empty and legally reachable by another route; only the returned transit is wrong.
+        var legal = BattleMovement.Preview(before, Raider, destination);
+        Assert.Equal(destination, legal.Destination);
+        Assert.True(legal.Cost <= before.GetActor(Raider).Definition.Move * 2);
+        if (opponent) Assert.DoesNotContain(new MapPosition(4, 4), legal.Path);
+        Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
+        var result = Send(session, new Confirm());
+        if (opponent)
+        {
+            Assert.True(result.Failure?.Kind == SessionFailureKind.InvariantFailure,
+                $"Expected invariant rejection; failure={result.Failure?.Code ?? "none"}, " +
+                $"movement={result.Snapshot.BattleMovement?.From}->{result.Snapshot.BattleMovement?.To}, " +
+                $"thinking={result.Snapshot.Battle.ThinkingSeed:X8}, preflights={physical.Preparations}, " +
+                $"observations={string.Join(",", result.Observations.Select(row => row.Kind))}");
+            Assert.Equal("decision-rule-failure", result.Failure!.Code);
+            Assert.Contains(rule.Identity, result.Failure.Message);
+            Assert.Equal(SessionStopReason.Faulted, result.StopReason);
+            Assert.Equal(before.MainSeed, result.Snapshot.Battle.MainSeed);
+            Assert.Equal(before.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
+            Assert.Equal(before.Actors.Select(actor => (actor.Hp, actor.Position, actor.LastTarget, actor.AiMemory)),
+                result.Snapshot.Battle.Actors.Select(actor => (actor.Hp, actor.Position, actor.LastTarget, actor.AiMemory)));
+            Assert.Equal(before.Queue, result.Snapshot.Battle.Queue);
+            Assert.Equal(1, result.Snapshot.Battle.Cursor);
+            Assert.Equal(Raider, BattleTurnFlow.QueuedActor(result.Snapshot.Battle).Actor);
+            Assert.Single(result.Observations, row => row.Kind == "action-committed" && row.Actor == Sword);
+            Assert.DoesNotContain(result.Observations, row => row.Actor == Raider);
+            Assert.Null(result.Snapshot.BattleMovement); Assert.Null(result.Snapshot.BattleScene);
+            Assert.Equal(0, physical.Preparations);
+            var stopped = session.Current;
+            Assert.NotNull(Send(session, new AdvanceSimulation()).Failure); Assert.Same(stopped, session.Current);
+        }
+        else
+        {
+            Assert.Null(result.Failure);
+            Assert.Equal(new[] { new MapPosition(5, 4), new MapPosition(4, 4), destination },
+                result.Snapshot.BattleMovement!.Path);
+            Assert.Equal(before.GetActor(Raider).Position, result.Snapshot.Battle.GetActor(Raider).Position);
+            Assert.Equal(before.MainSeed, result.Snapshot.Battle.MainSeed);
+            Assert.NotEqual(before.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
+            Assert.Single(result.Observations, row => row.Kind == "thinking-rng");
+            Assert.Equal(Sword, result.Snapshot.Battle.GetActor(Raider).LastTarget);
+            Assert.Equal(1, physical.Preparations);
+            var finished = FinishBattleScenes(session, FinishMovement(session, result));
+            Assert.Equal(SessionStopReason.PlayerInput, finished.StopReason);
+            Assert.Equal(destination, finished.Snapshot.Battle.GetActor(Raider).Position);
+            Assert.Equal(before.GetActor(blocker).Position, finished.Snapshot.Battle.GetActor(blocker).Position);
+            Assert.Equal(before.GetActor(blocker).Hp, finished.Snapshot.Battle.GetActor(blocker).Hp);
+            Assert.Equal((ushort)399, finished.Snapshot.Battle.GetActor(Sword).Hp);
+            Assert.Equal((ushort)487, finished.Snapshot.Battle.GetActor(Raider).Hp);
+            Assert.Equal(2, finished.Snapshot.Battle.Cursor); Assert.Equal(2, physical.Preparations);
+            Assert.Single(finished.Observations, row => row.Kind == "action-committed" && row.Actor == Raider);
+            Assert.Single(finished.Observations, row => row.Kind == "thinking-rng");
+        }
+    }
+
+    private sealed class PhysicalRouteDecision : IBattleDecisionRule
+    {
+        private readonly FirstLegalBattleDecision _admission = new();
+        public string Identity => "physical-route-test";
+        public void RequireDeployment(BattleDeploymentDefinition deployment) => _admission.RequireDeployment(deployment);
+        public void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input) => _admission.RequireStart(deployment, input);
+        public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical)
+        {
+            var draw = BattleRandom.NextThinkingWord((ushort)(battle.ThinkingSeed >> 16), 3);
+            uint seed = ((uint)draw.After << 16) | (battle.ThinkingSeed & 65535);
+            var prepared = battle.With(thinkingSeed: seed, actors: battle.Actors.Select(
+                row => row.Actor == actor ? row.With(lastTarget: Sword) : row));
+            return new(prepared, [new("thinking-rng", actor, battle.ThinkingSeed, seed, 3, draw.Value),
+                new("ai-target", actor, Target: Sword)], new(3, 4), [new(5, 4), new(4, 4), new(3, 4)], Sword);
+        }
+    }
     private sealed class CountedDecision(IBattleDecisionRule inner) : IBattleDecisionRule
     {
         public int Calls { get; private set; }
