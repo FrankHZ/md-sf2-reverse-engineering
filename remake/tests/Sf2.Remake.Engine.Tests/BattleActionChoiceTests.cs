@@ -223,6 +223,93 @@ public sealed class BattleActionChoiceTests
         Assert.DoesNotContain(result.Observations, row => row.Kind == "thinking-rng");
     }
 
+    [Theory]
+    [InlineData("estimate")]
+    [InlineData("preflight")]
+    [InlineData("post-decision")]
+    public void CompletedHealIsNotRolledBackWhenTheNextSelectedPhysicalRuleFails(string fault)
+    {
+        var document = Automatic();
+        document["spells"] = Document()["spells"]!.DeepClone();
+        document["actors"]![0]!["classRule"] = "unpromoted-priest";
+        document["actors"]![0]!["maxMp"] = 8;
+        document["actors"]![0]!["spells"] = Document()["actors"]![0]!["spells"]!.DeepClone();
+        document["start"]!["actors"]![0]!["mp"] = 8;
+        document["start"]!["actors"]![0]!["hp"] = 20;
+        document["actors"]![1]!["agility"] = 1;
+        document["actors"]![2]!["agility"] = 20;
+        if (fault == "post-decision") document["encounters"]![0]!["placements"]![2]!["x"] = 2;
+        var rule = new SmallPhysicalRule(estimate: fault == "estimate" ? -1 : 1000,
+            failPreflight: fault == "preflight", failAfterPreflight: fault == "post-decision");
+        var session = Open(document, Rules(rule));
+        uint startingSeed = session.Current.Battle.MainSeed;
+        var actor = session.Current.Selection!.Actor;
+        Accept(session, new Confirm()); Accept(session, new SelectSpell(new("mend", 1)));
+        Accept(session, new SelectTarget(actor));
+        var begun = Accept(session, new Confirm());
+        var observations = begun.Observations.ToList();
+        while (session.Current.BattleScene!.Phase != BattleScenePhase.End ||
+            !session.Current.BattleScene.Healing!.LogicalComplete)
+        {
+            var scene = session.Current.BattleScene;
+            var step = Accept(session, scene.Healing is { LogicalComplete: false, AtTimedInput: false }
+                ? new AdvanceSimulation(scene.Token) : scene.RequiresAcknowledgement
+                    ? new Acknowledge(scene.Token) : new CompletePresentation(scene.Token, scene.CompletionKind));
+            observations.AddRange(step.Observations);
+        }
+        var completedHeal = session.Current;
+        var resources = completedHeal.Battle.GetActor(actor);
+        Assert.Equal(35, resources.Hp); Assert.Equal(5, resources.Mp); Assert.True(resources.Exp > 0);
+        var token = completedHeal.BattleScene!.Token;
+        var completion = new CompletePresentation(token, completedHeal.BattleScene.CompletionKind);
+        var result = Send(session, completion);
+        observations.AddRange(result.Observations);
+        Assert.Equal(SessionFailureKind.InvariantFailure, result.Failure!.Kind);
+        Assert.Equal(SessionStopReason.Faulted, result.Snapshot.StopReason);
+        Assert.Null(result.Snapshot.BattleScene); Assert.Null(result.Snapshot.BattleMovement);
+        Assert.Equal(completedHeal.Battle.Cursor + 1, result.Snapshot.Battle.Cursor);
+        Assert.Equal(new("raider"), result.Snapshot.Battle.Queue[result.Snapshot.Battle.Cursor].Actor);
+        Assert.Equal(completedHeal.Battle.MainSeed, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(completedHeal.Battle.Gold, result.Snapshot.Battle.Gold);
+        Assert.Equal((resources.Hp, resources.Mp, resources.Exp, resources.Kills, resources.Defeats),
+            (result.Snapshot.Battle.GetActor(actor).Hp, result.Snapshot.Battle.GetActor(actor).Mp,
+                result.Snapshot.Battle.GetActor(actor).Exp, result.Snapshot.Battle.GetActor(actor).Kills,
+                result.Snapshot.Battle.GetActor(actor).Defeats));
+        Assert.Single(observations, row => row.Kind == "action-committed" && row.Actor == actor);
+        Assert.Single(observations, row => row.Kind == "scene-ended" && row.Actor == actor);
+        Assert.Single(observations, row => row.Kind == "hp" && row.Actor == actor);
+        Assert.Single(observations, row => row.Kind == "mp" && row.Actor == actor);
+        Assert.Single(observations, row => row.Kind == "exp" && row.Actor == actor);
+        Assert.Equal(observations.Count, observations.Select(row => row.Sequence).Distinct().Count());
+        var mainDraws = observations.Where(row => row.Kind.StartsWith("rng-", StringComparison.Ordinal)).ToArray();
+        Assert.True(mainDraws.Length > 2); // Construction and later HEAL scene work are both retained.
+        uint seed = startingSeed;
+        foreach (var draw in mainDraws)
+        {
+            Assert.Equal(seed, draw.Before);
+            var expected = BattleRandom.NextMain(seed, draw.RandomRange!.Value);
+            Assert.Equal(expected.After, draw.After); Assert.Equal(expected.Value, draw.RandomValue);
+            seed = expected.After;
+        }
+        Assert.Equal(seed, result.Snapshot.Battle.MainSeed);
+        if (fault == "post-decision")
+        {
+            Assert.Equal(2, rule.Preparations.Count);
+            Assert.NotEqual(completedHeal.Battle.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
+            Assert.NotNull(result.Snapshot.Battle.GetActor(new("raider")).LastTarget);
+            Assert.Contains(result.Observations, row => row.Kind == "ai-target");
+        }
+        else
+        {
+            Assert.Equal(completedHeal.Battle.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
+            Assert.Null(result.Snapshot.Battle.GetActor(new("raider")).LastTarget);
+        }
+        var stopped = session.Current; int preparationCount = rule.Preparations.Count;
+        Assert.Equal("not-player-control", Send(session, completion).Failure!.Code);
+        Assert.Equal("not-waiting", Send(session, new AdvanceSimulation()).Failure!.Code);
+        Assert.Same(stopped, session.Current); Assert.Equal(preparationCount, rule.Preparations.Count);
+    }
+
     [Fact]
     public void ProgramRunnerBattleEntryRetainsTheSelectedPhysicalRule()
     {
@@ -324,7 +411,7 @@ public sealed class BattleActionChoiceTests
         Assert.Equal(before.ThinkingSeed, completed.Snapshot.Battle.ThinkingSeed);
     }
 
-    private class SmallPhysicalRule(string? block = null, int estimate = 1000, bool failAfterPreflight = false, ushort? constructionRange = null) : IPhysicalActionRule
+    private class SmallPhysicalRule(string? block = null, int estimate = 1000, bool failAfterPreflight = false, ushort? constructionRange = null, bool failPreflight = false) : IPhysicalActionRule
     {
         private readonly Sf2PhysicalAction _source = new();
         public List<(ActorRef Actor, ActorRef Target)> Estimates { get; } = [];
@@ -347,7 +434,7 @@ public sealed class BattleActionChoiceTests
             var target = targetRef!.Value;
             _ = RequireTarget(battle, actor, destination, action, target);
             Preparations.Add((actor, destination, target, battle.MainSeed, battle.ThinkingSeed));
-            if (failAfterPreflight && Preparations.Count > 1) throw new InvalidOperationException("private detail");
+            if (failPreflight || failAfterPreflight && Preparations.Count > 1) throw new InvalidOperationException("private detail");
             var defender = battle.GetActor(target);
             uint seed = battle.MainSeed;
             List<BattleEffect> facts = [];

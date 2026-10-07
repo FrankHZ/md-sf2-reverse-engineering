@@ -303,7 +303,11 @@ internal static class BattleSceneContinuation
             new ActiveBattle(battle, null, updated), current.Story, current.StopReason);
         var result = Continue(ready, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token)
             : new CompletePresentation(scene.Token, scene.CompletionKind), rules);
-        if (result.Failure is not null) return result with { Snapshot = current, Observations = [] };
+        // A rejected current scene step returns its input snapshot: discard only
+        // this tentative logical/delivery update. Release may already have committed
+        // the action and advanced into automatic work; retain that downstream state.
+        if (result.Failure is not null && ReferenceEquals(result.Snapshot, ready))
+            return result with { Snapshot = current, Observations = [] };
         return result with { Observations = observations.Concat(result.Observations).ToArray() };
     }
 
