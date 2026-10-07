@@ -69,7 +69,7 @@ boundary; relocating classes inside Application would not establish it.
 ## Current M0 implementation
 
 Domain now has small internal [BattleRandom](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRandom.cs),
-[HealingRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/HealingRules.cs),
+[HealingRules](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/HealingRules.cs),
 [TurnOrderRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/TurnOrderRules.cs), and
 [BattleRange](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRange.cs) rules. Existing Battle01
 healing and first-round consumers call them. Their inputs contain no character, round, receipt or

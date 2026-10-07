@@ -4,6 +4,7 @@ using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Authored;
 using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -84,6 +85,46 @@ public sealed class HealingRuleReplacementTests
         Assert.Same(before, ordinary.Current);
     }
 
+    [Fact]
+    public void RuleOwnedRecoveryDrawCompletesThroughTheSessionWithCarriedRng()
+    {
+        var session = Open(new("random-recovery-test", new RandomRecoveryRule()));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
+        var before = session.Current; var actor = before.Selection!.Actor;
+        Assert.True(Assert.Single(session.QueryBattleChoices().Spells).Targets[0].Enabled);
+        Assert.Same(before, session.Current);
+        Select(session);
+        var draw = BattleRandom.NextMain(before.Battle.MainSeed, 10);
+        var prepared = Accept(session, new Confirm());
+        var fact = Assert.Single(prepared.Observations, row => row.RandomRange is not null);
+        Assert.Equal("rng-recovery", fact.Kind); Assert.Equal((ushort?)10, fact.RandomRange);
+        Assert.Equal((long?)draw.Before, fact.Before); Assert.Equal((long?)draw.After, fact.After);
+        Assert.Equal((ushort?)draw.Value, fact.RandomValue);
+        Assert.Equal(draw.After, session.Current.Battle.MainSeed);
+        Assert.Equal(new MapPosition(4, 3), session.Current.Battle.GetActor(actor).Position);
+        Assert.Equal(30, session.Current.Battle.GetActor(actor).Hp);
+        Assert.Equal(8, session.Current.Battle.GetActor(actor).Mp);
+        var ended = FinishBattleScenes(session, prepared);
+        var healed = ended.Snapshot.Battle.GetActor(actor);
+        Assert.Equal(31 + draw.Value, healed.Hp); Assert.Equal(5, healed.Mp);
+        Assert.Equal((byte?)0, healed.Exp);
+        Assert.Single(ended.Observations, row => row.Kind == "hp" && row.Actor == actor);
+        Assert.Single(ended.Observations, row => row.Kind == "mp" && row.Actor == actor);
+        Assert.DoesNotContain(ended.Observations, row => row.Kind == "exp" || row.Kind.StartsWith("rng-exp-", StringComparison.Ordinal));
+        Assert.Single(ended.Observations, row => row.Kind == "after-turn" && row.Actor == actor);
+        uint seed = before.Battle.MainSeed;
+        foreach (var observed in ended.Observations.Where(row => row.RandomRange is not null))
+        {
+            var next = BattleRandom.NextMain(seed, observed.RandomRange!.Value);
+            Assert.Equal((long?)seed, observed.Before); Assert.Equal((long?)next.After, observed.After);
+            Assert.Equal((ushort?)next.Value, observed.RandomValue); seed = next.After;
+        }
+        Assert.Equal(seed, ended.Snapshot.Battle.MainSeed);
+        Assert.Equal(before.Battle.ThinkingSeed, ended.Snapshot.Battle.ThinkingSeed);
+        Assert.Null(session.Current.BattleScene);
+        Assert.Equal(new ActorRef("guard-a"), session.Current.Selection!.Actor);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -141,6 +182,11 @@ public sealed class HealingRuleReplacementTests
     [InlineData("seed")]
     [InlineData("queue")]
     [InlineData("effect")]
+    [InlineData("rng-chain")]
+    [InlineData("rng-after")]
+    [InlineData("rng-value")]
+    [InlineData("rng-range")]
+    [InlineData("rng-final")]
     public void BrokenRulePreparationPublishesNoMovementResourcesRngOrObservations(string fault)
     {
         var rule = new BrokenRule(fault); var session = Open(new("broken-test-rule", rule));
@@ -254,6 +300,23 @@ public sealed class HealingRuleReplacementTests
         Assert.Empty(result.Observations); Assert.Same(before, session.Current);
     }
 
+    // Test-only rule uses the existing preparation shape and real scene consumer.
+    private sealed class RandomRecoveryRule : AuthoredHealingRule
+    {
+        public override string Identity => "random-recovery-test";
+        protected override BattleActionResolution Calculate(EngineBattleState battle, BattleActorState actor,
+            BattleActorState target, MapPosition destination, HealingSpellDefinition spell)
+        {
+            var draw = BattleRandom.NextMain(battle.MainSeed, spell.Power);
+            int recovery = Math.Min(target.MaxHp - target.Hp, 1 + draw.Value);
+            return new(battle.With(mainSeed: draw.After, actors: battle.Actors.Select(a => a.Actor == actor.Actor
+                    ? a.With(position: destination) : a)), actor.Actor, destination,
+                [new(actor.Actor, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
+                    (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)], null,
+                [new("rng-recovery", actor.Actor, draw.Before, draw.After, draw.Range, draw.Value)], [], Spell: spell);
+        }
+    }
+
     private sealed class BrokenRule(string fault) : IHealingRule
     {
         private readonly Sf2HealingRule _source = new();
@@ -287,7 +350,12 @@ public sealed class HealingRuleReplacementTests
                 "mp" => action with { Prepared = action.Prepared.With(actors: action.Prepared.Actors.Select(a => a.Actor == actor ? a.With(mp: 0) : a)) },
                 "seed" => action with { Prepared = action.Prepared.With(thinkingSeed: 1) },
                 "queue" => action with { Prepared = action.Prepared.With(cursor: battle.Cursor + 1) },
-                "effect" => action with { ConstructionEffects = [new("gold", actor, 0, 5)] },
+                "effect" => action with { ConstructionEffects = [action.ConstructionEffects[0] with { Kind = "gold" }, action.ConstructionEffects[1]] },
+                "rng-chain" => action with { ConstructionEffects = [action.ConstructionEffects[0], action.ConstructionEffects[1] with { Before = battle.MainSeed }] },
+                "rng-after" => action with { ConstructionEffects = [action.ConstructionEffects[0] with { After = action.ConstructionEffects[0].After + 1 }, action.ConstructionEffects[1]] },
+                "rng-value" => action with { ConstructionEffects = [action.ConstructionEffects[0] with { RandomValue = (ushort)(action.ConstructionEffects[0].RandomValue!.Value + 1) }, action.ConstructionEffects[1]] },
+                "rng-range" => action with { ConstructionEffects = [action.ConstructionEffects[0] with { RandomRange = null }, action.ConstructionEffects[1]] },
+                "rng-final" => action with { Prepared = action.Prepared.With(mainSeed: action.Prepared.MainSeed ^ 1) },
                 _ => action,
             };
         }

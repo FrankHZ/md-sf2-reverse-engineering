@@ -25,6 +25,7 @@ public sealed class HealingRulesTests
         Assert.Equal(patient.Hp, action.Prepared.GetActor(target).Hp);
         Assert.Equal(before.Exp, action.Prepared.GetActor(actor).Exp);
         Assert.Equal(2, action.ConstructionEffects.Count);
+        Assert.Equal(new[] { "rng-exp-plus", "rng-exp-minus" }, action.ConstructionEffects.Select(effect => effect.Kind));
         Assert.All(action.ConstructionEffects, effect => Assert.Equal((ushort)16, effect.RandomRange));
         var cast = action.ApplySpellCost(action.Prepared);
         Assert.Equal(before.Mp - 3, cast.GetActor(actor).Mp);

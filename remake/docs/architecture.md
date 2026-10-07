@@ -411,6 +411,9 @@ rechecks the selected rule and private cast capability, then `ValidateHealing` c
 resolution before `Begin`: only selected movement/main construction RNG, bounded target recovery,
 caster MP cost and later caster progress are permitted. Foreign state, queue, thinking RNG,
 accounting, definition and observation effects cannot be published by malformed HEAL output.
+Construction random facts must form a complete `BattleRandom` main-seed chain; their count,
+purpose names and ranges belong to the selected rule. SF2's two range-16 EXP draws are asserted at
+its own behavior boundary, rather than imposed on every HEAL implementation.
 Unexpected selected-rule errors report `InvariantFailure` with rule/operation context, without
 exposing exception details. Expected rule errors retain their existing categories. Source unknown
 EXP remains a reached preparation failure; selection does not prematurely spend or require it.

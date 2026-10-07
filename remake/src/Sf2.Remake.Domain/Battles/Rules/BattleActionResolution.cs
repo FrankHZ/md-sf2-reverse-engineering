@@ -52,13 +52,15 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(actor.Mp >= spell.MpCost);
         Require(Reward is null || Reward.Actor == actorRef && Reward.Amount is > 0 and <= 200);
         uint seed = before.MainSeed;
-        Require(ConstructionEffects.Count is 0 or 2);
-        for (int index = 0; index < ConstructionEffects.Count; index++)
+        // The rule owns draw count, purpose and range. This boundary checks that
+        // construction contains only random facts and carries the actual chain.
+        foreach (var effect in ConstructionEffects)
         {
-            var effect = ConstructionEffects[index]; var draw = BattleRandom.NextMain(seed, 16);
-            Require(effect.Kind == (index == 0 ? "rng-exp-plus" : "rng-exp-minus") && effect.Actor == actorRef &&
-                effect.Target is null && effect.Before == seed && effect.After == draw.After &&
-                effect.RandomRange == 16 && effect.RandomValue == draw.Value);
+            Require(effect.Kind.StartsWith("rng-", StringComparison.Ordinal) && effect.Kind.Length > 4 &&
+                effect.Actor == actorRef && effect.Target is null && effect.RandomRange is not null);
+            var draw = BattleRandom.NextMain(seed, effect.RandomRange!.Value);
+            Require(effect.Before == seed && effect.After == draw.After &&
+                effect.RandomValue == draw.Value);
             seed = draw.After;
         }
         Require(Prepared.MainSeed == seed);
