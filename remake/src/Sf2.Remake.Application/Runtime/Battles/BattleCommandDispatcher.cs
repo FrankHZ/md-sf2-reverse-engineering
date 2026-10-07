@@ -12,6 +12,10 @@ internal static class BattleCommandDispatcher
                 code, field, code.Replace('-', ' ')));
 
     internal static SessionResult Submit(SessionSnapshot current, SessionCommand command,
+        BattleSceneDefinition? sceneContent = null, bool requireSceneContent = false) =>
+        Submit(current, command, Gameplay.RuleCompositions.Sf2(), sceneContent, requireSceneContent);
+
+    internal static SessionResult Submit(SessionSnapshot current, SessionCommand command, SessionRules rules,
         BattleSceneDefinition? sceneContent = null, bool requireSceneContent = false)
     {
         if (command is AdvanceSimulation)
@@ -69,7 +73,7 @@ internal static class BattleCommandDispatcher
                         SessionAction.Item, target: itemTarget.Target, itemSlot: slot), "target-selected");
                 case SelectSpell spell when selection.Stage == BattleSelectionStage.ActionChoice ||
                     (selection.Action == SessionAction.Heal && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady):
-                    _ = PlayerHealing.RequireSpell(battle, selection.Actor, spell.Spell);
+                    _ = BattleChoices.RequireSpell(rules, battle, selection.Actor, spell.Spell);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.TargetChoice,
                         SessionAction.Heal, spell.Spell), "spell-selected");
                 case SelectTarget physicalTarget when selection.Action == SessionAction.PhysicalAttack &&
@@ -79,17 +83,18 @@ internal static class BattleCommandDispatcher
                         SessionAction.PhysicalAttack, target: physicalTarget.Target), "target-selected");
                 case SelectTarget target when selection.Spell is { } selectedSpell &&
                     selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
-                    var definition = PlayerHealing.RequireSpell(battle, selection.Actor, selectedSpell);
-                    _ = PlayerHealing.RequireTarget(battle, selection.Actor, selection.Preview.Destination, definition, target.Target);
+                    var definition = BattleChoices.RequireSpell(rules, battle, selection.Actor, selectedSpell);
+                    _ = BattleChoices.RequireTarget(rules, battle, selection.Actor, selection.Preview.Destination, definition, target.Target, sceneContent, requireSceneContent);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady,
                         SessionAction.Heal, selectedSpell, target.Target), "target-selected");
                 case Confirm when selection.Stage == BattleSelectionStage.CommitReady:
-                    return Commit(current, selection, sceneContent, requireSceneContent);
+                    return Commit(current, selection, sceneContent, requireSceneContent, rules);
                 default:
                     return Reject(current, "wrong-selection-stage", "phase");
             }
         }
         catch (BattleRuleException error) { return Reject(current, error.Code, error.Field, error.Unsupported); }
+        catch (HealingRuleFault error) { return new(current, [], SessionStopReason.Faulted, error.Failure); }
     }
 
     private static SessionResult Selected(SessionSnapshot current, BattleSelection selection, string kind)
@@ -101,16 +106,22 @@ internal static class BattleCommandDispatcher
     }
 
     private static SessionResult Commit(SessionSnapshot current, BattleSelection selection,
-        BattleSceneDefinition? sceneContent, bool requireSceneContent)
+        BattleSceneDefinition? sceneContent, bool requireSceneContent, SessionRules rules)
     {
         EngineBattleState battle;
         IReadOnlyList<BattleEffect> effects = [];
         if (selection.Action == SessionAction.Heal && selection.Spell is { } spell && selection.Target is { } target)
         {
-            var action = PlayerHealing.Prepare(current.Battle,
-                selection.Actor, selection.Preview.Destination, spell, target);
-            if (requireSceneContent && sceneContent is null)
-                throw new BattleRuleException("healing-scene-content", "battleScenes.healing", true);
+            var definition = BattleChoices.RequireSpell(rules, current.Battle, selection.Actor, spell);
+            _ = BattleChoices.RequireTarget(rules, current.Battle, selection.Actor, selection.Preview.Destination,
+                definition, target, sceneContent, requireSceneContent);
+            var action = BattleChoices.Invoke(rules, "prepare", () =>
+            {
+                var prepared = rules.Healing.Prepare(current.Battle,
+                    selection.Actor, selection.Preview.Destination, spell, target);
+                prepared.ValidateHealing(current.Battle, selection.Actor, selection.Preview.Destination, definition, target);
+                return prepared;
+            });
             return BattleSceneContinuation.Begin(current, action, [], sceneContent: sceneContent);
         }
         else if (selection.Action == SessionAction.Item && selection.ItemSlot is { } slot && selection.Target is { } itemTarget)

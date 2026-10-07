@@ -89,7 +89,7 @@ public sealed partial class GameRoot : Node
 
         void BeginSource(IScenarioSource source)
         {
-            var outcome = GameSession.Start(source);
+            var outcome = GameSession.Start(source, Sf2.Remake.Application.Gameplay.RuleCompositions.ForGame());
             if (outcome is SessionStartFailed failed) { view.FailStartup(failed.Failure); return; }
             var started = (SessionStarted)outcome;
             if (started.Session.Definition.Exploration is { } definition)

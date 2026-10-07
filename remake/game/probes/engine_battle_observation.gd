@@ -71,6 +71,10 @@ func _run() -> void:
         return
     var observation_case := _diagnostic("CASE")
     if not observation_case.is_empty():
+        if observation_case == "healing-rule":
+            await preload("res://probes/engine_healing_rule_observation.gd").new().run(self, initial)
+            _finish()
+            return
         if observation_case == "item-selection":
             await _item_selection(initial)
             _finish()

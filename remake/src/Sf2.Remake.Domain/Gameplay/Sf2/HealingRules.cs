@@ -1,4 +1,6 @@
-namespace Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Battles;
+
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal readonly record struct PriestHealingInput(
     ushort TargetHp, ushort TargetMaxHp, byte ActorMp, byte ActorExp,

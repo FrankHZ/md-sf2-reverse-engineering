@@ -9,8 +9,9 @@ It is an implementation guide, not a replacement for the normative decisions in
 
 The [architecture and verification audit](./architecture-audit.md) records findings at its named
 historical baseline and the user's modern-engine direction. Its A1–A8 are not a fresh defect list.
-The [logic-separation plan](#replaceable-gameplay-logic-plan) below rechecks the current callers for
-Issues #617/#672; it is proposed implementation scope, not delivered separation or new original-game evidence.
+The [logic-separation plan](#replaceable-gameplay-logic-plan) below owns the finite #617 scope.
+Its HEAL slice is implemented; the remaining action/AI/progression/story slices are planned.
+Implementation and authored demonstrations do not establish new original-game evidence.
 
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
 a service mesh, a general ECS, or an emulator-backed gameplay core.
@@ -305,8 +306,8 @@ architecture unless they reduce responsibility concentration or change amplifica
 
 ### Agreement and stopping boundary
 
-**Proposed design for [#617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/617),
-investigated by [#672](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/672).** Rigor is
+**Accepted design for [#617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/617),
+with the bounded HEAL implementation in [#674](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/674).** Rigor is
 **High**: action policy, source compatibility, shared RNG, content admission and presentation cross
 owners; a wrong commit boundary would cause expensive behavioral rework. This means finite scope,
 explicit dependencies and independent acceptance, not a new rules platform.
@@ -319,10 +320,10 @@ Preserve the single authoritative state, accepted source semantics, private prov
 The [accepted gameplay overview](../../docs/design/synthesis/gameplay-overview.md) explains the
 connected product; it does not extend the runnable capability frontier.
 
-This investigation changes only this architecture owner. It delivers source traces, a chosen design,
-a finite disposition and dependency-ordered implementation drafts for main-gate review. No production
-migration, prototype, benchmark, runtime acquisition or downstream Issue creation occurs here.
-Main-gate reviews/publishes the drafts separately. #438 art/UI/UX awaits user discussion; this plan
+The HEAL slice delivers selected rules, immutable session composition, disposable query choices,
+finite preparation validation and the existing staged scene consumer. Other action families, AI,
+progression/outcome and source story policy still require their dependent slices and independent review.
+#438 art/UI/UX awaits user discussion; this plan
 supplies semantic affordances only. #638 remains paused and Chinese synchronization is deferred.
 
 Non-goals are hot reload/state migration, an interpreter/VM, dynamic assembly discovery, a plugin
@@ -330,17 +331,18 @@ registry, a generic RPG effect language, ECS, new game capabilities, save/load, 
 and another comparator platform. Compile-free script authoring remains **Unknown** as a future
 requirement; neither this choice nor excluding hot reload answers that different question.
 
-### Current source evidence and caller ownership
+### Pre-migration source evidence and caller ownership
 
 **Confirmed — source structure only**, inspected at accepted `eec701e21bc0978d0bd9ba7c47c809a721f46ec9`.
 The subsequent accepted `70767a32df59e83d6fb0aac254e5907a89edf77e` changes only overview acceptance
 wording and its roadmap. Reproduce a trace with `git show <object>:<relative-path>` and the symbols
-below. Runtime equivalence, replacement cost and performance are **Unknown** until implementation
-pilots. These observations do not establish new facts about the original ROM.
+below. The historical paths in this table describe that accepted object; use `git show` for files
+since moved or retired. The current HEAL owner is [below](#implemented-heal-seam).
+Broader runtime equivalence and performance remain **Unknown**. These observations do not establish new facts about the original ROM.
 
 | Rechecked concern | Concrete current path | Consequence for this plan |
 | --- | --- | --- |
-| S1: formula and rule selection | [`GameSession.Start/Submit`](../src/Sf2.Remake.Application/Runtime/GameSession.cs) reads/adopts a definition once. [`BattleCommandDispatcher.Commit`](../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs) calls `PlayerHealing.Prepare`; [`PlayerHealing`](../src/Sf2.Remake.Domain/Battles/Rules/PlayerHealing.cs) calls `HealingRules.ResolvePriest` and preflights growth. [`HealingRules`](../src/Sf2.Remake.Domain/Battles/Rules/HealingRules.cs) owns proportional EXP and the ordered two award draws. There is no injected rule selection. | Move the existing algorithm into the selected implementation; do not copy a second calculator or merely externalize its constants. JSON programs already exist and should remain the story authoring path. |
+| S1: formula and rule selection | `GameSession.Start/Submit` reads/adopts a definition once. `BattleCommandDispatcher.Commit` called `PlayerHealing.Prepare`; `PlayerHealing` called `HealingRules.ResolvePriest` and preflighted growth. `HealingRules` owned proportional EXP and the ordered two award draws. There was no injected rule selection. | Move the existing algorithm into the selected implementation; do not copy a second calculator or merely externalize its constants. JSON programs already exist and should remain the story authoring path. |
 | S2: action, target and UI coupling | [`SessionContract`](../src/Sf2.Remake.Application/Runtime/SessionContract.cs) fixes Stay/Heal/PhysicalAttack/Item. Dispatcher selection/target/commit branches select their calculators. [`BattleSessionView`](../game/src/Battles/BattleSessionView.cs) constructs candidates from HP/IsAlly/action, cycles raw inventory words using `& 127`, and attempts self-target after spell/item selection. | Application must query the selected rules and return semantic choices. Current submission rechecks range: broad UI candidates are not proof of an existing legality bug. |
 | S3: capability versus legality | `PlayerHealing.RequireSpell` combines learned spell/MP checks with `healing-class` and level-based `healing-animation` Unsupported. [`AuthoredScenarioPackageReader.DecodeBattle`](../src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs) admits level 1–4 definitions but only heal/non-full-recovery effect data. `HealingSceneCursor.Create` checks the private cast/idle resources. | Separate a rule's legal conditions from implemented effect/scene support. Preserve HEAL4 and missing private-consumer rejection; moving a check does not implement the missing capability. |
 | S4: source story exception | [`ExplorationContentReader.ReadInstruction`](../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) decodes `retired-map3-entity-scratch` into [`RetiredMap3EntityScratch`](../src/Sf2.Remake.Application/Content/Scenarios/StoryProgram.cs). [`ProgramRunner.Run`](../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) checks `byte-513a8:1`, map, continuation, closed window, flags and a real entity retirement/tombstone. | Move this exact compatibility policy behind a selected source-policy call. Keep every guard and the actual hide effect; it is not a disposable route assertion. Ordinary branch/call/wait instructions already execute real programs. |
@@ -384,9 +386,45 @@ The ownership traces that constrain the replacement API are:
   `PostMessengerScratchRequiresTheExactNormalReloadAndRealEntityRetirement` constrain migration.
   This inspection read them; it did not run them or inherit a passing result.
 
+### Implemented HEAL seam
+
+[`SessionRules`](../src/Sf2.Remake.Application/Runtime/SessionRules.cs) retains one internal
+[`IHealingRule`](../src/Sf2.Remake.Domain/Battles/Rules/IHealingRule.cs) for the session's lifetime.
+[`RuleCompositions`](../src/Sf2.Remake.Application/Gameplay/RuleCompositions.cs) owns the default
+SF2 and the two authored factories; its `ForGame` method is the ordinary host's compile/restart
+selection. Source-start and definition/start overloads retain explicit composition without
+mutable selection. Default direct starts use SF2. Diagnostic rule identity is separate from Content
+profile and never chooses arithmetic in dispatcher/query/view.
+
+[`Sf2HealingRule`](../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2HealingRule.cs) owns source admission
+and preparation; the single [scalar](../src/Sf2.Remake.Domain/Gameplay/Sf2/HealingRules.cs) and
+[target helper](../src/Sf2.Remake.Domain/Gameplay/Sf2/HealingTargetRules.cs) are shared with Herb.
+[`AuthoredHealingRules`](../src/Sf2.Remake.Domain/Gameplay/Authored/AuthoredHealingRules.cs)
+implements capped/proportional award A and injured-only half-missing/no-award B. The default
+source class/award assertions remain independent of the demonstrations.
+
+`GameSession.QueryBattleChoices` returns immutable session/revision/actor/stage/destination facts,
+spell labels/presentation/range and ordered same-side living candidates with enabled/reason data.
+Query runs no preparation or RNG and retains no future seed. The actual view consumes these spell
+and target choices; physical/item/Stay UI remains the explicit next-slice boundary. Confirmation
+rechecks the selected rule and private cast capability, then `ValidateHealing` checks the existing
+resolution before `Begin`: only selected movement/main construction RNG, bounded target recovery,
+caster MP cost and later caster progress are permitted. Foreign state, queue, thinking RNG,
+accounting, definition and observation effects cannot be published by malformed HEAL output.
+Unexpected selected-rule errors report `InvariantFailure` with rule/operation context, without
+exposing exception details. Expected rule errors retain their existing categories. Source unknown
+EXP remains a reached preparation failure; selection does not prematurely spend or require it.
+
+The existing scene owns cost, HP, EXP, fairy work and later growth. Growth consumes the then-current
+seed. A reached later growth failure retains the earlier committed resources, progress, token and
+queue; no whole-action rollback or successful release is implied. The cursor's source operations
+are unchanged. [Verification](./development-and-verification.md#replaceable-heal-observation)
+owns engine assertions and the bounded actual A/B observation. Original timing, other rule families
+and full interface replacement remain outside this implemented seam.
+
 ### Selected module and composition design
 
-**Inferred design, proposed for acceptance:** keep the four assemblies. A gameplay module is an
+**Accepted design:** keep the four assemblies. A gameplay module is an
 ordinary set of C# source implementations under `Domain/Gameplay/Sf2` and
 `Application/Gameplay/Sf2`, selected by explicit construction. New authored variants live beside
 that module under `Gameplay/Authored`; they are project-authored examples, not original-fidelity
@@ -434,7 +472,7 @@ GameSession -> ordered state/scene projection -> Godot -> completion token
 
 ### Implementable API and transaction boundary
 
-Names below are proposed, not an implemented public protocol. Reuse the existing state, reference,
+HEAL names below are implemented; remaining seams are proposed. Reuse the existing state, reference,
 command, resolution, wait and failure types; do not add copies whose only purpose is forwarding.
 
 | Seam | Inputs/result and owner | Required behavior |
@@ -517,16 +555,15 @@ Keeping their fixed contracts avoids that expansion; it does not make them imple
 
 ### Dependency-ordered implementation and acceptance
 
-Slice numbers identify draft bodies in #672's local handoff, not already published Issues or granted
-write scopes. Main-gate publishes the reviewed children. Only slice 1 is dispatch-ready after this
-plan is accepted. Slices 2–5 require the preceding accepted result, refreshed exact path ownership,
+Slices are tracked by #674–#678. The HEAL slice is implemented; subsequent slices require the
+preceding independently accepted result, refreshed exact path ownership,
 and a continue/narrow/stop decision; proposed interface filenames are provisional until then.
 All shared contracts, default composition, `GameSession`, Content readers, views, tests and this owner
 have one writer at a time. No stacked unaccepted implementation is assumed.
 
 | Slice | Complete behavior and dependencies | Acceptance and retirement |
 | --- | --- | --- |
-| 1 — replace HEAL through the real session and presenter | Depends only on plan acceptance. Add selected HEAL policy/composition, query projection, finite transition validation and failure mapping; wire actual existing view. | Default source behavior plus two authored algorithms pass query → select → confirm → staged cost/recovery/reward → completion. Two variants use the same mechanism/view; malformed rule output, stale/illegal input and missing capability publish no partial preparation/RNG. Remove old duplicate static HEAL owner. |
+| 1 — replace HEAL through the real session and presenter | Implemented by `IHealingRule`, `SessionRules`, `QueryBattleChoices` and finite `ValidateHealing`, using the existing view/scene. | Default source behavior and two authored algorithms cover query → select → confirm → staged cost/recovery/reward → completion. Malformed rule output, stale/illegal input and missing capability publish no partial preparation/RNG. `PlayerHealing` is removed. Independent main-gate integration remains separate. |
 | 2 — complete the admitted action/target interface | Depends on slice 1's measured seam. Migrate physical, Herb and Stay; complete semantic inventory/action references and remove adapter target/raw-word policy. | Player and AI share one physical action calculation. Preserve reaction order, consumption, gold/death/queue boundaries. Queries and commit agree; unsupported items remain explicit. No action- or rule-name dispatch in Godot. Retire migration-only adapters. |
 | 3 — select AI without scheduler strategy switches | Depends on slices 1–2. Resolve actor strategy bindings, move admitted source/approach algorithms and class priority mapping. | Two authored algorithms choose different legal actions/targets from the same state without scheduler/UI edits. Repeatable thinking/main seed and memory, target ties, zero-target branch, illegal result and failed-action queue retention. Preserve source standby/activation acceptance. |
 | 4 — select progression and outcome policy | Depends on slices 1–3. Move award/growth and ordinary victory/defeat/recovery/return choices at their existing call sites. | Growth uses the live post-scene seed; EXP/growth message order, pending failure, defeat precedence, gold/recovery and usable program return remain real behavior. An authored alternate reward/outcome policy changes behavior without editing continuation machinery. |
@@ -543,15 +580,14 @@ than changed constants. They are demonstration rules, not proposed SF2 balance c
 existing supported HEAL scene family, cost once, and retain later scene RNG/order. The default SF2
 implementation remains the existing source behavior, independently asserted.
 
-The first slice also owns the narrow `PlayerItemUse.cs` call-site adaptation: it currently calls
-both `PlayerHealing.RequireTarget` and `HealingRules.Experience`. Extract the existing living
-same-side/range/self-destination target check once into
-`Domain/Gameplay/Sf2/HealingTargetRules.cs`; the default HEAL implementation and Herb call that
-maintained helper directly. Move the existing scalar `HealingRules` once into the same module and
-adapt Herb's EXP call to that owner. Herb must not call the session-selected HEAL strategy: changing
+The first slice adapts `PlayerItemUse.cs` to the single extracted living
+same-side/range/self-destination target owner,
+`Domain/Gameplay/Sf2/HealingTargetRules.cs`; default HEAL and Herb call it directly.
+The single scalar `HealingRules` now lives in that same module and owns Herb's EXP calculation.
+Herb does not call the session-selected HEAL strategy: changing
 the authored spell variant must not change Herb targeting, recovery, EXP, inventory or RNG behavior.
-Remove `PlayerHealing.cs` in slice 1 only after its dispatcher, Herb, `HealingRulesTests` and
-`HealingFairyTests` callers migrate; retain no forwarding class. The target/scalar helpers remain
+`PlayerHealing.cs` is removed after dispatcher, Herb, `HealingRulesTests` and
+`HealingFairyTests` callers migrated; no forwarding class remains. The target/scalar helpers remain
 single-owned shared policy while HEAL and Herb consume them, including after Herb's slice 2 migration.
 `MedicalHerbTests` supplies the affected action-behavior regression boundary, not tests of the helper.
 
@@ -582,8 +618,9 @@ refactor, or require a fresh full route merely to replace old red results.
 
 ### Cumulative resources, pilot decisions and recovery
 
-This investigation remains source-only, with no runtime launches. Its original effort/text-scratch
-estimates and the implementation estimates below are **Inferred planning ranges**, not acceptance
+The original investigation was source-only. The bounded HEAL pilot now uses actual engine tests,
+adapter compilation and short A/B Godot observations; [verification](./development-and-verification.md#replaceable-heal-observation)
+owns its reproducible commands. The implementation estimates below are **Inferred planning ranges**, not acceptance
 limits or reasons to omit necessary boundary analysis. Consider implementation, review, debugging,
 integration and ongoing maintenance together; main-gate adjusts estimates using actual discoveries
 and avoided rework, without a separate cost process or repeated per-task accounting.
