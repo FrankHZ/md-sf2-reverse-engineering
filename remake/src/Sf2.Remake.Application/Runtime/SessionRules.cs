@@ -15,7 +15,7 @@ public sealed class SessionRules
         IBattleActionRule item, IBattleActionRule stay,
         IEnumerable<KeyValuePair<BattleStrategyRef, IBattleDecisionRule>>? decisions = null,
         IBattleProgressionRule? progression = null, IBattleOutcomeRule? outcome = null,
-        Exploration.IOutcomeReturnPolicy? outcomeReturn = null)
+        Exploration.IOutcomeReturnPolicy? outcomeReturn = null, Exploration.ISourceStoryPolicy? sourceStory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identity);
         ArgumentNullException.ThrowIfNull(healing);
@@ -34,11 +34,13 @@ public sealed class SessionRules
         Progression = progression ?? RuleCompositions.SourceProgression();
         Outcome = outcome ?? RuleCompositions.SourceOutcome();
         OutcomeReturn = outcomeReturn ?? RuleCompositions.SourceOutcomeReturn();
+        SourceStory = sourceStory ?? RuleCompositions.SourceStory();
         Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), item, stay]);
     }
     internal IBattleProgressionRule Progression { get; }
     internal IBattleOutcomeRule Outcome { get; }
     internal Exploration.IOutcomeReturnPolicy OutcomeReturn { get; }
+    internal Exploration.ISourceStoryPolicy SourceStory { get; }
     public string Identity { get; }
     internal IHealingRule Healing { get; }
     internal IPhysicalActionRule Physical { get; }

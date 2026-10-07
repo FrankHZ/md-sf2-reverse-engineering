@@ -1,4 +1,6 @@
 using Sf2.Remake.Domain.Gameplay.Sf2;
+using Sf2.Remake.Application.Gameplay;
+using Sf2.Remake.Application.Gameplay.Sf2;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
@@ -237,14 +239,19 @@ public sealed class BattleOutcomeProgramTests
 
     [Theory]
     [InlineData("normal", true)]
+    [InlineData("outcome-reload", true)]
     [InlineData("live-alias", true)]
     [InlineData("wrong-map", false)]
     [InlineData("wrong-cursor", false)]
+    [InlineData("wrong-instruction", false)]
     [InlineData("active-window", false)]
     [InlineData("field-input", false)]
     [InlineData("missing-flag", false)]
     [InlineData("missing-record", false)]
     [InlineData("visible-record", false)]
+    [InlineData("missing-hide-flag", false)]
+    [InlineData("wrong-x", false)]
+    [InlineData("wrong-y", false)]
     public void PostMessengerScratchRequiresTheExactNormalReloadAndRealEntityRetirement(string shape, bool accepted)
     {
         var source = Start("harbor-arrival");
@@ -258,15 +265,29 @@ public sealed class BattleOutcomeProgramTests
             world = new(map, original.Layout, original.Player, world.AllEntities, original.Party,
                 aliases: new Dictionary<EntityRef, int> { [original.Player] = original.PlayerEntity.Slot });
         if (shape == "missing-record") world = new(map, original.Layout, original.Player, [original.PlayerEntity], original.Party);
+        if (shape is "wrong-x" or "wrong-y")
+        {
+            var tombstone = world.AllEntities.Single(entity => entity.Entity.Value == "entity-142");
+            world = world.WithEntity(tombstone with { Motion = tombstone.Motion with
+                { X = shape == "wrong-x" ? (short)0 : tombstone.Motion.X, Y = shape == "wrong-y" ? (short)0 : tombstone.Motion.Y } });
+        }
         string id = shape == "wrong-cursor" ? "another-call" : "byte-513a8";
-        var program = new StoryProgram(id, [new EndProgram(), new RetiredMap3EntityScratch(), new EndProgram()]);
+        var program = new StoryProgram(id, shape == "wrong-instruction" ?
+            [new RetiredMap3EntityScratch(), new EndProgram()] : [new EndProgram(), new RetiredMap3EntityScratch(), new EndProgram()]);
         var definition = new ScenarioDefinition("scratch-context", source.Definition.Encounters.Values,
             exploration: new([map], [program]));
-        var flags = shape == "missing-flag" ? new[] { 1 } : shape == "live-alias" ? new[] { 603 } : new[] { 1, 603 };
-        var story = new StoryState(flags, new(id, 1), continuation: shape == "field-input" ? ProgramContinuation.FieldInput : ProgramContinuation.MapLoaded,
+        var flags = shape == "missing-flag" ? new[] { 1 } : shape is "live-alias" or "missing-hide-flag" ? new[] { 603 } : new[] { 1, 603 };
+        var story = new StoryState(flags, new(id, shape == "wrong-instruction" ? 0 : 1), continuation: shape == "field-input" ? ProgramContinuation.FieldInput :
+            shape == "outcome-reload" ? ProgramContinuation.OutcomeMapLoaded : ProgramContinuation.MapLoaded,
             textWindow: shape == "active-window" ? new OpenTextWindow(1, TextDisplayMode.Single, null) : new ClosedTextWindow());
         var before = new SessionSnapshot(Guid.NewGuid(), 1, 1, new ActiveExploration(world), story, SessionStopReason.SimulationWait);
-        var result = ProgramRunner.Run(definition, before, []);
+        var result = ProgramRunner.Run(definition, before, [], RuleCompositions.Sf2());
+        var authored = ProgramRunner.Run(definition, before, [], RuleCompositions.AuthoredStory());
+        Assert.Equal("source-story-unsupported", authored.Failure!.Code);
+        Assert.Contains("authored-story", authored.Failure.Message);
+        Assert.Same(world, authored.Snapshot.Exploration);
+        Assert.Equal(story.Cursor, authored.Snapshot.Story.Cursor);
+        Assert.Empty(authored.Observations);
         if (!accepted)
         {
             Assert.Equal("inactive-window-scratch-context", result.Failure!.Code);
@@ -279,7 +300,7 @@ public sealed class BattleOutcomeProgramTests
         Assert.Same(world.Layout, after.Layout);
         Assert.Equal(original.PlayerEntity.Position, after.PlayerEntity.Position);
         Assert.Equal(flags, result.Snapshot.Story.Flags);
-        if (shape == "normal")
+        if (shape is "normal" or "outcome-reload")
         {
             Assert.Same(world, after);
             Assert.False(after.TryResolveEntity(new("entity-142"), out _));
@@ -287,6 +308,33 @@ public sealed class BattleOutcomeProgramTests
         else Assert.True(after.TryResolveEntity(new("entity-142"), out _));
         var hidden = after.AllEntities.Single(row => row.Entity.Value == "entity-142");
         Assert.False(hidden.Visible); Assert.Equal(0x7000, hidden.Motion.X); Assert.Equal(0x7000, hidden.Motion.Y);
+    }
+
+    [Fact]
+    public void ScratchRetiresTheResolvedPhysicalRecordWithoutResolvingItsOtherAliasAgain()
+    {
+        var source = Start("harbor-arrival");
+        var original = source.Current.Exploration!;
+        var map = new ExplorationMapDefinition(new("map-3"), original.Layout, original.Definition.Traversal, [], []);
+        var record = new ExplorationEntity(new("entity-143"), EntityMotionState.At(new(2, 2), 3, 32), true, Slot: 1);
+        var aliases = new Dictionary<EntityRef, int>
+            { [original.Player] = original.PlayerEntity.Slot, [new("entity-142")] = 1, [new("entity-143")] = original.PlayerEntity.Slot };
+        var world = new ExplorationState(map, original.Layout, original.Player, [original.PlayerEntity, record], original.Party,
+            aliases: aliases, population: new(1, 1, 0, []));
+        var program = new StoryProgram("byte-513a8", [new EndProgram(), new RetiredMap3EntityScratch(), new EndProgram()]);
+        var definition = new ScenarioDefinition("physical-retirement", source.Definition.Encounters.Values, exploration: new([map], [program]));
+        var input = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveExploration(world),
+            new StoryState([603], new("byte-513a8", 1), continuation: ProgramContinuation.MapLoaded), SessionStopReason.SimulationWait);
+        var result = ProgramRunner.Run(definition, input, [], RuleCompositions.Sf2());
+        Assert.Null(result.Failure);
+        var returned = result.Snapshot.Exploration!;
+        var hidden = returned.AllEntities.Single(entity => entity.Slot == 1);
+        Assert.Equal(record.Entity, hidden.Entity); Assert.False(hidden.Visible);
+        Assert.Equal(0x7000, hidden.Motion.X); Assert.Equal(0x7000, hidden.Motion.Y);
+        Assert.Equal(aliases, returned.Aliases);
+        Assert.Same(original.PlayerEntity, returned.PlayerEntity);
+        Assert.True(returned.TryResolveEntity(new("entity-142"), out var resolved));
+        Assert.Equal(hidden, resolved);
     }
 
     [Fact]

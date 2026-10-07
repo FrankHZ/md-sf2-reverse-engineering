@@ -9,6 +9,7 @@ public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, C
 public enum MapLoadMode { Rebuild, Preserve }
 
 public abstract record StoryInstruction;
+public abstract record SourceStoryInstruction : StoryInstruction;
 public sealed record EndProgram(bool SourceMapScript = false) : StoryInstruction;
 public sealed record JumpProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) : StoryInstruction;
@@ -17,7 +18,6 @@ public sealed record CallProgram(ProgramLocation Target, bool ActivateEntities =
 public sealed record ReturnProgram : StoryInstruction;
 public sealed record ResetPartyBattleStats : StoryInstruction;
 public sealed record ReturnBattleMap : StoryInstruction;
-public sealed record RetiredMap3EntityScratch : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
