@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;

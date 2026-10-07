@@ -119,7 +119,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
                 AllyPartyMember: ally ? order : null);
             deployments.Add(new(definition, ally ? BattleFaction.Ally : BattleFaction.Enemy, order,
-                ally ? BattleControl.Player : BattleControl.Automatic, ally ? null : BattleAiStrategy.SourceOrders,
+                ally ? BattleControl.Player : BattleControl.Automatic, ally ? null : new BattleStrategyRef("source-orders"),
                 new(row.Position.X, row.Position.Y), initialization));
             actorInputs.Add(actorInput);
         }

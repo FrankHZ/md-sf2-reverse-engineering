@@ -186,7 +186,7 @@ public sealed class BattleActionChoiceTests
     {
         var initial = Open(Automatic()).Current.Battle;
         var deployments = initial.Definition.Deployments.Select(row => row.Actor == new ActorRef("raider")
-            ? row with { AiStrategy = BattleAiStrategy.SourceOrders, Initialization = new(0x2000, 0, 15, 15, 0x60, 6, 255, 255) } : row).ToArray();
+            ? row with { AiStrategy = new BattleStrategyRef("source-orders"), Initialization = new(0x2000, 0, 15, 15, 0x60, 6, 255, 255) } : row).ToArray();
         var definition = new BattleDefinition(initial.Definition.Encounter, initial.Definition.Map,
             initial.Definition.Width, initial.Definition.Height, initial.Definition.Terrain, deployments,
             initial.Definition.Spells.Values, initial.Definition.Rewards);

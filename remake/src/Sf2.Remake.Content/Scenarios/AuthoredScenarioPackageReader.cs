@@ -215,12 +215,11 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 string controlName = Text(placement, "control");
                 Require(controlName is "player" or "automatic", "control-mode", "placements.control", true);
                 var control = controlName == "player" ? BattleControl.Player : BattleControl.Automatic;
-                BattleAiStrategy? aiStrategy = null;
+                BattleStrategyRef? aiStrategy = null;
                 if (placement.GetProperty("aiStrategy").ValueKind != JsonValueKind.Null)
                 {
                     string strategyName = Text(placement, "aiStrategy");
-                    Require(strategyName is "stay" or "attack-then-approach", "ai-strategy", "placements.aiStrategy", true);
-                    aiStrategy = strategyName == "stay" ? BattleAiStrategy.Stay : BattleAiStrategy.AttackThenApproach;
+                    aiStrategy = new BattleStrategyRef(strategyName);
                 }
                 Require(faction != BattleFaction.Ally || actor.Level >= 1, "numeric-range", "actors.level");
                 var position = new MapPosition(Number(placement, "x", 0, terrain.Width - 1), Number(placement, "y", 0, terrain.Height - 1));

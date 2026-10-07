@@ -23,20 +23,11 @@ internal static class BattleTurnFlow
     // Encounter policy is validated at Content admission and reusable session start, even for dead actors.
     internal static void ValidateDeployment(BattleDeploymentDefinition deployment)
     {
-        var actor = deployment.Definition;
-        Require((deployment.Control, deployment.AiStrategy) is (BattleControl.Player, null) or
-            (BattleControl.Automatic, BattleAiStrategy.Stay or BattleAiStrategy.AttackThenApproach or BattleAiStrategy.SourceOrders),
-            "control-ai", "placements.control/aiStrategy", true);
+        Require((deployment.Control == BattleControl.Player && deployment.AiStrategy is null) ||
+            (deployment.Control == BattleControl.Automatic && deployment.AiStrategy is { } strategy &&
+                !string.IsNullOrWhiteSpace(strategy.Value)), "control-ai", "placements.control/aiStrategy", true);
         Require((deployment.Faction == BattleFaction.Ally) == (deployment.Control == BattleControl.Player),
             "control-side", "placements.faction/control", true);
-        if (deployment.AiStrategy == BattleAiStrategy.SourceOrders)
-            Require(deployment.Initialization is not null, "missing-source-orders", "placements.initialization");
-        if (deployment.AiStrategy == BattleAiStrategy.AttackThenApproach)
-        {
-            Require(actor.Physical is not null, "physical-definition", "actors.physical", true);
-            Require(actor.Spells.Count == 0, "ai-action-categories", "actors.spells", true);
-            Require(actor.Move is >= 1 and <= 63, "ai-movement-domain", "actors.move", true);
-        }
     }
 
     // Used by the real Content admission and again by the reusable public session start boundary.
@@ -70,9 +61,6 @@ internal static class BattleTurnFlow
             if (loadout is not null)
                 Require(loadout.Items.Count == 4 && loadout.Spells.Count == 4 && loadout.Items.All(word => word <= 511),
                     "source-loadout", "start.actors.sourceLoadout");
-            if (deployment.AiStrategy == BattleAiStrategy.AttackThenApproach)
-                Require(loadout is null || loadout.Items.All(word => (word & 127) == 127),
-                    "ai-action-categories", "start.actors.items", true);
             if (input.Progress is { } progress)
                 Require(actor.Growth is not null && progress.Level >= actor.Level && progress.Level <= 99 &&
                     progress.MaxHp is > 0 and <= 200 && progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100,

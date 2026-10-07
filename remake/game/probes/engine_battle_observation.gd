@@ -71,6 +71,10 @@ func _run() -> void:
         return
     var observation_case := _diagnostic("CASE")
     if not observation_case.is_empty():
+        if observation_case == "decision-replacement":
+            await preload("res://probes/engine_decision_rule_observation.gd").new().run(self, initial)
+            _finish()
+            return
         if observation_case == "healing-rule":
             await preload("res://probes/engine_healing_rule_observation.gd").new().run(self, initial)
             _finish()
@@ -117,7 +121,8 @@ func _run() -> void:
             return
         if observation_case == "enemy-actions":
             await _enemy_actions(initial, _diagnostic("ENEMY_SHAPE", "counter"))
-            _check(samples.size() == 4, "Enemy observation completed all four native checkpoints")
+            _check(samples.filter(func(sample): return sample.label in ["initial", "enemy-action-ready", "enemy-action-result", "enemy-action-stable"]).size() == 4,
+                "Enemy observation completed all four native checkpoints after real scene settling")
             _finish()
             return
         if observation_case == "target-cycle":
@@ -330,6 +335,8 @@ func _layout(initial: Dictionary, long_path: bool) -> void:
     _visible_layout(committed, "next-control")
 
 func _enemy_actions(initial: Dictionary, shape: String) -> void:
+    var consumer := preload("res://probes/engine_action_choice_observation.gd").new()
+    consumer._start(self)
     var enemy: String = initial.actors[2].id
     var ally: String = initial.actors[0].id
     await _press(KEY_ENTER)
@@ -337,7 +344,8 @@ func _enemy_actions(initial: Dictionary, shape: String) -> void:
     var ready := _read("enemy-action-ready")
     _check(_same_battle(initial, ready), "Player selection does not execute automatic enemy work")
     await _press(KEY_ENTER)
-    var result := _read("enemy-action-result")
+    var result: Dictionary = _read("enemy-action-result") if shape == "unsupported" else await consumer._settle("enemy-action-result")
+    result.observations = consumer.facts.duplicate(true)
     if shape == "unsupported":
         _check(result.failure == "level-up" and result.stopReason == "Unsupported", "Late enemy counter award stops as Unsupported")
         _check(result.mainSeed == initial.mainSeed and result.thinkingSeed == initial.thinkingSeed
@@ -352,8 +360,11 @@ func _enemy_actions(initial: Dictionary, shape: String) -> void:
         _check(result.actors[0].hp == 478 and result.actors[2].hp == (0 if dead else 493), "Enemy hit and reversed ally counter update actual HP")
         _check(result.actors[0].exp == (24 if dead else 1) and result.actors[2].exp == 0,
             "Counter EXP belongs only to the ally")
-        _check(result.mainSeed == (0xB1BC1234 if dead else 0x557E1234) and result.thinkingSeed == 0x02EF0042,
-            "Main and thinking streams carry through source draws")
+        var construction_seed := 0xB1BC1234 if dead else 0x557E1234
+        var scene_seed: int = consumer._after(construction_seed, 48)
+        consumer._rng(initial.mainSeed, construction_seed, scene_seed, 12 if dead else 14, 48)
+        _check(result.mainSeed == scene_seed and result.thinkingSeed == 0x02EF0042,
+            "Main construction plus two damaging scene bodies and independent thinking retain source draws")
         _check(result.aiMemory[0].lastTarget == ally, "Committed target memory follows actual selected ally")
         _check(result.gold == initial.gold + (19 if dead else 0), "Counter kill grants configured enemy gold")
         if dead:

@@ -6,10 +6,13 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 internal static class BattleAdvancer
 {
     internal static SessionResult Start(BattleDefinition definition, BattleStartInput start) =>
-        Start(definition, start, Gameplay.RuleCompositions.Sf2());
+        Start(definition, start, Gameplay.RuleCompositions.Sf2().Bind([definition], start.Actors));
 
     internal static SessionResult Start(BattleDefinition definition, BattleStartInput start, SessionRules rules)
     {
+        foreach (var deployment in definition.Deployments)
+            if (start.Actors.FirstOrDefault(input => input.Actor == deployment.Actor) is { } input)
+                rules.RequireStart(deployment, input);
         var battle = BattleTurnFlow.Start(definition, start);
         List<SessionObservation> observations = [];
         if (start.NewBattle is not null) observations.Add(new(1, 0, "new-battle-initialized"));
@@ -23,7 +26,7 @@ internal static class BattleAdvancer
     }
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations) =>
-        Advance(current, observations, Gameplay.RuleCompositions.Sf2());
+        Advance(current, observations, Gameplay.RuleCompositions.Sf2().Bind([current.Battle.Definition]));
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
     {
@@ -68,7 +71,7 @@ internal static class BattleAdvancer
                     observations.Add(new(++sequence, revision, "dead-entry-skipped", actor.Actor));
                     continue;
                 }
-                if (actor.Control == BattleControl.Player && actor.AiStrategy is null)
+                if (actor.Control == BattleControl.Player)
                 {
                     var controlled = BattleControlRules.EnterPlayer(battle, actor.Actor);
                     var preview = BattleMovement.Preview(controlled, actor.Actor, actor.Position!);
@@ -79,25 +82,21 @@ internal static class BattleAdvancer
                     var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, battle, selection, SessionStopReason.PlayerInput);
                     return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
                 }
-                if (actor.Control == BattleControl.Automatic && actor.AiStrategy == BattleAiStrategy.Stay)
-                {
-                    battle = BattleTurnFlow.ConsumeEntry(battle); revision++;
-                    observations.Add(new(++sequence, revision, "ai-stay", actor.Actor));
-                    continue;
-                }
                 var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
-                if (actor.Control != BattleControl.Automatic)
+                if (actor.Control != BattleControl.Automatic || actor.AiStrategy is not { } strategy)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
-                var action = actor.AiStrategy switch
-                {
-                    BattleAiStrategy.SourceOrders => SourceEnemyAi.Resolve(battle, actor.Actor, rules.Physical),
-                    BattleAiStrategy.AttackThenApproach => AttackThenApproachAi.Resolve(battle, actor.Actor, rules.Physical),
-                    _ => throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true),
-                };
+                var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical);
                 var delivery = BattleMovementContinuation.BeginAutomatic(beforeAction.WithStory(current.Story), actor.Actor, action, observations, rules);
                 if (delivery.Failure is not null || delivery.Snapshot.BattleMovement is not null || delivery.Snapshot.BattleScene is not null) return delivery;
                 var committed = delivery.Snapshot;
                 battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
+            }
+            catch (BattleDecisionRuleFault error)
+            {
+                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                    observations.AsReadOnly(), SessionStopReason.Faulted,
+                    new(SessionFailureKind.InvariantFailure, "decision-rule-failure", "rules.decisions",
+                        $"{error.Identity}: {error.Operation}"));
             }
             catch (BattleActionRuleFault error)
             {

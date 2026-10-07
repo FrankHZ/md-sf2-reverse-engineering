@@ -131,11 +131,11 @@ public sealed class BattleControlAiTests
         var before = running.Current;
         var encounter = before.Battle.Definition;
         var deployments = encounter.Deployments.Select(d => d.Control == BattleControl.Automatic
-            ? d with { AiStrategy = unknownPolicy ? (BattleAiStrategy)99 : null } : d);
+            ? d with { AiStrategy = unknownPolicy ? new BattleStrategyRef("unknown") : null } : d);
         var invalid = new BattleDefinition(encounter.Encounter, encounter.Map, encounter.Width, encounter.Height,
             encounter.Terrain, deployments, encounter.Spells.Values, encounter.Rewards);
         var failed = Assert.IsType<SessionStartFailed>(GameSession.Start(new ScenarioDefinition("invalid", [invalid]), admitted.Start));
-        Assert.Equal((SessionFailureKind.UnsupportedCapability, "control-ai"), (failed.Failure.Kind, failed.Failure.Code));
+        Assert.Equal((SessionFailureKind.UnsupportedCapability, unknownPolicy ? "ai-strategy" : "control-ai"), (failed.Failure.Kind, failed.Failure.Code));
         Assert.Same(before, running.Current);
     }
 }

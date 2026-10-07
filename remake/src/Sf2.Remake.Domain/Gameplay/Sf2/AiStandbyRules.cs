@@ -1,6 +1,7 @@
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
-namespace Sf2.Remake.Domain.Battles;
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal sealed record StandbyOccupant<TActor>(TActor Actor, MapPosition Position, ushort? ActivationWord);
 internal sealed record StandbyCandidate<TActor>(byte Index, MapPosition Position, int? Cost, TActor? Occupant, bool Eligible) where TActor : struct;
@@ -50,6 +51,6 @@ internal static class AiStandbyRules
         if (valid.Count == 0) { memory = 0; return Result(origin, Array.AsReadOnly<byte>([255])); }
         byte chosen = valid[Roll((byte)valid.Count)]; memory = (byte)((chosen << 4) | count);
         var destination = candidates.Single(candidate => candidate.Index == chosen).Position;
-        return Result(destination, AiMovementRules.MoveString(grid, origin, destination, width, height));
+        return Result(destination, BattleMovement.MoveString(grid, origin, destination, width, height));
     }
 }

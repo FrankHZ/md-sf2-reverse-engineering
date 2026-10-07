@@ -289,27 +289,34 @@ use the existing Godot input/state probe; no adapter observation or gameplay aut
 ### Independent control and automatic strategy
 
 Encounter deployments own `BattleControl` (`Player` or `Automatic`) separately from nullable
-`BattleAiStrategy` (`Stay` or `AttackThenApproach`). Intrinsic `BattleActorDefinition` no longer owns
+`BattleStrategyRef`, an immutable content key resolved in the selected `SessionRules` composition.
+Intrinsic `BattleActorDefinition` no longer owns
 control: the same immutable actor can be deployed under different control or policy in different
 encounters. Runtime actors derive both choices from their deployment, with no copied state authority.
 This is an encounter assignment, not a new status/possession system or mutable campaign controller.
 
 Format-v7 placements require `control` and `aiStrategy`. `player` requires a null strategy; `automatic`
-requires an explicit `stay` or `attack-then-approach`. Missing/malformed fields are ContentError;
-unsupported policies or incompatible pairs are UnsupportedCapability. Only ally/player and
+requires an explicit key in the selected composition, whose default includes `stay`,
+`attack-then-approach` and private `source-orders`. Missing/malformed fields are ContentError;
+unknown/duplicate/missing bindings or incompatible pairs reject at session start. The full definition,
+including later encounters and dead deployments, is checked before publication. Only ally/player and
 enemy/automatic are currently supported. The shared Domain deployment validator runs at Content
-admission and reusable session start, including dead deployments. Attack-then-approach still requires
+admission and reusable session start, including dead deployments; selected rules own strategy
+capability admission. Attack-then-approach still requires
 regular physical capability, an empty spellbook and MOV1–63; items/status remain unsupported.
 
 The semantic strategy means: attempt the admitted physical attack; if none can be selected, approach
 using the accepted movement continuation and end the turn, including origin Stay. The existing rule
-body is named [AttackThenApproachAi](../../remake/src/Sf2.Remake.Domain/Battles/Rules/AttackThenApproachAi.cs).
+body is named [AttackThenApproachAi](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/AttackThenApproachAi.cs).
 It retains source ATTACK1/script3, empty HEAL1/SUPPORT failures and MOVE1 mode0 order and observations.
 Shared target/movement/physical bodies and original reference commandset/script mappings are unchanged.
-No attack follows movement in the same action; both RNG streams, target memory, temporary settlement,
+The zero-target MOVE1 pursuit branch does not attack after its movement in that action. A selected
+physical attack constructs after its actual movement delivery. Both RNG streams, target memory, temporary settlement,
 rewards/death, failed queue entry and earlier committed work retain their existing contracts.
-`BattleAdvancer` explicitly handles player input, automatic Stay and attack-then-approach; an unknown
-combination cannot fall through to Stay. Godot's existing AI-memory projection reads the same deployment.
+`BattleAdvancer` handles player input and invokes the resolved `IBattleDecisionRule`; it has no
+strategy-name dispatch or unknown-binding Stay fallback. Godot's existing AI-memory projection reads
+the same deployment/state. The [implemented decision seam](../../remake/docs/architecture.md#implemented-automatic-decisions)
+owns authored FirstLegal/LowestHp replacement and finite candidate/transaction validation.
 
 **Confirmed (engine):** [BattleControlAiTests](../../remake/tests/Sf2.Remake.Engine.Tests/BattleControlAiTests.cs)
 starts the same actor definition in separate player, automatic Stay and automatic attack deployments,
@@ -441,7 +448,7 @@ wholesale to M5. M5 retired the remaining wrappers together with the reference a
 
 ### Enemy physical decision and common action publication
 
-[EnemyPhysicalDecision](../../remake/src/Sf2.Remake.Domain/Battles/Rules/EnemyPhysicalDecision.cs)
+[EnemyPhysicalDecision](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/EnemyPhysicalDecision.cs)
 implements the already-active, physical-only ATTACK1 success branch with TargetPriorityScript3.
 The semantic `attack-then-approach` deployment strategy consumes this capability; original commandset06/
 script3 mapping stays at the source/reference boundary. Activation, other commandsets and spell/item
@@ -454,7 +461,7 @@ thinking calls visit that array backwards and store each priority at its origina
 name, receipt, round, seed allowlist or expected target is a gameplay predicate. Zero reachable
 attack targets return command failure to the bounded commandset continuation below.
 
-[PhysicalTargetRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalTargetRules.cs) owns
+[PhysicalTargetRules](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/PhysicalTargetRules.cs) owns
 script3 byte scoring and final selection. Signed-byte maximum starts at zero; the highest **raw**
 priority determines the cohort before the returned priority is capped at15. The cohort is collected
 in reverse reachable-array order. A single highest target bypasses class/movement comparison.
@@ -514,7 +521,7 @@ continuity, presentation and8C/H4. These engine checks do not complete M2 or A1�
 
 ### Zero-target commandset06 continuation
 
-[AttackThenApproachAi](../../remake/src/Sf2.Remake.Domain/Battles/Rules/AttackThenApproachAi.cs) owns the
+[AttackThenApproachAi](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/AttackThenApproachAi.cs) owns the
 fixed sequence ATTACK1 → HEAL1 → SUPPORT → MOVE1 → STAY for the admitted already-active,
 physical-only, empty spellbook/item/status branch. ATTACK1 success stops the sequence. Without an
 attack candidate, ATTACK1 and the unavailable HEAL1/SUPPORT return failure without consuming RNG.
@@ -522,10 +529,11 @@ MOVE1(mode0) returns success even when its movement result is origin Stay; the l
 therefore not reached in this subset. Successful MOVE1 ends this ACTION, and only a subsequent actual
 turn reevaluates ATTACK1. Rewards data is required when an attack is reached, not for movement.
 
-[AiMovementRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/AiMovementRules.cs) shares three
-calculations with actual reference pursuit/standby/physical consumers: stable unsigned raw target-cost
-selection, the source decreasing-cost walk retaining accumulated direction bits, and radius station
-selection. MOVE1 builds an unblocked permanent-terrain grid with budget128 and scans living opponents
+[AiMovementRules](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/AiMovementRules.cs) owns source stable
+unsigned raw target-cost and radius station selection. Shared
+[BattleMovement.Walk/MoveString](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleMovement.cs)
+retain the source decreasing-cost walk with accumulated direction bits for movement and
+pursuit/standby/physical consumers. MOVE1 builds an unblocked permanent-terrain grid with budget128 and scans living opponents
 by processing order. Every target cost must be present and within0–127; the first equal minimum wins. A target-rooted
 grid drives preliminary movement to `max(0, startCost - 4)`. This is fixed movement cost4, not four
 tiles or the whole actor MOV budget. The actor's MOV*2 grid blocks opponents and permits friend

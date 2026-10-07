@@ -1,16 +1,30 @@
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.Domain.Gameplay.Sf2;
 
-namespace Sf2.Remake.Domain.Battles;
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
-internal static class SourceEnemyAi
+internal sealed class SourceEnemyAi : IBattleDecisionRule
 {
+    public string Identity => "sf2-source-orders";
+    public void RequireDeployment(BattleDeploymentDefinition deployment)
+    {
+        if (deployment.Initialization is null)
+            throw new BattleRuleException("missing-source-orders", "placements.initialization");
+    }
+    public void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input)
+    {
+
+    }
+    public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical) =>
+        Resolve(battle, actor, physical, preflight: false);
+
     // Explicit source-default overload for standalone policy comparisons.
     internal static BattleAutomaticAction Resolve(EngineBattleState current, ActorRef actor) =>
         Resolve(current, actor, new Sf2PhysicalAction());
 
     internal static BattleAutomaticAction Resolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, bool preflight = true)
     {
         var actor = current.GetActor(actorRef);
         if (actor.IsAlly || actor.Position is null || actor.Hp == 0 || actor.Status != 0 ||
@@ -58,7 +72,7 @@ internal static class SourceEnemyAi
             throw new BattleRuleException("source-occupancy-word", "actors.activationWord", true);
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
-        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical) is { } attack)
+        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical, preflight) is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([
                 .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
@@ -76,4 +90,14 @@ internal static class SourceEnemyAi
         sbyte[] Costs() => current.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         uint Image(ushort seed) => ((uint)seed << 16) | (current.ThinkingSeed & 65535);
     }
+}
+
+internal sealed class StayBattleDecision : IBattleDecisionRule
+{
+    public string Identity => "sf2-stay";
+    public void RequireDeployment(BattleDeploymentDefinition deployment) { }
+    public void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input) { }
+    public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical) =>
+        new(battle, Array.AsReadOnly<BattleEffect>([new("ai-stay", actor)]),
+            battle.GetActor(actor).Position!, Array.AsReadOnly([battle.GetActor(actor).Position!]), QueueOnly: true);
 }

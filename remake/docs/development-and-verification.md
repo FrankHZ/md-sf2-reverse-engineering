@@ -1981,6 +1981,67 @@ actual consumption/compaction, capped HP recovery, EXP/RNG, HUD help and usable 
 native launch uses the existing protected environment/project/installation and its own worktree-local
 output and user-data locations. Preserve failure logs and use a new output directory for corrections.
 
+## Replaceable Automatic Decision Observation
+
+Select `RuleCompositions.AuthoredFirstLegal()` or `AuthoredLowestHp()` in the ordinary `ForGame()`
+factory, compile Debug with the existing locked environment, then restart the ordinary host using
+one identical [`decision-rule-demo.json`](../content/authored/decision-rule-demo.json). The demo uses
+source physical profiles/terrain/accounting: swordsman/raider/lookout agility63/40/1, allies current
+HP400/100 and all three maxHP500. Both candidates are reachable with a real raider movement segment.
+Other enemies keep Stay. No runtime plugin/CLI selection or scheduler/view strategy switch is used.
+Restore `ForGame()=>Sf2()` and build before freezing a candidate.
+
+Actual behavior owners are `BattleDecisionReplacementTests`, `BattleControlAiTests`,
+`SourceEnemyAiTests`, `TargetSelectionTests`, `CommandsetContinuationTests` and
+`BattleActionChoiceTests`. They cover same-state replacement, stable ties/changed legal targets,
+start binding of later/dead deployments, source reverse thinking/signed priority/class selection,
+standby/memory/zero-target pursuit and rejected current transactions after earlier commits. Keep
+HEAL release-to-next-AI estimate/preflight/post-decision failures and late preflight/queue retention.
+Run `uv run sf2 verify engine`, `uv run sf2 verify adapter`; after a completed failure rerun its nodes
+and the affected scope instead of repeating an aggregate to replace the failure record.
+
+After configuration and the selected Debug build, use a fresh worktree-local case directory and the
+existing actual input/state observer:
+
+```powershell
+$env:SF2_OBSERVATION_CASE = 'decision-replacement'
+$env:SF2_OBSERVATION_EXPECT_TARGET = 'swordsman' # 'lookout' for LowestHp
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'observation.json'
+$packagePath = (Resolve-Path -LiteralPath 'remake/content/authored/decision-rule-demo.json').Path
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+```
+
+The bounded `engine_decision_rule_observation.gd` reuses the actual action consumer's presenter
+settling and result events. Real Enter/Space/Enter commits the player's Stay, one selected decision
+starts movement, presenter completions deliver its segments, then physical construction, damage,
+counter/reward and next player input settle. Expected variants exist only in the external selector.
+Inspect actual stage/result/field-node readback and errors; screenshots are prohibited.
+
+Independent expectations come from the accepted source scalar rules: high seed55 followed by five
+ordinary three-draw round candidates gives main0x00C01234. Authored priorities draw no thinking RNG.
+The physical first hit does1 damage; the live counter does13 from swordsman ATT30 or1 from lookout
+ATT5, awards1 EXP and leaves gold100. Fourteen construction draws give0x557E1234; two damaging scene
+bodies add24 draws each, giving final0x976E1234. Thus FirstLegal yields ally HP399/100 and raider487;
+LowestHp yields400/99 and raider499. The selected target's memory, one decision, actual movement,
+one raider action/queue consumption and no construction before movement completion are observed.
+An early PresentationWait sample is not the final result.
+
+After restoring source composition, run only the affected [enemy movement/counter recipes](#enemy-action-observation).
+Their expected construction seed remains0x557E1234; actual scene-complete seed is0x976E1234 after48
+reaction draws. The observer now retains the full real event chain and waits for settled next input;
+phase samples supplement the four named initial/ready/result/stable checkpoints.
+
+For affected private binding/source AI, select the retained six admitted battle inputs in the same
+launch process and the tracked `remake/reference/inputs/battle01-player-ready.json` controlled start.
+Run `PrivateSourceAiTests` and the affected `PrivateBattleScenarioTests` nodes directly. The latter's
+reader has no HEAL scene sidecar: SelectSpell succeeds, SelectTarget rejects healing-scene-content
+with Unsupported and the same snapshot/no observations, then Cancel allows the original standby
+trajectory. That case cannot reach the old EXP confirmation without the consumer; existing initialized
+HEAL and source-AI physical cases retain their own reached unknown-accounting boundaries. No new
+source collection/export, private HEAL success, full route or fidelity claim follows.
+
 ## Authored Battle Observation
 
 After loading the existing worktree environment, build the actual Debug assembly once when needed
@@ -2166,8 +2227,11 @@ Current format-v7 `encounters[].placements[]` owns both choices, separately from
 | `player` | `null` | Application yields actual player input; currently ally-only. |
 | `automatic` | `stay` | Explicitly consume the automatic entry without attack or movement; currently enemy-only. |
 | `automatic` | `attack-then-approach` | Attempt the supported physical attack; if none can be selected, run the accepted approach or origin-Stay continuation and end the action. |
+| `automatic` | private `source-orders` | Bind source standby/activation/set6/set7 with retained source admission guards. |
+| `automatic` | `authored-priority` in the explicit authored composition | FirstLegal or LowestHp selects a legal physical target through the same movement/action path. |
 
-Missing or incompatible pairs reject; no unknown strategy defaults to Stay. The existing engine
+Missing or incompatible pairs reject; all current/later/dead deployments resolve before session start.
+Unknown/duplicate/missing bindings reject, and no unknown strategy defaults to Stay. The existing engine
 control/AI tests exercise shared actor definitions under distinct encounter assignments, actual
 player/automatic results, invalid Content and reusable starts. Existing enemy, target-selection and
 commandset-continuation cases retain independent damage, queue, memory and seed expectations.
@@ -2176,7 +2240,8 @@ Use the player HEAL/STAY and physical recipes plus the enemy-actions, target-sel
 commandset-continuation variants below with the retained editor/project. Their configuration selects
 `placements[2].aiStrategy`; source command observations remain ATTACK1/script3, HEAL1, SUPPORT and MOVE1.
 Observe complete startup, attack/counter, no-target pursuit, occupied origin Stay, next input and
-Unsupported atomicity checkpoints with clean logs. The existing native probe is unchanged.
+Unsupported atomicity checkpoints with clean logs. Reuse the existing probe and bounded action/decision
+consumer helpers for real scene settling; intermediate PresentationWait is not a finished action.
 
 Run related control/target/continuation references as one selected group, including
 `ActualOrderIncludesTheInactivePrefixOccupiedFallbackAndBothCommandsets`,
@@ -2255,11 +2320,13 @@ $env:SF2_OBSERVATION_ENEMY_SHAPE = $shape
 
 The four checkpoints cover initial state, real player STAY selection, automatic enemy action and
 stable next control/Unsupported. The counter hits the ally for22 and the enemy for7, awards the
-ally1 EXP, and carries main0x557E1234/thinking0x02EF0042. Counter kill instead awards24 EXP and19 gold,
-removes the enemy node and ends at main0xB1BC1234. The late level-up shape preserves all enemy-action
+ally1 EXP, constructs at main0x557E1234 and completes two damaging scene bodies at
+main0x976E1234/thinking0x02EF0042. Counter kill instead awards24 EXP and19 gold,
+removes the enemy node and constructs at main0xB1BC1234 before the damaging scene bodies. The late level-up shape preserves all enemy-action
 state while retaining the preceding player's committed turn. Movement chooses (4,3) from (7,3).
 These are reference expectations for the supplied configurations, never production dispatch rules.
-Inspect native logs for script/process errors and require all four checkpoints, as well as the
+Inspect native logs for script/process errors and require all four named checkpoints plus the real
+staged completion/event samples, as well as the
 reported pass and exit status; a script that stops before its final checkpoint is incomplete.
 
 `EnemyActionTests` owns independent behavior checks for changed targets/configurations, continued
