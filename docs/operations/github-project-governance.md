@@ -143,6 +143,13 @@ result will support. A request to verify fidelity does not by itself authorize a
 platform or complete-trajectory acquisition. Apply this workflow through the existing Issue,
 dispatch and independent review; a small change needs only a short paragraph, not a separate plan.
 
+Cost control serves sound software design and total engineering time, including implementation,
+review, debugging, rework and maintenance. Do not minimize one model call or local task at the expense
+of those outcomes. Estimates are reassessment signals, not acceptance targets or reasons to omit
+necessary design. Reuse the current agreement until scope, risk or complexity materially changes;
+do not add routine cost ledgers, repeated budget reports or generic benchmarks. Measure performance
+for a concrete credible regression, preferably using information from necessary checks or consumers.
+
 1. **Constrain the outcome.** Main-gate records the decision or user-visible behavior, minimum
    sufficient evidence, non-goals and Unknowns that can remain without blocking that decision.
    Link the accepted contract rather than inventing a broader completeness target. Research may
@@ -150,9 +157,10 @@ dispatch and independent review; a small change needs only a short paragraph, no
 2. **Choose and budget the method.** Prefer existing evidence, small actual-engine behavior tests
    and focused observations appropriate to the claim. Explain why a simpler method is insufficient
    before adding acquisition or verification infrastructure. Budget implementation, execution,
-   storage, review, integration and maintenance together, including supporting work. Record a
-   cumulative allowance for the outcome and concrete stop/replan thresholds; dividing it into
-   slices or issuing a replacement task does not reset that allowance. Use the existing
+   storage, review, debugging, integration and maintenance together, including supporting work.
+   For costly or uncertain expansion, estimate cumulative effort and name reassessment triggers;
+   distinguish revisable estimates from explicit user budgets and physical resource limits.
+   Splitting slices or replacing a task does not erase prior work or reset actual limits. Use the existing
    [scale-planning owner](./bounded-inspection-and-review.md#plan-before-scaling) for estimates.
 3. **Prove the method before expansion.** Where cost or diagnostic value is uncertain, run the
    smallest representative pilot covering the difficult boundary, a failure and insufficient
@@ -162,9 +170,10 @@ dispatch and independent review; a small change needs only a short paragraph, no
 4. **Reassess cumulative value.** At slice review, compare the product/research result with total
    effort and new interfaces, state owners, protocols and maintenance obligations. Smaller files,
    more passing checks or more captured data do not establish reduced complexity or useful progress.
-   A budget/threshold breach, an unplanned cross-system model or data platform, or repeated work
-   repairing verification without advancing the intended decision stops that expansion and
-   triggers replanning. Do not silently raise limits or schedule the next slice to justify sunk cost.
+   A material estimate change prompts routine engineering reassessment, including extra work that
+   prevents rework; it does not automatically stop sound design or require user approval. Stop the
+   affected expansion for an explicit budget/resource limit, an unplanned cross-system platform, or
+   repeated verification repair without useful progress. Replan rather than justify sunk cost.
 5. **Close the bounded outcome.** Report delivered behavior/findings, remaining uncertainty and
    supporting-system cost separately. Main-gate chooses and explains the smallest sufficient next
    step within authorization; it does not delegate routine engineering decisions back to the user.
@@ -178,7 +187,7 @@ Every executable Issue carries, in its body:
 
 ```text
 Goal
-Product constraint (decision, minimum evidence, non-goals, cumulative budget, stop/replan thresholds)
+Product constraint (decision, minimum evidence, non-goals; estimates/limits and replan triggers where relevant)
 Accepted base / Context
 Owned paths and shared-path needs
 Acceptance criteria and commands

@@ -12,8 +12,8 @@
 The original decision required one project-scoped `terra_reverse_engineer` custom agent for each
 ordinary Phase 2 slice. That model and mandatory-worker choice is superseded by
 [ADR 0018](./0018-astra-role-routing-trial.md#current-routing): a dedicated lane owner may execute a
-slice directly, and Terra is reserved for explicitly bounded single-file, single-assembly, or
-single-function reverse-engineering subtasks. This ADR's evidence, handoff, Worker Acceptance Checklist,
+slice directly; delegated research uses the current task-based routing. The custom Terra role is
+retired. This ADR's evidence, handoff, Worker Acceptance Checklist,
 and independent acceptance requirements remain in force.
 
 For a delegated subtask in its research topic worktree, the root scopes the work and its acceptance
@@ -30,23 +30,10 @@ parser or contract and project-owned tests, document the evidence, and leave onl
 question queue. It reports its scope, files, evidence labels and provenance, counter changes, commands,
 remaining runtime questions, contract impacts, and clean unstaged/uncommitted status.
 
-The role is defined in `.codex/agents/terra-reverse-engineer.toml`; `.codex/config.toml` limits the
-project to two agent threads and one nesting level. For an explicitly assigned bounded Terra subtask,
-the root selects `gpt-5.6-terra` when role selection is unavailable to the current surface. This fallback
-does not override ADR 0018's routing or make delegation mandatory.
-
-The bounded Terra role remains at `xhigh` reasoning effort. The 2026-08-01 review found that tested
-checkpoints and focused semantic corrections improved execution without requiring a higher reasoning
-effort. It also separated contract omissions from a runner/observer false PASS caused by missing failure
-propagation; that harness defect was not evidence that static reasoning needed a larger model. These
-findings explain the Terra configuration, not the current default model for a complete research lane.
-
-The same review found that copying every historical acceptance lesson into the injected custom-agent
-prompt had enlarged it and made the native harness test preserve historical wording.
-That pattern diluted the execution sequence and turned each rejection into another permanent prompt
-clause. The custom-agent prompt is now a compact protocol that points to this ADR's complete checklist as
-the single detailed acceptance owner. Tests protect the role boundary, required protocol stages, and a
-prompt-size ceiling rather than freezing each checklist sentence in two places.
+The retired custom-agent definition and its prompt-shape test are no longer maintained. Keep this
+ADR's acceptance checklist as the detailed research owner instead of duplicating historical lessons
+in role prompts or tests of their wording. Project-wide agent limits remain in `.codex/config.toml`;
+they do not make delegation mandatory or provide a security boundary.
 
 ## Why
 
@@ -170,6 +157,4 @@ research implementation.
 - Worker handoffs become durable input to review rather than a substitute for evidence in tracked docs.
 - For delegated work, the root may reject or return a subtask, but it should not silently complete the
   worker's research.
-- The tested checkpoint/review history supports retaining `xhigh` for the bounded Terra role; current
-  lane model selection belongs to ADR 0018.
 - The existing evidence, copyright, and verification rules remain unchanged.

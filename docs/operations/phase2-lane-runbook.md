@@ -19,10 +19,9 @@ Apply `AGENTS.md` and [ADR 0018](../decisions/0018-astra-role-routing-trial.md) 
 routing, and [Project governance](./github-project-governance.md#task-lifecycle) for Issue/task lifetime.
 The assigned Research Issue executor may complete its scoped slice directly. It is the root for any
 delegated subtask and owns commit, push and Draft PR handoff; main-gate independently accepts the PR.
-Only a small, independent single-file, single-assembly, or single-function reverse-engineering subtask may go to
-`terra_reverse_engineer`, with no inherited controller turns (`fork_turns: "none"`). If that role is
-unavailable, explicitly select `gpt-5.6-terra` with the same bounded handoff. A worker is not mandatory;
-never assign Terra the whole lane or run parallel writers in one worktree.
+Delegate only small, independent research subtasks using ADR 0018's current routing and a self-contained
+handoff, with no inherited controller turns (`fork_turns: "none"`). No custom Terra role or fallback
+is used. A worker is not mandatory; never run parallel writers in one worktree.
 
 Before a large or expanded static extraction, runtime acquisition or offline comparison, use the
 [scale-planning owner](./bounded-inspection-and-review.md#plan-before-scaling) to estimate scope,

@@ -4,7 +4,6 @@ import json
 import re
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
 
 import pytest
@@ -1177,61 +1176,6 @@ def test_legacy_powershell_surface_does_not_expand() -> None:
     lines = sum(len(path.read_text(encoding="utf-8").splitlines()) for path in scripts)
     assert len(scripts) <= 36
     assert lines <= 4813
-
-
-def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> None:
-    root = Path(__file__).resolve().parents[2]
-    with (root / ".codex" / "config.toml").open("rb") as config_file:
-        config = tomllib.load(config_file)
-    with (root / ".codex" / "agents" / "terra-reverse-engineer.toml").open("rb") as agent_file:
-        agent = tomllib.load(agent_file)
-    agents_guide = (root / "AGENTS.md").read_text(encoding="utf-8")
-    adr = " ".join(
-        (root / "docs" / "decisions" / "0004-single-terra-worker-with-root-acceptance.md")
-        .read_text(encoding="utf-8")
-        .split()
-    )
-
-    agents = config["agents"]
-    assert agents["max_threads"] == 2
-    assert agents["max_depth"] == 1
-    assert agents["interrupt_message"] is True
-    assert agent["name"] == "terra_reverse_engineer"
-    assert agent["model"] == "gpt-5.6-terra"
-    assert agent["model_reasoning_effort"] == "xhigh"
-
-    instructions = agent["developer_instructions"]
-    assert len(instructions.split()) <= 700
-    normalized_instructions = " ".join(instructions.split())
-    for required_text in (
-        "exactly one Phase 2 reverse-engineering slice",
-        "slice contract",
-        "ADR 0004's complete Worker Acceptance Checklist",
-        "tested, bounded repository change",
-        "Work static-first",
-        "Confirmed, Inferred, and Unknown",
-        "matching observation JSON is not sufficient",
-        "Every tracked callback",
-        "no Lua Console error or residual registered callback",
-        "Never stage",
-        "use external memory",
-        "verify --full",
-        "root owns commit",
-        "structured handoff",
-    ):
-        assert required_text in normalized_instructions
-    for required_text in (
-        "complete slice contract defined by ADR 0004",
-        "normative detailed acceptance profile",
-        "callback exceptions must reach the status/exit contract",
-        "schemas/README.md",
-    ):
-        assert required_text in agents_guide
-    for required_text in (
-        "Fixture/schema exactness alone is not a derivation guard",
-        "An H3 command does not pass merely because BizHawk exits normally",
-    ):
-        assert required_text in adr
 
 
 def test_parallel_worktree_contract_scopes_full_gate_invalidation() -> None:
