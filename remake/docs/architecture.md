@@ -11,7 +11,7 @@ The [architecture and verification audit](./architecture-audit.md) records findi
 historical baseline and the user's modern-engine direction. Its A1–A8 are not a fresh defect list.
 The [logic-separation plan](#replaceable-gameplay-logic-plan) below owns the finite #617 scope.
 Its HEAL, admitted-action, automatic-decision, progression/outcome and conditional-story slices are implemented.
-Independent acceptance of the final slice and the finite Epic scope remains separate.
+Main-gate has independently accepted the bounded #617 scope, including its fixed-service exclusions.
 Implementation and authored demonstrations do not establish new original-game evidence.
 
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
@@ -328,8 +328,9 @@ connected product; it does not extend the runnable capability frontier.
 The implemented slices deliver selected HEAL/physical/Herb/Stay rules, immutable session composition,
 disposable semantic choices, finite preparation validation, resolved automatic-decision bindings and
 the existing staged movement/scene consumer, selected progression/outcome policies, external
-conditional programs and a selected source-story compatibility policy. Independent final-slice
-integration and main-gate acceptance of the finite scope remain; no additional action family is admitted.
+conditional programs and a selected source-story compatibility policy. Main-gate independently
+accepted these outcomes with the fixed-service exclusions below. Broader replacement requires a
+future scoped decision; no additional action family is admitted.
 #438 art/UI/UX awaits user discussion; this plan
 supplies semantic affordances only. #638 remains paused and Chinese synchronization is deferred.
 
@@ -722,7 +723,7 @@ cannot close the Epic. This table is the coverage boundary, not a backlog for ev
 | Retired Map3 scratch exception and source outcome-return conditions | Implemented exact guarded selected SF2 story policy and separate outcome-return policy. | Preserve true entity retirement and source context; explicitly authored compositions reject the operation. The four inactive scratch stores supply no new visible effect. |
 | Actor state, main/thinking seeds, queue cursor, program PC/stack/waits, revisions, observation order, staged effects and completion tokens | Retained engine mechanism. Rule-selected candidates are validated/published by the existing engine. | No second state store, speculative live mutation or alternate publication facade. |
 | RNG recurrence, integer helpers, Manhattan geometry, weighted movement/path representation and fixed turn-order primitive | Retained deterministic primitives. Policy decides operands/call order; source arithmetic remains explicit. | This plan does not promise interchangeable RNG generators, pathfinding algorithms or turn schedulers. They are fixed mechanism contracts for this engine. |
-| New-battle refresh/activation/control word policy, terrain movement-cost table, field motion/text/music and battle-scene logical service algorithms | Explicitly deferred replacement seams; preserve current owners/behavior. Selected rules may call these supported primitives without duplicating them. | They remain source-specific engine services. #617 may close only with this bounded replaceability limit accepted; an assertion that **all** gameplay/source policy is replaceable remains false. Broader decoupling needs a new scoped decision, not automatic expansion here. |
+| New-battle refresh/activation/control word policy, terrain movement-cost table, field motion/text/music and battle-scene logical service algorithms | Explicitly deferred replacement seams; preserve current owners/behavior. Selected rules may call these supported primitives without duplicating them. | They remain fixed source-specific services within the independently accepted bounded #617 scope. An assertion that **all** gameplay/source policy is replaceable remains false. Broader decoupling requires a future scoped decision. |
 | Definition/source identity, package schema, public/private admission and selected class/spell/item data | Content retains parsing/provenance; slices 1–3 separate binding from runtime strategy. Keep finite typed healing/physical definitions and source metadata. | S5 is resolved for algorithm selection and state authority, not a universal ability/class system. Unsupported effects/statuses still stop explicitly. |
 | Runtime language, no-compile authoring, hot reload, broader UI, full-game capabilities | Deferred/excluded as stated in the agreement. | No dependency for the selected compile/restart workflow; new intent must reopen design rather than silently expand it. |
 
@@ -733,19 +734,19 @@ Keeping their fixed contracts avoids that expansion; it does not make them imple
 
 ### Dependency-ordered implementation and acceptance
 
-Slices are tracked by #674–#678. All five finite implementations exist; the final slice still needs
-independent integration and the Epic needs main-gate acceptance of its explicit fixed-service limits.
+Slices are tracked by #674–#678. Main-gate independently accepted all five finite implementations
+and the explicit fixed-service limits. Git integration remains main-gate-owned.
 Each slice consumes the preceding independently accepted result and exact transferred path ownership.
 All shared contracts, default composition, `GameSession`, Content readers, views, tests and this owner
 have one writer at a time. No stacked unaccepted implementation is assumed.
 
 | Slice | Complete behavior and dependencies | Acceptance and retirement |
 | --- | --- | --- |
-| 1 — replace HEAL through the real session and presenter | Implemented by `IHealingRule`, `SessionRules`, `QueryBattleChoices` and finite `ValidateHealing`, using the existing view/scene. | Default source behavior and two authored algorithms cover query → select → confirm → staged cost/recovery/reward → completion. Malformed rule output, stale/illegal input and missing capability publish no partial preparation/RNG. `PlayerHealing` is removed. Independent main-gate integration remains separate. |
+| 1 — replace HEAL through the real session and presenter | Implemented by `IHealingRule`, `SessionRules`, `QueryBattleChoices` and finite `ValidateHealing`, using the existing view/scene. | Default source behavior and two authored algorithms cover query → select → confirm → staged cost/recovery/reward → completion. Malformed rule output, stale/illegal input and missing capability publish no partial preparation/RNG. `PlayerHealing` is removed. Integration is main-gate-owned. |
 | 2 — complete the admitted action/target interface | Implemented on slice 1's seam: selected physical, Herb and Stay; semantic inventory/action references replace adapter target/raw-word policy. | Player and AI share one physical action calculation. Preserve reaction order, consumption, gold/death/queue boundaries. Queries and commit agree; unsupported items remain explicit. No action- or rule-name dispatch in Godot. Retire migration-only adapters. |
 | 3 — select AI without scheduler strategy switches | Implemented on slices 1–2: `IBattleDecisionRule`, immutable `BattleStrategyRef` bindings, source modules, shared movement primitives and `Sf2ClassRules`. | Two authored algorithms choose different legal actions/targets from the same state without scheduler/UI edits. Repeatable thinking/main seed and memory, target ties, zero-target branch, illegal result and failed-action queue retention. Preserve source standby/activation acceptance. |
 | 4 — select progression and outcome policy | Implemented on slices 1–3: selected award/growth and ordinary victory/defeat/recovery/return choices at their existing call sites. | Growth uses the live post-scene seed; EXP/growth message order, pending failure, defeat precedence, gold/recovery and usable program return remain real behavior. An authored alternate reward/outcome policy changes behavior without editing continuation machinery. |
-| 5 — replace conditional story and isolate the exact source exception | Implemented on slice 4's return seam: guarded source policy, alternate external programs and authoring/semantic-interface guidance. | Both flag outcomes per package execute different effects with nested call/return and actual text/tick waits. Stale/duplicate completion, unsupported PC and rule failure preserve prior commits/callers. Wrong scratch context fails; real retirement remains. Final independent review must accept S1–S5 and explicit deferrals before Epic closure. |
+| 5 — replace conditional story and isolate the exact source exception | Implemented on slice 4's return seam: guarded source policy, alternate external programs and authoring/semantic-interface guidance. | Both flag outcomes per package execute different effects with nested call/return and actual text/tick waits. Stale/duplicate completion, unsupported PC and rule failure preserve prior commits/callers. Wrong scratch context fails; real retirement remains. Main-gate independently accepted S1–S5 with the explicit fixed-service exclusions. |
 
 **First vertical slice:** choose HEAL over Stay (no meaningful formula/RNG/consumer proof), Herb
 (source inventory encoding adds a second concern), or physical (multi-hit/reversal/death expands the
@@ -866,7 +867,8 @@ S1 is resolved for implemented formulas; S2 for semantic actions/targets/invento
 legality-versus-consumer support; S4 has the guarded source-story policy; S5 separates rule binding
 from state/control/faction/order for the finite admitted set. Fixed refresh/activation/control,
 movement-cost, field text/music/motion and battle-scene source-service algorithms remain the
-explicit deferrals in the disposition table. This handoff does not close #438 or the Epic.
+explicit exclusions in the independently accepted bounded scope. #438 remains open for UI/UX
+discussion with the user; Git integration and Epic closure remain main-gate responsibilities.
 
 ### Cumulative resources, pilot decisions and recovery
 
@@ -919,8 +921,9 @@ are reassessment signals, not design acceptance targets or reasons to omit neces
 Main-gate adjusts estimates as routine engineering judgment, including extra work that prevents
 rework; this does not automatically require user approval. Stop for actual scope departures such as
 a second state authority, new runtime/framework or unauthorized acquisition. Changed user outcomes,
-fidelity or explicit user limits still require the user's decision. Source-service deferrals must
-be accepted explicitly before bounded #617 closure; otherwise keep the Epic open for that decision.
+fidelity or explicit user limits still require the user's decision. The fixed source-service
+exclusions are part of main-gate's independently accepted bounded #617 scope; broader replacement
+requires a future scoped decision.
 
 Each accepted slice is a recoverable Git boundary: integrate only after independent checks and
 retain its prior behavior/failure evidence. Before merge, correct or discard only that topic; after
