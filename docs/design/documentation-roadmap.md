@@ -98,22 +98,22 @@ accepted remake choices, historical results and remaining Unknowns clearly disti
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution, while this roadmap owns the current agreement.
 
-The finite English entry-plus-overview round has two outcomes with separate acceptance:
+The finite English entry-plus-overview round has two accepted outcomes:
 
 1. [Baseline calibration #667](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/667):
    align this roadmap and the English Design index with the accepted private milestone; establish
    scope, sequencing and translation deferral. Evidence contracts, readiness, implementation owners,
    Chinese files, glossary, translation index and agent guidance remain read-only for this outcome.
-2. [Overview revision #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669): update
-   the existing [Gameplay Overview](synthesis/gameplay-overview.md) as a readable explanation of
+2. [Overview revision #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669): the
+   user-accepted [Gameplay Overview](synthesis/gameplay-overview.md) provides a readable explanation of
    connected gameplay directions, using the accepted exploration → interaction/story → battle
-   admission → actions/results → return slice as a concrete demonstration. Preserve original facts,
-   accepted remake choices and uncertainty; link numerical/evidence tables rather than duplicating
-   them. Main-gate reviews the Draft PR technically and editorially, then presents it for the user's
-   personal acceptance. Do not merge, close #669 as accepted, or create/dispatch follow-on
-   research/documentation tickets from the overview before that acceptance.
+   admission → actions/results → return slice as a concrete demonstration. It preserves original
+   facts, accepted remake choices and uncertainty, and links numerical/evidence tables rather than
+   duplicating them. Main-gate completed technical/editorial review, and the user personally accepted
+   the English overview and authorized its merge. #669 is complete; subsequent research/documentation
+   tickets still require separate planning and dispatch.
 
-After the user's overview acceptance, main-gate may plan research/documentation tickets by direction.
+With the overview accepted, main-gate may separately plan research/documentation tickets by direction.
 Tactical-loop, progression/resource and story/persistence revisions are subsequent candidates,
 requiring separate scope and dispatch; they are not automatic work in this round. Further map and
 roster explanations remain subject to the entry criteria below.
@@ -144,8 +144,9 @@ Overview acceptance also reads the full resulting explanation as a reader and ch
 claims against their contract/research, pertinent fixture payload/identifier and verifier semantics.
 Check changed links/anchors and any diagram's syntax and transition meaning, exact two-file ownership
 and private boundary directly. No runtime/native/translation suites or new verification machinery
-are added. Its Draft PR uses `Refs #669` and freezes for independent review and pending user acceptance;
-passing direct checks or CI does not satisfy that user gate.
+are added. The #669 independent-review and user-acceptance gates are satisfied. For a separately scoped
+material revision, freeze its Draft PR for independent review and any required user acceptance;
+passing direct checks or CI alone does not satisfy a user gate.
 
 **Confirmed repository baseline:** existing contracts cover combat, maps, level-up, spells, services,
 save/input/window, dialogue, party/roster state, and randomness. They are listed in the

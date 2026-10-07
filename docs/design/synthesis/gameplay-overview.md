@@ -1,6 +1,6 @@
 # Gameplay Overview and System Boundaries
 
-- Status: **design synthesis over accepted evidence**, pending the user's overview acceptance under
+- Status: **user-accepted design synthesis over accepted evidence** under
   [Issue #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669).
 - Review baseline: accepted `main` at `3d550cd9db7a7508bd7f95d0307302ed05dddb7a`.
 - Audience: readers choosing which gameplay directions to understand more deeply, and researchers,
