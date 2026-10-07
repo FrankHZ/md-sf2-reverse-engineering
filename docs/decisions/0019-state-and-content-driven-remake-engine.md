@@ -373,10 +373,10 @@ and full ADR0009/0010/8C/H4 remain incomplete.
 ## Current M2 ordinary physical implementation
 
 The M2 capability uses the common session for configured regular-ground physical actions.
-[PhysicalBattleAction](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalBattleAction.cs) validates
+[Sf2PhysicalAction](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2PhysicalAction.cs) validates
 living opposing adjacent targets at the provisional destination, constructs at most first, second
 and reversed counter hits on temporary HP, then publishes once. Shared
-[PhysicalStrikeRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalStrikeRules.cs) owns dodge,
+[PhysicalStrikeRules](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/PhysicalStrikeRules.cs) owns dodge,
 integer land reduction, the two supported semantic critical rules, counter halving before spread and each strike's natural
 double/counter draws. The already-set counter toggle survives a failed draw after the second hit;
 a new second-hit success can also request it. Target death cancels the follow-up. Counter-end draws

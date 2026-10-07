@@ -208,7 +208,7 @@ public sealed class MedicalHerbTests
             1, 100, 20, 10, 8, 12, false, 5, [], sourceLoadout: new([199, 0, 256, 127], [63, 63, 63, 63]));
         var actor = new BattleActorState(original.Deployment with { Definition = definition }, 95, 8, 0, original.Position, 0, 0);
         var battle = initial.With(actors: initial.Actors.Select(a => a.Actor == actor.Actor ? actor : a), mainSeed: 0x12345678);
-        var action = PlayerItemUse.Prepare(battle, actor.Actor, actor.Position!, 1, actor.Actor);
+        var action = PlayerItemUse.PrepareSourceDefault(battle, actor.Actor, actor.Position!, 1, actor.Actor);
         var replay = action.ApplyReward(action.ApplyReaction(action.Prepared, action.Reactions.Single()));
         var after = replay.Battle; var effects = action.ConstructionEffects.Concat(replay.Effects).ToArray();
         Assert.Equal((byte)expectedExp, after.GetActor(actor.Actor).Exp);
@@ -218,7 +218,7 @@ public sealed class MedicalHerbTests
         Assert.Equal(new ushort?[] { 14, 0 }, effects.Where(e => e.RandomRange == 16).Select(e => e.RandomValue));
         Assert.Equal(2, effects.Count(e => e.RandomRange is not null));
         var before = after;
-        Assert.Equal("item-effect", Assert.Throws<BattleRuleException>(() => PlayerItemUse.Prepare(before, actor.Actor, actor.Position!, 0, actor.Actor)).Code);
+        Assert.Equal("item-effect", Assert.Throws<BattleRuleException>(() => PlayerItemUse.PrepareSourceDefault(before, actor.Actor, actor.Position!, 0, actor.Actor)).Code);
         Assert.Equal(before.MainSeed, after.MainSeed);
     }
 
@@ -232,7 +232,7 @@ public sealed class MedicalHerbTests
         var grown = new BattleActorState(actor.Deployment with { Definition = actor.Definition.WithGrowth(growth) },
             actor.Hp, actor.Mp, 99, actor.Position, 0, 0, sourceLoadout: new([0, 213, 0, 127], [0, 63, 63, 63]));
         var before = initial.With(actors: initial.Actors.Select(a => a.Actor == actor.Actor ? grown : a));
-        var action = PlayerItemUse.Prepare(before, actor.Actor, actor.Position!, 0, actor.Actor);
+        var action = PlayerItemUse.PrepareSourceDefault(before, actor.Actor, actor.Position!, 0, actor.Actor);
         var pending = BattleSceneContinuation.Begin(new SessionSnapshot(Guid.NewGuid(), 0, 0,
             new ActiveBattle(before, null), new StoryState([]), SessionStopReason.PlayerInput), action, []);
         while (pending.Snapshot.BattleScene!.Phase != BattleScenePhase.RewardMessage)

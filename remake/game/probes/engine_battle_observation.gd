@@ -76,7 +76,7 @@ func _run() -> void:
             _finish()
             return
         if observation_case == "item-selection":
-            await _item_selection(initial)
+            await preload("res://probes/engine_action_choice_observation.gd").new().items(self, initial)
             _finish()
             return
         if observation_case == "spell-selection":
@@ -121,7 +121,7 @@ func _run() -> void:
             _finish()
             return
         if observation_case == "target-cycle":
-            await _target_cycle(initial)
+            await preload("res://probes/engine_action_choice_observation.gd").new().targets(self, initial)
             _finish()
             return
         if observation_case == "layout":
@@ -129,7 +129,7 @@ func _run() -> void:
             _finish()
             return
         if observation_case == "physical":
-            await _physical(initial, _diagnostic("REVERSE_KILLS") == "1")
+            await preload("res://probes/engine_action_choice_observation.gd").new().physical(self, initial, _diagnostic("REVERSE_KILLS") == "1")
             _finish()
             return
         if observation_case == "followups":
@@ -137,7 +137,7 @@ func _run() -> void:
             if shape.is_empty():
                 failures.append("Missing follow-up observation shape.")
             else:
-                await _followups(initial, shape)
+                await preload("res://probes/engine_action_choice_observation.gd").new().followups(self, initial, shape)
             _finish()
             return
         failures.append("Unknown observation case.")
@@ -256,40 +256,6 @@ func _same_battle(before: Dictionary, after: Dictionary) -> bool:
                 return false
     return true
 
-func _target_cycle(initial: Dictionary) -> void:
-    await _press(KEY_ENTER)
-    await _press(KEY_H)
-    var selected := _read("self-selected")
-    await _press(KEY_TAB)
-    var rejected := _read("first-tab-range-rejected")
-    _check(rejected.failure == "target-range" and rejected.target == initial.actor
-        and rejected.candidate == "guard-a" and rejected.revision == selected.revision
-        and _same_battle(selected, rejected), "Rejected candidate preserves selected target, revision and battle/RNG")
-    await _press(KEY_TAB)
-    var later := _read("second-tab-later-legal-target")
-    _check(later.failure == null and later.target == "guard-c" and later.stage == "CommitReady"
-        and _same_battle(selected, later), "Tab reaches the legal ally after a rejected candidate")
-    await _press(KEY_TAB)
-    var wrapped := _read("third-tab-wraps-to-self")
-    _check(wrapped.failure == null and wrapped.target == initial.actor, "Target cycle wraps normally")
-    await _press(KEY_ESCAPE)
-    var cancelled := _read("cancel-clears-candidate")
-    _check(cancelled.candidate == null and cancelled.target == null and _same_battle(initial, cancelled),
-        "Cancel clears only provisional selection and UI cursor")
-    await _press(KEY_ENTER)
-    await _press(KEY_H)
-    await _press(KEY_TAB)
-    await _press(KEY_TAB)
-    await _press(KEY_ENTER)
-    var committed := _read("later-target-heal-committed")
-    _check(committed.failure == null and committed.actors[0].hp == initial.actors[0].hp
-        and committed.actors[0].mp == initial.actors[0].mp - 3, "Real input commits HEAL to the later ally, not self")
-    var healed_later := false
-    for observation in committed.observations:
-        if observation.Kind == "hp" and observation.Actor.Value == "guard-c":
-            healed_later = observation.After > observation.Before
-    _check(healed_later and committed.candidate == null, "Later ally receives healing and the next action has no stale UI cursor")
-
 func _rectangle(value: Dictionary) -> Rect2:
     return Rect2(value.x, value.y, value.width, value.height)
 
@@ -362,111 +328,6 @@ func _layout(initial: Dictionary, long_path: bool) -> void:
     _check(committed.failure == null and committed.actors[0].x == wide.previewX
         and committed.actors[0].y == wide.previewY, "Visible preview can be committed through actual input")
     _visible_layout(committed, "next-control")
-
-func _physical(initial: Dictionary, reverse: bool) -> void:
-    var player: String = initial.actor
-    var first_index := 3 if reverse else 2
-    var second_index := 2 if reverse else 3
-    await _press(KEY_ENTER)
-    await _press(KEY_F)
-    await _press(KEY_TAB)
-    await _press(KEY_TAB)
-    await _press(KEY_TAB)
-    var rejected := _read("physical-range-rejected")
-    _check(rejected.failure == "target-range", "Distant opponent fails range validation")
-    _check(rejected.target == initial.actors[3].id and rejected.candidate == initial.actors[4].id,
-        "Rejected physical cursor retains authoritative target")
-    await _press(KEY_TAB)
-    if reverse:
-        await _press(KEY_TAB)
-    var selected := _read("first-physical-selected")
-    _check(selected.failure == null and selected.target == initial.actors[first_index].id,
-        "Physical candidate cycles past rejection")
-    _check(selected.mainSeed == initial.mainSeed and selected.actors[first_index].hp == 15,
-        "Target selection leaves resources and RNG unchanged")
-    await _press(KEY_ENTER)
-    var killed := _read("first-death-next-control")
-    var first_exp := 23 if initial.map == "stone-court-map" else 48
-    _check(killed.failure == null and killed.mainSeed == 176099892 and killed.actors[0].exp == first_exp,
-        "Physical attack carries exact RNG and EXP")
-    _check(killed.actors[first_index].hp == 0 and killed.actors[first_index].x == null
-        and not killed.actors[first_index].visible, "Dead enemy leaves occupancy and visible battlefield")
-    _check(killed.gold == initial.gold + 17 + first_index and killed.actors[0].kills == 1,
-        "First death credits configured gold and killer")
-    _check(killed.actor == initial.actors[1].id and killed.stopReason == "PlayerInput", "Automatic next living player")
-    await _press(KEY_ENTER)
-    await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
-    var next_round := _read("physical-next-round")
-    _check(next_round.actor == player and next_round.round == 2 and next_round.mainSeed == 3184202292,
-        "Next round consumes only living turn entries")
-    await _press(KEY_ENTER)
-    await _press(KEY_F)
-    await _press(KEY_TAB)
-    _check(_read("second-physical-selected").target == initial.actors[second_index].id,
-        "Second legal kill uses the opposite opponent")
-    await _press(KEY_ENTER)
-    var second := _read("second-death-next-control")
-    var final_exp := 48 if initial.map == "stone-court-map" else 98
-    _check(second.failure == null and second.actors[0].exp == final_exp and second.mainSeed == 3226014260,
-        "Second physical action preserves expected EXP and RNG")
-    _check(second.gold == initial.gold + 39 and second.actors[0].kills == 2,
-        "Both kill orders settle the same gold and kill count")
-    _check(second.actor == initial.actors[1].id and second.actors[second_index].x == null
-        and not second.actors[second_index].visible, "Second death cleans up and returns actual control")
-    _check(second.thinkingSeed == initial.thinkingSeed, "Stay AI does not consume thinking RNG")
-
-func _followups(initial: Dictionary, shape: String) -> void:
-    var expected: Dictionary = {
-        "sticky": {"hits": ["first", "second", "counter"], "hp": 493, "target_hp": 453, "exp": 2, "seed": 0x3A1E1234, "draws": 20},
-        "counter": {"hits": ["first", "counter"], "hp": 491, "target_hp": 474, "exp": 3, "seed": 0x557E1234, "draws": 14},
-        "ally-death": {"hits": ["first", "counter"], "hp": 0, "target_hp": 478, "exp": 99, "seed": 0x4CCA1234, "draws": 10},
-        "second-death": {"hits": ["first", "second"], "hp": 500, "target_hp": 0, "exp": 24, "seed": 0xD1F61234, "draws": 12}
-    }.get(shape, {})
-    if expected.is_empty():
-        failures.append("Unknown follow-up shape.")
-        return
-    await _press(KEY_ENTER)
-    await _press(KEY_F)
-    await _press(KEY_TAB)
-    var selected := _read("followup-selected")
-    _check(selected.failure == null and selected.target == initial.actors[2].id
-        and selected.mainSeed == initial.mainSeed, "Follow-up selection leaves the battle untouched")
-    await _press(KEY_ENTER)
-    var result := _read("followup-resolved-next-control")
-    _check(result.failure == null and result.actor == initial.actors[1].id, "One action returns the next living player")
-    _check(result.actors[0].hp == expected.hp and result.actors[2].hp == expected.target_hp
-        and result.actors[0].exp == expected.exp, "Actual follow-up HP and aggregate EXP")
-    _check(result.mainSeed == expected.seed and result.thinkingSeed == initial.thinkingSeed, "Exact naturally carried action seeds")
-    var hits: Array = []
-    var draws := 0
-    var commits := 0
-    for observation in result.observations:
-        if observation.Kind.begins_with("physical-"):
-            hits.append(observation.Kind.trim_prefix("physical-"))
-            var counter: bool = observation.Kind == "physical-counter"
-            _check(observation.Actor.Value == (initial.actors[2].id if counter else initial.actor)
-                and observation.Target.Value == (initial.actor if counter else initial.actors[2].id),
-                "Semantic attack observation preserves actor/target reversal")
-        if observation.RandomRange != null:
-            draws += 1
-        if observation.Kind == "action-committed":
-            commits += 1
-    _check(hits == expected.hits and draws == expected.draws and commits == 1, "Source-ordered bounded chain and one atomic action")
-    var enemy_dead: bool = expected.target_hp == 0
-    _check(result.gold == initial.gold + (19 if enemy_dead else 0), "One configured kill reward only")
-    if shape == "ally-death":
-        _check(result.actors[0].x == null and not result.actors[0].visible
-            and result.actors[0].defeats == 7 and result.roster.contains("DEFEATS 7"), "Counter death clears actor node and projects defeat accounting")
-    if enemy_dead:
-        _check(result.actors[2].x == null and not result.actors[2].visible and result.actors[0].kills == 1,
-            "Second-hit death cancels counter and clears the enemy exactly once")
-    await _press(KEY_ENTER)
-    await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
-    var next_round := _read("followup-next-round")
-    _check(next_round.round == 2 and next_round.actor == (initial.actors[1].id if expected.hp == 0 else initial.actor),
-        "Next round excludes any dead actor and returns actual living control")
 
 func _enemy_actions(initial: Dictionary, shape: String) -> void:
     var enemy: String = initial.actors[2].id
@@ -846,62 +707,3 @@ func _private_actions(initial: Dictionary) -> void:
         _check(healed.stopReason == "PlayerInput", "HEAL returns actual control")
     else:
         _check(false, "Actual route reaches Sarah for HEAL")
-
-func _item_selection(initial: Dictionary) -> void:
-    # Recipe selects J/Start as the item bindings. Every transition goes through ordinary host input.
-    await _press(KEY_ENTER)
-    var choosing := _read("item-action-choice")
-    await _press(KEY_I)
-    var unmapped := _read("old-binding-inert")
-    _check(unmapped.revision == choosing.revision, "Overridden item key does not trigger a command")
-    await _press(KEY_J)
-    var selected := _read("held-item-selected")
-    _check(selected.itemSlot == 0 and selected.target == initial.actor and selected.stage == "CommitReady", "Remapped item selects the held slot and self")
-    _check(selected.itemChoices.contains("Recovery leaf · selected") and selected.help.contains("J / Pad Start"), "Actual HUD shows item identity, selected slot and remapped controls")
-    await _press(KEY_TAB)
-    var rejected := _read("item-outside-range")
-    _check(rejected.failure == "target-range" and rejected.target == initial.actor and rejected.mainSeed == initial.mainSeed, "Distant target rejection retains accepted target and RNG")
-    _check(rejected.inventories == initial.inventories, "Rejected target consumes no inventory")
-    await _press(KEY_J)
-    var reselected := _read("different-item-selected")
-    _check(reselected.itemSlot == 1 and reselected.target == initial.actor, "Cycling selects the next real inventory slot")
-    await _press(KEY_ESCAPE)
-    var cancelled := _read("item-cancelled")
-    _check(cancelled.itemSlot == null and cancelled.stage == "Movement" and cancelled.inventories == initial.inventories and cancelled.mainSeed == initial.mainSeed, "Cancel discards choices without resource changes")
-    await _press(KEY_ENTER)
-    await _press(KEY_J)
-    await _press(KEY_ENTER)
-    var committed := _read("item-consumed")
-    _check(committed.failure == null and committed.actors[0].hp == 70 and committed.actors[0].mp == initial.actors[0].mp, "Herb restores ten missing HP without MP payment")
-    _check(committed.inventories[0].items == [6.0, 127.0, 127.0, 127.0] and committed.actor == "guard-a", "Consumption shifts remaining slot and advances to another holder")
-    _check(committed.thinkingSeed == initial.thinkingSeed and committed.mainSeed != initial.mainSeed, "Only the action's main RNG channel advances")
-    await _press(KEY_ENTER)
-    var event := InputEventJoypadButton.new()
-    event.button_index = JOY_BUTTON_START
-    event.pressed = true
-    Input.parse_input_event(event)
-    await process_frame
-    await process_frame
-    event = InputEventJoypadButton.new()
-    event.button_index = JOY_BUTTON_START
-    event.pressed = false
-    Input.parse_input_event(event)
-    await process_frame
-    var pad := _read("gamepad-item-selection")
-    _check(pad.itemSlot == 0 and pad.target == "guard-a" and pad.failure == null, "Remapped gamepad selects another holder's own item")
-    await _press(KEY_ENTER)
-    var other := _read("other-holder-consumed")
-    _check(other.failure == null and other.actors[1].hp == 12 and other.actors[1].exp == 1 and other.inventories[1].items == [127.0, 127.0, 127.0, 127.0], "Non-healer consumes once, clamps HP and earns minimum EXP")
-    var current := other
-    for _turn in range(6):
-        if current.actor == "guard-a":
-            break
-        await _press(KEY_ENTER)
-        await _press(KEY_SPACE)
-        await _press(KEY_ENTER)
-        current = JSON.parse_string(view.call("ReadObservationJson"))
-    _check(current.actor == "guard-a", "Ordinary turns return the empty holder")
-    await _press(KEY_ENTER)
-    await _press(KEY_J)
-    var empty := _read("empty-inventory")
-    _check(empty.failure == "empty-item-slot" and empty.mainSeed == current.mainSeed and empty.inventories == current.inventories, "Empty inventory rejection is visible and atomic")

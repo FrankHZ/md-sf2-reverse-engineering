@@ -1,3 +1,5 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
+
 namespace Sf2.Remake.Domain.Battles;
 
 internal static class BattleRewards

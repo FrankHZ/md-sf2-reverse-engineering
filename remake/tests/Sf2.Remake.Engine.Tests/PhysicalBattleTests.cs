@@ -32,6 +32,8 @@ public sealed class PhysicalBattleTests
         Assert.Equal(0x3EB11234L, rolls[0].Before);
         for (int i = 1; i < rolls.Length; i++) Assert.Equal(rolls[i - 1].After, rolls[i].Before);
         Assert.Equal(0x0A7F1234u, ConstructionSeed(firstResult));
+        // Independent accepted RNG schedule: 24 damaging-reaction draws after construction.
+        Assert.Equal(0x41571234u, firstResult.Snapshot.Battle.MainSeed);
         Assert.Equal(firstExp, session.Current.Battle.GetActor(attacker).Exp!.Value);
         Assert.Equal((uint)(gold + (reverse ? 20 : 19)), session.Current.Battle.Gold);
         Assert.Equal(new ActorRef(nextPlayer), session.Current.Selection!.Actor);
@@ -44,7 +46,12 @@ public sealed class PhysicalBattleTests
         var roundRoll = Assert.Single(nextRound.Observations, row => row.Kind == "round-rng");
         Assert.Equal((long)firstResult.Snapshot.Battle.MainSeed, roundRoll.Before);
         Assert.Equal(roundRoll.After, nextRound.Snapshot.Battle.MainSeed);
+        // Four living ordinary actors consume twelve round draws, including zero-range draws.
+        Assert.Equal(0x01231234u, nextRound.Snapshot.Battle.MainSeed);
         var secondResult = Attack(session, second);
+        Assert.Equal(0x7AE11234u, ConstructionSeed(secondResult));
+        Assert.Equal(0xCE791234u, secondResult.Snapshot.Battle.MainSeed);
+        Assert.Equal(package == "stone-court" ? 47 : 97, session.Current.Battle.GetActor(attacker).Exp!.Value);
         Assert.Equal((long)nextRound.Snapshot.Battle.MainSeed, ConstructionRolls(secondResult).First().Before);
         var award = Assert.Single(secondResult.Observations, row => row.Kind == "exp");
         Assert.Equal(firstExp, award.Before);

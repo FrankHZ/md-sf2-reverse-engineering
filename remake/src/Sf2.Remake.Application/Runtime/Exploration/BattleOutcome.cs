@@ -6,7 +6,10 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class BattleOutcome
 {
-    internal static SessionResult Begin(ScenarioDefinition definition, SessionResult result)
+    internal static SessionResult Begin(ScenarioDefinition definition, SessionResult result) =>
+        Begin(definition, result, Gameplay.RuleCompositions.Sf2());
+
+    internal static SessionResult Begin(ScenarioDefinition definition, SessionResult result, SessionRules rules)
     {
         var current = result.Snapshot;
         if (current.Mode != SessionMode.Battle || current.BattleScene is not null || current.BattleMovement is not null ||
@@ -41,7 +44,7 @@ internal static class BattleOutcome
             story = ExplorationTextRunner.Initialize(world, story);
             current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations,
                 "outcome-program-started", kind.ToString());
-            return ProgramRunner.Run(definition, current, observations);
+            return ProgramRunner.Run(definition, current, observations, rules);
         }
         catch (BattleRuleException error) { return ProgramRunner.Failure(current, observations, error); }
     }

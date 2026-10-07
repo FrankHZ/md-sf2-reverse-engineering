@@ -63,7 +63,7 @@ public sealed class PrivateActionBindingTests
             var before = new EngineBattleState(initialized.Definition, actors, 0xAF881234, 0x01340099,
                 9, [], 0, admitted.Start.Gold, initialized.StartPolicy, initialized.Regions);
             var frozen = before.Actors.Select(actor => (actor.Actor, actor.Position, actor.Hp, actor.Exp, actor.Kills, actor.Defeats)).ToArray();
-            var resolved = PhysicalBattleAction.Resolve(before, actorRef, new(8, 10), targetRef);
+            var resolved = PhysicalBattleAction.ResolveSourceDefault(before, actorRef, new(8, 10), targetRef);
             Assert.Equal(frozen, before.Actors.Select(actor => (actor.Actor, actor.Position, actor.Hp, actor.Exp, actor.Kills, actor.Defeats)));
             Assert.Equal(new ushort?[] { 8, 16, 1, 1, 16, 16 }, resolved.Effects.Where(row => row.Kind.StartsWith("rng-", StringComparison.Ordinal)).Select(row => row.RandomRange));
             Assert.Equal((ushort)0, resolved.Battle.GetActor(targetRef).Hp); Assert.Null(resolved.Battle.GetActor(targetRef).Position);
@@ -85,7 +85,7 @@ public sealed class PrivateActionBindingTests
             actor.Kills, actor.Defeats, attack: actor.Attack, activationWord: actor.ActivationWord));
         var before = new EngineBattleState(initial.Definition, actors, 0xAF881234, 0x01340000, 6, [], 0,
             admitted.Start.Gold, initial.StartPolicy, initial.Regions);
-        var result = PhysicalBattleAction.Resolve(before, attacker, new(11, 15), target);
+        var result = PhysicalBattleAction.ResolveSourceDefault(before, attacker, new(11, 15), target);
         // Accepted ManualAttack reference: hovering on source terrain1 uses230, not256.
         Assert.Equal((ushort)2, result.Battle.GetActor(target).Hp); Assert.Equal((byte)15, result.Battle.GetActor(attacker).Exp);
         Assert.Equal(0xE9F01234u, result.Battle.MainSeed); Assert.Equal(before.ThinkingSeed, result.Battle.ThinkingSeed);
@@ -125,11 +125,11 @@ public sealed class PrivateActionBindingTests
             if (!known)
             {
                 Assert.Equal("unspecified-defeats", Assert.Throws<BattleRuleException>(() =>
-                    PhysicalBattleAction.Resolve(before, attacker, new(11, 14), target)).Code);
+                    PhysicalBattleAction.ResolveSourceDefault(before, attacker, new(11, 14), target)).Code);
                 Assert.Null(before.GetActor(target).Defeats); Assert.Equal((ushort)1, before.GetActor(target).Hp);
                 continue;
             }
-            var result = PhysicalBattleAction.Resolve(before, attacker, new(11, 14), target);
+            var result = PhysicalBattleAction.ResolveSourceDefault(before, attacker, new(11, 14), target);
             Assert.Equal((ushort)0, result.Battle.GetActor(target).Hp); Assert.Null(result.Battle.GetActor(target).Position);
             Assert.Equal((ushort)1, result.Battle.GetActor(target).Defeats); Assert.Null(result.Battle.GetActor(attacker).Kills);
             Assert.Equal(before.Gold, result.Battle.Gold); Assert.Equal(before.ThinkingSeed, result.Battle.ThinkingSeed);

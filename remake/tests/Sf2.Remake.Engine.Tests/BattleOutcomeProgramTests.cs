@@ -219,7 +219,7 @@ public sealed class BattleOutcomeProgramTests
             logicalText: field.Current.Story.LogicalText! with { Open = true }, randomSeedCopy: 0xA9);
         var input = new SessionSnapshot(field.Current.SessionId, field.Current.Revision, field.Current.ObservationSequence,
             new ActiveBattle(battle, null), story, SessionStopReason.SimulationWait);
-        var prepared = PhysicalBattleAction.Prepare(battle, new("medic-a"), new(x, 3), new("dummy-a"));
+        var prepared = PhysicalBattleAction.PrepareSourceDefault(battle, new("medic-a"), new(x, 3), new("dummy-a"));
         var result = BattleSceneContinuation.Begin(input, prepared, []);
         while (result.Snapshot.BattleScene is { } scene)
         {

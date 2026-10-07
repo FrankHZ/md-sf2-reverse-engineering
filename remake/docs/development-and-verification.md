@@ -1772,7 +1772,7 @@ $env:SF2_OBSERVATION_CASE = ''
 $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Inspect all eight checkpoints and the process log, not just exit0: the actual actor starts at(4,3),
@@ -1800,7 +1800,7 @@ $env:SF2_OBSERVATION_CASE = 'extra-turn'
 $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Require all seven checkpoints and clean logs: initial control, uncommitted STAY selection, consumption
@@ -1839,10 +1839,10 @@ $env:SF2_OBSERVATION_CASE = 'physical'
 $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
-Require seven physical checkpoints, real target input/node removal/next control and clean process logs.
+Require construction and completed-scene checkpoints, real target input/node removal/next control and clean process logs.
 Apply the same order/array transform after constructing the `secondary` multi-target input below to
 observe actual AI selection with sparse orders; its five independent checkpoints and RNG expectations
 are unchanged. `BattleFactionOrderTests` separately exercises a low-order enemy, renamed high-order
@@ -1907,6 +1907,80 @@ engine-suite discovery failure and its focused corrections remain in the slice h
 whole-suite rerun is required merely to replace that red aggregate record. Preserve the historical
 CP2059–2091 cursor FAIL under [HEAL scene verification](#heal-scene-verification).
 
+## Semantic action selection observation
+
+The [implemented semantic actions](./architecture.md#implemented-semantic-actions) expose finite
+Physical, Healing, Item and Stay references through one immutable selected rule composition.
+`BattleActionChoiceTests` exercises the actual query, admission, commit and automatic continuation:
+ordered disabled candidates, semantic empty slots, unchanged raw inventory words, stale/rejected
+commands, changed physical targeting/damage/estimate, source-AI pass-through, malformed results and
+later failure retention. Preview never prepares effects or spends RNG. Item/physical source arithmetic
+remains independently asserted by the existing behavior and controlled private action assertions.
+
+After loading the protected environment above, use the dedicated engine and adapter gates. A focused
+correction can select `BattleActionChoiceTests`, `PhysicalBattleTests`, `PhysicalRuleConfigurationTests`,
+`MedicalHerbTests`, `BattleSceneTests`, `SpellSelectionTests`, `EngineSessionTests` and
+`BattleOutcomeProgramTests` with the existing .NET test `--filter` option. Private assertions require
+the named external inputs; a skipped assertion is not private fidelity acceptance. No broad H4,
+original capture, source rebuild or observer test belongs to this bounded action seam.
+
+The existing battle observer delegates physical/follow-up/target/item consumers to
+[`engine_action_choice_observation.gd`](../game/probes/engine_action_choice_observation.gd). It observes
+canonical `battleChoices`, actual HUD labels and real input, retains construction facts before HP
+publication, then waits for actual presenter stages and player acknowledgements. Final checks retain
+HP/MP, EXP, inventory, gold, death projection, queue/next control and ordered carried RNG facts.
+Construction and damaging-reaction draws are checked separately. No direct completion API, runtime
+state setter or screenshot supplies these observations. Run the four physical package/order cases,
+four follow-up shapes and three-allies target-cycle recipe below serially with fresh ignored outputs.
+All ten cases, including the item recipe below, pass this bounded source-default consumer boundary.
+They do not replace the earlier HEAL A/B demonstration or close original timing/H4 Unknowns.
+
+The physical stage expectations are derived independently from accepted source rules: the high word
+advances as `(13 * seed + 7) & 65535`, preserving low word `0x1234`. A damaging reaction has twelve
+logical steps with two draws each; four living ordinary actors contribute twelve round-generation
+draws. The second lethal action contributes six construction draws, then twenty-four reaction draws.
+These counts produce the following expectations for both legal kill orders; they are not copied from
+native output. The second action's source damage/award is23/24 for stone-court and27/49 for river-post.
+
+| Stage | Expected seed |
+| --- | --- |
+| First construction | `0x0A7F1234` |
+| First scene complete | `0x41571234` |
+| Second round | `0x01231234` |
+| Second construction | `0x7AE11234` |
+| Second scene complete | `0xCE791234` |
+
+Final EXP is47 for stone-court and97 for river-post. The existing physical behavior assertion checks
+these separate stages. Follow-up cases retain their original construction vectors and independently
+advance twenty-four draws per damaging hit; source-specific draw counts are not generic rule validators.
+Completed early-read and parser failures remain in the slice handoff, with only affected cases rerun.
+
+For item selection, create this minimal startup variant in a fresh ignored `SF2_RUN_OUTPUT` directory:
+
+```powershell
+$data = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json -AsHashtable
+$data.items = @(
+    @{id=0; name='Recovery leaf'; effect='consumable-healing'; power=10; minimumRange=0; maximumRange=1},
+    @{id=6; name='Small remedy'; effect='consumable-healing'; power=4; minimumRange=0; maximumRange=2})
+$data.actors[0].items = @(0,6,127,127)
+$data.actors[1].items = @(0,127,127,127)
+$data.start.actors[0].hp = 60
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'package.json'
+$data | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$settingsPath = Join-Path $env:SF2_RUN_OUTPUT 'input-settings.json'
+'{"formatVersion":1,"bindings":{"item":{"keys":["J"],"buttons":["Start"],"axes":[]}}}' | Set-Content -LiteralPath $settingsPath -Encoding utf8NoBOM
+$env:SF2_OBSERVATION_CASE = 'item-selection'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'observation.json'
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --input-settings $settingsPath
+```
+
+This observes remapped J input, two named slots, an empty-slot rejection, selected range, cancel,
+actual consumption/compaction, capped HP recovery, EXP/RNG, HUD help and usable next control. Each
+native launch uses the existing protected environment/project/installation and its own worktree-local
+output and user-data locations. Preserve failure logs and use a new output directory for corrections.
+
 ## Authored Battle Observation
 
 After loading the existing worktree environment, build the actual Debug assembly once when needed
@@ -1941,7 +2015,7 @@ $env:SF2_OBSERVATION_CASE = ''
 $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 `$godotBinary` is the already verified local installation, and `SF2_RUN_OUTPUT` is an explicit ignored
@@ -1961,7 +2035,7 @@ $env:SF2_OBSERVATION_CASE = 'physical'
 $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Repeat with `river-post.json`; `SF2_OBSERVATION_REVERSE_KILLS=1` selects the opposite legal kill order. The observation
@@ -1998,7 +2072,7 @@ $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
 $env:SF2_OBSERVATION_FOLLOWUP_SHAPE = $shape
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Use a fresh output directory per shape and run serially in the same installed project. The observer
@@ -2176,7 +2250,7 @@ $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
 $env:SF2_OBSERVATION_ENEMY_SHAPE = $shape
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 The four checkpoints cover initial state, real player STAY selection, automatic enemy action and
@@ -2235,7 +2309,7 @@ $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
 $env:SF2_OBSERVATION_TARGET_SHAPE = $shape
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Both adjacent candidates consume thinking draws in reverse processing order: 1 then2 produce raw19 each,
@@ -2308,7 +2382,7 @@ $env:SF2_OBSERVATION_REVERSE_KILLS = '0'
 $env:SF2_OBSERVATION_LONG_PATH = '0'
 $env:SF2_OBSERVATION_OUTPUT = $outputPath
 $env:SF2_OBSERVATION_CONTINUATION_SHAPE = $shape
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
+& $godotBinary --headless --path remake/game --log-file (Join-Path $env:SF2_RUN_OUTPUT 'godot.log') --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Require exit0, `passed: true`, clean logs without script errors, and all checkpoints: six for
