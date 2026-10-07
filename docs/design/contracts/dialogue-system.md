@@ -134,7 +134,7 @@ tick debt and cannot erase mandatory work. These rules specify no wall-clock rat
 poll quota; they preserve shared RNG and all selected gameplay assertions.
 
 **Confirmed (bounded remake implementation):** ordered W1 spans in the suppressed entity-event
-consumer and the explicit [bound field-text profile](../../../remake/docs/exploration-programs.md#bound-field-text-work)
+consumer and the explicit [bound field-text profile](../../../remake/docs/application/session-and-programs.md#bound-field-text-work)
 now own their accepting draw/copy/service/input sequence. The latter also executes regular glyph,
 window, view-helper and W2 work, independently of actual display delivery. Generic unbound
 `ShowText` still uses `DialogueWait`; it does not establish original timing. JOIN emits
@@ -142,7 +142,7 @@ window, view-helper and W2 work, independently of actual display delivery. Gener
 separate. The completed finite-JOIN diagnostic recorded5,313 service results and572 minimal
 LCG-equivalent advances during audio delivery, with per-entity attribution and a universal
 cross-clock schedule still **Unknown**; preserve the
-[diagnostic owner](../../../remake/docs/development-and-verification.md#retained-first-control-opportunity-alignment).
+[diagnostic owner](../../../remake/docs/evidence/retained-comparisons.md#retained-first-control-opportunity-alignment).
 The earlier5,000-frame timeout is a completed failure, not an interrupted run to restart.
 
 **Confirmed (selected controlled opening):** the
@@ -254,8 +254,8 @@ lookup for operandFFFF, writes `CURRENT_SPEECH_SFX=0`, then performs view wait/t
 close/Sleep10 tail. Explicit sourceFF/null/no-event-speaker narration MAY use bound text without an
 actor; arbitrary missing/invalid actors remain errors. A skipped lookup MUST preserve an already
 open portrait rather than prove it absent. Actual speech must remain silent even with a retained
-portrait; explicit source closes still own its lifecycle. [Bound engine execution](../../../remake/docs/exploration-programs.md#bound-map-initialization-lifecycle)
-and [native acceptance](../../../remake/docs/development-and-verification.md#bound-map-initialization-observation)
+portrait; explicit source closes still own its lifecycle. [Bound engine execution](../../../remake/docs/application/session-and-programs.md#bound-map-initialization-lifecycle)
+and [native acceptance](../../../remake/docs/verification/field-programs.md#bound-map-initialization-observation)
 exercise the admitted consumer. Original natural cadence, speech scheduling and whole-route H4
 remain **Unknown**.
 
@@ -287,7 +287,7 @@ then clears the override; native subroutine returns remain distinct. Wrapper ret
 facing, removes/closes portrait, closes dialogue, and finally releases control with entities enabled.
 If no script activated entities, suppression persists through the close tail.
 
-**Confirmed (bounded remake):** the [entity-event consumer](../../../remake/docs/exploration-programs.md#bound-entity-event-portrait)
+**Confirmed (bounded remake):** the [entity-event consumer](../../../remake/docs/application/session-and-programs.md#bound-entity-event-portrait)
 uses those rules for supported live state/content and reaches Sarah's first classroom caller
 return under equal semantic inputs across three display settings. The source-zone section below
 admits the first introduction separately. **Unknown:** subsequent zone portrait,
@@ -316,7 +316,7 @@ X/Y destination; repeat VInt/recheck while unequal. Script-idle and aggregate Bu
 replace that predicate. An empty/skipped handler or already-arrived player still owns the
 unconditional opportunity. Ordinary field control resumes only after this caller tail completes.
 
-**Confirmed (bounded remake):** the [source-zone consumer](../../../remake/docs/exploration-programs.md#source-zone-caller)
+**Confirmed (bounded remake):** the [source-zone consumer](../../../remake/docs/application/session-and-programs.md#source-zone-caller)
 uses one live caller authority and reaches the first Astral introduction return from the retained
 bound start across three display settings. This includes the earlier opening zone's same rule.
 **Unknown:** later zone/camera/choice/JOIN/battle consumer schedules and original hardware timing.

@@ -887,7 +887,7 @@ actual logical input after delivery completes, while ordinary field actions rema
 Nested script returns retain the outer initialization continuation, including open-window view
 waits; only completion of the outer initializer restores player following and field control.
 Before-battle and outcome continuations, unknown/unregistered portraits and unbound legacy text
-are not admitted by this extension. The [engine owner](../../../remake/docs/exploration-programs.md#bound-map-initialization-lifecycle)
+are not admitted by this extension. The [engine owner](../../../remake/docs/application/session-and-programs.md#bound-map-initialization-lifecycle)
 records its bounded execution and acceptance; original presentation cadence remains **Unknown**.
 
 ### Bound black scene replacement and before-battle windows
@@ -926,7 +926,7 @@ Source lowering MUST retain the post-load one-service wait before subsequent ent
 the pre-load fade wait does not cover that boundary. Bound drawing MUST use the selected view area
 even when the retained player lies outside every new map area, without moving that player.
 Natural original cadence/pixels
-remain **Unknown**. [Execution boundary](../../../remake/docs/exploration-programs.md#bound-before-battle-scene-and-windows).
+remain **Unknown**. [Execution boundary](../../../remake/docs/application/session-and-programs.md#bound-before-battle-scene-and-windows).
 
 ### Bound physical camera target
 
@@ -1004,8 +1004,8 @@ profile. Gold/debug/raw-controller repeat, exact original menu rasters and hardw
 extra67 is implied by confirmation. Original runtime evidence remains bounded to its observed
 Yes path; a remake No run is not an original No observation. See
 [provenance](../../research/map3-messenger-acceptance.md#source-bound-choice-lifecycle),
-[execution](../../../remake/docs/exploration-programs.md#source-bound-yesno-lifecycle) and
-[verification](../../../remake/docs/development-and-verification.md#source-bound-choice-observation).
+[execution](../../../remake/docs/application/session-and-programs.md#source-bound-yesno-lifecycle) and
+[verification](../../../remake/docs/verification/field-programs.md#source-bound-choice-observation).
 
 ## Raw field text and the music boundary
 
@@ -1033,7 +1033,7 @@ is a modern choice, not505 original VInts or a PCM conversion. Unprofiled waits 
 completed state and stop as Unsupported. Profiled JOIN continues through previous playback,
 plain input, close/Sleep10 and existing follower/position/Zone return rules. This bounded
 implementation does not establish continuous H4. See [provenance](../../research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
-and [execution](../../../remake/docs/exploration-programs.md#raw-field-display).
+and [execution](../../../remake/docs/application/session-and-programs.md#raw-field-display).
 
 ### Bound map-white finite service
 

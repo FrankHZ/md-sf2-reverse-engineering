@@ -90,7 +90,7 @@ copy binding, the same lawful W2 flow retained `$03/$12` into AI and produced re
 Stay at(5,5)/memory`$00` and movement to(6,5)/memory`$34`. That counterexample rules out accepting
 the old separate-latch behavior merely because text and RNG helper checks passed.
 
-The [modern text owner](../../../remake/docs/exploration-programs.md) defines `ThinkingSeed` as
+The [modern text owner](../../../remake/docs/application/session-and-programs.md) defines `ThinkingSeed` as
 the live image and the nullable story copy as a last-text-write diagnostic. The actual current
 byte is derived even in a standalone battle with no preceding text; null diagnostic evidence
 must not hide an explicitly configured/executed modern value or be coerced into an original zero.

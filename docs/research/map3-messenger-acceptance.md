@@ -955,7 +955,7 @@ new execution. Static premises and historical outcomes retain their existing own
 This readback uses the accepted `prepared-04` records and the pinned source above; it adds no
 execution or broader gameplay admission. All CP numbers are one-based checkpoint lines. Frames
 below are observer `frame`, not `emulatorFrame`. A VInt activation is an interrupt, not proof of a
-`WaitForVInt` call. The [remake comparison](../../remake/docs/presentation-and-assets.md#separate-comparison-boundaries)
+`WaitForVInt` call. The [remake comparison](../../remake/docs/godot/battle-scenes.md#separate-comparison-boundaries)
 retains the separate continuous-cursor failure.
 
 **Confirmed (recovery):** CP2059–2091 spans `bsc0B_executeAllyReaction`, frames32364–32367,
@@ -2031,7 +2031,7 @@ Get-Content -LiteralPath (Join-Path $joinRuntime 'actual-inputs.jsonl') -Encodin
     Group-Object button | Select-Object Name,Count
 ```
 
-This bounded fact does not close the [retained H4 failures](../../remake/docs/development-and-verification.md#continuous-h4-comparison):
+This bounded fact does not close the [retained H4 failures](../../remake/docs/evidence/retained-comparisons.md#continuous-h4-comparison):
 the first-warp seed mismatch precedes JOIN. Completed JOIN timeout, next-actor/order and index 29
 occupancy failures, and the separate HEAL opportunity gap retain their original outcomes.
 
@@ -3187,7 +3187,7 @@ paragraph is superseded. Text446/447's plain [JOIN helper](#natural-join-audio-a
 remains input-first. The completed remake finite-JOIN diagnostic has5,313 simulation results and
 572 minimal LCG-equivalent advances, not an established original entity-service budget. Its
 5,000-frame timeout and corrected completed run are retained by the
-[verification owner](../../remake/docs/development-and-verification.md#retained-first-control-opportunity-alignment).
+[verification owner](../../remake/docs/evidence/retained-comparisons.md#retained-first-control-opportunity-alignment).
 Complete original portrait/entity timing and audio interleaving remain **Unknown**.
 
 ### First introduction source zone caller
@@ -3214,8 +3214,8 @@ loop compares X/Y to destination and waits/rechecks only while unequal. No extra
 wait occurs after equality. The wrapper neither suppresses entity services nor adds interaction
 facing/restoration. Native program metadata cannot substitute for the live service flag.
 
-**Confirmed (bounded remake):** the [implementation](../../remake/docs/exploration-programs.md#source-zone-caller)
-and [reproduction](../../remake/docs/development-and-verification.md#source-zone-caller-observation)
+**Confirmed (bounded remake):** the [implementation](../../remake/docs/application/session-and-programs.md#source-zone-caller)
+and [reproduction](../../remake/docs/verification/field-programs.md#source-zone-caller-observation)
 consume this lifecycle through the first introduction return. Metadata comparison reuses all
 previous rasters/audio/mappings, with only source-zone/init metadata changed. Three actual runs
 start at the retained opening state and include generic Zone6 and Sarah; no endpoint/seed splice
@@ -3249,7 +3249,7 @@ No new original runtime was launched.
 The accepted existing `tests/fixtures/h3/map-camera-control-v1.json` seven Map Test0 observations
 confirm bounded handler/call/operand seams only. They do not prove natural story trajectory or
 visible hardware timing. The separate [contract](../design/contracts/map-exploration.md#bound-field-camera-lifecycle)
-and [remake consumer](../../remake/docs/exploration-programs.md#source-bound-camera) express the new
+and [remake consumer](../../remake/docs/application/session-and-programs.md#source-bound-camera) express the new
 static binding without broadening that H3 claim.
 
 **Confirmed (source content):** `data/maps/entries/map03/mapsetups/scripts_1.asm:cs_5149A`
@@ -3263,7 +3263,7 @@ is csc11 yes/no; `mapscriptengine_2.asm:csc11_promptYesNoForStoryFlow` calls the
 `map03/mapsetups/s3_zoneevents.asm:Map3_ZoneEvent8` sets F603 only after the whole script returns.
 Choice/JOIN semantics are outside this camera allocation.
 
-**Confirmed (bounded remake):** the [native observation](../../remake/docs/development-and-verification.md#source-bound-camera-observation)
+**Confirmed (bounded remake):** the [native observation](../../remake/docs/verification/field-programs.md#source-bound-camera-observation)
 uses the unchanged bound start and content, preserves the accepted prefix's gameplay, observes
 both cameras and stops at genuine text531 W1 **before Wait/Ack** with held camera and active
 zone/script caller. It does not complete F603, #534, #437 or whole-Messenger/H4 acceptance.
@@ -3289,7 +3289,7 @@ ordering is retained, without claiming full original sprite-link or shadow/highl
 
 **Confirmed (bounded remake):** text525 places teacher entity142/slot17/sprite209 at `(42,12)`.
 Working block120 there contains high-priority tile words, while the teacher's layer0 gives low
-VDP priority. The [same-state native readback](../../remake/docs/development-and-verification.md#source-bound-camera-observation)
+VDP priority. The [same-state native readback](../../remake/docs/verification/field-programs.md#source-bound-camera-observation)
 records actual8px-region drawing over his sprite ink. The renderer uses existing tile/sprite
 textures and alpha; it neither raises the entire plane nor selects a character/dialogue-specific
 exception. High-map repair is limited to the current low sprite's nontransparent pixels so mixed
@@ -3333,9 +3333,9 @@ program; they are not engine legality guards. Text521's input is inside the acti
 F603 is set only after its later return. Camera targets at indices75/88 and later choice/JOIN
 are outside this binding.
 
-**Confirmed (bounded remake):** [NodWait and projection](../../remake/docs/exploration-programs.md#source-bound-nod)
+**Confirmed (bounded remake):** [NodWait and projection](../../remake/docs/application/session-and-programs.md#source-bound-nod)
 consume the ten/twenty/ten service sequence with live service flags and RNG. The
-[verification owner](../../remake/docs/development-and-verification.md#source-bound-nod-observation)
+[verification owner](../../remake/docs/verification/field-programs.md#source-bound-nod-observation)
 records behavior checks and three actual Godot routes from the unchanged bound start, through
 both nods to genuine text521 W1 before Wait/Ack. These are remake observations, not original
 natural-run evidence. Original-runtime delta remains zero.
@@ -3387,7 +3387,7 @@ Reproduce the static binding by inspecting these symbols in the pinned checkout 
 spatial edges in `tests/fixtures/h3/map3-battle01-natural-route-v1.json`; use its positions/waypoints,
 not historical acknowledgement quotas. The maintained producer records source provenance and
 retains portrait mappings. `uv run sf2 rom verify` owns private input identity. The
-[verification owner](../../remake/docs/development-and-verification.md#bound-portrait-entity-event-observation)
+[verification owner](../../remake/docs/verification/field-programs.md#bound-portrait-entity-event-observation)
 records the metadata comparison and actual remake observations through caller return.
 
 **Inferred:** the inherited speed2/mouth0/view0 ancestry remains the opening binding below;
@@ -3423,7 +3423,7 @@ Actual mounted font observations prove the modern configured face/size and Label
 same field/battle boundary. They do not prove individual system-fallback glyph selection or original
 bitmap/shaping/pixel behavior. **Unknown:** original W2 accepting reads/control side effects not
 already independently witnessed. Static token/material identity cannot supply those observations.
-The [verification route](../../remake/docs/development-and-verification.md#continuous-text-material-comparison)
+The [verification route](../../remake/docs/evidence/retained-comparisons.md#continuous-text-material-comparison)
 records exact source/material/input selections, whole-occurrence readback and missing/drift boundaries.
 
 **Confirmed (source and existing saved bytes):** the selected USA ROM remains the tracked
@@ -3459,7 +3459,7 @@ B=(0,0), A=(0,12288), active mask0. It does not reset inactive destination words
 unconsumed. **Inferred:** the short approach to(4,4) remains at or below the1536-unit lower
 deadband, so this opening view is stationary. This does not justify a stationary-only helper:
 WaitForViewScrollEnd must recheck after its first service and honor newly started scrolling.
-The [engine owner](../../remake/docs/exploration-programs.md#bound-field-text-work) records the
+The [engine owner](../../remake/docs/application/session-and-programs.md#bound-field-text-work) records the
 finite state-driven rule and source symbols independently of this example route.
 
 Reproduce without an original launch: use the retained selected continuations and
@@ -3469,7 +3469,7 @@ and run `uv run sf2 rom verify` and `uv run sf2 h2 variable-width-font --upstrea
 --output-path local/<fresh>/font.json` for identity/font parity. The executable reader is
 `src/sf2tool/h2/variable_width_font.py`; its fixture is evidence, never remake runtime input.
 The actual remake settings comparison is recorded in the
-[verification owner](../../remake/docs/development-and-verification.md#bound-opening-field-text-observation).
+[verification owner](../../remake/docs/verification/field-programs.md#bound-opening-field-text-observation).
 No original run/capture was added. The eight first-warp scalar gaps, H4 5340PASS/2FAIL/40Unavailable,
 HEAL2vs3/later RNG failures, JOIN cross-clock Unknowns, index29/next-actor discrepancy,
 public aggregate/h3-witch nonruns and attempts21/41/61/67 cleanup Unknowns remain.
@@ -3869,8 +3869,8 @@ Historical original Messenger entry7267/fresh poll7291/C7292/return7297 proves i
 it supplies no portable frame quota. **Unknown:** original natural No path, full raw-repeat/CPU/DMA
 schedule, gold/debug domain and later JOIN coupling. Modern release zero-service is an explicit
 product boundary. Engine/native observations consume this source; they do not become original
-observations. See [execution](../../remake/docs/exploration-programs.md#source-bound-yesno-lifecycle)
-and [verification](../../remake/docs/development-and-verification.md#source-bound-choice-observation).
+observations. See [execution](../../remake/docs/application/session-and-programs.md#source-bound-yesno-lifecycle)
+and [verification](../../remake/docs/verification/field-programs.md#source-bound-choice-observation).
 
 ## Raw display and unbound music progress
 
@@ -3929,7 +3929,7 @@ no direct boolean read is claimed. **Unknown:** natural R1 continuation timing, 
 opportunities, the collision corpus and full motion/gesture/fade consumer correspondence. A later
 sealed RAM buffer readback corroborates only its own saved point, not an earlier R1 RAM timestamp.
 Reproduction and explicit selection belong to the
-[verification owner](../../remake/docs/development-and-verification.md#offline-walking-admission-comparison).
+[verification owner](../../remake/docs/evidence/retained-comparisons.md#offline-walking-admission-comparison).
 
 ### Winning-lineage plain JOIN witness
 
@@ -3944,7 +3944,7 @@ through script return and is true at follower-ready, with no pending returns.
 Reproduce the bounded offline readback through `sf2tool.remake_h4_comparison compare
 --profile modern-continuous --original-join-evidence-root $selectedWitness` with the accepted
 reference, actual and material selections described by the
-[verification owner](../../remake/docs/development-and-verification.md#offline-plain-join-consumer-comparison).
+[verification owner](../../remake/docs/evidence/retained-comparisons.md#offline-plain-join-consumer-comparison).
 The explicit witness contains only `candidate.json`, `runtime/segment-pair.json`,
 `runtime/checkpoints.jsonl` and `runtime/actual-inputs.jsonl`; its existing pair/material/file seals
 must match the accepted reference. Embedded foreign paths are not followed. This does not validate
@@ -3961,7 +3961,7 @@ PCs, row indices, text447 and measured seeds locate this witness, not gameplay l
 actual W1/W2 and reveal completion. Speakerless raw display retains admitted common services and
 does not invent an acknowledgement. Without finite metadata, bound SoundWait preserves completed state and reports
 `field-music-progress-unbound` before callback-driven continuation. Engine cases and direct native
-readback reproduce this implementation boundary under the [verification owner](../../remake/docs/development-and-verification.md#raw-field-text-observation);
+readback reproduce this implementation boundary under the [verification owner](../../remake/docs/verification/field-programs.md#raw-field-text-observation);
 they do not prove original reach, music timing or complete JOIN. No original runtime delta is added;
 earlier H4, warp, HEAL, JOIN timeout/cross-clock, next-actor/index and cleanup gaps remain open.
 
@@ -3983,7 +3983,7 @@ Source `csc26` supplies Nod's normal/lowered/normal phases and animation-byte re
 termination and temporary-period restoration. The accepted modern half-second generic effects,
 loader bridge and ordinary-warp helpers remain the boundaries defined by the
 [exploration contract](../../docs/design/contracts/map-exploration.md) and
-[presentation owner](../../remake/docs/presentation-and-assets.md). The loader and outcome-return
+[presentation owner](../../remake/docs/godot/presentation.md). The loader and outcome-return
 wrappers are explicit modern compositions, not ordinary source cutscene macro compilations.
 
 **Confirmed (bounded modern observation):** the complete occurrence reader joins logical
@@ -3994,7 +3994,7 @@ motion destination or release predicate. Legitimate culling follows logical visi
 viewport geometry. A source wait does not require a draw on every tick or a terminal draw in
 the release frame. Palette nodes may be consumed before field geometry exists or after battle
 mounting; absent actors are not fabricated. Reproduce through the
-[whole field comparison route](../../remake/docs/development-and-verification.md#complete-field-motion-consumer-comparison).
+[whole field comparison route](../../remake/docs/evidence/retained-comparisons.md#complete-field-motion-consumer-comparison).
 
 **Unknown:** original natural reach/caller state for unobserved occurrences, CPU-time service
 opportunities, DMA/VDP processing and presentation timing, palette pixels, broad NPC/RNG/collision
@@ -4029,7 +4029,7 @@ retains the old physical entities with input unavailable before replacement. The
 `local/issue534/operation-flow-01/new-A-03` process exits0 with no Godot errors and unchanged
 party/start/settings. Nine pre-AB baseline checkpoints and Left remain exact. The
 [contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-operation-flow-binding)
-and [reproduction route](../../remake/docs/development-and-verification.md#complete-operation-flow-comparison)
+and [reproduction route](../../remake/docs/evidence/retained-comparisons.md#complete-operation-flow-comparison)
 define this bounded comparison, not original hardware equivalence.
 
 **Unknown:** original natural caller/branch/service history outside named observations, original
@@ -4050,7 +4050,7 @@ supply those intervals; that capture's whole route/setup/caller child remains Un
 correct observed source nesting and continuation. Fresh application readbacks preserve complete
 immutable before/after stacks at the actual call and enclosing-return Commit, including deferred
 source-map-script service returns. Their own session and source identities must establish the join.
-The [caller/resource cohort route](../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
+The [caller/resource cohort route](../../remake/docs/evidence/retained-comparisons.md#caller-and-reached-visual-resource-cohort)
 reuses pinned source/ROM decoders and accepted private atlas/sprite/portrait/field-death inputs for
 complete reached texture requirements and actual mounted uses. This adds no original runtime evidence
 and cannot backfill missing operands in the retained A03 or historical settings captures.
@@ -4083,7 +4083,7 @@ correspondence independently proves each side's actual source/request/generation
 helper arm/eligible progress and complete groups, both gates and caller return. It pairs that one
 completion only across same-occurrence music-step/helper-service records, retaining both original
 ordered streams. A/B pass this correspondence; C/D and the overall/full H4 result remain Unavailable.
-The [verification route](../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
+The [verification route](../../remake/docs/evidence/retained-comparisons.md#caller-and-reached-visual-resource-cohort)
 owns reproduction and exclusions. No original playback timing, YM phase, VInt cadence or natural
 history is inferred. C/D and repeat successful A/B captures remain held through independent integration
 and separately allocated Issue #605 performance work.

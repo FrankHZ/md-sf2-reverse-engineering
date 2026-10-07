@@ -27,7 +27,7 @@ def audio_consumer_binding(actual, context, source_root, bounded_list):
             "Fade_Out/UpdateSound/StopMusic/loc_DF2/loc_F88",
             bus="disasm/code/common/tech/interrupts/"
             "applyfadingeffectandz80busupdate.asm:ApplyZ80BusUpdates/@IsFadeOut",
-            policy="remake/docs/presentation-and-assets.md#sound-fade-request-and-effect-lifetime",
+            policy="remake/docs/godot/audio.md#sound-fade-request-and-effect-lifetime",
             originalCompletion="Unknown",
         ),
     )

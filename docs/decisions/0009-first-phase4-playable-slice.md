@@ -46,7 +46,7 @@ The reference scenario defines an eventual acceptance comparison, not a script f
 legality. The engine should apply supported rules to valid state and content; expected input counts,
 rounds, receipt prefixes and named character sequences belong to external reference verification.
 Keep genuine original rule conditions. The current controlled implementation's restrictions remain
-visible in the [architecture audit](../../remake/docs/architecture-audit.md); this clarification does
+visible in the [architecture audit](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/architecture-audit.md); this clarification does
 not claim they are removed. [ADR 0019](./0019-state-and-content-driven-remake-engine.md) is the adopted
 engine direction; its current implementation boundaries control the historical audit. The accepted
 continuous endpoint and current 8D/H4 target remain incomplete.

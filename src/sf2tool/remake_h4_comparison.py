@@ -4350,7 +4350,7 @@ def compare_modern(
                 field_motion["consumer"],
                 actual_location,
                 dict(
-                    owner="remake/docs/presentation-and-assets.md",
+                    owner="remake/docs/godot/presentation.md",
                     upstreamCommit=UPSTREAM,
                     binding="source occurrence -> real phase/draw/modulation -> completion "
                     "handoff -> logical restore/resume",

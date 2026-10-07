@@ -176,7 +176,7 @@ waveform and hardware register history are unnecessary. 7C private content ident
 required; no prose, asset or capture is made public by this mapping. Actual remake host consumption
 and continuous start-to-5B state/input observations remain H4 work, separate from original evidence.
 
-The accepted [exploration presentation owner](../../remake/docs/exploration-programs.md) explicitly describes MUSIC_JOIN/MUSIC_SAD_JOIN as project-authored C-major/C-minor chord loops. This is evidence of the product implementation boundary only. An original command ID plus an actual `AudioStreamPlayer` start/fade/stop does not establish a 7C original audio asset. Require the private asset identity/provenance and its binding to the consumed cue separately; generated modern chords do not satisfy that asset assertion. This audit neither inventories other private repositories nor admits an alternative audio source.
+The accepted [exploration presentation owner](../../remake/docs/application/session-and-programs.md) explicitly describes MUSIC_JOIN/MUSIC_SAD_JOIN as project-authored C-major/C-minor chord loops. This is evidence of the product implementation boundary only. An original command ID plus an actual `AudioStreamPlayer` start/fade/stop does not establish a 7C original audio asset. Require the private asset identity/provenance and its binding to the consumed cue separately; generated modern chords do not satisfy that asset assertion. This audit neither inventories other private repositories nor admits an alternative audio source.
 
 ## Research Gap Register
 

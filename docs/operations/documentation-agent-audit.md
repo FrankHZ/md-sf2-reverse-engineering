@@ -4,7 +4,7 @@
 
 Audited accepted base: `9fb9727e260416a54aeb3421454e610e00884ed5`, tree
 `27c21094f15deb9b449b7951d6d69d908a4f8f39`. This audit follows the
-[engine architecture findings](../../remake/docs/architecture-audit.md) and the merged
+[engine architecture findings](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/architecture-audit.md) and the merged
 [ADR 0019 design proposal](../decisions/0019-state-and-content-driven-remake-engine.md).
 
 The audit covers the task-entry graph: root guidance/README, both documentation indexes, operation
