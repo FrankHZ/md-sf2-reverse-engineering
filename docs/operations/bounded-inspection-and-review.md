@@ -11,6 +11,8 @@ Before a new or materially expanded bulk run, record a concise engineering plan 
 Issue or design surface. Durable requirements and acceptance boundaries belong in their tracked
 owners. Scale the rigor to the work: a small bounded task needs a few concrete estimates, not a new
 framework, manifest, monitoring service or human approval ceremony. Use existing dispatch and review.
+Apply the [product workflow's engineering judgment](./github-project-governance.md#product-constraint-workflow):
+estimates support design and total effort; explicit resource limits still constrain expansion.
 
 1. **Question and granularity.** Name the claim, selected scope, required occurrences and context.
    Choose the minimum sufficient events, changes, counters or samples. Justify each additional

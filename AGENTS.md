@@ -52,9 +52,8 @@ model routing and the completed Astra trial's historical evidence. Use
 [GitHub Project Governance](./docs/operations/github-project-governance.md#task-lifecycle) for
 Issue dispatch, task creation, recovery and retirement. Main-gate may create a fresh task for an
 executable Issue within the user's authorized scope; roles and lanes do not require permanent sessions.
-The assigned executor may complete its Issue directly; reserve `gpt-5.6-terra` for an explicitly bounded
-single-file, single-assembly, or single-function reverse-engineering subtask, never a whole lane or
-integration. This routing replaces
+The assigned executor may complete its Issue directly; bounded delegated research uses the same
+task-based routing. The project-specific Terra role is retired. This routing replaces
 ADR 0004's earlier model and mandatory-worker choice; its evidence, handoff, and root-acceptance
 checklist remains normative for any bounded Phase 2 task.
 

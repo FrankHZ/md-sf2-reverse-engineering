@@ -3,7 +3,7 @@
 - Status: **Accepted**; trial closed, task-based routing adopted
 - Proposal date: 2026-09-05
 - Decision date: 2026-09-06
-- Routing update: 2026-10-03
+- Routing update: 2026-10-07
 - Scope: task model routing and handoffs after the bounded trial
 
 ## Context
@@ -62,9 +62,9 @@ selection; confirm it through tool or host evidence when available. If selection
 verified, report that limitation instead of claiming the task is running at the chosen settings. An
 agent's self-description is not verification.
 
-Terra remains available only for explicitly bounded single-file, single-assembly, or single-function
-reverse-engineering work. It does not own a complete research lane or integration. A dedicated lane
-owner may execute a slice directly; a Terra subagent is not mandatory. Where older ADR 0004 or
+The project-specific Terra reverse-engineering role and model fallback are retired. Bounded research
+subtasks use the same task-based routing above; the accountable owner may execute a slice directly.
+Where older ADR 0004 or
 Phase 2 wording prescribes a model or mandatory worker, this routing controls. ADR 0004's evidence,
 Worker Acceptance Checklist, handoff, and independent acceptance requirements remain binding for
 Phase 2 work. Main-gate-authored changes also require independent review before integration.

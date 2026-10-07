@@ -121,7 +121,7 @@ where the dependency boundary is demonstrable; all ambiguous or executable delta
 ## Consequences
 
 - Ordinary agent work no longer commits directly to `main`.
-- The Terra worker still does not stage, commit, branch, or push; its root accepts on the research topic
+- A delegated research worker does not stage, commit, branch, or push; its root accepts on the research topic
   branch.
 - Design synthesis can progress beside research but consumes accepted evidence by default.
 - Branches may require a final rebase and correction when shared contracts changed while they were open.
