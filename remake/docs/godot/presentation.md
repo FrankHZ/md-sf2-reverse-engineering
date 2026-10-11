@@ -69,9 +69,42 @@ pixels and physical output pixels distinct; none may change gameplay collision o
 
 Current configurable input, text speed/reveal, reduced flash and finite audio policies have their
 specific owners. Broader art/theme/fullscreen/resizing/UI-scale work remains
-[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438), pending user discussion.
+[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438); its selected initial
+experiment is described below, with remaining product choices still open.
 The [original proposal and legacy consumers](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/presentation-and-assets.md#decision-summary)
 preserve the exact design and receipts without declaring them current functionality.
+
+### Modern UI experiment
+
+The user-selected direction for #438 retains the original diamond command arrangement and spatial
+input relationships. The [common-menu input contract](../../../docs/research/common-menus.md#confirmed-input-contracts)
+maps up/left/right/down to choices 0/1/2/3; the
+[battle action contract](../../../docs/design/contracts/battle-functions-control-flow.md)
+orders attack, magic, item and search-or-stay. Search admission remains a gameplay/content decision;
+an interface experiment showing Stay does not remove the source-specific Search route.
+
+Modernization separates world framing, UI dimensions and drawing resolution. Redraw command icons,
+render labels with the engine font system, and retain the blue fill and layered gold/light frame.
+Do not uniformly enlarge the original pixel menu or preserve its tiny physical size. Commands keep
+visible names and a distinct selected state; contextual descriptions, costs and unavailable reasons
+sit beside the diamond. Magic and inventory use list submenus, with explicit confirmation and a
+cancel path back to the preceding selection. A vertical list replacing the main diamond is not the
+selected direction.
+
+The existing graphics-remake experiment at commit `172662709b31cb296b55f51894754ce810c30f6c`,
+owned by its `docs/ui-treatment-01.md` and `src/remaster/vector_ui.py`, supplies the window-chrome
+reference. Its Yes/No sample is not a complete UI kit: placeholder text and the embedded private item
+image must be separated from reusable frame geometry. Private art is not licensed by this selection.
+
+This is an interface-prototype experiment, not implemented ordinary-host behavior or final visual
+acceptance. The initial scope is the diamond's size, icon/label hierarchy, selection feedback and
+magic/item submenu navigation. The local prototype uses illustrative data and placeholder icons;
+production must consume the existing [semantic interface](#semantic-interface), including enabled
+states and reasons, rather than deriving action legality in the view. Review keyboard direction,
+confirm/cancel, disabled choices and narrow-window readability directly. No game/evidence suite is
+required for this document/prototype scope. Exact size, final icons, typography and deployment await
+user review. Held exploration movement and a wider world viewport are separate requested improvements;
+the earlier 640-by-360 world-view candidate remains a proposal, not an accepted constant.
 
 ## Field Projection
 
