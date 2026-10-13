@@ -130,6 +130,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
 - [`story-progression.md`](./design/synthesis/story-progression.md)
 - [`opening-through-battle01.md`](./design/synthesis/opening-through-battle01.md) — selected locations,
   dialogue/entities, encounter and usable return; original evidence and remake composition stay distinct
+- [`battle01-return-through-battle02.md`](./design/synthesis/battle01-return-through-battle02.md) — castle
+  return, exorcism/commission, Jaha and conditional admission; static content and natural-route Unknowns
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

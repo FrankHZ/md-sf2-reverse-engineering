@@ -307,10 +307,12 @@ owns gold, levels, complete slots, status, RNG/time and the rest of this particu
 The accepted PR #504 terminal is nonresumable and contains neutral polls. A separate accepted
 PR #526 compatible acquisition observes one ordinary Down input and settled displacement to
 `(5,13)`. That closes its named input/effect boundary without changing the first terminal or proving
-what comes next in the campaign. Battle 02 admission is outside this segment; separately scoped
-[#691](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/691) has an
-[accepted static route investigation](../../research/battle01-to-battle02-content-route.md). It retains
-conditional connections and natural-route Unknowns; this guide stops at Battle 01 return.
+what comes next in the campaign. This guide stops at Battle 01 return. Continue with
+[Battle 01 return through Battle 02 admission](battle01-return-through-battle02.md) for the castle
+exorcism/commission, Jaha event and conditional next encounter. That guide consumes the
+[accepted static route investigation](../../research/battle01-to-battle02-content-route.md), preserving
+its caller/setup conditions and legal-walking/natural-continuity Unknowns; it adds no observed extension
+to this endpoint or accepted remake milestone.
 
 **Confirmed accepted remake boundary:** the current composition accepts the continuous private
 Map 3 → Battle 01 victory → usable 5B return, with reached actual content use, completion,

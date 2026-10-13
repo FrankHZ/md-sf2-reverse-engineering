@@ -37,12 +37,18 @@ The [documentation roadmap](../documentation-roadmap.md) deliberately places thi
 [progression/economy synthesis](progression-and-economy.md). Those documents explain the local
 systems that story progression coordinates; none supplies missing narrative chronology.
 
-## Read the Opening as a Content Segment
+## Read Story Content in Segments
 
 [Opening through Battle 01](opening-through-battle01.md) connects the selected Map 3 opening,
 messenger, castle/royal/tower phases, encounter and usable return. It supplies the location/entity/
 dialogue/encounter reading route over accepted evidence, with additional interactions and conditional
 branches kept separate from mandatory observed content.
+
+Continue with [Battle 01 return through Battle 02 admission](battle01-return-through-battle02.md)
+for the next conditional source-connected segment: castle return, exorcism/commission, Jaha's join
+and west-exit admission. It preserves alternate callers and state/selector conditions. Its **Confirmed
+static** content and **Inferred** narrative connection do not extend the original observed frontier
+or remake acceptance below; natural continuity and legal walking remain **Unknown**.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
