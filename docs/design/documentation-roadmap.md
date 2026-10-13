@@ -104,51 +104,61 @@ continues through Hawel's house, Kazin recruitment and the separate exit request
 outcomes retain their evidence and natural-route limits.
 [Battle04 outcomes through Battle05 admission](synthesis/battle04-outcomes-through-battle05.md)
 extends the accepted route through Galam captivity/escape and the guards' conditional admission.
-The current reader outcome continues through Battle05 outcomes, Slade's explicit recruitment and
-Galam's exits to conditional source Battle06 admission. Several evidence owners and shared navigation
-must agree, requiring adversarial evidence review and independent content review within a bounded
-documentation task. Follow the
+[Battle05 outcomes through Battle06 admission](synthesis/battle05-outcomes-through-battle06.md)
+continues through Slade's explicit recruitment and Galam's exits. The current reader outcome extends
+through Battle06 outcomes, Granseal's changed town/castle content and conditional source Battle07
+admission. Several evidence owners and shared navigation must agree, requiring adversarial evidence
+review and independent content review within a bounded documentation task. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the agreement.
 
 The current segment owner is
-[Battle05 outcomes through Battle06 admission](synthesis/battle05-outcomes-through-battle06.md), scoped
-by [#711](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/711). It consumes the
-[accepted static investigation](../research/battle05-to-battle06-content-route.md) from
-[PR #710](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/710), and the preceding guide.
-Explain the separate position/HP consumer, outcome returns, jewel/recruitment/follower state,
-castle/drawbridge content, conditional exit/selector and before/start. Use short sourced dialogue
-summaries and selected dependencies, without transcripts, complete layouts or rosters.
+[Battle06 outcomes through Battle07 admission](synthesis/battle06-outcomes-through-battle07.md), scoped
+by [#715](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/715). It consumes the
+[accepted static investigation](../research/battle06-to-battle07-content-route.md) from
+[PR #714](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/714), and the preceding guide.
+Explain empty after/variable victory return, distinct defeat/escape, F407's entry-side producer
+versus F506 content, optional Kiwi naming/join, king/minister following and F620/F621/F83 caller
+order, tower approach, substitution and selected before/start. Use short sourced dialogue summaries
+and selected dependencies, without transcripts, complete layouts or rosters.
 
 Acceptance requires a readable conditional segment with exact research/contract and fixture/verifier
 traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review selected payloads and
-consumer semantics: Battle05's leader-presence row is zero but its battlescene-return position helper
-still runs under its Bowie/slot-128 HP gates, without an F505 test. Enemies 128–157 receive HP zero;
-158/159 receive X only. Slade's placement and earlier following do not establish prior force membership.
-The first-completion after-program writes F384, explicitly joins Slade, clears F73, produces F406,
-adds current following and supplies the victory return. Its shared zero join-table tail joins Bowie,
-not Slade. JoinForce rebuilds before activation, so changed active flags do not prove synchronized
-lists. Defeat/escape and F505-set victory retain separate state/return alternatives.
+consumer semantics: Battle06's defeated/after targets are empty, leader-presence row is zero and
+no Battle06 position override runs. Both after branches reach the shared zero join-table tail for
+Bowie; victory clears F406, sets F506 and preserves its prepared current-map/final-position return.
+F407 comes from executed before, not victory, and survives selected outcomes; F456/F88 entry skips
+retain it as an input. Defeat/escape do not select F506 content merely because F407 is set.
 
-Map16/18 exits are conditional data, with F611-controlled layout copies and last-matching setup
-selection; no legal walk is admitted. Map17 init's F611 write is unconditional despite the copy-data
-comment. Map66's earlier encounter rows retain priority over row 6, and completion clears the selected
-unlock without rejecting that selection. Battle06 before writes F407 at entry; this is neither
-completion nor a proved Battle07 route. F456/F88 skips and scene-versus-force identities remain
-explicit. Preserve the older upgrade-name call/effect limitation and the controller overview's broad
-before/start wording at their stricter accepted boundaries. A concrete evidence conflict stays with
-its owner and is excluded from expanded conclusions rather than silently repaired.
+Preserve last-matching setup priority and source-comment/filename limits. Kiwi consent/name precedes
+the actual join/current-follower script; joined/active membership, rebuild-before-activation,
+current following and persistent follower rows remain distinct. The F506 castle table selects
+507-named handler implementations: F620 is written after its scene; the independent minister handler
+requests follows, then writes F83 and F621 after return. F621-set/F83-clear is not repaired. Reentry
+hides scene actors without proving arbitrary follower reconstruction. Lemon's scenes do not join him
+or write combat HP/death.
 
-Only the new guide, the preceding guide's continuation link, Story Progression's reading navigation,
-this current agreement and one English documentation-index entry are owned by #711. Stop at
-Battle06 admission and selected before/start dependencies; Battle06 resolution and later story are
-outside scope. Natural outcomes/walking, caller/actor/HP/party state, reentry, service completion,
-presentation and persistence remain **Unknown**. No playable remake support is added. Consume
-accepted main only; concurrent
-[#712](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/712) downstream research is
-independent, not an unmerged dependency. Earlier accepted outcomes remain intact; this segment does
-not complete the [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-or the campaign.
+Selected no-scroll requests do not prove legal walking. Preserve Map57's conditional F401
+interception even with F501 set, F506's block-copy/passability limit and F999's Map58-to-Map59
+substitution before encounter checking. Effective Map58 plus F407 selects row 7; F507 clears unlock
+after selection without rejecting that call. Missing F506/F620/F621/F83/Kiwi checks do not prove a
+playable bypass. Battle07 before clears F83 when admitted; F457/F88 skips retain the clear as
+conditional. Scene entities and seven placement slots do not establish the actual living force.
+Use the precise selected before/start order instead of the controller overview's broader grouping;
+retain the older upgrade-name call/effect limitation. A concrete evidence conflict stays with its
+owner and is excluded from expanded conclusions rather than silently repaired.
+
+Only the new guide, the preceding guide's continuation link, Story Progression's local reading
+navigation, this current agreement and one English documentation-index entry are owned by #715.
+Stop at Battle07 admission and selected before/start dependencies; Battle07 outcomes and later story
+are outside scope. Natural outcomes/walking/bypass, caller/flag/actor/HP/party state, reentry,
+services, presentation and persistence remain **Unknown**. No playable remake support is added.
+Consume accepted main only; concurrent
+[#716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/716) downstream research is
+independent, not an unmerged dependency. It may stop at an earlier post-Battle07 exploration handoff;
+its eventual accepted boundary must be reviewed before further synthesis rather than assumed to
+cover the entire evacuation. Earlier accepted outcomes remain intact; this segment completes neither
+the [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
 No research/fixture/schema/parser implementation, runtime capture, map decoding, engine code,
 content platform or comparator follows from this synthesis. Existing text and small in-memory

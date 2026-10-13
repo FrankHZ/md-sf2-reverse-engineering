@@ -230,3 +230,7 @@ routes, not fresh PASS claims; load `local/private-inputs.ps1` in the same proce
 The [roadmap](../documentation-roadmap.md#current-baseline-and-near-term-synthesis) owns the current
 agreement and [Story Progression](story-progression.md) the wider state framework. Battle06 outcomes
 and later campaign content remain outside this guide; no unmerged downstream conclusion is consumed.
+
+Continue with [Battle06 outcomes through Battle07 admission](battle06-outcomes-through-battle07.md)
+for the separate outcomes, Granseal content, optional Kiwi join, royal following and conditional
+tower request/entry. Its static account retains natural walking, reentry and party Unknowns.
