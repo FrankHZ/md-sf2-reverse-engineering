@@ -144,19 +144,24 @@ continues through conditional castle departure, town setup/init, independent sai
 zones, hiding and the first post-event pending/control read. Its own natural-route and service
 limits remain applicable.
 
-The current reader outcome explains the separate castle return and audience, Peter accompanying
-the party while Astral stays, the narrated gift, departure and conditional destination control.
-Membership/AI, temporary versus persistent followers, the gift discrepancy and request/caller order
-require Standard rigor for this bounded design segment. Follow the
+[Peter's castle audience and the return to town](synthesis/peter-castle-audience-through-town-return.md)
+continues through separate castle admission, Peter accompanying the party while Astral stays,
+membership/AI and distinct following, the gift discrepancy and conditional town control.
+Its caller, actor, service and natural-route limits remain applicable.
+
+The current reader outcome explains leaving New Granseal, the selected east-then-south overworld
+connections, conditional Battle09 admission and its empty opening. Distinct scrolling/ordinary
+entry consumers, partial request lineage and ordered battle/intro predicates require Standard rigor
+for this bounded design segment. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Peter's castle audience and the return to town](synthesis/peter-castle-audience-through-town-return.md),
-scoped by [#751](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/751). It consumes the
-[accepted static investigation](../research/peter-castle-audience-through-town-return.md) from
-[PR #749](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/749) and the accepted
-[#747 predecessor](synthesis/new-granseal-town-through-peter-introduction.md). Organize around
+[New Granseal departure through Battle09 admission](synthesis/new-granseal-departure-through-battle09.md),
+scoped by [#755](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/755). It consumes the
+[accepted static investigation](../research/new-granseal-departure-through-battle09.md) from
+[PR #754](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/754) and the accepted
+castle-audience predecessor. Organize around
 player meaning with compact provenance, not a transcript or duplicate technical ledger. This
 supports content/design planning, not a new remake capability.
 
@@ -164,30 +169,31 @@ Acceptance requires readable content and exact research/contract/fixture/verifie
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- Conditional town north exit requests Map7 `(11,22)`, Up; warp/zone rows do not prove natural
-  walking. Map7 setup order default/F701/F702/F805 and shared F707 init can change the cast without
-  suppressing the early audience. Missing actors and supplied followers remain explicit.
-- Early audience tests F802 clear, F701 set and F702 clear, separately from setup/F707/F706,
-  membership and actor presence. Later F802/F805 selection is only a control, not a new scene scope.
-- Nonzero `joinForceAI` sets only the AI bit in the old activation word, joins, rebuilds lists,
-  checks capacity and conditionally activates before storing the ORed word. Normal later `{LEADER}`
-  processing rebuilds lists again; debug skipping can bypass that rebuild. Temporary `followEntity`
-  scripts and caller F67's destination follower selection remain independent from membership/AI.
-- Astral staying behind is narrative meaning, not a dismissal or clearing of supplied followers.
-  Named waits do not join other unawaited actions or prove completed actor/presentation services.
-- Text advertises 100 gold, but the accepted script/text/caller chain supplies no effective award.
-  Observed retail balance, authorial intent and remake treatment remain Unknown; no fix is chosen.
-- The Map6 request precedes script return and caller F702 then F67; consumption is conditional on
-  pending survival. F702 selects the town population, F67 selects Peter, and F802/F706 init alternatives
-  precede the first destination pending/control read. Actual usable control remains unobserved.
+- The Map6 south exit requests ordinary Map73 entry. Carried F700/F508/F705 select scene-free init;
+  other history selects earlier voyage/construction content. Peter's F7 membership, conditional F39
+  active status, AI bit and F67 map follower remain separate, with other supplied flags/followers explicit.
+- Selected Map73→72→69 borders scroll within exploration, retain the cohort and omit ordinary
+  init, temporary-flag clearing, healing and battle selection. Map72's separate fixed south connection
+  reaches `MainLoop` and selects a battle before ordinary Map69 init. Neither route is exclusive or
+  naturally proved, and Map72 zone/random/cannon selectors can interrupt attempted travel.
+- Map69 specific X23–25 zones call the Battle17 helper and do not fall through to the default.
+  F509-clear default sets F409 and writes a partial reload; F509-set default returns without writes.
+  Remaining coordinate/facing bytes retain their producer lineage, with mutable-slot overwrite and
+  service/actor/request survival limits. Story context adds no extra handler predicate.
+- Map69 selects 9 before 17 using unlock/wildcard triggers, not area bounds. F409/F509 set clears
+  F409 while still returning 9 in that call; the helper's requested encounter is not direct admission.
+- Both Battle09 opening targets are empty. The shared intro wrappers still test F459, and start
+  sets it before dispatch when clear. F459-set skipping retains new-battle preparation; F88 resume
+  is separate. Empty content does not prove immediate service completion, a roster or ready input.
 
 Only the new guide, preceding guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #751. Stop at the
-first Map6 destination post-init pending/control read. Overworld departure, Battle09, later town
-services/audiences, new fixtures/parsers/platforms, data acquisition/generation/copy, source
+this current agreement and one English documentation-index entry are owned by #755. Stop at the
+Battle09 start-dispatcher return before `ActivateEnemies`. Battle09 combat/outcomes, Ribble content,
+other routes/later scenes, new fixtures/parsers/platforms, data acquisition/generation/copy, source
 re-investigation, engine/UI work and Chinese synchronization are outside scope. Do not consume
-unmerged successor research. Natural travel, reachable setup/follower history, completed actors/
-services, observed gold, pending survival, actual usable control and persistence remain **Unknown**.
+unmerged successor research. Natural travel/zone reach, reachable flags/follower/party history,
+completed actors/services, pending and retained-byte survival, battle readiness and persistence
+remain **Unknown**.
 This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 

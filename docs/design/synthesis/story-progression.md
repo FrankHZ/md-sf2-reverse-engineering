@@ -128,6 +128,13 @@ following mechanisms, the gift's narrative/state mismatch and town re-entry. Req
 precedes caller F702 then F67; destination setup/init precede the first pending/control read.
 It stops there with natural travel, observed gold, service completion and usable input Unknown.
 
+[New Granseal departure through Battle09 admission](new-granseal-departure-through-battle09.md)
+continues through town departure, the selected east-then-south overworld connections and conditional
+encounter admission. Scrolling retains exploration/cohort state; ordinary entry and a partial reload
+reach ordered battle selection. Specific/default zones, carried request bytes and F409/F509/F459
+remain distinct. It stops at the empty start-dispatcher return before enemy activation, with natural
+travel, actor/request survival, service completion and battle readiness Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
