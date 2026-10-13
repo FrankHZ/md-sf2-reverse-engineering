@@ -104,6 +104,12 @@ rescue request. F408/request production precedes caller F703/EGRESS_MAP writes; 
 F458 before/start dispatch remain distinct from scene casts and the combat roster. It stops before
 ActivateEnemies, preserving pending, walking, follower/service and suspended-entry limits.
 
+[Battle08 outcomes through the New Granseal castle handoff](battle08-outcomes-through-new-granseal-handoff.md)
+continues with first/repeat victory, defeat/escape, the worker and blocked-tunnel scene, conditional
+Map73 construction and its outgoing request. BattleLoop's direct return-field read differs from
+exploration pending consumption; F705 is written by the init caller after the script. Actor/follower,
+reset, service and natural-route limits remain explicit. It stops before Map7 destination init.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
