@@ -91,62 +91,64 @@ reviewers.
 
 ## Current Baseline and Near-Term Synthesis
 
-**Current scope agreement — Standard.** Several document owners and later design batches depend on
-a consistent entry baseline. The reader outcome is a traceable explanation of how play moves through
-exploration, interaction/story, battle admission, actions/results and return, with original evidence,
-accepted remake choices, historical results and remaining Unknowns clearly distinguished. Follow the
+**Current scope agreement — Standard.** The accepted English
+[Gameplay Overview](synthesis/gameplay-overview.md) is the entry to the design material. The current
+reader outcome is a coherent story-content segment connecting locations, encounters, dialogue and
+entities from the selected opening through Battle 01 and usable return. Several evidence owners and
+shared navigation must agree, so this requires adversarial evidence review and independent content
+review, while remaining a bounded documentation task. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
-Issues/Project coordinate execution, while this roadmap owns the current agreement.
+Issues/Project coordinate execution and this roadmap owns the agreement.
 
-The finite English entry-plus-overview round has two accepted outcomes:
+The current segment owner is
+[Opening through Battle 01](synthesis/opening-through-battle01.md), scoped by
+[#690](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/690). It organizes Map 3,
+castle/royal/tower phases in Maps 19/20/21, Map 40's selected passage, Map 57's encounter and field
+return. The reader should understand entry/exit conditions, selected setup/area/warp relationships,
+entity presence and identities, dialogue triggers/cursors, party/flag effects, encounter admission,
+program completion and usable return. Additional local interactions belong in the guide without
+claiming all occur in one playthrough or that static existence proves original optionality.
 
-1. [Baseline calibration #667](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/667):
-   align this roadmap and the English Design index with the accepted private milestone; establish
-   scope, sequencing and translation deferral. Evidence contracts, readiness, implementation owners,
-   Chinese files, glossary, translation index and agent guidance remain read-only for this outcome.
-2. [Overview revision #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669): the
-   user-accepted [Gameplay Overview](synthesis/gameplay-overview.md) provides a readable explanation of
-   connected gameplay directions, using the accepted exploration → interaction/story → battle
-   admission → actions/results → return slice as a concrete demonstration. It preserves original
-   facts, accepted remake choices and uncertainty, and links numerical/evidence tables rather than
-   duplicating them. Main-gate completed technical/editorial review, and the user personally accepted
-   the English overview and authorized its merge. #669 is complete; subsequent research/documentation
-   tickets still require separate planning and dispatch.
+Acceptance requires a readable stage sequence and source-to-content matrix, exact contract/research
+and fixture traceability, and visible **Confirmed**, **Inferred** and **Unknown** boundaries. Review
+fixture payloads and verifier semantics for original assertions, separating static topology,
+controlled runtime seams, the accepted savestate-linked original route and current remake composition.
+Use the stricter boundary when old queues or summaries describe earlier evidence; preserve their
+historical verdicts. A concrete disagreement is reported to its evidence owner and excluded from
+expanded conclusions rather than silently corrected in Layer B.
 
-With the overview accepted, main-gate may separately plan research/documentation tickets by direction.
-Tactical-loop, progression/resource and story/persistence revisions are subsequent candidates,
-requiring separate scope and dispatch; they are not automatic work in this round. Further map and
-roster explanations remain subject to the entry criteria below.
+[#691](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/691)'s
+[accepted static investigation](../research/battle01-to-battle02-content-route.md) identifies conditional
+connections from Battle 01 return through Battle 02 admission and dispositions for existing rails
+and missing contracts. It preserves legal-walking and natural-continuity Unknowns. The opening guide
+consumes accepted main and stops at Battle 01 return; a later synthesis needs separate scope and
+must retain that investigation's evidence boundary.
+The opening segment does not complete the whole [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
+or establish a complete original campaign. Wider tactical, resource, roster and persistence revisions
+also require their own dispatch rather than becoming automatic work.
+
+Only the segment guide, its narrow Story Progression navigation/current-boundary reconciliation,
+this agreement and the English documentation navigation are owned by #690. Review also authorizes
+the single `BattleSpriteset01` hex-address transcription correction in
+[admission research](../research/map3-battle01-admission.md), with no other research change. No new original research,
+fixtures, schemas, parser, runtime capture, engine code, new content platform or comparator follows
+from this synthesis. Use existing small text artifacts; there is no bulk acquisition or derived
+database. If a proposed assertion needs a new original observation, retain it as **Unknown** and
+identify a separately bounded research need. Unexpected broad dependencies, new machinery, evidence
+conflicts affecting the segment or product choices stop affected expansion for replanning.
+
+Read the complete candidate explanation and diff, check changed links/fragments, `git diff --check`,
+exact paths and private boundary, then inspect the clean committed-head verification plan and actual
+CI. Documentation acceptance runs no emulator, Godot, normal/full research suites, old comparator or
+translation batch. Freeze a clean committed/pushed Draft PR and evidence-review handoff for independent
+main-gate review; direct checks and CI alone do not grant integration or re-accept the milestone.
+
+Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
 [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) and
-[#617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/617) retain separate product and
-architecture outcomes. This round selects no new art/UI/UX direction and adds no original research,
-engine implementation, capture, schema, evidence ledger or validation machinery.
-
-The planning allowance is **4 agent-hours cumulatively** for entry calibration, overview and their
-reviews, provisional rather than a delivery guarantee. Baseline calibration and overview each have
-a provisional **90 minutes execution plus 30 minutes independent review**, including corrections;
-record actual active effort and uncertainty in their handoffs. Each uses at most **5 MiB
-of local text-only scratch** and no new runtime data. Stop affected expansion and report for replanning
-if broader contract changes, evidence disagreements, new product choices, new validation machinery
-or a budget overrun become necessary; a new slice does not reset the cumulative allowance.
-
-Baseline acceptance directly compares proposed prose with the
-[accepted milestone](synthesis/map3-battle01-readiness.md#accepted-current-milestone) and
-[verification composition owner](../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review).
-Read the complete diff, check changed links/anchors, run `git diff --check` and `git diff --name-only`,
-and confirm exact ownership and the private-content boundary. This documentation-only outcome runs
-no emulator, Python/.NET/Godot/H3 suites, comparison rebuilds, translation checker or new tests.
-Freeze the committed/pushed Draft PR with actual CI state for independent main-gate review; passing
-these direct checks does not independently accept the milestone or close the whole documentation epic.
-
-Overview acceptance also reads the full resulting explanation as a reader and checks changed original
-claims against their contract/research, pertinent fixture payload/identifier and verifier semantics.
-Check changed links/anchors and any diagram's syntax and transition meaning, exact two-file ownership
-and private boundary directly. No runtime/native/translation suites or new verification machinery
-are added. The #669 independent-review and user-acceptance gates are satisfied. For a separately scoped
-material revision, freeze its Draft PR for independent review and any required user acceptance;
-passing direct checks or CI alone does not satisfy a user gate.
+[#689](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/689) own the separate current UI/UX
+work; [#617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/617) retains its architecture
+boundary. This segment selects no new art/UI/UX direction, support platform or save/full-game scope.
 
 **Confirmed repository baseline:** existing contracts cover combat, maps, level-up, spells, services,
 save/input/window, dialogue, party/roster state, and randomness. They are listed in the

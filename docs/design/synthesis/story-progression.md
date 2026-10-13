@@ -8,8 +8,9 @@
   architecture in which map, flag, party, and battle state select later local behavior.
 - **Unknown original behavior:** a complete normal-play chronology, plot-beat meaning, player-choice
   consequences, route exclusivity, full save persistence, and player-visible story presentation.
-- Remake status: implementation-neutral Layer B synthesis; no engine, campaign rewrite, or narrative
-  data model has been selected.
+- Remake status: implementation-neutral Layer B synthesis; current engine direction belongs to
+  [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md). This document selects no
+  campaign rewrite or narrative data model.
 - Evidence date: 2026-08-02.
 - Source baseline: `ShiningForceCentral/SF2DISASM` `master`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`.
@@ -35,6 +36,28 @@ The [documentation roadmap](../documentation-roadmap.md) deliberately places thi
 [gameplay overview](gameplay-overview.md), [tactical battle loop](tactical-battle-loop.md), and
 [progression/economy synthesis](progression-and-economy.md). Those documents explain the local
 systems that story progression coordinates; none supplies missing narrative chronology.
+
+## Read the Opening as a Content Segment
+
+[Opening through Battle 01](opening-through-battle01.md) connects the selected Map 3 opening,
+messenger, castle/royal/tower phases, encounter and usable return. It supplies the location/entity/
+dialogue/encounter reading route over accepted evidence, with additional interactions and conditional
+branches kept separate from mandatory observed content.
+
+**Confirmed bounded original observation:** the
+[current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
+controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
+extension observes ordinary Down input and displacement. The earlier generic handler matrices and
+this document's historical audit remain bounded seams. Their Unknowns do not erase the later selected
+route, and that route does not prove full campaign chronology, unobserved choices or durable story
+persistence.
+
+**Confirmed accepted private remake milestone:** the
+[current composition](map3-battle01-readiness.md#accepted-current-milestone) accepts the selected
+continuous victory and usable 5B return, including reached content consumers, completion and input
+readiness under the modern clock/default-keyboard-A scope. Historical report verdicts remain with
+their owners. The wider framework below does not require re-proving that accepted segment; original
+hardware timing and wider reachability remain separate **Unknowns**.
 
 ## Pre-Synthesis Evidence Audit
 
@@ -326,8 +349,10 @@ behavior, and none should erase the source identity needed for parity comparison
 
 ## H4 Acceptance and Expansion Gates
 
-A future claim of reconstructed story progression requires a grouped route fixture rather than more
-label interpretation. At minimum it must:
+An expansion beyond the accepted [opening segment](opening-through-battle01.md) needs evidence for
+its specific new route or persistence claim rather than more label interpretation. The checklist below
+describes a broader campaign/persistence claim; it is not a new gate on the accepted local segment.
+For that broader claim, the evidence must:
 
 1. start from identified original New/load states with explicit save provenance;
 2. record current map, battle index, relevant flag deltas, selected setup, selected event/program,
@@ -339,6 +364,7 @@ label interpretation. At minimum it must:
 6. keep decoded copyrighted text and captured audiovisual assets private;
 7. retain disagreements and non-reached branches as explicit **Unknown** results.
 
-Only after such evidence exists should an upper-layer document describe campaign chapters, optional
-routes, quest semantics, or player-facing story choice. Those remain future design work, not facts
-implied by the current synthesis.
+Campaign chapters, wider optional-route consequences, quest semantics and complete player-facing
+story choice remain bounded by the evidence needed for each claim. The opening guide may explain its
+accepted local sequence and static alternatives now; neither generic program references nor that
+one selected sequence completes the wider campaign.
