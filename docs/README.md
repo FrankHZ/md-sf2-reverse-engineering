@@ -144,6 +144,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   Granseal/Kiwi/royal following and conditional tower entry; content, request and natural-route limits
 - [`battle07-outcomes-and-aftermath.md`](./design/synthesis/battle07-outcomes-and-aftermath.md) — outcomes,
   phased tower scene, jewel/follower flags and conditional restored exploration; caller and natural-route limits
+- [`post-tower-return-through-earthquake-entry.md`](./design/synthesis/post-tower-return-through-earthquake-entry.md) —
+  tower/castle requests, earthquake-town first/repeat entry and conditional control; walking and caller limits
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
