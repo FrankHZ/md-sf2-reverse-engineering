@@ -92,50 +92,54 @@ reviewers.
 ## Current Baseline and Near-Term Synthesis
 
 **Current scope agreement — Standard.** The accepted English
-[Gameplay Overview](synthesis/gameplay-overview.md) is the entry to the design material. The current
-reader outcome is a coherent story-content segment connecting locations, encounters, dialogue and
-entities from the selected opening through Battle 01 and usable return. Several evidence owners and
-shared navigation must agree, so this requires adversarial evidence review and independent content
-review, while remaining a bounded documentation task. Follow the
+[Gameplay Overview](synthesis/gameplay-overview.md) is the entry to the design material. The accepted
+[Opening through Battle 01](synthesis/opening-through-battle01.md) explains the selected opening,
+castle/tower, encounter and usable return, keeping original evidence separate from current remake
+composition. The current reader outcome continues that story-content route through the castle
+return/exorcism/commission, Jaha's join and conditional source Battle02 admission. Several evidence
+owners and shared navigation must agree, so this requires adversarial evidence review and independent
+content review while remaining a bounded documentation task. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the agreement.
 
 The current segment owner is
-[Opening through Battle 01](synthesis/opening-through-battle01.md), scoped by
-[#690](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/690). It organizes Map 3,
-castle/royal/tower phases in Maps 19/20/21, Map 40's selected passage, Map 57's encounter and field
-return. The reader should understand entry/exit conditions, selected setup/area/warp relationships,
-entity presence and identities, dialogue triggers/cursors, party/flag effects, encounter admission,
-program completion and usable return. Additional local interactions belong in the guide without
-claiming all occur in one playthrough or that static existence proves original optionality.
+[Battle 01 return through Battle 02 admission](synthesis/battle01-return-through-battle02.md), scoped by
+[#695](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/695). It consumes the
+[accepted static route investigation](../research/battle01-to-battle02-content-route.md) and its named
+map/event/script/battle owners. Organize the meaningful content phases rather than copying the
+technical transition table: returning to the castle; full-zone versus alternate-suffix exorcism entry;
+commission; Jaha event/join; west exit and admission. Connect selected locations/setups/warps,
+entity identities/presence, short grounded narrative summaries, dialogue cursors/triggers,
+party/flag effects and encounter declarations. Local interactions and alternate branches stay distinct
+from selected-route requirements; no transcript or full extracted layout/roster is needed.
 
-Acceptance requires a readable stage sequence and source-to-content matrix, exact contract/research
-and fixture traceability, and visible **Confirmed**, **Inferred** and **Unknown** boundaries. Review
-fixture payloads and verifier semantics for original assertions, separating static topology,
-controlled runtime seams, the accepted savestate-linked original route and current remake composition.
-Use the stricter boundary when old queues or summaries describe earlier evidence; preserve their
-historical verdicts. A concrete disagreement is reported to its evidence owner and excluded from
-expanded conclusions rather than silently corrected in Layer B.
+Acceptance requires a readable conditional segment with exact research/contract and fixture/verifier
+traceability, and visible **Confirmed**, **Inferred** and **Unknown** boundaries. Review source facts
+and pertinent payload/verifier semantics, separating table topology from marker/collision/occupancy-aware
+walking; full script from internal suffix; caller writes from script effects; scenario preconditions
+from shared selection rules; and placement counts from live membership. In particular, retain setup
+and map-switch overrides, F610's commission skip, the exact `(2,23)` zone exception, F3's skip of
+the F402 producer, same-call index-2 return after the F502 branch clears F402, and the F452 wrapper
+effects despite empty before/start targets. Source numbering is not verified player-facing numbering.
+A concrete evidence disagreement is reported to its owner and excluded from expanded conclusions
+rather than silently corrected in Layer B.
 
-[#691](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/691)'s
-[accepted static investigation](../research/battle01-to-battle02-content-route.md) identifies conditional
-connections from Battle 01 return through Battle 02 admission and dispositions for existing rails
-and missing contracts. It preserves legal-walking and natural-continuity Unknowns. The opening guide
-consumes accepted main and stops at Battle 01 return; a later synthesis needs separate scope and
-must retain that investigation's evidence boundary.
-The opening segment does not complete the whole [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-or establish a complete original campaign. Wider tactical, resource, roster and persistence revisions
-also require their own dispatch rather than becoming automatic work.
+Only the new segment guide, the opening guide's next-segment/endpoint navigation, Story Progression's
+segment navigation, this current agreement and one English documentation-index entry are owned by
+#695. The guide stops at admission: Battle02 resolution and later scenes are outside scope. It does
+not extend the accepted natural original frontier, live Battle02 roster, save persistence, presentation
+or playable remake support. It consumes accepted main only; concurrent downstream research is no
+dependency and its unmerged results are not evidence. The accepted opening outcome remains intact.
+Neither segment completes the whole
+[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) or establishes a
+complete original campaign. Wider tactical, resource, roster and persistence revisions require their
+own scope.
 
-Only the segment guide, its narrow Story Progression navigation/current-boundary reconciliation,
-this agreement and the English documentation navigation are owned by #690. Review also authorizes
-the single `BattleSpriteset01` hex-address transcription correction in
-[admission research](../research/map3-battle01-admission.md), with no other research change. No new original research,
-fixtures, schemas, parser, runtime capture, engine code, new content platform or comparator follows
-from this synthesis. Use existing small text artifacts; there is no bulk acquisition or derived
-database. If a proposed assertion needs a new original observation, retain it as **Unknown** and
-identify a separately bounded research need. Unexpected broad dependencies, new machinery, evidence
-conflicts affecting the segment or product choices stop affected expansion for replanning.
+No original research, fixture/schema/parser, runtime capture, engine code, content platform or comparator
+follows from this synthesis. Existing text and small local notes suffice; there is no bulk acquisition
+or derived database. If a proposed assertion needs a new observation, retain it as **Unknown** and
+identify the bounded missing relation. Unexpected broad dependencies, new machinery, evidence conflicts
+affecting the segment or product choices stop affected expansion for replanning.
 
 Read the complete candidate explanation and diff, check changed links/fragments, `git diff --check`,
 exact paths and private boundary, then inspect the clean committed-head verification plan and actual
