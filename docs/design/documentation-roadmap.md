@@ -175,8 +175,11 @@ conditional unchanged Map7 `(11,10)`, Up admission, before destination initializ
 year-later scene, later town/campaign, traversal/layout acquisition, new fixtures/parsers/platforms,
 engine/UI work and Chinese synchronization are outside scope. Natural outcomes/arrival, live actor/
 follower state, independent services/presentation/timing, request survival/control readiness and
-persistence remain **Unknown**. Concurrent
-[#740](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/740) research is not consumed.
+persistence remain **Unknown**. The separate
+[castle year-later research](../research/new-granseal-castle-year-later-control.md) from
+[#740](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/740) /
+[PR #741](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/741) is accepted; its next
+synthesis is not yet delivered and its conclusions do not expand this guide.
 This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
