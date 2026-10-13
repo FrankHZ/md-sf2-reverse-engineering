@@ -98,6 +98,12 @@ Jaha/plank scene. Two in-script Map14 loads bypass its init; F700 is written aft
 and before conditional control. Actor-reference reuse, follower/party state, natural arrival and
 services/pending outcomes retain their limits; player plank progression and Battle08 remain separate.
 
+[Damaged-ship plank choices through Battle08 admission](damaged-ship-plank-through-battle08.md) continues
+with the optional plank response, explicit/same-map entry alternatives, timber handover and repeated
+rescue request. F408/request production precedes caller F703/EGRESS_MAP writes; Map72 admission and
+F458 before/start dispatch remain distinct from scene casts and the combat roster. It stops before
+ActivateEnemies, preserving pending, walking, follower/service and suspended-entry limits.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
