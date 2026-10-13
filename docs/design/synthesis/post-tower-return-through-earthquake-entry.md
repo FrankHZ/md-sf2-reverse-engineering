@@ -171,9 +171,10 @@ Map4's default zone and entity handlers simply return. The generic zone-event co
 text/portrait windows, waits a VInt and waits for the main entity to stop. The next outward owner is
 [Map4's warp table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map04/6-warp-events.asm),
 identified in the [accepted handoff](../../research/post-tower-return-through-earthquake-entry.md#immediate-controlevent-boundary-and-next-owner).
-Its east-edge records point toward a docks request. Consuming that request, reaching the docks,
-boarding/departure, Battle08 and later destination content require their own accepted owners and
-remain outside this guide.
+Its east-edge records point toward a docks request. Continue with
+[Earthquake-town exit through docks departure](earthquake-town-through-docks-departure.md) for the
+accepted request, boarding choice and conditional outward handoff. Those consumers, Battle08 and
+later destination content remain outside this guide.
 
 ## Evidence Review and Remaining Limits
 
