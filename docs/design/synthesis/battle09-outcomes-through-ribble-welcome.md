@@ -237,3 +237,7 @@ visible village changes, responsive control and save persistence. These limits d
 acquisition queue. May recruitment, other NPC/services/treasure, shrine/raft and onward travel remain
 outside this guide. It completes neither campaign chronology nor epic #514, changes no remake
 capability or engine/product choice and leaves Chinese synchronization deferred under the roadmap.
+
+Continue with [Ribble's optional May recruitment through Battle10 admission](ribble-may-through-battle10-admission.md)
+for optional interaction, distinct membership/current following, travel advice and the selected
+conditional encounter route. That guide retains its own request, actor and natural-route limits.
