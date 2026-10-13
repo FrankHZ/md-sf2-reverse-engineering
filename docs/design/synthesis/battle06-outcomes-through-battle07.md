@@ -15,6 +15,9 @@ and stops at Battle07 before/start, before its resolution. The
 agreement for [#715](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/715).
 No playable remake capability or new observation is accepted here.
 
+Continue with [Battle07 outcomes and the exploration handoff](battle07-outcomes-and-aftermath.md)
+for victory/repeat/defeat/escape, the long tower scene and conditional restored exploration.
+
 Original-source paths, labels, addresses, dialogue bindings and selected numeric values below belong
 to that research owner, pinned to `ShiningForceCentral/SF2DISASM`
 `c834c652b6862bc5679fd7f69a38a7093206efc6` and the USA retail ROM identity. `Fnnn` means flag nnn;
