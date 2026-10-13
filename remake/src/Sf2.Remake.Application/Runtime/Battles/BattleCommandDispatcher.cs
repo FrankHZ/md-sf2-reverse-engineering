@@ -28,6 +28,8 @@ internal static class BattleCommandDispatcher
         {
             switch (command)
             {
+                case ReturnToBattleActions when selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "action-choice");
                 case Cancel:
                     return BattleMovementContinuation.BeginPlayer(current,
                         new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!), BattleSelectionStage.Movement),
