@@ -80,7 +80,7 @@ No natural defeat/escape reentry is demonstrated here.
 The ordinary victory heal and subsequent exploration heal skip dead non-immortal allies;
 the [shared heal owner](./battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)
 retains its HP/MP and status-mask limits. This differs from the later full-force reset below.
-F458 only gates the before/start programs. F458-set intro skips and F88 suspended entry
+F458 gates the before/start programs independently of F508. F458-set intro skips and F88 suspended entry
 (restore seconds, clear F88/AI memory, load battle, resume individual turns) do not themselves
 set F508 or suppress a later F508-clear after scene. Supplied suspension validity and natural
 combat remain Unknown; no combat engine is re-proved here.
