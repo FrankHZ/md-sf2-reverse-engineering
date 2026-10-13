@@ -158,6 +158,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   first/repeat castle init, year-later address, dismissal and conditional control; setup, actor and service limits.
 - [`new-granseal-town-through-peter-introduction.md`](./design/synthesis/new-granseal-town-through-peter-introduction.md) —
   conditional castle exit, town setup, independent introductions and Peter reception; hiding and control limits.
+- [`peter-castle-audience-through-town-return.md`](./design/synthesis/peter-castle-audience-through-town-return.md) —
+  conditional audience, Peter's join/AI and following, gift discrepancy and town return; caller and control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
