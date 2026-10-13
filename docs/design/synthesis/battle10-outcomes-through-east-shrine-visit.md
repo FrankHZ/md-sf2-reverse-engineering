@@ -14,8 +14,9 @@ route to Battle11 or a remake readiness claim.
 
 Begin with [Battle10 admission](ribble-may-through-battle10-admission.md). Stop after the final
 old-man caller and the first conditional restoration of exploration control. The south exit is only
-a continuation boundary; onward travel, the cave/Battle11, wooden panel, Sky Orb acquisition and the
-later shrine scene are outside this guide. Fnnn means flag nnn; map/battle IDs retain source numbering.
+a continuation boundary; [the selected return through Battle11 admission](east-shrine-return-through-battle11-admission.md)
+has its own guide. Onward travel, the cave/Battle11, wooden panel, Sky Orb acquisition and the later
+shrine scene are outside this guide. Fnnn means flag nnn; map/battle IDs retain source numbering.
 
 ## 1. Battle Outcomes Return through Different Destinations
 
@@ -180,7 +181,8 @@ service/actor finished or discards a newly produced pending request.
 
 The south exit row is wildcard X, Y19, no scroll, to Map70 `(43,41)`, Down, without an F77/F728/F729
 gate. It still requires the layout/request path. This is a continuation boundary only: no onward
-admission, Grans travel, Orb acquisition or Battle11 is claimed.
+admission, Grans travel, Orb acquisition or Battle11 is claimed here. Continue with the separate
+[return and cave-admission guide](east-shrine-return-through-battle11-admission.md) for its selected connection.
 
 ## Evidence Review and Remaining Limits
 
