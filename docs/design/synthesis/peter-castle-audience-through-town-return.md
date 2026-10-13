@@ -10,6 +10,8 @@ its caller then sets separate completion and follower flags. **Unknown:** natura
 actors/services, the observed gold balance and actual usable destination control.
 
 Read this after [New Granseal town: Peter's first introduction](new-granseal-town-through-peter-introduction.md).
+Continue with [New Granseal departure through Battle09 admission](new-granseal-departure-through-battle09.md)
+for selected overworld connections, conditional battle selection and the empty pre-activation opening.
 The accepted [research owner](../../research/peter-castle-audience-through-town-return.md) supplies
 the scene, text, handler and caller review. This guide stops at the first town post-init
 pending/control read. Overworld departure, Battle09 and later audiences are outside this segment.
