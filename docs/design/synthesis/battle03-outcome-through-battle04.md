@@ -24,6 +24,10 @@ No remake implementation is evidence about the original. The
 [accepted private remake milestone](map3-battle01-readiness.md#accepted-current-milestone) ends at
 Battle01 usable return; this guide grants no later playable support.
 
+Continue with [Battle 04 outcomes through Battle 05 admission](battle04-outcomes-through-battle05.md)
+for the separate victory/loss/escape returns, Galam captivity, Slade following and conditional guard
+request. It preserves static/natural and original/remake boundaries and stops before Battle05 resolution.
+
 ## 1. Battle03 Hands Control Back to Exploration
 
 **Confirmed shared outcome rule:** the controller counts combatants after action death processing,
