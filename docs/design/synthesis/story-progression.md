@@ -162,6 +162,13 @@ no-setup cave exploration, follower-selected placement and later combatant repla
 It stops at the new-battle start-dispatcher return before ActivateEnemies, retaining interruptions,
 actor/party/service/pending and darkness-presentation limits. No mandatory shrine route is established.
 
+[Battle11 outcomes through Polca's first Oddler arrival](battle11-outcomes-through-polca-arrival.md)
+continues with variable cave return, carried egress, selected exits and separate F413 town admission.
+The first X24 event stages the injured boy and villagers' response, then explicitly reloads the
+F710 residents before caller F711 handling and the F710 write. Following is rebuilt and can retain
+the same target/offset. It stops at first conditional restored control, preserving actor/HP/mapping,
+service/pending, presentation and natural-route limits; it recruits neither Oddler nor Gerhalt.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

@@ -15,8 +15,10 @@ shrine route nor an observed playable entry or remake readiness claim.
 
 Begin with [Battle10 outcomes and the optional shrine visit](battle10-outcomes-through-east-shrine-visit.md).
 Stop at the new-battle start-dispatcher return immediately before `ActivateEnemies`. Combat, outcomes,
-crossing the cave and later destinations are outside this guide. Fnnn means flag nnn; map and battle
-IDs retain source numbering.
+crossing the cave and later destinations are outside this guide. Continue with
+[Battle11 outcomes through Polca's first Oddler arrival](battle11-outcomes-through-polca-arrival.md)
+for the separate battle return, selected cave exit and first town incident. Fnnn means flag nnn;
+map and battle IDs retain source numbering.
 
 ## Returning to the Overworld and Selecting the Cave Connection
 

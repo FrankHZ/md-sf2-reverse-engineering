@@ -167,51 +167,58 @@ continues through separate shrine entry, mistaken identity, the grandfather's ac
 with independent gates and current/rebuilt following kept distinct. Its conditional-control and
 natural-route limits remain applicable.
 
-The current reader outcome explains the optional shrine return or direct Battle10 return, selected
-overworld connections and Battle11's cave admission/opening. Route requests, admission flags, scene
-population and presentation services cross existing owners, so this segment retains **Standard**
-rigor. Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+[East Shrine return through Battle11 cave admission](synthesis/east-shrine-return-through-battle11-admission.md)
+continues from optional shrine or direct Battle10 return through selected overworld requests, exact
+cave admission, Peter's exchange with the hobgoblin and the before/start battle handoff. Its
+interruption, cast, service and darkness-presentation limits remain applicable.
+
+The current reader outcome explains Battle11 outcomes, the selected cave-to-Polca connection and
+the first Oddler arrival scene through its caller and conditional restored control. Battle returns,
+admission, population selection/replacement and actor services cross existing owners, so this segment
+retains **Standard** rigor. Follow the
+[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[East Shrine return through Battle11 cave admission](synthesis/east-shrine-return-through-battle11-admission.md),
-scoped by [#771](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/771). It consumes the
-[accepted static investigation](../research/east-shrine-return-through-battle11-admission.md) from
-[PR #770](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/770) and the preceding English guide
-from [PR #769](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/769), without a stacked dependency.
-Organize around return, cave entry, Peter's exchange with the hobgoblin, camera/music/movement and
-battle handoff. This is a candidate content sequence, not a mandatory shrine visit, observed playable
-route or new remake capability. Full records and helper arithmetic stay with research.
+[Battle11 outcomes through Polca's first Oddler arrival](synthesis/battle11-outcomes-through-polca-arrival.md),
+scoped by [#775](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/775). It consumes the
+[accepted static investigation](../research/battle11-outcomes-through-polca-arrival.md) from
+[PR #774](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/774) and the preceding English guide
+from [PR #773](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/773), without a stacked dependency.
+Organize around cave battle return, leaving for Polca, town arrival, the injured boy and villagers'
+response, then restored town state. This is a candidate content sequence, not a proven navigable or
+mandatory route or a new remake capability. Full records and technical composition stay with research.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- Map70's west scroll carries exploration state; the selected fixed northern Map69 connection
-  invokes ordinary admission to Map72. Encounter/scene interruptions remain possible.
-- F411 originates in castle init, independently of shrine completion and recruitment. Battle11 tests
-  the exact Map48 request `(15,26)`, not its area bounds; F411/F511 both set still selects it on that call.
-- Map48 without battle admission has no normal setup/init or fixed NPC list. F461 skips intro scripts
-  without skipping new preparation; F88 resumes saved state through a different endpoint.
-- Explicit prebattle loading rebuilds followers first. F67 can cause Peter's authored row to be
-  skipped; actor presence proves neither joined/active/HP nor AI state. Actual battle placement later
-  replaces the scripted population.
-- Plane-B coordinate/counter/update writes support a bounded darkness-related **Inferred** presentation
-  role, not a validated visible mask, service completion or preserved final battle display.
+- Victory returns to a battle-derived cave position; loss/escape uses carried egress. Separate fixed
+  exits and Map72 interruptions precede Polca's independent F413/F513 admission.
+- Last-set setup priority and ally versus regular-NPC lookup determine the cast; regular 130 is the
+  kappa under default/F710 lists. Peter has no fixed row, and alternative supplied populations can
+  leave scene actors unmapped. F710-clear alone does not establish a sensible cast.
+- X24 selection is separate from town entry. Eleven paraphrased texts and their staging describe
+  the villagers' response; quake/flash/actions are requests rather than verified presentation.
+- Explicit F710 resident loading precedes caller F711 handling and the F710 write. Following is
+  rebuilt; F67-only can recreate the same target/offset without preserving the transient relation.
+- Neither the incident nor its caller recruits Oddler or Gerhalt. HP, mapping, services and pending
+  conditions bound the first restored-control claim.
 
 Only the new guide, predecessor continuation, Story Progression navigation, this current agreement
-and one English documentation-index entry are owned by #771. Stop at the new-battle start-dispatcher
-return immediately before `ActivateEnemies`. Combat/outcomes, cave crossing, Polca/Bedoe, unmerged
-successor findings, runtime readiness, new product decisions and Chinese synchronization are outside
-scope. No research/contracts/fixtures/glossary/remake changes are selected.
+and one English documentation-index entry are owned by #775. Stop after the first Oddler caller and
+conditional restored control. Turtle interaction `cs_58512`, the F710-set later scene, mayor/raft/
+recruitment, Bedoe/Battle12/13, unmerged successor findings, runtime readiness, new product decisions
+and Chinese synchronization are outside scope. No research/contracts/fixtures/glossary/remake changes
+are selected.
 
-Natural collision-free and uninterrupted travel, actual actors/flags/HP/party/AI state, service
-completion, request survival, composed darkness and continuous playable entry remain **Unknown**.
+Natural collision-free and uninterrupted travel, actual flags/actors/HP/party/AI/mappings, request
+survival, completed services, visible presentation/timing and continuous playability remain **Unknown**.
 This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived payloads
-must not be generated/copied for this segment. No acquisition, source investigation, runtime
+must not be generated/copied for this segment. No acquisition, repeated source investigation, runtime
 observation or new machinery is needed. Unexpected broad dependencies, evidence conflicts or product
 choices stop affected expansion for replanning; missing natural observations remain **Unknown**.
 
