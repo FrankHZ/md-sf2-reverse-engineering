@@ -61,8 +61,9 @@ physical slots or observed positions: initialization allocates flag-selected fol
 skips a fixed ally declaration if that ally is already mapped.
 
 Shared init tests F707 alone. Set returns without changing this population or egress/F411. Clear
-runs the [year-later address](new-granseal-castle-year-later-control.md), sets egress 6 and then
-F707/F411; that existing scene explicitly restores the default population. Consequently supplied
+first writes `EGRESS_MAP=6`, then runs the [year-later address](new-granseal-castle-year-later-control.md)
+(`cs_55832`), and sets F707/F411 only after normal return; that scene explicitly restores the default
+population. Consequently supplied
 F701-set/F707-clear history does not retain the ordinary five-ally audience staging. The audience
 itself does not reload actors before using them.
 
