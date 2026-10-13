@@ -114,58 +114,62 @@ continues through outcome branches, phased tower aftermath, jewel/follower flags
 Map58 control boundary. These accepted guides retain their own caller, natural-route and service
 limits; they do not establish a complete campaign or expand remake acceptance.
 
-The current reader outcome extends from that tower return through selected castle content to
-first/repeat earthquake-town initialization and its conditional control/event handoff. Request,
-setup, follower, layout, init and event consumers must agree; their separate static boundaries must
-not become a claim of continuous walking or natural service completion. Standard rigor remains
-appropriate for these cross-owner dependencies within a bounded documentation task. Follow the
+[Post-tower return through earthquake-town entry](synthesis/post-tower-return-through-earthquake-entry.md)
+continues through selected castle content, independent Astral dialogues and first/repeat town init.
+Its conditional control/event boundary retains the caller, follower, walking and presentation limits.
+
+The current reader outcome explains the earthquake-town exit, changed harbor, boarding choice and
+departure request handoff. Request, setup, follower, interaction, script and event consumers must
+agree; their separate static boundaries must not become a claim of continuous walking or natural
+service completion. Standard rigor remains appropriate for these cross-owner dependencies within a
+bounded documentation task. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Post-tower return through earthquake-town entry](synthesis/post-tower-return-through-earthquake-entry.md),
-scoped by [#723](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/723). It consumes the
-[accepted static investigation](../research/post-tower-return-through-earthquake-entry.md) from
-[PR #722](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/722), its accepted predecessors and
-the preceding Battle07 guide. Organize the explanation around leaving the tower, changed castle
-content and independent Astral dialogue, earthquake-town selection/population, first/repeat entry,
-and the conditional control handoff. Use short sourced summaries and compact references rather
+[Earthquake-town exit through docks departure](synthesis/earthquake-town-through-docks-departure.md),
+scoped by [#727](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/727). It consumes the
+[accepted static investigation](../research/earthquake-town-through-docks-departure.md) from
+[PR #726](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/726), its accepted predecessors and
+the preceding town-entry guide. Organize the explanation around the changed harbor, same-map boarding
+versus explicit reentry, actual departure interlocutor, Yes versus No/cancel, phases of departure and
+flag/actor/map consequences. Use short sourced summaries and compact references rather
 than transcripts, complete layouts/rosters or a duplicated research ledger.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review the selected payloads, schema and
 consumer semantics. Preserve these material boundaries:
 
-- Selected no-scroll records connect Maps58/60/57/40/21/20/19 to a Map3 request; they do not prove
-  walking between arrival and exit. Ordinary requests apply SwitchMap before CheckBattle, unlike
-  the direct battle-outcome return. Map57 with F401 set selects Battle01 even if F501 subsequently
-  clears F401; F507 is not permission to bypass that check.
-- Last-set setup priority and later F543/F982 inputs remain explicit. F507 restores Map40's default;
-  selected castle init calls request music/fade without progression writes. Map19's Astral setup
-  actor is distinct from FOLLOWER_B. F622/F623 independently suppress dialogue after script return;
-  neither is an explicit prerequisite at the south-warp/substitution/town-init consumers. Physical
-  optionality and survival are not proved by those facts or the dialogue.
-- F640 substitutes requested Map3 with Map4 while retaining the entry tuple. F624 branches within
-  Map4 init, not setup selection. Entity reconstruction consumes F74's three follower rows among
-  other enabled inputs; F83/conflicting rows, absent mappings and no deduplication remain explicit.
-- Flag-selected layout copies precede init. First entry animates working-layout copies and actor
-  falls; its caller sets F624 only after the script returns. The awaited guard 129 and non-awaited
-  128 remain distinct. Actor disappearance/falling does not establish combat HP/death or membership.
-- Repeat init parks guards, retaining supplied Bowie position and initialized followers, with no quake command.
-  That absence does not establish zero amplitude; F624 set does not prove this execution completed
-  the first scene. Both branches stop at WaitForEvent's conditional pending read: zero installs
-  control under the named player-type input, while a pending event bypasses that installation.
+- Map4's selected east-edge no-scroll requests enter Map44 `(1,25)`, Right; no Map44 substitution
+  or first-column encounter row intercepts this request. Records do not prove town/harbor walking.
+- Map44 setup priority is default, F609, F506, F507; last set wins. F507's music/fade init repeats
+  without a completion latch. F74 supplies B/A/D follower rows, with absent/conflicting flags and
+  caller player type explicit; setup selection does not establish the required speakers or control.
+- MAP_CURRENT boarding retains the population while its helper can reposition followers; explicit
+  Map44 reentry rebuilds it. Fixed actors overlap boarding triggers, leaving occupancy/traversal Unknown.
+- Departure belongs to old-man event index 138, not worker 137 or NPC slot 7. The event-table UP byte
+  is behavior bits, not approach direction. Yes=0 runs cs_54578; No/B=-1 returns without departure,
+  with control still conditional on the next pending-event read.
+- F74 clear at command 47 differs from actor rebuild at 52. In-script Map66 load at 51 bypasses
+  main-loop substitution/encounter/setup init; its view operands differ from entity placement. The
+  final Map73 request at 74 precedes F640 clear at 75 and script/handler return. Outward consumption
+  is conditional on request survival; neither ship sprite nor an empty fixed list proves vehicle
+  player type, force membership or a single actor.
+- The shared zone default selects 0x5486C inside another entity list, not the adjacent return stub.
+  Preserve the fixture exclusion separately from ordinary entity interaction; infer no normal no-op,
+  crash or natural reach. Unjoined movement and presentation calls do not prove completed services.
 
 Only the new guide, preceding guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #723. Stop at Map4's
-post-init control/event boundary and link its immediate outgoing warp owner without consuming the
-request. Docks/ship departure, Battle08, later destinations, complete walking/layout proof and town
-hazards are outside scope. Natural outcomes/caller state, party/HP/actor/follower state, changed-layout
-reentry, services/presentation/timing, pending value and persistence remain **Unknown**. This guide
+this current agreement and one English documentation-index entry are owned by #727. Stop at the
+Map73 outward-request consumer handoff. Destination setup/init, voyage/settlement, Battle08, complete
+walking/layout proof and exhaustive zone-anomaly investigation are outside scope. Natural outcomes/caller
+state, party/HP/actor/follower state, occupancy, changed-layout reentry, services/presentation/timing,
+pending value/survival and persistence remain **Unknown**. This guide
 adds no playable remake support and completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-Concurrent [#724](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/724) outward research is
-independent; its unmerged conclusions are not consumed here.
+Accepted [#728](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/728) destination research is
+an independent successor. Its findings are not consumed by this guide; destination synthesis remains
+a separate segment.
 
 No source investigation, fixture/schema/parser implementation, runtime capture, map decoding,
 engine code, content platform or comparator follows from this synthesis. Accepted prose and small

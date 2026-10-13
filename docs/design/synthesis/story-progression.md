@@ -86,6 +86,12 @@ through selected tower/castle exits, independent Astral dialogues, earthquake-ma
 first/repeat town initialization. It stops at the conditional control/event read; legal walking,
 caller/follower state and natural service completion remain Unknown, with later evacuation separate.
 
+[Earthquake-town exit through docks departure](earthquake-town-through-docks-departure.md) continues
+through the changed harbor, same-map boarding, the old man's Yes/No choice and phased departure.
+It distinguishes follower-flag clearing, actor reconstruction and in-script Map66 loading from the
+conditional Map73 request handoff. Walking, occupancy, follower/service/pending state and the separate
+zone-table anomaly retain their limits; destination initialization and later voyage remain outside it.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

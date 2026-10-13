@@ -146,6 +146,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   phased tower scene, jewel/follower flags and conditional restored exploration; caller and natural-route limits
 - [`post-tower-return-through-earthquake-entry.md`](./design/synthesis/post-tower-return-through-earthquake-entry.md) —
   tower/castle requests, earthquake-town first/repeat entry and conditional control; walking and caller limits
+- [`earthquake-town-through-docks-departure.md`](./design/synthesis/earthquake-town-through-docks-departure.md) —
+  changed harbor, boarding choice, phased departure and conditional Map73 handoff; walking, zone and service limits
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
