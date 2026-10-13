@@ -15,6 +15,9 @@ outcomes and town construction belong to later segments. It adds no remake capab
 [roadmap](../documentation-roadmap.md#current-baseline-and-near-term-synthesis) owns the Standard-rigor
 agreement for [#735](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/735).
 
+Continue with [Battle08 outcomes through the New Granseal castle handoff](battle08-outcomes-through-new-granseal-handoff.md)
+for the conditional worker aftermath, construction scene and outgoing castle request.
+
 `Fnnn` means flag nnn. Source references use `disasm/` at
 [`ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm).
 Research and fixtures bind the USA retail ROM in the [root baseline](../../../README.md#pinned-original-baseline).
