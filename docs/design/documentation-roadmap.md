@@ -98,41 +98,46 @@ castle/tower, encounter and usable return;
 [Battle 01 return through Battle 02 admission](synthesis/battle01-return-through-battle02.md) continues
 through castle return, exorcism/commission, Jaha and conditional admission.
 [Battle 02 outcome through Battle 03 admission](synthesis/battle02-outcome-through-battle03.md)
-continues through conditional Yeel/Kazin guidance and the separate zone request. These accepted
+continues through conditional Yeel/Kazin guidance and the separate zone request.
+[Battle 03 outcome through Battle 04 admission](synthesis/battle03-outcome-through-battle04.md)
+continues through Hawel's house, Kazin recruitment and the separate exit request. These accepted
 outcomes retain their evidence and natural-route limits. The current reader outcome extends the route
-through Battle03 return, Hawel-house content and conditional source Battle04 admission.
+through Battle04 outcome branches, Galam captivity/escape content and conditional source Battle05 admission.
 Several evidence owners and shared navigation must agree, requiring adversarial evidence
 review and independent content review within a bounded documentation task. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the agreement.
 
 The current segment owner is
-[Battle 03 outcome through Battle 04 admission](synthesis/battle03-outcome-through-battle04.md), scoped
-by [#703](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/703). It consumes the
-[accepted static investigation](../research/battle03-to-battle04-content-route.md), accepted in
-[PR #702](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/702), and the preceding guide.
-Explain outcome/return, house setup/actor presence, grounded scene content, recruitment/following/unlock,
-post-return caller writes, the actual exit request, ordered selection and before/start dependencies.
+[Battle 04 outcomes through Battle 05 admission](synthesis/battle04-outcomes-through-battle05.md), scoped
+by [#707](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/707). It consumes the
+[accepted static investigation](../research/battle04-to-battle05-content-route.md), accepted in
+[PR #706](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/706), and the preceding guide.
+Explain distinct victory/special-defeat/escape returns, prison/castle actor and dialogue content,
+first/repeat state, reset/resource/follower boundaries, the actual guard unlock/request and before/start.
 Short sourced summaries and selected dependencies suffice; no transcript, full layout or roster is needed.
 
 Acceptance requires a readable conditional segment with exact research/contract and fixture/verifier
 traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review selected payloads and
-consumer semantics: empty Battle03 after-program still reaches JoinForce(0), and final caller state
-supplies return operands; F612 selects house repeat setup, while neither F503 nor F72 gates default
-init. Default entities omit Kazin and F72 supplies a follower-presence path; absence of its gate
-proves neither missing-follower choreography nor a mandatory Yeel visit. Sad join recruits ally 4/F4;
-following/F72 and setStoryFlag 4/F404 differ, and active-party activation is capacity-dependent.
-The earlier reload does not rerun init or request exit; F612/F650/EGRESS_MAP are caller writes after
-script return. The actual no-scroll exit supplies destination parameters, and earlier unlocked Map66
-rows can preempt row 4. Intro/suspension flags condition before/start content. A concrete evidence
+consumer semantics: first victory's capture warp replaces prepared return operands; special defeat
+halves gold and overrides only egress map/result, while escape does neither capture path. UpgradeBattle
+finds no Battle04 entry in the random-battle list; the older fixture boolean records the call, not
+enemy changes or Battle05 unlock. F660 gates all-ally reset/placement, without restoring gold or
+confiscating inventory.
+Slade's following/F73 differs from joined F5. Tunnel reload precedes action-script reset, hiding,
+staging and following; reload is not an exit. F661/F662 do not prove reload reconstruction of block
+mutations. The guard's F505/F664 branches distinguish the actual F405 producer from a repeat warp;
+F664 is written after script return. Map16's wildcard row 5 has no battle-area containment gate,
+and its empty before/start targets do not move arrest dialogue out of the field. A concrete evidence
 conflict stays with its owner and is excluded from expanded conclusions rather than silently repaired.
 
 Only the new segment guide, the preceding guide's next-segment navigation, Story Progression's reading
-navigation, this current agreement and one English documentation-index entry are owned by #703.
-Stop at Battle04 admission and selected entry dependencies; combat resolution and later story are
-outside scope. Natural walking, caller/follower state, presentation, persistence and initialized
-Battle04 remain **Unknown**. No playable remake support is added. Consume accepted main only;
-concurrent [#704](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/704) downstream research
+navigation, this current agreement and one English documentation-index entry are owned by #707.
+Stop at Battle05 admission and selected entry dependencies; Battle05 resolution and later story are
+outside scope. Natural combat/walking, caller/entity state, reentry mutations, service completion,
+presentation, persistence and active Battle05 party remain **Unknown**. No playable remake support
+is added. Consume accepted main only;
+concurrent [#708](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/708) downstream research
 is no dependency. Earlier accepted outcomes remain intact;
 this segment does not complete the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) or the campaign.

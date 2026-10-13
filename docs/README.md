@@ -136,6 +136,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   conditional Yeel/Kazin guidance and source admission; following, request and natural-route boundaries
 - [`battle03-outcome-through-battle04.md`](./design/synthesis/battle03-outcome-through-battle04.md) — conditional return,
   Hawel-house scene, Kazin recruitment and exit/admission; caller, follower and natural-route limits
+- [`battle04-outcomes-through-battle05.md`](./design/synthesis/battle04-outcomes-through-battle05.md) — victory/loss/escape,
+  Galam captivity, Slade following and guard unlock/admission; conditional content and natural-route limits
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

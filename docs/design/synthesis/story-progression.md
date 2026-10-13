@@ -60,6 +60,11 @@ through the conditional return, Hawel-house initialization, Kazin recruitment an
 request/encounter selector. House default versus repeat setup and joined/follower/unlock state remain
 distinct; natural walking, caller/presentation/persistence and initialized Battle04 remain Unknown.
 
+[Battle 04 outcomes through Battle 05 admission](battle04-outcomes-through-battle05.md) follows with
+victory/special-defeat/escape distinctions, Galam prison/castle content, Slade following and the guard's
+conditional unlock/request. It stops at before/start and preserves natural walking, actor/reentry and
+active-party Unknowns; source branches do not establish a forced loss or a continuous walkthrough.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
