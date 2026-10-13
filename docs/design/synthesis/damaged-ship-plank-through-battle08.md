@@ -68,8 +68,8 @@ the selected entities, loads sprites, clears setup flags 256–383, including F2
 loading the map and running setup init. The default fixed list is empty, but follower initialization
 still occurs. No player-control handoff intervenes before init.
 
-Same-map stairs instead use `MAP_CURRENT`: below-deck `(12,11)`–`(14,11)` lead to above-deck
-`(44,8)`–`(46,8)`, Up; above-deck `(44,9)`–`(46,9)` lead back to `(12,12)`–`(14,12)`, Down.
+Same-map stairs instead use `MAP_CURRENT`: deck triggers `(12,11)`–`(14,11)` lead to below-deck
+`(44,8)`–`(46,8)`, Up; below-deck triggers `(44,9)`–`(46,9)` lead to deck `(12,12)`–`(14,12)`, Down.
 CheckBattle scans current Map14 but preserves the sentinel when no battle matches. This entry branch
 updates the main entity/raft without rebuilding setup entities or clearing temporary flags.
 **Both entry branches still run setup init.** A spawn coordinate also appearing in the warp table
