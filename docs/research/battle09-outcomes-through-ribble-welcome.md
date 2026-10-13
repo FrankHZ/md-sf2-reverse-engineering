@@ -276,10 +276,17 @@ edits; its actual identity/state remains an input. The existing
 [map-block copy lifecycle](./common-scripting.md#confirmed-map-block-copy-showhide-lifecycle)
 has bounded H3 helper observations, not a Ribble scene composition.
 
-Record 85 resolves Peter/Bowie through the current mapping and `AddFollower` installs
-the current follow actscript; selector 2 maps to pixel offset `(-24,0)`. The follower
-command's ally-HP guard can skip it for dead Peter. It does not set F67, join Peter,
-set F39 or change AI control. Persistent F67 determines Peter's re-instantiation on
+Record 85 is `followEntity ALLY_PETER,ALLY_BOWIE,2`. The macro in
+`sf2cutscenemacros.asm` encodes three words, `$0007,$0000,$0002`.
+`mapscriptengine_1.asm:csc2C_followEntity` probes the first word's high byte with
+`move.b (a6),d0` before advancing A6. `AdjustScriptPointerByCharacterAliveStatus`
+therefore checks character 0/Bowie's HP: zero skips all six operand bytes and returns
+without `AddFollower`. Peter's HP itself is not this command's guard. If Bowie is
+alive, the handler resolves the current Peter/Bowie mappings and `AddFollower` installs
+the follow actscript; selector 2 maps to pixel offset `(-24,0)`, without validating
+Peter's HP or presence. The [existing high-byte seam observation](./common-scripting.md#confirmed-map-script-entity-gesturerelationshipmotion-command-family)
+is a controlled handler case, not a Ribble runtime observation. The command does not
+set F67, join Peter, set F39 or change AI control. Persistent F67 determines Peter's re-instantiation on
 later ordinary entry. Other action/facing/destination handlers do not share a universal
 dead-actor guard: `GetEntityAddressFromCharacter` performs a lookup without proving
 presence, and action-script/sequence waits depend on the mapped actor reaching
@@ -307,7 +314,7 @@ prefix `uv run sf2 h2`. Coverage means the admitted owner, not a fresh full extr
 | Battle09 predicates/outcomes | `battle-loop-static-v1.json`, `battle-cutscenes-static-v1.json`, `battle-global-data-static-v1.json`, `battle-routing-data-static-v1.json`; commands `battle-loop`, `battle-cutscenes`, `battle-global-data`, `battle-routing-data`. Direct row-9 and shared-tail review plus cutscene-source comparison. Controls: slot 128 dead with other counted enemies; simultaneous faction loss; F509-clear versus repeat defeat/egress; variable first party member and egress map. No new combat execution. |
 | Map69→8 request/admission/init | `map-data-static-v1.json`, `map-setup-static-v1.json`, `map-entities-static-v1.json`, `map-init-static-v1.json`, `map-event-request-consumption-static-v1.json`; commands `map-data`, `map-setup`, `map-entities`, `map-init`, `map-event-request-consumption`. Retained init body 12 and direct warp row/pointer review. Missing: reachable victory position→warp→zones, actual pending lineage and collision. F417 competition or a request overwrite discriminates a forced-route claim. |
 | Welcome flags and scripts | `map-events/zone-programs.json` programs 145/146/147 retain the two handlers and default; `map-script-engine-static-v1.json` retains `cs_563B2` and `cs_56422`. Commands `map-events`, `map-script-engine`. Direct text/control review and retained comparison. Controls: F703 already set, F258 reset on entry, mayor without first scene, F708-set/F709-clear and F709-set/F708-clear. |
-| Population, blocks and helper | Existing map-script engine entity-population, entity-action, block-mutation and follow consumers; common scripting's `map-block-copy-lifecycle-v1.json` H3 fixture. Direct alias/helper/storage adjacency review. Missing executable composition: reload before F708, no init after reload, F709 copies then optional cached-rectangle restore, actor waits and pending/control return. Controls: F8 set at explicit reload, F67 clear, Peter HP zero/missing mapping, inactive versus active roof cache. No new H3 run is selected. |
+| Population, blocks and helper | Existing map-script engine entity-population, entity-action, block-mutation and follow consumers; common scripting's `map-block-copy-lifecycle-v1.json` H3 fixture. Direct alias/helper/storage adjacency review. Missing executable composition: reload before F708, no init after reload, F709 copies then optional cached-rectangle restore, actor waits and pending/control return. Controls: F8 set at explicit reload, F67 clear, Bowie HP zero (follow skipped) versus Bowie alive/Peter HP zero (not skipped by this guard), missing Peter mapping, inactive versus active roof cache. No new H3 run is selected. |
 
 For reproduction, load `. ./local/private-inputs.ps1` in the owning checkout; select
 the registered read-only `$upstream`, and verify `git -C $upstream rev-parse HEAD` and

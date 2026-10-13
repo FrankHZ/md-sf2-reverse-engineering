@@ -107,9 +107,10 @@ the program does not dismiss him or clear independently supplied F70/F74 followe
 
 Named movement waits join only their named actor. The minister's up-one action during the decision
 is unjoined, while Astral's next left/up action is awaited. Timed waits do not independently prove
-earlier actions completed, and their operands are not measured presentation time. Dead-ally guards
-can skip relevant actor commands; the join command has no corresponding alive guard. Missing
-mappings or unusual follower history also constrain the staging. Script return does not prove
+earlier actions completed, and their operands are not measured presentation time. HP guards are
+command-specific: the five follow calls below probe Bowie, not their named followers; the join
+command has no corresponding alive guard. Missing mappings or unusual follower history also
+constrain the staging. Script return does not prove
 every actor, camera, text, sound or movement service completed visibly.
 
 ## 4. Joining, Scene Following and Town Following Are Separate
@@ -137,10 +138,17 @@ control. The join handler does not reset HP, rename Peter, play join music, inst
 set F67.
 
 **Confirmed temporary following:** commands 62–66 install Peter behind Bowie, Sarah behind Peter,
-Chester behind Sarah, and Jaha/Kazin behind Bowie at separate offsets. `followEntity` resolves both
-references and, under its alive guard, calls `AddFollower` to install a walking script and register
-the physical follower. Reusing a follower already in the exploration list still replaces its walking
-script. These operations do not join or activate anyone and do not set persistent story follower
+Chester behind Sarah, and Jaha/Kazin behind Bowie at separate offsets, when their guard permits.
+The three operands are words; in that order, follower words are `$0007,$0001,$0002,$0003,$0004`.
+The HP probe reads each first word's high byte, zero: all five calls check Bowie. Bowie HP=0
+skips each call, while Peter or another named follower HP=0 with Bowie alive does not itself
+skip these commands. These supplied states distinguish the guard without proving natural
+reach or actor presence. When permitted, `followEntity` resolves both references and calls
+`AddFollower` to install a walking script and register the physical follower. The
+[research operand/handler review](../../research/peter-castle-audience-through-town-return.md#membership-ai-and-the-two-follower-mechanisms)
+retains the exact triples and existing controlled high-byte observation. Reusing a follower already
+in the exploration list still replaces its walking script. These operations do not join or activate
+anyone and do not set persistent story follower
 flags. Their table offsets do not promise observed final positions.
 
 **Confirmed destination following:** only the zone caller sets F67, after the script returns.
