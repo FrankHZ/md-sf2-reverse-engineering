@@ -89,8 +89,9 @@ victory/loss return coordinates must not be erased for that repeat alternative.
 
 **Confirmed reset order:** `resetForceBattleStats` → `resetMap` →
 `loadEntitiesFromMapSetup 0,0,RIGHT`. The first calls `ResetAlliesBattleStats`: all 30 ally slots
-receive maximum HP/MP, the STUN/POISON/CURSE status mask `0x0007` and derived-stat refresh, without
-a dead-ally skip. This differs from the living/immortal heal used around battle. It restores no
+have maximum HP/MP restored; their existing status bits are masked with `0x0007`, retaining only
+existing STUN/POISON/CURSE bits, then derived stats are refreshed. There is no dead-ally skip.
+This differs from the living/immortal heal used around battle. It restores no
 gold, recruits nobody and confiscates no inventory. The special defeat's earlier gold reduction
 therefore remains. Map reset/load operations have their own consumers and do not imply a new game.
 The [party/roster contract](../contracts/party-roster-state.md#handler-boundary) owns the reset call;
