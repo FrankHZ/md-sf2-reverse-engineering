@@ -70,6 +70,11 @@ with the separate position/HP consumer, first-completion jewel scene and Slade j
 conditional row-6 selection/before/start. F407 is written at entry, rather than completion or a proved
 Battle07 route; walking, caller/party/reentry and presentation remain Unknown.
 
+[Battle06 outcomes through Battle07 admission](battle06-outcomes-through-battle07.md) continues
+with variable outcome returns, F506 town/castle content, optional Kiwi recruitment, royal following
+and conditional tower requests. F407 admission remains separate from F506 content; F401 interception,
+F999 substitution and F457/F88 skips retain walking, follower/reentry and party Unknowns.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
