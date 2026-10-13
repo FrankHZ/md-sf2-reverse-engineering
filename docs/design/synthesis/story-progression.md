@@ -50,6 +50,11 @@ and west-exit admission. It preserves alternate callers and state/selector condi
 static** content and **Inferred** narrative connection do not extend the original observed frontier
 or remake acceptance below; natural continuity and legal walking remain **Unknown**.
 
+[Battle 02 outcome through Battle 03 admission](battle02-outcome-through-battle03.md) follows with
+outcome/return, conditional Yeel/Kazin guidance and the separate Map66 zone request/consumer path.
+Following is distinct from recruitment; Yeel is not a demonstrated encounter prerequisite. This
+segment also retains static/natural and original/remake boundaries.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
