@@ -142,6 +142,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   Slade recruitment, Galam exits and conditional entry; outcome, party/follower and natural-route limits
 - [`battle06-outcomes-through-battle07.md`](./design/synthesis/battle06-outcomes-through-battle07.md) — outcomes,
   Granseal/Kiwi/royal following and conditional tower entry; content, request and natural-route limits
+- [`battle07-outcomes-and-aftermath.md`](./design/synthesis/battle07-outcomes-and-aftermath.md) — outcomes,
+  phased tower scene, jewel/follower flags and conditional restored exploration; caller and natural-route limits
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

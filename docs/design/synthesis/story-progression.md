@@ -75,6 +75,12 @@ with variable outcome returns, F506 town/castle content, optional Kiwi recruitme
 and conditional tower requests. F407 admission remains separate from F506 content; F401 interception,
 F999 substitution and F457/F88 skips retain walking, follower/reentry and party Unknowns.
 
+[Battle07 outcomes and the exploration handoff](battle07-outcomes-and-aftermath.md) follows with
+victory/repeat/defeat/escape, phased tower aftermath and separate jewel/current-follow/persistent-flag
+effects. The return request precedes script/caller completion; void Map58 setup reconstructs followers
+before conditional control restoration. F999, conflicting follower flags, natural service completion
+and onward walking remain explicit limits; the guide stops at the immediate Map58 outgoing owner.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
