@@ -92,6 +92,12 @@ It distinguishes follower-flag clearing, actor reconstruction and in-script Map6
 conditional Map73 request handoff. Walking, occupancy, follower/service/pending state and the separate
 zone-table anomaly retain their limits; destination initialization and later voyage remain outside it.
 
+[Voyage and landing through damaged-ship control](voyage-through-damaged-ship-control.md) follows with
+Map73 first/repeat selection, optional Kiwi content, landing/crowd instructions and the scripted
+Jaha/plank scene. Two in-script Map14 loads bypass its init; F700 is written after script return
+and before conditional control. Actor-reference reuse, follower/party state, natural arrival and
+services/pending outcomes retain their limits; player plank progression and Battle08 remain separate.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

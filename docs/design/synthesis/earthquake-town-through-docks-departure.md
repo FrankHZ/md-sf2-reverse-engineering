@@ -178,6 +178,10 @@ Map44 reentry could still select F507 while F74 is now clear, unless another own
 flags. There is no completed-departure latch here making repeat interaction coherent. This is a
 counterexample to treating setup selection as full scene state, not a naturally reachable return claim.
 
+Continue with [Voyage and landing through damaged-ship control](voyage-through-damaged-ship-control.md)
+for the destination's first/repeat selection, voyage, landing and conditional Map14 control/event read.
+That separate segment preserves this guide's request-survival and natural-route limits.
+
 ## A Separate Zone-table Anomaly Limits Route Claims
 
 **Confirmed static anomaly:** all four Map44 setups share `ms_map44_ZoneEvents`. Its `$FD00` default
