@@ -13,9 +13,10 @@ state, request survival, service completion and a continuously playable route. T
 content/design planning; it does not establish remake readiness or a played walkthrough.
 
 Begin at the [welcome guide's conditional control handoff](battle09-outcomes-through-ribble-welcome.md).
-Stop at Battle10's start-dispatcher return, immediately before `ActivateEnemies`. Battle10 combat and
-outcomes, East Shrine, the cave and later content require separately accepted owners. Fnnn means flag
-nnn; map and battle IDs retain their source numbering.
+Stop at Battle10's start-dispatcher return, immediately before `ActivateEnemies`. Continue with
+[Battle10 outcomes through the optional East Shrine visit](battle10-outcomes-through-east-shrine-visit.md)
+for the separate outcomes/visit boundary. Combat simulation, the cave and later content remain outside
+this admission guide. Fnnn means flag nnn; map and battle IDs retain their source numbering.
 
 ## 1. Meeting May Is Optional; Her Script Has No Decline Branch
 
