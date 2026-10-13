@@ -231,3 +231,8 @@ load, music/fade and interpreter effects; actual battle/input readiness; and sav
 These gaps are not an automatic acquisition queue. Battle09 outcomes and Ribble require separately
 accepted successor evidence. This guide completes neither campaign chronology nor epic #514,
 selects no engine/product change and leaves Chinese synchronization deferred under the roadmap.
+
+Continue with [Battle09 outcomes through Ribble's welcome](battle09-outcomes-through-ribble-welcome.md)
+for the variable battle return, separate town entry, accusation and Peter's reconciliation through
+the first conditional restored-control boundary. Its flag, actor, reload and roof-restoration limits
+remain separate from this admission segment.

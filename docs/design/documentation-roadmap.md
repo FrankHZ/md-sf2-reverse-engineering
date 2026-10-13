@@ -149,58 +149,59 @@ continues through separate castle admission, Peter accompanying the party while 
 membership/AI and distinct following, the gift discrepancy and conditional town control.
 Its caller, actor, service and natural-route limits remain applicable.
 
-The current reader outcome explains leaving New Granseal, the selected east-then-south overworld
-connections, conditional Battle09 admission and its empty opening. Distinct scrolling/ordinary
-entry consumers, partial request lineage and ordered battle/intro predicates require Standard rigor
-for this bounded design segment. Follow the
+[New Granseal departure through Battle09 admission](synthesis/new-granseal-departure-through-battle09.md)
+continues through selected overworld connections, distinct scrolling/ordinary entry, partial reload
+and empty before/start scripts. Its request, service and natural-route limits remain applicable.
+
+The current reader outcome explains Battle09's variable return, the separate Ribble connection,
+initial suspicion, Peter's explanation and the changed village through conditional restored control.
+Independent flags, asynchronous actors and separate population/block/roof consumers require Standard
+rigor for this bounded segment. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[New Granseal departure through Battle09 admission](synthesis/new-granseal-departure-through-battle09.md),
-scoped by [#755](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/755). It consumes the
-[accepted static investigation](../research/new-granseal-departure-through-battle09.md) from
-[PR #754](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/754) and the accepted
-castle-audience predecessor. Organize around
-player meaning with compact provenance, not a transcript or duplicate technical ledger. This
-supports content/design planning, not a new remake capability.
+[Battle09 outcomes through Ribble's welcome](synthesis/battle09-outcomes-through-ribble-welcome.md),
+scoped by [#759](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/759). It consumes the
+[accepted static investigation](../research/battle09-outcomes-through-ribble-welcome.md) from
+[PR #758](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/758) and the accepted
+Battle09-admission predecessor. Organize around player meaning with compact provenance, not a
+transcript or duplicate technical ledger. This supports content/design planning, not a continuous
+playthrough or new remake capability.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- The Map6 south exit requests ordinary Map73 entry. Carried F700/F508/F705 select scene-free init;
-  other history selects earlier voyage/construction content. Peter's F7 membership, conditional F39
-  active status, AI bit and F67 map follower remain separate, with other supplied flags/followers explicit.
-- Selected Map73→72→69 borders scroll within exploration, retain the cohort and omit ordinary
-  init, temporary-flag clearing, healing and battle selection. Map72's separate fixed south connection
-  reaches `MainLoop` and selects a battle before ordinary Map69 init. Neither route is exclusive or
-  naturally proved, and Map72 zone/random/cannon selectors can interrupt attempted travel.
-- Map69 specific X23–25 zones call the Battle17 helper and do not fall through to the default.
-  F509-clear default sets F409 and writes a partial reload; F509-set default returns without writes.
-  Remaining coordinate/facing bytes retain their producer lineage, with mutable-slot overwrite and
-  service/actor/request survival limits. Story context adds no extra handler predicate.
-- Map69 selects 9 before 17 using unlock/wildcard triggers, not area bounds. F409/F509 set clears
-  F409 while still returning 9 in that call; the helper's requested encounter is not direct admission.
-- Both Battle09 opening targets are empty. The shared intro wrappers still test F459, and start
-  sets it before dispatch when clear. F459-set skipping retains new-battle preparation; F88 resume
-  is separate. Empty content does not prove immediate service completion, a roster or ready input.
+- Victory uses a battle-derived Map69 position; defeat/escape use carried egress state. Empty
+  end/after scripts do not force Ribble entry; the shared after tail joins Bowie, not May or Peter.
+- A separate ordinary Map69→8 request enters Ribble. Default/F708 setup, F8-dependent May hiding,
+  follower allocation and Peter's membership/active/AI/current-follow state remain distinct.
+- F703 is reused and does not gate the accusation. F258 suppresses it within one ordinary entry;
+  F708 suppresses both scenes. The mayor checks neither F703 nor F258, so narrative order is not
+  enforced by its local gate. Source zone rows do not prove natural movement/activation.
+- The mayor script explicitly reloads the fourteen-row population before caller F708, without
+  ordinary map init or F8 hiding. Immediate block copies precede F709's later-load reconstruction.
+  `j_csub_40F2` conditionally restores a saved roof rectangle; it is not the door-unlock mechanism.
+- Named actor waits do not join every launched action. Supplied/missing/dead mappings, the current
+  Peter-follow HP guard, roof-cache identity and pending/service/control conditions remain explicit.
 
 Only the new guide, preceding guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #755. Stop at the
-Battle09 start-dispatcher return before `ActivateEnemies`. Battle09 combat/outcomes, Ribble content,
-other routes/later scenes, new fixtures/parsers/platforms, data acquisition/generation/copy, source
-re-investigation, engine/UI work and Chinese synchronization are outside scope. Do not consume
-unmerged successor research. Natural travel/zone reach, reachable flags/follower/party history,
-completed actors/services, pending and retained-byte survival, battle readiness and persistence
-remain **Unknown**.
-This guide completes neither the
-[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
+this current agreement and one English documentation-index entry are owned by #759. Stop after the
+mayor caller and first conditional restored control. May recruitment, other NPC/service/treasure
+content, shrine/raft and onward travel, source re-investigation, new fixtures/parsers/platforms,
+data acquisition/generation/copy, runtime observation, engine/UI work and Chinese synchronization
+are outside scope. Do not consume unmerged successor research. Natural travel/zone reach, reachable
+flags/follower/party history, actor and service completion, roof-cache identity, pending survival,
+visible village changes, usable input and save persistence remain **Unknown**. This guide completes
+neither the [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
+nor the campaign.
 
-Accepted research and bounded in-memory tracked-fixture selections suffice. No acquisition, source
-investigation, derived payload generation/copy, runtime observation or new machinery is needed.
-Unexpected broad dependencies, evidence conflicts or product choices stop affected expansion for
-replanning; a missing natural observation remains **Unknown**.
+Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived
+payloads need not exist and must not be generated/copied for this segment. No acquisition, source
+investigation, runtime observation or new machinery is needed. Unexpected broad dependencies,
+evidence conflicts or product choices stop affected expansion for replanning; a missing natural
+observation remains **Unknown**.
 
 Read the complete explanation and diff, check changed links/fragments, exact paths/private boundary
 and `git diff --check`, then inspect the clean committed-head verification plan and actual final-head

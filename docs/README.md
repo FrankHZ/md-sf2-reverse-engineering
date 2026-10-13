@@ -162,6 +162,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   conditional audience, Peter's join/AI and following, gift discrepancy and town return; caller and control limits.
 - [`new-granseal-departure-through-battle09.md`](./design/synthesis/new-granseal-departure-through-battle09.md) —
   selected overworld connections, scrolling/ordinary entry, partial reload and empty Battle09 opening; request and readiness limits.
+- [`battle09-outcomes-through-ribble-welcome.md`](./design/synthesis/battle09-outcomes-through-ribble-welcome.md) —
+  variable return, separate town entry, suspicion and Peter's reconciliation; reload, roof and conditional-control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

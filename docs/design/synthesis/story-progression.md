@@ -135,6 +135,12 @@ reach ordered battle selection. Specific/default zones, carried request bytes an
 remain distinct. It stops at the empty start-dispatcher return before enemy activation, with natural
 travel, actor/request survival, service completion and battle readiness Unknown.
 
+[Battle09 outcomes through Ribble's welcome](battle09-outcomes-through-ribble-welcome.md) continues
+through variable battle returns, separate town entry, suspicion and Peter's explanation. Independent
+welcome gates and distinct resident reload, door reconstruction, roof restoration and current follow
+effects remain explicit. It stops after the mayor caller and first conditional restored control,
+with natural travel, actor/service completion, pending and visible village changes Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
