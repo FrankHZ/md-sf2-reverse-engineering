@@ -148,6 +148,13 @@ and a partial zone request reaches ordered Battle10/14 admission. It stops at th
 start-dispatcher return before ActivateEnemies, with actor/party, request, service, cross-save
 presentation and natural-route limits explicit.
 
+[Battle10 outcomes through the optional East Shrine visit](battle10-outcomes-through-east-shrine-visit.md)
+continues with variable battle return, separate shrine entry, mistaken identity, the grandfather's
+account and invitation. Independent persistent/temporary gates permit different interaction orders;
+current 129 following differs from the F77 rebuild under 30. It stops after the old-man caller and
+first conditional control handoff, retaining mapping, service, save/reentry and natural-route limits.
+This optional branch does not establish a mandatory Battle11 route.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
