@@ -154,6 +154,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   plank choices, entry alternatives, timber/rescue scene and conditional Battle08 before/start handoff.
 - [`battle08-outcomes-through-new-granseal-handoff.md`](./design/synthesis/battle08-outcomes-through-new-granseal-handoff.md) —
   first/repeat outcomes, worker recovery, conditional construction and outgoing castle handoff; caller and service limits.
+- [`new-granseal-castle-year-later-control.md`](./design/synthesis/new-granseal-castle-year-later-control.md) —
+  first/repeat castle init, year-later address, dismissal and conditional control; setup, actor and service limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

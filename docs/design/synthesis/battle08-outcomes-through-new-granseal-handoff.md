@@ -12,7 +12,8 @@ Read this after [Damaged-ship plank choices through Battle08 admission](damaged-
 The accepted [research owner](../../research/battle08-outcomes-through-new-granseal-handoff.md)
 supplies the pinned-source, dialogue, action and caller review. This guide supports content/design
 planning and stops after the conditional outgoing Map7 admission, **before destination initialization**.
-The castle's year-later scene and later town/campaign content belong to subsequent research. It adds
+Continue with [New Granseal castle: the year-later address and first control handoff](new-granseal-castle-year-later-control.md)
+for destination initialization; later town/campaign content remains separately scoped. It adds
 no playable remake capability. The [roadmap](../documentation-roadmap.md#current-baseline-and-near-term-synthesis)
 owns the Standard-rigor agreement for [#739](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/739).
 

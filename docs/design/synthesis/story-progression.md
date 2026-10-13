@@ -110,6 +110,12 @@ Map73 construction and its outgoing request. BattleLoop's direct return-field re
 exploration pending consumption; F705 is written by the init caller after the script. Actor/follower,
 reset, service and natural-route limits remain explicit. It stops before Map7 destination init.
 
+[New Granseal castle: the year-later address and first control handoff](new-granseal-castle-year-later-control.md)
+continues through setup priority, first/repeat init, rebuilding/trade speeches, dismissal and the
+explicit ordinary-population reload. Caller F707/F411 writes precede the first pending/control
+read; same-map display loads, actor mapping and named/unjoined waits retain their limits. It stops
+at that read without claiming natural arrival, completed services or actual usable control.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
