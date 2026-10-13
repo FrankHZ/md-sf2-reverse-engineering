@@ -81,6 +81,11 @@ effects. The return request precedes script/caller completion; void Map58 setup 
 before conditional control restoration. F999, conflicting follower flags, natural service completion
 and onward walking remain explicit limits; the guide stops at the immediate Map58 outgoing owner.
 
+[Post-tower return through earthquake-town entry](post-tower-return-through-earthquake-entry.md) continues
+through selected tower/castle exits, independent Astral dialogues, earthquake-map substitution and
+first/repeat town initialization. It stops at the conditional control/event read; legal walking,
+caller/follower state and natural service completion remain Unknown, with later evacuation separate.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

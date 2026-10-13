@@ -187,6 +187,10 @@ layout, occupancy and followers. Arrival on Map60, castle/town evacuation and Ba
 own accepted evidence before synthesis continues. The independent subsequent research is not a
 dependency consumed by this guide.
 
+Continue with [Post-tower return through earthquake-town entry](post-tower-return-through-earthquake-entry.md)
+for the accepted conditional tower/castle requests, earthquake-town selection and first/repeat init
+through its post-init control/event boundary.
+
 ## Evidence Review and Remaining Limits
 
 The pre-synthesis review inspected the accepted #716 research, preceding guide and research,
