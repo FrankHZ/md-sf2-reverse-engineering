@@ -246,6 +246,10 @@ and [selected Battle03 dependencies](../../research/battle02-to-battle03-content
 own the F453 and Egress conditions. The shared controller's Battle01 evidence does not prove an
 initialized Battle03 party, activation or first turn.
 
+Continue with [Battle 03 outcome through Battle 04 admission](battle03-outcome-through-battle04.md)
+for the conditional return, Hawel-house scene, Kazin recruitment and separate exit/admission path.
+It retains natural-route and follower-state Unknowns without extending remake support.
+
 ## Evidence Review and Remaining Limits
 
 This synthesis reviewed the accepted investigation's pinned-source bindings, the preceding guide and

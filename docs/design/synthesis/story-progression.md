@@ -55,6 +55,11 @@ outcome/return, conditional Yeel/Kazin guidance and the separate Map66 zone requ
 Following is distinct from recruitment; Yeel is not a demonstrated encounter prerequisite. This
 segment also retains static/natural and original/remake boundaries.
 
+[Battle 03 outcome through Battle 04 admission](battle03-outcome-through-battle04.md) continues
+through the conditional return, Hawel-house initialization, Kazin recruitment and separate exit
+request/encounter selector. House default versus repeat setup and joined/follower/unlock state remain
+distinct; natural walking, caller/presentation/persistence and initialized Battle04 remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
