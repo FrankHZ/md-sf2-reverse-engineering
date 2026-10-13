@@ -65,6 +65,11 @@ victory/special-defeat/escape distinctions, Galam prison/castle content, Slade f
 conditional unlock/request. It stops at before/start and preserves natural walking, actor/reentry and
 active-party Unknowns; source branches do not establish a forced loss or a continuous walkthrough.
 
+[Battle05 outcomes through Battle06 admission](battle05-outcomes-through-battle06.md) continues
+with the separate position/HP consumer, first-completion jewel scene and Slade join, Galam exits and
+conditional row-6 selection/before/start. F407 is written at entry, rather than completion or a proved
+Battle07 route; walking, caller/party/reentry and presentation remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

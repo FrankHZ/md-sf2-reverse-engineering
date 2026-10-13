@@ -243,3 +243,7 @@ retains the missing relations and discriminating controls. The
 [roadmap](../documentation-roadmap.md#current-baseline-and-near-term-synthesis) owns future scope;
 [Story Progression](story-progression.md) supplies the wider state framework. Stop here before
 Battle05 resolution; no later unmerged research is consumed.
+
+Continue with [Battle05 outcomes through Battle06 admission](battle05-outcomes-through-battle06.md)
+for the position/HP consumer, explicit Slade recruitment, Galam exits and conditional before/start.
+The continuation retains outcome, follower/party and natural-route limits.
