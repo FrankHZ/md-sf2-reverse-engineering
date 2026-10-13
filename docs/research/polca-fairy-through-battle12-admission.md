@@ -16,9 +16,10 @@ This is the Standard-rigor agreement for
 [Issue #776](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/776), under
 [the content epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Interaction routing, asynchronous entity services, pending requests and battle admission
-cross existing owners and require explicit boundaries. This document is the sole
-tracked change; no shared index, registry, schema, fixture, parser, design, engine, UI
-or translation edit. Consume accepted [Polca arrival](./battle11-outcomes-through-polca-arrival.md),
+cross existing owners and require explicit boundaries. This document is the primary
+tracked owner; the only additional change corrects the reload coordinate divisor in
+`battle11-outcomes-through-polca-arrival.md`. No shared index, registry, schema,
+fixture, parser, design, engine, UI or translation edit. Consume accepted [Polca arrival](./battle11-outcomes-through-polca-arrival.md),
 [request consumption](./map-event-request-consumption.md),
 [common scripting](./common-scripting.md), [battle cutscenes](./battle-cutscenes.md)
 and [battle loop](./battle-loop.md). Starting accepted base is

@@ -274,9 +274,15 @@ If Peter's mapping is absent, the resolver can select main for both operands. Th
 covers the high-byte guard at its controlled seam, not this Polca scene composition.
 
 Record 82 `csc44_reloadEntities` immediately disables entity-update VInts, samples
-main's current X/Y divided by 24 and facing, reads the **explicit**
-`ms_map13_flag710_Entities` pointer and calls `InitializeMapEntities`, then reenables
-those VInts. It does not query setup flags, call map init, heal/reset temporary flags,
+main's current X/Y as tile indices using `divu.w #MAP_TILE_SIZE` (384), plus facing,
+reads the **explicit** `ms_map13_flag710_Entities` pointer and calls
+`InitializeMapEntities`, then reenables those VInts. The divisor uses internal
+1/16-pixel coordinate units: `sf2enums.asm` defines `MAP_TILE_SIZE=384` and
+`NIBBLE_SHIFT_COUNT=4`; `entityscriptengine_1.asm:VInt_UpdateSprites` arithmetic-shifts
+entity-relative X/Y by four bits before writing sprite coordinates. Thus one tile
+spans 384 internal units, corresponding to 24 pixels. `InitializeMapEntities`
+multiplies the sampled tile indices by `MAP_TILE_SIZE` to rebuild internal positions.
+The reload does not query setup flags, call map init, heal/reset temporary flags,
 or call the separate `LoadEntityMapsprites` service used by `loadMapEntities`.
 `ClearEntities` clears entity/action state and mappings and resets walking allocation;
 followers and the explicit list are rebuilt, and main is declared idle at the sampled
