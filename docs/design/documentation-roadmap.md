@@ -153,49 +153,54 @@ Its caller, actor, service and natural-route limits remain applicable.
 continues through selected overworld connections, distinct scrolling/ordinary entry, partial reload
 and empty before/start scripts. Its request, service and natural-route limits remain applicable.
 
-The current reader outcome explains Battle09's variable return, the separate Ribble connection,
-initial suspicion, Peter's explanation and the changed village through conditional restored control.
-Independent flags, asynchronous actors and separate population/block/roof consumers require Standard
-rigor for this bounded segment. Follow the
-[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+[Battle09 outcomes through Ribble's welcome](synthesis/battle09-outcomes-through-ribble-welcome.md)
+continues through variable return, separate town entry, suspicion, Peter's explanation and conditional
+restored control. Its independent flags, population/block/roof consumers and natural-route limits
+remain applicable.
+
+The current reader outcome explains optional May recruitment, current following versus party state,
+travel advice, leaving Ribble and conditional Battle10 admission. Interactions, entity lifetimes and
+ordered deferred admission cross existing owners, so this bounded segment retains **Standard** rigor.
+Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Battle09 outcomes through Ribble's welcome](synthesis/battle09-outcomes-through-ribble-welcome.md),
-scoped by [#759](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/759). It consumes the
-[accepted static investigation](../research/battle09-outcomes-through-ribble-welcome.md) from
-[PR #758](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/758) and the accepted
-Battle09-admission predecessor. Organize around player meaning with compact provenance, not a
-transcript or duplicate technical ledger. This supports content/design planning, not a continuous
+[Ribble's optional May recruitment through Battle10 admission](synthesis/ribble-may-through-battle10-admission.md),
+scoped by [#763](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/763). It consumes the
+[accepted static investigation](../research/ribble-may-through-battle10-admission.md) from
+[PR #761](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/761) and the accepted welcome guide
+from [PR #762](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/762). Organize around optional
+interaction, joining, advice, departure and admission, with compact provenance rather than a transcript
+or duplicate technical ledger. This supports readable content/design planning, not a continuous
 playthrough or new remake capability.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- Victory uses a battle-derived Map69 position; defeat/escape use carried egress state. Empty
-  end/after scripts do not force Ribble entry; the shared after tail joins Bowie, not May or Peter.
-- A separate ordinary Map69→8 request enters Ribble. Default/F708 setup, F8-dependent May hiding,
-  follower allocation and Peter's membership/active/AI/current-follow state remain distinct.
-- F703 is reused and does not gate the accusation. F258 suppresses it within one ordinary entry;
-  F708 suppresses both scenes. The mayor checks neither F703 nor F258, so narrative order is not
-  enforced by its local gate. Source zone rows do not prove natural movement/activation.
-- The mayor script explicitly reloads the fourteen-row population before caller F708, without
-  ordinary map init or F8 hiding. Immediate block copies precede F709's later-load reconstruction.
-  `j_csub_40F2` conditionally restores a saved roof rectangle; it is not the door-unlock mechanism.
-- Named actor waits do not join every launched action. Supplied/missing/dead mappings, the current
-  Peter-follow HP guard, roof-cache identity and pending/service/control conditions remain explicit.
+- Recruitment is optional because selected travel/admission gates do not require it; the invitation
+  script itself has no yes/no branch. Entity-event facing control is not an approach-direction test.
+- F8 membership, F40/capacity/list timing, existing AI and actual current follower-tail selection are
+  separate. No persistent May follower flag is written. Current following, ordinary rebuild, explicit
+  reload without init and later F8-dependent hiding retain their different lifetimes; cross-save
+  presentation is not observed.
+- Directions have two speakers but one caller: event135 runs the script, event134 opens the weapon
+  shop. Dialogue is context, not map/path or recruitment-gate evidence.
+- Map8→69 uses ordinary entry and potential inherited battle interruptions; Map69→70 scrolls without
+  ordinary init or CheckBattle. Specific/default zones, partial reload parameters and ordered rows
+  10/14 remain distinct. F410/F510 both set still returns Battle10 on that selector call.
+- Empty Battle10 openings still use F460 and the interpreter tail. F88 resume and actual active/living
+  deployment remain separate; twelve authored placement records do not require twelve party members.
 
 Only the new guide, preceding guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #759. Stop after the
-mayor caller and first conditional restored control. May recruitment, other NPC/service/treasure
-content, shrine/raft and onward travel, source re-investigation, new fixtures/parsers/platforms,
-data acquisition/generation/copy, runtime observation, engine/UI work and Chinese synchronization
-are outside scope. Do not consume unmerged successor research. Natural travel/zone reach, reachable
-flags/follower/party history, actor and service completion, roof-cache identity, pending survival,
-visible village changes, usable input and save persistence remain **Unknown**. This guide completes
-neither the [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-nor the campaign.
+this current agreement and one English documentation-index entry are owned by #763. Stop at Battle10's
+start-dispatcher return before ActivateEnemies. Combat/outcomes, East Shrine/cave, other town content,
+source re-investigation, new fixtures/parsers/platforms, data acquisition/generation/copy, runtime
+observation, new engine/product choices and Chinese synchronization are outside scope. Do not consume
+unmerged successor research. Legal walking, activated actors/mappings, actual HP/party/AI/follower
+state, service completion, pending/parameter survival, cross-save follower presentation/capacity and
+continuous playability remain **Unknown**. This guide completes neither the
+[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived
 payloads need not exist and must not be generated/copied for this segment. No acquisition, source

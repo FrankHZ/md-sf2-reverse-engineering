@@ -141,6 +141,13 @@ welcome gates and distinct resident reload, door reconstruction, roof restoratio
 effects remain explicit. It stops after the mayor caller and first conditional restored control,
 with natural travel, actor/service completion, pending and visible village changes Unknown.
 
+[Ribble's optional May recruitment through Battle10 admission](ribble-may-through-battle10-admission.md)
+continues with the linear invitation, distinct joined/active/current-follow state, directions and
+selected departure. Ordinary entry rebuilds entities; the east scroll bypasses battle selection,
+and a partial zone request reaches ordered Battle10/14 admission. It stops at the empty
+start-dispatcher return before ActivateEnemies, with actor/party, request, service, cross-save
+presentation and natural-route limits explicit.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
