@@ -131,56 +131,56 @@ actor/follower and service/pending limits.
 continues through plank/rescue choices, caller departure writes, Map72 selection and before/start
 handoffs, retaining entry, actor, pending and suspended-route limits.
 
-The current reader outcome explains Battle08's first/repeat victory and defeat/escape returns,
-worker recovery and the blocked tunnel, return to the ship, construction and the outgoing New
-Granseal castle handoff. Two distinct return consumers and progress-flag selection require Standard
-rigor for this bounded design segment. Follow the
+[Battle08 outcomes through the New Granseal castle handoff](synthesis/battle08-outcomes-through-new-granseal-handoff.md)
+continues through first/repeat outcomes, worker recovery, conditional construction and the outgoing
+castle admission. It retains the separate battle/exploration consumers and stops before Map7 init.
+
+The current reader outcome explains New Granseal castle arrival, the year-later assembly,
+rebuilding/trade address, dismissal, ordinary population replacement and conditional control.
+Setup priority, shared init gating and caller/control ordering require Standard rigor for this
+bounded design segment. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Battle08 outcomes through the New Granseal castle handoff](synthesis/battle08-outcomes-through-new-granseal-handoff.md),
-scoped by [#739](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/739). It consumes the
-[accepted static investigation](../research/battle08-outcomes-through-new-granseal-handoff.md) from
-[PR #738](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/738), accepted predecessors and
-the plank/admission guide. Organize by player meaning and coherent state transitions, with compact
-provenance rather than transcripts or a duplicated ledger. This supports design/content planning,
-not a new remake capability.
+[New Granseal castle: the year-later address and first control handoff](synthesis/new-granseal-castle-year-later-control.md),
+scoped by [#743](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/743). It consumes the
+[accepted static investigation](../research/new-granseal-castle-year-later-control.md) from
+[PR #741](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/741) and the accepted Battle08
+predecessor. Organize by player meaning with compact provenance, not a transcript or duplicate
+technical ledger. This supports content/design planning, not a new remake capability.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- Battle08's row selection supplies no leader-only victory or position override. F508-clear victory
-  runs the after scene; repeat victory keeps its Map72 seed. Both use the shared Bowie join, clear
-  F408 and set F508. Defeat/escape use supplied EGRESS_MAP and create no completion. F458 and F88
-  remain separate intro/suspension inputs.
-- Worker recovery and blocked-tunnel/treasure statements are scene content, not healing, recruitment,
-  tunnel traversal or collision proof. Fixed actors, resolved references, F6 selection and zero-HP
-  ally guards do not establish live party or follower state.
-- The after-scene warp fields are consumed directly by BattleLoop, then SwitchMap enters exploration
-  without CheckBattle. Map73 entry clears temporary flags 256-383, leaving the relevant progress
-  flags intact; its F700/F508/F705 selector can choose voyage, construction or no scene.
-- Construction uses transient follow actions, actor reconstruction and working-map block copies.
-  Init replaces follow scripts; ship relocation implies no deletion/death. Each positive setDest
-  awaits its named actor before relocation, not a global barrier. Full-force reset covers indices
-  0-29 without joined/active/alive filters and changes no party membership.
-- The construction script resets stats and requests Map7 before returning; the init caller then
-  sets F705. Ordinary exploration consumes the surviving shared pending slot and runs SwitchMap /
-  CheckBattle. An overwritten request can leave F705 set without castle arrival.
+- Map7 setup scans default, F701, F702 and F805 in order; last set flag wins. All variants share
+  the same init. Population/setup history is independent of F707's scene gate.
+- F707 clear assigns town egress 6 before `cs_55832`; only normal return lets the caller set F707
+  then F411. F707 set skips the scene without repairing F411 or egress. Neither path requests an
+  immediate Battle11 encounter.
+- The year-later narration and rebuilding/trade speeches convey content, not measured elapsed time
+  or new trading/alliance mechanics. Same-map camera/display loads do not rerun init, clear story
+  state, rebuild entities or install control.
+- Fixed cast declarations differ from actual ally/follower mappings. Action/init waits have no
+  dead-ally filter and join only the named entity; dismissal has unjoined departures and no global
+  completion barrier before replacement.
+- Command 76 reloads explicit `ms_map7_Entities` while preserving the main tuple; it does not
+  reselect setup or clear unusual F701/F805 history. The ordinary population can therefore differ
+  from the later selected interaction setup.
+- Normally completing F707-clear staging yields source-derived `(11,7)`, Up; F707-set entry retains
+  `(11,10)`, Up under the stated mapping/service assumptions. First post-init pending/control
+  selection depends on the shared word and supplied player type; actual usable control is unobserved.
 
 Only the new guide, preceding guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #739. Stop after the
-conditional unchanged Map7 `(11,10)`, Up admission, before destination initialization. The castle's
-year-later scene, later town/campaign, traversal/layout acquisition, new fixtures/parsers/platforms,
-engine/UI work and Chinese synchronization are outside scope. Natural outcomes/arrival, live actor/
-follower state, independent services/presentation/timing, request survival/control readiness and
-persistence remain **Unknown**. The separate
-[castle year-later research](../research/new-granseal-castle-year-later-control.md) from
-[#740](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/740) /
-[PR #741](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/741) is accepted; its next
-synthesis is not yet delivered and its conclusions do not expand this guide.
-This guide completes neither the
+this current agreement and one English documentation-index entry are owned by #743. Stop at the
+first post-init pending/control read. Subsequent Peter content, town exploration and battles,
+new fixtures/parsers/platforms, data acquisition/generation/copy, source re-investigation,
+engine/UI work and Chinese synchronization are outside scope. Concurrent
+[#744](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/744) research is independent;
+its unaccepted conclusions are not consumed. Natural arrival, reachable setup/follower history,
+completed movement/services, pending survival, actual usable control and persistence remain
+**Unknown**. This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. No acquisition, source
