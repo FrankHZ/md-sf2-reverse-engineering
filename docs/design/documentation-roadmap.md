@@ -96,39 +96,44 @@ reviewers.
 [Opening through Battle 01](synthesis/opening-through-battle01.md) explains the selected opening,
 castle/tower, encounter and usable return;
 [Battle 01 return through Battle 02 admission](synthesis/battle01-return-through-battle02.md) continues
-through castle return, exorcism/commission, Jaha and conditional admission. These accepted outcomes
-retain their evidence and natural-route limits. The current reader outcome extends the content route
-through Battle02 outcome/return, the conditional Yeel/Kazin guidance branch and source Battle03
-admission. Several evidence owners and shared navigation must agree, requiring adversarial evidence
+through castle return, exorcism/commission, Jaha and conditional admission.
+[Battle 02 outcome through Battle 03 admission](synthesis/battle02-outcome-through-battle03.md)
+continues through conditional Yeel/Kazin guidance and the separate zone request. These accepted
+outcomes retain their evidence and natural-route limits. The current reader outcome extends the route
+through Battle03 return, Hawel-house content and conditional source Battle04 admission.
+Several evidence owners and shared navigation must agree, requiring adversarial evidence
 review and independent content review within a bounded documentation task. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the agreement.
 
 The current segment owner is
-[Battle 02 outcome through Battle 03 admission](synthesis/battle02-outcome-through-battle03.md), scoped
-by [#699](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/699). It consumes the
-[accepted static investigation](../research/battle02-to-battle03-content-route.md) and preceding guide.
-Explain meaningful content phases, connecting outcome/return, map/setup/warp, people and local
-interactions, following versus recruitment, unlock/request/consumer order and encounter entry data.
-Yeel/Kazin content remains conditional, not a demonstrated admission prerequisite. Short grounded
-summaries and selected dependencies suffice; no transcript, full layout or roster is needed.
+[Battle 03 outcome through Battle 04 admission](synthesis/battle03-outcome-through-battle04.md), scoped
+by [#703](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/703). It consumes the
+[accepted static investigation](../research/battle03-to-battle04-content-route.md), accepted in
+[PR #702](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/702), and the preceding guide.
+Explain outcome/return, house setup/actor presence, grounded scene content, recruitment/following/unlock,
+post-return caller writes, the actual exit request, ordered selection and before/start dependencies.
+Short sourced summaries and selected dependencies suffice; no transcript, full layout or roster is needed.
 
 Acceptance requires a readable conditional segment with exact research/contract and fixture/verifier
 traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review selected payloads and
-consumer semantics: empty after-program still reaches JoinForce(0); return operands use final
-combatant/entity state; field entry does not immediately recheck battles; zone markers and specific-row
-precedence gate the default; F503 clear requests without RNG; retained request parameters are not a
-fresh position snapshot; earlier eligible rows and same-call completed returns remain possible.
-Kazin's following/F72 is distinct from joined F4 and battle-unlock F403. Battle03's EGRESS_MAP write
-is conditional on intro/new-battle branches and does not prove a Yeel visit. A concrete evidence
-conflict is reported to its owner and excluded from expanded conclusions rather than silently repaired.
+consumer semantics: empty Battle03 after-program still reaches JoinForce(0), and final caller state
+supplies return operands; F612 selects house repeat setup, while neither F503 nor F72 gates default
+init. Default entities omit Kazin and F72 supplies a follower-presence path; absence of its gate
+proves neither missing-follower choreography nor a mandatory Yeel visit. Sad join recruits ally 4/F4;
+following/F72 and setStoryFlag 4/F404 differ, and active-party activation is capacity-dependent.
+The earlier reload does not rerun init or request exit; F612/F650/EGRESS_MAP are caller writes after
+script return. The actual no-scroll exit supplies destination parameters, and earlier unlocked Map66
+rows can preempt row 4. Intro/suspension flags condition before/start content. A concrete evidence
+conflict stays with its owner and is excluded from expanded conclusions rather than silently repaired.
 
 Only the new segment guide, the preceding guide's next-segment navigation, Story Progression's reading
-navigation, this current agreement and one English documentation-index entry are owned by #699.
-Stop at Battle03 admission and selected entry dependencies; resolution and Hawel-house expansion are
-outside scope. Natural walking, caller state, exact return endpoint, initialized Battle03,
-presentation and persistence remain **Unknown**. No playable remake support is added. Consume accepted
-main only; concurrent downstream research is no dependency. Earlier accepted outcomes remain intact;
+navigation, this current agreement and one English documentation-index entry are owned by #703.
+Stop at Battle04 admission and selected entry dependencies; combat resolution and later story are
+outside scope. Natural walking, caller/follower state, presentation, persistence and initialized
+Battle04 remain **Unknown**. No playable remake support is added. Consume accepted main only;
+concurrent [#704](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/704) downstream research
+is no dependency. Earlier accepted outcomes remain intact;
 this segment does not complete the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) or the campaign.
 
