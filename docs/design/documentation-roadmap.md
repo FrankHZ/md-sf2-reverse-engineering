@@ -117,16 +117,20 @@ Use the stricter boundary when old queues or summaries describe earlier evidence
 historical verdicts. A concrete disagreement is reported to its evidence owner and excluded from
 expanded conclusions rather than silently corrected in Layer B.
 
-[#691](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/691) separately investigates
-Battle 01 return through Battle 02 admission and assesses existing fixtures and any bounded missing
-contract. The opening guide consumes accepted main only; neither task depends on the other's
-unmerged conclusions. A later segment waits for independently accepted evidence and separate scope.
+[#691](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/691)'s
+[accepted static investigation](../research/battle01-to-battle02-content-route.md) identifies conditional
+connections from Battle 01 return through Battle 02 admission and dispositions for existing rails
+and missing contracts. It preserves legal-walking and natural-continuity Unknowns. The opening guide
+consumes accepted main and stops at Battle 01 return; a later synthesis needs separate scope and
+must retain that investigation's evidence boundary.
 The opening segment does not complete the whole [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
 or establish a complete original campaign. Wider tactical, resource, roster and persistence revisions
 also require their own dispatch rather than becoming automatic work.
 
 Only the segment guide, its narrow Story Progression navigation/current-boundary reconciliation,
-this agreement and the English documentation navigation are owned by #690. No original research,
+this agreement and the English documentation navigation are owned by #690. Review also authorizes
+the single `BattleSpriteset01` hex-address transcription correction in
+[admission research](../research/map3-battle01-admission.md), with no other research change. No new original research,
 fixtures, schemas, parser, runtime capture, engine code, new content platform or comparator follows
 from this synthesis. Use existing small text artifacts; there is no bulk acquisition or derived
 database. If a proposed assertion needs a new original observation, retain it as **Unknown** and

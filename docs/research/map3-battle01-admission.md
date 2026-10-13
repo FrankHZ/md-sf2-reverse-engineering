@@ -58,7 +58,7 @@ before the empty map-script program.
 `LoadBattle` at `0x25610` / 153104 structurally loads `CURRENT_MAP`, then orders fade-out, Map 57
 tilesets, fade completion, VInt clear/wait, battle entity positioning, sprite initialization, map load,
 the second VInt wait, entity sprites, battle VInts, `BattleTerrain01`, music, and fade-in.
-`BattleSpriteset01` at `0x1B3282` / 1782498 joins the accepted spriteset owner through its address,
+`BattleSpriteset01` at `0x1B32E2` / 1782498 joins the accepted spriteset owner through its address,
 3/6/3/0 counts, nine-entry all-`STARTING` denominator, and structural digest. The complete
 region-cutscene table has no Battle 01 row.
 

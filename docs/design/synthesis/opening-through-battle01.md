@@ -2,7 +2,7 @@
 
 - Scope: an English content guide to the selected opening, castle/tower route, Battle 01 and usable
   field return, under [Issue #690](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/690).
-- Evidence baseline: accepted repository `56eef43667f84fd8afb21c5bc08a5c7425bd74d3`; original source
+- Evidence baseline: accepted repository `bda69671355cf8d60c15136b705fb842a76f6d16`; original source
   `ShiningForceCentral/SF2DISASM` at `c834c652b6862bc5679fd7f69a38a7093206efc6`, USA ROM SHA-256
   `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
 - Audience: readers following this story-content segment and authors locating its accepted evidence.
@@ -226,12 +226,19 @@ not a proof of every valid route or an observed dialogue scene in Map 40.
 this guide. It is row 1, the second record of the zero-based battle-map table; this is not a claim
 that an original UI displays “01.” Its map is 57, source `MAP_ANCIENT_TOWER_ENTRANCE`, while the
 battle label is `INSIDE_ANCIENT_TOWER`. The selected area is `(0,0,16,20)`, with wildcard trigger
-coordinates. `CheckBattle` requires F401 set and F501 clear; the completion flag uses the +100
-relation. Battle identity, map identity and source name remain distinct.
+coordinates. `CheckBattle` requires the F401 unlock gate for this row. After a match it writes the
+battle rectangle, then checks the +100 completion flag F501. The selected fresh-entry state has
+F501 clear; that scenario condition is not an additional rejection rule in the shared function.
+If F501 is set, the same call clears F401 and still returns index 1; a later call sees the changed
+unlock state. [Common map routing](../../research/common-maps.md#confirmed-map-routing) and the
+[accepted selector analysis](../../research/battle01-to-battle02-content-route.md#battle-02-data-and-admission-semantics)
+own the shared source semantics. Battle identity, map identity and source name remain distinct.
 
 For the new-battle clear-F88 branch, before program `bbcs_01` precedes loading and battle-start
-routing. Its cursor 2292, text commands with entity operand 135 and the later `ce_49694` scene
-entity load belong to the before program; script `loadMapFadeIn` is not another player warp. Start row 1 targets `ms_Empty`, with F451 checked/set before that empty
+routing. Within `bbcs_01`, cursor 2292 precedes `loadMapFadeIn`, then `loadMapEntities ce_49694`,
+then the subsequent text commands, including entity operand 135. The scene entity load therefore
+precedes those text commands; script `loadMapFadeIn` is not another player warp.
+Start row 1 targets `ms_Empty`, with F451 checked/set before that empty
 program. F90–F105 are cleared for the encounter. `LoadBattle` establishes Map 57, positions and
 loads battle entities/sprites, loads `BattleTerrain01`, selects music and completes its load/fade
 sequence. Detailed program/caller order remains in the
@@ -301,8 +308,9 @@ The accepted PR #504 terminal is nonresumable and contains neutral polls. A sepa
 PR #526 compatible acquisition observes one ordinary Down input and settled displacement to
 `(5,13)`. That closes its named input/effect boundary without changing the first terminal or proving
 what comes next in the campaign. Battle 02 admission is outside this segment; separately scoped
-[#691](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/691) investigates that relation,
-and its unmerged conclusions are not dependencies here.
+[#691](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/691) has an
+[accepted static route investigation](../../research/battle01-to-battle02-content-route.md). It retains
+conditional connections and natural-route Unknowns; this guide stops at Battle 01 return.
 
 **Confirmed accepted remake boundary:** the current composition accepts the continuous private
 Map 3 → Battle 01 victory → usable 5B return, with reached actual content use, completion,
@@ -340,18 +348,11 @@ The work adds no fixture, extraction, capture or new observation.
 | Original continuity and usable input | [final lineage](../../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness), acquisition source `9c3ea03ac5f5b467ee744f1ac624870da2408443`; [Down extension](../../research/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515); [continuous contract](../contracts/map3-battle01-continuous-scenario.md#exact-observed-endpoint) | Existing private records/18 verified parent pairs and owning read-only audit recipes establish bounded results. Early owner queues are retained historical boundaries, not new missing-milestone claims. |
 | Remake delivery | [accepted composition](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review) and [current readiness](map3-battle01-readiness.md#accepted-current-milestone) | Consume the accepted composition without relabeling historical reports, restarting comparisons or using remake results as original evidence. |
 
-One concrete prose discrepancy remains visible for owner follow-up: the
-[admission research](../../research/map3-battle01-admission.md#confirmed-static-findings) writes
-`BattleSpriteset01` as hex `0x1B3282` beside decimal `1782498`, while its fixture, verifier and the
-[spriteset fixture](../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json) use decimal
-`1782498` (`0x1B32E2`). The placement owner agrees with the latter. This guide does not publish an
-address conclusion from the conflicting prose or edit Layer A; main-gate receives the exact mismatch
-for the research owner. The counts/identity used above agree across those executable owners.
-
-The other adversarial checks found boundary differences rather than competing results: R1 handoff
+The adversarial checks preserve boundary differences: R1 handoff
 versus raw coordinates and incomplete slots; source graph versus later original continuity;
 R2d seeded versus natural first actor; script return versus caller flag write; text ID versus
-unshimmed delivery; 80 static operations versus 67 reached pairs; and independent composition versus
+unshimmed delivery; fresh-entry assumptions versus the shared selector completion branch;
+80 static operations versus 67 reached pairs; and independent composition versus
 retained false milestone fields. Each uses the stricter named boundary above. Wider plot meaning,
 unobserved alternatives, speaker/presentation joins, persistence and the next encounter remain
 **Unknown**, with no automatic research or implementation dispatch.
