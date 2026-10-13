@@ -236,3 +236,7 @@ create an automatic runtime-acquisition queue.
 
 This guide completes neither campaign chronology nor epic #514. Chinese synchronization remains
 deferred under the roadmap; later audiences and routes require their own accepted evidence.
+
+Continue with [Peter's castle audience and the return to town](peter-castle-audience-through-town-return.md)
+for the separate audience predicate, Peter's joining/following, the narrated gift and the conditional
+town re-entry pending/control boundary.

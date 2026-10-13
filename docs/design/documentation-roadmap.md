@@ -139,51 +139,56 @@ castle admission. It retains the separate battle/exploration consumers and stops
 continues through setup priority, the rebuilding/trade address, dismissal, ordinary population
 replacement and conditional control. It retains actor, service and natural-route limits.
 
-The current reader outcome explains conditional castle departure into New Granseal town, the
-sailor/guard introduction, Peter's reception and the first post-event control read. Independent
-zone predicates, population/init priority and caller/control ordering require Standard rigor for
-this bounded design segment. Follow the
+[New Granseal town: Peter's first introduction](synthesis/new-granseal-town-through-peter-introduction.md)
+continues through conditional castle departure, town setup/init, independent sailor/guard and Peter
+zones, hiding and the first post-event pending/control read. Its own natural-route and service
+limits remain applicable.
+
+The current reader outcome explains the separate castle return and audience, Peter accompanying
+the party while Astral stays, the narrated gift, departure and conditional destination control.
+Membership/AI, temporary versus persistent followers, the gift discrepancy and request/caller order
+require Standard rigor for this bounded design segment. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[New Granseal town: Peter's first introduction](synthesis/new-granseal-town-through-peter-introduction.md),
-scoped by [#747](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/747). It consumes the
-[accepted static investigation](../research/new-granseal-town-through-peter-introduction.md) from
-[PR #746](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/746) and the accepted castle
-predecessor. Organize by player meaning with compact provenance, not a transcript or duplicate
-technical ledger. This supports content/design planning, not a new remake capability.
+[Peter's castle audience and the return to town](synthesis/peter-castle-audience-through-town-return.md),
+scoped by [#751](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/751). It consumes the
+[accepted static investigation](../research/peter-castle-audience-through-town-return.md) from
+[PR #749](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/749) and the accepted
+[#747 predecessor](synthesis/new-granseal-town-through-peter-introduction.md). Organize around
+player meaning with compact provenance, not a transcript or duplicate technical ledger. This
+supports content/design planning, not a new remake capability.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- The conditional castle south exit requests Map6 `(11,1)`, Down; matching a warp row and ordinary
-  admission do not prove natural walking. Carried F707/F411/egress do not gate either early event.
-- Town setup selects F702 over F701; shared init tests F802 before F706. Default scene declarations
-  differ from later populations and from actual ally/follower mappings.
-- F706-clear introduction and F701-clear Peter event are independent. The second has no F706
-  prerequisite; each caller writes its flag after normal script return. Neither caller enforces
-  an appropriate population or actual actor/service completion.
-- First-event guard movement's conditional `(14,25)`, Right differs from re-entry init's
-  `(15,23)`, Down. Named waits do not join earlier unawaited actions; action/init handlers differ
-  from position/facing's dead-ally skip.
-- Hiding removes mappings and a current follower entry without changing recruitment, HP or
-  persistent follower flags. Peter's invitation/departure does not establish castle arrival.
-- F701 does not immediately reload the population. The first post-event pending read selects
-  control conditionally, with no second init/heal/clear; actual usable input remains unobserved.
+- Conditional town north exit requests Map7 `(11,22)`, Up; warp/zone rows do not prove natural
+  walking. Map7 setup order default/F701/F702/F805 and shared F707 init can change the cast without
+  suppressing the early audience. Missing actors and supplied followers remain explicit.
+- Early audience tests F802 clear, F701 set and F702 clear, separately from setup/F707/F706,
+  membership and actor presence. Later F802/F805 selection is only a control, not a new scene scope.
+- Nonzero `joinForceAI` sets only the AI bit in the old activation word, joins, rebuilds lists,
+  checks capacity and conditionally activates before storing the ORed word. Normal later `{LEADER}`
+  processing rebuilds lists again; debug skipping can bypass that rebuild. Temporary `followEntity`
+  scripts and caller F67's destination follower selection remain independent from membership/AI.
+- Astral staying behind is narrative meaning, not a dismissal or clearing of supplied followers.
+  Named waits do not join other unawaited actions or prove completed actor/presentation services.
+- Text advertises 100 gold, but the accepted script/text/caller chain supplies no effective award.
+  Observed retail balance, authorial intent and remake treatment remain Unknown; no fix is chosen.
+- The Map6 request precedes script return and caller F702 then F67; consumption is conditional on
+  pending survival. F702 selects the town population, F67 selects Peter, and F802/F706 init alternatives
+  precede the first destination pending/control read. Actual usable control remains unobserved.
 
 Only the new guide, preceding guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #747. Stop at the
-first post-`cs_54F26`/caller-F701 pending/control read. The castle audience, later town services and routes,
-new fixtures/parsers/platforms, data acquisition/generation/copy, source re-investigation,
-engine/UI work and Chinese synchronization are outside scope. The
-[next audience/return research](../research/peter-castle-audience-through-town-return.md) is accepted
-through [PR #749](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/749); its separate synthesis
-is not delivered by this segment, and its findings are not consumed here. Natural travel, reachable
-setup/follower history,
-completed movement/services, pending survival, actual usable control and persistence remain
-**Unknown**. This guide completes neither the
+this current agreement and one English documentation-index entry are owned by #751. Stop at the
+first Map6 destination post-init pending/control read. Overworld departure, Battle09, later town
+services/audiences, new fixtures/parsers/platforms, data acquisition/generation/copy, source
+re-investigation, engine/UI work and Chinese synchronization are outside scope. Do not consume
+unmerged successor research. Natural travel, reachable setup/follower history, completed actors/
+services, observed gold, pending survival, actual usable control and persistence remain **Unknown**.
+This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. No acquisition, source

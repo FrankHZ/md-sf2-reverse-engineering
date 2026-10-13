@@ -122,6 +122,12 @@ Peter's reception. F706 and F701 independently gate the two zones; caller flags 
 Hiding and named/unjoined actions remain distinct from recruitment, persistent dismissal and arrival.
 It stops at the first post-Peter pending/control read without claiming natural travel or usable input.
 
+[Peter's castle audience and the return to town](peter-castle-audience-through-town-return.md)
+continues with conditional castle admission, Astral staying behind, Peter's join/AI and distinct
+following mechanisms, the gift's narrative/state mismatch and town re-entry. Request production
+precedes caller F702 then F67; destination setup/init precede the first pending/control read.
+It stops there with natural travel, observed gold, service completion and usable input Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
