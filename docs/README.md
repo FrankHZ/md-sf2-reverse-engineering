@@ -150,6 +150,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   changed harbor, boarding choice, phased departure and conditional Map73 handoff; walking, zone and service limits
 - [`voyage-through-damaged-ship-control.md`](./design/synthesis/voyage-through-damaged-ship-control.md) —
   voyage, landing, Jaha/plank staging and conditional Map14 control; actor, init and natural-route limits
+- [`damaged-ship-plank-through-battle08.md`](./design/synthesis/damaged-ship-plank-through-battle08.md) —
+  plank choices, entry alternatives, timber/rescue scene and conditional Battle08 before/start handoff.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

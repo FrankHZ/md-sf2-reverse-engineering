@@ -122,54 +122,55 @@ Its conditional control/event boundary retains the caller, follower, walking and
 continues through the changed harbor, boarding choice and conditional Map73 request handoff, with
 walking, zone, follower and service limits retained.
 
-The current reader outcome explains voyage, landing, crowd instructions, the scripted Jaha/plank
-scene and the first conditional Map14 control/event read. Cross-map init, actor-reference reuse and
-caller/control order require Standard rigor within this bounded documentation task. Follow the
+[Voyage and landing through damaged-ship control](synthesis/voyage-through-damaged-ship-control.md)
+continues through Map73 first/repeat selection, optional Kiwi dialogue, landing/crowd instructions,
+Jaha/plank staging and the first conditional Map14 control/event read. It retains in-script-load,
+actor/follower and service/pending limits.
+
+The current reader outcome explains the plank choices, above-deck handover and rescue request,
+departure order, Map72 encounter selection and Battle08 before/start handoff. Cross-map requests,
+setup replacement and dispatcher/caller ordering require Standard rigor for this bounded design
+segment. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Voyage and landing through damaged-ship control](synthesis/voyage-through-damaged-ship-control.md),
-scoped by [#731](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/731). It consumes the
-[accepted static investigation](../research/voyage-through-damaged-ship-control.md) from
-[PR #729](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/729), accepted predecessors and
-the preceding departure guide. Organize the explanation by arrival selection, voyage/optional Kiwi,
-landing/crowd instructions, Jaha/plank staging and actual caller/control handoff. Use short sourced
-summaries and compact references rather than transcripts, complete layouts/rosters or a duplicated
-research ledger.
+[Damaged-ship plank choices through Battle08 admission](synthesis/damaged-ship-plank-through-battle08.md),
+scoped by [#735](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/735). It consumes the
+[accepted static investigation](../research/damaged-ship-plank-through-battle08.md) from
+[PR #734](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/734), accepted predecessors and
+the voyage guide. Organize by player meaning and ordered state handoffs, with concise sourced
+summaries and compact traceability, rather than transcripts, exhaustive rosters or a duplicated ledger.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- The predecessor conditionally supplies Map73 `(26,13)`, Right after F74/F640 clear. Map73 has no
-  substitution or first-column encounter row; its default init precedes any control handoff.
-- F700 clear runs cs_503A6 and sets F700 only after script return, before the conditional control
-  read. F700 set selects early returns or the later F508/F705 town-building owner; it does not
-  replay the first scene. Later selection is a boundary, not town-building coverage.
-- Force-stat reset can restore zero HP without joined/active/alive filtering, recruits nobody and
-  changes no battle-party membership. Its intermediate status mask differs from final curse handling.
-- F6 selects eight voyage lines and later Kiwi hiding. Branches reset dialogue cursors, and no Kiwi
-  recruitment follows from his scene declaration. Three list rebuilds reuse logical references:
-  132 changes from ship to crowd member to middle interior object. Follower conflicts and player
-  type prevent treating authored placements as an observed cast or ordinary walking control.
-- Both Map14 loads are in-script resource/layout loads with separate actor-list commands. They run
-  no Map14 setup init, encounter scan or setup-temporary clear. Map14's F703 scene/EGRESS_MAP write
-  are not arrival effects. The Map73 caller returns with Map14 current and the scripted population.
-- Crowd walking is unjoined and does not prove timber delivery. Animation stop, hide, block copies
-  and priority writes retain their handler meanings; they establish no Jaha death, force departure,
-  inventory transfer or exact rendered overlap. The final priority write targets the current object.
-- WaitForEvent installs camera/control only if its first pending word is zero; character versus
-  vehicle control depends on PLAYER_TYPE. Earlier clear and F700's comment prove no movement-ready
-  frame. Subsequent Map14 default/F458 event lookup identifies owners without invoking fresh init.
+- Start with the predecessor's scripted Map14 population and conditional control read, not an ordinary
+  Map14 init. F257 does not guard plank repeats; F89 is overwritten by each choice. No/cancel returns
+  from the plank script, while the later rescue choice repeats until Yes.
+- Explicit Map14 entry rebuilds entities and clears temporary flags; same-map stairs do neither, but
+  both run init. F458 replaces setup; F703 suppresses the default scene and caller writes. Neither
+  a carried item nor accepted plank response is an init predicate, and no legal shortcut is proved.
+- Above-deck actor references replace the interior references. Scene movement, hide, priority and
+  animation operations imply no inventory/force/HP change. The scene directs Kiwi without F6, while
+  the before-battle scene relocates him when F6 is clear; follower mappings remain separate inputs.
+- F408 production precedes the Map72 request, script return, caller F703 and EGRESS_MAP=14 writes,
+  then conditional pending consumption. Unjoined actors and the final Kiwi wait prove no global
+  service completion or guaranteed request delivery.
+- Map72 selects the first eligible row. Battle08's area is output geometry, not a trigger rectangle;
+  F508 set clears F408 but still returns Battle08 in that call. Other flag combinations remain controls.
+- F458 is checked without being set by before dispatch, then set before the empty start target
+  ms_Empty. Battle initialization uses combat party/spriteset/HP inputs, not the scene cast. Suspended
+  F88 entry bypasses the ordinary before/start/position path; no valid resume history is inferred.
 
 Only the new guide, preceding guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #731. Stop at the
-first post-init Map14 control/event read. Player-controlled plank progression, Battle08, town-building,
-complete walking/layout proof and later campaign are outside scope. Natural arrival/caller state,
-party/actor/follower state, waits/services/presentation/timing, pending value/overwrite and persistence
+this current agreement and one English documentation-index entry are owned by #735. Stop at the
+Battle08 start dispatcher's return before ActivateEnemies. Combat, outcomes, town construction,
+complete walking/layout proof and later campaign are outside scope. Natural event/caller history,
+party/actor/follower state, services/presentation/timing, pending survival/overwrite and persistence
 remain **Unknown**. Concurrent
-[#732](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/732) research is not consumed.
+[#736](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/736) research is not consumed.
 This guide adds no playable remake support and completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 

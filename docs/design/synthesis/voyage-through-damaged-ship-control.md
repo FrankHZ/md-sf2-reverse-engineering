@@ -10,8 +10,9 @@ actor state and whether the following event read permits player control.
 Read this after [Earthquake-town exit through docks departure](earthquake-town-through-docks-departure.md).
 The accepted [research owner](../../research/voyage-through-damaged-ship-control.md) supplies the
 pinned-source, dialogue, inline-action and caller review. This guide supports content/design planning
-and stops at the first post-init control/event read on Map14. Player-controlled plank progression,
-Battle08 and town-building belong to separate segments. It adds no remake capability. The
+and stops at the first post-init control/event read on Map14. Continue with
+[Damaged-ship plank choices through Battle08 admission](damaged-ship-plank-through-battle08.md)
+for the next conditional segment; town-building remains separate. It adds no remake capability. The
 [roadmap](../documentation-roadmap.md#current-baseline-and-near-term-synthesis) owns the Standard-rigor
 agreement for [#731](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/731).
 
