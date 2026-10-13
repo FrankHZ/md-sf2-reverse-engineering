@@ -293,7 +293,9 @@ physical 1. These follow-action pointers are assigned by selected-row ordinal fr
 `followersfunctions_2.asm:pt_eas_Followers`, not by character 31. Additional flags
 change slots/action selection; do not generalize these two bounded cases into an
 arbitrary-count capacity or target guarantee. No full follower-table capacity audit
-is added here. Character 30 has no explicit Map62 entity-event row and is also a
+is added here. If F83 is also enabled, its later king row overwrites character 30's
+lookup after the F77 old-man row; row identity does not guarantee the final alias.
+Character 30 has no explicit Map62 entity-event row and is also a
 current follower; it must not be treated as event 129.
 
 F77/F728/F729 lie in the game-flag save domain; the transient follower list
