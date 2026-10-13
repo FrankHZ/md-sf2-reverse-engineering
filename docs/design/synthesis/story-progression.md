@@ -155,6 +155,13 @@ current 129 following differs from the F77 rebuild under 30. It stops after the 
 first conditional control handoff, retaining mapping, service, save/reentry and natural-route limits.
 This optional branch does not establish a mandatory Battle11 route.
 
+[East Shrine return through Battle11 cave admission](east-shrine-return-through-battle11-admission.md)
+continues from the optional shrine exit or direct Battle10 return through selected scroll/fixed
+connections, exact F411 admission and Peter's exchange with the hobgoblin. F461 intro/F88 resume,
+no-setup cave exploration, follower-selected placement and later combatant replacement remain distinct.
+It stops at the new-battle start-dispatcher return before ActivateEnemies, retaining interruptions,
+actor/party/service/pending and darkness-presentation limits. No mandatory shrine route is established.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

@@ -168,6 +168,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   optional recruitment, membership/current following, advice and conditional Battle10 entry; request and natural-route limits.
 - [`battle10-outcomes-through-east-shrine-visit.md`](./design/synthesis/battle10-outcomes-through-east-shrine-visit.md) —
   battle return, optional shrine visit, independent conversations and current/rebuilt following; caller and natural-route limits.
+- [`east-shrine-return-through-battle11-admission.md`](./design/synthesis/east-shrine-return-through-battle11-admission.md) —
+  optional return, selected overworld connections and cave opening; admission, cast and darkness-presentation limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

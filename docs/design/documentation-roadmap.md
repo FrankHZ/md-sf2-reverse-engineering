@@ -162,55 +162,58 @@ remain applicable.
 continues through optional joining/current following, travel advice, selected departure and conditional
 before/start admission. It retains membership, actor lifetime, request and natural-route limits.
 
-The current reader outcome explains Battle10 outcomes and the optional East Shrine visit through
-the old-man caller and first conditional restored control. Independent event gates and current versus
-rebuilt follower state cross existing owners, so this bounded segment retains **Standard** rigor.
-Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+[Battle10 outcomes through the optional East Shrine visit](synthesis/battle10-outcomes-through-east-shrine-visit.md)
+continues through separate shrine entry, mistaken identity, the grandfather's account and invitation,
+with independent gates and current/rebuilt following kept distinct. Its conditional-control and
+natural-route limits remain applicable.
+
+The current reader outcome explains the optional shrine return or direct Battle10 return, selected
+overworld connections and Battle11's cave admission/opening. Route requests, admission flags, scene
+population and presentation services cross existing owners, so this segment retains **Standard**
+rigor. Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Battle10 outcomes through the optional East Shrine visit](synthesis/battle10-outcomes-through-east-shrine-visit.md),
-scoped by [#767](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/767). It consumes the
-[accepted static investigation](../research/battle10-outcomes-through-east-shrine-visit.md) from
-[PR #766](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/766) and the accepted admission guide
-from [PR #765](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/765), without a stacked dependency.
-Organize around battle return, optional entry, greeting/mistaken identity, the grandfather's account,
-invitation and changing follower state. This supports readable content/design planning, not a
-continuous playthrough or new remake capability; avoid a transcript or duplicate technical ledger.
+[East Shrine return through Battle11 cave admission](synthesis/east-shrine-return-through-battle11-admission.md),
+scoped by [#771](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/771). It consumes the
+[accepted static investigation](../research/east-shrine-return-through-battle11-admission.md) from
+[PR #770](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/770) and the preceding English guide
+from [PR #769](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/769), without a stacked dependency.
+Organize around return, cave entry, Peter's exchange with the hobgoblin, camera/music/movement and
+battle handoff. This is a candidate content sequence, not a mandatory shrine visit, observed playable
+route or new remake capability. Full records and helper arithmetic stay with research.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- Victory returns to a variable Map70 position; shrine entry is separate and tests neither victory
-  nor May recruitment. This optional branch does not establish a mandatory route to Battle11.
-- F728/F729/F77 are independent persistent flags; F256/F257/F258 reset on ordinary entry. Zone and
-  conversation gates permit different orders. Invitation text creates no yes/no branch; entity128's
-  context and later F732 alternative do not prove travel or acquisition.
-- `FOLLOWER_B=31` resolves the supplied mapping; F67 alone maps Peter as 7 and leaves 31 zero, resolving
-  main. Other enabled rows can overwrite 31. The word operand's high-byte HP probe checks Bowie here,
-  not the follower or target; a skipped follow does not suppress later script/caller flag writes.
-- Current129 following, script F77 and caller F729 are distinct. Following excludes ordinary
-  interaction. Later entry rebuilds the old man under `FOLLOWER_A=30`, with ordinal-selected action
-  and possible later alias overwrite; it does not preserve event129 or guarantee cross-save presentation.
+- Map70's west scroll carries exploration state; the selected fixed northern Map69 connection
+  invokes ordinary admission to Map72. Encounter/scene interruptions remain possible.
+- F411 originates in castle init, independently of shrine completion and recruitment. Battle11 tests
+  the exact Map48 request `(15,26)`, not its area bounds; F411/F511 both set still selects it on that call.
+- Map48 without battle admission has no normal setup/init or fixed NPC list. F461 skips intro scripts
+  without skipping new preparation; F88 resumes saved state through a different endpoint.
+- Explicit prebattle loading rebuilds followers first. F67 can cause Peter's authored row to be
+  skipped; actor presence proves neither joined/active/HP nor AI state. Actual battle placement later
+  replaces the scripted population.
+- Plane-B coordinate/counter/update writes support a bounded darkness-related **Inferred** presentation
+  role, not a validated visible mask, service completion or preserved final battle display.
 
-Only the new guide, preceding admission guide's continuation link, Story Progression's local navigation,
-this current agreement and one English documentation-index entry are owned by #767. Stop after the
-final old-man caller and first conditional restored exploration control. The south exit is a
-continuation boundary only. Onward/Grans travel, wooden panel/Sky Orb acquisition, cave/Battle11,
-unmerged successor research, runtime readiness, new engine/product choices and Chinese synchronization
-are outside scope. No research/contracts/fixtures/glossary/remake changes are selected.
+Only the new guide, predecessor continuation, Story Progression navigation, this current agreement
+and one English documentation-index entry are owned by #771. Stop at the new-battle start-dispatcher
+return immediately before `ActivateEnemies`. Combat/outcomes, cave crossing, Polca/Bedoe, unmerged
+successor findings, runtime readiness, new product decisions and Chinese synchronization are outside
+scope. No research/contracts/fixtures/glossary/remake changes are selected.
 
-Legal walking, actual activated actors/mappings/HP/party/follower state, natural service completion,
-pending survival, arbitrary follower capacity, save/reentry presentation and continuous playability
-remain **Unknown**. This guide completes neither the
+Natural collision-free and uninterrupted travel, actual actors/flags/HP/party/AI state, service
+completion, request survival, composed darkness and continuous playable entry remain **Unknown**.
+This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
-Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived
-payloads need not exist and must not be generated/copied for this segment. No acquisition, source
-investigation, runtime observation or new machinery is needed. Unexpected broad dependencies,
-evidence conflicts or product choices stop affected expansion for replanning; a missing natural
-observation remains **Unknown**.
+Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived payloads
+must not be generated/copied for this segment. No acquisition, source investigation, runtime
+observation or new machinery is needed. Unexpected broad dependencies, evidence conflicts or product
+choices stop affected expansion for replanning; missing natural observations remain **Unknown**.
 
 Read the complete explanation and diff, check changed links/fragments, exact paths/private boundary
 and `git diff --check`, then inspect the clean committed-head verification plan and actual final-head
