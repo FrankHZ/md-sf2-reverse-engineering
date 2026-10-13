@@ -116,6 +116,12 @@ explicit ordinary-population reload. Caller F707/F411 writes precede the first p
 read; same-map display loads, actor mapping and named/unjoined waits retain their limits. It stops
 at that read without claiming natural arrival, completed services or actual usable control.
 
+[New Granseal town: Peter's first introduction](new-granseal-town-through-peter-introduction.md)
+continues through conditional castle departure, town setup/init, the sailor/guard introduction and
+Peter's reception. F706 and F701 independently gate the two zones; caller flags follow script return.
+Hiding and named/unjoined actions remain distinct from recruitment, persistent dismissal and arrival.
+It stops at the first post-Peter pending/control read without claiming natural travel or usable input.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

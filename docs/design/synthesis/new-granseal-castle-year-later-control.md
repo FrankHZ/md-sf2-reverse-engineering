@@ -202,5 +202,8 @@ clear, an already mapped or dead ally, an unfinished unjoined departure, nonzero
 pending overwrite or a service stall before caller return. They constrain interpretation rather
 than creating an automatic acquisition queue.
 
+Continue with [New Granseal town: Peter's first introduction](new-granseal-town-through-peter-introduction.md)
+for the conditional castle exit, town setup, independent zone scenes and post-event control boundary.
+
 This guide completes neither campaign chronology nor epic #514. Later town/Peter content and battles
 need their own accepted owners. Chinese synchronization remains deferred under the roadmap.
