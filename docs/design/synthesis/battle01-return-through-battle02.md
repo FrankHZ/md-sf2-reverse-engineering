@@ -216,7 +216,10 @@ clears F90–F105, heals/initializes combatants, clears AI memory, loads battle 
 The saved-battle F88 branch is separate. **Confirmed shared source order:** the existing
 [Battle01 admission owner](../../research/map3-battle01-admission.md) closes that controller sequence
 for its selected data; it does not become a Battle02 initialization or player-ready observation.
-This guide stops at admission. Battle02 actions, outcome, return and onward travel need their own scope.
+This guide stops at admission. Continue with
+[Battle 02 outcome through Battle 03 admission](battle02-outcome-through-battle03.md) for the
+conditional return, Yeel/Kazin content and overworld request/consumer connection. That continuation
+retains natural-route Unknowns and grants no later remake support.
 
 ## Evidence Review and Limits
 

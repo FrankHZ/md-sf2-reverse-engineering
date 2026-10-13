@@ -92,60 +92,57 @@ reviewers.
 ## Current Baseline and Near-Term Synthesis
 
 **Current scope agreement — Standard.** The accepted English
-[Gameplay Overview](synthesis/gameplay-overview.md) is the entry to the design material. The accepted
+[Gameplay Overview](synthesis/gameplay-overview.md) is the entry to the design material.
 [Opening through Battle 01](synthesis/opening-through-battle01.md) explains the selected opening,
-castle/tower, encounter and usable return, keeping original evidence separate from current remake
-composition. The current reader outcome continues that story-content route through the castle
-return/exorcism/commission, Jaha's join and conditional source Battle02 admission. Several evidence
-owners and shared navigation must agree, so this requires adversarial evidence review and independent
-content review while remaining a bounded documentation task. Follow the
+castle/tower, encounter and usable return;
+[Battle 01 return through Battle 02 admission](synthesis/battle01-return-through-battle02.md) continues
+through castle return, exorcism/commission, Jaha and conditional admission. These accepted outcomes
+retain their evidence and natural-route limits. The current reader outcome extends the content route
+through Battle02 outcome/return, the conditional Yeel/Kazin guidance branch and source Battle03
+admission. Several evidence owners and shared navigation must agree, requiring adversarial evidence
+review and independent content review within a bounded documentation task. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the agreement.
 
 The current segment owner is
-[Battle 01 return through Battle 02 admission](synthesis/battle01-return-through-battle02.md), scoped by
-[#695](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/695). It consumes the
-[accepted static route investigation](../research/battle01-to-battle02-content-route.md) and its named
-map/event/script/battle owners. Organize the meaningful content phases rather than copying the
-technical transition table: returning to the castle; full-zone versus alternate-suffix exorcism entry;
-commission; Jaha event/join; west exit and admission. Connect selected locations/setups/warps,
-entity identities/presence, short grounded narrative summaries, dialogue cursors/triggers,
-party/flag effects and encounter declarations. Local interactions and alternate branches stay distinct
-from selected-route requirements; no transcript or full extracted layout/roster is needed.
+[Battle 02 outcome through Battle 03 admission](synthesis/battle02-outcome-through-battle03.md), scoped
+by [#699](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/699). It consumes the
+[accepted static investigation](../research/battle02-to-battle03-content-route.md) and preceding guide.
+Explain meaningful content phases, connecting outcome/return, map/setup/warp, people and local
+interactions, following versus recruitment, unlock/request/consumer order and encounter entry data.
+Yeel/Kazin content remains conditional, not a demonstrated admission prerequisite. Short grounded
+summaries and selected dependencies suffice; no transcript, full layout or roster is needed.
 
 Acceptance requires a readable conditional segment with exact research/contract and fixture/verifier
-traceability, and visible **Confirmed**, **Inferred** and **Unknown** boundaries. Review source facts
-and pertinent payload/verifier semantics, separating table topology from marker/collision/occupancy-aware
-walking; full script from internal suffix; caller writes from script effects; scenario preconditions
-from shared selection rules; and placement counts from live membership. In particular, retain setup
-and map-switch overrides, F610's commission skip, the exact `(2,23)` zone exception, F3's skip of
-the F402 producer, same-call index-2 return after the F502 branch clears F402, and the F452 wrapper
-effects despite empty before/start targets. Source numbering is not verified player-facing numbering.
-A concrete evidence disagreement is reported to its owner and excluded from expanded conclusions
-rather than silently corrected in Layer B.
+traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review selected payloads and
+consumer semantics: empty after-program still reaches JoinForce(0); return operands use final
+combatant/entity state; field entry does not immediately recheck battles; zone markers and specific-row
+precedence gate the default; F503 clear requests without RNG; retained request parameters are not a
+fresh position snapshot; earlier eligible rows and same-call completed returns remain possible.
+Kazin's following/F72 is distinct from joined F4 and battle-unlock F403. Battle03's EGRESS_MAP write
+is conditional on intro/new-battle branches and does not prove a Yeel visit. A concrete evidence
+conflict is reported to its owner and excluded from expanded conclusions rather than silently repaired.
 
-Only the new segment guide, the opening guide's next-segment/endpoint navigation, Story Progression's
-segment navigation, this current agreement and one English documentation-index entry are owned by
-#695. The guide stops at admission: Battle02 resolution and later scenes are outside scope. It does
-not extend the accepted natural original frontier, live Battle02 roster, save persistence, presentation
-or playable remake support. It consumes accepted main only; concurrent downstream research is no
-dependency and its unmerged results are not evidence. The accepted opening outcome remains intact.
-Neither segment completes the whole
-[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) or establishes a
-complete original campaign. Wider tactical, resource, roster and persistence revisions require their
-own scope.
+Only the new segment guide, the preceding guide's next-segment navigation, Story Progression's reading
+navigation, this current agreement and one English documentation-index entry are owned by #699.
+Stop at Battle03 admission and selected entry dependencies; resolution and Hawel-house expansion are
+outside scope. Natural walking, caller state, exact return endpoint, initialized Battle03,
+presentation and persistence remain **Unknown**. No playable remake support is added. Consume accepted
+main only; concurrent downstream research is no dependency. Earlier accepted outcomes remain intact;
+this segment does not complete the
+[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) or the campaign.
 
-No original research, fixture/schema/parser, runtime capture, engine code, content platform or comparator
-follows from this synthesis. Existing text and small local notes suffice; there is no bulk acquisition
-or derived database. If a proposed assertion needs a new observation, retain it as **Unknown** and
-identify the bounded missing relation. Unexpected broad dependencies, new machinery, evidence conflicts
-affecting the segment or product choices stop affected expansion for replanning.
+No research/fixture/schema/parser implementation, runtime capture, engine code, content platform or
+comparator follows from this synthesis. Existing text and small local notes suffice; no bulk
+acquisition or derived database is needed. A new-observation claim stays **Unknown** with its missing
+relation named. Unexpected broad dependencies, machinery, evidence conflicts or product choices stop
+affected expansion for replanning.
 
-Read the complete candidate explanation and diff, check changed links/fragments, `git diff --check`,
-exact paths and private boundary, then inspect the clean committed-head verification plan and actual
-CI. Documentation acceptance runs no emulator, Godot, normal/full research suites, old comparator or
-translation batch. Freeze a clean committed/pushed Draft PR and evidence-review handoff for independent
-main-gate review; direct checks and CI alone do not grant integration or re-accept the milestone.
+Read the complete explanation and diff, check changed links/fragments, exact paths/private boundary
+and `git diff --check`, then inspect the clean committed-head verification plan and actual CI.
+Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4 or translation suites.
+Freeze a clean committed/pushed Draft PR and evidence-review handoff for independent main-gate review;
+direct checks and CI alone do not grant integration or re-accept the milestone.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
