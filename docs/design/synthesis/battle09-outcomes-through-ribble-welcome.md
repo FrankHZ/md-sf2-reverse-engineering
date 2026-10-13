@@ -185,10 +185,15 @@ door-unlock mechanism, an entity reload or a guaranteed full redraw/music change
 [map-block lifecycle owner](../../research/common-scripting.md#confirmed-map-block-copy-showhide-lifecycle)
 retains the bounded helper evidence.
 
-The final follow command resolves the current Peter/Bowie mappings and installs a follow action
-with selector 2, pixel offset `(-24,0)`. Its ally-HP guard can skip dead Peter. It does not set F67,
-join Peter, set F39 or change AI control; F67 governs his later map re-instantiation. Those guards
-must not be generalized to every earlier actor command.
+The final `followEntity ALLY_PETER,ALLY_BOWIE,2` encodes three words
+`$0007,$0000,$0002`. Its HP probe reads the first word's high byte, zero, so Bowie HP=0
+skips the command. With Bowie alive, Peter HP=0 does not itself skip it: the handler resolves
+the current Peter/Bowie mappings and installs the follow action with selector 2, offset `(-24,0)`.
+These are distinct discriminating states, not evidence of natural dead-actor or missing-mapping
+behavior. The command does not set F67, join Peter, set F39 or change AI control; F67 governs
+later re-instantiation. This guard must not be generalized to every earlier actor command.
+The [research owner](../../research/battle09-outcomes-through-ribble-welcome.md#mayor-scene-through-explicit-reload-and-control)
+binds the macro/handler and existing controlled high-byte observation; no new runtime is claimed.
 
 After the interpreter returns, caller F708 is set. The zone dispatcher closes portrait/text,
 waits one VInt and physical entity 0's movement, then returns to exploration. It neither joins all

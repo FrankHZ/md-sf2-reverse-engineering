@@ -142,8 +142,9 @@ normal staging assumptions without suppressing the caller.
 The motion/wait handlers retain the predecessor's
 [actor and service limits](./new-granseal-town-through-peter-introduction.md#handler-effects-and-post-event-boundary).
 `entityActionsWait` joins only its named actor's completion, and `csWait` is a sleep
-operand, not measured rendered time. Dead ally guards can skip relevant actor commands;
-`joinForceAI` has no equivalent alive guard. Minister's command 41 does not itself join
+operand, not measured rendered time. HP guards are command-specific: the five
+`followEntity` calls below probe Bowie, not their named followers; `joinForceAI` has
+no equivalent alive guard. Minister's command 41 does not itself join
 before subsequent commands. A script return is not proof that every actor completed,
 that a particular route was walkable, or that text/audio/render services were observed.
 The final down-18 operation does not replace the explicit destination warp tuple.
@@ -195,7 +196,19 @@ Commands 62-66 call `csc2C_followEntity` with these target/leader/position-index
 | Jaha | Bowie | 5 / `(-24,-24)` |
 | Kazin | Bowie | 6 / `(-24,24)` |
 
-The handler applies its alive guard, resolves both character references to entity IDs,
+`sf2cutscenemacros.asm:followEntity` encodes all three operands as words. In table
+order the exact triples are `$0007,$0000,$0002`; `$0001,$0007,$0002`;
+`$0002,$0001,$0002`; `$0003,$0000,$0005`; and `$0004,$0000,$0006`.
+`csc2C_followEntity` first reads `move.b (a6),d0` without advancing A6, so each
+first word's high byte is zero. `AdjustScriptPointerByCharacterAliveStatus` checks
+character 0/Bowie's HP for all five calls. Bowie HP=0 skips each call's six operand
+bytes and returns without `AddFollower`; Peter or another named follower's HP=0
+with Bowie alive does not itself skip these calls. This probe does not validate entity
+presence or separately check the named follower/leader HP. The
+[existing high-byte seam observation](./common-scripting.md#confirmed-map-script-entity-gesturerelationshipmotion-command-family)
+retains a controlled handler case, not this audience composition.
+
+When the guard permits execution, the handler resolves both character references,
 reads the indexed pair from `table_FollowerPositions`, then calls
 `code/common/scripting/entity/entityfunctions_2.asm:AddFollower`. That helper installs a
 42-byte `eas_Follower1` walking block with leader/offset words and adds the physical
@@ -305,7 +318,7 @@ These are existing evidence boundaries, not claims that their complete rails ran
 | --- | --- |
 | Conditional warp, setup, population and init | `map-data-static-v1.json`, `map-content-static-v1.json`, `gameflow-static-v1.json`, `common-maps-static-v1.json`, `map-setup-static-v1.json`, `map-entities-static-v1.json`, `map-init-static-v1.json`; [map inventory](./map-data-inventory.md). Commands use those basenames. Direct reads bind Map6 north row, no Map6/7 substitution/battle row, setup priorities/shared pointers/lists and retained init bodies 10/11. Missing relation: natural movement/layout/occupancy to the warp and zone. |
 | Audience predicate and caller order | `map-events-static-v1.json`, predicate/flag-route owners; commands `map-events`, `map-event-predicate-results`, `map-event-flag-route-selection`. Direct source binds the five zone rows, F802 priority and script → F702 → F67. Controls: F701 clear, F702 set/F67 clear, F802 priority, F707-clear population replacement, F805 anomalous staging. |
-| Program, text, membership/AI and followers | `map-script-engine-static-v1.json`, `forceStateCommandFacts.activePartyCommandFacts`, `common-stats-static-v1.json`; commands `map-script-engine`, `common-stats`; party contracts linked above. Retained comparison and complete 88-command/39-text review. Existing `tests/fixtures/h3/force-state-active-party-v1.json` is handler-local evidence, not this audience; no H3 rerun. Controls: zero/nonzero selector, full party, joined reserve/already active, dead ally, duplicate or missing mapping, F67 independent of membership/AI, text-side list rebuild versus debug skip. |
+| Program, text, membership/AI and followers | `map-script-engine-static-v1.json`, `forceStateCommandFacts.activePartyCommandFacts`, `common-stats-static-v1.json`; commands `map-script-engine`, `common-stats`; party contracts linked above. Retained comparison and complete 88-command/39-text review. Existing `tests/fixtures/h3/force-state-active-party-v1.json` is handler-local evidence, not this audience; no H3 rerun. Controls: zero/nonzero selector, full party, joined reserve/already active, Bowie HP zero (all five follow calls skipped) versus Bowie alive/named follower HP zero (not skipped by these guards), duplicate or missing mapping, F67 independent of membership/AI, text-side list rebuild versus debug skip. |
 | Gift text and missing award | Direct pinned `04D2`, command 76, display/token handlers, gold services and zone caller. The script fixture covers command shape, not an audience gold-delta assertion. Missing relation: naturally reached before/after `CURRENT_GOLD`; retain the static mismatch and runtime Unknown without adding a generic text comparator. |
 | Request → caller flags → destination/control | `map-event-request-consumption-static-v1.json`, `common-scripting-static-v1.json`; [request consumption](./map-event-request-consumption.md). Shared producer/consumer evidence does not execute the full audience composition. Controls: interrupted script after join, overwritten request, independent F706/F802 init, other supplied followers and nonzero player type. |
 

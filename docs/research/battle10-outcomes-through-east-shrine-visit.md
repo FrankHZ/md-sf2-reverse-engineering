@@ -16,14 +16,22 @@ This is the Standard-rigor agreement for
 [Issue #764](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/764), under
 [the content epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Outcome, caller flags and current versus rebuilt follower identities need explicit
-cross-owner boundaries. Sole tracked owner: this document; no shared-path write or
-stacked dependency. Starting accepted base: `72b254c8d24669102242fc96bbffca8811918739`.
+cross-owner boundaries. This document owns the new investigation and scope agreement.
+The same Issue also owns only the `followEntity` HP-guard correction and its controls in
+[Ribble research](./battle09-outcomes-through-ribble-welcome.md),
+[Ribble synthesis](../design/synthesis/battle09-outcomes-through-ribble-welcome.md),
+[castle-audience research](./peter-castle-audience-through-town-return.md) and
+[castle-audience synthesis](../design/synthesis/peter-castle-audience-through-town-return.md).
+Those four paths have exclusive transferred ownership; no other shared-path write or
+stacked dependency. This bounded dependency correction remains Standard: existing
+macro/handler and observer evidence suffice, with no new runtime or product behavior.
+Starting accepted base: `72b254c8d24669102242fc96bbffca8811918739`.
 Continue [Battle10 admission](./ribble-may-through-battle10-admission.md) through
 outcomes and the selected Map70→62 visit. Stop after the final old-man caller and first
 conditional restored exploration control. The south exit is only a continuation
 boundary. Combat/roster simulation, other world routes, cave/Battle11, return-shrine
 or Grans travel, wooden panel, Sky Orb/Nazca acquisition, the later F732 scene,
-unrelated NPC/shop/treasure content, design, translation, engine/UI and runtime
+unrelated NPC/shop/treasure content, broader design, translation, engine/UI and runtime
 acquisition are excluded. This is original-game research, not remake acceptance.
 
 Source paths are relative to `disasm/` in
