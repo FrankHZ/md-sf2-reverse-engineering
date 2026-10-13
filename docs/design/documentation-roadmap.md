@@ -167,8 +167,9 @@ state, party/HP/actor/follower state, occupancy, changed-layout reentry, service
 pending value/survival and persistence remain **Unknown**. This guide
 adds no playable remake support and completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-Concurrent [#728](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/728) destination research is
-independent; its unmerged conclusions are not consumed here.
+Accepted [#728](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/728) destination research is
+an independent successor. Its findings are not consumed by this guide; destination synthesis remains
+a separate segment.
 
 No source investigation, fixture/schema/parser implementation, runtime capture, map decoding,
 engine code, content platform or comparator follows from this synthesis. Accepted prose and small
