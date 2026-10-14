@@ -15,8 +15,10 @@ Fnnn means flag nnn; coordinates are map tiles unless a different unit is named.
 
 Read [Bedoe return through Battle13 admission](bedoe-return-through-battle13-admission.md) for
 the preceding confrontation, Gerhalt joining and battle handoff. This guide stops after the
-selected mayor caller and conditional control return. The Y11/Y30 Oddler choices, departure,
-river travel, boarding and Battle14 remain outside its boundary.
+selected mayor caller and conditional control return. Continue with
+[Polca's Oddler choices and following](polca-oddler-choice-and-following.md) for the independent
+Y11/Y30 requests, different refusal paths and common conclusion. Actual departure, river travel,
+boarding and Battle14 remain outside these guides' boundaries.
 
 ## Battle Outcome and Where It Returns
 

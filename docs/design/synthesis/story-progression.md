@@ -240,6 +240,14 @@ separate. It stops at conditional caller/control return, retaining natural reach
 presentation and persistence Unknowns; configured raft state proves no current Polca raft,
 river availability or boarding. Oddler choice/departure and later travel remain outside scope.
 
+[Polca's Oddler choices and following](polca-oddler-choice-and-following.md) explains the independent
+Y11/Y30 requests, first refusal return and second refusal appeal that converges without another
+prompt. F89 records the returned choice; F717/F718 caller predicates differ from internal
+F68/clear75/F718 and future population. Current Peter→Bowie,140→Peter,Luke→140 differs from list
+order and later FOLLOWER_B31 construction/NPC140 init removal. It stops at both caller/conditional
+control returns, preserving input, actor/HP, service/presentation and persistence Unknowns;
+actual Polca departure, river/boarding, Battle14 and recruitment remain separate.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
