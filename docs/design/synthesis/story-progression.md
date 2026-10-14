@@ -383,6 +383,14 @@ completed control remain distinct. It stops at conditional cave control, an unre
 continuation or Battle21 admission before opening, retaining actor/mode/service, natural-route
 and persistence Unknowns without later cave exploration or Creed content.
 
+[Fairy Cave exploration and Devil's Tail return](fairy-cave-exploration-and-devils-tail-return.md)
+continues with four chest rewards, entity-first C versus Search, recipients/rollback and later layout
+reapplication. Both cave exits retain independent F421/F521 admission and conditional Map67 control;
+east return `(57,24)` does not select F520. Rock inspection retains F751/F13/HP and current Peter
+mapping, separately from passage opening. It stops at completed conditional local interaction/search,
+Map67 control/request or Battle21 admission before opening; natural access, services and persistence
+remain Unknown, with no Creed or battle content.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

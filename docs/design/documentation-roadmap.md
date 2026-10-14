@@ -279,51 +279,52 @@ individual-turn stops and flag/request/cast/service limits remain applicable.
 explains first/repeat outcomes, force membership, temporary following and immediate conditional pond/
 savepoint return. Its stop and supplied-state/service limits remain applicable.
 
-The current reader outcome explains pond departure, Elric opening the passage and conditional Fairy
-Cave entry. **Standard** rigor remains appropriate because admission, shared population, actor
-allocation, live map mutation, persistent flags and request/control completion have separate owners.
-The current owner is
-[Harpy Pond departure through Fairy Cave entry](synthesis/harpy-pond-departure-through-fairy-cave-entry.md),
-scoped by [#879](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/879). It consumes
-[accepted departure/entry research](../research/harpy-pond-departure-through-fairy-cave-entry.md),
-[PR878 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171704588),
-[rebased handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171750883)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/878#issuecomment-6171765502),
-plus accepted pond, battle, map/population, request, action/dialogue and roster owners from main.
-Preserve unchanged comparisons, original/rebased CI receipts, inspection/quoting/path failures,
-corrections and linked predecessor results. No stacked/successor evidence, raw-source reinvestigation,
-runtime or remake work is selected.
+The current reader outcome explains Fairy Cave's four chest rewards, both returns to Devil's Tail
+and conditional rock inspection. **Standard** rigor remains appropriate because search admission,
+inventory/flag/layout mutation, shared population, request consumption and dialogue completion have
+separate owners. The current owner is
+[Fairy Cave exploration and Devil's Tail return](synthesis/fairy-cave-exploration-and-devils-tail-return.md),
+scoped by [#883](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/883). It consumes
+[accepted exploration/return research](../research/fairy-cave-exploration-and-devils-tail-return.md),
+[PR882 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/880#issuecomment-6172113709),
+[independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/882#issuecomment-6172145421)
+and [east-return correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/880#issuecomment-6171924743),
+plus accepted entry, search/recipient, passage, F520, request, population and dialogue owners from main.
+Preserve retained comparisons, original/rebased CI receipts, resolved inspection failures and linked
+predecessor results. No stacked/successor evidence, raw-source reinvestigation, runtime or remake work
+is selected.
 
 Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Pond exit versus warning, supplied F421/F521 admission before fresh Map67 exploration and actual
-  follower/population/transport state. Explain the independent F751/F13/Elric-HP passage predicate,
-  reserve eligibility and supplied F520 combinations without a fairy-history prerequisite.
-- Complete passage actions/dialogue, new actor allocation versus membership/following, current
-  HP/class/lookups/duplicates, hide and partial-service boundaries. Preserve actual actor resolution.
-- Live block copy versus post-return F751 and later flag-block loading; final asynchronous Bowie
-  motion versus the physical 0 wrapper barrier. Keep retained/replaced pending requests and explicit
-  cave tuple independent of movement completion.
-- Separate external cave/working-layout producers, Map32's actual ms_Void fallback and shared fresh
-  population/init/controller, no battle row, and arrival at an exit coordinate versus new movement.
+- Actual ms_Void dispatch and shared search; entity-first C versus explicit Search and all five
+  item-kind branches before descriptions. Four chest rows/flags distinguish item 0 from empty 127,
+  duplicates, four-slot recipients/list assumptions, full-inventory rollback and later chest loading.
+  Link shared item detail; do not infer item-use effects or economy.
+- Both cave exits and supplied F421/F521 admission before fresh Map67 population/control, with
+  follower/mode/raft/F751 limits. Arrival `(57,24)` is not an F520 coordinate or a zone dispatch;
+  consume the separate call-for-help/passage owners only at their actual boundaries.
+- Default-zone request/counter/RNG rules, packed residual bytes and conditional later admission,
+  separate from movement, flash/scroll/wrapper completion and retained/replaced pending requests.
+- Complete rock description and text controls, F751/F13/HP polarity, C/Search versus entity/tile
+  interception, Peter's current mapping, speech copy without restoration and closure/service limits.
+  No opening/join/heal or fairy-history consequence is added to inspection.
 
-The exact five owned paths are the new guide, preceding Battle20 guide's single continuation
+The exact five owned paths are the new guide, preceding entry guide's single continuation
 cross-reference (preserving its stop), Story Progression navigation, this current agreement and one
-English index entry. Stop at conditional Map32 entry control, an unrelated pending continuation or
-Battle21 admission before opening. Exclude cave exploration/chests/search/rock inspection dialogue,
-subsequent traversal, Creed and battle opening/outcomes, terrain reconstruction and runtime
-acquisition. No research/
-contracts/fixtures/schemas/glossary/zh-CN/remake writes, payload regeneration or new machinery are selected.
+English index entry. Stop at completed conditional local interaction/search, Map67 control/request
+or Battle21 admission before opening. Exclude Creed traversal/content, Battle21 scene/roster/combat/
+outcomes and natural terrain reconstruction. No research/contracts/fixtures/schemas/glossary/zh-CN/
+remake writes, payload regeneration or new verification machinery are selected.
 
-Natural access/terrain/producer selection, actual flags/HP/class/mappings/membership/mode, completed
-action/text/fade/camera/services, presentation, responsive input and persistence remain Unknown.
-Supplied-state counterexamples constrain static review rather than describe executed bugs. Public
-summaries and retained full-program comparisons remain distinct; aggregates alone prove no selected
-scene, selected population or composed runtime outcome. This guide completes neither
-[the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-Evidence conflicts, broad dependencies or product changes require replanning before affected expansion;
-missing natural observations remain Unknown.
+Natural terrain/access/layout, actual flags/inventory/HP/membership/mappings/mode/raft/recipient,
+completed text/window/movement/scroll/flash/load services, presentation, responsive input and persistence
+remain Unknown. Supplied-state counterexamples constrain static review rather than describe executed
+bugs. Public summaries, retained comparisons and selected direct-source joins remain distinct;
+aggregates alone prove no complete local content or composed runtime outcome. This guide completes
+neither [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the
+campaign. Evidence conflicts, broad dependencies or product changes require replanning before affected
+expansion; missing natural observations remain Unknown.
 
 Read the complete owned prose/diff and bounded existing fixture selections; check provenance,
 links/fragments, quantities, exact paths/private boundary and `git diff --check`, then inspect the

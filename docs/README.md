@@ -224,6 +224,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   first/repeat outcomes, complete recruitment and conditional pond/savepoint return; force membership versus temporary following and service limits.
 - [`harpy-pond-departure-through-fairy-cave-entry.md`](./design/synthesis/harpy-pond-departure-through-fairy-cave-entry.md) —
   pond exit, conditional passage and cave entry; actor membership, live blocks/F751, pending request and control limits.
+- [`fairy-cave-exploration-and-devils-tail-return.md`](./design/synthesis/fairy-cave-exploration-and-devils-tail-return.md) —
+  four rewards, both returns and conditional rock inspection; search/rollback, independent admission and service limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
