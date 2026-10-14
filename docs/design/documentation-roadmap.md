@@ -220,59 +220,62 @@ explains the selected south request, independent init, Luke volunteering/joining
 through the later unlock and conditional exploration control. Its actor, cache, service and
 natural-route limits remain applicable.
 
-The current reader outcome explains separate player boarding, raft control and the selected
-southern Map72 exits into South Parmecia69. **Standard** rigor remains appropriate because movement
-eligibility, physical alignment, staged actor changes, completion predicates and two entry
-lifecycles must agree without becoming a natural-playthrough claim.
+[Polca raft boarding and South Parmecia entry](synthesis/polca-raft-boarding-through-south-parmecia-entry.md)
+explains separate player boarding, raft control and the selected southern Map72 exits into
+South Parmecia69. Its physical-alignment, list-wait, entry-lifecycle and natural-travel limits remain
+applicable.
+
+The current reader outcome explains the selected South Parmecia route, complete Kraken reveal and
+Battle16 start handoff. **Standard** rigor remains appropriate because admission, scene identities,
+requested services and fresh combatant rebuilding must agree without becoming a natural-playthrough
+or first-turn-readiness claim.
 Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Polca raft boarding and South Parmecia entry](synthesis/polca-raft-boarding-through-south-parmecia-entry.md),
-scoped by [#819](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/819). It consumes the
-[accepted static investigation](../research/polca-raft-boarding-through-south-parmecia-entry.md) and
-[corrected PR818 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/818#issuecomment-6159852108),
-with accepted Luke/raft/request predecessors from main only, without stacking. The failed initial
-South Parmecia=70 assumption remains preserved; selected warp symbols now resolve to actual numeric
-owners before setup/init/battle selection. This is original-content explanation, not new source
-investigation, a natural journey or a remake capability.
+[South Parmecia, the Kraken reveal and Battle16 entry](synthesis/south-parmecia-through-kraken-battle16-entry.md),
+scoped by [#823](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/823). It consumes the
+[accepted static investigation](../research/south-parmecia-through-kraken-battle16-entry.md) and
+[PR822 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/822#issuecomment-6160096072),
+with accepted Luke/raft/request predecessors from main only, without stacking. This is
+original-content explanation, not new source investigation, a natural journey or a remake capability.
 
 Acceptance requires readable consequences and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked-fixture selections and
 their schema/consumer limits. Preserve these material distinctions:
 
-- Movement's type3 eligibility differs from physical-raft destination alignment. F64, Luke's Down1
-  and configured placement prove neither player contact nor boarding.
-- Staged Bowie/raft/list changes precede the final mode2 write. Physical31, FOLLOWER_D159/lookup63
-  and FOLLOWER_B31 are distinct; two Bowie waits and the last-listed-actor-only wait do not join all
-  followers. No boarding HP/member or saved-tuple update is implied.
-- Actual mode2 installs source eas_Caravan/opcode8 despite symbolic names. Numeric type5 is its
-  disembark alternative; input, collision, bounds and working-layout gates do not prove a water path.
-- South Parmecia69 differs from Southeast70. Rows6/9 resolve to69 and competing corners7/8 to73/71.
-  No-scroll row6 calls SwitchMap/CheckBattle with actual rows9/17 and F409/F417 precedence; completion
-  clears unlock but still admits the selected battle on this call. F416 alone proves no admission.
-- Scroll row9 preserves X, ignores tuple facing and stays in exploration with retained actors,
-  without fresh battle scan/setup/init/heal. Fresh Map69 mode2 population, empty fixed list, separate
-  raft declaration and conditional controller restoration retain their supplied-state limits.
+- Map69 row0 resolves the Kraken symbol to49 before Battle16 selection. Actual mode2 opcode8 and
+  working-layout/input/collision gates prove no natural water route. No Battle14/15 prerequisite
+  or numbered route order is imposed.
+- F416/F516 admission differs from F466 intro/start and F88 saved entry. Completion clears unlock
+  but still admits on that call; Map49 no-admission uses ms_Void, not an invented init.
+- The complete encounter has four Peter and three conditional FOLLOWER_B text sites. Warp, camera,
+  header and combat placement differ; transport clears, HP guards and missing mappings retain limits.
+- cloneEntity shares ENTNUM sprite slots without copying actors. Block, quake, sound, FX and
+  movement services are requested work, not observed rendering or all-actor completion.
+- Post-intro healing and membership-sensitive ally placement precede eleven initialized enemies
+  and LoadBattle's actor rebuild. Scene population proves no active/living roster; zero AI
+  regions/points does not mean no AI. The empty start wrapper sets F466 before its script.
 
-The five owned paths are the new guide, Luke continuation, Story Progression navigation, this
-current agreement and one English documentation-index entry. Stop at a type5 request, an admitted
-battle before initialization/combat, or conditional Map69 control. No full disembark, later story/
+The five owned paths are the new guide, raft-entry continuation, Story Progression navigation, this
+current agreement and one English documentation-index entry. Stop after the Battle16 start wrapper,
+before activation, region/spawn work, turns, combat or outcomes. No disembark completion, later story/
 zone/combat, continuous playability, original-source reinvestigation, inventories, Chinese work,
 research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition, payload generation,
 verification machinery or new product decisions are selected.
 
-Natural contact/travel; actual layout, flags, HP, actors, mappings and lists; pending writes,
-action/service/presentation/input completion and transport persistence remain **Unknown**. Supplied
-states and partial completion do not establish a natural history. This guide completes neither the
+Natural travel; actual layout, flags, mode, HP, membership, actors, mappings and lists; pending writes,
+action/service/presentation/input completion, saved-state consistency and persistence remain
+**Unknown**. Supplied states and partial completion do not establish a natural history. This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-[#820](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/820) owns disjoint successor
+[#824](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/824) owns disjoint successor
 research; its unmerged conclusions are not dependencies of this guide.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. Unexpected broad
 dependencies, evidence conflicts or product choices stop affected expansion for replanning;
-missing natural observations remain Unknown. Preserve PR818's failed initial destination assumption,
-corrected symbol-to-owner join, successful final checks/CI and linked earlier failures/results;
+missing natural observations remain Unknown. Preserve PR822's passed comparisons/CI, resolved
+inspection/commentary correction and rejected-command history, plus PR818's failed initial destination
+assumption, corrected symbol-to-owner join and successful final checks/CI through their handoffs;
 do not ritual-replay them or equate aggregate evidence with per-case/composed coverage.
 
 Read the complete explanation and owned diff; check provenance, changed links/fragments, exact
