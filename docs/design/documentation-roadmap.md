@@ -378,54 +378,61 @@ flags and separate fresh-entry populations. Its retained review preserves the
 corrected Fairy declaration `(17,10)` Up/eas_InitSlow and both original and
 corrected #962 review/CI receipts.
 
-The current reader outcome explains Creed departure, Fairy's dwarf recovery,
-the Cannon offer and digging through immediate caller returns and relevant
-fresh-entry consequences. **Standard** rigor remains appropriate because map
-admission, actual actors, recovery narrative, item capacity and ordered flags
-are distinct boundaries. The owner is
-[Creed departure, dwarf recovery and the Cannon gift](synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md),
-scoped by [#966](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/966).
-Consume [accepted #961 research](../research/creed-departure-dwarf-recovery-and-cannon-gift.md)
-and predecessors on main `c430f26f69a01a0f6e917660e34503c6bcccbec4`.
-Concurrent #965 New Granseal/Astral research is neither evidence nor dependency.
+[Creed departure, dwarf recovery and the Cannon gift](synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md)
+explains the selected mine route, Fairy's recovery staging, capacity-dependent
+Cannon offer and digging through conditional caller returns. Live/fresh layout,
+actual actors, repeated gifts and service/control/save limits remain with that owner.
 
-Acceptance requires a coherent readable recovery/gratitude/digging story with
+The current reader outcome explains the return to New Granseal, retrospective
+audience and Astral's adviser following through immediate caller return and
+relevant fresh-entry consequences. **Standard** rigor remains appropriate:
+route/history, actual cast, narration versus force membership, services and
+ordered flags are distinct boundaries. The owner is
+[New Granseal return and Astral following](synthesis/new-granseal-return-and-astral-following.md),
+scoped by [#970](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/970).
+Consume [accepted #965 research](../research/new-granseal-return-and-astral-following.md)
+and predecessors on main `af7a1e656eddc4a0252b9f5cee4bbe31288369a3`.
+Concurrent #969 inventor/Dynamite research is neither evidence nor dependency.
+
+Acceptance requires a complete readable return/audience/adviser story with
 unchanged **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain selected33→67→68→30 connections without mandatory terrain/natural-walk
-  claims. Retained scroll differs from fresh admission; interior30 is directly
-  reached from68 and differs from exterior29. Keep battle/mode/coordinate premises.
-- Separate selected baseline/F785/empty761 populations, independent761-layout/
-  760-illness init and759 dialogue from recovery admission. Current C158 is Fairy,
-  resident130 the patient; absent ordinary B aliases0 rather than retaining Oddler.
-- Complete examination, staged recovery/self-report, gratitude, Fairy hide and
-  digging with precise speaker/control/name owners. No combat-HP cure, observed
-  recovery or all-actor completion follows from presentation requests/waits.
-- Preserve69-set/760-clear admission and recovery→helper→760→clear69 order;
-  no invented759/762/785/761/capacity guard. Count all four Bowie slots, distinguish
-  fixed recipient from LEADER, retain unchecked AddItem and no existing-Cannon/
-  761 helper guard. Full inventory still reaches760/clear69; retained128 can
-  retry and repeats can award again with space. Fresh761 removes residents.
-- Complete digging and distinguish its live2×2 copy from fresh761's two copies;
-  placements/per-actor waits do not prove settled actors or an open route.
-  Preserve item/761/digging/760/69 interruption order, entity versus zone returns,
-  current following and natural-reach/supplied-state/service/control/save Unknowns.
+- Explain selected30→68→73→6→7 connections, Battle19/F419/F519 intercept,
+  retained scroll versus fresh entry and history/setup/init premises. No Cannon/
+  761 audience prerequisite or mandatory/naturally walked route.
+- Preserve802 priority/805 skip versus older701/702 branch, welcoming/Elis
+  report, retrospective explanation, Zeon/Tristan discussion and adviser
+  announcement. Attribute speakers without inventing rescue, yes/no, replay
+  of earlier scenes or automatic northward travel.
+- Keep Minister128/King129/Astral139, Peter/Bowie and selected populations/
+  fresh707 init distinct. Retain HP/aliases, word32768's Bowie no-wait control,
+  replaced unawaited actions, speed/animation and per-actor/service limits.
+  Palette remap/restore is a request, not observed all-cast/visible completion.
+- Separate announcement music/narration from direct held-input acknowledgement:
+  no fresh edge, helper-name palette fade, force recruitment or capacity test.
+  Peter→Bowie checks Bowie's HP; addNewFollower139 selects the actual last list
+  entry, which need not be an existing Peter.
+- Current139 remains resident; script70 precedes caller805/70 and physical0
+  wrapper wait. Fresh70-derived B31 and805's omitted139 are independent.
+  Preserve707-clear reload, missing/duplicate/self-follow, HP0, skipped/repeat/
+  direct/interrupted prefixes and natural-reach/service/control/save Unknowns.
 
-Own exactly five paths: the new guide, Oddler predecessor continuation link only,
+Own exactly five paths: the new guide, dwarf predecessor continuation link only,
 Story Progression, this current agreement and docs/README.md navigation.
 No research/contract/schema/fixture/tooling/remake/glossary or Chinese writes.
-Stop before Cannon use, subsequent journeys and New Granseal/Astral. Small
+Stop before Janet/inventor gift/North Cave scenes. Small
 selected reads/prose only; no acquisition, regeneration, runtime, new environment
 or machinery. Content/readability governs length. Material evidence conflict or
 broader coupling requires replanning rather than silent expansion.
 
-The guide's [evidence review](synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md#evidence-review-and-retained-results)
-preserves #961 original/rebased/accepted receipts, unchanged18,285,979-byte
-pair0.081s,144 records/25 inline bodies/28 text joins and both CI runs. Retain
-its encoded-size inspection failure/correction, linked original diagnostics,
-#962 original/corrected review and CI, #957/#953/#949/#945/#941/#937 results,
-failures/Unknowns and #954 callback correction. This checkout lacks the pinned
-upstream/pair: no fresh comparison claim or completed-failure restart.
+The guide's [evidence review](synthesis/new-granseal-return-and-astral-following.md#evidence-review-and-retained-results)
+preserves #965 original/final CI, Battle19/stride32 corrections, distinct
+0.087/0.081/0.080s retained-pair receipts and main-gate's complete joins.
+Retain #966 original/final CI and flash/fade clarification, #961 receipts/
+encoded-size correction, #962 Fairy correction and linked #957/#953/#949/
+#945/#941/#937 failures/results/Unknowns and #954 callback correction.
+This checkout lacks the pinned upstream/pair: no fresh comparison claim or
+completed-failure restart.
 
 Adversarially inspect accepted Layer A and selected public fixture/schema/consumer
 surfaces; report contradictions to their owner without research edits. Check
@@ -433,7 +440,7 @@ complete prose/diff, links/anchors/navigation, English/private boundary and
 `git diff --check`. Load local/private-inputs.ps1 in the same process for the
 clean committed planner and record actual exact-head CI on current accepted
 main. No blanket local Python/.NET/Godot/H3/H4 or translation suite solely for
-prose. Freeze a clean pushed Draft PR fixing #966, Project Review / Verify and
+prose. Freeze a clean pushed Draft PR fixing #970, Project Review / Verify and
 successfully notify authorized main-gate for independent acceptance. No merge,
 cleanup, archive or next Issue.
 

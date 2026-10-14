@@ -619,6 +619,23 @@ Independent init/dialogue flags, aliases/HP/mode, interrupted prefixes, inherite
 speech, service/control/save and natural-reach Unknowns remain explicit. The
 guide stops before Cannon use, subsequent journeys or New Granseal/Astral.
 
+[New Granseal return and Astral following](new-granseal-return-and-astral-following.md)
+continues along selected30→68→73→6→7 connections, with Map68's Battle19
+intercept and retained border scroll kept separate from fresh entry/history.
+The802-priority/805-clear audience welcomes the party, hears Peter's report
+about Elis and narrates the earlier journey. The king calls for Zeon's defeat
+and Elis's rescue; Astral proposes Tristan and accompanies the party as adviser.
+Minister128, king129 and current Astral139 require actual mappings; altered
+707 init, HP, aliases and asynchronous actions retain their accepted limits.
+Palette remap/restore, announcement music and direct held-input acknowledgement
+do not prove visible completion or battle-force recruitment. Peter's current
+follow checks Bowie's HP;139 then follows the actual last exploration entry,
+which need not be an existing Peter. Script70 precedes caller805/70 and the
+physical0 wrapper wait. Fresh70-derived B31 and805's omission of resident139
+are independent from current following. Repeat/direct/interrupted prefixes,
+natural reach, services, usable control and save persistence remain explicit;
+Janet, inventor gift and North Cave are next boundaries only.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

@@ -266,6 +266,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   admitted farewell, dormant hides and current following through ordered zone return; separate fresh F786/F22 populations and service/control limits.
 - [`creed-departure-dwarf-recovery-and-cannon-gift.md`](./design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md) —
   selected departure/mine route, Fairy recovery, capacity-dependent Cannon gift and digging; actual actors, repeated/live/fresh state and ordered caller/service/control limits.
+- [`new-granseal-return-and-astral-following.md`](./design/synthesis/new-granseal-return-and-astral-following.md) —
+  conditional mine-to-castle return, retrospective audience and adviser announcement; actual cast, current/fresh following, ordered flags and service/control/save limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
