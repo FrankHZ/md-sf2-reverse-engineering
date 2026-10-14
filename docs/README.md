@@ -264,6 +264,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   explicit shrine return, selected mansion population, Fairy current following and eight recruit offers; joined/active capacity, shrink parking, repeat/interruption and conditional-return limits.
 - [`oddler-stays-and-fairy-handoff.md`](./design/synthesis/oddler-stays-and-fairy-handoff.md) —
   admitted farewell, dormant hides and current following through ordered zone return; separate fresh F786/F22 populations and service/control limits.
+- [`creed-departure-dwarf-recovery-and-cannon-gift.md`](./design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md) —
+  selected departure/mine route, Fairy recovery, capacity-dependent Cannon gift and digging; actual actors, repeated/live/fresh state and ordered caller/service/control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

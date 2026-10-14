@@ -20,6 +20,10 @@ consequences. A walked mansion departure, overworld route and dwarf healing
 have separate boundaries; Creed's advice to go north does not perform that journey.
 This Layer B guide selects no remake rule or new observation work.
 
+Continue with [Creed departure, dwarf recovery and the Cannon gift](creed-departure-dwarf-recovery-and-cannon-gift.md)
+for the selected mine route, Fairy's recovery scene, capacity-dependent gift
+and digging through their separate caller and fresh-entry boundaries.
+
 ## When the Farewell Is Admitted
 
 **Confirmed:** the room's zone table associates `(15,21)` with
