@@ -297,6 +297,10 @@ branch, rebuilds the population or restores main to `(0,0)`. Supplied mode and a
 still matter. This guide stops at that conditional first-arrival/repeat boundary, before interaction,
 postbattle scene or Chessboard admission/content.
 
+Continue separately with [Desktop conversations and the Chessboard challenge](desktop-kingdom-interactions-through-battle22-entry.md)
+for villagers/services, King Ponpei's permission and conditional Battle22 admission. This
+first-arrival guide retains its local return/repeat stop.
+
 ## Evidence Review and Changed-State Limits
 
 **Confirmed provenance:** accepted main `e120a9b6890527eb018e081f1c5b1907c21155bc` contains the

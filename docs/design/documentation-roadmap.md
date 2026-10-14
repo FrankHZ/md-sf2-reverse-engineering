@@ -299,50 +299,54 @@ pre-shrinking stop and supplied-state, service, following and live-layout limits
 explains the independent warning/shrinking/collection scene and conditional request/admission. Its
 pre-population/pre-opening stop and supplied-state, sprite, live-copy and pending limits remain.
 
-The current reader outcome explains accepted Desktop Kingdom population, first arrival and
-conditional control. **Standard** rigor remains appropriate because allocation, narrative speakers,
-concurrent action consumers, temporary sprite work and the init/control caller have distinct
-boundaries. The current owner is
-[Desktop Kingdom first arrival and conditional control](synthesis/desktop-kingdom-first-arrival.md),
-scoped by [#903](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/903). It consumes accepted
-[arrival research](../research/desktop-kingdom-first-arrival.md),
-[#900's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/900#issuecomment-6174161863),
-[correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/900#issuecomment-6174261324),
-[resolved P2](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/902#issuecomment-6174194697)
-and [PR902 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/902#issuecomment-6174272544).
-Preserve distinct original/corrected heads/trees and CI38605731097/38606392847, the unchanged
-18,285,979-byte retained pair/0.081s and all linked failures. The predecessor's
-[#899 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/899#issuecomment-6174047117)
-and [PR901 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/901#issuecomment-6174065903)
-retain their separately owned comparisons, CI, original/rebased #896 receipts, #895 results and
-linked failures. No stacking, raw-source reinvestigation, runtime acquisition or remake work.
+The current reader outcome explains accepted Desktop Kingdom conversations, bounded services,
+King Ponpei's permission and conditional Chessboard admission. **Standard** rigor remains
+appropriate because actor activation, independent flags, service return, scene completion and
+request consumption have distinct boundaries. The current owner is
+[Desktop conversations and the Chessboard challenge](synthesis/desktop-kingdom-interactions-through-battle22-entry.md),
+scoped by [#907](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/907). It consumes
+[accepted interaction/admission research](../research/desktop-kingdom-interactions-through-battle22-entry.md),
+[#904's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/904#issuecomment-6174520666),
+[rebased/final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/904#issuecomment-6174585157)
+and [PR906 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/906#issuecomment-6174618486).
+Preserve distinct original/rebased/final identities and CI38608369060/38608730439/38608904864,
+the unchanged18,285,979-byte pair/0.080s and all linked failures. The accepted
+[first-arrival guide](synthesis/desktop-kingdom-first-arrival.md),
+[#903 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/903#issuecomment-6174446531),
+[correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/903#issuecomment-6174502720)
+and [PR905 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/905#issuecomment-6174512539)
+retain reload's existing-layout reuse, RightLeft facing changes, #900's corrected csc2D FLAGS_A5/6
+destination-scan bypass and all #900/#899 predecessor receipts/failures. No stacking, raw-source
+reinvestigation, runtime acquisition or remake work.
 
 Acceptance requires readable content/consequences with research/fixture/schema/verifier traceability
 and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Admitted fresh Map22 exploration F422 clear, first-arrival F522/F776 clear; all 30 baseline rows,
-  Eric/Karna ally slots, follower-first/row/main allocation and conditional physical-slot example.
-  NPC128 CARAVAN differs from the mansion WORKER and dialogue Goliath attribution; ORB153–155,
-  missing/duplicate followers, HP/class and mode/raft overwrite remain supplied-state boundaries.
-- Complete 136-command cs_59656, seven custom/thirteen inline bodies and fifteen texts 1748–1762,
-  organized by landing, discussion, farewell and conditional following/control.
-- Current-map camera reload without population/init recursion; animation versus motion, speed,
-  shared size/orientation/shadow work, nominal paired targets, actual selected waits and hide's
-  lookup/slot effect. Retain corrected installer FLAGS_A5/6 clearing and destination-scan bypass
-  for unmodified inline moves, with conditional completion and no inferred exact elapsed time.
-- Actual portrait/speech fallback and five+five explicit sound requests; final Init/follow with its
-  high-byte guard that tests Bowie's HP and supplied mappings, without a membership/warp/persistent-scale grant.
-- Caller-written F776 only after return, independent F522/F778 dispatch, pending/controller/mode
-  conditions and fresh-map versus map255 return. Identify later interactions/postbattle only.
+- All27 event rows/default and selected prebattle callbacks; all29 literal/control joins, grouped
+  by villagers, Eric/Karna, services, King/guards and chess pieces. Activation/reverse mapping and
+  row action bits are actual consumers, not required approach directions. Supplied HP/class/alias,
+  physical mappings and portrait/speech remain conditional. Eric/Karna text does not recruit.
+- NPC128 Caravan and NPC132 Church entry/return boundaries, including Caravan's F70-selected
+  service portrait versus dispatcher fallback; no transaction or later-control completion claim.
+- King F522-before-F777 selection, first1778-1780 plus1781/repeat1781, then F777 write. Talking
+  alone does not unlock battle. Guard135 uses F777; guard136 uses independent F212/F258.
+  Identify excluded F522/F256 and F212/F258 continuations without consuming their later content.
+  Lore/boasts are dialogue, not universal mechanics or stats.
+- Wildcard-X zoneY16 versus actual block request/natural reach; F777-set/F522-clear EGRESS_MAP22
+  write, complete eight-command cs_5994E and both texts. No Yes/No branch despite the question.
+  EGRESS_MAP supplies only the map selector; the later warp supplies22,0,0,Right. Camera10,0,
+  text/camera return, F422, pending warp, wrapper and no-scroll consumption remain distinct.
+- CheckBattle map/F422/wildcards/area-before-F522-clear order and changed-state bypasses. Stop at
+  BattleLoop admission before opening/roster or conditional local bypass/return. No F522
+  completion, reward, exit, Cotton Balloon or Floor World content follows from this boundary.
 
 The five owned paths are the new guide, predecessor's one continuation preserving its stop,
-Story Progression navigation, this current agreement and one English index entry. Stop at conditional
-local first-arrival return/repeat before interactions, cs_5996E or Battle22 opening/roster/outcomes.
-No research/contracts/fixtures/schemas/code/glossary/Chinese/remake edits, retained-payload
-rerun/regeneration or new verification machinery. Concurrent #904 local-interaction/admission
-research is disjoint and not an accepted dependency.
+Story Progression navigation, this current agreement and one English index entry.
+No research/contracts/fixtures/schemas/code/glossary/Chinese/remake edits, retained comparison
+rerun/regeneration or new verification machinery. Concurrent #908 Battle22 initialization research
+is disjoint and not an accepted dependency.
 
-Natural reach, supplied state, completed services/concurrent actions, rendered/heard performance,
+Natural reach, supplied state, services/camera/text/wrapper completion, rendered/heard performance,
 useful control and persistence remain Unknown. Static counterexamples are not executed scenarios
 or an automatic runtime queue. Public aggregates and accepted selected direct-source joins retain
 separate limits; no aggregate proves complete local content or composed runtime success. This
