@@ -246,64 +246,67 @@ cross-reference rather than a mandatory chronological prerequisite.
 explains ordered admission, walking/raft requests, first/repeat outcomes and conditional returns.
 Its mutable request, party/transport and natural-route limits remain applicable.
 
-The current reader outcome explains the selected Southwest Parmecia transfer, Taros warning/retreat
-and conditional Battle18 entry. **Standard** rigor remains appropriate because scrolling versus
-MainLoop admission, independent flags, scene/population identity and before/start order must agree
-without becoming an observed journey or vehicle/combat capability. Follow the
+[Southwest Parmecia, Taros's warning and conditional Battle18 entry](synthesis/southwest-parmecia-through-taros-battle18-entry.md)
+explains the selected western transfer, warning/retreat and complete confrontation through the
+pre-activation start. Its independent flags, scene/neutral identities and natural-route limits remain.
+
+The current reader outcome explains Battle18 outcomes, the complete Caravan acquisition scene and
+immediate conditional exploration/control. **Standard** rigor remains appropriate because outcome
+precedence, actor identity, speech versus mutations, seeded return and supplied savepoint consumers
+must agree without implying a natural route, rendered bug or vehicle operation. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Southwest Parmecia, Taros's warning and conditional Battle18 entry](synthesis/southwest-parmecia-through-taros-battle18-entry.md),
-scoped by [#843](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/843). It consumes the
-[accepted static investigation](../research/southwest-parmecia-through-taros-battle18-entry.md),
-[PR842 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161224116)
-and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161232331),
-with accepted Hassan/Rohde, request, battle, actor and following owners from main only. No stacked or
-unmerged evidence is consumed; opposite-lane Battle18 outcomes/Caravan research is outside this guide.
+[Battle18 outcomes and Caravan acquisition](synthesis/battle18-outcomes-and-caravan-acquisition.md),
+scoped by [#847](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/847). It consumes the
+[accepted investigation](../research/battle18-outcomes-and-caravan-acquisition.md),
+[PR846 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/846#issuecomment-6161451537)
+and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/846#issuecomment-6161473505),
+plus accepted Taros/Hassan, battle, request, actor and membership owners from main only. No stacked
+or unmerged evidence is consumed; the opposite lane's Hassan/Rick research is not a dependency.
 This is original-content explanation without source reinvestigation or remake work.
 
 Acceptance requires readable consequences and exact research/contract/fixture/schema/consumer
-traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Bounded tracked-fixture selections
-support shared-rule review without promoting aggregate facts to composed observation. Explain:
+traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Explain:
 
-- Map69-to68 in-place scrolling versus Map68-to12 no-scroll/MainLoop admission. F418 selection
-  precedes F725 init; completion may clear unlock without canceling selection. Independent flags
-  do not establish mandatory chronological travel or Sword/Battle17 prerequisites.
-- The complete warning, pending retreat and conditional exploration/unrelated Battle19 boundary,
-  including selected population/followers, lookup/HP limits and unfinished action/service/control work.
-- The complete Battle18 before scene, main header versus Taros/Caravan rows and flag-selected
-  followers, fresh/F88 bypass and empty start. Stop before activation or an observed playable turn.
-- Scene Caravan129/Down versus F518-clear neutral159/Left/HP0/eas_Motionless after combat rebuild;
-  independent F468/F518 combinations. Neither sprite nor speech grants transport, Rohde membership,
-  inventory or Sword damage, and twelve placement rows do not prescribe a living party.
+- Leader cleanup versus defeat-before-victory, first/repeat wrapper and seeded return before staging
+  and joining; actual F65/F84 changes and both paths' shared Bowie join.
+- The complete inspection, entry/disappearance, reaction, return/explanation and departure scene,
+  including all dialogue/action/camera meaning, HP/missing actors and asynchronous overwrite/services.
+- Scene logical128 versus before129/neutral159 and raw physical1 shrink clone. Conditional allocation
+  establishes no observed rendered bug. Driver/miniaturization speech does not supply combat
+  membership, current transport mode or Caravan operation.
+- Immediate Map12 F725 warning before F518 movement-out, pending Map68 return with conditional
+  exploration/control or unrelated admission; supplied EGRESS_MAP versus Battle17's forced Hassan,
+  conditional raft resets and non-Hassan init Unknowns. Flags/membership/modes remain independently
+  supplied, without a natural-route or winning-state assumption.
 
-The five owned paths are the new guide, Hassan departure guide's next-segment cross-reference,
+The exact five owned paths are the new guide, the Taros entry guide's next-segment cross-reference,
 Story Progression navigation, this current agreement and one English documentation-index entry.
-Stop at conditional exploration return, unrelated admission or pre-activation start. Battle18
-outcomes, Caravan acquisition/operation, Rick, later travel, terrain/path reconstruction, natural
-runtime, combat simulation, continuous playability and Chinese work are excluded. No
+Stop at immediate conditional outcome return/control or unrelated admission. Sword damage, combat
+simulation, Caravan operation/menus/storage, Rick, later travel and Chinese work are excluded. No
 research/contracts/fixtures/schemas/glossary/zh-CN/remake writes; no acquisition, payload regeneration
 or new verification machinery.
 
-Natural travel/admission/return, actual flags/HP/lists/lookups/transport/raft/request/input,
-action/all-actor/service completion, presentation, usable control and save/resume persistence remain
-**Unknown**. This guide completes neither
-[the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-Unexpected broad dependencies, evidence conflicts or product choices stop affected expansion for
-replanning; missing natural observations remain Unknown.
+Natural outcome/reach, actual flags/HP/roster/lookups/seed/savepoint/transport/raft/request/input,
+all-actor/services, rendered shrinking/presentation, usable control and persistence remain **Unknown**.
+Other supplied savepoint-map init continuations are not silently treated as Hassan. This guide
+completes neither [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
+nor the campaign. Evidence conflicts, broad dependencies or new product choices stop affected
+expansion for replanning; missing natural observations remain Unknown.
 
-Preserve PR842's original/rebased CI, direct/retained comparisons, corrected/failed inspections and
-linked predecessor results in its final/original handoffs and independent acceptance. Accepted
-results suffice without ritual replay. The narrower research order controls over compact aggregate
-summaries; no new composed-route observation is implied.
+Preserve PR846's original/rebased results, retained comparisons, corrected/failed inspections and
+final CI in its handoff/acceptance, including linked PR842/predecessor histories. Accepted results
+suffice without ritual replay. Bounded existing fixture selections support shared-rule review;
+aggregate facts do not establish a composed scene or outcome observation.
 
-Read the entire owned prose/diff; check provenance, links/fragments, exact paths/private boundary and
-`git diff --check`, then inspect the clean committed dependency planner and actual final-head CI.
-Documentation acceptance runs no normal/full/engine/Godot/H3/H4 or translation suite solely for prose.
-Freeze a clean pushed Draft PR fixing the Issue, Project Review / Verify and a successful authorized
-completion callback for independent main-gate review. Direct checks and CI do not grant integration;
-no cleanup or next-Issue selection is authorized.
+Read the entire owned prose/diff; check provenance, links/fragments, fixture quantities, exact paths/
+private boundary and `git diff --check`, then inspect the clean committed dependency planner and
+actual final-head CI. Documentation acceptance runs no normal/full/engine/Godot/H3/H4 or translation
+suite solely for prose. Freeze a clean pushed Draft PR fixing the Issue, Project Review / Verify and
+a successful authorized completion callback for independent main-gate review. No integration,
+cleanup or next-Issue selection is authorized.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
