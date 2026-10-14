@@ -546,10 +546,27 @@ an empty resident list; main/followers/raft remain separate. Evil Spirit130 uses
 physical47, while sixteen EFFECT1 rows are distinct ordinary allocations, not
 proven animation. Return-only init does not start the consultation. A separately
 produced zone request with Y low byte13 reaches the independent F784-clear call
-gate; F783 is no prerequisite. Only after the unanalyzed scene returns can the
-caller set F784 then F802. Scene contents, recruitment/departure and postscene
-control remain later boundaries; actual layout/state, natural reach, service
-completion, presentation and persistence remain Unknown.
+gate; F783 is no prerequisite. Only after scene return can the caller set F784
+then F802. Its continuation explains the scene below; recruitment/departure and
+usable postscene control remain later boundaries. Actual layout/state, natural
+reach, service completion, presentation and persistence remain Unknown.
+
+[Evil Spirit consultation and conditional zone return](evil-spirit-consultation-and-zone-return.md)
+continues through Creed's summoning, blocked contact, jewel inspection/display,
+the spirit's report and the voice identifying itself as Zeon. Its demand for the
+Jewel of Evil and proposed Elis exchange remain dialogue, with no inventory
+transaction. The explosion staging uses sixteen separate effects, five ray
+bursts and cyclic actions; the spirit, effects, Creed and Fairy are hidden in
+order. Actor131's dialogue identity is separate from special physical47 and the
+shared graphics requests. Hidden orbit pointers remain dormant under the
+$7000-X entity-loop skip; waited actions join one actor, not the whole scene.
+After the attendants' exit, the high-byte/Bowie-HP-guarded following requests
+precede script return, conditional F784 then F802 and the wrapper's physical0
+coordinate wait. This is ordered, non-atomic source behavior, not measured
+presentation, restored original palette, usable control or persistence. The
+complete 409-record/73-text scope retains N-only 3254 continuation, actual
+speaker/portrait/leader state, debug skipping and changed-state limits. Later
+mansion/Fairy/recruitment and Oddler events remain outside this guide.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
