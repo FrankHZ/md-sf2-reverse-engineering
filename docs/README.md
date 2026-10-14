@@ -242,6 +242,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   empty hooks, party placement, sixteen chess enemies and rebuilt board/neutral actors; fresh/current-state and pre-activation limits.
 - [`battle22-outcomes-and-desktop-return.md`](./design/synthesis/battle22-outcomes-and-desktop-return.md) —
   leader/count outcomes, rebuilt Desktop, reward announcement and King/Maid repeats; seed, actor, service and acquisition limits.
+- [`cotton-balloon-through-floor-world-entry.md`](./design/synthesis/cotton-balloon-through-floor-world-entry.md) —
+  chest delivery, guard clearance, own-tile use and complete departure through conditional Map26 admission; custody, actor/wait and pre-population limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
