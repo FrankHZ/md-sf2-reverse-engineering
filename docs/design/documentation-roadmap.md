@@ -393,72 +393,75 @@ explains the accepted inventor conversation, independent permission/item/capacit
 checks and ordered gift/local return. Its retained review preserves predecessor
 results, corrected inspections, failures and Unknowns.
 
-The current reader outcome explains Janet finding the party, asking to accompany
-Elric, the warning and scripted acceptance, recruitment announcement and temporary
-following through local zone return and necessary fresh-town consequences.
-**Standard** rigor remains appropriate: admission, current actors, joined/active
-membership, following,806 and later usable control are distinct. The owner is
-[New Granseal Janet recruitment and departure](synthesis/new-granseal-janet-recruitment-and-departure.md),
-scoped by [#978](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/978).
-Consume [accepted #973 research](../research/new-granseal-janet-recruitment-and-departure.md)
-and accepted predecessors, including the inventor synthesis. Battle24 research
-and UI outcomes have separate scope and are not evidence dependencies here.
-
-Acceptance requires a coherent story preserving **Confirmed**, **Inferred** and
-**Unknown** boundaries:
-
-- Explain Map6 zones19,29/20,29,805-set/806-clear and shared-default return,
-  actual producer/request premises and current/fresh setup/init/followers.
-  No804/Cannon/Dynamite/70/Elric/HP/capacity prerequisite or natural-reach claim.
-  Town139 is a guard; actual B31 mapping and the earlier castle139 are separate.
-- Account for the complete scene, actors, absolute/relative moves, camera,
-  actions/gestures/waits and scripted consent, with no yes/no prompt. Preserve
-  LEADER/NAME;13, actual mapped speech/portrait, modifiers, skip/cursor limits
-  and direct446 NAME/CLASS. Static requests do not prove visible completion.
-- Preserve unconditional Janet allocation and class/dead sprite selection,
-  missing/aliased actors, duplicate allocation and overwritten actions. No
-  existing/joined/dead rejection or healing. Actor-byte facing guards differ
-  from followEntity's word-high-byte Bowie guard on all three calls.
-- Separate join/music/announcement/input from joined18 and conditional active50.
-  Full capacity permits reserve joining; repeated/inconsistent inputs retain
-  actual behavior. Rebuild-before-activation leaves cached lists distinct.
-  One held-input service needs no fresh edge and performs no palette fade;
-  membership precedes its return without stats/class/items/AI/HP initialization
-  or a battle-slot guarantee.
-- Explain physical P→Bowie, B→P, J→B dependencies, offset and actual following,
-  installation-before-dedup and retained old entries. No fixed endpoint,
-  adjacency, self/cycle/list-capacity repair or forced completion.
-- Preserve scene→806→zone windows/VInt/physical0 wait→conditional control reset,
-  without borrowing the entity wrapper's update toggles. Fresh Map6 has no
-  Janet declaration; joined18/active50/806 do not reconstruct the temporary
-  chain. Retain interruption/retry/skip/direct/changed-state and save limits.
-
-Own exactly five paths: the new guide, inventor predecessor continuation link
-only, Story Progression's connected segment/frontier, this agreement and
-docs/README.md navigation. No research/contract/schema/fixture/tooling/remake/
-glossary or Chinese writes. Stop at local return/fresh-town consequences.
-South warp identifies the next route only; Battle24 entry/roster, North Cave
-blast/Rohde and later travel/combat belong to separate outcomes.
-
-Minimum evidence is accepted Layer A plus selected existing public zone/init/
-script/roster schemas, fixtures and consumers, and small document checks. No
-upstream/pair acquisition/regeneration, runtime/capture, environment creation or
-new framework. Content/readability governs length; material contradiction
-returns to the research owner for replanning. The guide's
+[New Granseal Janet recruitment and departure](synthesis/new-granseal-janet-recruitment-and-departure.md)
+explains accepted scripted acceptance, joined/active membership and temporary
+following through local return/fresh-town consequences. Its
 [retained review](synthesis/new-granseal-janet-recruitment-and-departure.md#evidence-review-and-retained-results)
-links #973/#974 accepted results, all retained comparisons/CI, corrected alias,
-private-regex and KeyError inspections, predecessor #969/#970/#965 results,
-#954/#962 corrections, failures and Unknowns. Missing synthesis-checkout
-upstream/pair permits no fresh-comparison claim or completed-failure restart.
+preserves predecessor comparisons, corrected inspections, failures and Unknowns.
+
+The current reader outcome explains New Granseal departure, conditional
+Battle24 admission and the initial encounter. **Standard** rigor remains
+appropriate: retained scroll, request production, ordered selection and
+fresh/continued roster state differ. The owner is
+[New Granseal departure through Battle24 admission](synthesis/new-granseal-departure-through-battle24-admission.md),
+scoped by [#982](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/982).
+Consume corrected accepted [#977 research](../research/new-granseal-departure-through-battle24-admission.md)
+and accepted predecessors, including Janet synthesis. Battle24 outcomes and
+UI have separate scope and are not dependencies of this admission guide.
+
+Acceptance requires a readable connected explanation preserving **Confirmed**,
+**Inferred** and **Unknown** boundaries:
+
+- Explain Map6 south→73 fresh entry and73 east→72 retained scroll, actual
+  coordinate/facing/high-byte, history/mode/raft/follower limits and the
+  corrected south alternative Map68. No Janet/item/805/806 prerequisite;
+  scrolling does not select battle, rebuild actors or run72 init.
+- Separate the walking zone write before raw blocking from movement, mode,
+  first specific26/cave selection and default523→8/24. Preserve completed524,
+  counter/RNG branches, partial request residuals, write-before-service and
+  request survival; no automatic default every frame or guaranteed travel.
+- Explain ordered8/24/26 admission, completion-clear-after-selection,
+  wildcard versus crop, local coordinates, empty before/start hooks and474
+  ordering. Keep88 suspension distinct from fresh heal/placement/load.
+- Account for twelve processed ally slots, joined-active order, living/dead/
+  immortal/capacity differences and Janet's non-guaranteed placement. Explain
+  all16 enemy IDs/types/formation/orders/regions/item inputs, three regions
+  and point0, actual combatant follow targets and separate physical numbering.
+- Distinguish authored item flags from stored words, copied definitions/
+  equipment/spells, initial activation, difficulty baseATT versus final ATT
+  and524/class/level/RNG-dependent upgrades. No uniform successful repeat
+  roster, executed tactic or activation claim.
+- End after fresh start-dispatcher return before ActivateEnemies. Preserve
+  natural reach, supplied state, interrupted/repeated/changed-state and
+  service/presentation/control/save Unknowns. Combat/outcomes/Egress, cave
+  preparation/blast, Rohde, Battle25 and later travel are separate outcomes.
+
+Own exactly five paths: the new guide, Janet predecessor continuation link
+only, Story Progression's connected segment/boundary, this agreement and
+docs/README.md navigation. No research/contract/schema/fixture/tooling/remake/
+glossary/Chinese changes or new original fact/remake behavior.
+
+Minimum evidence is complete accepted Layer A plus selected existing public
+fixtures, schemas and actual consumers and small direct document checks.
+Retain rowContentTracked=false/routeTargetsParsed=false boundaries: counts
+cannot prove private roster rows or effective route targets. Source/pair are
+absent here; no acquisition/regeneration, fresh-comparison claim, runtime,
+installation/environment creation or new machinery. Content/readability
+governs length; contradictions return to the research owner for replanning.
+The guide's [retained review](synthesis/new-granseal-departure-through-battle24-admission.md#evidence-review-and-retained-results)
+keeps #977 original/intermediate/final receipts, both0.080s comparisons,
+Map68 source-symbol correction and direct failures, #978 CI/514links and
+inspector corrections, #973/#969/#965/#954/#962 results/failures/Unknowns.
+Completed failures are not restarted or reclassified.
 
 Check complete prose/diff/navigation/links/anchors, UTF-8/private/exact ownership
-and `git diff --check`. Load local/private-inputs.ps1 in the same process for
+and git diff --check. Load local/private-inputs.ps1 in the same process for
 the clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI in the Issue handoff. Documentation-only policy
-uses direct checks, without blanket Python/.NET/Godot/H3/H4/translation suites.
-Freeze a clean pushed Draft PR fixing #978, Project Review / Verify and successful
-authorized main-gate notification for independent acceptance. No merge, cleanup,
-archive or next Issue.
+uses direct checks without blanket Python/.NET/Godot/H3/H4/translation suites.
+Freeze a clean pushed Draft PR fixing #982, Project Review / Verify and a
+successful authorized main-gate callback for independent acceptance. No merge,
+cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

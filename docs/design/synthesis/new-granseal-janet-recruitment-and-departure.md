@@ -295,6 +295,10 @@ mapping/capacity and follower-list validity/order; completed movement/collision,
 DMA/text/portrait/music/input; visible recruitment, usable control and save/load
 persistence. These limits do not create a runtime queue or a remake requirement.
 
+Continue with [New Granseal departure through Battle24 admission](new-granseal-departure-through-battle24-admission.md)
+for the separate south-exit/east-scroll route, conditional admission and fresh
+initial encounter. Janet recruitment is not a prerequisite for that route.
+
 ## Evidence Review and Retained Results
 
 This synthesis adversarially checks the complete accepted #973 prose and
