@@ -129,8 +129,9 @@ not a newly observed portrait layout, text cadence, gesture or audible result.
 
 **Confirmed complete initial graph:** `cs_569BC` at `0x569BC` contains the recognition region,
 refusal `cs_56A70`, acceptance `cs_56A82` and common return `cs_56AD4` in one 50-record physical
-program. Six inline bodies accompany it. It requests 15 texts 1382–1396 across alternate branches;
-no one answer plays every text in physical order.
+program. Six inline bodies accompany it. Its 13 text sites are 1382–1391 and 1394–1396; the
+two sites 1392–1393 belong to the separate repeat prefix described below. Together the Rohde
+regions have 15 text sites across alternate branches; no one answer plays every text in physical order.
 
 | Records | Ordered staging and attributed meaning |
 | --- | --- |

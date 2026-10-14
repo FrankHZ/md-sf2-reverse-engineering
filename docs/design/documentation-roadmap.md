@@ -277,8 +277,9 @@ verification machinery or new product decisions are selected.
 Natural admission, actual inventories/flags/HP/membership/mappings/lists/input, action/window/update/
 service/presentation completion, lore, usable control and persistence remain **Unknown**. This guide
 completes neither [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-nor the campaign. [#832](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/832) owns disjoint
-successor research; its unmerged conclusions are not dependencies of this guide.
+nor the campaign. Accepted successor research under
+[#832](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/832) remains outside this guide's
+dependencies and scope.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. Unexpected broad
 dependencies, evidence conflicts or product choices stop affected expansion for replanning; missing
