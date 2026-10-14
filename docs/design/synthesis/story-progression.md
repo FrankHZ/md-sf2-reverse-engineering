@@ -356,6 +356,13 @@ repeat/full-inventory rollback and current-map stair retention remain conditiona
 church call/return or conditional Map23 control, retaining caller, natural-access, service/input and
 persistence Unknowns without recruitment, item use or later travel.
 
+[Elven Village departure through Harpy Pond entry](elven-village-departure-through-harpy-pond-entry.md)
+explains selected village exits, independent west scroll with retained population, complete call-for-help
+and shared pond prompt. Direct/scripted requests, before-init F420 admission and F520 population versus
+F470 prompt remain separate. It stops at conditional pond control, another pending/admitted continuation
+or Battle20 admission before opening, preserving actor/HP/mode/service and natural-route Unknowns
+without rescue/recruitment, passage, approach/exit-warning or battle-content claims.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

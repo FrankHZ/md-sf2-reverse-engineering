@@ -263,57 +263,59 @@ Its admission stop and actor, request, service and natural-route limits remain a
 explains shared outcomes and independent arrival. Its entry/control stop, supplied population/mode,
 savepoint and natural-route limits remain applicable.
 
-The current reader outcome explains optional Elven Village conversations, local search and internal
-stairs. **Standard** rigor remains appropriate because interaction, inventory, request consumption
-and map reload have separate owners. The current owner is
-[Elven Village conversations and local exploration](synthesis/elven-village-conversations-and-local-exploration.md),
-scoped by [#863](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/863). It consumes
-[accepted local research](../research/elven-village-conversations-and-local-exploration.md),
-[PR862 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/860#issuecomment-6162414060),
-[rebased handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/860#issuecomment-6162442630)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/862#issuecomment-6162494122),
-plus accepted shared interaction, search, description, membership and map owners from main. Preserve
-[PR861 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/859#issuecomment-6162382778)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/861#issuecomment-6162400984),
+[Elven Village conversations and local exploration](synthesis/elven-village-conversations-and-local-exploration.md)
+explains optional dialogue, search and internal stairs. Its local stop, inventory/actor/service and
+natural-access limits remain applicable.
+
+The current reader outcome explains selected village departure, independent Devil's Tail scroll,
+call-for-help and the initial Harpy Pond prompt. **Standard** rigor remains appropriate because
+request consumption, battle admission, population, init and actor actions have separate owners.
+The current owner is
+[Elven Village departure through Harpy Pond entry](synthesis/elven-village-departure-through-harpy-pond-entry.md),
+scoped by [#867](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/867). It consumes
+[accepted departure/entry research](../research/elven-village-departure-through-harpy-pond-entry.md),
+[PR866 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/864#issuecomment-6170376311),
+[updated handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/864#issuecomment-6170461179)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/866#issuecomment-6170476818),
+plus accepted shared map/request, admission, population, action and dialogue owners from main.
+Preserve [PR865 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/863#issuecomment-6170364766)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/865#issuecomment-6170393336),
 including linked predecessor comparisons, actual CI, failures and corrected inspections. No stacked
-evidence, source reinvestigation, runtime or remake work is selected.
+or successor evidence, source reinvestigation, runtime or remake work is selected.
 
 Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Default/F762 actor-handler mappings, row-action bits versus approach direction, ordinary C
-  entity-first interaction versus menu search, literal dialogue/F13 read-only branch and church
-  call/conditional-return boundary. Text questions and Creed/fairy/Elric references imply no choice,
-  recruitment, story mutation or travel.
-- All three descriptions and four item rows with exact coordinates/kind admission/flags/items,
-  item-before-description priority at `(52,2)`, repeat/full-inventory rollback, joined-list recipients
-  versus active/visible followers, and unchecked AddItem return. Actual layout, collection, item
-  use/promotion and church transactions remain unclaimed.
-- No-scroll current-map stairs, Up to `(57,3)` Left and Down to `(21,8)` Right, current-map battle
-  scan and existing population/layout retention. Preserve modes 0/1/2, existing followers/raft,
-  temporary flags, load/init/services/pending and conditional control without a mandatory itinerary.
+- Selected Map23 exits and supplied F419 admission before fresh Map68; independent west scroll to67,
+  corner precedence and retained actors/mode/followers with no immediate battle scan/init. Later
+  supplied F421 admission and the bounded default random callback remain separate from scroll.
+- Complete cs_4FB64/F520 and cs_5C3D8/F470 gates, ordered dialogue/inline actions/waits/camera,
+  HP/missing mappings and absence of rescue/recruitment/unlock. Keep the actual first-byte follow
+  HP test, current-list append and asynchronous layout-sensitive following explicit.
+- Direct Map51 `(10,24)` versus scripted `(11,22)` requests, supplied F420 admission before init,
+  default four fixed actors versus F520-empty alternate, shared F470 init and all four flag
+  combinations. Preserve numeric transport, pending/service and conditional-control boundaries.
 
-The exact five owned paths are the new guide, Battle19 arrival guide's single local-content
-cross-reference (preserving its entry/control stop), Story Progression navigation, this current
-agreement and one English index entry. Stop at church call/conditional return or conditional local
-Map23 control, before external exits, Map24/Battle20, Fairy Cave/Creed or later story. F762's producer
-and Elric rescue/recruitment are excluded. No research/contracts/fixtures/schemas/glossary/zh-CN/remake
-writes, payload regeneration or new verification machinery are selected.
+The exact five owned paths are the new guide, local village guide's single departure cross-reference
+(preserving its local stop), Story Progression navigation, this current agreement and one English
+index entry. Stop at conditional pond control, another pending/admitted continuation or Battle20
+admission before opening. Exclude pond approach/exit-warning, battle roster/turns/outcomes, Elric
+rescue/recruitment, F751 passage, Fairy Cave/Creed and Battle21 content. No research/contracts/fixtures/
+schemas/glossary/zh-CN/remake writes, payload regeneration or new verification machinery are selected.
 
-Natural access/terrain, actual actor lookup/facing/counter/layout, caller flags/membership/inventory/
-recipient, service return/church outcomes, text substitutions/presentation, current mode/followers/raft,
-completed stairs/load/init, usable input and persistence remain Unknown. Supplied-state counterexamples
-constrain static review rather than describe executed bugs. Public summaries, retained full comparisons
-and source-only field-search reuse remain distinct; aggregates alone prove no selected title/item or
-composed runtime outcome. This guide completes neither
+Natural access/terrain/route, actual flags/HP/mappings/membership/mode/raft, producer selection,
+completed action/text/fade/camera/services, presentation, responsive input and persistence remain
+Unknown. Supplied-state counterexamples constrain static review rather than describe executed bugs.
+Public summaries and retained full-program comparisons remain distinct; aggregates alone prove no
+selected scene or composed runtime outcome. This guide completes neither
 [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 Evidence conflicts, broad dependencies or product changes require replanning before affected expansion;
 missing natural observations remain Unknown.
 
 Read the complete owned prose/diff and bounded existing fixture selections; check provenance,
 links/fragments, quantities, exact paths/private boundary and `git diff --check`, then inspect the
-clean committed dependency planner and actual final-head CI. Preserve accepted comparisons and failures
-without ritual replay. No normal/full/engine/Godot/H3/H4 or translation suite runs solely for prose.
+clean committed configured dependency planner and actual final-head CI. Preserve accepted comparisons
+and failures without replay. No normal/full/engine/Godot/H3/H4 or translation suite runs solely for prose.
 Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully deliver
 the authorized completion callback for independent main-gate review. No integration, cleanup or
 next-Issue selection is authorized.
