@@ -291,46 +291,54 @@ independent flags, crop/cast/roster/item and service limits remain applicable.
 explains leader cleanup, the complete first after scene and conditional full-map return. Its
 Map67 control/pending or supplied loss-continuation stop and cast/service limits remain applicable.
 
-The current reader outcome explains separate Creed Mansion admission and the complete first Goliath
-obstruction, through conditional local return/repeat. **Standard** rigor remains appropriate because
-request/admission, last-set setup selection, actor allocation, live layout changes, complete dialogue/
-action consumers and callback/wrapper completion have distinct boundaries. The current owner is
-[Creed Mansion entry and the first Goliath obstruction](synthesis/creed-mansion-entry-and-first-goliath-scene.md),
-scoped by [#895](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/895). It consumes accepted
-[entry/scene research](../research/creed-mansion-entry-and-first-goliath-scene.md),
-[#892's handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/892#issuecomment-6173418824)
-and [PR894 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/894#issuecomment-6173456022),
-including original/rebased identities, distinct CI/comparison receipts and inspection failures.
-The accepted predecessor guide, [#891's handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/891#issuecomment-6173346871)
-and [PR893 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/893#issuecomment-6173367158)
-retain earlier failures, resolved lifecycle-summary P2 and predecessor receipts. No stacking,
-raw-source reinvestigation, runtime or remake work.
+[Creed Mansion entry and the first Goliath obstruction](synthesis/creed-mansion-entry-and-first-goliath-scene.md)
+explains separate arrival and the complete first scene through conditional return/repeat. Its
+pre-shrinking stop and supplied-state, service, following and live-layout limits remain applicable.
 
-Acceptance requires readable consequences with research/contract/fixture/schema/verifier traceability
-and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
+The current reader outcome explains the accepted magic-door shrinking/collection scene and Desktop
+request/admission. **Standard** rigor remains appropriate because zone selection, supplied actor
+lookups, concurrent sprite work, narrated pickup, live layout and pending/destination admission have
+distinct boundaries. The current owner is
+[Creed's magic door and the Desktop transfer](synthesis/creed-magic-door-and-desktop-transfer.md),
+scoped by [#899](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/899). It consumes accepted
+[magic-door research](../research/creed-magic-door-and-desktop-transfer.md),
+[#896's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/896#issuecomment-6173732542),
+[rebase handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/896#issuecomment-6173857962)
+and [PR897 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/897#issuecomment-6173871815),
+preserving distinct original/rebased identities, comparisons, CI receipts and inspection failures.
+The accepted predecessor's [#895 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/895#issuecomment-6173738883)
+and [PR898 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/898#issuecomment-6173819074)
+retain their own results and linked earlier failures. No stacking, raw-source reinvestigation,
+runtime acquisition or remake work.
 
-- Separate Map67 doorway/request, SwitchMap/CheckBattle admission and fresh full-map 33 arrival;
-  first-visit F523/F783/F784/F786/F22-clear scope, last-set precedence and pointer versus state.
-- Six parked rows, actual actor/follower allocation, duplicate/HP/alias/mode/raft boundaries;
-  Map33 is not overworld and F65 supplies no Caravan prefix. Baseline init does not run the scene.
-- Admitted zone `(15,21)` and F774-clear complete 129-command cs_5AC58, all 17 inline/six custom
-  bodies and thirty text 1804–1833/control joins, organized by content and consequences. Concurrent
-  moves differ from waits; portrait/name/animation/follow consumers use actual supplied identities.
-- Two OpenDoor copies change live layout, not F774 persistence or proven passability. F774 is written
-  only after complete script return; wrapper closure/VInt/physical 0 destination waits and pending/control
-  follow. Baseline immediate repeat/reentry does not automatically replay the copies.
+Acceptance requires readable consequences with research/fixture/schema/verifier traceability and
+unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-The five owned paths are the new guide, predecessor guide's single continuation link preserving its
-stop, Story Progression navigation, this current agreement and one English index entry. Stop at
-conditional first-scene return/repeat before zone `(12,14)` shrinking. Exclude later mansion departure/
-restoration/recruitment, whole mansion, Desktop Kingdom/Battle22 and terrain/renderer audits. No
-research/contracts/fixtures/schemas/code/glossary/Chinese/remake edits, payload regeneration or new
-verification machinery. Opposite magic-door research is disjoint and not an accepted dependency.
+- Independent zone `(12,14)`/F783 gate and F774 independence; selected setup, supplied actors,
+  lookup/HP/class and position limits without an assumed first-scene prerequisite.
+- Complete 43-command cs_5AF36, all three inline/one custom bodies and six texts 1834–1839/control
+  joins, organized by warning, flashes, shrinking, narrated pickup/collection and departure.
+- Actor-specific waits versus concurrent/replaced actions, physical-index timer seeding and no
+  inferred elapsed duration; complete 42-operation shrinking action, shared sprite-size versus
+  per-entity resize/facing/position/action state, parking versus deletion and no scale/membership grant.
+- Actual speaker/name/animation and flash consumers without a renderer audit; stepEvent `(12,13)`
+  live copy without a completion stamp or persistence guarantee; literal warp versus wrapper and
+  surviving pending-request consumption.
+- Independent F422/F522 admission table and area-before-completion-clear order. Outside-area `(0,0)`
+  does not suppress wildcard Battle22 admission; selection survives F522's subsequent F422 clear.
 
-Natural access/itinerary, supplied flags/party/HP/classes/lookups/geometry/mode/raft/pending, completed
-services, rendered scene, usable control and persistence remain Unknown. Dialogue is no guaranteed
-lore or itinerary. Static changed-state examples are not executed scenarios or an automatic runtime
-queue. Public aggregates, retained comparisons and accepted selected direct-source joins retain
+The five owned paths are the new guide, predecessor's one continuation link preserving its stop,
+Story Progression navigation, this current agreement and one English index entry. Stop at fresh
+exploration entry before Map22 population/init, or selected Battle22 handoff before opening. Identify
+F776/F522/F778 successors only. Exclude destination arrival/control claims, later scenes, whole
+mansion and Chessboard content. No research/contracts/fixtures/schemas/code/glossary/Chinese/remake
+edits, retained-payload rerun/regeneration or new verification machinery. Opposite #900 arrival
+research is disjoint and not an accepted dependency.
+
+Natural reach, supplied setup/flags/party/HP/class/lookups/source position/mode/pending, completed
+services/concurrent actions, rendered shrinking/shadows/pickup, actual destination admission/control
+and persistence remain Unknown. Static changed-state examples are not executed scenarios or an
+automatic runtime queue. Public aggregates and complete accepted selected direct-source joins retain
 separate limits; no aggregate proves complete local content or composed runtime success. This
 completes neither the campaign nor [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Evidence conflict, broad dependency or product change requires replanning before affected expansion.

@@ -316,6 +316,8 @@ relations guarantee no later activation. F774/later-story/follower flags survive
 reset, but surviving RAM does not establish save/load durability. Stop at this conditional local
 return/repeat, before shrinking, later departure/restoration/recruitment or Battle22.
 
+Continue separately with [Creed's magic door and the Desktop transfer](creed-magic-door-and-desktop-transfer.md).
+
 ## Evidence Review and Preserved Limits
 
 **Confirmed provenance:** the consumed research is accepted in main
