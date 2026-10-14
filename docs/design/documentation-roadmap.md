@@ -207,52 +207,54 @@ boundaries. Its shared actors, independent predicates and natural-route limits r
 explains selected exits, Polca's confrontation, Gerhalt joining and the new-battle start handoff.
 Its independent setup, membership, request and natural-route limits remain applicable.
 
-The current reader outcome explains Battle13 outcomes, Luke accompanying the party, fresh Polca
-return and the optional mayor bargain through raft-state configuration and conditional control.
-**Standard** rigor remains appropriate because outcome, actor lifetime, temporary contacts,
-following and persistent raft state have independent conditions. Follow the
-[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+[Battle13 outcomes through Polca's raft grant](synthesis/battle13-outcomes-through-polca-raft-grant.md)
+explains Luke accompanying, fresh Polca return and the optional bargain through ordered raft state
+and conditional control. Its outcome, actor, service and natural-route limits remain applicable.
+
+The current reader outcome explains Polca's two Oddler requests, their Yes/No paths and common
+following conclusion. **Standard** rigor remains appropriate because independent caller flags,
+branch convergence and current versus rebuilt actor lifetimes require explicit boundaries.
+Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Battle13 outcomes through Polca's raft grant](synthesis/battle13-outcomes-through-polca-raft-grant.md),
-scoped by [#807](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/807). It consumes the
-[accepted static investigation](../research/battle13-outcomes-through-polca-raft-grant.md) from
-[PR #805](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/805) and the preceding English
-admission guide from accepted main only, without stacking. This is a content explanation, not a
-natural playthrough or new remake capability; technical composition stays with research.
+[Polca's Oddler choices and following](synthesis/polca-oddler-choice-and-following.md), scoped by
+[#811](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/811). It consumes the
+[accepted static investigation](../research/polca-oddler-choice-and-following.md) from
+[PR #809](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/809) and the preceding English
+raft guide from accepted main only, without stacking. This is original-content explanation,
+not a natural playthrough or new remake capability; technical composition stays with research.
 
-Acceptance requires readable outcome/Luke/Polca/bargain content and exact research/contract/
-fixture/verifier traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded
-tracked fixture selections and their schema/consumer limits. Preserve these material distinctions:
+Acceptance requires readable choices/consequences and exact research/contract/fixture/verifier
+traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked-fixture
+selections and their schema/consumer limits. Preserve these material distinctions:
 
-- Leader admission, ally-first defeat priority, F513 aftermath gate and variable repeat seed;
-  Bedoe defeat/Egress and an existing F64 raft reset differ from victory and the mayor's grant.
-- Paraphrase all eight aftermath and thirty bargain texts plus caller responses with attribution.
-  F75 accompanying differs from F10/F42, HP/revival and AI. Preserve the first pending tuple,
-  Bowie join tail and F413/F513 order without an atomic receipt or replay repair.
-- Fresh F513 population and temporary reset differ from supplied flags/current actors. Mayor137
-  RIGHT=0 wrapper and F718 > F717 > F716 > F260/F261/F262 caller priority permit a fourth scene
-  after three completed preparatory contacts only from cleared unchanged temporaries.
-- Preserve actual137/133/140, lookup versus physical mappings, sequential destination waits,
-  nonwaited actor actions, hide133 versus fresh recreation and Peter→Bowie/Luke→Peter following
-  admitted by high-byte Bowie HP. No guaranteed position, membership or service completion.
-- Only scene return reaches F716 → F64 → RAFT_MAP72 → X43 → Y48. Conditional declaration
-  differs from a raft present in Polca, river availability or boarding; repeat speech repairs none.
+- X24 row priority and independent F716/F717/F718 predicates: Y30 requires no F717; Y11 tests
+  no F718. Two physical programs with five entry regions form a branch graph, not five scenes.
+- All 42 text sites / 39 IDs with attribution and repeated cursors. Y11 refusal returns; Y11 Yes
+  and either completed Y30 answer reach common following. Y30 No has no second prompt.
+- Ordinary prompt entry, held-input release, initial Yes, Left/Right selection, A/C confirmation,
+  B cancellation, pending no input and F89 polarity. A flag is not a prior-scene receipt.
+- Distinct current placements, nonwaited actions, NPC140 versus FOLLOWER_B31, animation/speed/shadow
+  services and mapping limits. Each follow command's high byte tests Bowie HP, not follower HP.
+- Current Peter→Bowie,140→Peter,Luke→140 target chain differs from list order and future F68
+  declaration under 31, F75 clearing and F718 init move of 140. No speech establishes health,
+  force membership/AI or later plot. Preserve sequential internal F68/clear F75/F718, later caller F717/F718,
+  partial state, repeat suppression and conditional control without transaction or repair.
 
-The five owned paths are the new guide, predecessor admission continuation, Story Progression
-navigation, this current agreement and one English documentation-index entry. Stop at conditional
-mayor caller/control return. Y11/Y30 Oddler choices/departure, later river travel/Battle14, unmerged
-successor claims, original-source reinvestigation, town inventories and Chinese synchronization
-are outside scope. No research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition,
+The five owned paths are the new guide, predecessor raft continuation, Story Progression
+navigation, this current agreement and one English documentation-index entry. Stop at both
+caller/control boundaries before actual Polca departure, river/boarding, Battle14, later Oddler
+story or Luke recruitment. No unmerged successor, original-source reinvestigation, inventories,
+Chinese synchronization, research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition,
 payload copying/generation, verification machinery or new product decisions are selected.
 
-Natural battle/contact reach; actual flags, actors, mappings, HP, membership/deployment/AI and
-positions; concurrent actions and service/pending completion; rendered/audible content, responsive
-control, persistence, river availability and boarding remain **Unknown**. This guide completes
-neither the [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-nor the campaign. [#808](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/808) separately
-owns successor Oddler research; its unmerged findings are not this guide's dependencies.
+Natural Y11/Y30 reach/history; actual input, flags, actors, mappings, HP, membership/deployment/AI,
+positions and concurrent actions; service/presentation/control and persistence remain **Unknown**.
+This guide completes neither the
+[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
+[#812](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/812) owns the disjoint successor
+research; its unmerged findings are not this guide's dependencies.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. No repeated source
 investigation or observation is needed. Unexpected broad dependencies, evidence conflicts or product
