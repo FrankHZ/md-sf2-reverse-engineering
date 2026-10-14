@@ -470,6 +470,20 @@ control/pending handling before residents/services, ring/search/exits or Battle2
 Natural arrival/state, completed services, presentation/control and persistence
 remain Unknown; balloon portrayal is Inferred.
 
+[Floor World residents, the giant ring and outbound exits](floor-world-interactions-and-exits.md)
+continues from local control with all six resident callbacks/default, repeated
+1742–1747 dialogue, fixed NAME16 and Church/Caravan call-return boundaries.
+The independent destination-derived X14/anyY zone checks F780, then runs all
+eight ring commands and the moveUp8 body; only129 is joined before hide, with
+caller F780 and the wrapper's physical0 wait separate. Same-visit lookup
+invalidation differs from later fresh-load parking. All three no-scroll records
+separate CURRENT255 local routes from Map27 admission, retain shared pending
+storage and signed quotient/low-byte/whole-word coordinate limits, and test no
+F780 exit gate. F423/F523 battle lookup is separate. The guide stops before
+destination init, tunnel or Battle23 content. Natural reach/state, completed
+services/presentation/control and persistence remain Unknown; failed ring
+lifting is Inferred, without an implemented mass/lift/item-receipt rule.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
