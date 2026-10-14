@@ -568,6 +568,26 @@ complete 409-record/73-text scope retains N-only 3254 continuation, actual
 speaker/portrait/leader state, debug skipping and changed-state limits. Later
 mansion/Fairy/recruitment and Oddler events remain outside this guide.
 
+[Creed return, Fairy following and recruitment choices](creed-return-fairy-and-recruitment-choices.md)
+continues through the explicit shrine exit, selected Map33 population/init and
+seven room callbacks. F784/F786/F22 priorities and fresh/retained actors remain
+separate from dialogue: Goliath's help/disaster reports, Creed's Tristan advice
+and resident130's Fairy/Oddler branches are attributed speech. Fairy's live block
+copy and narration precede a high-byte/Bowie-HP-guarded current follow request,
+then caller762/785; they are neither force joining nor immediate69/68 handoff.
+The four initial and four F22 offers preserve Yes/No polarity, joined versus
+active capacity and pre-active-write count snapshots, acknowledgement before787,
+exact three-other-actor shrink order and current last-follower targeting. Full
+party does not reject joining, and F22 bypasses787 without shrinking others.
+Shrink parks at63,63 while retaining lookup/list/membership; one waited actor
+is not all-three completion. Actual HP/class/name/portrait, ordinary activation,
+aliases, debug skipping, interrupted flags and conditional returns remain
+explicit. Sword, healing and freedom promises are not implemented transactions.
+The later cs_5B466 admission identifies a separate boundary without unaccepted
+Oddler-scene internals. Natural reach, completed presentation/actions, usable
+control and save persistence remain Unknown; no universal one-recruit rule or
+full campaign acceptance follows.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

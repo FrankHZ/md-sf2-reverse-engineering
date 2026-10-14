@@ -260,6 +260,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   mansion/shrine route, three warps, fresh/retained residents and the independent consultation request gate; special actor/effect allocation, coordinate/layout and conditional caller-flag limits.
 - [`evil-spirit-consultation-and-zone-return.md`](./design/synthesis/evil-spirit-consultation-and-zone-return.md) —
   complete consultation, Zeon demand and explosion through conditional zone return; dialogue/transaction, actor/action, dormant hides, presentation requests and non-atomic control limits.
+- [`creed-return-fairy-and-recruitment-choices.md`](./design/synthesis/creed-return-fairy-and-recruitment-choices.md) —
+  explicit shrine return, selected mansion population, Fairy current following and eight recruit offers; joined/active capacity, shrink parking, repeat/interruption and conditional-return limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
