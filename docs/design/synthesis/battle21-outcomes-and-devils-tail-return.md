@@ -370,3 +370,6 @@ actor lookups/geometry/mode/raft/savepoint; completed action/text/input/fade/scr
 actual scene/portrait/sound, usable control and storage persistence. Changed-state examples constrain
 static claims; they are not executed scenarios, automatic runtime work or evidence of later lore.
 This guide completes neither the campaign nor the design epic and stops before mansion initialization.
+
+Continue with [Creed Mansion entry and the first Goliath obstruction](creed-mansion-entry-and-first-goliath-scene.md)
+for the separate doorway admission and zone scene; this guide retains its stop before mansion initialization.

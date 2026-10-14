@@ -404,6 +404,12 @@ Repeat seed, cropped scene versus full-map return, membership versus follower ma
 population remain separate. It stops at conditional Map67 control/pending or supplied loss continuation,
 before mansion init; natural reach, supplied state, completed services and persistence remain Unknown.
 
+[Creed Mansion entry and the first Goliath obstruction](creed-mansion-entry-and-first-goliath-scene.md)
+continues through separate doorway/request/admission, baseline setup and the complete first zone scene.
+Last-set pointers, supplied actors, live door copies versus F774 and delayed wrapper/control remain
+separate. It stops at conditional first-scene return/repeat before shrinking; natural access, completed
+services, rendered performance, usable control and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
