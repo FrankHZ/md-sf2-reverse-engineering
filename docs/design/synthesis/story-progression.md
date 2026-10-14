@@ -283,6 +283,15 @@ F518/F65/F12 init preserve absent-Rick lookup→main0 and F84 Rohde-following li
 conditional control before town interactions, retaining natural-route, supplied-state, service/input
 and persistence Unknowns; town entry preserves transport mode and proves no usable walking.
 
+[Hassan ancestry and Rohde's Caravan choice](hassan-ancestry-and-rohde-caravan-choice.md)
+explains independent priest zones and Rohde talk/selected-item admission, complete initial/repeat
+choices and conditional following/control. Joined-member sword search differs from selected sword
+Use at physical0's `(16,58)`; repeat talk skips the search and suppressed item use returns to the
+submenu. F726, F727 and F725 retain separate suppression roles; F84/F418 and Rohde-to-current-
+FOLLOWER_B following confer no force membership, F65 unlock or item consumption. Attributed lore,
+actual supplied actors/HP/input, unfinished services, fresh-population differences and usable control
+remain bounded or Unknown. It stops before acquisition, Rick, departure, Taros and Caravan operation.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

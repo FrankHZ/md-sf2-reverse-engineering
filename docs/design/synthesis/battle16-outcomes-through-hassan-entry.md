@@ -19,6 +19,11 @@ for the separate boarding mechanism. This guide stops at fresh Hassan init and t
 control handoff, before town actions, zones, entities, items, service dialogue, priest events,
 Rick/Rohde interaction or later story. It adds no continuous playthrough or remake capability.
 
+Continue with [Hassan ancestry and Rohde's Caravan choice](hassan-ancestry-and-rohde-caravan-choice.md)
+for the independent priest zones and Rohde talk/selected-item paths. That guide distinguishes
+initial/repeat choices, current following and conditional menu/control return, without assuming
+usable walking at this entry or proceeding to sword acquisition, Rick, departure, Taros or Caravan use.
+
 ## How the Encounter Ends
 
 **Confirmed caller order:** after an individual turn, BattleLoop invokes the defeated hook,

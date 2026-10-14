@@ -229,67 +229,68 @@ applicable.
 explains selected battlefield admission, the complete reveal and fresh combatant rebuilding through
 the start wrapper. Its scene identity, service and natural-route limits remain applicable.
 
-The current reader outcome explains Battle16 outcomes, separate disembark and conditional Hassan
-entry. **Standard** rigor remains appropriate because outcome tuples, transport, actor/list waits
-and flag-selected town population must agree without becoming a natural-playthrough, all-actor
-landing or usable-walking claim.
+[Battle16 outcomes, disembark and conditional Hassan entry](synthesis/battle16-outcomes-through-hassan-entry.md)
+explains first/repeat returns, separate landing and flag-selected town population/init. Its tuple,
+last-listed-actor wait, transport and usable-control limits remain applicable.
+
+The current reader outcome explains Hassan's independent ancestry conversation and Rohde's Caravan
+proposal. **Standard** rigor remains appropriate because three admission paths, initial/repeat
+choices and current/fresh follower state must agree without becoming a natural playthrough,
+force-recruitment, vehicle-operation or historical-lore claim.
 Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Battle16 outcomes, disembark and conditional Hassan entry](synthesis/battle16-outcomes-through-hassan-entry.md),
-scoped by [#827](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/827). It consumes the
-[accepted static investigation](../research/battle16-outcomes-through-hassan-entry.md) and
-[PR826 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/826#issuecomment-6160352020),
-with accepted Kraken/raft/outcome/request predecessors from main only, without stacking. This is
-original-content explanation, not new source investigation, a natural journey or a remake capability.
+[Hassan ancestry and Rohde's Caravan choice](synthesis/hassan-ancestry-and-rohde-caravan-choice.md),
+scoped by [#831](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/831). It consumes the
+[accepted static investigation](../research/hassan-ancestry-and-rohde-caravan-choice.md),
+[#828 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828#issuecomment-6160569868)
+and [independent PR830 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/830#issuecomment-6160579144),
+with accepted Hassan-entry, prompt, following and item-transaction predecessors from main only,
+without stacking. This is original-content explanation, not source reinvestigation or remake work.
 
-Acceptance requires readable consequences and exact research/contract/fixture/verifier traceability,
-preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked-fixture selections and
-their schema/consumer limits. Preserve these material distinctions:
+Acceptance requires readable consequences and exact research/contract/fixture/schema/consumer
+traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded existing
+tracked-fixture selections without promoting aggregate facts to a composed observation. Preserve:
 
-- Head-slot HP and leader/death-list/count ordering retain defeat priority and the after-turn hook
-  limit. First/repeat F516 branches differ; both reach JoinForce(0). F416/F516 and F466 remain separate.
-- First victory's three-record after scene writes mode2 and Map69/29/51/Left. BattleLoop reads its
-  tuple directly and bypasses CheckBattle; ordinary exploration warp consumption does not apply.
-  Defeat/Egress selects Polca13 with conditional F64 raft reset; transport and saved tuple differ.
-- Numeric5 saves physical0's destination tuple before all four disembark records, follower actions,
-  last-listed-actor wait, flag-based restoration and final mode0. Logical159, physical31 and
-  FOLLOWER_B31 differ; no all-actor landing, healing or automatic reboarding is established.
-- Map69 row2 resolves Hassan to9. Walking/actual raft producers can request it without an explicit
-  disembark prerequisite; natural geometry remains Unknown. Hassan has no battle row.
-- Fresh F518 cast selection and the thirteen-operation F518/F65/F12 init preserve merchant137,
-  mapped Rohde/F84 and absent-Rick lookup→main0 supplied-state limits. Entry preserves mode;
-  returned init/control is not necessarily usable walking or new membership.
+- Three priest zones share F726 suppression; the complete scene attributes ancestry, Max and
+  Devil's Tail claims to speakers. Neither priest nor Rohde requires the other first.
+- Talk searches joined members, including reserves; F798 controls only its initial preface.
+  Selected-item Use instead requires selected sword and physical0 coordinates `(16,58)`, with a
+  direction wildcard. Direction-looking entity-row operands are action flags, not facing admission.
+- F727 initial suppression, F725 acceptance and repeat talk without another sword search differ
+  from suppressed item fallback and submenu return. Explain all recognition, refusal, acceptance,
+  common and repeat regions, actual Yes/No input and initial/repeat No staging differences.
+- F725/F84/F418 and Rohde→current logical FOLLOWER_B following grant no force membership, F65,
+  sword consumption or Caravan operation. Preserve current mapping/physical-list distinctions,
+  Bowie's HP follow guard, unfinished actions, partial flags and fresh-population differences.
+- Caller/service/menu completion and pending/mode determine conditional control. Attributed speech
+  and supplied flags do not establish history, historical truth, a settled chain or usable walking.
 
-The five owned paths are the new guide, Kraken-entry continuation, Story Progression navigation, this
-current agreement and one English documentation-index entry. Stop after fresh Hassan init and the
-first conditional control handoff, before town actions/zones/entities/items/service dialogue,
-priest events, Rick/Rohde interaction or later story. No combat simulation, continuous playability,
-original-source reinvestigation, inventories, Chinese work,
-research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition, payload generation,
+The five owned paths are the new guide, Hassan-entry continuation, Story Progression navigation,
+this current agreement and one English documentation-index entry. Stop at conditional caller/control
+return, before sword acquisition, Rick, departure, Taros and Caravan use. No other town content,
+combat simulation, continuous playability, original-source investigation, inventories, Chinese work,
+research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition, payload regeneration,
 verification machinery or new product decisions are selected.
 
-Natural travel; actual layout, flags, mode, HP, membership, actors, mappings and lists; pending writes,
-action/service/presentation/input completion, saved-state consistency and persistence remain
-**Unknown**. Supplied states and partial completion do not establish a natural history. This guide completes neither the
-[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-[#828](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828) owns disjoint successor
-research; its unmerged conclusions are not dependencies of this guide.
+Natural admission, actual inventories/flags/HP/membership/mappings/lists/input, action/window/update/
+service/presentation completion, lore, usable control and persistence remain **Unknown**. This guide
+completes neither [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
+nor the campaign. [#832](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/832) owns disjoint
+successor research; its unmerged conclusions are not dependencies of this guide.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. Unexpected broad
-dependencies, evidence conflicts or product choices stop affected expansion for replanning;
-missing natural observations remain Unknown. Preserve PR826's passed retained/direct comparisons,
-actual final CI and corrected enemy-macro/inspection failures through its handoffs, plus
-PR822's passed comparisons/CI, resolved
-inspection/commentary correction and rejected-command history, plus PR818's failed initial destination
-assumption, corrected symbol-to-owner join and successful final checks/CI through their handoffs;
-do not ritual-replay them or equate aggregate evidence with per-case/composed coverage.
+dependencies, evidence conflicts or product choices stop affected expansion for replanning; missing
+natural observations remain Unknown. Preserve #828's completed retained/direct comparisons, actual
+final CI and resolved inspection failures through its original/final handoffs, plus the linked
+PR826/822/818 checks, corrected macro/destination/inspection failures and rejected-command histories.
+Do not ritual-replay those runs or treat their equality as per-choice natural-state coverage.
 
-Read the complete explanation and owned diff; check provenance, changed links/fragments, exact
-paths/private boundary and git diff --check, then inspect the clean committed dependency planner
-and actual final-head CI. Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4
-or translation suites solely for prose. Freeze a clean pushed Draft PR fixing the Issue, Project
+Read the entire owned prose/diff; check provenance, changed links/fragments, exact paths/private
+boundary and git diff --check, then inspect the clean committed dependency planner and actual
+final-head CI. Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4 or
+translation suites solely for prose. Freeze a clean pushed Draft PR fixing the Issue, Project
 Review / Verify and a successful authorized completion callback for independent main-gate review.
 Direct checks and CI do not grant integration; no cleanup or next-Issue selection is authorized.
 
