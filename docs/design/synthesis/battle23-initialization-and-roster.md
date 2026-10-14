@@ -326,7 +326,9 @@ positions/activation, current/saved area/map/battle and turn/order; completed
 script/load/fade/VInt services, visible/audible roster/presentation, usable
 control and persistence. Neither this guide nor its configuration proves
 executed tactics, displayed agility, outcomes, leader death, postbattle or Creed
-progression. Outcome research #937 is not a source or dependency. These gaps remain
+progression. The separate [outcome and burrow-return guide](battle23-outcomes-and-burrow-return.md)
+continues at the post-action check using corrected accepted #937; it does not
+fill the unobserved turns between these boundaries. These gaps remain
 bounded under [ADR0014](../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)
 and [ADR0016](../../decisions/0016-remake-start-evidence-deferral.md), without an
 automatic runtime queue, new remake acceptance or full-campaign completion claim.
