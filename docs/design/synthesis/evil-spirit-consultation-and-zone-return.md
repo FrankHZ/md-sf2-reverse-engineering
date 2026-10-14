@@ -261,8 +261,8 @@ also do not roll back global scene state.
 Only a returned scene reaches caller `setFlg 784` and then `setFlg 802`. After callback
 return, the wrapper closes portrait/text, waits one VInt, then waits for physical 0's
 current X/Y to equal destination before restoring its registers and returning.
-This tail also applies to a skipped/default callback. It is a coordinate wait
-for one physical actor, not an Idle, follower or service barrier.
+This tail also applies to the F784-set or default callback path. It is a
+coordinate wait for one physical actor, not an Idle, follower or service barrier.
 
 The ordering is non-atomic. Interruption during the scene can leave partial
 positions, actions, graphics and hides without either new caller flag;
@@ -273,7 +273,8 @@ usable control, completed presentation or save/load persistence.
 These **Confirmed static discriminators** bound changed supplied state:
 
 - Fresh F784-clear entry rebuilds baseline residents; a qualifying request still
-  needs to be produced. Fresh F784-set entry creates none and skips the callback.
+  needs to be produced. Fresh F784-set entry creates no residents; the callback
+  skips the scene call and both caller flag writes.
 - Setting F784 on retained baseline changes admission without removing residents.
   Clearing it on empty/hidden population admits a call without recreating actors.
   Repetition is not a reset; explicit fresh34 and CURRENT255 reuse differ.
