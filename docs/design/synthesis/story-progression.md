@@ -333,6 +333,15 @@ population reentry differ; no persistent Rick follower flag or mandatory return 
 It stops at conditional ordinary control/reentry, with natural reach, service/input/presentation and
 persistence Unknown. Caravan operation and later travel remain separate.
 
+[Caravan boarding and Southwest Parmecia travel](caravan-boarding-and-southwest-parmecia-travel.md)
+explains selected shrine exit/admission before fresh Map68 population, F65 following versus supplied
+mode, numeric2 boarding, actual mode1/opcode7 movement and numeric4 landing. Logical actors, raw
+physical slots, suffix/last-actor waits and flag-driven action reinstallation remain distinct.
+Walking's separate default19 callback preserves first/repeat counter/RNG decisions, packed reload
+X0/zoneY/residual-facing/sound and F419 wildcard admission. It stops at conditional walking control
+or Battle19 handoff, preserving partial-execution/service/natural-route/persistence limits without
+menu transactions, terrain reconstruction, village content or battle outcomes.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

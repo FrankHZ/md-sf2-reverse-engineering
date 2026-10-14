@@ -19,6 +19,9 @@ stops at the immediate conditional exploration/control boundary or an unrelated 
 Sword damage, combat simulation, Caravan operation/menus/storage, Rick and later travel are excluded.
 The separate [optional Rick recruitment guide](hassan-rick-recruitment.md) explains conditional Hassan
 population and current membership/following; it establishes no mandatory shrine-to-Hassan return.
+The separate [Caravan boarding and Southwest Parmecia travel guide](caravan-boarding-and-southwest-parmecia-travel.md)
+explains selected shrine exit/admission, mode1 boarding/movement/landing and walking's separate Battle19
+request; its conditional-control/admission boundary supplies no natural itinerary or menu transaction.
 Fnnn means flag nnn; coordinates are map tiles and indices are zero-based. Waits and speeds below
 are source operands, not measured time. Dialogue is paraphrased.
 
