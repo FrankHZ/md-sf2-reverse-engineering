@@ -16,7 +16,8 @@ This guide continues [the consultation and conditional zone return](evil-spirit-
 and consumes [accepted #953 research](../../research/creed-return-fairy-and-recruitment-choices.md)
 on accepted main `17718cd3ece7dc087737f3a6bea4eb463fd4553f`.
 It stops at the immediate room interaction returns. The later Oddler departure
-scene has a separate evidence boundary; its internals are not explained here.
+scene continues in [Oddler stays and the Fairy handoff](oddler-stays-and-fairy-handoff.md),
+which explains its current actors, ordered caller flags and later fresh population.
 This Layer B explanation selects no remake rule or new observation work.
 
 ## Returning to the Room
