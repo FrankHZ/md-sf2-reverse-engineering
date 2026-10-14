@@ -21,6 +21,9 @@ Later walked return, mansion reentry, Fairy events, recruitment and Oddler's
 departure remain separate boundaries. This Layer B explanation selects no remake
 behavior or new runtime work.
 
+Continue with [Creed return, Fairy following and recruitment choices](creed-return-fairy-and-recruitment-choices.md)
+for the separate mansion return and immediate room interactions.
+
 ## Who Is Present, and What Admits the Scene
 
 **Confirmed:** a separately produced type6 request matching Map34's wildcard X
