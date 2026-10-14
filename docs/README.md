@@ -230,6 +230,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   refusal/threat scene and conditional initial placements; independent flags, cropped coordinates, item masking and service limits.
 - [`battle21-outcomes-and-devils-tail-return.md`](./design/synthesis/battle21-outcomes-and-devils-tail-return.md) —
   leader cleanup, complete first after scene and conditional full-map return; repeat seed, follower and service limits.
+- [`creed-mansion-entry-and-first-goliath-scene.md`](./design/synthesis/creed-mansion-entry-and-first-goliath-scene.md) —
+  separate arrival and complete first obstruction; setup/cast limits, live door copies, delayed flag and conditional return/repeat.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
