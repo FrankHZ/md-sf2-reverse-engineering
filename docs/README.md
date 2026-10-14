@@ -236,6 +236,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   independent door gate, complete shrinking/collection scene and conditional Desktop admission; temporary sprite, live copy and pending/control limits.
 - [`desktop-kingdom-first-arrival.md`](./design/synthesis/desktop-kingdom-first-arrival.md) —
   fresh population, complete landing/discussion/farewell and conditional following/control; supplied-state, temporary sprite and service limits.
+- [`desktop-kingdom-interactions-through-battle22-entry.md`](./design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md) —
+  conversations/services, King permission and conditional Chessboard admission; actual flags, pending/wrapper and pre-opening limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

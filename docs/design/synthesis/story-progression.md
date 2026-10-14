@@ -425,6 +425,14 @@ conditional local first-arrival return/repeat before interactions, cs_5996E or B
 natural reach, actual state, completed services/actions, visible/heard performance, useful control
 and persistence remain Unknown.
 
+[Desktop conversations and the Chessboard challenge](desktop-kingdom-interactions-through-battle22-entry.md)
+continues with villagers, Eric/Karna, bounded Caravan/Church handoffs, King Ponpei's permission
+and the chess pieces. F777 permission, independent guard flags, wildcard-X zone dispatch at Y16,
+encounter completion, pending warp and actual battle admission remain distinct. It stops at
+BattleLoop entry before opening/roster, or conditional local bypass/return; talking does not
+recruit or start combat, and lore/boasts do not define mechanics. Natural reach, actual state,
+service/wrapper/presentation completion, useful control and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
