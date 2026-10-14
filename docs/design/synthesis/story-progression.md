@@ -342,6 +342,13 @@ X0/zoneY/residual-facing/sound and F419 wildcard admission. It stops at conditio
 or Battle19 handoff, preserving partial-execution/service/natural-route/persistence limits without
 menu transactions, terrain reconstruction, village content or battle outcomes.
 
+[Battle19 outcomes and independent Elven Village entry](battle19-outcomes-through-elven-village-entry.md)
+explains empty scene targets with shared wrapper/leader/Bowie-join effects, fresh/resumed entry,
+first/repeated victory seeds and defeat/escape savepoints. Independent Map68 entrance to Map23 has
+no victory19 prerequisite; default/F762 residents, supplied followers/mode, return-only init and
+conditional control remain distinct from outcome returns. It stops before village interactions,
+stairs, Map24/Battle20 and later travel, preserving natural-route, service and persistence Unknowns.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

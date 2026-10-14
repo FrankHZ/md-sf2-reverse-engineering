@@ -19,6 +19,8 @@ current following, not a mandatory detour. The [raft guide](polca-raft-boarding-
 keeps its different mode and saved-position lifecycle. This guide stops at conditional walking control
 after landing or MainLoop's Battle19 handoff, before opening, placement, turns or outcomes. C-button
 menu admission ends at the menu call; transactions, storage, village content and later travel are excluded.
+Continue with [Battle19 outcomes and independent Elven Village entry](battle19-outcomes-through-elven-village-entry.md)
+for the separately accepted outcome/arrival boundary; this guide retains its admission stop.
 Fnnn means flag nnn. Tile coordinates and waits are source operands, not observed positions or durations.
 
 ## Leaving the Shrine Before Fresh Overworld Population

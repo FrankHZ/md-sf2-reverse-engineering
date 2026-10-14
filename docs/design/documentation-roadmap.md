@@ -255,64 +255,60 @@ explains first/repeat outcomes, the complete driver/miniaturization scene and co
 [Optional Hassan Rick recruitment](synthesis/hassan-rick-recruitment.md) explains separate population,
 membership, temporary suppression and current following; neither guide supplies a mandatory travel route.
 
-The current reader outcome explains Caravan boarding, mode1 movement/landing and the separate walking
-Battle19 request/admission. **Standard** rigor remains appropriate because map entry, flag-selected
-population, logical/physical identities, current follower lists, transport mode and replaceable requests
-have separate consumers and lifetimes. Follow the
-[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
-Issues/Project coordinate execution and this roadmap owns the current agreement.
+[Caravan boarding and Southwest Parmecia travel](synthesis/caravan-boarding-and-southwest-parmecia-travel.md)
+explains selected boarding, mode1 movement/landing and separate walking Battle19 admission.
+Its admission stop and actor, request, service and natural-route limits remain applicable.
 
-The current segment owner is [Caravan boarding and Southwest Parmecia travel](synthesis/caravan-boarding-and-southwest-parmecia-travel.md),
-scoped by [#855](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/855). It consumes
-[accepted travel research](../research/caravan-boarding-and-southwest-parmecia-travel.md),
-[PR854 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/854#issuecomment-6161892874)
-and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/854#issuecomment-6161933230),
-plus accepted acquisition/entry/raft/request/Rick owners from main only. No stacked or unmerged evidence
-is consumed. [#856](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/856) separately owns
-Battle19 outcome/Elven Village research; its findings cannot enter this guide before acceptance.
-This is original-content explanation without source reinvestigation, runtime acquisition or remake work.
+The current reader outcome explains Battle19's shared outcomes and independent Elven Village arrival.
+**Standard** rigor remains appropriate because battle lifecycle, membership, map requests, population
+and current-mode control have separate consumers. The current owner is
+[Battle19 outcomes and independent Elven Village entry](synthesis/battle19-outcomes-through-elven-village-entry.md),
+scoped by [#859](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/859). It consumes
+[accepted research](../research/battle19-outcomes-through-elven-village-entry.md),
+[PR857 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/856#issuecomment-6162129601)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/857#issuecomment-6162154889),
+plus accepted battle, Caravan, request, population and Rick owners from main. Preserve
+[PR858 updated handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/858#issuecomment-6162196284)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/858#issuecomment-6162210098),
+including linked original/predecessor evidence and corrected inspections. No stacked evidence or
+unaccepted Issue860 finding enters this guide; source reinvestigation, runtime and remake work are excluded.
 
-Acceptance requires readable consequences and exact research/contract/fixture/schema/consumer
-traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Explain:
+Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
+traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Selected shrine exit and admission before fresh Map68 population; F65/FOLLOWER_A/physical1 versus
-  supplied mode, HP/missing/conflicting actors and current-only Rick.
-- Complete numeric2 boarding and numeric4 landing, actual mode1/opcode7 despite misleading labels,
-  logical versus raw physical operands, suffix/last-actor waits versus flag-driven action reinstallation,
-  partial execution and conditional mode/control timing. C-button admission ends at the menu call.
-- Actual input, bounds, obstruction, working-layout/door/warp/landing decisions without terrain reach;
-  walking zone/counter behavior remains separate.
-- Map68 default19, first/repeat F519/counter/RNG/flash requests, packed reload X0/zoneY/residual facing
-  and sound, and F419 wildcard admission. Neither measured probability nor position-preserving reload
-  follows. Public fixture summaries and the full retained corpus have different claim limits.
+- All four empty scene targets with F469/F519 wrappers, leader row -1, actual consumed join0,
+  fresh/F88 entry, initial roster and repeat-upgrade boundary. Leader cleanup precedes end counts;
+  Bowie's death prevents unconditional leader-death victory. Initial placement is not the return seed.
+- First/repeated victory selection before Bowie joining, fresh Map68 returns, defeat/admitted escape,
+  supplied savepoint and conditional saved-raft effects. EGRESS_MAP23 gives `(61,4)`, Up;
+  other savepoint continuations remain Unknown.
+- Independent Map68 `(48,30)` to Map23 `(22,29)`, Right, competing map/battle rows and no victory19
+  prerequisite. This is a static admission boundary, not a demonstrated walk from battle return.
+- Default/F762 actors, supplied normal followers versus overworld Caravan following, current-only
+  Rick, separate mode/raft handling, temporary flags, shared return-only init and conditional control.
+  F762 is a supplied later-story selector; its producer is outside scope.
 
-The exact five owned paths are the new guide, acquisition's travel cross-reference (preserving Rick),
-Story Progression navigation, this current agreement and one English documentation-index entry.
-Stop at conditional walking control after landing or Battle19 admission, before opening/roster/turns/
-outcomes. Menu/storage/service transactions, village content, later travel, natural routes and Chinese
-work are excluded. No research/contracts/fixtures/schemas/glossary/zh-CN/remake writes, payload
-regeneration or new verification machinery are authorized.
+The exact five owned paths are the new guide, Caravan guide's single successor cross-reference
+(preserving its admission stop), Story Progression navigation, this current agreement and one English
+index entry. Stop at immediate outcome return or conditional Map23 control, before village interactions,
+search/treasure/stairs, Map24/Battle20 or later travel. No research/contracts/fixtures/schemas/glossary/
+zh-CN/remake writes, payload regeneration, combat simulation or new verification machinery are selected.
 
-Natural reach/input, actual flags/counter/seed/HP/class/mappings/list/residual parameters, completed
-motion/presentation/services, responsive control and persistence remain **Unknown**. Supplied-state
-alternatives are static consequences, not observed bugs. This guide completes neither
+Natural reach/outcomes, actual flags/HP/roster/mappings/seed/savepoint/mode, nonselected savepoint init,
+completed services/actions/presentation, usable input and persistence remain Unknown. Supplied-state
+counterexamples constrain static review rather than describe executed bugs. Public aggregates do not
+serialize all selected content or prove a composed runtime outcome. This guide completes neither
 [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-Evidence conflicts, broad dependencies or new product choices stop affected expansion for replanning;
+Evidence conflicts, broad dependencies or product changes require replanning before affected expansion;
 missing natural observations remain Unknown.
 
-Preserve PR854 original/rebased comparisons, corrected/failed inspections, identities and final CI
-in its handoffs/acceptance, with the linked PR849/846/842 results. Preserve accepted design
-[PR853 correction/result](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/853#issuecomment-6161853425)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/853#issuecomment-6161859812).
-Accepted results suffice without ritual replay. Bounded existing fixture selections support shared-rule
-review; aggregate facts do not establish composed runtime boarding/travel/landing or battle admission.
-
-Read the entire owned prose/diff; check provenance, links/fragments, fixture quantities, exact paths/
-private boundary and `git diff --check`, then inspect the clean committed dependency planner and
-actual final-head CI. Documentation acceptance runs no normal/full/engine/Godot/H3/H4 or translation
-suite solely for prose. Freeze a clean pushed Draft PR fixing the Issue, Project Review / Verify and
-a successful authorized completion callback for independent main-gate review. No integration,
-cleanup or next-Issue selection is authorized.
+Read the complete owned prose/diff and bounded existing fixture selections; check provenance,
+links/fragments, quantities, exact paths/private boundary and `git diff --check`, then inspect the
+clean committed dependency planner and actual final-head CI. Preserve accepted comparisons and failures
+without ritual replay. No normal/full/engine/Godot/H3/H4 or translation suite runs solely for prose.
+Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully deliver
+the authorized completion callback for independent main-gate review. No integration, cleanup or
+next-Issue selection is authorized.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
