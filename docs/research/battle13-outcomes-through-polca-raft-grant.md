@@ -286,8 +286,8 @@ here; his population identity is not a script action, transfer or recruitment.
 ## Service, following and actor-lifetime limits
 
 **Confirmed:** `csc29_setEntityDest` consumes word entity/X/Y operands, scales tiles
-by384 (1/16-pixel units), writes destinations, travel and signed32 velocity, and
-waits for position to equal destination unless operand bit15 is set. Both selected
+by384 (1/16-pixel units), writes destinations, travel and velocity of +32 or -32
+on each axis, then waits for position to equal destination unless operand bit15 is set. Both selected
 operands have bit15 clear: Luke then Peter are sequential destination waits, not
 teleports or parallel fire-and-forget moves. The handler has no HP/presence guard.
 `WaitForEntityToStopMoving` compares X/Y against XDEST/YDEST while waiting VInts;
