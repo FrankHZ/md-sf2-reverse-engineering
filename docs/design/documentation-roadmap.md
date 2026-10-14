@@ -311,11 +311,15 @@ traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundarie
   boundary remain conditional. Successful AddItem masks equipped/AI/drop bits before the caller's
   equipment test; unchanged row 1 Dark Madam receives an unequipped ring through that path.
 
-The exact five owned paths are the new guide, preceding Fairy Cave guide's single continuation link
-(preserving its stop), Story Progression navigation, this current agreement and one English index
-entry. Stop fresh entry before ActivateEnemies, or suspended entry before individual turns. Exclude
-combat execution, outcomes, Creed entry/interior and terrain reconstruction. No research/contracts/
-fixtures/schemas/glossary/zh-CN/code/remake writes, payload regeneration or new verification machinery.
+The seven owned paths are the new guide, preceding Fairy Cave guide's single continuation link
+(preserving its stop), Story Progression navigation, this current agreement, one English index entry,
+and the New Battle paragraph in [battle-control lifecycle](contracts/battle-control-lifecycle.md#new-battle)
+plus the entry paragraph in [battle-loop research](../research/battle-loop.md#top-level-battle-control).
+Those two narrow owner corrections align the existing summaries with the accepted exact entry trace;
+no new original-game finding or broad contract rewrite is selected. Stop fresh entry before
+ActivateEnemies, or suspended entry before individual turns. Exclude combat execution, outcomes,
+Creed entry/interior and terrain reconstruction. No other research/contract or fixture/schema/
+glossary/zh-CN/code/remake writes, payload regeneration or new verification machinery.
 
 Natural reach, supplied flags/party/HP/classes, live mappings/raft/collisions, completed fade/load/
 text/window/scroll/action services, RNG-dependent upgrade, actual roster/presentation/control and

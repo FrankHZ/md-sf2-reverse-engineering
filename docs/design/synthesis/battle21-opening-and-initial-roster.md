@@ -302,15 +302,9 @@ joins. No raw-source reinvestigation, regenerated comparison or runtime acquisit
 | --- | --- |
 | Accepted Battle21 research, predecessor return and shared Battle20 entry consumers | Complete selected admission, before/start, cropped layout, follower/HP, source rows, random/neutral and actual item-mask joins. These accepted selected joins, not public aggregate counts, establish the local content. |
 | `sf2-battle-cutscenes-static-v1`, [fixture](../../../tests/fixtures/h2/battle-cutscenes-static-v1.json), expected.cutsceneFacts.intro; [routing contract](../contracts/battle-cutscene-routing.md) | Shared intro check/write order. Older contract Unknowns for exact route targets/empty execution are aggregate limits; accepted Battle21 research supplies these selected joins, without closing other routes. |
-| `sf2-battle-loop-static-v1`, [fixture](../../../tests/fixtures/h2/battle-loop-static-v1.json), expected.lifecycleFacts.rosters/betweenBattleHealing; [lifecycle contract](../contracts/battle-control-lifecycle.md#entry-and-round-scheduling) | Shared slot/healing boundary. Fresh-entry sequencing uses the accepted selected research rather than the older summary noted below. Battle01 activation/turn observations do not prove Battle21 behavior. |
+| `sf2-battle-loop-static-v1`, [fixture](../../../tests/fixtures/h2/battle-loop-static-v1.json), expected.lifecycleFacts.rosters/betweenBattleHealing; [lifecycle contract](../contracts/battle-control-lifecycle.md#entry-and-round-scheduling) | Shared slot/healing boundary. The shared entry-order summaries agree with the accepted exact research trace: before → reset/heal/ally then enemy initialization/AI clear/load → start. Battle01 activation/turn observations do not prove Battle21 behavior. |
 | `sf2-battle-spriteset-data-static-v1`, [fixture](../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json), table.BattleSpriteset21 and expected.facts.rowContentTracked=false; [encounter contract](../contracts/battle-encounter-definition.md) | Address and aggregate shape only. Neither aggregate totals nor macro counts serialize all 24 selected combatant rows or 48 region bytes. |
 | `sf2-map-script-engine-static-v1`, [fixture](../../../tests/fixtures/h2/map-script-engine-static-v1.json), expected.programSummary and command families | Shared script/consumer context. The accepted retained corpus selection entryLabel=bbcs_21 has 37 commands; inline bodies/entity rows and literal text remain separately research-owned. |
-
-The older lifecycle contract's New Battle paragraph lists the start seam before region reset,
-healing and loading; that wording differs from the accepted selected research's exact
-before → reset/heal/initialize/load → start trace. This guide follows the accepted research trace,
-retains the discrepancy for the contract owner and does not change that shared contract. Its older
-wording supplies no separate evidence for a different Battle21 sequence.
 
 Schema/verifier boundaries inspected are the
 [cutscene fixture schema](../../../schemas/h2-battle-cutscenes-static-fixture.schema.json) and
