@@ -222,6 +222,9 @@ calls `cs_59656` when clear and sets F776 after return. Later F522-set/F778-clea
 `cs_5996E` then sets F778. Population and those scene bodies belong to separate arrival/post-battle
 work. This guide consumes no concurrent arrival research or Battle22 opening/Chessboard content.
 
+Continue with [Desktop Kingdom first arrival and conditional control](desktop-kingdom-first-arrival.md)
+for the accepted fresh population/arrival boundary; this guide retains its pre-population/pre-opening stop.
+
 ## Evidence Review and Changed-State Limits
 
 **Confirmed provenance:** the research is accepted at main
