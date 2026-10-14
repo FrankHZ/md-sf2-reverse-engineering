@@ -125,6 +125,11 @@ The cave row remains a separate boundary even when it returns immediately.
 Its F750/F805/F256 and item branches do not become Battle24 prerequisites.
 This guide does not explain cave preparation or its scene.
 
+The continuation, [Battle24 outcomes through North Cliff preparation](battle24-outcomes-through-north-cliff-preparation.md),
+explains actual end counting, victory versus Egress returns and the later
+missing-item warning through its local retry/control boundary. Actual removal,
+blast/Rohde, cave interior and Battle25 remain separate scope.
+
 Walking's masked `$1400` path writes event6 and two coordinate words at
 parameters1/3 **before** the later raw blocking check. A blocked tail can leave
 a zone event without an admitted step. Admitted movement sets destination and

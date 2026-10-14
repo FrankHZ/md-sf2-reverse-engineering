@@ -700,7 +700,33 @@ instead of guaranteeing this roster. The explained static segment now ends
 after fresh start-dispatcher return before ActivateEnemies, with no executed
 tactics, combat/outcome/Egress, cave preparation/blast/Rohde or Battle25 claim.
 Natural travel, supplied state, service/presentation/control/save and changed-
-state Unknowns remain explicit. The observed and remake frontiers below are
+state Unknowns remain explicit.
+
+[Battle24 outcomes through North Cliff preparation](battle24-outcomes-through-north-cliff-preparation.md)
+continues with actual ally/enemy counting and defeat priority: Bishop128's
+LEADER AI does not override the zero leader-presence byte. Empty end/after
+hooks retain shared wrapper/JoinForce0 work. Victory seeds a byte position
+and mapped facing from current first active membership before join/424-clear/
+524-set; defeat and Egress use EGRESS_MAP and their distinct costs/restoration.
+All outcomes bypass immediate CheckBattle into exploration. Fresh72 rebuilds
+actors and temporary flags; CURRENT255 reload/scroll and88 suspension retain
+their separate histories. Later specific26/cave priority and default523→8/24
+still differ from ordered8/24/26 admission.
+
+The cave's ordered750/805/256 guards admit current Cannon-then-Dynamite search,
+including reserve/dead joined carriers and gap limits. Both missing branches
+name Dynamite, consume neither item and run the same reprimand; no town warp,
+choice or recruitment follows. Actual A/B/P/Bowie mappings, class/HP guards,
+nonwaiting destinations versus Idle, text/context/substitutions, gestures,
+compiled arrival-wait step versus timed jumps and debug skip govern the scene.
+Final follows all test Bowie's HP and form A→Bowie/P→A/B→A, with alias/allocation
+limits rather than guaranteed settled cast. Scene return precedes256, then
+physical0's position wait and conditional control. Walking/current reload
+retain256; fresh entry permits a retry when750 remains clear/805 set. Direct
+calls and interrupted prefixes retain actual effects without rollback. Actual
+removal/blast/Rohde, cave interior and Battle25 have separate scope. Natural
+reach, supplied state, completed services, visible settling, usable control
+and save/load remain Unknown. The observed and remake frontiers below are
 unchanged by this static explanation.
 
 **Confirmed bounded original observation:** the

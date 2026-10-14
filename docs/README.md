@@ -274,6 +274,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   Janet encounter and scripted acceptance, joined/active membership, temporary following and local/fresh-town return limits.
 - [`new-granseal-departure-through-battle24-admission.md`](./design/synthesis/new-granseal-departure-through-battle24-admission.md) —
   retained overworld travel, separate request/ordered admission and fresh initial encounter; supplied-state and pre-activation limits.
+- [`battle24-outcomes-through-north-cliff-preparation.md`](./design/synthesis/battle24-outcomes-through-north-cliff-preparation.md) —
+  actual end counting, distinct outcome returns and current-inventory cave warning; cast, movement, temporary retry and conditional local-control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

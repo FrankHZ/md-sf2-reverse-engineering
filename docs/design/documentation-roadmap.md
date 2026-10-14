@@ -399,67 +399,78 @@ following through local return/fresh-town consequences. Its
 [retained review](synthesis/new-granseal-janet-recruitment-and-departure.md#evidence-review-and-retained-results)
 preserves predecessor comparisons, corrected inspections, failures and Unknowns.
 
-The current reader outcome explains New Granseal departure, conditional
-Battle24 admission and the initial encounter. **Standard** rigor remains
-appropriate: retained scroll, request production, ordered selection and
-fresh/continued roster state differ. The owner is
-[New Granseal departure through Battle24 admission](synthesis/new-granseal-departure-through-battle24-admission.md),
-scoped by [#982](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/982).
-Consume corrected accepted [#977 research](../research/new-granseal-departure-through-battle24-admission.md)
-and accepted predecessors, including Janet synthesis. Battle24 outcomes and
-UI have separate scope and are not dependencies of this admission guide.
+[New Granseal departure through Battle24 admission](synthesis/new-granseal-departure-through-battle24-admission.md)
+explains accepted retained travel, separate request/ordered selection and fresh
+formation through the pre-activation boundary. Its retained review preserves
+#977's Map68 correction, comparison/CI failures and linked predecessor Unknowns.
+
+The current reader outcome explains Battle24 outcomes, returned exploration
+and the North Cliff missing-item warning through local retry/control.
+**Standard** rigor remains appropriate: leader AI versus victory, seeded return
+versus Egress, current inventory/cast and scene/caller completion differ.
+The owner is
+[Battle24 outcomes through North Cliff preparation](synthesis/battle24-outcomes-through-north-cliff-preparation.md),
+scoped by [#986](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/986).
+Consume accepted [#981 research](../research/battle24-outcomes-through-north-cliff-preparation.md)
+and accepted #982 admission synthesis. Actual removal/blast/Rohde, cave
+interior/Battle25, opening research and UI remain separate scope, not evidence
+or dependencies of this guide.
 
 Acceptance requires a readable connected explanation preserving **Confirmed**,
 **Inferred** and **Unknown** boundaries:
 
-- Explain Map6 south→73 fresh entry and73 east→72 retained scroll, actual
-  coordinate/facing/high-byte, history/mode/raft/follower limits and the
-  corrected south alternative Map68. No Janet/item/805/806 prerequisite;
-  scrolling does not select battle, rebuild actors or run72 init.
-- Separate the walking zone write before raw blocking from movement, mode,
-  first specific26/cave selection and default523→8/24. Preserve completed524,
-  counter/RNG branches, partial request residuals, write-before-service and
-  request survival; no automatic default every frame or guaranteed travel.
-- Explain ordered8/24/26 admission, completion-clear-after-selection,
-  wildcard versus crop, local coordinates, empty before/start hooks and474
-  ordering. Keep88 suspension distinct from fresh heal/placement/load.
-- Account for twelve processed ally slots, joined-active order, living/dead/
-  immortal/capacity differences and Janet's non-guaranteed placement. Explain
-  all16 enemy IDs/types/formation/orders/regions/item inputs, three regions
-  and point0, actual combatant follow targets and separate physical numbering.
-- Distinguish authored item flags from stored words, copied definitions/
-  equipment/spells, initial activation, difficulty baseATT versus final ATT
-  and524/class/level/RNG-dependent upgrades. No uniform successful repeat
-  roster, executed tactic or activation claim.
-- End after fresh start-dispatcher return before ActivateEnemies. Preserve
-  natural reach, supplied state, interrupted/repeated/changed-state and
-  service/presentation/control/save Unknowns. Combat/outcomes/Egress, cave
-  preparation/blast, Rohde, Battle25 and later travel are separate outcomes.
+- Explain zero leader byte versus Bishop128's LEADER AI, counting and defeat
+  priority, empty end/after hooks with shared JoinForce0, fresh/completed/
+  suspended states and no automatic boss victory.
+- Separate victory healing, current member/mapping-derived byte return seed
+  and join/424-clear/524-set from defeat gold/Bowie restoration and Egress/
+  Angel Wing costs. Preserve EGRESS_MAP/raft reset and immediate CheckBattle
+  bypass, fresh72 population/init/temp reset versus CURRENT255/scroll/88,
+  and later specific26/cave priority, default8/24 and ordered admission.
+- Explain ordered750/805/256 guards and actual current Cannon-then-Dynamite
+  full-word lookup, joined/reserve/dead/gapped inventories. Both missing
+  branches name Dynamite, consume neither item and perform no town warp,
+  choice or recruitment. Both-present removal/blast/Rohde is the next boundary.
+- Explain the complete warning through actual A/B/P/Bowie mappings and
+  class/HP/alias alternatives, nonwaiting destinations versus Idle,3357/3358
+  substitutions/portrait/speech, nod/shiver/shrink/restore, compiled left
+  movement versus timed Jump scripts and wait/skip semantics. Preserve actual
+  actor guards and the high-byte Bowie HP guard for branching final follows;
+  no guaranteed assembled or settled cast.
+- Distinguish source/generated bytes and follower allocation/list lifetimes
+  where they affect repeated/changed state. Follow scene return→256→physical0
+  position wait→conditional control. Walking/current reload retain256; fresh
+  entry resets it while750 remains distinct. Direct calls/interrupted prefixes
+  retain actual effects without rollback or universal playable acceptance.
+- Preserve natural reach, supplied state, service/presentation/control/save
+  Unknowns and stop before actual removal-callee audit, blast/Rohde, cave
+  interior or Battle25. Use stable separate-scope boundaries.
 
-Own exactly five paths: the new guide, Janet predecessor continuation link
+Own exactly five paths: the new guide, admission predecessor continuation
 only, Story Progression's connected segment/boundary, this agreement and
 docs/README.md navigation. No research/contract/schema/fixture/tooling/remake/
 glossary/Chinese changes or new original fact/remake behavior.
 
 Minimum evidence is complete accepted Layer A plus selected existing public
-fixtures, schemas and actual consumers and small direct document checks.
-Retain rowContentTracked=false/routeTargetsParsed=false boundaries: counts
-cannot prove private roster rows or effective route targets. Source/pair are
-absent here; no acquisition/regeneration, fresh-comparison claim, runtime,
-installation/environment creation or new machinery. Content/readability
-governs length; contradictions return to the research owner for replanning.
-The guide's [retained review](synthesis/new-granseal-departure-through-battle24-admission.md#evidence-review-and-retained-results)
-keeps #977 original/intermediate/final receipts, both0.080s comparisons,
-Map68 source-symbol correction and direct failures, #978 CI/514links and
-inspector corrections, #973/#969/#965/#954/#962 results/failures/Unknowns.
-Completed failures are not restarted or reclassified.
+fixtures, schemas and actual consumers and direct document checks. Public
+structure/counts do not prove private detailed scenes or slot24 targets;
+retain rowContentTracked=false/routeTargetsParsed=false boundaries. Source/pair
+are absent here: no acquisition/regeneration, fresh-comparison claim, runtime,
+environment creation or new machinery. Content/readability governs length;
+contradictions return to research. The guide's
+[retained review](synthesis/battle24-outcomes-through-north-cliff-preparation.md#evidence-review-and-retained-results)
+preserves #981's original/final identities, exact CI, author0.081s/independent
+0.082s pair receipts,40+2records/212bytes and literal/key/opcode/obstruction
+corrections; #982's CI/521links and case/source-size inspector corrections;
+#977's Map68 P2 and linked predecessor failures/Unknowns. Completed results
+are not restarted or reclassified.
 
-Check complete prose/diff/navigation/links/anchors, UTF-8/private/exact ownership
+Check full prose/diff/navigation/links/anchors, UTF-8/private/exact ownership
 and git diff --check. Load local/private-inputs.ps1 in the same process for
 the clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI in the Issue handoff. Documentation-only policy
 uses direct checks without blanket Python/.NET/Godot/H3/H4/translation suites.
-Freeze a clean pushed Draft PR fixing #982, Project Review / Verify and a
+Freeze a clean pushed Draft PR fixing #986, Project Review / Verify and a
 successful authorized main-gate callback for independent acceptance. No merge,
 cleanup, archive or next Issue.
 
