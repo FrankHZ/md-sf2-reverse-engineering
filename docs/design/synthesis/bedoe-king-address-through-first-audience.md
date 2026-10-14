@@ -15,9 +15,12 @@ services, visible presentation and usable input. This guide adds no remake capab
 decision. All conversation summaries are attributed speech, rather than independently established
 history about Grans, the devils or Volcanon.
 
-Stop after the first audience caller and conditional restoration of control. Shrine travel,
-Volcanon, the F722 producer, `cs_5766C` and later king choices, Skreech, further recruitment,
-services/floor inventory, Battle13 and unmerged successor findings remain outside this guide.
+Stop after the first audience caller and conditional restoration of control. The separate
+[Bedoe to the Volcanon audience guide](bedoe-to-volcanon-audience.md) continues through selected
+shrine requests, the conversation, Peter's membership/AI/following changes and conditional Map11
+control. That connection retains its own admission and natural-route limits. `cs_5766C` and later
+king choices, Skreech, further recruitment, services/floor inventory, Battle13 and unmerged successor
+findings remain outside this guide.
 Fnnn means flag nnn; coordinates are map tiles unless another unit is named.
 
 ## Two Independent Opportunities to Hear the King
