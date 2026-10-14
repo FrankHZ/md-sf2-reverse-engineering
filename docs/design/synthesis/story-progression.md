@@ -248,6 +248,14 @@ order and later FOLLOWER_B31 construction/NPC140 init removal. It stops at both 
 control returns, preserving input, actor/HP, service/presentation and persistence Unknowns;
 actual Polca departure, river/boarding, Battle14 and recruitment remain separate.
 
+[Polca departure and Luke recruitment](polca-departure-through-luke-recruitment.md) continues with
+the selected south warp, conditional battle interruption and independent F716-set/F10-clear init.
+Fresh followers and separate raft mapping differ from current-map population; new Luke allocation
+can retain an old F75 follower. All six attributed texts and join446 lead through separate F10,
+conditional F42/cache, current hide and later F416 effects, without transaction or retry repair.
+It stops at conditional exploration control, retaining actor/HP, natural-route, service/presentation,
+input and persistence Unknowns; Luke's Down1 proves neither boarding nor Battle14/16 route order.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
