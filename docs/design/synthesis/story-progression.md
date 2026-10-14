@@ -458,6 +458,18 @@ It stops at conditional destination exploration-loader admission, before populat
 Natural reach/custody/selection, supplied state, completed movement/services, presentation/control
 and persistence remain Unknown; descent framing is Inferred.
 
+[Floor World first arrival and conditional exploration](floor-world-first-arrival.md)
+continues from accepted Map26 admission with nine population rows and the complete
+41-command landing/pop scene. Randolf/Tyrin presence is not recruitment; followers,
+HP, mode/raft and aliases remain supplied premises. Six independent movements wait
+only for 132; hides invalidate lookups while F780 separately parks 129. Scene return
+precedes F779 then EGRESS_MAP26, but F779-set repeats skip that EGRESS write.
+Current-map/reload paths, interruption prefixes, final following and event-before-input
+controller installation retain their separate limits. It stops at conditional local
+control/pending handling before residents/services, ring/search/exits or Battle23.
+Natural arrival/state, completed services, presentation/control and persistence
+remain Unknown; balloon portrayal is Inferred.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
