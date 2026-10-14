@@ -20,6 +20,10 @@ selected Battle17 prerequisite. This guide stops at battle admission/start or th
 conditional exploration/control return. Western Map68 travel, Taros/Battle18, Caravan operation,
 Rick interactions and combat simulation are outside its scope.
 
+Continue with [Southwest Parmecia, Taros's warning and conditional Battle18 entry](southwest-parmecia-through-taros-battle18-entry.md)
+for the separate western scroll, shrine warning/retreat and before/start boundary. That guide retains
+independent admission flags and distinguishes staged Caravan actors from a usable vehicle grant.
+
 ## Leaving Town and Selecting a Battle
 
 **Confirmed departure:** Hassan Map9's first warp row matches any X at Y0 and requests a no-scroll

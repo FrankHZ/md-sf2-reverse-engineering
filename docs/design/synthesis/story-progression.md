@@ -308,6 +308,14 @@ shared entry/outcome work. First/repeat victory uses the selected member's final
 defeat/Egress choose Hassan with conditional saved-raft reset. It stops at admission/start or
 conditional fresh exploration/control, retaining state, service, natural-route and persistence limits.
 
+[Southwest Parmecia, Taros's warning and conditional Battle18 entry](southwest-parmecia-through-taros-battle18-entry.md)
+explains the western in-place scroll and separate shrine request, where F418 battle admission
+precedes F725 exploration init. Complete warning/retreat and confrontation retain actor/HP/service
+limits. Fresh combat rebuild replaces scene Caravan129/Down with F518-clear neutral159/Left/HP0;
+F468 intro and F518 completion act independently. It stops at conditional exploration return,
+unrelated admission or pre-activation start, without vehicle acquisition, Sword damage or observed
+playability. Natural route, supplied state, completion/input and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

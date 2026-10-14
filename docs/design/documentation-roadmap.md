@@ -242,59 +242,61 @@ explains the selected Panel/tree/Sword puzzle, capacity and conditional custody/
 admission and natural-path limits remain applicable; acquisition remains a separate Hassan
 cross-reference rather than a mandatory chronological prerequisite.
 
-The current reader outcome explains Hassan departure, Battle17 admission and conditional outcome
-returns. **Standard** rigor remains appropriate because ordered battle selection, mutable request
-bytes, transport, membership and first/repeated outcome consumers must agree without becoming a
-natural playthrough or combat simulation. Follow the
+[Hassan departure, Battle17 entry and conditional returns](synthesis/hassan-departure-and-battle17-outcomes.md)
+explains ordered admission, walking/raft requests, first/repeat outcomes and conditional returns.
+Its mutable request, party/transport and natural-route limits remain applicable.
+
+The current reader outcome explains the selected Southwest Parmecia transfer, Taros warning/retreat
+and conditional Battle18 entry. **Standard** rigor remains appropriate because scrolling versus
+MainLoop admission, independent flags, scene/population identity and before/start order must agree
+without becoming an observed journey or vehicle/combat capability. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Hassan departure, Battle17 entry and conditional returns](synthesis/hassan-departure-and-battle17-outcomes.md),
-scoped by [#839](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/839). It consumes the
-[accepted static investigation](../research/hassan-departure-and-battle17-outcomes.md),
-[PR838 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/838#issuecomment-6160960756)
-and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/838#issuecomment-6160982826),
-with accepted Hassan, battle, request, roster and following owners from main only. No stacked or
-unmerged evidence is consumed. This is original-content explanation, without source reinvestigation
-or remake work.
+[Southwest Parmecia, Taros's warning and conditional Battle18 entry](synthesis/southwest-parmecia-through-taros-battle18-entry.md),
+scoped by [#843](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/843). It consumes the
+[accepted static investigation](../research/southwest-parmecia-through-taros-battle18-entry.md),
+[PR842 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161224116)
+and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161232331),
+with accepted Hassan/Rohde, request, battle, actor and following owners from main only. No stacked or
+unmerged evidence is consumed; opposite-lane Battle18 outcomes/Caravan research is outside this guide.
+This is original-content explanation without source reinvestigation or remake work.
 
 Acceptance requires readable consequences and exact research/contract/fixture/schema/consumer
 traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Bounded tracked-fixture selections
-support shared-rule review without promoting aggregate facts to a composed observation. Explain:
+support shared-rule review without promoting aggregate facts to composed observation. Explain:
 
-- The no-scroll Map9 departure tuple, ordered wildcard Battle9/17 priority and independent
-  F417/F467/F517 versus Rohde F418. Battle rectangles do not restrict player-position admission;
-  completion clears an eligible unlock without suppressing selection.
-- Walking zone/default and actual raft differences, first/repeat counter/RNG requests, flash/service
-  order, partial reload parameter writes/residual coordinates and the next scan. No measured
-  independent encounter probability or position/facing-preserving reload follows.
-- Four actual empty scene targets versus shared wrappers/initialization; fresh/F88 entry, supplied
-  membership, base spriteset and repeat-upgrade limits, static end/leader rules without combat.
-- First/repeated victory's current-member final-position/facing seed and Bowie join tail, distinct
-  Hassan defeat/Egress and F64-conditional saved-raft reset, followed by conditional fresh exploration,
-  follower/raft population and control. No fixed winning position or all-actor/input guarantee.
+- Map69-to68 in-place scrolling versus Map68-to12 no-scroll/MainLoop admission. F418 selection
+  precedes F725 init; completion may clear unlock without canceling selection. Independent flags
+  do not establish mandatory chronological travel or Sword/Battle17 prerequisites.
+- The complete warning, pending retreat and conditional exploration/unrelated Battle19 boundary,
+  including selected population/followers, lookup/HP limits and unfinished action/service/control work.
+- The complete Battle18 before scene, main header versus Taros/Caravan rows and flag-selected
+  followers, fresh/F88 bypass and empty start. Stop before activation or an observed playable turn.
+- Scene Caravan129/Down versus F518-clear neutral159/Left/HP0/eas_Motionless after combat rebuild;
+  independent F468/F518 combinations. Neither sprite nor speech grants transport, Rohde membership,
+  inventory or Sword damage, and twelve placement rows do not prescribe a living party.
 
-The five owned paths are the new guide, Hassan choice guide's departure cross-reference, Story
-Progression navigation, this current agreement and one English documentation-index entry. Preserve
-the existing acquisition link and corrected dialogue attribution. Stop at selected admission/start
-or immediate conditional exploration/control. Map68 travel, Taros/Battle18, Caravan, Rick, terrain/path
-reconstruction, natural probability measurement, combat simulation, continuous playability and
-Chinese work are excluded. No research/contracts/fixtures/schemas/glossary/zh-CN/remake writes;
-no runtime acquisition, payload regeneration or new verification machinery.
+The five owned paths are the new guide, Hassan departure guide's next-segment cross-reference,
+Story Progression navigation, this current agreement and one English documentation-index entry.
+Stop at conditional exploration return, unrelated admission or pre-activation start. Battle18
+outcomes, Caravan acquisition/operation, Rick, later travel, terrain/path reconstruction, natural
+runtime, combat simulation, continuous playability and Chinese work are excluded. No
+research/contracts/fixtures/schemas/glossary/zh-CN/remake writes; no acquisition, payload regeneration
+or new verification machinery.
 
-Natural departure/zone/admission/return, actual flags/counter/seed/HP/roster/mappings/request/input,
+Natural travel/admission/return, actual flags/HP/lists/lookups/transport/raft/request/input,
 action/all-actor/service completion, presentation, usable control and save/resume persistence remain
 **Unknown**. This guide completes neither
 [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 Unexpected broad dependencies, evidence conflicts or product choices stop affected expansion for
 replanning; missing natural observations remain Unknown.
 
-Preserve PR838's original/rebased CI, direct/retained comparisons and corrected/failed inspections,
-plus linked #832/#828 and predecessor results. The
-[#831 corrected handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/831#issuecomment-6160802747)
-retains initial13/repeat2 Rohde text accounting and actual CI; empty Battle17 scenes add no texts.
-Accepted results suffice without ritual replay.
+Preserve PR842's original/rebased CI, direct/retained comparisons, corrected/failed inspections and
+linked predecessor results in its final/original handoffs and independent acceptance. Accepted
+results suffice without ritual replay. The narrower research order controls over compact aggregate
+summaries; no new composed-route observation is implied.
 
 Read the entire owned prose/diff; check provenance, links/fragments, exact paths/private boundary and
 `git diff --check`, then inspect the clean committed dependency planner and actual final-head CI.
