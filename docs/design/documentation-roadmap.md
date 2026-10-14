@@ -314,52 +314,60 @@ explains accepted outcome/counting, the rebuilt population, announcement and cha
 Its local-control/pending stop and [#915/PR917 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/917#issuecomment-6175632640)
 retain the acquisition and service limits.
 
-The current reader outcome explains Cotton Balloon acquisition, guard clearance and Floor World
-admission. **Standard** rigor remains appropriate because independent search/inventory, interaction,
-item selection, actor/action and request consumers require a complete accepted join. The current
-owner is [Cotton Balloon acquisition and Floor World departure](synthesis/cotton-balloon-through-floor-world-entry.md),
-scoped by [#919](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/919). It consumes
-[accepted #916 research](../research/cotton-balloon-through-floor-world-entry.md), its linked
-transaction/request/population owners and the outcome guide. Accepted base
-`63fab597ee78136cd88f7cdefa2bc6c4512cf6b5` includes #916/PR918 and #915/PR917.
-No stacking or dependency on concurrent #920 destination research.
+[Cotton Balloon acquisition and Floor World departure](synthesis/cotton-balloon-through-floor-world-entry.md)
+explains accepted chest delivery, guard clearance, own-tile use and complete departure through
+conditional destination admission. Its pre-population stop and
+[#919/PR921 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/921#issuecomment-6176035685)
+retain inventory, actor/action, request and natural-route limits. The
+[corrected per-service ownership](../research/map-event-item-transactions.md#ownership-and-unknown-boundary)
+retains #923's caller/callee distinction; accepted #916 owns the selected service algorithms.
 
-Acceptance requires readable player-relevant consequences with research/fixture/schema/verifier
-traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
+The current reader outcome explains Floor World first arrival from accepted Map26 admission through
+landing, popping and conditional local exploration/control. **Standard** rigor remains appropriate
+because population, action, flag and controller consumers must remain distinct. The current owner is
+[Floor World first arrival and conditional exploration](synthesis/floor-world-first-arrival.md),
+scoped by [#926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/926). It consumes
+[accepted #920 research](../research/floor-world-first-arrival.md) and its named predecessor/consumer
+owners. Starting accepted base `6e8803feebaf95931246e6e435c305a8916a9aac` includes #920/PR922 and #923/PR925.
+No stacking or dependency on #924 resident/ring/exit research; that outcome is outside this slice.
 
-- Chest appearance/search versus F212 write and actual delivery, full-party/repeat/interruption;
-  F212/F258 guard movement and wrapper-restored facing versus permission/current custody.
-- Actual own-tile `(35,24)`/any-facing match; menu selection versus first joined-holder/reverse-slot
-  search, removal before scene, handled/default d6 return and no automatic undo.
-- All twenty-nine departure commands, relevant inline/custom semantics and all six actors;
-  baseline/alternate sprites, HP/follower/alias/caller premises, timed jump versus arrival and
-  single-actor waits versus all-actor completion. Reference exact tables when duplication adds no value.
-- Pending request versus consumed Map26 `(26,8)`, Down admission, with no Map26 battle row.
-  Stop before destination population/init, interior content or Battle23 opening; exclude general
-  item/physics/AI/renderer expansion.
+Acceptance requires readable consequences with research/fixture/schema/verifier traceability and
+unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-The five owned paths are the new guide, outcome guide's bounded continuation, Story
-Progression navigation, this current agreement and one English index entry. No research, contract,
-fixture, schema, code, glossary, Chinese or remake edit; no runtime acquisition, comparison
-regeneration or new verification machinery. Organize for readability without a length target.
+- Fresh Map26 load and all nine rows with ordinary logical/physical examples; Randolf/Tyrin presence
+  versus recruitment, follower/HP/mode/raft/alias premises and distinct current-map255/reload paths.
+- All 41 landing commands as complete phases: camera/current-layout reload, trio Init/animation,
+  six custom speeds/placements, independent downward actions and only 132's waited movement,
+  animation restart, three hides, literal 1739 text and two follow copies. Keep HP asymmetry,
+  including followEntity's high-byte Bowie test, and missing/aliased actors explicit.
+- Source scene return → F779 → EGRESS_MAP26, skipped-scene EGRESS preservation and independent
+  F780 park 129. HideEntity invalidates lookups/followers; MoveEntityOutOfMap only parks position.
+  Retain repeat/supplied-state/interruption distinctions without claiming observed persistence.
+- Conditional palette/music/fade and event-before-input/controller installation. Text sentinel/W1/debug
+  facts do not establish observed UX; no shared physics, simultaneous start/all-actor completion,
+  pop sound, measured duration, guaranteed final coordinates or unconditional usable control.
 
-The guide's [evidence review](synthesis/cotton-balloon-through-floor-world-entry.md#evidence-review-and-remaining-limits)
-retains #916 handoff/acceptance, exact original/rebased objects, CI38616821310/38617104204 and
-unchanged 18,285,979-byte pair/0.081s, including inspection/fixture/private-regex failures and
-corrections. #915 retains scope-only CI38616608492 and its linked predecessor results/failures.
-Their evidence is not replaced here. The
-[transaction overview's per-service ownership](../research/map-event-item-transactions.md#ownership-and-unknown-boundary)
-agrees with its fixture and #916's exact alias resolution. Its caller-only boundary remains;
-accepted #916 research owns the guide's selected callee algorithms.
-Natural reach/custody/selection, supplied state, completed movement/services, presentation/control
-and persistence remain Unknown. Source counterexamples are not executed scenarios or an automatic
-runtime queue. This completes neither the campaign nor [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
+Stop before residents/services, giant-ring cs_59F20, search, exits/tunnel, Battle23 and recruitment.
+No new desired gameplay/UI policy, engine/remake acceptance, runtime queue or general physics work.
+Exactly five paths: the new guide, departure guide's bounded continuation, Story Progression navigation,
+this current agreement and one English index entry. No research, contract, fixture, schema, code,
+glossary, Chinese or remake edit; no acquisition, payload regeneration or new verification machinery.
+Organize for readability without a length target.
+
+The guide's [evidence review](synthesis/floor-world-first-arrival.md#evidence-review-and-retained-limits)
+retains #920 original/rebased handoffs and acceptance, exact objects, CI38619448174/38620203806,
+unchanged 18,285,979-byte pair/0.079s and completed inspection/transport failures. It links
+#923 handoff/acceptance and CI38621272226, including the corrected per-service address conflict,
+and #919/#916 predecessor results/failures rather than replacing them. Natural arrival/supplied
+state, completed actions/services, presentation/control and persistence remain Unknown. Static
+counterexamples are not played scenarios. This completes neither the campaign nor
+[epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Evidence conflict, broad dependency or product change requires replanning before affected expansion.
 
-Adversarially inspect accepted prose/contracts and bounded fixture/schema/verifier selections;
-read complete owned prose/diff and check quantities, provenance, links/fragments, English/private
-boundary and whitespace. Then inspect the configured clean committed dependency planner and actual
-final-head CI. No local blanket normal/full/engine/Godot/H3/H4 or translation suite solely for prose.
+Adversarially inspect accepted prose/contracts and bounded existing fixture/schema/verifier selections;
+read complete owned prose/diff and check quantities/traceability, provenance, links/fragments/tables/fences,
+English/private boundary and whitespace. Inspect the configured clean committed dependency planner and
+actual final-head CI. No local blanket normal/full/engine/Godot/H3/H4 or translation suite solely for prose.
 Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully deliver
 the authorized completion callback for independent main-gate review. No integration, cleanup or
 next-Issue selection.

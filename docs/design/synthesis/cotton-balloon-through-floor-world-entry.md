@@ -291,8 +291,12 @@ its own consumers and cannot be cited as this Floor World admission.
 
 This is conditional destination **loader admission**, before population/init.
 It proves no Floor World interior, immediate encounter, usable control or Battle23
-opening. Those later consumers remain outside this guide and are not dependencies
-on concurrent #920 research.
+opening. [Floor World first arrival and conditional exploration](floor-world-first-arrival.md)
+continues from this seam using accepted #920 research: fresh population, the complete
+landing/pop scene, F779/EGRESS and independent F780 parking, then conditional control.
+That guide preserves supplied-state, service and presentation limits and stops
+before residents, the giant ring, searches/exits and Battle23. These later consumers
+remain outside this departure guide; the navigation link does not broaden its claims.
 
 ## Evidence Review and Remaining Limits
 
