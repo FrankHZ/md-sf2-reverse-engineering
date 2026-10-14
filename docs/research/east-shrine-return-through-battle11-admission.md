@@ -301,7 +301,7 @@ neither a fixed camera origin nor a fixed helper output may replace these inputs
 
 The selected Map48 area descriptor in `2-areas.asm` has main bounds `(0,0)..(26,31)`,
 layer type255, background start `(28,33)`, parallax256 on both axes/layers and
-second-layer autoscroll words128/128. These are small descriptor facts, not an extracted
+second-layer autoscroll bytes128/128. These are small descriptor facts, not an extracted
 layout. The existing `LoadMap` plane initialization also uses `sub_38C0` and equivalent
 counter construction; this helper refreshes plane B after the explicit population and
 camera selection. `animations.asm:VInt_UpdateMapPlanes` consumes/clears bit1 and calls

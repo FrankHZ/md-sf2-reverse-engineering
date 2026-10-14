@@ -16,7 +16,8 @@ Standard rigor for [Issue #989](https://github.com/FrankHZ/md-sf2-reverse-engine
 and [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514):
 opening, request production, ordered battle admission, map loading and combatant
 initialization have distinct conditions. Accepted starting base is
-`1238d4d5165cb99d124651520bdf0cf87cc0014b`. This document is the sole owned path;
+`1238d4d5165cb99d124651520bdf0cf87cc0014b`. Owned paths are this document and the
+one-line secondary-autoscroll field-width correction in the linked Battle11 owner;
 no shared indexes/registries, schemas/fixtures, tooling, design, remake/UI,
 glossary or Chinese changes. #986 synthesis and UI692 are independent.
 No stacked dependency or unmerged conclusion is consumed.
@@ -484,7 +485,7 @@ with unchanged pair size/mtime. No extraction regeneration.
    Follow the selected map crop separately from descriptor selection, byte128
    secondary-layer behavior and final load/start requests. Preserve service,
    state and presentation Unknowns rather than escalating to runtime.
-4. Check complete prose/diff, relative links/anchors, UTF-8/LF, sole-path/private
+4. Check complete prose/diff, relative links/anchors, UTF-8/LF, owned-path/private
    boundary and `git diff --check`. On a clean committed head run
    `uv run sf2 verify plan --base origin/main --head HEAD`; record selected
    partitions and actual final-head CI in the Issue/PR handoff. No blanket
@@ -503,9 +504,15 @@ and [PR987 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pul
 0.082s unchanged-pair receipt,114 commands/612 bytes/150 generated action
 bytes, LF-only failure/correction, path/field diagnostics and hidden-X VInt
 correction. Preserve their linked #981/#977 failures, results and Unknowns.
-The earlier Battle11 owner's wording calls128/128 autoscroll words; direct
-macro/RAM/consumer review here establishes bytes without changing that
-separately owned note. Discovery guesses were resolved to actual source
+The earlier Battle11 owner described128/128 autoscroll as words. Direct
+sf2mapmacros dc.b encoding, adjacent RAM bytes and byte consumer operations
+establish bytes. The [consolidated PR992 review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/992#issuecomment-6181013516)
+expanded Issue989 ownership for that one-line correction; both owners now
+say bytes, while this paragraph preserves the original discrepancy and its
+source-backed correction. The ignored no-Map48 check also now compares each
+msMap row's first operand, so a row such as `48,ms_map48` cannot evade it;
+the earlier whole-argument comparison was insufficient despite the manually
+confirmed absence. Discovery guesses were resolved to actual source
 paths; no absent guessed path is treated as missing behavior.
 
 Freeze the clean pushed Draft PR with Project Review / Verify and completed
