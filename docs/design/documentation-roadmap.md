@@ -203,56 +203,60 @@ departure. Its prompt, actor, hiding/re-entry and conditional-control limits rem
 separate optional demonstration/repeat and fall/rescue content through its two caller/control
 boundaries. Its shared actors, independent predicates and natural-route limits remain applicable.
 
-The current reader outcome explains selected Bedoe return through Polca's confrontation, Gerhalt
-joining and the Battle13 new-battle start handoff. **Standard** rigor remains appropriate because
-travel, population, asynchronous actions, membership and battle admission have independent
-conditions. Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+[Bedoe return through Battle13 admission](synthesis/bedoe-return-through-battle13-admission.md)
+explains selected exits, Polca's confrontation, Gerhalt joining and the new-battle start handoff.
+Its independent setup, membership, request and natural-route limits remain applicable.
+
+The current reader outcome explains Battle13 outcomes, Luke accompanying the party, fresh Polca
+return and the optional mayor bargain through raft-state configuration and conditional control.
+**Standard** rigor remains appropriate because outcome, actor lifetime, temporary contacts,
+following and persistent raft state have independent conditions. Follow the
+[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Bedoe return through Battle13 admission](synthesis/bedoe-return-through-battle13-admission.md),
-scoped by [#803](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/803). It consumes the
-[accepted static investigation](../research/bedoe-return-through-battle13-admission.md) from
-[PR #802](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/802) and preceding English
-king-choice guide from accepted main only, without stacking. This is a content explanation, not a
+[Battle13 outcomes through Polca's raft grant](synthesis/battle13-outcomes-through-polca-raft-grant.md),
+scoped by [#807](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/807). It consumes the
+[accepted static investigation](../research/battle13-outcomes-through-polca-raft-grant.md) from
+[PR #805](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/805) and the preceding English
+admission guide from accepted main only, without stacking. This is a content explanation, not a
 natural playthrough or new remake capability; technical composition stays with research.
 
-Acceptance requires readable return/confrontation/joining/battle content and exact research/contract/
+Acceptance requires readable outcome/Luke/Polca/bargain content and exact research/contract/
 fixture/verifier traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded
 tracked fixture selections and their schema/consumer limits. Preserve these material distinctions:
 
-- Explain both selected exits and competing battle/init paths, F513 > F799 > F710 setup and actual
-  cast. F74 supplies Astral/king/minister, not Gerhalt; F75 Luke fixed-row skip and F67 Peter mapping
-  differ from membership, word HP and AI. X24/wildcard-Y caller tests F710/F799/F715 in order,
-  without F723/F724 or an automatic scene on entry.
-- Paraphrase all 19 cursor texts with speakers and the separate join446 request. Preserve scene
-  ordering/concurrency without copying a command ledger. Speech grants no raft or Luke recruitment.
-  `eas_Die` is presentation/placement rather than combat death; Luke's interrupted Left3 and
-  animation OFF prove neither completed movement nor freeze.
-- Gerhalt F9, capacity-dependent F41 and cached-list refresh differ from field presence, followers,
-  health, deployment and party AI. Supplied flags are not receipts, completion or replay repair.
-- F413 precedes pending warp, script return, caller F715, wrapper and consumption. Row13 wildcard
-  admission/output area and F513 clear-on-selected-call are independent. Actual empty before/start
-  scripts, F463/F88 alternatives and reinitialized battle population remain explicit.
+- Leader admission, ally-first defeat priority, F513 aftermath gate and variable repeat seed;
+  Bedoe defeat/Egress and an existing F64 raft reset differ from victory and the mayor's grant.
+- Paraphrase all eight aftermath and thirty bargain texts plus caller responses with attribution.
+  F75 accompanying differs from F10/F42, HP/revival and AI. Preserve the first pending tuple,
+  Bowie join tail and F413/F513 order without an atomic receipt or replay repair.
+- Fresh F513 population and temporary reset differ from supplied flags/current actors. Mayor137
+  RIGHT=0 wrapper and F718 > F717 > F716 > F260/F261/F262 caller priority permit a fourth scene
+  after three completed preparatory contacts only from cleared unchanged temporaries.
+- Preserve actual137/133/140, lookup versus physical mappings, sequential destination waits,
+  nonwaited actor actions, hide133 versus fresh recreation and Peter→Bowie/Luke→Peter following
+  admitted by high-byte Bowie HP. No guaranteed position, membership or service completion.
+- Only scene return reaches F716 → F64 → RAFT_MAP72 → X43 → Y48. Conditional declaration
+  differs from a raft present in Polca, river availability or boarding; repeat speech repairs none.
 
-The five owned paths are the new guide, king-choice main-route continuation, Story Progression
-navigation, this current agreement and one English documentation-index entry. Stop at new-battle
-start-dispatcher return before ActivateEnemies/first turn. Combat/outcomes, mayor/raft/Oddler
-departure, unmerged successor claims, original-source reinvestigation, town/floor inventories,
-king-choice rework, compulsory optional-hatchling order and Chinese synchronization are outside
-scope. No research/contracts/fixtures/glossary/zh-CN/remake edits or new product decisions are selected.
+The five owned paths are the new guide, predecessor admission continuation, Story Progression
+navigation, this current agreement and one English documentation-index entry. Stop at conditional
+mayor caller/control return. Y11/Y30 Oddler choices/departure, later river travel/Battle14, unmerged
+successor claims, original-source reinvestigation, town inventories and Chinese synchronization
+are outside scope. No research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition,
+payload copying/generation, verification machinery or new product decisions are selected.
 
-Natural walking/collision and uninterrupted arrival; actual flags, actors, mappings, HP, party/AI
-and positions; concurrent movement and service/pending completion; rendered action, text/camera/
-sprite/fade/audio, responsive control, persistence and continuous battle playability remain
-**Unknown**. This guide completes neither the
-[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
+Natural battle/contact reach; actual flags, actors, mappings, HP, membership/deployment/AI and
+positions; concurrent actions and service/pending completion; rendered/audible content, responsive
+control, persistence, river availability and boarding remain **Unknown**. This guide completes
+neither the [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
+nor the campaign. [#808](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/808) separately
+owns successor Oddler research; its unmerged findings are not this guide's dependencies.
 
-Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived
-payloads must not be generated/copied. No acquisition, repeated source investigation, runtime
-observation or new verification machinery is needed. Unexpected broad dependencies, evidence
-conflicts or product choices stop affected expansion for replanning; missing natural observations
-remain Unknown.
+Accepted research and bounded in-memory tracked-fixture selections suffice. No repeated source
+investigation or observation is needed. Unexpected broad dependencies, evidence conflicts or product
+choices stop affected expansion for replanning; missing natural observations remain Unknown.
 
 Read the complete explanation and owned diff; check provenance, changed links/fragments, exact
 paths/private boundary and `git diff --check`, then inspect the clean committed dependency planner
