@@ -19,6 +19,11 @@ for the configured Map72 `(43,48)` tuple. This guide ends at a numeric type5 dis
 an admitted battle before initialization, or conditional Map69 exploration control. It adds no
 remake capability, continuous-playability claim or downstream story/combat explanation.
 
+Continue with [the Kraken reveal and Battle16 entry](south-parmecia-through-kraken-battle16-entry.md)
+for the selected Map69 row0→Map49 route, conditional admission, complete encounter and fresh
+combatant rebuild through the empty start wrapper. That separate guide preserves this segment's
+natural-travel, supplied-state and completion limits; it adds no Battle14/15 prerequisite.
+
 ## Requesting Boarding Is Not Yet Boarding
 
 **Confirmed producer:** ordinary character movement considers directional input against the

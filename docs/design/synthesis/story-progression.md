@@ -266,6 +266,14 @@ population, while row9 preserves X/facing and retained actors within exploration
 It stops at the request, pre-init battle admission or conditional control, preserving natural-route,
 supplied-state, service/presentation/input and persistence Unknowns; F416 alone starts no Map69 battle.
 
+[South Parmecia, the Kraken reveal and Battle16 entry](south-parmecia-through-kraken-battle16-entry.md)
+continues with selected Map69 row0→Map49 and F416/F516 admission, distinct from F466 intro/start
+and F88 saved entry. The complete encounter has four Peter and three conditional FOLLOWER_B text
+sites; scene actors, shared ENTNUM sprite slots and requested services differ from the later healed,
+membership-sensitive combatant rebuild. Map49's no-admission fallback selects ms_Void. It stops
+after the empty start wrapper, before activation/turns/combat/outcomes, preserving supplied-state,
+natural-route, service/presentation/input and persistence Unknowns without Battle14/15 prerequisites.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
