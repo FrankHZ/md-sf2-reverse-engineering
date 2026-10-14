@@ -15,6 +15,8 @@ This guide continues [Harpy Pond approach through Battle20 entry](harpy-pond-app
 using accepted [Battle20 outcome/recruitment research](../../research/battle20-outcomes-and-elric-recruitment.md).
 It stops at immediate conditional Map51 control or the selected unrelated savepoint continuation.
 Later pond departure, F751 passage, Fairy Cave/Creed travel and Battle21 are outside its scope.
+Continue in [Harpy Pond departure through Fairy Cave entry](harpy-pond-departure-through-fairy-cave-entry.md)
+for that separately bounded departure, passage and conditional cave-entry explanation.
 Fnnn denotes flag nnn; records and slots are zero-based. Coordinates and waits are source operands,
 not observed positions, elapsed time or proof of a naturally reached scenario.
 

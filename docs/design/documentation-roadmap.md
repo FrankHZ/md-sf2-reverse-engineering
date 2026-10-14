@@ -275,39 +275,45 @@ Its conditional-control/admission stop and actor, mode, service and natural-rout
 explains the selected confrontation, independent warning and fresh/saved admission. Its pre-activation/
 individual-turn stops and flag/request/cast/service limits remain applicable.
 
-The current reader outcome explains Battle20 outcomes, Elric's rescue/recruitment scene and immediate
-conditional exploration return. **Standard** rigor remains appropriate because outcome selection,
-return seeds, force lists, temporary following and fresh map population have separate owners.
+[Battle20 outcomes and Elric recruitment](synthesis/battle20-outcomes-and-elric-recruitment.md)
+explains first/repeat outcomes, force membership, temporary following and immediate conditional pond/
+savepoint return. Its stop and supplied-state/service limits remain applicable.
+
+The current reader outcome explains pond departure, Elric opening the passage and conditional Fairy
+Cave entry. **Standard** rigor remains appropriate because admission, shared population, actor
+allocation, live map mutation, persistent flags and request/control completion have separate owners.
 The current owner is
-[Battle20 outcomes and Elric recruitment](synthesis/battle20-outcomes-and-elric-recruitment.md),
-scoped by [#875](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/875). It consumes
-[accepted outcome/recruitment research](../research/battle20-outcomes-and-elric-recruitment.md),
-[PR874 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/872#issuecomment-6171350805)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/874#issuecomment-6171383624),
-plus accepted pond, battle, map/population, action/dialogue and roster owners from main.
-Preserve their unchanged comparisons, final CI, resolved inspection failures and linked predecessor
-receipts. No stacked/successor evidence, source reinvestigation, runtime or remake work is selected.
+[Harpy Pond departure through Fairy Cave entry](synthesis/harpy-pond-departure-through-fairy-cave-entry.md),
+scoped by [#879](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/879). It consumes
+[accepted departure/entry research](../research/harpy-pond-departure-through-fairy-cave-entry.md),
+[PR878 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171704588),
+[rebased handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171750883)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/878#issuecomment-6171765502),
+plus accepted pond, battle, map/population, request, action/dialogue and roster owners from main.
+Preserve unchanged comparisons, original/rebased CI receipts, inspection/quoting/path failures,
+corrections and linked predecessor results. No stacked/successor evidence, raw-source reinvestigation,
+runtime or remake work is selected.
 
 Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Actual defeated/region/after selection, no leader-death shortcut, ordered count checks and
-  first/repeat victory versus defeat/Egress. Keep the pre-scene return seed, scene placement and
-  later returned coordinates distinct.
-- Complete selected scene/dialogue, replacement cast versus neutral159, explicit join13, full-party
-  reserve/list timing and generic music/input service. No consent branch or healing inferred from
-  joining; partial service completion preserves earlier writes without promising later records.
-- All three follow calls' actual Bowie-HP test and current-list effects. Explain common Bowie join,
-  F420 clear/F520 set, fresh Map51 selection and its empty fixed rows/no persistent Elric follower
-  row. Membership survives removal of the temporary scene actor.
-- Supplied F470-clear/repeat/full-party/dead/missing states and bounded savepoint exceptions through
-  accepted owners. Empty repeated content proves neither recruitment, natural reach nor usable input.
+- Pond exit versus warning, supplied F421/F521 admission before fresh Map67 exploration and actual
+  follower/population/transport state. Explain the independent F751/F13/Elric-HP passage predicate,
+  reserve eligibility and supplied F520 combinations without a fairy-history prerequisite.
+- Complete passage actions/dialogue, new actor allocation versus membership/following, current
+  HP/class/lookups/duplicates, hide and partial-service boundaries. Preserve actual actor resolution.
+- Live block copy versus post-return F751 and later flag-block loading; final asynchronous Bowie
+  motion versus the physical 0 wrapper barrier. Keep retained/replaced pending requests and explicit
+  cave tuple independent of movement completion.
+- Separate external cave/working-layout producers, Map32's actual ms_Void fallback and shared fresh
+  population/init/controller, no battle row, and arrival at an exit coordinate versus new movement.
 
-The exact five owned paths are the new guide, preceding approach guide's single continuation
+The exact five owned paths are the new guide, preceding Battle20 guide's single continuation
 cross-reference (preserving its stop), Story Progression navigation, this current agreement and one
-English index entry. Stop at immediate conditional Map51 control or the selected unrelated savepoint
-continuation. Exclude pond departure, F751 passage, Fairy Cave/Creed travel, Battle21, combat/terrain
-reconstruction and runtime acquisition. No research/
+English index entry. Stop at conditional Map32 entry control, an unrelated pending continuation or
+Battle21 admission before opening. Exclude cave exploration/chests/search/rock inspection dialogue,
+subsequent traversal, Creed and battle opening/outcomes, terrain reconstruction and runtime
+acquisition. No research/
 contracts/fixtures/schemas/glossary/zh-CN/remake writes, payload regeneration or new machinery are selected.
 
 Natural access/terrain/producer selection, actual flags/HP/class/mappings/membership/mode, completed

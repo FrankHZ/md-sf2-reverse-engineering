@@ -376,6 +376,13 @@ pond control or the selected savepoint continuation. Force membership, temporary
 fresh F520 population remain distinct; supplied flags/party/HP/lookups and service/persistence
 Unknowns remain explicit. It stops before pond departure, passage, Fairy Cave/Creed and Battle21.
 
+[Harpy Pond departure through Fairy Cave entry](harpy-pond-departure-through-fairy-cave-entry.md)
+explains the separate pond exit, Map67 admission/population, Elric's conditional passage scene and
+Map32's actual ms_Void/shared-entry boundary. Live blocks, post-return F751, pending request and
+completed control remain distinct. It stops at conditional cave control, an unrelated pending
+continuation or Battle21 admission before opening, retaining actor/mode/service, natural-route
+and persistence Unknowns without later cave exploration or Creed content.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
