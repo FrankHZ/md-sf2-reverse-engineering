@@ -304,59 +304,60 @@ explains accepted conversations/services, Ponpei's permission and conditional Ba
 Its [#907/PR909 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/909#issuecomment-6174944499)
 retains the independent permission/request gates and pre-opening stop.
 
-The current reader outcome explains Battle22 initialization and initial roster, including the
-fresh/current-state contrast. **Standard** rigor remains appropriate because independent flags,
-party capacity, item decoding, map loading and actor mappings require a complete accepted
-consumer join. The current owner is
-[Chessboard initialization and initial roster](synthesis/battle22-initialization-and-roster.md),
-scoped by [#911](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/911). It consumes
-[accepted Battle22 research](../research/battle22-initialization-and-roster.md), the
-[battle control/lifecycle contract](contracts/battle-control-lifecycle.md) and the predecessor.
-Accepted base `5ef473acf19a3c47cbccc71078e0e3bbfc65f047` includes both #908/PR910 and #907/PR909.
-No stacking or dependency on concurrent #912 outcomes research.
+[Chessboard initialization and initial roster](synthesis/battle22-initialization-and-roster.md)
+explains accepted empty hooks, party placement, sixteen enemies and fresh/current-state loading.
+Its pre-activation stop and [#911/PR913 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/913#issuecomment-6175260041)
+remain intact.
 
-Acceptance requires readable content/consequences with research/fixture/schema/verifier traceability
-and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
+The current reader outcome explains Battle22 outcomes and conditional Desktop Kingdom return.
+**Standard** rigor remains appropriate because independent outcome/count, party-seed, population,
+scene and service consumers require a complete accepted join. The current owner is
+[Chessboard outcomes and Desktop return](synthesis/battle22-outcomes-and-desktop-return.md),
+scoped by [#915](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/915). It consumes
+[accepted outcome research](../research/battle22-outcomes-and-desktop-return.md), its linked
+lifecycle/map/interaction owners and the initial-roster guide. Accepted base
+`546ccbb21ab1e9da42f5899fe7eae86ead18d255` includes #912/PR914 and #911/PR913.
+No stacking or dependency on concurrent #916 research.
 
-- Independent F422/F472/F522/F88; empty before/start hooks versus complete fresh initialization,
-  wrapper writes and actual return/service limits. Prior conversation does not replay here.
-- Eligible healing and membership rebuilding in ascending joined/active ally order; twelve
-  processed party slots versus living placements, dead/surplus/fewer-member cases and retained
-  class/inventory. Link the exact placement table instead of assigning named allies to rows.
-- All sixteen chess enemy rows and sole AI point, copied definitions/inventory versus exact row
-  NOTHING, stored commandsets/orders versus executed AI. Battle22 has no random-upgrade case;
-  do not import Battle21's scene or tactics.
-- Full Map22 load, crop9,0/30x30 and already battle-local coordinates; current-state actor scans
-  and exploration-to-battle remapping. Enemy type, sprite, logical actor and physical index stay
-  distinct. F522-clear Ponpei/Maid state159/158 versus script B31/A30 and their service limits.
-- F88 continuation bypasses fresh assignment/hooks/healing/roster/regions while loading current
-  state and applicable neutrals. Stop before fresh ActivateEnemies or suspended
-  IndividualTurns_Loop. No tactics, damage, outcomes, postbattle Desktop, Cotton Balloon or Floor World.
+Acceptance requires readable player-relevant consequences with research/fixture/schema/verifier
+traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-The five owned paths are the new guide, predecessor's bounded continuation preserving its stop,
-Story Progression navigation, this current agreement and one English index entry. No research,
-contract, fixture, schema, code, glossary, Chinese or remake edit; no acquisition, comparison
+- Leader cleanup versus all-enemy counting, loss precedence, empty defeated/after scripts versus
+  common Bowie join/completion effects and actual service returns.
+- First-active-member full-map victory seed, later scene placement, CheckBattle bypass and
+  distinct loss/Egress destinations; independent F422/F472/F522/F88 and supplied-state limits.
+- Fourteen-row F522 population, changed logical/physical identities and existing followers/aliases;
+  two flag-layout copies and chest record versus actual Balloon acquisition/use. Link exact tables
+  where duplication would hinder readability.
+- Independent F776/F522/F778 gates and the complete twelve-command post-victory announcement;
+  alternate-population arrival caveat, map reload versus full load, retained follower actions,
+  absent/dead aliases, text/camera/fade services and conditional pending/control return.
+- Changed King/Maid callbacks, temporary F256 reset/repeat and delayed writes. Stop at conditional
+  local exploration/control or pending return and these callbacks, before chest acquisition/use,
+  guard clearance or Floor World departure; exclude general combat/AI/terrain/renderer work.
+
+The five owned paths are the new guide, initial-roster guide's bounded continuation, Story
+Progression navigation, this current agreement and one English index entry. No research, contract,
+fixture, schema, code, glossary, Chinese or remake edit; no runtime acquisition, comparison
 regeneration or new verification machinery. Organize for readability without a length target.
 
-The guide's [evidence review](synthesis/battle22-initialization-and-roster.md#evidence-review-and-remaining-limits)
-retains #908 original/rebased handoffs and PR910 acceptance, distinct head/tree/base identities,
-CI38610992302/38612004333 and the unchanged18,285,979-byte pair/0.084s. Its predecessor retains
-#907 CI38610983007 scope-only success and the linked #904/#903/#900/#899 failures/corrections,
-including csc2D FLAGS_A5/6 destination-scan bypass, reloadMap working-layout reuse and RightLeft
-facing. Completed evidence/failures are preserved without replay or a new evidence authority.
-
-Natural admission, supplied party/flags/current state, actual services/roster/presentation/control
-and persistence remain Unknown. Static counterexamples are not executed scenarios or an automatic
-runtime queue. Aggregate fixtures and accepted direct-source joins retain separate boundaries.
-This completes neither the campaign nor [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
+The guide's [evidence review](synthesis/battle22-outcomes-and-desktop-return.md#evidence-review-and-remaining-limits)
+retains #912 handoff/acceptance, exact objects, CI38614495457 and unchanged 18,285,979-byte
+pair/0.084s, including inspection/transport failures and corrections. #911 retains scope-only
+CI38613823392; predecessor receipts retain #908 original/rebased objects/CI and linked
+#907/#904/#903/#900/#899 results, failures and corrections. Their evidence is not replaced here.
+Natural outcomes/return/interaction, supplied state, completed services, actual presentation/control
+and persistence remain Unknown. Source counterexamples are not executed scenarios or an automatic
+runtime queue. This completes neither the campaign nor [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Evidence conflict, broad dependency or product change requires replanning before affected expansion.
 
-Read complete owned prose/diff and bounded existing fixture/schema/verifier selections; check
-provenance, links/fragments, quantities, scope/private boundary and whitespace, then inspect the
-clean committed configured dependency planner and actual final-head CI. No local blanket
-normal/full/engine/Godot/H3/H4 or translation suite solely for prose. Freeze a clean pushed Draft PR
-fixing the Issue, set Project Review / Verify and successfully deliver the authorized completion
-callback for independent main-gate review. No integration, cleanup or next-Issue selection.
+Adversarially inspect accepted prose/contracts and bounded fixture/schema/verifier selections;
+read complete owned prose/diff and check quantities, provenance, links/fragments, English/private
+boundary and whitespace. Then inspect the configured clean committed dependency planner and actual
+final-head CI. No local blanket normal/full/engine/Godot/H3/H4 or translation suite solely for prose.
+Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully deliver
+the authorized completion callback for independent main-gate review. No integration, cleanup or
+next-Issue selection.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

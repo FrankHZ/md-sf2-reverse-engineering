@@ -15,7 +15,11 @@ at its conditional BattleLoop admission. It consumes
 [current Standard agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 It stops **before ActivateEnemies on fresh entry**, or **before IndividualTurns_Loop on
 suspended entry**. Tactics, AI execution, damage, outcomes, postbattle Desktop, Cotton Balloon
-and Floor World are outside this guide. Coordinates below are source tile operands; rows are
+and Floor World are outside this guide. Continue with
+[Chessboard outcomes and Desktop return](battle22-outcomes-and-desktop-return.md) for the
+accepted outcome, rebuilt population, announcement and changed conversations; this guide's
+pre-activation/current-state stop remains unchanged. Coordinates below are source tile operands;
+rows are
 zero-based. They are not observed movement or a prescribed party lineup.
 
 ## Four Independent Gates
@@ -316,6 +320,7 @@ state; actual live roster, lookups and view; completed load/fade/VInt/shared scr
 rendered/heard performance, usable control and cross-process persistence. The changed-state
 examples are static counterexamples, not executed scenarios or an automatic runtime queue under
 [ADR0014](../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) and
-[ADR0016](../../decisions/0016-remake-start-evidence-deferral.md). Concurrent #912 outcomes research
-is not consumed. This guide completes neither the campaign nor
+[ADR0016](../../decisions/0016-remake-start-evidence-deferral.md). The separate outcome guide
+consumes accepted #912; this initialization guide retains its own stop.
+This guide completes neither the campaign nor
 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
