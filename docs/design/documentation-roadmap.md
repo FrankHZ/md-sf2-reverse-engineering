@@ -250,56 +250,56 @@ Its mutable request, party/transport and natural-route limits remain applicable.
 explains the selected western transfer, warning/retreat and complete confrontation through the
 pre-activation start. Its independent flags, scene/neutral identities and natural-route limits remain.
 
-The current reader outcome explains Battle18 outcomes, the complete Caravan acquisition scene and
-immediate conditional exploration/control. **Standard** rigor remains appropriate because outcome
-precedence, actor identity, speech versus mutations, seeded return and supplied savepoint consumers
-must agree without implying a natural route, rendered bug or vehicle operation. Follow the
-[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+The current reader outcome explains optional Hassan Rick population/recruitment, the complete
+conversation and immediate membership/following/control. **Standard** rigor remains appropriate
+because population, membership, temporary suppression and physical following have separate lifetimes;
+ordinary admission, partial execution and reentry must agree without inventing a natural route.
+Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
-The current segment owner is
-[Battle18 outcomes and Caravan acquisition](synthesis/battle18-outcomes-and-caravan-acquisition.md),
-scoped by [#847](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/847). It consumes the
-[accepted investigation](../research/battle18-outcomes-and-caravan-acquisition.md),
-[PR846 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/846#issuecomment-6161451537)
-and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/846#issuecomment-6161473505),
-plus accepted Taros/Hassan, battle, request, actor and membership owners from main only. No stacked
-or unmerged evidence is consumed; the opposite lane's Hassan/Rick research is not a dependency.
-This is original-content explanation without source reinvestigation or remake work.
+The current segment owner is [Hassan Rick recruitment and following](synthesis/hassan-rick-recruitment.md),
+scoped by [#851](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/851). It consumes
+[accepted Rick research](../research/hassan-rick-recruitment.md),
+[PR849 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/849#issuecomment-6161609727)
+and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/849#issuecomment-6161628177),
+plus accepted Hassan/Taros/Caravan and membership/following owners from main only.
+[Caravan acquisition](synthesis/battle18-outcomes-and-caravan-acquisition.md) retains its separate
+outcome/scene/return scope and [PR850 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/850#issuecomment-6161661260)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/850#issuecomment-6161671119).
+No stacked or unmerged evidence is consumed. This is original-content explanation without source
+reinvestigation or remake work; #852 separately owns Caravan travel research.
 
 Acceptance requires readable consequences and exact research/contract/fixture/schema/consumer
 traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Explain:
 
-- Leader cleanup versus defeat-before-victory, first/repeat wrapper and seeded return before staging
-  and joining; actual F65/F84 changes and both paths' shared Bowie join.
-- The complete inspection, entry/disappearance, reaction, return/explanation and departure scene,
-  including all dialogue/action/camera meaning, HP/missing actors and asynchronous overwrite/services.
-- Scene logical128 versus before129/neutral159 and raw physical1 shrink clone. Conditional allocation
-  establishes no observed rendered bug. Driver/miniaturization speech does not supply combat
-  membership, current transport mode or Caravan operation.
-- Immediate Map12 F725 warning before F518 movement-out, pending Map68 return with conditional
-  exploration/control or unrelated admission; supplied EGRESS_MAP versus Battle17's forced Hassan,
-  conditional raft resets and non-Hassan init Unknowns. Flags/membership/modes remain independently
-  supplied, without a natural-route or winning-state assumption.
+- F518 default/alternate population and init hiding; F12/F44 membership, temporary F256, separate
+  F65 context and current physical following. Ordinary actor admission and action-flags turn/restore
+  differ from an artificial handler call.
+- All29 Rick scene commands, nine texts and generic join446, complete story/action/facing/priority
+  meaning. Physical records6–34 within cs_56AE6 are Rick's, not Rohde's repeat prefix.
+- Full active party and HP0, rebuild-before-active-write roster snapshots, current-input join
+  acknowledgement and destination-based facing; current-list tail/physical0 targeting, duplicate,
+  self-target and missing-actor limits, without a persistent Rick follower flag.
+- Partial execution, caller/control return and fresh versus existing-population reentry. F65/Sword/
+  battle-order gates do not follow from dialogue; no mandatory shrine-to-Hassan journey is claimed.
 
-The exact five owned paths are the new guide, the Taros entry guide's next-segment cross-reference,
+The exact five owned paths are the new guide, Caravan acquisition's optional Rick cross-reference,
 Story Progression navigation, this current agreement and one English documentation-index entry.
-Stop at immediate conditional outcome return/control or unrelated admission. Sword damage, combat
-simulation, Caravan operation/menus/storage, Rick, later travel and Chinese work are excluded. No
-research/contracts/fixtures/schemas/glossary/zh-CN/remake writes; no acquisition, payload regeneration
-or new verification machinery.
+Stop at conditional ordinary control/reentry. Other NPC conversations, Caravan operation, later
+travel/Battle19, Rick growth/gear/combat and Chinese work are excluded. No research/contracts/fixtures/
+schemas/glossary/zh-CN/remake writes; no acquisition, payload regeneration or new verification machinery.
 
-Natural outcome/reach, actual flags/HP/roster/lookups/seed/savepoint/transport/raft/request/input,
-all-actor/services, rendered shrinking/presentation, usable control and persistence remain **Unknown**.
-Other supplied savepoint-map init continuations are not silently treated as Hassan. This guide
-completes neither [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-nor the campaign. Evidence conflicts, broad dependencies or new product choices stop affected
-expansion for replanning; missing natural observations remain Unknown.
+Natural reach, actual flags/HP/class/roster/lookups/list order, acknowledgement/input, action/services/
+presentation/audio, usable control and persistence remain **Unknown**. Supplied malformed states are
+static consequences, not observed bugs. This guide completes neither
+[the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
+Evidence conflicts, broad dependencies or new product choices stop affected expansion for replanning;
+missing natural observations remain Unknown.
 
-Preserve PR846's original/rebased results, retained comparisons, corrected/failed inspections and
-final CI in its handoff/acceptance, including linked PR842/predecessor histories. Accepted results
-suffice without ritual replay. Bounded existing fixture selections support shared-rule review;
-aggregate facts do not establish a composed scene or outcome observation.
+Preserve PR849 and PR850 original/rebased results, retained comparisons, corrected/failed inspections,
+final CI and linked predecessor histories in their handoffs/acceptance. Accepted results suffice
+without ritual replay. Bounded existing fixture selections support shared-rule review; aggregate
+facts do not establish a composed natural recruitment observation.
 
 Read the entire owned prose/diff; check provenance, links/fragments, fixture quantities, exact paths/
 private boundary and `git diff --check`, then inspect the clean committed dependency planner and

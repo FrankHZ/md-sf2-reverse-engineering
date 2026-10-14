@@ -17,6 +17,8 @@ preceding conditional admission, and [Rohde's proposal](hassan-ancestry-and-rohd
 for his separate acceptance/following writes. Neither supplies a natural winning route. This guide
 stops at the immediate conditional exploration/control boundary or an unrelated battle admission.
 Sword damage, combat simulation, Caravan operation/menus/storage, Rick and later travel are excluded.
+The separate [optional Rick recruitment guide](hassan-rick-recruitment.md) explains conditional Hassan
+population and current membership/following; it establishes no mandatory shrine-to-Hassan return.
 Fnnn means flag nnn; coordinates are map tiles and indices are zero-based. Waits and speeds below
 are source operands, not measured time. Dialogue is paraphrased.
 
