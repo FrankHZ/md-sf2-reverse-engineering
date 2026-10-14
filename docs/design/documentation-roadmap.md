@@ -211,62 +211,63 @@ Its independent setup, membership, request and natural-route limits remain appli
 explains Luke accompanying, fresh Polca return and the optional bargain through ordered raft state
 and conditional control. Its outcome, actor, service and natural-route limits remain applicable.
 
-The current reader outcome explains Polca's two Oddler requests, their Yes/No paths and common
-following conclusion. **Standard** rigor remains appropriate because independent caller flags,
-branch convergence and current versus rebuilt actor lifetimes require explicit boundaries.
+[Polca's Oddler choices and following](synthesis/polca-oddler-choice-and-following.md) explains the
+independent requests, refusal/convergence and current/future following through its caller/control
+boundaries. Its input, actor, service and natural-route limits remain applicable.
+
+The current reader outcome explains selected Polca departure and Luke volunteering/joining through
+conditional exploration control. **Standard** rigor remains appropriate because map admission,
+actor allocation, membership/cache changes, hiding and later unlock commit at separate boundaries.
 Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Polca's Oddler choices and following](synthesis/polca-oddler-choice-and-following.md), scoped by
-[#811](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/811). It consumes the
-[accepted static investigation](../research/polca-oddler-choice-and-following.md) from
-[PR #809](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/809) and the preceding English
-raft guide from accepted main only, without stacking. This is original-content explanation,
-not a natural playthrough or new remake capability; technical composition stays with research.
+[Polca departure and Luke recruitment](synthesis/polca-departure-through-luke-recruitment.md), scoped by
+[#815](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/815). It consumes the
+[accepted static investigation](../research/polca-departure-through-luke-recruitment.md) from
+[PR814](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/814), its accepted membership/entry/
+raft/Oddler dependencies and the preceding English guide from main only, without stacking.
+This is original-content explanation, not a natural playthrough or new remake capability.
 
-Acceptance requires readable choices/consequences and exact research/contract/fixture/verifier
-traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked-fixture
-selections and their schema/consumer limits. Preserve these material distinctions:
+Acceptance requires readable consequences and exact research/contract/fixture/verifier traceability,
+preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked-fixture selections and
+their schema/consumer limits. Preserve these material distinctions:
 
-- X24 row priority and independent F716/F717/F718 predicates: Y30 requires no F717; Y11 tests
-  no F718. Two physical programs with five entry regions form a branch graph, not five scenes.
-- All 42 text sites / 39 IDs with attribution and repeated cursors. Y11 refusal returns; Y11 Yes
-  and either completed Y30 answer reach common following. Y30 No has no second prompt.
-- Ordinary prompt entry, held-input release, initial Yes, Left/Right selection, A/C confirmation,
-  B cancellation, pending no input and F89 polarity. A flag is not a prior-scene receipt.
-- Distinct current placements, nonwaited actions, NPC140 versus FOLLOWER_B31, animation/speed/shadow
-  services and mapping limits. Each follow command's high byte tests Bowie HP, not follower HP.
-- Current Peter→Bowie,140→Peter,Luke→140 target chain differs from list order and future F68
-  declaration under 31, F75 clearing and F718 init move of 140. No speech establishes health,
-  force membership/AI or later plot. Preserve sequential internal F68/clear F75/F718, later caller F717/F718,
-  partial state, repeat suppression and conditional control without transaction or repair.
+- Selected south warp, first-match conditional battle interruption and independent F716-set/F10-clear
+  init do not require Oddler following or raft presence and prove no natural departure/zone order.
+- Fresh versus no-rebuild population, FOLLOWER_B lookup31 versus raft mapping63, new Luke HP/class
+  sprite and allocation limits, and supplied F75 duplication. Creation does not join/heal/append.
+- All six attributed cursor texts and join446, placements, two separately waited jumps, dialogue
+  services and waited Down1. Requested frames/actions are not measured presentation completion.
+- Separate F10, conditional F42/rebuild-cache limits, current hide versus future F75 reconstruction,
+  then F416. Ordered writes are not atomic or automatic recovery; F10 can suppress an incomplete retry.
+- Luke's Down1 does not board the player or prove raft contact. F416 unlocks Battle16 without starting
+  combat or establishing Battle14/16 natural route order.
 
-The five owned paths are the new guide, predecessor raft continuation, Story Progression
-navigation, this current agreement and one English documentation-index entry. Stop at both
-caller/control boundaries before actual Polca departure, river/boarding, Battle14, later Oddler
-story or Luke recruitment. No unmerged successor, original-source reinvestigation, inventories,
+The five owned paths are the new guide, Oddler continuation, Story Progression navigation, this
+current agreement and one English documentation-index entry. Stop at conditional exploration control
+before boarding, travel or subsequent battle admission. No original-source reinvestigation, inventories,
 Chinese synchronization, research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition,
-payload copying/generation, verification machinery or new product decisions are selected.
+payload generation, verification machinery or new product decisions are selected.
 
-Natural Y11/Y30 reach/history; actual input, flags, actors, mappings, HP, membership/deployment/AI,
-positions and concurrent actions; service/presentation/control and persistence remain **Unknown**.
-This guide completes neither the
+Natural departure/earlier choices; actual battle, follower, raft, flags, actors, mappings, HP,
+membership/deployment/AI and concurrent actions; service/presentation/input and persistence remain
+**Unknown**. This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-[#812](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/812) owns the disjoint successor
-research; its unmerged findings are not this guide's dependencies.
+[#816](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/816) owns disjoint successor
+boarding/travel research; unmerged conclusions are not this guide's dependencies.
 
-Accepted research and bounded in-memory tracked-fixture selections suffice. No repeated source
-investigation or observation is needed. Unexpected broad dependencies, evidence conflicts or product
-choices stop affected expansion for replanning; missing natural observations remain Unknown.
+Accepted research and bounded in-memory tracked-fixture selections suffice. Unexpected broad
+dependencies, evidence conflicts or product choices stop affected expansion for replanning;
+missing natural observations remain Unknown. Preserve PR814's completed successful CI, resolved
+inspection/quoting/path/propagation failures and linked earlier results; do not ritual-replay them.
 
 Read the complete explanation and owned diff; check provenance, changed links/fragments, exact
 paths/private boundary and `git diff --check`, then inspect the clean committed dependency planner
 and actual final-head CI. Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4
-or translation suites solely for prose. Preserve completed failures/receipts. Freeze a clean pushed
-Draft PR fixing the Issue, Project Review / Verify and a successful authorized completion callback
-for independent main-gate review. Direct checks and CI do not grant integration; no cleanup or
-next-Issue selection is authorized.
+or translation suites solely for prose. Freeze a clean pushed Draft PR fixing the Issue, Project
+Review / Verify and a successful authorized completion callback for independent main-gate review.
+Direct checks and CI do not grant integration; no cleanup or next-Issue selection is authorized.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

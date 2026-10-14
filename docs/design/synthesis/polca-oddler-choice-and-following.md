@@ -18,7 +18,11 @@ Read [Battle13 outcomes through Polca's raft grant](battle13-outcomes-through-po
 for Luke accompanying the party, the changed town and the mayor's bargain. This guide consumes
 that accepted predecessor and stops after the two Oddler callers and their conditional control
 returns. Actual departure, boarding/river travel, Battle14, Luke recruitment and later Oddler
-story remain outside its boundary. It adds no remake capability or product decision.
+story remain outside its boundary. Continue with
+[Polca departure and Luke recruitment](polca-departure-through-luke-recruitment.md) for the selected
+south warp, independent init guard and explicit joining through conditional exploration control.
+That continuation requires neither Oddler following nor a raft and proves no natural route order.
+This guide adds no remake capability or product decision.
 
 ## Which Request Can Run
 
