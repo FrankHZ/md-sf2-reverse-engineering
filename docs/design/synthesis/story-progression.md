@@ -539,6 +539,18 @@ permit. The Hassan selector is not transport or a saved tuple. Basement arrival,
 recruitment, natural reach, visible growth/control and persistence remain outside
 that boundary or Unknown.
 
+[Evil Spirit Shrine entry and consultation admission](evil-spirit-shrine-entry-and-scene-admission.md)
+continues from the mansion's separate `(9,5)` exit through Map34's fresh setup,
+three warps and retained local transfers. F784 selects 21 baseline residents or
+an empty resident list; main/followers/raft remain separate. Evil Spirit130 uses
+physical47, while sixteen EFFECT1 rows are distinct ordinary allocations, not
+proven animation. Return-only init does not start the consultation. A separately
+produced zone request with Y low byte13 reaches the independent F784-clear call
+gate; F783 is no prerequisite. Only after the unanalyzed scene returns can the
+caller set F784 then F802. Scene contents, recruitment/departure and postscene
+control remain later boundaries; actual layout/state, natural reach, service
+completion, presentation and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
