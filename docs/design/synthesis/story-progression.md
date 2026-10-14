@@ -325,6 +325,14 @@ defeat/Egress uses supplied EGRESS_MAP rather than forced Hassan. It stops at im
 exploration/control or unrelated admission, retaining savepoint/raft, actor/service, presentation,
 natural-route and persistence limits. Caravan operation, Rick and later travel remain outside it.
 
+[Optional Rick recruitment in Hassan](hassan-rick-recruitment.md) explains the separate F518
+population, F12/F44 membership, temporary F256 and F65 context, ordinary talk admission and complete
+conversation. Immediate join/acknowledgement and current physical following retain HP/capacity,
+roster-snapshot, destination-facing, lookup and duplicate/self-target limits. Fresh and existing
+population reentry differ; no persistent Rick follower flag or mandatory return route is supplied.
+It stops at conditional ordinary control/reentry, with natural reach, service/input/presentation and
+persistence Unknown. Caravan operation and later travel remain separate.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
