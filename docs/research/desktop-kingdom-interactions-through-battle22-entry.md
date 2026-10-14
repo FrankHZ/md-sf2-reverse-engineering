@@ -284,9 +284,11 @@ zone wrapper. No direct player-facing or F776 gate is added by the zone row.
 
 Map22_ZoneEvent0 tests F777 first: clear returns. It then tests F522: set
 returns. Only F777 set/F522 clear writes the byte EGRESS_MAP=22, then calls
-`cs_5994E`. That is an EGRESS_MAP-only write: EGRESS destination X/Y/facing
-remain as supplied, and this does not complete an egress, service or savepoint
-transaction. A later scene failure can leave the map byte already changed.
+`cs_5994E`. That operation writes only EGRESS_MAP: it supplies no egress
+X/Y/facing tuple and leaves the map-event parameters untouched. The later warp
+supplies its own destination coordinates/facing. This does not complete an
+egress, service or savepoint transaction; an unfinished scene can leave the
+map byte already changed.
 
 The complete `scripts.asm:4–11` program is 32 encoded bytes, eight commands:
 
