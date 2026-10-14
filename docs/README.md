@@ -192,6 +192,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   two independent requests, refusal/convergence and current/future following; prompt, actor and conditional-control limits.
 - [`polca-departure-through-luke-recruitment.md`](./design/synthesis/polca-departure-through-luke-recruitment.md) —
   selected departure, independent init and Luke joining; actor, cache, hide/unlock and conditional-control limits.
+- [`polca-raft-boarding-through-south-parmecia-entry.md`](./design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md) —
+  separate boarding request, staged raft mode and selected Map69 exits; actor waits, controller and entry/control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
