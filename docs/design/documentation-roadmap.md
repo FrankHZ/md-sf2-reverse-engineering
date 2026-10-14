@@ -372,54 +372,60 @@ explains accepted room interactions, current following and joined/active choices
 Its [retained review](synthesis/creed-return-fairy-and-recruitment-choices.md#evidence-review-and-retained-results)
 keeps the accepted predecessor results, failures and Unknowns.
 
-The current reader outcome explains Oddler remaining with Creed and Fairy
-continuing with the party through the immediate conditional zone return, then
-separately explains later fresh-entry population consequences. **Standard**
-rigor remains appropriate because current actor/action changes, ordered caller
-flags and reconstruction are distinct boundaries. The owner is
-[Oddler stays and the Fairy handoff](synthesis/oddler-stays-and-fairy-handoff.md),
-scoped by [#962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/962).
-Consume [accepted #957 research](../research/oddler-stays-and-fairy-handoff.md)
-and accepted predecessors on main `936748b0715fdc992b05833745b566953dc77de3`.
-Concurrent #961 research is neither accepted evidence nor a dependency.
+[Oddler stays and the Fairy handoff](synthesis/oddler-stays-and-fairy-handoff.md)
+explains the accepted farewell, current actor/following changes, ordered caller
+flags and separate fresh-entry populations. Its retained review preserves the
+corrected Fairy declaration `(17,10)` Up/eas_InitSlow and both original and
+corrected #962 review/CI receipts.
 
-Acceptance requires a readable complete farewell with unchanged **Confirmed**,
-**Inferred** and **Unknown** boundaries and precise research links:
+The current reader outcome explains Creed departure, Fairy's dwarf recovery,
+the Cannon offer and digging through immediate caller returns and relevant
+fresh-entry consequences. **Standard** rigor remains appropriate because map
+admission, actual actors, recovery narrative, item capacity and ordered flags
+are distinct boundaries. The owner is
+[Creed departure, dwarf recovery and the Cannon gift](synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md),
+scoped by [#966](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/966).
+Consume [accepted #961 research](../research/creed-departure-dwarf-recovery-and-cannon-gift.md)
+and predecessors on main `c430f26f69a01a0f6e917660e34503c6bcccbec4`.
+Concurrent #965 New Granseal/Astral research is neither evidence nor dependency.
 
-- Explain F774 priority, F785/F786 admission, actual room actors and absence
-  of a recruitment/F787 prerequisite. Callback invocation can still skip a scene.
-- Attribute Oddler's wishes and Creed's advice while completing recruit hides,
-  staging, gestures, movement, farewell/hide and final following. Preserve
-  faceDown1 as facing rather than an extra step, HP/class/alias premises and
-  asynchronous/per-actor service limits. No menu, choice mutation, force leave,
-  healing or automatic journey follows from the speech.
-- Distinguish Init replacing Fairy's prior action from the final encoded-high-byte
-  Bowie-HP guard. A skipped follow does not preserve the earlier action. Hiding
-  removes lookup/list participation and leaves dormant records, not lost force
-  membership. Current Fairy130 and later Fairy158/Oddler130 remain distinct.
-- Explain script return, then set786/set69/clear68, then physical0 coordinate
-  wait. Preserve partial interruption prefixes and skipped/repeated/default
-  paths without rollback, all-actor settlement, usable-control or save claims.
-- Separate later fresh F786/F22 precedence and independent normal-init784 tail
-  from current actors; flags do not morph the retained room population.
+Acceptance requires a coherent readable recovery/gratitude/digging story with
+unchanged **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-Own exactly five paths: the new guide, Creed-return continuation link only,
+- Explain selected33→67→68→30 connections without mandatory terrain/natural-walk
+  claims. Retained scroll differs from fresh admission; interior30 is directly
+  reached from68 and differs from exterior29. Keep battle/mode/coordinate premises.
+- Separate selected baseline/F785/empty761 populations, independent761-layout/
+  760-illness init and759 dialogue from recovery admission. Current C158 is Fairy,
+  resident130 the patient; absent ordinary B aliases0 rather than retaining Oddler.
+- Complete examination, staged recovery/self-report, gratitude, Fairy hide and
+  digging with precise speaker/control/name owners. No combat-HP cure, observed
+  recovery or all-actor completion follows from presentation requests/waits.
+- Preserve69-set/760-clear admission and recovery→helper→760→clear69 order;
+  no invented759/762/785/761/capacity guard. Count all four Bowie slots, distinguish
+  fixed recipient from LEADER, retain unchecked AddItem and no existing-Cannon/
+  761 helper guard. Full inventory still reaches760/clear69; retained128 can
+  retry and repeats can award again with space. Fresh761 removes residents.
+- Complete digging and distinguish its live2×2 copy from fresh761's two copies;
+  placements/per-actor waits do not prove settled actors or an open route.
+  Preserve item/761/digging/760/69 interruption order, entity versus zone returns,
+  current following and natural-reach/supplied-state/service/control/save Unknowns.
+
+Own exactly five paths: the new guide, Oddler predecessor continuation link only,
 Story Progression, this current agreement and docs/README.md navigation.
 No research/contract/schema/fixture/tooling/remake/glossary or Chinese writes.
-Stop before walked mansion departure, overworld travel and dwarf healing.
-Small selected reads and prose only; no acquisition, regeneration, runtime,
-new environment or machinery. Content/readability governs length. Material
-evidence conflict, broader coupling or product change requires replanning.
+Stop before Cannon use, subsequent journeys and New Granseal/Astral. Small
+selected reads/prose only; no acquisition, regeneration, runtime, new environment
+or machinery. Content/readability governs length. Material evidence conflict or
+broader coupling requires replanning rather than silent expansion.
 
-The guide's [evidence review](synthesis/oddler-stays-and-fairy-handoff.md#evidence-review-and-retained-results)
-preserves #957's complete67 records/nine bodies/fourteen text joins,
-unchanged18,285,979-byte pair0.085s and CI38640917634; Init/F22/encoded-end
-corrections and source-path/truncation diagnostics remain retained. Preserve
-#958's unchanged five files/518 links and both CI runs, #953 original/rebased
-0.081s, #954 callback correction and linked #949/#945/#941/#937 completed
-failures/results/Unknowns. This checkout lacks pinned upstream/pair: no fresh
-comparison claim or completed-failure restart. Natural reach, supplied state,
-service/presentation completion, usable control and save may remain Unknown.
+The guide's [evidence review](synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md#evidence-review-and-retained-results)
+preserves #961 original/rebased/accepted receipts, unchanged18,285,979-byte
+pair0.081s,144 records/25 inline bodies/28 text joins and both CI runs. Retain
+its encoded-size inspection failure/correction, linked original diagnostics,
+#962 original/corrected review and CI, #957/#953/#949/#945/#941/#937 results,
+failures/Unknowns and #954 callback correction. This checkout lacks the pinned
+upstream/pair: no fresh comparison claim or completed-failure restart.
 
 Adversarially inspect accepted Layer A and selected public fixture/schema/consumer
 surfaces; report contradictions to their owner without research edits. Check
@@ -427,7 +433,7 @@ complete prose/diff, links/anchors/navigation, English/private boundary and
 `git diff --check`. Load local/private-inputs.ps1 in the same process for the
 clean committed planner and record actual exact-head CI on current accepted
 main. No blanket local Python/.NET/Godot/H3/H4 or translation suite solely for
-prose. Freeze a clean pushed Draft PR fixing #962, Project Review / Verify and
+prose. Freeze a clean pushed Draft PR fixing #966, Project Review / Verify and
 successfully notify authorized main-gate for independent acceptance. No merge,
 cleanup, archive or next Issue.
 

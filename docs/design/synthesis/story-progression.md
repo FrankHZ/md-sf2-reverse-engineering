@@ -602,6 +602,23 @@ skipped/repeated/interrupted paths, text/action/service and save Unknowns remain
 explicit. There is no choice mutation, force leave, healing or automatic journey.
 The guide stops before walked mansion departure, overworld travel or dwarf recovery.
 
+[Creed departure, dwarf recovery and the Cannon gift](creed-departure-dwarf-recovery-and-cannon-gift.md)
+continues with selected Map33→67→68→30 connections, separating retained border
+scroll from fresh admission and mine interior30 from exterior29. Fairy is
+current C158; sick dwarf130 and the normally absent B31/physical0 alias have
+distinct roles. The F69-set/F760-clear zone stages an examination, flashes,
+the patient's resumed animation/self-report, gratitude and Fairy's departure.
+This expresses recovery without combat-HP healing. The helper counts Bowie's
+four item slots, independently of LEADER's name, and leaves AddItem's result
+unchecked. Full hands defer the gift but still allow caller760/clear69; retained128
+can retry, and repeated helpers can award again with space. An admitted gift
+sets761 before the complete digging sequence and its live2×2 layout copy;
+fresh761 instead removes residents and performs two copies. These are not a
+universal one-time gift rule, all-actor completion or an open-route proof.
+Independent init/dialogue flags, aliases/HP/mode, interrupted prefixes, inherited
+speech, service/control/save and natural-reach Unknowns remain explicit. The
+guide stops before Cannon use, subsequent journeys or New Granseal/Astral.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
