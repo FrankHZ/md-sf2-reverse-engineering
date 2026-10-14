@@ -417,6 +417,14 @@ selection remain separate. It stops before destination population/init or Battle
 natural reach, supplied state, concurrent/service completion, rendered pickup and usable control
 remain Unknown.
 
+[Desktop Kingdom first arrival and conditional control](desktop-kingdom-first-arrival.md) continues
+from admitted fresh exploration through baseline population, the complete landing/discussion/farewell
+and installed following. Supplied mappings, temporary sprite work, selected concurrent waits and
+caller-written F776 remain separate from narrative attribution and persistent scale. It stops at
+conditional local first-arrival return/repeat before interactions, cs_5996E or Battle22 content;
+natural reach, actual state, completed services/actions, visible/heard performance, useful control
+and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

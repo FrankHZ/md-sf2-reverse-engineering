@@ -295,50 +295,56 @@ Map67 control/pending or supplied loss-continuation stop and cast/service limits
 explains separate arrival and the complete first scene through conditional return/repeat. Its
 pre-shrinking stop and supplied-state, service, following and live-layout limits remain applicable.
 
-The current reader outcome explains the accepted magic-door shrinking/collection scene and Desktop
-request/admission. **Standard** rigor remains appropriate because zone selection, supplied actor
-lookups, concurrent sprite work, narrated pickup, live layout and pending/destination admission have
-distinct boundaries. The current owner is
-[Creed's magic door and the Desktop transfer](synthesis/creed-magic-door-and-desktop-transfer.md),
-scoped by [#899](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/899). It consumes accepted
-[magic-door research](../research/creed-magic-door-and-desktop-transfer.md),
-[#896's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/896#issuecomment-6173732542),
-[rebase handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/896#issuecomment-6173857962)
-and [PR897 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/897#issuecomment-6173871815),
-preserving distinct original/rebased identities, comparisons, CI receipts and inspection failures.
-The accepted predecessor's [#895 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/895#issuecomment-6173738883)
-and [PR898 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/898#issuecomment-6173819074)
-retain their own results and linked earlier failures. No stacking, raw-source reinvestigation,
-runtime acquisition or remake work.
+[Creed's magic door and the Desktop transfer](synthesis/creed-magic-door-and-desktop-transfer.md)
+explains the independent warning/shrinking/collection scene and conditional request/admission. Its
+pre-population/pre-opening stop and supplied-state, sprite, live-copy and pending limits remain.
 
-Acceptance requires readable consequences with research/fixture/schema/verifier traceability and
-unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
+The current reader outcome explains accepted Desktop Kingdom population, first arrival and
+conditional control. **Standard** rigor remains appropriate because allocation, narrative speakers,
+concurrent action consumers, temporary sprite work and the init/control caller have distinct
+boundaries. The current owner is
+[Desktop Kingdom first arrival and conditional control](synthesis/desktop-kingdom-first-arrival.md),
+scoped by [#903](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/903). It consumes accepted
+[arrival research](../research/desktop-kingdom-first-arrival.md),
+[#900's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/900#issuecomment-6174161863),
+[correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/900#issuecomment-6174261324),
+[resolved P2](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/902#issuecomment-6174194697)
+and [PR902 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/902#issuecomment-6174272544).
+Preserve distinct original/corrected heads/trees and CI38605731097/38606392847, the unchanged
+18,285,979-byte retained pair/0.081s and all linked failures. The predecessor's
+[#899 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/899#issuecomment-6174047117)
+and [PR901 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/901#issuecomment-6174065903)
+retain their separately owned comparisons, CI, original/rebased #896 receipts, #895 results and
+linked failures. No stacking, raw-source reinvestigation, runtime acquisition or remake work.
 
-- Independent zone `(12,14)`/F783 gate and F774 independence; selected setup, supplied actors,
-  lookup/HP/class and position limits without an assumed first-scene prerequisite.
-- Complete 43-command cs_5AF36, all three inline/one custom bodies and six texts 1834–1839/control
-  joins, organized by warning, flashes, shrinking, narrated pickup/collection and departure.
-- Actor-specific waits versus concurrent/replaced actions, physical-index timer seeding and no
-  inferred elapsed duration; complete 42-operation shrinking action, shared sprite-size versus
-  per-entity resize/facing/position/action state, parking versus deletion and no scale/membership grant.
-- Actual speaker/name/animation and flash consumers without a renderer audit; stepEvent `(12,13)`
-  live copy without a completion stamp or persistence guarantee; literal warp versus wrapper and
-  surviving pending-request consumption.
-- Independent F422/F522 admission table and area-before-completion-clear order. Outside-area `(0,0)`
-  does not suppress wildcard Battle22 admission; selection survives F522's subsequent F422 clear.
+Acceptance requires readable content/consequences with research/fixture/schema/verifier traceability
+and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-The five owned paths are the new guide, predecessor's one continuation link preserving its stop,
-Story Progression navigation, this current agreement and one English index entry. Stop at fresh
-exploration entry before Map22 population/init, or selected Battle22 handoff before opening. Identify
-F776/F522/F778 successors only. Exclude destination arrival/control claims, later scenes, whole
-mansion and Chessboard content. No research/contracts/fixtures/schemas/code/glossary/Chinese/remake
-edits, retained-payload rerun/regeneration or new verification machinery. Opposite #900 arrival
+- Admitted fresh Map22 exploration F422 clear, first-arrival F522/F776 clear; all 30 baseline rows,
+  Eric/Karna ally slots, follower-first/row/main allocation and conditional physical-slot example.
+  NPC128 CARAVAN differs from the mansion WORKER and dialogue Goliath attribution; ORB153–155,
+  missing/duplicate followers, HP/class and mode/raft overwrite remain supplied-state boundaries.
+- Complete 136-command cs_59656, seven custom/thirteen inline bodies and fifteen texts 1748–1762,
+  organized by landing, discussion, farewell and conditional following/control.
+- Current-map camera reload without population/init recursion; animation versus motion, speed,
+  shared size/orientation/shadow work, nominal paired targets, actual selected waits and hide's
+  lookup/slot effect. Retain corrected installer FLAGS_A5/6 clearing and destination-scan bypass
+  for unmodified inline moves, with conditional completion and no inferred exact elapsed time.
+- Actual portrait/speech fallback and five+five explicit sound requests; final Init/follow with its
+  high-byte guard that tests Bowie's HP and supplied mappings, without a membership/warp/persistent-scale grant.
+- Caller-written F776 only after return, independent F522/F778 dispatch, pending/controller/mode
+  conditions and fresh-map versus map255 return. Identify later interactions/postbattle only.
+
+The five owned paths are the new guide, predecessor's one continuation preserving its stop,
+Story Progression navigation, this current agreement and one English index entry. Stop at conditional
+local first-arrival return/repeat before interactions, cs_5996E or Battle22 opening/roster/outcomes.
+No research/contracts/fixtures/schemas/code/glossary/Chinese/remake edits, retained-payload
+rerun/regeneration or new verification machinery. Concurrent #904 local-interaction/admission
 research is disjoint and not an accepted dependency.
 
-Natural reach, supplied setup/flags/party/HP/class/lookups/source position/mode/pending, completed
-services/concurrent actions, rendered shrinking/shadows/pickup, actual destination admission/control
-and persistence remain Unknown. Static changed-state examples are not executed scenarios or an
-automatic runtime queue. Public aggregates and complete accepted selected direct-source joins retain
+Natural reach, supplied state, completed services/concurrent actions, rendered/heard performance,
+useful control and persistence remain Unknown. Static counterexamples are not executed scenarios
+or an automatic runtime queue. Public aggregates and accepted selected direct-source joins retain
 separate limits; no aggregate proves complete local content or composed runtime success. This
 completes neither the campaign nor [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Evidence conflict, broad dependency or product change requires replanning before affected expansion.
