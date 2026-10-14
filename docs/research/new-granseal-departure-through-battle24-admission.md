@@ -57,7 +57,7 @@ Replan material contradiction or expanded machinery; Unknowns are not a runtime 
 
 Map6 row0 is the castle Y0 warp; row2 `(31,14)` has the same destination as
 row1 but is a separate row, not evidence of usable terrain. Map73 row0
-`(29,52)` returns to town `(20,30)` Up; row2 `(255,63)` scrolls south to Map69.
+`(29,52)` returns to town `(20,30)` Up; row2 `(255,63)` scrolls south to Map68.
 At `(63,63)`, east row1 wins over south row2. Negative coordinate bytes are
 wildcards in the warp scanner. No selected row tests Janet, joined/active
 membership, Cannon/Dynamite, F805/F806, F523 or an earlier conversation.
