@@ -346,51 +346,61 @@ Its [#938 rebase handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/
 and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/940#issuecomment-6177419250)
 retain original/rebase results and predecessor diagnostics.
 
-The current reader outcome explains Battle23 outcomes and conditional Willard Burrow return.
-**Standard** rigor remains appropriate for the outcome/party-seed, savepoint, reload/actor and
-request-admission joins. The owner is [Battle23 outcomes and the return to Willard Burrow](synthesis/battle23-outcomes-and-burrow-return.md),
-scoped by [#942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/942). Consume
-[corrected accepted #937 research](../research/battle23-outcomes-and-burrow-return.md) and accepted
-initialization/admission owners from main `6498fd588d3ed12b9d38392d97778e9e4b90af90`.
-Running #941 Creed research is neither source nor dependency.
+[Battle23 outcomes and the return to Willard Burrow](synthesis/battle23-outcomes-and-burrow-return.md)
+explains accepted leader/count outcomes, current-member victory seed, distinct defeat/escape returns,
+fresh/retained burrow state and conditional next-map admission. Its
+[#942 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/942#issuecomment-6177635072)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/943#issuecomment-6177652147)
+retain exact checks, absent-input limits and linked predecessor failures.
 
-Acceptance requires readable consequences with unchanged **Confirmed**, **Inferred** and **Unknown**
-boundaries and fixture/schema/verifier traceability. Explain:
+The current reader outcome explains Creed's restoration and main-room departure.
+**Standard** rigor remains appropriate for the setup/population, complete scene, sprite/action,
+text/HP/alias and init/control joins. The owner is
+[Creed's restoration and main-room departure](synthesis/creed-restoration-and-basement-departure.md),
+scoped by [#946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/946). Consume
+[accepted #941 research](../research/creed-restoration-and-basement-departure.md) and accepted
+predecessors from main `2eddb2c6d00a748315d9a4671dca8429a8a1ea67`.
+Running #945 shrine-entry research is neither source nor dependency.
 
-- First post-action hook/cleanup/count versus the separate after-turn check; Bowie/leader HP,
-  interleaved fresh enemy identities, surviving-enemy append, dead-list/mapping/service assumptions,
-  cleanup without HP/list reset and zero-allies defeat precedence. No combat simulation.
-- Eligible victory healing; actual first ascending joined/active member, including dead/off-map and
-  empty-list limits, seeds current position plus area and mapped facing. Common Bowie join and
-  full-party limits precede F423 clear/F523 set and alternate MainLoop return. Preserve parameter
-  and interrupted-prefix limits; admission (0,0,Right) and formation are not the current victory seed.
-- Defeat versus admitted Egress/Angel Wing costs/recovery, conditional unlock and EGRESS_MAP savepoint
-  selector, default/raft cases and conditional retained Floor World26; all bypass CheckBattle there.
-- Fresh full Map27 layout/entities, F523 empty residents versus main/followers/aliases, rts init and
-  no F781 repair; contrast CURRENT255 retained state. Independent F423/F473/F523/F781 and all eight
-  exit requests retain layout, pending, low-byte-coordinate and separate battle-admission limits.
+Acceptance requires readable story consequences with unchanged **Confirmed**, **Inferred** and
+**Unknown** boundaries and exact accepted provenance. Explain:
 
-Begin at the post-action seam and stop at conditional exploration or next-map admission before
-next-destination population/init, Creed scene or recruitment. Exclude natural-play claims, maze solution, engine/UI
-policy, runtime/acquisition, payload generation, new machinery and Chinese work. Own exactly five
-paths: the new guide, initialization guide's bounded continuation, Story Progression navigation,
-this current agreement and one English docs/README.md entry. No research/contract/schema/fixture/
-tooling/remake/glossary changes. Organize for reader understanding without an artificial length target.
+- Conditional Map33 admission, every setup override and seven return resident identities, changed
+  population, retained loading, follower allocation, lookup aliases and actual class/HP premises.
+  F523/F783 scene admission is independent of F774 and the later flags.
+- All 212 commands as coherent phases, all 58 text meanings/speakers/controls and 30 embedded bodies
+  through exact accepted joins. Preserve fresh load versus reload, live door-copy versus persistent
+  geometry, current-relative movement, selective HP guards, actual portrait/name/debug consumers
+  and waited versus unjoined/replaced actions; use precise links without duplicating the transcript.
+- Narrative restoration as Inferred, with TwirlGrow's complete Init tail, shared sprite size versus
+  per-actor resize bit, three unjoined growth actions and later replacement, flash DBF and synchronous
+  gestures. No general body/collision scaling, guaranteed final growth/shadow or measured rate/duration.
+- Creed/Fairy waited departure and hides, encoded high-byte/Bowie-HP follower guard, unjoined following,
+  complete caller tail F783 then EGRESS_MAP9, later Goliath/ally placement branches and conditional
+  controller handoff. Hassan is a later Egress selector, not transport or a saved XYZ tuple. Repeats,
+  supplied flags, interrupted prefixes and service failures preserve their limits.
 
-The guide's [evidence review](synthesis/battle23-outcomes-and-burrow-return.md#evidence-review-and-remaining-limits)
-links #937 original/P2/corrected/acceptance and #938 original/rebase/acceptance receipts, including
-all predecessor failures and Unknowns. Retain accepted comparisons without claiming fresh reruns:
-this checkout lacks pinned upstream/retained pair and acquires/regenerates neither. Natural outcome/
-traversal, actual supplied state, completed services, presentation/control and persistence may remain
-Unknown; population-removal framing is Inferred. Material evidence conflict, broader coupling or
-product change requires replanning before expansion; this completes neither campaign nor epic #514.
+Begin at separately admitted Map33 loading and stop after main-room init/exploration handoff, before
+basement arrival, Evil Spirit scene, recruitment choice, Oddler departure or #945 content. Exclude
+natural-play claims, gameplay/engine/UI policy, runtime/acquisition, payload generation, new machinery
+and Chinese work. Own exactly five paths: the new guide, outcome guide's bounded continuation,
+Story Progression navigation, this current agreement and one English docs/README.md entry. No
+research/contract/schema/fixture/tooling/remake/glossary changes. Content/readability governs length.
 
-Inspect the whole corrected research and selected public fixture/schema/verifier and consumer
-boundaries. Check exact identities/counts/rows/order and coherent changed-state examples, whole owned
-prose/diff, links/anchors and English/private boundary plus git diff --check. Load
-local/private-inputs.ps1 for controlled commands; inspect the clean committed planner and actual
+The guide's [evidence review](synthesis/creed-restoration-and-basement-departure.md#evidence-review-and-remaining-limits)
+links #941's handoff/acceptance, unchanged-pair result and original/corrected diagnostics, and #942's
+handoff/acceptance and linked predecessor failures. This checkout lacks the pinned upstream/pair;
+retain accepted comparisons without fresh-rerun claims, acquisition or regeneration. Natural reach,
+actual supplied state, completed services/concurrent actions, presentation/control and persistence
+may remain Unknown. Material evidence conflict, broader coupling or product change requires
+replanning before expansion; this completes neither campaign nor epic #514.
+
+Inspect the whole accepted research and selected fixture/schema/verifier/consumer boundaries;
+check exact identities, phase/command/text/action/flag order and changed-state consequences, whole
+owned prose/diff, links/anchors, English/private boundary and git diff --check. Load
+local/private-inputs.ps1 for controlled commands, inspect the clean committed planner and actual
 exact-head CI. No blanket local Python/.NET/Godot/H3/H4 or translation suites solely for prose.
-Freeze a clean committed pushed Draft PR fixing #942, set Project Review / Verify and successfully
+Freeze a clean committed pushed Draft PR fixing #946, set Project Review / Verify and successfully
 notify authorized main-gate for independent review. No merge, cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.

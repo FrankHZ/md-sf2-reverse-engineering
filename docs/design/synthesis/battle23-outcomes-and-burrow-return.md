@@ -16,6 +16,8 @@ and [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514
 It begins at the post-action end check; it does not simulate the turns between
 initialization and that seam. It ends at conditional burrow exploration or
 next-map admission, before destination initialization or any Creed scene.
+The continuation [Creed's restoration and main-room departure](creed-restoration-and-basement-departure.md)
+begins at separately admitted Map33 loading and preserves this guide's exit limits.
 Fnnn means flag nnn; slots are zero-based. Examples below discriminate source
 branches under supplied premises; they are not executed scenarios.
 
