@@ -323,16 +323,13 @@ The transaction fixture stores sourceContext/eventItemTransactions at top level;
 its grouped Unknowns and aggregates do not verify the service bodies or natural selection.
 The authored-program contract owns data, not movement execution or rendering.
 
-**Reported provenance discrepancy:** the older
-[transaction overview](../../research/map-event-item-transactions.md#ownership-and-unknown-boundary)
-names `iteminventory.asm` as canonical callee owner. #916 explicitly resolves these
-two section02 aliases to `itemstats.asm`, excluding similarly named helpers and
-alternate implementations. This guide uses that accepted exact local resolution;
-it does not silently repair or extend the older Layer A overview/fixture boundary.
-The fixture itself records both selected service paths as itemstats.asm and agrees with #916.
-The discrepancy does not change the aliases or caller seam, but the overview is
-insufficient authority for these callee algorithms. No other selected semantic
-conflict was found. Runtime-question queues remain deferred under ADR0014/0016.
+The [transaction overview's per-service ownership](../../research/map-event-item-transactions.md#ownership-and-unknown-boundary)
+and its fixture agree with #916's exact resolution: GetItemInventoryLocation and
+RemoveItemBySlot belong to `code/common/stats/itemstats.asm`; ReceiveMandatoryItem
+and RemoveItemFromInventory belong to `code/common/stats/iteminventory.asm`.
+The alternate `code/common/stats/items/itemfunctions_s7_0.asm` remains excluded.
+The overview retains its caller-only boundary; accepted #916 research owns the
+callee algorithms used here. Runtime-question queues remain deferred under ADR0014/0016.
 
 Preserve [#916's handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/916#issuecomment-6175681254):
 original head `9aaa845048a3be6d3c9011849e1f832c220ecde4`, rebased head

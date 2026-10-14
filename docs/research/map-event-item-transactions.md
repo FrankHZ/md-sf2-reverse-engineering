@@ -32,7 +32,7 @@ contextual / 13 physical service calls across six unique ordered shapes: six / o
 / five `RemoveItemFromInventory` calls. The aliases are retained as caller-target facts:
 `j_GetItemInventoryLocation` `0x81D0` → `GetItemInventoryLocation` `0x9146`, and
 `j_RemoveItemBySlot` `0x819C` → `RemoveItemBySlot` `0x8E76`; the two remaining effective entries are
-`0x4F4AA` and `0x4F566`.
+`0x4F48A` and `0x4F542`.
 
 Six item setup constants are source-enum joined exactly: Achilles Sword `$3D`, Wooden Panel `$70`,
 Cannon `$72`, Dynamite `$74`, Arm of Golem `$75`, and Cotton Balloon `$7D`. The retained predicate
@@ -54,9 +54,19 @@ selected event, or a caller-visible `d6` value.
 This owner joins accepted map events; direct state/control/handoff; predicate results;
 dialogue/request/interaction projections where they overlap; common stats/item inventory/item stats;
 map setup; technical interfaces; and FieldMenu control. It neither enters a service body nor republishes
-a callee algorithm or golden result. The canonical service-body owner is
-`code/common/stats/iteminventory.asm`; its alternate
-`code/common/stats/items/itemfunctions_s7_0.asm` is deliberately excluded.
+a callee algorithm or golden result. The fixture's
+`eventItemTransactions.serviceEntries` records the selected source owner for each service:
+
+| Service | Instruction target → effective entry | Selected service-body source |
+| --- | --- | --- |
+| `GetItemInventoryLocation` | `j_GetItemInventoryLocation` `0x81D0` → `0x9146` | `code/common/stats/itemstats.asm` |
+| `RemoveItemBySlot` | `j_RemoveItemBySlot` `0x819C` → `0x8E76` | `code/common/stats/itemstats.asm` |
+| `ReceiveMandatoryItem` | `ReceiveMandatoryItem` `0x4F48A` → `0x4F48A` | `code/common/stats/iteminventory.asm` |
+| `RemoveItemFromInventory` | `RemoveItemFromInventory` `0x4F542` → `0x4F542` | `code/common/stats/iteminventory.asm` |
+
+The pinned section02 layout includes `itemstats.asm`; section07 includes `iteminventory.asm`.
+The alternate `code/common/stats/items/itemfunctions_s7_0.asm` is deliberately excluded.
+These per-service source locations preserve this overview's caller-only boundary.
 
 The fixture's 14-field grouped **Unknown** register keeps natural reachability, selected context,
 caller state, inventory contents, all service results and mutations, predicate values/branches,

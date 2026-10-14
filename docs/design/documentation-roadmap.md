@@ -347,8 +347,10 @@ The guide's [evidence review](synthesis/cotton-balloon-through-floor-world-entry
 retains #916 handoff/acceptance, exact original/rebased objects, CI38616821310/38617104204 and
 unchanged 18,285,979-byte pair/0.081s, including inspection/fixture/private-regex failures and
 corrections. #915 retains scope-only CI38616608492 and its linked predecessor results/failures.
-Their evidence is not replaced here. The older transaction-overview callee-owner discrepancy is
-reported against #916's exact alias resolution without silently rewriting Layer A.
+Their evidence is not replaced here. The
+[transaction overview's per-service ownership](../research/map-event-item-transactions.md#ownership-and-unknown-boundary)
+agrees with its fixture and #916's exact alias resolution. Its caller-only boundary remains;
+accepted #916 research owns the guide's selected callee algorithms.
 Natural reach/custody/selection, supplied state, completed movement/services, presentation/control
 and persistence remain Unknown. Source counterexamples are not executed scenarios or an automatic
 runtime queue. This completes neither the campaign nor [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
