@@ -76,9 +76,12 @@ command. Wrapper and script-engine effects still matter.
 
 `cutscenes/battleendcutscenesstart.asm` first requires Bowie's HP nonzero
 and enemy128's HP zero. Either failed predicate restores registers at
-`loc_47C88` and returns. The accepted fresh roster identifies enemy128 as
-Willard, enemies129–133 as Rats and134–139 as Bubbling Oozes; a resumed or
-supplied roster is not silently replaced by that fresh premise.
+`loc_47C88` and returns. The accepted fresh roster in
+`data/battles/spritesets/spriteset23.asm:BattleSpriteset23` identifies Willard
+as enemy128; the five Rats are 129, 130, 132, 134, 137, and the six Bubbling Oozes
+are 131, 133, 135, 136, 138, 139. These identities are interleaved, not contiguous
+groups. A resumed or supplied roster is not silently replaced by that fresh
+premise.
 
 With both predicates satisfied, F523 clear dispatches ms_Empty; F523 set
 skips only the script. Both reach `battleendcutscenesend.asm:loc_47C48`.
