@@ -194,6 +194,14 @@ supplied state. The final command installs Peter following Bowie without joining
 after the audience caller and conditional control, preserving natural floor/order, actor/mapping,
 service/pending and presentation Unknowns; shrine travel and Volcanon remain separate.
 
+[Bedoe to the Volcanon audience](bedoe-to-volcanon-audience.md) continues through explicit shrine
+entry, retained-population current-map entrance, Peter's return/introduction, Volcanon's refusal,
+jewel advice and Peter's commitment. Scene attribution to Volcanon differs from speaker128's
+birdman mapping. F722 alone admits the scene; later F722/F711 writes, F7 membership,
+capacity-dependent F39/cached lists, AI bit2 clear, unchanged F67 and current following remain
+distinct. It stops at first conditional Map11 control, retaining supplied-state, natural-floor,
+service/pending and presentation Unknowns; return to Bedoe and the king's choice remain separate.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
