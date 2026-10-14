@@ -243,14 +243,19 @@ palettes, initializes counters, waits for FADING_SETTING to clear and another
 VInt. Completion of this service is not an observation of the visible scene.
 
 `csc2D` compiles each move to esc04 relative motion followed by esc01 destination
-wait, appending an idle jump. Down 16 is `(0,+16)` and DownLeft 8 is `(-8,+8)`;
-esc04 scales signed deltas by 384 from actual current positions and checks
-conflicting destinations. Under the stated starting positions and completed
-unmodified actions, the paired targets coincide: Bowie/153 `(4,24)`,
-Peter/154 `(3,23)`, B/155 `(5,23)`. This arithmetic is a **conditional** target
-join, not evidence that bodies were carried or that all six arrived together.
-Only 155's inline action is waited before the three hide calls. Conflict,
-alias, replacement or stalled service can break that nominal timing.
+wait, appending an idle jump. Its installer first applies `andi.b #$9F` to
+FLAGS_A, clearing bits 5 and 6. Down 16 is `(0,+16)` and DownLeft 8 is `(-8,+8)`;
+esc04 scales signed deltas by 384 from actual current positions and calls
+`entityscriptengine_2.asm:HasSameDestinationAsOtherEntity`. Its initial bit-5
+check branches directly to its `clr.w d4` return when clear, leaving Z set; esc04's conflict
+branch (`bne`) is not taken. These unmodified compiled moves therefore bypass
+the competing-destination scan, including for the deliberately coincident
+trio/ORB targets. Under the stated starting positions and completed unmodified
+actions, the paired targets are Bowie/153 `(4,24)`, Peter/154 `(3,23)`,
+B/155 `(5,23)`. This arithmetic is a **conditional** target join, not evidence
+that bodies were carried or that all six arrived together. Only 155's inline
+action is waited before the three hide calls. Alias, replacement or stalled
+service can still break that nominal timing.
 
 `csc2E` calls `entityfunctions_2.asm:HideEntity`: current and destination become
 `$7000,$7000`, all matching lookup bytes become $FF, and a matching follower
