@@ -259,45 +259,53 @@ membership, temporary suppression and current following; neither guide supplies 
 explains selected boarding, mode1 movement/landing and separate walking Battle19 admission.
 Its admission stop and actor, request, service and natural-route limits remain applicable.
 
-The current reader outcome explains Battle19's shared outcomes and independent Elven Village arrival.
-**Standard** rigor remains appropriate because battle lifecycle, membership, map requests, population
-and current-mode control have separate consumers. The current owner is
-[Battle19 outcomes and independent Elven Village entry](synthesis/battle19-outcomes-through-elven-village-entry.md),
-scoped by [#859](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/859). It consumes
-[accepted research](../research/battle19-outcomes-through-elven-village-entry.md),
-[PR857 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/856#issuecomment-6162129601)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/857#issuecomment-6162154889),
-plus accepted battle, Caravan, request, population and Rick owners from main. Preserve
-[PR858 updated handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/858#issuecomment-6162196284)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/858#issuecomment-6162210098),
-including linked original/predecessor evidence and corrected inspections. No stacked evidence or
-unaccepted Issue860 finding enters this guide; source reinvestigation, runtime and remake work are excluded.
+[Battle19 outcomes and independent Elven Village entry](synthesis/battle19-outcomes-through-elven-village-entry.md)
+explains shared outcomes and independent arrival. Its entry/control stop, supplied population/mode,
+savepoint and natural-route limits remain applicable.
+
+The current reader outcome explains optional Elven Village conversations, local search and internal
+stairs. **Standard** rigor remains appropriate because interaction, inventory, request consumption
+and map reload have separate owners. The current owner is
+[Elven Village conversations and local exploration](synthesis/elven-village-conversations-and-local-exploration.md),
+scoped by [#863](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/863). It consumes
+[accepted local research](../research/elven-village-conversations-and-local-exploration.md),
+[PR862 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/860#issuecomment-6162414060),
+[rebased handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/860#issuecomment-6162442630)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/862#issuecomment-6162494122),
+plus accepted shared interaction, search, description, membership and map owners from main. Preserve
+[PR861 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/859#issuecomment-6162382778)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/861#issuecomment-6162400984),
+including linked predecessor comparisons, actual CI, failures and corrected inspections. No stacked
+evidence, source reinvestigation, runtime or remake work is selected.
 
 Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- All four empty scene targets with F469/F519 wrappers, leader row -1, actual consumed join0,
-  fresh/F88 entry, initial roster and repeat-upgrade boundary. Leader cleanup precedes end counts;
-  Bowie's death prevents unconditional leader-death victory. Initial placement is not the return seed.
-- First/repeated victory selection before Bowie joining, fresh Map68 returns, defeat/admitted escape,
-  supplied savepoint and conditional saved-raft effects. EGRESS_MAP23 gives `(61,4)`, Up;
-  other savepoint continuations remain Unknown.
-- Independent Map68 `(48,30)` to Map23 `(22,29)`, Right, competing map/battle rows and no victory19
-  prerequisite. This is a static admission boundary, not a demonstrated walk from battle return.
-- Default/F762 actors, supplied normal followers versus overworld Caravan following, current-only
-  Rick, separate mode/raft handling, temporary flags, shared return-only init and conditional control.
-  F762 is a supplied later-story selector; its producer is outside scope.
+- Default/F762 actor-handler mappings, row-action bits versus approach direction, ordinary C
+  entity-first interaction versus menu search, literal dialogue/F13 read-only branch and church
+  call/conditional-return boundary. Text questions and Creed/fairy/Elric references imply no choice,
+  recruitment, story mutation or travel.
+- All three descriptions and four item rows with exact coordinates/kind admission/flags/items,
+  item-before-description priority at `(52,2)`, repeat/full-inventory rollback, joined-list recipients
+  versus active/visible followers, and unchecked AddItem return. Actual layout, collection, item
+  use/promotion and church transactions remain unclaimed.
+- No-scroll current-map stairs, Up to `(57,3)` Left and Down to `(21,8)` Right, current-map battle
+  scan and existing population/layout retention. Preserve modes 0/1/2, existing followers/raft,
+  temporary flags, load/init/services/pending and conditional control without a mandatory itinerary.
 
-The exact five owned paths are the new guide, Caravan guide's single successor cross-reference
-(preserving its admission stop), Story Progression navigation, this current agreement and one English
-index entry. Stop at immediate outcome return or conditional Map23 control, before village interactions,
-search/treasure/stairs, Map24/Battle20 or later travel. No research/contracts/fixtures/schemas/glossary/
-zh-CN/remake writes, payload regeneration, combat simulation or new verification machinery are selected.
+The exact five owned paths are the new guide, Battle19 arrival guide's single local-content
+cross-reference (preserving its entry/control stop), Story Progression navigation, this current
+agreement and one English index entry. Stop at church call/conditional return or conditional local
+Map23 control, before external exits, Map24/Battle20, Fairy Cave/Creed or later story. F762's producer
+and Elric rescue/recruitment are excluded. No research/contracts/fixtures/schemas/glossary/zh-CN/remake
+writes, payload regeneration or new verification machinery are selected.
 
-Natural reach/outcomes, actual flags/HP/roster/mappings/seed/savepoint/mode, nonselected savepoint init,
-completed services/actions/presentation, usable input and persistence remain Unknown. Supplied-state
-counterexamples constrain static review rather than describe executed bugs. Public aggregates do not
-serialize all selected content or prove a composed runtime outcome. This guide completes neither
+Natural access/terrain, actual actor lookup/facing/counter/layout, caller flags/membership/inventory/
+recipient, service return/church outcomes, text substitutions/presentation, current mode/followers/raft,
+completed stairs/load/init, usable input and persistence remain Unknown. Supplied-state counterexamples
+constrain static review rather than describe executed bugs. Public summaries, retained full comparisons
+and source-only field-search reuse remain distinct; aggregates alone prove no selected title/item or
+composed runtime outcome. This guide completes neither
 [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 Evidence conflicts, broad dependencies or product changes require replanning before affected expansion;
 missing natural observations remain Unknown.

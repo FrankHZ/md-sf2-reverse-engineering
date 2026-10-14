@@ -271,6 +271,10 @@ mode. Population therefore does not by itself establish walking, boarded Caravan
 or usable input. A pending request wins before controller installation; services and asynchronous
 initial actions remain conditional. Stop at this boundary before village interaction or departure.
 
+For optional local content after admitted arrival, see
+[Elven Village conversations and local exploration](elven-village-conversations-and-local-exploration.md).
+That guide owns dialogue, search and internal stairs; this guide retains its entry/control stop.
+
 ## Evidence Trace and Review Limits
 
 **Confirmed provenance:** accepted #856/PR857 binds SF2DISASM master
