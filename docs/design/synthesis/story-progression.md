@@ -441,6 +441,14 @@ remain distinct. It stops before fresh ActivateEnemies or suspended IndividualTu
 admission, supplied/current state, completed services, presentation/control and persistence remain
 Unknown. No tactics, outcomes or postbattle Desktop are implied.
 
+[Chessboard outcomes and Desktop return](battle22-outcomes-and-desktop-return.md) continues with
+leader cleanup/counting, victory/loss/Egress and rebuilt F522 exploration. The member-derived
+full-map seed differs from later scene placements; F776/522/778 independently select arrival
+and announcement. Fourteen population rows, existing follower actions/aliases, working-layout
+reload and Maid F256 reset/repeat retain their limits. It stops at conditional local control/pending
+or changed King/Maid callback return, before Balloon acquisition/use, guard clearance and Floor World.
+Natural outcome, supplied state, service completion, presentation/control and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
