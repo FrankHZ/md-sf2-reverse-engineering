@@ -280,3 +280,9 @@ actual mappings/followers/party/AI, uninterrupted service and pending completion
 fade/text/motion/audio timing, persistence beyond the rebuilt-entry boundary and continuous
 playability. Dialogue and connectivity do not close those questions or authorize acquisition.
 The guide ends at initial conditional control and completes neither the campaign nor the design epic.
+
+Continue with [Bedoe's king address and first audience](bedoe-king-address-through-first-audience.md)
+for the independently admitted report, guard dispersal, Luke/Peter/Bowie introductions and invitation
+to Volcanon. That guide distinguishes actual hiding from fresh-entry out-of-map movement and preserves
+shared actor positions, current following and conditional control; it establishes no mandatory scene
+order, shrine travel or recruitment.

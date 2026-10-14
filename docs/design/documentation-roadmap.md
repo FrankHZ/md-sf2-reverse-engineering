@@ -181,19 +181,24 @@ remain applicable.
 continues through the optional turtle test, independent east exit, searching-devils confrontation
 and ordered battle handoff. Its caller, actor, service and natural-route limits remain applicable.
 
-The current reader outcome explains Battle12's leader recognition, first/repeat mountain returns,
-Peter's separate response, selected Bedoe entry and the guards' challenge, recognition and requests
-through initial conditional control. Battle outcomes, setup/population selectors and asynchronous
-scene services cross existing owners, so this segment retains **Standard** rigor. Follow the
+[Battle12 outcomes through Bedoe's initial guard encounter](synthesis/battle12-outcomes-through-bedoe-entry.md)
+continues through leader recognition, first/repeat mountain returns, Peter's response and the initial
+guards' challenge, recognition and requests. Its outcome, setup, actor and service limits remain
+applicable.
+
+The current reader outcome explains Bedoe's king address, dispersing guards, Luke's greeting,
+introductions, Zeon warnings and the invitation to Volcanon through the first audience caller and
+conditional control. Independent callers, shared actors and asynchronous scene services cross
+existing owners, so this segment retains **Standard** rigor. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Battle12 outcomes through Bedoe's initial guard encounter](synthesis/battle12-outcomes-through-bedoe-entry.md),
-scoped by [#783](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/783). It consumes the
-[accepted static investigation](../research/battle12-outcomes-through-bedoe-entry.md) from
-[PR #781](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/781) and the preceding English guide
-from [PR #782](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/782), without stacking.
+[Bedoe's king address and first audience](synthesis/bedoe-king-address-through-first-audience.md),
+scoped by [#787](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/787). It consumes the
+[accepted static investigation](../research/bedoe-king-address-through-first-audience.md) from
+[PR #786](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/786) and the preceding English guide
+from [PR #785](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/785), without stacking.
 This is a candidate content connection, not a natural playthrough or new remake capability.
 Full records and technical composition stay with research.
 
@@ -201,29 +206,29 @@ Acceptance requires readable content and exact research/contract/fixture/verifie
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- HP gates precede F512; the leader tail queues living enemies before death processing/counting.
-  F512-set skips scenes while retaining shared leader/join tails. First-win after-script return
-  replaces the seeded tuple; repeat completion retains it.
-- F714/F712 response and F512 population are independent. Healing Peter does not prove his
-  mapping, follower/party flags or AI state. Paraphrase three defeated and two response texts.
-- Selected Map52-to-Map10 entry has no battle row. F722 selects another init/population and can
-  bypass the default F719 scene. Luke's ally row does not consume regular NPC numbering;
-  the placements of guards 150/151 and F67 Peter remain conditional.
-- Paraphrase all 25 guard requests. Patrol/army dialogue establishes attributed speech, not
-  historical events or permanent departure. Explicit guard placements precede caller F719 and
-  optional F720 movement of 150–156 out of map.
-- Preserve real coordinate units, action/wait/mapping/word-HP/high-byte/service boundaries and
-  current following rather than persistent state. Conditional restored control is not usable input.
+- Paraphrase all ten address and 29 audience requests as attributed speech. The invitation neither
+  enters the shrine nor recruits Luke/Peter.
+- Preserve independent F720/F721 callers, no F719/mandatory scene-order gate, F722 zone replacement,
+  wildcard/first-match and actual request admission. Caller flags follow script return.
+- Actor lookup differs from physical slot and party/HP/AI. Hiding 150–156 invalidates mappings/list
+  entries and excludes ordinary updates at out-of-map coordinates; fresh re-entry's
+  `MoveEntityOutOfMap` retains mappings/list entries. Absent mappings do not safely skip.
+- Audience uses other lookups; shared 147/148 relative positions depend on prior scenes and supplied
+  state. Do not assume the address normalized positions or that audience-first is naturally reached.
+- Preserve byte-actor/word-HP and high-byte follow admission, tile versus pixel/internal units,
+  action/wait/service boundaries, actual Peter→Bowie following versus speech, and current versus
+  persistent following. Coordinate-based main-stop precedes conditional control, not proven input.
 
 Only the new guide, predecessor continuation, Story Progression navigation, this current agreement
-and one English documentation-index entry are owned by #783. Stop after Bedoe's default/alternate
-init and first conditional restored control. King address/audience, Volcanon, later choices,
-Skreech, recruitment/services/floor routes, Battle13, unmerged successor findings, runtime readiness,
+and one English documentation-index entry are owned by #787. Stop after the first audience caller
+and conditional restored control. Shrine travel/Volcanon, the F722 producer, `cs_5766C`, later choices,
+Skreech, further recruitment/services/floor inventory, Battle13, unmerged successor findings, runtime readiness,
 new product decisions and Chinese synchronization are outside scope. No research/contracts/fixtures/
 glossary/remake changes are selected.
 
-Natural collision-free travel, supplied flags/actors/HP/mappings/party/AI, uninterrupted services
-and pending completion, visible presentation/timing and continuous playability remain **Unknown**.
+Natural collision-free floor access/order, supplied flags/actors/HP/mappings/party/AI and positions,
+uninterrupted services and pending completion, visible presentation/timing, follower reconstruction
+and continuous playability remain **Unknown**.
 This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
