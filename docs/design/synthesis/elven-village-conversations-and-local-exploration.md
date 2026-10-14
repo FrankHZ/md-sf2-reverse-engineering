@@ -303,6 +303,10 @@ Ordinary returning conversation/search resumes the existing exploration loop sub
 rather than forcing fresh entry. **Unknown:** completed services, actions, fades, map rendering,
 usable input and persistence. Stop here; no mandatory village itinerary or subsequent journey follows.
 
+The separate [Elven Village departure through Harpy Pond entry](elven-village-departure-through-harpy-pond-entry.md)
+explains selected external exits, independent Devil's Tail scroll and the two initial help scenes.
+It preserves this guide's local stop and supplies no mandatory route or prerequisite village activity.
+
 ## Evidence Trace and Review Boundary
 
 **Confirmed provenance:** accepted research binds SF2DISASM master
