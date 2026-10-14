@@ -283,60 +283,63 @@ savepoint return. Its stop and supplied-state/service limits remain applicable.
 explains four chest rewards, both returns and conditional rock inspection. Its local interaction/
 control/request or Battle21-admission stop and supplied-state/service limits remain applicable.
 
-The current reader outcome explains Battle21's complete opening confrontation and conditional
-initial roster. **Standard** rigor remains appropriate because admission, scene selection, actor
-population, cropped coordinates, party placement, item installation and saved entry have separate
-consumers. The current owner is
-[Battle21 opening and initial roster](synthesis/battle21-opening-and-initial-roster.md), scoped by
-[#887](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/887). It consumes
-[accepted Battle21 research](../research/battle21-opening-and-initial-roster.md),
-[PR886's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/884#issuecomment-6172444717),
-[rebase handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/884#issuecomment-6172589433)
-and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/886#issuecomment-6172605301),
-plus the accepted Fairy Cave return and shared lifecycle/script/roster owners from main. Preserve
-retained comparisons, original/final CI, resolved inspection failures and linked predecessor results.
-No stacking, raw-source reinvestigation, runtime acquisition or remake work is selected.
+[Battle21 opening and initial roster](synthesis/battle21-opening-and-initial-roster.md) explains the
+complete confrontation and conditional fresh/saved setup. Its pre-activation/individual-turn stop,
+independent flags, crop/cast/roster/item and service limits remain applicable.
 
-Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
+The current reader outcome explains Battle21 outcomes, the complete Oddler/Peter after scene and
+conditional Devil's Tail return. **Standard** rigor remains appropriate because leader cleanup,
+outcome precedence, seed/scene selection, coordinate lifetime, membership/follower mappings and fresh
+exploration have distinct consumers. The current owner is
+[Battle21 outcomes and Devil's Tail return](synthesis/battle21-outcomes-and-devils-tail-return.md),
+scoped by [#891](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/891). It consumes
+[accepted outcome research](../research/battle21-outcomes-and-devils-tail-return.md),
+[#888's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/888#issuecomment-6173000296),
+[rebase handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/888#issuecomment-6173114839)
+and [PR890 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/890#issuecomment-6173127050),
+plus the accepted opening and shared lifecycle/script/membership/map consumers from main. Preserve
+[#887's original](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/887#issuecomment-6172913854)
+and [corrected handoffs](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/887#issuecomment-6173044344)
+and [PR889 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/889#issuecomment-6173054505),
+including the resolved lifecycle-summary P2, distinct CI receipts, retained comparisons, inspection
+failures and predecessor results. No stacking, raw-source reinvestigation, runtime or remake work.
+
+Acceptance requires readable consequences with exact research/contract/fixture/schema/verifier
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Supplied F421/F521 admission and independent F471/F88 entry gates. Complete before scene and
-  text 2576–2582 support an Inferred refusal/threat interpretation, without a choice branch.
-- Flag-selected A/B/Peter versus fixed Peter, aliases/HP guards, parked/revealed actors, camera,
-  actions/services and later healing. Scene identity is not the initialized battle roster.
-- Source area `(21,0)` versus cropped origin `(0,0)` and literal scene/camera/roster domains.
-  Arrival coordinates do not deploy combatants or prove natural access/terrain.
-- All selected ally/enemy positions and four regions as source operands and conditional setup,
-  not actual roster or tactics. Random-upgrade membership/F521 and the empty airborne exclusion
-  boundary remain conditional. Successful AddItem masks equipped/AI/drop bits before the caller's
-  equipment test; unchanged row 1 Dark Madam receives an unequipped ring through that path.
+- Leader cleanup versus HP mutation, two ordered count checks and both-zero defeat precedence;
+  empty defeated/no region scene, F521 after gate and independent F421/F471 consumers.
+- First/repeat seed versus scene warp; common JoinForce(0), joined/active membership versus selected
+  A/B/Peter mappings, fixed scene Peter fallback and changed-state HP/alias boundaries.
+- All 33 commands, custom/two inline bodies, text2583–2589, speed/look/move/wait/portrait/follow
+  consumers. Intended Oddler attribution is Inferred; dialogue establishes no physiological/lore fact.
+- CURRENT_BATTLE's actual lifetime: cropped after-scene coordinates versus full-map67 `(26,23)` Down;
+  shared-slot replacement/partial completion, fresh population/templates and conditional control.
+- Bounded defeat/escape/suspension, supplied savepoint/raft consumers and the independent doorway
+  `(26,22)`→Map33 `(15,30)` Up. Arrival is not automatic mansion entry.
 
-The seven owned paths are the new guide, preceding Fairy Cave guide's single continuation link
-(preserving its stop), Story Progression navigation, this current agreement, one English index entry,
-and the New Battle paragraph in [battle-control lifecycle](contracts/battle-control-lifecycle.md#new-battle)
-plus the entry paragraph in [battle-loop research](../research/battle-loop.md#top-level-battle-control).
-Those two narrow owner corrections align the existing summaries with the accepted exact entry trace;
-no new original-game finding or broad contract rewrite is selected. Stop fresh entry before
-ActivateEnemies, or suspended entry before individual turns. Exclude combat execution, outcomes,
-Creed entry/interior and terrain reconstruction. No other research/contract or fixture/schema/
-glossary/zh-CN/code/remake writes, payload regeneration or new verification machinery.
+The five owned paths are the new guide, opening guide's single continuation link (preserving its
+stop), Story Progression navigation, this current agreement and one English index entry. Stop at
+conditional Map67 control/pending or the supplied loss destination's continuation. Exclude mansion
+init/interior, Battle22, later lore/recruitment, damage/AI/drop/terrain reconstruction. No research/
+contract/fixture/schema/glossary/zh-CN/code/remake writes, payload regeneration or new verification
+machinery. Opposite mansion-entry research has disjoint ownership and is not an accepted dependency.
 
-Natural reach, supplied flags/party/HP/classes, live mappings/raft/collisions, completed fade/load/
-text/window/scroll/action services, RNG-dependent upgrade, actual roster/presentation/control and
-saved persistence remain Unknown. Supplied-state counterexamples constrain static review rather
-than describe executed bugs. Public summaries, retained comparisons and accepted selected joins
-remain distinct; aggregates alone prove no complete local content or composed runtime result.
-This guide completes neither [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-nor the campaign. Evidence conflicts, broad dependencies or product changes require replanning
-before affected expansion; missing natural observations remain Unknown.
+Natural outcome/reach, supplied party/HP/classes/flags/lookups/geometry/mode/raft/savepoint, completed
+services, rendered scene/control and persistence remain Unknown. Static counterexamples are not
+executed bugs or an automatic runtime queue. Public aggregates, retained comparisons and accepted
+selected direct-source joins keep separate limits; no aggregate proves complete local content or
+composed runtime success. This completes neither the campaign nor
+[design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514). Evidence conflict,
+broad dependency or product change requires replanning before affected expansion.
 
-Read the complete owned prose/diff and bounded existing fixture selections; check provenance,
-links/fragments, quantities, exact paths/private boundary and `git diff --check`, then inspect the
+Read the complete owned prose/diff and bounded existing fixture/schema/verifier selections; check
+provenance, links/fragments, quantities, ownership/private boundary and whitespace, then inspect the
 clean committed configured dependency planner and actual final-head CI. Preserve accepted comparisons
-and failures without replay. No normal/full/engine/Godot/H3/H4 or translation suite runs solely for prose.
-Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully deliver
-the authorized completion callback for independent main-gate review. No integration, cleanup or
-next-Issue selection is authorized.
+and failures without replay. No local normal/full/engine/Godot/H3/H4 or translation suite solely for
+prose. Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully
+deliver the authorized completion callback for independent main-gate review. No integration, cleanup
+or next-Issue selection.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
