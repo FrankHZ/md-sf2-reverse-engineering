@@ -299,67 +299,64 @@ pre-shrinking stop and supplied-state, service, following and live-layout limits
 explains the independent warning/shrinking/collection scene and conditional request/admission. Its
 pre-population/pre-opening stop and supplied-state, sprite, live-copy and pending limits remain.
 
-The current reader outcome explains accepted Desktop Kingdom conversations, bounded services,
-King Ponpei's permission and conditional Chessboard admission. **Standard** rigor remains
-appropriate because actor activation, independent flags, service return, scene completion and
-request consumption have distinct boundaries. The current owner is
-[Desktop conversations and the Chessboard challenge](synthesis/desktop-kingdom-interactions-through-battle22-entry.md),
-scoped by [#907](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/907). It consumes
-[accepted interaction/admission research](../research/desktop-kingdom-interactions-through-battle22-entry.md),
-[#904's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/904#issuecomment-6174520666),
-[rebased/final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/904#issuecomment-6174585157)
-and [PR906 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/906#issuecomment-6174618486).
-Preserve distinct original/rebased/final identities and CI38608369060/38608730439/38608904864,
-the unchanged18,285,979-byte pair/0.080s and all linked failures. The accepted
-[first-arrival guide](synthesis/desktop-kingdom-first-arrival.md),
-[#903 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/903#issuecomment-6174446531),
-[correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/903#issuecomment-6174502720)
-and [PR905 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/905#issuecomment-6174512539)
-retain reload's existing-layout reuse, RightLeft facing changes, #900's corrected csc2D FLAGS_A5/6
-destination-scan bypass and all #900/#899 predecessor receipts/failures. No stacking, raw-source
-reinvestigation, runtime acquisition or remake work.
+[Desktop conversations and the Chessboard challenge](synthesis/desktop-kingdom-interactions-through-battle22-entry.md)
+explains accepted conversations/services, Ponpei's permission and conditional BattleLoop admission.
+Its [#907/PR909 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/909#issuecomment-6174944499)
+retains the independent permission/request gates and pre-opening stop.
+
+The current reader outcome explains Battle22 initialization and initial roster, including the
+fresh/current-state contrast. **Standard** rigor remains appropriate because independent flags,
+party capacity, item decoding, map loading and actor mappings require a complete accepted
+consumer join. The current owner is
+[Chessboard initialization and initial roster](synthesis/battle22-initialization-and-roster.md),
+scoped by [#911](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/911). It consumes
+[accepted Battle22 research](../research/battle22-initialization-and-roster.md), the
+[battle control/lifecycle contract](contracts/battle-control-lifecycle.md) and the predecessor.
+Accepted base `5ef473acf19a3c47cbccc71078e0e3bbfc65f047` includes both #908/PR910 and #907/PR909.
+No stacking or dependency on concurrent #912 outcomes research.
 
 Acceptance requires readable content/consequences with research/fixture/schema/verifier traceability
 and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- All27 event rows/default and selected prebattle callbacks; all29 literal/control joins, grouped
-  by villagers, Eric/Karna, services, King/guards and chess pieces. Activation/reverse mapping and
-  row action bits are actual consumers, not required approach directions. Supplied HP/class/alias,
-  physical mappings and portrait/speech remain conditional. Eric/Karna text does not recruit.
-- NPC128 Caravan and NPC132 Church entry/return boundaries, including Caravan's F70-selected
-  service portrait versus dispatcher fallback; no transaction or later-control completion claim.
-- King F522-before-F777 selection, first1778-1780 plus1781/repeat1781, then F777 write. Talking
-  alone does not unlock battle. Guard135 uses F777; guard136 uses independent F212/F258.
-  Identify excluded F522/F256 and F212/F258 continuations without consuming their later content.
-  Lore/boasts are dialogue, not universal mechanics or stats.
-- Wildcard-X zoneY16 versus actual block request/natural reach; F777-set/F522-clear EGRESS_MAP22
-  write, complete eight-command cs_5994E and both texts. No Yes/No branch despite the question.
-  EGRESS_MAP supplies only the map selector; the later warp supplies22,0,0,Right. Camera10,0,
-  text/camera return, F422, pending warp, wrapper and no-scroll consumption remain distinct.
-- CheckBattle map/F422/wildcards/area-before-F522-clear order and changed-state bypasses. Stop at
-  BattleLoop admission before opening/roster or conditional local bypass/return. No F522
-  completion, reward, exit, Cotton Balloon or Floor World content follows from this boundary.
+- Independent F422/F472/F522/F88; empty before/start hooks versus complete fresh initialization,
+  wrapper writes and actual return/service limits. Prior conversation does not replay here.
+- Eligible healing and membership rebuilding in ascending joined/active ally order; twelve
+  processed party slots versus living placements, dead/surplus/fewer-member cases and retained
+  class/inventory. Link the exact placement table instead of assigning named allies to rows.
+- All sixteen chess enemy rows and sole AI point, copied definitions/inventory versus exact row
+  NOTHING, stored commandsets/orders versus executed AI. Battle22 has no random-upgrade case;
+  do not import Battle21's scene or tactics.
+- Full Map22 load, crop9,0/30x30 and already battle-local coordinates; current-state actor scans
+  and exploration-to-battle remapping. Enemy type, sprite, logical actor and physical index stay
+  distinct. F522-clear Ponpei/Maid state159/158 versus script B31/A30 and their service limits.
+- F88 continuation bypasses fresh assignment/hooks/healing/roster/regions while loading current
+  state and applicable neutrals. Stop before fresh ActivateEnemies or suspended
+  IndividualTurns_Loop. No tactics, damage, outcomes, postbattle Desktop, Cotton Balloon or Floor World.
 
-The five owned paths are the new guide, predecessor's one continuation preserving its stop,
-Story Progression navigation, this current agreement and one English index entry.
-No research/contracts/fixtures/schemas/code/glossary/Chinese/remake edits, retained comparison
-rerun/regeneration or new verification machinery. Concurrent #908 Battle22 initialization research
-is disjoint and not an accepted dependency.
+The five owned paths are the new guide, predecessor's bounded continuation preserving its stop,
+Story Progression navigation, this current agreement and one English index entry. No research,
+contract, fixture, schema, code, glossary, Chinese or remake edit; no acquisition, comparison
+regeneration or new verification machinery. Organize for readability without a length target.
 
-Natural reach, supplied state, services/camera/text/wrapper completion, rendered/heard performance,
-useful control and persistence remain Unknown. Static counterexamples are not executed scenarios
-or an automatic runtime queue. Public aggregates and accepted selected direct-source joins retain
-separate limits; no aggregate proves complete local content or composed runtime success. This
-completes neither the campaign nor [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
+The guide's [evidence review](synthesis/battle22-initialization-and-roster.md#evidence-review-and-remaining-limits)
+retains #908 original/rebased handoffs and PR910 acceptance, distinct head/tree/base identities,
+CI38610992302/38612004333 and the unchanged18,285,979-byte pair/0.084s. Its predecessor retains
+#907 CI38610983007 scope-only success and the linked #904/#903/#900/#899 failures/corrections,
+including csc2D FLAGS_A5/6 destination-scan bypass, reloadMap working-layout reuse and RightLeft
+facing. Completed evidence/failures are preserved without replay or a new evidence authority.
+
+Natural admission, supplied party/flags/current state, actual services/roster/presentation/control
+and persistence remain Unknown. Static counterexamples are not executed scenarios or an automatic
+runtime queue. Aggregate fixtures and accepted direct-source joins retain separate boundaries.
+This completes neither the campaign nor [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Evidence conflict, broad dependency or product change requires replanning before affected expansion.
 
 Read complete owned prose/diff and bounded existing fixture/schema/verifier selections; check
-provenance, links/fragments, quantities, ownership/private boundary and whitespace, then inspect the
-clean committed configured dependency planner and actual final-head CI. Preserve accepted comparisons
-and failures without replay. No local normal/full/engine/Godot/H3/H4 or translation suite solely for
-prose. Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully
-deliver the authorized completion callback for independent main-gate review. No integration, cleanup
-or next-Issue selection.
+provenance, links/fragments, quantities, scope/private boundary and whitespace, then inspect the
+clean committed configured dependency planner and actual final-head CI. No local blanket
+normal/full/engine/Godot/H3/H4 or translation suite solely for prose. Freeze a clean pushed Draft PR
+fixing the Issue, set Project Review / Verify and successfully deliver the authorized completion
+callback for independent main-gate review. No integration, cleanup or next-Issue selection.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
