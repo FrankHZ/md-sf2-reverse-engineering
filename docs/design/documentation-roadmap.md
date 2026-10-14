@@ -340,57 +340,58 @@ Its [#934 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/
 and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/936#issuecomment-6177145045)
 retain its actor/alias, coordinate, wait and admission limits.
 
-The current reader outcome explains Battle23's initial formation and fresh-versus-suspended entry.
-**Standard** rigor remains appropriate for the party/capacity, initialization, crop/entity and
-saved-state joins. The owner is [Battle23 initial formation and suspended entry](synthesis/battle23-initialization-and-roster.md),
-scoped by [#938](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/938). Consume
-[accepted #932 research](../research/battle23-initialization-and-roster.md) and #934's predecessor
-from accepted main `424b8eaeb2f467f3f714d39b73d255f2a3c9dd27`.
-Outcome research [#937](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/937) is outside this slice and supplies no facts.
+[Battle23 initial formation and suspended entry](synthesis/battle23-initialization-and-roster.md)
+explains accepted fresh/saved setup through its pre-activation/pre-turn stops.
+Its [#938 rebase handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/938#issuecomment-6177400955)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/940#issuecomment-6177419250)
+retain original/rebase results and predecessor diagnostics.
 
-Acceptance requires readable consequences with research/fixture/schema/verifier traceability and
-unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
+The current reader outcome explains Battle23 outcomes and conditional Willard Burrow return.
+**Standard** rigor remains appropriate for the outcome/party-seed, savepoint, reload/actor and
+request-admission joins. The owner is [Battle23 outcomes and the return to Willard Burrow](synthesis/battle23-outcomes-and-burrow-return.md),
+scoped by [#942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/942). Consume
+[corrected accepted #937 research](../research/battle23-outcomes-and-burrow-return.md) and accepted
+initialization/admission owners from main `6498fd588d3ed12b9d38392d97778e9e4b90af90`.
+Running #941 Creed research is neither source nor dependency.
 
-- Independent F423 admission, F473 intro, F523 completion and F781 exploration scene. Fresh order is
-  before wrapper, region clear, eligible healing, ally/enemy placement, AI clear, load and start
-  wrapper. Empty hooks retain shared effects/waits; start writes F473 before dispatch.
-- All twelve placement slots versus actual ascending joined/active selection; dead processed capacity,
-  surplus removal, reserves, healing/status/equipment and inconsistent supplied-state limits. Promise
-  neither twelve living heroes nor a fixed named roster.
-- All twelve complete enemy records: Willard, five Rats and six Oozes. Preserve definitions/items/
-  spells/difficulty, numeric orders/activation, one region/point, complete random/neutral exclusions,
-  battle-local crop and distinct logical/physical/sprite identities. No tactics, displayed agility,
-  turn-count or original intent follows from configuration.
-- Suspended F88 uses actual current/saved state, clears AI memory and loads directly to the
-  individual-turn seam, bypassing fresh healing, formations, hooks, region clear and round setup.
-  Retain actual map/battle/area/positions/activation/HP/class/items/party/order and alias premises;
-  promise no automatic repair, presentation/control or persistence.
+Acceptance requires readable consequences with unchanged **Confirmed**, **Inferred** and **Unknown**
+boundaries and fixture/schema/verifier traceability. Explain:
 
-Stop fresh before ActivateEnemies/region activation/initial rounds and saved before the first
-individual-turn read/execution. Exclude leader death, outcomes, postbattle/Creed, gameplay/UI policy,
-remake scope, runtime/acquisition, payload generation, new machinery and Chinese work. Own exactly
-five paths: the new guide, predecessor's bounded continuation, Story Progression navigation, this
-current agreement and one English docs/README.md entry. No research/contract/fixture/schema/tooling/
-engine/glossary edits. Organize by reader understanding without an artificial length target.
+- First post-action hook/cleanup/count versus the separate after-turn check; Bowie/leader HP,
+  interleaved fresh enemy identities, surviving-enemy append, dead-list/mapping/service assumptions,
+  cleanup without HP/list reset and zero-allies defeat precedence. No combat simulation.
+- Eligible victory healing; actual first ascending joined/active member, including dead/off-map and
+  empty-list limits, seeds current position plus area and mapped facing. Common Bowie join and
+  full-party limits precede F423 clear/F523 set and alternate MainLoop return. Preserve parameter
+  and interrupted-prefix limits; admission (0,0,Right) and formation are not the current victory seed.
+- Defeat versus admitted Egress/Angel Wing costs/recovery, conditional unlock and EGRESS_MAP savepoint
+  selector, default/raft cases and conditional retained Floor World26; all bypass CheckBattle there.
+- Fresh full Map27 layout/entities, F523 empty residents versus main/followers/aliases, rts init and
+  no F781 repair; contrast CURRENT255 retained state. Independent F423/F473/F523/F781 and all eight
+  exit requests retain layout, pending, low-byte-coordinate and separate battle-admission limits.
 
-The guide's [evidence review](synthesis/battle23-initialization-and-roster.md#evidence-review-and-retained-limits)
-links [#932 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/932#issuecomment-6176988463)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/935#issuecomment-6177066791),
-retaining pair 0.081s, exact objects/CI38626848120 and all diagnostics/predecessor corrections.
-Preserve #934's receipts and retained #928 results/failures without copying a history ledger.
-This checkout lacks pinned upstream/retained pair: retain accepted direct comparisons without
-claiming fresh reruns or acquiring/regenerating them. Natural admission, actual supplied state,
-completed services, presentation/control and persistence may remain Unknown; encounter staging is
-Inferred. Material evidence conflict, broader coupling or product change requires replanning before
-expansion; this completes neither campaign nor epic #514.
+Begin at the post-action seam and stop at conditional exploration or next-map admission before
+next-destination population/init, Creed scene or recruitment. Exclude natural-play claims, maze solution, engine/UI
+policy, runtime/acquisition, payload generation, new machinery and Chinese work. Own exactly five
+paths: the new guide, initialization guide's bounded continuation, Story Progression navigation,
+this current agreement and one English docs/README.md entry. No research/contract/schema/fixture/
+tooling/remake/glossary changes. Organize for reader understanding without an artificial length target.
 
-Adversarially inspect the whole accepted research and selected public fixture/schema/verifier and
-consumer boundaries. Review whole owned prose/diff, numeric/table/order/link/anchor and English/
-private checks plus git diff --check. Load local/private-inputs.ps1 for controlled commands; inspect
-the clean committed planner and actual exact-head CI. No local blanket Python/.NET/Godot/H3/H4 or
-translation suite solely for prose. Freeze a clean committed pushed Draft PR fixing #938, set Project
-Review / Verify and successfully notify authorized main-gate for independent review. No merge,
-cleanup, archive or next Issue.
+The guide's [evidence review](synthesis/battle23-outcomes-and-burrow-return.md#evidence-review-and-remaining-limits)
+links #937 original/P2/corrected/acceptance and #938 original/rebase/acceptance receipts, including
+all predecessor failures and Unknowns. Retain accepted comparisons without claiming fresh reruns:
+this checkout lacks pinned upstream/retained pair and acquires/regenerates neither. Natural outcome/
+traversal, actual supplied state, completed services, presentation/control and persistence may remain
+Unknown; population-removal framing is Inferred. Material evidence conflict, broader coupling or
+product change requires replanning before expansion; this completes neither campaign nor epic #514.
+
+Inspect the whole corrected research and selected public fixture/schema/verifier and consumer
+boundaries. Check exact identities/counts/rows/order and coherent changed-state examples, whole owned
+prose/diff, links/anchors and English/private boundary plus git diff --check. Load
+local/private-inputs.ps1 for controlled commands; inspect the clean committed planner and actual
+exact-head CI. No blanket local Python/.NET/Godot/H3/H4 or translation suites solely for prose.
+Freeze a clean committed pushed Draft PR fixing #942, set Project Review / Verify and successfully
+notify authorized main-gate for independent review. No merge, cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

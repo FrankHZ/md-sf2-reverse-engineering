@@ -252,6 +252,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   fresh/retained population, eight traversal/exit requests and complete confrontation through conditional Battle23 admission; actor/alias, wait, coordinate and pre-initialization limits.
 - [`battle23-initialization-and-roster.md`](./design/synthesis/battle23-initialization-and-roster.md) —
   fresh healing/party capacity, complete enemy formation and initialized stats, crop/entity mapping versus suspended current-state load; pre-activation/pre-turn and supplied-state limits.
+- [`battle23-outcomes-and-burrow-return.md`](./design/synthesis/battle23-outcomes-and-burrow-return.md) —
+  leader/count outcomes, current-member victory seed, defeat/escape savepoint selector and fresh/retained burrow returns; independent flags, eight exit requests and pre-destination-init limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

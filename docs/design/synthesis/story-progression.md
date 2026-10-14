@@ -512,6 +512,19 @@ reading/execution. Configured orders prove no tactics, displayed agility or turn
 result. Natural admission, completed services, actual presentation/control and
 persistence remain Unknown; the formation's encounter staging is Inferred.
 
+[Battle23 outcomes and the return to Willard Burrow](battle23-outcomes-and-burrow-return.md)
+continues at the post-action end check: leader cleanup versus enemy count,
+zero-allies defeat precedence and separate after-turn check. Victory uses the
+first ascending joined/active member's current position and mapped facing,
+then common Bowie join/flags and alternate MainLoop return. Defeat and Egress/
+Angel Wing instead have distinct costs and use EGRESS_MAP as a savepoint selector;
+retained Floor World26 is conditional. Fresh Map27 replaces the crop/actors with
+full layout, F523-selected empty residents and supplied followers;
+CURRENT255 retains different state. Independent F423/F473/F523/F781, missing-resident
+aliases and eight existing exit requests retain pending/coordinate/admission
+limits. It stops before destination init or Creed content. Natural combat/route,
+supplied state, services, presentation/control and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
