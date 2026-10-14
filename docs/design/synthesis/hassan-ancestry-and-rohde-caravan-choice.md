@@ -25,6 +25,11 @@ Panel use and conditional shrine/Ribble return, without requiring those events b
 conversation or expanding this guide into acquisition. Chest/opening flags alone do not prove a
 held Sword.
 
+For the separate departure and encounter boundary, read
+[Hassan departure, Battle17 entry and conditional returns](hassan-departure-and-battle17-outcomes.md).
+It explains ordered Battle9/17 admission, walking/raft requests and conditional outcome returns.
+Rohde's F418 is independent of Battle17's F417/F467/F517; this link adds no conversation prerequisite.
+
 ## Three Ways to Enter the Conversations
 
 **Confirmed population:** both Map9 setup variants use the same zone, entity-event and item-event

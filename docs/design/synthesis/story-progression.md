@@ -300,6 +300,14 @@ F415 wildcard Battle15 admission competes with tree-side exploration; F515 clear
 selection. The guide stops at conditional Sword custody and Ribble return, linking Rohde's possession
 check without a walk between shrine regions, mandatory battle order or Caravan claim.
 
+[Hassan departure, Battle17 entry and conditional returns](hassan-departure-and-battle17-outcomes.md)
+explains the north exit and ordered wildcard Battle9/17 priority, independently of Rohde's F418.
+Walking zones, default Battle9 and actual raft control differ; repeat counter/RNG decisions and
+residual reload bytes do not establish probability or position preservation. Empty hooks retain
+shared entry/outcome work. First/repeat victory uses the selected member's final-position seed;
+defeat/Egress choose Hassan with conditional saved-raft reset. It stops at admission/start or
+conditional fresh exploration/control, retaining state, service, natural-route and persistence limits.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
