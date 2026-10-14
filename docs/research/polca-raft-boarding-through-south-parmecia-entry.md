@@ -24,10 +24,10 @@ This is the sole tracked owner. Accepted base is
 
 Scope begins at Luke's conditional Map72 control boundary and ends at either the
 type5 disembark request, an admitted battle before initialization/combat, or
-conditional Map70 exploration control. No continuous journey, terrain/pathfinding,
+conditional Map69 exploration control. No continuous journey, terrain/pathfinding,
 vehicle inventory, full disembark, Caravan behavior, downstream zone/Creed/Kraken
 story, new verification machinery, engine change or runtime acquisition. The
-remaining content question is what a separately admitted Map70 interaction or
+remaining content question is what a separately admitted Map69 interaction or
 zone does after this boundary; this document does not select or authorize it.
 
 All source paths below are relative to `disasm/` in
@@ -203,12 +203,15 @@ to establish a path; rows or southward dialogue cannot do so.
 **Confirmed:** `data/maps/entries/map72/6-warp-events.asm` contains ten ordered
 8-byte rows. The selected rows and possible competing edge matches are:
 
-| Row | Match `(X,Y)` | Request |
-| --- | --- | --- |
-| 6 | `(40,62)` | No-scroll, Map70 `(41,16)`, Down. |
-| 7 | `(0,255)` | Scroll Left to Map69; precedes the south wildcard. |
-| 8 | `(63,255)` | Scroll Right to Map73; precedes the south wildcard. |
-| 9 | `(255,63)` | Scroll Down, Map70 `(255,1)`, Down. |
+`sf2enums.asm` resolves the row operands before selection of numeric map owners.
+South Parmecia is69; `MAP_OVERWORLD_SOUTHEAST_PARMECIA=70` is a different map.
+
+| Row | Match `(X,Y)` | Source destination symbol → map | Request |
+| --- | --- | --- | --- |
+| 6 | `(40,62)` | `MAP_OVERWORLD_SOUTH_PARMECIA` → 69 | No-scroll, `(41,16)`, Down. |
+| 7 | `(0,255)` | `MAP_OVERWORLD_NEW_GRANSEAL_KINGDOM` → 73 | Scroll Left; precedes the south wildcard. |
+| 8 | `(63,255)` | `MAP_OVERWORLD_PACALON_KINGDOM_DROUGHT` → 71 | Scroll Right; precedes the south wildcard. |
+| 9 | `(255,63)` | `MAP_OVERWORLD_SOUTH_PARMECIA` → 69 | Scroll Down, `(255,1)`, Down. |
 
 Rows0–5 are specific cave/Ketto/Polca entrances and do not match either selected
 point. Negative coordinate bytes are wildcards in
@@ -231,28 +234,28 @@ the state needed to approach `(40,62)` or Y63.
 **Confirmed:** `ProcessMapEvent` clears pending before type1. With parameter1=0,
 `ProcessMapEventType1_Warp` requests/clears warp SFX, idles physical0, unwinds the
 exploration return frame, samples main's current coordinates/facing, replaces
-nonnegative X/Y and takes the tuple's facing. Row6 therefore returns Map70
+nonnegative X/Y and takes the tuple's facing. Row6 therefore returns Map69
 `(41,16)`, Down to `mainloop.asm:MainLoop/@Start`. It preserves PLAYER_TYPE and
-RAFT_MAP/X/Y. `SwitchMap` has no Map70 replacement in `flagswitchedmaps.asm`.
-Then `CheckBattle` scans the actual Map70 rows in `battlemapcoords.asm`:
+RAFT_MAP/X/Y. `SwitchMap` has no Map69 replacement in `flagswitchedmaps.asm`.
+Then `CheckBattle` scans the actual Map69 rows in `battlemapcoords.asm`:
 
 | Battle row | Area output `(X,Y,width,height)` | Trigger | Unlock / completion |
 | --- | --- | --- | --- |
-| 10 | `(0,0,32,32)` | `(255,255)` | F410 / F510 |
-| 14 | `(15,26,32,32)` | `(255,255)` | F414 / F514 |
+| 9 | `(0,0,48,32)` | `(255,255)` | F409 / F509 |
+| 17 | `(0,31,30,32)` | `(255,255)` | F417 / F517 |
 
 Map, unlock, then trigger are tested. The first unlocked matching row wins;
-F410 takes priority over F414. Area rectangles are **outputs**, not containment,
+F409 takes priority over F417. Area rectangles are **outputs**, not containment,
 so `(41,16)` does not exclude either row. Set completion clears the selected
 row's unlock but **still admits that battle on this call**, without falling
 through to the next row. With both unlocks clear there is ordinary exploration.
-F416 from Luke unlocks Battle16, whose map is49, not either Map70 row; it alone
-proves neither Battle14 nor any immediate battle. Supplied unlock/completion state
-is not repaired from story progress. Stop before `j_BattleLoop` initialization or
+F416 from Luke unlocks Battle16, whose map is49, not either Map69 row; it alone
+does not prove either selected battle or any immediate admission. Supplied
+unlock/completion state is not repaired from story progress. Stop before `j_BattleLoop` initialization or
 combat. Battle return's separate `alt_MainLoopEntry` is not this original entry.
 
 Row9 has nonzero parameter1 (scroll Down). Its consumer idles main, writes
-CURRENT_MAP=70, and calls `mapload.asm:ProcessMapTransition`; the special Map73/F530
+CURRENT_MAP=69, and calls `mapload.asm:ProcessMapTransition`; the special Map71/F530
 replacement does not apply. That service loads selected tiles, blocks and working
 layout with flag-dependent copies, and dispatches Down through
 `ApplyOverworldMapTransition`. The Down routine scrolls/redraws with DMA/VInt waits.
@@ -262,26 +265,26 @@ calls `DeclareRaftEntity`, and returns **inside the same exploration loop**.
 
 This scroll branch does not consume parameter5 to set facing, unwind to MainLoop,
 call SwitchMap/CheckBattle, rebuild entities, clear setup temporary flags, heal,
-run Map70 init, or request a fresh map-music/fade-in lifecycle. The row carries
+run Map69 init, or request a fresh map-music/fade-in lifecycle. The row carries
 Down, but the retained actor's facing is the consumer result. It also leaves
 PLAYER_TYPE and RAFT_MAP/X/Y unchanged. For raft mode2, `DeclareRaftEntity` returns
-immediately, retaining current mappings/list/hidden actors. Thus F410/F414 do not
+immediately, retaining current mappings/list/hidden actors. Thus F409/F417 do not
 interrupt this selected scroll call; applying the no-scroll battle table here
 would invent a call. Subsequent events are outside this slice. Services and
 intervening mutable parameter writes remain completion/state limits for both forms.
 
-## Ordinary Map70 population and conditional control
+## Ordinary Map69 population and conditional control
 
 **Confirmed:** only the no-scroll path with no admitted battle reaches fresh
-`ExplorationLoop(70,41,16,Down)` here. It clears pending, adjusts step count,
-heals living/immortal allies, fades out, sets Map70 and not-in-battle, loads tiles,
+`ExplorationLoop(69,41,16,Down)` here. It clears pending, adjusts step count,
+heals living/immortal allies, fades out, sets Map69 and not-in-battle, loads tiles,
 initializes actors/mapsprites, clears temporary F256–383 and sets F80 before
-map loading, base VInts and init. Map70 has a default-only entry in `mapsetups.asm`;
+map loading, base VInts and init. Map69 has a default-only entry in `mapsetups.asm`;
 its pointer table selects an empty `s1_entities.asm` and
-`s6_initfunction.asm:ms_map70_InitFunction` at `0x4FE42`, a sole `rts`. There is no
-fresh Map70 story script or F416-dependent init on this path.
+`s6_initfunction.asm:ms_map69_InitFunction` at `0x4FDE2`, a sole `rts`. There is no
+fresh Map69 story script or F416-dependent init on this path.
 
-Map70 is an overworld map and not follower-excluded. The accepted flag-based
+Map69 is an overworld map and not follower-excluded. The accepted flag-based
 follower construction applies again: F65 can prefix caravan; F67 admits Peter;
 F68 maps FOLLOWER_B to Oddler, subject to the other rows that use that same logical
 lookup; F75 can reconstruct Luke despite his prior current-actor hide. Membership
@@ -298,7 +301,7 @@ F64 nor a matching RAFT_MAP. It does not rewrite the saved raft tuple.
 
 For supplied non-raft mode, the ordinary F64-and-CURRENT_MAP==RAFT_MAP gate instead
 controls separate raft declaration. A still-stored Map72 tuple does not declare
-it on Map70. Fresh declarations and scroll's no-rebuild `DeclareRaftEntity` are not
+it on Map69. Fresh declarations and scroll's no-rebuild `DeclareRaftEntity` are not
 interchangeable: outside raft mode the latter can relocate listed followers, and
 with F64 set/map mismatch clears lookup63 and moves physical31 to `$7000,$7000`.
 These supplied alternatives are not a claim that boarding secretly disembarks.
@@ -320,22 +323,32 @@ and clean status. Run the existing
 without rewriting inputs. Select `programCorpus.programs` entry `cs_453F2`, compare
 all four sourceLine/macro/argument records to `vehiclefunctions.asm:142–145`, then
 read the named adjacent actor bodies and wrappers separately. Select map-init
-`primarySourceBodies` sourceOrder77 and compare its sole `rts` to Map70 init.
-No dialogue/transcript or new composed candidate is needed.
+`primarySourceBodies` by the resolved destination's path
+`data/maps/entries/map69/mapsetups/s6_initfunction.asm`: sourceOrder76,
+`ms_map69_InitFunction`, address `0x4FDE2`, sole `rts`.
+
+For the destination check, parse each selected `warpMap` operand, resolve it from
+pinned `sf2enums.asm`, and use that numeric value to select `msMap 69, ms_map69`,
+the corresponding pointer/entity/area/init files, and the battle-table rows whose
+map byte equals69. Compare the retained init's path, owner symbol, address and
+operation to that selected source. Compare both corner-row symbols as well.
+Checking a symbolic row and an independently assumed numeric owner's records is
+insufficient, even when their bodies happen to match. No dialogue/transcript or
+new composed candidate is needed.
 
 | Existing fixture surface under `tests/fixtures/h2/` | Relation reused and limit |
 | --- | --- |
 | `map-script-engine-static-v1.json` and retained corpus | Four boarding records and established map-script handlers. Does not prove natural type3 production, alignment, all-list completion or player control. New immediate action/list/controller consumers above are direct pinned-source evidence. |
 | `map-event-request-state-static-v1.json`, `map-event-request-consumption-static-v1.json` | Existing request/raft state and pending-consumer topology. Their bounded joins do not compose boarding, these two exits and arrival. |
 | `map-setup-static-v1.json`, `map-entities-static-v1.json`, `map-init-static-v1.json` | Default/empty population and sole init return at their aggregate boundaries; selected records and actual follower/raft consumers were read directly. Empty fixed rows do not mean no actors. |
-| `battle-routing-data-static-v1.json` | Aggregate routing facts; exact Map70 row10/14 values and `CheckBattle` order were read directly. A successful fixture comparison is not per-case or composed route coverage. |
+| `battle-routing-data-static-v1.json` | Aggregate routing facts; exact Map69 row9/17 values and `CheckBattle` order were read directly. A successful fixture comparison is not per-case or composed route coverage. |
 
 Discriminating supplied cases are misaligned physical raft despite F64; lookup63
 not mapping physical31; empty or differently ordered follower list; earlier
 listed actor still busy when the last becomes idle; presentation changed before
 mode commit; opcode7 selected by an incorrect label-based reading; edge corners
-matching rows7/8 before9; F410 preceding F414; completed-but-still-unlocked battle;
-and the same F414 state taking admission on row6 but no scan on row9.
+matching rows7/8 before9; F409 preceding F417; completed-but-still-unlocked battle;
+and the same F417 state taking admission on row6 but no scan on row9.
 
 **Unknown:** natural reach from Luke's exit to a boarding marker and either south
 exit; actual layout/actor/flag/HP/list state; which pending write survives; action,
