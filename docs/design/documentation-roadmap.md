@@ -392,7 +392,8 @@ ordered flags are distinct boundaries. The owner is
 scoped by [#970](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/970).
 Consume [accepted #965 research](../research/new-granseal-return-and-astral-following.md)
 and predecessors on main `af7a1e656eddc4a0252b9f5cee4bbe31288369a3`.
-Concurrent #969 inventor/Dynamite research is neither evidence nor dependency.
+Inventor/Dynamite belongs to its separate research outcome and is not this
+guide's evidence dependency.
 
 Acceptance requires a complete readable return/audience/adviser story with
 unchanged **Confirmed**, **Inferred** and **Unknown** boundaries:

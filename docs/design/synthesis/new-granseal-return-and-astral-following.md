@@ -19,8 +19,9 @@ from [accepted #965 research](../../research/new-granseal-return-and-astral-foll
 and predecessors on main `af7a1e656eddc4a0252b9f5cee4bbe31288369a3`.
 The guide ends at the audience's conditional caller return and relevant
 current/fresh-entry consequences. Janet, the inventor's gift and the North
-Cave blast are later boundaries. Concurrent #969 research supplies no evidence
-or dependency here. This Layer B explanation selects no remake rule or new
+Cave blast are later boundaries. Inventor/Dynamite belongs to its separate
+research outcome and is not this guide's evidence dependency.
+This Layer B explanation selects no remake rule or new
 observation work.
 
 ## Returning from the Mine
