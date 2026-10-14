@@ -200,6 +200,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   first/repeat outcomes, separate disembark and conditional Hassan cast/init; tuple, actor-wait, transport and control limits.
 - [`hassan-ancestry-and-rohde-caravan-choice.md`](./design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md) —
   independent priest/talk/selected-item paths, complete choices and conditional following/control; lore, actor and menu limits.
+- [`ribble-tree-opening-and-achilles-sword.md`](./design/synthesis/ribble-tree-opening-and-achilles-sword.md) —
+  selected Panel/tree/Sword puzzle, capacity and conditional custody/return; item-use, admission and natural-path limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

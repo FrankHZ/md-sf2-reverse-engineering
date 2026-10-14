@@ -292,6 +292,14 @@ FOLLOWER_B following confer no force membership, F65 unlock or item consumption.
 actual supplied actors/HP/input, unfinished services, fresh-population differences and usable control
 remain bounded or Unknown. It stops before acquisition, Rick, departure, Taros and Caravan operation.
 
+[Ribble's tree opening and the Achilles Sword](ribble-tree-opening-and-achilles-sword.md) explains
+the selected chest-capacity and item-use puzzle separately from a chronological route. Search uses a
+facing-offset tile; Panel Use needs physical 0 at the exact Up-facing row. Scene return precedes F731,
+force-wide removal-by-item and handled use, with partial/repeat/fresh-load effects distinct. Map50's
+F415 wildcard Battle15 admission competes with tree-side exploration; F515 clears unlock after
+selection. The guide stops at conditional Sword custody and Ribble return, linking Rohde's possession
+check without a walk between shrine regions, mandatory battle order or Caravan claim.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

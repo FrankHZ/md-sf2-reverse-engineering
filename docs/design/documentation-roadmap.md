@@ -233,67 +233,72 @@ the start wrapper. Its scene identity, service and natural-route limits remain a
 explains first/repeat returns, separate landing and flag-selected town population/init. Its tuple,
 last-listed-actor wait, transport and usable-control limits remain applicable.
 
-The current reader outcome explains Hassan's independent ancestry conversation and Rohde's Caravan
-proposal. **Standard** rigor remains appropriate because three admission paths, initial/repeat
-choices and current/fresh follower state must agree without becoming a natural playthrough,
-force-recruitment, vehicle-operation or historical-lore claim.
-Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+[Hassan ancestry and Rohde's Caravan choice](synthesis/hassan-ancestry-and-rohde-caravan-choice.md)
+explains the independent priest and Rohde paths, complete initial/repeat choices and conditional
+following/control. Its lore, item/menu, actor and service boundaries remain applicable.
+
+The current reader outcome explains the Wooden Panel / Ribble tree-opening / Achilles Sword puzzle
+and conditional item custody. **Standard** rigor remains appropriate because chest receipt, selected
+item Use, asynchronous scene actions, force-wide removal and competing map admission must agree
+without becoming a natural playthrough or mandatory battle order. Follow the
+[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Hassan ancestry and Rohde's Caravan choice](synthesis/hassan-ancestry-and-rohde-caravan-choice.md),
-scoped by [#831](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/831). It consumes the
-[accepted static investigation](../research/hassan-ancestry-and-rohde-caravan-choice.md),
-[#828 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828#issuecomment-6160569868)
-and [independent PR830 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/830#issuecomment-6160579144),
-with accepted Hassan-entry, prompt, following and item-transaction predecessors from main only,
-without stacking. This is original-content explanation, not source reinvestigation or remake work.
+[Ribble's tree opening and the Achilles Sword](synthesis/ribble-tree-opening-and-achilles-sword.md),
+scoped by [#835](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/835). It consumes the
+[accepted static investigation](../research/ribble-tree-opening-and-achilles-sword.md),
+[PR833 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/833#issuecomment-6160733380)
+and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/833#issuecomment-6160756298),
+with accepted Ribble, Hassan, item, menu, map/request and following owners from main only. No stacked
+or unmerged evidence is consumed. This is original-content explanation, without source reinvestigation
+or remake work.
 
 Acceptance requires readable consequences and exact research/contract/fixture/schema/consumer
-traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded existing
-tracked-fixture selections without promoting aggregate facts to a composed observation. Preserve:
+traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Bounded existing tracked-fixture
+selections support review, without promoting aggregate facts to composed observations. Explain:
 
-- Three priest zones share F726 suppression; the complete scene attributes ancestry, Max and
-  Devil's Tail claims to speakers. Neither priest nor Rohde requires the other first.
-- Talk searches joined members, including reserves; F798 controls only its initial preface.
-  Selected-item Use instead requires selected sword and physical0 coordinates `(16,58)`, with a
-  direction wildcard. Direction-looking entity-row operands are action flags, not facing admission.
-- F727 initial suppression, F725 acceptance and repeat talk without another sword search differ
-  from suppressed item fallback and submenu return. Explain all recognition, refusal, acceptance,
-  common and repeat regions, actual Yes/No input and initial/repeat No staging differences.
-- F725/F84/F418 and Rohde→current logical FOLLOWER_B following grant no force membership, F65,
-  sword consumption or Caravan operation. Preserve current mapping/physical-list distinctions,
-  Bowie's HP follow guard, unfinished actions, partial flags and fresh-population differences.
-- Caller/service/menu completion and pending/mode determine conditional control. Attributed speech
-  and supplied flags do not establish history, historical truth, a settled chain or usable walking.
+- Separate Panel/Sword chest rows, facing-offset search versus selected Item Use, Bowie/other-joined
+  capacity, carrier choice and the completed full-capacity flag/block restoration. Chest flags do
+  not establish custody; shared Map50 storage does not establish a walk between regions.
+- Map8's exact selected item/position/facing predicates and complete opening script, both inline
+  actions, three block copies and quake sequence. Preserve script return → F731 → force-wide
+  removal-by-item → handled d6, ignoring selected carrier/slot and removal result.
+- Partial and repeated states, fresh F731 block application, HP/mapping/following and action/service
+  limits. No atomicity, all-actor movement or presentation guarantee follows from script order.
+- Selected tree-side request, default ms_Void exploration and competing F415 wildcard Battle15
+  admission. F515 clears unlock after selection rather than skipping that admission; battle branches
+  stop there. Selected Ribble return preserves only conditional successful Sword custody.
+- Rohde's joined-inventory possession predicate as a cross-reference, without a mandatory route,
+  chronological order, Sword consumption or Caravan-operation claim.
 
-The five owned paths are the new guide, Hassan-entry continuation, Story Progression navigation,
-this current agreement and one English documentation-index entry. Stop at conditional caller/control
-return, before sword acquisition, Rick, departure, Taros and Caravan use. No other town content,
-combat simulation, continuous playability, original-source investigation, inventories, Chinese work,
-research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition, payload regeneration,
-verification machinery or new product decisions are selected.
+The five owned paths are the new guide, Hassan guide's acquisition cross-reference, Story Progression
+navigation, this current agreement and one English documentation-index entry. Stop at conditional
+Ribble return/custody and Rohde's possession cross-reference. External shrine approach, terrain/path
+reconstruction, unrelated chests, Battle17/18, Rick, Rohde replay, Caravan operation, new product
+choices, combat simulation, continuous playability and Chinese work are excluded. No research,
+contracts, fixtures, schemas, glossary, zh-CN or remake writes; no runtime acquisition, payload
+regeneration or new verification machinery.
 
-Natural admission, actual inventories/flags/HP/membership/mappings/lists/input, action/window/update/
-service/presentation completion, lore, usable control and persistence remain **Unknown**. This guide
-completes neither [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-nor the campaign. Accepted successor research under
-[#832](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/832) remains outside this guide's
-dependencies and scope.
+Natural approach/search/use/warp, actual inventory/flags/HP/mappings/lists, collision/allocation/action
+and service completion, input/release, window/audio/VDP/quake presentation, usable control, continuous
+custody and persistence remain **Unknown**. This guide completes neither
+[the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
+Unexpected broad dependencies, evidence conflicts or product choices stop affected expansion for
+replanning; missing natural observations remain Unknown.
 
-Accepted research and bounded in-memory tracked-fixture selections suffice. Unexpected broad
-dependencies, evidence conflicts or product choices stop affected expansion for replanning; missing
-natural observations remain Unknown. Preserve #828's completed retained/direct comparisons, actual
-final CI and resolved inspection failures through its original/final handoffs, plus the linked
-PR826/822/818 checks, corrected macro/destination/inspection failures and rejected-command histories.
-Do not ritual-replay those runs or treat their equality as per-choice natural-state coverage.
+Preserve PR833's actual retained comparisons/CI and corrected inspection/check failures, plus its
+linked #828/PR826/822/818 completed results and failures. The
+[#831 corrected handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/831#issuecomment-6160802747)
+retains the resolved initial-13/repeat-2 Rohde text accounting and actual CI; do not copy those counts
+into the text-free tree-opening program. Accepted results suffice without ritual replay.
 
-Read the entire owned prose/diff; check provenance, changed links/fragments, exact paths/private
-boundary and git diff --check, then inspect the clean committed dependency planner and actual
-final-head CI. Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4 or
-translation suites solely for prose. Freeze a clean pushed Draft PR fixing the Issue, Project
-Review / Verify and a successful authorized completion callback for independent main-gate review.
-Direct checks and CI do not grant integration; no cleanup or next-Issue selection is authorized.
+Read the entire owned prose/diff; check provenance, links/fragments, exact paths/private boundary and
+`git diff --check`, then inspect the clean committed dependency planner and actual final-head CI.
+Documentation acceptance runs no normal/full/engine/Godot/H3/H4 or translation suite solely for
+prose. Freeze a clean pushed Draft PR fixing the Issue, Project Review / Verify and a successful
+authorized completion callback for independent main-gate review. Direct checks and CI do not grant
+integration; no cleanup or next-Issue selection is authorized.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
