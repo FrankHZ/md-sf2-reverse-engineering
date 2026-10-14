@@ -159,8 +159,13 @@ identity through adjacency/layout, view target and mappings. A table row proves 
 
 The wrapper prepares portrait/speech and resolves the mapping. Both bits0/1 are clear: no
 pre-handler automatic turn toward Bowie and no post-handler property/facing restoration.
-It disables entity updates during the handler, then closes portrait/text and reactivates
-updates on return. Window cleanup still applies with bit1 clear.
+It clears the entity-update VInt flag before calling the handler, then closes portrait/text
+and reactivates updates on return. For `cs_58856`, the nested script trap
+`Trap6_TriggerAndExecuteMapScript` separately reactivates entity updates before
+`ExecuteMapScript`, allowing the scene's waited actor actions to run. Its return does not undo
+that activation, as the [dialogue service owner](../contracts/dialogue-system.md#w2-composed-semantic-acceptance) records.
+Updates are therefore not disabled throughout the scene. Window cleanup still applies with
+bit1 clear; these service orders do not prove actual action completion.
 
 | First matching supplied state | Mayor response / caller effect |
 | --- | --- |
@@ -168,7 +173,7 @@ updates on return. Window cleanup still applies with bit1 clear.
 | F718 clear, F717 set | Text1451: asks again to take the boy; returns. |
 | F718/F717 clear, F716 set | Text1512: suggests inspecting the raft; returns. |
 | Those three clear, F260 clear | Text1448: asks to take the boy; sets F260 only after text returns. |
-| Those clear, F260 set, F261 clear | Text1449: pleads for the boy's life; sets F261 after text returns. |
+| Those clear, F260 set, F261 clear | Text1449: mayor pleads for his own life; sets F261 after text returns. |
 | Those clear, F260/F261 set, F262 clear | Text1450: repeats the plea; sets F262 after text returns. |
 | F718/F717/F716 clear, F260/F261/F262 all set | Runs the full bargain scene below; only its return reaches the raft-state writes. |
 
@@ -275,8 +280,9 @@ For an ordinary player, `DeclareRaftEntity` and initialization's `sub_44404` req
 `CURRENT_MAP==RAFT_MAP`** before declaring the stored raft. Coordinates are masked by `$7F`
 and scaled by384; the separate raft uses physical31, mapping offset63, Left, raft sprite and
 `eas_Standing`. F716 is not a substitute for those gates. `DeclareRaftEntity` returns immediately
-for an existing raft player; on ordinary unlocked-map mismatch it clears the raft mapping and
-moves it off-map, while its matching branch also relocates ordinary followers. `sub_44404` has
+for an existing raft player. Otherwise it relocates ordinary non-raft/non-caravan followers
+before testing F64 and the current-map match, independently of whether a raft is spawned.
+On an unlocked-map mismatch it clears the raft mapping and moves it off-map. `sub_44404` has
 a distinct supplied raft-player branch: main's sprite changes, followers stand and the separate
 entity uses `(64,64)`. These are conditional consumers, not an unconditional spawn.
 
