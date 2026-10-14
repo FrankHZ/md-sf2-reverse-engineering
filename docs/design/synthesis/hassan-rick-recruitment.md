@@ -1,8 +1,8 @@
 # Hassan Rick Recruitment and Following
 
-Rick can join the force through a separate conversation in Hassan. He first praises the leader's
-arrival, then notices the Caravan. Peter explains where it came from, Rick asks to accompany the
-party, and the scene joins him before requesting that his current actor follow the group. This is
+Rick can join the force through a separate conversation in Hassan. He credits the leader for helping
+him reach Hassan, then notices the Caravan. Peter explains where it came from, Rick asks to accompany
+the party, and the scene joins him before requesting that his current actor follow the group. This is
 an optional interaction branch, not a required return from the shrine or a new travel instruction.
 
 **Confirmed:** the accepted [research owner](../../research/hassan-rick-recruitment.md) establishes
