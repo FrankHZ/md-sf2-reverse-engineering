@@ -8,6 +8,10 @@ residents threaten to eat the party. **Unknown:** the natural maze route,
 supplied actors/state, completed actions/presentation, usable control and
 persistence. This guide ends at the BattleLoop call, before initialization.
 
+Continue from that stop with [Battle23 initial formation and suspended entry](battle23-initialization-and-roster.md),
+which consumes accepted #932 research and ends before fresh activation/rounds or
+the saved individual-turn read. This predecessor retains its admission boundary.
+
 This English guide continues [Floor World's outbound admission](floor-world-interactions-and-exits.md)
 using accepted [Willard Burrow research](../../research/willard-burrow-through-battle23-entry.md)
 under [#934](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/934)

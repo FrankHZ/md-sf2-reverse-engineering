@@ -500,6 +500,18 @@ destination Floor World/Creed init. Natural reach/supplied state, completed
 actions/presentation/control and persistence remain Unknown; the eating threat
 is Inferred without an implemented smell/growth/food/harm rule.
 
+[Battle23 initial formation and suspended entry](battle23-initialization-and-roster.md)
+continues from the admitted BattleLoop call. It explains independent intro F473,
+empty hooks with wrapper effects, fresh healing and twelve processed-member
+placement capacity, all twelve enemy records and initialized stats, one region
+and point, and the rebuilt local crop/entity mapping. Supplied party, HP/class/
+items and aliases prevent a fixed living roster or presentation guarantee.
+F88 instead bypasses fresh setup and loads actual current/saved state. Fresh
+stops before ActivateEnemies/round creation; saved stops before individual-turn
+reading/execution. Configured orders prove no tactics, displayed agility or turn
+result. Natural admission, completed services, actual presentation/control and
+persistence remain Unknown; the formation's encounter staging is Inferred.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

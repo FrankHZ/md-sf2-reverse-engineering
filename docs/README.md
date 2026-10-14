@@ -250,6 +250,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   all residents/default, giant-ring attempt and three outbound requests; separate waits, hide/parking, coordinate and conditional admission limits.
 - [`willard-burrow-through-battle23-entry.md`](./design/synthesis/willard-burrow-through-battle23-entry.md) —
   fresh/retained population, eight traversal/exit requests and complete confrontation through conditional Battle23 admission; actor/alias, wait, coordinate and pre-initialization limits.
+- [`battle23-initialization-and-roster.md`](./design/synthesis/battle23-initialization-and-roster.md) —
+  fresh healing/party capacity, complete enemy formation and initialized stats, crop/entity mapping versus suspended current-state load; pre-activation/pre-turn and supplied-state limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
