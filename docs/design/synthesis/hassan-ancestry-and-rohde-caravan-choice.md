@@ -18,6 +18,13 @@ population and transport limits. This guide does not require that outcome or eit
 first. It stops at the conversations' conditional caller/control return, before sword acquisition,
 Rick, town departure, Taros combat or Caravan use. It adds no remake capability or natural playthrough.
 
+For the separate item-custody question, read
+[Ribble's tree opening and the Achilles Sword](ribble-tree-opening-and-achilles-sword.md).
+It explains the selected Panel/Sword chest capacity,
+Panel use and conditional shrine/Ribble return, without requiring those events before every Rohde
+conversation or expanding this guide into acquisition. Chest/opening flags alone do not prove a
+held Sword.
+
 ## Three Ways to Enter the Conversations
 
 **Confirmed population:** both Map9 setup variants use the same zone, entity-event and item-event
