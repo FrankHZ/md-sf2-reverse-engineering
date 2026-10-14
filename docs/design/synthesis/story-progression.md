@@ -200,7 +200,17 @@ jewel advice and Peter's commitment. Scene attribution to Volcanon differs from 
 birdman mapping. F722 alone admits the scene; later F722/F711 writes, F7 membership,
 capacity-dependent F39/cached lists, AI bit2 clear, unchanged F67 and current following remain
 distinct. It stops at first conditional Map11 control, retaining supplied-state, natural-floor,
-service/pending and presentation Unknowns; return to Bedoe and the king's choice remain separate.
+service/pending and presentation Unknowns; its selected return continues separately below.
+
+[Volcanon return through the Bedoe king choice](volcanon-return-through-bedoe-king-choice.md)
+continues with selected shrine return, the optional Zeon question, refusal/repeat and Creed/river/raft
+advice through Luke's requested departure. F722 selects setup independently of F799/F724; F75 can
+supply follower Luke instead of the fixed row, and F67 supplies Peter. Yes requires confirmation,
+No/B share refusal and no input stays pending. Destination-based facing has no HP guard; waited
+actions, hide invalidation, later coordinate-only init and saved physical king-facing restore remain
+distinct. Only script return reaches F799. It stops after the caller and conditional control, retaining
+natural-floor, supplied-state, input/service/pending and presentation Unknowns. Bedoe exit, Polca/raft
+fulfillment, hatchling/rescue, Luke recruitment and Battle13 remain separate.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from

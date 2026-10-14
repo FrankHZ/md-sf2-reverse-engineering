@@ -190,47 +190,56 @@ applicable.
 continues through independent scenes, dispersing guards, introductions, Zeon warnings and the
 invitation to Volcanon. Its shared actors, following and conditional-control limits remain applicable.
 
-The current reader outcome explains selected shrine entry, Peter's return and introduction,
-Volcanon's anger/refusal, jewel advice and Peter's commitment through joining and first conditional
-Map11 control. Map admission, membership/capacity and asynchronous services cross existing owners,
-so this segment retains **Standard** rigor. Follow the
-[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+The accepted [Bedoe to the Volcanon audience](synthesis/bedoe-to-volcanon-audience.md) explains
+selected shrine entry, Peter's introduction, Volcanon's refusal, jewel advice and Peter's commitment
+through joining and first conditional Map11 control. Its attribution, capacity/AI/following and
+service limits remain applicable.
+
+The current reader outcome explains selected shrine return, the optional Bedoe king question,
+acceptance/refusal/repeat, Creed/river/possible-raft advice and Luke's requested departure through the
+first selected response/caller and conditional control. Prompt input, population/mapping lifetimes
+and post-script flag commitment cross existing owners, so **Standard** rigor remains appropriate.
+Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Bedoe to the Volcanon audience](synthesis/bedoe-to-volcanon-audience.md),
-scoped by [#791](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/791). It consumes the
-[accepted static investigation](../research/bedoe-to-volcanon-audience.md) from
-[PR #790](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/790) and the preceding English guide
-from [PR #789](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/789), without stacking.
-This is a candidate content connection, not a natural playthrough or new remake capability.
-Full records and technical composition stay with research.
+[Volcanon return through the Bedoe king choice](synthesis/volcanon-return-through-bedoe-king-choice.md),
+scoped by [#795](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/795). It consumes the
+[accepted static investigation](../research/volcanon-return-through-bedoe-king-choice.md) from
+[PR #794](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/794) and the preceding English guide
+from [PR #793](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/793), without stacking.
+This is an optional candidate content connection, not a natural playthrough or new remake capability.
+Full source records and technical composition stay with research.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- Paraphrase all 37 conversation requests plus separate join446 with attribution. Speaker128's
-  actual birdman mapping differs from scene-level Volcanon attribution; invent no entity/rendering fact.
-- Preserve explicit/current-map requests and rebuilt/retained mappings, sole F722 admission,
-  independent prior-audience flags, later F722/F711 writes and F722-set/F711-clear nonrepair.
-- Separate Peter F7 joining, capacity-dependent F39, pre-mutation cached lists, AI bit2 clear,
-  unchanged F67 and current following. These changes prove no available playable turn.
-- Preserve unguarded word-actor `setDest`, byte-actor/word-HP facing and high-byte follow admission,
-  tile/pixel/internal units and action/wait boundaries. Rumble/quake/sleeps do not measure presentation.
-- Partial services can change membership before caller flags. Coordinate-based main-stop and zero
-  pending precede conditional control, not demonstrated input or settled following.
+- Paraphrase all five caller and eight script text request sites, 12 distinct texts. Attribute the
+  king's Creed/river/possible-raft advice and Luke's acknowledgment without claiming fulfilled travel,
+  a prepared raft or availability.
+- Preserve current-map retention versus explicit Map10 rebuild, F722 setup selection, independent
+  F799/F724 init conditions, F75 follower/fixed-Luke skip and F67 Peter mapping. Activation/lookups and
+  event flags `DOWN=3` establish no facing prerequisite.
+- Initial Yes requires confirmation; entry release and Left/Right/B/C/A priority remain explicit.
+  No and B return `-1` to refusal; no input stays pending. Timing/presentation remain Unknown.
+- Preserve no-HP `faceEntity` destination comparison versus other HP rules, both waited Luke action
+  bodies, actual hide mapping/list invalidation versus future coordinate-only init, and restoration
+  of the saved physical king's supplied pre-interaction facing.
+- Only script return reaches F799. Hidden/F799-clear and F799-set/still-present states are not
+  repaired by repeat. Membership/AI/F67/F75 do not change here; completed services and zero pending
+  precede conditional control, not demonstrated input.
 
 Only the new guide, predecessor continuation, Story Progression navigation, this current agreement
-and one English documentation-index entry are owned by #791. Stop after first conditional Map11
-control. Return-to-Bedoe king choice/Luke departure, hatchling/Skreech, town/services/floor inventory,
-later travel/Battle13, unmerged successor findings, runtime readiness, new product decisions and
-Chinese synchronization are outside scope. No research/contracts/fixtures/glossary/remake changes
-are selected.
+and one English documentation-index entry are owned by #795. Stop after the first selected response,
+caller and conditional control. Bedoe exit, Polca/raft fulfillment, hatchling/Skreech/rescue, Luke
+recruitment, town/services/floor inventory, later travel/Battle13, unmerged successor findings, runtime
+readiness, new product decisions and Chinese synchronization are outside scope. No
+research/contracts/fixtures/glossary/remake changes are selected.
 
-Natural collision-free floor access/order, supplied flags/actors/HP/mappings/party/AI and positions,
-uninterrupted services and pending completion, visible presentation/timing, follower reconstruction
-and continuous playability remain **Unknown**.
+Natural collision-free floor access/order, actual flags/actors/HP/mappings/party/AI and positions,
+release/input timing, uninterrupted services and pending completion, visible presentation, later
+persistence, Luke's arrival, raft availability and continuous playability remain **Unknown**.
 This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
