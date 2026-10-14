@@ -186,6 +186,14 @@ F719 and optional F720 out-of-map movement; current following does not establish
 It stops after default/alternate init and first conditional restored control, before the king's
 address/audience, retaining natural-route, actor/party/AI, service/pending and presentation Unknowns.
 
+[Bedoe's king address and first audience](bedoe-king-address-through-first-audience.md) continues
+with the report, dispersing guards, Luke's greeting, introductions, Zeon warnings and the invitation
+to Volcanon. F720/F721 independently admit the scenes; F722 replaces their zone table. Real hiding
+differs from re-entry out-of-map movement, and shared 147/148 positions depend on prior scenes and
+supplied state. The final command installs Peter following Bowie without joining anyone. It stops
+after the audience caller and conditional control, preserving natural floor/order, actor/mapping,
+service/pending and presentation Unknowns; shrine travel and Volcanon remain separate.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

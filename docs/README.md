@@ -176,6 +176,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   optional turtle test, independent east departure and searching-devils confrontation; ordered battle admission and presentation limits.
 - [`battle12-outcomes-through-bedoe-entry.md`](./design/synthesis/battle12-outcomes-through-bedoe-entry.md) —
   first/repeat outcomes, Peter's response and initial Bedoe guard exchange; setup, caller and conditional-control limits.
+- [`bedoe-king-address-through-first-audience.md`](./design/synthesis/bedoe-king-address-through-first-audience.md) —
+  independent king address/audience, guard hiding, introductions and invitation; shared actors, following and conditional-control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
