@@ -13,9 +13,11 @@ floor traversal, actual supplied state, service completion, presentation and usa
 king's invitation is dialogue, not the shrine's admission requirement. This guide adds no remake
 capability or product decision; the speakers' claims remain attributed speech.
 
-Stop after the selected caller and first conditional control on Map11. Return to Bedoe, the king's
-choice and Luke's departure, hatchling/Skreech, town/services/floor inventory, later travel and
-Battle13 are outside this guide. Fnnn denotes flag nnn; coordinates are map tiles unless specified.
+Stop after the selected caller and first conditional control on Map11. The
+[Volcanon return through the Bedoe king choice](volcanon-return-through-bedoe-king-choice.md)
+continues separately with selected return requests, the optional question and Luke's requested
+departure. Natural floor travel, hatchling/Skreech, town/services/floor inventory, later travel and
+Battle13 remain outside this guide. Fnnn denotes flag nnn; coordinates are map tiles unless specified.
 
 ## Entering the Shrine Is Separate from Hearing the Conversation
 

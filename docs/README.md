@@ -180,6 +180,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   independent king address/audience, guard hiding, introductions and invitation; shared actors, following and conditional-control limits.
 - [`bedoe-to-volcanon-audience.md`](./design/synthesis/bedoe-to-volcanon-audience.md) — selected shrine entry,
   Volcanon conversation and Peter's joining; actor attribution, capacity/AI/following and conditional Map11 control limits.
+- [`volcanon-return-through-bedoe-king-choice.md`](./design/synthesis/volcanon-return-through-bedoe-king-choice.md) —
+  selected shrine return, optional king choice and Luke's requested departure; prompt, hiding/re-entry and conditional-control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
