@@ -20,6 +20,10 @@ entity/zone returns and relevant fresh-entry consequences. Cannon use,
 subsequent journeys and New Granseal/Astral content are outside this guide.
 This Layer B explanation selects no remake rule or new observation work.
 
+[New Granseal return and Astral following](new-granseal-return-and-astral-following.md)
+continues separately with the selected mine-to-castle return and retrospective
+adviser audience; it does not make Cannon possession an audience prerequisite.
+
 ## Leaving Creed and Entering the Mine
 
 **Confirmed:** the selected route is Mansion33 → Devil's Tail67 → Southwest
