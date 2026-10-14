@@ -21,6 +21,9 @@ Activation, turns, tactics, outcomes, rescue/recruitment, F751 passage, Fairy Ca
 and terrain reconstruction remain outside this guide. Fnnn denotes flag nnn; rows and records are
 zero-based. Wait counts and positions below are command inputs, not measured time or observed motion.
 
+[Battle20 outcomes and Elric recruitment](battle20-outcomes-and-elric-recruitment.md) continues
+separately through the selected aftermath and conditional exploration return.
+
 ## Which Pond Event Is Selected?
 
 **Confirmed:** Map51's default and F520 alternate setups share the same zone callbacks and init.

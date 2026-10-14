@@ -370,6 +370,12 @@ neutral Elric 159 remain distinct from the exploration cast and force membership
 before ActivateEnemies or suspended entry before individual turns, preserving supplied-state,
 service/input/presentation and natural-route Unknowns without outcomes, rescue/recruitment or later travel.
 
+[Battle20 outcomes and Elric recruitment](battle20-outcomes-and-elric-recruitment.md) explains
+first/repeat victory, defeat/escape and the complete recruitment scene through immediate conditional
+pond control or the selected savepoint continuation. Force membership, temporary scene following and
+fresh F520 population remain distinct; supplied flags/party/HP/lookups and service/persistence
+Unknowns remain explicit. It stops before pond departure, passage, Fairy Cave/Creed and Battle21.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

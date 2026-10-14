@@ -271,46 +271,50 @@ natural-access limits remain applicable.
 explains selected exits, independent Devil's Tail scroll, call-for-help and the initial pond prompt.
 Its conditional-control/admission stop and actor, mode, service and natural-route limits remain applicable.
 
-The current reader outcome explains the selected Harpy Pond confrontation, separate exit warning
-and conditional Battle20 entry. **Standard** rigor remains appropriate because zone admission,
-request consumption, shared flags, battle lifecycle and roster population have separate owners.
+[Harpy Pond approach through Battle20 entry](synthesis/harpy-pond-approach-through-battle20-entry.md)
+explains the selected confrontation, independent warning and fresh/saved admission. Its pre-activation/
+individual-turn stops and flag/request/cast/service limits remain applicable.
+
+The current reader outcome explains Battle20 outcomes, Elric's rescue/recruitment scene and immediate
+conditional exploration return. **Standard** rigor remains appropriate because outcome selection,
+return seeds, force lists, temporary following and fresh map population have separate owners.
 The current owner is
-[Harpy Pond approach through Battle20 entry](synthesis/harpy-pond-approach-through-battle20-entry.md),
-scoped by [#871](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/871). It consumes
-[accepted approach/entry research](../research/harpy-pond-approach-through-battle20-entry.md),
-[PR870 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/868#issuecomment-6170807905),
-[rebased handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/868#issuecomment-6170840743)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/870#issuecomment-6170954167),
-plus accepted shared map/request, admission, population, action/dialogue and battle owners from main.
-Preserve their comparisons, original/rebased CI, inspection corrections and linked predecessor
-failures. No stacked or successor evidence, source reinvestigation, runtime or remake work is selected.
+[Battle20 outcomes and Elric recruitment](synthesis/battle20-outcomes-and-elric-recruitment.md),
+scoped by [#875](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/875). It consumes
+[accepted outcome/recruitment research](../research/battle20-outcomes-and-elric-recruitment.md),
+[PR874 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/872#issuecomment-6171350805)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/874#issuecomment-6171383624),
+plus accepted pond, battle, map/population, action/dialogue and roster owners from main.
+Preserve their unchanged comparisons, final CI, resolved inspection failures and linked predecessor
+receipts. No stacked/successor evidence, source reinvestigation, runtime or remake work is selected.
 
 Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Actual zone admission and the complete confrontation/dialogue/action order, conditional command
-  waits, HP and missing lookups. Preserve F420 inside the script, pending same-map request and
-  post-return F470; neither attributed speech nor current exploration actors establish rescue,
-  recruitment or combat identity.
-- Independent Y24 warning and Y25 external warp, without claiming a universal exit lock or initial
-  direct-arrival zone dispatch. Explain wildcard row 20, F520 clearing F420 only after selection,
-  fresh exploration bypass and independent F470/F420/F520 supplied states.
-- Actual empty before/start targets sharing F470; fresh/suspended entry, conditional party placement,
-  selected enemy roster/AI operands, random-upgrade exclusion and separate completion-gated neutral
-  Elric 159. Link research for detailed row values; installed inputs do not establish tactics/control.
+- Actual defeated/region/after selection, no leader-death shortcut, ordered count checks and
+  first/repeat victory versus defeat/Egress. Keep the pre-scene return seed, scene placement and
+  later returned coordinates distinct.
+- Complete selected scene/dialogue, replacement cast versus neutral159, explicit join13, full-party
+  reserve/list timing and generic music/input service. No consent branch or healing inferred from
+  joining; partial service completion preserves earlier writes without promising later records.
+- All three follow calls' actual Bowie-HP test and current-list effects. Explain common Bowie join,
+  F420 clear/F520 set, fresh Map51 selection and its empty fixed rows/no persistent Elric follower
+  row. Membership survives removal of the temporary scene actor.
+- Supplied F470-clear/repeat/full-party/dead/missing states and bounded savepoint exceptions through
+  accepted owners. Empty repeated content proves neither recruitment, natural reach nor usable input.
 
-The exact five owned paths are the new guide, preceding departure guide's single continuation
+The exact five owned paths are the new guide, preceding approach guide's single continuation
 cross-reference (preserving its stop), Story Progression navigation, this current agreement and one
-English index entry. Stop fresh entry before ActivateEnemies or suspended entry before individual
-turns; preserve unrelated continuation boundaries. Exclude outcomes, rescue/recruitment, F751 passage,
-Fairy Cave/Creed, Battle21, later travel, terrain reconstruction and runtime acquisition. No research/
+English index entry. Stop at immediate conditional Map51 control or the selected unrelated savepoint
+continuation. Exclude pond departure, F751 passage, Fairy Cave/Creed travel, Battle21, combat/terrain
+reconstruction and runtime acquisition. No research/
 contracts/fixtures/schemas/glossary/zh-CN/remake writes, payload regeneration or new machinery are selected.
 
 Natural access/terrain/producer selection, actual flags/HP/class/mappings/membership/mode, completed
 action/text/fade/camera/services, presentation, responsive input and persistence remain Unknown.
 Supplied-state counterexamples constrain static review rather than describe executed bugs. Public
 summaries and retained full-program comparisons remain distinct; aggregates alone prove no selected
-scene, full roster rows or composed runtime outcome. This guide completes neither
+scene, selected population or composed runtime outcome. This guide completes neither
 [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 Evidence conflicts, broad dependencies or product changes require replanning before affected expansion;
 missing natural observations remain Unknown.
