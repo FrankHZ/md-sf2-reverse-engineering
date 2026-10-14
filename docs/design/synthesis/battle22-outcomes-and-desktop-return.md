@@ -13,8 +13,9 @@ and the [battle lifecycle contract](../contracts/battle-control-lifecycle.md), u
 [Issue #915](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/915) and the
 [current Standard agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 It stops at conditional local exploration/control or a pending return, plus the changed
-King/Maid conversations. Chest acquisition/use, guard clearance and Floor World departure
-remain separate. Fnnn names flag nnn; row and command indices are zero-based. Coordinates
+King/Maid conversations. [Cotton Balloon acquisition and Floor World departure](cotton-balloon-through-floor-world-entry.md)
+continues with the separate chest/guard/item-use joins through conditional Map26 loader
+admission, before destination population/init. Fnnn names flag nnn; row and command indices are zero-based. Coordinates
 are source operands, not observed movement.
 
 ## How the Encounter Ends
@@ -140,6 +141,8 @@ identify chest-for-chessboard and blank-for-blank respectively. Chest overlays f
 an already set chest flag can subsequently apply the opened-chest word `$D802`.
 The chest row names `(25,10)`, F212 and COTTON_BALLOON. F522 does not set F212.
 These records establish neither inventory custody nor a decoded collision/rendering route.
+The [acquisition guide](cotton-balloon-through-floor-world-entry.md#finding-the-gift-is-separate-from-receiving-it)
+explains the subsequent search, pre-delivery F212 write and full-party/repeat/interruption paths.
 
 ## Which Scene Runs on Return
 
@@ -237,8 +240,9 @@ then restore his saved facing on return; they are not approach restrictions. Mai
 no portrait/bleep 3, Ponpei no portrait/bleep 6. The wrapper temporarily disables entity updates,
 conditionally restores facing, closes windows and reactivates updates after the callback.
 These services must return before local completion; no army recruitment, Balloon acquisition
-or new map request occurs. F522 independently suppresses the chess-start zone. Guard 136's
-F212/F258 clearance and `cs_599A4` remain the next boundary.
+or new map request occurs. F522 independently suppresses the chess-start zone. The
+[guard and departure continuation](cotton-balloon-through-floor-world-entry.md#the-exit-guard-reads-chest-state)
+explains F212/F258 clearance, wrapper-restored facing and the separate own-tile item match.
 
 ## Loss, Egress and Repeat Returns
 
@@ -323,6 +327,6 @@ lookups/current-saved geometry, mode/raft; completed input/action/text/scroll/fa
 visible/heard performance, usable control and persistence. Counterexamples above are source
 states, not executed scenarios or an automatic runtime queue under
 [ADR0014](../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) and
-[ADR0016](../../decisions/0016-remake-start-evidence-deferral.md). Concurrent #916 is not a
-dependency. This completes neither the campaign nor
+[ADR0016](../../decisions/0016-remake-start-evidence-deferral.md). The accepted #916 continuation belongs to the
+[Cotton Balloon guide](cotton-balloon-through-floor-world-entry.md). This completes neither the campaign nor
 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).

@@ -309,44 +309,47 @@ explains accepted empty hooks, party placement, sixteen enemies and fresh/curren
 Its pre-activation stop and [#911/PR913 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/913#issuecomment-6175260041)
 remain intact.
 
-The current reader outcome explains Battle22 outcomes and conditional Desktop Kingdom return.
-**Standard** rigor remains appropriate because independent outcome/count, party-seed, population,
-scene and service consumers require a complete accepted join. The current owner is
-[Chessboard outcomes and Desktop return](synthesis/battle22-outcomes-and-desktop-return.md),
-scoped by [#915](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/915). It consumes
-[accepted outcome research](../research/battle22-outcomes-and-desktop-return.md), its linked
-lifecycle/map/interaction owners and the initial-roster guide. Accepted base
-`546ccbb21ab1e9da42f5899fe7eae86ead18d255` includes #912/PR914 and #911/PR913.
-No stacking or dependency on concurrent #916 research.
+[Chessboard outcomes and Desktop return](synthesis/battle22-outcomes-and-desktop-return.md)
+explains accepted outcome/counting, the rebuilt population, announcement and changed callbacks.
+Its local-control/pending stop and [#915/PR917 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/917#issuecomment-6175632640)
+retain the acquisition and service limits.
+
+The current reader outcome explains Cotton Balloon acquisition, guard clearance and Floor World
+admission. **Standard** rigor remains appropriate because independent search/inventory, interaction,
+item selection, actor/action and request consumers require a complete accepted join. The current
+owner is [Cotton Balloon acquisition and Floor World departure](synthesis/cotton-balloon-through-floor-world-entry.md),
+scoped by [#919](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/919). It consumes
+[accepted #916 research](../research/cotton-balloon-through-floor-world-entry.md), its linked
+transaction/request/population owners and the outcome guide. Accepted base
+`63fab597ee78136cd88f7cdefa2bc6c4512cf6b5` includes #916/PR918 and #915/PR917.
+No stacking or dependency on concurrent #920 destination research.
 
 Acceptance requires readable player-relevant consequences with research/fixture/schema/verifier
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Leader cleanup versus all-enemy counting, loss precedence, empty defeated/after scripts versus
-  common Bowie join/completion effects and actual service returns.
-- First-active-member full-map victory seed, later scene placement, CheckBattle bypass and
-  distinct loss/Egress destinations; independent F422/F472/F522/F88 and supplied-state limits.
-- Fourteen-row F522 population, changed logical/physical identities and existing followers/aliases;
-  two flag-layout copies and chest record versus actual Balloon acquisition/use. Link exact tables
-  where duplication would hinder readability.
-- Independent F776/F522/F778 gates and the complete twelve-command post-victory announcement;
-  alternate-population arrival caveat, map reload versus full load, retained follower actions,
-  absent/dead aliases, text/camera/fade services and conditional pending/control return.
-- Changed King/Maid callbacks, temporary F256 reset/repeat and delayed writes. Stop at conditional
-  local exploration/control or pending return and these callbacks, before chest acquisition/use,
-  guard clearance or Floor World departure; exclude general combat/AI/terrain/renderer work.
+- Chest appearance/search versus F212 write and actual delivery, full-party/repeat/interruption;
+  F212/F258 guard movement and wrapper-restored facing versus permission/current custody.
+- Actual own-tile `(35,24)`/any-facing match; menu selection versus first joined-holder/reverse-slot
+  search, removal before scene, handled/default d6 return and no automatic undo.
+- All twenty-nine departure commands, relevant inline/custom semantics and all six actors;
+  baseline/alternate sprites, HP/follower/alias/caller premises, timed jump versus arrival and
+  single-actor waits versus all-actor completion. Reference exact tables when duplication adds no value.
+- Pending request versus consumed Map26 `(26,8)`, Down admission, with no Map26 battle row.
+  Stop before destination population/init, interior content or Battle23 opening; exclude general
+  item/physics/AI/renderer expansion.
 
-The five owned paths are the new guide, initial-roster guide's bounded continuation, Story
+The five owned paths are the new guide, outcome guide's bounded continuation, Story
 Progression navigation, this current agreement and one English index entry. No research, contract,
 fixture, schema, code, glossary, Chinese or remake edit; no runtime acquisition, comparison
 regeneration or new verification machinery. Organize for readability without a length target.
 
-The guide's [evidence review](synthesis/battle22-outcomes-and-desktop-return.md#evidence-review-and-remaining-limits)
-retains #912 handoff/acceptance, exact objects, CI38614495457 and unchanged 18,285,979-byte
-pair/0.084s, including inspection/transport failures and corrections. #911 retains scope-only
-CI38613823392; predecessor receipts retain #908 original/rebased objects/CI and linked
-#907/#904/#903/#900/#899 results, failures and corrections. Their evidence is not replaced here.
-Natural outcomes/return/interaction, supplied state, completed services, actual presentation/control
+The guide's [evidence review](synthesis/cotton-balloon-through-floor-world-entry.md#evidence-review-and-remaining-limits)
+retains #916 handoff/acceptance, exact original/rebased objects, CI38616821310/38617104204 and
+unchanged 18,285,979-byte pair/0.081s, including inspection/fixture/private-regex failures and
+corrections. #915 retains scope-only CI38616608492 and its linked predecessor results/failures.
+Their evidence is not replaced here. The older transaction-overview callee-owner discrepancy is
+reported against #916's exact alias resolution without silently rewriting Layer A.
+Natural reach/custody/selection, supplied state, completed movement/services, presentation/control
 and persistence remain Unknown. Source counterexamples are not executed scenarios or an automatic
 runtime queue. This completes neither the campaign nor [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Evidence conflict, broad dependency or product change requires replanning before affected expansion.

@@ -449,6 +449,15 @@ reload and Maid F256 reset/repeat retain their limits. It stops at conditional l
 or changed King/Maid callback return, before Balloon acquisition/use, guard clearance and Floor World.
 Natural outcome, supplied state, service completion, presentation/control and persistence remain Unknown.
 
+[Cotton Balloon acquisition and the departure to Floor World](cotton-balloon-through-floor-world-entry.md)
+continues with chest search/delivery, F212/F258 guard clearance and own-tile `(35,24)` use in
+any facing. Menu selection differs from the first joined-holder/reverse-slot removal; the complete
+twenty-nine-command departure uses six supplied actors, with timed jumps and actor-specific waits.
+A surviving request passes SwitchMap/CheckBattle to Map26 `(26,8)`, Down, which has no battle row.
+It stops at conditional destination exploration-loader admission, before population/init or Battle23.
+Natural reach/custody/selection, supplied state, completed movement/services, presentation/control
+and persistence remain Unknown; descent framing is Inferred.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
