@@ -199,66 +199,68 @@ service limits remain applicable.
 explains the optional question, refusal/repeat, Creed/river/possible-raft advice and Luke's requested
 departure. Its prompt, actor, hiding/re-entry and conditional-control limits remain applicable.
 
-The current reader outcome explains Bedoe's optional hatchling demonstration/repeat and independent
-fall/rescue through each caller and conditional control. Independent predicates share actors and
-asynchronous services, so **Standard** rigor remains appropriate: selection, supplied state and
-completion must stay distinct. Follow the
-[Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
+[Bedoe's hatchling flight and rescue](synthesis/bedoe-hatchling-flight-and-rescue.md) explains
+separate optional demonstration/repeat and fall/rescue content through its two caller/control
+boundaries. Its shared actors, independent predicates and natural-route limits remain applicable.
+
+The current reader outcome explains selected Bedoe return through Polca's confrontation, Gerhalt
+joining and the Battle13 new-battle start handoff. **Standard** rigor remains appropriate because
+travel, population, asynchronous actions, membership and battle admission have independent
+conditions. Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Bedoe's hatchling flight and rescue](synthesis/bedoe-hatchling-flight-and-rescue.md), scoped by
-[#799](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/799). It consumes the
-[accepted static investigation](../research/bedoe-hatchling-flight-and-rescue.md) from
-[PR #798](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/798) and preceding English guide
-from [PR #797](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/797), without stacking.
-This is optional content, not a natural playthrough or new remake capability. Full source records
-and technical composition stay with research.
+[Bedoe return through Battle13 admission](synthesis/bedoe-return-through-battle13-admission.md),
+scoped by [#803](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/803). It consumes the
+[accepted static investigation](../research/bedoe-return-through-battle13-admission.md) from
+[PR #802](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/802) and preceding English
+king-choice guide from accepted main only, without stacking. This is a content explanation, not a
+natural playthrough or new remake capability; technical composition stays with research.
 
-Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
-preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked fixture selections and
-their schema/consumer boundaries against accepted research. Preserve these material distinctions:
+Acceptance requires readable return/confrontation/joining/battle content and exact research/contract/
+fixture/verifier traceability, preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded
+tracked fixture selections and their schema/consumer limits. Preserve these material distinctions:
 
-- Explain all six flight and four rescue texts plus repeat 1685; distinguish speaker 153/152 and
-  attributed `{NAME;20}` from an ally 20 mapping, health change or future joining.
-- F722 selects setup; F723 admits flight/repeat. Rescue independently tests F13/F724, with no
-  F723/F799 prerequisite, forced order or automatic recruitment. Actual mappings, word HP and
-  follower declaration versus membership/party/AI remain separate.
-- Flight leaves CHICK/InitSlow speed 16 and wrapper-restored facing, without a fixed final coordinate
-  from the interrupted counterclockwise action. Rescue initially retains supplied speed, later
-  normalizes it with Init, imposes 153 `(16,6)` Left and retains supplied sprite/priority 1.
-- Nonwaited Peter/chase/departure actions and `waitIdle 153` prove no global arrival/contact barrier.
-  `startEntity` sets an animation counter; motion OFF is not movement freeze. Sprite-link priority
-  differs from tile priority; cardinal tiles, speed pairs, sleeps and pixel follow offsets differ.
-- Hide 152 invalidates mappings/following, whereas later init changes coordinates only. Current-map
-  entry retains possibly invalid mappings and prior 153 state; fresh rebuilding differs. High-byte
-  follow admission tests Bowie HP, and following implies neither membership nor settled position.
-- Post-return F723/F724 writes, separate entity/zone wrappers and completed services/zero pending
-  precede conditional control, without proving responsive input or making flags scene receipts.
+- Explain both selected exits and competing battle/init paths, F513 > F799 > F710 setup and actual
+  cast. F74 supplies Astral/king/minister, not Gerhalt; F75 Luke fixed-row skip and F67 Peter mapping
+  differ from membership, word HP and AI. X24/wildcard-Y caller tests F710/F799/F715 in order,
+  without F723/F724 or an automatic scene on entry.
+- Paraphrase all 19 cursor texts with speakers and the separate join446 request. Preserve scene
+  ordering/concurrency without copying a command ledger. Speech grants no raft or Luke recruitment.
+  `eas_Die` is presentation/placement rather than combat death; Luke's interrupted Left3 and
+  animation OFF prove neither completed movement nor freeze.
+- Gerhalt F9, capacity-dependent F41 and cached-list refresh differ from field presence, followers,
+  health, deployment and party AI. Supplied flags are not receipts, completion or replay repair.
+- F413 precedes pending warp, script return, caller F715, wrapper and consumption. Row13 wildcard
+  admission/output area and F513 clear-on-selected-call are independent. Actual empty before/start
+  scripts, F463/F88 alternatives and reinitialized battle population remain explicit.
 
-The five paths owned by #799 are the new guide, king-choice optional-content continuation, Story
-Progression navigation, this current agreement and one English documentation-index entry. Stop at
-the two conditional caller/control boundaries. Bedoe exit, Polca/raft, Battle13, later recruitment,
-king-choice rework, town/floor inventories, unmerged successor conclusions, runtime readiness, new
-product decisions and Chinese synchronization are outside scope. No research/contracts/fixtures/
-glossary/zh-CN/remake edits are selected; the earlier common-menu correction is accepted context.
+The five owned paths are the new guide, king-choice main-route continuation, Story Progression
+navigation, this current agreement and one English documentation-index entry. Stop at new-battle
+start-dispatcher return before ActivateEnemies/first turn. Combat/outcomes, mayor/raft/Oddler
+departure, unmerged successor claims, original-source reinvestigation, town/floor inventories,
+king-choice rework, compulsory optional-hatchling order and Chinese synchronization are outside
+scope. No research/contracts/fixtures/glossary/zh-CN/remake edits or new product decisions are selected.
 
-Natural collision-free access/order, actual flags/actors/HP/mappings/party/AI and positions,
-nonwaited movement and service/input/VInt completion, visible flight/fall/contact, sprite ordering,
-dialogue/camera/audio/hide, responsive control, later persistence and continuous playability remain
+Natural walking/collision and uninterrupted arrival; actual flags, actors, mappings, HP, party/AI
+and positions; concurrent movement and service/pending completion; rendered action, text/camera/
+sprite/fade/audio, responsive control, persistence and continuous battle playability remain
 **Unknown**. This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
-Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived payloads
-must not be generated/copied for this segment. No acquisition, repeated source investigation, runtime
-observation or new machinery is needed. Unexpected broad dependencies, evidence conflicts or product
-choices stop affected expansion for replanning; missing natural observations remain **Unknown**.
+Accepted research and bounded in-memory tracked-fixture selections suffice. Optional derived
+payloads must not be generated/copied. No acquisition, repeated source investigation, runtime
+observation or new verification machinery is needed. Unexpected broad dependencies, evidence
+conflicts or product choices stop affected expansion for replanning; missing natural observations
+remain Unknown.
 
-Read the complete explanation and diff, check changed links/fragments, exact paths/private boundary
-and `git diff --check`, then inspect the clean committed-head verification plan and actual final-head
-CI. Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4 or translation suites.
-Preserve completed failures and receipts. Freeze a clean committed/pushed Draft PR and evidence-review
-handoff for independent main-gate review; direct checks and CI do not grant integration.
+Read the complete explanation and owned diff; check provenance, changed links/fragments, exact
+paths/private boundary and `git diff --check`, then inspect the clean committed dependency planner
+and actual final-head CI. Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4
+or translation suites solely for prose. Preserve completed failures/receipts. Freeze a clean pushed
+Draft PR fixing the Issue, Project Review / Verify and a successful authorized completion callback
+for independent main-gate review. Direct checks and CI do not grant integration; no cleanup or
+next-Issue selection is authorized.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

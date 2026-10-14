@@ -220,6 +220,17 @@ coordinate-only init, HP-dependent following and retained versus rebuilt mapping
 It stops at those caller/control boundaries, preserving natural access, supplied-state, contact,
 service/presentation and persistence Unknowns; no future Skreech recruitment is promised.
 
+[Bedoe return through Battle13 admission](bedoe-return-through-battle13-admission.md) continues the
+selected main route through south/west exit requests, changed Polca population, the devils' confrontation,
+Gerhalt joining and conditional new-battle start. F513/F799/F710 setup priority differs from the
+F710/F799/F715 zone and independent F413 admission; F74 supplies Astral/king/minister, not Gerhalt.
+F9/F41/cache timing, health, following and AI remain separate. Scripted birdmen death presentation
+and Luke's interrupted animation/movement do not establish combat deaths or a frozen position.
+Unlock/request precede caller F715 and consumption; empty before/start scripts, F463/F88 alternatives
+and battle-population rebuilding retain their boundaries. It stops before ActivateEnemies, with
+natural travel, supplied state, services/presentation and playability Unknown; hatchling content
+imposes no prerequisite or forced order, and no raft fulfillment or Luke recruitment is asserted.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
