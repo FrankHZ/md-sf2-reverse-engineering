@@ -14,7 +14,9 @@ input and save persistence. The dialogue is attributed speech, not proof of a pr
 This guide continues [Battle20 outcomes and Elric recruitment](battle20-outcomes-and-elric-recruitment.md)
 through accepted [departure and cave-entry research](../../research/harpy-pond-departure-through-fairy-cave-entry.md).
 It stops at conditional Map32 entry control, an unrelated pending continuation, or Battle21 admission
-before opening. Cave exploration, chests, search, rock inspection dialogue, subsequent movement,
+before opening. Continue with [Fairy Cave exploration and Devil's Tail return](fairy-cave-exploration-and-devils-tail-return.md)
+for the separately scoped local content and returns. Cave exploration, chests, search, rock inspection
+dialogue, subsequent movement,
 Creed content and battle opening/outcomes are outside this guide. Fnnn means flag nnn; record and
 row indices are zero-based. Coordinates, waits and sound IDs are source operands rather than
 observed positions, elapsed durations or audible results.
