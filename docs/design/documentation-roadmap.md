@@ -334,60 +334,63 @@ Its [#930 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/
 and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/933#issuecomment-6176904018)
 retain CI38626011000 and linked #924/#926/#923 corrections and limits.
 
-The current reader outcome explains Willard Burrow exploration/local traversal and the complete
-confrontation through conditional Battle23 admission. **Standard** rigor remains appropriate for
-population/alias, zone/action and pending/admission joins. The owner is
-[Willard Burrow exploration and Battle23 admission](synthesis/willard-burrow-through-battle23-entry.md),
-scoped by [#934](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/934). It consumes
-[accepted #928 research](../research/willard-burrow-through-battle23-entry.md) and necessary accepted
-predecessors from main `53df4b5cbf6d0b75136d5dfa737d125e2f08d551`. No stack or content dependency on
-[#932](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/932) battle initialization.
+[Willard Burrow exploration and Battle23 admission](synthesis/willard-burrow-through-battle23-entry.md)
+explains accepted exploration, traversal and confrontation through the conditional BattleLoop call.
+Its [#934 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/934#issuecomment-6177126852)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/936#issuecomment-6177145045)
+retain its actor/alias, coordinate, wait and admission limits.
+
+The current reader outcome explains Battle23's initial formation and fresh-versus-suspended entry.
+**Standard** rigor remains appropriate for the party/capacity, initialization, crop/entity and
+saved-state joins. The owner is [Battle23 initial formation and suspended entry](synthesis/battle23-initialization-and-roster.md),
+scoped by [#938](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/938). Consume
+[accepted #932 research](../research/battle23-initialization-and-roster.md) and #934's predecessor
+from accepted main `424b8eaeb2f467f3f714d39b73d255f2a3c9dd27`.
+Outcome research [#937](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/937) is outside this slice and supplies no facts.
 
 Acceptance requires readable consequences with research/fixture/schema/verifier traceability and
 unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Conditional Map27 entry, F423 bypass and distinct F523 population/F781 scene gate; all three
-  baseline residents versus the empty523 list, actual shared-terminator/include adjacency, fresh
-  versus CURRENT255 retained actors. Followers, missing/invalid lookup, Peter HP/class, B/A/D and
-  D159/raft63 aliases remain premises; exploration rows prove neither recruitment nor activation.
-- Silent/default/empty local surfaces and all eight complete no-scroll records, exact/wildcard
-  matching, destination facing and current-map retention. Floor/Creed destinations stop at admission;
-  no maze solution, walkability proof or completed post-battle route follows from records alone.
-- Actual destination-derived layout-zone Y19 plus independent F781; all 41 cs59FB8 commands as
-  coherent phases, complete named action effects, absolute destination versus facing/current-relative
-  timed Jump, sole 130 joins, looping rotation/replacement, Init orientation versus facing and
-  motion-OFF animation counter versus velocity. Retain camera, shiver, six texts/speakers/C0/window/
-  debug distinctions, selective HP guards and no all-actor completion or timing guarantee.
-- Ordered F423, warp, scene return, caller F781, physical0 wrapper wait, pending consumption and
-  CheckBattle/BattleLoop call; signed quotient/low-byte override and retained whole-word multiplication
-  limit. Independent423/523/781, repeat/bypass/alias/interruption/overwrite and no rollback; completed F523
-  clears F423 without canceling the current selection. Eating threat is Inferred, with no implemented
-  smell/growth/food/harm rule.
+- Independent F423 admission, F473 intro, F523 completion and F781 exploration scene. Fresh order is
+  before wrapper, region clear, eligible healing, ally/enemy placement, AI clear, load and start
+  wrapper. Empty hooks retain shared effects/waits; start writes F473 before dispatch.
+- All twelve placement slots versus actual ascending joined/active selection; dead processed capacity,
+  surplus removal, reserves, healing/status/equipment and inconsistent supplied-state limits. Promise
+  neither twelve living heroes nor a fixed named roster.
+- All twelve complete enemy records: Willard, five Rats and six Oozes. Preserve definitions/items/
+  spells/difficulty, numeric orders/activation, one region/point, complete random/neutral exclusions,
+  battle-local crop and distinct logical/physical/sprite identities. No tactics, displayed agility,
+  turn-count or original intent follows from configuration.
+- Suspended F88 uses actual current/saved state, clears AI memory and loads directly to the
+  individual-turn seam, bypassing fresh healing, formations, hooks, region clear and round setup.
+  Retain actual map/battle/area/positions/activation/HP/class/items/party/order and alias premises;
+  promise no automatic repair, presentation/control or persistence.
 
-Stop exactly at the BattleLoop call, before before/start/init, roster, AI, activation, rounds or
-outcomes, and before destination Floor World/Creed init. Select no desired gameplay/UI policy,
-remake scope or runtime queue. Own exactly five paths: the new guide, Floor World interaction guide's
-bounded continuation, Story Progression navigation, this current agreement and one English
-docs/README.md entry. No research/contract/fixture/schema/code/glossary/Chinese/remake changes,
-acquisition, new tooling or payload regeneration. Organize by reader understanding without an
-artificial length target.
+Stop fresh before ActivateEnemies/region activation/initial rounds and saved before the first
+individual-turn read/execution. Exclude leader death, outcomes, postbattle/Creed, gameplay/UI policy,
+remake scope, runtime/acquisition, payload generation, new machinery and Chinese work. Own exactly
+five paths: the new guide, predecessor's bounded continuation, Story Progression navigation, this
+current agreement and one English docs/README.md entry. No research/contract/fixture/schema/tooling/
+engine/glossary edits. Organize by reader understanding without an artificial length target.
 
-The guide's [evidence review](synthesis/willard-burrow-through-battle23-entry.md#evidence-review-and-retained-limits)
-links [#928 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/928#issuecomment-6176708249)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/931#issuecomment-6176742983):
-exact objects/CI38624813497, unchanged 18,285,979-byte pair/0.080s, inspection failures and corrected
-D159/raft63 hypothesis, plus linked #924/#920 records. Retain those and #930/#926/#923 receipts
-without copying a history ledger. Natural reach/supplied state, completed services/actions,
-presentation/control and persistence remain Unknown. Static changed-state cases are not played
-scenarios. Evidence conflict, broader coupling or product change requires replanning before affected
+The guide's [evidence review](synthesis/battle23-initialization-and-roster.md#evidence-review-and-retained-limits)
+links [#932 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/932#issuecomment-6176988463)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/935#issuecomment-6177066791),
+retaining pair 0.081s, exact objects/CI38626848120 and all diagnostics/predecessor corrections.
+Preserve #934's receipts and retained #928 results/failures without copying a history ledger.
+This checkout lacks pinned upstream/retained pair: retain accepted direct comparisons without
+claiming fresh reruns or acquiring/regenerating them. Natural admission, actual supplied state,
+completed services, presentation/control and persistence may remain Unknown; encounter staging is
+Inferred. Material evidence conflict, broader coupling or product change requires replanning before
 expansion; this completes neither campaign nor epic #514.
 
-Adversarially inspect the whole accepted research and selected existing fixture/schema/verifier and
-consumer claims. Review whole owned prose/diff, counts/order, links/fragments/tables/fences,
-English/private boundary and git diff --check; inspect the configured clean committed planner and
-actual final-head CI. No local blanket Python/.NET/Godot/H3/H4/translation suites solely for prose.
-Freeze a clean committed pushed Draft PR fixing #934, set Project Review / Verify and successfully
-notify the authorized main-gate for independent review. No merge, cleanup, archive or next Issue.
+Adversarially inspect the whole accepted research and selected public fixture/schema/verifier and
+consumer boundaries. Review whole owned prose/diff, numeric/table/order/link/anchor and English/
+private checks plus git diff --check. Load local/private-inputs.ps1 for controlled commands; inspect
+the clean committed planner and actual exact-head CI. No local blanket Python/.NET/Godot/H3/H4 or
+translation suite solely for prose. Freeze a clean committed pushed Draft PR fixing #938, set Project
+Review / Verify and successfully notify authorized main-gate for independent review. No merge,
+cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
