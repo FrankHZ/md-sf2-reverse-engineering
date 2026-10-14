@@ -70,12 +70,55 @@ Exploration, dialogue/choice, battle and return use the same semantic actions. D
 | `stay` | Space | LeftShoulder |
 
 Confirm talks, acknowledges dialogue, answers Yes, or selects/commits in battle. Cancel answers No
-or cancels battle provisional choices; it does not acknowledge dialogue. Spell cycles learned spells
-and levels with self as the initial target. Item selects and cycles carried item slots, initially
-targeting self; Target cycles living candidates for the selected action.
+or backs out one menu level in battle; it does not acknowledge dialogue. Spell and Item open their
+lists from the diamond; Confirm selects a row, initially targeting self when the offer permits it.
+Target cycles the selected action's offered candidates. The [diamond recipe](#diamond-menu-observation)
+owns the current battle interaction; older immediate-selection shortcuts in probes are retained
+historical recipes, not acceptance of this revised UI.
 All accepted commands still use Application's existing legality and state. F replaces the former X
 attack binding; former C/Y/N exploration shortcuts are replaced by Confirm/Cancel. View help and
 spell/item hints read effective bindings, including after a convention swap.
+
+### Diamond menu observation
+
+The first #438 production iteration uses default keyboard A and live semantic offers. After the
+locked environment and Debug adapter build, prepare a small variation of the existing authored
+practice yard in a fresh ignored output directory. This is controlled content, not a session setter:
+
+```powershell
+$package = Join-Path $env:SF2_RUN_OUTPUT 'menu-package.json'
+$data = Get-Content remake/content/authored/practice-yard.json -Raw | ConvertFrom-Json
+$data | Add-Member -NotePropertyName items -NotePropertyValue @(
+    [pscustomobject]@{id=0;name='Recovery leaf';effect='consumable-healing';power=10;minimumRange=0;maximumRange=1},
+    [pscustomobject]@{id=6;name='Small remedy';effect='consumable-healing';power=4;minimumRange=0;maximumRange=2}) -Force
+$data.actors[0].items = @(256,6,255,383)
+$data.actors[1].items = @(0,127,127,127)
+$data.start.actors[0].hp = 60
+$spell = $data.spells[0] | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+$spell.level = 2; $spell.mpCost = 25
+$data.spells += $spell
+$data.actors[0].spells += [pscustomobject]@{id='mend';level=2}
+$data | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $package -Encoding utf8
+$env:SF2_DIAMOND_CASE = 'menu'
+$env:SF2_DIAMOND_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'diamond-menu.json'
+& $godotBinary --headless --path remake/game --max-fps 120 `
+    --script res://probes/engine_diamond_ui_observation.gd -- --authored-package $package
+```
+
+The probe checks cardinal focus, disabled spell/item/target feedback, nested cancel without resource
+use, real healing and another actor's item consumption. Actual menu/text rectangles are checked at
+960×540, 1280×720, 1920×1080, 640×540 and 360×640, including disabled-list and target descriptions.
+The map focus area expands during movement/target selection; very short narrow menu views prioritize
+readable commands. No claim of final visual quality follows from geometry alone.
+
+For physical attack, set `SF2_DIAMOND_CASE=physical`, a fresh output, and use the existing
+`remake/content/authored/stone-court.json` package. For a bounded private menu observation, load
+registered complete private selections, set CASE=`private`, a fresh output, and replace the entry
+with `--private-battle-start $env:SF2_PRIVATE_CONTROLLED_START`. That case checks menu navigation
+and cancel without committing an action; it is not another continuous opening/outcome comparison.
+Require exit0, `passed:true`, empty failures and clean Godot errors. Preserve failed reports when
+correcting a layout. The public Release adapter build and engine behavior tests are separate gates;
+no tests of this probe or screenshot audit are added.
 
 Keyboard echo is ignored. A stick deflection crossing magnitude0.5 submits one action; it must return
 below that threshold or change sign to submit another. Unrelated axes and releases cannot repeat a

@@ -22,6 +22,8 @@ public sealed record SelectItem(int Slot) : SessionCommand;
 public sealed record SelectTarget(ActorRef Target) : SessionCommand;
 public sealed record Confirm : SessionCommand;
 public sealed record Cancel : SessionCommand;
+// Return from a provisional battle action without undoing the movement preview.
+public sealed record ReturnToBattleActions : SessionCommand;
 // One deliberate gameplay opportunity at an eligible settled field-input boundary.
 public sealed record WaitAtInput : SessionCommand;
 // One nonaccepting poll. W1 also polls on acceptance; the plain input-first helper does not.

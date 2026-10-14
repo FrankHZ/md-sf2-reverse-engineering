@@ -13,6 +13,36 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleActionChoiceTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BackFromActionPreservesMovementAndResourcesAndAllowsAnotherKind(bool targetSelected)
+    {
+        var session = Open(Items());
+        var origin = session.Current.Selection!.Preview.Destination;
+        Assert.Equal("wrong-selection-stage", Send(session, new ReturnToBattleActions()).Failure!.Code);
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
+        Accept(session, new Confirm());
+        Assert.Equal("wrong-selection-stage", Send(session, new ReturnToBattleActions()).Failure!.Code);
+        Accept(session, new SelectItem(0));
+        if (targetSelected) Accept(session, new SelectTarget(new("guard-a")));
+        var before = session.Current;
+        var back = Accept(session, new ReturnToBattleActions());
+        Assert.Same(before.Battle, back.Snapshot.Battle); // Includes vitals, inventory, seeds and turn cursor.
+        Assert.Same(before.Selection!.Preview, back.Snapshot.Selection!.Preview);
+        Assert.Equal(new MapPosition(3, 4), back.Snapshot.Selection.Preview.Destination);
+        Assert.Equal(BattleSelectionStage.ActionChoice, back.Snapshot.Selection.Stage);
+        Assert.Null(back.Snapshot.Selection.ActionReference);
+        Assert.Null(back.Snapshot.Selection.Target);
+        Assert.Equal("stale-input", session.Submit(new(before.SessionId, before.Revision,
+            before.Selection.Actor, new Confirm())).Failure!.Code);
+        Accept(session, new SelectBattleAction(new(BattleActionKind.Stay)));
+        Accept(session, new ReturnToBattleActions());
+        FinishMovement(session, Accept(session, new Cancel()));
+        Assert.Equal(origin, session.Current.Selection!.Preview.Destination);
+        Assert.Equal(BattleSelectionStage.Movement, session.Current.Selection.Stage);
+    }
+
     private static SessionRules Rules(IPhysicalActionRule? physical = null, IBattleActionRule? item = null,
         IBattleActionRule? stay = null) => new("selected-actions-test", new Sf2HealingRule(),
             physical ?? new Sf2PhysicalAction(), item ?? new Sf2ItemAction(), stay ?? new Sf2StayAction());
