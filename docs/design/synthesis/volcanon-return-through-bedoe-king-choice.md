@@ -247,6 +247,11 @@ positions, membership/AI, follower/player state; release/input sampling, complet
 pending requests; visible speaker/facing/motion/hiding, windows/audio/timing and responsive control;
 later persistence, Luke's arrival and raft availability. These gaps admit no automatic runtime work.
 
+Continue the selected main route with [Bedoe return through Battle13 admission](bedoe-return-through-battle13-admission.md):
+the south/west requests, Polca confrontation, Gerhalt joining and conditional battle start handoff.
+That guide distinguishes F799 content from F413 battle admission and retains actor, party and service
+Unknowns. This guide's raft advice and Luke departure do not establish the later journey or fulfillment.
+
 For separate optional content, read [Bedoe's hatchling flight and rescue](bedoe-hatchling-flight-and-rescue.md).
 F722 selects its callers, but rescue tests F13/F724 rather than the king's F799 or flight's F723.
 That guide preserves both independent caller/control boundaries and claims no future recruitment;

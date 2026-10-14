@@ -184,6 +184,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   selected shrine return, optional king choice and Luke's requested departure; prompt, hiding/re-entry and conditional-control limits.
 - [`bedoe-hatchling-flight-and-rescue.md`](./design/synthesis/bedoe-hatchling-flight-and-rescue.md) —
   optional demonstration/repeat and independent fall/rescue; shared actor state, hiding/re-entry and two conditional-control limits.
+- [`bedoe-return-through-battle13-admission.md`](./design/synthesis/bedoe-return-through-battle13-admission.md) —
+  selected return, Polca confrontation, Gerhalt joining and empty battle-start handoff; cast, party, request and readiness limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
