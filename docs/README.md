@@ -210,6 +210,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   outcomes, complete driver/miniaturization scene and conditional return; actual flags, actor identity, savepoint and service limits.
 - [`hassan-rick-recruitment.md`](./design/synthesis/hassan-rick-recruitment.md) —
   optional population/talk, complete recruitment and current following; separate membership, reentry and control limits.
+- [`caravan-boarding-and-southwest-parmecia-travel.md`](./design/synthesis/caravan-boarding-and-southwest-parmecia-travel.md) —
+  boarding, mode1 movement/landing and separate walking Battle19 request/admission; actor, residual-parameter and natural-route limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
