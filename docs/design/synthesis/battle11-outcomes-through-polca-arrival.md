@@ -15,6 +15,8 @@ playable sequence, and this guide adds no remake readiness claim.
 
 Begin with [East Shrine return through Battle11 cave admission](east-shrine-return-through-battle11-admission.md).
 Stop after the first Oddler scene's caller and its first conditional restored-control boundary.
+Continue with [Polca's fairy interaction through Battle12 admission](polca-fairy-through-battle12-admission.md)
+for the optional turtle encounter, independent east departure and searching-devils handoff.
 The turtle interaction `cs_58512`, F710-set later scene, mayor/raft/recruitment content, Bedoe and
 Battle12/13 are outside this guide. Fnnn means flag nnn; maps and battles retain source numbering.
 

@@ -172,6 +172,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   optional return, selected overworld connections and cave opening; admission, cast and darkness-presentation limits.
 - [`battle11-outcomes-through-polca-arrival.md`](./design/synthesis/battle11-outcomes-through-polca-arrival.md) —
   cave return, selected Polca entry and the injured-boy scene; rebuilt residents/following and conditional-control limits.
+- [`polca-fairy-through-battle12-admission.md`](./design/synthesis/polca-fairy-through-battle12-admission.md) —
+  optional turtle test, independent east departure and searching-devils confrontation; ordered battle admission and presentation limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

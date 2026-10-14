@@ -172,48 +172,54 @@ continues from optional shrine or direct Battle10 return through selected overwo
 cave admission, Peter's exchange with the hobgoblin and the before/start battle handoff. Its
 interruption, cast, service and darkness-presentation limits remain applicable.
 
-The current reader outcome explains Battle11 outcomes, the selected cave-to-Polca connection and
-the first Oddler arrival scene through its caller and conditional restored control. Battle returns,
-admission, population selection/replacement and actor services cross existing owners, so this segment
-retains **Standard** rigor. Follow the
+[Battle11 outcomes through Polca's first Oddler arrival](synthesis/battle11-outcomes-through-polca-arrival.md)
+continues through separate cave/town admission, the injured boy and villagers' response, rebuilt
+residents/following and conditional restored control. Its actor, service and natural-route limits
+remain applicable.
+
+The current reader outcome explains Polca's optional turtle interaction, fairy departure,
+independent east exit and Mount Volcano's searching-devils confrontation through Battle12's
+before/start handoff. Interaction routing, actor services, pending requests and battle admission
+cross existing owners, so this segment retains **Standard** rigor. Follow the
 [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Battle11 outcomes through Polca's first Oddler arrival](synthesis/battle11-outcomes-through-polca-arrival.md),
-scoped by [#775](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/775). It consumes the
-[accepted static investigation](../research/battle11-outcomes-through-polca-arrival.md) from
-[PR #774](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/774) and the preceding English guide
-from [PR #773](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/773), without a stacked dependency.
-Organize around cave battle return, leaving for Polca, town arrival, the injured boy and villagers'
-response, then restored town state. This is a candidate content sequence, not a proven navigable or
-mandatory route or a new remake capability. Full records and technical composition stay with research.
+[Polca's fairy interaction through Battle12 admission](synthesis/polca-fairy-through-battle12-admission.md),
+scoped by [#779](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/779). It consumes the
+[accepted static investigation](../research/polca-fairy-through-battle12-admission.md) from
+[PR #778](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/778) and the preceding English guide
+from [PR #777](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/777), without a stacked dependency.
+Organize around helping the turtle, fairy departure, leaving Polca, observing the devils and being
+confronted, then battle handoff. This is a candidate content connection, not a mandatory rescue route,
+verified playable entry or new remake capability. Full records and technical composition stay with research.
 
 Acceptance requires readable content and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review tracked fixture selections and their
 schema/consumer boundaries against accepted research. Preserve these material distinctions:
 
-- Victory returns to a battle-derived cave position; loss/escape uses carried egress. Separate fixed
-  exits and Map72 interruptions precede Polca's independent F413/F513 admission.
-- Last-set setup priority and ally versus regular-NPC lookup determine the cast; regular 130 is the
-  kappa under default/F710 lists. Peter has no fixed row, and alternative supplied populations can
-  leave scene actors unmapped. F710-clear alone does not establish a sensible cast.
-- X24 selection is separate from town entry. Eleven paraphrased texts and their staging describe
-  the villagers' response; quake/flash/actions are requests rather than verified presentation.
-- Explicit F710 resident loading precedes caller F711 handling and the F710 write. Following is
-  rebuilt; F67-only can recreate the same target/offset without preserving the transient relation.
-- Neither the incident nor its caller recruits Oddler or Gerhalt. HP, mapping, services and pending
-  conditions bound the first restored-control claim.
+- F711 clear/set caller branches, an alternative producer, event flags0 rather than a Right-facing
+  predicate, actual lookup/availability and transient versus rebuilt following remain distinct.
+- Four turtle texts and thirteen searching-devils texts are paraphrased. Mosaic/sprite commands and
+  source service loops establish requests, not rendered transformation or measured timing.
+- The selected east exit requires neither F710 nor F711; the earlier south row wins at overlap.
+  Immediate F412 admission differs from ordinary Map52 entry/scene; F512 can supply an empty cast,
+  while F714/F712 can interrupt init. No invented predicates repair inconsistent supplied state.
+- F412 precedes pending warp, caller F713 and consumption. There is no atomic switch or zone replay
+  repair for F713-set/F412-clear. Wildcard trigger differs from output area, and F412/F512 can clear
+  unlock while admitting battle on the same call.
+- Scene actors/following differ from actual party, HP, AI and battle placement. Empty before/start
+  rows retain F462/F88 branches and services, without certifying battle readiness.
 
 Only the new guide, predecessor continuation, Story Progression navigation, this current agreement
-and one English documentation-index entry are owned by #775. Stop after the first Oddler caller and
-conditional restored control. Turtle interaction `cs_58512`, the F710-set later scene, mayor/raft/
-recruitment, Bedoe/Battle12/13, unmerged successor findings, runtime readiness, new product decisions
-and Chinese synchronization are outside scope. No research/contracts/fixtures/glossary/remake changes
-are selected.
+and one English documentation-index entry are owned by #779. Stop at the new-battle start-dispatcher
+return before `ActivateEnemies`. Combat/outcomes, `cs_5C622`, Bedoe/Volcanon, other Polca scenes,
+unmerged successor findings, runtime readiness, new product decisions and Chinese synchronization
+are outside scope. No research/contracts/fixtures/glossary/remake changes are selected.
 
 Natural collision-free and uninterrupted travel, actual flags/actors/HP/party/AI/mappings, request
-survival, completed services, visible presentation/timing and continuous playability remain **Unknown**.
+survival, completed services, rendered fairy/transformation, visible presentation/timing and continuous
+playable Battle12 entry remain **Unknown**.
 This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 
