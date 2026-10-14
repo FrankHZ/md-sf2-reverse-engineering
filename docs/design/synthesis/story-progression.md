@@ -231,6 +231,15 @@ and battle-population rebuilding retain their boundaries. It stops before Activa
 natural travel, supplied state, services/presentation and playability Unknown; hatchling content
 imposes no prerequisite or forced order, and no raft fulfillment or Luke recruitment is asserted.
 
+[Battle13 outcomes through Polca's raft grant](battle13-outcomes-through-polca-raft-grant.md)
+continues through first/repeat victory, distinct Bedoe defeat/Egress, Luke's accompanying flag,
+fresh Polca population and the optional mayor bargain. F75 differs from Luke membership/HP/AI;
+F718/F717/F716 caller priority precedes temporary contacts, and only scene return reaches the
+ordered F716/F64/Map72 `(43,48)` writes. Current following, hide133 and future recreation remain
+separate. It stops at conditional caller/control return, retaining natural reach, actors/services,
+presentation and persistence Unknowns; configured raft state proves no current Polca raft,
+river availability or boarding. Oddler choice/departure and later travel remain outside scope.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

@@ -19,6 +19,11 @@ This reading route imposes no hatchling prerequisite or compulsory order. Stop a
 new-battle start-dispatcher return, immediately before `ActivateEnemies`; combat, outcomes,
 the mayor, raft fulfillment and Oddler's departure remain outside scope.
 
+Continue with [Battle13 outcomes through Polca's raft grant](battle13-outcomes-through-polca-raft-grant.md)
+for first/repeat outcomes, Luke's aftermath, fresh town return and the optional mayor bargain.
+It separates following from recruitment/health, and the ordered raft configuration from
+current-map presence, river access or boarding, stopping at conditional caller/control return.
+
 ## Returning toward Polca
 
 **Confirmed selected requests:** Bedoe's south exit and the intervening west exit have these
