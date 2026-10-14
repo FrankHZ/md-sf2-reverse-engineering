@@ -18,6 +18,7 @@ Fresh entry stops at `BattleLoop:@Start` **before ActivateEnemies**; suspended e
 `@IndividualTurns_Loop`. Combat execution, outcomes, Creed entry/interior and terrain reconstruction
 remain outside this guide. Fnnn means flag nnn; rows are zero-based. Coordinates, waits and speeds
 are source operands rather than observed positions or measured durations.
+Continue with [Battle21 outcomes and Devil's Tail return](battle21-outcomes-and-devils-tail-return.md).
 
 ## Admission Does Not Decide Whether the Scene Runs
 

@@ -398,6 +398,12 @@ party placement and successful item masking retain separate consumers. It stops 
 ActivateEnemies or suspended before individual turns, without outcomes/Creed or tactical claims;
 natural reach, services, upgraded roster, presentation and persistence remain Unknown.
 
+[Battle21 outcomes and Devil's Tail return](battle21-outcomes-and-devils-tail-return.md) continues with
+leader cleanup versus HP mutation, both ordered outcome checks and the complete first after scene.
+Repeat seed, cropped scene versus full-map return, membership versus follower mappings and fresh
+population remain separate. It stops at conditional Map67 control/pending or supplied loss continuation,
+before mansion init; natural reach, supplied state, completed services and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

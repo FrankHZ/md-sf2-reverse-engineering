@@ -228,6 +228,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   four rewards, both returns and conditional rock inspection; search/rollback, independent admission and service limits.
 - [`battle21-opening-and-initial-roster.md`](./design/synthesis/battle21-opening-and-initial-roster.md) —
   refusal/threat scene and conditional initial placements; independent flags, cropped coordinates, item masking and service limits.
+- [`battle21-outcomes-and-devils-tail-return.md`](./design/synthesis/battle21-outcomes-and-devils-tail-return.md) —
+  leader cleanup, complete first after scene and conditional full-map return; repeat seed, follower and service limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
