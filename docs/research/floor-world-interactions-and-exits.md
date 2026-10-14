@@ -365,9 +365,13 @@ three rows have PARAM1=0, selecting the no-scroll arm of
 It requests the stored sound, clears WARP_SFX, idles physical0, removes its
 caller return address to leave ExplorationLoop, and zeroes d0–d4. It loads
 the map into d0, samples actual player X/Y/facing through
-UpdatePlayerPosFromMapEvent, then overrides X/Y with each nonnegative
-destination byte and always loads facing. Here all destination bytes are
-nonnegative, so the outbound tuples are exactly the table values with d4=0.
+UpdatePlayerPosFromMapEvent, then replaces only the low X/Y bytes with each
+nonnegative destination byte and always loads facing. With coherent
+nonnegative local coordinates, the outbound tuples equal the table values
+with d4=0. The signed divisions in UpdatePlayerPosFromMapEvent first fill
+the coordinate words; the later move.b writes do not normalize their high
+bytes. For example, supplied raw X=-384 gives quotient `$FFFF`; destination2
+then produces d1.w=`$FF02`, not `$0002`. The same limitation applies to Y.
 It returns directly to MainLoop. It is not the nonzero-type scroll-transition
 arm, and it does not execute destination initialization itself.
 
@@ -390,10 +394,14 @@ the tunnel and its later scripts are only the next boundary.
 At the existing exploration entry boundary, d0=255 preserves CURRENT_MAP,
 population/lookups and working layout, skips explicit-load tilesets/entity
 allocation, temporary-flag clearing and F80 set, and uses the existing
-UpdateMainEntityProperties/DeclareRaftEntity path. The positive destination
-coordinates update main current/destination and facing; retained actors are
-not reset to their population rows. It still passes through the common
-exploration entry work and later init dispatch; it is not a position-only
+UpdateMainEntityProperties/DeclareRaftEntity path. Under the same coherent
+coordinate premise, the destination values update main current/destination
+and facing; retained actors are not reset to their population rows.
+UpdateMainEntityProperties tests each coordinate's low byte for negativity,
+then multiplies the whole word by384 and stores the low product word. It does
+not clear a retained abnormal high byte before that multiplication. It still
+passes through the common exploration entry work and later init dispatch;
+it is not a position-only
 shortcut. Explicit-map exploration instead selects the new map/population,
 sets CURRENT_BATTLE=255 and clears temporary flags256–383 before later init.
 F779/F780 are outside that temporary range. Map27 battle admission follows
