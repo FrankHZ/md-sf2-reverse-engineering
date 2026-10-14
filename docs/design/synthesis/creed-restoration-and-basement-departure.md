@@ -332,6 +332,8 @@ F783 and EGRESS_MAP can leave completion set with the old selector; later failur
 can leave both writes without exploration control. None establishes saved
 persistence, basement arrival, an Evil Spirit scene, a recruit choice or Oddler's
 departure. This guide stops at the conditional main-room exploration handoff.
+Continue with [Evil Spirit Shrine entry and consultation admission](evil-spirit-shrine-entry-and-scene-admission.md)
+for the separate room route, population and scene-request gate.
 
 ## Evidence Review and Remaining Limits
 

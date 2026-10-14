@@ -353,54 +353,57 @@ fresh/retained burrow state and conditional next-map admission. Its
 and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/943#issuecomment-6177652147)
 retain exact checks, absent-input limits and linked predecessor failures.
 
-The current reader outcome explains Creed's restoration and main-room departure.
-**Standard** rigor remains appropriate for the setup/population, complete scene, sprite/action,
-text/HP/alias and init/control joins. The owner is
-[Creed's restoration and main-room departure](synthesis/creed-restoration-and-basement-departure.md),
-scoped by [#946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/946). Consume
-[accepted #941 research](../research/creed-restoration-and-basement-departure.md) and accepted
-predecessors from main `2eddb2c6d00a748315d9a4671dca8429a8a1ea67`.
-Running #945 shrine-entry research is neither source nor dependency.
+[Creed's restoration and main-room departure](synthesis/creed-restoration-and-basement-departure.md)
+explains the accepted restoration/Zeon conversation and conditional main-room handoff.
+Its sprite/action, alias/HP, following, Egress-selector and control limits remain applicable.
 
-Acceptance requires readable story consequences with unchanged **Confirmed**, **Inferred** and
-**Unknown** boundaries and exact accepted provenance. Explain:
+The current reader outcome explains the separate Evil Spirit Shrine route and consultation
+admission. **Standard** rigor remains appropriate for the route/setup/population and independent
+request/callback joins. The owner is
+[Evil Spirit Shrine entry and consultation admission](synthesis/evil-spirit-shrine-entry-and-scene-admission.md),
+scoped by [#950](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/950). Consume
+[accepted #945 research](../research/evil-spirit-shrine-entry-and-scene-admission.md) and accepted
+predecessors from main `c6bbc1c11ea52d9a0828abf2280e9ff125bfaf91`. Consultation contents are a
+later boundary; concurrent #949 research is neither evidence nor dependency.
 
-- Conditional Map33 admission, every setup override and seven return resident identities, changed
-  population, retained loading, follower allocation, lookup aliases and actual class/HP premises.
-  F523/F783 scene admission is independent of F774 and the later flags.
-- All 212 commands as coherent phases, all 58 text meanings/speakers/controls and 30 embedded bodies
-  through exact accepted joins. Preserve fresh load versus reload, live door-copy versus persistent
-  geometry, current-relative movement, selective HP guards, actual portrait/name/debug consumers
-  and waited versus unjoined/replaced actions; use precise links without duplicating the transcript.
-- Narrative restoration as Inferred, with TwirlGrow's complete Init tail, shared sprite size versus
-  per-actor resize bit, three unjoined growth actions and later replacement, flash DBF and synchronous
-  gestures. No general body/collision scaling, guaranteed final growth/shadow or measured rate/duration.
-- Creed/Fairy waited departure and hides, encoded high-byte/Bowie-HP follower guard, unjoined following,
-  complete caller tail F783 then EGRESS_MAP9, later Goliath/ally placement branches and conditional
-  controller handoff. Hassan is a later Egress selector, not transport or a saved XYZ tuple. Repeats,
-  supplied flags, interrupted prefixes and service failures preserve their limits.
+Acceptance requires readable route/room consequences with unchanged **Confirmed**, **Inferred**
+and **Unknown** boundaries and exact accepted provenance. Explain:
 
-Begin at separately admitted Map33 loading and stop after main-room init/exploration handoff, before
-basement arrival, Evil Spirit scene, recruitment choice, Oddler departure or #945 content. Exclude
-natural-play claims, gameplay/engine/UI policy, runtime/acquisition, payload generation, new machinery
-and Chinese work. Own exactly five paths: the new guide, outcome guide's bounded continuation,
-Story Progression navigation, this current agreement and one English docs/README.md entry. No
-research/contract/schema/fixture/tooling/remake/glossary changes. Content/readability governs length.
+- The mansion exit and all three shrine warps, actual candidate/layout/request and coordinate
+  high-byte premises, explicit entry versus CURRENT255 retained population and local return-only
+  surfaces. No invented F783 prerequisite, walked stairway or automatic arrival trigger.
+- F784's 21 baseline residents versus empty resident override, include-adjacent terminator,
+  logical130/physical47/ENTNUM32 special allocation and sixteen separate ordinary effect rows.
+  Main/followers/raft, aliases, actual HP/class/mode and asynchronous action declarations remain
+  distinct; declarations prove no rendered animation or completed effects.
+- Destination-derived type6 request coordinates versus current-position layout classification,
+  wildcard-X/Y-low-byte13 matching and independent F784 callback gate. Stop at cs_5B6C0 call;
+  F784 then F802 are conditional caller writes only after the unanalyzed scene returns.
+- Fresh/repeat/retained and changed flags/population/request cases, physical0 init and wrapper
+  coordinate-wait boundaries, without postscene control, persistence or completed-consultation claims.
 
-The guide's [evidence review](synthesis/creed-restoration-and-basement-departure.md#evidence-review-and-remaining-limits)
-links #941's handoff/acceptance, unchanged-pair result and original/corrected diagnostics, and #942's
-handoff/acceptance and linked predecessor failures. This checkout lacks the pinned upstream/pair;
-retain accepted comparisons without fresh-rerun claims, acquisition or regeneration. Natural reach,
-actual supplied state, completed services/concurrent actions, presentation/control and persistence
-may remain Unknown. Material evidence conflict, broader coupling or product change requires
-replanning before expansion; this completes neither campaign nor epic #514.
+Begin at the mansion's separate shrine request and stop at scene admission. Exclude scene contents,
+recruitment, Oddler departure, natural-play claims, engine/UI policy, runtime/acquisition, payload
+regeneration, new environments/machinery and Chinese work. Own exactly five paths: the new guide,
+predecessor continuation link only, Story Progression, this current agreement and docs/README.md
+navigation. No research/contract/schema/fixture/tooling/remake/glossary changes. Content/readability
+governs length; no command inventory or artificial length target is required.
+
+The guide's [evidence review](synthesis/evil-spirit-shrine-entry-and-scene-admission.md#evidence-review-and-remaining-limits)
+links #945's original/rebased handoffs and acceptance: retained 0.084s unchanged-pair/source checks,
+original/rebased CI and newline/index diagnostics, plus #941/#937 corrected facts and failure records.
+This checkout lacks the pinned upstream/pair; retain accepted comparisons without fresh-rerun claims,
+acquisition or regeneration. Natural reach, actual supplied state, service/action completion,
+presentation/control and persistence may remain Unknown. A material evidence conflict, broader
+coupling or product change requires replanning before expansion; this completes neither campaign
+nor epic #514.
 
 Inspect the whole accepted research and selected fixture/schema/verifier/consumer boundaries;
-check exact identities, phase/command/text/action/flag order and changed-state consequences, whole
-owned prose/diff, links/anchors, English/private boundary and git diff --check. Load
+check exact route/population/request identities, callback/flag order and changed-state consequences,
+whole owned prose/diff, links/anchors, English/private boundary and git diff --check. Load
 local/private-inputs.ps1 for controlled commands, inspect the clean committed planner and actual
 exact-head CI. No blanket local Python/.NET/Godot/H3/H4 or translation suites solely for prose.
-Freeze a clean committed pushed Draft PR fixing #946, set Project Review / Verify and successfully
+Freeze a clean committed pushed Draft PR fixing #950, set Project Review / Verify and successfully
 notify authorized main-gate for independent review. No merge, cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
