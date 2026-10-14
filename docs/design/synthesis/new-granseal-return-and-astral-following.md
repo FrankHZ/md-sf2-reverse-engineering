@@ -313,6 +313,10 @@ visible retrospective/adviser presentation, usable control and save/load
 persistence. These limits do not create an automatic capture or acquisition
 queue.
 
+Continue with [New Granseal inventor and Dynamite gift](new-granseal-inventor-and-dynamite-gift.md)
+for the separate permission, actual Cannon search and receiving attempt
+through local inventor return.
+
 ## Evidence Review and Retained Results
 
 The adversarial review checked accepted Layer A prose and selected public

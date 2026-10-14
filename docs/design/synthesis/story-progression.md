@@ -634,7 +634,28 @@ which need not be an existing Peter. Script70 precedes caller805/70 and the
 physical0 wrapper wait. Fresh70-derived B31 and805's omission of resident139
 are independent from current following. Repeat/direct/interrupted prefixes,
 natural reach, services, usable control and save persistence remain explicit;
-Janet, inventor gift and North Cave are next boundaries only.
+Janet and North Cave remain separate next boundaries.
+
+[New Granseal inventor and Dynamite gift](new-granseal-inventor-and-dynamite-gift.md)
+continues through the selected castle south return and current/fresh town
+setup. Inventor141, current castle Astral139 and fresh B31 remain distinct.
+The callback gives F802 priority over older F702 dialogue, then F804 before
+F805. With eligible flags it searches actual joined-force Cannon inventory;
+F761/F70, living or active-party status and actual Astral are not prerequisites.
+The earlier explosive warning, permission requirement, unsafe-detonation
+dialogue or Cannon suitability/nod/offer follow that selected branch, without
+a yes/no prompt, Cannon consumption or cave opening. Count-limited descending
+search depends on packing; receiving instead counts all four slots and selects
+the earliest joined member with room, including reserve/dead members. AddItem
+inserts into the first empty slot, with no uniqueness check and an unchecked
+result. Recipient NAME/item substitution and inherited inventor context precede
+two held-input services, helper0, caller bit0/F804 and entity-wrapper cleanup.
+All-full option0 admits no forced discard and leaves F804 clear for retry.
+Already-owned items, altered B mapping, changed selectors and interrupted
+prefixes retain their limits; insertion, visible receipt, completion flag,
+usable control and persistence are separate. The guide stops at local return
+and necessary fresh-entry consequences; Janet recruitment and North Cave
+use/blast remain outside it, with natural reach and services still Unknown.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
