@@ -279,52 +279,52 @@ individual-turn stops and flag/request/cast/service limits remain applicable.
 explains first/repeat outcomes, force membership, temporary following and immediate conditional pond/
 savepoint return. Its stop and supplied-state/service limits remain applicable.
 
-The current reader outcome explains Fairy Cave's four chest rewards, both returns to Devil's Tail
-and conditional rock inspection. **Standard** rigor remains appropriate because search admission,
-inventory/flag/layout mutation, shared population, request consumption and dialogue completion have
-separate owners. The current owner is
-[Fairy Cave exploration and Devil's Tail return](synthesis/fairy-cave-exploration-and-devils-tail-return.md),
-scoped by [#883](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/883). It consumes
-[accepted exploration/return research](../research/fairy-cave-exploration-and-devils-tail-return.md),
-[PR882 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/880#issuecomment-6172113709),
-[independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/882#issuecomment-6172145421)
-and [east-return correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/880#issuecomment-6171924743),
-plus accepted entry, search/recipient, passage, F520, request, population and dialogue owners from main.
-Preserve retained comparisons, original/rebased CI receipts, resolved inspection failures and linked
-predecessor results. No stacked/successor evidence, raw-source reinvestigation, runtime or remake work
-is selected.
+[Fairy Cave exploration and Devil's Tail return](synthesis/fairy-cave-exploration-and-devils-tail-return.md)
+explains four chest rewards, both returns and conditional rock inspection. Its local interaction/
+control/request or Battle21-admission stop and supplied-state/service limits remain applicable.
+
+The current reader outcome explains Battle21's complete opening confrontation and conditional
+initial roster. **Standard** rigor remains appropriate because admission, scene selection, actor
+population, cropped coordinates, party placement, item installation and saved entry have separate
+consumers. The current owner is
+[Battle21 opening and initial roster](synthesis/battle21-opening-and-initial-roster.md), scoped by
+[#887](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/887). It consumes
+[accepted Battle21 research](../research/battle21-opening-and-initial-roster.md),
+[PR886's original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/884#issuecomment-6172444717),
+[rebase handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/884#issuecomment-6172589433)
+and [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/886#issuecomment-6172605301),
+plus the accepted Fairy Cave return and shared lifecycle/script/roster owners from main. Preserve
+retained comparisons, original/final CI, resolved inspection failures and linked predecessor results.
+No stacking, raw-source reinvestigation, runtime acquisition or remake work is selected.
 
 Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Actual ms_Void dispatch and shared search; entity-first C versus explicit Search and all five
-  item-kind branches before descriptions. Four chest rows/flags distinguish item 0 from empty 127,
-  duplicates, four-slot recipients/list assumptions, full-inventory rollback and later chest loading.
-  Link shared item detail; do not infer item-use effects or economy.
-- Both cave exits and supplied F421/F521 admission before fresh Map67 population/control, with
-  follower/mode/raft/F751 limits. Arrival `(57,24)` is not an F520 coordinate or a zone dispatch;
-  consume the separate call-for-help/passage owners only at their actual boundaries.
-- Default-zone request/counter/RNG rules, packed residual bytes and conditional later admission,
-  separate from movement, flash/scroll/wrapper completion and retained/replaced pending requests.
-- Complete rock description and text controls, F751/F13/HP polarity, C/Search versus entity/tile
-  interception, Peter's current mapping, speech copy without restoration and closure/service limits.
-  No opening/join/heal or fairy-history consequence is added to inspection.
+- Supplied F421/F521 admission and independent F471/F88 entry gates. Complete before scene and
+  text 2576–2582 support an Inferred refusal/threat interpretation, without a choice branch.
+- Flag-selected A/B/Peter versus fixed Peter, aliases/HP guards, parked/revealed actors, camera,
+  actions/services and later healing. Scene identity is not the initialized battle roster.
+- Source area `(21,0)` versus cropped origin `(0,0)` and literal scene/camera/roster domains.
+  Arrival coordinates do not deploy combatants or prove natural access/terrain.
+- All selected ally/enemy positions and four regions as source operands and conditional setup,
+  not actual roster or tactics. Random-upgrade membership/F521 and the empty airborne exclusion
+  boundary remain conditional. Successful AddItem masks equipped/AI/drop bits before the caller's
+  equipment test; unchanged row 1 Dark Madam receives an unequipped ring through that path.
 
-The exact five owned paths are the new guide, preceding entry guide's single continuation
-cross-reference (preserving its stop), Story Progression navigation, this current agreement and one
-English index entry. Stop at completed conditional local interaction/search, Map67 control/request
-or Battle21 admission before opening. Exclude Creed traversal/content, Battle21 scene/roster/combat/
-outcomes and natural terrain reconstruction. No research/contracts/fixtures/schemas/glossary/zh-CN/
-remake writes, payload regeneration or new verification machinery are selected.
+The exact five owned paths are the new guide, preceding Fairy Cave guide's single continuation link
+(preserving its stop), Story Progression navigation, this current agreement and one English index
+entry. Stop fresh entry before ActivateEnemies, or suspended entry before individual turns. Exclude
+combat execution, outcomes, Creed entry/interior and terrain reconstruction. No research/contracts/
+fixtures/schemas/glossary/zh-CN/code/remake writes, payload regeneration or new verification machinery.
 
-Natural terrain/access/layout, actual flags/inventory/HP/membership/mappings/mode/raft/recipient,
-completed text/window/movement/scroll/flash/load services, presentation, responsive input and persistence
-remain Unknown. Supplied-state counterexamples constrain static review rather than describe executed
-bugs. Public summaries, retained comparisons and selected direct-source joins remain distinct;
-aggregates alone prove no complete local content or composed runtime outcome. This guide completes
-neither [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the
-campaign. Evidence conflicts, broad dependencies or product changes require replanning before affected
-expansion; missing natural observations remain Unknown.
+Natural reach, supplied flags/party/HP/classes, live mappings/raft/collisions, completed fade/load/
+text/window/scroll/action services, RNG-dependent upgrade, actual roster/presentation/control and
+saved persistence remain Unknown. Supplied-state counterexamples constrain static review rather
+than describe executed bugs. Public summaries, retained comparisons and accepted selected joins
+remain distinct; aggregates alone prove no complete local content or composed runtime result.
+This guide completes neither [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
+nor the campaign. Evidence conflicts, broad dependencies or product changes require replanning
+before affected expansion; missing natural observations remain Unknown.
 
 Read the complete owned prose/diff and bounded existing fixture selections; check provenance,
 links/fragments, quantities, exact paths/private boundary and `git diff --check`, then inspect the
