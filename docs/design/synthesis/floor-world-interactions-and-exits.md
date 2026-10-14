@@ -327,7 +327,11 @@ admission with F780 clear or set. Natural geometry/reach and later destination
 behavior remain separate. These exits consume neither ring nor balloon and
 write no EGRESS_MAP, PLAYER_TYPE, saved raft state or new story/recruitment flag.
 This guide stops before destination population/init, tunnel scripts and Battle23
-hooks, roster, activation or outcomes. It consumes no #928 tunnel-content conclusion.
+hooks, roster, activation or outcomes. The accepted continuation,
+[Willard Burrow exploration and Battle23 admission](willard-burrow-through-battle23-entry.md),
+explains the new population, local traversal and separately admitted confrontation
+through the BattleLoop call. It retains actor/alias, coordinate and pending-request
+limits and stops before battle initialization or destination Floor World/Creed init.
 
 ## Evidence Review and Retained Limits
 

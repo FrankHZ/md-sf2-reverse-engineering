@@ -484,6 +484,22 @@ destination init, tunnel or Battle23 content. Natural reach/state, completed
 services/presentation/control and persistence remain Unknown; failed ring
 lifting is Inferred, without an implemented mass/lift/item-receipt rule.
 
+[Willard Burrow exploration and Battle23 admission](willard-burrow-through-battle23-entry.md)
+continues from the conditional Map27 request. Independent F423 battle lookup,
+F523 fresh population and F781 scene admission explain direct-entry bypasses,
+three baseline residents versus the shared empty-list terminator, and retained
+CURRENT255 actors. Silent local callbacks and all eight no-scroll records
+describe requests, not a maze solution or completed post-battle route. The
+destination-derived Y19 zone runs all 41 confrontation commands, with complete
+named actions, actual speakers/six texts and selective HP/alias/wait limits.
+F423, warp request, scene return, caller F781, physical0 wrapper wait and pending
+consumption precede CheckBattle's BattleLoop call; completed F523 can clear423
+without canceling that selection. Signed quotient/low-byte override/whole-word
+coordinate limits remain. The guide stops before battle initialization or
+destination Floor World/Creed init. Natural reach/supplied state, completed
+actions/presentation/control and persistence remain Unknown; the eating threat
+is Inferred without an implemented smell/growth/food/harm rule.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

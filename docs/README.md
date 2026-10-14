@@ -248,6 +248,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   fresh population, complete landing/pop and conditional exploration; independent actions, lookup/park, repeat-EGRESS and service/control limits.
 - [`floor-world-interactions-and-exits.md`](./design/synthesis/floor-world-interactions-and-exits.md) —
   all residents/default, giant-ring attempt and three outbound requests; separate waits, hide/parking, coordinate and conditional admission limits.
+- [`willard-burrow-through-battle23-entry.md`](./design/synthesis/willard-burrow-through-battle23-entry.md) —
+  fresh/retained population, eight traversal/exit requests and complete confrontation through conditional Battle23 admission; actor/alias, wait, coordinate and pre-initialization limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
