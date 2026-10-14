@@ -151,8 +151,8 @@ camera changes view. Dwarf128 steps Left, welcomes her, jumps twice with waits,
 then moves Right3, faces her and asks for an examination. The camera follows
 Fairy through Right4, Down1, Right2 toward the patient, then shifts its view.
 After another pause, Fairy hopes she arrived in time and begins examining him.
-She shivers twice across pauses, requests two white flashes around a white
-fade-out/fade-in, and pauses again. These are presentation instructions and
+She shivers twice across pauses, requests white flashing, a white fade-out,
+another flashing sequence and a white fade-in, then pauses again. These are presentation instructions and
 service waits, not an observed medical effect or measured recovery time.
 
 Dwarf129 turns from side to side, moves Down1 and asks how the patient is.
