@@ -410,6 +410,13 @@ Last-set pointers, supplied actors, live door copies versus F774 and delayed wra
 separate. It stops at conditional first-scene return/repeat before shrinking; natural access, completed
 services, rendered performance, usable control and persistence remain Unknown.
 
+[Creed's magic door and the Desktop transfer](creed-magic-door-and-desktop-transfer.md) continues with
+the independent F783 zone gate, complete warning/shrinking/collection scene and conditional Map22
+request/admission. Temporary sprite work, narrated pickup, live door copy and F422/F522 battle
+selection remain separate. It stops before destination population/init or Battle22 opening;
+natural reach, supplied state, concurrent/service completion, rendered pickup and usable control
+remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
