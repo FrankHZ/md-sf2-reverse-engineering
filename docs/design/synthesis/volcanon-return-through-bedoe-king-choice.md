@@ -246,4 +246,10 @@ inventory and timing/presentation Unknowns remain unchanged.
 positions, membership/AI, follower/player state; release/input sampling, completed services and
 pending requests; visible speaker/facing/motion/hiding, windows/audio/timing and responsive control;
 later persistence, Luke's arrival and raft availability. These gaps admit no automatic runtime work.
+
+For separate optional content, read [Bedoe's hatchling flight and rescue](bedoe-hatchling-flight-and-rescue.md).
+F722 selects its callers, but rescue tests F13/F724 rather than the king's F799 or flight's F723.
+That guide preserves both independent caller/control boundaries and claims no future recruitment;
+this link establishes no compulsory order after the king choice.
+
 This guide completes neither the campaign nor the design epic.

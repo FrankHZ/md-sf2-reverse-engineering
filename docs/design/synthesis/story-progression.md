@@ -212,6 +212,14 @@ distinct. Only script return reaches F799. It stops after the caller and conditi
 natural-floor, supplied-state, input/service/pending and presentation Unknowns. Bedoe exit, Polca/raft
 fulfillment, hatchling/rescue, Luke recruitment and Battle13 remain separate.
 
+[Bedoe's hatchling flight and rescue](bedoe-hatchling-flight-and-rescue.md) explains separate optional
+content: the demonstration, repeat claim, fall/rescue and conditional return from each caller. F722
+selects setup; F723 controls flight/repeat, while F13/F724 independently control rescue, without an
+F799 king-choice prerequisite. Shared speed/sprite/priority state, nonwaited actors, real hide versus
+coordinate-only init, HP-dependent following and retained versus rebuilt mappings remain distinct.
+It stops at those caller/control boundaries, preserving natural access, supplied-state, contact,
+service/presentation and persistence Unknowns; no future Skreech recruitment is promised.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
