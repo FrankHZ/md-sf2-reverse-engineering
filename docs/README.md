@@ -196,6 +196,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   separate boarding request, staged raft mode and selected Map69 exits; actor waits, controller and entry/control limits.
 - [`south-parmecia-through-kraken-battle16-entry.md`](./design/synthesis/south-parmecia-through-kraken-battle16-entry.md) —
   selected battlefield entry, complete Kraken reveal and fresh Battle16 rebuild; scene identity, start/saved-entry and completion limits.
+- [`battle16-outcomes-through-hassan-entry.md`](./design/synthesis/battle16-outcomes-through-hassan-entry.md) —
+  first/repeat outcomes, separate disembark and conditional Hassan cast/init; tuple, actor-wait, transport and control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

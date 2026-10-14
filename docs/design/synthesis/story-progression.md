@@ -274,6 +274,15 @@ membership-sensitive combatant rebuild. Map49's no-admission fallback selects ms
 after the empty start wrapper, before activation/turns/combat/outcomes, preserving supplied-state,
 natural-route, service/presentation/input and persistence Unknowns without Battle14/15 prerequisites.
 
+[Battle16 outcomes, disembark and conditional Hassan entry](battle16-outcomes-through-hassan-entry.md)
+continues through leader/defeat priority, first/repeat victory and distinct Polca loss/escape returns.
+Victory reads the after-scene tuple and skips CheckBattle; the selected Hassan warp uses ordinary
+exploration consumption without an explicit disembark prerequisite. Tuple saving, actor moves,
+last-listed-actor waiting and flag-based follow restoration precede mode0. F518 cast selection and
+F518/F65/F12 init preserve absent-Rick lookup→main0 and F84 Rohde-following limits. It stops at
+conditional control before town interactions, retaining natural-route, supplied-state, service/input
+and persistence Unknowns; town entry preserves transport mode and proves no usable walking.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
