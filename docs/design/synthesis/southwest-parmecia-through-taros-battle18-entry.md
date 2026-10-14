@@ -18,7 +18,9 @@ preceding selected region, [Rohde's proposal](hassan-ancestry-and-rohde-caravan-
 independent acceptance/following writes, and [the Achilles Sword puzzle](ribble-tree-opening-and-achilles-sword.md)
 for conditional item custody. These links do not establish a required chronological journey.
 This guide stops at conditional exploration return, unrelated battle admission or Battle18's
-pre-activation start handoff. Battle18 outcomes, Caravan acquisition/operation, Rick and later travel
+pre-activation start handoff. Continue with
+[Battle18 outcomes and Caravan acquisition](battle18-outcomes-and-caravan-acquisition.md) for the
+separate outcome/scene and immediate return boundary. Caravan operation, Rick and later travel
 require separate owners; no combat or playable turn is observed here.
 
 ## Two Transfers with Different Consequences

@@ -316,6 +316,15 @@ F468 intro and F518 completion act independently. It stops at conditional explor
 unrelated admission or pre-activation start, without vehicle acquisition, Sword damage or observed
 playability. Natural route, supplied state, completion/input and persistence remain Unknown.
 
+[Battle18 outcomes and Caravan acquisition](battle18-outcomes-and-caravan-acquisition.md) explains
+leader cleanup versus defeat-before-victory, first/repeat aftermath, Rohde's complete demonstration
+and the actual F65/F84 changes with the shared Bowie join. Scene Caravan128, before129, neutral159
+and raw physical1 remain distinct; speech and staged motion do not supply membership or transport
+operation. Victory preserves its earlier return seed, with F725 warning before F518 movement-out;
+defeat/Egress uses supplied EGRESS_MAP rather than forced Hassan. It stops at immediate conditional
+exploration/control or unrelated admission, retaining savepoint/raft, actor/service, presentation,
+natural-route and persistence limits. Caravan operation, Rick and later travel remain outside it.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
