@@ -204,6 +204,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   selected Panel/tree/Sword puzzle, capacity and conditional custody/return; item-use, admission and natural-path limits.
 - [`hassan-departure-and-battle17-outcomes.md`](./design/synthesis/hassan-departure-and-battle17-outcomes.md) —
   ordered Battle9/17 admission, walking/raft and partial reload, fresh/saved entry and conditional returns.
+- [`southwest-parmecia-through-taros-battle18-entry.md`](./design/synthesis/southwest-parmecia-through-taros-battle18-entry.md) —
+  in-place western scroll, conditional warning/retreat and complete before/start; scene/neutral Caravan and control limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
