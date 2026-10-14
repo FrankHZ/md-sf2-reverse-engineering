@@ -228,7 +228,7 @@ selections, with no source reinvestigation, optional payload generation/copy or 
 | --- | --- | --- |
 | Choice caller and init | [sf2-map-events-static-v1:entity-programs](../../../tests/fixtures/h2/map-events/entity-programs.json), program25; [sf2-map-init-static-v1](../../../tests/fixtures/h2/map-init-static-v1.json), body15. | All 15 caller operations preserve F799 test, actual prompt alias, refusal/repeat texts and script-before-write. Nine init operations preserve independent F799/F724 reads and coordinate-removal calls, without writes. |
 | Return, activation and population | [map exploration](../contracts/map-exploration.md), [interaction state](../../research/map-event-interaction-state.md), [request consumption](../../research/map-event-request-consumption.md). | Accepted selected research owns row/mapping/flag-bit composition; inventory or handler seams alone prove neither natural floor reach nor a usable composed interaction. |
-| Prompt, text and actor services | [common-menu input](../../research/common-menus.md#confirmed-input-contracts), [dialogue](../contracts/dialogue-system.md), [sf2-map-script-engine-static-v1](../../../tests/fixtures/h2/map-script-engine-static-v1.json), placement/action/lifecycle/gesture families. | The general menu summary says “Left returns”/“right returns”; accepted selected source-bound research instead distinguishes selection from confirmed return. This guide uses that stricter boundary; the general summary is not corrected by this slice. Command-family fixture identities do not contain the complete scene or observe it; research supplies its eight requests, two action bodies and handler distinctions. |
+| Prompt, text and actor services | [common-menu input](../../research/common-menus.md#confirmed-input-contracts), [dialogue](../contracts/dialogue-system.md), [sf2-map-script-engine-static-v1](../../../tests/fixtures/h2/map-script-engine-static-v1.json), placement/action/lifecycle/gesture families. | The reconciled common-menu summary and accepted selected research distinguish directional selection from confirmed return, B cancellation and pending no input; timing remains Unknown. Command-family fixture identities do not contain the complete scene or observe it; research supplies its eight requests, two action bodies and handler distinctions. |
 
 The [entity-program schema](../../../schemas/h2/map-events-entity-programs.schema.json) and
 [fixture loader](../../../src/sf2tool/h2/map_events_fixture.py) retain ordered operations, targets and
@@ -239,7 +239,8 @@ shard composition. The [init schema](../../../schemas/h2-map-init-static-fixture
 Their focused checks live in `tests/python/test_map_events.py`, `test_map_init.py` and
 `test_map_script_engine.py`. Existing narrow routes are `uv run sf2 h2 map-events`, `map-init`,
 `map-script-engine`, `map-data`, `map-setup` and `map-entities`; naming them is not a fresh execution
-claim. The stricter accepted prompt boundary is used without changing Layer A.
+claim. The common-menu Yes/No summary is reconciled to the same accepted prompt evidence; its
+inventory and timing/presentation Unknowns remain unchanged.
 
 **Unknown:** natural floor/collision traversal and interaction reach; actual flags, HP, mappings,
 positions, membership/AI, follower/player state; release/input sampling, completed services and

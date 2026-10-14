@@ -230,12 +230,15 @@ schema/consumer boundaries against accepted research. Preserve these material di
   repaired by repeat. Membership/AI/F67/F75 do not change here; completed services and zero pending
   precede conditional control, not demonstrated input.
 
-Only the new guide, predecessor continuation, Story Progression navigation, this current agreement
-and one English documentation-index entry are owned by #795. Stop after the first selected response,
+The six paths owned by #795 are the new guide, predecessor continuation, Story Progression
+navigation, this current agreement, one English documentation-index entry and the existing Yes/No
+paragraph in `docs/research/common-menus.md` with a bounded accepted-evidence link. That research
+exception reconciles selection versus return without changing inventory or timing/presentation
+Unknowns. Stop after the first selected response,
 caller and conditional control. Bedoe exit, Polca/raft fulfillment, hatchling/Skreech/rescue, Luke
 recruitment, town/services/floor inventory, later travel/Battle13, unmerged successor findings, runtime
-readiness, new product decisions and Chinese synchronization are outside scope. No
-research/contracts/fixtures/glossary/remake changes are selected.
+readiness, new product decisions and Chinese synchronization are outside scope. No other research
+or contracts/fixtures/glossary/remake changes are selected.
 
 Natural collision-free floor access/order, actual flags/actors/HP/mappings/party/AI and positions,
 release/input timing, uninterrupted services and pending completion, visible presentation, later
