@@ -202,6 +202,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   independent priest/talk/selected-item paths, complete choices and conditional following/control; lore, actor and menu limits.
 - [`ribble-tree-opening-and-achilles-sword.md`](./design/synthesis/ribble-tree-opening-and-achilles-sword.md) —
   selected Panel/tree/Sword puzzle, capacity and conditional custody/return; item-use, admission and natural-path limits.
+- [`hassan-departure-and-battle17-outcomes.md`](./design/synthesis/hassan-departure-and-battle17-outcomes.md) —
+  ordered Battle9/17 admission, walking/raft and partial reload, fresh/saved entry and conditional returns.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
