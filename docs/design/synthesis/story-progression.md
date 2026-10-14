@@ -256,6 +256,16 @@ conditional F42/cache, current hide and later F416 effects, without transaction 
 It stops at conditional exploration control, retaining actor/HP, natural-route, service/presentation,
 input and persistence Unknowns; Luke's Down1 proves neither boarding nor Battle14/16 route order.
 
+[Polca raft boarding and South Parmecia entry](polca-raft-boarding-through-south-parmecia-entry.md)
+continues from that control boundary through separate type3 production/physical alignment, staged
+Bowie/raft/list changes and mode2 committed last. Physical31, FOLLOWER_D159/lookup63 and FOLLOWER_B31
+remain distinct; the group wait polls only the last listed actor. Actual mode2 selects opcode8,
+with type5 as the disembark-request stopping alternative. Both selected southern rows resolve to
+Map69, distinct from Southeast70: row6 returns through conditional F409/F417 admission and fresh
+population, while row9 preserves X/facing and retained actors within exploration without that scan.
+It stops at the request, pre-init battle admission or conditional control, preserving natural-route,
+supplied-state, service/presentation/input and persistence Unknowns; F416 alone starts no Map69 battle.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

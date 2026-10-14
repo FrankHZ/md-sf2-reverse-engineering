@@ -17,7 +17,10 @@ Read [Polca's Oddler choices and following](polca-oddler-choice-and-following.md
 requests and current/future following, and [the raft grant](battle13-outcomes-through-polca-raft-grant.md)
 for the mayor's bargain. This guide explains the selected departure through conditional exploration
 control. Boarding, river travel and subsequent battle admission remain beyond its boundary.
-It adds no remake capability or product decision.
+It adds no remake capability or product decision. Continue with
+[Polca raft boarding and South Parmecia entry](polca-raft-boarding-through-south-parmecia-entry.md)
+for the separate player request, staged mode2 commit and two selected Map69 entry lifecycles.
+That guide preserves this scene's contact and natural-route limits.
 
 ## Leaving Polca and Reaching the Scene
 

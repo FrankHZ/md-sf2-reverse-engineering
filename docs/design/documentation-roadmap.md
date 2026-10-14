@@ -215,55 +215,68 @@ and conditional control. Its outcome, actor, service and natural-route limits re
 independent requests, refusal/convergence and current/future following through its caller/control
 boundaries. Its input, actor, service and natural-route limits remain applicable.
 
-The current reader outcome explains selected Polca departure and Luke volunteering/joining through
-conditional exploration control. **Standard** rigor remains appropriate because map admission,
-actor allocation, membership/cache changes, hiding and later unlock commit at separate boundaries.
+[Polca departure and Luke recruitment](synthesis/polca-departure-through-luke-recruitment.md)
+explains the selected south request, independent init, Luke volunteering/joining and current hide
+through the later unlock and conditional exploration control. Its actor, cache, service and
+natural-route limits remain applicable.
+
+The current reader outcome explains separate player boarding, raft control and the selected
+southern Map72 exits into South Parmecia69. **Standard** rigor remains appropriate because movement
+eligibility, physical alignment, staged actor changes, completion predicates and two entry
+lifecycles must agree without becoming a natural-playthrough claim.
 Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[Polca departure and Luke recruitment](synthesis/polca-departure-through-luke-recruitment.md), scoped by
-[#815](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/815). It consumes the
-[accepted static investigation](../research/polca-departure-through-luke-recruitment.md) from
-[PR814](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/814), its accepted membership/entry/
-raft/Oddler dependencies and the preceding English guide from main only, without stacking.
-This is original-content explanation, not a natural playthrough or new remake capability.
+[Polca raft boarding and South Parmecia entry](synthesis/polca-raft-boarding-through-south-parmecia-entry.md),
+scoped by [#819](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/819). It consumes the
+[accepted static investigation](../research/polca-raft-boarding-through-south-parmecia-entry.md) and
+[corrected PR818 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/818#issuecomment-6159852108),
+with accepted Luke/raft/request predecessors from main only, without stacking. The failed initial
+South Parmecia=70 assumption remains preserved; selected warp symbols now resolve to actual numeric
+owners before setup/init/battle selection. This is original-content explanation, not new source
+investigation, a natural journey or a remake capability.
 
 Acceptance requires readable consequences and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked-fixture selections and
 their schema/consumer limits. Preserve these material distinctions:
 
-- Selected south warp, first-match conditional battle interruption and independent F716-set/F10-clear
-  init do not require Oddler following or raft presence and prove no natural departure/zone order.
-- Fresh versus no-rebuild population, FOLLOWER_B lookup31 versus raft mapping63, new Luke HP/class
-  sprite and allocation limits, and supplied F75 duplication. Creation does not join/heal/append.
-- All six attributed cursor texts and join446, placements, two separately waited jumps, dialogue
-  services and waited Down1. Requested frames/actions are not measured presentation completion.
-- Separate F10, conditional F42/rebuild-cache limits, current hide versus future F75 reconstruction,
-  then F416. Ordered writes are not atomic or automatic recovery; F10 can suppress an incomplete retry.
-- Luke's Down1 does not board the player or prove raft contact. F416 unlocks Battle16 without starting
-  combat or establishing Battle14/16 natural route order.
+- Movement's type3 eligibility differs from physical-raft destination alignment. F64, Luke's Down1
+  and configured placement prove neither player contact nor boarding.
+- Staged Bowie/raft/list changes precede the final mode2 write. Physical31, FOLLOWER_D159/lookup63
+  and FOLLOWER_B31 are distinct; two Bowie waits and the last-listed-actor-only wait do not join all
+  followers. No boarding HP/member or saved-tuple update is implied.
+- Actual mode2 installs source eas_Caravan/opcode8 despite symbolic names. Numeric type5 is its
+  disembark alternative; input, collision, bounds and working-layout gates do not prove a water path.
+- South Parmecia69 differs from Southeast70. Rows6/9 resolve to69 and competing corners7/8 to73/71.
+  No-scroll row6 calls SwitchMap/CheckBattle with actual rows9/17 and F409/F417 precedence; completion
+  clears unlock but still admits the selected battle on this call. F416 alone proves no admission.
+- Scroll row9 preserves X, ignores tuple facing and stays in exploration with retained actors,
+  without fresh battle scan/setup/init/heal. Fresh Map69 mode2 population, empty fixed list, separate
+  raft declaration and conditional controller restoration retain their supplied-state limits.
 
-The five owned paths are the new guide, Oddler continuation, Story Progression navigation, this
-current agreement and one English documentation-index entry. Stop at conditional exploration control
-before boarding, travel or subsequent battle admission. No original-source reinvestigation, inventories,
-Chinese synchronization, research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition,
-payload generation, verification machinery or new product decisions are selected.
+The five owned paths are the new guide, Luke continuation, Story Progression navigation, this
+current agreement and one English documentation-index entry. Stop at a type5 request, an admitted
+battle before initialization/combat, or conditional Map69 control. No full disembark, later story/
+zone/combat, continuous playability, original-source reinvestigation, inventories, Chinese work,
+research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition, payload generation,
+verification machinery or new product decisions are selected.
 
-Natural departure/earlier choices; actual battle, follower, raft, flags, actors, mappings, HP,
-membership/deployment/AI and concurrent actions; service/presentation/input and persistence remain
-**Unknown**. This guide completes neither the
+Natural contact/travel; actual layout, flags, HP, actors, mappings and lists; pending writes,
+action/service/presentation/input completion and transport persistence remain **Unknown**. Supplied
+states and partial completion do not establish a natural history. This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-[#816](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/816) owns disjoint successor
-boarding/travel research; unmerged conclusions are not this guide's dependencies.
+[#820](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/820) owns disjoint successor
+research; its unmerged conclusions are not dependencies of this guide.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. Unexpected broad
 dependencies, evidence conflicts or product choices stop affected expansion for replanning;
-missing natural observations remain Unknown. Preserve PR814's completed successful CI, resolved
-inspection/quoting/path/propagation failures and linked earlier results; do not ritual-replay them.
+missing natural observations remain Unknown. Preserve PR818's failed initial destination assumption,
+corrected symbol-to-owner join, successful final checks/CI and linked earlier failures/results;
+do not ritual-replay them or equate aggregate evidence with per-case/composed coverage.
 
 Read the complete explanation and owned diff; check provenance, changed links/fragments, exact
-paths/private boundary and `git diff --check`, then inspect the clean committed dependency planner
+paths/private boundary and git diff --check, then inspect the clean committed dependency planner
 and actual final-head CI. Documentation acceptance runs no emulator, Godot, normal/full/engine/H3/H4
 or translation suites solely for prose. Freeze a clean pushed Draft PR fixing the Issue, Project
 Review / Verify and a successful authorized completion callback for independent main-gate review.
