@@ -267,47 +267,50 @@ savepoint and natural-route limits remain applicable.
 explains optional dialogue, search and internal stairs. Its local stop, inventory/actor/service and
 natural-access limits remain applicable.
 
-The current reader outcome explains selected village departure, independent Devil's Tail scroll,
-call-for-help and the initial Harpy Pond prompt. **Standard** rigor remains appropriate because
-request consumption, battle admission, population, init and actor actions have separate owners.
+[Elven Village departure through Harpy Pond entry](synthesis/elven-village-departure-through-harpy-pond-entry.md)
+explains selected exits, independent Devil's Tail scroll, call-for-help and the initial pond prompt.
+Its conditional-control/admission stop and actor, mode, service and natural-route limits remain applicable.
+
+The current reader outcome explains the selected Harpy Pond confrontation, separate exit warning
+and conditional Battle20 entry. **Standard** rigor remains appropriate because zone admission,
+request consumption, shared flags, battle lifecycle and roster population have separate owners.
 The current owner is
-[Elven Village departure through Harpy Pond entry](synthesis/elven-village-departure-through-harpy-pond-entry.md),
-scoped by [#867](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/867). It consumes
-[accepted departure/entry research](../research/elven-village-departure-through-harpy-pond-entry.md),
-[PR866 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/864#issuecomment-6170376311),
-[updated handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/864#issuecomment-6170461179)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/866#issuecomment-6170476818),
-plus accepted shared map/request, admission, population, action and dialogue owners from main.
-Preserve [PR865 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/863#issuecomment-6170364766)
-and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/865#issuecomment-6170393336),
-including linked predecessor comparisons, actual CI, failures and corrected inspections. No stacked
-or successor evidence, source reinvestigation, runtime or remake work is selected.
+[Harpy Pond approach through Battle20 entry](synthesis/harpy-pond-approach-through-battle20-entry.md),
+scoped by [#871](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/871). It consumes
+[accepted approach/entry research](../research/harpy-pond-approach-through-battle20-entry.md),
+[PR870 original handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/868#issuecomment-6170807905),
+[rebased handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/868#issuecomment-6170840743)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/870#issuecomment-6170954167),
+plus accepted shared map/request, admission, population, action/dialogue and battle owners from main.
+Preserve their comparisons, original/rebased CI, inspection corrections and linked predecessor
+failures. No stacked or successor evidence, source reinvestigation, runtime or remake work is selected.
 
 Acceptance requires readable consequences with exact research/contract/fixture/schema/consumer
 traceability and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-- Selected Map23 exits and supplied F419 admission before fresh Map68; independent west scroll to67,
-  corner precedence and retained actors/mode/followers with no immediate battle scan/init. Later
-  supplied F421 admission and the bounded default random callback remain separate from scroll.
-- Complete cs_4FB64/F520 and cs_5C3D8/F470 gates, ordered dialogue/inline actions/waits/camera,
-  HP/missing mappings and absence of rescue/recruitment/unlock. Keep the actual first-byte follow
-  HP test, current-list append and asynchronous layout-sensitive following explicit.
-- Direct Map51 `(10,24)` versus scripted `(11,22)` requests, supplied F420 admission before init,
-  default four fixed actors versus F520-empty alternate, shared F470 init and all four flag
-  combinations. Preserve numeric transport, pending/service and conditional-control boundaries.
+- Actual zone admission and the complete confrontation/dialogue/action order, conditional command
+  waits, HP and missing lookups. Preserve F420 inside the script, pending same-map request and
+  post-return F470; neither attributed speech nor current exploration actors establish rescue,
+  recruitment or combat identity.
+- Independent Y24 warning and Y25 external warp, without claiming a universal exit lock or initial
+  direct-arrival zone dispatch. Explain wildcard row 20, F520 clearing F420 only after selection,
+  fresh exploration bypass and independent F470/F420/F520 supplied states.
+- Actual empty before/start targets sharing F470; fresh/suspended entry, conditional party placement,
+  selected enemy roster/AI operands, random-upgrade exclusion and separate completion-gated neutral
+  Elric 159. Link research for detailed row values; installed inputs do not establish tactics/control.
 
-The exact five owned paths are the new guide, local village guide's single departure cross-reference
-(preserving its local stop), Story Progression navigation, this current agreement and one English
-index entry. Stop at conditional pond control, another pending/admitted continuation or Battle20
-admission before opening. Exclude pond approach/exit-warning, battle roster/turns/outcomes, Elric
-rescue/recruitment, F751 passage, Fairy Cave/Creed and Battle21 content. No research/contracts/fixtures/
-schemas/glossary/zh-CN/remake writes, payload regeneration or new verification machinery are selected.
+The exact five owned paths are the new guide, preceding departure guide's single continuation
+cross-reference (preserving its stop), Story Progression navigation, this current agreement and one
+English index entry. Stop fresh entry before ActivateEnemies or suspended entry before individual
+turns; preserve unrelated continuation boundaries. Exclude outcomes, rescue/recruitment, F751 passage,
+Fairy Cave/Creed, Battle21, later travel, terrain reconstruction and runtime acquisition. No research/
+contracts/fixtures/schemas/glossary/zh-CN/remake writes, payload regeneration or new machinery are selected.
 
-Natural access/terrain/route, actual flags/HP/mappings/membership/mode/raft, producer selection,
-completed action/text/fade/camera/services, presentation, responsive input and persistence remain
-Unknown. Supplied-state counterexamples constrain static review rather than describe executed bugs.
-Public summaries and retained full-program comparisons remain distinct; aggregates alone prove no
-selected scene or composed runtime outcome. This guide completes neither
+Natural access/terrain/producer selection, actual flags/HP/class/mappings/membership/mode, completed
+action/text/fade/camera/services, presentation, responsive input and persistence remain Unknown.
+Supplied-state counterexamples constrain static review rather than describe executed bugs. Public
+summaries and retained full-program comparisons remain distinct; aggregates alone prove no selected
+scene, full roster rows or composed runtime outcome. This guide completes neither
 [the design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
 Evidence conflicts, broad dependencies or product changes require replanning before affected expansion;
 missing natural observations remain Unknown.
