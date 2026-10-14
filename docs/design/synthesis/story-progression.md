@@ -178,6 +178,14 @@ wildcard admission, actual battle placement and F462/F88 branches remain separat
 new-battle start-dispatcher return before ActivateEnemies, with natural travel, supplied actors,
 services/pending and rendered transformation Unknown; helping the turtle is not an exit prerequisite.
 
+[Battle12 outcomes through Bedoe's initial guard encounter](battle12-outcomes-through-bedoe-entry.md)
+continues with leader recognition, first/repeat mountain returns, Peter's response, selected Bedoe
+entry and the guards' challenge, recognition and requests. HP/F512 leader/join tails, independent
+F714/F712 response and F722 setup selection remain distinct. Final guard placements precede caller
+F719 and optional F720 out-of-map movement; current following does not establish persistence.
+It stops after default/alternate init and first conditional restored control, before the king's
+address/audience, retaining natural-route, actor/party/AI, service/pending and presentation Unknowns.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

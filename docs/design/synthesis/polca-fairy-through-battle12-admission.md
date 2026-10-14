@@ -19,6 +19,11 @@ Stop at the new-battle start-dispatcher return immediately before `ActivateEnemi
 outcomes, `cs_5C622`, Bedoe/Volcanon scenes and successor findings are outside this guide. Fnnn means
 flag nnn; map and battle numbers retain their source meanings.
 
+Continue with [Battle12 outcomes through Bedoe's initial guard encounter](battle12-outcomes-through-bedoe-entry.md)
+for leader recognition, first/repeat mountain returns, Peter's separate response and the selected
+Bedoe entry. That guide retains outcome, setup/actor, caller/service and natural-route limits and
+stops at initial conditional control before the king's address/audience.
+
 ## Helping the Turtle Is an Optional Interaction
 
 **Confirmed routing:** in Polca's default and F710 populations, regular NPC lookup 130 is the
