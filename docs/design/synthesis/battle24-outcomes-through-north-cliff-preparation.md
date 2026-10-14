@@ -18,6 +18,11 @@ save/load persistence. This guide ends at the missing-item scene's local
 retry/control boundary. Actual removal, the blast, Rohde, the cave interior
 and Battle25 have separate scope.
 
+[North Cliff opening and Rohde recruitment](north-cliff-opening-and-rohde-recruitment.md)
+continues the both-item path through actual removal, the full blast/join scene,
+local return and fresh-map consequences. It identifies the next entrance warp
+only, retaining the cave-interior/Battle25 boundary.
+
 ## Evidence and Reading Boundary
 
 The accepted Layer A owner is

@@ -724,10 +724,32 @@ limits rather than guaranteed settled cast. Scene return precedes256, then
 physical0's position wait and conditional control. Walking/current reload
 retain256; fresh entry permits a retry when750 remains clear/805 set. Direct
 calls and interrupted prefixes retain actual effects without rollback. Actual
-removal/blast/Rohde, cave interior and Battle25 have separate scope. Natural
-reach, supplied state, completed services, visible settling, usable control
-and save/load remain Unknown. The observed and remake frontiers below are
-unchanged by this static explanation.
+removal/blast/Rohde are continued in the next guide; cave interior and Battle25
+remain separate scope. Natural reach, supplied state, completed services,
+visible settling, usable control and save/load remain Unknown.
+
+[North Cliff opening and Rohde recruitment](north-cliff-opening-and-rohde-recruitment.md)
+continues the admitted both-item path. Each removal searches current joined
+inventory again and compacts one selected item; ignored return values permit
+partial consumption without rollback. Narration naming LEADER does not prove
+the actual holder or a Cannon transfer to Rohde. Current A/B/P/Bowie and
+unconditional new R/O/E allocations retain mapping, HP/class and capacity
+limits. The complete staging, blast, sixteen dialogue lines and join446 have
+no yes/no choice; timed sleeps, destination/Idle waits and ordinary text skip
+have different effects. The two-cell live copy precedes joined11/conditional
+active43, withdrawals and branching follows. Physical1 shrink cloning differs
+from logical A; hide retains pointers while hidden X suppresses ordinary VInt
+updates. All final follows test Bowie's HP, with separate buffer allocation.
+
+Unlock425 precedes caller750 then256, zone physical0's position wait and
+conditional control. Interrupted prefixes retain their effects. Fresh750
+reconstruction reads reloaded source cells rather than live mutable cells;
+fresh Rohde follows84 independently of joined11/750/425. CURRENT reload,
+scroll and fresh entry retain different actor/latch lifetimes. The next
+27,33→Map48(55,29)Up warp is identified only; the scene does not directly take
+it. Cave interior/Battle25, natural reach, supplied state, completed services,
+presentation/control and save/load remain outside the established boundary.
+The observed and remake frontiers below are unchanged by this static explanation.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
