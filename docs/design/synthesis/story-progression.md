@@ -525,6 +525,20 @@ aliases and eight existing exit requests retain pending/coordinate/admission
 limits. It stops before destination init or Creed content. Natural combat/route,
 supplied state, services, presentation/control and persistence remain Unknown.
 
+[Creed's restoration and main-room departure](creed-restoration-and-basement-departure.md)
+continues from separately admitted Map33 loading through ordered setup overrides,
+the seven return residents and the F523/F783-gated scene. Creed calls Goliath,
+hears Peter's request, performs the sprite restoration sequence and learns of
+Zeon's return; he and the Fairy then leave to consult the Evil Spirit.
+Narrative restoration is Inferred; the complete 212-command/text/action order
+is Confirmed static evidence, with actual mapping/HP, shared sprite size,
+unjoined/replaced actions and presentation limits retained. After scene return,
+init sets F783 then EGRESS_MAP9, applies conditional Goliath/ally placements and
+returns toward exploration control only if pending/service/controller conditions
+permit. The Hassan selector is not transport or a saved tuple. Basement arrival,
+recruitment, natural reach, visible growth/control and persistence remain outside
+that boundary or Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
