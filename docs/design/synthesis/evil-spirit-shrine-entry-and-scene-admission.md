@@ -15,6 +15,9 @@ recruitment, Oddler's departure and postscene control remain later boundaries.
 and persistence. This is an implementation-neutral Layer B explanation, not a
 remake requirement or a completed campaign route.
 
+The continuation, [Evil Spirit consultation and conditional zone return](evil-spirit-consultation-and-zone-return.md),
+explains the complete admitted scene and its immediate caller/wrapper boundary.
+
 ## From the Mansion into the Shrine
 
 **Confirmed:** Map33's exit at `(9,5)` requests Evil Spirit Shrine34 at `(26,28)`,
