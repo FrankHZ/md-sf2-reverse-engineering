@@ -47,9 +47,12 @@ the other specific row `(12,14)` has its separate F783-gated scene.
 ## The Actors Already in the Room
 
 **Confirmed:** under the usual F784 population with F786/F22 clear, the residents
-are Goliath128, Creed129, Fairy130 and the four recruits. Normal init leaves
-Goliath at `(17,14)` Up, Creed at `(17,5)` Down and Fairy at `(18,5)` Down;
-living unjoined recruits can be placed around the room. Peter is ally7 and
+are Goliath128, Creed129, Fairy130 and the four recruits. Their declarations
+place Goliath at `(17,14)` Up, Creed at `(17,5)` Down and Fairy130 (FAIRY219)
+at `(17,10)` Up with `eas_InitSlow`. Normal F784 init adds no placement for
+those three. Earlier current following and later scene commands can change
+Fairy's state; the declaration is not her settled position at farewell admission.
+Living unjoined recruits can be placed around the room. Peter is ally7 and
 Oddler is the ordinary FOLLOWER_B31, separate from those residents.
 The [preceding population guide](creed-return-fairy-and-recruitment-choices.md#returning-to-the-room)
 retains selection, init, membership and HP premises.
