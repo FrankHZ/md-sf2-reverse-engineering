@@ -126,7 +126,8 @@ This supports the intended landing image without proving carrying or simultaneou
 | 30–39 | Three waited custom bodies: `ac_motion OFF; ac_orientLeft` for Bowie / `ac_orientRight` for Peter and B, then `ac_updateSprite; ac_jump eas_Idle` each. Wait 100; startEntity triple; waited Init triple. |
 
 `reloadMap 0,19` is camera/display work on **current Map22**. It packs the camera words, passes
-negative d1 to LoadMap and reloads current blocks/layout, area, parallax, animation and display state.
+negative d1 to LoadMap, reusing existing blocks/layout while re-establishing area, camera, parallax,
+animation and display state.
 The explicit camera input supplies `(0,7296)` before area offsets, equivalent to tile Y19 in
 384-unit coordinates. It neither requests map0, places main at `(0,19)`, rebuilds entities nor calls
 init again. CURRENT_BATTLE=255 selects full-map loading rather than the Battle22 crop.
@@ -231,7 +232,7 @@ the sprite and jumps idle. It neither places/revives an actor nor turns animatio
 adds autofacing off and animation off. The opening custom speed 64 and B's later speed 48 are temporary;
 final Init restores 32. Earlier startEntity and headshake restoration are separate animation writes.
 
-RightLeft means four Right/Left/Right/Left steps, each with sprite update and wait 30, then idle.
+RightLeft means four Right/Left/Right/Left facing changes, each with sprite update and wait 30, then idle.
 Jump turns autofacing off, moves `(0,-1)`, waits 5, moves `(0,1)`, waits 5, moves `(0,0)`, restores
 autofacing and goes idle. DeactivateAutoFacing only turns that property off and goes idle. Installing
 a later action replaces the actor's pointer even when an earlier unwaited look or jump is unfinished.
