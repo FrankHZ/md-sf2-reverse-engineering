@@ -270,6 +270,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   conditional mine-to-castle return, retrospective audience and adviser announcement; actual cast, current/fresh following, ordered flags and service/control/save limits.
 - [`new-granseal-inventor-and-dynamite-gift.md`](./design/synthesis/new-granseal-inventor-and-dynamite-gift.md) —
   castle-to-town inventor conversation, actual Cannon search and capacity-dependent Dynamite gift; permission, actor/context, receiving/retry and ordered return limits.
+- [`new-granseal-janet-recruitment-and-departure.md`](./design/synthesis/new-granseal-janet-recruitment-and-departure.md) —
+  Janet encounter and scripted acceptance, joined/active membership, temporary following and local/fresh-town return limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

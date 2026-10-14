@@ -239,6 +239,10 @@ none of insertion, completion flag or persistence.
 | Fresh town entry after F804 | F701/F702 still select population; F802 selects init and F70 independently contributes B. F804 only changes this callback branch. |
 | Current town with changed setup/follower flags | Table selection can change while actual actors retain earlier mappings until a separate rebuild. |
 
+Continue with [Janet recruitment and departure](new-granseal-janet-recruitment-and-departure.md)
+for the independent encounter, force membership, temporary following and
+local return; the Dynamite gift is not a prerequisite.
+
 Janet's zone admission is an independent F805-set/F806-clear boundary; F804
 is not its prerequisite. This guide does not explain that recruitment scene,
 walk the next journey or consume Dynamite/blast North Cave. Natural reach,
