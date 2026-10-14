@@ -16,7 +16,8 @@ and follows the optional [village conversations and local exploration](elven-vil
 The selected exit/request programs impose no village-activity prerequisite. The scope stops at conditional pond control, another pending
 or admitted continuation, or Battle20 admission **before its opening**. Pond approach/exit-warning,
 battle content/outcomes, Elric rescue/recruitment, F751 passage, Fairy Cave/Creed and Battle21 content
-remain outside it. Fnnn denotes flag nnn; rows and command records are zero-based.
+remain outside it. The separate [Harpy Pond approach through Battle20 entry](harpy-pond-approach-through-battle20-entry.md)
+guide continues beyond this stop. Fnnn denotes flag nnn; rows and command records are zero-based.
 
 ## Selected Village Exits
 

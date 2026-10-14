@@ -218,6 +218,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   optional dialogue, local search and current-map stairs; item-kind priority, recipient/rollback and conditional-control limits.
 - [`elven-village-departure-through-harpy-pond-entry.md`](./design/synthesis/elven-village-departure-through-harpy-pond-entry.md) —
   selected exits, independent scroll and initial help scenes; separate admission/population/prompt and conditional-control limits.
+- [`harpy-pond-approach-through-battle20-entry.md`](./design/synthesis/harpy-pond-approach-through-battle20-entry.md) —
+  confrontation, separate warning/exit and conditional fresh/saved battle entry; flag/request, cast and service limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

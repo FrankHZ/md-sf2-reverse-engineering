@@ -363,6 +363,13 @@ F470 prompt remain separate. It stops at conditional pond control, another pendi
 or Battle20 admission before opening, preserving actor/HP/mode/service and natural-route Unknowns
 without rescue/recruitment, passage, approach/exit-warning or battle-content claims.
 
+[Harpy Pond approach through Battle20 entry](harpy-pond-approach-through-battle20-entry.md)
+explains the selected confrontation, independent southern warning/exit and ordered F420/request/F470
+handoff. Shared empty before/start targets, conditional party placement, rebuilt enemies and separate
+neutral Elric 159 remain distinct from the exploration cast and force membership. It stops fresh entry
+before ActivateEnemies or suspended entry before individual turns, preserving supplied-state,
+service/input/presentation and natural-route Unknowns without outcomes, rescue/recruitment or later travel.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
