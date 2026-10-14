@@ -657,6 +657,29 @@ usable control and persistence are separate. The guide stops at local return
 and necessary fresh-entry consequences; Janet recruitment and North Cave
 use/blast remain outside it, with natural reach and services still Unknown.
 
+[New Granseal Janet recruitment and departure](new-granseal-janet-recruitment-and-departure.md)
+continues at town zones `(19,29)`/`(20,29)` with805 set/806 clear, independently
+of804, Cannon/Dynamite,70, Elric membership, HP or party capacity. Janet finds
+the party, asks to accompany Elric, persists after B's warning and receives
+scripted acceptance/Bowie's nod; there is no yes/no choice. LEADER and NAME;13
+retain their active-list/explicit-name meanings. Unconditional Janet allocation,
+actual class/dead sprite and physical mappings remain separate from joined18
+and conditional active50. A full active party still joins her in reserve;
+UpdateForce precedes the active-bit write, leaving caches distinct. Direct446,
+music and one held-input service precede join return without initializing
+stats/items/AI/HP or proving acknowledgement. P→Bowie, B→P, J→B resolve physical
+dependencies with offset and actual movement, not fixed endpoints; all three
+follow guards read Bowie's HP. Installation precedes list deduplication, so
+missing/aliased actors, duplicate allocation and old list entries retain their
+actual failure/overwrite limits. Scene return precedes806, zone window/VInt/
+physical0 cleanup and conditional control reset. Fresh Map6 declares no Janet;
+force/completion flags do not reconstruct the temporary chain. Interrupted,
+skipped/direct and changed-state paths, service/control/save and natural-reach
+Unknowns remain explicit. The explained static segment stops at local return
+and fresh-town consequences; the separate south warp only identifies the next
+route. Battle24, North Cave blast/Rohde and later travel/combat have separate
+scope and are not consumed here.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
