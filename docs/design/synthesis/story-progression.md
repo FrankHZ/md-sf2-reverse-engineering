@@ -680,6 +680,29 @@ and fresh-town consequences; the separate south warp only identifies the next
 route. Battle24, North Cave blast/Rohde and later travel/combat have separate
 scope and are not consumed here.
 
+[New Granseal departure through Battle24 admission](new-granseal-departure-through-battle24-admission.md)
+continues the separate south exit into fresh Map73 and east scroll into72.
+It needs no Janet/items/805/806 premise. The scroll retains actors/mode and
+skips battle selection and72 init; the south alternative is Map68. A later
+walking zone event can be written before blocking. First specific26/cave
+selection suppresses default, while default523 chooses8/24; completed524,
+counter/RNG and partial request residuals still govern production. Produced424
+is distinct from ordered8/24/26 admission, where408 can intercept and a selected
+completion clears unlock only after selection. Wildcard triggers are not crop
+containment. Fresh24 uses local coordinates, empty hooks with474 ordering,
+healing and twelve processed joined-active ally slots, not guaranteed Janet
+placement. Sixteen enemies, three regions and point0 supply formation/orders;
+authored item flags, stored words, copied definitions/equipment and difficulty
+baseATT remain distinct. Completed524 can change initialization through actual
+class/level/RNG upgrade paths without a uniform successful repeat roster.
+Physical actors are rebuilt separately;88 suspension retains supplied state
+instead of guaranteeing this roster. The explained static segment now ends
+after fresh start-dispatcher return before ActivateEnemies, with no executed
+tactics, combat/outcome/Egress, cave preparation/blast/Rohde or Battle25 claim.
+Natural travel, supplied state, service/presentation/control/save and changed-
+state Unknowns remain explicit. The observed and remake frontiers below are
+unchanged by this static explanation.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
