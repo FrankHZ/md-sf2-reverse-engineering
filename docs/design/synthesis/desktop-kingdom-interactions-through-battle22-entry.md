@@ -17,7 +17,9 @@ F777 may already be set; F776 does not gate these ordinary conversations.
 The endpoint is **entry to BattleLoop before battle opening or roster work**, or the conditional
 zone bypass/local return. Postbattle scripts, Cotton Balloon acquisition/use, Floor World,
 combat, rewards and exits remain outside this guide. The King's mention of a tunnel is retained
-as dialogue without importing that later content. Concurrent #908 is not an accepted dependency.
+as dialogue without importing that later content. Continue from the admitted BattleLoop boundary in
+[Chessboard initialization and initial roster](battle22-initialization-and-roster.md), which consumes
+accepted #908 research and keeps fresh activation and resumed turns outside its own boundary.
 
 ## Who Can Be Talked To
 

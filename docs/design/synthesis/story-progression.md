@@ -433,6 +433,14 @@ BattleLoop entry before opening/roster, or conditional local bypass/return; talk
 recruit or start combat, and lore/boasts do not define mechanics. Natural reach, actual state,
 service/wrapper/presentation completion, useful control and persistence remain Unknown.
 
+[Chessboard initialization and initial roster](battle22-initialization-and-roster.md) continues from
+conditional BattleLoop admission through empty hooks, eligible healing, twelve processed party
+slots, sixteen enemy rows, full-map crop and rebuilt actors. F422/F472/F522/F88, copied equipment
+versus row NOTHING, battle-local coordinates and neutral state159/158 versus B/A script lookups
+remain distinct. It stops before fresh ActivateEnemies or suspended IndividualTurns_Loop; natural
+admission, supplied/current state, completed services, presentation/control and persistence remain
+Unknown. No tactics, outcomes or postbattle Desktop are implied.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

@@ -238,6 +238,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   fresh population, complete landing/discussion/farewell and conditional following/control; supplied-state, temporary sprite and service limits.
 - [`desktop-kingdom-interactions-through-battle22-entry.md`](./design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md) —
   conversations/services, King permission and conditional Chessboard admission; actual flags, pending/wrapper and pre-opening limits.
+- [`battle22-initialization-and-roster.md`](./design/synthesis/battle22-initialization-and-roster.md) —
+  empty hooks, party placement, sixteen chess enemies and rebuilt board/neutral actors; fresh/current-state and pre-activation limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
