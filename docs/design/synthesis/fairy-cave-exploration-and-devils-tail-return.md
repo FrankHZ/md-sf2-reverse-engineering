@@ -13,6 +13,7 @@ a continuous played itinerary or a promise that all four chests can naturally be
 
 This guide continues [Harpy Pond departure through Fairy Cave entry](harpy-pond-departure-through-fairy-cave-entry.md)
 and consumes [accepted exploration/return research](../../research/fairy-cave-exploration-and-devils-tail-return.md).
+The continuation is [Battle21 opening and initial roster](battle21-opening-and-initial-roster.md).
 It stops at a completed conditional local interaction/search, Map67 control or a selected request,
 or Battle21 admission before opening. Creed traversal/content, Battle21 scene/roster/combat/outcomes,
 terrain reconstruction, item-use effects and economy are outside this guide. Fnnn means flag nnn;

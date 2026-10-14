@@ -391,6 +391,13 @@ mapping, separately from passage opening. It stops at completed conditional loca
 Map67 control/request or Battle21 admission before opening; natural access, services and persistence
 remain Unknown, with no Creed or battle content.
 
+[Battle21 opening and initial roster](battle21-opening-and-initial-roster.md) explains the complete
+refusal/threat confrontation and conditional fresh setup. Supplied F421/F521 admission, F471 scene
+selection and F88 saved entry remain independent; cropped/source coordinates, scene cast, actual
+party placement and successful item masking retain separate consumers. It stops fresh before
+ActivateEnemies or suspended before individual turns, without outcomes/Creed or tactical claims;
+natural reach, services, upgraded roster, presentation and persistence remain Unknown.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
