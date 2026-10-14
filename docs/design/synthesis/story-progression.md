@@ -169,6 +169,15 @@ F710 residents before caller F711 handling and the F710 write. Following is rebu
 the same target/offset. It stops at first conditional restored control, preserving actor/HP/mapping,
 service/pending, presentation and natural-route limits; it recruits neither Oddler nor Gerhalt.
 
+[Polca's fairy interaction through Battle12 admission](polca-fairy-through-battle12-admission.md)
+continues with the optional turtle test, fairy departure, independent east exit and searching-devils
+confrontation. F711 caller/alternative-producer state, actual event lookup and transient/rebuilt
+following remain distinct. F412 immediate admission, F512 empty population and F714/F712 init can
+change the ordinary scene branch. The scene's unlock/request precedes caller F713 and consumption;
+wildcard admission, actual battle placement and F462/F88 branches remain separate. It stops at the
+new-battle start-dispatcher return before ActivateEnemies, with natural travel, supplied actors,
+services/pending and rendered transformation Unknown; helping the turtle is not an exit prerequisite.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
