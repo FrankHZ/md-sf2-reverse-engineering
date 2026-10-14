@@ -367,65 +367,69 @@ explains the complete accepted consultation, Zeon interruption and conditional
 caller/wrapper return. Its dialogue/transaction, actor/action, dormant hiding,
 presentation-service and non-atomic flag/control limits remain applicable.
 
-The current reader outcome explains return to Creed Mansion, local conversations,
-Fairy current following and all four recruitment choices through immediate
-interaction returns. **Standard** rigor remains appropriate because room
-selection, dialogue, force membership, active capacity and current following
-have distinct state and service boundaries. The owner is
-[Creed return, Fairy following and recruitment choices](synthesis/creed-return-fairy-and-recruitment-choices.md),
-scoped by [#958](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/958).
-Consume [accepted #953 research](../research/creed-return-fairy-and-recruitment-choices.md)
-and accepted predecessors from main `17718cd3ece7dc087737f3a6bea4eb463fd4553f`.
-Separate #957 Oddler-departure research is neither evidence nor dependency.
+[Creed return, Fairy following and recruitment choices](synthesis/creed-return-fairy-and-recruitment-choices.md)
+explains accepted room interactions, current following and joined/active choices.
+Its [retained review](synthesis/creed-return-fairy-and-recruitment-choices.md#evidence-review-and-retained-results)
+keeps the accepted predecessor results, failures and Unknowns.
 
-Acceptance requires a readable complete room/choice explanation with unchanged
-**Confirmed**, **Inferred** and **Unknown** boundaries and precise research links:
+The current reader outcome explains Oddler remaining with Creed and Fairy
+continuing with the party through the immediate conditional zone return, then
+separately explains later fresh-entry population consequences. **Standard**
+rigor remains appropriate because current actor/action changes, ordered caller
+flags and reconstruction are distinct boundaries. The owner is
+[Oddler stays and the Fairy handoff](synthesis/oddler-stays-and-fairy-handoff.md),
+scoped by [#962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/962).
+Consume [accepted #957 research](../research/oddler-stays-and-fairy-handoff.md)
+and accepted predecessors on main `936748b0715fdc992b05833745b566953dc77de3`.
+Concurrent #961 research is neither accepted evidence nor a dependency.
 
-- Explain the explicit shrine exit, selected Map33 population/init, F784/F786/F22
-  priorities and fresh/retained/HP/alias premises. No automatic usable return.
-- Organize seven callbacks and eight offers around conversations and consequences.
-  Attribute sword, disaster, freedom and healing claims; explain F22 over F787
-  without turning initial-choice suppression into a universal one-recruit rule.
-- Separate Fairy narration/live block copy and encoded Bowie-HP-guarded current
-  following from yes/no and force joining. Preserve ordered762/785, no immediate
-  69/68 handoff, resident130 versus FOLLOWER_C158 and repeat/fresh-entry limits.
-- Explain Yes/No polarity, joined versus active capacity/count timing, acknowledgement
-  before787, exact three-other-actor shrink order and current last-follower target.
-  Full party does not reject joining; shrink targets have no membership/HP filter.
-  Shrink parks at63,63 without lookup/list/membership deletion, unlike hide; one
-  waited actor is not all-three completion. F22 successes have no other shrinks.
-- Keep actual text/name/portrait/control/debug, interrupted flags, service,
-  persistence and conditional-return limits explicit. Identify cs_5B466 admission
-  only; no unaccepted departure-scene internals or duplicated transcript/opcodes.
+Acceptance requires a readable complete farewell with unchanged **Confirmed**,
+**Inferred** and **Unknown** boundaries and precise research links:
 
-Own exactly five paths: the new guide, predecessor consultation continuation link
-only, Story Progression, this current agreement and docs/README.md navigation.
+- Explain F774 priority, F785/F786 admission, actual room actors and absence
+  of a recruitment/F787 prerequisite. Callback invocation can still skip a scene.
+- Attribute Oddler's wishes and Creed's advice while completing recruit hides,
+  staging, gestures, movement, farewell/hide and final following. Preserve
+  faceDown1 as facing rather than an extra step, HP/class/alias premises and
+  asynchronous/per-actor service limits. No menu, choice mutation, force leave,
+  healing or automatic journey follows from the speech.
+- Distinguish Init replacing Fairy's prior action from the final encoded-high-byte
+  Bowie-HP guard. A skipped follow does not preserve the earlier action. Hiding
+  removes lookup/list participation and leaves dormant records, not lost force
+  membership. Current Fairy130 and later Fairy158/Oddler130 remain distinct.
+- Explain script return, then set786/set69/clear68, then physical0 coordinate
+  wait. Preserve partial interruption prefixes and skipped/repeated/default
+  paths without rollback, all-actor settlement, usable-control or save claims.
+- Separate later fresh F786/F22 precedence and independent normal-init784 tail
+  from current actors; flags do not morph the retained room population.
+
+Own exactly five paths: the new guide, Creed-return continuation link only,
+Story Progression, this current agreement and docs/README.md navigation.
 No research/contract/schema/fixture/tooling/remake/glossary or Chinese writes.
-Stop at immediate interaction returns; exclude acquisition, regeneration,
-runtime, new environments/machinery and any broader campaign/epic acceptance.
-Content/readability governs length. Material evidence conflict, broader coupling
-or product change requires replanning before expansion.
+Stop before walked mansion departure, overworld travel and dwarf healing.
+Small selected reads and prose only; no acquisition, regeneration, runtime,
+new environment or machinery. Content/readability governs length. Material
+evidence conflict, broader coupling or product change requires replanning.
 
-The guide's [evidence review](synthesis/creed-return-fairy-and-recruitment-choices.md#evidence-review-and-retained-results)
-preserves #953's original/rebased handoffs and acceptance, unchanged18,285,979-byte
-pair comparison0.081s, CI38639160994/38639720868, corrected FOLLOWER_C158/shrink
-facts and inspection diagnostics. Preserve #954's callback-wording correction,
-both CI results and all linked #949/#945/#941/#937 failures/results/Unknowns.
-This checkout lacks the pinned upstream/pair: no fresh comparison claim,
-acquisition, regeneration or completed-failure restart. Natural reach, actual
-supplied state, service/action completion, presentation/control and save
-persistence may remain Unknown.
+The guide's [evidence review](synthesis/oddler-stays-and-fairy-handoff.md#evidence-review-and-retained-results)
+preserves #957's complete67 records/nine bodies/fourteen text joins,
+unchanged18,285,979-byte pair0.085s and CI38640917634; Init/F22/encoded-end
+corrections and source-path/truncation diagnostics remain retained. Preserve
+#958's unchanged five files/518 links and both CI runs, #953 original/rebased
+0.081s, #954 callback correction and linked #949/#945/#941/#937 completed
+failures/results/Unknowns. This checkout lacks pinned upstream/pair: no fresh
+comparison claim or completed-failure restart. Natural reach, supplied state,
+service/presentation completion, usable control and save may remain Unknown.
 
-Adversarially inspect accepted Layer A and selected fixture/schema/consumer
-surfaces; distinguish aggregate facts from the retained full corpus and report
-contradictions to the owner without research edits. Check complete owned
-prose/diff, links/anchors/navigation, English/private boundary and git diff --check.
-Load local/private-inputs.ps1 in the same process for controlled commands; inspect
-the clean committed planner and actual exact-head CI after updating onto current
-accepted main. No blanket local Python/.NET/Godot/H3/H4 or translation suites
-solely for prose. Freeze a clean committed pushed Draft PR fixing #958, set Project
-Review / Verify and successfully notify authorized main-gate for independent
-review. No merge, cleanup, archive or next Issue.
+Adversarially inspect accepted Layer A and selected public fixture/schema/consumer
+surfaces; report contradictions to their owner without research edits. Check
+complete prose/diff, links/anchors/navigation, English/private boundary and
+`git diff --check`. Load local/private-inputs.ps1 in the same process for the
+clean committed planner and record actual exact-head CI on current accepted
+main. No blanket local Python/.NET/Godot/H3/H4 or translation suite solely for
+prose. Freeze a clean pushed Draft PR fixing #962, Project Review / Verify and
+successfully notify authorized main-gate for independent acceptance. No merge,
+cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

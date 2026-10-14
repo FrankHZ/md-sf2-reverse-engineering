@@ -583,10 +583,24 @@ Shrink parks at63,63 while retaining lookup/list/membership; one waited actor
 is not all-three completion. Actual HP/class/name/portrait, ordinary activation,
 aliases, debug skipping, interrupted flags and conditional returns remain
 explicit. Sword, healing and freedom promises are not implemented transactions.
-The later cs_5B466 admission identifies a separate boundary without unaccepted
-Oddler-scene internals. Natural reach, completed presentation/actions, usable
-control and save persistence remain Unknown; no universal one-recruit rule or
-full campaign acceptance follows.
+The later cs_5B466 admission has its own farewell guide below. Natural reach,
+completed presentation/actions, usable control and save persistence remain
+Unknown; no universal one-recruit rule or full campaign acceptance follows.
+
+[Oddler stays and the Fairy handoff](oddler-stays-and-fairy-handoff.md) continues
+through the F774-priority, F785-set/F786-clear zone admission and complete
+farewell. Oddler asks to stay; Creed advises rest and goodbye. The scene stages
+actors, hides the four recruits without removing membership, replaces earlier
+actions with Init, moves/gestures Oddler through farewell and hides B31, then
+requests Peter→Bowie and current Fairy130→Peter. Both encoded high-byte guards
+test Bowie HP; skipping the final Fairy follow does not preserve its earlier
+action. Only after script return does the caller set786, set69 and clear68;
+the wrapper waits for physical0 coordinates, not every actor or usable control.
+Fresh F786/F22 precedence, independent normal-init784 tail and later Fairy158
+versus Oddler130 reconstruction are separate from the current room. Alias/HP,
+skipped/repeated/interrupted paths, text/action/service and save Unknowns remain
+explicit. There is no choice mutation, force leave, healing or automatic journey.
+The guide stops before walked mansion departure, overworld travel or dwarf recovery.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
