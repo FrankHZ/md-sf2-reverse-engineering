@@ -19,6 +19,11 @@ Battle16's start wrapper returns, before enemy activation, region/spawn work, tu
 combat or outcomes. It imposes no Battle14/15 prerequisite or natural order of numbered battles,
 and establishes no remake capability or continuous playability.
 
+Continue with [Battle16 outcomes, disembark and conditional Hassan entry](battle16-outcomes-through-hassan-entry.md)
+for leader/outcome selection, first/repeat returns, the separate raft-exit event and Hassan's
+flag-selected cast/init. That guide preserves the direct battle-tuple versus ordinary warp consumers
+and stops before town interactions; it does not supply this segment's natural combat or travel gaps.
+
 ## Selecting the Battlefield
 
 **Confirmed route:** Map69 row0 matches `(28,51)` and resolves the source symbol

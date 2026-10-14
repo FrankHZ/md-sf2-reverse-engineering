@@ -225,42 +225,48 @@ explains separate player boarding, raft control and the selected southern Map72 
 South Parmecia69. Its physical-alignment, list-wait, entry-lifecycle and natural-travel limits remain
 applicable.
 
-The current reader outcome explains the selected South Parmecia route, complete Kraken reveal and
-Battle16 start handoff. **Standard** rigor remains appropriate because admission, scene identities,
-requested services and fresh combatant rebuilding must agree without becoming a natural-playthrough
-or first-turn-readiness claim.
+[South Parmecia, the Kraken reveal and Battle16 entry](synthesis/south-parmecia-through-kraken-battle16-entry.md)
+explains selected battlefield admission, the complete reveal and fresh combatant rebuilding through
+the start wrapper. Its scene identity, service and natural-route limits remain applicable.
+
+The current reader outcome explains Battle16 outcomes, separate disembark and conditional Hassan
+entry. **Standard** rigor remains appropriate because outcome tuples, transport, actor/list waits
+and flag-selected town population must agree without becoming a natural-playthrough, all-actor
+landing or usable-walking claim.
 Follow the [Product Constraint Workflow](../operations/github-project-governance.md#product-constraint-workflow);
 Issues/Project coordinate execution and this roadmap owns the current agreement.
 
 The current segment owner is
-[South Parmecia, the Kraken reveal and Battle16 entry](synthesis/south-parmecia-through-kraken-battle16-entry.md),
-scoped by [#823](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/823). It consumes the
-[accepted static investigation](../research/south-parmecia-through-kraken-battle16-entry.md) and
-[PR822 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/822#issuecomment-6160096072),
-with accepted Luke/raft/request predecessors from main only, without stacking. This is
+[Battle16 outcomes, disembark and conditional Hassan entry](synthesis/battle16-outcomes-through-hassan-entry.md),
+scoped by [#827](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/827). It consumes the
+[accepted static investigation](../research/battle16-outcomes-through-hassan-entry.md) and
+[PR826 final handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/826#issuecomment-6160352020),
+with accepted Kraken/raft/outcome/request predecessors from main only, without stacking. This is
 original-content explanation, not new source investigation, a natural journey or a remake capability.
 
 Acceptance requires readable consequences and exact research/contract/fixture/verifier traceability,
 preserving **Confirmed**, **Inferred** and **Unknown**. Review bounded tracked-fixture selections and
 their schema/consumer limits. Preserve these material distinctions:
 
-- Map69 row0 resolves the Kraken symbol to49 before Battle16 selection. Actual mode2 opcode8 and
-  working-layout/input/collision gates prove no natural water route. No Battle14/15 prerequisite
-  or numbered route order is imposed.
-- F416/F516 admission differs from F466 intro/start and F88 saved entry. Completion clears unlock
-  but still admits on that call; Map49 no-admission uses ms_Void, not an invented init.
-- The complete encounter has four Peter and three conditional FOLLOWER_B text sites. Warp, camera,
-  header and combat placement differ; transport clears, HP guards and missing mappings retain limits.
-- cloneEntity shares ENTNUM sprite slots without copying actors. Block, quake, sound, FX and
-  movement services are requested work, not observed rendering or all-actor completion.
-- Post-intro healing and membership-sensitive ally placement precede eleven initialized enemies
-  and LoadBattle's actor rebuild. Scene population proves no active/living roster; zero AI
-  regions/points does not mean no AI. The empty start wrapper sets F466 before its script.
+- Head-slot HP and leader/death-list/count ordering retain defeat priority and the after-turn hook
+  limit. First/repeat F516 branches differ; both reach JoinForce(0). F416/F516 and F466 remain separate.
+- First victory's three-record after scene writes mode2 and Map69/29/51/Left. BattleLoop reads its
+  tuple directly and bypasses CheckBattle; ordinary exploration warp consumption does not apply.
+  Defeat/Egress selects Polca13 with conditional F64 raft reset; transport and saved tuple differ.
+- Numeric5 saves physical0's destination tuple before all four disembark records, follower actions,
+  last-listed-actor wait, flag-based restoration and final mode0. Logical159, physical31 and
+  FOLLOWER_B31 differ; no all-actor landing, healing or automatic reboarding is established.
+- Map69 row2 resolves Hassan to9. Walking/actual raft producers can request it without an explicit
+  disembark prerequisite; natural geometry remains Unknown. Hassan has no battle row.
+- Fresh F518 cast selection and the thirteen-operation F518/F65/F12 init preserve merchant137,
+  mapped Rohde/F84 and absent-Rick lookup→main0 supplied-state limits. Entry preserves mode;
+  returned init/control is not necessarily usable walking or new membership.
 
-The five owned paths are the new guide, raft-entry continuation, Story Progression navigation, this
-current agreement and one English documentation-index entry. Stop after the Battle16 start wrapper,
-before activation, region/spawn work, turns, combat or outcomes. No disembark completion, later story/
-zone/combat, continuous playability, original-source reinvestigation, inventories, Chinese work,
+The five owned paths are the new guide, Kraken-entry continuation, Story Progression navigation, this
+current agreement and one English documentation-index entry. Stop after fresh Hassan init and the
+first conditional control handoff, before town actions/zones/entities/items/service dialogue,
+priest events, Rick/Rohde interaction or later story. No combat simulation, continuous playability,
+original-source reinvestigation, inventories, Chinese work,
 research/contracts/fixtures/glossary/zh-CN/remake edits, runtime acquisition, payload generation,
 verification machinery or new product decisions are selected.
 
@@ -268,12 +274,14 @@ Natural travel; actual layout, flags, mode, HP, membership, actors, mappings and
 action/service/presentation/input completion, saved-state consistency and persistence remain
 **Unknown**. Supplied states and partial completion do not establish a natural history. This guide completes neither the
 [design epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) nor the campaign.
-[#824](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/824) owns disjoint successor
+[#828](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828) owns disjoint successor
 research; its unmerged conclusions are not dependencies of this guide.
 
 Accepted research and bounded in-memory tracked-fixture selections suffice. Unexpected broad
 dependencies, evidence conflicts or product choices stop affected expansion for replanning;
-missing natural observations remain Unknown. Preserve PR822's passed comparisons/CI, resolved
+missing natural observations remain Unknown. Preserve PR826's passed retained/direct comparisons,
+actual final CI and corrected enemy-macro/inspection failures through its handoffs, plus
+PR822's passed comparisons/CI, resolved
 inspection/commentary correction and rejected-command history, plus PR818's failed initial destination
 assumption, corrected symbol-to-owner join and successful final checks/CI through their handoffs;
 do not ritual-replay them or equate aggregate evidence with per-case/composed coverage.
