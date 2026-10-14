@@ -383,67 +383,73 @@ explains the selected mine route, Fairy's recovery staging, capacity-dependent
 Cannon offer and digging through conditional caller returns. Live/fresh layout,
 actual actors, repeated gifts and service/control/save limits remain with that owner.
 
-The current reader outcome explains the return to New Granseal, retrospective
-audience and Astral's adviser following through immediate caller return and
-relevant fresh-entry consequences. **Standard** rigor remains appropriate:
-route/history, actual cast, narration versus force membership, services and
-ordered flags are distinct boundaries. The owner is
-[New Granseal return and Astral following](synthesis/new-granseal-return-and-astral-following.md),
-scoped by [#970](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/970).
-Consume [accepted #965 research](../research/new-granseal-return-and-astral-following.md)
-and predecessors on main `af7a1e656eddc4a0252b9f5cee4bbe31288369a3`.
-Inventor/Dynamite belongs to its separate research outcome and is not this
-guide's evidence dependency.
+[New Granseal return and Astral following](synthesis/new-granseal-return-and-astral-following.md)
+explains the accepted retrospective audience, adviser announcement and distinct
+current/fresh following. Its [retained review](synthesis/new-granseal-return-and-astral-following.md#evidence-review-and-retained-results)
+preserves predecessor results, corrections, failures and Unknowns.
 
-Acceptance requires a complete readable return/audience/adviser story with
-unchanged **Confirmed**, **Inferred** and **Unknown** boundaries:
+The current reader outcome explains New Granseal's inventor conversation and
+capacity-dependent Dynamite gift through local interaction return and necessary
+fresh-entry consequences. **Standard** rigor remains appropriate: permission
+flags, actual Cannon possession, actor/speech context, receiving capacity and
+ordered completion are distinct. The owner is
+[New Granseal inventor and Dynamite gift](synthesis/new-granseal-inventor-and-dynamite-gift.md),
+scoped by [#974](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/974).
+Consume [accepted #969 research](../research/new-granseal-inventor-and-dynamite-gift.md)
+and accepted predecessors on main `36b0026bca3f7aaa5dee2b1d366312534000c522`;
+Janet research is a separate outcome and is not this guide's evidence dependency.
 
-- Explain selected30→68→73→6→7 connections, Battle19/F419/F519 intercept,
-  retained scroll versus fresh entry and history/setup/init premises. No Cannon/
-  761 audience prerequisite or mandatory/naturally walked route.
-- Preserve802 priority/805 skip versus older701/702 branch, welcoming/Elis
-  report, retrospective explanation, Zeon/Tristan discussion and adviser
-  announcement. Attribute speakers without inventing rescue, yes/no, replay
-  of earlier scenes or automatic northward travel.
-- Keep Minister128/King129/Astral139, Peter/Bowie and selected populations/
-  fresh707 init distinct. Retain HP/aliases, word32768's Bowie no-wait control,
-  replaced unawaited actions, speed/animation and per-actor/service limits.
-  Palette remap/restore is a request, not observed all-cast/visible completion.
-- Separate announcement music/narration from direct held-input acknowledgement:
-  no fresh edge, helper-name palette fade, force recruitment or capacity test.
-  Peter→Bowie checks Bowie's HP; addNewFollower139 selects the actual last list
-  entry, which need not be an existing Peter.
-- Current139 remains resident; script70 precedes caller805/70 and physical0
-  wrapper wait. Fresh70-derived B31 and805's omitted139 are independent.
-  Preserve707-clear reload, missing/duplicate/self-follow, HP0, skipped/repeat/
-  direct/interrupted prefixes and natural-reach/service/control/save Unknowns.
+Acceptance requires a readable castle-to-town inventor story with unchanged
+**Confirmed**, **Inferred** and **Unknown** boundaries:
 
-Own exactly five paths: the new guide, dwarf predecessor continuation link only,
-Story Progression, this current agreement and docs/README.md navigation.
+- Explain the selected Map7 south return, current/fresh town setup/init and
+  inventor141, distinct from castle139/current-follow and fresh B31. Reuse the
+  accepted population owner without a full town catalog or natural-walk claim.
+- Preserve F802 priority over old F702, F804 before F805, earlier warning,
+  permission dialogue, actual Cannon search, nod/offer and receiving attempt.
+  No F761/F70/actual-Astral or living/active-party prerequisite, yes/no prompt,
+  Cannon consumption, cave opening or Dynamite uniqueness rule.
+- Keep ascending joined-member search (reserve/dead included), count-limited
+  descending slots, packed/gapped premise, masked entries/unmasked request and
+  full-word sentinel distinct. Receiving counts all four slots and chooses the
+  earliest joined member with room; AddItem finds the first empty slot. Empty
+  joined-list behavior is not guaranteed.
+- Separate unchecked AddItem result, receiving announcement and later helper0,
+  caller bit0/F804, wrapper cleanup, visible receipt, usable control and save.
+  Option0 permits no forced discard; all-full leaves F804 clear for retry.
+- Preserve actual B nod/speech/portrait context, inherited inventor receiving
+  context, recipient NAME/item substitution and two sequential held-input
+  services without required release. The helper name is not a palette fade;
+  direct txt differs from scene skip. Retain repeat/existing-item, changed
+  actor/state and interrupted-prefix limits, with no invented repair/rollback.
+
+Own exactly five paths: the new guide, Astral predecessor continuation link only,
+Story Progression's connected segment, this agreement and docs/README.md navigation.
 No research/contract/schema/fixture/tooling/remake/glossary or Chinese writes.
-Stop before Janet/inventor gift/North Cave scenes. Small
-selected reads/prose only; no acquisition, regeneration, runtime, new environment
-or machinery. Content/readability governs length. Material evidence conflict or
-broader coupling requires replanning rather than silent expansion.
+Stop at local inventor return and relevant fresh-entry consequences; Janet
+recruitment, North Cave blast, travel/battle and remake choices remain outside.
+Minimum evidence is accepted Layer A plus selected public fixture/schema/consumer
+inspection and small document/scope checks. No acquisition, retained-pair
+regeneration, runtime/capture, installation or new machinery. Content/readability
+governs length. Material evidence contradiction requires replanning with its owner.
 
-The guide's [evidence review](synthesis/new-granseal-return-and-astral-following.md#evidence-review-and-retained-results)
-preserves #965 original/final CI, Battle19/stride32 corrections, distinct
-0.087/0.081/0.080s retained-pair receipts and main-gate's complete joins.
-Retain #966 original/final CI and flash/fade clarification, #961 receipts/
-encoded-size correction, #962 Fairy correction and linked #957/#953/#949/
-#945/#941/#937 failures/results/Unknowns and #954 callback correction.
-This checkout lacks the pinned upstream/pair: no fresh comparison claim or
-completed-failure restart.
+The guide's [retained review](synthesis/new-granseal-inventor-and-dynamite-gift.md#evidence-review-and-retained-results)
+links #969's complete49/40 operation and14 text joins, distinct author/independent
+unchanged-pair receipts and actual CI, plus #970's original/final candidates,
+checks and independent review. Linked #965 Battle19/stride, #954 callback and
+#962 Fairy corrections and predecessor failures/diagnostics/Unknowns remain
+retained. The synthesis checkout lacks the pinned upstream/pair; no fresh
+comparison claim, acquisition or completed-failure restart follows.
 
-Adversarially inspect accepted Layer A and selected public fixture/schema/consumer
-surfaces; report contradictions to their owner without research edits. Check
-complete prose/diff, links/anchors/navigation, English/private boundary and
-`git diff --check`. Load local/private-inputs.ps1 in the same process for the
-clean committed planner and record actual exact-head CI on current accepted
-main. No blanket local Python/.NET/Godot/H3/H4 or translation suite solely for
-prose. Freeze a clean pushed Draft PR fixing #970, Project Review / Verify and
-successfully notify authorized main-gate for independent acceptance. No merge,
-cleanup, archive or next Issue.
+Check complete prose/diff, links/anchors/navigation, UTF-8/private boundary,
+exact ownership and `git diff --check`. Load local/private-inputs.ps1 in the
+same process for the clean committed
+`uv run sf2 verify plan --base origin/main --head HEAD`;
+record actual exact-head CI in the Issue handoff. Documentation-only
+policy calls for direct checks, without blanket Python/.NET/Godot/H3/H4 or
+translation suites. Freeze a clean pushed Draft PR fixing #974, Project Review /
+Verify and successfully notify authorized main-gate for independent acceptance.
+No merge, cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
