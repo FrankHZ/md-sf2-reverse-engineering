@@ -349,6 +349,13 @@ no victory19 prerequisite; default/F762 residents, supplied followers/mode, retu
 conditional control remain distinct from outcome returns. It stops before village interactions,
 stairs, Map24/Battle20 and later travel, preserving natural-route, service and persistence Unknowns.
 
+[Elven Village conversations and local exploration](elven-village-conversations-and-local-exploration.md)
+explains optional default/F762 dialogue, the text-only F13 branch, church call boundary and local
+descriptions/items. Item-kind priority precedes descriptions; joined-list recipient selection,
+repeat/full-inventory rollback and current-map stair retention remain conditional. It stops at the
+church call/return or conditional Map23 control, retaining caller, natural-access, service/input and
+persistence Unknowns without recruitment, item use or later travel.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
