@@ -13,9 +13,10 @@ from its conditional loader admission. It consumes only accepted
 [Issue #926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/926) and the
 [current Standard agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 It ends at conditional local controller installation or pending-event handling.
-Resident conversations/services, the giant-ring scene, search, exits/tunnel,
-Battle23 and recruitment are later boundaries. Fnnn means flag nnn; command and
-population indices are zero-based. Coordinates, speeds and waits are source
+The [resident, ring and exit continuation](floor-world-interactions-and-exits.md)
+explains the next local interactions through conditional destination admission.
+Destination init, tunnel content, Battle23 and recruitment remain later boundaries.
+Fnnn means flag nnn; command and population indices are zero-based. Coordinates, speeds and waits are source
 operands, not measured movement, pixels or elapsed time.
 
 ## A New Population Replaces the Desktop Cast
@@ -300,11 +301,13 @@ parameters decide subsequent work. Landing itself writes no warp/battle request,
 PLAYER_TYPE or saved raft state. Services, event state, mode, aliases and actual
 controller execution therefore remain premises for usable exploration.
 
-This guide stops here. The accepted research identifies resident/service callbacks
-in s2_entityevents and the independent F780-gated `cs_59F20` giant-ring zone in
-s3_zoneevents as next boundaries. It does not explain those interactions,
-searches, exits/tunnel, Battle23 or later recruitment, and consumes no
-[#924](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/924) conclusion.
+This guide stops here. Continue with [Floor World residents, the giant ring and
+outbound exits](floor-world-interactions-and-exits.md) for the six resident
+callbacks/default, independent F780 zone, scoped empty lists and three exit
+requests through conditional admission. That guide consumes accepted corrected
+#924 and retains the same-visit hide versus fresh-load parking boundary. This
+arrival guide does not expand into those callbacks, destination initialization,
+tunnel content, Battle23 or later recruitment.
 
 ## Evidence Review and Retained Limits
 

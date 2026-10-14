@@ -322,55 +322,62 @@ retain inventory, actor/action, request and natural-route limits. The
 [corrected per-service ownership](../research/map-event-item-transactions.md#ownership-and-unknown-boundary)
 retains #923's caller/callee distinction; accepted #916 owns the selected service algorithms.
 
-The current reader outcome explains Floor World first arrival from accepted Map26 admission through
-landing, popping and conditional local exploration/control. **Standard** rigor remains appropriate
-because population, action, flag and controller consumers must remain distinct. The current owner is
-[Floor World first arrival and conditional exploration](synthesis/floor-world-first-arrival.md),
-scoped by [#926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/926). It consumes
-[accepted #920 research](../research/floor-world-first-arrival.md) and its named predecessor/consumer
-owners. Starting accepted base `6e8803feebaf95931246e6e435c305a8916a9aac` includes #920/PR922 and #923/PR925.
-No stacking or dependency on #924 resident/ring/exit research; that outcome is outside this slice.
+[Floor World first arrival and conditional exploration](synthesis/floor-world-first-arrival.md)
+explains the fresh population, complete landing/pop and conditional control boundary.
+Its [#926 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/926#issuecomment-6176550578)
+and [acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/929#issuecomment-6176569261)
+retain CI38623499458 and the linked arrival/service/departure evidence and failure records.
 
-Acceptance requires readable consequences with research/fixture/schema/verifier traceability and
-unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
+The current reader outcome explains Floor World residents, the giant-ring attempt and all outbound
+exits from accepted local control through conditional destination admission. **Standard** rigor
+remains appropriate because activation, zone/action/hide and request consumers have distinct
+boundaries. The owner is [Floor World residents, the giant ring and outbound exits](synthesis/floor-world-interactions-and-exits.md),
+scoped by [#930](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/930). It consumes
+[accepted corrected #924 research](../research/floor-world-interactions-and-exits.md) and necessary
+accepted predecessors only, from accepted base `b9405e3d2649af6aee3ace4397ecbfa6faa9121e`.
+There is no stack or consumption of the independent #928 Willard investigation.
 
-- Fresh Map26 load and all nine rows with ordinary logical/physical examples; Randolf/Tyrin presence
-  versus recruitment, follower/HP/mode/raft/alias premises and distinct current-map255/reload paths.
-- All 41 landing commands as complete phases: camera/current-layout reload, trio Init/animation,
-  six custom speeds/placements, independent downward actions and only 132's waited movement,
-  animation restart, three hides, literal 1739 text and two follow copies. Keep HP asymmetry,
-  including followEntity's high-byte Bowie test, and missing/aliased actors explicit.
-- Source scene return → F779 → EGRESS_MAP26, skipped-scene EGRESS preservation and independent
-  F780 park 129. HideEntity invalidates lookups/followers; MoveEntityOutOfMap only parks position.
-  Retain repeat/supplied-state/interruption distinctions without claiming observed persistence.
-- Conditional palette/music/fade and event-before-input/controller installation. Text sentinel/W1/debug
-  facts do not establish observed UX; no shared physics, simultaneous start/all-actor completion,
-  pop sound, measured duration, guaranteed final coordinates or unconditional usable control.
+Acceptance requires readable consequences with precise research/fixture/schema/verifier traceability
+and unchanged **Confirmed**, **Inferred** and **Unknown** boundaries. Explain:
 
-Stop before residents/services, giant-ring cs_59F20, search, exits/tunnel, Battle23 and recruitment.
-No new desired gameplay/UI policy, engine/remake acceptance, runtime queue or general physics work.
-Exactly five paths: the new guide, departure guide's bounded continuation, Story Progression navigation,
-this current agreement and one English index entry. No research, contract, fixture, schema, code,
-glossary, Chinese or remake edit; no acquisition, payload regeneration or new verification machinery.
-Organize for readability without a length target.
+- All six resident callbacks/default, activation/identity/facing bitfields, portrait/speech,
+  repeat/silent cases, IDs1742–1747 and fixed NAME16. Church/Caravan remain call-return boundaries;
+  no completed service, recruitment or permission is claimed.
+- Destination-derived layout-zone X14/anyY admission and independent F780 check, all eight
+  cs_59F20 commands and moveUp8 body, view/speaker/W2/W1/debug skip, inherited speed/current-relative
+  destination, sole129 wait, hide mapping/list invalidation, caller flag and separate physical0 wait.
+  Failed ring lifting is narrative inference, without an implemented mass/physics/item-receipt rule.
+- Same-visit invalidation versus fresh F780 position-only parking and MAP_CURRENT retained mappings;
+  repeats, absent/aliased actors, interruptions and no rollback. Empty local descriptions and
+  default item/chest/other lists do not establish universal absence of search/service rewards.
+- All three exact no-scroll records, destination facing, CURRENT255 local routes versus explicit27,
+  shared pending storage and consumer order. Signed quotient words precede low-byte destination
+  overrides; MAP_CURRENT multiplies whole words without normalizing abnormal high bytes. Exact
+  outbound table tuples require coherent nonnegative local coordinates. No F780 exit gate;
+  F423/F523 and current-map battle lookup remain separate admission predicates.
 
-The guide's [evidence review](synthesis/floor-world-first-arrival.md#evidence-review-and-retained-limits)
-retains #920 original/rebased handoffs and acceptance, exact objects, CI38619448174/38620203806,
-unchanged 18,285,979-byte pair/0.079s and completed inspection/transport failures. It links
-#923 handoff/acceptance and CI38621272226, including the corrected per-service address conflict,
-and #919/#916 predecessor results/failures rather than replacing them. Natural arrival/supplied
-state, completed actions/services, presentation/control and persistence remain Unknown. Static
-counterexamples are not played scenarios. This completes neither the campaign nor
-[epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
-Evidence conflict, broad dependency or product change requires replanning before affected expansion.
+Stop before destination population/init, tunnel/Battle23 hooks, roster, activation/outcomes or later
+Creed/recruitment. Select no desired gameplay/UI policies, remake acceptance or runtime queue.
+Own exactly five paths: the new guide, first-arrival guide's bounded continuation, Story Progression
+navigation, this current agreement and one English docs/README.md entry. No research, contract,
+fixture, schema, code, glossary, Chinese or remake edits, runtime/new tooling or payload regeneration.
+Organize by reader understanding/content without an artificial length target.
 
-Adversarially inspect accepted prose/contracts and bounded existing fixture/schema/verifier selections;
-read complete owned prose/diff and check quantities/traceability, provenance, links/fragments/tables/fences,
-English/private boundary and whitespace. Inspect the configured clean committed dependency planner and
-actual final-head CI. No local blanket normal/full/engine/Godot/H3/H4 or translation suite solely for prose.
+The guide's [evidence review](synthesis/floor-world-interactions-and-exits.md#evidence-review-and-retained-limits)
+links #924 original/corrected handoffs, P2 correction and acceptance; those receipts retain distinct
+objects/CI38622136093/38622845061, the unchanged 18,285,979-byte pair/0.082s and all failures/Unknowns.
+The predecessor's receipts retain #920/#923/#919/#916 evidence without another history ledger.
+Natural reach/supplied state, completed services/actions, presentation/control and persistence remain
+Unknown. Static changed-state distinctions are not played scenarios. Evidence conflict, broad
+coupling or product change requires replanning before affected expansion; this completes neither
+the campaign nor [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
+
+Adversarially inspect accepted whole research and bounded existing fixture/schema/verifier and
+consumer claims. Check complete owned prose/diff, quantities, links/fragments/tables/fences,
+English/private boundary and git diff --check; inspect the configured clean committed planner and
+actual final-head CI. No local blanket Python/.NET/Godot/H3/H4 or translation suite solely for prose.
 Freeze a clean pushed Draft PR fixing the Issue, set Project Review / Verify and successfully deliver
-the authorized completion callback for independent main-gate review. No integration, cleanup or
-next-Issue selection.
+the authorized main-gate callback for independent review. No merge, cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

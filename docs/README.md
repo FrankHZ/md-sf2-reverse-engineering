@@ -246,6 +246,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   chest delivery, guard clearance, own-tile use and complete departure through conditional Map26 admission; custody, actor/wait and pre-population limits.
 - [`floor-world-first-arrival.md`](./design/synthesis/floor-world-first-arrival.md) —
   fresh population, complete landing/pop and conditional exploration; independent actions, lookup/park, repeat-EGRESS and service/control limits.
+- [`floor-world-interactions-and-exits.md`](./design/synthesis/floor-world-interactions-and-exits.md) —
+  all residents/default, giant-ring attempt and three outbound requests; separate waits, hide/parking, coordinate and conditional admission limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
