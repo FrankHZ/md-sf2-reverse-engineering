@@ -108,7 +108,8 @@ public sealed partial class GameRoot : Node
                     if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
                 };
             }
-            if (started.Result.Snapshot.HasBattleControl || started.Result.Snapshot.BattleScene is not null) { view.Attach(started.Session, started.Result); return; }
+            if (started.Result.Snapshot.HasBattleControl || started.Result.Snapshot.BattleScene is not null ||
+                started.Result.Snapshot.BattleMovement is not null) { view.Attach(started.Session, started.Result); return; }
             view.Hide();
             ShowExploration(started.Result, returning: false);
             view.LeaveBattle = result => ShowExploration(result, returning: true);

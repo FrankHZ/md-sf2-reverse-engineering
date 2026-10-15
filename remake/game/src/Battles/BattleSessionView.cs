@@ -50,6 +50,8 @@ public sealed partial class BattleSessionView : Control
     private int? _itemCandidate;
     private Label _items = null!;
     private BattleMapViewport _map = null!;
+    private BattleDefinition? _mapDefinition;
+    private BattleSceneDefinition? _mapScenes;
     private ScrollContainer _hud = null!;
     private VBoxContainer _hudContent = null!;
     private readonly List<Label> _hudLabels = [];
@@ -149,10 +151,17 @@ public sealed partial class BattleSessionView : Control
         _session = session;
         _result = result;
         if (first) _scene.Configure(session, _input.Settings, Audio);
+        if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
+            !ReferenceEquals(_mapScenes, session.ActiveBattleScenes))
+        {
+            _map.Build(result.Snapshot.Battle.Definition, session.Definition);
+            _mapDefinition = result.Snapshot.Battle.Definition;
+            _mapScenes = session.ActiveBattleScenes;
+            _targetCandidate = null; _spellCandidate = null; _itemCandidate = null;
+        }
         PublishResult("attach");
         ObserveResult?.Invoke(result);
         if (_startupFailure is not null) return;
-        if (first) _map.Build(result.Snapshot.Battle.Definition, session.Definition);
         Show();
         Present();
     }
@@ -272,7 +281,7 @@ public sealed partial class BattleSessionView : Control
     {
         if (_session!.Current.BattleMovement is { } movement)
         {
-            if (_session.Definition.PrivateDefinitions is not null && _session.Definition.BattleScenes?.FieldDeath is null)
+            if (_session.Definition.PrivateDefinitions is not null && _session.ActiveBattleScenes?.FieldDeath is null)
             { FailStartup(new(SessionFailureKind.AdapterError, "field-movement-content-required", "battleScenes.fieldDeath", "Movement sprite content is unavailable.")); return; }
             if (_movementSoundToken != movement.Token)
             { _movementSoundToken = movement.Token; Audio?.PlayEffect(79); }

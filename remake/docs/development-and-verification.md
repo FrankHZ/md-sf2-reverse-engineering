@@ -5,6 +5,11 @@ affected behavior: [host/input](verification/host.md), [battle/rules/scenes](ver
 or [field/programs](verification/field-programs.md). [Retained evidence](evidence/retained-comparisons.md)
 separates accepted composition from historical failures and retired run instructions.
 
+The selected [Battle01-through-Battle02 recipe](verification/field-programs.md#battle01-through-battle02)
+owns private preparation, ordinary human-play launch and semantic observation for the second encounter.
+It starts at an explicit tower boundary, keeps the subsequent route continuous, and stops before
+Battle02 resolution. Its candidate results do not extend the independently accepted milestone.
+
 Documentation upkeep uses Standard rigor: current behavior/navigation and preserved evidence are
 the acceptance boundary. It changes no gameplay, original evidence, UX policy or verification
 framework. Historical dispatch plans and audit dispositions belong to Git/Issues, not this guide.

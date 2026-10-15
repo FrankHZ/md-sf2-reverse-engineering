@@ -6,6 +6,25 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class SceneEntities
 {
+    internal static ExplorationState Add(ExplorationState world, AddMapEntity add, long request)
+    {
+        // InitializeNewEntity scans the first 63 signed alias bytes, then allocates max+1.
+        if (world.Population is null || !world.Aliases.ContainsKey(add.Entity))
+            throw new BattleRuleException("new-entity-reference", "program.entity", true);
+        int slot = world.Aliases.Where(pair => pair.Key != new EntityRef("entity-159"))
+            .Select(pair => pair.Value).DefaultIfEmpty(0).Max() + 1;
+        if (slot >= 49) throw new BattleRuleException("source-entity-capacity", "program.entity", true);
+        var entity = new ExplorationEntity(add.Entity, EntityMotionState.At(add.Position, add.Facing, 0) with
+            { FlagsA = 0xE0, AnimationCounter = (byte)(slot + 1), WaitTimer = (byte)slot },
+            true, add.Actions, Slot: slot, Sprite: add.Sprite,
+            SpriteRequest: request, WaitingForSprite: true);
+        var aliases = world.Aliases.ToDictionary(pair => pair.Key, pair => pair.Value);
+        aliases[add.Entity] = slot;
+        return new(world.Definition, world.Layout, world.Player,
+            world.AllEntities.Where(row => row.Slot != slot).Append(entity), world.Party,
+            world.SpriteSize, aliases, world.RoofState, world.Population, world.Quake);
+    }
+
     internal static ExplorationState Build(ExplorationMapDefinition map, WorkingMapLayout layout, EntityRef player,
         MapPosition position, byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags,
         ExplorationPopulation population, IReadOnlyList<ExplorationEntityDefinition> records,

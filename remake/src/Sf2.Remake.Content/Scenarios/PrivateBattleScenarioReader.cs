@@ -46,9 +46,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     {
         var encounter = definitions.Encounter;
         Require(start.Battle == encounter.Battle.Id, "controlled-encounter", "start.battle");
-        // This selected source table has no Battle01 region program. Other programs need an owner.
-        Require(encounter.Battle.Id == 1, "region-program-table", "encounter.regionProgram", true);
-        Require(encounter.Area.X == 0 && encounter.Area.Y == 0, "battle-area-origin", "encounter.area", true);
+        // Both selected source slots have no region program. This is content admission, not action legality.
+        Require(encounter.Battle.Id is 1 or 2, "region-program-table", "encounter.regionProgram", true);
         Require(encounter.AllyCount <= 30 && encounter.EnemyCount <= 32, "roster-capacity", "encounter.placements");
         var deployments = new List<BattleDeploymentDefinition>(); var actorInputs = new List<BattleActorStartInput>();
         var party = start.Allies.ToDictionary(row => row.Id); var usedAllies = new HashSet<byte>();
@@ -60,7 +59,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             Require(row.ItemExpression == "NOTHING", "placement-item-refresh", "placements.item", true);
             byte commandset = row.AiCommandsetExpression switch
             {
-                "HEALER1" => 0, "ATTACKER1" => 6, "ATTACKER2" => 7,
+                "HEALER1" => 0, "ATTACKER1" => 6, "ATTACKER2" => 7, "ATTACKER3" => 9, "LEADER" => 14,
                 _ => throw Unsupported("source-commandset", "placements.aiCommandset"),
             };
             ActorRef actor; BattleActorDefinition definition; BattleActorStartInput actorInput; int order;
@@ -75,7 +74,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 var classRule = classDefinition.Id switch
                 {
                     0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedKnight,
-                    4 => BattleClassRule.UnpromotedPriest, _ => throw Unsupported("source-class", "actors.class"),
+                    2 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedPriest,
+                    _ => throw Unsupported("source-class", "actors.class"),
                 };
                 Require(input.Hp <= input.MaxHp && input.Mp <= input.MaxMp, "numeric-range", "allies.resources");
                 foreach (ushort word in input.Items)
@@ -91,7 +91,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     physical: PrivateBattleActionBindings.Physical(definitions, classDefinition.ProwessExpression, input.Items,
                         leader: id == 0, gold: 0),
                     mover: Mover(classDefinition.MovementType), sourceLoadout: new(input.Items, input.Spells));
-                actorInput = new(actor, input.Hp, input.Mp, input.Exp, input.Kills, input.Defeats, input.Status, null);
+                actorInput = new(actor, input.Hp, input.Mp, input.Exp, input.Kills, input.Defeats, input.Status, null, ActivationWord: input.ActivationWord);
             }
             else
             {
@@ -99,10 +99,11 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 var enemy = definitions.Enemies[row.IdentityExpression];
                 Require(enemy.InitialStatusExpression == "NONE" && enemy.SpellPower == "REGULAR",
                     "enemy-derived-state", "enemy.initialStatus/spellPower", true);
-                var match = Regex.Match(enemy.AiBitfieldExpression, "^PRIORITYMOD_([0-9]+)$", RegexOptions.CultureInvariant);
+                var match = Regex.Match(enemy.AiBitfieldExpression, "^PRIORITYMOD_([0-9]+)(\\|BIT5)?$", RegexOptions.CultureInvariant);
                 Require(match.Success && byte.TryParse(match.Groups[1].Value, out byte _) && int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) <= 15,
                     "source-ai-word", "enemy.aiBitfield", true);
-                enemyAi = (ushort)(int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) << 12);
+                enemyAi = (ushort)((int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) << 12) |
+                    (match.Groups[2].Success ? 32 : 0));
                 var items = enemy.Items.Select(item => (ushort)(definitions.Items.Values.Single(value => value.Code == item.Item).Id | (item.Equipped ? 128 : 0))).ToArray();
                 var spells = enemy.Spells.Select(spell => spell.Spell == "NOTHING" ? (byte)63 :
                     (byte)(definitions.Spells.Values.Single(value => value.Code == spell.Spell && value.Level == spell.Level).BaseId | ((spell.Level - 1) << 6))).ToArray();
@@ -129,7 +130,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             0 or 8 => new BattleTerrain(TerrainSurface.Impassable, TerrainProtection.None),
             1 => new(TerrainSurface.Open, TerrainProtection.Light), 2 => new(TerrainSurface.Open, TerrainProtection.None),
             3 => new(TerrainSurface.Brush, TerrainProtection.Heavy), 4 => new(TerrainSurface.Deep, TerrainProtection.Heavy),
-            5 or 6 => new(TerrainSurface.Rough, TerrainProtection.Heavy), 7 or 255 => new(TerrainSurface.Barrier, TerrainProtection.None),
+            5 => new(TerrainSurface.Rough, TerrainProtection.Heavy), 6 => new(TerrainSurface.Desert, TerrainProtection.Heavy),
+            7 or 255 => new(TerrainSurface.Barrier, TerrainProtection.None),
             _ => throw Unsupported("source-terrain", "terrain"),
         }).ToArray();
         var regions = encounter.Regions.Select(region => new BattleActivationRegion(region.Id,
@@ -141,7 +143,9 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
             encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(encounter.Scene.HalfExperience),
             initialization: new(regions, BattleRegionProgram.None,
-                encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y))),
+                encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y)),
+                encounter.AiPoints.Select(point => new MapPosition(point.X, point.Y)),
+                deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor)),
             healingItems: PrivateBattleActionBindings.HealingItems(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         BattleTurnFlow.ValidateStart(battle, inputStart);
@@ -149,13 +153,25 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     }
 
     // Preserve unresolved source expressions in PrivateDefinitions; null never means NONE.
-    private static byte? Order(string expression) => expression == "NONE" ? (byte)255 :
-        byte.TryParse(expression, NumberStyles.None, CultureInfo.InvariantCulture, out byte value) ? value : null;
+    private static byte? Order(string expression)
+    {
+        if (expression == "NONE") return 255;
+        if (byte.TryParse(expression, NumberStyles.None, CultureInfo.InvariantCulture, out byte value)) return value;
+        var parts = expression.Split('|');
+        if (parts.Length != 2 || !byte.TryParse(parts[1], out byte index)) return null;
+        return parts[0] switch
+        {
+            "MOVE_TO" when index < 16 => (byte)(64 | index),
+            "FOLLOW_ENEMY" when index < 32 => (byte)(128 | index),
+            "FOLLOW_TARGET" when index < 30 => index,
+            _ => null,
+        };
+    }
 
     private static BattleMover Mover(string source) => source switch
     {
         "REGULAR" => BattleMover.Regular, "HEALER" => BattleMover.Healer,
-        "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering,
+        "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering, "STEALTH" => BattleMover.Stealth,
         _ => throw Unsupported("source-mover", "actor.movementType"),
     };
     private static AdmissionIssue Unsupported(string code, string field) =>

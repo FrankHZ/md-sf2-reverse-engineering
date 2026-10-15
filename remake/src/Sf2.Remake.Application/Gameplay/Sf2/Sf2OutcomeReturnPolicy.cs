@@ -51,7 +51,9 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         var encounter = definition.Encounters[party.Encounter];
         var actors = party.Actors.Select(input =>
         {
-            var deployment = encounter.Deployments.Single(row => row.Actor == input.Actor);
+            var deployment = encounter.Deployments.FirstOrDefault(row => row.Actor == input.Actor) ??
+                definition.Encounters.Values.SelectMany(value => value.Deployments)
+                    .First(row => row.Faction == BattleFaction.Ally && row.Actor == input.Actor);
             if (deployment.Faction != BattleFaction.Ally || (!all && input.Hp == 0 && deployment.Initialization?.AllyPartyMember is not (7 or 28))) return input;
             if (input.Status != 0) throw new BattleRuleException("return-status-refresh", "party.status", true);
             return input with { Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,

@@ -69,7 +69,7 @@ public sealed record FullFadeWait(WaitToken Token, PresentationCueKind Kind, Ful
     bool ActualDone = false, byte? RestorePeriod = null, FullFadeColor Color = FullFadeColor.Black) : ProgramWait(Token);
 public sealed record WarpLoadWait(WaitToken Token, int Remaining = 2) : ProgramWait(Token);
 public sealed record OrdinaryWarp(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode);
-public enum EntityWaitCompletion { NotBusy, ScriptIdle }
+public enum EntityWaitCompletion { NotBusy, ScriptIdle, MotionStopped }
 public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocation? AfterMotion = null,
     ExplorationDirection? PendingMove = null, EntityWaitCompletion Completion = EntityWaitCompletion.NotBusy) : ProgramWait(Token);
 public sealed record EntitySpriteWait(WaitToken Token, int Slot, long Request) : ProgramWait(Token);
@@ -107,7 +107,7 @@ public sealed class StoryState
         int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
-        MusicProgress? music = null)
+        MusicProgress? music = null, OrdinaryWarp? scriptWarp = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -119,6 +119,7 @@ public sealed class StoryState
         TextSettings = textSettings; LogicalText = logicalText; LogicalView = logicalView;
         EntityServices = entityServices; Typewriting = typewriting; WindowFixPending = windowFixPending;
         Music = music;
+        ScriptWarp = scriptWarp;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -127,6 +128,9 @@ public sealed class StoryState
     public int TextCursor { get; }
     public ProgramContinuation Continuation { get; }
     public ExplorationBattleRoute? EnteringBattle { get; }
+    // The retained outcome route still owns return bookkeeping, not battlefield music.
+    public bool SelectsBattleMusic => EnteringBattle is not null && Continuation is not
+        (ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded);
     public FieldReturnAnchor? ReturnAnchor { get; }
     public FieldReturnAnchor? OutcomeReturn { get; }
     public TextWindow TextWindow { get; }
@@ -140,6 +144,7 @@ public sealed class StoryState
     public int? CameraEntitySlot { get; }
     public ExplorationDisplay? Display { get; }
     public OrdinaryWarp? Warp { get; }
+    public OrdinaryWarp? ScriptWarp { get; }
     // Last text-poll write only; null means no admitted text write. AI can change the live
     // ThinkingSeed afterwards. SessionSnapshot.CurrentRandomSeedCopy projects that live byte.
     public byte? RandomSeedCopy { get; }
@@ -163,7 +168,7 @@ public sealed class StoryState
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
-        MusicProgress? music = null) =>
+        MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -171,7 +176,8 @@ public sealed class StoryState
             clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn, portraitWindow ?? PortraitWindow,
             display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy, textSettings ?? TextSettings, logicalText ?? LogicalText, logicalView ?? LogicalView,
             clearEntityServices ? null : entityServices ?? EntityServices, typewriting ?? Typewriting,
-            clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music);
+            clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
+            clearScriptWarp ? null : scriptWarp ?? ScriptWarp);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
@@ -191,10 +197,11 @@ public sealed class ExplorationState
     internal ExplorationState(ExplorationMapDefinition definition, WorkingMapLayout layout, EntityRef player,
         IEnumerable<ExplorationEntity> entities, BattleStartInput party, ushort spriteSize = 16,
         IReadOnlyDictionary<EntityRef, int>? aliases = null, MapBlockCopyLifecycleState? roofState = null,
-        ExplorationPopulation? population = null)
+        ExplorationPopulation? population = null, byte quake = 0)
     {
         Definition = definition; Layout = layout; Player = player; Party = party; SpriteSize = spriteSize; RoofState = roofState ?? MapBlockCopyLifecycleState.Inactive;
         Population = population ?? definition.Population;
+        Quake = quake;
         AllEntities = Array.AsReadOnly(entities.Select((entity, index) => entity.Slot < 0 ? entity with { Slot = index } : entity)
             .OrderBy(entity => entity.Slot).ToArray());
         Aliases = new ReadOnlyDictionary<EntityRef, int>((aliases ?? AllEntities.ToDictionary(entity => entity.Entity, entity => entity.Slot))
@@ -214,6 +221,7 @@ public sealed class ExplorationState
     // Before encounter entry these are the only live vitals/RNG/accounting. Entry consumes this mode.
     public BattleStartInput Party { get; }
     public ushort SpriteSize { get; }
+    public byte Quake { get; }
     public ExplorationEntity PlayerEntity => Entities[Player];
     public bool TryResolveEntity(EntityRef reference, out ExplorationEntity entity)
     {
@@ -233,17 +241,18 @@ public sealed class ExplorationState
         }
         return Entities.TryGetValue(reference, out entity!);
     }
-    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState, Population);
+    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState, Population, Quake);
     internal ExplorationState WithLayout(WorkingMapLayout layout, MapBlockCopyLifecycleState? roofState = null) =>
-        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population);
-    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population);
+        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population, Quake);
+    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population, Quake);
+    internal ExplorationState WithQuake(byte amount) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, amount);
     internal ExplorationState Hide(ExplorationEntity entity, bool removeAliases)
     {
         var hidden = entity with { Visible = false, Actions = null, Follower = null, WaitingForSprite = false,
             Motion = entity.Motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 } };
         // For source populations an absent reference represents FF, distinct from a fresh zero mapping.
         return new(Definition, Layout, Player, AllEntities.Select(row => row.Slot == hidden.Slot ? hidden : row), Party, SpriteSize,
-            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population);
+            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population, Quake);
     }
     internal ExplorationState WithEntity(ExplorationEntity entity) =>
         WithEntities(AllEntities.Select(current => current.Slot == entity.Slot ? entity : current));

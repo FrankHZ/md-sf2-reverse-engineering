@@ -10,6 +10,7 @@ internal sealed record SourceStoryCandidate(ExplorationEntity? RetiredEntity = n
 internal interface ISourceStoryPolicy
 {
     string Identity { get; }
+    bool EnterCompletedBattle(ScenarioDefinition definition) => false;
     SourceStoryCandidate Apply(ScenarioDefinition definition, SessionSnapshot current,
         SourceStoryInstruction instruction, ProgramLocation location);
 }

@@ -32,6 +32,15 @@ internal static class ProgramRunner
                 if (current.Story.Wait is not null) return Finish(Result(current, observations));
                 if (current.Story.Cursor is not { } cursor)
                 {
+                    if (current.Story.ScriptWarp is { } pendingWarp)
+                    {
+                        var warpEvent = new ExplorationEvent(ExplorationEventKind.Warp, null, null, null, null,
+                            pendingWarp.Map, pendingWarp.Position, pendingWarp.Facing);
+                        MapTransfer.Validate(definition, current, current.Exploration!, warpEvent, rules);
+                        current = current.WithStory(current.Story.Copy(null, clearScriptWarp: true, clearEventCaller: true));
+                        current = MapTransfer.BeginWarp(definition, current, warpEvent, observations, rules);
+                        continue;
+                    }
                     if (current.Story.Warp is not null)
                     {
                         current = MapTransfer.ReturnVisible(current, observations);
@@ -47,7 +56,7 @@ internal static class ProgramRunner
                             continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true), observations, "battle-returned");
                     if (current.Story.Continuation is ProgramContinuation.MapLoaded or ProgramContinuation.BeforeBattleFinished or ProgramContinuation.BattleLoadFinished)
                     {
-                        current = MapTransfer.Continue(definition, current, observations);
+                        current = MapTransfer.Continue(definition, current, observations, rules);
                         continue;
                     }
                     if (current.Story.Continuation == ProgramContinuation.BattleStartFinished)
@@ -94,7 +103,7 @@ internal static class ProgramRunner
                         story = story.Copy(story.Cursor, clearWarp: true);
                         var returning = current.Story.OutcomeReturn ?? throw new BattleRuleException("outcome-return", "story.outcomeReturn");
                         current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
-                            MapLoadMode.Rebuild, story, observations);
+                            MapLoadMode.Rebuild, story, observations, rules);
                         continue;
                     case SourceStoryInstruction source:
                         try { active = SourceStoryRules.Apply(rules.SourceStory, definition, current, source, cursor); }
@@ -133,6 +142,7 @@ internal static class ProgramRunner
                     case JoinPartyMember join:
                         var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("party-flag-layout", "world.partyFlags", true);
                         var joined = MapPartyMembership.Join(current.Story.Flags, layout, join.Member);
+                        active = JoinResources(definition, current, join.Member);
                         story = story.Copy(story.Cursor, flags: joined.Flags, partyLists: joined.Lists); break;
                     case FollowEntity follow:
                         int leaderSlot = Entity(current, follow.Leader).Slot;
@@ -206,11 +216,13 @@ internal static class ProgramRunner
                         }
                         break;
                     case ShowText text:
-                        if (!definition.Exploration!.Texts.ContainsKey(current.Story.TextCursor))
+                        int selectedText = text.TextId ?? current.Story.TextCursor;
+                        int nextTextCursor = text.TextId is null ? checked(current.Story.TextCursor + 1) : current.Story.TextCursor;
+                        if (!definition.Exploration!.Texts.ContainsKey(selectedText))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
                         if (text.ExplicitWindows && current.Story.TextSettings is not null)
                         {
-                            story = ExplorationTextRunner.Begin(definition.Exploration, current, text, token);
+                            story = ExplorationTextRunner.Begin(definition.Exploration, current, text, token, definition);
                             break;
                         }
                         if (text.ExplicitWindows && !program.EntitiesRunning &&
@@ -219,24 +231,24 @@ internal static class ProgramRunner
                             current.Exploration!.TryResolveEntity(context.Entity, out var eventActor) &&
                             eventActor.Sprite is { } eventSprite && definition.Exploration.Visuals is { } eventVisuals &&
                             eventVisuals.Sprites.TryGetValue(eventSprite, out var eventVisual) && eventVisual.Portrait is null &&
-                            definition.Exploration.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens) &&
+                            definition.Exploration.TextTokens.TryGetValue(selectedText, out var tokens) &&
                             tokens.Any(part => part.Kind == ExplorationTextTokenKind.Wait1) &&
                             tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1) &&
                                 (part.Kind != ExplorationTextTokenKind.MemberName || part.Member < definition.Exploration.MemberNames.Count)))
                         {
-                            story = current.Story.Copy(cursor, TextSpan(tokens, token, current.Story.TextCursor, 0),
-                                textCursor: checked(current.Story.TextCursor + 1),
-                                textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode,
+                            story = current.Story.Copy(cursor, TextSpan(tokens, token, selectedText, 0),
+                                textCursor: nextTextCursor,
+                                textWindow: new OpenTextWindow(selectedText, text.Mode,
                                     text.UseEventSpeaker ? context.Entity : text.Speaker, text.SpeakerFlags));
                             break;
                         }
                         story = current.Story.Copy(text.WaitForAcknowledgement ? cursor : Next(cursor),
-                            text.WaitForAcknowledgement ? new DialogueWait(token, current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags,
+                            text.WaitForAcknowledgement ? new DialogueWait(token, selectedText, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags,
                                 CloseOnAcknowledgement: !text.ExplicitWindows) : null,
-                            textCursor: checked(current.Story.TextCursor + 1),
+                            textCursor: nextTextCursor,
                             portraitWindow: text.ExplicitWindows ? current.Story.PortraitWindow : new UnknownPortraitWindow(
                                 text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags),
-                            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags)); break;
+                            textWindow: new OpenTextWindow(selectedText, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags)); break;
                     case WaitForTextInput:
                         if (current.Story.TextWindow is not OpenTextWindow open)
                             throw new BattleRuleException("text-input-without-window", "program.text");
@@ -283,7 +295,7 @@ internal static class ProgramRunner
                             current.Story.TextSettings is not null;
                         if (boundNod) ExplorationTextRunner.ValidateContext(current);
                         GestureRestore? restore = null;
-                        if (cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodding })
+                        if (cue is { Kind: PresentationCueKind.Gesture, Resource: "nod" or "shake-head", Entity: { } nodding })
                             active = EditEntity(current, nodding, entity => entity with { Motion = entity.Motion with { AnimationCounter = 255 } });
                         if (cue is { Kind: PresentationCueKind.Gesture, Resource: "shiver", Entity: { } shivering })
                         {
@@ -322,6 +334,52 @@ internal static class ProgramRunner
                         active = new ActiveExploration(current.Exploration!.WithEntity(faced)); break;
                     case SetEntityPriority priority:
                         active = EditEntity(current, priority.Entity, entity => entity with { Priority = priority.Value }); break;
+                    case SetMapEntityAnimation animation:
+                        active = EditEntity(current, animation.Entity, entity => entity with
+                            { Motion = entity.Motion with { AnimationCounter = animation.Counter } }); break;
+                    case ReloadSceneMap reload:
+                        var reloaded = MapTransfer.ReloadScene(current, reload);
+                        active = new ActiveExploration(reloaded.World);
+                        story = reloaded.Story.Copy(Next(cursor));
+                        break;
+                    case SetMapQuake quake:
+                        active = new ActiveExploration(current.Exploration!.WithQuake(quake.Amount)); break;
+                    case AddMapEntity add:
+                        active = new ActiveExploration(SceneEntities.Add(current.Exploration!, add, token.Value));
+                        break;
+                    case RestoreMemberResource restoreResource:
+                        var party = current.Exploration!.Party;
+                        var member = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
+                            .FirstOrDefault(row => row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == restoreResource.Member)
+                            ?? throw new BattleRuleException("party-member-definition", "program.member", true);
+                        if (!party.Actors.Any(row => row.Actor == member.Actor))
+                            throw new BattleRuleException("missing-party-member", "program.member", true);
+                        active = new ActiveExploration(current.Exploration.WithParty(new(party.Encounter,
+                            party.Actors.Select(row => row.Actor != member.Actor ? row : restoreResource.Hp
+                                ? row with { Hp = row.Progress?.MaxHp ?? member.Definition.MaxHp }
+                                : row with { Mp = row.Progress?.MaxMp ?? member.Definition.MaxMp }),
+                            party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies)));
+                        break;
+                    case MoveEntityNextToPlayer beside:
+                        var playerMotion = current.Exploration!.PlayerEntity.Motion;
+                        int destinationX = playerMotion.XDestination + (beside.Direction == 0 ? 384 : beside.Direction == 2 ? -384 : 0);
+                        int destinationY = playerMotion.YDestination + (beside.Direction == 3 ? 384 : beside.Direction == 1 ? -384 : 0);
+                        active = EditEntity(current, beside.Entity, entity => entity with
+                        {
+                            Motion = entity.Motion with
+                            {
+                                XDestination = checked((short)destinationX), YDestination = checked((short)destinationY),
+                                XTravel = checked((ushort)Math.Abs(destinationX - entity.Motion.X)),
+                                YTravel = checked((ushort)Math.Abs(destinationY - entity.Motion.Y)),
+                                XVelocity = (short)(destinationX < entity.Motion.X ? -48 : 48),
+                                YVelocity = (short)(destinationY < entity.Motion.Y ? -48 : 48),
+                            },
+                        });
+                        break;
+                    case WaitForEntityMotion waitMotion:
+                        if (Entity(current, waitMotion.Entity).Motion.IsMoving)
+                            story = current.Story.Copy(cursor, new EntityWait(token, waitMotion.Entity, Completion: EntityWaitCompletion.MotionStopped));
+                        break;
                     case SetEntityVisibility visible:
                         active = EditEntity(current, visible.Entity, entity => entity with { Visible = visible.Visible }); break;
                     case HideMapEntity hide:
@@ -358,6 +416,9 @@ internal static class ProgramRunner
                         current = MapTransfer.Apply(definition, current, transfer.Map, transfer.Position, transfer.Facing,
                             transfer.Mode, story, observations);
                         continue;
+                    case QueueMapWarp queued:
+                        story = story.Copy(story.Cursor, scriptWarp: new(queued.Map, queued.Position, queued.Facing, MapLoadMode.Rebuild));
+                        break;
                     default: throw new BattleRuleException("program-instruction", "program", true);
                 }
                 current = Commit(current, active, story, observations, story.Wait is NodWait ? "nod-started" : "program-instruction", instruction.GetType().Name, cursor);
@@ -394,6 +455,25 @@ internal static class ProgramRunner
     }
     private static ActiveExploration EditEntity(SessionSnapshot current, EntityRef entity, Func<ExplorationEntity, ExplorationEntity> edit) =>
         new(current.Exploration!.WithEntity(edit(Entity(current, entity))));
+
+    private static ActiveSessionState JoinResources(ScenarioDefinition definition, SessionSnapshot current, int member)
+    {
+        if (definition.EncounterStarts.Count == 0) return current.Active;
+        var world = current.Exploration!;
+        var actors = definition.Encounters.Values.SelectMany(battle => battle.Deployments)
+            .Where(actor => actor.Faction == BattleFaction.Ally && actor.Initialization?.AllyPartyMember == member)
+            .Select(actor => actor.Actor).Distinct().ToArray();
+        if (actors.Length != 1) throw new BattleRuleException("join-member-binding", "program.member", true);
+        if (world.Party.Actors.Any(actor => actor.Actor == actors[0])) return current.Active;
+        var initial = definition.EncounterStarts.Values.SelectMany(start => start.Actors)
+            .Where(actor => actor.Actor == actors[0]).ToArray();
+        if (initial.Length != 1) throw new BattleRuleException("join-member-start", "program.member", true);
+        // A newly introduced member receives its admitted resources once at joining.
+        // Repeated joins preserve the live inventory/progress; seeds and gold are not starts.
+        return new ActiveExploration(world.WithParty(new(world.Party.Encounter,
+            world.Party.Actors.Append(initial[0]), world.Party.MainSeed, world.Party.ThinkingSeed,
+            world.Party.Gold, world.Party.NewBattle, world.Party.ActiveAllies)));
+    }
 
     internal static SessionSnapshot Commit(SessionSnapshot current, ActiveSessionState active, StoryState story,
         List<SessionObservation> observations, string kind, string? detail = null, ProgramLocation? program = null)

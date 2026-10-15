@@ -6,7 +6,7 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal sealed record ControlledAllyStart(byte Id, byte ClassId, byte Level, ushort MaxHp, ushort Hp,
     byte MaxMp, byte Mp, byte Attack, byte Defense, byte Agility, byte Move, ushort Status,
-    IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells, byte? Exp, ushort? Kills, ushort? Defeats);
+    IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells, byte? Exp, ushort? Kills, ushort? Defeats, ushort? ActivationWord = null);
 internal sealed record ControlledBattleStart(byte Battle, uint MainSeed, uint ThinkingSeed, uint? Gold,
     NewBattleStartPolicy Policy, IReadOnlyList<ControlledAllyStart> Allies);
 
@@ -46,7 +46,7 @@ internal static class ControlledBattleStartReader
         var allies = new List<ControlledAllyStart>(); var ids = new HashSet<byte>();
         foreach (var row in Array(root, "allies"))
         {
-            Object(row, "controlled-ally", "id", "classId", "level", "maxHp", "hp", "maxMp", "mp", "attack", "defense", "agility", "move", "status", "items", "spells", "exp", "kills", "defeats");
+            ObjectOptional(row, "controlled-ally", "activationWord", "id", "classId", "level", "maxHp", "hp", "maxMp", "mp", "attack", "defense", "agility", "move", "status", "items", "spells", "exp", "kills", "defeats");
             byte id = (byte)Number(row, "id", 0, 29);
             Require(ids.Add(id), "duplicate-party-actor", "allies.id");
             var items = Slots(row, "items", 255); var spells = Slots(row, "spells", 255);
@@ -57,7 +57,8 @@ internal static class ControlledBattleStartReader
                 (byte)Number(row, "agility", 0, 255), (byte)Number(row, "move", 1, 255),
                 (ushort)Number(row, "status", 0, 65535), System.Array.AsReadOnly(items.Select(value => (ushort)value).ToArray()),
                 System.Array.AsReadOnly(spells.Select(value => (byte)value).ToArray()),
-                (byte?)OptionalNumber(row, "exp", 200), (ushort?)OptionalNumber(row, "kills", 9999), (ushort?)OptionalNumber(row, "defeats", 9999)));
+                (byte?)OptionalNumber(row, "exp", 200), (ushort?)OptionalNumber(row, "kills", 9999), (ushort?)OptionalNumber(row, "defeats", 9999),
+                row.TryGetProperty("activationWord", out _) ? (ushort?)OptionalNumber(row, "activationWord", 65535) : null));
         }
         Require(allies.Count > 0, "missing-party", "allies");
         return new((byte)Number(root, "battle", 0, 255), WordImage(root, "mainSeed"), WordImage(root, "thinkingSeed"),

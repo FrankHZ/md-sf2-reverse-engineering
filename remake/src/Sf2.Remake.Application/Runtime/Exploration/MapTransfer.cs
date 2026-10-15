@@ -9,15 +9,15 @@ internal static class MapTransfer
     // Apply is a pure snapshot construction. Reuse its full admission before consuming a
     // field action; publish again after the old-world pass with its resulting party seed.
     internal static void Validate(ScenarioDefinition definition, SessionSnapshot current, ExplorationState candidate,
-        ExplorationEvent warp)
+        ExplorationEvent warp, SessionRules? rules = null)
     {
         var preview = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(MapEventDispatcher.Roof(candidate)), current.Story, current.StopReason);
         _ = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
-            warp.LoadMode, current.Story, []);
-        if (SelectsBattle(current, definition.Exploration!.Maps[warp.DestinationMap!])) return;
+            warp.LoadMode, current.Story, [], rules);
+        if (BattleEntry.Selects(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!].Battle, rules)) return;
         ValidateDisplay(current.Story.Display);
-        var target = definition.Exploration.Maps[warp.DestinationMap!];
+        var target = definition.Exploration.Maps[warp.DestinationMap!].SelectSetup(current.Story.Flags);
         if (warp.LoadMode == MapLoadMode.Rebuild && target.BasePalette is not { Valid: true })
             throw new BattleRuleException("warp-palette-binding", "map.basePalette", true);
         // Reject statically known unsupported display effects before consuming the move.
@@ -38,11 +38,6 @@ internal static class MapTransfer
         }
         Check(target.OnLoad);
     }
-
-    private static bool SelectsBattle(SessionSnapshot current, ExplorationMapDefinition target) =>
-        target.Battle is { } battle &&
-        (battle.UnlockedFlag is null || current.Story.Flags.Contains(battle.UnlockedFlag.Value)) &&
-        (battle.CompletedFlag is null || !current.Story.Flags.Contains(battle.CompletedFlag.Value));
 
     internal static void ValidateDisplay(ExplorationDisplay? display)
     {
@@ -70,11 +65,11 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot BeginWarp(ScenarioDefinition definition, SessionSnapshot current,
-        ExplorationEvent warp, List<SessionObservation> observations)
+        ExplorationEvent warp, List<SessionObservation> observations, SessionRules? rules = null)
     {
-        if (SelectsBattle(current, definition.Exploration!.Maps[warp.DestinationMap!]))
+        if (BattleEntry.Selects(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!].Battle, rules))
             return Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
-                warp.LoadMode, current.Story, observations);
+                warp.LoadMode, current.Story, observations, rules);
         var story = current.Story.Copy(null, warp: new(warp.DestinationMap!, warp.Destination!, warp.Facing, warp.LoadMode));
         var world = current.Exploration!;
         current = new(current.SessionId, current.Revision, current.ObservationSequence,
@@ -157,7 +152,7 @@ internal static class MapTransfer
         return ProgramRunner.Commit(current, current.Active, story, observations, "full-fade-completed", wait.Kind.ToString());
     }
 
-    internal static SessionSnapshot LoadTick(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations)
+    internal static SessionSnapshot LoadTick(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, SessionRules? rules = null)
     {
         var wait = (WarpLoadWait)current.Story.Wait!;
         var story = current.Story.Copy(null, wait with { Remaining = wait.Remaining - 1 },
@@ -165,7 +160,7 @@ internal static class MapTransfer
         current = ProgramRunner.Commit(current, current.Active, story, observations, "map-load-service");
         if (wait.Remaining > 1) return current;
         var warp = story.Warp!;
-        try { return Apply(definition, current, warp.Map, warp.Position, warp.Facing, warp.Mode, story.Copy(null), observations); }
+        try { return Apply(definition, current, warp.Map, warp.Position, warp.Facing, warp.Mode, story.Copy(null), observations, rules); }
         catch (BattleRuleException error) { throw new FadeServiceFailure(current, error); }
     }
 
@@ -182,7 +177,7 @@ internal static class MapTransfer
     internal static ExplorationState Build(ExplorationMapDefinition map, EntityRef player, MapPosition position,
         byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null)
     {
-        ValidateSetup(map, flags);
+        map = map.SelectSetup(flags);
         var layout = map.Layout;
         foreach (var copy in map.LayoutEvents?.Flags ?? [])
             if ((layoutFlags ?? flags).Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
@@ -206,7 +201,25 @@ internal static class MapTransfer
         // csc48 changes the displayed layout/view; entity allocation, map init and battle selection
         // are separate calls. Keep the running program, party and physical entities intact here.
         return new(map, map.Layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
-            world.Aliases, population: world.Population);
+            world.Aliases, population: world.Population, quake: world.Quake);
+    }
+
+    internal static (ExplorationState World, StoryState Story) ReloadScene(SessionSnapshot current, ReloadSceneMap reload)
+    {
+        ExplorationTextRunner.ValidateContext(current);
+        var story = current.Story;
+        var world = current.Exploration!;
+        ValidateDisplay(story.Display);
+        if (story.Warp is not null || story.TextWindow is not ClosedTextWindow ||
+            story.PortraitWindow is not ClosedPortraitWindow || story.LogicalText is not { Open: false })
+            throw new BattleRuleException("scene-reload-context", "story.windows", true);
+        if (world.Definition.BasePalette != story.Display!.Base)
+            throw new BattleRuleException("scene-reload-palette", "story.display", true);
+        // csc36/csc46 rebuild the current layout, without reallocating entities or invoking map init.
+        var next = world.WithLayout(world.Definition.Layout, MapBlockCopyLifecycleState.Inactive);
+        return (next, story.Copy(story.Cursor,
+            logicalView: ExplorationViewRunner.LoadScene(next, reload.Camera, story.LogicalView!),
+            logicalText: new(), clearCameraEntity: true, clearCameraTarget: true));
     }
 
     internal static StoryState BindScene(SessionSnapshot current, ExplorationState next, LoadSceneMap load)
@@ -232,16 +245,16 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,
-        MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations)
+        MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules? rules = null)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
         if (!definition.Exploration!.Maps.TryGetValue(map, out var target))
             throw new BattleRuleException("missing-map", "map");
+        target = target.SelectSetup(current.Story.Flags);
         // MainLoop selects BattleLoop before ExplorationLoop. The before-battle script owns
         // its map load and entity replacement; retain the actual field scene until those calls.
         if (world.Party.NewBattle is not null && target.Battle is { } battle &&
-            (battle.UnlockedFlag is null || current.Story.Flags.Contains(battle.UnlockedFlag.Value)) &&
-            (battle.CompletedFlag is null || !current.Story.Flags.Contains(battle.CompletedFlag.Value)))
+            BattleEntry.Selects(definition, current.Story, battle, rules))
             return BattleEntry.Select(current, continuation.Copy(continuation.Cursor,
                 returnAnchor: new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing)), battle, observations);
         ExplorationState next;
@@ -283,8 +296,8 @@ internal static class MapTransfer
         return ProgramRunner.Commit(current, new ActiveExploration(next), story, observations, "map-transferred", map.Value);
     }
 
-    internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations)
-        => BattleEntry.Continue(definition, current, observations);
+    internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, SessionRules? rules = null)
+        => BattleEntry.Continue(definition, current, observations, rules);
 
     private static void ValidateSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags)
     {

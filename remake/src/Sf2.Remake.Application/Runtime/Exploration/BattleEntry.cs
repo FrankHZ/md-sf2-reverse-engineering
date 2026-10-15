@@ -6,7 +6,20 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class BattleEntry
 {
-    internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations)
+    internal static bool Selects(ScenarioDefinition definition, StoryState story, ExplorationBattleRoute? route,
+        SessionRules? rules) => route is not null &&
+        (route.UnlockedFlag is null || story.Flags.Contains(route.UnlockedFlag.Value)) &&
+        (route.CompletedFlag is null || !story.Flags.Contains(route.CompletedFlag.Value) || EnterCompleted(definition, rules));
+
+    private static bool EnterCompleted(ScenarioDefinition definition, SessionRules? rules)
+    {
+        var policy = (rules ?? Gameplay.RuleCompositions.Sf2()).SourceStory;
+        return BattleProgressionRules.Invoke(policy.Identity, "completed-battle-admission",
+            () => policy.EnterCompletedBattle(definition));
+    }
+
+    internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations,
+        SessionRules? rules = null)
     {
         var story = current.Story;
         if (story.Continuation == ProgramContinuation.MapLoaded)
@@ -15,9 +28,14 @@ internal static class BattleEntry
             if (route is null || (route.UnlockedFlag is { } unlocked && !story.Flags.Contains(unlocked)))
                 return current.WithStory(story.Copy(null, continuation: ProgramContinuation.FieldInput));
             if (route.CompletedFlag is { } completed && story.Flags.Contains(completed))
-                return ProgramRunner.Commit(current, current.Active,
+            {
+                bool enter = EnterCompleted(definition, rules);
+                current = ProgramRunner.Commit(current, current.Active,
                     story.Copy(null, flags: route.UnlockedFlag is { } flag ? ProgramRunner.Flags(story, flag, false) : story.Flags,
-                        continuation: ProgramContinuation.FieldInput), observations, "battle-already-completed", route.Encounter);
+                        continuation: enter ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput), observations, "battle-already-completed", route.Encounter);
+                if (!enter) return current;
+                story = current.Story;
+            }
             return Select(current, story, route, observations);
         }
 
@@ -47,7 +65,16 @@ internal static class BattleEntry
             active = partyLists.Active.Select(member => members.TryGetValue(member, out var actor) ? actor :
                 throw new BattleRuleException("party-member-definition", "entry.party", true)).ToArray();
         }
-        var input = new BattleStartInput(selected.Encounter, world.Party.Actors, world.Party.MainSeed,
+        var actors = world.Party.Actors;
+        if (definition.EncounterStarts.TryGetValue(selected.Encounter, out var defaults))
+        {
+            var carried = world.Party.Actors.ToDictionary(input => input.Actor);
+            actors = encounter.Deployments.Select(deployment =>
+                deployment.Faction == BattleFaction.Ally && carried.TryGetValue(deployment.Actor, out var input)
+                    ? input with { PositionOverride = null }
+                    : defaults.Actors.Single(input => input.Actor == deployment.Actor)).ToArray();
+        }
+        var input = new BattleStartInput(selected.Encounter, actors, world.Party.MainSeed,
             world.Party.ThinkingSeed, world.Party.Gold,
             world.Party.NewBattle is { } policy ? policy with { SkipIntro = false, BeforeBattleRouted = true } : null, active);
         // Validate and compute the whole initialization before publishing its flags or actor state.
@@ -61,6 +88,8 @@ internal static class BattleEntry
     internal static SessionSnapshot Select(SessionSnapshot current, StoryState story, ExplorationBattleRoute route,
         List<SessionObservation> observations)
     {
+        if (route.CompletedFlag is { } completed && story.Flags.Contains(completed) && route.UnlockedFlag is { } unlocked)
+            story = story.Copy(story.Cursor, flags: ProgramRunner.Flags(story, unlocked, false));
         if (current.Exploration!.Party.NewBattle is not null && story.Flags.Contains(88))
             throw new BattleRuleException("suspended-battle-entry", "entry.flags", true);
         bool introSeen = route.IntroFlag is { } intro && story.Flags.Contains(intro);

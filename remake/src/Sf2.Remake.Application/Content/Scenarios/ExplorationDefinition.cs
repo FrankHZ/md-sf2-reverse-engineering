@@ -89,13 +89,15 @@ public sealed class ExplorationMapDefinition
         IEnumerable<ExplorationEntityDefinition> entities, IEnumerable<ExplorationEvent> events,
         ProgramLocation? onLoad = null, ExplorationBattleRoute? battle = null, ProgramLocation? inputProgram = null, MapSetupRoute? setup = null,
         ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null,
-        IEnumerable<WriteFlag>? entryFlags = null, PalettePair? basePalette = null, IEnumerable<ExplorationViewArea>? viewAreas = null)
+        IEnumerable<WriteFlag>? entryFlags = null, PalettePair? basePalette = null, IEnumerable<ExplorationViewArea>? viewAreas = null,
+        IEnumerable<ExplorationSetupDefinition>? setups = null)
     {
         Map = map; Layout = layout; Traversal = traversal; Entities = Array.AsReadOnly(entities.ToArray());
         Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad; Battle = battle; InputProgram = inputProgram; Setup = setup; Population = population; LayoutEvents = layoutEvents;
         OverlayOffsets = Array.AsReadOnly((overlays ?? traversal.ActiveAreas.Select(_ => new MapOverlayOffset(0, 0))).ToArray());
         EntryFlags = Array.AsReadOnly((entryFlags ?? []).ToArray());
         BasePalette = basePalette; ViewAreas = Array.AsReadOnly((viewAreas ?? []).ToArray());
+        Setups = new ReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition>((setups ?? []).ToDictionary(value => value.Id));
     }
     public MapId Map { get; }
     public WorkingMapLayout Layout { get; }
@@ -112,7 +114,25 @@ public sealed class ExplorationMapDefinition
     public IReadOnlyList<WriteFlag> EntryFlags { get; }
     public PalettePair? BasePalette { get; }
     public IReadOnlyList<ExplorationViewArea> ViewAreas { get; }
+    public IReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition> Setups { get; }
+
+    internal ExplorationMapDefinition SelectSetup(IReadOnlyList<int> flags)
+    {
+        if (Setup is null) return this;
+        var selected = MapSetupSelector.Select(Setup, Setup.DefaultSetup,
+            flag => flags.Contains(int.Parse(flag.Value, System.Globalization.CultureInfo.InvariantCulture)));
+        if (selected == Setup.DefaultSetup) return this;
+        if (!Setups.TryGetValue(selected, out var content))
+            throw new BattleRuleException("map-setup", selected.Value, true);
+        return new(Map, Layout, Traversal, content.Entities, content.Events, content.OnLoad, Battle,
+            content.InputProgram, population: content.Population, layoutEvents: LayoutEvents, overlays: OverlayOffsets,
+            entryFlags: EntryFlags, basePalette: BasePalette, viewAreas: ViewAreas);
+    }
 }
+
+public sealed record ExplorationSetupDefinition(MapSetupId Id, IReadOnlyList<ExplorationEntityDefinition> Entities,
+    IReadOnlyList<ExplorationEvent> Events, ProgramLocation? OnLoad, ProgramLocation? InputProgram,
+    ExplorationPopulation Population);
 
 public sealed class ExplorationProvenance
 {
@@ -127,7 +147,7 @@ public sealed class ExplorationProvenance
     public string ControlledBoundary { get; }
 }
 
-public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Wait2, Unsupported, Delay1 }
+public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Wait2, Unsupported, Delay1, ClassName }
 public sealed record ExplorationTextToken(ExplorationTextTokenKind Kind, string Value, int? Member = null);
 
 public sealed class ExplorationDefinition
