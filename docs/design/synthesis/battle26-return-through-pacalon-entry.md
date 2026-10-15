@@ -171,7 +171,7 @@ Interrupted DMA, fade, action or VInt services do not roll back reached writes.
 
 ## A loaded overworld is not a decoded route
 
-**Confirmed:** neither F71 nor 78 has a map-setup entry. GetCurrentMapSetup reaches
+**Confirmed:** neither Map71 nor Map78 has a map-setup entry. GetCurrentMapSetup reaches
 the terminator and returns `ms_Void/$FFFF`; the entity-list consumer returns that
 sentinel and init dispatch skips its call. This is no populated default setup
 or default random encounter. A hypothetical fresh explicit 71/78 entry would
