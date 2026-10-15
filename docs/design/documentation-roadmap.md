@@ -453,68 +453,67 @@ loading and empty start, stopping pre-ActivateEnemies. Its
 and #1010 handoff preserve #1005/#1006 objects, source/pair/CI, accepted-table joins,
 corrections, completed diagnostics/failures and unavailable source/pair limits.
 
-The current reader outcome explains Battle26 activation and first-turn dispatch
-from that endpoint through the first ExecuteIndividualTurn call, before its body.
-**Standard** rigor remains appropriate: geometry, checked/active flags, spawn modes,
-turn eligibility, randomized records and performed actions have different consumers.
-The owner is [Battle26 activation and the first turn handoff](synthesis/battle26-activation-and-first-turn-dispatch.md),
-scoped by [#1014](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1014).
-Consume complete accepted [#1009 research](../research/battle26-activation-and-first-turn-dispatch.md)
-and the initialization predecessor. Parallel #1013 aftermath research and UI692
-are independent, offlimits and not evidence. No original finding or remake behavior
-is authorized.
+[Battle26 activation and the first turn handoff](synthesis/battle26-activation-and-first-turn-dispatch.md)
+explains accepted region/activation, conditional deals alias, fresh no-spawn and
+randomized records through the first ExecuteIndividualTurn call, before its body.
+Its [retained review](synthesis/battle26-activation-and-first-turn-dispatch.md#evidence-review-and-retained-results)
+and #1014 handoff preserve #1009/#1010 source/pair/CI, schema/table/link checks,
+corrections, completed diagnostics/failures and unavailable source/pair limits.
+
+The current reader outcome explains Battle26 outcomes, independent Black Ring
+drop, Higins rescue/recruitment and the returned handoff.
+**Standard** rigor remains appropriate: terminal counting, action-side rewards,
+scene actors, membership/following and return seeds have different predicates
+and lifetimes. The owner is
+[Battle26 outcomes and Higins recruitment](synthesis/battle26-outcomes-and-higins-recruitment.md),
+scoped by [#1018](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1018).
+Consume complete accepted [#1013 research](../research/battle26-outcomes-and-higins-recruitment.md)
+and the predecessor guides. Concurrent #1017 and UI692 are independent,
+offlimits and not evidence. No original finding or remake behavior is authorized.
 
 Acceptance requires a readable connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain ordered activation/region hook/debug/spawn/turn generation/dispatch.
-  Preserve32 activation versus30 enemy turn candidates and the actual X/Y,
-  nonzero versus positive-signed HP, membership/neutral/active predicates.
-- Present complete three-region geometry and all15 activation rows. Fresh positions
-  trigger none; F90–92 stay clear, low checked bits become set while other bits
-  persist. Preserve primary-first/secondary-bit behavior, sentinel15, changed flags,
-  positions/party and upgraded-definition premises without a tactic claim.
-- Explain actual slot160 fall-through and inclusive address acceptance, selected
-  deals alias/pseudo-field gates and Goddess Staff count-bit writes. Fresh clear
-  flags produce no write; this is not unconditional addition or observed shopping.
-- Present complete four-row region-hook no-match for26 and debug-dependent service
-  limits. STARTING mode0 makes fresh spawn length0 despite activation; old bytes
-  are unconsumed. Changed hidden/respawn/combined modes retain dead/trigger/maxHP,
-  row/occupancy/reset/carry, full-word return/single-append, item and service limits.
-- Present all15 current HP/AGI rows,64 two-byte records, unsigned current-AGI mask/
-  threshold, ordered RNG including range0, different second score, signed low-byte
-  stable comparisons/padding and conditional capacity. Fresh maximum39/positive
-  enemies permit a first call if services return; actual actor is party/AGI/seed-dependent.
-- Explain current-turn byte offset/reset/sentinel and empty/padding loops; initial
-  F88 uses supplied bytes before preparation, with sentinel re-entry distinct.
-  Keep changed-state/interruption writes and absence of control ownership,
-  performed turns, outcomes/recruitment or unmerged aftermath explicit.
+- Explain defeat precedence, separate leader append/death processing and ordinary
+  remaining counts, including the second status pass and changed/supplied lists.
+- Separate cleanup from actual26/130/24/10 drop caller/target/item/bit transaction,
+  actor HP/capacity, rare fallback/saturation, repeated flag and interruption.
+- Distinguish eligible victory healing and pre-scene active-member return seed
+  from camera/actor staging; retain distinct F426/F476/F526 and repeat/F88 paths.
+- Explain the complete rescue narrative, actual speaker aliases/literal boundaries,
+  actor population/mapping/HP/class and asynchronous replacement/service limits.
+- Preserve JoinForce19's joined/conditional-active capacity and list lag, absence
+  of stat initialization/healing, transient AddFollower and shared JoinForce0 tail.
+- Explain defeat/Egress/Wing costs, savepoint/raft selection and returned MainLoop
+  boundary. Do not promise first actor, completed circles/rotations, Pacalon travel,
+  persistence, later admission, usable exploration or remake capability.
 
-Own exactly five paths: the new guide, initialization continuation only, Story
+Own exactly five paths: the new guide, activation continuation only, Story
 Progression's connected segment/boundary, this current agreement and docs/README.md
 navigation. No research/contracts/fixtures/schemas/tooling/remake/glossary/Chinese
 writes, acquisition, regeneration, runtime, environment change or new maintained
 machinery. Content/readability governs length without an artificial cap.
 Source contradictions return to research.
 
-Minimum evidence is complete accepted Layer A/changed-state review, selected public
-contract/fixture/schema/consumer checks and direct documents. Public summaries do
-not prove private row bodies, aliases or selected hook targets; Battle01 observations
-prove only named seams. Source/pair absence in design is accepted; no fresh comparison
-is claimed. The guide's [retained review](synthesis/battle26-activation-and-first-turn-dispatch.md#evidence-review-and-retained-results)
-links #1009's exact objects, source/pair/joins and both CI receipts, neutral syntax/
-coordinate, full-word spawn-return and integer-projection corrections, plus #1010's
-schemas/links/table comparisons, CI and inspection/tool diagnostics. Linked
-predecessor failures and Unknowns remain with their owners; completed suites are
-not reset. Natural reach, actual state/first actor, service completion, presentation,
-control and persistence may remain Unknown.
+Minimum evidence is adversarial accepted Layer A/changed-state review and selected
+public contract/fixture/schema/actual-consumer checks, plus direct documents.
+Read narrower Battle26, action/drop, lifecycle, cutscene and party/follower owners;
+use stricter selected predicates rather than inherited count summaries. Existing
+controlled Battle01 drop observations prove only named seams. Source/pair absence
+in design is accepted; no fresh comparison is claimed. The guide's
+[retained review](synthesis/battle26-outcomes-and-higins-recruitment.md#evidence-review-and-retained-results)
+links #1013 handoff/acceptance, source/program/literal/transaction joins, unchanged
+pair receipt and actual CI, plus #1014 environment limitations/diagnostics.
+Predecessor completed results, failures and Unknowns remain with their owners;
+completed suites are not reset. Natural reach/state/reward, service completion,
+presentation, usable exploration and persistence may remain Unknown.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
 scope and git diff --check. Load local/private-inputs.ps1 in the same process
 for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI. Documentation scope uses direct checks without
 blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #1014, Project Review / Verify and a successful authorized
+pushed Draft PR fixing #1018, Project Review / Verify and a successful authorized
 main-gate callback for independent acceptance. No merge, cleanup, archive or
 next Issue.
 

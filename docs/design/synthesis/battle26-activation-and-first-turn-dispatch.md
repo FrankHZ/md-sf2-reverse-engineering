@@ -29,8 +29,11 @@ under [#514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514),
 with [the roadmap](../documentation-roadmap.md#current-baseline-and-near-term-synthesis)
 owning its current agreement. It introduces no original finding, engine policy or
 runtime observation. Performed turns, tactics, movement, damage, outcomes,
-recruitment and subsequent exploration are outside the endpoint. Parallel aftermath
-research and UI work supply no evidence here.
+recruitment and subsequent exploration are outside this guide's endpoint.
+[Battle26 outcomes and Higins recruitment](battle26-outcomes-and-higins-recruitment.md)
+continues from accepted outcome evidence through the returned MainLoop handoff;
+it supplies no intervening combat transcript or later town admission. Independent
+UI work supplies no evidence here.
 
 All **Confirmed** original claims below are conditional deductions from accepted
 Layer A at pinned SF2DISASM
