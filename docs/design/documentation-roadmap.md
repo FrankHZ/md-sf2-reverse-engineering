@@ -433,70 +433,72 @@ initial town population. Its
 and #998 handoff preserve #993/#994 objects, comparisons, corrections, CI,
 completed failures and unavailable source/pair boundaries.
 
-The current reader outcome explains Ketto's local interactions, merchant move,
-services, inspections/items and conditional departure. **Standard** rigor remains
-appropriate: narrative, real choices, temporary/persistent state, motion, service
-invocation and completed transactions have separate premises. The owner is
-[Ketto interactions and merchant relocation](synthesis/ketto-interactions-and-merchant-relocation.md),
-scoped by [#1002](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1002).
-Consume complete accepted [#997 research](../research/ketto-interactions-and-merchant-relocation.md)
-and #998's entry guide. Concurrent #1001 Battle26 research and UI692 are
+[Ketto interactions and merchant relocation](synthesis/ketto-interactions-and-merchant-relocation.md)
+explains residents, merchant movement, services, inspections/items and conditional
+departure. Its [retained review](synthesis/ketto-interactions-and-merchant-relocation.md#evidence-review-and-retained-results)
+and #1002 handoff preserve accepted actor0 waiting, service/collection boundaries,
+predecessor corrections, completed failures and unavailable source/pair limits.
+
+The current reader outcome explains conditional Battle26 admission and the complete
+Geshp/Higins confrontation through before-wrapper return. **Standard** rigor remains
+appropriate: ordered requests, scene population, narrative possession/death,
+actual field writes and later battle initialization have separate premises.
+The owner is [Battle26 admission and the Geshp confrontation](synthesis/battle26-admission-and-geshp-confrontation.md),
+scoped by [#1006](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1006).
+Consume complete accepted [#1001 research](../research/battle26-admission-and-geshp-confrontation.md)
+and #1002's Ketto guide. Concurrent #1005 initialization research and UI692 are
 independent, offlimits and not evidence. No original finding or remake behavior
 is authorized.
 
 Acceptance requires a readable connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain all eight callbacks through actual activation/lookup/portrait/facing/
-  cleanup. UP1/DOWN3 are action bits, not approach gates. Preserve meaningful
-  1956–1978 dialogue/context and uncalled 1970; narrative prohibitions and
-  merchant questions add no gates or consent menu.
-- Explain woman's Yes/No/B and 257 commit/repeat,800 precedence, priest 256 warning
-  versus unconditional ChurchMenu, actual sprite/name context and independent
-  text continuation/cleanup, temporary/persistent state and interruptions.
-- Explain saved speed 0/1/2/3/restore,800-before-scene, speed 64, actual Bowie actor 0
-  setDest wait then facing, five sequential waited relative segments, conditional
-  endpoint 20,3, headshake and final 133/135 relocation. Preserve high-bit wait
-  exception, generated actions, HP/hidden/missing mappings and incomplete
-  prefixes without claiming animation/timing or transaction completion.
-- Present zero-based weapon 9/item 27 stock; entry is not payment/purchase/grant.
-  Explain priest entry and selected Save copying 25 to EGRESS_MAP/399 before
-  SaveGame, savepoint 25(12,11)Up and suspend/return distinction. Link shared
-  service behavior without expanding generic menus or claiming persistence.
-- Explain all 11 books/signs, meaningful English content, actual NAME substitution,
-  absent offset 10 and coordinate/layout admission. Both items/locations/170/171,
-  flag-before-inventory, ordinary Bowie versus joined-force fallback, all-full
-  refill and interruptions matter; acquisition differs from use. Empty/default
-  callbacks do not disable shared handling.
-- Contrast fresh/CURRENT/scroll/800/temp 256/257. Fresh relocation omits old speed/
-  route; clearing 800 does not restore positions. Explain wildcard Y31→72(31,27)
-  Down and ordered admission/helper 26 without local 426 write. Stop before
-  Battle26 scene/roster/combat or later towns. Natural reach, supplied state,
-  completed services, rendered/usable control and save may remain Unknown.
+- Explain Ketto return72 and mutable request, complete ordered8/24/26 selection,
+  output crops versus triggers, earlier unlock/completion cleanup and helper26's
+  counter/RNG/unlock writes. Shopping,800 and victory525 do not prove426 or reach.
+- Resolve actual slot26 before/start targets and476/88 differences. Held intro
+  skips the scene but not all fresh initialization; supplied continuation does
+  not recreate it. Stop before fresh region reset/healing/formation/load/start.
+- Present the full staged confrontation with meaningful complete dialogue/context:
+  both centaurs, Geshp/Lizardman/Demon/Cloud, Higins/Peter/Bowie and actual A/B
+  aliases. Questions/new-leader speech add no choice, recruitment, HP/status or
+  allegiance mutation; possession, illness and apparent deaths remain narrative.
+- Explain scene loading and conditional physical mappings, class/dead/missing/
+  aliased followers, duplicate lookup and capacity premises. Hidden/63,63 actors
+  remain allocated/updating; field declarations are not a combat roster.
+- Preserve ordered movement, asynchronous versus waited actions, replacement,
+  camera/FX and final departure. Idle polls/jumps prove no exact displacement or
+  observed timing; stopEntity/motion OFF disable animation, not general motion.
+- Preserve actual literal ownership, NAME19, nextText/nextSingleText, supplied
+  portrait/bleep and skip cursor behavior. No generic dialogue/effects redesign.
+- Describe actual writes and absent local story/recruitment/combat/outcome writes.
+  Before-return restores neither all actors/effects nor joins the final async
+  action or grants control. Preserve changed-state/interruption examples and
+  link the next caller boundary without consuming unmerged initialization facts.
 
-Own exactly five paths: the new guide, Battle25-entry predecessor continuation
-only, Story Progression's connected segment/boundary, this current agreement
-and docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/
-remake/glossary/Chinese writes, acquisition, regeneration, runtime, environment
-change or new maintained machinery. Content/readability governs length, without
-artificial caps. Source contradictions return to research.
+Own exactly five paths: the new guide, Ketto predecessor continuation only,
+Story Progression's connected segment/boundary, this current agreement and
+docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/remake/
+glossary/Chinese writes, acquisition, regeneration, runtime, environment change
+or new maintained machinery. Content/readability governs length without an
+artificial cap. Source contradictions return to research.
 
-Minimum evidence is complete accepted Layer A and changed-state review, selected
+Minimum evidence is complete accepted Layer A/changed-state review, selected
 existing public fixture/schema/consumer checks and direct document review.
-Public schemas/facts do not substitute for private-row proof. Source/pair absence
-in design is accepted; no fresh-comparison claim. The guide's
-[retained review](synthesis/ketto-interactions-and-merchant-relocation.md#evidence-review-and-retained-results)
-links #997's exact objects, 0.081s pair/CI, accepted waiting-Bowie correction,
-zero-based stock 9, opcode-case assertion failure/correction and diagnostics,
-and #998's receipts/readability-link correction. Linked predecessor failures
-and Unknowns stay with their owners; completed results are not reset.
+Aggregate public counts do not prove private rows, targets or literals.
+Source/pair absence in design is accepted; no fresh-comparison claim. The guide's
+[retained review](synthesis/battle26-admission-and-geshp-confrontation.md#evidence-review-and-retained-results)
+links #1001's objects, pair/CI, all130 command/9 entity/41 literal joins and
+fixture-layout/HTTPS corrections, and #1002's receipts/diagnostics. The ignored
+Markdown cap was removed without a tracked change. Predecessor failures and
+Unknowns remain with their owners; completed suites are not reset.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
 scope and git diff --check. Load local/private-inputs.ps1 in the same process
 for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI. Documentation scope uses direct checks without
 blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #1002, Project Review / Verify and a successful authorized
+pushed Draft PR fixing #1006, Project Review / Verify and a successful authorized
 main-gate callback for independent acceptance. No merge, cleanup, archive or
 next Issue.
 

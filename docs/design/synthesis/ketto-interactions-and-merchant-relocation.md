@@ -307,6 +307,12 @@ first. Other cave/default zones retain their
 This boundary establishes no necessary, navigable or unopposed route and stops
 before Battle26's selected scene, formation, combat or aftermath.
 
+[Battle26 admission and the Geshp confrontation](battle26-admission-and-geshp-confrontation.md)
+continues through the independently admitted fresh before-battle scene: actual
+field cast, both Pacalon soldiers, Geshp's possession threat and the Granseal
+interruption. Its endpoint remains before fresh healing/formation/load/start;
+the connection does not establish natural travel, combat deaths or Higins recruitment.
+
 ## Evidence Review and Retained Results
 
 The complete accepted research and its changed-state matrix were reviewed,
