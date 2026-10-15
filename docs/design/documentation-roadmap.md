@@ -419,62 +419,65 @@ consequences through the identified next warp. Its
 and #990 handoff preserve #985/#986 and linked #981/#982/#977 findings,
 completed failures and Unknowns; content/readability govern the prose.
 
-The current reader outcome explains North Cliff entry, conditional Battle25
-admission and its complete initial encounter through the fresh start-dispatcher
-return before ActivateEnemies. **Standard** rigor remains appropriate: opening,
-mutable request, ordered admission, actual party assignment and map/view
-configuration have distinct premises and interrupted prefixes. The owner is
-[North Cliff entry through Battle25 admission](synthesis/north-cliff-entry-through-battle25-admission.md),
-scoped by [#994](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/994).
-Consume accepted [#989 research](../research/north-cliff-entry-through-battle25-admission.md)
-and #990 opening synthesis. Concurrent #993 Battle25-outcomes research and
-UI692 are independent, offlimits and not evidence for this guide. No original
-finding or remake behavior is authorized.
+[North Cliff entry through Battle25 admission](synthesis/north-cliff-entry-through-battle25-admission.md)
+explains the separate entrance, ordered admission, complete initial encounter
+and crop/view limits before activation. Its
+[retained review](synthesis/north-cliff-entry-through-battle25-admission.md#evidence-review-and-retained-results)
+and #994 handoff preserve #989/#990 evidence, corrections, CI and unavailable
+source/pair boundaries. Actual combat and later travel are separate transitions.
+
+The current reader outcome explains Battle25 outcomes and the conditional
+return/journey through Ketto's initial population. **Standard** rigor remains
+appropriate: outcome bookkeeping, mutable member-derived return coordinates,
+later admission and town initialization have separate premises. The owner is
+[Battle25 outcomes through Ketto entry](synthesis/battle25-outcomes-through-ketto-entry.md),
+scoped by [#998](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/998).
+Consume complete accepted [#993 research](../research/battle25-outcomes-through-ketto-entry.md)
+and #994 admission synthesis. Concurrent #997 Ketto-interactions research and
+UI692 are independent, offlimits and not evidence. No original finding or
+remake behavior is authorized.
 
 Acceptance requires a readable connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain Map72 `(27,33)` → Map48 `(55,29)` Up, stored/mutable no-scroll
-  request and absent extra750/425/member guards. Separate ordered Battle11/25
-  exact-coordinate/unlock checks, output crop and post-selection completion
-  cleanup. Opening guarantees neither travel nor admission.
-- Cover no-battle ms_Void setup, shared followers/init and immediate stored
-  returns without broad optional exploration. CURRENT, scroll and direct
-  LoadMap have different lifetimes from explicit ordinary entry.
-- Explain empty before/start slot25 targets and475 order; F88 saved-state
-  continuation differs from fresh heal→ally/enemy placement→map load→start.
-  Actual joined/active lists, capacity, dead-member loop/coordinate consumption
-  and health/class/equipment govern placement; joined Rohde alone is insufficient.
-- Present all twelve potential ally placements, fifteen actual enemy IDs/types/
-  positions, three region shapes/no points and follow/order relationships, plus
-  meaningful initial items/equipment/spells/activation. Link encoding detail
-  without reducing encounter content to counts. Distinguish source base ATT,
-  difficulty-adjusted base and final stats; source item masking and absence of
-  Battle25 random upgrades do not establish tactics or natural activation.
-- Separate crop `(28,0)` and local positions from actual view target/descriptor
-  selection. Main bounds override differs from secondary-layer setup; byte128
-  is a follow sentinel with actual load/VInt consumers. Battle11's explicit
-  darkness refresh is not a Battle25 observation or rendered-fidelity claim.
-- Preserve completed/missing-unlock, changed map/trigger/party/HP/class/mode/RNG
-  and interrupted-state consequences. Natural reach, supplied state, completed
-  services, rendered darkness, control/save, actual combat/outcomes and later
-  cave crossing/Ketto remain Unknown or separate scope. Stop before activation.
+- Explain empty end/after slot25 and leader byte0, actual death/count order,
+  after-turn effects, X-byte/HP-word counting and defeat precedence. Killing128
+  alone does not win; supplied hidden/nonmember slots keep their actual rules.
+- Explain eligible victory healing, first actual joined/active member and mapped
+  facing, crop byte arithmetic and later JoinForce0. Preserve425/525/475 order
+  and absence of426 unlock; no fixed exit or guaranteed Bowie seed. Distinguish
+  defeat/Egress costs, EGRESS_MAP selector/savepoint/fallback/raft effects and
+  eventual exploration healing without generic revival.
+- All outcomes enter exploration without immediate CheckBattle. Explicit48's
+  sentinel still rebuilds actors/followers/temp state; CURRENT/scroll/F88 differ.
+  Keep Rohde joined11/active43/follower84 distinct, real logical aliases
+  A/B/C/D30/31/158/159, physical mapping and capacity caveats readable.
+- Explain cave returns to72, ordered wildcard8/24/26 admission, independent
+  F750/716/10 init and helper26's526 rather than525 predicate. Geography and
+  crop do not prove a navigable or unopposed journey; no Battle26 roster/combat.
+- Explain separate31,26→Map25(16,30)Up request, absent Map25 battle row,
+  complete eight Ketto actors/walking bounds and follower-relative placement.
+  F800 changes init, not population selection;133/135 setPos relocation differs
+  from walking. Fresh/CURRENT/scroll and missing/hidden mappings retain effects.
+- Stop after init and conditional controller installation request. Supplied
+  state, natural route, completed services, rendered/usable control and save
+  may remain Unknown. Later conversations, merchant run, services/items and
+  subsequent quests remain separate scope; interrupted prefixes do not roll back.
 
-Own exactly five paths: the new guide, opening predecessor continuation only,
-Story Progression's connected segment/boundary, this current agreement and
-docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/
+Own exactly five paths: the new guide, admission predecessor continuation
+only, Story Progression's connected segment/boundary, this current agreement
+and docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/
 remake/glossary/Chinese writes, acquisition, regeneration, runtime, environment
-change or new maintained machinery. Organize by content/readability without
-artificial length caps. Route source contradictions back to research.
+change or new maintained machinery. Content/readability governs length, without
+artificial caps. Source contradictions return to research.
 
 Minimum evidence is complete accepted Layer A, selected existing public
 fixture/schema/consumer checks and direct document review. Source/pair absence
 in design is accepted; no fresh-comparison claim. The guide's
-[retained review](synthesis/north-cliff-entry-through-battle25-admission.md#evidence-review-and-retained-results)
-preserves #989's exact identities, unchanged-pair/CI receipts, source-backed
-Battle11 words-to-bytes discrepancy/correction and ignored absence-check
-correction. It links #990's accepted opening results and bounded diagnostics;
-predecessor failures/Unknowns remain with their owners. Completed results are
+[retained review](synthesis/battle25-outcomes-through-ketto-entry.md#evidence-review-and-retained-results)
+links #993's exact objects, unchanged-pair/CI receipts, separator-check and
+follower C/D corrections, discovery diagnostics, and #994's accepted results.
+Predecessor failures/Unknowns stay with their owners; completed results are
 not reset or repeated for replacement receipts.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
@@ -482,7 +485,7 @@ scope and git diff --check. Load local/private-inputs.ps1 in the same process
 for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI. Documentation scope uses direct checks without
 blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #994, Project Review / Verify and a successful authorized
+pushed Draft PR fixing #998, Project Review / Verify and a successful authorized
 main-gate callback for independent acceptance. No merge, cleanup, archive or
 next Issue.
 

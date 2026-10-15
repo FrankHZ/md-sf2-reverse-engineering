@@ -770,6 +770,30 @@ the established boundary.
 
 The observed and remake frontiers below are unchanged by this static explanation.
 
+[Battle25 outcomes through Ketto entry](battle25-outcomes-through-ketto-entry.md)
+continues with empty end/after hooks and leader byte0: killing128 alone does
+not win, actual X-byte/HP-word counts and zero-allies precedence govern both
+death checkpoints. Victory heals eligible allies, seeds coordinates/facing
+from the first actual joined/active member before JoinForce0, clears425 and
+sets525 without unlocking426. Defeat/Egress costs and EGRESS_MAP selection
+differ; later exploration healing is not generic revival. All outcomes bypass
+an immediate battle scan. Explicit48 rebuilds shared followers/temp state
+despite its sentinel setup; CURRENT/scroll/F88 retain different lifetimes.
+
+Separate cave exits request72, where ordered wildcard8/24/26 admission can
+intervene. F750/716/10 init and helper26's526 test remain independent of525;
+crop/geography proves no unopposed journey. The separate31,26→Map25(16,30)Up
+request has no town battle row. Fresh Ketto declares eight actors after actual
+followers; F800 relocates merchant133/woman135 by setPos rather than walking,
+without selecting a different population. CURRENT/missing mappings, changed
+flags/mode/capacity and interrupted writes preserve their actual consequences.
+
+The guide stops after init and the conditional controller installation
+request. Natural travel, supplied state, completed services, rendered/usable
+arrival and save/load remain Unknown. Later conversations, merchant run,
+services/items, Battle26 combat and subsequent quests are separate scope.
+This extension does not advance the observed or remake frontier.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
