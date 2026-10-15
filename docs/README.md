@@ -298,6 +298,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   both resident alternatives, shops/priest, descriptions and possible pickups through ordered outgoing exits; current selection, partial effects and pre-destination limits.
 - [`pacalon-castle-entry-and-first-visit.md`](./design/synthesis/pacalon-castle-entry-and-first-visit.md) —
   conditional castle entry, drought-state cast/conversations, optional centaur scene, descriptions/pickups/priest and retained CURRENT stairs; south stops before town battle selection, later Frayja deferred.
+- [`pacalon-departure-to-battle27-admission.md`](./design/synthesis/pacalon-departure-to-battle27-admission.md) —
+  conditional town/overworld rebuilding, retained north scroll, candidate zone and partial reload through ordered27/32 admission; stops before BattleLoop initialization, with natural-route/control/persistence limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

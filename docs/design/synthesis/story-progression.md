@@ -1011,6 +1011,38 @@ MainLoop before town battle scan. F530-set population/pointer context does
 not consume later Frayja/cs_5DA28 progression. Natural reach, completed
 presentation/control and persistence remain Unknown; no remake frontier advances.
 
+[Pacalon departure: the north scroll and conditional Battle27 admission](pacalon-departure-to-battle27-admission.md)
+continues the castle south request. Town2 can admit31 with431 held, even when
+531 clears the unlock on this scan. Otherwise explicit town exploration
+rebuilds actors/mappings/temp/layout; south71 becomes78 under current530,
+with neither overworld map having a battle row or setup. Shared main/follower/
+raft construction still runs. Mode and pending type condition control.
+The king's words, F810, items and services are no prerequisite here.
+
+The ordered north scroll loads74 but retains population/scripts/mappings,
+temporary flags, CURRENT_BATTLE and area metadata apart from explicit
+transition changes. Recorded Up facing is not applied; actual mode can
+relocate followers or change raft state. The ordinary zone producer needs
+layout-kind1400 and posts candidate XDEST/YDEST plus movement deltas,
+type before coordinate words; later collision logic can still skip movement.
+First-match `(255,61)` chooses Map74_ZoneEvent0 without proving a decoded path
+or arrival, then wrapper cleanup/VInt/motion waits remain separate.
+
+Clear527 sets427, writes reload, then sets428/429/430. Held527 uses811/532
+to choose432/reload or no writes; old unlocks survive. F811 proves no
+deferred Frayja history. Four-byte000100FF replaces only type/PARAM1/PARAM2:
+retained zone Y003D becomes warp X0/Y61 with stale facing/sound. High bytes,
+pending replacement and interruption remain actual mutable state.
+
+Reload reaches MainLoop's ordered Map74 scan:27 precedes32, both wildcard
+triggers, and crop is output rather than containment. Held completion clears
+the selected unlock but still admits now. No-match restores CURRENT255 and
+can refresh area metadata while retaining actors/temp/loaded layout and
+stale CURRENT_BATTLE. This deterministic callback differs from the random
+helper and ordinary movement counter. Stop before BattleLoop initialization;
+natural reach, completion/control/persistence remain Unknown and no observed
+or remake frontier advances.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

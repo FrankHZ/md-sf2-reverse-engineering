@@ -482,74 +482,78 @@ and corrected #1026 handoff preserve accepted public-schema/consumer checks,
 pickup music/text chronology, Save service-loop versus post-save suspend,
 distinct original/final CI, source/pair limits and linked predecessor failures.
 
-The current reader outcome explains castle entry and the first drought-state
-visit in [Pacalon castle: entry and the first drought-state visit](synthesis/pacalon-castle-entry-and-first-visit.md),
-scoped by [#1030](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1030).
-**Standard** rigor remains appropriate: membership/following, physical actor
-identity, current setup selection, script return and map reload lifetimes
-have different predicates. Consume accepted
-[#1025 research](../research/pacalon-castle-entry-and-first-visit.md) at1d62ba1c
-and the accepted #1026 guide, with necessary entry/map/script/action,
-interaction/dialogue/request, description/item/service owners. Independent
-departure research and UI692 remain unconsumed/offlimits.
+[Pacalon castle: entry and the first drought-state visit](synthesis/pacalon-castle-entry-and-first-visit.md)
+explains conditional construction, default cast/conversations, the full optional
+centaur scene, examination/pickup/priest boundaries and retained CURRENT stairs.
+Its [retained review](synthesis/pacalon-castle-entry-and-first-visit.md#changed-states-and-retained-review)
+and #1030 handoff preserve accepted #1025/#1026 results, diagnostics and Unknowns.
+Its south endpoint is the starting request for the next guide.
+
+The current reader outcome explains [Pacalon departure: the north scroll and
+conditional Battle27 admission](synthesis/pacalon-departure-to-battle27-admission.md),
+scoped by [#1034](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1034).
+**Standard** rigor remains appropriate: fresh construction, retained scrolling,
+candidate zone coordinates, partial pending writes and ordered admission are
+separate boundaries. Consume complete accepted
+[#1029 research](../research/pacalon-departure-to-battle27-admission.md)
+at369757a5 plus the accepted #1030 guide, with necessary entry/request/zone/
+common-map/random-helper owners. Parallel Battle27-initialization research
+and UI692 remain unconsumed/offlimits.
 
 Acceptance requires a connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain three incoming seeds, actual conditional Map36 exploration and the
-  default13-row cast: ally22 plus twelve NPCs. Distinguish Frayja's F82
-  follower dedup, joined22 init displacement, off-map update skip and unsafe
-  missing mappings. Current tables do not freeze physical actor identity.
-- Cover all default dialogue themes, named substitutions and actual sprite
-  portrait/SFX properties. The king's Mitula request has no local quest flag
-  or YesNo branch; spoken claims are not world-state or route proof.
-- Explain the full optional F810 script and all packed/inline payloads through
-  their actual consumers: camera/destination waits, relative movement from
-  current position, overwritten actions, retained speed, HP-gated facing,
-  headshake/shiver graphics limits and interpreter waits. F810 follows script
-  return but precedes final text; callback return and usable control differ.
-- Cover all nine shared descriptions, locked-door/bookshelf priorities,
-  Mithril176/FairyPowder174/PegasusWing175 collection/repeat/all-full and
-  interruption, plus accepted priest/savepoint limits. Preserve actual
-  music/text chronology and menu-loop versus post-save suspend. Rows are
-  not decoded placement/access, successful delivery, use or persistence.
-- Explain all five ordered exits. Four CURRENT stairs retain actors/mappings/
-  temp and loaded blocks/layout while refreshing area/display and rerunning
-  init after actual follower relocation. Explicit requests rebuild only if
-  admission reaches exploration. Retain signed sentinel, coordinate widths,
-  current-map/battle/pending semantics; stop south before town battle scan.
-- Record F530-set pointer/population context only. Later Frayja/cs_5DA28,
-  restored-rain callbacks and progression stay deferred. Natural reach,
-  completion, presentation/control and persistence remain Unknown; no
-  observed/remake frontier advances.
+- Explain castle return through conditional town/Battle31 admission, then
+  town south71/F530→78 fresh exploration, absent setups, actual followers/
+  mode and pending/control premises. King/F810/item/service prerequisites
+  must not be inferred.
+- Follow ordered north scroll74 with retained population/scripts/mappings,
+  temporary flags, CURRENT_BATTLE and area metadata. Preserve coordinate
+  widths/high bytes/sentinels, unapplied facing and actual raft/follower
+  mutations. Scrolling neither rebuilds exploration nor scans battles.
+- Join actual layout-kind1400 producer, candidate XDEST/YDEST plus deltas,
+  type-before-word writes, later collision skip, first-match zone255,61/
+  default and wrapper cleanup/VInt/motion wait. Resource/exit rows prove
+  no natural traversable route.
+- Cover every527/811/532 branch and exact427→reload→428/429/430 order,
+  old unlocks on no-write paths and partial/interrupted mutations. The
+  four-byte000100FF write replaces only type/PARAM1/PARAM2: retained zone
+  Y003D becomes warp X0/Y61 with stale facing/sound and changed high bytes
+  explicit. Neither immutable event queue nor deferred Frayja history follows.
+- Explain reload through WaitForEvent/no-scroll/MainLoop/SwitchMap and
+  ordered27-before32 selection: wildcard triggers, output crop and completion
+  clearing unlock while admitting now. Distinguish the generic random helper
+  and ordinary movement counter; stop before BattleLoop initialization.
+- Preserve no-match CURRENT actor/temp/loaded-layout retention and area
+  refresh with stale CURRENT_BATTLE. Changed-state/interruption/control/
+  persistence Unknowns remain explicit; no observed/remake frontier advances.
 
-Own exactly five Markdown paths: new guide, predecessor continuation only,
-Story Progression selected continuation, this current agreement/navigation
-and docs/README.md bounded navigation. No research/contracts/schema/fixture/
-tooling/remake/glossary/Chinese writes, runtime, acquisition/copy/fresh private
-comparison, environment changes, general service audit or new verification
-machinery. Content/readability governs length; evidence contradictions
-return to research rather than silent Layer B repair.
+Own exactly five Markdown paths: new guide, castle predecessor continuation
+only, Story Progression selected continuation, this current agreement/
+navigation and docs/README.md bounded navigation. No research/contracts/
+schema/fixture/tooling/remake/glossary/Chinese writes, runtime, source copy/
+acquisition/fresh private comparison, environment changes, generic combat/
+service/platform expansion or new maintained verification machinery.
+Content/readability governs length; contradictions return to research.
 
 Minimum evidence is complete adversarial accepted Layer A/changed-state
-review plus selected actual public fixture/schema/consumer inspection and
-direct document checks. Aggregate counts and controlled seams do not prove
-a natural castle visit. The guide's
-[retained review](synthesis/pacalon-castle-entry-and-first-visit.md#changed-states-and-retained-review)
-links #1025 original/final handoff/acceptance (final direct0.146s,
-independent0.144s, CI38672496689; original CI38672213037), #1026 corrected
-handoff/acceptance (final headb0b886fe, independent2.357s, CI38672157287;
-original CI38671842716), and earlier failures/Unknowns. Reuse pair0.083s
-provenance only: source/pair remain unavailable in design and optional
-layout limits remain explicit. No completed result is reset.
+review plus relevant real public fixture/schema/consumer joins and direct
+documents. Compact counts do not prove natural producer-to-consumer paths.
+The guide's [retained review](synthesis/pacalon-departure-to-battle27-admission.md#changed-states-and-retained-evidence-review)
+links #1029 final/acceptance (direct0.143s/independent0.136s, CI38673862670;
+original CI38673722838 and KeyError separate) and #1030 handoff/acceptance
+(direct3.075s/independent3.229s, CI38673538882; checker/link diagnostics
+retained). Their linked predecessors preserve earlier results/Unknowns.
+Reuse accepted0.083s provenance only: source/pair remain unavailable in design
+and optional layout limits remain explicit. No completed suite is reset.
 
-Check full prose/diff/changed states, exact five paths/navigation/links/
+Check complete prose/diff/changed states, exact five paths/navigation/links/
 anchors/encoding/private boundary and git diff --check. Load retained
 local/private-inputs.ps1 in the launching process for clean committed
 `uv run sf2 verify plan --base origin/main --head HEAD`; record exact-head
 actual scoped CI. Documentation scope skips blanket normal/full/Python/
 .NET/Godot/H3/H4/translation suites. Freeze a clean current-main-based
-committed/pushed Draft PR fixing #1030, Project Review / Verify and successful
+committed/pushed Draft PR fixing #1034, Project Review / Verify and successful
 authorized main-gate completion callback. No merge, cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
