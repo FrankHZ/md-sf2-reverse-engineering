@@ -116,8 +116,10 @@ campaign platform return to main-gate. Actual reached failures remain explicit, 
 
 Validation uses actual engine behavior tests, affected producer execution, `uv run sf2 verify engine`,
 `uv run sf2 verify adapter`, the clean-head dependency plan, scoped CI and native semantic checkpoints.
-Independent implementation review, integration and human-play acceptance remain pending. This
-agreement does not extend the accepted Battle01 milestone before those checks are complete.
+The bounded implementation, scoped tests, native continuous route and independent implementation
+review are complete. Integration is tracked in [PR #1046](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1046);
+human-play acceptance remains pending. These results do not establish original-game fidelity or
+full-game acceptance, or extend the accepted Battle01 milestone beyond its existing boundary.
 
 Current mandatory acceptance uses default keyboard A under the
 [corrected product scope](../../docs/decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope).
