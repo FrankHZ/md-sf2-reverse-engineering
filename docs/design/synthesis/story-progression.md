@@ -941,9 +941,38 @@ membership, physical mappings, class/HP sprites, finite walking storage and
 raft mode remain separate. Shared init is empty. Pending zero at WaitForEvent
 permits the actual numeric-mode control script; pending nonzero bypasses it.
 The guide stops at this first event/control read or before Battle31 execution.
-Town interactions/castle admission, natural reach/state, completed services,
-rendering, usable control and persistence remain outside the proved boundary.
-The observed/remake frontier does not advance.
+Its continuation, [Pacalon conversations, supplies and the castle handoff](pacalon-interactions-and-castle-handoff.md),
+explains the two current F530 resident-event alternatives on the town-exploration
+path. Clear530 conversations express fear, hunger, pride and contradictory views
+of Geshp; set530 conversations welcome visitors, credit rain to the gods, retain
+hunger and ask about Mitula/Tristan/devils. These are spoken claims/questions,
+not independently proven world state or travel prerequisites. Current event
+selection can change after population, even invoking a different service from
+the same retained merchant. Physical activation, first reverse alias and actual
+sprite portrait/SFX remain distinct; UP1 turns without restoring facing.
+
+Both alternatives reuse weapon-shop10's ten and item-shop25's six offerings
+and the priest's shared service menu. Catalog/contact does not complete a
+transaction. Save writes then-current CURRENT_MAP to EGRESS_MAP and sets399
+only on its accepted first prompt; post-save continue and suspend diverge.
+The Map02 savepoint is return data, not automatic travel. Both full description
+tables share signs/statues and differ at the well; layout priority and current
+selection precede text, with no water/item grant. The empty chest table and
+two other-item rows remain separate: bread13/flag172 at33,6 and herb0/flag173
+at27,24 require eligible examination. Flag writes precede member0/full-force
+delivery; reached all-full refill permits retry. Held flags, changed inventory
+and interruption can prevent delivery or leave partial effects.
+
+North exit records19,0→36/20,30 and23,0→36/22,30 precede the wildcard
+north row preserving sampled X at Y30; the wildcard south row requests71/22,16.
+All require the applicable layout/control consumer and first-match scan;
+conversations/services/pickups add no row prerequisite. Pending type/parameters
+are mutable, negative destination bytes preserve sampled words, and positive
+bytes replace only low bytes. Facing remains an outgoing operand. The guide
+stops at MainLoop return before destination CheckBattle/setup/init, including
+any later530 substitution71→78. Natural reach/state, completed services,
+rendering, usable control and persistence remain Unknown. The observed/remake
+frontier does not advance.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from

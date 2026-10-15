@@ -294,6 +294,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   terminal precedence, independent Black Ring transaction and complete rescue/join/following through the returned handoff; seed, capacity, action, service and later-arrival limits.
 - [`battle26-return-through-pacalon-entry.md`](./design/synthesis/battle26-return-through-pacalon-entry.md) —
   fresh return rebuild, retained eastern scroll and conditional town/Battle31 admission through the first Map02 event/control read; population, coordinate, route and service limits.
+- [`pacalon-interactions-and-castle-handoff.md`](./design/synthesis/pacalon-interactions-and-castle-handoff.md) —
+  both resident alternatives, shops/priest, descriptions and possible pickups through ordered outgoing exits; current selection, partial effects and pre-destination limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

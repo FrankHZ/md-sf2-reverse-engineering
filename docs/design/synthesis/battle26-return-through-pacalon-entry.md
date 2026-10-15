@@ -14,9 +14,12 @@ and its predecessor owners. It is Layer B English synthesis under
 [#1022](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1022)
 and [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Standard rigor fits the separate return, population, scrolling and admission
-lifetimes. Concurrent Pacalon-interaction research supplies no evidence here.
+lifetimes. Pacalon interactions remain with their separate accepted owner.
 The endpoint is the first conditional Map02 event/control read, or the Battle31
 diversion before execution. Town interactions and castle admission are excluded.
+Continue with [Pacalon conversations, supplies and the castle handoff](pacalon-interactions-and-castle-handoff.md)
+for both resident-event alternatives, services, descriptions, possible pickups
+and outgoing warp consumption, stopping before destination admission/init.
 
 **Unknown:** natural reach, actual supplied state, decoded walkable route,
 service completion, rendering, usable control and save/load persistence.
