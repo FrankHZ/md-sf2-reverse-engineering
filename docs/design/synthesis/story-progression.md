@@ -915,9 +915,35 @@ Defeat halves gold/restores Bowie before egress; admitted Egress pays MP and
 Angel Wing removes its selected item. Their savepoint/raft returns differ
 from victory's pre-scene seed. The guide stops when BattleLoop returns to
 MainLoop, before SwitchMap/ExplorationLoop completion. Natural reach, supplied
-state/reward, completed services, rendered rescue, usable control, later
-Pacalon/Tristan admission and persistence remain Unknown. Concurrent #1017 is
-unconsumed; the observed/remake frontier does not advance.
+state/reward, completed services, rendered rescue and persistence remain Unknown.
+Its accepted continuation,
+[Battle26 return through conditional Pacalon entry](battle26-return-through-pacalon-entry.md),
+explains the fresh rebuild after that handoff. Explicit entry heals eligible
+allies, clears pending/temporary state and reconstructs flag followers, fixed
+entities and Bowie; F19/F51 survives but no persistent Higins follower row
+recreates his temporary rescue actor. Map72's altered-history716-set/10-clear
+Luke init remains separate from Battle26 completion.
+
+The selected east-edge request scrolls72→71, explicitly substituting78 under530.
+It retains scripts/mappings/walking scratch while ordinary follower positions
+and destinations are refreshed under the actual mode/raft branches. It does
+not heal, rerun setup/init or scan battles; recorded X1, negative Y and facing
+retain their byte/word and unapplied-facing limits. Missing71/78 setups supply
+no populated or random-battle default, and those maps have no battle-table rows.
+Their distinct layouts establish no decoded walkable route or refreshed area
+metadata. Neither Higins's request nor the border row proves eastward travel.
+
+Both overworld town entrances request no-scroll Map02, nominally21,30/Up.
+Ordinary MainLoop now scans battles:431 admits31 with either531; held531 clears
+431 while still selecting31 on that call. Only clear431 reaches fresh town
+exploration. F530 selects ten or nine fixed NPCs after actual flag followers;
+membership, physical mappings, class/HP sprites, finite walking storage and
+raft mode remain separate. Shared init is empty. Pending zero at WaitForEvent
+permits the actual numeric-mode control script; pending nonzero bypasses it.
+The guide stops at this first event/control read or before Battle31 execution.
+Town interactions/castle admission, natural reach/state, completed services,
+rendering, usable control and persistence remain outside the proved boundary.
+The observed/remake frontier does not advance.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
