@@ -2119,6 +2119,47 @@ continuation/operation indexes are not automatically equivalent. Historical repo
 original Git/compiler identity. This candidate neither updates their fixtures nor claims that a
 retired comparison passed against the new lowering; the current engine behavior uses the new rules.
 
+The source support is pinned `disasm/code/common/scripting/map/mapscriptengine_2.asm`,
+`csc08_joinForce`: it calls `txt 447` for selector128, or `JoinForce`/`GetClass` and `txt 446` for one
+member, then returns after the music/input wait. It does not invoke `csc04_setTextIndex` or change the
+cutscene text cursor. The explicit-ID lowering is an intentional correction, independently of the
+native route's success. The three compiler deltas are present in production commit
+`f24827296b184ff34ac9ca1a7550e486a2685e78`; later commits only adjust planner/tests/documentation.
+No currently required public command consumes those old H4 program indexes.
+
+To reproduce the bounded lowering comparison from this candidate checkout, load the local environment
+and run the following in `uv run python -X utf8 - <pinned-source-root>` using a PowerShell here-string
+pipe. It reads the accepted Git source without checking out or changing another worktree, compiles
+the existing adapter selection, and prints only changed program names/counts:
+
+```python
+import subprocess, sys, types
+from pathlib import Path
+from sf2tool.remake_exploration_content import OriginalPrograms
+from sf2tool.remake_h4.w1_source import _W1_SOURCE_FILES, _W1_SOURCE_SYMBOLS
+old = types.ModuleType("accepted_producer")
+source = subprocess.check_output(["git", "show",
+    "dee915fdf02c9fe49c367b2c2a251ba255728038:src/sf2tool/remake_exploration_content.py"])
+exec(compile(source, "accepted-producer", "exec"), old.__dict__)
+files = set(_W1_SOURCE_FILES) | {
+    "data/maps/entries/map03/mapsetups/scripts_1.asm",
+    "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+    "data/maps/entries/map03/mapsetups/s3_zoneevents.asm",
+    "data/battles/entries/battle01/cs_beforebattle.asm"}
+symbols = set(_W1_SOURCE_SYMBOLS) | {
+    "cs_5145C", "Map3_EntityEvent0", "Map3_EntityEvent15", "byte_50E96", "cs_5149A", "bbcs_01"}
+outputs = []
+for compiler_type in (old.OriginalPrograms, OriginalPrograms):
+    compiler = compiler_type({"resources": {
+        "standaloneScriptPrograms": [], "initSourcePrograms": []}}, Path(sys.argv[1]))
+    for path in sorted(files): compiler.register_file("disasm/" + path)
+    for symbol in sorted(symbols): compiler.compile(symbol)
+    outputs.append(compiler.programs)
+for name in sorted(set(outputs[0]) | set(outputs[1])):
+    if outputs[0].get(name) != outputs[1].get(name):
+        print(name, *(len(rows.get(name, {}).get("instructions", [])) for rows in outputs))
+```
+
 ### Retained candidate results and open acceptance
 
 The Issue1045 handoff retains exact inputs, reports, logs, failed node IDs and correction commands.
