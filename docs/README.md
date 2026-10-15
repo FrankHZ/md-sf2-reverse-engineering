@@ -302,6 +302,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   conditional town/overworld rebuilding, retained north scroll, candidate zone and partial reload through ordered27/32 admission; stops before BattleLoop initialization, with natural-route/control/persistence limits.
 - [`battle27-initialization-and-opening.md`](./design/synthesis/battle27-initialization-and-opening.md) —
   actual fresh formation, sixteen enemies, rebuilt crop/view and complete three-speaker opening; supplied F88 state, identity, interrupted-intro and pre-activation/pre-turn limits.
+- [`battle27-activation-and-first-turn-dispatch.md`](./design/synthesis/battle27-activation-and-first-turn-dispatch.md) —
+  checked regions versus flags/activation, fresh no-spawn and randomized turn records through the first call before its body; supplied-state, deals alias, finite-buffer and presentation limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

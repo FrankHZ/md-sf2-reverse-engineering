@@ -312,6 +312,12 @@ sentinel branches to `@Start`; otherwise ExecuteIndividualTurn follows. Merely
 reaching the label guarantees neither a valid actor nor an immediate turn.
 LoadBattle itself performs no round reset or turn-order resampling.
 
+Continue with [Battle27 activation and the first turn handoff](battle27-activation-and-first-turn-dispatch.md)
+only after the fresh opening wrapper returns. That guide distinguishes checked
+regions, persistent flags, enemy activation, spawning and turn admission through
+the first ExecuteIndividualTurn call, before its body; it also retains F88's
+initial supplied-order bypass and sentinel reentry.
+
 ## Changed states and the supported boundary
 
 | Changed premise | Consequence that must remain conditional |
