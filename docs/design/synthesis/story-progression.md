@@ -749,6 +749,25 @@ scroll and fresh entry retain different actor/latch lifetimes. The next
 27,33→Map48(55,29)Up warp is identified only; the scene does not directly take
 it. Cave interior/Battle25, natural reach, supplied state, completed services,
 presentation/control and save/load remain outside the established boundary.
+
+[North Cliff entry through Battle25 admission](north-cliff-entry-through-battle25-admission.md)
+continues the separate no-scroll request to Map48 `(55,29)` Up. Ordered
+Battle11/25 trigger checks require their own unlocks; completion525 clears425
+after selection without declining that same entry. Without admission, Map48's
+sentinel setup still runs shared population/follower/loading behavior. Fresh25
+uses empty before/start hooks with475 ordering, heals before actual roster
+placement, and loads the complete fifteen-enemy/three-region encounter. Joined
+Rohde does not guarantee an active healthy placed or equipped member. Source
+item flags are masked; difficulty modifies base ATT before current stats, and25
+has no random-battle type upgrades. The `(28,0)` crop is separate from actual
+view-target descriptor selection and byte128 secondary-layer following.
+
+F88 continuation, supplied party/HP/class/mode/RNG and interrupted prefixes
+retain different effects. The guide ends at fresh start-dispatcher return,
+before `ActivateEnemies`. Natural reach, completed services, rendered darkness,
+control/save, actual combat/outcomes and later crossing/Ketto remain outside
+the established boundary.
+
 The observed and remake frontiers below are unchanged by this static explanation.
 
 **Confirmed bounded original observation:** the
