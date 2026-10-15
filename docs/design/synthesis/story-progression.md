@@ -794,6 +794,35 @@ arrival and save/load remain Unknown. Later conversations, merchant run,
 services/items, Battle26 combat and subsequent quests are separate scope.
 This extension does not advance the observed or remake frontier.
 
+[Ketto interactions and merchant relocation](ketto-interactions-and-merchant-relocation.md)
+continues with all eight residents and their actual activation/lookup/facing
+wrapper. UP1/DOWN3 are turn/restore action bits. Narrative prohibitions and
+the merchant's assumed agreement add no choice or gameplay gate. The woman's
+Yes/No/B prompt selects dialogue; temporary 257 follows its branch text. F800
+overrides her prompt/repeat with shop 27. Priest 256 suppresses only the warning,
+while both paths invoke church. Actual sprite context and text cleanup remain
+separate from intended speakers and completed services.
+
+The merchant saves/restores text speed around 1966–1969, sets 800 before the
+scene, installs speed 64, waits for Bowie actor 0's destination before facing,
+then waits five relative merchant segments before headshake and final 133/135
+placements. The high-bit variant alone skips Bowie's destination wait.
+Partial writes, changed origins/mappings, dead-Bowie facing and fresh/CURRENT/
+scroll lifetimes remain explicit. Stock 9/27 is zero-based; invocation does not
+prove a purchase. Only selected Save copies 25 to EGRESS_MAP and sets 399 before
+SaveGame; its savepoint 25(12,11)Up and suspend branch are separate boundaries.
+
+Eleven sign/book inspections retain actual coordinate/layout admission and
+member 0 NAME substitution; offset 10 is absent. BRIGHT_HONEY(4,22)/170 and
+HEALING_WATER(29,18)/171 set collection flags before inventory success, use
+joined-force fallback and refill on normal all-full failure. Collection is
+not consumable use. Empty/default local callbacks retain shared handlers.
+Wildcard Y31 requests 72(31,27)Down without a local 426 write; ordered 8/24/26
+admission and later helper 26 remain independent. The guide stops before
+Battle26's scene/roster/combat. Natural access, supplied state, completed
+services, usable control and save persistence remain Unknown. Neither the
+observed nor remake frontier advances.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

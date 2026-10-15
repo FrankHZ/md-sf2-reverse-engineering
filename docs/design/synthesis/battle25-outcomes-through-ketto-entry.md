@@ -13,6 +13,11 @@ supplied state, completed services, rendered arrival, usable control and
 save persistence. This guide ends after Ketto init and the conditional
 controller installation request, before later town interactions.
 
+[Ketto conversations, shops and the merchant's move](ketto-interactions-and-merchant-relocation.md)
+continues from this entry through independent local interactions, inspections,
+collection and conditional departure. It retains separate choice, flag, motion
+and service-completion boundaries.
+
 ## Evidence and Reading Boundary
 
 Continue from [North Cliff entry through Battle25 admission](north-cliff-entry-through-battle25-admission.md).

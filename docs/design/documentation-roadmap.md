@@ -426,66 +426,77 @@ and crop/view limits before activation. Its
 and #994 handoff preserve #989/#990 evidence, corrections, CI and unavailable
 source/pair boundaries. Actual combat and later travel are separate transitions.
 
-The current reader outcome explains Battle25 outcomes and the conditional
-return/journey through Ketto's initial population. **Standard** rigor remains
-appropriate: outcome bookkeeping, mutable member-derived return coordinates,
-later admission and town initialization have separate premises. The owner is
-[Battle25 outcomes through Ketto entry](synthesis/battle25-outcomes-through-ketto-entry.md),
-scoped by [#998](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/998).
-Consume complete accepted [#993 research](../research/battle25-outcomes-through-ketto-entry.md)
-and #994 admission synthesis. Concurrent #997 Ketto-interactions research and
-UI692 are independent, offlimits and not evidence. No original finding or
-remake behavior is authorized.
+[Battle25 outcomes through Ketto entry](synthesis/battle25-outcomes-through-ketto-entry.md)
+explains actual outcomes, separate cave departure/ordered admission and the
+initial town population. Its
+[retained review](synthesis/battle25-outcomes-through-ketto-entry.md#evidence-review-and-retained-results)
+and #998 handoff preserve #993/#994 objects, comparisons, corrections, CI,
+completed failures and unavailable source/pair boundaries.
+
+The current reader outcome explains Ketto's local interactions, merchant move,
+services, inspections/items and conditional departure. **Standard** rigor remains
+appropriate: narrative, real choices, temporary/persistent state, motion, service
+invocation and completed transactions have separate premises. The owner is
+[Ketto interactions and merchant relocation](synthesis/ketto-interactions-and-merchant-relocation.md),
+scoped by [#1002](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1002).
+Consume complete accepted [#997 research](../research/ketto-interactions-and-merchant-relocation.md)
+and #998's entry guide. Concurrent #1001 Battle26 research and UI692 are
+independent, offlimits and not evidence. No original finding or remake behavior
+is authorized.
 
 Acceptance requires a readable connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain empty end/after slot25 and leader byte0, actual death/count order,
-  after-turn effects, X-byte/HP-word counting and defeat precedence. Killing128
-  alone does not win; supplied hidden/nonmember slots keep their actual rules.
-- Explain eligible victory healing, first actual joined/active member and mapped
-  facing, crop byte arithmetic and later JoinForce0. Preserve425/525/475 order
-  and absence of426 unlock; no fixed exit or guaranteed Bowie seed. Distinguish
-  defeat/Egress costs, EGRESS_MAP selector/savepoint/fallback/raft effects and
-  eventual exploration healing without generic revival.
-- All outcomes enter exploration without immediate CheckBattle. Explicit48's
-  sentinel still rebuilds actors/followers/temp state; CURRENT/scroll/F88 differ.
-  Keep Rohde joined11/active43/follower84 distinct, real logical aliases
-  A/B/C/D30/31/158/159, physical mapping and capacity caveats readable.
-- Explain cave returns to72, ordered wildcard8/24/26 admission, independent
-  F750/716/10 init and helper26's526 rather than525 predicate. Geography and
-  crop do not prove a navigable or unopposed journey; no Battle26 roster/combat.
-- Explain separate31,26→Map25(16,30)Up request, absent Map25 battle row,
-  complete eight Ketto actors/walking bounds and follower-relative placement.
-  F800 changes init, not population selection;133/135 setPos relocation differs
-  from walking. Fresh/CURRENT/scroll and missing/hidden mappings retain effects.
-- Stop after init and conditional controller installation request. Supplied
-  state, natural route, completed services, rendered/usable control and save
-  may remain Unknown. Later conversations, merchant run, services/items and
-  subsequent quests remain separate scope; interrupted prefixes do not roll back.
+- Explain all eight callbacks through actual activation/lookup/portrait/facing/
+  cleanup. UP1/DOWN3 are action bits, not approach gates. Preserve meaningful
+  1956–1978 dialogue/context and uncalled 1970; narrative prohibitions and
+  merchant questions add no gates or consent menu.
+- Explain woman's Yes/No/B and 257 commit/repeat,800 precedence, priest 256 warning
+  versus unconditional ChurchMenu, actual sprite/name context and independent
+  text continuation/cleanup, temporary/persistent state and interruptions.
+- Explain saved speed 0/1/2/3/restore,800-before-scene, speed 64, actual Bowie actor 0
+  setDest wait then facing, five sequential waited relative segments, conditional
+  endpoint 20,3, headshake and final 133/135 relocation. Preserve high-bit wait
+  exception, generated actions, HP/hidden/missing mappings and incomplete
+  prefixes without claiming animation/timing or transaction completion.
+- Present zero-based weapon 9/item 27 stock; entry is not payment/purchase/grant.
+  Explain priest entry and selected Save copying 25 to EGRESS_MAP/399 before
+  SaveGame, savepoint 25(12,11)Up and suspend/return distinction. Link shared
+  service behavior without expanding generic menus or claiming persistence.
+- Explain all 11 books/signs, meaningful English content, actual NAME substitution,
+  absent offset 10 and coordinate/layout admission. Both items/locations/170/171,
+  flag-before-inventory, ordinary Bowie versus joined-force fallback, all-full
+  refill and interruptions matter; acquisition differs from use. Empty/default
+  callbacks do not disable shared handling.
+- Contrast fresh/CURRENT/scroll/800/temp 256/257. Fresh relocation omits old speed/
+  route; clearing 800 does not restore positions. Explain wildcard Y31→72(31,27)
+  Down and ordered admission/helper 26 without local 426 write. Stop before
+  Battle26 scene/roster/combat or later towns. Natural reach, supplied state,
+  completed services, rendered/usable control and save may remain Unknown.
 
-Own exactly five paths: the new guide, admission predecessor continuation
+Own exactly five paths: the new guide, Battle25-entry predecessor continuation
 only, Story Progression's connected segment/boundary, this current agreement
 and docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/
 remake/glossary/Chinese writes, acquisition, regeneration, runtime, environment
 change or new maintained machinery. Content/readability governs length, without
 artificial caps. Source contradictions return to research.
 
-Minimum evidence is complete accepted Layer A, selected existing public
-fixture/schema/consumer checks and direct document review. Source/pair absence
+Minimum evidence is complete accepted Layer A and changed-state review, selected
+existing public fixture/schema/consumer checks and direct document review.
+Public schemas/facts do not substitute for private-row proof. Source/pair absence
 in design is accepted; no fresh-comparison claim. The guide's
-[retained review](synthesis/battle25-outcomes-through-ketto-entry.md#evidence-review-and-retained-results)
-links #993's exact objects, unchanged-pair/CI receipts, separator-check and
-follower C/D corrections, discovery diagnostics, and #994's accepted results.
-Predecessor failures/Unknowns stay with their owners; completed results are
-not reset or repeated for replacement receipts.
+[retained review](synthesis/ketto-interactions-and-merchant-relocation.md#evidence-review-and-retained-results)
+links #997's exact objects, 0.081s pair/CI, accepted waiting-Bowie correction,
+zero-based stock 9, opcode-case assertion failure/correction and diagnostics,
+and #998's receipts/readability-link correction. Linked predecessor failures
+and Unknowns stay with their owners; completed results are not reset.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
 scope and git diff --check. Load local/private-inputs.ps1 in the same process
 for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI. Documentation scope uses direct checks without
 blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #998, Project Review / Verify and a successful authorized
+pushed Draft PR fixing #1002, Project Review / Verify and a successful authorized
 main-gate callback for independent acceptance. No merge, cleanup, archive or
 next Issue.
 
