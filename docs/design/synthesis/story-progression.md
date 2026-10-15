@@ -1043,6 +1043,38 @@ helper and ordinary movement counter. Stop before BattleLoop initialization;
 natural reach, completion/control/persistence remain Unknown and no observed
 or remake frontier advances.
 
+[Battle27: initial formation and the restrictions confrontation](battle27-initialization-and-opening.md)
+continues that74/27 handoff. **Confirmed:** fresh entry assigns current map/
+battle, passes the empty F477-gated before hook, resets90–105, heals eligible
+allies and rebuilds actual membership/positions and sixteen enemy rows. Twelve
+formation slots name no fixed party; dead members consume processed slots
+without advancing placement, surplus members leave active membership and
+inconsistent empty state has no established safe guard. The six enemy types'
+definitions, equipment, spells, difficulty-adjusted stats and initial region/
+activation storage prove no tactics. Battle27 has no random upgrade or neutral
+group; Battle32's Jaro exception does not apply.
+
+Load replaces exploration actors/mappings, selects actual class/type sprites
+and uses local coordinates inside the supplied Map74 crop. The physical scan
+tests position/neutral state, not HP, and has no allocation guard. Logical
+combatants, physical actors, sprites and text speakers remain distinct.
+The start wrapper sets477 before the complete nine-command scene: Soldier133
+asks origin/purpose, Soldier132 mentions restrictions, and Lizardman128 dismisses
+ignorance. No question creates a choice. Fresh sprites use no-portrait/bleep6
+fallback; missing/aliased actors, existing portraits, held input and debug skip
+can change consumption. Camera/speed requests establish no rendered completion;
+interrupted477 can suppress an unfinished replay.
+
+Fresh entry stops before ActivateEnemies. F88 instead loads supplied current
+battle state without reset/healing/hooks, stopping before individual-turn
+execution; the next turn byte can still be the sentinel that branches to Start.
+At this particular74/27 entry d0 remains74 and reads outside the64-byte lookup;
+this does not establish natural suspend/resume's entry/registers. **Inferred:**
+the exchange concerns restrictions toward source-named Tristan. **Unknown:**
+natural reach, supplied state, completed services/presentation/control and
+persistence. Activation, turns, actions, outcomes and later story remain outside
+this guide, with no observed or remake frontier advance.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

@@ -489,46 +489,51 @@ Its [retained review](synthesis/pacalon-castle-entry-and-first-visit.md#changed-
 and #1030 handoff preserve accepted #1025/#1026 results, diagnostics and Unknowns.
 Its south endpoint is the starting request for the next guide.
 
-The current reader outcome explains [Pacalon departure: the north scroll and
-conditional Battle27 admission](synthesis/pacalon-departure-to-battle27-admission.md),
-scoped by [#1034](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1034).
-**Standard** rigor remains appropriate: fresh construction, retained scrolling,
-candidate zone coordinates, partial pending writes and ordered admission are
-separate boundaries. Consume complete accepted
-[#1029 research](../research/pacalon-departure-to-battle27-admission.md)
-at369757a5 plus the accepted #1030 guide, with necessary entry/request/zone/
-common-map/random-helper owners. Parallel Battle27-initialization research
+[Pacalon departure: the north scroll and conditional Battle27 admission](synthesis/pacalon-departure-to-battle27-admission.md)
+explains fresh town/overworld construction, retained scrolling, candidate zone
+writes, partial reload and ordered27/32 admission. Its
+[retained review](synthesis/pacalon-departure-to-battle27-admission.md#changed-states-and-retained-evidence-review)
+and #1034 handoff/acceptance preserve #1029/#1030 evidence, separate original/
+final results and diagnostics, accepted0.083s provenance and natural-route limits.
+
+The current reader outcome explains [Battle27: initial formation and the
+restrictions confrontation](synthesis/battle27-initialization-and-opening.md),
+scoped by [#1038](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1038).
+**Standard** rigor remains appropriate: fresh/resume state, actual membership,
+physical identity and intro completion have distinct boundaries. Consume the
+complete accepted [#1033 research](../research/battle27-initialization-and-opening.md)
+at85016e1c and the accepted #1034 predecessor. Activation research
 and UI692 remain unconsumed/offlimits.
 
 Acceptance requires a connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain castle return through conditional town/Battle31 admission, then
-  town south71/F530→78 fresh exploration, absent setups, actual followers/
-  mode and pending/control premises. King/F810/item/service prerequisites
-  must not be inferred.
-- Follow ordered north scroll74 with retained population/scripts/mappings,
-  temporary flags, CURRENT_BATTLE and area metadata. Preserve coordinate
-  widths/high bytes/sentinels, unapplied facing and actual raft/follower
-  mutations. Scrolling neither rebuilds exploration nor scans battles.
-- Join actual layout-kind1400 producer, candidate XDEST/YDEST plus deltas,
-  type-before-word writes, later collision skip, first-match zone255,61/
-  default and wrapper cleanup/VInt/motion wait. Resource/exit rows prove
-  no natural traversable route.
-- Cover every527/811/532 branch and exact427→reload→428/429/430 order,
-  old unlocks on no-write paths and partial/interrupted mutations. The
-  four-byte000100FF write replaces only type/PARAM1/PARAM2: retained zone
-  Y003D becomes warp X0/Y61 with stale facing/sound and changed high bytes
-  explicit. Neither immutable event queue nor deferred Frayja history follows.
-- Explain reload through WaitForEvent/no-scroll/MainLoop/SwitchMap and
-  ordered27-before32 selection: wildcard triggers, output crop and completion
-  clearing unlock while admitting now. Distinguish the generic random helper
-  and ordinary movement counter; stop before BattleLoop initialization.
-- Preserve no-match CURRENT actor/temp/loaded-layout retention and area
-  refresh with stale CURRENT_BATTLE. Changed-state/interruption/control/
-  persistence Unknowns remain explicit; no observed/remake frontier advances.
+- Connect incoming74/27 through the empty before hook, restored selectors,
+  region reset, eligible healing, actual membership/formation and enemy load.
+  Twelve placements prove no fixed named party; preserve dead/fewer/surplus/
+  empty-member behavior and actual HP/class/status/item/difficulty readers.
+- Explain all sixteen enemies/six definitions using the owning complete
+  tables, equipment/spells/stats and initial order/activation/region/point
+  declarations. Preserve no27 random upgrade/neutral group and exclusion of
+  Battle32's Jaro exception; counts/names prove no tactics or activation.
+- Separate combatants, physical actors, sprites and text speakers. Cover
+  rebuilt mappings, position-versus-HP/capacity hazards and actual Map74
+  crop/local coordinates/view/terrain/music without a decoded-route claim.
+- Explain all nine opening commands and2658–2660 literals/meaning, actual
+  Soldier133/Soldier132/Lizardman128 mappings, portrait/speech fallback,
+  camera requests and real single-text/W1/skip/terminator consumers. Preserve
+  existing portrait, current rather than guaranteed new input, unguarded
+  missing-speaker lookup, aliases/dead speakers and477-before-completion.
+  Questions create no player choice; no completed camera/rendering is claimed.
+- Distinguish fresh pre-ActivateEnemies from F88's supplied-state continuation
+  before individual-turn execution, including the possible turn sentinel.
+  At this specific74/27 entry d0-preserving helpers carry74 outside the64-byte
+  lookup; this proves no natural suspend/resume entry or register state.
+- Preserve current-selector/crop/flag/interruption premises and unsupported
+  activation/turn/AI/action/outcome/later story. Natural reach, services,
+  presentation/control/persistence stay Unknown; no frontier advances.
 
-Own exactly five Markdown paths: new guide, castle predecessor continuation
+Own exactly five Markdown paths: new guide, departure predecessor continuation
 only, Story Progression selected continuation, this current agreement/
 navigation and docs/README.md bounded navigation. No research/contracts/
 schema/fixture/tooling/remake/glossary/Chinese writes, runtime, source copy/
@@ -537,13 +542,14 @@ service/platform expansion or new maintained verification machinery.
 Content/readability governs length; contradictions return to research.
 
 Minimum evidence is complete adversarial accepted Layer A/changed-state
-review plus relevant real public fixture/schema/consumer joins and direct
-documents. Compact counts do not prove natural producer-to-consumer paths.
-The guide's [retained review](synthesis/pacalon-departure-to-battle27-admission.md#changed-states-and-retained-evidence-review)
-links #1029 final/acceptance (direct0.143s/independent0.136s, CI38673862670;
-original CI38673722838 and KeyError separate) and #1030 handoff/acceptance
-(direct3.075s/independent3.229s, CI38673538882; checker/link diagnostics
-retained). Their linked predecessors preserve earlier results/Unknowns.
+review plus selected actual public fixture/schema/consumer joins and direct
+documents. Compact summaries do not prove row contents or natural behavior.
+The guide's [retained review](synthesis/battle27-initialization-and-opening.md#evidence-review-and-retained-results)
+links #1033 final/acceptance (direct0.202s/independent0.195s, CI38675636173;
+original0.207s/CI38675382781 and schema-path/local-$ref failures separate)
+and #1034 handoff/acceptance (independent1.433s, CI38674976874; checker
+diagnostics retained). Their linked predecessors preserve #1029 and earlier
+results/failures/Unknowns.
 Reuse accepted0.083s provenance only: source/pair remain unavailable in design
 and optional layout limits remain explicit. No completed suite is reset.
 
@@ -553,7 +559,7 @@ local/private-inputs.ps1 in the launching process for clean committed
 `uv run sf2 verify plan --base origin/main --head HEAD`; record exact-head
 actual scoped CI. Documentation scope skips blanket normal/full/Python/
 .NET/Godot/H3/H4/translation suites. Freeze a clean current-main-based
-committed/pushed Draft PR fixing #1034, Project Review / Verify and successful
+committed/pushed Draft PR fixing #1038, Project Review / Verify and successful
 authorized main-gate completion callback. No merge, cleanup, archive or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.

@@ -14,6 +14,12 @@ travel toward Tristan. They do not prove a naturally completed walk.
 **Unknown:** supplied state, decoded route, completed movement/cleanup/display,
 usable control and persistence. No observed or remake frontier advances.
 
+Continue with [Battle27: initial formation and the restrictions confrontation](battle27-initialization-and-opening.md).
+That guide consumes accepted initialization/opening research after this guide's
+BattleLoop handoff, separating fresh party/enemy construction and the complete
+three-speaker scene from F88's supplied-state continuation. It stops before
+activation or individual-turn execution and retains natural-route/service limits.
+
 ## Evidence and scope
 
 The complete accepted [departure research](../../research/pacalon-departure-to-battle27-admission.md)
