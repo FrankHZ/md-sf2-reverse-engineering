@@ -1998,6 +1998,33 @@ including10ms edge margins; no normalization/filtering was applied. Their bounde
 are complete,3,532,592 bytes each (28,260,736 combined). Static finite-channel termination and a quiet
 tail establish the crop; this does not establish natural caller timing or analog hardware fidelity.
 
+The completed capture used registered BizHawk2.11.1
+(`bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`) with its verified installation, isolated config/cwd/TEMP
+and `--dump-type=wave --dump-length=1200 --dump-close --audiosync=false`, bounded to120 seconds.
+Addresses and stream intervals here are hexadecimal; counts and command IDs are decimal.
+The controlled observer advanced180 frames, saved core state, wrote68K RAM B0A3=1 and cleared
+DED8–DEDF, then selected the timer-context music through Z80 mailbox1FFF (music34 for89/BD,
+music1 for C2, music5 otherwise). After2 frames it required mailbox consumption, sent254, waited60
+frames and required all13 channel flags at0x1380+channel×0x20+3 to be inactive. It dispatched the selected
+command through1FFF, checked the first-frame stream cursor against the pinned range below, retained
+active-count changes, and required all channels inactive within600 frames plus60 quiet-tail frames.
+The saved state was restored and released before process exit. The capture is an isolated original
+driver experiment; these writes are not used by the remake continuity observation.
+
+| Command | Channel slot | Z80 stream interval (end exclusive) |
+| --- | --- | --- |
+| 110 | 9 | 1DDD–1DF7 |
+| 111 | 11 | 1E01–1E2E |
+| 89 | 9 | 1888–1893 |
+| 65 | 11 | 1634–164D |
+| 67 | 8 | 168A–16A9 |
+| 74 | 8 | 17AA–17B5 |
+
+Source slots, stream ranges and timer contexts derive from the pinned sound-driver data and selected
+music headers. The local capture records retain launch/config, mailbox/channel boundaries, unchanged
+installation inventories and the finite-cut proposals. Acquisition is closed; this protocol records
+provenance rather than authorizing a new capture batch.
+
 | Command / timer | Capture SHA256 | Retained interval |
 | --- | --- | --- |
 | 110 / CC | `A22792215FE6E761CA9411A9582765B6CD543A25E488CECD924D3103186E3650` | 179579–207649 |
@@ -2072,6 +2099,15 @@ script3 scoring: `CalculateTargetPriorityForAttack` clears the ATTACK1/2/3 extra
 `AdjustTargetPriorityForAttackByDifficulty` selects from activation/difficulty. Wider AI profiles are
 not claimed by the observed Battle02 sequence.
 
+The extracted producers preserve the existing `OriginalPrograms`, `prepare_visuals` and `_tokens`
+imports used by shared H4 source adapters. Direct import checks and unchanged prepared content cover
+that extraction; no retired comparison run is required merely by relocation. The explicit producer
+path set in `verification_engine_paths.py` selects engine-unit, adapter-build and research-public in
+both existing planner branches. Engine scope still rejects unrelated research paths. The actual
+committed auto plan retains the planner's broader dependency rules; use the explicitly reviewed
+engine semantic scope for this candidate and record both plans in the handoff. Planner edits also
+select the existing standalone H4 **build**, not a private H4 comparison run.
+
 ### Retained candidate results and open acceptance
 
 The Issue1045 handoff retains exact inputs, reports, logs, failed node IDs and correction commands.
@@ -2079,6 +2115,14 @@ The complete initial engine run finished1085 passed/16 failed; it was not interr
 replaced with a claimed green aggregate. Focused route/music checks passed after two test assertions
 were corrected to the already-owned source living-member refresh rule. Adapter compilation passed
 with zero warnings/errors. Ruff and repeated maintained preparation passed.
+
+The first public CI run completed1107 passed/2 failed/30 private skips. Its two source-AI assertions
+still expected blanket move-order rejection and an activation-bit write for unconditional dispatch.
+Pinned `StartAiControl` branches directly to the activated handler when both regions are NONE,
+without that write. The migrated behavior checks preserve the activation word and distinguish set7;
+the negative order case now requires an exact missing-follow-binding failure with unchanged input.
+The owning-file run and corrected negative-case rerun pass. The completed CI failure and the first
+correction's incomplete fixture failure remain in the handoff; final remote results belong there too.
 
 The native route report18 passes but retains an obsolete “route pending” scope string; report19
 has the correct scope and stronger route/audio assertions. Reports19, defeat02 and startup01 have

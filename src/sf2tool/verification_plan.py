@@ -14,6 +14,13 @@ from urllib.parse import urlparse
 
 from sf2tool.h3.bootstrap import COMMAND_LAUNCHES
 from sf2tool.paths import repo_path
+from sf2tool.verification_engine_paths import (
+    ENGINE_EVIDENCE_INPUTS,
+    ENGINE_WIRING_PATHS,
+    REMAKE_PRODUCER_PATHS,
+    RETIRED_ENGINE_TEST_PATHS,
+    _engine_or_document_path,
+)
 
 
 @dataclass(frozen=True)
@@ -591,16 +598,12 @@ def _selection_entry(
     entry["commands"].update(partition.commands if commands is None else commands)
 
 
-def _select_h2_command(
-    selected: dict[str, dict[str, set[str]]], command: str, reason: str
-) -> None:
+def _select_h2_command(selected: dict[str, dict[str, set[str]]], command: str, reason: str) -> None:
     partition_id = H2_COMMAND_PARTITIONS[command]
     _selection_entry(selected, partition_id, reason, (f"uv run sf2 h2 {command}",))
 
 
-def _select_h3_command(
-    selected: dict[str, dict[str, set[str]]], command: str, reason: str
-) -> None:
+def _select_h3_command(selected: dict[str, dict[str, set[str]]], command: str, reason: str) -> None:
     launch = COMMAND_LAUNCHES[command]
     partition_id = H3_PROFILE_PARTITIONS[launch.profile]
     _selection_entry(selected, partition_id, reason, (_h3_command(command),))
@@ -613,9 +616,7 @@ def _select_all(
         _selection_entry(selected, partition_id, reason)
 
 
-def _select_dependents(
-    selected: dict[str, dict[str, set[str]]], root: Path, path: str
-) -> bool:
+def _select_dependents(selected: dict[str, dict[str, set[str]]], root: Path, path: str) -> bool:
     target_path = root / path
     target_module = _module_for_source_path(target_path, root)
     reverse: dict[str, set[str]] = defaultdict(set)
@@ -651,58 +652,17 @@ def _select_dependents(
     return matched
 
 
-ENGINE_WIRING_PATHS = frozenset(
-    {
-        "src/sf2tool/cli.py",
-        "src/sf2tool/harness.py",
-        "src/sf2tool/verification_plan.py",
-        "src/sf2tool/remake_exploration_content.py",
-        "src/sf2tool/remake_battle_scene_content.py",
-        "remake/reference/inputs/map3-programs.json",
-    }
-)
-ENGINE_EVIDENCE_INPUTS = frozenset(
-    {
-        "tests/fixtures/h3/battlefield-movement-matrix-v1.json",
-        "tests/fixtures/h2/map3-battle01-admission-static-v1.json",
-        "tests/fixtures/h2/map3-battle01-victory-return-static-v1.json",
-        "tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json",
-        "tests/fixtures/h3/battle-exp-level-up-v1.json",
-        "tests/fixtures/h3/entity-movement-matrix-v1.json",
-        "tests/fixtures/h3/map3-battle01-player-ready-v1.json",
-        "tests/fixtures/h3/map3-admitted-start-v1.json",
-        "tests/fixtures/h3/map3-battle01-natural-route-v1.json",
-        "tests/fixtures/h3/map3-messenger-acceptance-v1.json",
-    }
-)
-RETIRED_ENGINE_TEST_PATHS = frozenset(
-    {
-        "tests/python/test_dotnet_environment.py",
-        "tests/python/test_godot_ai_probe.py",
-        "tests/python/test_remake_architecture.py",
-        "tests/python/test_remake_godot.py",
-        "tests/python/test_verification_plan.py",
-    }
-)
-
-
-def _engine_or_document_path(path: str) -> bool:
-    if path.endswith(".md"):
-        return not path.startswith(("docs/research/", "docs/design/contracts/"))
-    return (
-        path.startswith("remake/")
-        or path in RETIRED_ENGINE_TEST_PATHS
-        or path == ".github/workflows/public-checks.yml"
-    )
-
-
 def _plan_engine_paths(
     paths: tuple[str, ...], include_partitions: tuple[str, ...]
 ) -> dict[str, object]:
     selected: dict[str, dict[str, set[str]]] = {}
     _select_all(selected, include_partitions, "explicit --include-partition")
     for path in paths:
-        if path in {"src/sf2tool/verification_plan.py", ".github/workflows/public-checks.yml"}:
+        if path in {
+            "src/sf2tool/verification_plan.py",
+            "src/sf2tool/verification_engine_paths.py",
+            ".github/workflows/public-checks.yml",
+        }:
             _selection_entry(selected, "h4-comparison-build", path)
         if path.endswith(".md") or path in RETIRED_ENGINE_TEST_PATHS:
             continue
@@ -786,16 +746,15 @@ def plan_paths(
     for path in changed_paths:
         normalized = path.replace("\\", "/")
         if normalized in {
-            "src/sf2tool/verification_plan.py", ".github/workflows/public-checks.yml"
+            "src/sf2tool/verification_plan.py",
+            "src/sf2tool/verification_engine_paths.py",
+            ".github/workflows/public-checks.yml",
         }:
             _selection_entry(selected, "h4-comparison-build", normalized)
         if normalized in ENGINE_EVIDENCE_INPUTS:
             # Preserve the owning research selection and the actual engine consumer.
             _selection_entry(selected, "engine-unit", normalized)
-        if normalized in {
-            "src/sf2tool/remake_exploration_content.py",
-            "src/sf2tool/remake_battle_scene_content.py",
-        }:
+        if normalized in REMAKE_PRODUCER_PATHS:
             _select_all(selected, ("engine-unit", "adapter-build", "research-public"), normalized)
             continue
         if normalized in RETIRED_ENGINE_TEST_PATHS:
@@ -925,11 +884,7 @@ def plan_paths(
             continue
 
         if normalized.startswith("tests/python/") and normalized.endswith(".py"):
-            commands = (
-                (f"uv run pytest {normalized}",)
-                if (root / normalized).is_file()
-                else None
-            )
+            commands = (f"uv run pytest {normalized}",) if (root / normalized).is_file() else None
             _selection_entry(
                 selected,
                 "tooling-python",
@@ -972,7 +927,8 @@ def plan_paths(
             continue
 
         if normalized.startswith("tools/h4-comparison/") or normalized in {
-            "src/sf2tool/h4_dotnet.py", "src/sf2tool/remake_h4_comparison.py",
+            "src/sf2tool/h4_dotnet.py",
+            "src/sf2tool/remake_h4_comparison.py",
             "src/sf2tool/dotnet_environment.py",
         }:
             _selection_entry(selected, "h4-comparison-build", normalized)
