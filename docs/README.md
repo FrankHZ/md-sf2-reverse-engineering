@@ -284,6 +284,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   actual outcome returns, conditional cave departure and later admission, and Ketto's initial population through the controller request.
 - [`ketto-interactions-and-merchant-relocation.md`](./design/synthesis/ketto-interactions-and-merchant-relocation.md) —
   all resident interactions, merchant movement, service entry and inspections/items through conditional departure; choice, state and completion limits.
+- [`battle26-admission-and-geshp-confrontation.md`](./design/synthesis/battle26-admission-and-geshp-confrontation.md) —
+  ordered admission, actual field cast and complete Geshp/Higins confrontation through before-wrapper return; narrative, action, alias and fresh-initialization limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

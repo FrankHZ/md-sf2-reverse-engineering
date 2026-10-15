@@ -823,6 +823,35 @@ Battle26's scene/roster/combat. Natural access, supplied state, completed
 services, usable control and save persistence remain Unknown. Neither the
 observed nor remake frontier advances.
 
+[Battle26 admission and the Geshp confrontation](battle26-admission-and-geshp-confrontation.md)
+continues after a conditional Map72 request. Ordered wildcard candidates 8/24/26
+use independent unlocks; completion cleanup still returns the selected battle.
+Helper26 tests 526/counter/RNG before requesting 426; shopping,800 and victory525
+do not establish that route. Fresh88-clear assigns72/26 and checks476 before
+the scene; held476 skips its population but not later fresh initialization.
+Supplied88 continuation bypasses this scene and incoming72/26 assignment.
+
+The scene rebuilds actual field actors/follower lookups, including Peter and
+Higins without requiring membership, Geshp, Demon, Bishop, Lizardman, Cloud and both centaurs.
+Geshp taunts Higins and the soldiers; each soldier defends or challenges him,
+then undergoes a scene death action. Geshp identifies himself as Zeon's adviser,
+claims Higins's body and welcomes a new leader. FOLLOWER_B interrupts and names
+Granseal; Geshp orders the devils to stop the force and visually departs. B is
+the actual supplied alias, not guaranteed Astral; A/B/class/HP/missing mappings
+change command behavior. Neither apparent death nor possession mutates combat
+HP/status/allegiance, and Higins is not recruited here.
+
+Waited actions poll Idle; relative origins, timer-based jumps, asynchronous
+replacement and hidden actors that still update retain their separate premises.
+stopEntity/motion OFF disable animation rather than all motion. Actual NAME19,
+portrait/bleep/windows and text-skip cursor differ with supplied state; questions
+do not create choices. The before tail restores neither all actor/effect state
+nor Demon's last asynchronous action and grants no control. The guide stops at
+before-wrapper return, before fresh region reset/healing/formation/load/start.
+Initial combatant/neutral roster, turns, outcomes and Higins recruitment remain
+later scope. Natural reach, supplied state, completed services, visible timing,
+control and persistence remain Unknown; the observed/remake frontier does not advance.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
