@@ -102,7 +102,9 @@ public sealed class PrivateActionBindingTests
         var result = FinishBattleScenes(session, Accept(session, new Confirm()));
         Assert.Equal((byte)7, result.Snapshot.Battle.GetActor(actor).Mp); Assert.InRange(result.Snapshot.Battle.GetActor(actor).Exp!.Value, 9, 11);
         Assert.Single(result.Observations, row => row.Kind == "after-turn" && row.Actor == actor);
-        Stay(session); Assert.Equal(new ActorRef("ally-0"), session.Current.Selection!.Actor);
+        // Stay can publish an automatic movement before the next player's selection.
+        FinishBattleScenes(session, Stay(session));
+        Assert.Equal(new ActorRef("ally-0"), session.Current.Selection!.Actor);
         Accept(session, new Confirm()); var before = session.Current;
         Assert.Equal("spell-effect", Send(session, new SelectSpell(new("egress", 1))).Failure!.Code);
         Assert.Same(before, session.Current);

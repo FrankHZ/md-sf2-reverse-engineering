@@ -72,7 +72,9 @@ internal static class OutcomeReturnRules
         {
             var a = before.Actors[index]; var b = after.Actors[index];
             Require(b with { Hp = a.Hp, Mp = a.Mp } == a);
-            var deployment = encounter.Deployments.Single(row => row.Actor == a.Actor);
+            var deployment = encounter.Deployments.FirstOrDefault(row => row.Actor == a.Actor) ??
+                definition.Encounters.Values.SelectMany(value => value.Deployments)
+                    .First(row => row.Faction == BattleFaction.Ally && row.Actor == a.Actor);
             Require(deployment.Faction == BattleFaction.Ally || b == a);
             Require(b.Hp <= (a.Progress?.MaxHp ?? deployment.Definition.MaxHp) &&
                 b.Mp <= (a.Progress?.MaxMp ?? deployment.Definition.MaxMp));

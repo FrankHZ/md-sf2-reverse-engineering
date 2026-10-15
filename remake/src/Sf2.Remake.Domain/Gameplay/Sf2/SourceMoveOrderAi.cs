@@ -33,19 +33,23 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         Restrict(mode);
         var targets = _battle.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != Actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();
-        var costs = Costs();
-        var grid = Grid();
-        // MOVE2/3 retain temporary obstruction restrictions while selecting reachable targets.
-        var raw = WeightedMovement.Build(costs, Offset(Actor.Position!), 128);
-        targets = targets.Where(unit => raw.CostAt(unit.Position!) is >= 0 and < 128).ToArray();
         if (targets.Length == 0)
         {
             _effects.Add(new("ai-command-move" + (mode + 1), actorRef, After: -1));
             _effects.Add(new("ai-stay", actorRef));
             return Complete(new(_battle, [], Actor.Position!, [Actor.Position!]));
         }
-        var pursuit = AiMovementRules.Pursue(costs, grid, Actor.Position!, targets.Select(unit => unit.Position!).ToArray(),
+        // Source scores before clearing temporary flags, approaches on unrestricted terrain,
+        // then reapplies the order restriction and opposing occupancy for its actual stop.
+        var scores = WeightedMovement.Build(Costs(), Offset(Actor.Position!), 128);
+        _blocked = new bool[2304];
+        var approachCosts = Costs();
+        Restrict(mode);
+        var pursuit = AiMovementRules.PursueOrdered(approachCosts, scores, Grid(), Actor.Position!, targets,
+            Actor.Definition.Mover == BattleMover.Hovering ? PhysicalPriorityTable.Flying : PhysicalPriorityTable.Regular,
             Occupied, _battle.Definition.Width, _battle.Definition.Height);
+        _effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost,
+            Target: targets[pursuit.TargetIndex].Actor));
         _effects.Add(new("ai-command-move" + (mode + 1), actorRef, After: 0));
         return Complete(new(_battle, [], pursuit.Destination, BattleMovement.Route(Actor.Position!, pursuit.MoveString)));
     }

@@ -2099,6 +2099,18 @@ script3 scoring: `CalculateTargetPriorityForAttack` clears the ATTACK1/2/3 extra
 `AdjustTargetPriorityForAttackByDifficulty` selects from activation/difficulty. Wider AI profiles are
 not claimed by the observed Battle02 sequence.
 
+Ordered MOVE2/3 keeps every living/on-map opponent. Pinned
+`disasm/code/gameflow/battle/ai/command/move.asm` first scores under temporary restrictions and stores
+the low byte of `GetMoveCostToEntity`, including128/255. It uses stable unsigned ascending order;
+when multiple targets exist and the last original-order score has bit7 set, it performs one forward
+adjacent class pass, requiring both rank distance≤1 and source combatant-index distance≤3. It then
+clears temporary restrictions for the preliminary reverse approach and reapplies the order pocket
+plus opposing occupancy for the final stop. `AiMovementRules.PursueOrdered` keeps those score,
+approach and final grids separate; a target outside the pocket is not silently discarded into Stay.
+The original MOVE1 overload keeps its narrower admitted score domain. Unknown classes and genuinely
+unavailable unrestricted paths still produce typed failures. Small engine cases vary target/order
+positions, different raw score bytes, both adjacent-pass conditions and the final restricted stop.
+
 The extracted producers preserve the existing `OriginalPrograms`, `prepare_visuals` and `_tokens`
 imports used by shared H4 source adapters. Direct import checks and unchanged prepared content cover
 that extraction; no retired comparison run is required merely by relocation. The explicit producer
@@ -2124,7 +2136,8 @@ The source support is pinned `disasm/code/common/scripting/map/mapscriptengine_2
 member, then returns after the music/input wait. It does not invoke `csc04_setTextIndex` or change the
 cutscene text cursor. The explicit-ID lowering is an intentional correction, independently of the
 native route's success. The three compiler deltas are present in production commit
-`f24827296b184ff34ac9ca1a7550e486a2685e78`; later commits only adjust planner/tests/documentation.
+`f24827296b184ff34ac9ca1a7550e486a2685e78`; the subsequent AI/recovery/host corrections do not change
+those compiler deltas.
 No currently required public command consumes those old H4 program indexes.
 
 To reproduce the bounded lowering comparison from this candidate checkout, load the local environment
@@ -2183,12 +2196,48 @@ identified AudioStreamWAV/playback objects awaiting the real audio thread. The o
 250ms of wall time after root disposal; the subsequent bounded cleanup check exits without warnings
 or leaked objects. No production delay or whole-route rerun was introduced for this observer fix.
 
+The ordered-AI correction changes Battle02's first enemy decision, so report19 does not establish
+that corrected decision's host acceptance. The dependency-selected route20 reached Battle02 but
+timed out during its first Automatic movement with no session failure. The ongoing field-to-battle
+handoff recognized player selection and scenes but omitted movement, leaving the prepared battle
+view with its previous projection. The host now transfers a legitimate pending `BattleMovement`
+through the existing attach path and prevents field input during it, matching initial startup's
+guard. Before/load/start programs retain their existing ownership; the observer does not force
+completion, alter input, or extend its timeout. The failed report remains in the Issue handoff.
+The unchanged route21 observer passes with the corrected host: the first enemy moves from(3,5)
+to(4,6) before Chester's round1 input, then player/enemy physical actions return to Chester's round2
+input in the same session. Its process log has no errors, warnings or leaked-object report. This
+replaces report19 only for the changed ordered-AI/handoff dependency; loop and defeat evidence were
+not reacquired.
+
 Earlier completed route failures remain in the local handoff: missing/ambiguous selected audio,
 camera-neutral/text-class handling, unbound changed-map music context, stale board attachment and
 missing enemy sprites. They are corrected by the corresponding narrow checks and native route,
-not erased. The private legacy comparison selection still has failures from old full-opening starts,
-unbound fade context and oversized mutation fixtures; it is not a passed gate. Two corrected-H3-start
-comparisons still expect rejection of now-admitted activation or unsupported EGRESS. Do not weaken
-content admission to satisfy those stale expectations. Independent review must assess these explicit
-comparison boundaries. Human-play acceptance, independent integration and Battle02 resolution are
-not established by this candidate.
+not erased. Remaining private comparison gaps have distinct causes; no accepted-base runtime rerun
+was performed, so the initial candidate aggregate does not establish a baseline failure count:
+
+- The unchanged `map3-opening-start.json` lacks display/map-palette state, and the unchanged H3
+  `Bridge` constructs an `ExplorationStartInput` without display. The unchanged full-fade guard
+  requires it. Opening/castle/continuous-outcome comparisons stop at that reached fade; the explicitly
+  bound tower start does not replace their full R1/H3 comparisons.
+- The expanded world makes the negative fixtures' default `JsonNode.ToJsonString()` output exceed
+  the128MiB limit before ROM/raster/sprite semantic checks. Moving a multi-encounter world into TEMP
+  also breaks its relative input root. These exact negative checks remain unvalidated; successful
+  admission of valid content is not their replacement.
+- Multi-encounter input exposes old `Encounters.Values.Single()` assumptions and direct calls that
+  treat exploration's ally-only party as a complete battle start. Production `BattleEntry` merges
+  enemy defaults, but its passing route does not prove every old fixed growth/completion assertion.
+- Optional ally `activationWord` is now deliberately admitted and carried. The old unknown-field
+  expectation no longer describes that behavior; it must not be generalized to other negative cases.
+
+The two specifically reviewed private behavior gaps are resolved by narrow checks. Post-Stay was
+observed in Battle/PresentationWait with pending Automatic movement and no failure; the priest test
+now delivers that movement/scene through the existing helper, preserving its exact next-player and
+EGRESS `spell-effect` rejection/state assertions. The earlier explanation that EGRESS was implemented
+was incorrect: the failure occurred before that request. The exact test now passes. Separately,
+cross-encounter healing exposed a real production bug in the outcome-result guard, which still looked
+up every ally only in the current encounter. Its known-ally fallback now matches the recovery policy
+while retaining identity/order/count, seed/accounting, enemy immutability and resource-bound checks.
+The exact private living/dead recovery node and small extra-encounter ally/unknown/enemy cases pass.
+Prior failures remain recorded. Human-play acceptance, independent integration and Battle02 resolution
+are not established by this candidate.

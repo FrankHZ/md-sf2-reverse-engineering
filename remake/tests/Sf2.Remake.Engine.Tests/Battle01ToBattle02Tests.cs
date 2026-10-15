@@ -395,6 +395,135 @@ public sealed class Battle01ToBattle02Tests
         Assert.Equal(expected, Assert.Single(action.Effects, effect => effect.Kind == "ai-command-move-order5").After);
     }
 
+    [Theory]
+    [InlineData(10, 10, 5, 10, 8, 10)]
+    [InlineData(6, 6, 12, 6, 8, 6)]
+    [InlineData(8, 8, 8, 14, 8, 10)]
+    public void OrderedEnemyApproachesAnOutsideTargetButStopsInsideItsOrderPocket(
+        int x, int y, int targetX, int targetY, int stopX, int stopY)
+    {
+        var battle = PursuitState(new(x, y), [(0, BattleClassRule.UnpromotedSwordsman, new(targetX, targetY))]);
+        string frozen = JsonSerializer.Serialize(battle);
+        var result = SourceEnemyAi.Resolve(battle, new("pursuer"));
+        Assert.Equal(new MapPosition(stopX, stopY), result.Destination);
+        Assert.Equal(255, Assert.Single(result.Effects, effect => effect.Kind == "ai-move-target").Before);
+        Assert.Contains(result.Effects, effect => effect.Kind == "ai-command-move3" && effect.After == 0);
+        Assert.All(result.Path, point => Assert.InRange(Math.Abs(point.X - x) + Math.Abs(point.Y - y), 0, 2));
+        Assert.Equal(battle.MainSeed, result.Battle.MainSeed);
+        Assert.Equal(battle.ThinkingSeed, result.Battle.ThinkingSeed);
+        Assert.Equal(frozen, JsonSerializer.Serialize(battle));
+    }
+
+    [Theory]
+    [InlineData(1, BattleClassRule.UnpromotedSwordsman, 12)]
+    [InlineData(4, BattleClassRule.UnpromotedSwordsman, 8)]
+    [InlineData(1, BattleClassRule.UnpromotedPriest, 8)]
+    public void OutsideTargetClassPassUsesBothAdjacentPredicates(int secondId, BattleClassRule secondClass, int stopX)
+    {
+        var battle = PursuitState(new(10, 10), [(0, BattleClassRule.UnpromotedSwordsman, new(4, 10)),
+            (secondId, secondClass, new(16, 10))]);
+        var result = SourceEnemyAi.Resolve(battle, new("pursuer"));
+        Assert.Equal(new MapPosition(stopX, 10), result.Destination);
+        Assert.Equal(new ActorRef(stopX == 12 ? "target-" + secondId : "target-0"),
+            Assert.Single(result.Effects, effect => effect.Kind == "ai-move-target").Target);
+    }
+
+    [Theory]
+    [InlineData(false, 4, 0, 4)]
+    [InlineData(false, 1, 1, 255)]
+    [InlineData(true, 1, 1, 4)]
+    public void OrderedPursuitRanksRestrictedScoreBytesBeforeUnrestrictedApproach(
+        bool outsideFirst, int secondId, int selected, int score)
+    {
+        var battle = PursuitState(new(10, 10), [(0, BattleClassRule.UnpromotedSwordsman, outsideFirst ? new(5, 10) : new(10, 12)),
+            (secondId, BattleClassRule.UnpromotedSwordsman, outsideFirst ? new(10, 12) : new(5, 10))]);
+        var costs = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, BattleMover.Regular)).ToArray();
+        var restricted = costs.Select((cost, index) => Math.Abs(index % 48 - 10) + Math.Abs(index / 48 - 10) <= 2 ? cost : (sbyte)-1).ToArray();
+        var targets = battle.Actors.Where(actor => actor.IsAlly).OrderBy(actor => actor.ProcessingOrder).ToArray();
+        var scores = WeightedMovement.Build(restricted, 10 * 48 + 10, 128);
+        foreach (var target in targets) restricted[target.Position!.Y * 48 + target.Position.X] = -1;
+        var result = AiMovementRules.PursueOrdered(costs, scores, WeightedMovement.Build(restricted, 10 * 48 + 10, 8),
+            new(10, 10), targets, PhysicalPriorityTable.Regular, point => battle.Actors.Any(actor => actor.Position == point), 20, 20);
+        Assert.Equal(selected, result.TargetIndex);
+        Assert.Equal(score, result.TargetCosts[selected]);
+        Assert.Equal(new[] { outsideFirst ? 255 : 4, outsideFirst ? 4 : 255 }, result.TargetCosts);
+        Assert.Equal(score == 255 ? new MapPosition(8, 10) : new MapPosition(10, 11), result.Destination);
+    }
+
+    [Fact]
+    public void OrderedPursuitRetainsThe128BoundaryAndUnreachable255Score()
+    {
+        var battle = PursuitState(new(0, 0), [(0, BattleClassRule.UnpromotedSwordsman, new(32, 32)),
+            (4, BattleClassRule.UnpromotedSwordsman, new(33, 32))], width: 48);
+        var costs = Enumerable.Repeat((sbyte)2, 2304).ToArray();
+        var targets = battle.Actors.Where(actor => actor.IsAlly).ToArray();
+        var result = AiMovementRules.PursueOrdered(costs, WeightedMovement.Build(costs, 0, 128),
+            WeightedMovement.Build(costs, 0, 8), new(0, 0), targets, PhysicalPriorityTable.Regular,
+            point => battle.Actors.Any(actor => actor.Position == point), 48, 48);
+        Assert.Equal(new[] { 128, 255 }, result.TargetCosts);
+        Assert.Equal(0, result.TargetIndex); // Class pass cannot swap source slots four apart.
+        Assert.Equal(2, result.Destination.X + result.Destination.Y);
+        Assert.Equal(4, result.Cost);
+    }
+
+    [Theory]
+    [InlineData(0, false, 0)]
+    [InlineData(0, true, 20)]
+    [InlineData(7, false, 20)]
+    [InlineData(7, true, 20)]
+    public void RecoveryRetainsLivePartyFactsForAnAllyFromAnotherEncounter(ushort hp, bool all, ushort expected)
+    {
+        var definition = RecoveryContent();
+        var party = new BattleStartInput("first", [new(new("target-0"), 20, 0, 2, 3, 4, 0, null),
+            new(new("target-1"), hp, 0, 17, 8, 9, 0, null, ActivationWord: 32)], 0x1234, 0x5678, 987);
+        var recovered = BattleOutcome.Heal(definition, party, all);
+        Assert.Equal(party.Actors[0], recovered.Actors[0]);
+        Assert.Equal(party.Actors[1] with { Hp = expected }, recovered.Actors[1]);
+        Assert.Equal(party.Encounter, recovered.Encounter);
+        Assert.Equal(party.MainSeed, recovered.MainSeed); Assert.Equal(party.ThinkingSeed, recovered.ThinkingSeed);
+        Assert.Equal(party.Gold, recovered.Gold); Assert.Equal(hp, party.Actors[1].Hp);
+    }
+
+    [Theory]
+    [InlineData("unknown")]
+    [InlineData("pursuer")]
+    public void RecoveryRejectsUnknownActorsAndOtherEncounterEnemies(string actor)
+    {
+        var definition = RecoveryContent();
+        var party = new BattleStartInput("first", [new(new(actor), 1, 0, 2, 3, 4, 0, null)], 0x1234, 0x5678, 987);
+        string frozen = JsonSerializer.Serialize(party);
+        var failure = Assert.Throws<BattlePolicyFault>(() => BattleOutcome.Heal(definition, party, all: true));
+        Assert.Equal("party-recovery", failure.Operation);
+        Assert.Equal(frozen, JsonSerializer.Serialize(party));
+    }
+
+    private static ScenarioDefinition RecoveryContent()
+    {
+        var first = PursuitState(new(10, 10), [(0, BattleClassRule.UnpromotedSwordsman, new(5, 10))]).Definition;
+        var second = PursuitState(new(10, 10), [(1, BattleClassRule.UnpromotedPriest, new(5, 10))]).Definition;
+        return new("recovery", [new("first", first.Map, first.Width, first.Height, first.Terrain,
+            first.Deployments.Where(row => row.Faction == BattleFaction.Ally), []),
+            new("second", second.Map, second.Width, second.Height, second.Terrain, second.Deployments, [])]);
+    }
+
+    private static EngineBattleState PursuitState(MapPosition origin, (int Id, BattleClassRule Class, MapPosition Position)[] targets, int width = 20)
+    {
+        BattleActorDefinition Unit(string id, BattleClassRule rule) => new(new(id), rule, 1, 20, 0, 10, 4, 5, false, 4, [],
+            physical: new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, false, 0),
+            sourceLoadout: new([127, 127, 127, 127], [63, 63, 63, 63]));
+        var enemy = new BattleDeploymentDefinition(Unit("pursuer", BattleClassRule.Ordinary), BattleFaction.Enemy, 128,
+            BattleControl.Automatic, new("source-orders"), origin, new(0x2020, 0, 15, 15, 0, 14, 64, 255));
+        var allies = targets.Select(row => new BattleDeploymentDefinition(Unit("target-" + row.Id, row.Class), BattleFaction.Ally,
+            row.Id, BattleControl.Player, null, row.Position, new(null, 0, 0, 0, 0, 0, 255, 255))).ToArray();
+        BattleDeploymentDefinition[] deployments = [enemy, .. allies];
+        var definition = new BattleDefinition("ordered-pursuit", new("field"), width, width,
+            Enumerable.Range(0, 2304).Select(i => new BattleTerrain(i % 48 < width && i / 48 < width ? TerrainSurface.Open : TerrainSurface.Barrier, TerrainProtection.None)),
+            deployments, [], rewards: new(false), initialization: new([], BattleRegionProgram.None, aiPoints: [origin],
+                sourceCombatants: deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor)));
+        return new(definition, deployments.Select(row => new BattleActorState(row, 20, 0, 0, row.Position, 0, 0,
+            activationWord: row.Faction == BattleFaction.Ally ? (ushort)0 : (ushort)0x2020)), 0x1234, 0x5678, 1, [], 0, 0, regions: new(new bool[16], 0));
+    }
+
     private static (BattleDefinition, BattleStartInput) Setup(byte secondary = 255, byte commandset = 9)
     {
         BattleActorDefinition Unit(string id, bool ally) => new(new(id), ally ? BattleClassRule.UnpromotedSwordsman : BattleClassRule.Ordinary,
