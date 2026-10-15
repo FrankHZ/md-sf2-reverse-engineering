@@ -78,7 +78,7 @@ public sealed class EngineSessionTests
         Accept(session, new SelectSpell(before.Battle.GetActor(actor).Definition.Spells.Single()));
         Accept(session, new SelectTarget(actor));
         var result = FinishMovement(session, Accept(session, new Cancel()));
-        Assert.Same(before.Battle, result.Snapshot.Battle);
+        Battle02OutcomeTests.UnchangedExceptFacing(before.Battle, result.Snapshot.Battle, before.Selection!.Actor, 2);
         Assert.Equal(before.Battle.GetActor(actor).Position, result.Snapshot.Selection!.Preview.Destination);
         Assert.Equal(BattleSelectionStage.Movement, result.Snapshot.Selection.Stage);
         Assert.Null(result.Snapshot.Selection.Spell);
@@ -93,7 +93,7 @@ public sealed class EngineSessionTests
         var actor = before.Selection!.Actor;
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         Accept(session, new Confirm());
-        Assert.Same(before.Battle, session.Current.Battle);
+        Battle02OutcomeTests.UnchangedExceptFacing(before.Battle, session.Current.Battle, before.Selection!.Actor, 0);
         Accept(session, new ChooseAction(SessionAction.Stay));
         var committed = Accept(session, new Confirm());
         Assert.Equal(new MapPosition(4, 3), committed.Snapshot.Battle.GetActor(actor).Position);

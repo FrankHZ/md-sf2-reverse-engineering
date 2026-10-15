@@ -338,13 +338,14 @@ internal static class ExplorationContentReader
 
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
     {
-        Object(row, "outcome", "after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress");
+        ObjectOptional(row, "outcome", "battleOrigin", "after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress");
         // Non-empty defeated programs and enemy-leader cleanup need their own supported seam.
         var egress = row.GetProperty("egress");
         Object(egress, "egress", "map", "position", "facing");
         return new(Required("after"), Number(row, "joinMember", 0, 29),
             Required("defeated"), Required("defeat"), Required("return"), battleMap,
-            (byte)Number(row, "victoryFacing", 0, 3), new(Id(egress, "map")), Position(egress.GetProperty("position")), (byte)Number(egress, "facing", 0, 3));
+            (byte)Number(row, "victoryFacing", 0, 3), new(Id(egress, "map")), Position(egress.GetProperty("position")), (byte)Number(egress, "facing", 0, 3),
+            row.TryGetProperty("battleOrigin", out var origin) ? Position(origin) : null);
         ProgramLocation Required(string name)
         {
             var value = Location(row.GetProperty(name));

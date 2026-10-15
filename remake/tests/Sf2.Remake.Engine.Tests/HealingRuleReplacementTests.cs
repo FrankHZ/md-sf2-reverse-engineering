@@ -138,7 +138,7 @@ public sealed class HealingRuleReplacementTests
         Assert.Equal("target-range", Assert.Single(moved.Spells).Targets[1].Reason!.Code);
         Assert.True(Assert.Single(moved.Spells).Targets[0].Enabled); // Self is at provisional destination.
         FinishMovement(session, Accept(session, new Cancel()));
-        Assert.Same(initial.Battle, session.Current.Battle);
+        Battle02OutcomeTests.UnchangedExceptFacing(initial.Battle, session.Current.Battle, initial.Selection!.Actor, 2);
         Select(session, new("guard-a")); var ready = session.Current;
         foreach (var target in new[] { "dummy-a", "absent" })
         {

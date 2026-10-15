@@ -40,7 +40,7 @@ public sealed class BattleMovementTests
         var arrived = Accept(session, completion);
         Assert.Null(session.Current.BattleMovement);
         Assert.True(session.Current.HasBattleControl);
-        Assert.Same(before.Battle, session.Current.Battle);
+        Battle02OutcomeTests.UnchangedExceptFacing(before.Battle, session.Current.Battle, actor, 0);
         Assert.Equal(actor, session.Current.Selection!.Actor);
         Assert.Single(arrived.Observations, e => e.Kind == "battle-movement-segment-arrived");
         Assert.NotNull(Send(session, completion).Failure);
@@ -68,10 +68,10 @@ public sealed class BattleMovementTests
         Assert.Equal(BattleMovementPurpose.Return, movement.Purpose);
         Assert.Equal(new[] { new MapPosition(5, 4), new MapPosition(5, 3), new MapPosition(4, 3), new MapPosition(3, 3) }, movement.Path);
         Assert.False(session.Current.HasBattleControl);
-        Assert.Same(original, session.Current.Battle);
+        Battle02OutcomeTests.UnchangedExceptFacing(original, session.Current.Battle, session.Current.Selection!.Actor, 0);
         var returned = FinishMovement(session, cancelled);
         Assert.Equal(3, returned.Observations.Count(e => e.Kind == "battle-movement-segment-started"));
-        Assert.Same(original, session.Current.Battle);
+        Battle02OutcomeTests.UnchangedExceptFacing(original, session.Current.Battle, session.Current.Selection!.Actor, 2);
         Assert.Equal(new MapPosition(3, 3), session.Current.Selection!.Preview.Destination);
         var empty = Accept(session, new Cancel());
         Assert.Null(session.Current.BattleMovement);
@@ -114,7 +114,9 @@ public sealed class BattleMovementTests
         var before = session.Current.Battle;
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
+        var pending = session.Current;
         var result = Send(session, new Confirm());
+        Assert.Same(pending, session.Current);
         Assert.Equal("occupied-destination", result.Failure!.Code);
         Assert.Same(before, session.Current.Battle);
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));

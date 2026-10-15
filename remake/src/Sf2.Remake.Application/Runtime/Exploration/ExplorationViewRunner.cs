@@ -34,7 +34,7 @@ internal static class ExplorationViewRunner
         bool main = area.Layer switch
         {
             0 => area.BackgroundX == 0 && area.BackgroundY == 0 && area.ParallaxBX == 256 && area.ParallaxBY == 256,
-            255 => area.ForegroundX == 0 && area.ForegroundY == 0 && area.ParallaxAX == 256 && area.ParallaxAY == 256,
+            254 or 255 => area.ForegroundX == 0 && area.ForegroundY == 0 && area.ParallaxAX == 256 && area.ParallaxAY == 256,
             _ => false,
         };
         if (!main || area.ParallaxAX is not (128 or 256) || area.ParallaxAY is not (128 or 256) ||

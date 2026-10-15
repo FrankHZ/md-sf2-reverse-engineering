@@ -1,0 +1,109 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "Explicit INITIAL Battle02 field entry at Map66 (29,32), facing Down; four joined/active members, prior commission and Battle01 completion, Battle02 unlocked/incomplete. Egress map3 is explicitly selected in the world content, consistent with witchstart Start/NewGame initial assignment and no intervening church/other Egress writer. No later HP/flag/position/seed injection, restart or reseed is allowed for native outcome/retry acceptance. Text/palette are controlled initial values; original natural reach remains Unknown.",
+  "start": {
+    "map": "map-66",
+    "player": "entity-0",
+    "position": {
+      "x": 29,
+      "y": 32
+    },
+    "facing": 3,
+    "speed": 32,
+    "flags": [
+      0,
+      1,
+      2,
+      3,
+      32,
+      33,
+      34,
+      35,
+      80,
+      89,
+      256,
+      399,
+      402,
+      451,
+      501,
+      600,
+      601,
+      602,
+      603,
+      604,
+      605,
+      607,
+      608,
+      609,
+      610
+    ],
+    "mapPalettes": [
+      {
+        "map": "map-3",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-19",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-20",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-21",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-40",
+        "base": {
+          "color2": 3204,
+          "color3": 34
+        }
+      },
+      {
+        "map": "map-57",
+        "base": {
+          "color2": 3240,
+          "color3": 34
+        }
+      },
+      {
+        "map": "map-66",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      }
+    ],
+    "display": {
+      "period": 3,
+      "base": {
+        "color2": 3716,
+        "color3": 36
+      },
+      "current": {
+        "color2": 3716,
+        "color3": 36
+      },
+      "visibility": "base-restored"
+    },
+    "textSettings": {
+      "messageSpeed": 2,
+      "mouthControl": 0,
+      "viewSpeed": 0
+    }
+  }
+}

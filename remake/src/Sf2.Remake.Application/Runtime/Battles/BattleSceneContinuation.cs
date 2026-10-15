@@ -415,6 +415,10 @@ internal static class BattleSceneContinuation
                 break;
             case BattleScenePhase.GoldMessage: next = BattleScenePhase.End; break;
             case BattleScenePhase.End:
+                // ExecuteIndividualTurn reloads the battlefield through LoadBattle /
+                // PositionBattleEntities before post-action death and outcome processing.
+                battle = battle.With(actors: battle.Actors.Select(actor =>
+                    actor.Position is not null ? actor.With(facing: 3) : actor));
                 observations.Add(new(++sequence, revision, "scene-ended", scene.Action.Actor));
                 if (BattleOutcomeSelection.DefeatedHook(rules.Outcome, battle))
                     observations.Add(new(++sequence, revision, "enemy-defeated-program-none"));

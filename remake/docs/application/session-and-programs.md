@@ -1,5 +1,52 @@
 # Session and Resumable Programs
 
+## Battle02 outcomes and live facing
+
+The selected private world admits Battle02's empty after-program and the shared `JoinForce(0)` tail.
+Victory saves the first active member by membership index, adds the battle-area origin to its final
+combatant coordinates, and retains its current logical facing. The producer supplies `battleOrigin`
+from the pinned battle-map table (Battle02 `(16,19)`). This explicit binding selects live source
+coordinates/facing; existing authored and retained inputs without it keep their declared map-space
+position/fixed-facing policy. The projection uses the same coordinate conversion before scripts run.
+Victory clears F402 and sets F502, returns directly to field control and does not request Battle03.
+An already completed battle skips only its after-program, retaining the join/flag tail.
+
+Ordinary defeat restores the leader, halves current gold by integer division and refreshes living
+members; dead ordinary allies remain dead. It clears the unlock only when completion already exists.
+The selected controlled Egress map is Map3, yielding savepoint `(32,13)`, Up. This is an explicit
+caller input, consistent with the initial witch-start assignment; neither Battle02's empty hooks nor
+the selected intervening route writes Yeel. Church/Egress changes outside this selection remain
+unsupported. Walking through the church door `(32,15)` and Granseal west exit invokes ordinary entry:
+party inventory, growth, EXP, kills/defeats, money and RNG are carried, while enemies come from the
+encounter defaults. Retry reuses the same `GameSession` and source living-member initialization.
+
+Actor facing belongs to immutable battle state. Completed movement segments, including cancel-return
+segments, update only the moving actor. Stationary selection preserves it. No-action completion sets
+only the actor Down; actual scene completion reloads ordinary placed entities facing Down before
+field-death/outcome processing. Transient movement/death drawing overrides remain presentation data.
+The host projects facing and never supplies it back from sprite metadata. Action/automatic/progression
+guards preserve facing unless the owning lifecycle boundary changes it. Herb consumption also keeps
+`Progress.SourceLoadout` synchronized with the verified consumed inventory while preserving all other
+growth fields; it does not relax non-item or other-actor invariants.
+
+These rules consume pinned `c834c652b6862bc5679fd7f69a38a7093206efc6` source:
+`battleloop_2.asm:BattleLoop_Victory/BattleLoop_Defeat`,
+`battlefunctions_1.asm:UpdateBattleUnlockedFlag`,
+`textfunctions_1.asm:UpdateForceAndGetFirstBattlePartyMemberIndex`,
+`executeindividualturn.asm:@NoAction/@InitBattlescene`,
+`loadBattle.asm:LoadBattle`, and `entityfunctions_1.asm:PositionBattleEntities`.
+`witchstart.asm` assigns `GAMESTART_MAP` to `EGRESS_MAP`; `getegresspositionforbattle.asm` and
+`egressinit.asm:GetSavepointForMap` consume the selected map. The accepted
+[Battle02 outcome owner](../../../docs/research/battle02-to-battle03-content-route.md) retains the
+original evidence and Unknowns; remake observations establish implementation behavior only.
+
+Map66's source `data/maps/entries/map66/2-areas.asm` uses layer 254 with unit parallax and zero origins/
+autoscroll. `mapload.asm` loads this byte unchanged; `camerafunctions.asm` selects Plane A for nonzero
+values. The field view now admits 254 under the same main-plane constraints as 255. Other unknown layer
+values and unsupported parallax/autoscroll remain rejected. Native acceptance reads the actual bound
+camera/player projection after victory and field movement; no screenshot or hardware-timing claim
+is made. See the [focused recipe](../verification/field-programs.md#battle02-outcomes-and-retry).
+
 Application owns command admission, continuation and snapshot publication across exploration,
 battle, scene work and return. [Domain rules](../domain/gameplay-rules.md) supply selected algorithms;
 [Content](../content/profiles-and-trust.md) supplies admitted immutable definitions and explicit starts.

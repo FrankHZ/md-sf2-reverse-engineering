@@ -9,6 +9,11 @@ internal static class BattleActionCommitter
     internal static SessionSnapshot Publish(SessionSnapshot current, EngineBattleState battle,
         ActorRef actor, MapPosition destination, IReadOnlyList<BattleEffect> effects, List<SessionObservation> observations, SessionRules rules, bool defeatedHookHandled = false)
     {
+        // The no-scene path is ExecuteIndividualTurn @NoAction. Scene completion
+        // already performed LoadBattle's whole-field reset before death processing.
+        if (!defeatedHookHandled)
+            battle = battle.With(actors: battle.Actors.Select(value =>
+                value.Actor == actor && value.Position is not null ? value.With(facing: 3) : value));
         var outcome = BattleOutcomeSelection.Check(rules.Outcome, battle);
         bool hook = !defeatedHookHandled && BattleOutcomeSelection.DefeatedHook(rules.Outcome, battle);
         long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
