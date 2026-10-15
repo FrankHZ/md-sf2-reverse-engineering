@@ -280,6 +280,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   selected item removals, complete blast/join scene and local/fresh-map consequences; actual cast, partial effects and next-warp-only boundary.
 - [`north-cliff-entry-through-battle25-admission.md`](./design/synthesis/north-cliff-entry-through-battle25-admission.md) —
   separate entrance request and conditional Battle25 admission, complete initial encounter and crop/view limits before enemy activation.
+- [`battle25-outcomes-through-ketto-entry.md`](./design/synthesis/battle25-outcomes-through-ketto-entry.md) —
+  actual outcome returns, conditional cave departure and later admission, and Ketto's initial population through the controller request.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners

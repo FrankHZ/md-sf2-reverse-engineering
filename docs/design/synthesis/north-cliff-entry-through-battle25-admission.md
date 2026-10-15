@@ -14,6 +14,11 @@ darkness, usable control and save persistence. The endpoint is the fresh
 start-dispatcher return immediately before `ActivateEnemies`; no combat,
 outcome, later cave crossing or Ketto arrival is included.
 
+Continue with [Battle25 outcomes through Ketto entry](battle25-outcomes-through-ketto-entry.md)
+for actual termination, member-derived returns, separate cave departures and
+conditional town initialization. That guide retains the later admission,
+mutable-state, service and natural-route limits through the controller request.
+
 ## Evidence and Reading Boundary
 
 Continue from [North Cliff opening and Rohde recruitment](north-cliff-opening-and-rohde-recruitment.md).
