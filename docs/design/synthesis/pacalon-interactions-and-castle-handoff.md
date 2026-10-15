@@ -192,10 +192,12 @@ not natural Pacalon observations.
 For the selected Save route, the first YesNoPrompt result 0 reaches
 @DoSaveGame: copy the then-current CURRENT_MAP byte (nominally 2) to
 EGRESS_MAP, load CURRENT_SAVE_SLOT, set 399, and call SaveGame. A nonzero
-first result avoids those save writes and reaches @ExitSave's further
-continue/exit question. After saving, music/input work precedes texts 115/116
-and the post-save prompt: zero reaches @ExitMenu, nonzero text 117 and
-FadeOutToBlack/WitchSuspend instead of ordinary callback completion.
+first result avoids those save writes and reaches @ExitSave's text 112,
+"Do you have another desire?": zero loops to @StartMenu for another service,
+nonzero exits the menu. After saving, music/input work precedes texts 115/116
+and the separate continue-adventure/suspend prompt: zero reaches @ExitMenu,
+nonzero requests text 117 and reaches FadeOutToBlack/WitchSuspend instead
+of ordinary callback completion.
 These are actual choice branches, unlike the resident's requested answer.
 
 The existing Map02 savepoint is `(41,10)`, Up. It is return data; it does
@@ -276,8 +278,9 @@ joined Bowie is first: altered unjoined-Bowie state still tries 0 separately
 but omits the actual first joined member in fallback.
 
 At the first capacity match the caller invokes AddItem, retains the flag,
-requests 415 for Bowie or 416 with recipient name index 3, then item music and
-FadeOut_WaitForP1Input. Text 413 uses W2/CLEAR;415/416 contain neither W1 nor
+requests item music and text 415 for Bowie or 416 with recipient name index 3,
+then reaches FadeOut_WaitForP1Input. Text 413 uses W2/CLEAR;
+415/416 contain neither W1 nor
 W2, so the caller's separate music/plain-input boundary must not become an
 invented text wait. Receiving bread/herb does not apply its stat/healing use.
 AddItem writes the first empty slot or returns 1 if no slot remains; this
