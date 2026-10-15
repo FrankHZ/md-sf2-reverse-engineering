@@ -476,6 +476,12 @@ usable town control. Explicit-map requests rebuild population/temp/layout
 only if subsequent admission reaches exploration. That conditional lifetime
 is separate from the four CURRENT stairs.
 
+[Pacalon departure: the north scroll and conditional Battle27 admission](pacalon-departure-to-battle27-admission.md)
+continues that south request through conditional town admission, fresh
+overworld construction, retained north scrolling and the separate zone/
+reload/battle scan. It stops before BattleLoop initialization and retains
+natural-route, supplied-state and control/persistence Unknowns.
+
 ## Changed states and retained review
 
 | Changed premise or interruption | Required distinction |
