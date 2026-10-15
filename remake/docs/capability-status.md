@@ -85,6 +85,45 @@ or stable-observation boundary under
 
 ## Current Engineering Frontier
 
+### Battle02 outcome implementation agreement
+
+**Implemented bounded group:** ordinary actions reach victory, the empty after-program/JoinForce(0)
+tail, F402 clear/F502 set and usable Map66 return at the first active member's final position plus
+`(16,19)` and live facing. Ordinary defeat restores the leader, halves current gold and returns to the
+explicitly selected Map3 savepoint; incomplete F402 remains set. Church-door movement and west-exit
+entry initialize fresh enemies while retaining the same party/session. Grown actors can consume Herbs
+without losing growth or inventory consistency. Native win and defeat/retry observations establish
+implementation behavior. [Execution](application/session-and-programs.md#battle02-outcomes-and-live-facing)
+and [verification](verification/field-programs.md#battle02-outcomes-and-retry) own the detailed boundary.
+
+Issue [#1047](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1047) retains **High**
+rigor for caller-dependent return coordinates, party recovery and continuous retry. The bounded
+outcome is actual Battle02 victory or ordinary defeat, usable field control, and a same-session
+walk back into Battle02 after defeat. Controlled initial Battle02 starts with four members are
+explicit inputs; later state injection, restart or reseeding cannot establish retry acceptance.
+Research/design batches remain paused. Yeel, Battle03, save/load, revival/shop UI and Egress gameplay
+are outside this slice. Original natural reach/timing and human-play acceptance remain Unknown/pending.
+
+Owned implementation files are `remake_exploration_battles.py`, `ExplorationDefinition.cs`,
+`ExplorationContentReader.cs`, `Sf2OutcomeReturnPolicy.cs` and `BattleOutcome.cs`; approved shared
+extensions are `EngineBattleState.cs`, `BattleMovementContinuation.cs`, `BattlePresentation.cs`,
+`BattleActionResolution.cs`, `IBattleProgressionRule.cs`, `BattleSceneContinuation.cs`,
+`BattleActionCommitter.cs` and `ExplorationViewRunner.cs`. Existing movement/session/healing-rule
+and private-initialization tests replace only stale movement identity expectations with unchanged
+resource/accounting/seed and explicit facing assertions. Focused acceptance uses
+`Battle02OutcomeTests.cs`, `battle02-outcome-{programs,start,party}.json` and
+`engine_battle02_outcome_observation.gd`. Documentation changes stay in this capability owner,
+the session/program owner and the field verification recipe. There are no unmerged dependencies.
+
+Acceptance covers varying final positions/facing, living/dead allies, completed/incomplete defeat,
+movement cancellation, unchanged accounting/resources except source-owned recovery, and fresh enemies
+on retry. Run the affected producer, engine behavior tests, adapter build, clean-head dependency plan,
+scoped CI and two native input/state runs (win; defeat plus retry). Existing failed comparisons remain
+individually classified. The selected world is 127,597,616 bytes under the 134,217,728-byte bound.
+This selection adds small route/program metadata, no new media, with unchanged linear preparation/load
+cost. Runtime outputs and resource measurements remain in the Issue handoff. Human play and independent
+integration remain pending; existing failed comparisons are not reclassified by this bounded acceptance.
+
 ### Battle01 return through Battle02 implementation agreement
 
 Issue [#1045](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1045) uses **High**

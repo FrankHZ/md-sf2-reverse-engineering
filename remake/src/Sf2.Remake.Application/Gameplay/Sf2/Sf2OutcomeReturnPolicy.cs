@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Gameplay.Sf2;
 
@@ -15,14 +16,24 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         var leader = battle.GetActor(battle.Definition.Outcome!.Leader);
         var first = battle.Actors.Where(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null)
             .OrderBy(actor => actor.ProcessingOrder).FirstOrDefault();
+        if (kind == BattleOutcomeKind.Victory && route.BattleOrigin is not null && definition.Exploration!.PartyFlags is { } layout)
+        {
+            // UpdateForce returns the first active member by member index, not turn/deployment order.
+            int member = MapPartyMembership.Rebuild(story.Flags, layout).Active.First();
+            first = battle.Actors.Single(actor => actor.IsAlly && actor.Deployment.Initialization?.AllyPartyMember == member);
+            if (first.Position is null) throw new BattleRuleException("outcome-first-member-position", "battle.outcome", true);
+        }
+        var origin = route.BattleOrigin ?? new MapPosition(0, 0);
+        var position = first?.Position ?? leader.Deployment.Position;
+        var projected = new MapPosition(position.X + origin.X, position.Y + origin.Y);
         if (kind == BattleOutcomeKind.Defeat && (!story.Flags.Contains(399) || story.Flags.Any(flag => flag is 64 or 640)))
             throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
         var destination = kind == BattleOutcomeKind.Victory
-            ? new FieldReturnAnchor(route.BattleMap, first!.Position!, route.VictoryFacing)
+            ? new FieldReturnAnchor(route.BattleMap, projected, route.BattleOrigin is null ? route.VictoryFacing : first!.Facing)
             : new FieldReturnAnchor(route.EgressMap, route.EgressPosition, route.EgressFacing);
         bool skip = kind == BattleOutcomeKind.Victory && selected.CompletedFlag is { } flag && story.Flags.Contains(flag);
         return new(kind == BattleOutcomeKind.Victory ? skip ? null : route.AfterProgram : route.DefeatProgram,
-            destination, first?.Position ?? leader.Deployment.Position,
+            destination, projected,
             kind == BattleOutcomeKind.Victory ? Heal(definition, party, all: false) : party);
     }
 
@@ -42,7 +53,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 party.NewBattle, party.ActiveAllies);
         }
         return new(party, Heal(definition, party, all: false), victory ? route.JoinMember : null,
-            victory, victory, route.ReturnProgram);
+            victory || selected.CompletedFlag is { } completed && story.Flags.Contains(completed), victory, route.ReturnProgram);
     }
     protected virtual uint DefeatGold(uint current) => current / 2;
 

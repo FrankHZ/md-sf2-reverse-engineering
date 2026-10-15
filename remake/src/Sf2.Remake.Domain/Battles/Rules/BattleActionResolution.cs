@@ -26,7 +26,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         {
             var old = before.Actors[index]; var candidate = Battle.Actors[index];
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp &&
-                candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position &&
+                candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position && candidate.Facing == old.Facing &&
                 candidate.Kills == old.Kills && candidate.Defeats == old.Defeats && candidate.Attack == old.Attack &&
                 candidate.Status == old.Status && Equals(candidate.Progress, old.Progress) &&
                 ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
@@ -131,12 +131,15 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             var old = before.Actors[index]; var candidate = Prepared.Actors[index];
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
-                candidate.LastTarget == old.LastTarget && candidate.Attack == old.Attack && candidate.Status == old.Status &&
+                candidate.LastTarget == old.LastTarget && candidate.Attack == old.Attack && candidate.Status == old.Status && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
-                Equals(candidate.Progress, old.Progress) && candidate.Position == (old.Actor == actor ? destination : old.Position));
+                Equals(old.Actor == actor && consumedLoadout is not null && candidate.Progress is { } progress
+                    ? progress with { SourceLoadout = old.Progress?.SourceLoadout } : candidate.Progress, old.Progress) &&
+                candidate.Position == (old.Actor == actor ? destination : old.Position));
             if (old.Actor == actor && consumedLoadout is not null)
                 Require(candidate.SourceLoadout is { } loadout && loadout.Items.SequenceEqual(consumedLoadout.Items) &&
-                    loadout.Spells.SequenceEqual(consumedLoadout.Spells));
+                    loadout.Spells.SequenceEqual(consumedLoadout.Spells) &&
+                    (candidate.Progress is null || ReferenceEquals(candidate.Progress.SourceLoadout, loadout)));
             else Require(ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
         }
     }

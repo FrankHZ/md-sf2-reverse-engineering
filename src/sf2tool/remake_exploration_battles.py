@@ -222,7 +222,7 @@ def compile_routes(compiler, selection, upstream):
         (upstream / coordinates_path).read_text(encoding="utf-8"), "battleMapCoordinates"
     )
     for battle_id in selection["battles"]:
-        map_id, _, _, _, _, trigger_x, trigger_y = map(
+        map_id, origin_x, origin_y, _, _, trigger_x, trigger_y = map(
             compiler.number, _tokens(coordinates[battle_id])
         )
         if (trigger_x, trigger_y) != (255, 255):
@@ -286,6 +286,7 @@ def compile_routes(compiler, selection, upstream):
                 "defeated": outcome_hooks[0],
                 "joinMember": compiler.number(joins[battle_id]),
                 "victoryFacing": compiler.equates["DOWN"],
+                "battleOrigin": {"x": origin_x, "y": origin_y},
                 "defeat": _location("source-ordinary-defeat"),
                 "return": _location("source-outcome-return"),
                 "egress": {

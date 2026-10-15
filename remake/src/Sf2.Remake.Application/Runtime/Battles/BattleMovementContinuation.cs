@@ -78,17 +78,20 @@ internal static class BattleMovementContinuation
         long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
         List<SessionObservation> observations = [new(++sequence, revision, "battle-movement-segment-arrived",
             movement.Actor, From: movement.From, To: movement.To, Detail: movement.Purpose.ToString())];
+        var delivered = current.Battle.GetActor(movement.Actor).Facing == movement.Facing ? current.Battle :
+            current.Battle.With(actors: current.Battle.Actors.Select(actor =>
+                actor.Actor == movement.Actor ? actor.With(facing: (byte)movement.Facing) : actor));
         int next = movement.Segment + 1;
         if (next < movement.Path.Count - 1)
         {
             observations.Add(new(++sequence, revision, "battle-movement-segment-started", movement.Actor,
                 From: movement.Path[next], To: movement.Path[next + 1], Detail: movement.Purpose.ToString()));
-            return Result(current, current.Battle, current.Selection, new(movement.Actor, movement.Path,
+            return Result(current, delivered, current.Selection, new(movement.Actor, movement.Path,
                 next, new(sequence), movement.Purpose, movement.Target), revision, sequence, observations);
         }
         observations.Add(new(++sequence, revision, "battle-movement-finished", movement.Actor,
             From: movement.Path[0], To: movement.To, Detail: movement.Purpose.ToString()));
-        var finished = Result(current, current.Battle, current.Selection, null, revision, sequence, observations);
+        var finished = Result(current, delivered, current.Selection, null, revision, sequence, observations);
         if (movement.Purpose != BattleMovementPurpose.Automatic) return finished;
         var automatic = FinishAutomatic(finished.Snapshot, movement.Actor, movement.To, movement.Target, observations, rules);
         return automatic.Failure is not null || automatic.Snapshot.BattleScene is not null

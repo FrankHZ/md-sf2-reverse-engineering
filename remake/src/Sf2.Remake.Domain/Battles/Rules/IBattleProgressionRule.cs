@@ -107,7 +107,7 @@ internal static class BattleProgressionRules
 
     private static void Unchanged(BattleActorState before, BattleActorState after) => Require(
         ReferenceEquals(before.Deployment, after.Deployment) && after.Hp == before.Hp && after.Mp == before.Mp &&
-        after.Position == before.Position && after.Kills == before.Kills && after.Defeats == before.Defeats &&
+        after.Position == before.Position && after.Facing == before.Facing && after.Kills == before.Kills && after.Defeats == before.Defeats &&
         after.Status == before.Status && after.LastTarget == before.LastTarget && after.ActivationWord == before.ActivationWord &&
         after.AiMemory == before.AiMemory);
 

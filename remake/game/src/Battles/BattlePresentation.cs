@@ -29,7 +29,7 @@ internal static class BattleSnapshotProjection
             a.Actor, snapshot.BattleMovement?.Actor == a.Actor ? snapshot.BattleMovement.From :
                 selection?.Actor == a.Actor ? selection.Preview.Destination : a.Position!, a.IsAlly, a.Actor == selection?.Actor,
             $"{a.Actor.Value}\n{a.Hp}/{a.MaxHp}",
-            death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : null,
+            death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : a.Facing,
             death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit)).ToArray();
         string roster = string.Join("\n", battle.Actors.Select(a =>
             $"{a.Actor.Value}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));

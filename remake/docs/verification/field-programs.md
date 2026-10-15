@@ -2,6 +2,65 @@
 
 Select the affected program, logical field service, map transition or actual presentation handoff.
 
+## Battle02 outcomes and retry
+
+The [current scope](../capability-status.md#battle02-outcome-implementation-agreement) admits controlled
+INITIAL Battle02 runs, followed exclusively by ordinary commands. The win endpoint is usable Map66
+field movement after all enemies die. The separate defeat endpoint includes Map3 recovery, church-door
+movement, the west exit and new Battle02 player control in the same session. Neither uses a terminal
+checkpoint or mid-session state replacement. Human play and original natural-route/timing remain pending.
+
+Reuse the verified inputs/audio from [Battle01 through Battle02](#battle01-through-battle02), including
+the authored defeat cue. Select `battle02-outcome-programs.json` for the maintained world producer,
+`battle02-outcome-start.json` for field startup and `battle02-outcome-party.json` for the initial
+first-three-member input. These files live in `remake/reference/inputs`; production does not depend
+on that directory. The party values are explicitly controlled remake-native entry facts, not an
+original-game observation. For the local second-encounter input, start with
+`battle01-to-battle02-party.json`, replace its first three ally rows and gold/mainSeed/thinkingSeed
+with the corresponding values from `battle02-outcome-party.json`, and retain Jaha's declared row.
+Both encounter readers must see the same immutable ally definitions. Keep its battle index2.
+
+All relative encounter inputs must be contained beneath the new world output directory. Copy only the
+selected small placement/scene/terrain/static/enemy/gold/party/battle-scene files when preparing a new
+output root; preserve their source identities and the earlier accepted inputs. Reuse existing canonical
+map import, pinned source, ROM, presentation pack and audio candidates read-only. The maintained
+`sf2tool.remake_exploration_content` command uses the same arguments as the preceding recipe, with
+the new selection/encounter file and fresh ignored output. No new extraction/capture or asset promotion
+is needed. The measured world is 127,597,616 bytes, below 128 MiB.
+
+After loading the owning worktree's ignored selections in the launching process, set
+`SF2_PRIVATE_EXPLORATION_CONTENT` to that world and `SF2_PRIVATE_CONTROLLED_START` to the new party
+input. Build the actual Debug adapter from `remake/`. For ordinary human play, run without a probe,
+headless mode or fixed-fps:
+
+```powershell
+& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+$start = (Resolve-Path -LiteralPath 'reference/inputs/battle02-outcome-start.json').Path
+& $env:GODOT_BIN --path game -- --private-exploration-start $start
+```
+
+Arrows move; Enter confirms; Escape cancels movement/selection. F selects physical attack, H healing,
+I inventory, Tab cycles targets, and Space selects Stay. Enter acknowledges ordinary scene/field text.
+On defeat, walk through the church door at `(32,15)`, then Granseal's west exit. The retry retains live
+party accounting/resources and initializes enemies from encounter content; automatic turns may precede
+the first player boundary under the carried RNG.
+
+For native acceptance set a fresh `SF2_OBSERVATION_OUTPUT`, then run the same project with
+`--headless --fixed-fps 60 --script res://probes/engine_battle02_outcome_observation.gd` before `--`.
+Leave `SF2_BATTLE_OUTCOME_CASE` as `win` for actual victory, or set it to `defeat` for the separate
+defeat/retry run. The probe uses existing semantic key/state/scene helpers, reads actual projection and
+audio errors, and saves bounded semantic checkpoints/actions. It emits no screenshots or bulk frames.
+The win driver is an external tactical policy; its chosen rounds/formation do not constrain gameplay.
+Use ordinary speed for human review; accelerated probe success does not establish UX acceptance.
+
+Focused engine behavior includes origin/member/facing variation, source reset boundaries, layer254
+camera initialization/following, dead-member recovery, completion/unlock distinctions, fresh retry
+enemies and grown-actor Herb consumption. Run `uv run sf2 verify engine` once for the initial discovery,
+then affected files/failing nodes after fixes; run `uv run sf2 verify adapter`, the clean-head planner
+with the declared engine-only producer scope, and scoped CI. The Issue handoff owns exact commands,
+input/report identities, completed failures and process state. Existing private old-start/display,
+activation-admission and comparison limitations remain separate from these native checks.
+
 Load the owning worktree's private-input configuration and protected SDK/Godot environment from
 [development](../development-and-verification.md#locked-net-workflow) in the same launching process.
 Unless a recipe explicitly changes directory, commands run from the repository root. Reuse the

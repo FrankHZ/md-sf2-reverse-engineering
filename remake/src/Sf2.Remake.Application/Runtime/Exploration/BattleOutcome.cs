@@ -25,7 +25,8 @@ internal static class BattleOutcome
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, kind, party);
             var map = definition.Exploration!.Maps[route.BattleMap];
-            var world = MapTransfer.Build(map, new("entity-0"), selected.ProjectionPosition, route.VictoryFacing, 32,
+            var world = MapTransfer.Build(map, new("entity-0"), selected.ProjectionPosition,
+                kind == BattleOutcomeKind.Victory ? selected.Return.Facing : route.VictoryFacing, 32,
                 selected.Party, current.Story.Flags);
             var story = current.Story.Copy(selected.Program, callers: [],
                 continuation: kind == BattleOutcomeKind.Victory ? ProgramContinuation.VictoryProgramFinished : ProgramContinuation.DefeatProgramFinished,
