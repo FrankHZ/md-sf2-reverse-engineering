@@ -1,0 +1,142 @@
+{
+  "formatVersion": 1,
+  "id": "private-battle02-controlled-party",
+  "evidenceOwner": "Pinned SF2DISASM c834c652: disasm/code/common/stats/newgame.asm, disasm/data/stats/allies/allystartdefs.asm, disasm/sf2enums.asm; docs/design/contracts/map3-battle01-continuous-scenario.md selected R1; docs/research/map3-admitted-start.md and tests/fixtures/h3/map3-admitted-start-v1.json for separate controlled projection",
+  "bridgeBoundary": "Separate controlled Battle02 pilot and immutable ally baselines. First three source-initial allies match the opening definitions. Jaha is source level1 WARR, growth-start HP/MP/ATK/DEF/AGI and source class movement, Short Axe equipped and Medical Herb; EXP/kills/defeats and independent RNG remain controlled. During continuous play the existing allies use actual live resources/progress/inventory/accounting and seeds; this file does not supply a completed checkpoint. The pilot explicitly supplies activationWord=0 for each ally before session creation; it is a controlled input, not inferred runtime evidence. Continuous re-entry retains existing live ally words; only newly recruited Jaha uses this declared baseline.",
+  "profile": "private-local-controlled-start",
+  "battle": 2,
+  "policy": {
+    "beforeBattle": "controlled-skip",
+    "allyStats": "already-refreshed-and-equipped",
+    "actorStorage": "roster-only",
+    "difficulty": 0,
+    "allyAutoBattle": false,
+    "opponentControl": false,
+    "missingCandidateAllyWord": 0
+  },
+  "mainSeed": 2568421376,
+  "thinkingSeed": 305397760,
+  "gold": 60,
+  "allies": [
+    {
+      "id": 0,
+      "classId": 0,
+      "level": 1,
+      "maxHp": 12,
+      "hp": 12,
+      "maxMp": 8,
+      "mp": 8,
+      "attack": 9,
+      "defense": 4,
+      "agility": 4,
+      "move": 6,
+      "status": 0,
+      "items": [
+        199,
+        0,
+        127,
+        127
+      ],
+      "spells": [
+        10,
+        63,
+        63,
+        63
+      ],
+      "exp": 0,
+      "kills": 0,
+      "defeats": 0,
+      "activationWord": 0
+    },
+    {
+      "id": 1,
+      "classId": 4,
+      "level": 1,
+      "maxHp": 11,
+      "hp": 11,
+      "maxMp": 10,
+      "mp": 10,
+      "attack": 9,
+      "defense": 5,
+      "agility": 5,
+      "move": 5,
+      "status": 0,
+      "items": [
+        213,
+        0,
+        0,
+        127
+      ],
+      "spells": [
+        0,
+        63,
+        63,
+        63
+      ],
+      "exp": 0,
+      "kills": 0,
+      "defeats": 0,
+      "activationWord": 0
+    },
+    {
+      "id": 2,
+      "classId": 1,
+      "level": 1,
+      "maxHp": 11,
+      "hp": 11,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 8,
+      "defense": 5,
+      "agility": 7,
+      "move": 7,
+      "status": 0,
+      "items": [
+        184,
+        0,
+        127,
+        127
+      ],
+      "spells": [
+        63,
+        63,
+        63,
+        63
+      ],
+      "exp": 0,
+      "kills": 0,
+      "defeats": 0,
+      "activationWord": 0
+    },
+    {
+      "id": 3,
+      "classId": 2,
+      "level": 1,
+      "maxHp": 9,
+      "hp": 9,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 14,
+      "defense": 7,
+      "agility": 4,
+      "move": 5,
+      "status": 0,
+      "items": [
+        161,
+        0,
+        127,
+        127
+      ],
+      "spells": [
+        63,
+        63,
+        63,
+        63
+      ],
+      "exp": 0,
+      "kills": 0,
+      "defeats": 0,
+      "activationWord": 0
+    }
+  ]
+}

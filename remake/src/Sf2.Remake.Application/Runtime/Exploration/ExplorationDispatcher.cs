@@ -57,6 +57,8 @@ internal static class ExplorationDispatcher
         List<SessionObservation> observations = [];
         try
         {
+            if (current.CanWaitAtInput && command is (Sf2.Remake.Application.Runtime.Move or Sf2.Remake.Application.Runtime.Interact or WaitAtInput))
+                current = ExplorationMusicRunner.AtFieldInput(definition.Exploration!, current, observations);
             bool playerWait = command is WaitAtInput or WaitForText;
             if (command is WaitAtInput)
             {
@@ -150,7 +152,7 @@ internal static class ExplorationDispatcher
                     if (current.Story.Wait is not PresentationWait presenting || presenting.Token != completion.Wait || presenting.Cue.Kind != completion.Kind)
                         return Reject(current, "stale-or-wrong-presentation", "presentation");
                     var completedActive = current.Active;
-                    if (presenting.Cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodded })
+                    if (presenting.Cue is { Kind: PresentationCueKind.Gesture, Resource: "nod" or "shake-head", Entity: { } nodded })
                     {
                         var entity = ProgramRunner.Entity(current, nodded);
                         completedActive = new ActiveExploration(current.Exploration!.WithEntity(entity with { Motion = entity.Motion with { AnimationCounter = 0 } }));
@@ -285,7 +287,7 @@ internal static class ExplorationDispatcher
                             current = ExplorationMusicRunner.BeforeService(current, observations);
                             current = current.Story.Wait is FullFadeWait
                                 ? MapTransfer.FadeTick(definition, current, observations)
-                                : MapTransfer.LoadTick(definition, current, observations);
+                                : MapTransfer.LoadTick(definition, current, observations, rules);
                             if (current.Story.Wait?.Token != token)
                                 return ProgramRunner.Run(definition, current, observations, rules);
                             if (current.Story.Wait is FullFadeWait { LogicalDone: true })
@@ -323,7 +325,7 @@ internal static class ExplorationDispatcher
                                 else
                                 {
                                     current = ProgramRunner.Commit(current, active, story, observations, "warp-started");
-                                    current = MapTransfer.BeginWarp(definition, current, warp, observations);
+                                    current = MapTransfer.BeginWarp(definition, current, warp, observations, rules);
                                 }
                                 return ProgramRunner.Run(definition, current, observations, rules);
                             }
@@ -345,8 +347,13 @@ internal static class ExplorationDispatcher
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
                             explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) &&
-                            (entityWait.Completion == EntityWaitCompletion.ScriptIdle
-                                ? awaitedEntity.IsScriptIdle : !awaitedEntity.Busy))
+                            (entityWait.Completion switch
+                            {
+                                EntityWaitCompletion.ScriptIdle => awaitedEntity.IsScriptIdle,
+                                // WaitForEntityToStopMoving compares X/Y with XDEST/YDEST.
+                                EntityWaitCompletion.MotionStopped => !awaitedEntity.Motion.IsMoving,
+                                _ => !awaitedEntity.Busy,
+                            }))
                         {
                             releasedEntityWait = new(entityWait.Token, entityWait.Entity, entityWait.Completion,
                                 awaitedEntity.IsScriptIdle, awaitedEntity.Busy, awaitedEntity.Motion.IsMoving,
@@ -373,7 +380,7 @@ internal static class ExplorationDispatcher
                         current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(inputProgram), observations, "map-input-program");
                         return ProgramRunner.Run(definition, current, observations, rules);
                     }
-                    if (command is Move move) return Move(definition, current, move, observations);
+                    if (command is Move move) return Move(definition, current, move, observations, rules);
                     if (command is Interact interact) return Interact(definition, current, interact, observations, rules);
                     return Reject(current, "exploration-command", "command");
             }
@@ -383,7 +390,7 @@ internal static class ExplorationDispatcher
         catch (BattleRuleException error) { return ProgramRunner.Failure(current, observations, error); }
     }
 
-    private static SessionResult Move(ScenarioDefinition definition, SessionSnapshot current, Move move, List<SessionObservation> observations)
+    private static SessionResult Move(ScenarioDefinition definition, SessionSnapshot current, Move move, List<SessionObservation> observations, SessionRules rules)
     {
         if (!Enum.IsDefined(move.Direction)) return Reject(current, "invalid-direction", "direction");
         var world = current.Exploration!;
@@ -396,7 +403,7 @@ internal static class ExplorationDispatcher
         var preview = MapEventDispatcher.Move(controlled, move.Direction, current.Story.Flags);
         if (preview.Outcome.Event is { Kind: ExplorationEventKind.Warp } warp)
         {
-            if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp);
+            if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp, rules);
         }
         else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,

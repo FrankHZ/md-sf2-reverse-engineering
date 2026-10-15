@@ -1937,3 +1937,307 @@ exploration methods on the startup-error battle view. JSON numbers and direct Go
 variants compare by numeric value. Preserve prior failures and partial files; they are not passes.
 Run the affected adapter build and these direct observations; no test of this probe or full-route run
 is required by this bounded seam.
+
+## Battle01 through Battle02
+
+This is the private candidate for [the implementation agreement](../capability-status.md#battle01-return-through-battle02-implementation-agreement),
+not an extension of the independently accepted original-comparison milestone. The tracked
+`battle01-to-battle02-start.json` starts at Map57 tile(5,12), with explicit pre-battle story flags;
+`map3-opening-party.json` supplies the initial party/accounting. No completed Battle01, exorcism,
+commission, Jaha or Battle02 flags are supplied. Subsequent progression uses ordinary commands in
+one session. The separate `battle01-to-battle02-party.json` is the second encounter's immutable
+admission baseline and the standalone pilot input; it is never injected into the continuing session.
+
+### Prepare the selected inputs
+
+Load the checkout's ignored private-input configuration in the same PowerShell process. Use absolute
+`DOTNET_BIN`, `DOTNET_CLI_HOME`, `GODOT_BIN`, worktree-local caches/TEMP and
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` as required by the environment owner. The registered accepted
+ROM is 2,097,152 bytes, SHA256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`;
+the read-only SF2DISASM revision is `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+The existing asset library manifest is
+`C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E`.
+Resolve machine-specific inputs through the private-input owner; do not substitute absolute paths
+from another checkout. All new destinations below must be fresh paths under this checkout's ignored
+`local/`. Do not modify or copy back into canonical inputs.
+
+1. Run `uv run python -m sf2tool.remake_exploration_battles --upstream <pinned-source> --rom <registered-rom> --output <local/battle02>`.
+   This verifies the ROM, source revision and selected source blobs, then exports the existing
+   placement/scene/terrain transport. Placement ROM span is1782646–1782772 (end exclusive), terrain
+   compressed span1758304–1758636. The source spriteset has four allies, six enemies, no region rows
+   and one AI point. Preserve these records rather than manufacturing Battle01-shaped inputs.
+2. Run `uv run python -m sf2tool.remake_battle_scene_content --battle 2 --rom <registered-rom> --upstream <pinned-source> --output <local/scene02>`;
+   then run the same module with `--field-death-base <local/scene02/battle-scenes.json>` and a fresh
+   output. The world producer also imports the selected enemies' map sprites64/65/103.
+3. Keep the accepted static/enemy/gold inputs and their provenance. Create one local encounter row
+   with `placement`, `scene`, `terrain`, `static`, `enemies`, `gold`, `start` and `battleScenes` paths
+   relative to the output world's directory. `start` points to a local copy of
+   `battle01-to-battle02-party.json`. Admission rejects paths outside that directory and more than
+   one additional encounter. This is an operator selection, not a new shared registry.
+4. Reuse the reviewed audio candidates below. `uv run python -m sf2tool.remake_audio` takes
+   `--capture`, `--expected-sha256`, `--command`, `--timer-b`, `--cue`, `--start-sample`, `--end-sample`
+   and a fresh `--output`; MainTheme1 also takes `--loop-begin 358968 --loop-end 3887119`.
+   Run `uv run python -m sf2tool.remake_authored_audio --output <local/authored-defeat>` for the
+   separately labeled authored defeat candidate. No further emulator acquisition is required.
+5. Run `uv run python -m sf2tool.remake_exploration_content` with `--canonical` set to the accepted
+   canonical map import, `--upstream`, `--rom-path`, `--presentation-root`,
+   `--selection remake/reference/inputs/battle01-to-battle02-programs.json`, `--encounter-inputs`
+   set to the local row file, a fresh `--output`, and repeated `--audio-candidate` arguments for the
+   eight finite cues, MainTheme1 and authored defeat. No generated JSON patching follows preparation.
+
+**Confirmed:** direct producer execution yields seven maps,259 programs and152 source entries. The
+candidate is127,596,681 bytes, within the128MiB admission bound. Preparation repeats after the source
+responsibility extraction produced identical content. These are candidate measurements, not required
+constant counts. The compiled routes retain last-matching setup selection, source join branches,
+the caller's402/66 changes, and `outcomeBattles:[1]`; Battle02 resolution reports `outcome-route`.
+
+### Audio selection and evidence boundary
+
+All finite rows use unchanged stereo44,100Hz PCM16. Intervals are half-open sample-frame indexes,
+including10ms edge margins; no normalization/filtering was applied. Their bounded original captures
+are complete,3,532,592 bytes each (28,260,736 combined). Static finite-channel termination and a quiet
+tail establish the crop; this does not establish natural caller timing or analog hardware fidelity.
+
+The completed capture used registered BizHawk2.11.1
+(`bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`) with its verified installation, isolated config/cwd/TEMP
+and `--dump-type=wave --dump-length=1200 --dump-close --audiosync=false`, bounded to120 seconds.
+Addresses and stream intervals here are hexadecimal; counts and command IDs are decimal.
+The controlled observer advanced180 frames, saved core state, wrote68K RAM B0A3=1 and cleared
+DED8–DEDF, then selected the timer-context music through Z80 mailbox1FFF (music34 for89/BD,
+music1 for C2, music5 otherwise). After2 frames it required mailbox consumption, sent254, waited60
+frames and required all13 channel flags at0x1380+channel×0x20+3 to be inactive. It dispatched the selected
+command through1FFF, checked the first-frame stream cursor against the pinned range below, retained
+active-count changes, and required all channels inactive within600 frames plus60 quiet-tail frames.
+The saved state was restored and released before process exit. The capture is an isolated original
+driver experiment; these writes are not used by the remake continuity observation.
+
+| Command | Channel slot | Z80 stream interval (end exclusive) |
+| --- | --- | --- |
+| 110 | 9 | 1DDD–1DF7 |
+| 111 | 11 | 1E01–1E2E |
+| 89 | 9 | 1888–1893 |
+| 65 | 11 | 1634–164D |
+| 67 | 8 | 168A–16A9 |
+| 74 | 8 | 17AA–17B5 |
+
+Source slots, stream ranges and timer contexts derive from the pinned sound-driver data and selected
+music headers. The local capture records retain launch/config, mailbox/channel boundaries, unchanged
+installation inventories and the finite-cut proposals. Acquisition is closed; this protocol records
+provenance rather than authorizing a new capture batch.
+
+| Command / timer | Capture SHA256 | Retained interval |
+| --- | --- | --- |
+| 110 / CC | `A22792215FE6E761CA9411A9582765B6CD543A25E488CECD924D3103186E3650` | 179579–207649 |
+| 111 / CC | `BDF10A4750353F11136A5DA3FD8AEB7C3CDD9827E18D82C1EFECAE4168AD99DB` | 179621–221372 |
+| 89 / BD | `9DF9A449C255165758DDB50910D0BF4F464A8AF52F0FCA9079A59E8E75B0A017` | 179476–208779 |
+| 65 / CC | `CB4FAFE48954E3CF4E9B2F3E05B955B5F9679207190C472A4A6405DDCC0EBEA3` | 179615–193010 |
+| 67 / CC | `E4C2720E35457AC4E290D1D6C1951280CB04C629EEF15D03296EE7C42D4A07EB` | 179512–205096 |
+| 74 / CC | `C4DC3CB1F08653ECBB58DF0A4BD7198E7ED411894A36C95117C2638BD8C34200` | 179621–187345 |
+| 65 / C2 | `A2EF2C47D13C051065C8A2118EE722EB2661E399CF446AD7C83813CA3A5666C4` | 179307–194659 |
+| 67 / C2 | `FB98273D3AF7FBF12F9EEECE003E94CE2E945854A868571562EDA4D50FF5693F` | 179229–209035 |
+
+**Inferred:** MainTheme1's modern loop reuses the existing25,792,196-byte recording, SHA256
+`3CCF76BDBD8C62B60985311B33DCD30C41135893E58211104A143B0FA40098A4`, source interval983430–4870549.
+The runtime loop358968–3887119 has period3,528,151 frames (80.003424 seconds). Waveform recurrence
+and the pinned Music01/C2 eight-channel source support this selection; original loop phase remains
+**Unknown**. **Confirmed:** actual native playback crossed position87.7743→8.32819 while remaining
+playing without an audio error. That observes this modern loop, not original timing equivalence.
+
+The defeat cue is explicitly **project-authored**: the196/233.08/293.66Hz chord retained from
+`8a581a82e297ea2947cc9837e661752163d2806d`, `ExplorationPresentation.JoinCue`. Its2-second22,050Hz
+mono WAV is88,244 bytes, SHA256 `C4EDFEF0D2B61BA3E521209963AB316106E7785347D8BE0AEF5B644290BA1A75`.
+Command12/C4 supplies the source cue context only. It is prepared as an explicit local asset,
+not synthesized by the running host or promoted into the shared library. Source command/channel
+definitions use the pinned sound-driver data; the110 PSG-noise and111 YM5 override consumers retain
+the source channel boundaries.
+
+### Ordinary play and direct observation
+
+Keep the existing accepted Battle01 placement, terrain, scene, static/enemy/gold and battle-scene
+environment selections. Set `SF2_PRIVATE_EXPLORATION_CONTENT` to the prepared world and
+`SF2_PRIVATE_CONTROLLED_START` to the absolute tracked `map3-opening-party.json` path. From the
+checkout root, after loading the local environment, build Debug and launch ordinary play:
+
+```powershell
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+if ($LASTEXITCODE -ne 0) { throw 'Adapter build failed' }
+$start = (Resolve-Path -LiteralPath 'remake/reference/inputs/battle01-to-battle02-start.json').Path
+& $env:GODOT_BIN --path remake/game -- --private-exploration-start $start
+```
+
+Use the existing default keyboard actions: arrows move/select, Enter confirms, Escape cancels.
+F chooses physical attack, H spells, I items, Tab targets and Space stays.
+Win Battle01 through ordinary actions; return through the tower/castle, complete Astral's exorcism
+and the king's commission, walk the Granseal Jaha event and leave by the west exit. The endpoint is
+Battle02 movement/cancel, player physical action, enemy continuation and returned player control.
+No `--fixed-fps`, external observer or runtime state modification is used for human play.
+
+For reproducible automatic acceptance, use the same inputs with
+`--headless --fixed-fps 60 --script res://probes/engine_battle01_to_battle02_observation.gd` before
+the `--` separator. Set fresh ignored `SF2_OBSERVATION_OUTPUT` and
+`SF2_EXPLORATION_OBSERVATION_OUTPUT` files. Require exit0, `passed:true`, empty failures and no Godot
+errors; retain companion outcome JSON and process log. The observer uses actual input and live
+state/projection, without screenshots. `SF2_ROUTE_MUSIC_LOOP=1` adds a bounded110-second actual
+playback check sampled every500ms; `SF2_BATTLE_OUTCOME_CASE=defeat` instead selects ordinary loss
+and usable Map3 return. `SF2_ROUTE_STARTUP_ONLY=1` checks first movement/cancel; omit fixed-fps for
+its ordinary-speed startup check. These are external observer options, not GameRoot switches.
+
+**Confirmed candidate behavior:** the same session reaches real Battle01 victory, flags609/610,
+commission refusal then acceptance, Jaha flags3/35, caller402 set/66 clear and Battle02 intro452.
+Battle02's actual board is map66,22×18 with four allies/six enemies. Movement cancellation restores
+position and RNG; actual player/enemy physical actions return to a player. Audio receipts show
+110/CC start/finish,111/CC start/stop,19/C0 start/finish and MainTheme1/C2 start. Ordinary defeat
+returns to usable Map3 with gold60→30,401 retained/501 absent, no Jaha join and Town8/CB playing.
+This proves implementation behavior after the declared controlled start, not original natural reach.
+
+Focused engine checks cover party carry through source refresh, setup flag combinations, authored
+versus source completion policy, join text/caller failure, motion waits, distinct terrain costs,
+empty-region admission, dead-follow promotion and ordered AI's returned-X-zero branch. Use
+`Battle01ToBattle02Tests` plus affected `ExplorationMusicTests`; existing affected action/entry/outcome
+tests retain their completed results. The physical-only normal-difficulty source profile reuses
+script3 scoring: `CalculateTargetPriorityForAttack` clears the ATTACK1/2/3 extra parameter, while
+`AdjustTargetPriorityForAttackByDifficulty` selects from activation/difficulty. Wider AI profiles are
+not claimed by the observed Battle02 sequence.
+
+Ordered MOVE2/3 keeps every living/on-map opponent. Pinned
+`disasm/code/gameflow/battle/ai/command/move.asm` first scores under temporary restrictions and stores
+the low byte of `GetMoveCostToEntity`, including128/255. It uses stable unsigned ascending order;
+when multiple targets exist and the last original-order score has bit7 set, it performs one forward
+adjacent class pass, requiring both rank distance≤1 and source combatant-index distance≤3. It then
+clears temporary restrictions for the preliminary reverse approach and reapplies the order pocket
+plus opposing occupancy for the final stop. `AiMovementRules.PursueOrdered` keeps those score,
+approach and final grids separate; a target outside the pocket is not silently discarded into Stay.
+The original MOVE1 overload keeps its narrower admitted score domain. Unknown classes and genuinely
+unavailable unrestricted paths still produce typed failures. Small engine cases vary target/order
+positions, different raw score bytes, both adjacent-pass conditions and the final restricted stop.
+
+The extracted producers preserve the existing `OriginalPrograms`, `prepare_visuals` and `_tokens`
+imports used by shared H4 source adapters. Direct import checks and unchanged prepared content cover
+that extraction; no retired comparison run is required merely by relocation. The explicit producer
+path set in `verification_engine_paths.py` selects engine-unit, adapter-build and research-public in
+both existing planner branches. Engine scope still rejects unrelated research paths. The actual
+committed auto plan retains the planner's broader dependency rules; use the explicitly reviewed
+engine semantic scope for this candidate and record both plans in the handoff. Planner edits also
+select the existing standalone H4 **build**, not a private H4 comparison run.
+
+The reached story-rule extensions are not all semantic no-ops for those old consumers. A direct
+source-lowering comparison against accepted `dee915fdf02c9fe49c367b2c2a251ba255728038` used the existing
+W1 source files/symbols plus W2's six continuation symbols (43 selected symbols,47 compiled programs).
+`cs_51406` and `cs_51614` now use explicit join text447 instead of overwriting the caller text cursor;
+their instruction counts decrease32→31. `cs_51454` now lowers `moveNextToPlayer` into movement,
+motion waits and facing instead of its former unsupported native-call boundary (2→5 instructions).
+The existing W1 `cs_51614` cohort positions3/10 precede the changed instruction20, but old H4
+continuation/operation indexes are not automatically equivalent. Historical reports retain their
+original Git/compiler identity. This candidate neither updates their fixtures nor claims that a
+retired comparison passed against the new lowering; the current engine behavior uses the new rules.
+
+The source support is pinned `disasm/code/common/scripting/map/mapscriptengine_2.asm`,
+`csc08_joinForce`: it calls `txt 447` for selector128, or `JoinForce`/`GetClass` and `txt 446` for one
+member, then returns after the music/input wait. It does not invoke `csc04_setTextIndex` or change the
+cutscene text cursor. The explicit-ID lowering is an intentional correction, independently of the
+native route's success. The three compiler deltas are present in production commit
+`f24827296b184ff34ac9ca1a7550e486a2685e78`; the subsequent AI/recovery/host corrections do not change
+those compiler deltas.
+No currently required public command consumes those old H4 program indexes.
+
+To reproduce the bounded lowering comparison from this candidate checkout, load the local environment
+and run the following in `uv run python -X utf8 - <pinned-source-root>` using a PowerShell here-string
+pipe. It reads the accepted Git source without checking out or changing another worktree, compiles
+the existing adapter selection, and prints only changed program names/counts:
+
+```python
+import subprocess, sys, types
+from pathlib import Path
+from sf2tool.remake_exploration_content import OriginalPrograms
+from sf2tool.remake_h4.w1_source import _W1_SOURCE_FILES, _W1_SOURCE_SYMBOLS
+old = types.ModuleType("accepted_producer")
+source = subprocess.check_output(["git", "show",
+    "dee915fdf02c9fe49c367b2c2a251ba255728038:src/sf2tool/remake_exploration_content.py"])
+exec(compile(source, "accepted-producer", "exec"), old.__dict__)
+files = set(_W1_SOURCE_FILES) | {
+    "data/maps/entries/map03/mapsetups/scripts_1.asm",
+    "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+    "data/maps/entries/map03/mapsetups/s3_zoneevents.asm",
+    "data/battles/entries/battle01/cs_beforebattle.asm"}
+symbols = set(_W1_SOURCE_SYMBOLS) | {
+    "cs_5145C", "Map3_EntityEvent0", "Map3_EntityEvent15", "byte_50E96", "cs_5149A", "bbcs_01"}
+outputs = []
+for compiler_type in (old.OriginalPrograms, OriginalPrograms):
+    compiler = compiler_type({"resources": {
+        "standaloneScriptPrograms": [], "initSourcePrograms": []}}, Path(sys.argv[1]))
+    for path in sorted(files): compiler.register_file("disasm/" + path)
+    for symbol in sorted(symbols): compiler.compile(symbol)
+    outputs.append(compiler.programs)
+for name in sorted(set(outputs[0]) | set(outputs[1])):
+    if outputs[0].get(name) != outputs[1].get(name):
+        print(name, *(len(rows.get(name, {}).get("instructions", [])) for rows in outputs))
+```
+
+### Retained candidate results and open acceptance
+
+The Issue1045 handoff retains exact inputs, reports, logs, failed node IDs and correction commands.
+The complete initial engine run finished1085 passed/16 failed; it was not interrupted and is not
+replaced with a claimed green aggregate. Focused route/music checks passed after two test assertions
+were corrected to the already-owned source living-member refresh rule. Adapter compilation passed
+with zero warnings/errors. Ruff and repeated maintained preparation passed.
+
+The first public CI run completed1107 passed/2 failed/30 private skips. Its two source-AI assertions
+still expected blanket move-order rejection and an activation-bit write for unconditional dispatch.
+Pinned `StartAiControl` branches directly to the activated handler when both regions are NONE,
+without that write. The migrated behavior checks preserve the activation word and distinguish set7;
+the negative order case now requires an exact missing-follow-binding failure with unchanged input.
+The owning-file run and corrected negative-case rerun pass. The completed CI failure and the first
+correction's incomplete fixture failure remain in the handoff; final remote results belong there too.
+
+The native route report18 passes but retains an obsolete “route pending” scope string; report19
+has the correct scope and stronger route/audio assertions. Reports19, defeat02 and startup01 have
+passing behavior but retained ObjectDB shutdown warnings. A verbose startup-only diagnostic
+identified AudioStreamWAV/playback objects awaiting the real audio thread. The observer now waits
+250ms of wall time after root disposal; the subsequent bounded cleanup check exits without warnings
+or leaked objects. No production delay or whole-route rerun was introduced for this observer fix.
+
+The ordered-AI correction changes Battle02's first enemy decision, so report19 does not establish
+that corrected decision's host acceptance. The dependency-selected route20 reached Battle02 but
+timed out during its first Automatic movement with no session failure. The ongoing field-to-battle
+handoff recognized player selection and scenes but omitted movement, leaving the prepared battle
+view with its previous projection. The host now transfers a legitimate pending `BattleMovement`
+through the existing attach path and prevents field input during it, matching initial startup's
+guard. Before/load/start programs retain their existing ownership; the observer does not force
+completion, alter input, or extend its timeout. The failed report remains in the Issue handoff.
+The unchanged route21 observer passes with the corrected host: the first enemy moves from(3,5)
+to(4,6) before Chester's round1 input, then player/enemy physical actions return to Chester's round2
+input in the same session. Its process log has no errors, warnings or leaked-object report. This
+replaces report19 only for the changed ordered-AI/handoff dependency; loop and defeat evidence were
+not reacquired.
+
+Earlier completed route failures remain in the local handoff: missing/ambiguous selected audio,
+camera-neutral/text-class handling, unbound changed-map music context, stale board attachment and
+missing enemy sprites. They are corrected by the corresponding narrow checks and native route,
+not erased. Remaining private comparison gaps have distinct causes; no accepted-base runtime rerun
+was performed, so the initial candidate aggregate does not establish a baseline failure count:
+
+- The unchanged `map3-opening-start.json` lacks display/map-palette state, and the unchanged H3
+  `Bridge` constructs an `ExplorationStartInput` without display. The unchanged full-fade guard
+  requires it. Opening/castle/continuous-outcome comparisons stop at that reached fade; the explicitly
+  bound tower start does not replace their full R1/H3 comparisons.
+- The expanded world makes the negative fixtures' default `JsonNode.ToJsonString()` output exceed
+  the128MiB limit before ROM/raster/sprite semantic checks. Moving a multi-encounter world into TEMP
+  also breaks its relative input root. These exact negative checks remain unvalidated; successful
+  admission of valid content is not their replacement.
+- Multi-encounter input exposes old `Encounters.Values.Single()` assumptions and direct calls that
+  treat exploration's ally-only party as a complete battle start. Production `BattleEntry` merges
+  enemy defaults, but its passing route does not prove every old fixed growth/completion assertion.
+- Optional ally `activationWord` is now deliberately admitted and carried. The old unknown-field
+  expectation no longer describes that behavior; it must not be generalized to other negative cases.
+
+The two specifically reviewed private behavior gaps are resolved by narrow checks. Post-Stay was
+observed in Battle/PresentationWait with pending Automatic movement and no failure; the priest test
+now delivers that movement/scene through the existing helper, preserving its exact next-player and
+EGRESS `spell-effect` rejection/state assertions. The earlier explanation that EGRESS was implemented
+was incorrect: the failure occurred before that request. The exact test now passes. Separately,
+cross-encounter healing exposed a real production bug in the outcome-result guard, which still looked
+up every ally only in the current encounter. Its known-ally fallback now matches the recovery policy
+while retaining identity/order/count, seed/accounting, enemy immutability and resource-bound checks.
+The exact private living/dead recovery node and small extra-encounter ally/unknown/enemy cases pass.
+Prior failures remain recorded. Human-play acceptance, independent integration and Battle02 resolution
+are not established by this candidate.

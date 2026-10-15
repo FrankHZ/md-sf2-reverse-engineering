@@ -104,6 +104,8 @@ internal static class EntityActionRunner
                         else motion = motion with { WaitTimer = 0 };
                         break;
                     case SetEntitySpeed speed: motion = motion with { XSpeed = speed.X, YSpeed = speed.Y, WaitTimer = 0 }; break;
+                    case SetEntityAnimationCounter animation:
+                        motion = motion with { AnimationCounter = animation.Counter, WaitTimer = 0 }; break;
                     case SetEntityAcceleration factors: motion = motion with { XAcceleration = factors.X, YAcceleration = factors.Y, WaitTimer = 0 }; break;
                     case ChangeEntityFlags flags:
                         motion = flags.FlagsB ? motion with { FlagsB = (byte)((motion.FlagsB & ~flags.Mask) | (flags.Value & flags.Mask)), WaitTimer = 0 }

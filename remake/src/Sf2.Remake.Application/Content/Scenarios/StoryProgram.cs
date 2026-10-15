@@ -21,7 +21,7 @@ public sealed record ReturnBattleMap : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
-    bool WaitForAcknowledgement = true, bool ExplicitWindows = false) : StoryInstruction;
+    bool WaitForAcknowledgement = true, bool ExplicitWindows = false, int? NameMember = null, int? TextId = null) : StoryInstruction;
 public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0) : StoryInstruction;
 public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;
@@ -31,6 +31,14 @@ public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
 public sealed record SetEntitySprite(EntityRef Entity, int Sprite) : StoryInstruction;
 public sealed record SetEntityPriority(EntityRef Entity, bool Value) : StoryInstruction;
+public sealed record SetMapEntityAnimation(EntityRef Entity, byte Counter) : StoryInstruction;
+public sealed record AddMapEntity(EntityRef Entity, MapPosition Position, byte Facing, int Sprite,
+    EntityActionProgram Actions) : StoryInstruction;
+public sealed record RestoreMemberResource(int Member, bool Hp) : StoryInstruction;
+public sealed record SetMapQuake(byte Amount) : StoryInstruction;
+public sealed record ReloadSceneMap(MapPosition Camera) : StoryInstruction;
+public sealed record MoveEntityNextToPlayer(EntityRef Entity, byte Direction) : StoryInstruction;
+public sealed record WaitForEntityMotion(EntityRef Entity) : StoryInstruction;
 public sealed record SetEntityPosition(EntityRef Entity, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record SetEntityVisibility(EntityRef Entity, bool Visible) : StoryInstruction;
 public sealed record HideMapEntity(EntityRef Entity, bool RemoveAliases) : StoryInstruction;
@@ -48,11 +56,12 @@ public sealed record JoinPartyMember(int Member) : StoryInstruction;
 public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
 public sealed record WaitProgramTicks(int Ticks) : StoryInstruction;
 public sealed record PresentCue(PresentationCueKind Kind, string? Resource = null,
-    EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null) : StoryInstruction;
+    EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null, int? DurationTicks = null) : StoryInstruction;
 // ExecuteFading is synchronous, full-mask black, with one final VInt service.
 // A supplied period is temporary; null consumes the live period.
 public sealed record FullBlackFade(byte? Period = null);
 public sealed record TransferToMap(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode) : StoryInstruction;
+public sealed record QueueMapWarp(MapId Map, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record UnsupportedInstruction(string Opcode, string Source) : StoryInstruction;
 
 public abstract record EntityAction;
@@ -64,6 +73,7 @@ public sealed record WaitEntityTicks(byte Ticks) : EntityAction;
 public sealed record StopEntityActions : EntityAction;
 public sealed record IdleEntityAction : EntityAction;
 public sealed record SetEntitySpeed(ushort X, ushort Y) : EntityAction;
+public sealed record SetEntityAnimationCounter(byte Counter) : EntityAction;
 public sealed record SetEntityAcceleration(byte X, byte Y) : EntityAction;
 public sealed record ChangeEntityFlags(bool FlagsB, byte Mask, byte Value) : EntityAction;
 public sealed record SetGlobalSpriteSize(ushort Size) : EntityAction;

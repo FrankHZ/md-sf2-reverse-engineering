@@ -85,6 +85,42 @@ or stable-observation boundary under
 
 ## Current Engineering Frontier
 
+### Battle01 return through Battle02 implementation agreement
+
+Issue [#1045](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1045) uses **High**
+rigor: second-encounter admission, shared party resources and cross-map story execution cross
+existing Content/Application/host boundaries. The intended outcome is one ordinary private
+`GameSession` executing real Battle01 victory, tower return, castle exorcism/commission, Jaha's
+join and the Granseal west exit into usable Battle02 rounds. Research and design-production batches
+are paused. Accepted source contracts remain evidence; remake execution establishes implementation
+behavior only.
+
+Acceptance is staged: first a separately controlled Battle02 pilot (terrain, six enemies, Jaha,
+movement/cancel, physical action and enemy continuation); then the uninterrupted ordinary route
+from actual Battle01 victory; finally native input/state/projection evidence and human-play launch
+instructions. The pilot is not continuity acceptance. No checkpoint substitution, flag injection,
+teleport, session replacement, screenshots or bulk frame capture is allowed for that final route.
+Source completion/unlock behavior must preserve intentionally different authored policy. Party
+resources, equipment, growth, accounting and seeds retain their live owners across encounters.
+
+The endpoint is Battle02 actions and return to player control, excluding Battle02 resolution,
+Battle03, save/load, UI redesign, Chinese, full-game import and new original runtime acquisition.
+The measured candidate is 127,596,681 bytes, admitted under a
+128 MiB (134,217,728-byte) bound checked before allocation and after read. A native load measured
+721,465,344 bytes resident and 1,007,714,304 bytes peak working set; these are one observed load,
+not a general performance guarantee. Existing resources and producers are reused. Eight explicitly
+approved finite sound captures total 28,260,736 raw bytes; acquisition is closed. MainTheme1 uses
+existing unchanged PCM with an inferred modern loop. Ordinary defeat uses a clearly authored
+local chord asset, preserving the prior accepted presentation choice without an original-audio claim. Scope/ownership expansion and a need for a general
+campaign platform return to main-gate. Actual reached failures remain explicit, never no-op success.
+
+Validation uses actual engine behavior tests, affected producer execution, `uv run sf2 verify engine`,
+`uv run sf2 verify adapter`, the clean-head dependency plan, scoped CI and native semantic checkpoints.
+The bounded implementation, scoped tests, native continuous route and independent implementation
+review are complete. Integration is tracked in [PR #1046](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1046);
+human-play acceptance remains pending. These results do not establish original-game fidelity or
+full-game acceptance, or extend the accepted Battle01 milestone beyond its existing boundary.
+
 Current mandatory acceptance uses default keyboard A under the
 [corrected product scope](../../docs/decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope).
 Existing C/D observations complete the winning/return route with intact bounded capture and unchanged

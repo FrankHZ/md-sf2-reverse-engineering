@@ -20,8 +20,8 @@ internal static class BattleOutcome
             var route = current.Story.EnteringBattle?.Outcome ?? throw new BattleRuleException("outcome-route", "battle.outcome", true);
             var battle = current.Battle;
             var party = new BattleStartInput(battle.Definition.Encounter,
-                battle.Actors.Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp, actor.Exp,
-                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout)),
+                battle.Actors.Where(actor => actor.IsAlly || definition.EncounterStarts.Count == 0).Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp, actor.Exp,
+                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord)),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, kind, party);
             var map = definition.Exploration!.Maps[route.BattleMap];

@@ -8,6 +8,7 @@ namespace Sf2.Remake.Application.Gameplay.Authored;
 internal sealed class AuthoredStoryPolicy : ISourceStoryPolicy
 {
     public string Identity => "authored-story";
+    public bool EnterCompletedBattle(ScenarioDefinition definition) => false;
     public SourceStoryCandidate Apply(ScenarioDefinition definition, SessionSnapshot current,
         SourceStoryInstruction instruction, ProgramLocation location) =>
         throw new BattleRuleException("source-story-unsupported", "program.sourceStory", true);

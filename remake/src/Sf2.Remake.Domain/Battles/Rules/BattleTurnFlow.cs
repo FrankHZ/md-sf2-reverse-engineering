@@ -14,7 +14,8 @@ internal static class BattleTurnFlow
             var input = inputs[deployment.Actor];
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
                 deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
-                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status, progress: input.Progress, sourceLoadout: input.SourceLoadout);
+                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
+                progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle);
         return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);

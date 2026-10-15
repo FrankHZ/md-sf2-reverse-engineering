@@ -5,13 +5,14 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal static class EnemyPhysicalDecision
 {
-    // Already-active ATTACK1 / script3, physical-only. This is
-    // a successful first command of source commandset06, not a replacement fallback policy.
+    // Admitted physical-only / script3 decision, using the caller's temporary grid when supplied.
+    // CalculateTargetPriorityForAttack clears ATTACK1/2/3's extra parameter; the priority
+    // script is selected from activation/difficulty, not that command parameter.
     internal static BattleAutomaticAction? TryResolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, WeightedMovementGrid? selectedGrid = null)
     {
         var actor = current.GetActor(actorRef);
-        var grid = BattleMovement.Grid(current, actorRef);
+        var grid = selectedGrid ?? BattleMovement.Grid(current, actorRef);
         var candidates = new List<(BattleActorState Target, MapPosition Position, int Cost)>();
         foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.IsAlly).OrderBy(a => a.ProcessingOrder))
         {

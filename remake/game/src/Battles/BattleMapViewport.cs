@@ -36,8 +36,12 @@ internal sealed partial class BattleMapViewport : Control
 
     internal void Build(BattleDefinition definition, ScenarioDefinition content)
     {
+        foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
+        _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _preview.Clear(); _focus = [];
+        _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
+        ReleaseTextures();
         _visuals = content.Exploration?.Visuals;
-        _sceneContent = content.BattleScenes;
+        _sceneContent = content.ScenesFor(definition.Encounter);
         _mapSize = new(definition.Width * CellSize, definition.Height * CellSize);
         _board.Size = _mapSize;
         for (int y = 0; y < definition.Height; y++)
@@ -68,6 +72,14 @@ internal sealed partial class BattleMapViewport : Control
             }
         }
     }
+
+    private void ReleaseTextures()
+    {
+        foreach (var texture in _textures.Values) texture.Dispose();
+        _textures.Clear(); _resourceSelectors.Clear();
+    }
+
+    public override void _ExitTree() => ReleaseTextures();
 
     internal void Present(BattlePresentation projection)
     {

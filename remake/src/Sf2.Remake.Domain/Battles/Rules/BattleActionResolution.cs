@@ -32,9 +32,17 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
                 ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
             if (old.Actor != actorRef)
                 Require(candidate.LastTarget == old.LastTarget && candidate.AiMemory == old.AiMemory &&
-                    candidate.ActivationWord == old.ActivationWord);
+                    candidate.ActivationWord == old.ActivationWord && candidate.PrimaryOrder == old.PrimaryOrder &&
+                    candidate.SecondaryOrder == old.SecondaryOrder);
             else if (candidate.LastTarget != old.LastTarget)
                 Require(Target is not null && candidate.LastTarget == Target);
+            if (old.Actor == actorRef && (candidate.PrimaryOrder != old.PrimaryOrder || candidate.SecondaryOrder != old.SecondaryOrder))
+            {
+                Require(old.PrimaryOrder is not null and not 255 && (old.PrimaryOrder.Value & 64) == 0 &&
+                    before.Definition.Initialization is { } initialization &&
+                    initialization.SourceCombatants.TryGetValue(old.PrimaryOrder.Value, out var followed) &&
+                    before.GetActor(followed).Hp == 0 && candidate.PrimaryOrder == old.SecondaryOrder && candidate.SecondaryOrder == 255);
+            }
         }
         Require(Path.Count > 0 && Path[0] == actor.Position && Path[^1] == Destination &&
             before.Definition.Contains(Destination));

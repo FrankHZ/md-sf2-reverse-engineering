@@ -9,6 +9,10 @@ internal sealed class Sf2StoryPolicy : ISourceStoryPolicy
 {
     public string Identity => "sf2-story";
 
+    // Source CheckBattle consumes the unlock but returns the selected battle on this call.
+    // Authored routes retain their explicit one-shot completion convention even with SF2 combat.
+    public bool EnterCompletedBattle(ScenarioDefinition definition) => definition.PrivateDefinitions is not null;
+
     public SourceStoryCandidate Apply(ScenarioDefinition definition, SessionSnapshot current,
         SourceStoryInstruction instruction, ProgramLocation location)
     {

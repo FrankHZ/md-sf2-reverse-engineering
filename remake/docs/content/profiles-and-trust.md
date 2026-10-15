@@ -338,3 +338,36 @@ PlayerReady input retains Unknown values and rejects only operations that need t
 is applied twice, no live accounting is filled, and unsupported spell references stay visible. The
 connected world adds Battle01 growth and outcome programs; broader spawn/region programs and other
 outcome families remain future work.
+
+
+## Selected second encounter
+
+The private world may declare at most one additional `encounters` row. Its `placement`, `scene`,
+`terrain`, `static`, `enemies`, `gold`, `start` and optional `battleScenes` paths resolve beneath the
+world file's directory. Admission reads these once through the existing pinned readers, rejects
+repeated encounter IDs or incompatible shared ally baselines, and retains immutable per-encounter
+starts/scenes. The core/enemy/gold exports retain their exact accepted identities; selected records
+are merged from those authenticated inputs. Production never reads comparison fixtures.
+
+The Battle01-to-Battle02 selection imports seven maps and the source setup variants needed for
+501/609. The maintained visual producer gathers enemy map sprites from the selected encounter
+spritesets and enemy sprite table; the runtime rejects missing battlefield sprite references at
+startup. It selects the active encounter's scene resources and map music, while live party resources,
+progress, inventory, gold and RNG cross the transition. A newly joined member obtains its admitted
+initial resources once; an already present member keeps its current values. The separately declared
+Battle02 party input is an admission baseline, not a second session or a runtime reseed.
+
+The world file is limited to 128 MiB (134,217,728 bytes), checked before full allocation and after
+reading. Decoded PCM/rasters, JSON buffers, renderer objects and imports require additional memory;
+this bound is not a total-memory promise. The measured selection and native load are recorded in the
+[implementation agreement](../capability-status.md#battle01-return-through-battle02-implementation-agreement).
+
+Explicit `--audio-candidate` inputs use the existing WAV/PCM admission format and byte/format checks.
+They do not promote assets into the shared library. Captured finite cues retain exact recording,
+sample interval and timer provenance. MainTheme1 uses unchanged existing PCM with an inferred modern
+loop. `sf2tool.remake_authored_audio` prepares the prior project-authored defeat chord as a distinctly
+labeled local candidate; command12/C4 selects the source command context, not original audio fidelity.
+No private waveforms or generated content are checked in.
+
+`battle01-to-battle02-programs.json` declares `outcomeBattles: [1]`. Battle02 resolution is deliberately
+unbound and reports the existing typed `outcome-route` boundary; it cannot silently enter later story.

@@ -963,6 +963,14 @@ request can use that known cue as previous and admit finite progress. This avoid
 SessionAudio consumed every intermediate map selection within one application result. No host
 history or timing is copied back into gameplay; context changes add no extra service.
 
+A subsequent external ordinary field input may establish only the current map cue when the
+invalidated music context differs from the published map/area/battle context. The host consumes
+that final result through `SessionAudio.Observe` before dispatching the input, and that changed
+context selects typed map music. This clears the obsolete stack without reviving it. Valid explicit
+script music remains untouched. A transfer and return to the old context in one result cannot
+establish map music this way: the host may retain its explicit cue, so history stays unbound until
+an explicit request establishes it. Binding advances neither service time nor RNG.
+
 Plain input after the helper keeps the raw window without revealing it anew. A genuine Wait uses
 the existing one-service input-first rule without a W1/W2 copy. Bound plain Ack is silent; only
 accepted W2 requests validation67. Ack, close/Sleep10, follower/position
@@ -1056,3 +1064,32 @@ PC and stack remain. A rejected or duplicate completion cannot apply a later eff
 [short actual observations](../verification/field-programs.md#replaceable-story-observation)
 cover content replacement, failure retention and usable control; source-context tests do not claim
 private natural reach, original timing or measured performance.
+
+## Continuous second-encounter boundary
+
+The selected private route keeps one `GameSession` from the controlled tower start through actual
+Battle01 outcome, castle return, Jaha and Battle02. `ScenarioDefinition` owns immutable encounter
+definitions, initial inputs and scene resources. `BattleEntry` selects the next definition and carries
+the live ally records, gold and both RNG images; only new members/enemies use the selected baseline.
+The source new-battle refresh still heals living allies and applies the admitted refresh rules.
+Continuity does not mean bypassing that refresh or preserving provisional battle positions.
+
+SF2 story policy preserves the source completed-and-unlocked warp behavior, including consuming the
+unlock once and entering the selected encounter. The authored policy retains its one-shot completed
+route behavior. Map setup selection uses the last satisfied source flag variant without replacing
+the immutable layout. Motion waits can finish at the destination while retaining the installed
+follower script; script-completion waits retain their separate meaning.
+
+The source `csc08` join body compiles into existing program instructions and returns to its caller.
+Member/class text captures the reached join member, while an explicit text ID leaves the shared text
+cursor unchanged. Missing class content is a typed reached failure after any earlier committed join;
+it does not run the caller's later unlock. The exact-position/no-op and already-joined source branches
+remain in the selected program, rather than being replaced by a general join shortcut.
+
+The host rebuilds the board only when its actual battle definition or scene resources change, before
+publishing observations. Repeated attachment of the same state keeps the board. Scene cache keys
+include the encounter, and field-death selection uses the active scene package. Field music chooses
+the published map context after an outcome; a retained `EnteringBattle` anchor does not select battle
+music during victory/defeat return. This also preserves valid explicit cues and rejects unbound
+same-context music waits. [Direct acceptance](../verification/field-programs.md#battle01-through-battle02)
+covers the actual cross-encounter consumer; Battle02 resolution remains outside this selection.

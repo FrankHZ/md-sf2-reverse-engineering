@@ -14,7 +14,10 @@ public sealed class GameSession
     public SessionSnapshot Current => _current;
     public SessionRules Rules { get; }
     public BattleChoicesSnapshot QueryBattleChoices() =>
-        BattleChoices.Query(Current, Rules, Definition.BattleScenes, Definition.PrivateDefinitions is not null);
+        BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
+
+    public BattleSceneDefinition? ActiveBattleScenes => Current.Mode == SessionMode.Battle
+        ? Definition.ScenesFor(Current.Battle.Definition.Encounter) : null;
 
     public static SessionStartOutcome Start(IScenarioSource source) => Start(source, RuleCompositions.Sf2());
 
@@ -104,7 +107,7 @@ public sealed class GameSession
         var result = movementActive ? BattleMovementContinuation.Submit(current, envelope.Command, Rules)
             : sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command, Rules)
             : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command, Rules)
-            : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, Definition.BattleScenes, Definition.PrivateDefinitions is not null);
+            : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
         if (!programActive && !ReferenceEquals(result.Snapshot, current))
             result = result with { Snapshot = result.Snapshot.WithStory(current.Story) };
         if (result.Failure is null && !programActive) result = BattleOutcome.Begin(Definition, result, Rules);

@@ -13,7 +13,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // wait token; it never computes damage, rewards, RNG or the next combatant.
 internal sealed partial class BattleSceneView : Control
 {
-    private readonly Dictionary<string, ImageTexture> _textures = new(StringComparer.Ordinal);
+    private readonly Dictionary<(string Encounter, string Resource), ImageTexture> _textures = [];
     private Node2D _canvas = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
     private Label _message = null!, _allyStatus = null!, _enemyStatus = null!;
@@ -32,7 +32,7 @@ internal sealed partial class BattleSceneView : Control
     private readonly List<Sprite2D> _fairyBodies = [], _fairyWings = [], _fairyDust = [];
     private bool _castSoundPlayed;
     internal string? Error { get; private set; }
-    private BattleSceneDefinition? Content => _session.Definition.BattleScenes;
+    private BattleSceneDefinition? Content => _session.ActiveBattleScenes;
 
     public override void _Ready()
     {
@@ -93,7 +93,15 @@ internal sealed partial class BattleSceneView : Control
             {
                 if (content.Encounter != battle.Definition.Encounter || !content.Allies.TryGetValue(ally.Definition.ClassRule, out _allyVisual) ||
                     (enemy is not null && !content.Enemies.TryGetValue(enemy.Actor, out _enemyVisual))) throw new InvalidOperationException("battle-scene-actor-unavailable");
-                Bind(_background, content.Background); Bind(_backgroundWrap, content.Background); Bind(_ground, content.Ground);
+                string background = content.Background, ground = content.Ground;
+                if (content.TerrainScenes is { } terrain)
+                {
+                    var back = enemy?.Position ?? ally.Position ?? ally.Deployment.Position;
+                    var front = ally.Position ?? ally.Deployment.Position;
+                    background = terrain[back.Y * 48 + back.X].Background;
+                    ground = terrain[front.Y * 48 + front.X].Ground;
+                }
+                Bind(_background, background); Bind(_backgroundWrap, background); Bind(_ground, ground);
                 _allyFrame = _enemyFrame = 0;
                 var equipped = ally.SourceLoadout?.Items.FirstOrDefault(item => (item & 128) != 0 && (item & 127) != 127);
                 _hasWeapon = equipped is > 0;
@@ -296,7 +304,8 @@ internal sealed partial class BattleSceneView : Control
     {
         if (Content is not { } content) return actor.Value;
         var state = _session.Current.Battle.GetActor(actor);
-        return state.IsAlly ? content.MemberNames[state.ProcessingOrder] : _session.Definition.PrivateDefinitions!.Enemies["GIZMO"].DisplayName;
+        return state.IsAlly ? content.MemberNames[state.ProcessingOrder] :
+            content.EnemyNames?.GetValueOrDefault(actor) ?? throw new InvalidOperationException("scene-enemy-name");
     }
 
     private string Message(BattleSceneState state)
@@ -344,12 +353,13 @@ internal sealed partial class BattleSceneView : Control
     }
     private void Bind(Sprite2D node, string resource)
     {
-        if (!_textures.TryGetValue(resource, out var texture))
+        var key = (Content!.Encounter, resource);
+        if (!_textures.TryGetValue(key, out var texture))
         {
             var raster = Content!.Rasters[resource]; using var image = new Image();
             if (image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok || image.GetWidth() != raster.Width || image.GetHeight() != raster.Height)
                 throw new InvalidOperationException("battle-scene-texture-invalid");
-            texture = ImageTexture.CreateFromImage(image); _textures.Add(resource, texture);
+            texture = ImageTexture.CreateFromImage(image); _textures.Add(key, texture);
         }
         node.Texture = texture; node.Scale = new(0.5f,0.5f);
         node.SetMeta("bound_resource", resource);
@@ -411,5 +421,6 @@ internal sealed partial class BattleSceneView : Control
         resource = node.HasMeta("bound_resource") ? node.GetMeta("bound_resource").AsString() : null,
         texturePresent = node.Texture is not null, visible = node.IsVisibleInTree(),
     };
-    public override void _ExitTree() { foreach (var texture in _textures.Values) texture.Dispose(); }
+    public override void _ExitTree()
+    { foreach (var texture in _textures.Values) texture.Dispose(); _textures.Clear(); }
 }

@@ -24,8 +24,9 @@ internal static class BattleActivationRules
                 throw new BattleRuleException("missing-deployment-initialization", "placements.initialization");
             if (source.SpawnMode != 0)
                 throw new BattleRuleException("spawn-mode", "placements.spawn", true);
-            if (source.PrimaryRegion != 15 && !ids.Contains(source.PrimaryRegion) ||
-                source.SecondaryRegion != 15 && !ids.Contains(source.SecondaryRegion))
+            if (deployment.Faction == BattleFaction.Enemy &&
+                (source.PrimaryRegion != 15 && !ids.Contains(source.PrimaryRegion) ||
+                source.SecondaryRegion != 15 && !ids.Contains(source.SecondaryRegion)))
                 throw new BattleRuleException("missing-activation-region", "placements.region");
         }
     }
@@ -34,6 +35,8 @@ internal static class BattleActivationRules
     {
         // Validate every reached region/program/spawn prerequisite before any RNG or publication.
         Validate(before.Definition);
+        // TriggerRegionsAndActivateEnemies returns before testing/activation when count is zero.
+        if (before.Definition.Initialization!.Regions.Count == 0) return before;
         var flags = before.Regions!.Flags.ToArray(); ushort tested = 0;
         var allies = before.Actors.Where(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null).ToArray();
         var actors = before.Actors.ToArray();
