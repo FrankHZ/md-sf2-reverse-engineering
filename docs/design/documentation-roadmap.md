@@ -496,71 +496,81 @@ writes, partial reload and ordered27/32 admission. Its
 and #1034 handoff/acceptance preserve #1029/#1030 evidence, separate original/
 final results and diagnostics, accepted0.083s provenance and natural-route limits.
 
-The current reader outcome explains [Battle27: initial formation and the
-restrictions confrontation](synthesis/battle27-initialization-and-opening.md),
-scoped by [#1038](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1038).
-**Standard** rigor remains appropriate: fresh/resume state, actual membership,
-physical identity and intro completion have distinct boundaries. Consume the
-complete accepted [#1033 research](../research/battle27-initialization-and-opening.md)
-at85016e1c and the accepted #1034 predecessor. Activation research
-and UI692 remain unconsumed/offlimits.
+[Battle27: initial formation and the restrictions confrontation](synthesis/battle27-initialization-and-opening.md)
+explains actual membership, sixteen enemies, rebuilt crop/view and the complete
+three-speaker opening, stopping before activation. Its
+[retained review](synthesis/battle27-initialization-and-opening.md#evidence-review-and-retained-results)
+and #1038 handoff preserve accepted #1033/#1034 evidence, distinct heads/checks/CI,
+source/pair limits, diagnostics/failures and natural-route Unknowns.
+
+The current reader outcome explains [Battle27 activation and the first turn
+handoff](synthesis/battle27-activation-and-first-turn-dispatch.md), scoped by
+[#1042](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1042).
+**Standard** rigor remains appropriate: checked-region bits, persistent flags,
+activation words, spawning and turn eligibility have distinct predicates.
+Consume complete accepted [#1037 research](../research/battle27-activation-and-first-turn-dispatch.md)
+and the #1038 predecessor from accepted65334101. Outcome research #1041 and
+UI692 remain unconsumed/offlimits. Organize by content/readability without
+an arbitrary length cap; no new original claim or generic battle/AI platform.
 
 Acceptance requires a connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Connect incoming74/27 through the empty before hook, restored selectors,
-  region reset, eligible healing, actual membership/formation and enemy load.
-  Twelve placements prove no fixed named party; preserve dead/fewer/surplus/
-  empty-member behavior and actual HP/class/status/item/difficulty readers.
-- Explain all sixteen enemies/six definitions using the owning complete
-  tables, equipment/spells/stats and initial order/activation/region/point
-  declarations. Preserve no27 random upgrade/neutral group and exclusion of
-  Battle32's Jaro exception; counts/names prove no tactics or activation.
-- Separate combatants, physical actors, sprites and text speakers. Cover
-  rebuilt mappings, position-versus-HP/capacity hazards and actual Map74
-  crop/local coordinates/view/terrain/music without a decoded-route claim.
-- Explain all nine opening commands and2658–2660 literals/meaning, actual
-  Soldier133/Soldier132/Lizardman128 mappings, portrait/speech fallback,
-  camera requests and real single-text/W1/skip/terminator consumers. Preserve
-  existing portrait, current rather than guaranteed new input, unguarded
-  missing-speaker lookup, aliases/dead speakers and477-before-completion.
-  Questions create no player choice; no completed camera/rendering is claimed.
-- Distinguish fresh pre-ActivateEnemies from F88's supplied-state continuation
-  before individual-turn execution, including the possible turn sentinel.
-  At this specific74/27 entry d0-preserving helpers carry74 outside the64-byte
-  lookup; this proves no natural suspend/resume entry or register state.
-- Preserve current-selector/crop/flag/interruption premises and unsupported
-  activation/turn/AI/action/outcome/later story. Natural reach, services,
-  presentation/control/persistence stay Unknown; no frontier advances.
+- Start after completed fresh initialization/opening and explain actual Start
+  activation/region-hook/debug/spawn/turn order through the first
+  ExecuteIndividualTurn call before its body. F88 initially reads supplied
+  order/offset instead; sentinel reentry, current-selector, missing-mapping
+  and flag-before-completion limits remain conditional.
+- Join all twelve formation positions to all four regions using the accepted
+  complete geometry/integer arithmetic. Separate30-slot positive-signed-HP/X/Y
+  geometry from nonzero-HP/no-Y activation and turn admission. The checked
+  word is incoming OR000F, not necessarily zero/15 or persistent90–105 flags.
+- Explain all sixteen row consequences via the complete trigger/activation
+  table, primary precedence and preserved bit1. Bishop12/13 secondary
+  FOLLOW_ENEMY0 orders do not change trigger15; unchanged rows have no
+  secondary-only path. Keep slot160/deals alias conditional, with no new
+  shop audit or unconditional item reward.
+- Use the complete region-hook table for no27 match, and mode0 for the zero
+  fresh spawn list. Changed hidden/respawn modes retain max-HP and
+  flag-before-rejection, bound144, occupancy/self-exclusion, reset/append/
+  service order and unobserved presentation limits.
+- Join actual current stats for sixteen enemies,48 enemy draws and initialized
+  records16+N+T <=40. Retain sequential RNG/double-turn/score wrapping,
+  signed sort/stable ties/padding/buffer limits,158/159 exclusion, empty set
+  and supplied offset. Clear activation does not exclude turns; actual inputs
+  determine the first actor. No seed enumeration/simulation.
+- Preserve changed-state/interrupted-prefix writes and unsupported actual
+  AI/action/turn/outcome/story behavior. Natural runtime, control, persistence
+  and remake frontiers do not advance; contradictions return to research.
 
-Own exactly five Markdown paths: new guide, departure predecessor continuation
-only, Story Progression selected continuation, this current agreement/
-navigation and docs/README.md bounded navigation. No research/contracts/
-schema/fixture/tooling/remake/glossary/Chinese writes, runtime, source copy/
-acquisition/fresh private comparison, environment changes, generic combat/
-service/platform expansion or new maintained verification machinery.
-Content/readability governs length; contradictions return to research.
+Own exactly five Markdown paths: new guide, initialization predecessor
+continuation only, Story Progression selected continuation, this current
+agreement/navigation and docs/README.md bounded navigation. No research/
+contract/schema/fixture/tool/remake/glossary/Chinese writes, runtime, source
+copy/acquisition/regeneration, environment changes or maintained review machinery.
+Small prose/receipts need no processing expansion or runtime queue.
 
-Minimum evidence is complete adversarial accepted Layer A/changed-state
-review plus selected actual public fixture/schema/consumer joins and direct
-documents. Compact summaries do not prove row contents or natural behavior.
-The guide's [retained review](synthesis/battle27-initialization-and-opening.md#evidence-review-and-retained-results)
-links #1033 final/acceptance (direct0.202s/independent0.195s, CI38675636173;
-original0.207s/CI38675382781 and schema-path/local-$ref failures separate)
-and #1034 handoff/acceptance (independent1.433s, CI38674976874; checker
-diagnostics retained). Their linked predecessors preserve #1029 and earlier
-results/failures/Unknowns.
-Reuse accepted0.083s provenance only: source/pair remain unavailable in design
-and optional layout limits remain explicit. No completed suite is reset.
+Minimum evidence is full accepted Layer A/changed-state review plus relevant
+actual public fixture/schema/consumer joins and direct documents. Compact
+summaries cannot replace complete source rows or natural behavior. The guide's
+[retained review](synthesis/battle27-activation-and-first-turn-dispatch.md#evidence-review-and-retained-results)
+links #1037 handoff/acceptance (author0.340s/initial0.329s/independent0.332s,
+CI38676678592 and Region1 CCR/projection correction) and #1038 handoff/acceptance
+(final author0.389s/independent0.393s/CI38677018042, with all earlier distinct
+heads/CI/receipts/diagnostics). Linked predecessors preserve #1033 original/
+rebased failures/results and earlier Unknowns. Source/pair remain unavailable
+in design: accepted0.083s provenance only; optional layout limits stay explicit.
+No completed suite is reset.
 
-Check complete prose/diff/changed states, exact five paths/navigation/links/
-anchors/encoding/private boundary and git diff --check. Load retained
-local/private-inputs.ps1 in the launching process for clean committed
-`uv run sf2 verify plan --base origin/main --head HEAD`; record exact-head
-actual scoped CI. Documentation scope skips blanket normal/full/Python/
-.NET/Godot/H3/H4/translation suites. Freeze a clean current-main-based
-committed/pushed Draft PR fixing #1038, Project Review / Verify and successful
-authorized main-gate completion callback. No merge, cleanup, archive or next Issue.
+Check full prose/diff/changed states, actual public fixture/schema/consumer
+joins, five paths/navigation/links/anchors/UTF-8/private boundary and
+`git diff --check`. Load retained local/private-inputs.ps1 in the launching
+process for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
+retain exact-head actual scoped CI. Documentation scope skips blanket normal/
+full/Python/.NET/Godot/H3/H4/translation suites and tests of review programs.
+Freeze a clean current-main-based committed/pushed Draft PR fixing #1042,
+Project Review / Verify and successful authorized main-gate completion callback.
+Main-gate alone independently accepts/merges. No cleanup/archive/runtime/next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.

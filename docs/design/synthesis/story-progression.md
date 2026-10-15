@@ -1075,6 +1075,34 @@ natural reach, supplied state, completed services/presentation/control and
 persistence. Activation, turns, actions, outcomes and later story remain outside
 this guide, with no observed or remake frontier advance.
 
+[Battle27 activation and the first turn handoff](battle27-activation-and-first-turn-dispatch.md)
+continues only after the fresh opening returns. **Confirmed:** all twelve
+formation positions are outside all four regions under the actual integer
+consumer. Geometry scans all30 positive-signed-HP/placed allies, independently
+of membership; activation and turn admission instead use nonzero HP/no Y test.
+The checked word becomes incoming OR `$000F`, not necessarily15, while F90–105
+stay clear. All sixteen enemy activation words remain unchanged, yet all sixteen
+qualify for turn records. Primary precedence and retained bit1 matter; Bishop12/13
+secondary FOLLOW_ENEMY0 orders do not replace their secondary trigger15.
+
+The extra slot160 helper aliases packed deals quantities conditionally; fresh
+clear flags prevent a write. The complete region-hook table has no27 match,
+and all32 mode0 slots yield a zero spawn list. Changed hidden/respawn modes
+retain trigger/max-HP/row-bound144/occupancy/self-block/reset/service limits.
+Turn construction offers0–29/128–157, excluding158/159. Sixteen fresh enemies
+consume48 draws after ally draws; initialized records `16+N+T <= 40` fit the64
+slots. Sequential RNG, byte wrapping, signed sorting, stable ties, padding
+and unguarded overflow remain actual consumer boundaries, not a first-actor prediction.
+
+The stop is the first ExecuteIndividualTurn call **before its body**. F88
+initially bypasses preparation and uses unvalidated supplied turn/order bytes;
+a sentinel reenters Start with actual current state. Preparation is not atomic,
+and the predecessor's selector/mapping/flag-before-completion limits remain.
+**Inferred:** the formation stages contact before the regions. **Unknown:**
+natural reach, actual state/seed/first actor, completed services/presentation,
+control and persistence. No AI/action, completed turn, outcome, later story,
+observed or remake frontier advances.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
