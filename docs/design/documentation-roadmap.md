@@ -446,69 +446,75 @@ through before-wrapper return. Its
 and #1006 handoff preserve #1001/#1002 objects, pair/CI, complete scene/literal
 joins, corrections, completed failures and unavailable source/pair limits.
 
-The current reader outcome explains Battle26's fresh initialization and initial
-roster from before-wrapper return through the empty start hook, stopping
-immediately before ActivateEnemies. **Standard** rigor remains appropriate:
-scene population, actual membership/formation, enemy definitions/current stats,
-neutral loading and later activation have separate premises. The owner is
-[Battle26 initial formation and neutral Higins](synthesis/battle26-initialization-and-roster.md),
-scoped by [#1010](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1010).
-Consume complete accepted [#1005 research](../research/battle26-initialization-and-roster.md)
-and #1006's confrontation guide. Parallel #1009 activation/first-dispatch
-research and UI692 are independent, offlimits and not evidence. No original
-finding or remake behavior is authorized.
+[Battle26 initial formation and neutral Higins](synthesis/battle26-initialization-and-roster.md)
+explains before-return through fresh formation, conditional stats/upgrades, neutral
+loading and empty start, stopping pre-ActivateEnemies. Its
+[retained review](synthesis/battle26-initialization-and-roster.md#evidence-review-and-retained-results)
+and #1010 handoff preserve #1005/#1006 objects, source/pair/CI, accepted-table joins,
+corrections, completed diagnostics/failures and unavailable source/pair limits.
+
+The current reader outcome explains Battle26 activation and first-turn dispatch
+from that endpoint through the first ExecuteIndividualTurn call, before its body.
+**Standard** rigor remains appropriate: geometry, checked/active flags, spawn modes,
+turn eligibility, randomized records and performed actions have different consumers.
+The owner is [Battle26 activation and the first turn handoff](synthesis/battle26-activation-and-first-turn-dispatch.md),
+scoped by [#1014](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1014).
+Consume complete accepted [#1009 research](../research/battle26-activation-and-first-turn-dispatch.md)
+and the initialization predecessor. Parallel #1013 aftermath research and UI692
+are independent, offlimits and not evidence. No original finding or remake behavior
+is authorized.
 
 Acceptance requires a readable connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain restored map/battle, region reset, actual healing/status/equipment,
-  sorted membership and all12 ordinal placements. Dead/fewer/surplus/empty and
-  changed-class members prevent a fixed named-party claim;426/476/526/88 differ.
-- Present all15 enemy rows/IDs/positions, six unupgraded definitions and initial
-  current stats, equipment and actual difficulty branches. Copied definitions
-  and later current stats differ; successful Black Ring insertion masks stored
-  value/d1 to0018, so Flail stays equipped, the ring adds no ATT and the encoded
-  equip/AI-use/drop flags are stripped. Full-inventory failure is a different branch.
-- Separate completion526 upgrade eligibility from intro476 and neutral suppression.
-  Bowie effective level, RNG, categories, bounds/exclusions and returned
-  definitions can change repeat rosters. Retain empty-airborne-exclusion
-  uncertainty with the shared owner; no general upgrade/combat audit.
-- Explain all three regions/one point and configured follow references without
-  triggered-event, tactics, movement, damage or drop claims. Preserve partial
-  absent-slot resets and initialized activation versus later activation.
-- Explain physical scene replacement, HP-free position scans, conditional
-  mappings and missing/special/capacity limits. Geshp128 and Lizardman128 differ.
-  Neutral Higins is state159 HP0/status0/neutral, conditionally physical N+15,
-  lookup B31 rather than enemy63; no scene preservation or ally19 copy/heal/join.
-  Initial Down facing, left orientation and observed pose remain distinct.
-- Explain Map72 crop versus descriptor/terrain and local coordinates, view
-  fallback, full-load arguments, tilesets/music/fade requests and service limits.
-  State actual empty start,476-before-tail and interruption/F88/inconsistent159
-  alternatives. Stop pre-ActivateEnemies without unmerged next-stage findings.
+- Explain ordered activation/region hook/debug/spawn/turn generation/dispatch.
+  Preserve32 activation versus30 enemy turn candidates and the actual X/Y,
+  nonzero versus positive-signed HP, membership/neutral/active predicates.
+- Present complete three-region geometry and all15 activation rows. Fresh positions
+  trigger none; F90–92 stay clear, low checked bits become set while other bits
+  persist. Preserve primary-first/secondary-bit behavior, sentinel15, changed flags,
+  positions/party and upgraded-definition premises without a tactic claim.
+- Explain actual slot160 fall-through and inclusive address acceptance, selected
+  deals alias/pseudo-field gates and Goddess Staff count-bit writes. Fresh clear
+  flags produce no write; this is not unconditional addition or observed shopping.
+- Present complete four-row region-hook no-match for26 and debug-dependent service
+  limits. STARTING mode0 makes fresh spawn length0 despite activation; old bytes
+  are unconsumed. Changed hidden/respawn/combined modes retain dead/trigger/maxHP,
+  row/occupancy/reset/carry, full-word return/single-append, item and service limits.
+- Present all15 current HP/AGI rows,64 two-byte records, unsigned current-AGI mask/
+  threshold, ordered RNG including range0, different second score, signed low-byte
+  stable comparisons/padding and conditional capacity. Fresh maximum39/positive
+  enemies permit a first call if services return; actual actor is party/AGI/seed-dependent.
+- Explain current-turn byte offset/reset/sentinel and empty/padding loops; initial
+  F88 uses supplied bytes before preparation, with sentinel re-entry distinct.
+  Keep changed-state/interruption writes and absence of control ownership,
+  performed turns, outcomes/recruitment or unmerged aftermath explicit.
 
-Own exactly five paths: the new guide, confrontation continuation only, Story
+Own exactly five paths: the new guide, initialization continuation only, Story
 Progression's connected segment/boundary, this current agreement and docs/README.md
 navigation. No research/contracts/fixtures/schemas/tooling/remake/glossary/Chinese
 writes, acquisition, regeneration, runtime, environment change or new maintained
 machinery. Content/readability governs length without an artificial cap.
 Source contradictions return to research.
 
-Minimum evidence is complete accepted Layer A/changed-state review, selected
-public fixture/schema/consumer checks and direct document review. Public
-summaries do not prove private rows, neutral tuples or selected targets.
-Source/pair absence in design is accepted; no fresh-comparison claim. The guide's
-[retained review](synthesis/battle26-initialization-and-roster.md#evidence-review-and-retained-results)
-links #1005's exact objects, pair/source/data/consumer and both CI receipts,
-inspect.py/pointer-assertion/ID/neutral-proof corrections, and #1006's schema/link/
-CI/inspection records. Linked predecessor failures and Unknowns remain with
-their owners; completed suites are not reset.
+Minimum evidence is complete accepted Layer A/changed-state review, selected public
+contract/fixture/schema/consumer checks and direct documents. Public summaries do
+not prove private row bodies, aliases or selected hook targets; Battle01 observations
+prove only named seams. Source/pair absence in design is accepted; no fresh comparison
+is claimed. The guide's [retained review](synthesis/battle26-activation-and-first-turn-dispatch.md#evidence-review-and-retained-results)
+links #1009's exact objects, source/pair/joins and both CI receipts, neutral syntax/
+coordinate, full-word spawn-return and integer-projection corrections, plus #1010's
+schemas/links/table comparisons, CI and inspection/tool diagnostics. Linked
+predecessor failures and Unknowns remain with their owners; completed suites are
+not reset. Natural reach, actual state/first actor, service completion, presentation,
+control and persistence may remain Unknown.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
 scope and git diff --check. Load local/private-inputs.ps1 in the same process
 for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI. Documentation scope uses direct checks without
 blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #1010, Project Review / Verify and a successful authorized
+pushed Draft PR fixing #1014, Project Review / Verify and a successful authorized
 main-gate callback for independent acceptance. No merge, cleanup, archive or
 next Issue.
 
