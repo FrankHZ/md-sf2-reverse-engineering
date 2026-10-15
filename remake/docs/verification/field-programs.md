@@ -2108,6 +2108,17 @@ committed auto plan retains the planner's broader dependency rules; use the expl
 engine semantic scope for this candidate and record both plans in the handoff. Planner edits also
 select the existing standalone H4 **build**, not a private H4 comparison run.
 
+The reached story-rule extensions are not all semantic no-ops for those old consumers. A direct
+source-lowering comparison against accepted `dee915fdf02c9fe49c367b2c2a251ba255728038` used the existing
+W1 source files/symbols plus W2's six continuation symbols (43 selected symbols,47 compiled programs).
+`cs_51406` and `cs_51614` now use explicit join text447 instead of overwriting the caller text cursor;
+their instruction counts decrease32→31. `cs_51454` now lowers `moveNextToPlayer` into movement,
+motion waits and facing instead of its former unsupported native-call boundary (2→5 instructions).
+The existing W1 `cs_51614` cohort positions3/10 precede the changed instruction20, but old H4
+continuation/operation indexes are not automatically equivalent. Historical reports retain their
+original Git/compiler identity. This candidate neither updates their fixtures nor claims that a
+retired comparison passed against the new lowering; the current engine behavior uses the new rules.
+
 ### Retained candidate results and open acceptance
 
 The Issue1045 handoff retains exact inputs, reports, logs, failed node IDs and correction commands.
