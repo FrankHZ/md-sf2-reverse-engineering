@@ -371,6 +371,11 @@ arrival/event production across the copied cells. Cave interior, Battle25
 admission/roster and later travel remain separate scope; concurrent #989 is
 not evidence for this guide.
 
+Continue with [North Cliff entry through Battle25 admission](north-cliff-entry-through-battle25-admission.md)
+for the separate request, exact-coordinate/unlock admission, fresh party/enemy
+initialization and crop/view configuration. That guide stops before enemy
+activation; the opening above guarantees neither travel nor admission.
+
 | Changed state | Consequence to preserve |
 | --- | --- |
 |750 set /805 clear /256 set|Ordered early return; direct scene calls bypass these caller guards.|

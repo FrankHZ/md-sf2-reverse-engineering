@@ -409,82 +409,82 @@ explains actual battle counting, distinct outcome returns and the current-item
 warning through local retry/control. Its
 [retained review](synthesis/battle24-outcomes-through-north-cliff-preparation.md#evidence-review-and-retained-results)
 preserves #981/#982 comparison and CI receipts, #977's Map68 correction and
-linked predecessor failures/Unknowns. Actual removal/blast/Rohde continues in
-the current guide, while cave interior and Battle25 remain separate scope.
+linked predecessor failures/Unknowns. Actual removal/blast/Rohde and the
+separate Battle25 entrance continue in the next two guides; combat/outcomes and later crossing remain separate scope.
 
-The current reader outcome explains North Cliff opening and Rohde recruitment
-through complete scene/local return and fresh-map consequences, identifying
-only the next entrance warp. **Standard** rigor remains appropriate: item
-custody/removal, narration, current/new actors, live layout, membership and
-caller flags/control have separate conditions and interrupted prefixes.
-The owner is
-[North Cliff opening and Rohde recruitment](synthesis/north-cliff-opening-and-rohde-recruitment.md),
-scoped by [#990](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/990).
-Consume accepted [#985 research](../research/north-cliff-opening-and-rohde-recruitment.md)
-and #986 preparation synthesis. Concurrent #989 Battle25 research and UI work
-are independent, not evidence or dependencies of this guide. No new original
+[North Cliff opening and Rohde recruitment](synthesis/north-cliff-opening-and-rohde-recruitment.md)
+explains actual item removal, complete blast/join staging and local/fresh-map
+consequences through the identified next warp. Its
+[retained review](synthesis/north-cliff-opening-and-rohde-recruitment.md#evidence-review-and-retained-results)
+and #990 handoff preserve #985/#986 and linked #981/#982/#977 findings,
+completed failures and Unknowns; content/readability govern the prose.
+
+The current reader outcome explains North Cliff entry, conditional Battle25
+admission and its complete initial encounter through the fresh start-dispatcher
+return before ActivateEnemies. **Standard** rigor remains appropriate: opening,
+mutable request, ordered admission, actual party assignment and map/view
+configuration have distinct premises and interrupted prefixes. The owner is
+[North Cliff entry through Battle25 admission](synthesis/north-cliff-entry-through-battle25-admission.md),
+scoped by [#994](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/994).
+Consume accepted [#989 research](../research/north-cliff-entry-through-battle25-admission.md)
+and #990 opening synthesis. Concurrent #993 Battle25-outcomes research and
+UI692 are independent, offlimits and not evidence for this guide. No original
 finding or remake behavior is authorized.
 
-Acceptance requires a readable connected explanation preserving **Confirmed**,
-**Inferred** and **Unknown** boundaries:
+Acceptance requires a readable connected English explanation preserving
+**Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Preserve ordered750/805/256/current-item admission, separate actual removal
-  searches, selected compaction/stat service and ignored results. Include
-  duplicate/gapped/reserve/dead/unjoined custody, partial consumption and
-  narration's separate LEADER substitution, without atomicity or transfer.
-- Explain all meaningful movement/action/wait/skip and state effects across
-  the accepted114-command/612-byte scene, complete3341–3356 literal context
-  and join446. Rohde's questions offer no player yes/no choice. Use the Layer A
-  inventory for encoding detail; content/readability governs document length.
-- Keep logical A/B/P/Bowie and unconditional new R/O/E allocation distinct
-  from physical mappings, including raft lookup63 exclusion, missing/hidden/
-  aliased/already-joined/dead/class/capacity differences and actual Init,
-  position/facing guards. Timed, arrival and Idle waits do not prove an
-  assembled/settled cast or original presentation.
-- Explain live two-cell copy, effect/quake/flame/sound requests, joined11 and
-  conditional active43, capacity/stale-list order and unchanged HP/class/
-  equipment. Follower84 is separate. Join music/announcement/input is not a
-  palette fade, fresh edge or ordinarily skipped text. Partial skip can lag
-  the ordinary cursor while unguarded state work remains.
-- Preserve physical1 shrink cloning versus logical A, nonwaiting withdrawal/
-  hides, hidden-X suppression of ordinary VInt actions despite retained
-  pointers, lookup/list effects and final branching follows with high-byte
-  Bowie HP guard. Source/generated action and walking-buffer lifetimes matter
-  where they explain changed/repeated state, not as a duration claim.
-- Track copy→membership→425→caller750→256→zone physical0 wait→conditional
-  control without rollback or presentation/save guarantees. Fresh750 copy
-  reads reloaded cells; live copy reads mutable cells. Fresh Rohde tests84
-  independently of11/750/425; CURRENT/scroll/fresh actor/latch lifetimes differ.
-  Identify27,33→Map48(55,29)Up only; stop before interior/Battle25.
-- Retain natural reach, supplied-state, service/presentation/control/save
-  Unknowns and changed/interrupted-state consequences. A synthesis contradiction
-  returns to research rather than being repaired or silently filled in.
+- Explain Map72 `(27,33)` → Map48 `(55,29)` Up, stored/mutable no-scroll
+  request and absent extra750/425/member guards. Separate ordered Battle11/25
+  exact-coordinate/unlock checks, output crop and post-selection completion
+  cleanup. Opening guarantees neither travel nor admission.
+- Cover no-battle ms_Void setup, shared followers/init and immediate stored
+  returns without broad optional exploration. CURRENT, scroll and direct
+  LoadMap have different lifetimes from explicit ordinary entry.
+- Explain empty before/start slot25 targets and475 order; F88 saved-state
+  continuation differs from fresh heal→ally/enemy placement→map load→start.
+  Actual joined/active lists, capacity, dead-member loop/coordinate consumption
+  and health/class/equipment govern placement; joined Rohde alone is insufficient.
+- Present all twelve potential ally placements, fifteen actual enemy IDs/types/
+  positions, three region shapes/no points and follow/order relationships, plus
+  meaningful initial items/equipment/spells/activation. Link encoding detail
+  without reducing encounter content to counts. Distinguish source base ATT,
+  difficulty-adjusted base and final stats; source item masking and absence of
+  Battle25 random upgrades do not establish tactics or natural activation.
+- Separate crop `(28,0)` and local positions from actual view target/descriptor
+  selection. Main bounds override differs from secondary-layer setup; byte128
+  is a follow sentinel with actual load/VInt consumers. Battle11's explicit
+  darkness refresh is not a Battle25 observation or rendered-fidelity claim.
+- Preserve completed/missing-unlock, changed map/trigger/party/HP/class/mode/RNG
+  and interrupted-state consequences. Natural reach, supplied state, completed
+  services, rendered darkness, control/save, actual combat/outcomes and later
+  cave crossing/Ketto remain Unknown or separate scope. Stop before activation.
 
-Own exactly five paths: the new guide, preparation predecessor continuation
-only, Story Progression's connected segment/boundary, this current agreement
-and docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/
-remake/glossary/Chinese writes, acquisition, runtime or new machinery.
+Own exactly five paths: the new guide, opening predecessor continuation only,
+Story Progression's connected segment/boundary, this current agreement and
+docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/
+remake/glossary/Chinese writes, acquisition, regeneration, runtime, environment
+change or new maintained machinery. Organize by content/readability without
+artificial length caps. Route source contradictions back to research.
 
-Minimum evidence is complete accepted Layer A plus selected existing public
-fixtures/schemas and actual consumers, then direct document checks. Structural
-counts do not prove private script detail. Source/pair absence here is accepted:
-no acquisition/regeneration or fresh-comparison claim. The guide's
-[retained review](synthesis/north-cliff-opening-and-rohde-recruitment.md#evidence-review-and-retained-results)
-preserves #985's exact identities/CI/0.082s unchanged pair, full program/action
-accounting, LF-only failure, path/field discovery and hidden-X correction;
-#986's original/rebased identities/CI, byte-identical documents and530 links,
-and removal of the scratch length cap without shortening prose. Linked
-#981/#982/#977 and predecessor failures/Unknowns remain with their owners.
-Completed failures/suites are not reset or repeated for replacement receipts.
+Minimum evidence is complete accepted Layer A, selected existing public
+fixture/schema/consumer checks and direct document review. Source/pair absence
+in design is accepted; no fresh-comparison claim. The guide's
+[retained review](synthesis/north-cliff-entry-through-battle25-admission.md#evidence-review-and-retained-results)
+preserves #989's exact identities, unchanged-pair/CI receipts, source-backed
+Battle11 words-to-bytes discrepancy/correction and ignored absence-check
+correction. It links #990's accepted opening results and bounded diagnostics;
+predecessor failures/Unknowns remain with their owners. Completed results are
+not reset or repeated for replacement receipts.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
 scope and git diff --check. Load local/private-inputs.ps1 in the same process
-for the clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
-record actual exact-head CI in the Issue handoff. Documentation-only policy
-uses direct checks without blanket normal/full/Python/.NET/Godot/H3/H4/
-translation suites. Freeze a clean pushed Draft PR fixing #990, Project
-Review / Verify and a successful authorized main-gate callback for independent
-acceptance. No merge, cleanup, archive or next Issue.
+for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
+record actual exact-head CI. Documentation scope uses direct checks without
+blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
+pushed Draft PR fixing #994, Project Review / Verify and a successful authorized
+main-gate callback for independent acceptance. No merge, cleanup, archive or
+next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
