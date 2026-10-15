@@ -869,11 +869,30 @@ MAIN_THEME1 request retain their service limits. Start sets476 before its empty
 interpreter tail; interruption can leave the flag without return. F88-supplied
 loading skips fresh setup and uses actual current state with neutral rewrites.
 
-The explained fresh segment ends immediately before the first ActivateEnemies.
-No unmerged activation/first-dispatch work is consumed. Turns, outcomes and Higins
-recruitment remain later scope. Natural reach, supplied state, completed services,
-visible timing, control and persistence remain Unknown; the observed/remake
-frontier does not advance.
+The initialization guide ends immediately before the first ActivateEnemies.
+[Battle26 activation and the first turn handoff](battle26-activation-and-first-turn-dispatch.md)
+continues with accepted #1009 through the first ExecuteIndividualTurn call.
+Unchanged fresh placement lies outside all three regions: F90–92 stay clear,
+low checked bits become set and other supplied checked bits persist. Primary-first
+activation preserves prior bits; the extra slot160 fall-through can conditionally
+write Goddess Staff deals-count bits under changed state, but fresh clear flags
+produce no deals write. Battle26 matches no row in the complete region-hook table.
+
+All 32 spawn candidates have masked mode0 in this fresh state, so list length0
+skips spawning despite possible active-bit changes. Turn generation instead scans
+allies0–29/enemies128–157 using X/nonzero HP without membership/Y/active-region
+checks. All 15 fresh enemies qualify. Current AGI, ordered RNG including range0,
+second records and signed stable comparisons determine the buffer. The accepted
+fresh maximum of39 fits its64 records; positive enemies permit a first call if earlier
+services return, but party/current AGI/seed determine the actor. Padding and larger
+changed states retain their own limits. The current-turn byte is an offset;255
+re-enters preparation. Initial F88 dispatch uses supplied bytes before any such
+preparation, with sentinel re-entry distinct.
+
+The connected explanation stops before that called turn's body. No control
+ownership, performed turn, tactic, outcome or Higins recruitment is established.
+Natural reach, supplied state, completed services, visible timing, control and
+persistence remain Unknown; the observed/remake frontier does not advance.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from

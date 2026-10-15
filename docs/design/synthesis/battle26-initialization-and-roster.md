@@ -409,11 +409,13 @@ Neither byte-for-byte preservation nor fresh-state repair is established.
 | Interrupted healing, load, neutral declaration, fade or start tail | Completed prefix writes remain;476 can be held before start returns. |
 
 The endpoint establishes conditional initial state and a completed fresh start
-wrapper, without activation execution or a control grant. The next coherent
-source boundary starts at ActivateEnemies and proceeds toward first-dispatch
-work, as named by the accepted research. No finding from parallel #1009 is
-consumed. First turn, outcomes, afterbattle dialogue, Higins recruitment and
-later exploration remain outside this guide.
+wrapper, without activation execution or a control grant. Its continuation,
+[Battle26 activation and the first turn handoff](battle26-activation-and-first-turn-dispatch.md),
+consumes accepted #1009 from ActivateEnemies through the first individual-turn
+call. It separates region flags, spawn modes and turn eligibility, including
+unchanged fresh no-trigger/no-spawn and conditional deals-storage effects.
+The actual actor is not guaranteed. Performed turns, outcomes, afterbattle
+dialogue, Higins recruitment and later exploration remain outside this guide.
 
 ## Evidence Review and Retained Results
 

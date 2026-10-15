@@ -288,6 +288,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   ordered admission, actual field cast and complete Geshp/Higins confrontation through before-wrapper return; narrative, action, alias and fresh-initialization limits.
 - [`battle26-initialization-and-roster.md`](./design/synthesis/battle26-initialization-and-roster.md) —
   actual force/enemy formation, conditional stats/upgrades, neutral Higins and crop/load/start; identity, supplied-state and pre-activation limits.
+- [`battle26-activation-and-first-turn-dispatch.md`](./design/synthesis/battle26-activation-and-first-turn-dispatch.md) —
+  region/activation, conditional deals alias, fresh no-spawn and randomized turn records through the first individual-turn call; supplied-state, actor and service limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
