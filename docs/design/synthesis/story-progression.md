@@ -889,10 +889,35 @@ changed states retain their own limits. The current-turn byte is an offset;255
 re-enters preparation. Initial F88 dispatch uses supplied bytes before any such
 preparation, with sentinel re-entry distinct.
 
-The connected explanation stops before that called turn's body. No control
-ownership, performed turn, tactic, outcome or Higins recruitment is established.
-Natural reach, supplied state, completed services, visible timing, control and
-persistence remain Unknown; the observed/remake frontier does not advance.
+The activation guide stops before that called turn's body; it establishes no
+control ownership, performed turn or tactic. Its continuation,
+[Battle26 outcomes and Higins recruitment](battle26-outcomes-and-higins-recruitment.md),
+explains accepted terminal/drop/rescue/return branches without inventing the
+intervening combat. Defeat precedes victory when both counts are zero. With
+Bowie alive and Lizardman128 dead, leader cleanup appends nonzero-HP enemies;
+ordinary remaining counts instead use X/nonzero HP. Cleanup can remove Dark
+Bishop130 without the separate Black Ring action/target/item/drop-bit transaction.
+That transaction delivers to a living acting ally with capacity or uses the
+rare deals fallback, consuming flag/item even at saturation; interruption is
+not atomic receipt.
+
+Victory heals eligible slots before joining and seeds map/position/facing from
+the first active-list byte before the rescue stages Map72. Clear526 admits the
+complete cloud/rescue conversation; B is an actual follower alias, and timed
+circle/rotation replacement proves no completed circuit or settled pose.
+Higins's Pacalon request and recovery statement perform neither travel nor stat
+healing. Join19 sets joined/conditional-active flags with list lag; later
+addNewFollower19 installs temporary following without a persistent table row.
+The shared JoinForce0 tail precedes clear426/set526;476 retains its separate
+admission owner. Held526 skips rescue but still takes that shared tail.
+
+Defeat halves gold/restores Bowie before egress; admitted Egress pays MP and
+Angel Wing removes its selected item. Their savepoint/raft returns differ
+from victory's pre-scene seed. The guide stops when BattleLoop returns to
+MainLoop, before SwitchMap/ExplorationLoop completion. Natural reach, supplied
+state/reward, completed services, rendered rescue, usable control, later
+Pacalon/Tristan admission and persistence remain Unknown. Concurrent #1017 is
+unconsumed; the observed/remake frontier does not advance.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
