@@ -460,35 +460,48 @@ Its [retained review](synthesis/battle26-activation-and-first-turn-dispatch.md#e
 and #1014 handoff preserve #1009/#1010 source/pair/CI, schema/table/link checks,
 corrections, completed diagnostics/failures and unavailable source/pair limits.
 
-The current reader outcome explains Battle26 outcomes, independent Black Ring
-drop, Higins rescue/recruitment and the returned handoff.
-**Standard** rigor remains appropriate: terminal counting, action-side rewards,
-scene actors, membership/following and return seeds have different predicates
-and lifetimes. The owner is
-[Battle26 outcomes and Higins recruitment](synthesis/battle26-outcomes-and-higins-recruitment.md),
-scoped by [#1018](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1018).
-Consume complete accepted [#1013 research](../research/battle26-outcomes-and-higins-recruitment.md)
-and the predecessor guides. Concurrent #1017 and UI692 are independent,
-offlimits and not evidence. No original finding or remake behavior is authorized.
+[Battle26 outcomes and Higins recruitment](synthesis/battle26-outcomes-and-higins-recruitment.md)
+explains terminal precedence, independent Black Ring transaction, complete
+rescue/join/following and the returned handoff. Its
+[retained review](synthesis/battle26-outcomes-and-higins-recruitment.md#evidence-review-and-retained-results)
+preserves selected source/program/literal joins, public-schema/dialogue checks,
+pair provenance, CI, source/pair limits and linked predecessor diagnostics.
+
+The current reader outcome explains that return through conditional Pacalon
+entry. **Standard** rigor remains appropriate: fresh population, retained
+scrolling actors, mutable requests and town/battle admission have separate
+predicates and lifetimes. The owner is
+[Battle26 return through conditional Pacalon entry](synthesis/battle26-return-through-pacalon-entry.md),
+scoped by [#1022](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1022).
+Consume complete accepted [#1017 research](../research/battle26-return-through-pacalon-entry.md)
+and its predecessors. Concurrent Pacalon-interaction research and UI692 are
+independent, offlimits and not evidence. No new original finding or remake
+behavior is authorized.
 
 Acceptance requires a readable connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain defeat precedence, separate leader append/death processing and ordinary
-  remaining counts, including the second status pass and changed/supplied lists.
-- Separate cleanup from actual26/130/24/10 drop caller/target/item/bit transaction,
-  actor HP/capacity, rare fallback/saturation, repeated flag and interruption.
-- Distinguish eligible victory healing and pre-scene active-member return seed
-  from camera/actor staging; retain distinct F426/F476/F526 and repeat/F88 paths.
-- Explain the complete rescue narrative, actual speaker aliases/literal boundaries,
-  actor population/mapping/HP/class and asynchronous replacement/service limits.
-- Preserve JoinForce19's joined/conditional-active capacity and list lag, absence
-  of stat initialization/healing, transient AddFollower and shared JoinForce0 tail.
-- Explain defeat/Egress/Wing costs, savepoint/raft selection and returned MainLoop
-  boundary. Do not promise first actor, completed circles/rotations, Pacalon travel,
-  persistence, later admission, usable exploration or remake capability.
+- Preserve the actual pre-scene victory seed, separate defeat/escape alternatives
+  and battle-return MainLoop path without immediate CheckBattle.
+- Explain fresh exploration healing/pending/temp/entity/init order, lost transient
+  Higins following versus membership and altered-history Luke-init predicate.
+- Explain selected east request, explicit530 substitution71→78 and scrolling
+  script/mapping retention with actual follower relocation/mode/raft rules. Keep
+  coordinate byte/word/sentinel and unapplied facing boundaries; no unconditional
+  normalized X1 claim or fresh setup/init/healing/battle scan.
+- Explain absent71/78 setups, selected layout/collision/area limits and no default
+  random encounter or battle-table rows. Do not promise a decoded walking route,
+  automatic eastward travel or refreshed area metadata.
+- Explain both town entrances, no-scroll return and ordered Map02 Battle31
+  diversion under431 even when531 is held. Only the no-battle path selects
+  F530 town exploration, both full NPC alternatives, actual mappings/class/HP,
+  finite walking storage, raft and numeric control-script consumers.
+- Stop at the first conditional Map02 event/control read or before Battle31
+  execution. Preserve changed-state/interruption, natural-route, service,
+  rendering, usable-control and persistence Unknowns; no town interactions,
+  castle admission or remake/evidence frontier expansion.
 
-Own exactly five paths: the new guide, activation continuation only, Story
+Own exactly five paths: the new guide, outcome continuation only, Story
 Progression's connected segment/boundary, this current agreement and docs/README.md
 navigation. No research/contracts/fixtures/schemas/tooling/remake/glossary/Chinese
 writes, acquisition, regeneration, runtime, environment change or new maintained
@@ -497,23 +510,25 @@ Source contradictions return to research.
 
 Minimum evidence is adversarial accepted Layer A/changed-state review and selected
 public contract/fixture/schema/actual-consumer checks, plus direct documents.
-Read narrower Battle26, action/drop, lifecycle, cutscene and party/follower owners;
-use stricter selected predicates rather than inherited count summaries. Existing
-controlled Battle01 drop observations prove only named seams. Source/pair absence
-in design is accepted; no fresh comparison is claimed. The guide's
-[retained review](synthesis/battle26-outcomes-and-higins-recruitment.md#evidence-review-and-retained-results)
-links #1013 handoff/acceptance, source/program/literal/transaction joins, unchanged
-pair receipt and actual CI, plus #1014 environment limitations/diagnostics.
+Read request-state/consumption, common-map/scripting, follower/party, Luke-init and
+previous Battle26 owners; inspect relevant public payloads/schemas and actual
+consumers. Use stricter selected predicates instead of generic counts, full-load
+summaries or controlled handler observations. Source/pair absence in design is
+accepted; no fresh comparison is claimed. The guide's
+[retained review](synthesis/battle26-return-through-pacalon-entry.md#changed-states-and-retained-evidence)
+links #1017 handoff/acceptance, source/request/list joins, unchanged pair receipt,
+original/rebased CI and unavailable optional cell decode, plus #1018 environment
+limits and diagnostics.
 Predecessor completed results, failures and Unknowns remain with their owners;
-completed suites are not reset. Natural reach/state/reward, service completion,
-presentation, usable exploration and persistence may remain Unknown.
+completed suites are not reset. Actual state, natural reach/decoded route,
+services, rendering, usable control and persistence may remain Unknown.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
 scope and git diff --check. Load local/private-inputs.ps1 in the same process
 for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI. Documentation scope uses direct checks without
 blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #1018, Project Review / Verify and a successful authorized
+pushed Draft PR fixing #1022, Project Review / Verify and a successful authorized
 main-gate callback for independent acceptance. No merge, cleanup, archive or
 next Issue.
 

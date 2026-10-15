@@ -386,7 +386,9 @@ All returns reach MainLoop's alt_MainLoopEntry. Its next calls are SwitchMap
 then ExplorationLoop, without a d4 sign test or intervening CheckBattle.
 **This guide stops at that returned handoff.** Map setup/population, usable
 control, subsequent movement, Pacalon/Tristan arrival, another battle and
-save/load persistence remain outside it. Concurrent #1017 supplies no evidence.
+save/load persistence remain outside it. Continue with
+[Battle26 return through conditional Pacalon entry](battle26-return-through-pacalon-entry.md)
+for the fresh rebuild, retained scrolling state and separate town/battle admission.
 
 ## Evidence review and retained results
 
