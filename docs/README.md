@@ -282,6 +282,8 @@ The glossary and existing `sf2 zh-meta` commands retain ownership of eventual tr
   separate entrance request and conditional Battle25 admission, complete initial encounter and crop/view limits before enemy activation.
 - [`battle25-outcomes-through-ketto-entry.md`](./design/synthesis/battle25-outcomes-through-ketto-entry.md) —
   actual outcome returns, conditional cave departure and later admission, and Ketto's initial population through the controller request.
+- [`ketto-interactions-and-merchant-relocation.md`](./design/synthesis/ketto-interactions-and-merchant-relocation.md) —
+  all resident interactions, merchant movement, service entry and inspections/items through conditional departure; choice, state and completion limits.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
