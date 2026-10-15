@@ -467,70 +467,75 @@ rescue/join/following and the returned handoff. Its
 preserves selected source/program/literal joins, public-schema/dialogue checks,
 pair provenance, CI, source/pair limits and linked predecessor diagnostics.
 
-The current reader outcome explains that return through conditional Pacalon
-entry. **Standard** rigor remains appropriate: fresh population, retained
-scrolling actors, mutable requests and town/battle admission have separate
-predicates and lifetimes. The owner is
-[Battle26 return through conditional Pacalon entry](synthesis/battle26-return-through-pacalon-entry.md),
-scoped by [#1022](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1022).
-Consume complete accepted [#1017 research](../research/battle26-return-through-pacalon-entry.md)
-and its predecessors. Concurrent Pacalon-interaction research and UI692 are
-independent, offlimits and not evidence. No new original finding or remake
+[Battle26 return through conditional Pacalon entry](synthesis/battle26-return-through-pacalon-entry.md)
+explains fresh return rebuilding, retained eastern scrolling and conditional
+Map02 exploration/Battle31 admission through the first event/control read.
+Its [retained review](synthesis/battle26-return-through-pacalon-entry.md#changed-states-and-retained-evidence)
+preserves the accepted source/pair/optional-layout limits and the corrected
+#1022 handoff with distinct original/rebased CI and completed diagnostics.
+
+The current reader outcome explains Pacalon's local interactions and outgoing
+castle handoff. **Standard** rigor remains appropriate: current F530 selection,
+physical/logical actor identity, service/pickup commits and mutable exit
+requests must remain distinct. The owner is
+[Pacalon conversations, supplies and the castle handoff](synthesis/pacalon-interactions-and-castle-handoff.md),
+scoped by [#1026](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1026).
+Consume complete accepted [#1021 research](../research/pacalon-interactions-and-castle-handoff.md)
+and the accepted entry guide, with the narrower interaction/dialogue/request,
+service, description and item consumers. Concurrent castle research and UI692
+are independent, offlimits and not evidence. No new original finding or remake
 behavior is authorized.
 
-Acceptance requires a readable connected English explanation preserving
+Acceptance requires a connected readable English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Preserve the actual pre-scene victory seed, separate defeat/escape alternatives
-  and battle-return MainLoop path without immediate CheckBattle.
-- Explain fresh exploration healing/pending/temp/entity/init order, lost transient
-  Higins following versus membership and altered-history Luke-init predicate.
-- Explain selected east request, explicit530 substitution71→78 and scrolling
-  script/mapping retention with actual follower relocation/mode/raft rules. Keep
-  coordinate byte/word/sentinel and unapplied facing boundaries; no unconditional
-  normalized X1 claim or fresh setup/init/healing/battle scan.
-- Explain absent71/78 setups, selected layout/collision/area limits and no default
-  random encounter or battle-table rows. Do not promise a decoded walking route,
-  automatic eastward travel or refreshed area metadata.
-- Explain both town entrances, no-scroll return and ordered Map02 Battle31
-  diversion under431 even when531 is held. Only the no-battle path selects
-  F530 town exploration, both full NPC alternatives, actual mappings/class/HP,
-  finite walking storage, raft and numeric control-script consumers.
-- Stop at the first conditional Map02 event/control read or before Battle31
-  execution. Preserve changed-state/interruption, natural-route, service,
-  rendering, usable-control and persistence Unknowns; no town interactions,
-  castle admission or remake/evidence frontier expansion.
+- Explain both complete resident-event alternatives, activation/reverse mapping,
+  current selection and actual facing/portrait/SFX semantics. Changed530 after
+  population can select another service for the same mapped actor.
+- Cover all dialogue themes and exact text/control boundaries. Spoken beliefs
+  about Geshp, gods or other places remain dialogue; a question in prose is not
+  YesNoPrompt and does not establish world state or a required route.
+- Present actual shop10/25 catalogs and priest invocation through the accepted
+  service contract. Separate offerings, purchases, capacity/gold/item/deals
+  writes, savepoint/save/suspend paths, completed services and persistence.
+- Explain both full description alternatives and the well change, examination
+  priority, empty chest table, both non-chest items/flags172/173, member0/full-force
+  fallback, flag-before-delivery, repeat/refill and interruption. Do not infer
+  decoded placement, item use or guaranteed delivery from rows.
+- Explain four ordered exit rows, exact north matches before wildcard X
+  preservation, and the south alternative. Retain layout producer/consumer,
+  sentinel, low-byte/facing and mutable pending-write distinctions. Stop at
+  outgoing MainLoop before destination CheckBattle/setup/init. Conversations,
+  services and pickups are not invented travel prerequisites.
+- Preserve changed-state, natural-reach, presentation, usable-control and
+  persistence Unknowns, without advancing remake/evidence acceptance.
 
-Own exactly five paths: the new guide, outcome continuation only, Story
-Progression's connected segment/boundary, this current agreement and docs/README.md
-navigation. No research/contracts/fixtures/schemas/tooling/remake/glossary/Chinese
-writes, acquisition, regeneration, runtime, environment change or new maintained
-machinery. Content/readability governs length without an artificial cap.
-Source contradictions return to research.
+Own exactly five Markdown paths: the new guide, predecessor continuation only,
+Story Progression's selected continuation, this current agreement/navigation
+and docs/README.md bounded navigation. No research/contracts/fixtures/schemas/
+tooling/remake/glossary/Chinese writes, acquisition/copy/new private comparison,
+runtime, environment change or general service audit. Content/readability
+governs length; source disagreements return to research.
 
-Minimum evidence is adversarial accepted Layer A/changed-state review and selected
-public contract/fixture/schema/actual-consumer checks, plus direct documents.
-Read request-state/consumption, common-map/scripting, follower/party, Luke-init and
-previous Battle26 owners; inspect relevant public payloads/schemas and actual
-consumers. Use stricter selected predicates instead of generic counts, full-load
-summaries or controlled handler observations. Source/pair absence in design is
-accepted; no fresh comparison is claimed. The guide's
-[retained review](synthesis/battle26-return-through-pacalon-entry.md#changed-states-and-retained-evidence)
-links #1017 handoff/acceptance, source/request/list joins, unchanged pair receipt,
-original/rebased CI and unavailable optional cell decode, plus #1018 environment
-limits and diagnostics.
-Predecessor completed results, failures and Unknowns remain with their owners;
-completed suites are not reset. Actual state, natural reach/decoded route,
-services, rendering, usable control and persistence may remain Unknown.
+Minimum evidence is adversarial accepted Layer A/changed-state review plus
+selected public contracts, fixture payloads, schemas and actual consumers.
+Aggregate counts and controlled handler seams are not natural Pacalon evidence.
+The guide's [retained review](synthesis/pacalon-interactions-and-castle-handoff.md#changed-states-and-retained-review)
+links #1021/#1022 handoffs and independent acceptances, selected source/consumer
+joins, unchanged pair0.083s provenance, correction/base/CI and earlier completed
+failures/Unknowns. Private source/pair remain unavailable in design and optional
+layout limits remain explicit; no fresh comparison, acquisition or decoded-route
+claim follows. Completed suites are not reset.
 
-Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
-scope and git diff --check. Load local/private-inputs.ps1 in the same process
-for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
-record actual exact-head CI. Documentation scope uses direct checks without
-blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #1022, Project Review / Verify and a successful authorized
-main-gate callback for independent acceptance. No merge, cleanup, archive or
-next Issue.
+Check full prose/diff/changed states, five-path/navigation/links/anchors,
+UTF-8/private boundary and git diff --check. Load local/private-inputs.ps1 in
+the same process for clean committed
+`uv run sf2 verify plan --base origin/main --head HEAD`; record actual
+exact-head scoped CI. Documentation-only scope skips blanket normal/full/
+Python/.NET/Godot/H3/H4/translation suites. Freeze a clean current-main-based
+committed/pushed Draft PR fixing #1026, Project Review / Verify and a successful
+authorized main-gate callback for independent acceptance. No merge, cleanup,
+archive, runtime or next Issue.
 
 Chinese remains deferred until each selected English theme is independently accepted and stable.
 [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) remains user-paused.
