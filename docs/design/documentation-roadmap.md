@@ -439,66 +439,76 @@ departure. Its [retained review](synthesis/ketto-interactions-and-merchant-reloc
 and #1002 handoff preserve accepted actor0 waiting, service/collection boundaries,
 predecessor corrections, completed failures and unavailable source/pair limits.
 
-The current reader outcome explains conditional Battle26 admission and the complete
-Geshp/Higins confrontation through before-wrapper return. **Standard** rigor remains
-appropriate: ordered requests, scene population, narrative possession/death,
-actual field writes and later battle initialization have separate premises.
-The owner is [Battle26 admission and the Geshp confrontation](synthesis/battle26-admission-and-geshp-confrontation.md),
-scoped by [#1006](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1006).
-Consume complete accepted [#1001 research](../research/battle26-admission-and-geshp-confrontation.md)
-and #1002's Ketto guide. Concurrent #1005 initialization research and UI692 are
-independent, offlimits and not evidence. No original finding or remake behavior
-is authorized.
+[Battle26 admission and the Geshp confrontation](synthesis/battle26-admission-and-geshp-confrontation.md)
+explains ordered admission, actual field actors and the complete confrontation
+through before-wrapper return. Its
+[retained review](synthesis/battle26-admission-and-geshp-confrontation.md#evidence-review-and-retained-results)
+and #1006 handoff preserve #1001/#1002 objects, pair/CI, complete scene/literal
+joins, corrections, completed failures and unavailable source/pair limits.
+
+The current reader outcome explains Battle26's fresh initialization and initial
+roster from before-wrapper return through the empty start hook, stopping
+immediately before ActivateEnemies. **Standard** rigor remains appropriate:
+scene population, actual membership/formation, enemy definitions/current stats,
+neutral loading and later activation have separate premises. The owner is
+[Battle26 initial formation and neutral Higins](synthesis/battle26-initialization-and-roster.md),
+scoped by [#1010](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1010).
+Consume complete accepted [#1005 research](../research/battle26-initialization-and-roster.md)
+and #1006's confrontation guide. Parallel #1009 activation/first-dispatch
+research and UI692 are independent, offlimits and not evidence. No original
+finding or remake behavior is authorized.
 
 Acceptance requires a readable connected English explanation preserving
 **Confirmed**, **Inferred** and **Unknown** boundaries:
 
-- Explain Ketto return72 and mutable request, complete ordered8/24/26 selection,
-  output crops versus triggers, earlier unlock/completion cleanup and helper26's
-  counter/RNG/unlock writes. Shopping,800 and victory525 do not prove426 or reach.
-- Resolve actual slot26 before/start targets and476/88 differences. Held intro
-  skips the scene but not all fresh initialization; supplied continuation does
-  not recreate it. Stop before fresh region reset/healing/formation/load/start.
-- Present the full staged confrontation with meaningful complete dialogue/context:
-  both centaurs, Geshp/Lizardman/Demon/Cloud, Higins/Peter/Bowie and actual A/B
-  aliases. Questions/new-leader speech add no choice, recruitment, HP/status or
-  allegiance mutation; possession, illness and apparent deaths remain narrative.
-- Explain scene loading and conditional physical mappings, class/dead/missing/
-  aliased followers, duplicate lookup and capacity premises. Hidden/63,63 actors
-  remain allocated/updating; field declarations are not a combat roster.
-- Preserve ordered movement, asynchronous versus waited actions, replacement,
-  camera/FX and final departure. Idle polls/jumps prove no exact displacement or
-  observed timing; stopEntity/motion OFF disable animation, not general motion.
-- Preserve actual literal ownership, NAME19, nextText/nextSingleText, supplied
-  portrait/bleep and skip cursor behavior. No generic dialogue/effects redesign.
-- Describe actual writes and absent local story/recruitment/combat/outcome writes.
-  Before-return restores neither all actors/effects nor joins the final async
-  action or grants control. Preserve changed-state/interruption examples and
-  link the next caller boundary without consuming unmerged initialization facts.
+- Explain restored map/battle, region reset, actual healing/status/equipment,
+  sorted membership and all12 ordinal placements. Dead/fewer/surplus/empty and
+  changed-class members prevent a fixed named-party claim;426/476/526/88 differ.
+- Present all15 enemy rows/IDs/positions, six unupgraded definitions and initial
+  current stats, equipment and actual difficulty branches. Copied definitions
+  and later current stats differ; successful Black Ring insertion masks stored
+  value/d1 to0018, so Flail stays equipped, the ring adds no ATT and the encoded
+  equip/AI-use/drop flags are stripped. Full-inventory failure is a different branch.
+- Separate completion526 upgrade eligibility from intro476 and neutral suppression.
+  Bowie effective level, RNG, categories, bounds/exclusions and returned
+  definitions can change repeat rosters. Retain empty-airborne-exclusion
+  uncertainty with the shared owner; no general upgrade/combat audit.
+- Explain all three regions/one point and configured follow references without
+  triggered-event, tactics, movement, damage or drop claims. Preserve partial
+  absent-slot resets and initialized activation versus later activation.
+- Explain physical scene replacement, HP-free position scans, conditional
+  mappings and missing/special/capacity limits. Geshp128 and Lizardman128 differ.
+  Neutral Higins is state159 HP0/status0/neutral, conditionally physical N+15,
+  lookup B31 rather than enemy63; no scene preservation or ally19 copy/heal/join.
+  Initial Down facing, left orientation and observed pose remain distinct.
+- Explain Map72 crop versus descriptor/terrain and local coordinates, view
+  fallback, full-load arguments, tilesets/music/fade requests and service limits.
+  State actual empty start,476-before-tail and interruption/F88/inconsistent159
+  alternatives. Stop pre-ActivateEnemies without unmerged next-stage findings.
 
-Own exactly five paths: the new guide, Ketto predecessor continuation only,
-Story Progression's connected segment/boundary, this current agreement and
-docs/README.md navigation. No research/contracts/fixtures/schemas/tooling/remake/
-glossary/Chinese writes, acquisition, regeneration, runtime, environment change
-or new maintained machinery. Content/readability governs length without an
-artificial cap. Source contradictions return to research.
+Own exactly five paths: the new guide, confrontation continuation only, Story
+Progression's connected segment/boundary, this current agreement and docs/README.md
+navigation. No research/contracts/fixtures/schemas/tooling/remake/glossary/Chinese
+writes, acquisition, regeneration, runtime, environment change or new maintained
+machinery. Content/readability governs length without an artificial cap.
+Source contradictions return to research.
 
 Minimum evidence is complete accepted Layer A/changed-state review, selected
-existing public fixture/schema/consumer checks and direct document review.
-Aggregate public counts do not prove private rows, targets or literals.
+public fixture/schema/consumer checks and direct document review. Public
+summaries do not prove private rows, neutral tuples or selected targets.
 Source/pair absence in design is accepted; no fresh-comparison claim. The guide's
-[retained review](synthesis/battle26-admission-and-geshp-confrontation.md#evidence-review-and-retained-results)
-links #1001's objects, pair/CI, all130 command/9 entity/41 literal joins and
-fixture-layout/HTTPS corrections, and #1002's receipts/diagnostics. The ignored
-Markdown cap was removed without a tracked change. Predecessor failures and
-Unknowns remain with their owners; completed suites are not reset.
+[retained review](synthesis/battle26-initialization-and-roster.md#evidence-review-and-retained-results)
+links #1005's exact objects, pair/source/data/consumer and both CI receipts,
+inspect.py/pointer-assertion/ID/neutral-proof corrections, and #1006's schema/link/
+CI/inspection records. Linked predecessor failures and Unknowns remain with
+their owners; completed suites are not reset.
 
 Check full prose/diff/navigation/links/anchors, UTF-8/private/exact-five-path
 scope and git diff --check. Load local/private-inputs.ps1 in the same process
 for clean committed `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head CI. Documentation scope uses direct checks without
 blanket normal/full/Python/.NET/Godot/H3/H4/translation suites. Freeze a clean
-pushed Draft PR fixing #1006, Project Review / Verify and a successful authorized
+pushed Draft PR fixing #1010, Project Review / Verify and a successful authorized
 main-gate callback for independent acceptance. No merge, cleanup, archive or
 next Issue.
 

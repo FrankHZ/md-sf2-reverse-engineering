@@ -848,9 +848,32 @@ portrait/bleep/windows and text-skip cursor differ with supplied state; question
 do not create choices. The before tail restores neither all actor/effect state
 nor Demon's last asynchronous action and grants no control. The guide stops at
 before-wrapper return, before fresh region reset/healing/formation/load/start.
-Initial combatant/neutral roster, turns, outcomes and Higins recruitment remain
-later scope. Natural reach, supplied state, completed services, visible timing,
-control and persistence remain Unknown; the observed/remake frontier does not advance.
+Its continuation, [Battle26 initial formation and neutral Higins](battle26-initialization-and-roster.md),
+explains the accepted fresh suffix: restored72/26, region reset, eligible healing,
+actual sorted membership/ordinal placement, fifteen configured enemies, AI clear,
+physical scene replacement, map load and empty start. Twelve placements do not
+promise twelve named living allies; dead/fewer/surplus/empty/changed-class cases
+retain their actual consumers. Completion526 differs from intro476/unlock426:
+clear526 keeps the six base definitions, while held526 permits level/class/RNG
+upgrades and suppresses neutral loading. Difficulty/equipment change current ATT;
+successful Black Ring insertion strips its encoded equip/AI-use/drop bits,
+leaving the Bishop's Flail equipped. No tactics, damage or drop follows.
+
+The three regions and one point configure later work. Scene Geshp128 is replaced
+by fresh Lizardman128. Clear526 adds Higins at local18,14 with state159 HP0/status0/
+neutral, conditionally physical N+15, but script lookup B31 rather than enemy
+lookup63. Down facing and requested left orientation are distinct; no ally19
+copy/heal/join or observed lying pose is established. Map72's36x32 crop from28,0,
+local coordinates, actual view fallback/full-load arguments, terrain and
+MAIN_THEME1 request retain their service limits. Start sets476 before its empty
+interpreter tail; interruption can leave the flag without return. F88-supplied
+loading skips fresh setup and uses actual current state with neutral rewrites.
+
+The explained fresh segment ends immediately before the first ActivateEnemies.
+No unmerged activation/first-dispatch work is consumed. Turns, outcomes and Higins
+recruitment remain later scope. Natural reach, supplied state, completed services,
+visible timing, control and persistence remain Unknown; the observed/remake
+frontier does not advance.
 
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from

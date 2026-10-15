@@ -396,8 +396,14 @@ only after this return does the caller restore/reassign saved map/battle, reset
 region flags 90–105, heal living/immortal allies, initialize ally then enemy
 positions, clear AI, LoadBattle for combatant 0 and invoke start. The scene
 establishes none of the initial combatant/neutral roster, activated enemies,
-turns, outcomes or Higins recruitment. The separate ongoing initialization
-research is not consumed here.
+turns, outcomes or Higins recruitment.
+
+[Battle26 initial formation and neutral Higins](battle26-initialization-and-roster.md)
+continues from this return through actual party/enemy initialization, physical
+replacement, completion-gated neutral Higins and the empty start hook. It stops
+immediately before ActivateEnemies, retaining supplied-state, upgrade, lookup,
+service and presentation limits. Activation, turns, outcomes and recruitment
+remain separate scope.
 
 | Changed state or interruption | Consequence that must remain visible |
 | --- | --- |
