@@ -974,6 +974,43 @@ any later530 substitution71→78. Natural reach/state, completed services,
 rendering, usable control and persistence remain Unknown. The observed/remake
 frontier does not advance.
 
+[Pacalon castle: entry and the first drought-state visit](pacalon-castle-entry-and-first-visit.md)
+continues the three north requests into conditional Map36 exploration.
+No36 battle-coordinate row matches the intact request; explicit exploration
+heals eligible allies, clears pending/temp, rebuilds actors/mappings/layout
+and invokes current init. With530 clear, thirteen fixed rows mean ally22
+plus twelve NPCs, after actual flag followers. F82 follower admission and
+ally-row dedup differ from joined22's init displacement to$7000; retained
+scripts/mappings are not deleted, and missing lookup is not safe absence.
+Current530 reads may later select callbacks against a retained cast.
+
+Default conversations describe drought, hunger, Moun's abandonment and
+Mitula/Tristan. The king's request writes no quest flag or YesNo branch;
+named text substitutions and sprite presentation do not prove actor identity
+or world state. Optional Event4 runs the complete movement/gesture scene
+before setting810 and final hunger text. Relative destinations, overwritten
+actions, retained16/16 then8/8 speed, HP-gated facing, camera and separate
+interpreter/gesture waits remain conditional, not measured animation or
+pathfinding. Script return, callback return and usable control differ.
+
+Nine shared descriptions include two books, the locked-door statement and
+six statues; examination priority precedes text and proves no unlock/access.
+Mithril123/176, FairyPowder5/174 and PegasusWing118/175 require eligible
+layout/caller state. Flag/block writes precede delivery; Bowie/full-force
+fallback, actual music/text order, untested AddItem return, repeats and
+reached all-full recovery keep collection non-atomic. Priest invocation
+delegates the accepted service limits; Map36's40,5/Up savepoint is return
+data, and another-service decline differs from post-save continue/suspend.
+
+Four CURRENT stair requests retain actors/mappings/walking/temp and loaded
+blocks/layout while refreshing area/display and rerunning init after the
+actual mode's follower relocation. They normally retain810 and reached
+centaur state; a fresh explicit36 rebuild need not retain scene position.
+The south row preserves sampled X and requests Map02/Y1/Down, stopping at
+MainLoop before town battle scan. F530-set population/pointer context does
+not consume later Frayja/cs_5DA28 progression. Natural reach, completed
+presentation/control and persistence remain Unknown; no remake frontier advances.
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted

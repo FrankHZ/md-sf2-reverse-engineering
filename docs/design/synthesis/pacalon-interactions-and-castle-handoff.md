@@ -15,6 +15,11 @@ no-scroll warp returns operands to MainLoop, before destination battle
 selection, setup or initialization. It explains accepted original evidence;
 it adds no remake behavior or new observed campaign frontier.
 
+Continue the three north requests with
+[Pacalon castle: entry and the first drought-state visit](pacalon-castle-entry-and-first-visit.md).
+That guide consumes destination admission/setup/init, default castle content
+and CURRENT stair lifetimes; this guide's request endpoint remains unchanged.
+
 ## Evidence and reading boundary
 
 **Confirmed evidence owner:** [Pacalon interactions and castle handoff](../../research/pacalon-interactions-and-castle-handoff.md),
