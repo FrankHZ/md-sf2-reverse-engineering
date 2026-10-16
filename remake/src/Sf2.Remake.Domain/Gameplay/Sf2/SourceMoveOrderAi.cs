@@ -46,7 +46,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         var approachCosts = Costs();
         Restrict(mode);
         var pursuit = AiMovementRules.PursueOrdered(approachCosts, scores, Grid(), Actor.Position!, targets,
-            Actor.Definition.Mover == BattleMover.Hovering ? PhysicalPriorityTable.Flying : PhysicalPriorityTable.Regular,
+            Actor.Definition.Mover is BattleMover.Hovering or BattleMover.Flying ? PhysicalPriorityTable.Flying : PhysicalPriorityTable.Regular,
             Occupied, _battle.Definition.Width, _battle.Definition.Height);
         _effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost,
             Target: targets[pursuit.TargetIndex].Actor));

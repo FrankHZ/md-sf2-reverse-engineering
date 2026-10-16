@@ -1,8 +1,9 @@
-"""Prepare the previously accepted authored defeat cue as explicit local content.
+"""Prepare explicitly authored modern cues as worktree-local content.
 
 This is a project-authored chord, not a recording or reconstruction of Music 12.
 The formula is retained from commit 8a581a82's ExplorationPresentation.JoinCue.
 Command 12 / timer C4 supplies only the source command's UI context.
+The finite encounter notification likewise claims no original audio equivalence.
 """
 
 from __future__ import annotations
@@ -82,8 +83,77 @@ def prepare_defeat_cue(output: Path) -> dict:
     return receipt
 
 
+def prepare_encounter_cue(output: Path) -> dict:
+    """Finite modern encounter notification; not a recording or SMPS reconstruction."""
+    output = output.resolve()
+    root = repo_path("").resolve()
+    if not output.is_relative_to(root / "local") or output.exists():
+        raise ValueError("output must be a new worktree-local ignored directory")
+    subprocess.run(["git", "check-ignore", "--quiet", str(output)], cwd=root, check=True)
+    rate, count = 22050, 5292  # 240 ms, three rising authored tones with soft edges.
+    notes = (440.0, 554.365, 659.255)
+    pcm = bytearray()
+    for index in range(count):
+        segment, phase = divmod(index, count // 3)
+        time = phase / rate
+        envelope = min(1, phase / 220, (count // 3 - phase) / 440)
+        pcm.extend(
+            struct.pack("<h", int(5500 * envelope * math.sin(math.tau * notes[segment] * time)))
+        )
+    output.mkdir(parents=True)
+    path = output / "authored-encounter.wav"
+    with wave.open(str(path), "wb") as sound:
+        sound.setnchannels(1)
+        sound.setsampwidth(2)
+        sound.setframerate(rate)
+        sound.writeframes(pcm)
+    payload = path.read_bytes()
+    receipt = {
+        "boundary": (
+            "Project-authored modern encounter cue for source SFX_BOOST109/C2; "
+            "no original audio fidelity claim."
+        ),
+        "asset": {
+            "assetId": "audio.authored-encounter",
+            "kind": "audio",
+            "cue": "SFX_BOOST",
+            "command": 109,
+            "timerB": 194,
+            "source": {
+                "kind": "project-authored",
+                "repository": "FrankHZ/md-sf2-reverse-engineering",
+                "path": "src/sf2tool/remake_authored_audio.py",
+                "symbol": "prepare_encounter_cue",
+            },
+            "derivation": {
+                "policyId": "project-authored-encounter-v1",
+                "generatorId": "sf2tool.remake_authored_audio",
+                "generatorVersion": "2",
+                "notesHz": notes,
+                "amplitude": 5500,
+                "edgeSamples": [220, 440],
+            },
+            "runtime": {
+                "runtimePath": "runtime/audio/authored-encounter.wav",
+                "byteLength": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest().upper(),
+                "mediaType": "audio/wav",
+                "sampleRate": rate,
+                "channels": 1,
+                "sampleFrames": count,
+                "loopBegin": None,
+                "loopEnd": None,
+            },
+        },
+    }
+    (output / "candidate.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    return receipt
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
-    result = prepare_defeat_cue(parser.parse_args().output)
+    parser.add_argument("--cue", choices=("defeat", "encounter"), default="defeat")
+    args = parser.parse_args()
+    result = (prepare_defeat_cue if args.cue == "defeat" else prepare_encounter_cue)(args.output)
     print(json.dumps({"boundary": result["boundary"], "runtime": result["asset"]["runtime"]}))

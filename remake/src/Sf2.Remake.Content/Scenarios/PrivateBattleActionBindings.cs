@@ -31,6 +31,7 @@ internal static class PrivateBattleActionBindings
         {
             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn16WithQuarterBonus,
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn32WithHalfBonus,
+            "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Sleep,
             _ => throw new BattleRuleException("source-prowess", "actor.prowess", true),
         };
         var equipped = items.Where(word => (word & 128) != 0).Select(word => definitions.Items[(byte)(word & 127)]).ToArray();

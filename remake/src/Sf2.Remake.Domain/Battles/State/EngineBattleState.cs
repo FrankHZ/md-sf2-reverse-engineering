@@ -18,12 +18,14 @@ public enum BattleFaction { Ally, Enemy }
 
 public sealed class PhysicalCriticalRule
 {
-    private PhysicalCriticalRule(ushort chanceDenominator, int damageBonusShift)
-    { ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; }
+    private PhysicalCriticalRule(ushort chanceDenominator, int damageBonusShift, bool inflictsSleep = false)
+    { ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
     public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
     public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
+    public static PhysicalCriticalRule Sleep { get; } = new(4, 0, true);
+    public bool InflictsSleep { get; }
     public ushort ChanceDenominator { get; }
-    public int DamageBonusDenominator => 1 << DamageBonusShift;
+    public int DamageBonusDenominator => DamageBonusShift == 0 ? 0 : 1 << DamageBonusShift;
     internal int DamageBonusShift { get; }
 }
 

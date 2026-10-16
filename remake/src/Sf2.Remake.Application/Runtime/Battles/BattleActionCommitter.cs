@@ -27,14 +27,16 @@ internal static class BattleActionCommitter
             observations.Add(new(++sequence, revision, "enemy-defeated-program-none"));
         foreach (var effect in effects.Where(effect => effect.Kind is "death-cleanup" or "kills" or "defeats"))
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));
-        // Every admitted action has status-free, ATT-only equipment semantics. Its after-turn
-        // pass changes no resources or RNG; publish it once for player and automatic actions.
-        if (outcome is null) observations.Add(new(++sequence, revision, "after-turn", actor));
-        else observations.Add(new(++sequence, revision, "battle-outcome", Detail: outcome.Value.ToString()));
+        bool sleep = outcome is null && battle.GetActor(actor).Hp > 0 && (battle.GetActor(actor).Status & 0xC0) != 0;
+        if (outcome is null && !sleep) observations.Add(new(++sequence, revision, "after-turn", actor));
+        else if (outcome is not null) observations.Add(new(++sequence, revision, "battle-outcome", Detail: outcome.Value.ToString()));
         if (battle.MainSeed != current.Battle.MainSeed)
             observations.Add(new(++sequence, revision, "action-rng", actor, current.Battle.MainSeed, battle.MainSeed));
         observations.Add(new(++sequence, revision, "action-committed", actor));
-        return new(current.SessionId, revision, sequence, outcome is null ? BattleTurnFlow.ConsumeEntry(battle) : battle,
-            null, SessionStopReason.SimulationWait);
+        var published = new SessionSnapshot(current.SessionId, revision, sequence,
+            new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
+        if (sleep) return BattleAfterTurnContinuation.Begin(published, actor, observations);
+        return new(current.SessionId, revision, sequence,
+            new ActiveBattle(outcome is null ? BattleTurnFlow.ConsumeEntry(battle) : battle, null), current.Story, SessionStopReason.SimulationWait);
     }
 }

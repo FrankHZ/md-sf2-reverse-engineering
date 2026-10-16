@@ -47,6 +47,8 @@ internal sealed class ExplorationPresentation : IDisposable
     }
     private double _cueAge;
     private float _fadeStart;
+    private Color _flashRestore;
+    private int _flashPulse = -1;
     private EntityRef? _gesture;
     private bool _nodding;
     private bool _shivering;
@@ -94,6 +96,8 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int NodDraws { get; private set; }
     internal int RestoredGestureDraws { get; private set; }
     internal int SoundStarts => _audio.Starts;
+    internal int FlashPulses { get; private set; }
+    internal int FlashRestorations { get; private set; }
     internal int SoundFades { get; private set; }
     internal int SoundCompletions => _audio.Completions;
     internal int SoundStops => _audio.Stops;
@@ -121,6 +125,7 @@ internal sealed class ExplorationPresentation : IDisposable
         mosaic = _mosaic?.Value, mosaicOut = _mosaicOut,
         paletteBrightness = PaletteBrightness, whiteOpacity = WhiteOpacity, reducedFlash = _reducedFlash,
         whiteVisible = _white.IsVisibleInTree(), ownerVisible = _owner.IsVisibleInTree(),
+        flashPulses = FlashPulses, flashRestorations = FlashRestorations, flashPulse = _flashPulse,
     };
 
     internal IReadOnlyList<SessionCommand> Update(double delta, SessionSnapshot current)
@@ -195,6 +200,15 @@ internal sealed class ExplorationPresentation : IDisposable
                 _cue = wait.Token; _cueAge = 0; _gesture = null; _mosaic = null; _storyEffect = null; _shivering = _nodding = false;
                 _cueResource = wait.Cue.Resource;
                 ActiveCue = wait.Cue.Kind.ToString();
+                if (wait.Cue.Kind == PresentationCueKind.FlashWhite)
+                {
+                    if (wait.Cue.Resource != "white-four-pulses" || wait.Cue.DurationTicks is not (> 0 and <= 240))
+                        throw new InvalidOperationException("flash-pulse-binding");
+                    _flashRestore = _white.Color;
+                    _flashPulse = -1;
+                    _cueAge = -delta;
+                    if (_reducedFlash) SuppressedWhiteCues++;
+                }
                 if (wait.Cue.Kind is PresentationCueKind.FadeIn or PresentationCueKind.FadeOut)
                 {
                     if (wait.Cue.Resource is not ("black" or "white")) throw new InvalidOperationException("fade-binding");
@@ -260,6 +274,17 @@ internal sealed class ExplorationPresentation : IDisposable
             bool complete;
             switch (wait.Cue.Kind)
             {
+                case PresentationCueKind.FlashWhite:
+                    // csc41(30) requests four flashes. Modern time uses four short on/off
+                    // pulses in one cue; palettes and black modulation remain authoritative.
+                    double pulseDuration = wait.Cue.DurationTicks!.Value / 60.0;
+                    complete = _cueAge >= pulseDuration;
+                    int pulse = Math.Min(3, (int)(_cueAge / pulseDuration * 4));
+                    if (pulse != _flashPulse) { _flashPulse = pulse; FlashPulses++; }
+                    bool on = !complete && (_cueAge / pulseDuration * 8) % 2 < 1;
+                    _white.Color = new Color(1, 1, 1, on && !_reducedFlash ? 1 : 0);
+                    if (complete) { _white.Color = _flashRestore; _flashPulse = -1; FlashRestorations++; }
+                    break;
                 case PresentationCueKind.FadeIn:
                 case PresentationCueKind.FadeOut:
                     float opacity = (float)Math.Clamp(_cueAge / 0.5, 0, 1);

@@ -754,6 +754,8 @@ public sealed partial class ExplorationSessionView : Control
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
             continuation = current?.Story.Continuation.ToString(), enteringBattle = current?.Story.EnteringBattle, callers = current?.Story.Callers,
+            stepCounter = current?.Story.StepCounter, battleRequest = current?.Story.BattleRequest,
+            egressMap = current?.Story.EgressMap?.Value, thinkingSeed = current?.Exploration?.Party.ThinkingSeed,
             display = current?.Story.Display, fade = current?.Story.Wait as FullFadeWait,
             warp = current?.Story.Warp, loadServices = (current?.Story.Wait as WarpLoadWait)?.Remaining,
             tickDebt = _tickTime, failureVisible = _failureLabel.Visible,

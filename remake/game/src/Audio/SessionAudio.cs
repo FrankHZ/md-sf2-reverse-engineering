@@ -127,7 +127,7 @@ internal sealed class SessionAudio : IDisposable
             else if (current.Active is ActiveBattle battle)
             {
                 var bindings = _definition.Maps.Values.Where(map =>
-                    map.Battle?.Encounter == battle.Battle.Definition.Encounter).ToArray();
+                    map.Battles.Any(route => route.Encounter == battle.Battle.Definition.Encounter)).ToArray();
                 if (bindings.Length != 1 || !_maps.TryGetValue(bindings[0].Map, out var visual))
                     throw new InvalidOperationException("battle-music-map-binding");
                 var map = bindings[0].Map;
@@ -351,7 +351,7 @@ internal sealed class SessionAudio : IDisposable
     // not hardware output masks or a claim of acoustic independence.
     private static Slots SoundSlots(int command) => command switch
     {
-        65 or 111 => Slots.Ym5,
+        65 or 109 or 111 => Slots.Ym5,
         66 or 67 or 70 or 72 or 73 or 74 or 79 or 102 => Slots.PsgTone3,
         77 => Slots.Ym4,
         81 or 83 or 116 => Slots.Ym6,

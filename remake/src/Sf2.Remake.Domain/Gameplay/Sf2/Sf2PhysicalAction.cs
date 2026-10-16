@@ -39,6 +39,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     internal static int LandMultiplier(BattleTerrain terrain, BattleMover mover = BattleMover.Regular)
     {
         if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
+        if (mover == BattleMover.Flying) return 256;
         // Protection is independent of the movement-cost table, including hovering.
         return terrain.Protection switch
         {
@@ -80,6 +81,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         _ = RequireActor(current, actorRef);
         var actor = current.GetActor(actorRef);
         var target = RequireTarget(current, actorRef, destination, targetRef);
+        if (((actor.Status | target.Status) & ~0xC0) != 0)
+            throw new BattleRuleException("physical-status", "actors.status", true);
         ushort actorHp = actor.Hp, targetHp = target.Hp;
         uint seed = current.MainSeed;
         var effects = new List<BattleEffect>();
@@ -95,7 +98,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             counterRequested |= second.CounterRolled;
         }
         var counterRange = target.Definition.Physical!;
-        bool counterPerformed = targetHp > 0 && counterRequested &&
+        bool counterPerformed = targetHp > 0 && counterRequested && (target.Status & 0xC0) == 0 &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);
         // No third/double-counter dispatch exists. A surviving counter still consumes its own
@@ -146,12 +149,14 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             // moved original actor's destination when it becomes the counter's target.
             int multiplier = LandMultiplier(terrain, defender.Definition.Mover);
             var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Defense,
-                hp, multiplier, seed, defender.Definition.Mover == BattleMover.Hovering ? (ushort)8 : (ushort)32,
+                hp, multiplier, seed, defender.Definition.Mover is BattleMover.Hovering or BattleMover.Flying ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
-                profile.Critical.DamageBonusShift, counter);
+                profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (defender.Status & 0xC0) != 0);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : BattleReactionKind.Damage,
-                hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical, strike.Damage));
+                hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical, strike.Damage,
+                strike.Dodged ? null : defender.Status,
+                strike.SleepInflicted ? (ushort)(defender.Status | 0xC0) : null));
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
@@ -198,6 +203,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         {
             var before = battle.GetActor(reaction.Target);
             battle = action.ApplyReaction(battle, reaction);
+            battle = action.ApplySleep(battle, reaction);
             deaths = deaths.Append(before, battle.GetActor(reaction.Target));
         }
         var reward = action.ApplyReward(battle, progression);

@@ -312,6 +312,8 @@ internal static class ExplorationDispatcher
                         }
                         if (story.Wait is EntityWait { PendingMove: not null } fieldMove && tickResult?.FieldMove is { } field)
                         {
+                            if (field.Moved && story.StepCounter is > 0)
+                                story = story.Copy(story.Cursor, story.Wait, stepCounter: (short)(story.StepCounter.Value - 1));
                             story = story.Copy(null, field.Moved && field.Event?.Kind != ExplorationEventKind.Warp
                                 ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
                                 simulationTick: checked(story.SimulationTick + 1));

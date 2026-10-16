@@ -15,6 +15,7 @@ internal sealed partial class BattleSceneView : Control
 {
     private readonly Dictionary<(string Encounter, string Resource), ImageTexture> _textures = [];
     private Node2D _canvas = null!;
+    private ColorRect _sceneBlack = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
     private Label _message = null!, _allyStatus = null!, _enemyStatus = null!;
     private GameSession _session = null!;
@@ -39,8 +40,8 @@ internal sealed partial class BattleSceneView : Control
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
         ClipContents = true;
-        var black = new ColorRect { Color = Colors.Black, MouseFilter = MouseFilterEnum.Ignore };
-        black.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(black);
+        _sceneBlack = new ColorRect { Color = Colors.Black, MouseFilter = MouseFilterEnum.Ignore };
+        _sceneBlack.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_sceneBlack);
         _canvas = new Node2D { Name = "SceneCanvas", TextureFilter = TextureFilterEnum.Nearest }; AddChild(_canvas);
         _background = Sprite("Background", new(0, 56));
         _backgroundWrap = Sprite("BackgroundWrap", new(256, 56));
@@ -83,6 +84,15 @@ internal sealed partial class BattleSceneView : Control
             }
             if (_session.Definition.PrivateDefinitions is not null && Content is null)
                 throw new InvalidOperationException("battle-scene-content-required");
+            _sceneBlack.Visible = !state.IsSleepTurn;
+            if (state.IsSleepTurn)
+            {
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon, _allyStatus, _enemyStatus }) node.Hide();
+                foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
+                _message.Text = Message(state); _message.VisibleCharacters = -1;
+                return;
+            }
+            _background.Show(); _backgroundWrap.Show(); _ground.Show(); _ally.Show(); _allyStatus.Show();
             var battle = _session.Current.Battle;
             var actor = battle.GetActor(state.Actor); var target = battle.GetActor(state.Target);
             var ally = battle.GetActor(state.DisplayedAlly!.Value);
@@ -151,6 +161,14 @@ internal sealed partial class BattleSceneView : Control
         float scale = MathF.Min(viewport.X / 256, viewport.Y / 224);
         _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
         _elapsed += delta;
+        if (state.IsSleepTurn || state.Phase == BattleScenePhase.SleepMessage)
+        {
+            // Modern finite delivery of the source's no-input sleep notices. Actual
+            // completion releases the status command; reveal/input speed adds no RNG.
+            if (_elapsed < 0.5) return null;
+            _completed = true;
+            return new CompletePresentation(state.Token, state.CompletionKind);
+        }
         if (state.RequiresAcknowledgement)
         {
             _revealed += delta * _settings.CharactersPerSecond;
@@ -315,6 +333,8 @@ internal sealed partial class BattleSceneView : Control
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         int id = state.Phase switch
         {
+            BattleScenePhase.SleepMessage => 338,
+            BattleScenePhase.SleepTurnMessage => state.SleepTurnText!.Value,
             BattleScenePhase.ActionMessage => state.ActionKind switch { "item-use" => 275, "physical-second" => 293, "physical-counter" => 292, _ => 273 },
             BattleScenePhase.ResultMessage => state.ReactionKind == "Recovery" ? 298 : state.ReactionKind == "Dodge" ? 286 : state.Critical ? (ally ? 287 : 288) : (ally ? 284 : 285),
             BattleScenePhase.DeathMessage => _session.Current.Battle.GetActor(state.Target).IsAlly ? 291 : 290,
@@ -328,12 +348,12 @@ internal sealed partial class BattleSceneView : Control
         string name = ActorName(state.Phase == BattleScenePhase.ActionMessage ? state.Actor :
             state.Phase is BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage ? state.RewardActor!.Value : state.Target);
         int amount = state.GrowthNotice?.Amount ?? (state.Phase == BattleScenePhase.RewardMessage ? state.RewardAmount : state.Phase == BattleScenePhase.GoldMessage ? state.GoldAmount : state.Amount);
-        string text = Content?.Texts.GetValueOrDefault(id) ?? (state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
+        string text = Content?.Texts.GetValueOrDefault(id) ?? (id == 338 ? "{NAME} fell asleep." : id == 306 ? "{NAME} is sleeping." : id == 354 ? "{NAME} has awakened." : state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
             state.Phase == BattleScenePhase.RewardMessage ? "{NAME} earned {#} EXP." : state.Phase == BattleScenePhase.GoldMessage ? "Found {#} gold." : "{NAME}: {#}");
         // Text timing remains the existing product setting. No battle speech bleeps:
         // source bsc10/bsc11 clear CURRENT_SPEECH_SFX.
         return Regex.Replace(text.Replace("{NAME}", name).Replace("{#}", amount.ToString()).Replace("{N}", "\n")
-            .Replace("{ITEM}", state.Item?.Name ?? "").Replace("{SPELL}", state.GrowthNotice?.Spell?.Value.ToUpperInvariant() ?? ""), @"\{D[0-9]+\}", "");
+            .Replace("{ITEM}", state.Item?.Name ?? "").Replace("{SPELL}", state.GrowthNotice?.Spell?.Value.ToUpperInvariant() ?? "").Replace("{CLEAR}", ""), @"\{D[0-9]+\}", "");
     }
 
     private void SetFrame(bool ally, int frame)

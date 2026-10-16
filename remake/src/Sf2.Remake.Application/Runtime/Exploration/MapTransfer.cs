@@ -15,7 +15,7 @@ internal static class MapTransfer
             new ActiveExploration(MapEventDispatcher.Roof(candidate)), current.Story, current.StopReason);
         _ = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
             warp.LoadMode, current.Story, [], rules);
-        if (BattleEntry.Selects(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!].Battle, rules)) return;
+        if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null) return;
         ValidateDisplay(current.Story.Display);
         var target = definition.Exploration.Maps[warp.DestinationMap!].SelectSetup(current.Story.Flags);
         if (warp.LoadMode == MapLoadMode.Rebuild && target.BasePalette is not { Valid: true })
@@ -28,6 +28,7 @@ internal static class MapTransfer
             foreach (var instruction in definition.Exploration.Programs[entry.Program].Instructions)
                 switch (instruction)
                 {
+                    case PresentCue { Kind: PresentationCueKind.FlashWhite } cue: ValidateFlash(cue); break;
                     case PresentCue cue when IsPalette(cue): ValidateCue(cue); break;
                     case LoadSceneMap: throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
                     case CallProgram call: Check(call.Target); break;
@@ -54,7 +55,14 @@ internal static class MapTransfer
     }
 
     internal static bool IsPalette(PresentCue cue) => cue.Kind is PresentationCueKind.FadeIn or
-        PresentationCueKind.FadeOut or PresentationCueKind.FlashWhite or PresentationCueKind.RestorePalette;
+        PresentationCueKind.FadeOut or PresentationCueKind.RestorePalette;
+
+    internal static void ValidateFlash(PresentCue cue)
+    {
+        if (cue.Resource != "white-four-pulses" || cue.DurationTicks is not (> 0 and <= 240) ||
+            cue.Entity is not null || cue.Position is not null || cue.FullBlack is not null)
+            throw new BattleRuleException("flash-pulse-binding", "program.presentation", true);
+    }
 
     internal static void ValidateCue(PresentCue cue)
     {
@@ -67,7 +75,7 @@ internal static class MapTransfer
     internal static SessionSnapshot BeginWarp(ScenarioDefinition definition, SessionSnapshot current,
         ExplorationEvent warp, List<SessionObservation> observations, SessionRules? rules = null)
     {
-        if (BattleEntry.Selects(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!].Battle, rules))
+        if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null)
             return Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
                 warp.LoadMode, current.Story, observations, rules);
         var story = current.Story.Copy(null, warp: new(warp.DestinationMap!, warp.Destination!, warp.Facing, warp.LoadMode));
@@ -253,8 +261,7 @@ internal static class MapTransfer
         target = target.SelectSetup(current.Story.Flags);
         // MainLoop selects BattleLoop before ExplorationLoop. The before-battle script owns
         // its map load and entity replacement; retain the actual field scene until those calls.
-        if (world.Party.NewBattle is not null && target.Battle is { } battle &&
-            BattleEntry.Selects(definition, current.Story, battle, rules))
+        if (world.Party.NewBattle is not null && BattleEntry.First(definition, current.Story, target, rules) is { } battle)
             return BattleEntry.Select(current, continuation.Copy(continuation.Cursor,
                 returnAnchor: new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing)), battle, observations);
         ExplorationState next;

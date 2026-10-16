@@ -1,0 +1,74 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "Controlled INITIAL post-Battle02 victory field return Map66(24,28), facingDown, four joined/active allies; F402clear/F502set/F403clear, F72/F4/F650/F530/F28clear. Party/resources/growth/accounting and RNG select the accepted return values in yeel-to-battle03-party.json. No later state injection, teleport, reseed, restart or auto-written flags; walk, talk, exit/reenter and real zone request must drive the session. Original natural route/timing and human play remain Unknown/pending.",
+  "start": {
+    "map": "map-66",
+    "player": "entity-0",
+    "position": {
+      "x": 24,
+      "y": 28
+    },
+    "facing": 3,
+    "speed": 32,
+    "flags": [
+      0,
+      1,
+      2,
+      3,
+      32,
+      33,
+      34,
+      35,
+      80,
+      89,
+      399,
+      451,
+      452,
+      501,
+      502,
+      600,
+      601,
+      602,
+      603,
+      604,
+      605,
+      607,
+      608,
+      609,
+      610
+    ],
+    "mapPalettes": [
+      {
+        "map": "map-5",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-66",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      }
+    ],
+    "display": {
+      "period": 3,
+      "base": {
+        "color2": 3716,
+        "color3": 36
+      },
+      "current": {
+        "color2": 3716,
+        "color3": 36
+      },
+      "visibility": "base-restored"
+    },
+    "textSettings": {
+      "messageSpeed": 2,
+      "mouthControl": 0,
+      "viewSpeed": 0
+    }
+  }
+}

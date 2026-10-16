@@ -46,7 +46,7 @@ internal static class EnemyPhysicalDecision
             thinking = after;
         }
         // Source airborne movement selects the Flying table; the other admitted movers use Regular.
-        var selection = PhysicalTargetRules.Select(priorities, actor.Definition.Mover == BattleMover.Hovering
+        var selection = PhysicalTargetRules.Select(priorities, actor.Definition.Mover is BattleMover.Hovering or BattleMover.Flying
             ? PhysicalPriorityTable.Flying : PhysicalPriorityTable.Regular)
             ?? throw new BattleRuleException("ai-target-selection", "ai.targets", true);
         var selected = candidates[selection.Index];

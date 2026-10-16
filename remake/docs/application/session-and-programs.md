@@ -1,5 +1,47 @@
 # Session and Resumable Programs
 
+## Yeel guide, zone request and sleep continuation
+
+The selected early Yeel program preserves texts784–787, source portraits and synchronous caller
+return. `ShowText.Narration` defaults false and permits only a null explicit speaker without
+`UseEventSpeaker`; reader and runtime reject conflicting selectors. The producer lowers only the
+explicit close-text/close-portrait/copy-and-clear-speech sequence. Narration keeps normal W1/W2 and
+caller ownership; it does not bypass missing portrait checks for ordinary speakers. `{CLEAR}` resets
+the current window cursor/layout with one logical VInt, keeping the window and following real input.
+The next portrait instruction restores Kazin. F72 is written after the offer returns; the existing
+source population/follower path supplies one follower on reentry without adding F4 or battle members.
+
+A map has an ordered `Battles` collection. The old optional `battle` document is the singleton form;
+`battles` is the multiple-route form, with both simultaneously rejected. Entry scans eligible routes
+in source order, preserving completed-repeat policy and one-time unlock consumption. Map66's ordered
+zone dispatch remains a separate service: matching rows can suppress its default without an encounter.
+`SourceRandomBattle` requests an incomplete encounter without RNG or step tests; a completed encounter
+uses the nullable signed `StoryState.StepCounter`. Unknown repeat state rejects; nonzero defers; zero
+uses range8, then range4+2 only on failure. Positive counters decrement once at successful field-move
+launch, never during preview, blocked moves or observation.
+
+A request sets its unlock and30000 counter, then runs the existing typed WaitView/Sound/FlashWhite
+program and returns through the actual caller. Only return to the zone boundary consumes the pending
+request and performs the ordered encounter scan. This in-place selection invents no position/facing
+and imposes no battle-rectangle proximity predicate. The reached `SetEgressMap` instruction writes the
+shared story owner; mode/automatic/scene continuations preserve it. The selected Battle03 intro gate
+controls the Yeel assignment and F453; its empty start remains a real program boundary.
+
+Physical sleep has two separate publication stages. Constructed damage/status operands remain in
+`BattleActionResolution`; damage playback publishes its original status, and the following real
+SleepMessage completion publishes the infliction. Construction and counter eligibility never read an
+unplayed reaction as live status. Lethal damage omits infliction; sleeping targets omit dodge/counter.
+At a sleeping queued entry, `BattleAdvancer` skips command selection and starts a typed after-turn
+notice without fabricating an attack, reward or selection. `BattleAfterTurnContinuation` commits the
+single main draw before text306/354, retains actor.Status while pending, then applies its operand and
+consumes the queue entry on the matching actual completion. Dead entries bypass this work. Wrong or
+stale commands cannot consume it twice. Other status families remain Unsupported. The Godot consumer
+uses finite modern no-input notices over the field and the same completion protocol; it does not
+freeze an attack/hurt animation or own logical status.
+
+See [capability agreement](../capability-status.md#yeel-guide-through-battle03-implementation-agreement)
+and [direct observation](../verification/field-programs.md#yeel-guide-through-battle03).
+
 ## Battle02 outcomes and live facing
 
 The selected private world admits Battle02's empty after-program and the shared `JoinForce(0)` tail.

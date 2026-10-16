@@ -85,7 +85,7 @@ internal static class BattleSceneContentReader
                 {
                     // Pinned EnemyBattlesprites rows for the admitted species.
                     var selected = placement.IdentityExpression switch
-                    { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0),
+                    { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
                         _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,
                             "scene-enemy-species", "battleScenes.actors", "unadmitted species")) };
                     if ((sprite, palette) == selected)
@@ -105,6 +105,8 @@ internal static class BattleSceneContentReader
         Require(new[] {244, 263, 266, 267, 268, 269, 270, 271, 273, 275, 298, 284, 285, 286, 287, 288, 290, 291, 292, 293, 393}
             .All(texts.ContainsKey), "scene-required-text", "battleScenes.texts");
         var names = Strings(root, "memberNames");
+        if (definitions.Enemies.Values.Any(enemy => enemy.ProwessExpression == "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32"))
+            Require(new[] { 306, 338, 354 }.All(texts.ContainsKey), "scene-sleep-text", "battleScenes.texts");
         Require(names.Length >= 3, "scene-member-names", "battleScenes.memberNames");
         HealingSceneVisual? healing = null;
         if (root.TryGetProperty("healing", out var heal))

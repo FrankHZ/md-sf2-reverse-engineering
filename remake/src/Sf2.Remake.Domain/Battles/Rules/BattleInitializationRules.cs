@@ -28,7 +28,9 @@ internal static class BattleInitializationRules
             {
                 _ = EnemyAttack(deployment.Definition.Attack, policy.Difficulty);
                 // General equipped/status refresh is not admitted by a loaded baseline.
-                Require(deployment.Definition.SourceLoadout!.Items.All(word => word == 127),
+                // The admitted unequipped Herb has no stat refresh effects. Placement AddItem
+                // already masked its AI/drop bits; equipped/unknown words still reject.
+                Require(deployment.Definition.SourceLoadout!.Items.All(word => word is 0 or 127),
                     "enemy-equipment-refresh", "actors.loadout", true);
             }
         }

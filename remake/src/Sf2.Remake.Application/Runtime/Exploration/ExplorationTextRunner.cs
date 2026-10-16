@@ -84,11 +84,13 @@ internal static class ExplorationTextRunner
         ScenarioDefinition? scenario = null)
     {
         ValidateContext(current);
+        if (text.Narration && (text.UseEventSpeaker || text.Speaker is not null))
+            throw new BattleRuleException("narration-speaker", "program.text");
         var speaker = text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker;
         // Raw DisplayText and explicit source FF lookup-skip can have no speaker. A failed event lookup or
         // an explicitly supplied invalid speaker must still fail ordinary validation.
         bool speakerless = !text.UseEventSpeaker && text.Speaker is null &&
-            (!text.WaitForAcknowledgement || text.SpeakerFlags == 255);
+            (text.Narration || !text.WaitForAcknowledgement || text.SpeakerFlags == 255);
         if (!speakerless && (speaker is not { } actor || !current.Exploration!.TryResolveEntity(actor, out var entity) || entity.Sprite is not { } sprite ||
             definition.Visuals is not { } visuals || !visuals.Sprites.TryGetValue(sprite, out var visual) ||
             visual.Portrait is not null && current.Story.PortraitWindow is not OpenPortraitWindow { Work: not null }))
@@ -100,7 +102,7 @@ internal static class ExplorationTextRunner
         var partyLists = current.Story.PartyLists;
         foreach (var part in tokens)
         {
-            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1)
+            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Clear)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "")); continue; }
             int? member = part.Member;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{NAME}") member = text.NameMember;
@@ -174,6 +176,16 @@ internal static class ExplorationTextRunner
                 break;
             }
             var unit = wait.Units[wait.Index];
+            if (unit.Kind == ExplorationTextTokenKind.Clear)
+            {
+                // symbol_clear rebuilds the existing window/cursor and owns one VInt.
+                // It does not close/reopen the window or consume the following input.
+                window = window with { X = 2, Y = 0, Row = 0 };
+                int following = wait.Index + 1;
+                wait = wait with { Index = following, Phase = FieldTextPhase.ClearToken, Revealed = false,
+                    Projection = string.Concat(wait.Units.Skip(following).Take(wait.End - following).Select(part => part.Text)) };
+                break;
+            }
             if (unit.Kind == ExplorationTextTokenKind.Delay1)
             {
                 wait = wait with { Index = wait.Index + 1 };
@@ -230,6 +242,7 @@ internal static class ExplorationTextRunner
         var window = story.LogicalText!;
         switch (wait.Phase)
         {
+            case FieldTextPhase.ClearToken: wait = wait with { Phase = FieldTextPhase.Tokens }; break;
             case FieldTextPhase.ClearFirst: wait = wait with { Phase = FieldTextPhase.ClearSecond }; break;
             case FieldTextPhase.ClearSecond:
                 window = new(Open: true, AnimationLength: 8, OriginY: 29, DestinationY: 19);

@@ -1,0 +1,91 @@
+{
+  "package": "private-yeel-battle03",
+  "maps": [
+    5,
+    66
+  ],
+  "battles": [
+    2,
+    3
+  ],
+  "growthClasses": [
+    {
+      "member": 0,
+      "class": "SDMN"
+    },
+    {
+      "member": 1,
+      "class": "PRST"
+    },
+    {
+      "member": 2,
+      "class": "KNTE"
+    },
+    {
+      "member": 3,
+      "class": "WARR"
+    }
+  ],
+  "controlledEntitySpeed": 32,
+  "controlledBoundary": "Controlled INITIAL post-Battle02 victory field return Map66(24,28), facingDown, four joined/active allies; F402clear/F502set/F403clear, F72/F4/F650/F530/F28clear. Party/resources/growth/accounting and RNG select the accepted return values in yeel-to-battle03-party.json. No later state injection, teleport, reseed, restart or auto-written flags; walk, talk, exit/reenter and real zone request must drive the session. Original natural route/timing and human play remain Unknown/pending.",
+  "additionalProgramSources": [
+    {
+      "symbol": "ms_Empty",
+      "path": "code/common/scripting/map/ms_empty.asm"
+    },
+    {
+      "symbol": "bbcs_03",
+      "path": "data/battles/entries/battle03/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "csub_49816",
+      "path": "data/battles/entries/battle03/cs_beforebattle.asm"
+    }
+  ],
+  "programs": [
+    "ms_Empty"
+  ],
+  "eventMaps": [
+    5,
+    66
+  ],
+  "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
+  "presentationAtlases": {},
+  "setups": {},
+  "audioCues": [
+    "MUSIC_TOWN",
+    "MUSIC_ATTACK",
+    "MUSIC_ENEMY_ATTACK",
+    "MUSIC_BATTLE_THEME_1",
+    "SFX_WARP_TIMER_CB",
+    "SFX_DIALOG_BLEEP_4_TIMER_CB",
+    "SFX_VALIDATION_TIMER_CB",
+    "SFX_DOOR_OPEN_TIMER_CB",
+    "SFX_MENU_SWITCH_TIMER_CB",
+    "SFX_DIALOG_BLEEP_2_TIMER_CB",
+    "SFX_DIALOG_BLEEP_6_TIMER_CB",
+    "SFX_DIALOG_BLEEP_5_TIMER_CB",
+    "SFX_MENU_SWITCH_TIMER_BD",
+    "SFX_WALKING_TIMER_BD",
+    "SFX_VALIDATION_TIMER_BD",
+    "SFX_LIGHTNING_1_TIMER_CC",
+    "SFX_HIT_1_TIMER_C6",
+    "SFX_MENU_SELECTION_TIMER_BD",
+    "SFX_HEALING_TIMER_C6",
+    "SFX_BATTLEFIELD_DEATH_TIMER_BD",
+    "SFX_SPELL_CAST_TIMER_C6",
+    "SFX_LEVEL_UP_TIMER_C6",
+    "SFX_DIALOG_BLEEP_6_TIMER_BD",
+    "SFX_DIALOG_BLEEP_2_TIMER_BD",
+    "SFX_DIALOG_BLEEP_5_TIMER_BD",
+    "SFX_DESOUL_HOVERING_TIMER_CC",
+    "SFX_PRISM_LASER_CUTSCENE_FIRING_TIMER_CC",
+    "SFX_MENU_SWITCH_TIMER_CC",
+    "SFX_VALIDATION_TIMER_CC",
+    "SFX_DIALOG_BLEEP_6_TIMER_CC",
+    "SFX_MENU_SWITCH_TIMER_C2",
+    "SFX_VALIDATION_TIMER_C2",
+    "MUSIC_MAIN_THEME",
+    "SFX_BOOST"
+  ]
+}
