@@ -30,6 +30,13 @@ internal static class BattleAdvancer
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
     {
+        var result = AdvanceCore(current, observations, rules);
+        return ReferenceEquals(result.Snapshot.Story, current.Story) ? result
+            : result with { Snapshot = result.Snapshot.WithStory(current.Story) };
+    }
+
+    private static SessionResult AdvanceCore(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
+    {
         if (current.BattleScene is not null || current.BattleMovement is not null)
             return new(current, observations.AsReadOnly(), SessionStopReason.PresentationWait);
         var battle = current.Battle;
@@ -70,6 +77,15 @@ internal static class BattleAdvancer
                     battle = BattleTurnFlow.ConsumeEntry(battle); revision++;
                     observations.Add(new(++sequence, revision, "dead-entry-skipped", actor.Actor));
                     continue;
+                }
+                if ((actor.Status & 0xC0) != 0)
+                {
+                    var skipped = new SessionSnapshot(current.SessionId, revision, sequence,
+                        new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
+                    observations.Add(new(++sequence, revision, "sleeping-action-skipped", actor.Actor));
+                    skipped = new(current.SessionId, revision, sequence, skipped.Active, current.Story, skipped.StopReason);
+                    var pending = BattleAfterTurnContinuation.Begin(skipped, actor.Actor, observations);
+                    return new(pending, observations.AsReadOnly(), pending.StopReason);
                 }
                 if (actor.Control == BattleControl.Player)
                 {

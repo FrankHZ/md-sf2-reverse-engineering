@@ -5,7 +5,7 @@ namespace Sf2.Remake.Domain.Battles;
 internal enum BattleReactionKind { Damage, Dodge, Recovery, Resource }
 internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Action,
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
-    bool Critical = false, int Amount = 0);
+    bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
     MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false)
@@ -190,6 +190,10 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 reaction.Amount >= 0 && reaction.HpAfter == Math.Max(0, hp - reaction.Amount) &&
                 reaction.MpBefore == defender.Mp && reaction.MpAfter == defender.Mp &&
                 (reaction.Kind != BattleReactionKind.Dodge || reaction.Amount == 0 && !reaction.Critical));
+            Require(reaction.StatusWrite is null || reaction.Kind == BattleReactionKind.Damage && reaction.StatusWrite == defender.Status);
+            Require(reaction.InflictedSleep is null || profile.Critical.InflictsSleep && reaction.Kind == BattleReactionKind.Damage &&
+                reaction.HpAfter > 0 && !reaction.Critical && reaction.StatusWrite == defender.Status &&
+                reaction.InflictedSleep == (ushort)(defender.Status | 0xC0));
             if (reversed) actorHp = reaction.HpAfter; else targetHp = reaction.HpAfter;
         }
         var ally = actor.IsAlly ? actor : target; var enemy = actor.IsAlly ? target : actor;
@@ -236,7 +240,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             reaction.Actor == actorRef && reaction.Target == targetRef && reaction.Action == "item-use" &&
             reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
             reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp && reaction.Amount == reaction.HpAfter - target.Hp &&
-            reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp);
+            reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
+            reaction.StatusWrite is null && reaction.InflictedSleep is null);
         ValidateReward(before, actorRef);
         ValidateRandom(before, effect => effect.Kind == "item-consumed"
             ? effect == new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)
@@ -262,7 +267,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(reaction.Actor == actorRef && reaction.Target == targetRef && reaction.Action == "heal" &&
             reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
             reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
-            reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp);
+            reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
+            reaction.StatusWrite is null && reaction.InflictedSleep is null);
         Require(actor.Mp >= spell.MpCost);
         Require(Reward is null || Reward.Actor == actorRef && Reward.Amount > 0);
         uint seed = before.MainSeed;
@@ -282,7 +288,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
 
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target
-            ? actor.With(hp: reaction.HpAfter, mp: Spell is null ? reaction.MpAfter : actor.Mp) : actor));
+            ? actor.With(hp: reaction.HpAfter, mp: Spell is null ? reaction.MpAfter : actor.Mp,
+                status: reaction.StatusWrite) : actor));
+
+    internal EngineBattleState ApplySleep(EngineBattleState current, BattleReaction reaction) =>
+        reaction.InflictedSleep is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
+            actor.Actor == reaction.Target ? actor.With(status: status) : actor));
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == Actor

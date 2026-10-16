@@ -23,7 +23,7 @@ internal static class BattleGrowthRules
         int total = actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true);
         if (total < 100) return actor.With(exp: (byte)total);
         var growth = actor.Definition.Growth ?? throw new BattleRuleException("level-up", "actor.growth", true);
-        if (actor.Status != 0) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
+        if ((actor.Status & ~0xC0) != 0) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
         total -= 100; // Source bsc0F processes one threshold even when another 100 remains.
         effects.Add(new("exp-threshold", actor.Actor, total + 100, total));
         if (actor.Level >= (growth.ClassId < 12 ? 40 : 99))

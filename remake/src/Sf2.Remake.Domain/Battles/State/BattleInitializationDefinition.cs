@@ -2,7 +2,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
-public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth }
+public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth, Flying }
 public enum BattleRegionProgram { None, Required }
 
 // Declared external controlled inputs; these values are not inferred from original entry.
