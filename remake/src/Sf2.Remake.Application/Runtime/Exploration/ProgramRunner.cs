@@ -291,8 +291,7 @@ internal static class ProgramRunner
                     case PresentCue cue:
                         if (cue.Kind == PresentationCueKind.FlashWhite)
                         {
-                            if (cue.Resource != "white-four-pulses" || cue.DurationTicks is not (> 0 and <= 240))
-                                throw new BattleRuleException("flash-pulse-binding", "program.presentation", true);
+                            MapTransfer.ValidateFlash(cue);
                             if (current.Story.Display is not null) MapTransfer.ValidateDisplay(current.Story.Display);
                         }
                         if (cue.FullBlack is not null && current.Active is not ActiveExploration)

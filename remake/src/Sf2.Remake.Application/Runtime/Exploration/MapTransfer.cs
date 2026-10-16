@@ -28,6 +28,7 @@ internal static class MapTransfer
             foreach (var instruction in definition.Exploration.Programs[entry.Program].Instructions)
                 switch (instruction)
                 {
+                    case PresentCue { Kind: PresentationCueKind.FlashWhite } cue: ValidateFlash(cue); break;
                     case PresentCue cue when IsPalette(cue): ValidateCue(cue); break;
                     case LoadSceneMap: throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
                     case CallProgram call: Check(call.Target); break;
@@ -55,6 +56,13 @@ internal static class MapTransfer
 
     internal static bool IsPalette(PresentCue cue) => cue.Kind is PresentationCueKind.FadeIn or
         PresentationCueKind.FadeOut or PresentationCueKind.RestorePalette;
+
+    internal static void ValidateFlash(PresentCue cue)
+    {
+        if (cue.Resource != "white-four-pulses" || cue.DurationTicks is not (> 0 and <= 240) ||
+            cue.Entity is not null || cue.Position is not null || cue.FullBlack is not null)
+            throw new BattleRuleException("flash-pulse-binding", "program.presentation", true);
+    }
 
     internal static void ValidateCue(PresentCue cue)
     {
