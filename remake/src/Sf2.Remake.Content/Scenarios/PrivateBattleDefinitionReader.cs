@@ -35,7 +35,8 @@ internal static class PrivateBattleDefinitionReader
             .Select(row => row.IdentityExpression).Distinct().Select(code => Enemy(FindCode(enemy, "enemies", code))).ToArray();
         var itemIds = start.Allies.SelectMany(row => row.Items).Select(word => (byte)(word & 127)).ToHashSet();
         foreach (var row in enemies.SelectMany(row => row.Items)) itemIds.Add((byte)Number(FindCode(core, "items", row.Item), "id", 0, 127));
-        foreach (var row in encounter.Placements) itemIds.Add((byte)Number(FindCode(core, "items", row.ItemExpression), "id", 0, 127));
+        foreach (var row in encounter.Placements)
+            itemIds.Add((byte)Number(FindCode(core, "items", row.ItemExpression.Split('|')[0]), "id", 0, 127));
         var items = itemIds.Order().Select(id => Item(FindId(core, "items", id))).ToArray();
         var spellKeys = new HashSet<(byte Id, byte Level)>();
         foreach (byte packed in start.Allies.SelectMany(row => row.Spells))

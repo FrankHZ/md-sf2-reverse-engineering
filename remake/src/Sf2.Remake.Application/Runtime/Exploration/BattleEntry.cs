@@ -6,6 +6,8 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class BattleEntry
 {
+    internal static ExplorationBattleRoute? First(ScenarioDefinition definition, StoryState story,
+        ExplorationMapDefinition map, SessionRules? rules) => map.Battles.FirstOrDefault(route => Selects(definition, story, route, rules));
     internal static bool Selects(ScenarioDefinition definition, StoryState story, ExplorationBattleRoute? route,
         SessionRules? rules) => route is not null &&
         (route.UnlockedFlag is null || story.Flags.Contains(route.UnlockedFlag.Value)) &&
@@ -24,19 +26,21 @@ internal static class BattleEntry
         var story = current.Story;
         if (story.Continuation == ProgramContinuation.MapLoaded)
         {
-            var route = current.Exploration?.Definition.Battle;
-            if (route is null || (route.UnlockedFlag is { } unlocked && !story.Flags.Contains(unlocked)))
-                return current.WithStory(story.Copy(null, continuation: ProgramContinuation.FieldInput));
-            if (route.CompletedFlag is { } completed && story.Flags.Contains(completed))
+            foreach (var route in current.Exploration?.Definition.Battles ?? [])
             {
-                bool enter = EnterCompleted(definition, rules);
-                current = ProgramRunner.Commit(current, current.Active,
-                    story.Copy(null, flags: route.UnlockedFlag is { } flag ? ProgramRunner.Flags(story, flag, false) : story.Flags,
-                        continuation: enter ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput), observations, "battle-already-completed", route.Encounter);
-                if (!enter) return current;
-                story = current.Story;
+                if (route.UnlockedFlag is { } unlocked && !story.Flags.Contains(unlocked)) continue;
+                if (route.CompletedFlag is { } completed && story.Flags.Contains(completed))
+                {
+                    bool enter = EnterCompleted(definition, rules);
+                    current = ProgramRunner.Commit(current, current.Active,
+                        story.Copy(null, flags: route.UnlockedFlag is { } flag ? ProgramRunner.Flags(story, flag, false) : story.Flags,
+                            continuation: ProgramContinuation.MapLoaded), observations, "battle-already-completed", route.Encounter);
+                    story = current.Story;
+                    if (!enter) continue;
+                }
+                return Select(current, story, route, observations);
             }
-            return Select(current, story, route, observations);
+            return current.WithStory(story.Copy(null, continuation: ProgramContinuation.FieldInput));
         }
 
         var selected = story.EnteringBattle ?? throw new BattleRuleException("entry-route", "entry");

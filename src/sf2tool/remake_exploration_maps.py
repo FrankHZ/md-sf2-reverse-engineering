@@ -102,6 +102,11 @@ def compile_maps(
                 destination in selection["maps"]
                 and not warp["retainsCoordinates"]
                 and warp["scrollMode"] == 0
+                and all(0 <= warp["destination"][axis] < 64 for axis in ("x", "y"))
+                and all(
+                    warp["trigger"][axis] < 64 or warp["trigger"][axis] == 255
+                    for axis in ("x", "y")
+                )
             ):
                 events.append(
                     {
@@ -253,7 +258,7 @@ def compile_maps(
             instructions.append({"op": "jump", "target": _location(on_load)})
             compiler.programs[guarded_load]["instructions"] = instructions
             on_load = guarded_load
-        battle = battle_routes.get(selected)
+        battles = battle_routes.get(selected, [])
         input_program = None
         if entities or resources["stepEventTables"][references["stepEventTable"]]["records"]:
             input_program = _location(
@@ -326,7 +331,8 @@ def compile_maps(
                 ),
                 "events": events,
                 "onLoad": _location(on_load),
-                "battle": battle,
+                "battle": battles[0] if len(battles) == 1 else None,
+                **({"battles": battles} if len(battles) > 1 else {}),
                 "input": input_program,
                 "setup": None
                 if route is None

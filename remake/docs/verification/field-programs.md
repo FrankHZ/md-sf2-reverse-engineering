@@ -2,6 +2,126 @@
 
 Select the affected program, logical field service, map transition or actual presentation handoff.
 
+## Yeel guide through Battle03
+
+This is [bounded implementation acceptance](../capability-status.md#yeel-guide-through-battle03-implementation-agreement)
+from the controlled accepted Battle02 return. It establishes actual commands/state/projection, not
+natural original chronology, hardware timing, human UX or Battle03 outcomes. The ordinary guide input
+keeps four joined/active members and the accepted resources/accounting/seeds, including dead Chester.
+No later checkpoint, seed reset, teleport or auto-written flags are used. The independent skip-guide
+and HP200 sleep cases are separately declared INITIAL inputs.
+
+### Prepare the selected world
+
+Load this checkout's ignored private-input selections in the same PowerShell process. Keep absolute
+SDK/Godot selections, the approved CLI home, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and local
+TEMP/caches from the [environment owner](../development-and-verification.md#locked-net-workflow).
+Use `uv sync --locked`. Reuse the accepted registered USA ROM, pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, canonical map import and presentation manifest
+`C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E` read-only.
+Resolve the local `$rom`, `$source`, `$canonical`, `$assets` and reviewed audio candidate paths from
+that configuration; machine-specific private paths do not belong in public commands or reports.
+
+Use a fresh output root below this worktree's ignored `local/`; never overwrite a previous run.
+The [preceding preparation recipe](#prepare-the-selected-inputs) supplies Battle02 placement/scenes
+and accepted static/enemy/gold/audio inputs. Copy only those small immutable selected inputs beneath
+the new output root. Keep old packages and evidence unchanged. Then:
+
+1. Run `uv run python -m sf2tool.remake_exploration_battles --battle 3 --upstream $source --rom $rom --output <local/battle03>`.
+   The trusted export retains six enemies, twelve formation rows and actual region/AI records.
+2. Run `uv run python -m sf2tool.remake_battle_scene_content --battle 3 --upstream $source --rom $rom --output <local/scene03>`;
+   run it again with `--field-death-base <local/scene03/battle-scenes.json>` and a fresh output.
+   Sprite23/palette0, actual unarmed animation and sleep text306/338/354 are required.
+3. Copy `remake/reference/inputs/yeel-to-battle03-party.json` beneath the output root, changing only
+   `battle` from2 to3 for the additional encounter baseline. Keep its four ally definitions, resources,
+   accounting and seeds. Create a one-row local encounter JSON with `placement`, `scene`, `terrain`,
+   `static`, `enemies`, `gold`, `start` and `battleScenes` paths relative to the world directory.
+   Set the first three paths to the Battle03 export, `start` to this local party and `battleScenes`
+   to the field-death scene document. The initial/root encounter selections still point to Battle02.
+4. Run `uv run python -m sf2tool.remake_authored_audio --cue encounter --output <local/authored-encounter>`.
+   This creates the explicitly authored109/C2,22,050Hz mono PCM16,5292-frame cue (240ms;10628 WAV bytes).
+   Its three rising440/554.365/659.255Hz tones use amplitude5500 and soft220/440-sample edges. The WAV
+   SHA256 is `5C17BAB560827640F07979795DEB495F4D7B6EE699BF4A625340F0B4E311DB06`.
+   It is not original recorded audio. No acquisition or shared asset promotion is authorized.
+5. Run `uv run python -m sf2tool.remake_exploration_content --canonical $canonical --upstream $source --rom-path $rom --presentation-root $assets --selection remake/reference/inputs/yeel-to-battle03-programs.json --encounter-inputs <local/encounter-inputs.json> --output <local/world.json>`
+   with repeated `--audio-candidate` arguments for the previously reviewed finite cues/MainTheme and
+   the authored encounter candidate. The tracked finite `audioCues` list selects exact identities;
+   extra unselected candidates do not enlarge the runtime document. Do not patch generated JSON.
+
+The selected world measures94,006,868 bytes against the unchanged134,217,728-byte bound. Direct
+preparation takes approximately3 seconds on the observing host; load/observation peak for the largest
+owned game process is760,791,040 resident bytes, below the2GiB budget. Preparation/load cost is linear
+in selected media/content. One producer or native case runs at a time. Retain only bounded semantic
+checkpoints/notices rather than bulk frames; observed reports fit the200MiB world/report budget.
+A material increase or missing required content requires reassessment rather than raising limits.
+
+### Ordinary play and native observations
+
+Set `SF2_PRIVATE_EXPLORATION_CONTENT` to the prepared world,
+`SF2_PRIVATE_CONTROLLED_START` to the tracked `yeel-to-battle03-party.json`, and the existing
+`SF2_PRIVATE_BATTLE01_{DATA,SCENE,TERRAIN}` to the selected Battle02 exports. Keep accepted
+`SF2_PRIVATE_STATIC_DATA`, `SF2_PRIVATE_ENEMY_DATA`, `SF2_PRIVATE_ENEMY_GOLD` and
+`SF2_PRIVATE_BATTLE_SCENE_CONTENT` selections (Battle02 field-death scenes). Build/launch from `remake/`:
+
+```powershell
+& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+$start = (Resolve-Path -LiteralPath 'reference/inputs/yeel-to-battle03-start.json').Path
+& $env:GODOT_BIN --path game -- --private-exploration-start $start
+```
+
+This ordinary-speed launch has no probe/headless/fixed-fps. Arrows move, Enter talks/confirms, Escape
+cancels, F selects attack, H healing, I item, Tab target and Space Stay. Walk from Map66(24,28) to the
+south Yeel warp(19,23), approach Kazin from(7,7), face Up and talk. Complete all four messages;
+text786 is narration and787 restores Kazin's portrait. Exit Yeel at(7,0), reenter through Map66(18,22),
+then exit north again. Walk through(17,21) to the actual masked marker(16,21). These coordinates are
+a route description, not admission predicates; actual working layout/doors/entities govern movement.
+Kazin follows with F72; F4 and battle membership remain unchanged.
+
+For the native guide case set fresh `SF2_OBSERVATION_OUTPUT` and
+`SF2_EXPLORATION_OBSERVATION_OUTPUT`, leave `SF2_YEEL_CASE=guide`, and add
+`--headless --fixed-fps 60 --script res://probes/engine_yeel_to_battle03_observation.gd` before `--`.
+The external probe reads current layout/obstructable entities, drives actual keys, records fixed
+speaker IDs, follower reentry, request/intro/flash/audio boundaries, movement/cancel and committed
+player/enemy continuation. Its short encounter interval gives the real mixer time for the authored
+cue's `Finished` callback; no synthetic audio completion is sent. A separate input-settings JSON
+`{"formatVersion":1,"reducedFlash":true}` selected by `--input-settings <path>` observes opacity
+suppression, four-pulse completion, restored overlay/logical palette and continued battle control.
+
+For skipped-guide admission, create a separate local INITIAL copy of the start with position(17,21),
+F502 removed and F72 clear, describing that variation in `controlledBoundary`. Set `SF2_YEEL_CASE=skip`
+and select that file at startup. The actual next step must request Battle03 without any Yeel visit.
+Do not substitute this file into the ordinary guide run or mutate a running session.
+
+For full sleep/control recovery, make separate local initial party copies for primary Battle02 and
+additional Battle03. Set only all four allies' `hp`/`maxHp` to200 (making Chester initially living)
+and describe the independent variation. Keep original enemy stats/prowess/items and both seeds.
+Prepare a new world whose encounter row points at the Battle03 variation; select the Battle02 variation
+as `SF2_PRIVATE_CONTROLLED_START`. Copy the field start to(17,21), retaining F403/F72 clear.
+Run `res://probes/engine_battle03_sleep_observation.gd` with that initial field file. The observer moves
+players toward the live bat and chooses Stay, without changing status/RNG/queue or prescribing a game
+round/actor. It retains actual infliction, skipped entry, notice/status transition and restored usable
+player control. The bounded observed run wakes Sarah and restores her control in round6; this is a
+sample outcome, never a legal-gameplay constraint. Sleeping/counter decrement variations are tested
+as small engine behaviors; source code operands control over adjacent chance comments.
+
+### Verification and limits
+
+Run the affected producer directly, `uv run sf2 verify adapter`, and from `remake/` the engine test
+project with `--filter 'FullyQualifiedName~YeelToBattle03Tests|FullyQualifiedName~SleepAndFlyingTests'`.
+Affected existing movement/terrain/physical/scene/AI/growth/text/earlier-entry behavior files also need
+selected verification. The completed selected run exposed one completed-authored unlock-consumption
+regression; its owning `Battle01ToBattle02Tests` file passed after correction. Completed failures,
+exact node IDs and corrected-run mapping stay in ignored handoff results; no aggregate is repeated
+to replace a red result. Obtain the clean-head planner with
+`uv run sf2 verify plan --scope engine --base origin/main --head HEAD`: shared producer edits here
+only lower selected remake content and preserve research extraction/contracts, so engine scope is
+explicit. Public CI and private native observations establish different boundaries.
+
+Keep #1047's twelve unresolved old comparisons (nine old-start full-fade-state, selected seed,
+first actor and activation rejection) explicit and untouched. Source natural chronology/walking/
+timing, human play and full-game parity remain **Unknown** or pending. Battle03 outcomes,
+Hawel/recruitment, later battles/Yeel, village service UI, save/load and balancing remain outside scope.
+
 ## Battle02 outcomes and retry
 
 The [current scope](../capability-status.md#battle02-outcome-implementation-agreement) admits controlled

@@ -11,7 +11,7 @@ public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mod
     bool CloseOnAcknowledgement = true, bool? InputFirstEntityService = null) : ProgramWait(Token);
 // EndToken excludes the next W1, or equals the stream length for trailing delivery.
 public sealed record W1TextWait(WaitToken Token, int Text, int EndToken, bool AtInput, bool Revealed = false) : ProgramWait(Token);
-public enum FieldTextPhase { ClearFirst, ClearSecond, Opening, Tokens, GlyphCursor, GlyphDelay, Scroll, Input, End, TextPause }
+public enum FieldTextPhase { ClearFirst, ClearSecond, Opening, Tokens, GlyphCursor, GlyphDelay, Scroll, Input, End, TextPause, ClearToken }
 public sealed record FieldTextUnit(ExplorationTextTokenKind Kind, string Text, byte Symbol = 0, byte Advance = 0);
 public sealed record FieldTextWait(WaitToken Token, int Text, IReadOnlyList<FieldTextUnit> Units,
     int Index, int End, string Projection, FieldTextPhase Phase, int Remaining = 0,
@@ -107,7 +107,8 @@ public sealed class StoryState
         int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
-        MusicProgress? music = null, OrdinaryWarp? scriptWarp = null)
+        MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
+        bool battleRequest = false, MapId? egressMap = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -120,6 +121,7 @@ public sealed class StoryState
         EntityServices = entityServices; Typewriting = typewriting; WindowFixPending = windowFixPending;
         Music = music;
         ScriptWarp = scriptWarp;
+        StepCounter = stepCounter; BattleRequest = battleRequest; EgressMap = egressMap;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -145,6 +147,10 @@ public sealed class StoryState
     public ExplorationDisplay? Display { get; }
     public OrdinaryWarp? Warp { get; }
     public OrdinaryWarp? ScriptWarp { get; }
+    // Null is unobserved initial storage; first admission does not read it. Signed source word.
+    public short? StepCounter { get; }
+    public bool BattleRequest { get; }
+    public MapId? EgressMap { get; }
     // Last text-poll write only; null means no admitted text write. AI can change the live
     // ThinkingSeed afterwards. SessionSnapshot.CurrentRandomSeedCopy projects that live byte.
     public byte? RandomSeedCopy { get; }
@@ -168,7 +174,8 @@ public sealed class StoryState
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
-        MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false) =>
+        MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
+        short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -177,7 +184,8 @@ public sealed class StoryState
             display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy, textSettings ?? TextSettings, logicalText ?? LogicalText, logicalView ?? LogicalView,
             clearEntityServices ? null : entityServices ?? EntityServices, typewriting ?? Typewriting,
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
-            clearScriptWarp ? null : scriptWarp ?? ScriptWarp);
+            clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
+            battleRequest ?? BattleRequest, egressMap ?? EgressMap);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

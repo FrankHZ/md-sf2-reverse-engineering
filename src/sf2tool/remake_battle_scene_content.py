@@ -83,8 +83,8 @@ def sprite_layout(columns: int, rows: int) -> list[int]:
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (1, 2):
-        raise ValueError("selected encounter must be 1 or 2")
+    if battle not in (1, 2, 3):
+        raise ValueError("selected encounter must be 1, 2 or 3")
     root = repo_path("")
     output = output.resolve()
     if not output.is_relative_to(root / "local") or output.exists():
@@ -216,6 +216,9 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         if battle == 1
         else [("ally", 3, 0, 33), ("enemy", 0, 1, None), ("enemy", 1, 0, None)]
     )
+    if battle == 3:
+        # Pinned enemybattlesprites.asm: HUGE_BAT uses BAT23/palette0, unarmed.
+        actor_selections.append(("enemy", 23, 0, None))
     for side, index, pal_index, weapon_item in actor_selections:
         base = pointer(sprites[side + "BattlespriteTableAddress"] + index * 4)
         pal_offset = base + 4 + word(base + 4)
@@ -342,7 +345,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             "background" + str(index), bgdata, bgpal, 256, 96, layout, opaque=True
         )
         backdrop[index] = dict(background=background_asset, ground=ground_asset)
-    if battle == 2:
+    if battle in (2, 3):
         terrain_scenes = [
             dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
         ]
@@ -404,6 +407,8 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         293,
         393,
     }
+    if battle == 3:
+        text_ids.update((306, 338, 354))
     texts = {
         str(int(line[:4], 16)): line[5:]
         for line in script.splitlines()
@@ -449,7 +454,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             texts=texts,
             memberNames=names,
             healing=healing,
-            **({"terrainScenes": terrain_scenes} if battle == 2 else {}),
+            **({"terrainScenes": terrain_scenes} if battle in (2, 3) else {}),
         ),
     )
     report = dict(
@@ -501,7 +506,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     scene = json.loads(scene_path.read_text(encoding="utf-8"))
     if (
         scene["version"] != 1
-        or scene["encounter"] not in ("battle-1", "battle-2")
+        or scene["encounter"] not in ("battle-1", "battle-2", "battle-3")
         or "fieldDeath" in scene
     ):
         raise ValueError("selected scene field boundary")
@@ -510,12 +515,16 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     )
     allies = [
         {"character": r["character"], "sprite": r["sprite"]}
-        for r in compiler.initial_ally_sprites()[: 3 if scene["encounter"] == "battle-1" else 4]
+        for r in compiler.initial_ally_sprites()[
+            : {"battle-1": 3, "battle-2": 4, "battle-3": 12}[scene["encounter"]]
+        ]
     ]
     enemy_table = json.loads(
         repo_path("tests/fixtures/h2/enemy-map-sprites-static-v1.json").read_text(encoding="utf-8")
     )["table"]["table_EnemyMapsprites"]
     species = ["GIZMO"] if scene["encounter"] == "battle-1" else ["HUGE_RAT", "OOZE"]
+    if scene["encounter"] == "battle-3":
+        species.append("HUGE_BAT")
     enemy_sprites = [
         dict(code=code, sprite=rom[enemy_table + compiler.equates["ENEMY_" + code]])
         for code in species
@@ -580,7 +589,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(1, 2), default=1)
+    parser.add_argument("--battle", type=int, choices=(1, 2, 3), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

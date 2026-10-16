@@ -382,6 +382,8 @@ class OriginalPrograms:
         rows, index = raw["operations"], 0
         registers: dict[str, int] = {}
         speaker = None
+        event_speaker = True
+        narration = False
         self.programs[symbol]["entitiesRunning"] = not any(
             row["opcode"] in ("chkFlg", "txt", "script", "rts") for row in rows
         )
@@ -456,6 +458,8 @@ class OriginalPrograms:
             elif op == "jsr" and args == ["GetEntityPortaitAndSpeechSfx"]:
                 speaker = self.entity(str(registers["d0"]))
             elif op == "jsr" and args == ["DisplayCurrentPortrait"]:
+                event_speaker = False
+                narration = False
                 result.append({"op": "speaker", "entity": speaker})
                 result.append(
                     {"op": "open-portrait", "entity": speaker, "flags": 0}
@@ -464,6 +468,37 @@ class OriginalPrograms:
                 )
             elif op == "jsr" and args == ["j_ClosePortraitWindow"]:
                 result.append({"op": "close-portrait"})
+            elif (
+                op == "clr.w"
+                and args == ["((CURRENT_SPEECH_SFX-$1000000)).w"]
+                and index >= 4
+                and rows[index - 4]["opcode"] == "clsTxt"
+                and rows[index - 3]["operandText"] == "j_ClosePortraitWindow"
+                and rows[index - 2]["operandText"]
+                == "((CURRENT_SPEECH_SFX-$1000000)).w,((SPEECH_SFX_COPY-$1000000)).w"
+            ):
+                speaker = None
+                event_speaker = False
+                narration = True
+                result.append({"op": "speaker", "entity": None})
+            elif (
+                op == "move.b"
+                and len(args) == 2
+                and args[1] == "((EGRESS_MAP-$1000000)).w"
+                and args[0].startswith("#")
+            ):
+                result.append({"op": "egress-map", "map": "map-" + str(self.number(args[0][1:]))})
+            elif op == "jsr" and args == ["CheckRandomBattle"]:
+                self.sources.add("disasm/code/common/scripting/map/mapsetupsfunctions_1.asm")
+                result.append(
+                    {
+                        "op": "source-random-battle",
+                        "battle": registers["d0"],
+                        "onRequest": _location("source-random-battle-presentation"),
+                    }
+                )
+            elif op == "executeSubroutine":
+                result.append({"op": "call", "target": _location(self.compile(args[0]))})
             elif op == "jsr" and args in (["j_GetMaxHp"], ["j_GetMaxMp"]):
                 setter = "j_SetCurrentHp" if args == ["j_GetMaxHp"] else "j_SetCurrentMp"
                 if (
@@ -521,7 +556,8 @@ class OriginalPrograms:
                             "op": "show-text",
                             "mode": "single",
                             "speaker": speaker,
-                            "useEventSpeaker": speaker is None,
+                            "useEventSpeaker": speaker is None and event_speaker,
+                            **({"narration": True} if narration else {}),
                             "explicitWindows": True,
                         },
                     ]

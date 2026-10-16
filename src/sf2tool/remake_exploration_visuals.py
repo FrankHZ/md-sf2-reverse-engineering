@@ -117,7 +117,14 @@ def prepare_visuals(
     atlas_bindings: dict[str, str],
     audio_candidates: tuple[Path, ...] = (),
     battles: tuple[int, ...] = (),
+    audio_cues: tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
+    if audio_cues is not None and (
+        not audio_cues
+        or any(not isinstance(cue, str) or not cue for cue in audio_cues)
+        or len(set(audio_cues)) != len(audio_cues)
+    ):
+        raise ValueError("audio cue selection must contain unique nonempty identities")
     rom = rom_path.read_bytes()
     if hashlib.sha256(rom).hexdigest().upper() != canonical["romSha256"]:
         raise ValueError("visual source ROM identity mismatch")
@@ -327,12 +334,16 @@ def prepare_visuals(
     for asset in manifest["assets"]:
         if asset["kind"] != "audio":
             continue
+        if audio_cues is not None and asset["cue"] not in audio_cues:
+            continue
         path = (asset_root / asset["runtime"]["runtimePath"]).resolve(strict=True)
         if not path.is_relative_to(asset_root.resolve()):
             raise ValueError("audio asset path escapes selected root")
         selected_audio.append((asset, path))
     for candidate in audio_candidates:
         asset = json.loads(candidate.read_text(encoding="utf-8"))["asset"]
+        if audio_cues is not None and asset["cue"] not in audio_cues:
+            continue
         runtime_path = Path(asset["runtime"]["runtimePath"])
         if (
             asset["kind"] != "audio"
@@ -388,6 +399,10 @@ def prepare_visuals(
         )
     if not audio:
         raise ValueError("private original audio is missing from the selected asset pack")
+    if audio_cues is not None and set(audio_cues) != cues:
+        raise ValueError(
+            "selected audio cue is unavailable: " + ", ".join(sorted(set(audio_cues) - cues))
+        )
     return {
         "maps": map_visuals,
         "sprites": sprite_visuals,

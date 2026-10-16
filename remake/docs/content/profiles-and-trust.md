@@ -371,3 +371,36 @@ No private waveforms or generated content are checked in.
 
 `battle01-to-battle02-programs.json` declares `outcomeBattles: [1]`. Battle02 resolution is deliberately
 unbound and reports the existing typed `outcome-route` boundary; it cannot silently enter later story.
+
+## Selected third encounter
+
+The [Yeel selection](../../reference/inputs/yeel-to-battle03-programs.json) imports only Map5/66 and
+Battle02/03. The paired [start](../../reference/inputs/yeel-to-battle03-start.json) and
+[party](../../reference/inputs/yeel-to-battle03-party.json) are explicit INITIAL remake inputs derived
+from the accepted Battle02 return, not proof of natural original reach. Growth is represented by the
+matching grown baseline at admission. Later transitions carry actual party resources/accounting and
+both seeds; no reference terminal state is injected. Source new-battle healing remains intentional.
+
+Battle03 placement admits only actual controlled allies, retaining twelve formation rows as capacity.
+Its six enemies use pinned source definitions. Huge Bat's Flying/sleep prowess is bound to real common
+rules; its placement item `$6000` passes through source AddItem's `$807F` mask to ordinary Herb0.
+The source action metadata remains distinct from runtime inventory. Private encounter pins retain
+placement span1782772–1783004 and compressed terrain span1758636–1758970 (end exclusive), the
+selected export/source/ROM identities, and the same closed private path boundary. Field-death visual
+capacity does not create combatants. The selected bat scene admits sprite23/palette0, unarmed frames
+and text306/338/354; missing required scene content rejects before play.
+
+Optional selection `audioCues` is a unique nonempty list of exact cue identities. Omission retains
+existing all-cue preparation; unknown/missing/duplicate selections reject. Selected assets keep their
+existing root, length, format, PCM and provenance checks. This is finite content selection, not a
+cache or a weaker reader. The selected 94,006,868-byte world fits the unchanged128MiB ceiling.
+Boost109/C2 is a separately labeled project-authored 240ms notification, generated before startup
+by `sf2tool.remake_authored_audio --cue encounter`. Its three tones and soft edges are not an original
+audio reconstruction. Source109 replaces the admitted YM5 whole-clip group; unknown commands remain
+rejected and real playback/Finished receipts retain both recording and requested timer contexts.
+
+Map5 source warp rows containing coordinate64 are retained as frontier events with raw byte operands;
+they are not clamped into traversable space. Source comments call these two rows unusable; admission
+of a frontier does not establish their universal natural unreachability. Other reached unsupported
+warps still fail explicitly. Full village services, later setups, other ailments, Battle03 outcomes,
+EGRESS gameplay and original timing remain outside this selected capability.

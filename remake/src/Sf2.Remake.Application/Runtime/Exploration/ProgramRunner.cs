@@ -32,6 +32,11 @@ internal static class ProgramRunner
                 if (current.Story.Wait is not null) return Finish(Result(current, observations));
                 if (current.Story.Cursor is not { } cursor)
                 {
+                    if (current.Story.BattleRequest && current.Story.EventCaller is null)
+                    {
+                        current = SourceRandomBattleRunner.Consume(definition, current, observations, rules);
+                        continue;
+                    }
                     if (current.Story.ScriptWarp is { } pendingWarp)
                     {
                         var warpEvent = new ExplorationEvent(ExplorationEventKind.Warp, null, null, null, null,
@@ -96,6 +101,11 @@ internal static class ProgramRunner
                 var token = new WaitToken(checked(current.ObservationSequence + 1));
                 switch (instruction)
                 {
+                    case SetEgressMap egress:
+                        story = story.Copy(story.Cursor, egressMap: egress.Map); break;
+                    case SourceRandomBattle random:
+                        current = SourceRandomBattleRunner.Check(current, random, cursor, observations);
+                        continue;
                     case ResetPartyBattleStats:
                         active = new ActiveExploration(current.Exploration!.WithParty(OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration.Party, all: true)));
                         break;
@@ -279,6 +289,12 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, ExplorationMusicRunner.Begin(current, token));
                         break;
                     case PresentCue cue:
+                        if (cue.Kind == PresentationCueKind.FlashWhite)
+                        {
+                            if (cue.Resource != "white-four-pulses" || cue.DurationTicks is not (> 0 and <= 240))
+                                throw new BattleRuleException("flash-pulse-binding", "program.presentation", true);
+                            if (current.Story.Display is not null) MapTransfer.ValidateDisplay(current.Story.Display);
+                        }
                         if (cue.FullBlack is not null && current.Active is not ActiveExploration)
                             throw new BattleRuleException("full-fade-context", "program.presentation", true);
                         if (cue.FullBlack is not null || current.Active is ActiveExploration &&

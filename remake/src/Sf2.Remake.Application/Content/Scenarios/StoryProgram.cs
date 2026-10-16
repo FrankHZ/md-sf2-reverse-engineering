@@ -18,10 +18,13 @@ public sealed record CallProgram(ProgramLocation Target, bool ActivateEntities =
 public sealed record ReturnProgram : StoryInstruction;
 public sealed record ResetPartyBattleStats : StoryInstruction;
 public sealed record ReturnBattleMap : StoryInstruction;
+public sealed record SetEgressMap(MapId Map) : StoryInstruction;
+public sealed record SourceRandomBattle(int Battle, ProgramLocation OnRequest) : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
-    bool WaitForAcknowledgement = true, bool ExplicitWindows = false, int? NameMember = null, int? TextId = null) : StoryInstruction;
+    bool WaitForAcknowledgement = true, bool ExplicitWindows = false, int? NameMember = null, int? TextId = null,
+    bool Narration = false) : StoryInstruction;
 public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0) : StoryInstruction;
 public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;

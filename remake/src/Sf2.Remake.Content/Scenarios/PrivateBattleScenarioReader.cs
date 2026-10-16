@@ -46,8 +46,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     {
         var encounter = definitions.Encounter;
         Require(start.Battle == encounter.Battle.Id, "controlled-encounter", "start.battle");
-        // Both selected source slots have no region program. This is content admission, not action legality.
-        Require(encounter.Battle.Id is 1 or 2, "region-program-table", "encounter.regionProgram", true);
+        // These selected slots have no region program; region geometry is independent.
+        Require(encounter.Battle.Id is 1 or 2 or 3, "region-program-table", "encounter.regionProgram", true);
         Require(encounter.AllyCount <= 30 && encounter.EnemyCount <= 32, "roster-capacity", "encounter.placements");
         var deployments = new List<BattleDeploymentDefinition>(); var actorInputs = new List<BattleActorStartInput>();
         var party = start.Allies.ToDictionary(row => row.Id); var usedAllies = new HashSet<byte>();
@@ -56,7 +56,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         {
             bool ally = row.Kind == EncounterEntityKind.Ally;
             Require(row.Behavior.SpawnExpression == "STARTING", "spawn-expression", "placements.spawn", true);
-            Require(row.ItemExpression == "NOTHING", "placement-item-refresh", "placements.item", true);
+            Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP",
+                "placement-item-refresh", "placements.item", true);
             byte commandset = row.AiCommandsetExpression switch
             {
                 "HEALER1" => 0, "ATTACKER1" => 6, "ATTACKER2" => 7, "ATTACKER3" => 9, "LEADER" => 14,
@@ -68,7 +69,9 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             {
                 Require(byte.TryParse(row.IdentityExpression, NumberStyles.None, CultureInfo.InvariantCulture, out byte id) && id <= 29,
                     "ally-identity-expression", "placements.identity", true);
-                Require(party.TryGetValue(id, out var input) && usedAllies.Add(id), "missing-or-duplicate-party-actor", "placements.identity");
+                // Source ally rows are formation capacity, not a roster/recruit command.
+                if (!party.TryGetValue(id, out var input)) continue;
+                Require(usedAllies.Add(id), "duplicate-party-actor", "placements.identity");
                 order = id; actor = new("ally-" + id.ToString(CultureInfo.InvariantCulture));
                 var classDefinition = definitions.Classes[input!.ClassId];
                 var classRule = classDefinition.Id switch
@@ -105,6 +108,12 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 enemyAi = (ushort)((int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) << 12) |
                     (match.Groups[2].Success ? 32 : 0));
                 var items = enemy.Items.Select(item => (ushort)(definitions.Items.Values.Single(value => value.Code == item.Item).Id | (item.Equipped ? 128 : 0))).ToArray();
+                if (row.ItemExpression != "NOTHING")
+                {
+                    // InitializeEnemyItems -> AddItem masks with $807F. Source $6000 stores0.
+                    int empty = System.Array.FindIndex(items, word => (word & 127) == 127);
+                    if (empty >= 0) items[empty] = 0;
+                }
                 var spells = enemy.Spells.Select(spell => spell.Spell == "NOTHING" ? (byte)63 :
                     (byte)(definitions.Spells.Values.Single(value => value.Code == spell.Spell && value.Level == spell.Level).BaseId | ((spell.Level - 1) << 6))).ToArray();
                 definition = new(actor, BattleClassRule.Ordinary, enemy.Level, enemy.MaxHp, enemy.MaxMp, enemy.BaseAttack,
@@ -131,7 +140,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             1 => new(TerrainSurface.Open, TerrainProtection.Light), 2 => new(TerrainSurface.Open, TerrainProtection.None),
             3 => new(TerrainSurface.Brush, TerrainProtection.Heavy), 4 => new(TerrainSurface.Deep, TerrainProtection.Heavy),
             5 => new(TerrainSurface.Rough, TerrainProtection.Heavy), 6 => new(TerrainSurface.Desert, TerrainProtection.Heavy),
-            7 or 255 => new(TerrainSurface.Barrier, TerrainProtection.None),
+            7 => new(TerrainSurface.HighSky, TerrainProtection.None),
+            255 => new(TerrainSurface.Barrier, TerrainProtection.None),
             _ => throw Unsupported("source-terrain", "terrain"),
         }).ToArray();
         var regions = encounter.Regions.Select(region => new BattleActivationRegion(region.Id,
@@ -172,6 +182,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     {
         "REGULAR" => BattleMover.Regular, "HEALER" => BattleMover.Healer,
         "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering, "STEALTH" => BattleMover.Stealth,
+        "FLYING" => BattleMover.Flying,
         _ => throw Unsupported("source-mover", "actor.movementType"),
     };
     private static AdmissionIssue Unsupported(string code, string field) =>

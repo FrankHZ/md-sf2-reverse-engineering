@@ -61,7 +61,10 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         // happens to match it in Battle01 but is zero in Battle02.
         int commandset = source.AiCommandset;
         if (commandset is not (6 or 7 or 9 or 14)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
-        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(item => item != 127) || loadout.Spells.Any(spell => spell != 63))
+        // Ordinary unequipped Herb0 cannot be selected: attack-item checks equipped/AI bits,
+        // healing-item skips it with AI bit13 clear (Healing Rain has a separate source branch).
+        // Neither path draws RNG. Other items, enabled bits and spells remain Unsupported.
+        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(item => item is not (0 or 127)) || loadout.Spells.Any(spell => spell != 63))
             throw new BattleRuleException("source-action-categories", "actor.loadout", true);
         var targets = current.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();

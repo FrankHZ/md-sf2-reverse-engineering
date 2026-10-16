@@ -22,13 +22,13 @@ from sf2tool.remake_asset_build import (
 
 
 def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> dict:
-    """Reuse the existing selected encounter transport for the second admitted slot.
+    """Reuse the selected encounter transport for admitted overworld slots.
 
     Source macros and the pinned split ranges own placement and terrain. No H1
     rebuild or mutation of the canonical source tree is required.
     """
-    if battle != 2:
-        raise ValueError("only the selected second encounter is admitted here")
+    if battle not in (2, 3):
+        raise ValueError("only selected overworld encounters 2 and 3 are admitted here")
     root = repo_path("").resolve()
     output = output.resolve()
     upstream = upstream.resolve()
@@ -65,7 +65,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     bounds = re.search(r"0x([0-9A-Fa-f]+)\.\.0x([0-9A-Fa-f]+)", source)
     begin, end = (int(value, 16) for value in bounds.groups())
     counts = [int(value) for value in _arguments(source, "dc.b")[:4]]
-    if counts != [4, 6, 0, 1]:
+    if counts != {2: [4, 6, 0, 1], 3: [12, 6, 1, 0]}[battle]:
         raise ValueError("selected spriteset header drift")
     entities = []
     pattern = (
@@ -93,14 +93,44 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
                 ),
             )
         )
-    points = [
-        dict(zip(("x", "y"), map(int, _tokens(row)), strict=True))
-        for row in _arguments(source.split("; AI Points")[1], "dc.b")
+    region_bytes = (
+        [
+            int(value)
+            for row in _arguments(source.split("; AI Regions")[1].split("; AI Points")[0], "dc.b")
+            for value in _tokens(row)
+        ]
+        if counts[2]
+        else []
+    )
+    regions = [
+        dict(
+            id=index,
+            vertexCount=values[0],
+            unknown=values[1],
+            vertices=[dict(x=values[n], y=values[n + 1]) for n in range(2, 10, 2)],
+            trailingBytes=values[10:12],
+        )
+        for index in range(counts[2])
+        for values in [region_bytes[index * 12 : (index + 1) * 12]]
     ]
-    if len(entities) != 10 or len(points) != 1 or end - begin != 126:
+    points = (
+        [
+            dict(zip(("x", "y"), map(int, _tokens(row)), strict=True))
+            for row in _arguments(source.split("; AI Points")[1], "dc.b")
+        ]
+        if counts[3]
+        else []
+    )
+    if (
+        len(entities) != sum(counts[:2])
+        or len(points) != counts[3]
+        or len(region_bytes) != counts[2] * 12
+        or end - begin != 4 + len(entities) * 12 + counts[2] * 12 + counts[3] * 2
+    ):
         raise ValueError("selected spriteset record drift")
     provenance = dict(repository=ACCEPTED_UPSTREAM_REPOSITORY, commit=ACCEPTED_UPSTREAM_COMMIT)
-    identity = dict(id=battle, code="TO_YEEL")
+    code = {2: "TO_YEEL", 3: "TO_HAWEL_HOUSE"}[battle]
+    identity = dict(id=battle, code=code)
 
     def span(start: int, end: int) -> dict:
         return dict(start=start, endExclusive=end, lengthBytes=end - start)
@@ -112,7 +142,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         romRange=span(begin, end),
         counts=dict(zip(("allies", "enemies", "aiRegions", "aiPoints"), counts, strict=True)),
         entities=entities,
-        aiRegions=[],
+        aiRegions=regions,
         aiPoints=points,
     )
     terrain_path = f"data/battles/entries/battle{battle:02d}/terrain.bin"
@@ -152,7 +182,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
                 _arguments(source_text(global_root + "enemyleaderpresence.asm"), "dc.b")[battle]
             )
             != 0,
-            halfExperience="TO_YEEL"
+            halfExperience=code
             in _arguments(source_text(global_root + "halvedexpearnedbattles.asm"), "battle"),
         ),
         terrain=dict(
@@ -185,6 +215,36 @@ def _location(program: str, instruction: int = 0) -> dict:
 
 def compile_routes(compiler, selection, upstream):
     battle_routes = {}
+    compiler.sources.update(
+        (
+            "disasm/code/common/tech/graphics/flashwhite.asm",
+            "disasm/code/common/scripting/map/mapscriptengine_1.asm",
+        )
+    )
+    compiler.programs["source-random-battle-presentation"] = {
+        "id": "source-random-battle-presentation",
+        "source": "disasm/code/common/scripting/map/mapsetupsfunctions_1.asm:CheckRandomBattle",
+        "entitiesRunning": True,
+        "instructions": [
+            {"op": "wait-view"},
+            {
+                "op": "present",
+                "kind": "Sound",
+                "resource": "SFX_BOOST",
+                "entity": None,
+                "position": None,
+            },
+            {
+                "op": "present",
+                "kind": "FlashWhite",
+                "resource": "white-four-pulses",
+                "entity": None,
+                "position": None,
+                "durationTicks": 32,
+            },
+            {"op": "end"},
+        ],
+    }
     load_source = "disasm/code/gameflow/battle/battlefunctions/loadBattle.asm"
     compiler.sources.update((load_source, "disasm/code/gameflow/battle/battleloop_1.asm"))
     compiler.programs["source-battle-load"] = {
@@ -234,7 +294,7 @@ def compile_routes(compiler, selection, upstream):
             expressions = _arguments((upstream / path).read_text(encoding="utf-8"), "dc.w")
             symbol = re.search(r"[A-Za-z_]\w*", expressions[battle_id]).group(0)
             hooks.append(_location(compiler.compile(symbol)))
-        battle_routes[map_id] = {
+        route = {
             "encounter": "battle-" + str(battle_id),
             "unlockedFlag": 400 + battle_id,
             "completedFlag": 500 + battle_id,
@@ -281,7 +341,7 @@ def compile_routes(compiler, selection, upstream):
             egress, ex, ey, facing = next(
                 row for row in savepoints if row[0] == selection["outcomeEgressMap"]
             )
-            battle_routes[map_id]["outcome"] = {
+            route["outcome"] = {
                 "after": outcome_hooks[1],
                 "defeated": outcome_hooks[0],
                 "joinMember": compiler.number(joins[battle_id]),
@@ -295,6 +355,7 @@ def compile_routes(compiler, selection, upstream):
                     "facing": facing,
                 },
             }
+        battle_routes.setdefault(map_id, []).append(route)
     if "outcomeEgressMap" in selection:
         compiler.programs["source-ordinary-defeat"] = {
             "id": "source-ordinary-defeat",
@@ -345,5 +406,10 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--battle", type=int, choices=(2, 3), default=2)
     args = parser.parse_args()
-    print(json.dumps(prepare_encounter(args.upstream, args.rom.read_bytes(), 2, args.output)))
+    print(
+        json.dumps(
+            prepare_encounter(args.upstream, args.rom.read_bytes(), args.battle, args.output)
+        )
+    )
