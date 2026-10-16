@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.GodotAdapter.Observation;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Content.Scenarios;
@@ -12,8 +13,7 @@ internal sealed class ExplorationPresentation : IDisposable
 {
     private readonly Control _owner;
     private readonly ExplorationVisuals? _visuals;
-    private readonly Dictionary<MapId, Image> _atlases = [];
-    private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
+    private readonly MapBlockTextures _mapTextures = new();
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift), ImageTexture> _sprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
@@ -703,25 +703,8 @@ internal sealed class ExplorationPresentation : IDisposable
 
     private ImageTexture Block(ExplorationMapVisual visual, int block)
     {
-        if (_blocks.TryGetValue((visual.Map, block), out var texture)) return texture;
-        if (block >= visual.Blocks.Count) throw new InvalidOperationException("map-block-binding");
-        if (!_atlases.TryGetValue(visual.Map, out var atlas)) _atlases[visual.Map] = atlas = Image(visual.Atlas);
-        using var image = Godot.Image.CreateEmpty(24, 24, false, Godot.Image.Format.Rgba8);
-        for (int tile = 0; tile < 9; tile++)
-        {
-            int word = visual.Blocks[block][tile], index = (word & 0x3FF) - 0x100;
-            if (index < 0) continue;
-            if (index >= 640) throw new InvalidOperationException("map-tile-binding");
-            for (int y = 0; y < 8; y++)
-                for (int x = 0; x < 8; x++)
-                {
-                    int sx = (word & 0x800) != 0 ? 7 - x : x, sy = (word & 0x1000) != 0 ? 7 - y : y;
-                    image.SetPixel(tile % 3 * 8 + x, tile / 3 * 8 + y,
-                        atlas.GetPixel((index % 16 * 8 + sx) * visual.Scale, (index / 16 * 8 + sy) * visual.Scale));
-                }
-        }
-        _blocks[(visual.Map, block)] = texture = ImageTexture.CreateFromImage(image);
-        _resourceSelectors[texture] = new { kind = "map-block", map = visual.Map.Value, block };
+        var texture = _mapTextures.Block(visual, block);
+        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block });
         return texture;
     }
 
@@ -769,7 +752,7 @@ internal sealed class ExplorationPresentation : IDisposable
 
     public void Dispose()
     {
-        foreach (var texture in _blocks.Values.Concat(_sprites.Values).Concat(_portraits.Values)) texture.Dispose();
-        foreach (var image in _atlases.Values) image.Dispose();
+        foreach (var texture in _sprites.Values.Concat(_portraits.Values)) texture.Dispose();
+        _mapTextures.Dispose();
     }
 }

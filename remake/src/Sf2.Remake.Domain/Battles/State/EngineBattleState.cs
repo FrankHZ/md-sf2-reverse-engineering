@@ -140,19 +140,21 @@ public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition
     public ActorRef Actor => Definition.Actor;
 }
 
+public sealed record BattleMapRegion(MapId Map, MapPosition Origin);
+
 public sealed class BattleDefinition
 {
     internal BattleDefinition(string encounter, MapId map, int width, int height,
         IEnumerable<BattleTerrain> terrain, IEnumerable<BattleDeploymentDefinition> deployments,
         IEnumerable<HealingSpellDefinition> spells, BattleRewardDefinition? rewards = null,
         BattleInitializationDefinition? initialization = null, BattleOutcomeDefinition? outcome = null,
-        IEnumerable<HealingItemDefinition>? healingItems = null)
+        IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null)
     {
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
         Spells = new ReadOnlyDictionary<SpellRef, HealingSpellDefinition>(spells.ToDictionary(s => s.Spell));
-        Rewards = rewards; Initialization = initialization; Outcome = outcome;
+        Rewards = rewards; Initialization = initialization; Outcome = outcome; SourceMapRegion = sourceMapRegion;
         HealingItems = new ReadOnlyDictionary<byte, HealingItemDefinition>((healingItems ?? []).ToDictionary(item => item.ItemId));
     }
     public string Encounter { get; }
@@ -166,6 +168,7 @@ public sealed class BattleDefinition
     public BattleRewardDefinition? Rewards { get; }
     public BattleInitializationDefinition? Initialization { get; }
     public BattleOutcomeDefinition? Outcome { get; }
+    public BattleMapRegion? SourceMapRegion { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
 }
 

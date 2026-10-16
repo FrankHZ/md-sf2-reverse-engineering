@@ -17,6 +17,74 @@ Unknown boundaries before reproducing a claim. Full historical receipts remain i
 | Ordinary authored battle | [Input/session](#authored-battle-observation), [enemy actions](#enemy-action-observation), [targets](#multi-target-selection-observation), [commandset06](#commandset06-continuation-observation) |
 | Private source admission and actions | [Initialized entry](#private-initialized-entry-observation), [spell/action selection](#private-action-and-spell-selection-observations) |
 | Actual scene/field consumers | [Message/font](#battle-message-operand-and-font-observation), [HEAL](#heal-scene-verification), [death](#battlefield-death-consumer), [movement](#battlefield-movement-consumer), [Herb](#ordinary-controls-and-reproduction) |
+| Selected battlefield map resources and lifecycle | [Battlefield maps](#battlefield-map-observation) |
+
+## Battlefield Map Observation
+
+[`engine_battlefield_map_observation.gd`](../../game/probes/engine_battlefield_map_observation.gd)
+uses the ordinary host, real keyboard input and existing navigation/decision helpers. It reads the
+map viewport's `ReadTerrainJson`, actual draw passes/resource instance IDs, actors, target borders,
+preview/framing rectangles and session state. It never sets runtime state or emits images.
+
+First load current worktree private/SDK selections and build the actual Debug host with the
+[locked workflow](../development-and-verification.md#locked-net-workflow). Reuse retained prepared
+worlds and their relative encounter inputs. The
+[Battle01-to-Battle02 preparation](field-programs.md#battle01-through-battle02) and
+[Battle02 outcomes](field-programs.md#battle02-outcomes-and-retry) recipes own those inputs;
+the [Yeel/Battle03 recipe](field-programs.md#yeel-guide-through-battle03) owns the two-encounter
+world and independent initial zone approach. These starts are controlled admission boundaries,
+not evidence of original natural reach. Do not inject a later checkpoint or reset seeds.
+
+Set `SF2_BATTLEFIELD_CASE` and a fresh ignored `SF2_OBSERVATION_OUTPUT`:
+
+| Case | Entry and observation |
+| --- | --- |
+| `pilot` | Tracked `battle01-to-battle02-start.json` plus prepared Battle01/02 world and its first-encounter party; prove Battle01 binding/alignment/layers before wider runs |
+| `battle01` | Same entry; ordinary combat, death, next actor and usable field return |
+| `target-switch` | Same entry; ordinary Stay until the healer, then self/other-ally accepted target switch and cancellation; no action committed |
+| `transition` | Same entry; victory, existing castle/Jaha route, then Battle02 rebuild in the retained view; previous nodes/textures must release |
+| `battle02` | Tracked `battle02-outcome-start.json`, its party and prepared outcome world; ordinary victory and usable field return |
+| `battle02-retry` | Same entry; ordinary defeat, Map3 field movement and west-exit retry in the same session; retained textures must remain valid |
+| `battle03` | Retained independent initial Map66(17,21) approach with F72/F502 clear, source Battle02/03 world and its declared party; one real west step requests Battle03; stop after action/target/next-player control |
+| `authored` | No private entry; ordinary default practice map |
+
+```powershell
+$env:SF2_BATTLEFIELD_CASE = 'pilot'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $run 'battlefield.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path remake/game `
+  --script res://probes/engine_battlefield_map_observation.gd -- `
+  --private-exploration-start $selectedControlledStart
+```
+
+Omit the final separator/start option for `authored`. For Battle03 the observer gives the existing
+finite encounter sound its normal wall-clock completion opportunity; it does not inject a callback.
+The observer checks960×640 and640×480, movement/cancel preserving position/seeds, accepted target
+geometry through rejected attempts/cancel, action return and weak-reference texture lifetime.
+Final shutdown allows the native audio mixer to release stopped voices. Require exit0,
+`passed:true`, empty failures and no native script/engine errors. Human play remains a separate
+ordinary launch without `--script`, `--fixed-fps` or headless mode.
+
+The `missing` negative case uses a separate temporary private envelope: an admitted Battle02 route
+is attached to a minimal Map5 definition, while its source Map66 definition is deliberately absent.
+Use one music-area binding and an already available battle cue so an unrelated audio failure cannot
+mask the renderer check. Preserve canonical inputs. The existing field failure CanvasLayer must be
+visible with `presentation.error=battlefield-map-resource-unavailable`, `battleLoads=0`; the
+BattleLoad token, cursor and revision must remain unchanged through subsequent frames/input.
+This malformed diagnostic is not source-game evidence or a supported content configuration.
+
+Resource scope: reuse existing94–128 MB worlds, serial native instances, under2 GiB process memory,
+150-second external deadline and under5 MiB checkpoint output per case. Source block decoding is
+bounded by the region's cells×9 tiles and caches only used24×24 blocks; no per-frame history or
+duplicated normal world preparation is needed. A corrected temporary negative envelope may require
+another bounded local copy; retain failed reports and keep total diagnostic copies below512 MiB.
+No new SDK, tool installation or asset-library write is needed.
+
+Run `uv run sf2 verify adapter`, the actual Debug build and the committed
+`uv run sf2 verify plan --base origin/main --head HEAD`; apply its selected engine/public checks.
+Public engine checks skip private-input cases. The existing private initialization test also asserts
+the active battle retains its region; it does not supersede the twelve preserved comparisons or
+authorize rerunning their aggregate. The native observations establish current renderer behavior;
+original pixels/timing, general plane-motion support and human aesthetic approval remain **Unknown**.
 
 ## Replaceable Progression and Outcome Observation
 

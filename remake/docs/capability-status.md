@@ -85,6 +85,25 @@ or stable-observation boundary under
 
 ## Current Engineering Frontier
 
+### Battlefield map rendering agreement
+
+Issue [#1051](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1051) uses **Standard** rigor:
+bounded integration of admitted resources into the existing battle board, with one shared decoder
+and no second gameplay/map authority. **Implemented candidate, independent integration pending:**
+Battle01–03 draw their selected map regions with one cell/actor/preview transform, tile-priority
+passes and an accepted-target outline. Content preserves per-encounter visual map/origin through
+growth/outcome binding. Authored practice keeps its intended fallback; missing private maps fail
+visibly and retain the pending BattleLoad. The
+[presentation owner](godot/battle-scenes.md#battlefield-maps) and
+[native recipe](verification/battles.md#battlefield-map-observation) own current behavior and acceptance.
+
+Acceptance covers the Battle01 pilot, different source origins, movement/cancel, target rejection
+and cancellation, real action/death/next-player presentation, desktop/small-window clipping,
+exploration handoff, Battle02 retry, different-map rebuild and final disposal. Reuse prepared worlds;
+no screenshot/emulator acquisition, broader renderer platform, menu redesign or additional gameplay
+is in scope. UI/UX remains independently owned by #689/PR692. Human aesthetic approval and original
+pixel/timing parity remain **Unknown**; the twelve historical comparison failures remain unchanged.
+
 ### Yeel guide through Battle03 implementation agreement
 
 Issue [#1049](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1049) retains **High** rigor:

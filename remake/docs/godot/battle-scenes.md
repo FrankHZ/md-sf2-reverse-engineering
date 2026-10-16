@@ -11,6 +11,36 @@ visual; it also chooses source ground/animation presentation. This resource comp
 general mod/schema support and does not grant Godot gameplay mutation or provenance authority.
 Missing private resources fail visibly; they do not silently use authored gestures.
 
+## Battlefield Maps
+
+The ordinary private Battle01–03 board consumes the admitted exploration atlas, nine-tile blocks
+and layout through the same `MapBlockTextures` decoder as exploration. Content retains an optional
+`BattleMapRegion` on each battle definition, including its visual-map identity and source-cell origin;
+growth and outcome definition copies preserve it. This is presentation metadata: gameplay positions,
+terrain costs and ranges remain local battle coordinates. The existing `BattleDefinition.Map` identity
+is unchanged. A missing region is distinct from the valid origin(0,0).
+
+Battle01 uses map57(0,0),16×20; Battle02 uses map66(16,19),22×18; Battle03 uses
+map66(0,0),22×30. Each source24-pixel block maps to the existing40-pixel board cell. Board framing
+applies one translation/scale to tiles, sprites, movement and selection. Ground/foreground tile
+passes retain the source priority bit: low tiles at z0, actor sprites at z1, high tiles at z2,
+movement indicators and the cyan accepted-target outline at z3. A rejected target candidate never
+changes that outline; cancellation removes it. The connected regions have no separate packed
+foreground offset and no high-priority tiles; the affected exploration paths retain their existing
+foreground behavior. Fixed plane offsets are supported; unconsumed plane motion fails explicitly.
+
+Private missing map/region/block resources fail through the existing adapter error UI. A failed
+hidden BattleLoad retains its wait and cannot report completion. Private startup requires a
+prepared world with map resources; standalone private inputs without those resources no longer
+draw placeholder terrain. Public authored practice retains its intentional colored terrain.
+
+The battle view is retained and reparented during outcome/field handoff. Cached textures survive
+transient tree exits; rebuilding for a different definition releases the old board nodes/textures,
+and final owner destruction releases current resources. See the
+[bounded native recipe](../verification/battles.md#battlefield-map-observation) for actual input,
+draw/resource geometry, return/reentry and negative-case observations. This establishes bounded
+rendering and lifecycle behavior, with no original pixel/timing parity or human aesthetic approval.
+
 ## Physical Battle Scenes
 
 The common session separates physical action construction from scene execution. Domain prepares

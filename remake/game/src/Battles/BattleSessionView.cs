@@ -154,7 +154,17 @@ public sealed partial class BattleSessionView : Control
         if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
             !ReferenceEquals(_mapScenes, session.ActiveBattleScenes))
         {
-            _map.Build(result.Snapshot.Battle.Definition, session.Definition);
+            try { _map.Build(result.Snapshot.Battle.Definition, session.Definition); }
+            catch (InvalidOperationException error)
+            {
+                FailStartup(new(SessionFailureKind.AdapterError, error.Message, "battlefield", "Selected battlefield resources are unavailable."));
+                Show();
+                // During BattleLoad the field presenter owns the pending token.
+                // Its existing error path must retain that wait instead of treating
+                // a failed hidden mount as a completed presentation.
+                if (GetParent() is Sf2.Remake.GodotAdapter.Exploration.ExplorationSessionView) throw;
+                return;
+            }
             _mapDefinition = result.Snapshot.Battle.Definition;
             _mapScenes = session.ActiveBattleScenes;
             _targetCandidate = null; _spellCandidate = null; _itemCandidate = null;

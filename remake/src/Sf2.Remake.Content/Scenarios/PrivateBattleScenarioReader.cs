@@ -156,7 +156,9 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y)),
                 encounter.AiPoints.Select(point => new MapPosition(point.X, point.Y)),
                 deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor)),
-            healingItems: PrivateBattleActionBindings.HealingItems(definitions));
+            healingItems: PrivateBattleActionBindings.HealingItems(definitions),
+            sourceMapRegion: new(new("map-" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
+                new(encounter.Area.X, encounter.Area.Y)));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         BattleTurnFlow.ValidateStart(battle, inputStart);
         return new(new("private-encounter", [battle], definitions), inputStart);
