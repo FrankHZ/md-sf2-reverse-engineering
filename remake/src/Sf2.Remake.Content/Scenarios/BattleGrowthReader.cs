@@ -91,6 +91,7 @@ internal static class BattleGrowthReader
             encounter.Width, encounter.Height, encounter.Terrain, encounter.Deployments.Select(deployment =>
                 growth.TryGetValue(deployment.Actor, out var value)
                     ? deployment with { Definition = deployment.Definition.WithGrowth(value) } : deployment),
-            encounter.Spells.Values, encounter.Rewards, encounter.Initialization, encounter.Outcome, encounter.HealingItems.Values));
+            encounter.Spells.Values, encounter.Rewards, encounter.Initialization, encounter.Outcome, encounter.HealingItems.Values,
+            encounter.SourceMapRegion));
     }
 }
