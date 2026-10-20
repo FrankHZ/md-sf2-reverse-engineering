@@ -1,5 +1,7 @@
 # Battle29 activation and first-turn dispatch
 
+Continue with [Battle29 outcomes and shrine exterior route](./battle29-outcomes-and-shrine-exterior-route.md).
+
 Evidence date: 2026-10-20. **Confirmed:** all twelve declared Battle29
 formation positions miss all four regions under the actual integer consumer.
 The fifteen initialized enemies still qualify for turn records: checked
