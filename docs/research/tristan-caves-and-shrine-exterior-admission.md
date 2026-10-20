@@ -10,6 +10,8 @@ source names identify these as Tristan Caves and Mitula shrine exterior.
 **Unknown:** natural transit, collision routes, successful services/control,
 presentation/timing and persistence. No remake readiness is established.
 
+Continue the admitted encounter in [Battle29 initialization and opening](./battle29-initialization-and-opening.md).
+
 ## Agreement and provenance
 
 Standard rigor for [Issue #1056](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1056)
