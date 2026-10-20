@@ -108,8 +108,8 @@ before AddItem, without clearing those copied items. Thus no placement item
 is added, while definition equipment remains: fresh enemy128 Devil Soldier
 retains GREAT_AXE|EQUIPPED from `data/stats/enemies/enemydefs.asm`, definition23.
 The [opening inventory owner](./battle31-initialization-and-opening.md#full-spriteset-and-fresh-construction)
-retains the other selected definitions. No dedicated drop row is distinct
-from retained equipment, other action-side rewards or arbitrary inventory.
+retains the other selected definitions. The absence of a dedicated drop row
+does not imply empty inventory or exclude other action-side rewards.
 
 `countremainingcombatants.asm` counts signed X.b>=0 and HP.w!=0 across
 all30 allies/all32 enemies, without Y, membership, neutrality, activation
