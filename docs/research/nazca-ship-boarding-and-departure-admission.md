@@ -480,10 +480,20 @@ import or a native implementation. Successful selected lowerings are:
 | --- | --- |
 |cs_5FA9C|2: position and end-map-script; no full init wrapper.|
 |Map37_EntityEvent0|1: native jmp DisplayTacticalBaseQuote; no typed quote implementation.|
-|Map37_EntityEvent24|3: text/close/end; imported text alone does not supply Orb use.|
-|Map37_EntityEvent26|3: text/close/jump to event27.|
+|Map37_EntityEvent24|3: text-cursor/show-text/end; text cursor3376, single mode with event speaker; no close instruction.|
+|Map37_EntityEvent26|3: text-cursor/show-text/jump; text cursor11, single mode with event speaker, target event27/instruction0; no close instruction.|
 |Map37_EntityEvent27|1: end.|
 |Map37_DefaultEntityEvent|3: native jsr, add.w, jsr; no accepted random-text callback.|
+
+`txt` emits the cursor/show pair; event24's `rts` emits `end`, whereas
+`csc_end` would emit `end-map-script`. Neither selected handler closes
+text or portrait. For entity-event caller return, MapEventDispatcher.Finish
+restores facing only while not Returning and flags bit1 (mask2) is set;
+with TextSettings and not Returning it closes portrait and may wait for
+portrait movement. Open LogicalText produces TextCloseWait with
+CallerReturn=true. Without an entity-event context (after separate zone
+handling), it returns unchanged; standalone completion does not supply
+that caller cleanup.
 
 The successful cs_5FA9C lowering also omits the original HP-dependent
 setPos skip and sprite-update request. Its `position` instruction becomes
@@ -558,6 +568,15 @@ scoped CI are distinct from author probes and planner suggestions. Under
 this explicit documentation policy, no normal/full, old comparison,
 SDK/Godot/emulator/H3/H4 or screenshot gate is run or claimed. The planner
 does not turn its suggested commands into executed passes.
+
+For the operation-label correction, the focused command is
+`uv run --locked python -X utf8 local/issue1106/correction.py <registered-source-root> --committed`
+after the same input-selection load. It checks both complete emitted
+objects, current txt/return lowering and conditional caller cleanup,
+corrected prose and unchanged original candidate outside this correction.
+Original513d546b/treea9f29733, author direct0.292s/main-gate0.291s and
+CI39517713722 remain completed passing results that missed the two wrong
+operation labels. The focused correction does not rerun that full audit.
 
 Preserve the two initial selected-lowering failures (local stream and
 local @Return) as consumer-gap evidence. Preserve #1104's no-drop author
