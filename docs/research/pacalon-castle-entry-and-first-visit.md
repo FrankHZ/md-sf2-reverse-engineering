@@ -7,7 +7,8 @@ without setting a quest flag. An optional centaur interaction runs a movement
 and gesture script before setting F810. Castle stairs retain the population
 but rerun initialization; the south exit requests Map02. **Unknown:** natural
 reach, actual supplied state, completed presentation/services, usable control
-and persistence. The later F530-set Frayja event is deferred.
+and persistence. The later F530-set Frayja event belongs to the
+[restored-rain return owner](./pacalon-return-frayja-and-battle31-admission.md).
 
 ## Agreement and provenance
 
@@ -31,7 +32,8 @@ Reuse the accepted [entry/lifecycle owner](./battle26-return-through-pacalon-ent
 [service contract](../design/contracts/service-interactions.md) and
 [description routing](../design/contracts/map-area-description-routing.md).
 The main premise is F530 clear. Record the alternate pointer/population
-boundary, but do not consume the restored-rain callbacks or `cs_5DA28`.
+boundary; the [return owner](./pacalon-return-frayja-and-battle31-admission.md)
+consumes the restored-rain callbacks and `cs_5DA28` separately.
 Stop the south request at MainLoop before the town battle scan. Battle27/31/
 33/34 progression, promotion/item-use algorithms, runtime, extraction, layout
 acquisition and new maintained machinery are excluded.
@@ -207,7 +209,8 @@ Left, then NPC128..137 at25,24 Left;12,25 Down walk1;21,16 Down walk1;
 8,3 Down;5,22 Left;40,17 Down; king29,3 Down;31,5 Left;31,11 Left;
 priest40,4 Down. Non-royal/priest NPCs here are male centaurs. The same
 dedup and init rules apply. Its event pointer changes to the table at$5D924;
-the Frayja callback and restored-rain dialogue/`cs_5DA28` are deferred.
+the Frayja callback and restored-rain dialogue/`cs_5DA28` are covered by the
+[return owner](./pacalon-return-frayja-and-battle31-admission.md).
 Changing530 after population construction can select callbacks against old
 actors (including the changed priest index); it does not rebuild/relabel
 them. This document supplies no completion claim for that alternate visit.
@@ -577,7 +580,7 @@ lifecycle is distinct from these four CURRENT stair requests.
 
 | Changed state / interrupted boundary | Required distinction |
 | --- | --- |
-|530 clear/set or changes between reads|List/event pointers differ; shared init/descriptions remain; deferred visit is not covered by drought callbacks.|
+|530 clear/set or changes between reads|List/event pointers differ; shared init/descriptions remain; the return owner covers the alternate visit separately from drought callbacks.|
 |22/82 independently clear/set|Ally declaration/dedup, follower exclusion and init displacement are different predicates; no new join.|
 |Missing/aliased lookup, extra followers, class/HP/capacity|Actual physical actor and first reverse alias govern;0 is not a safe absent result; bounded allocation formulas are conditional.|
 |810 clear/set or interrupted scene/final text|First scene precedes flag write; repeat skips scene; reached motion/flag/text are not atomic.|
@@ -621,8 +624,10 @@ inventory, modes/pending state, natural reach, completed dialogue/services/
 collection/transitions/scene, usable control, rendering/timing and persistence.
 The optional compressed-layout absence remains a no-decoded-route limit,
 not a ROM blocker or acquisition authorization. No new runtime was launched;
-Unknowns are not an automatic observation queue. The F530-set Frayja event
-and later progression remain explicitly deferred.
+Unknowns are not an automatic observation queue. The
+[return owner](./pacalon-return-frayja-and-battle31-admission.md) covers the
+F530-set Frayja event through Battle31 admission; later battle bodies remain
+outside this first-visit scope.
 
 Preserve [#1021 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1021#issuecomment-6182880836)
 and [PR1023 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1023#issuecomment-6182901348),
