@@ -1,5 +1,7 @@
 # Battle33 activation and first-turn dispatch
 
+Continue with [Battle33 outcomes and the Zynk handoff](./battle33-outcomes-and-zynk-handoff.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** all twelve declared
 formation positions miss Battle33's sole region under the original integer
 consumer. With unchanged fresh construction, flags90–105 remain clear,
