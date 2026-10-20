@@ -1,5 +1,7 @@
 # Battle31 initialization and opening
 
+Continue with [Battle31 activation and first-turn dispatch](./battle31-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Map2/Battle31 has separate
 temporary opening actors, twelve formation declarations and fifteen battle
 enemy declarations. Fresh entry stops at BattleLoop @Start before
