@@ -1,5 +1,7 @@
 # Battle33 initialization, Moun opening and Frayja party admission
 
+Continue with [Battle33 activation and first-turn dispatch](./battle33-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** admitted Map31/Battle33
 runs a temporary gate/confrontation scene, joins Frayja22 and conditionally
 replaces an active member, then rebuilds battle actors from combatants.
