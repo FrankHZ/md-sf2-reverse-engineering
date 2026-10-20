@@ -1,5 +1,7 @@
 # Moun underground: Gyan joining and Zynk following
 
+Continue with [Moun town, the painter and the Arm of Golem](./moun-town-painter-and-golem-arm.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Map39 has two setups selected
 by flag830. The initial zone scene formally joins Gyan24; the separate Zynk26
 entity interaction installs following and then sets76/836, without joining
