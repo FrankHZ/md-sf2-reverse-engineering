@@ -234,27 +234,29 @@ Static call order does not prove real time, completed fades/audio or control.
 
 **Confirmed:** textCursor2895 plus16 sequential text commands joins exactly
 to `data/scripting/text/gamescript.txt` hexadecimal keys0B4F–0B5E and all
-source comments. `S` is nextSingleText; `C` is nextText. Modifiers are00 for
-128/FOLLOWER_B andC0 for129 (right-side plus mirrored portrait bits).
+source comments. Raw joins remain in ignored audit receipts; the public
+table gives authored paraphrases and complete ordered token arrays.
+`S` is nextSingleText; `C` is nextText. Modifiers are00 for128/FOLLOWER_B
+andC0 for129 (right-side plus mirrored portrait bits).
 
-| ID / mode / speaker | Exact text and tokens |
-| --- | --- |
-|2895 /S /128|`Hello, Granseal soldiers.{W1}`|
-|2896 /C /128|`Remember?  I promised that I{N}would see you again.{W2}`|
-|2897 /S /128|`Come on.  Let's party!{W1}`|
-|2898 /S /129|`Stop!  You need my war plan!{W1}`|
-|2899 /S /128|`You again, Geshp?  Why don't{N}you leave me alone?{W1}`|
-|2900 /C /129|`Zeon left me in charge.{W2}`|
-|2901 /S /129|`It doesn't matter if you are{N}killed or not.{W1}`|
-|2902 /C /128|`Then kill me, if you've{N}got the guts to do it!{W2}`|
-|2903 /S /128|`I know.  You want me to be{N}die!{W1}`|
-|2904 /S /128|`Geshp, you coward!{N}I'll kill you first!{W1}`|
-|2905 /C /129|`I have no time to waste.{N}I must go.{W2}`|
-|2906 /S /129|`Silly Cameela.{N}You can't survive without my{N}brains.{W1}`|
-|2907 /C /128|`{LEADER}, did you hear that?{N}He said you would win!{W2}`|
-|2908 /S /128|`He must be a bad{N}fortuneteller.{W1}`|
-|2909 /C /FOLLOWER_B31|`We can get a ship and return{N}to Grans if we defeat her.{W2}`|
-|2910 /S /FOLLOWER_B31|`{LEADER}, get her!{W1}`|
+| ID / mode / speaker | Paraphrase | Ordered tokens |
+| --- | --- | --- |
+|2895 /S /128|Cameela greets the opposing force.|`["{W1}"]`|
+|2896 /C /128|She recalls their promised reunion.|`["{N}", "{W2}"]`|
+|2897 /S /128|She invites confrontation.|`["{W1}"]`|
+|2898 /S /129|Geshp insists Cameela needs his tactics.|`["{W1}"]`|
+|2899 /S /128|Cameela resents Geshp's interference.|`["{N}", "{W1}"]`|
+|2900 /C /129|Geshp claims authority delegated by Zeon.|`["{W2}"]`|
+|2901 /S /129|He dismisses concern for Cameela's survival.|`["{N}", "{W1}"]`|
+|2902 /C /128|Cameela challenges Geshp to kill her himself.|`["{N}", "{W2}"]`|
+|2903 /S /128|She accuses him of wanting her death.|`["{N}", "{W1}"]`|
+|2904 /S /128|She turns her threat against Geshp.|`["{N}", "{W1}"]`|
+|2905 /C /129|Geshp announces his departure.|`["{N}", "{W2}"]`|
+|2906 /S /129|He belittles Cameela's independent prospects.|`["{N}", "{N}", "{W1}"]`|
+|2907 /C /128|Addressing the leader, Cameela interprets Geshp's warning as a prediction of the force's victory.|`["{LEADER}", "{N}", "{W2}"]`|
+|2908 /S /128|She disputes that prediction.|`["{N}", "{W1}"]`|
+|2909 /C /FOLLOWER_B31|The follower connects defeating Cameela with obtaining transport back to Grans.|`["{N}", "{W2}"]`|
+|2910 /S /FOLLOWER_B31|The follower urges the leader to attack.|`["{LEADER}", "{W1}"]`|
 
 `data/spritedialogproperties.asm` binds Cameela156 to portrait44/bleep3 and
 Geshp159 to portrait45/bleep6. The actual alias mapsprite supplies identity;
@@ -267,8 +269,9 @@ and2910 calls UpdateForce then reads the first active-list byte. That
 rebuilds ID-sorted joined/active/reserve prefixes and counts but does not
 clear tails or validate a nonempty list. Empty or changed membership can
 therefore expose stale byte state; LEADER is not fixed to Bowie. `{N}`,
-`{W1}` and `{W2}` remain distinct controls. Source spelling `be{N}die` is
-retained. No question, item token, reward or membership write is present.
+`{W1}` and `{W2}` remain distinct controls. Source wording is checked privately;
+the paraphrases do not reproduce it. No question, item token, reward or
+membership write is present.
 **Inferred:** the scene frames a quarrel and a ship objective; dialogue
 alone does not prove a ship unlock, successful fight or completed departure.
 
