@@ -12,6 +12,8 @@ natural arrival, actual flags/actors/layout, completed services, usable control,
 presentation/timing and persistence. This is static organization, not a claim
 that Tristan runs in the remake.
 
+Continue with [Tristan Caves and shrine exterior admission](./tristan-caves-and-shrine-exterior-admission.md).
+
 ## Agreement and provenance
 
 Standard rigor for [Issue #1054](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1054)
