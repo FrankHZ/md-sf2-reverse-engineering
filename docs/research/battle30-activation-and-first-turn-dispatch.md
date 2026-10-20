@@ -140,17 +140,20 @@ Normal iteration supplies0–3. Trigger15 is a sentinel, not a fifth polygon.
 |10|`(12,31)`|outside|outside|outside|outside|
 |11|`(10,31)`|outside|outside|outside|outside|
 
-Let trunc mean signed truncation toward zero. Each selected point has Y
-greater than both projections below. First triangle rejects at edge4->2;
-second at3->2, with opposite vertex on the other side. Earlier edges do not
-immediately accept these points:
+Let trunc mean signed truncation toward zero. Compare each projected axis
+with the same coordinate of the selected point. Region1's triangle1 edge4->2
+has absolute deltas X23/Y29, so it takes the vertical path: at `(11,28)`,
+Xproj=`trunc(-23*(28-29)/29)=0`, below X11. For Y31, Xproj=-1 instead takes
+the negative-projection return2. All other entries below project Y, below
+the selected Y. First triangle rejects at edge4->2; second at3->2, with
+opposite vertex on the other side. Earlier edges do not immediately accept:
 
-| Region | Triangle1/2/4 Y projection | Triangle3/2/4 Y projection |
+| Region | Triangle1/2/4 projection | Triangle3/2/4 projection |
 | --- | --- | --- |
-|0|`21+trunc(-21*X/23)`|`21+trunc(9*X/23)`|
-|1|`29+trunc(-29*X/23)`|`29+trunc(-9*X/23)`|
-|2|`18+trunc(-18*X/23)`|18|
-|3|`16+trunc(-16*X/23)`|16|
+|0|Y: `21+trunc(-21*X/23)`|Y: `21+trunc(9*X/23)`|
+|1|X: `trunc(-23*(Y-29)/29)`|Y: `29+trunc(-9*X/23)`|
+|2|Y: `18+trunc(-18*X/23)`|Y: 18|
+|3|Y: `16+trunc(-16*X/23)`|Y: 16|
 
 These are formation ordinals, not twelve fixed living identities. Unchanged
 fresh placement uses a subset for fewer/dead members; other allies have X=-1.
