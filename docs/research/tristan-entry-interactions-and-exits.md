@@ -306,10 +306,10 @@ Only 724 set/820 clear calls `script cs_5D04E`; **after that call returns** it
 sets 820. F724 is the accepted Bedoe fall/rescue flag, not joined20. F820 is
 outside the temporary clear range and is not reset by this entry.
 
-`scripts.asm:$5D04E..$5D1CA` names a substantial Skreech flight/conversation
-program, text cursor 2006, later join 20 and follower changes. Discovery of that
-target is necessary to bound the zone callback; its complete execution,
-dialogue 2006 onward, flight path and join-service outcome are deferred.
+`scripts.asm:$5D04E..$5D1CA` names the Skreech flight/conversation program.
+Its complete commands/text, flight/join/follower consumers and changed-state
+boundaries now belong to [Mitula return and Skreech recruitment](./mitula-return-and-skreech-recruitment.md).
+This town survey retains only the callback frontier.
 If the script does not return, the callback has not reached set 820; its already
 reached actor/scene/party prefix is not rolled back by this later instruction.
 The gate does not prove natural reach, usable 20, a completed join, or persistence.
@@ -385,7 +385,7 @@ for implemented/Unsupported boundaries.
 |Shops/church/save|Accepted [service contract](../design/contracts/service-interactions.md), common-menus fixture/schema and savepoint source own original selectors/effects.|No ShopMenu/ChurchMenu service instruction or service UI is provided by the selected StoryProgram/reader switch. Unknown native calls remain UnsupportedInstruction and stop in ProgramRunner. Stock, transactions, church/save/persistence need explicit support; text or SetEgressMap alone cannot replace them.|
 |Search, descriptions and pickups|`map-descriptions-static-v1.json` and its schema/consumer owner express matching rules; original local rows are checked directly. Empty pickup tables need no invented acquisition rows.|Capability owner marks item acquisition/area descriptions Unsupported. ExplorationEventKind has Step/Interact/Warp/SourceZone, with no area-search or pickup dispatch; a bounded original search-priority/description consumer is needed.|
 |Warp requests and main-loop scans|Prepared Warp/SourceZone events, QueueMapWarp/TransferToMap and MapTransfer/BattleEntry consume explicit destination and battle routes.|Directly expressible destination/flag subsets require ordered 35/74 map and 27/32 admission bindings, source sentinel/coordinate-width review and actual reached consumers. No destination init or battle integration is delivered here.|
-|Alternate Skreech callback|The accepted zone-program fixture records 724/820 polarity, script target and post-return 820; general flag/call/join/motion instructions exist.|Only the callback frontier is organized here. Complete scene lowering, affected join/follower/flight consumers and an actual reached observation remain unassessed. Do not mark recruitment ready.|
+|Alternate Skreech callback|The accepted zone-program fixture records 724/820 polarity, script target and post-return 820; general flag/call/join/motion instructions exist.|Only the callback frontier is organized here. [Complete scene/consumer review](./mitula-return-and-skreech-recruitment.md#actual-representations-and-consumer-gaps) owns actual lowering refusals, binding gaps and unassessed fidelity; no reached scene observation or recruitment-ready claim.|
 
 The existing preparer [remake_exploration_maps.py](../../src/sf2tool/remake_exploration_maps.py)
 already lowers selected entities, entity/zone events, warps and layout copies;
@@ -427,5 +427,5 @@ remain preserved in their existing handoffs; none is relabeled or rerun.
 **Unknown:** actual incoming words/mode/pending state, selected flags and
 interleaving, live mappings/capacity/HP/class, natural approach or collision
 route, completion of text/shop/church/layout/script services, resulting usable
-control, hardware presentation/timing and persistence. Deferred scene execution
+control, hardware presentation/timing and persistence. The [complete Skreech scene](./mitula-return-and-skreech-recruitment.md)
 and every destination's init/battle body remain outside this town slice.
