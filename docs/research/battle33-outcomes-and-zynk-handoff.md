@@ -11,6 +11,8 @@ question. **Unknown:** natural victory/travel, incoming state, completed
 services, presentation, usable control and saved persistence. No playable
 Battle33 or completed Moun/underground implementation follows.
 
+Continue with [Moun underground, Gyan joining and Zynk following](./moun-underground-gyan-and-zynk.md).
+
 ## Agreement and evidence route
 
 Standard rigor for [Issue #1092](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1092)
