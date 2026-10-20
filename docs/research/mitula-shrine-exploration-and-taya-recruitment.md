@@ -62,9 +62,12 @@ SwitchMap does not switch1 under530. This entry does not require21 or841.
 
 `explorationfunctions_2.asm:ExplorationLoop` orders:
 
-1. Clear MAP_EVENT_TYPE.w. Subtract20000 from STEP_COUNTER.w and clear it
-   when the signed word result is negative; this is word arithmetic, not an
-   unbounded mathematical clamp for arbitrary supplied values.
+1. Clear MAP_EVENT_TYPE.w. SUBI.W subtracts20000 from STEP_COUNTER.w, then
+   BGE retains the result only when N==V: signed16(input)>=20000 yields
+   signed16(input)-20000; otherwise the following CLR.W writes zero. This
+   word arithmetic uses the overflow-aware signed comparison, not the wrapped
+   result's sign alone: input `$8000` yields `$31E0` with N=0/V=1, so BGE
+   falls through and clears the counter.
 2. Heal living/immortal allies under the accepted30-slot rules; fade out;
    detach view target. Save incoming map word. With low byte other than FF,
    assign CURRENT_MAP.b and CURRENT_BATTLE=255 before loading tilesets.
@@ -532,6 +535,13 @@ private boundary, exact two-path ownership and navigation-only predecessor:
 uv run --locked python -X utf8 local/issue1070/review.py <configured-source-disasm-root>
 git diff --check
 ```
+
+Original head d71168ec's author0.739s/main-gate0.743s audits and
+CI39464142557 passed without catching the STEP_COUNTER overflow derivation
+error. Preserve those results and `lowering-author.json`; the focused
+correction uses `local/issue1070/step-counter-correction.py` with the same
+configured-source argument to check source order, N/V boundary arithmetic
+and prose/document scope. It does not rerun the completed full audit.
 
 On clean committed HEAD run `uv run sf2 verify plan --base origin/main --head HEAD`;
 record actual exact-head scoped CI in the Issue/PR handoff. Documentation scope
