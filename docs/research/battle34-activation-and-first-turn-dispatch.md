@@ -1,5 +1,7 @@
 # Battle34 activation and first-turn dispatch
 
+Continue with [Battle34 outcomes and the Sky Orb handoff](./battle34-outcomes-and-sky-orb-handoff.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** all twelve declared
 formation positions miss all six Battle34 regions under the original
 integer consumer. With unchanged completed fresh initialization, region
