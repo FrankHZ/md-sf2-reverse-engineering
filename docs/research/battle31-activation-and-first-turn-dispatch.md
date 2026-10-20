@@ -1,5 +1,7 @@
 # Battle31 activation and first-turn dispatch
 
+Continue with [Battle31 outcomes and Battle32 admission](./battle31-outcomes-and-battle32-admission.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** all twelve declared
 formation positions miss all four Battle31 regions under the actual integer
 consumer. With unchanged fresh construction, flags90–105 remain clear,
