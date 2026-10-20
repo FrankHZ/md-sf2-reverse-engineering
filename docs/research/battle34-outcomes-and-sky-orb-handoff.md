@@ -21,9 +21,19 @@ for later content and engine decisions. Accepted base is
 `1f4bae449250536dfdf59e43b6bd5e6659bc2bb8`, including
 [Battle34 initialization](./battle34-initialization-and-opening.md) and
 [activation/first dispatch](./battle34-activation-and-first-turn-dispatch.md).
-Own only this document and one navigation link in that activation owner.
-No shared registry/index/schema/fixture, stacked dependency, implementation
-or competing UI692 path is included.
+Own this document, one navigation link in that activation owner, and only
+the death-counter attribution sentence in each of these accepted owners:
+
+- [Battle23 research](./battle23-outcomes-and-burrow-return.md).
+- [Battle26 research](./battle26-outcomes-and-higins-recruitment.md).
+- [Battle30 research](./battle30-outcomes-and-mitula-scene.md).
+- [Battle31 research](./battle31-outcomes-and-battle32-admission.md).
+- [Battle33 research](./battle33-outcomes-and-zynk-handoff.md).
+- [Battle23 synthesis](../design/synthesis/battle23-outcomes-and-burrow-return.md).
+
+These eight paths correct the same factual attribution; no other design
+scope, shared registry/index/schema/fixture, stacked dependency,
+implementation or competing UI692 path is included.
 
 Begin after a returning individual turn. Include terminal selection,
 cleanup, victory/defeat/escape, complete selected scene and item helper,
@@ -96,9 +106,14 @@ clears scrolling speed on return. Skipping dispatch avoids those effects
 but retains leader cleanup. An empty program is not a completed-service
 observation. F88 supplies restored state, not fresh-list guarantees.
 
-ProcessKilledCombatants requests spin/effect/sound waits, credits supplied
-BATTLESCENE_FIRST_ALLY's defeats or kills, writes combatant X/Y=-1, clears
+ProcessKilledCombatants requests spin/effect/sound waits, credits defeats
+to the listed dead ally or enemy kills to supplied BATTLESCENE_FIRST_ALLY,
+writes combatant X/Y=-1, clears
 status/refreshes stats and moves the mapped entity to `$7000,$7000`.
+At @CheckKillDefeat_Loop, d0 retains the listed ally for IncreaseDefeats;
+only @IncreaseKills temporarily replaces it with BATTLESCENE_FIRST_ALLY,
+then restores the dead enemy ID before cleanup. With Jaha3 listed and
+FIRST_ALLY=Bowie0, defeat credit goes to3; a listed enemy instead credits0's kills.
 It neither sets HP0 nor clears the list length nor calls the drop service.
 Living queued enemies can disappear from counts through X alone. Duplicate
 or stale entries/mappings and interrupted processing remain supplied state.
@@ -586,12 +601,12 @@ Use the owning worktree, current ignored selections and bounded recipe:
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1104/review.py <configured-source-disasm-root> --committed
+uv run --locked python -X utf8 local/issue1104/correction.py <configured-source-disasm-root> --committed
 git diff --check
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
-The audit joins complete selected tables/wrappers, terminal/count/cleanup/
+The preserved original review.py audit joins complete selected tables/wrappers, terminal/count/cleanup/
 healing/return/escape consumers,83 commands/56 inline bytes/10-byte helper/
 48-byte list, all23 scene and nine shared text-token rows, independent76
 reads/aliases/LEADER/follow/HP differences, mandatory item/discard branches,
@@ -601,7 +616,14 @@ selector/return-mode conditions; no claim is established solely by a fixed
 scenario. Apply ADR0004's adversarial checklist to this documentation scope.
 No new parser/fixture/schema or tests of verification machinery are added.
 
-Check exact two-path ownership, predecessor navigation only, cached diff,
+The correction-only audit checks the actual list-byte/branch/call/register
+dataflow and counter fields, with distinct and changed valid dead/first-ally
+IDs. It checks seven attribution sentences, exact sentence-only changes in
+the six older owners and unchanged original-candidate content outside the
+declared new-owner correction/scope/verification edits. Do not rerun the
+complete original audit for this prose correction.
+
+Check exact eight-path ownership, predecessor navigation only, cached diff,
 UTF8/no BOM/LF, links/anchors/tables, short paraphrases and no raw/token-stripped
 game lines, private/generated paths or assets. Record clean-head planner
 and actual exact-head scoped CI separately. Planner suggestions are not
@@ -618,6 +640,10 @@ is overwritten, described as interrupted or made an automatic rerun queue.
 The first local1104 probe's no-drop assumption failed; the selected table
 instead has both Wish Staff and random Iron Ball rows, now explicitly joined.
 This was an author inspection error, not changed original evidence.
+Preserve original1104 head d84ecb32/tree8d3518ff, author/main-gate direct
+PASS0.290s and CI39514888171 as completed results: they missed the incorrect
+defeat-counter prose attribution. The focused correction distinguishes the
+listed dead ally from FIRST_ALLY; original behavior and engine scope do not change.
 
 **Unknown:** natural admission/terminal path/reach of exits or7,7; actual
 joined/active/follower flags, party lists/tails, checked word, HP/status,

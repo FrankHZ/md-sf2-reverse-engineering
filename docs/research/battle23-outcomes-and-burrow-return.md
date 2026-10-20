@@ -95,8 +95,8 @@ are not repaired by the outcome wrapper.
 
 `battleloop/processkilledcombatants.asm` at `$24518..$24642` returns for
 length 0. Otherwise it processes the length-delimited list through spin and
-death-sound presentation, then bookkeeping: ally defeats or kills credited
-to BATTLESCENE_FIRST_ALLY, X/Y=-1, status=0, stat recomputation and mapped
+death-sound presentation, then bookkeeping: defeats credited to the listed
+dead ally, or enemy kills to BATTLESCENE_FIRST_ALLY, X/Y=-1, status=0, stat recomputation and mapped
 entity position `$7000,$7000`. Its complete body does not set listed HP to 0
 or clear the list length. Surviving enemies appended by leader cleanup
 therefore cease to count through negative X even if HP stays nonzero.

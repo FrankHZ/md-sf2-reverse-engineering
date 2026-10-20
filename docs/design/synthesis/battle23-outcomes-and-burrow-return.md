@@ -60,8 +60,8 @@ list or deduplicate it. Willard's already zero-HP slot is not appended by
 this tail; any ordinary death-list entry for him comes from earlier work.
 
 Cleanup processes the length-delimited list, including spin/death-sound
-requests, before bookkeeping: ally defeat or enemy kill credit to
-BATTLESCENE_FIRST_ALLY, X/Y=-1, status clear, stat recomputation and mapped
+requests, before bookkeeping: defeat credit to the listed dead ally or
+enemy kill credit to BATTLESCENE_FIRST_ALLY, X/Y=-1, status clear, stat recomputation and mapped
 entity placement at raw `(0x7000,0x7000)`. It neither zeroes listed HP nor
 clears the list length. Appended survivors cease to count through negative X.
 An empty list returns immediately. Stale/duplicate/invalid list entries and
