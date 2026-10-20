@@ -23,6 +23,9 @@ no stacked dependency, shared index/schema/fixture, design or implementation.
 Stop at the Map31 outgoing request handoff, before later travel, battle or
 Golem recruitment/item use.
 
+Continue with [Moun to Nazca and Battle34 admission](./moun-to-nazca-and-battle34-admission.md)
+for the conditional Map74 return, west scroll, Map75 declarations and Map55 admission boundary.
+
 Original paths are relative to `disasm/` at clean read-only
 [SF2DISASM c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm).
 The registered USA ROM has SHA-256
