@@ -1,5 +1,7 @@
 # Battle34 initialization and the Cameela/Geshp opening
 
+Continue with [Battle34 activation and first-turn dispatch](./battle34-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** admitted Map55/Battle34
 can run a temporary Cameela/Geshp scene, then rebuild combatants and map
 entities from the current party and spriteset34. F76 independently gates
