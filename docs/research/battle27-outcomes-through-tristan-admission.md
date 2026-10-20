@@ -34,6 +34,7 @@ Consume [initialization/opening](./battle27-initialization-and-opening.md),
 [request state](./map-event-request-state.md) and
 [request consumption](./map-event-request-consumption.md).
 Stop at MainLoop's resulting Tristan exploration call, before its body/init.
+Continue with [Tristan entry, interactions and exits](./tristan-entry-interactions-and-exits.md).
 No combat transcript, AI/action/damage execution, general reward/menu system,
 decoded collision route, runtime, capture/extraction, RNG seed enumeration,
 Tristan dialogue, Battle28/32/later Frayja, design synthesis or remake work.
