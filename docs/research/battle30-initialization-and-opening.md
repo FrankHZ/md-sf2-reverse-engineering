@@ -1,5 +1,7 @@
 # Battle30 initialization and opening
 
+Continue with [Battle30 activation and first-turn dispatch](./battle30-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** fresh Map1/Battle30 entry
 can run Zalbard's `bbcs_30` before healing and building the battle roster.
 The temporary scene, twelve formation slots, sixteen enemy declarations and
