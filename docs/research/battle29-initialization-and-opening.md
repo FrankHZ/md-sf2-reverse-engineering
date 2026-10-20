@@ -1,5 +1,7 @@
 # Battle29 initialization and opening
 
+Continue with [Battle29 activation and first-turn dispatch](./battle29-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed:** Map0/Battle29 fresh entry can run
 `bbcs_29` before healing and constructing the battle party. Its priest/devil
 scene is temporary: LoadBattle replaces it with the selected formation and
