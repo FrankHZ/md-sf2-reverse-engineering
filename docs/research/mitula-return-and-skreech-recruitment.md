@@ -360,6 +360,8 @@ scene and Pacalon/Battle31 route are outside this slice. F811 supplied set is
 not evidence that route occurred; no Map74 exploration or next-scene audit
 is added here.
 
+Continue with the [Pacalon return, Frayja following and Battle31 admission owner](./pacalon-return-frayja-and-battle31-admission.md).
+
 ## Actual representations and consumer gaps
 
 **Confirmed about repository consumers:** retained routing/program fixtures
