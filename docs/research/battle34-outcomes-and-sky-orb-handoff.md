@@ -1,5 +1,7 @@
 # Battle34 outcomes and the Sky Orb handoff
 
+Continue with [Nazca ship boarding, exploration and departure admission](./nazca-ship-boarding-and-departure-admission.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** unchanged Battle34
 victory saves its Map55 return seed before the Cameela/Geshp scene, then
 clears434 and sets534. The scene hides its physical Orb before attempting
