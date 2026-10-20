@@ -358,9 +358,26 @@ The actual handlers preserve these distinctions:
   The single-text tail still closes portrait/text and sleeps10 after display.
   C waits for view scroll, displays and increments cursor without that tail;
   S also closes/sleeps. NAME22 and LEADER are separate text substitutions,
-  not proof of roster change. Sprite/class/HP/aliases own actual portraits.
+  not proof of membership-flag changes. Sprite/class/HP/aliases own actual
+  portraits. LEADER has the indirect list-rebuild effect below.
+- Text3330/command10 and3332/command12 each contain LEADER. When normal text
+  parsing reaches that symbol, `text/textfunctions_1.asm:ParseSpecialTextSymbol`
+  dispatches byte$F3 to symbol_leader, which calls
+  UpdateForceAndGetFirstBattlePartyMemberIndex → j_UpdateForce →
+  `code/common/stats/battleparty.asm:UpdateForce` **before** name selection.
+  It scans allies0–29 in order, tests joined flags0–29 and active flags32–61,
+  and rebuilds the counted TARGETS_LIST/BATTLE_PARTY_MEMBERS/RESERVE_MEMBERS
+  prefixes plus their word counts from those flags. It does not clear
+  uncounted tails or set membership flags. The helper reads the first active-
+  list byte without checking the new count, then symbol_leader gets its name;
+  LEADER is not an unconditional Bowie selector. With stale cached lists,
+  parsing3330 can therefore change lists/counts before follow14, unlocks15–17,
+  callback811/82 and even that text's final acknowledgement. Parsing3332 can
+  rebuild them again using then-live flags; NAME22 instead selects explicit22.
 - Debug/P2 Start may skip text display and cursor increments while consuming
   operands. It does not skip the two faces, follow or story-flag commands.
+  A skipped/not-reached LEADER token avoids that token's UpdateForce call;
+  it does not undo a rebuild already reached by an earlier displayed token.
   Normal text3332 is therefore neither a yes/no decision nor a success check.
   No completed text/input/audio/rendering duration follows from these requests.
 - `followEntity` emits three **words**0016,001F,0002. csc2C first probes
@@ -393,12 +410,16 @@ The actual handlers preserve these distinctions:
 
 ## Independent state lifetimes and interrupted prefixes
 
-**Confirmed:** no join22, JoinForce, JoinBattleParty, UpdateForce,
-InitializeAllyStats, item initialization or join ceremony occurs in this
-scene/callback. Joined22 and active32+22=54 remain supplied state;82 means
-a future flag-driven follower declaration, not force membership. Current
-AddFollower is yet another immediate list/script mutation. Flags811/82
-are outside temporary256–383 and survive ordinary fresh exploration clears.
+**Confirmed:** no join22, JoinForce, JoinBattleParty, InitializeAllyStats,
+item initialization or join ceremony occurs in this scene/callback. Joined22
+and active32+22=54 flags remain supplied state; the text-side UpdateForce
+rebuild changes cached lists/counts, not those flags. Thus supplied joined22
+can enter the rebuilt active/reserve prefix according to54 without a new join,
+while54 without22 does not admit22 to those counted prefixes. F82 means a
+future flag-driven follower declaration, not force membership. Current
+AddFollower is another immediate list/script mutation, independent of the
+text-side party-list rebuild. Flags811/82 are outside temporary256–383 and
+survive ordinary fresh exploration clears.
 
 | Supplied state / interruption | Resulting boundary |
 | --- | --- |
@@ -406,7 +427,8 @@ are outside temporary256–383 and survive ordinary fresh exploration clears.
 |811 clear,82 already held|Fresh construction can dedup22 and exclude it as a follower from ordinary activation; a supplied callback still runs, reinstalls following if admitted, and rewrites flags.|
 |22 held, either82/811|Shared init displaces mapped22; scene has no unjoin, direct reposition or heal. Active54 is independently preserved; later follower services have their own effects.|
 |Bowie HP0 or changed HP; Frayja/leader dead or missing|Only this follow's high-byte Bowie precheck skips; faces/text/three unlocks have their separate consumers. No success propagation.|
-|Stop during text/before14|Reached face/text/cursor effects can remain; no newly reached follow/unlocks/811/82.|
+|Membership flags and cached party lists disagree|Reached LEADER parsing in3330/3332 rebuilds joined/active/reserve prefixes/counts from live flags before selecting the name; joined22/active54 flags are not written.|
+|Stop during text/before14|Reached face/text/cursor effects and any LEADER-triggered party-list rebuild can remain; no newly reached follow/unlocks/811/82. Stop before the token or debug-skip it and that rebuild need not occur.|
 |Stop after14/before15|Follow/list/scratch may change while all later flags remain as supplied.|
 |Stop after15 or16|Only reached unlock prefix431 or431/433 is newly held; no atomic group or rollback.|
 |Stop after17/before script return|All three unlocks can be held with811/82 still clear; repeats are possible if callback can be reached again.|
@@ -480,6 +502,7 @@ supported runtime scope; these findings do not make this route engine-ready.
 |[Preparer](../../src/sf2tool/remake_exploration_content.py), [maps](../../src/sf2tool/remake_exploration_maps.py)|Registered canonical identity/pin and explicit selection drive preparation. Entities, walking, setups, callbacks, zones, text and simple no-scroll warps have representations. Scrolling, retained-coordinate or unselected-destination warps emit warp-frontier/native refusal; the south scroll and preserved-X return are not directly runnable simple transfers. No new export is required for this research.|
 |[OriginalPrograms](../../src/sf2tool/remake_exploration_programs.py)|cs_5DA28 produces62 lowered instructions: cursor; two **native-call faceEntity** at indices1/2; text/window/wait operations; follow22→31(-24,0); set-flag431/433/434; end-map-script. The first refusal is before any scene text/follow/unlock. There is no join-party. Callback branch811, activating call, write811, write82 and jump to the shared return preserve their representable order; that return is a separate one-instruction program.|
 |[Content reader](../../remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs), [ProgramRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs)|native-call becomes UnsupportedInstruction; reached execution reports program-opcode/Unsupported. A successful lowering is not a completed scene. WriteFlag/BranchFlag/CallProgram/text/follow can be consumed only with a bound admitted world/program. Missing content and explicit semantic refusal are different gaps.|
+|LEADER / [ExplorationTextRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationTextRunner.cs), [MapPartyMembership](../../remake/src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs)|With admitted text context and PartyFlags, LEADER already calls Rebuild on current flags before selecting the first active member and publishes PartyLists. No selected3330/3332 execution or original token-time fidelity is established here; the earlier native faceEntity refusal still prevents normal scene execution.|
 |Follow and identity / [FollowerMotion](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/FollowerMotion.cs)|ProgramRunner resolves slots and installs follower motion. Compiler omits the original high-byte Bowie-HP precheck; modern install has no original list append/dedup or42-byte scratch accounting. Original missing-slot/alias and HP behavior require separate binding/review. No selected member22/active54 binding is established or acquired by this no-join scene.|
 |Setup and request / [MapTransfer](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/MapTransfer.cs), [MapSetupSelection](../../remake/src/Sf2.Remake.Domain/Maps/MapSetupSelection.cs), [MapEventDispatcher](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/MapEventDispatcher.cs)|Transfer selects prepared setup/population; later movement/interaction uses the loaded world.Definition.Events. Original live530 callback reselection versus retained population is not established by that shape. CURRENT lifetime, mutable pending replacement, signed/retained coordinate words, shared22 displacement and stale/rearmed encounter admission need selected bindings and assessment.|
 |Battle/private binding / [PrivateExplorationReader](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateExplorationReader.cs), [PrivateBattleEncounterReader](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleEncounterReader.cs)|Production consumes provenance-bound prepared documents, not research fixtures/disassembly on demand. Private encounter pins remain1–3, not31/32/33/34; no selected2/36/71/74/78 world, Frayja deployment, town/castle resources or battle-start binding is delivered.|
@@ -506,8 +529,26 @@ of an audit program or runtime proof. No parser/schema/extractor is changed;
 their new-code mutation obligations do not add a new test suite. ADR0004's
 adversarial branch/alias/width/provenance review still applies.
 
+The original author/main-gate direct audits both passed0.256s and hosted
+CI39480126515 succeeded but missed the indirect LEADER→UpdateForce side
+effect; independent review found the false no-UpdateForce prose. Preserve
+those results, their deficiency and original `*-author.json` receipts.
+For this correction, run only the focused source/text/substitution/flag-to-list/
+skip/prose check (plus diff and corrected-head scoped CI):
+
+```powershell
+. ./local/private-inputs.ps1
+uv run --locked python -X utf8 local/issue1074/leader_correction.py <configured-source-disasm-root>
+```
+
+It retains normal3330/3332 parsing versus skipped/not-reached tokens, stale
+cached lists versus supplied membership flags, unchanged22/54 and the
+before-follow/unlock/811/82 interruption boundary. Do not rerun the original
+full direct audit or broader suites to replace the preserved passing result.
+
 Self-review separates131/22, destination/actual coordinates, byte HP probe/
-word follower,431/31/531, follower82/member22/active54,257/811 lifetimes,
+word follower,431/31/531, follower82/member22/active54 versus cached party lists,
+257/811 lifetimes,
 scroll/fresh/CURRENT, scene-return/callback-return/control and lowering/
 execution. Preserve actual results and exact-head CI in the Issue/PR handoff.
 On a clean committed head run
