@@ -530,15 +530,42 @@ runtime scope. No Map2/Battle31 package or execution is delivered here.
 | Surface / actual consumer | Existing shape and selected boundary |
 | --- | --- |
 |Research fixtures and retained pair|Global/spriteset fixtures retain summary/address/provenance facts; script corpus has96 bbcs_31 top-level records. Exact inline actions/list/full roster require the pinned source join. Aggregate equality is not initialized-state or playable-content acceptance.|
-|[OriginalPrograms](../../src/sf2tool/remake_exploration_programs.py)|Actual read-only selected lowering produces248 instructions. Scene-map/population, movement/custom actions, waits, stop/start animation, mosaics/shiver, text/C0, positions/facings and camera destinations have shapes. Native-call cameraSpeed at lowered18 is the first explicit refusal, before2811; flashScreenWhite at94 is another. Raw compiler source-index43 for that flash includes inline records; top-level corpus index is37. Successful lowering does not execute it.|
-|[ExplorationContentReader](../../remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs), [ProgramRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs)|native-call becomes UnsupportedInstruction and reached program-opcode refusal. No selected world/resources or native speed/one-call screen-flash binding is supplied. Existing white fade/FlashWhite is not evidence of consuming this command.|
+|[OriginalPrograms](../../src/sf2tool/remake_exploration_programs.py)|Actual read-only selected lowering produces248 instructions. Scene-map/population, movement/custom actions, waits, stop/start animation, mosaics/shiver, text/C0, positions/facings and camera destinations have shapes. Lowered15 installs entity130's eas_AnimSpeedx2 without waiting; its first nested action is native-call ac_animSpeedX2. CameraSpeed18 is the first **top-level native-call**, before2811; flashScreenWhite94 is another. Raw compiler source-index43 for that flash includes inline records; top-level corpus index is37. Shapes and successful lowering do not establish supported nested actions or execution.|
+|[ExplorationContentReader](../../remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs), [ProgramRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs)|Top-level native-call becomes UnsupportedInstruction and reached program-opcode refusal. Actions instead maps nested native-call to UnsupportedEntityAction, which can fail during an earlier enabled entity service; see the installation/service path below. No selected world/resources, animation-speed doubling or native camera-speed/one-call screen-flash binding is supplied. Existing white fade/FlashWhite is not evidence of consuming this command.|
 |[SceneEntities](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/SceneEntities.cs), [EntityActionRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs), [ExplorationPortraitRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationPortraitRunner.cs)|Prepared population/ordinary followers and action/text flags have consumers. Selected full cast, class/HP/aliases/capacity and interrupted semantics remain unbound/unassessed. Compiler position/face/animation forms do not carry original alive-helper checks; do not equate their shapes with exact changed-state parity.|
-|[ExplorationTextRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationTextRunner.cs), [MapPartyMembership](../../remake/src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs)|LEADER with admitted PartyFlags already rebuilds lists before choosing the first active name and publishes PartyLists. Selected2840/2841 token-time execution and fidelity remain unassessed, and cameraSpeed refusal precedes them.|
+|[ExplorationTextRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationTextRunner.cs), [MapPartyMembership](../../remake/src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs)|LEADER with admitted PartyFlags already rebuilds lists before choosing the first active name and publishes PartyLists. Selected2840/2841 token-time execution and fidelity remain unassessed; earlier nested-action and top-level refusal paths remain.|
 |[BattleEncounterDefinition](../../remake/src/Sf2.Remake.Application/Content/Scenarios/BattleEncounterDefinition.cs), [PrivateBattleEncounterReader.Pin](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleEncounterReader.cs)|Placements/expressions/regions/point/terrain/scene shapes exist; private encounter Pin admits1/2/3, explicitly rejects31. Missing31 definitions/live-party/start/policy and resource bindings remain. Scene Frayja is not a supplied deployment.|
 |[BattleEntry](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/BattleEntry.cs)|Intro/before/load/start and membership reconstruction mechanisms exist. Correct431/531/481 route and changed-party rules are unbound for31; NewBattle's F88 path rejects suspended-battle-entry. Save/suspend remains Unsupported.|
-|[ExplorationViewRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationViewRunner.cs), [BattleMapViewport](../../remake/game/src/Battles/BattleMapViewport.cs)|Map2's layer0/background0/256 parallax/zero autoscroll passes the field profile; foreground0,32 is permitted for its nonmain plane. Fixed1:1 profile passes the board plane-motion guard. Metadata support is separate from absent tiles/blocks/layout/sprites/portraits/audio/terrain bindings, reached rendering and precise fidelity. Nonzero ViewSpeed also has an explicit field-view-speed guard; native cameraSpeed already blocks this selected stream.|
+|[ExplorationViewRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationViewRunner.cs), [BattleMapViewport](../../remake/game/src/Battles/BattleMapViewport.cs)|Map2's layer0/background0/256 parallax/zero autoscroll passes the field profile; foreground0,32 is permitted for its nonmain plane. Fixed1:1 profile passes the board plane-motion guard. Metadata support is separate from absent tiles/blocks/layout/sprites/portraits/audio/terrain bindings, reached rendering and precise fidelity. Nonzero ViewSpeed also has an explicit field-view-speed guard; native cameraSpeed remains a separate refusal if reached.|
 |[OriginalMapTraversal.SelectActiveArea](../../remake/src/Sf2.Remake.Domain/Maps/OriginalMapTraversal.cs)|Modern absent area returns null, leading to field-view-area or battlefield-map-area-unavailable; original falls back to first record. Board selects by crop origin, original LoadBattle by view target. Ordinary0,0/21,4 match; changed-state fallback remains a separate gap.|
 |[ExplorationPresentation](../../remake/game/src/Exploration/ExplorationPresentation.cs)|Godot has effect/sprite/window consumers; selected mosaic/flash/audio/text/material and camera-speed rendering/timing, motion completion and input/control are unassessed. No deployment or Godot observation follows from the static shapes.|
+
+The selected lowered program has `entitiesRunning=true`. ProgramRunner's
+StartEntityMotion case (line412) installs lowered15's actions at cursor0,
+clears WaitingForMotion/Follower and does not wait because wait=false.
+The first action is therefore not executed merely by installing it.
+[ExplorationContentReader.Actions](../../remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs)
+line634 maps ac_animSpeedX2 to UnsupportedEntityAction. With that installation
+retained, an admitted enabled service that reaches130's first action hits
+[EntityActionRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs)
+line128 and reports `entity-action`/Unsupported.
+
+In particular, lowered17's fadeInB carries fullBlack and starts a Script
+FullFadeWait. On a reached fade tick,
+[MapTransfer.FadeTick](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/MapTransfer.cs)
+line141 calls ExplorationDispatcher.Service with entityEnabled=null for
+the Script purpose. [Service](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationDispatcher.cs)
+line454 selects explicit entityEnabled, then Story.EntityServices, then
+program.EntitiesRunning. Without a false override, the selected true program
+enables EntityActionRunner.Tick; its failure is carried by FadeServiceFailure
+with the reached snapshot, before a successful fade return could advance to18.
+An earlier enabled service can also encounter the installed action. With
+entity services suppressed, that opportunity does not execute the action.
+This static path requires admitted resources/context, successful earlier
+population/initialization/presentation services and no earlier slot failure;
+it does not establish an absolute first error for arbitrary supplied state,
+or an actual Battle31 run. Nested animation refusal, top-level camera refusal
+and missing deployment remain distinct boundaries.
 
 Production consumes prepared Content, not research JSON/disassembly on
 demand. Missing resources/bindings, explicit semantic refusal and unassessed
@@ -547,13 +574,17 @@ fidelity are different gaps. Supported shapes do not establish runnable31.
 ## Reproduction and remaining boundaries
 
 Load current ignored selections in each launching process. Reuse the pair
-unchanged; the bounded direct recipe checks pinned sources, complete scene/
+unchanged. The retained original direct review covers pinned sources, complete scene/
 inline/list/text joins, all27 rows/four regions/point, definitions/equipment,
-hook/init/map/text/action consumers and actual248-instruction lowering:
+hook/init/map/text/action consumers and actual248-instruction lowering.
+
+For the nested-action correction, run only its focused installation/enablement/
+service/refusal and document-boundary check; retain the original full audit
+receipts without rerunning that audit.
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1076/review.py <configured-source-disasm-root>
+uv run --locked python -X utf8 local/issue1076/correction_review.py <configured-source-disasm-root>
 git diff --check
 ```
 
@@ -571,6 +602,13 @@ effect and corrected independent0.138s/CI39481060627 result, #1072 receipts,
 #1070 N==V, #1068 HP and #1066 projection corrections, prior diagnostics and
 Unknown chain. Twelve completed old comparison failures remain evidence,
 not a repair/rerun queue. No runtime/process launch is needed for this slice.
+
+The author full direct audit0.236s, independent main-gate audit0.240s and
+original CI39483112493 passed but missed the nested ac_animSpeedX2 refusal.
+Those receipts remain retained; the correction checks only the selected
+installation/enablement/service/refusal path and revised prose, plus the
+clean-head planner and new exact-head scoped CI in the Issue/PR handoff.
+The accepted original-game review is not repeated or promoted to runtime proof.
 
 **Unknown:** natural admission, actual map/register words/crop/flags/HP/
 membership/equipment/difficulty/turn state; aliases/population/capacity;
