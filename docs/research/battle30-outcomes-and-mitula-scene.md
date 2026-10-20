@@ -1,5 +1,7 @@
 # Battle30 outcomes and Mitula scene
 
+Continue with [Mitula Shrine exploration and Taya recruitment](./mitula-shrine-exploration-and-taya-recruitment.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Battle30 selects the empty
 defeated hook with leader cleanup and the complete `abcs_battle30` after scene.
 Its Ground Orb actors/effects do not award an inventory item or determine
