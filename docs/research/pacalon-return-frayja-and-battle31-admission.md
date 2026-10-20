@@ -1,5 +1,7 @@
 # Pacalon return, Frayja following and Battle31 admission
 
+Continue with [Battle31 initialization and opening](./battle31-initialization-and-opening.md).
+
 Evidence date: 2026-10-20. **Confirmed:** a separately reached south scroll
 from Map74 requests71 and substitutes78 when F530 is held. Pacalon town2
 and castle36 then have independent admission and live setup reads. The
