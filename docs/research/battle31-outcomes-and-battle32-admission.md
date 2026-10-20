@@ -96,8 +96,8 @@ effects, but neither wrapper tail. An empty script is no proof of a completed
 service or a side-effect-free wrapper.
 
 `battleloop/processkilledcombatants.asm` performs spin/effect/sound waits,
-increments ally defeats or enemy kills attributed to supplied
-BATTLESCENE_FIRST_ALLY, writes X/Y=-1, clears status/recomputes stats and
+increments the listed dead ally's defeats or supplied
+BATTLESCENE_FIRST_ALLY's kills for an enemy, writes X/Y=-1, clears status/recomputes stats and
 moves the mapped entity to `$7000,$7000`. It does not set HP0, clear the
 list length or invoke the action-side drop transaction. Thus queued living
 enemies can disappear from the count through X alone. Existing stale or

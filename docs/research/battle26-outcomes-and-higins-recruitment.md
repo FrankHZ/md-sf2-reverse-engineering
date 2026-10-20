@@ -96,8 +96,8 @@ neutral159 has HP0 and is not appended; supplied nonzero HP changes that.
 finds no26 table row, so it performs no relocation here.
 
 `battleloop/processkilledcombatants.asm` consumes the length-delimited list,
-performs spin/sound passes, increments ally defeats or kills for
-BATTLESCENE_FIRST_ALLY, writes listed combatant X/Y=-1 and status0,
+performs spin/sound passes, increments the listed dead ally's defeats or
+BATTLESCENE_FIRST_ALLY's kills for an enemy, writes listed combatant X/Y=-1 and status0,
 recomputes stats and moves mapped entities to `$7000,$7000`. It neither
 zeros listed HP nor clears list length. It calls no enemy-drop transaction.
 Thus leader cleanup can eliminate130 from the count without awarding its

@@ -93,8 +93,8 @@ and clears scrolling speed on return. Skipping it avoids those interpreter
 effects, but does not skip the cleanup tail. An empty script proves no service
 completion.
 
-ProcessKilledCombatants requests spin/effect/sound waits, credits allied
-defeats or enemy kills through supplied BATTLESCENE_FIRST_ALLY, writes X/Y=-1,
+ProcessKilledCombatants requests spin/effect/sound waits, credits defeats to
+the listed dead ally or enemy kills to supplied BATTLESCENE_FIRST_ALLY, writes X/Y=-1,
 clears status/recomputes stats and moves the mapped entity to `$7000,$7000`.
 It does not set HP0, clear death-list length or execute the item-drop service.
 Living queued enemies can therefore stop counting through X alone. Stale or

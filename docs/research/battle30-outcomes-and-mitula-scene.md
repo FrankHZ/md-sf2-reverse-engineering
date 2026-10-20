@@ -85,8 +85,8 @@ The selected roster's sixteen declarations do not shorten this scan. The
 separate `data/battles/global/afterbattlepositions.asm` contains only battle5;
 no Battle30 leader-position script is selected.
 
-The shared death consumer runs spin/effect/sound waits, credits ally defeats
-or enemy kills to the supplied BATTLESCENE_FIRST_ALLY, writes combatant X/Y=-1,
+The shared death consumer runs spin/effect/sound waits, credits defeats to
+the listed dead ally or enemy kills to supplied BATTLESCENE_FIRST_ALLY, writes combatant X/Y=-1,
 clears status/recomputes stats and moves its mapped entity to `$7000,$7000`.
 It neither writes current HP0 nor clears list length nor calls the item-drop
 transaction. Thus cleanup can remove nonzero-HP enemies from the count by X.
