@@ -1,5 +1,7 @@
 # Battle31 outcomes and Battle32 admission
 
+Continue with [Battle32 initialization and opening](./battle32-initialization-and-opening.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Battle31 selects empty
 defeated/after scripts, but their wrappers still queue leader cleanup and
 call JoinForce0. Unchanged victory clears431, sets531 and returns to fresh
