@@ -1,5 +1,7 @@
 # Battle32 outcomes, Jaro recruitment and Moun entry
 
+Continue with [Battle33 initialization and Moun opening](./battle33-initialization-and-opening.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** unchanged victory saves
 a Map74 return seed before the complete Jaro scene, clears432 and sets532.
 The scene joins23, clears his AI-control bit, then clears active55 and
