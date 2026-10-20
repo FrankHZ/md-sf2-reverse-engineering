@@ -36,6 +36,9 @@ this slice does not rebuild or newly observe it. `sf2const.asm`,
 `sf2enums.asm`, `sf2macros.asm`, `sf2mapmacros.asm` and
 `sf2cutscenemacros.asm` own constants/encoding. Fnnn means flag nnn;
 indices are zero-based and address intervals half-open.
+Short `cutscenes/` and `battlefunctions/` paths are under
+`code/gameflow/battle/`; `map/` and `text/` paths are under
+`code/common/scripting/`.
 
 Minimum evidence is complete selected source, existing fixtures/consumers
 and the unchanged18,285,979-byte map-init/script pair with accepted0.083s
@@ -53,6 +56,11 @@ held531 clears431 but still admits31 on that invocation. No additional
 530/811/82/join22/active54 test applies. MainLoop overwrites d1.w with31
 and calls j_BattleLoop with map2 in d0. Entry coordinates do not seed the
 formation, and wildcard triggers do not establish containment or travel.
+For the intact castle-south request, MainLoop receives d1.w=sampled X,
+d2.w=sampled Y with only its low byte replaced by1, d3.w=Down3 and d4.w=0.
+The d1 overwrite discards that X argument; d2/d3 are not the scene or
+formation positions. Retained high coordinate bytes and supplied mutations
+remain premises, rather than an assumed literal entry `(X,1)`.
 
 `code/gameflow/battle/battleloop_1.asm:BattleLoop` (`$23A84..$23BB4`):
 
