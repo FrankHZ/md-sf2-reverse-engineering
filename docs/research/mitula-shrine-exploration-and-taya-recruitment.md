@@ -10,6 +10,8 @@ reveals Taya, who proposes Nazca. **Unknown:** natural interaction/collection/
 travel reach, supplied state, completed presentation/control and persistence.
 This supplies research data, not a runnable Map1 or engine-ready claim.
 
+Continue with [Mitula return and Skreech recruitment](./mitula-return-and-skreech-recruitment.md).
+
 ## Agreement and provenance
 
 Standard rigor for [Issue #1070](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1070)
