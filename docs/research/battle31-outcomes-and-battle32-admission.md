@@ -100,8 +100,16 @@ moves the mapped entity to `$7000,$7000`. It does not set HP0, clear the
 list length or invoke the action-side drop transaction. Thus queued living
 enemies can disappear from the count through X alone. Existing stale or
 duplicate entries/mappings and interrupted prefixes remain supplied state.
-No Battle31 row exists in the drop table; selected fresh inventory is NOTHING.
-This is no assertion about other action-side rewards or arbitrary inventory.
+No Battle31 row exists in the drop table. Separately, all27 spriteset
+placement item operands are NOTHING; this does not mean empty inventory.
+`battleloop/initializecombatants.asm:InitializeEnemyStats` first copies the
+full56-byte enemy definition. InitializeEnemyItems returns on ITEM_NOTHING
+before AddItem, without clearing those copied items. Thus no placement item
+is added, while definition equipment remains: fresh enemy128 Devil Soldier
+retains GREAT_AXE|EQUIPPED from `data/stats/enemies/enemydefs.asm`, definition23.
+The [opening inventory owner](./battle31-initialization-and-opening.md#full-spriteset-and-fresh-construction)
+retains the other selected definitions. No dedicated drop row is distinct
+from retained equipment, other action-side rewards or arbitrary inventory.
 
 `countremainingcombatants.asm` counts signed X.b>=0 and HP.w!=0 across
 all30 allies/all32 enemies, without Y, membership, neutrality, activation
