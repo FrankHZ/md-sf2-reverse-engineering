@@ -1,5 +1,7 @@
 # Battle30 activation and first-turn dispatch
 
+Continue with [Battle30 outcomes and Mitula scene](./battle30-outcomes-and-mitula-scene.md).
+
 Evidence date: 2026-10-20. **Confirmed:** all twelve declared formation
 positions miss all four Battle30 regions under the integer consumer. Fifteen
 initialized enemies qualify for sixteen turn records: Zalbard's current
