@@ -430,7 +430,15 @@ therefore becomes56 (SUPER70) before the distinct staff/flail bonuses.
 Absent144–159 take the hidden branch with d1=0: activation0,max/currentHP0,
 X=-1; no Y/enemy-index/inventory refresh. Their trigger bytes are read from
 the first enemy-row pointer,0/15, not sixteen absent row records. ClearAiMemory
-clears49 memory entries, not combatant state. PositionBattleEntities then
+(`battleloop/clearaimemory.asm`) writes48 last-target bytes toFF and48
+AI-memory bytes to0, offsets0–47: its word counter starts48 and decrements
+with subq.w/BNE after each pair of byte writes, rather than DBF. The ranges
+are `$FFB1AC..$FFB1DC` and `$FFB1DC..$FFB20C`, respectively. The next byte
+`$FFB20C` is the high byte of NEWLY_TRIGGERED_BATTLE_REGIONS, whose checked
+word spans `$FFB20C..$FFB20E`; this call clears neither byte of that word.
+Clearing region flags90–105 is a separate fresh-entry operation. The later
+word read in TriggerRegionsAndActivateEnemies is beyond this slice's stop.
+PositionBattleEntities then
 clears physical/lookups again and packs placed allies followed by enemies
 in ID order, testing signed X/Y bytes and enemy neutral bit, **not HP**.
 Coordinates are masked3F, facingDown3; allies use eas_Standing and enemy
@@ -480,6 +488,7 @@ Load ignored selections in the launching process; reuse the pair unchanged:
 ```powershell
 . ./local/private-inputs.ps1
 uv run --locked python -X utf8 local/issue1088/review.py <configured-source-disasm-root> --committed
+uv run --locked python -X utf8 local/issue1088/review_ai_clear.py <configured-source-disasm-root> --committed
 git diff --check
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
@@ -491,6 +500,9 @@ fresh/F88/483, join/csc51/LEADER/2874/heal/sorted placement, Map31 copies/crop/
 view/terrain/music and recursive lowering/current consumers. Changed states
 include active/inactive/dead/over-capacity/short/empty cached lists, skipped
 and interrupted scenes, changed selectors/flags/crop and aliased physicals.
+
+The focused AI-clear audit checks the exact subq/BNE loop,48-byte ranges,
+adjacent checked-word address/width and this prose on a clean committed head.
 
 Separately compare exact accepted-base→HEAD two paths, clean status and
 navigation-only predecessor; verify UTF8/LF/links/private boundary and cached
