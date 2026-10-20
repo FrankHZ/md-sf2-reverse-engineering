@@ -1,5 +1,7 @@
 # Battle32 initialization and opening
 
+Continue with [Battle32 activation, Jaro side change and first-turn dispatch](./battle32-activation-jaro-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** admitted Map74/Battle32
 constructs a temporary scene, then a current-party formation and sixteen
 declared enemies. Enemy143 has a joined-list exception that can retain its
