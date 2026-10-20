@@ -1,5 +1,7 @@
 # Moun to the Nazca region and Battle34 admission
 
+Continue with [Battle34 initialization and the Cameela/Geshp opening](./battle34-initialization-and-opening.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Moun's three surface
 returns explicitly request Map74. That request can select Battle27 before
 Battle32; exploration is conditional. The west-edge scroll into Map75 loads
