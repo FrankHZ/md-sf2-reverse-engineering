@@ -1,5 +1,7 @@
 # Battle32 activation, Jaro side change and first-turn dispatch
 
+Continue with [Battle32 outcomes, Jaro recruitment and Moun entry](./battle32-outcomes-and-moun-entry.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** all twelve declared
 formation positions miss both regions under the original integer consumer.
 Unchanged fresh placement therefore does not admit the Jaro region scene.
