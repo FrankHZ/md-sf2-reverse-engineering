@@ -135,8 +135,14 @@ with their existing action consumers; this is not a claim that none occurred.
 With unchanged Map0/crop `(0,0,32,38)`, the victory seed is Map0 and the actual
 first active member's coordinate bytes/facing, not fixed `(15,33)` or a door
 entrance. It need not be Bowie, alive or onscreen; empty active lists expose
-retained first-byte contents. Zero/missing lookup resolves physical0; other
-lookup bytes are not validated by the facing read. Changed map/crop/actor/
+retained first-byte contents. Only a zero lookup selects physical0.
+`entity/entityfunctions_1.asm:PositionBattleEntities` writes `$FF` for an
+unplaced ally. `battlefunctions/battlefunctions_0.asm:GetEntityIndexForCombatant`
+returns that byte without rejecting it; victory directly shifts the result by5
+and reads facing at `ENTITY_DATA+$1FE0+$10`. This is an unchecked read, not
+physical0 or a valid entity guarantee. Unlike `battlefunctions/loadBattle.asm`,
+victory has no negative-lookup fallback or `$3F` mask before the shift. Other
+lookup bytes are likewise consumed without validation. Changed map/crop/actor/
 PARAM/current-battle values affect their own live reads. Checked completion,
 script selection, join tail and final flag writes are not one snapshot. Stopping
 after healing, seed, join,429-clear or529-set does not complete the remaining suffix.
