@@ -261,12 +261,14 @@ on the text; scene operations alone do not establish story truth or completion.
    submit eas_2xUpDown without wait, then csWait120 and call to Mitula. Peter
    walks Left1, wait30, faces Down/Left/Down separated by30 waits and a final
    wait30, then asks what to do.31 faces Right for Arc Valley directions,
-   Down for storytellers; Bowie faces Up and nods. Install follow31→Bowie2,
-   then Peter→31/2; csc_end. Offset2 resolves `(-24,0)` from the actual
-   follower table. This installs following, without moving the victory seed.
+   Down for storytellers; Bowie faces Up and nods. If Bowie's live HP is
+   nonzero at each follow precheck, install follow31→Bowie2, then Peter→31/2;
+   csc_end. Offset2 resolves `(-24,0)` from the actual follower table. Each
+   admitted command installs following, without moving the victory seed.
 
-With distinct intact aliases and all awaited actions returning, the commanded
-pre-follow positions are Bowie10,13,31 at9,11 and Peter10,11; Zalbard's Die
+With distinct intact aliases, living Bowie/Peter at their own-ID-gated commands
+and all awaited actions returning, the commanded pre-follow positions are
+Bowie10,13,31 at9,11 and Peter10,11; Zalbard's Die
 ends at63,63, Mitula's movement at9,11 and the Orb's second destination11,2.
 Mitula's mosaic and the Orb's slide modify graphics without relocating them.
 Installing following can subsequently move31/Peter, so these are not a frozen
@@ -391,13 +393,25 @@ held-input behavior, complete display or audible speech was observed.
   VIEW_SCROLLING_SPEED and restores interpreter registers; it does not
   restore actors, following, priority, crop or PARAM2–5.
 
-setPos/setFacing/stopEntity/followEntity use the live ally-HP skip helper
-where selected: allies0–29 at HP0 skip their command;31 and128–130 bypass
-that test. Referenced action/text/camera/flash/custom consumers do not all
-share that gate. Victory normally revived Peter first, but changed/dead
-Peter or Bowie during the scene can still differ. A missing31 aliases main0,
-not a skipped command; a supplied FF mapping is an unchecked entity-data
-address, not main0. No arbitrary live-alias/capacity safety is established.
+setPos/setFacing read byte IDs and stopEntity reads its word ID before the
+live ally-HP skip helper: their own allies0–29 at HP0 skip that command;
+their31 and128–130 operands bypass the test. followEntity differs: its macro
+emits **word** follower operands, but csc2C first peeks only the first/high byte00
+of both selected001F (31) and0007 (Peter7) before the helper. Only after the
+helper returns does it read the full follower word for entity lookup.
+GetCurrentHp reaches GetCombatantWord/GetCombatantEntryAddress, whose BYTE_MASK
+removes retained upper word bits; both prechecks therefore read combatant0/Bowie
+HP, not31/Peter. Bowie HP0 skips both follow commands' six operand bytes and
+unwinds each command before the full-word lookup/AddFollower; Peter HP0 alone
+does not suppress Peter-follow when Bowie HP is nonzero. Ordinary unchanged
+victory has living Bowie, but changed live HP between the two reads can differ.
+
+Referenced action/text/camera/flash/custom consumers do not all share these
+gates. Victory normally revived Peter first, but changed/dead Peter or Bowie
+during the scene can still differ. With an admitted follow precheck, missing31
+aliases main0 rather than skipping; a supplied FF mapping is an unchecked
+entity-data address, not main0. No arbitrary live-alias/capacity safety is
+established.
 
 The six movement streams and four custom streams, named actions, text waits,
 flash/fade/DMA and camera waits are non-atomic. An interrupted prefix can
