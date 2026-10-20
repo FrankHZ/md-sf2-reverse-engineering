@@ -1,5 +1,7 @@
 # Battle29 outcomes and shrine exterior route
 
+Continue the admitted encounter in [Battle30 initialization and opening](./battle30-initialization-and-opening.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Battle29's empty defeated
 and after scripts retain shared leader cleanup and JoinForce0. Victory returns
 a member-derived Map0 seed and enters fresh exploration without another battle
