@@ -17,8 +17,9 @@ Standard rigor for [Issue #1116](https://github.com/FrankHZ/md-sf2-reverse-engin
 under [#1053](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1053):
 explain the regional transition, battle admission and town-entry dependencies
 for later content decisions. Accepted base:
-`cb64e45f2860f99e23016c246b38e1f9693dfbe2`. Own this document and navigation
-only in the [optional Dojo owner](./dojo-exploration-and-sheela-recruitment.md).
+`cb64e45f2860f99e23016c246b38e1f9693dfbe2`. Own this document
+and navigation plus the directly related collision-consumer wording in the
+[optional Dojo owner](./dojo-exploration-and-sheela-recruitment.md).
 No stacked dependency, registry/index/schema/fixture/tool/engine change.
 Battle35 roster/AI/turns/outcomes, Roft interactions/searches/recruitment and
 Map77's body are excluded. A successful conversion is not playable acceptance.
@@ -273,8 +274,9 @@ HP or joined flags. No table row is a fixed Zynk or a membership operation.
 |142|13,3 /Down3|MAN194 /fixed sprite|
 
 Walking actions are ongoing random-walk requests, not prescribed trajectories
-or observed RNG. eas_Init resets acceleration factors, speed32, acceleration/
-deceleration and collision/obstruction/autofacing/orientation/immersion fields,
+or observed RNG. eas_Init resets acceleration factors/speed32, clears
+acceleration/deceleration and entity/map collision-check bits5/6, enables
+the separate obstruction bit7 and autofacing, resets orientation/immersion,
 requests size24/sprite update and jumps idle. InitFixedSprite additionally
 disables autofacing/motion. These init dependencies do not establish city
 interactions, shops/church, Petro's later scene or recruitment.
@@ -353,12 +355,28 @@ that F is Astral or manufactures a missing P/F/26 alias for the greeting.
 F76 alone selects its optional Zynk position, independently of921/26/260.
 
 csc15 and csc2D resolve the physical alias, seed its action timer from slot
-and poll **eas_Idle's address** for waiting forms; csc2D clears FLAGS_A bits5/6
-to enable map/entity collision tests. eas_Jump disables autofacing,
+and poll **eas_Idle's address** for waiting forms. csc2D's AND$9F clears
+FLAGS_A bits5/6, **disabling** the corresponding entity/map collision checks.
+In entityscriptengine_2.asm, HasSameDestinationAsOtherEntity returns zero/
+no obstruction when bit5 is clear; bit6-clear branches bypass map checks in controlled/
+random walking. The source macro names ac_entityUncollidable and
+ac_mapUncollidable do not reverse those actual consumer predicates.
+
+csc2D's directional builders emit esc04 relative movement followed by
+esc01 destination wait, then the terminal jump to eas_Idle. esc04 calls
+HasSameDestinationAsOtherEntity and enters loc_55C8 to set destination,
+travel and velocity; it does not run the random-walk map-check path.
+With bit5 still clear, another actor's destination does not block this
+installation. UpdateEntityData advances/clamps motion without a new
+bit5/6 collision gate; esc01 waits for actual X/Y to equal XDEST/YDEST.
+Thus obstacles alone are not a source-backed reason for these sequences
+to stall while the bits stay clear. Completion still needs entity-update
+services and motion progress; live script/alias/state changes can alter it.
+csc15 does not itself clear these bits. Its eas_Jump disables autofacing,
 requests relative0,−1/wait5/0,1/wait5/0,0, reenables autofacing and jumps idle.
-None of these waits HP-skips. Blockage/interruption can prevent completion.
-Nominal completed unblocked128 positions are14,26→12,26→12,25→10,25→10,27→12,27;
-these are source arithmetic only, not observed motion or guaranteed final facing.
+None of these waits HP-skips. Nominal completed128 positions are
+14,26→12,26→12,25→10,25→10,27→12,27; these are source arithmetic only,
+not observed motion or guaranteed final facing.
 
 ExecuteMapScript/csc_end restores registers and clears view scroll speed;
 it neither joins nor repositions the party into a follower chain. Trap6
@@ -439,6 +457,7 @@ sf2enums.asm/code/data, and canonical selects the registered existing export:
 ```powershell
 . ./local/private-inputs.ps1
 uv run --locked python -X utf8 local/issue1116/review.py <registered-source-root> --canonical <registered-canonical-export> --committed --receipt local/issue1116/direct-reproduction-01.json
+uv run --locked python -X utf8 local/issue1116/correction.py <registered-source-root> --committed --receipt local/issue1116/correction-reproduction-01.json
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
@@ -446,9 +465,13 @@ Choose an unused ignored receipt; --canonical/--receipt are required and
 existing outputs are rejected. The local direct recipe checks full selected
 tables/commands, constants/use sites, request/consumer order, source-arithmetic
 changed states, text IDs/speakers/tokens and actual compiler/content results;
-pair/provenance/canonical unchanged; two paths/navigation-only, links, UTF-8/LF
+pair/provenance/canonical unchanged; two paths with navigation and the targeted
+collision-consumer correction, links, UTF-8/LF
 and private boundary. Clean committed planner and exact-head scoped CI are
-separate receipts. Suggested planner gates are not executed passes. No normal/
+separate receipts. The focused correction recipe checks collision-bit polarity,
+relative movement/wait consumers and the exact permitted correction diff;
+it does not rerun the full earlier recipe. Suggested planner gates are not
+executed passes. No normal/
 full/old comparison/SDK/Godot/emulator/H3/H4/screenshots or new maintained
 parser/schema/fixture/platform is introduced or run.
 
