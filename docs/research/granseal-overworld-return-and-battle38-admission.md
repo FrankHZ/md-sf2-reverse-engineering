@@ -1,5 +1,7 @@
 # Granseal overworld return and Battle38 admission
 
+Continue with [Battle38 initialization and Geshp opening](./battle38-initialization-and-opening.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** Map77's south scroll
 loads Map66 while retaining the live population and exploration call;
 it does not scan for battles. A subsequently invoked Map66 y9/y10 zone
