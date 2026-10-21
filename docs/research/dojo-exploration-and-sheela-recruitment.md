@@ -432,7 +432,7 @@ Join calls no stat/item initializer, heal, status reset, alias allocation,
 map-event publication or save. Sheela's existing HP/MP/class/status/items
 survive it; sprite and movement were separate earlier commands. The later
 follow operations append/update transient field following through AddFollower,
-with offset2=(0,24) and offset5=(−24,−24), not a new persistent follower flag.
+with offset2=(−24,0) and offset5=(−24,−24), not a new persistent follower flag.
 There is no Sheela25 row in the ordinary follower table. Callback return
 does not prove post-join message acknowledgement, completed following or control.
 
