@@ -1,5 +1,7 @@
 # Battle35 activation and first-turn dispatch
 
+Continue with [Battle35 outcomes and Roft return](./battle35-outcomes-and-roft-return.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** all twelve declared
 formation positions miss all four regions under the original integer
 consumer. After unchanged completed fresh initialization, thirteen
