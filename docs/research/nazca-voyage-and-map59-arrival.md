@@ -494,6 +494,9 @@ usable control and saved persistence. The five later scenes, alternate
 ending and battle initialization remain outside this acceptance boundary.
 Static completion does not mean a playable voyage or supported subsystem.
 
+Continue at [Nazca ship shootdown and crash handoff](./nazca-ship-shootdown-and-crash-handoff.md)
+for the five scenes through fresh Map37's first post-crash dispatch.
+
 Freeze a clean committed/pushed Draft PR, exact base/head/tree, direct/
 planner/actual-CI results, failures/Unknowns and ignored handoff. Move
 Project to Review / Verify, send the assigned main-gate completion and
