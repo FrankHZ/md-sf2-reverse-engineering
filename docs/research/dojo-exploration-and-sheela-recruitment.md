@@ -10,6 +10,9 @@ dialogue does not itself establish membership or a required main route.
 **Stop at Map75 return/reentry context.** Natural access, completed services,
 usable control, rendering and saved persistence remain **Unknown**.
 
+The separate [Nazca-to-Roft route, Battle35 admission and town greeting](./nazca-to-roft-and-battle35-admission.md)
+continues from Map75's west boundary; the optional Dojo is not its prerequisite.
+
 ## Agreement and evidence route
 
 Standard rigor for [Issue #1114](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1114)
