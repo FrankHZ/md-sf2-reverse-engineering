@@ -1,5 +1,7 @@
 # Battle35 initialization and the Geshp opening
 
+Continue with [Battle35 activation and first-turn dispatch](./battle35-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** an admitted Map76/Battle35
 fresh entry can stage Geshp's confrontation, then replace the scene population
 with the current party and spriteset35. Geshp is a temporary scene actor,
