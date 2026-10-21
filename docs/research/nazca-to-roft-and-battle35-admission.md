@@ -1,5 +1,7 @@
 # Nazca to Roft, Battle35 admission and the town greeting
 
+Continue with [Battle35 initialization and the Geshp opening](./battle35-initialization-and-opening.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Map75's west scroll
 loads Map76/Roft region with retained population and without battle admission.
 Map76's admitted default zone, while F535 is clear, sets F435 and posts a
