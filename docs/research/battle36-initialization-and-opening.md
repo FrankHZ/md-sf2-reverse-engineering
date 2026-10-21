@@ -214,8 +214,9 @@ The complete top-level order follows; all four inline streams are
 sets its wait timer to the physical slot byte, installs the pointer, and
 for Wait spins until that pointer equals eas_Idle. It has no alive guard.
 `eas_Init` sets acceleration0, speeds32/32, disables acceleration and
-deceleration, enables obstruction/auto-facing, clears entity/map collision
-disable bits5/6, orients Up, clears immersed, sets global sprite size24,
+deceleration, enables obstruction/auto-facing, clears flagsA bits5/6,
+disabling entity/map collision checks at their respective consumers,
+orients Up, clears immersed, sets global sprite size24,
 refreshes sprite and jumps idle. Requested Down facing after Init is separate.
 
 setPos and setFacing use AdjustScriptPointerByCharacterAliveStatus: only
@@ -237,9 +238,11 @@ change results. With distinct stable aliases and completed requests the
 nominal endpoints are Bowie19,5; Peter18,4; follower20,4; Caravan19,4.
 These are conditional arithmetic endpoints, not natural reach or duration.
 
-`entity/entityscriptengine_2.asm:HasSameDestinationAsOtherEntity` treats an
-other entity with bit5 clear as nonblocking for its destination check;
-bit5 set allows blocking. esc04 retries a blocked move; esc01 checks remaining
+`entity/entityscriptengine_2.asm:HasSameDestinationAsOtherEntity` tests bit5
+of the **current moving entity at a0**. Clear returns no obstruction without
+scanning; set permits scanning other entity records through a2. The scanned
+entity's bit5 does not decide whether this scan runs or blocks movement.
+esc04 retries a blocked move; esc01 checks remaining
 travel and yields while nonzero. Bits0/2/1/3 respectively govern X acceleration,
 X deceleration, Y acceleration, Y deceleration; bits5/6 must not be inverted
 or described as motion bits. Ordinary controlled/random movement tests bit6
@@ -305,9 +308,13 @@ the actual view/fallback coordinates, not crop origin. It then loads entity
 sprites, base VInts, terrain, map music and fade-in. The scene's BATTLE_THEME_1
 request and later area BATTLE_THEME_3 selection are separate. Terrainentries
 slot36→BattleTerrain36→battle36/terrain.bin is a binding, not decoded terrain.
-Global36 selects SWAMP, leader-presence FF, no neutral row; LEADER AI below
-does not turn that global byte into a leader-present result. Drop table has
-enemyEntity0/BATTLE_SWORD/F25; no outcome or award execution is covered.
+Global36 selects SWAMP and no neutral row. The placement's LEADER AI is
+independent of the global leader-presence byte FF. FF is nonzero:
+`code/gameflow/battle/cutscenes/battleendcutscenesend.asm:loc_47C48` tests
+table_EnemyLeaderPresentFlags with tst.b and skips its post-leader-death
+append path only for zero. Thus36 enables that path when its caller reaches
+this chunk; full defeat/settlement behavior remains deferred. Drop table has
+enemyEntity0/BATTLE_SWORD/F25; no outcome or award execution is covered here.
 
 ### Complete spriteset36
 
