@@ -10,6 +10,8 @@ Battle35 victory. **Stop at the Map38 exit request to76,8,48.** Natural
 reach, actual carried state, completed services, usable control and saved
 persistence remain **Unknown**.
 
+Continue at [Roft to Galam, Dry Stone and Battle36 admission](./roft-to-galam-and-battle36-admission.md).
+
 ## Agreement and evidence route
 
 Standard rigor for [Issue #1124](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1124)
