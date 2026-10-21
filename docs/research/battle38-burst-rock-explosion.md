@@ -1,5 +1,7 @@
 # Battle38 Burst Rock targeting, damage and immediate explosions
 
+Continue with [Battle38 outcomes, Geshp aftermath and exploration return](./battle38-outcomes-and-geshp-aftermath.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** kind32's special AI
 replaces its ally-only preparation with an **all-combatant** occupancy
 array. Eligible enemies alone can therefore enable the explosion draw.
