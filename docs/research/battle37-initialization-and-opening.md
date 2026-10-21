@@ -1,5 +1,7 @@
 # Battle37 initialization and the Red Baron opening
 
+Continue with [Battle37 activation, double turns and first control dispatch](./battle37-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** admitted Map77/Battle37
 can stage Geshp128 and Red Baron129, then replace that population with
 the live party and eighteen STARTING enemies led by Red Baron128.
