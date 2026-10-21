@@ -10,6 +10,9 @@ dialogue does not itself establish membership or a required main route.
 **Stop at Map75 return/reentry context.** Natural access, completed services,
 usable control, rendering and saved persistence remain **Unknown**.
 
+The separate [Nazca-to-Roft route, Battle35 admission and town greeting](./nazca-to-roft-and-battle35-admission.md)
+continues from Map75's west boundary; the optional Dojo is not its prerequisite.
+
 ## Agreement and evidence route
 
 Standard rigor for [Issue #1114](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1114)
@@ -185,8 +188,9 @@ cs_600B2's complete five commands are: setActscriptWait25,eas_Immersed;
 setSprite25,POSE7; setActscriptWait25,eas_InitFixedSprite;
 setFacing25,Up; csc_end. Immersed sets flagsB immersed bit then sprite
 update/idle. InitFixedSprite subsequently sets accel0/speed32, clears
-acceleration/deceleration and collision-disable bits, enables obstruction,
-sets auto-facing then orientationUp, **clears immersed**, disables
+acceleration/deceleration and entity/map collision-check bits5/6, enables
+the separate obstruction bit7, sets auto-facing then orientationUp,
+**clears immersed**, disables
 auto-facing and animation, sets size24, updates sprite and enters idle.
 Thus immersed is an intermediate request, not a retained final-state claim.
 setSprite uses explicit POSE7; final setFacing alone has the ally HP guard.
@@ -312,10 +316,19 @@ calls increment the cursor from2083; their modes/speakers are listed next.
 Action installation csc14/15 and sequence csc2D resolve physical slots,
 initialize their wait timer from slot number, install script addresses and
 optionally wait for the **eas_Idle address**, not merely destination arrival.
-csc2D additionally clears flagsA bits5/6 (the collision-disable flags),
-restoring the sequence's entity/map collision tests. They
-do not test ally HP/joined; waitIdle/csc16 also has no HP guard. Blocking,
-interruption and alias reuse can change or prevent completion. Nonwaiting
+csc2D additionally ANDs flagsA with$9F, clearing bits5/6 and **disabling**
+the corresponding entity/map collision checks. HasSameDestinationAsOtherEntity
+returns zero/no obstruction with bit5 clear; bit6-clear branches bypass map checks in
+controlled/random walking. Its directional builders emit esc04 relative
+movement plus esc01 destination wait. esc04 sets destination/travel/velocity
+through loc_55C8 after the entity-destination check, without the random-walk
+map-check path. With bit5 still clear, another actor's destination cannot
+block installation. UpdateEntityData advances/clamps motion without a new
+bit5/6 gate; esc01 waits for X/Y to equal XDEST/YDEST. Obstacles alone do
+not establish a stall while those bits stay clear. csc14/15 retain these
+bits instead of clearing them. None tests ally HP/joined; waitIdle/csc16
+also has no HP guard. Completion needs entity updates/motion progress;
+interruption, changed live state and alias reuse can alter it. Nonwaiting
 Jump calls can overlap F's awaited Jump; source order is not a frame schedule.
 
 setPos, setFacing and startEntity use AdjustScriptPointerByCharacterAliveStatus:
@@ -327,7 +340,7 @@ actual follower/leader. Dead Zynk is not independently excluded by follow;
 dead Bowie skips all four. No source command manufactures missing actors.
 
 At129 onward, Sheela's own position is relative to her actual current slot.
-Nominal unblocked completed6,6→6,4→6,8→6,10 is only a source arithmetic
+Nominal completed6,6→6,4→6,8→6,10 is only a source arithmetic
 example. startEntity writes animation counter0; Transparent sets the
 blinking/transparency flagsB bit, not alias removal. Its nonwaiting install
 and the immediately following action install are distinct service seams;
