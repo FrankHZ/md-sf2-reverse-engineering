@@ -13,6 +13,10 @@ interfaces. Natural reach, actual incoming state/RNG/first actor, completed
 services, presentation, usable control and persistence remain **Unknown**.
 This is not playable Battle36 acceptance.
 
+The successor [Prism Flower laser targeting and results](./battle36-prism-flower-laser.md)
+connects that entry to decision occupancy, action reconstruction, damage and
+result interfaces; this owner's activation/first-dispatch stopping point remains.
+
 ## Agreement and evidence route
 
 Standard rigor for [Issue #1130](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1130)
