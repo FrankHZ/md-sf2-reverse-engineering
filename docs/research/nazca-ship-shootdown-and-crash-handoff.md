@@ -1,5 +1,8 @@
 # Nazca ship shootdown and crash handoff
 
+Continue at [post-crash ship interactions and Nazca overworld return](./post-crash-ship-and-nazca-overworld-return.md)
+for cs_5FABC, alternate interactions and the Map55 initializer's Map75 return context.
+
 Evidence date: 2026-10-20. **Confirmed (static):** Map59's default
 999-clear initializer calls five consecutive scenes, stages the enemy
 conference and Prism Flowers, switches to the flying ship, then requests
