@@ -1,5 +1,7 @@
 # Battle37 activation, double turns and first control dispatch
 
+Continue with [Battle37 outcomes, Lemon aftermath and exploration return](./battle37-outcomes-and-lemon-aftermath.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** all twelve declared
 formation points miss all three original integer regions. With unchanged
 completed fresh initialization, eighteen STARTING enemies retain their
