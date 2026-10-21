@@ -1,5 +1,7 @@
 # Battle36 initialization and the Prism Flowers opening
 
+Continue with [Battle36 activation and first-turn dispatch](./battle36-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** admitted Map53/Battle36
 can stage Geshp, a Caravan and four flowers as temporary scene actors, then
 replace them with the live party and twenty STARTING enemies, including
