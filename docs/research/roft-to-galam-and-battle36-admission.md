@@ -1,5 +1,7 @@
 # Roft to Galam, Dry Stone and Battle36 admission
 
+Continue with [Battle36 initialization and the Prism Flowers opening](./battle36-initialization-and-opening.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Roft38 exits to76;
 76's west scroll selects77 without a fresh exploration entry or CheckBattle.
 Map77 has two separate no-scroll entrances to53. Battle36 admission uses
