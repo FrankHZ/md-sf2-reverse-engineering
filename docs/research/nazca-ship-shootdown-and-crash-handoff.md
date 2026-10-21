@@ -81,8 +81,8 @@ ac_end, installed with customActscriptWait.
 |cs_5EF60, interior rebuild|textCursor3739; loadMapFadeIn37,4,6; loadEntitiesFromMapSetup9,11,Down; executeSubroutine InitializeNazcaShipForceMembers; setPosZ,8,10,Right; executeSubroutine sub_5F32E; I(P),I(B),I(Z); setPos128,9,12,Up; setPosP,10,12,Up; setPosZ,10,11,Left; fadeInB; shiver128; T3739..3743.|
 |First hit and reaction|SFX_BATTLEFIELD_DEATH; setQuake3; flashScreenWhite20; setQuake1; csWait10; setQuake0; EAwaitP:Right1,jumpRight1,jumpLeft1,jumpRight1,jumpLeft1; setFacingP Left; T3744; setFacing0 Right; setFacingZ Down; T3745..3746.|
 |Second and third hits|death SFX; quake3; flash20; quake1; wait10; quake0; wait10; death SFX; quake3; flash20; quake1; wait10; T3747..3748; EAwait128:Right1; setFacing128 Up; shiver128; T3749..3750.|
-|Fourth and fifth hits|death SFX; quake3; flash20; quake1; wait10; death SFX; quake3; flash20; quake1; wait10; setActscriptWaitP,eas_Jump twice; T3751..3753.|
-|Sixth and seventh hits|death SFX; quake3; flash20; quake1; wait10; T3754..3755; death SFX; quake3; flash20; quake1; wait10; quake3; executeSubroutine sub_5F338; fadeOutB; quake0.|
+|Fourth and fifth hits|death SFX; quake3; flash20; quake1; wait10; death SFX; quake3; flash20; quake1; wait10; setActscriptWaitP,eas_Jump twice; T3751..3754.|
+|Sixth and seventh hits|death SFX; quake3; flash20; quake1; wait10; T3755; death SFX; quake3; flash20; quake1; wait10; quake3; executeSubroutine sub_5F338; fadeOutB; quake0.|
 |Exterior descent|mapLoad75,20,14; loadMapEntities ce_5F1CE; I(0); setCameraEntity128; custom speed16,16 on128; cameraSpeed `$10`; EA128:Left12; executeSubroutine csub_5F326; fadeInB; executeSubroutine sub_5FD92; csWait150; SOUND_COMMAND_FADE_OUT; executeSubroutine sub_5F16C.|
 |Crash and handoff|quake1; SFX_INTRO_LIGHTNING; flashScreenWhite60; waitIdle128; setBlocks56,59,4,5,12,17; csWait120; quake0; executeSubroutine csub_5F14C; csWait120; warp37,8,12,Down; csc_end.|
 
