@@ -1,5 +1,7 @@
 # Battle36 Prism Flower laser targeting and results
 
+Continue with [Battle36 outcomes and Galam return](./battle36-outcomes-and-galam-return.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** the eight kind93
 Prism Flowers decide whether to fire using an ally-only occupancy array,
 then action6 reconstructs its ray using both sides and sorts its targets.
