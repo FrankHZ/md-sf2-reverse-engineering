@@ -1,5 +1,7 @@
 # Battle36 outcomes and Galam return
 
+Continue with [Battle37 initialization and the Red Baron opening](./battle37-initialization-and-opening.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** Battle36 has an empty
 defeated hook and a nonzero leader byte. With Bowie alive, enemy128's death
 can remove the remaining living enemies before the count. Battle Sword66
