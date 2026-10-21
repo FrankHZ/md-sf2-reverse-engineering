@@ -1,5 +1,8 @@
 # Nazca ship boarding, exploration and departure admission
 
+Continue at [Nazca voyage and Map59 story admission](./nazca-voyage-and-map59-arrival.md)
+for cs_5FB6A through the target initializer's first scene dispatch.
+
 Evidence date: 2026-10-20. **Confirmed (static):** the Map55 boarding
 program sequentially installs the shrinking action on Bowie, Peter and
 FOLLOWER_B, conditionally on Zynk, then requests Map37 at29,8/Left.
