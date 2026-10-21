@@ -145,14 +145,23 @@ layer byte. Declaration clears its layer through the upper half of d6;
 the first exterior ramp starts from0 under this successful rebuild.
 
 Map75 is in `data/maps/global/overworldmaps.asm`. If F65 is held,
-InitializeFollowerEntities uses table_OverworldFollowers, whose only row is
-65/FOLLOWER_A30/Caravan. FOLLOWER_B31 remains alias0 after the clear;
-3383's portrait/speech resolver consequently reads the player slot. If65
-is clear, the ordinary flag-filtered follower table applies; held70 can
-give31 an Astral slot, while other matching31 rows can overwrite it in
-table order. No dialogue phrase proves Astral's presence. Flags76/836
+InitializeFollowerEntities starts at table_OverworldFollowers's
+65/FOLLOWER_A30/Caravan prefix, then continues directly into table_Followers:
+there is no intervening terminator. The consumer advances four bytes per
+row until the final tableEnd.w, admitting rows by their flags. If65 is
+clear, it starts at table_Followers and skips only that Caravan prefix.
+With only65/70 held, Caravan is physical1 and Astral/FOLLOWER_B31 physical2;
+with only70 held, Astral is physical1. Other admitted rows shift slots.
+Rows74/Astral,68/Oddler and70/Astral target31 in that order; later admitted
+rows overwrite its alias without removing earlier physical actors. If none
+is admitted,31 retains cleared alias0. 3383 resolves the live result, not a
+hardcoded Astral. No dialogue phrase proves presence. Flags76/836
 are not equivalent to65/70, and the scene's ship128 is a separate identity.
 Unresolved aliases are not rejected by GetEntityAddressFromCharacter.
+These allocation facts depend on each declaration returning; arbitrary
+enabled-row counts and action-pointer capacity are not validated here.
+Reuse the accepted [overworld population explanation](./north-cliff-opening-and-rohde-recruitment.md)
+and [prefix/alias examples](./polca-departure-through-luke-recruitment.md).
 
 Returning to37 uses csc49_loadEntitiesFromMapSetup, which reselects the
 **live** setup, rebuilds its entities with Bowie9,11/Right and loads sprites.
@@ -364,7 +373,7 @@ These small source-derived counterexamples are static, not runtime tests:
 |76 or836 toggled after admitted launch|No new voyage branch; initial callback admission remains separately guarded. Reloaded stage/followers can depend on other flags.|
 |Peter/Zynk HP0|Actions and Zynk setDest still run; ally setPos/setFacing skip. Non-ally128 is not ally HP-filtered.|
 |Alias26 or31 missing/stale|Source resolver can target player/another slot; there is no rejection in selected actions/dest/text. Rebuild can replace aliases later.|
-|65 held on75 versus clear/70 held|Overworld Caravan-only selection leaves31→0 versus ordinary Astral follower possibility; no hardcoded Astral3383.|
+|On75, only65/70 held versus only70 held|Continuous prefix-plus-ordinary walk gives Caravan1/Astral2 versus Astral1; other flags shift slots and later31 rows can overwrite its alias. With no admitted31 row it remains0;3383 is not hardcoded Astral.|
 |999 held injected into voyage|No branch in voyage; live37 entity reload chooses alternate table. Ordinary item callback would have returned before launch.|
 |Scroll seed0,8,128,255; layer250|Byte arithmetic wraps; a ramp may pass0/128 service cases; layer250+24 wraps18. Explicit second exterior layer assignment resets24.|
 |Old request present before final warp|Selected warp overwrites type/parameters; no preservation, queue or collision guard. No warp command reached if an earlier wait never returns.|
@@ -459,6 +468,16 @@ treedc90db27 author0.272s/main0.260s/CI39518456897 accepted in this base.
 The main-gate's end-map-script versus actual end naming diagnostic remains
 in that handoff; current24 ends,26 jumps27,27 ends and caller cleanup is
 conditional. No old audit rerun replaces those completed results.
+
+Preserve this slice's original7ee6a237/treeccb2227d direct0.262s and
+CI39520102343 as completed passing results that missed the follower-table
+boundary P2. The original review.py split at table_Followers and proved
+only the Caravan prefix, not runtime termination. Focused correction via
+`uv run --locked python -X utf8 local/issue1108/correction.py <registered-source-root> --committed`
+checks the contiguous table through its terminator, actual four-byte
+consumer walk/flag/alias ordering, selected changed states and corrected
+prose, while retaining original receipts and unchanged navigation. It does
+not rerun the prior audit or expand into runtime.
 
 Also retain #1104's count-attribution/no-drop diagnostics and missed-prose
 P2 before/after checks, #1100's public-full-text P2 before/after checks,
