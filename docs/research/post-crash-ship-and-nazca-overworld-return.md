@@ -394,6 +394,9 @@ after a prior layout mutation; no implementation repair is included here.
 
 ## Verification, preservation and Unknowns
 
+The optional [Dojo exploration and Sheela recruitment branch](./dojo-exploration-and-sheela-recruitment.md)
+continues from Map75's declared entrance; it is not a main-route prerequisite.
+
 Reproduce after loading the current ignored selection in the same process:
 
 `<registered-source-root>` is the registered disassembly directory
