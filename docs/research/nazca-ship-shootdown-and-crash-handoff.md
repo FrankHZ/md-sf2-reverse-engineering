@@ -507,9 +507,12 @@ Reproduction after same-process ignored input configuration load:
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1110/review.py <registered-source-root> --committed
+uv run --locked python -X utf8 local/issue1110/review.py <registered-source-root> --committed --receipt local/issue1110/direct-reproduction-01.json
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
+
+Choose an unused ignored receipt path for each run; the recipe requires
+`--receipt` and rejects an existing output to preserve earlier evidence.
 
 The direct recipe checks selected complete source command/action/table
 order, helper effective paths/widths, initializer/request joins, changed
