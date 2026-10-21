@@ -1,5 +1,7 @@
 # Battle38 activation, hidden spawning and first control dispatch
 
+Continue with [Burst Rock targeting, damage and immediate explosions](./battle38-burst-rock-explosion.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** all twelve unchanged
 formation points miss all three integer regions. Eleven STARTING enemies
 remain initialized; nine HIDDEN Burst Rocks remain off-map with HP0
