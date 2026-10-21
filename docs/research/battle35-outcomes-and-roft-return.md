@@ -1,5 +1,7 @@
 # Battle35 outcomes and Roft return
 
+Continue with [Roft town interactions, Petro scene and Zynk recruitment](./roft-town-interactions-and-zynk-recruitment.md).
+
 Evidence date: 2026-10-20. **Confirmed (static):** Battle35's defeated and
 after scripts are empty, but its nonzero leader-table entry still removes
 living enemies after Bowie survives and enemy128 dies. Victory saves a
