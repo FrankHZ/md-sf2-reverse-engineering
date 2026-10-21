@@ -1,6 +1,6 @@
 # Battle36 outcomes and Galam return
 
-Evidence date: 2026-10-20. **Confirmed (static):** Battle36 has an empty
+Evidence date: 2026-10-21. **Confirmed (static):** Battle36 has an empty
 defeated hook and a nonzero leader byte. With Bowie alive, enemy128's death
 can remove the remaining living enemies before the count. Battle Sword66
 is a separate action-side drop from that Executioner, not a victory reward.
