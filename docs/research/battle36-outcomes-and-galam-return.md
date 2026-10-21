@@ -230,8 +230,10 @@ and receive eas_Init through csc15, while its setPos command skips.
 `data/scripting/entity/eas_actions.asm` owns the three actions. eas_Init
 sets acceleration factors0, speed32, acceleration/deceleration off,
 obstruction on, entity/map-uncollidable off, auto-facing on, orientation
-up, immersed off, global size24 and sprite update, then idle. Clear
-collision-disable bits enable their checks. eas_Jump disables auto-facing,
+up, immersed off, global size24 and sprite update, then idle. As the accepted
+[action-semantics owner](./battle36-initialization-and-opening.md#action-hp-alias-and-wait-semantics)
+records, eas_Init clears flagsA bits5/6, disabling the respective entity/map
+collision checks at their consumers. eas_Jump disables auto-facing,
 requests relative0,-1, waits5, relative0,1, waits5, relative0,0, enables
 auto-facing and enters idle. eas_2xRightLeft sets Right/Left/Right/Left,
 refreshing sprite and waiting30 after each, then idle. Its nonblocking
@@ -403,7 +405,7 @@ comparison, SDK/.NET/Godot/emulator/H3/H4/screenshots or acquisition/export.
 Preserve #1132 original RNG hand-calculation/regex diagnostics and corrected
 author0.2234s/main0.2198s PASS, CI39545472070, static laser boundary;
 #1130 author/main0.332s PASS, CI39543645357. Preserve #1128's three prose
-corrections (clear collision-disable bits, moving a0's bit5, nonzero
+corrections (clear bits5/6 disable entity/map collision checks, moving a0's bit5, nonzero
 leaderFF), #1126 Map53 event-enabled UnboundLocalError/zero partial and
 earlier named alias/collision/follow/statistics/import failures. Twelve
 completed old comparison failures remain discovery evidence; none is
