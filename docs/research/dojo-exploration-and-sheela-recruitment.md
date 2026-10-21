@@ -76,7 +76,7 @@ requests fade, sets CURRENT_MAP45/CURRENT_BATTLE255, loads tilesets,
 selects/builds entities, loads mapsprites, clears temp256..383 and sets80.
 Then it resets exploration sprite counters, calls LoadMap, installs base
 VInts and runs the live setup initializer. Healing scans all30 ally records,
-not only joined/active: living HP/MP become maxima, Peter7/Lemon29 revive,
+not only joined/active: living HP/MP become maxima, Peter7/Lemon28 revive,
 other dead allies stay dead; status retains stun/poison/curse and updates
 stats. It does not initialize Sheela's class/items or set25/57.
 
