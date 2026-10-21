@@ -1,5 +1,7 @@
 # Battle38 initialization and Geshp opening
 
+Continue with [Battle38 activation, hidden spawning and first control dispatch](./battle38-activation-and-first-turn-dispatch.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** selected Map66/Battle38
 stages a separate Geshp scene, then reconstructs the party and eleven
 STARTING enemies. Nine HIDDEN Burst Rocks have HP0/X−1 before activation;
