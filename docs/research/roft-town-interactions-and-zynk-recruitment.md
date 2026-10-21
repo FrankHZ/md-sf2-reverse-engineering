@@ -502,9 +502,20 @@ conversion also retains init's native ally newEntity; the accepted entry
 owner's creation/resource/HP/alias limits remain separate from these scenes.
 
 Typed animation/facing/motion/follow operations do not encode native HP
-prechecks, including the high-byte/Bowie follow gate. Missing entity resolution
-raises program-entity rather than silently resolving native alias0; exact
-duplicate/unchecked alias behavior is not guaranteed. The selected Petro
+prechecks, including the high-byte/Bowie follow gate.
+[SceneEntities.Build](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/SceneEntities.cs)
+initializes all64 normal aliases (0..31 and128..159) to physical0 before
+overwriting allocated mappings. The [ExplorationState constructor and resolver](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationState.cs)
+project those aliases through physical slots. Thus unallocated26 with no
+follower or dynamic creation can resolve to player0, including for this
+scene's early camera target; absence of a Z actor does not guarantee rejection.
+TryResolveEntity separately rejects malformed references, selectors outside
+the64-entry contract, absent alias mappings (including Hide's removed aliases)
+and mapped slots>=49. A genuinely unresolved reference, or absent exploration
+state, reaches ProgramRunner's program-entity failure. Fresh zero mappings
+and removed mappings are different states; without a source population the
+resolver uses its existing entity dictionary directly. Exact duplicate and
+unchecked out-of-contract native alias behavior is not guaranteed. The selected Petro
 stream has no native, but needs live142/137, correct text/portrait/materials,
 camera, shiver and audio acknowledgements. Its PLAY_PREVIOUS_MUSIC is emitted
 as generic Sound, while join lowering has explicit PreviousMusic; matching
