@@ -1,5 +1,7 @@
 # Battle37 outcomes, Lemon aftermath and exploration return
 
+Continue with [Granseal overworld return and Battle38 admission](./granseal-overworld-return-and-battle38-admission.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** with Bowie alive,
 Red Baron128's death can queue the remaining living enemies for removal.
 Both terminal checks give defeat precedence. Battle37 has no enemy-drop
