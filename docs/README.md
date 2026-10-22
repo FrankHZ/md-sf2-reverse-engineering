@@ -36,7 +36,11 @@ Current task routing, private-input selection and independent review.
 
 ## Research
 
-Source, ROM, fixture and runtime provenance live in these owners. Use the source-coverage owner and research-index commands for current coverage, not copied counts.
+Source, ROM, fixture and runtime provenance live in these owners. The
+[story-content coverage map](./research/story-content-coverage.md) routes by chapter and conditional
+connection through the ending, with encounter/optional gaps and distinct original-runtime, design
+and remake frontiers. The source-coverage owner and research-index commands retain registered
+evidence denominators; story prose does not add fixture or index credit.
 
 - [`reproducible-original.md`](./research/reproducible-original.md)
 - [`static-core-data.md`](./research/static-core-data.md)
@@ -46,6 +50,7 @@ Source, ROM, fixture and runtime provenance live in these owners. Use the source
 - [`battle01-placement.md`](./research/battle01-placement.md)
 - [`indexing.md`](./research/indexing.md)
 - [`source-coverage.md`](./research/source-coverage.md)
+- [`story-content-coverage.md`](./research/story-content-coverage.md)
 - [`battle-ai.md`](./research/battle-ai.md)
 - [`battlefield-pathfinding.md`](./research/battlefield-pathfinding.md)
 - [`battle-loop.md`](./research/battle-loop.md)
