@@ -659,6 +659,9 @@ The [Battle14 desert owner](./battle14-desert-encounter-and-outcomes.md) connect
 base formation/conditional repeat upgrades, empty hooks, control, held-item drop and outcomes/exits.
 The [Fairy Woods44 owner](./battle44-fairy-woods-trial-and-records.md) connects Map23/24 invitation,
 hidden/respawning formation, leader terminal, timer/record and conditional returns.
+The [Village29/smith owner](./dwarven-village-and-mithril-smithing.md) connects the77 entrance,
+all local interactions/search/stairs and static order/readiness/collection/return lifecycle;
+earlier mine30 remains separate. Natural service visits and production consumption remain unproved.
 The [story frontier](./story-content-coverage.md#encounter-omission-check) retains other optional-content
 gaps; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
 separates that research from original runtime, English design and current remake capability.

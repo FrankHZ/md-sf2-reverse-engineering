@@ -184,8 +184,9 @@ encounter, outside this account.
 ## Returning for the Cannon and opening North Cliff
 
 [Mine30/Fairy recovery/Cannon](./creed-departure-dwarf-recovery-and-cannon-gift.md)
-is an accepted **bounded part** of dwarf content. It does not complete later
-Dwarven Village29/30 or smithing. [Astral's return audience](./new-granseal-return-and-astral-following.md),
+is an accepted **bounded part** of dwarf content. Later Village29 and smithing
+have a separate [static lifecycle](./dwarven-village-and-mithril-smithing.md) via77.
+[Astral's return audience](./new-granseal-return-and-astral-following.md),
 [inventor/Dynamite](./new-granseal-inventor-and-dynamite-gift.md) and
 [Janet](./new-granseal-janet-recruitment-and-departure.md) have independent flags,
 capacity and following; the audience does not check Cannon, and Janet does not
@@ -250,7 +251,7 @@ retains population on west scroll; a later explicit55 request can select34.
 | Boarding37→voyage75/59→shootdown→crash37→75 | [Boarding/departure gate](./nazca-ship-boarding-and-departure-admission.md), [voyage](./nazca-voyage-and-map59-arrival.md), [shootdown](./nazca-ship-shootdown-and-crash-handoff.md), [post-crash return](./post-crash-ship-and-nazca-overworld-return.md). | Scene map changes and999/unlocks have separate boundaries. Native/special-entity limits prevent calling lowered prefixes playable voyage. |
 | Optional Dojo45 | [Search/church/Sheela](./dojo-exploration-and-sheela-recruitment.md). | Optional75 branch, not proved mandatory to Roft/Grans. |
 | Map75→76; Battle35 and separate Roft38 | [Route/admission/greeting](./nazca-to-roft-and-battle35-admission.md), [opening](./battle35-initialization-and-opening.md), [activation/Mud Men](./battle35-activation-and-first-turn-dispatch.md), [outcomes](./battle35-outcomes-and-roft-return.md). | Tables do not prove whether town or35 occurs first. Completed-repeat upgrades differ from first entry. |
-| Roft→Galam region77 | [Petro/Zynk join](./roft-town-interactions-and-zynk-recruitment.md), [Dry Stone/route/36 admission](./roft-to-galam-and-battle36-admission.md). | Zynk's own gates do not require35 victory. Dry Stone boundary does not complete village/smithing; selected revisits are not exhaustive. |
+| Roft→Galam region77 | [Petro/Zynk join](./roft-town-interactions-and-zynk-recruitment.md), [Dry Stone/route/36 admission](./roft-to-galam-and-battle36-admission.md). | Zynk's own gates do not require35 victory. [Village29/smith lifecycle](./dwarven-village-and-mithril-smithing.md) continues the declared77 entrance; natural traversal and exhaustive revisits remain unproved. |
 
 ## Grans return: Prism Flowers, Lemon and Geshp
 
@@ -379,7 +380,7 @@ set, not proof that no source or generic helper evidence exists.
 | Panel/tree/Sword and shrine approach | Accepted bounded [custody/tree](./ribble-tree-opening-and-achilles-sword.md) and [61/15 chapter](./battle15-shrine-approach-and-outcomes.md), with Rohde's possession predicate separate. |50 storage regions are not a proven continuous route; complete tactics, natural actor/service completion and production15 remain outside the static account. |
 | Rick, Elric, Taya, Skreech, Janet, Rohde, Higins, Jaro, Frayja, Gyan, Zynk, Sheela | Accepted selected joining/following/capacity scenes. | Not all-recruits/all-entries census. Skreech rescue and Jaro/Frayja multi-stage transitions retain conditions; membership/following differ. |
 | Creed choices/later alternatives | Partial: [recruitment owner](./creed-return-fairy-and-recruitment-choices.md) covers initial/F22 offers, refusal and actual join/follow paths for four recruits. | Complete later journey, every setup and ability to recruit everyone on a naturally reached save are not established. |
-| Dwarven Village29/30 and smith | Partial: earlier30 recovery/Cannon accepted. [Menus](./common-menus.md#static-service-menu-state-machines), [item auxiliary data](./core-stats-data-inventory.md#item-auxiliary-catalog) and service H3 own helper/order/fulfillment seams. | Later village access/setup/interactions, local smith caller and full player service experience are not an accepted connected account. Helper H3 is not village traversal. Source29's tail to `j_BlacksmithMenu` identifies an entry, not completed service. |
+| Dwarven Village29 and smith; separate mine30 | [Village29 lifecycle](./dwarven-village-and-mithril-smithing.md) connects77 admission, seven residents/search/eighteen warps, actual smith placement/readiness/collection and exit/revisit. Earlier30 recovery/Cannon remains a separate accepted chapter via68. | Complete static account; natural access, full church/shop services, presentation, saves and production smithing remain unproved. Existing helper/transaction/caller H3 retains only its bounded seams. Source interior/exterior names do not connect29 and30. |
 | Arm/Claude and later Yeel/Chaz | Partial: [Moun Arm award](./moun-town-painter-and-golem-arm.md) is accepted but stops before later Golem recruitment/item use. | Separate Map63 item-event/script identifies the Arm/Claude branch; late Yeel530/28 setups declare Chaz. Neither supplies a full accepted optional-route account here. Arm acquisition alone does not establish Claude joining. |
 | Lemon | Partial across [Red Baron aftermath](./battle37-outcomes-and-lemon-aftermath.md) and [Map41 sword/head entry](./battle39-outcomes-and-force-sword-route.md). | After37 does not recruit;41 conditional join is accepted. Other entrances remain unorganized by that one owner. |
 | Dojo45 and hidden Battle0 | Accepted bounded chapter owners. | Optional Dojo and special EndGame/reset caller do not close other optional encounters. |
@@ -449,7 +450,10 @@ and held-equipment drop limits; it adds no natural/runtime or playable acceptanc
 The [Fairy Woods44 account](./battle44-fairy-woods-trial-and-records.md) closes the
 named connected static trial gap without adding runtime/design/playable acceptance.
 
-**Recommendation, not dispatch:** dwarf village/smith and later revisits remain
+The [Village29/smith account](./dwarven-village-and-mithril-smithing.md) closes the
+connected static village/service gap; it adds no runtime/design/playable acceptance.
+
+**Recommendation, not dispatch:** later revisits, Arm/Claude and Yeel/Chaz remain
 optional-content decisions. These are alternatives for
 main-gate planning, not a numbered queue or Epic close decision.
 
