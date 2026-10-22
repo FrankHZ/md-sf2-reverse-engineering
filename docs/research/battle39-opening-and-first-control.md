@@ -1,5 +1,7 @@
 # Battle39 opening, initialization and first control
 
+Continue with [Battle39 outcomes, Force Sword and Devils Head entry](./battle39-outcomes-and-force-sword-route.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** Battle39 stages five
 non-allies, then replaces the scene with the actual party and fourteen
 STARTING enemies. It has no AI regions or normal hidden-spawn lifecycle.
