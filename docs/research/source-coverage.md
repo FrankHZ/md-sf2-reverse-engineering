@@ -13,6 +13,10 @@ functions, one H3 fixture can exercise several branches, and a parsed data table
 runtime semantics of every consumer. Report the evidence surface with explicit denominators instead
 of treating fixture or address counts as line coverage.
 
+Story-content coverage has a separate [chapter and connection owner](./story-content-coverage.md).
+It organizes accepted static research through the ending and Battle0, with explicit encounter and
+optional-content gaps; those prose owners do not change this ledger's fixture or index denominators.
+
 The strictest current executable-code proxy is **indexed file reach**: a source file counts once when
 at least one named symbol in it is connected through the research index to executable H2/H3 evidence.
 It says that the file has been reached, not that every instruction in the file is understood.
@@ -571,11 +575,14 @@ The current evidence is deep but narrow:
   reach the tail; the unchecked lookup leaves only raw/debug/corrupt state as an explicit boundary.
   Battle cutscene data now has a complete 61-file inventory: 59 labeled cutscenes enter through one
   unlabeled storage include container and have H1 bindings; one Battle 01 region script is an orphan
-  absent from the original build. Type/command shape is indexed, but story content and side effects
-  are explicitly not counted as reconstructed.
-- **Minimal or unindexed:** individual event-script content, conversations,
-  detailed shops/church flows, save payload semantics, maps beyond the Battle 01 slice,
-  graphics/audio runtime output, and most content tables.
+  absent from the original build. This inventory rail indexes type/command shape, not the story
+  content and side effects separately described by later content owners.
+- **Not implied by registered inventory/index reach:** comprehensive event/dialogue semantics,
+  every location-specific service journey, natural story routes beyond the bounded opening,
+  graphics/audio runtime output, and complete content behavior. This is an executable-evidence
+  boundary, not a claim that maps beyond Battle01 have no organized research. The
+  [story-content coverage owner](./story-content-coverage.md) distinguishes accepted static chapters,
+  conditional connections, encounter omissions, optional branches and actual consumer limits.
 
 Therefore 98.45% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
@@ -642,6 +649,12 @@ remaining files are explicitly owned H2 exceptions. Data-file discovery is also 
 deterministic H2 inventory; its 1,017/1,690 domain-aware reach includes 37 Z80 song files while the
 remaining gap reflects include-site-only map bodies, alternates, and unlabeled storage rather than
 unknown files.
+
+Accepted static story research already reaches Zeon, epilogue, credits and Battle0's reset caller.
+The [story frontier](./story-content-coverage.md#encounter-omission-check) retains Battles14/15/28
+and other optional-content gaps; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
+separates that research from original runtime, English design and current remake capability.
+It does not extend H2/H3 fixture counts or establish full-game/natural-path completion.
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage. The
 current frontier is the highest-priority honest independent static H2 gaps: event semantics/state
