@@ -1,5 +1,7 @@
 # Devils Head labyrinth and Battle40 admission
 
+Continue with [Battle40 initialization and opening](./battle40-initialization-and-opening.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** Map41's final warp
 enters Map28 at16,30/Up. Map28 has no setup NPC records but retains the
 ordinary follower/player initializer. Its default zone callback tests
