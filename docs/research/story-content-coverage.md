@@ -3,7 +3,9 @@
 Evidence date: 2026-10-22. **Confirmed:** accepted research owners describe a
 conditional story spine from the Map3 opening through both continents, the return
 to Grans, Zeon, the epilogue, credits and Battle0's reset caller. That spine has
-explicit content gaps, including Battles14 and44. The [Battle15 shrine account](./battle15-shrine-approach-and-outcomes.md)
+explicit content gaps, including Battle44. The [Battle14 desert account](./battle14-desert-encounter-and-outcomes.md)
+connects Map70 random requests, complete base formation, repeat upgrades, control, drops and returns.
+The [Battle15 shrine account](./battle15-shrine-approach-and-outcomes.md)
 connects exterior61, the complete scenes/formation/control boundary and conditional outcomes/exits.
 The [Battle28 bridge account](./battle28-bridge-and-outcomes.md)
 covers its conditional entry, complete scenes/formation/control boundary and outcomes/returns.
@@ -127,7 +129,7 @@ transition, map handoff or first control read an observed runtime.
 | Segment and encounters | Organized boundary | Conditional or optional relation |
 | --- | --- | --- |
 | New Granseal→Map73/72/69; Battle09 | [Departure/admission](./new-granseal-departure-through-battle09.md), [outcomes/Ribble8 welcome](./battle09-outcomes-through-ribble-welcome.md). | Scroll does not scan combat or rerun init. Victory does not itself enter Ribble. |
-| Ribble→Map70; Battle10 | [Optional May/admission](./ribble-may-through-battle10-admission.md), [outcomes/East Shrine62](./battle10-outcomes-through-east-shrine-visit.md). | May's invitation is linear, not Yes/No. Optional shrine/following is not a proved Battle11 prerequisite. Battle14 remains below. |
+| Ribble→Map70; Battle10 | [Optional May/admission](./ribble-may-through-battle10-admission.md), [outcomes/East Shrine62](./battle10-outcomes-through-east-shrine-visit.md). | May's invitation is linear, not Yes/No. Optional shrine/following is not a proved Battle11 prerequisite. The separate Battle14 random encounter is organized below. |
 | Shrine return/Map69/72→cave48; Battle11 | [Cave admission](./east-shrine-return-through-battle11-admission.md), [outcomes/Polca13](./battle11-outcomes-through-polca-arrival.md). | Darkness/presentation and crossing are Unknown; separate Polca entry builds Oddler's scene. |
 | Polca→Volcano52; Battle12 | [Optional turtle/east departure](./polca-fairy-through-battle12-admission.md), [outcomes/Bedoe10](./battle12-outcomes-through-bedoe-entry.md). | Neither turtle nor first Oddler scene is required by the exit. |
 | Bedoe10→Volcanon11→Bedoe | [King address/audience](./bedoe-king-address-through-first-audience.md), [Volcanon/Peter](./bedoe-to-volcanon-audience.md), [king choice/Luke](./volcanon-return-through-bedoe-king-choice.md), [hatchling/rescue](./bedoe-hatchling-flight-and-rescue.md). | Address/audience gates are independent; invitation is not shrine admission. Demonstration is not rescue admission; rescue is not Skreech recruitment. |
@@ -140,8 +142,10 @@ separate movement request, alignment, boarding completion, mode write and
 scroll/no-scroll. [Kraken/Battle16 entry](./south-parmecia-through-kraken-battle16-entry.md)
 on49 uses416 independently of raft mode. [Outcomes/disembarking/Hassan9](./battle16-outcomes-through-hassan-entry.md)
 separate victory transport, defeat/Egress savepoints and town population.
-Battle14 remains a **content gap**; the separate [Battle15 shrine account](./battle15-shrine-approach-and-outcomes.md)
-does not make either encounter an implicitly completed predecessor.
+The [Battle14 desert account](./battle14-desert-encounter-and-outcomes.md) covers Map70 requests,
+ordered10-before14 admission, base formation/conditional repeat upgrades, control, drop and returns.
+The separate [Battle15 shrine account](./battle15-shrine-approach-and-outcomes.md)
+does not make either encounter an implicitly completed predecessor of16.
 
 | Branch / onward encounter | Accepted owner and boundary | Remaining connection |
 | --- | --- | --- |
@@ -309,7 +313,7 @@ count documents as completion units.
 | 1 | Accepted savestate-linked original route/admission, selected winning actions, victory/after-program/stable return and one subsequent Down input/effect; [current original frontier](../design/synthesis/map3-battle01-readiness.md#accepted-original-frontier). All action branches, natural New/load, uninterrupted execution and hardware/full-presentation claims remain outside that bounded acceptance. |
 | 2–7 | Early content/outcome/admission; not complete encounter-specific initialization/activation/actions. |
 | 8–13 | Continent/eastern selected admissions/openings/outcomes/local content; not full tactical processing per encounter. |
-| **14** | **Content gap:** Southeast Desert,70. [May/admission table](./ribble-may-through-battle10-admission.md) and [random caller contract](./map-event-random-battle-state.md) describe producer/selection, not a dedicated formation/opening/outcome/location account. |
+| 14 | [Southeast Desert account](./battle14-desert-encounter-and-outcomes.md): Map70 request/cooldown and10-before14 scan, complete formation/empty hooks, conditional repeat upgrades, region/control predicates, Power Stick conditions and outcomes/returns/exits. Natural reach, unsafe airborne scan results, all tactics and production14 remain outside its static boundary. |
 | 15 | [Shrine account](./battle15-shrine-approach-and-outcomes.md):69/61 approach, full exterior population/opening, both50 admissions, complete scenes/formation/control boundary, hidden Golem/chest/drop conditions, outcomes and three exits. Natural paths, all tactics and implementation remain outside its static boundary; [Panel/Sword custody](./ribble-tree-opening-and-achilles-sword.md) retains its separate scope. |
 | 16–25 | Southern/Creed/North Cliff selected fresh initialization/outcomes/map links; not every region/first-control/action path. |
 | 26–27 | Separate opening/init, activation/first-call and outcome owners; first call is not an executed individual action. |
@@ -320,8 +324,8 @@ count documents as completion units.
 ### Direct evidence for encounter gaps and the bridge branch
 
 This bounded source check supplements accepted owners. The dedicated28 owner
-fills its declared static content boundary; the dedicated15 owner does likewise,
-while14/44 remain gaps. It does not
+fills its declared static content boundary; the dedicated15 and14 owners do likewise,
+while44 remains an encounter gap. It does not
 classify natural order/mandatory status. Actual records/producers at
 the pin, rather than comment names alone, establish the following:
 
@@ -329,7 +333,10 @@ the pin, rather than comment names alone, establish the following:
   `data/battles/global/battlemapcoords.asm:table_BattleMapCoordinates` row14→70.
   `data/maps/entries/map70/mapsetups/s3_zoneevents.asm` routes X16–19/wildcard-Y
   to `Map70_ZoneEvent0`, supplying14 to `CheckRandomBattle`. Default10 producer
-  and ordered scan are independent; no14-before15/16 sequence is derived.
+  and ordered scan are independent; no14-before15/16 sequence is derived. The
+  [dedicated desert owner](./battle14-desert-encounter-and-outcomes.md) now connects
+  base/substituted formation, empty hooks, control, actual held-item drop and returns.
+  The airborne count0 scan defect remains explicit without an invented safe fallback.
 - **15:** row15→50; enum `BATTLE_SHRINE_SOUTH_OF_RIBBLE`.
   `data/maps/entries/map61/mapsetups/s3_zoneevents.asm:Map61_ZoneEvent0`
   admits `scripts.asm:cs_5C6CA` with clear730/held77. Its `setStoryFlag 15`
@@ -372,7 +379,8 @@ set, not proof that no source or generic helper evidence exists.
 | Arm/Claude and later Yeel/Chaz | Partial: [Moun Arm award](./moun-town-painter-and-golem-arm.md) is accepted but stops before later Golem recruitment/item use. | Separate Map63 item-event/script identifies the Arm/Claude branch; late Yeel530/28 setups declare Chaz. Neither supplies a full accepted optional-route account here. Arm acquisition alone does not establish Claude joining. |
 | Lemon | Partial across [Red Baron aftermath](./battle37-outcomes-and-lemon-aftermath.md) and [Map41 sword/head entry](./battle39-outcomes-and-force-sword-route.md). | After37 does not recruit;41 conditional join is accepted. Other entrances remain unorganized by that one owner. |
 | Dojo45 and hidden Battle0 | Accepted bounded chapter owners. | Optional Dojo and special EndGame/reset caller do not close other optional encounters. |
-| Battle14, Fairy Woods44 | Structural/producer evidence; named content gaps. | Local content/formation/control/outcome/return; no invented ordering or automatic runtime queue. |
+| Battle14 | Dedicated [static encounter/repeat/outcome account](./battle14-desert-encounter-and-outcomes.md). | Natural order/state, actual airborne overread results, full tactics/runtime and production consumption remain unproved. |
+| Fairy Woods44 | Structural/producer evidence; named content gap. | Local content/formation/control/outcome/return; no invented ordering or automatic runtime queue. |
 | Battle28 bridge branch | Dedicated [static entry/scenes/formation/control/outcome/return account](./battle28-bridge-and-outcomes.md). | All action/AI decisions, natural traversal and late production consumption remain unproved; no physical collapse/countdown inferred from staging. |
 | Late town revisits, shop/church/Caravan, promotion/equipment, magic tunnels | Selected alternatives/services/warps where linked; global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/tunnel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
 
@@ -430,8 +438,11 @@ Battle15's [dedicated account](./battle15-shrine-approach-and-outcomes.md) close
 the named external61/15 static content gap while preserving separate Panel/Sword
 custody, natural/runtime, design and remake boundaries.
 
-**Recommendation, not dispatch:**14 is a separate random-encounter gap and44
-remains an optional encounter gap. Dwarf village/smith
+The [dedicated Battle14 account](./battle14-desert-encounter-and-outcomes.md) closes
+the named connected static encounter gap, including conditional repeat upgrade
+and held-equipment drop limits; it adds no natural/runtime or playable acceptance.
+
+**Recommendation, not dispatch:**44 remains an optional encounter gap. Dwarf village/smith
 and later revisits are optional-content decisions. These are alternatives for
 main-gate planning, not a numbered queue or Epic close decision.
 
