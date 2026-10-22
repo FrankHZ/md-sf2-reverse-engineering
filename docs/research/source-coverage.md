@@ -662,6 +662,9 @@ hidden/respawning formation, leader terminal, timer/record and conditional retur
 The [Village29/smith owner](./dwarven-village-and-mithril-smithing.md) connects the77 entrance,
 all local interactions/search/stairs and static order/readiness/collection/return lifecycle;
 earlier mine30 remains separate. Natural service visits and production consumption remain unproved.
+The [Hub63/Pipe64 and Claude owner](./magic-tunnel-hub-and-claude-recruitment.md) connects both
+entrances, bridge/pipe lifetimes, talk/item-use Arm removal, complete awakening/join/follow and
+exits/revisit. This is static content coverage, not natural travel, production or save acceptance.
 The [story frontier](./story-content-coverage.md#encounter-omission-check) retains other optional-content
 gaps; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
 separates that research from original runtime, English design and current remake capability.
