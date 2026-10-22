@@ -1,5 +1,7 @@
 # Battle40 initialization and opening
 
+Continue with [Battle40 regions, terrain changes and first control](./battle40-regions-terrain-and-first-control.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** the accepted Map54
 admission selects Battle40. This owner covers its complete before-battle
 scene and fresh initialization, stopping before the first region activation.
