@@ -14,7 +14,8 @@ under [Epic #1053](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/
 Accepted base `15cda51342eb0f196df8ecbead2ae369b4c0d8b7`, tree
 `0019af359f27f1e76ea92434ba392b7bca9e86c4`. The outcome is a complete
 selected initialization contract for future design/content integration.
-Own this document and successor navigation only in
+Own this document and successor navigation plus the narrowly corrected
+scene-Zeon ENTNUM statement in
 [Battle42 outcomes and Zeon admission](./battle42-outcomes-and-zeon-admission.md).
 No shared owner,engine,extractor,schema,fixture or index changes; no
 stacked dependency. Zeon's special allocation and Elis's backing/alias
@@ -321,8 +322,12 @@ Down/eas_Standing. All15 other declared enemies129–143 pack at
 **A..A+14**,so alias for ordinal i=1..15 is A+i−1. The counter ends
 A+15. Enemy144–159 are absent,X−1,so enemy aliases16–31 stayFF at this
 point. Ally aliases30/31 are still fresh0: neither is a scanned ally.
-The previous aftermath's scene Zeon130/physical47 at62,62 is replaced;
-this is fresh combat Zeon128 at13,6,not continuation of that scene actor.
+The aftermath's scene Zeon130/physical47 is a different identity.
+Its table initially parks it at62,62;after42 later setPos130 moves it
+to13,6/Down. The predecessor's conditional normal43 admission then passes
+through ordinary Map59 population rebuilding before fresh combat
+reconstruction. Combat Zeon128 at13,6 does not continue scene130;
+position differences do not establish the reconstruction.
 
 Zeon Guards132/135 use ordinary sprite102,not special47. Their fresh
 physical slots are A+3/A+6 and their declared coordinates7,9/19,7;
@@ -477,7 +482,7 @@ remain separate outcomes,not hidden acceptance promises here.
 
 ## Reproduction, retained failures and stopping boundary
 
-Ignored `local/issue1176/review.py` retains the selected source/consumer
+The original candidate's ignored `local/issue1176/review.py` retains the selected source/consumer
 snapshots,complete roster/definition/current-value derivations,ordered
 call/flag/width guards and direct prose/link/anchor/UTF8/LF/private/owned
 diff checks. It reads only metadata for the existing static pair and the
@@ -487,15 +492,19 @@ Tracked prose and exact Git/source objects remain the durable contract.
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1176/review.py <configured-source-disasm-root> --receipt local/issue1176/direct-reproduction-01.json --committed --snapshots local/issue1176/direct-03.json
+uv run --locked python -X utf8 local/issue1176/correction_review.py <configured-source-disasm-root> --receipt local/issue1176/correction-reproduction-01.json --committed
 
 git diff --check origin/main
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
 Every receipt name must be **fresh and nonexistent**;change the example
-after use. The source argument ends in disasm. The snapshots argument
-references the retained first complete receipt,not the new output.
+after use. The source argument ends in disasm. Original complete direct
+receipts and direct-03 snapshots remain anchored to candidate18e19598;
+its navigation-only diff assertion is superseded for this correction.
+correction_review.py checks only the constant→producer→byte-write and
+corrected prose/links/exact two-path delta;it does not rerun full direct
+source review,lowering or prior suites.
 Load private configuration in the same process for each uv invocation.
 Clean committed planner and actual scoped CI selection/results,frozen
 head/tree,process state,resources and full command outcomes belong to
@@ -508,6 +517,20 @@ actual consumers. New production parser/schema/fixture/mutation-test/
 H3-callback obligations are N/A. One-off source checks do not claim
 new maintained parser mutation coverage. Initial path/read/helper failures
 and self-review corrections remain in the ignored handoff.
+
+A P2 correction in this slice fixes the predecessor's scene-Zeon
+"entity number128" to **ENTNUM32**: mapfunctions.asm passes
+ENTITY_ENEMY_START=$20 in d6;DeclareNewEntity stores d6.b at ENTNUM.
+Scene logical130,physical47 and ENTNUM32 are distinct. #1174's author
+and main-gate direct checks,two independent reviews and CI passed while
+missing that numerical prose error. #1176's initial main-gate direct
+PASS likewise did not cover this predecessor statement. Those accepted
+records remain unchanged;their PASS is not proof of that value.
+
+#1176's original author/main-gate direct checks and CI also passed while
+missing its stale scene-coordinate claim. Source review found the two
+P2 prose errors;the earlier PASS records remain evidence of their named
+checks,not complete claim coverage.
 
 Preserve [the predecessor's failures and Unknowns](./battle42-outcomes-and-zeon-admission.md#reproduction-preserved-failures-and-stopping-boundary):
 the single after42 special251 refusal/five-op partial;eas_Init14 cache;

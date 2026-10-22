@@ -247,7 +247,7 @@ retained state; it is not a battle-state snapshot restore.
 Fixed fields are X/Y/facing/sprite bytes and script long. Native
 InitializeMapEntities tests sprite>=MAPSPRITES_SPECIALS_START240;
 Zeon uses ENTITY_SPECIAL_SPRITE47, appends47 to the nonally alias list,
-sets entity number128 and does not advance the ordinary allocation
+sets ENTNUM32, distinct from scene logical130, and does not advance the ordinary allocation
 counter. Its layer starts0 through clr.l d6. Galam/Elis are ordinary
 nonallies. With n admitted followers and p/l=1 when Peter/Lemon fixed
 rows allocate anew, Galam physical n+p+l+1, Elis n+p+l+2, Zeon47,
