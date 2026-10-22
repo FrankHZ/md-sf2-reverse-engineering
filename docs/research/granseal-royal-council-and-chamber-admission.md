@@ -494,9 +494,12 @@ actors must not be silently reconciled by this static account.
 
 Both tables' UP1/DOWN3 event bytes turn toward the player (bit0); DOWN3 also
 takes the post-callback property restore branch (bit1). RIGHT0 does neither.
-These bytes are not required player facings. The wrapper disables VInt entity
-updates, resolves portrait/speech properties, executes the callback, closes
-windows and reenables updates; actual service completion remains unobserved.
+These bytes are not required player facings. The wrapper first resolves and
+stores portrait/speech properties and displays the portrait when nonnegative.
+It then resolves the physical alias; bit0 conditionally waits for VInt and
+turns the actor. Only then does it clear VInt_UpdateEntities and call the
+callback. On return, bit1 conditionally restores properties, then it closes
+portrait/text and reactivates updates. Actual service completion is unobserved.
 
 ### Complete populations and33 event declarations
 
@@ -629,8 +632,9 @@ The common init, not a zone, requests the scene. Item section
 
 Description source `$62C72..$62C96` sets base `$FD4`=4052 and jumps
 DisplayAreaDescription. Complete rows are19,3 type4 offset0→4052;
-20,3 type4 offset1→4053;13,20 type5 offset2→4054. Type4's introduction425
-investigates shelves, type5's426 checks a well; each has
+20,3 type4 offset1→4053;13,20 type5 offset2→4054. DisplayAreaDescription
+(`map/mapsetupsfunctions_1.asm`) reads row byte4 and adds423: type4's
+introduction427 investigates shelves, type5's428 checks a well; each has
 `{NAME}{N}{W2}{CLEAR}`. Facing/adjacent-cell selection and the common
 open/chest/item precedence remain with the search owner. Coordinates are lookup
 keys, not proof Bowie can stand at the necessary adjacent tile.
@@ -735,6 +739,8 @@ it in ordinary review. `review.py` reuses observe-01, checks pinned source and
 corpus attribution, complete ledger/actions/text/populations/events, source
 service order, changed-state cases, actual consumers, links/UTF8/LF, exact
 predecessor navigation and two-file diff. It performs no lowering/publication.
+Its original PASS missed the description
+introduction-ID prose; use the focused correction check below for that chain.
 Independent reproduction uses a **fresh nonexistent receipt**, for example:
 
 ```powershell
@@ -769,6 +775,25 @@ fresh receipts remain. Orientation read failures remain in the local handoff;
 the sole selected lowering had no exception. Self-review added the csc14
 manual-script timer/terminator boundary and corrected3959's name selector
 to Lemon28 from sf2enums rather than relying on a remembered roster order.
+
+Independent review found a P2 after the author's direct-committed-01 and
+exact-head CI39830600450 passed: this owner incorrectly called investigation
+kinds4/5 text IDs425/426. Those IDs describe a sign/wash basin; the actual
+row-byte4 +423 consumer yields427/428 for shelves/well. observe-01 selected
+425/426, and equal control tokens did not validate that semantic relationship.
+All original receipts and PASS conclusions remain, with this missed finding
+explicit. The focused `local/issue1188/focused-descriptions.py` check follows
+msDesc operand3 → row byte4 → addi423 → gamescript ID/meaning → corrected
+prose, writing a fresh nonexistent receipt. It neither lowers again nor reruns
+the full recipe. The local review's unrelated document-length gate was also
+removed; the user set no arbitrary document length limit. Neither correction
+changes the preceding owner or expands source/consumer scope.
+The same independent review found a second P2: this owner's interaction
+wrapper summary incorrectly put disabling entity updates before portrait/
+speech lookup. The original direct/CI PASS missed that order as well.
+The focused check also guards portrait setup and its signed display branch,
+physical alias resolution, bit0's optional wait/turn, CLEAR_FLAG before callback,
+bit1's optional restore, window closure and update reactivation in source order.
 
 **Unknown:** natural entrance/zone/warp/interaction reach and geometry/bypasses,
 live flags/HP/party/aliases/followers/input/inventory, interruption prefixes,
