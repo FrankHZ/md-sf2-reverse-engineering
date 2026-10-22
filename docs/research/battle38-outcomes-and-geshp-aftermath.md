@@ -1,5 +1,7 @@
 # Battle38 outcomes, Geshp aftermath and exploration return
 
+Continue with [Battle39 opening, initialization and first control](./battle39-opening-and-first-control.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** with Bowie alive,
 combat Geshp128's death can queue all remaining living enemy slots for
 removal. Both terminal checks give defeat precedence. Buster Shot is a
