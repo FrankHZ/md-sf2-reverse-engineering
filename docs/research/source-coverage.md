@@ -668,8 +668,12 @@ exits/revisit. This is static content coverage, not natural travel, production o
 The [late Yeel05/Chaz/Lemon owner](./late-yeel-chaz-and-lemon-recruitment.md) connects both66 entrances,
 late populations/interactions/search, piano/stairs, both930 underground branches, distinct joins/follows
 and returns/revisits. It adds no natural-route, service/save, runtime/design or production acceptance.
-The [story frontier](./story-content-coverage.md#encounter-omission-check) retains other optional-content
-gaps; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
+The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
+distinguishes the already-explained Creed late offers and generic service state machines from
+Battle02's missing complete static initialization/activation account. It recommends that finite
+content handoff without dispatching it; an exhaustive town/state census remains unassessed.
+The [story frontier](./story-content-coverage.md#encounter-omission-check) retains qualified encounter
+and optional-content limits; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
 separates that research from original runtime, English design and current remake capability.
 It does not extend H2/H3 fixture counts or establish full-game/natural-path completion.
 
