@@ -539,8 +539,25 @@ No engine, importer, SDK, Godot or source-runtime command was executed here.
 |[Activation](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs)|Preserves held flags/OR1/OR3, but tests cross-product triangles and resets local tested=0 each BeforeRound. Uses supplied actor roster/Position/HP>0, not all30 signed slots or persistent native checked word. Rejects nonzero SpawnMode before publication; no selected hidden collector/reset/appearance. The finite slope differences above remain real gaps.|
 |[Turn generation](../../remake/src/Sf2.Remake.Domain/Battles/Rules/TurnOrderRules.cs), [turn flow](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs)|Sequential RNG,second action,signed62-pass stable sort and sentinel have consumers. Uses numerical AGI≤127 plus explicit ExtraRoundAction and deployment processing order; it does not read native rawAGI or fixed offered IDs. Validates capacity≤64 instead of source overflow; no Galam rod refresh binding. Cursor is a slot index, not native byte offset.|
 |[SourceEnemyAi](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/SourceEnemyAi.cs), [move orders](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/SourceMoveOrderAi.cs), [standby](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/AiStandbyRules.cs)|Consumes primary/secondary,15/15 bypass,checked clear,follow promotion,points and bounded standby. Active commandsets6/7/9/14 only; status,spells/equipment and selected heal/sentry paths refuse. Standby occupancy comes from living positioned supplied actors, unlike all-slot native spawn occupancy. Neutral opposing target words refuse. A Galam-shaped LEADER primitive is not bound Galam behavior.|
-|[BattleEntry](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/BattleEntry.cs), [BattleAdvancer](../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs)|Before→initialize→load→start and round/control continuation exist. Fresh entry is a transaction through supported initial control; native retained partial prefixes are not reproduced. Advances use authoritative state/queue/AI/player selection; sleep/stun skip before AI decision, unlike native preparation order. F88 and original cheat/control modes remain unsupported.|
+|[BattleEntry](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/BattleEntry.cs), [ProgramRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs), [BattleAdvancer](../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs)|Before→initialize→load→start and round/control continuation exist. Direct Start and field entry have different publication boundaries, detailed below. F88 and original cheat/control modes remain unsupported.|
+|[Player admission](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleControlRules.cs), BattleAdvancer and SourceEnemyAi above|Sleep (status AND0xC0) skips to after-turn before AI decision, unlike native preparation order. Stun bit0 has no such skip: with StartPolicy present, player admission classifies Stunned and rejects as Unsupported; SourceEnemyAi rejects nonzero status. EnterPlayer without StartPolicy returns unchanged before classification.|
 |[BattleMapViewport](../../remake/game/src/Battles/BattleMapViewport.cs)|Consumes session projection/selection for supported packages. No42 package,hidden camera/alias/DMA sequence,selected terrain/material or usable first-control observation was bound or run.|
+
+Direct BattleAdvancer.Start with BattleStartInput and nonnull NewBattle
+computes initialization, calls Advance and throws on its failure before
+returning an initial session: that direct entry is a transaction through
+supported initial control. Field entry instead commits initialization/
+region-flag clearing and LoadProgram in BattleEntry.Continue, then
+separately commits IntroFlag/StartProgram after load. ProgramRunner's
+BattleStartFinished calls **Advance**, not Start. A start-hook refusal
+or later first-AI refusal therefore retains the already committed field
+prefix; it does not roll back the whole entry. Within a round,
+BeforeRound validates and computes replacement activation state, and
+GenerateRound computes the queue/RNG replacement before publication.
+Failure there preserves the prior committed state; failure in a later
+AI/control decision does not undo an already published round or field
+prefix. These local publication boundaries do not establish native
+instruction-by-instruction hidden/spawn prefix parity.
 
 **Inferred:** future42 admission needs coordinated content, persistent
 activation/cache, integer geometry, hidden/neutral lifecycle, actual stat
@@ -583,7 +600,13 @@ example was not rerunnable because the recipe required a fresh output;
 its accepted command-only correction and passing narrow review do not
 turn the earlier direct/CI PASS into command-copyability coverage.
 The old-head CI/watcher propagation race remains old-head evidence,
-not current CI. Nothing is erased, reclassified as interrupted or rerun
+not current CI. This slice's original author/main-gate direct PASS and
+scoped CI also missed the consumer row's conflation of Sleep and Stun
+and its overgeneralization of direct Start atomicity to field entry.
+The corrected consumer rows and publication paragraph follow the named
+production paths; those earlier passes do not establish coverage of
+either distinction.
+Nothing is erased, reclassified as interrupted or rerun
 without invalidation. This task's bounded path-lookup failures and
 self-review corrections remain in its ignored handoff.
 
