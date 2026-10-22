@@ -1,5 +1,8 @@
 # Granseal royal council and chamber admission
 
+Continue with [chamber interactions and ending kiss](./granseal-chamber-interactions-and-ending-kiss.md)
+for Map20's later interactions and the kiss-to-credits admission boundary.
+
 Evidence date: 2026-10-22. **Confirmed (static):** Castle2F's royal council
 selects Bowie in dialogue, sends Sarah and Kazin offstage, then returns to an
 init suffix that sets F982 and terminates the temporary follower list. Current
