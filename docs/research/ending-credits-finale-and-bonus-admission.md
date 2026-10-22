@@ -7,6 +7,10 @@ requests the witch/jewel presentation, waits, and checks the real Battle0
 entry. A normal BattleLoop return leads to a start-vector reset. This is a
 source account, not evidence of natural completion or playability.
 
+Continue with [Battle0 bonus battle and return to reset](./battle00-bonus-battle-and-reset.md)
+for its complete formation, regions, first control, two Flower lasers and
+victory/defeat/escape return boundary.
+
 ## Agreement and provenance
 
 Standard rigor for [Issue #1192](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1192)
