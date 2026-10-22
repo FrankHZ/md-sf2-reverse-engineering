@@ -723,8 +723,9 @@ returns reach MainLoop's `alt_MainLoopEntry`: SwitchMap then ExplorationLoop,
 substitute47. This is why the posted event is not a second queued transfer:
 ExplorationLoop first clears MAP_EVENT_TYPE, then consumes the returned seed.
 
-The CURRENT255 exploration arm heals eligible allies and fades out, subtracts
-20000 from STEP_COUNTER with its signed-word fallback, waits for fade, updates
+After clearing the pending event, ExplorationLoop subtracts20000 from
+STEP_COUNTER with its signed-word fallback, heals eligible allies and fades
+out. The CURRENT255 arm waits for fade, updates
 main position/destination to16,30 and facingRight. With ordinary PLAYER_TYPE0,
 DeclareRaftEntity first also places the flag-built EXPLORATION_ENTITIES at
 those coordinates (before its F64/map raft tests); it does not promise all
