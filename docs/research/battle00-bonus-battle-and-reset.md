@@ -88,7 +88,12 @@ old CURSE and no cursed equipment loses it; equipped cursed gear can
 reintroduce it. STUN/POISON can survive into first control. This is the
 accepted shared refresh, not a new healing-spell rule.
 
-Held88 instead restores saved seconds, clears88 and AI memory/view target,
+Held88 is an inherited or externally supplied-state conditional path;
+the normal Battle0 menu cannot produce it. BattlefieldMenu's @SuspendGame
+in `battle/battlefunctions/battlefunctions_2.asm` first tests
+CURRENT_BATTLE.b and branches to @StartMenu when zero, before the prompt,
+setFlg88, SaveGame or WitchSuspend. If88 is nevertheless held on entry,
+BattleLoop instead restores saved seconds, clears88 and AI memory/view target,
 calls LoadBattle with incoming D0, then jumps to the individual-turn loop.
 It does not install63/0, reset flags/HP/stats/formation, run hooks or generate
 the first queue. CURRENT_MAP/BATTLE, crop, combatants, queue/cursor and RNG
@@ -551,7 +556,9 @@ For **every actual return** above EndGame ignores D0–D4, requests
 FadeOutToWhite, clears contextual VInts, disables display/interrupts,
 writes SR2700, restores SP from InitialStack, loads p_Start and JMP(A0).
 There is no return-value dispatch to field exploration or another battle.
-Suspension, an interrupted scene, a waiting service, or a nonreturning
+Battle0's Suspend menu choice returns to @StartMenu without prompting,
+saving, setting88, leaving the battle or entering WitchSuspend/reset.
+It is not a selected nonreturning path. An interrupted scene, a waiting service, or a nonreturning
 BattleLoop is not evidence that this suffix executed. Stop at this software
 reset transfer; do not reopen the post-reset menu investigation.
 
@@ -585,7 +592,7 @@ authorization or an automatic runtime queue.
 
 ## Reproduction, retained failures and stop
 
-One-off `local/issue1194/review.py` uses Python standard library only;
+The original candidate's `local/issue1194/review.py` uses Python standard library only;
 there are no imported local helpers. It checks clean source pin, selected
 complete rows/definitions and source→use-site→prose joins, critical ordered
 instructions/flag/stack branches, changed-input implications, actual consumer
@@ -595,9 +602,21 @@ it does not simulate the battle or add tests of verification programs.
 One-off checks are not maintained mutation coverage or proof every prose
 claim is correct; independent source/consumer review remains necessary.
 
+Independent source review found a P2: the original prose did not identify
+the Battle0 Suspend rejection, so its generic suspension wording could
+imply a normally available exit. Original author direct05 and committed
+direct checks, main's reproduction-main-01 PASS and exact-head CI passed
+without covering this gate. Those completed PASS results remain preserved
+with the omission. The corrected F88 and outcome paragraphs bind the
+zero-battle branch to its actual menu boundary. The self-contained
+`local/issue1194/focused-correction.py` checks only that source branch,
+Battle0's zero constant, corrected prose, retained results and exact owned
+delta/links/UTF8/LF/private boundary. It does not rerun full review,
+capture, lowering or unrelated checks; no local helpers are imported.
+
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1194/review.py <configured-source-disasm-root> --receipt local/issue1194/reproduction-main-01.json --committed
+uv run --locked python -X utf8 local/issue1194/focused-correction.py <configured-source-disasm-root> --receipt local/issue1194/focused-main-01.json --committed
 git diff --check origin/main
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
