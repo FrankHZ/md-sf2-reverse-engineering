@@ -20,7 +20,8 @@ to the ordinary Granseal return interface. Distinct scene loads, retained
 actors, posted events and setup reads justify Standard. Accepted base
 `fd25779584b399f28e3954874fd9aa209b11a418`, tree
 `f4e5353e053bb178fae1d3197915cd3971ad0b48`; no stacked dependency.
-Own this document and predecessor navigation only. No index, schema,
+Own this document, predecessor navigation and its focused healing-status
+correction authorized in PR1185 review. No index, schema,
 contract, producer, engine or maintained parser changes.
 
 Reuse [common scripting](./common-scripting.md), [common maps](./common-maps.md),
@@ -98,10 +99,18 @@ counter−1/0 after the live-ally HP gate; they do not stop destination motion.
 `ac_orient*` writes orientation bits and `ac_updateSprite` refreshes the
 sprite; it does not mean the same thing as `setFacing`.
 
-`customActscriptWait` installs the inline address and clears its timer;
-its wait tests script-address equality with `eas_Idle`. Inline `ac_jump
-eas_Idle` replaces the action cursor and clears the timer, without executing
-the later delimiter as another action. `ac_setSpeed x,y` packs two bytes
+`customActscriptWait` installs the inline address and writes the resolved
+**physical slot byte** to its timer. In csc14, GetEntityAddressFromCharacter
+returns that slot in D0 before `move.b d0,ACTSCRIPTWAITTIMER(a5)`;
+csc15/setActscript and csc2D/entityActions use the same installation write.
+For ordinary543 with no additional followers and newly allocated P/L,
+G134 resolves to physical9: installation writes9, not0. Its wait tests
+script-address equality with `eas_Idle`. A **later executed** inline
+`ac_jump eas_Idle` redirects the action cursor through
+esc_clearTimerGoToNextCommand, which clears the timer; that is separate
+from installation and does not execute the later delimiter as an action.
+No frame duration is derived without the actual scheduler.
+`ac_setSpeed x,y` packs two bytes
 written together into XSPEED/YSPEED by esc10; values5/10/16/48/64 are
 source speed units, not tiles per tick. `eas_StopMoving` executes
 `ac_moveRel0,0` then idle; esc04 replaces destination relative to **current**
@@ -573,7 +582,7 @@ programs remain, including unsupported action operations.
 | Actual owner | Expression, refusal and publication limits |
 | --- | --- |
 |[OriginalPrograms](../../src/sf2tool/remake_exploration_programs.py)|First main native is typed7, source-operation6, setBlocks; earlier0–6 include text-cursor, camera detach, reload/wait1, position and two priorities. Main29 natives comprise19 flashScreenWhite, five waitIdle, two setBlocks, one setDest, one setSprite L,L and quake8003. Tail typed5 is native mapLoad; reset/reload both lower as reload-scene-map+wait1. Only loadMapFadeIn currently has scene-map lowering. Helper's jsr j_ClosePortraitEyes is native. Program dictionaries insert before compile; this run returned, but no admitted execution follows.|
-|Same action compiler|212 main motion installations include fixed and inline scripts. Transparency/AnimSpeedx2 retain native ac_transparency/ac_animSpeedX2. Twirl retains native ac_resizable/ac_setPos/ac_resizable. Inline jumpUp currently lowers through generic action fallback to native rather than an admitted jump template. Later typed flags/reset/queue-warp do not bypass these earlier refusals.|
+|Same action compiler; [ProgramRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs)|212 main motion installations include fixed and inline scripts. SlotTimer/SlotTimerClearCollision installs WaitTimer from entity.Slot, matching the source's physical-slot seed; later action execution can clear it. Transparency/AnimSpeedx2 retain native ac_transparency/ac_animSpeedX2. Twirl retains native ac_resizable/ac_setPos/ac_resizable. Inline jumpUp currently lowers through generic action fallback to native rather than an admitted jump template. Later typed flags/reset/queue-warp do not bypass these earlier refusals.|
 |[Map preparation](../../src/sf2tool/remake_exploration_maps.py), [final preparation](../../src/sf2tool/remake_exploration_content.py)|Existing543 ordinary rows are input declarations, not future scene-created actors. Default59/543 share a map-59-setup key; retained variant-overwrite risk stays **Inferred**. No543 setup/material world or final prepare was requested/published. Final preparation validates identity/pin and serializes after building maps/programs; this is not a disk rollback proof.|
 |[Content reader](../../remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs), [story types](../../remake/src/Sf2.Remake.Application/Content/Scenarios/StoryProgram.cs)|Generic text/portrait/motion/follow/scene-map/reload/reset-party/queued warp types exist; native-call becomes UnsupportedInstruction and native actions become UnsupportedEntityAction. Reader availability does not establish scene content, aliases, portrait bindings or accepted runtime. Battle43 leader/defeated-program refusals remain with predecessor.|
 |[ProgramRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs)|UnsupportedInstruction throws before Next/commit; earlier committed prefixes remain. Each instruction can publish separately. QueueMapWarp stores ScriptWarp; null-cursor processing services it before VictoryProgramFinished. This retained after43 outcome-order difference is not fixed by this scene research.|
@@ -747,11 +756,24 @@ retained unsupported output. These local review aids are not maintained
 parsers, tool tests, schemas or durable evidence owners; this tracked
 account plus exact Git objects and named source own the findings.
 
-From the assigned checkout, with a fresh nonexistent receipt path:
+The original author/main direct checks and CI39821008118 passed while
+missing two P2 prose defects identified in
+[independent review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1185#issuecomment-6346897412):
+installation was incorrectly described as clearing the timer, and the
+predecessor described CURSE preservation without the equipment refresh.
+Both findings and original results remain preserved. The old review.py
+navigation-only predecessor predicate no longer applies to the authorized
+factual correction; do not rerun analysis, observation or that full recipe.
+The correction recipe directly checks the three installation use sites,
+slot-resolution/jump helpers, healing masks/equipment refresh, finite
+supplied states, corrected prose/links and the exact expanded diff.
+
+For the corrected candidate, from the assigned checkout with a fresh
+nonexistent receipt path:
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1184/review.py <configured-source-disasm-root> --receipt local/issue1184/direct-reproduction-01.json --committed
+uv run --locked python -X utf8 local/issue1184/correction-review.py <configured-source-disasm-root> --receipt local/issue1184/correction-committed-01.json --committed
 git diff --check origin/main...HEAD
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
