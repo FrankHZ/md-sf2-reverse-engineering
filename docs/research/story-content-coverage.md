@@ -3,7 +3,9 @@
 Evidence date: 2026-10-22. **Confirmed:** accepted research owners describe a
 conditional story spine from the Map3 opening through both continents, the return
 to Grans, Zeon, the epilogue, credits and Battle0's reset caller. That spine has
-explicit content gaps, including Battles14,15 and28. It is not a complete campaign
+explicit content gaps, including Battles14 and15. The [Battle28 bridge account](./battle28-bridge-and-outcomes.md)
+covers its conditional entry, complete scenes/formation/control boundary and outcomes/returns.
+It is not a complete campaign
 walkthrough, an all-content denominator or proof of naturally continuous play.
 **Inferred:** the chapter groupings below are a useful reading order over those
 connections. **Unknown:** complete original natural chronology, all optional
@@ -197,7 +199,8 @@ reach departure. Shop/church entry does not complete every service or revisit.
 | Battle26 admission→fresh battle→first call | [Geshp/Higins](./battle26-admission-and-geshp-confrontation.md), [initialization](./battle26-initialization-and-roster.md), [activation/dispatch](./battle26-activation-and-first-turn-dispatch.md). | Scene/neutral Higins, joined ally and deployed actor differ; extra-slot/deals alias is conditional. Dispatch is not an executed turn. |
 | Battle26 result→Map72/71/78→Pacalon2 | [Outcomes/Higins](./battle26-outcomes-and-higins-recruitment.md), [fresh return/town admission](./battle26-return-through-pacalon-entry.md). | Return seed precedes scene staging. East scroll does no immediate battle scan;431 can select31 before town. |
 | Pacalon town/castle36→Map74/Battle27 | [Town/services/exits](./pacalon-interactions-and-castle-handoff.md), [first castle visit](./pacalon-castle-entry-and-first-visit.md), [north departure](./pacalon-departure-to-battle27-admission.md). | Drought dialogue is not a quest-flag write. Optional centaur/stairs have separate lifetimes. Later Frayja is separate. |
-| Battle27→Tristan15 admission | [Opening](./battle27-initialization-and-opening.md), [activation/first call](./battle27-activation-and-first-turn-dispatch.md), [outcomes/Map74/Tristan](./battle27-outcomes-through-tristan-admission.md). | Victory does not itself set428–430; a separate zone can set them together.28 is not29 and remains a gap. |
+| Battle27→Tristan15 admission | [Opening](./battle27-initialization-and-opening.md), [activation/first call](./battle27-activation-and-first-turn-dispatch.md), [outcomes/Map74/Tristan](./battle27-outcomes-through-tristan-admission.md). | Victory does not itself set428–430; a separate zone can set them together.28 is a separate bridge branch, not29. |
+| Map74⇄bridge47/Battle28 | [Both entrances, complete bridge scenes/roster/control and outcome returns](./battle28-bridge-and-outcomes.md). | Clear528 victory retains the after-scene through CURRENT47, including CURRENT_BATTLE28; repeat victory rebuilds explicit47. Neutral woman/B31 and Astral's scene alias differ. Dialogue/quake do not establish physical collapse or a countdown; neither table nor outcome proves natural travel to Tristan. |
 
 ## Tristan, Mitula and restored-rain returns
 
@@ -307,14 +310,15 @@ count documents as completion units.
 | **15** | **Content gap:** Shrine South of Ribble,50. [Panel/Sword](./ribble-tree-opening-and-achilles-sword.md) covers selected chests/tree and conditional415 interception; external61 and full battle content are outside scope. |
 | 16–25 | Southern/Creed/North Cliff selected fresh initialization/outcomes/map links; not every region/first-control/action path. |
 | 26–27 | Separate opening/init, activation/first-call and outcome owners; first call is not an executed individual action. |
-| **28** | **Content gap:** Pangoat Valley Bridge,47. Accepted74 zone mentions428; Tristan/Caves enters0/29 instead. No dedicated bridge opening/formation/control/outcome owner is claimed. |
+| 28 | [Bridge47 account](./battle28-bridge-and-outcomes.md): both74 entrances, full before/after programs, live formation/sixteen enemies/neutral alias, first dispatch/control predicates, conditional terminal/escape/Suspend and retained/fresh returns. All tactical choices, natural traversal and implementation remain outside its static boundary; Tristan/Caves still enters0/29 independently. |
 | 29–43 | Late entry/opening, activation or first-control and outcome owners. Laser/Burst Rock exceptions do not establish all-AI coverage. |
 | 44, outside0–43 | **Not organized as story content:** Fairy Woods,24. Tables/generic battle evidence do not supply a location/trial/repeat/outcome account. Distinct from Fairy Cave32. |
 
-### Direct evidence for the three encounter gaps
+### Direct evidence for encounter gaps and the bridge branch
 
-This bounded source check supplements accepted owners. It neither fills the gaps
-nor classifies their natural order/mandatory status. Actual records/producers at
+This bounded source check supplements accepted owners. The dedicated28 owner
+fills its declared static content boundary;14/15 remain gaps. It does not
+classify natural order/mandatory status. Actual records/producers at
 the pin, rather than comment names alone, establish the following:
 
 - **14:** `sf2enums.asm:BATTLE_SOUTHEAST_DESERT=14` and
@@ -335,7 +339,10 @@ the pin, rather than comment names alone, establish the following:
   separately declares two47 entrances;47 declares two no-scroll returns to74.
   Before/after tables select `bbcs_28` / `abcs_battle28` in
   `data/battles/entries/battle28/`. These records do not say27 victory runs28,
-  that28 is required for35→0, or that bridge outcome effects are organized.
+  or that28 is required for35→0. The [dedicated bridge owner](./battle28-bridge-and-outcomes.md)
+  now organizes the complete scenes, battle data/control boundary and outcome
+  effects, including the actual CURRENT return caller. That is static content
+  coverage, not a new runtime observation or all-AI account.
 
 For44, only `sf2enums.asm:BATTLE_FAIRY_WOODS=44`, row44→24 and
 `data/maps/entries/map24/mapsetups/s6_initfunction.asm`'s44-unlock/544 accesses
@@ -358,7 +365,8 @@ set, not proof that no source or generic helper evidence exists.
 | Arm/Claude and later Yeel/Chaz | Partial: [Moun Arm award](./moun-town-painter-and-golem-arm.md) is accepted but stops before later Golem recruitment/item use. | Separate Map63 item-event/script identifies the Arm/Claude branch; late Yeel530/28 setups declare Chaz. Neither supplies a full accepted optional-route account here. Arm acquisition alone does not establish Claude joining. |
 | Lemon | Partial across [Red Baron aftermath](./battle37-outcomes-and-lemon-aftermath.md) and [Map41 sword/head entry](./battle39-outcomes-and-force-sword-route.md). | After37 does not recruit;41 conditional join is accepted. Other entrances remain unorganized by that one owner. |
 | Dojo45 and hidden Battle0 | Accepted bounded chapter owners. | Optional Dojo and special EndGame/reset caller do not close other optional encounters. |
-| Battle14,28, Fairy Woods44 | Structural/producer evidence; named content gaps. | Local content/formation/control/outcome/return; no invented ordering or automatic runtime queue. |
+| Battle14, Fairy Woods44 | Structural/producer evidence; named content gaps. | Local content/formation/control/outcome/return; no invented ordering or automatic runtime queue. |
+| Battle28 bridge branch | Dedicated [static entry/scenes/formation/control/outcome/return account](./battle28-bridge-and-outcomes.md). | All action/AI decisions, natural traversal and late production consumption remain unproved; no physical collapse/countdown inferred from staging. |
 | Late town revisits, shop/church/Caravan, promotion/equipment, magic tunnels | Selected alternatives/services/warps where linked; global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/tunnel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
 
 The29 smith entry and Chaz declarations use pinned
@@ -406,17 +414,12 @@ passes or a repair queue. Battle0's accepted Suspend correction preserves the
 original author/main/CI PASS that missed that exclusion; the focused correction
 does not validate unrelated source content.
 
-**Recommendation, not dispatch:** organize missing Pangoat Valley Bridge/Battle28
-next. It gives the late Parmecia reading route an explicit branch alongside
-Tristan. Reuse accepted74 producer, routing/spritesets and pinned47/battle28.
-An initial coherent acceptance boundary is both entrances, ordered admission,
-full opening/cast and fresh versus retained initialization through start-wrapper
-return before activation; explicitly leave later bridge outcome/return outside
-that first slice. Do not turn collapse staging into natural traversal. Main-gate
-may choose a larger coherent outcome boundary if direct inspection shows that
-splitting would obscure the connection.
+Battle28's [dedicated account](./battle28-bridge-and-outcomes.md) now spans the
+whole declared static branch, through conditional outcomes, full Cameela scene
+and both return connections. It does not prove that the chapter spine must traverse28 or that
+the later campaign is playable, and creates no all-AI/runtime closure queue.
 
-Battle15/external61 is another useful follow-up because Panel/Sword explicitly
+**Recommendation, not dispatch:** Battle15/external61 is a useful follow-up because Panel/Sword explicitly
 excludes its approach;14 is a separate random-encounter gap. Dwarf village/smith
 and later revisits are optional-content decisions. These are alternatives for
 main-gate planning, not a numbered queue or Epic close decision.
