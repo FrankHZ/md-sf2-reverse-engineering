@@ -773,7 +773,7 @@ nonexistent receipt path:
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1184/correction-review.py <configured-source-disasm-root> --receipt local/issue1184/correction-committed-01.json --committed
+uv run --locked python -X utf8 local/issue1184/correction-review.py <configured-source-disasm-root> --receipt local/issue1184/correction-reproduction-01.json --committed
 git diff --check origin/main...HEAD
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
