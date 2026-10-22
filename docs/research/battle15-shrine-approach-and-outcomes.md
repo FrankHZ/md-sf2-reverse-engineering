@@ -63,9 +63,9 @@ from `(43,31)`. `map61/6-warp-events.asm` row1 returns from `(5,16)` to69
 and treats negative source bytes as wildcards. It posts mutable event1 and
 payload/sound in separate writes. The request is not a walked-path receipt.
 
-The no-scroll request consumer idles main, discards the exploration return
-address and clears the event before dispatch. Nonnegative destination bytes
-replace low coordinate bytes of sampled main words; they do not globally
+ProcessMapEvent clears the event before dispatching the warp. Its no-scroll
+consumer then idles main and discards the exploration return address.
+Nonnegative destination bytes replace low coordinate bytes of sampled main words; they do not globally
 clear supplied high bytes. Ordinary nonnegative samples give the rows above.
 `code/gameflow/mainloop.asm:@Start` orders **SwitchMap then CheckBattle**.
 SwitchMap has only3/F640→4,71/F530→78,58/F999→59; neither61 nor69 is switched.
@@ -577,7 +577,7 @@ All three `map50/6-warp-events.asm` records are no-scroll:
 
 | Row / source | Destination request | Actual next admission boundary |
 | --- | --- | --- |
-|0 /(27,3)|63 `(8,51)` Right|SwitchMap has no63 replacement. Row0/F400 can admit hidden Battle0 regardless of crop trigger coordinates; otherwise fresh63 setup (F29 override) and its selected init. This does not prove walking through the door, F999 state or the tunnel network.|
+|0 /(27,3)|63 `(8,51)` Right|SwitchMap has no63 replacement. Row0/F400 can admit hidden Battle0 regardless of crop trigger coordinates, retaining this route's MainLoop caller; otherwise fresh63 setup (F29 override) and its selected init. This does not prove walking through the door, F999 state or the tunnel network.|
 |1 /(14,23)|61 `(5,7)` Down|No61 battle row; fresh61 setup by729, follower population by77 and open block by730 remain independent.|
 |2 /(42,24)|8 `(16,20)` Down|No8 battle row; fresh Ribble default/F708 setup and F731 tree block from the accepted Panel/tree owner.|
 
@@ -586,8 +586,9 @@ regions, block changes and these records do not prove continuous walkable
 connectivity among the three exits/chests. For63, its init checks29 and can
 run the short Claude pose program; no full hub conversation/recruitment or
 later village research is undertaken. [Battle0's owner](./battle00-bonus-battle-and-reset.md)
-owns the separate F400 admission/reset chapter. Returning61 can later exit69
-as above; the chapter stops at these admissions and existing owners.
+describes the separate EndGame/reset caller. Admission here does not inherit
+that reset suffix: this supplied Map63/F400 route retains MainLoop. Returning61
+can later exit69 as above; the chapter stops at these admissions and existing owners.
 
 ## Actual producer and remake consumers
 
@@ -598,8 +599,8 @@ engine run was performed; none was needed to answer these code-bound questions.
 | Surface | Actual expression / limitation for this chapter |
 | --- | --- |
 |H2 producers|`src/sf2tool/h2/map_init.py` and `map_script_engine.py`, plus map setup/event/data, battle spriteset/routing/global/cutscene owners, preserve selected source structure/operands. Retained `programCorpus` physically groups commands to end with inline action bodies separately. Parsing is not natural reach or a playable content package.|
-|Python conversion|`src/sf2tool/remake_exploration_programs.py:OriginalPrograms.compile` lowers flags (Story adds400), text, position, actions, block copies, quake, flash, scene loads, hide and queued warp subject to selected scene maps. Unmatched `setDest` has no case and reaches native-call; do not substitute its position primitive. `followEntity` resolves selector offsets but emits no Bowie-HP precheck.|
-|Content admission|`ExplorationContentReader.cs` reads typed story operations/native-call into `StoryProgram.cs` records/UnsupportedInstruction. `PrivateBattleScenarioReader.Assemble` admits battle1/2/3 only; requires STARTING, selected item expressions and commandsets (no HEALER3), plus narrower class/derived-state assumptions. Battle15's hidden row/Power Water/Monks do not become supported by generic geometry/order types.|
+|Python conversion|`src/sf2tool/remake_exploration_programs.py:OriginalPrograms.compile` lowers flags (Story adds400), text, position, actions, quake, flash, scene loads, hide and queued warp subject to selected scene maps. `setDest`, `setBlocks` and `setBlocksVar` have no cases and reach native-call; the opening's `setBlocks` is an explicit conversion/Unsupported gap alongside `setDest`. Do not substitute position or static layout-event copies for these story operations. `followEntity` resolves selector offsets but emits no Bowie-HP precheck.|
+|Content admission|`ExplorationContentReader.cs` reads typed story operations/native-call into `StoryProgram.cs` records/UnsupportedInstruction. Its `ReadLayoutEvents` constructs `WorkingMapBlockCopy` for static map `layoutEvents` (doors/flags/roofs), separately from story instructions; that does not lower `setBlocks`/`setBlocksVar`. `PrivateBattleScenarioReader.Assemble` admits battle1/2/3 only; requires STARTING, selected item expressions and commandsets (no HEALER3), plus narrower class/derived-state assumptions. Battle15's hidden row/Power Water/Monks do not become supported by generic geometry/order types.|
 |Domain|Map/follower motion, flag membership, region geometry, battle initialization/turn/control and source-order AI primitives exist. `BattleInitializationRules.cs` requires controlled roster-only/already-refreshed starts, difficulty0, no auto-battle/opponent control, and narrow enemy loadouts; `Gameplay/Sf2/SourceEnemyAi.cs` admits commandsets6/7/9/14 and narrow no-spell/item categories, excluding these Monks/equipment/spells. `PrivateBattleScenarioReader.Order` distinguishes MOVE_TO point, FOLLOW_ENEMY high-bit ID and FOLLOW_TARGET ally ID; expression is not15 admission. Native trapped-chest/drop/terminal composition still needs supported bindings.|
 |Application|`Runtime/Exploration/ProgramRunner.cs` applies FollowEntity by resolving current slots and installing FollowerMotion without checking Bowie's HP. It handles typed scene/map/position/flag/queue operations and returns Unsupported at native instructions. Thus even expressible follows need a source-guard conversion decision before faithful15 use; no blanket rejection of every primitive or claim of current15 execution is made.|
 |Battle production|`src/sf2tool/remake_exploration_battles.py:prepare_encounter` permits2/3; `compile_routes` reads the selection's battle IDs and wildcard rows/hooks, separately from that producer restriction and Content/Domain/Application validation. No15 scenario, full after-scene, chest trap, all-AI or playable connection is established by this prose.|
