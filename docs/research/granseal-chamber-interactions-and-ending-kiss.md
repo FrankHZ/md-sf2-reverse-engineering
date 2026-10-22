@@ -505,3 +505,7 @@ Unknowns and special-screens' historical queue do not authorize runtime work.
 Freeze a clean pushed Draft PR and stop the writer for independent main-gate
 review/merge; same task owns corrections. No merge, cleanup, archive, ref
 deletion or next dispatch belongs to this slice.
+
+The [credits, finale and bonus-admission account](./ending-credits-finale-and-bonus-admission.md)
+continues through the complete end sequence and the BattleLoop caller's
+normal-return reset boundary.

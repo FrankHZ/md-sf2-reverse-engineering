@@ -281,6 +281,10 @@ game sequence. The ending-kiss path owns a data-driven pixel-filling renderer. E
 ending-witch, and ending-kiss resource labels are all part of the canonical resource map. This
 establishes ownership and routing, not visual parity.
 
+The [credits, finale and bonus-admission account](./ending-credits-finale-and-bonus-admission.md)
+traces the complete ending service/state chain and BattleLoop caller's reset boundary;
+its static findings do not reopen the historical presentation queue.
+
 ## Concentrated Runtime Queue
 
 The witch service/control-flow matrix is now observed above. The remaining non-witch presentation
