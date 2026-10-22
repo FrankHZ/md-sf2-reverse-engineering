@@ -1,5 +1,7 @@
 # Battle43 Zeon Guard laser action and results
 
+Continue with [Battle43 outcomes and ending admission](./battle43-outcomes-and-ending-admission.md).
+
 Evidence date: 2026-10-22. **Confirmed (static):** Guards132/135 use the
 shared action6 laser, with base power16 and ordinary damage12–16 per target.
 Preparation tests allies; script construction rebuilds occupancy from both
