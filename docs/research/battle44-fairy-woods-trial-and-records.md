@@ -85,9 +85,11 @@ source DIVS60 format is detailed below; it is not a hardware stopwatch claim.
 
 The actual `code/common/menus/yesnoprompt.asm:alt_YesNoPrompt` starts with choice0
 and no initial release-wait operand. Left selects0, Right selects-1 (stored byte255);
-B returns negative, C/A confirm the byte choice as a zero-extended word. Direction
-checks precede B, then C, then A. Init tests the returned **word** for zero, so only
-0 accepts; confirmed No255 and B-1 both decline. Accepted text473 is the start
+C/A initially zero-extend the choice byte, but the shared return epilogue reloads
+CURRENT_DIAMOND_MENU_CHOICE and applies EXT.W before RTS. Thus the final returned
+word is0 for Yes and-1 for confirmed No; B also ultimately returns-1. Direction
+checks precede B, then C, then A. Init tests that final **word** for zero, so only
+0 accepts; confirmed No and B both decline. Accepted text473 is the start
 cue (`{W2}`), followed by `cs_StartSpecialBattle`: setStoryFlag44 means F444,
 then warp24 `(1,24)`, Left. This is a pending request subsequently consumed by
 exploration/MainLoop, not an immediate direct BattleLoop call. Decline text474
@@ -128,8 +130,8 @@ its completion-held shortcut does not manufacture one.
 
 `data/battles/spritesets/spriteset44.asm:BattleSpriteset44` declares **12 allies,
 15 enemies,14 regions,1 point**. `battleloop/initializecombatants.asm:InitializeAllAlliesBattlePositions`
-first sets all32 ally X=-1, updates force, then takes actual battle-party IDs in
-order. UpdateForce scans IDs0..31 and includes joined-and-active flag pairs; it
+first sets all30 ally X=-1, updates force, then takes actual battle-party IDs in
+order. UpdateForce scans IDs0..29 and includes joined-and-active flag pairs; it
 does not use spriteset identity bytes as a recruitment list. A dead member consumes its party entry without advancing the placement
 pointer; living members consume successive placement rows. Therefore the row's
 printed ally number is not a guaranteed character identity. Remaining party
@@ -152,7 +154,7 @@ position initializer reads their X/Y, not those values as a new ally AI policy.
 | 10 | (9,29) |
 | 11 | (14,30) |
 
-Healing is shared `battleloop/heallivingandimmortalallies.asm`: all32 slots with
+Healing is shared `battleloop/heallivingandimmortalallies.asm`: all30 slots with
 nonzero HP, plus Peter/Lemon regardless of HP, get maxHP/MP. The intermediate
 status AND7 retains STUN/POISON/CURSE, then UpdateCombatantStats recomputes CURSE
 from equipped cursed items. Supplied CURSE without cursed equipment clears;
@@ -288,8 +290,8 @@ single triangle (its unused fourth pair is0,0). Regions are local to the0,0 crop
 
 The actual consumer is `battleloop/triggerregions.asm`, not the conceptual
 comment alone. IsRegionTriggered accepts type3 as triangle1/2/3; other selected
-type4 records use triangles1/2/4 and3/2/4. AreAnyAlliesInTriangle scans all32 ally
-slots, requiring positive signed HP and nonnegative signed-byte X/Y, independently
+type4 records use triangles1/2/4 and3/2/4. AreAnyAlliesInTriangle scans all30 ally
+slots (IDs0..29: COMBATANT_ALLIES_COUNTER29 with DBF), requiring positive signed HP and nonnegative signed-byte X/Y, independently
 of current active-party membership. It does not require the acting ally itself.
 IsAllyInTriangle tests edges1→2,3→1,3→2 against the point and opposite vertex.
 A segment result1 returns inside immediately; otherwise the low-bit exception
