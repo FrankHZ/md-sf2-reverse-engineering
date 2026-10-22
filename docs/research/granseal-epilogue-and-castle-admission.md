@@ -497,3 +497,5 @@ The next bounded owner starts with castle's royal-scene admission above;
 it must not assume this document executed it. Freeze clean pushed Draft PR for
 independent main-gate acceptance; same task owns corrections. No integration,
 cleanup, archival, ref deletion or next dispatch is part of this slice.
+
+Continue with [Granseal royal council and chamber admission](./granseal-royal-council-and-chamber-admission.md) for the complete royal scene, companion departures, post-council interactions and ordinary Map20 entry.
