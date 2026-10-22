@@ -8,6 +8,10 @@ neutral, independently of scene129 and combat129. Stop immediately
 before the first ActivateEnemies call. Natural arrival, completed
 presentation and playable remake support remain **Unknown**.
 
+Continue with [Battle42 activation and first control](./battle42-activation-and-first-control.md)
+for the four integer regions, hidden spawning, neutral/queue interaction
+and the first action-selection boundary.
+
 ## Agreement, provenance and method
 
 Standard rigor for [Issue #1170](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1170)
