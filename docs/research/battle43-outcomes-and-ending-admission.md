@@ -8,6 +8,9 @@ and clears four follower flags. After it returns, victory joins0, clears443
 and sets543. Ordinary Map59 rebuild can then call `cs_615E6`. This is
 ending **admission**, not completed ending or restored free walking.
 
+Continue with [Zeon aftermath, sealing and the Granseal return](./zeon-aftermath-and-granseal-return.md)
+for the complete admitted scene and its ordinary-map return boundary.
+
 ## Agreement and evidence route
 
 Standard rigor for [Issue #1182](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1182)
