@@ -367,14 +367,28 @@ That scans selected placement coordinates; `(2,8)` matches row15, then
 requires **entire activation word0200**, both triggers15, and maxHP0. It calls
 ResetSpawningEnemyStats and returns143. The caller tests only d0!=-1, **not
 carry**, sets TRAPPED_CHEST action/item-or-spell143, requests corrupted-save
-music, and SpawnEnemySkipCamera before ending control. This bypasses ordinary
+music, and SpawnEnemySkipCamera before returning from menu control. This bypasses ordinary
 chest AddItem/full-hands logic; F151/open layout is already written.
+
+The same search action then continues in
+`battlefunctions/executeindividualturn.asm`, lines171–177: TRAPPED_CHEST128
+becomes ATTACK0; ITEM_OR_SPELL receives the original opener's combatant ID,
+and the local actor becomes143. After the intervening ordinary class/special
+checks, `@WriteBattlesceneScript` waits two VInts and passes that local actor
+to WriteBattlesceneScript. `battleactions/battleactionsengine_1.asm`,
+lines216–220, reconstructs the attack target list as length1 with the low
+byte of ITEM_OR_SPELL: the original opener. Thus an unchanged valid trap
+initiates **Golem143 → opener** scene generation within the search action,
+rather than merely spawning143 for a later queue. This is actor/target
+dispatch, not proof of a completed hit, damage, death or presentation.
 
 Reset checks actual row bound144 and all-combatant occupancy, including
 dead/self coordinates. Success copies Golem24HP, adds Power Water to its empty
 inventory and restores saved activation0200. Failure sets max/currentHP0/X=-1
 and carry, but does not change returned143 into-1; the caller can still request
-spawn. This is a static failure boundary, not proof of natural failure or an
+spawn and reach the same actor/target rewrite and scene-generation path.
+HP0/offscreen or stale uninitialized stats are not a valid successful attack
+guarantee. This is a static failure boundary, not proof of natural failure or an
 automatic fix. With unchanged successful143 now maxHP24, the trap predicate
 cannot pass again; later ordinary death cleanup does not reset maxHP to0.
 Changed activation bits can also defeat the exact0200 predicate. Fresh battle
