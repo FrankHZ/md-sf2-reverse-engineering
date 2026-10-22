@@ -653,7 +653,9 @@ unknown files.
 Accepted static story research already reaches Zeon, epilogue, credits and Battle0's reset caller.
 The [Battle28 bridge owner](./battle28-bridge-and-outcomes.md) covers its conditional entrances,
 complete scenes/formation/control boundary and outcomes/returns. The
-[story frontier](./story-content-coverage.md#encounter-omission-check) retains Battles14/15/44
+[Battle15 shrine owner](./battle15-shrine-approach-and-outcomes.md) connects exterior61,
+both50 admissions, complete scenes/formation/control boundary, hidden chest and outcomes/exits.
+The [story frontier](./story-content-coverage.md#encounter-omission-check) retains Battles14/44
 and other optional-content gaps; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
 separates that research from original runtime, English design and current remake capability.
 It does not extend H2/H3 fixture counts or establish full-game/natural-path completion.
