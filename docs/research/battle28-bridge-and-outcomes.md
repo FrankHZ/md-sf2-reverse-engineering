@@ -199,7 +199,7 @@ Packed moves become signed relative destination requests plus destination
 waits. csWait is Sleep, not an implicit join. eas_Init configures speeds32,
 collision/auto-facing/size24/orientation and refresh; Jump uses relative
 requests/timers with auto-facing temporarily off. stopEntity sets animation
-counter-1; startEntity sets1. `ac_motion OFF` disables animation, not travel;
+counter-1; startEntity sets0. `ac_motion OFF` disables animation, not travel;
 orientDown changes FLAGS_B orientation bits, **not FACING**; refresh requests
 sprite update separately. setFacing writes FACING/update; setPos writes
 position/destination/facing, without resetting travel/script. For actual
