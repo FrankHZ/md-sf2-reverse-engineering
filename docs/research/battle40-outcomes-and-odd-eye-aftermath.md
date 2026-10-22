@@ -1,6 +1,6 @@
 # Battle40 outcomes and Odd Eye's aftermath
 
-Evidence date: 2026-10-21. **Confirmed (static):** defeat has priority.
+Evidence date: 2026-10-22. **Confirmed (static):** defeat has priority.
 With Bowie alive and combat Odd Eye128 at HP0, the leader hook can
 remove remaining enemies from counting. Fairy Tear and Counter Sword
 are independent action-side drops; the sword requires a range32 draw.
@@ -411,14 +411,32 @@ and inserts physical follower ID if absent. These are fixed-point
 entity offsets (one tile384), not two tiles or synchronous relocation.
 No wait follows these installations.
 
-csc19 setPos, csc23 facing, csc1C stopEntity and csc2C follow use the
-alive-status helper for ordinary allies0–29; HP0 skips the whole command.
-Enemy-bit128–131 and nonally31 bypass it. Installs14/15, csc2D movement,
-flash, shiver, nod and hide have no such guard. Victory normally revives
-Peter/Lemon, not necessarily Zynk. F76-held/HP0 Zynk gets unguarded InitW
-but setPos can skip. Changed HP can suppress facing/follow while an
-installed action still runs. Missing FOLLOWER_B can redirect unguarded
-commands to physical0; F76 alone is no general alias guarantee.
+csc19 setPos and csc23 facing encode the target as a byte and peek that
+byte before the alive-status helper. csc1C stopEntity encodes and peeks
+the target word. For these handlers ordinary ally0–29 HP0 skips the
+command; enemy-bit128–131 and nonally31 bypass this HP test.
+
+csc2C has a different operand-width boundary. followEntity encodes three
+words (follower, leader, selector), but the handler first does
+`move.b (a6),d0`, sets d7=6 and calls the alive-status helper; only then
+does `move.w (a6)+,d0` consume the follower. On the big-endian source,
+the selected follower words0007/001F/001C all supply high byte00 to
+the guard: it checks **Bowie0 HP**, not Peter7/FOLLOWER_B31/Lemon28 HP.
+With Bowie HP!=0, even HP0 Peter or Lemon can receive the follow
+installation, subject to alias/services;31 does not bypass this guard.
+With Bowie HP0, each selected command skips its six operand bytes and
+the installation regardless of follower HP. The helper removes its
+own return address so execution resumes after the skipped handler.
+Each command rereads HP; changes between calls need not admit all three.
+These supplied HP variations do not prove natural scene reach.
+
+Installs14/15, csc2D movement, flash, shiver, nod and hide have no such
+guard. Victory normally revives Peter/Lemon, not necessarily Zynk.
+F76-held/HP0 Zynk gets unguarded InitW but setPos can skip. Changed
+target HP can suppress facing; changed Bowie HP can suppress the three
+selected follow installations while an older action still runs. Missing
+FOLLOWER_B can redirect unguarded commands to physical0; F76 alone is
+no general alias guarantee.
 
 Explicit csWaits are60, nine8, two8,120,40,40,40,30:418 requested Sleep
 ticks. ExecuteMapScript can skip encoded waits with SKIP_CUTSCENE_TEXT,
@@ -496,6 +514,15 @@ neither encounter admission nor scheduling/presentation parity.
 |[BattleOutcomeRules](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/BattleOutcomeRules.cs),[Sf2OutcomeReturnPolicy](../../remake/src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs),[BattleOutcome](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/BattleOutcome.cs)|Represented positioned/living actors, leader-loss priority, completed-scene skip, join/flags and staged return exist. Active membership uses First/Single and rejects missing position, not unchecked byte/alias selection. Defeat uses configured egress, refuses399/64/640 variants; nonzero return status refuses refresh. No arbitrary RAM slots or interrupted-prefix parity.|
 |[MapEntityAllocator](../../remake/src/Sf2.Remake.Domain/Maps/MapEntityAllocation.cs),[SceneEntities](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/SceneEntities.cs),[ProgramRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs),[EntityActionRunner](../../remake/src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs)|Follower-first/duplicate-ally allocation, typed motion/facing/follow/animation exist with validation. Native refuses program-opcode/entity-action before that operation advances. Relative motion outside0..63 refuses; native HP/alias/service interleaving and five-script limits are not established.|
 |[WorkingMapLayout](../../remake/src/Sf2.Remake.Domain/Maps/WorkingMapLayout.cs),[ExplorationPresentation](../../remake/game/src/Exploration/ExplorationPresentation.cs),[BattleMapViewport](../../remake/game/src/Battles/BattleMapViewport.cs),[capability owner](../../remake/docs/capability-status.md)|Word-copy/generic projections exist; selected native layout/templates/assets, actual40 drops, population and return lifecycle remain unbound/unadmitted. Primitives do not establish display/audio completion or usable40 input.|
+
+For these selected follow commands, the compiler emits typed follower/
+leader references and−24,0 offsets without the native high-byte HP guard.
+[ExplorationContentReader](../../remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs)
+reads FollowEntity with those fields; ProgramRunner's FollowEntity case
+resolves entities and calls FollowerMotion.Install without checking
+Bowie HP. Entity resolution validates presence, not this HP predicate.
+Thus typed follow does **not** preserve csc2C's selected guard. This is
+a documented consumer gap, not an engine change or a new40 runtime claim.
 
 **Inferred:** future content can express independent dropped bits,
 inventory transactions, completed guard, staged aliases, mutable layout,
