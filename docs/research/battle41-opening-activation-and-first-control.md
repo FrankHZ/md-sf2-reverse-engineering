@@ -1,5 +1,7 @@
 # Battle41 opening, activation and first control
 
+Continue with [Battle41 outcomes and Ancient Tower stairway](./battle41-outcomes-and-ancient-tower-stairway.md).
+
 Evidence date: 2026-10-22. **Confirmed (static):** Outside Ancient Tower
 has a short Reaper opening, twelve party formation rows, twenty STARTING
 enemies, five rectangular regions and one AI point. Seventeen enemies
