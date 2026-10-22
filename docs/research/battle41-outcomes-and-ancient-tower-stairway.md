@@ -1,5 +1,7 @@
 # Battle41 outcomes and Ancient Tower stairway
 
+Continue with [Battle42 initialization and opening](./battle42-initialization-and-opening.md).
+
 Evidence date: 2026-10-22. **Confirmed (static):** Bowie defeat wins
 terminal priority. Reaper128's death can sweep other living enemies;
 that sweep does not award Blue Shaman129's Holy Staff. Victory has an
