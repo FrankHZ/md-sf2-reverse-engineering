@@ -1,5 +1,7 @@
 # Ancient Tower ascent, Creed and Battle41 admission
 
+Continue with [Battle41 opening, activation and first control](./battle41-opening-activation-and-first-control.md).
+
 Evidence date: 2026-10-22. **Confirmed (static):** Map56 has an authored
 setup and one fixed Creed actor. Talking can set903 and enter Church;
 the43,40 zone separately sets441 then904. Talking alone does not unlock41.
