@@ -1,5 +1,7 @@
 # Battle43 activation, round queue and first control
 
+Continue with [Battle43 Zeon Guard laser action and results](./battle43-zeon-guard-laser.md).
+
 Evidence date: 2026-10-22. **Confirmed (static):** all twelve fresh formation
 points miss Battle43's sole region. Three enemies use that region; the other
 thirteen bypass its PRIMARY gate through 15/15 assignments. The sixteen
