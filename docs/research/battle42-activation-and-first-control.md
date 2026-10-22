@@ -8,6 +8,8 @@ rawAGI190 contributes two queue entries. These are state-dependent source
 contracts, not a natural first actor or a playable Battle42 remake.
 Stop before a concrete movement, spell, item or attack decision.
 
+Continue at [Battle42 outcomes, Galam aftermath and Zeon admission](./battle42-outcomes-and-zeon-admission.md).
+
 ## Agreement, provenance and method
 
 Standard rigor for [Issue #1172](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1172)
