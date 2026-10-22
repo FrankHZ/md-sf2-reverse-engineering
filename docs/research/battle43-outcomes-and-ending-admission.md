@@ -8,6 +8,9 @@ and clears four follower flags. After it returns, victory joins0, clears443
 and sets543. Ordinary Map59 rebuild can then call `cs_615E6`. This is
 ending **admission**, not completed ending or restored free walking.
 
+Continue with [Zeon aftermath, sealing and the Granseal return](./zeon-aftermath-and-granseal-return.md)
+for the complete admitted scene and its ordinary-map return boundary.
+
 ## Agreement and evidence route
 
 Standard rigor for [Issue #1182](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1182)
@@ -169,7 +172,11 @@ drop bits or Deals. A later playback failure is not a proved rollback.
 
 **Confirmed:** `battle/battleloop_2.asm: BattleLoop_Victory`
 (`$23CBA..$23D98` file) first heals living/immortal allies. Its30-slot
-helper restores maxima, preserves STUN/POISON/CURSE and refreshes stats;
+helper restores maxima, writes status AND7 (STUN/POISON/CURSE) as an
+**intermediate** value, then refreshes stats. UpdateCombatantStats removes
+old CURSE and recomputes it from equipped cursed items: a living ally
+with only CURSE and no cursed equipment finishes without CURSE. See the
+[refresh derivation](./zeon-aftermath-and-granseal-return.md#shared-tail-scene-load-reset-text-and-posted-return);
 Peter7/Lemon28 heal even at HP0, other dead allies skip. It saves live
 CURRENT_MAP into PARAM2, rebuilds force lists, reads first active member's
 X/Y plus crop origin by **byte arithmetic**, and physical alias facing
