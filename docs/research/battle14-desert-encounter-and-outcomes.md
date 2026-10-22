@@ -107,7 +107,10 @@ is added to the separate [shrine15](./battle15-shrine-approach-and-outcomes.md) 
 PLAYER_TYPE, sets399, clears elapsed seconds; establishes70/14 and base VInts;
 runs before; restores selectors; clears region flags90–105; heals living allies
 plus Peter7/Lemon28; places actual allies, initializes enemies, clears AI memory,
-LoadBattle(0), then start wrapper. Healing restores HP/MP and retains status mask7.
+LoadBattle(0), then start wrapper. Healing restores HP/MP and first applies
+status AND7 (STUN/POISON/CURSE); UpdateCombatantStats then refreshes stats and
+recomputes CURSE from equipped cursed items. Supplied CURSE without such
+equipment clears; equipped cursed gear sets it.
 It does not make every supplied party member living or player controlled.
 
 The actual build's `layout/sf2-07-0x044000-0x064000.asm` includes the four pointer
