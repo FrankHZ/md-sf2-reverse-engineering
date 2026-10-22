@@ -9,6 +9,9 @@ selected only at a later CheckBattle. The default Map59 setup supplies
 the intervening warp when its live flags admit it. Natural completion,
 presentation and playable remake support remain **Unknown**.
 
+Continue with [Battle43 initialization](./battle43-initialization.md) for the complete
+formation, refreshed values and Zeon/Elis reconstruction before first activation.
+
 ## Agreement, provenance and method
 
 Standard rigor for [Issue #1174](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1174)
