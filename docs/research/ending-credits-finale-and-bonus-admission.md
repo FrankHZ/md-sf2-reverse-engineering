@@ -15,7 +15,7 @@ one coherent credits → finale → witch → hidden-battle admission account,
 including the caller's reset suffix. Accepted base
 `6256c0965b556d033bf1241da77f5d7b7868fd66`, tree
 `a0bdf5a9d3d0190a592c420825f8033024071ff2`; no stacked dependency.
-Own this document and navigation in the
+Own this document, the CheckBattle clarification in common-maps, and navigation in the
 [chamber predecessor](./granseal-chamber-interactions-and-ending-kiss.md) and
 [special screens](./special-screens.md#ending-screens). Battle0's actual
 battle, victory/defeat/escape rules, post-reset menus, rendering parity,
@@ -32,8 +32,8 @@ Reuse [common scripting](./common-scripting.md), [common maps](./common-maps.md)
 [party services](./common-stats.md#confirmed-services),
 [SRAM services](./technical-services.md#sram-save-system-contract),
 [interrupts](./technical-interrupts.md) and [gameflow](./gameflow-core.md).
-The precise completed-flag branch of CheckBattle is stated below; the older
-common-maps summary is not a substitute for that use-site predicate.
+The [common-map routing summary](./common-maps.md#confirmed-map-routing) and
+the precise CheckBattle use-site predicate below describe the same branch.
 
 The five main source files total32,711 UTF-8 bytes: endcredits.asm,
 cs_introendroutine.asm, cs_end.asm, witchendinit.asm and witchend.asm. Read
@@ -180,8 +180,10 @@ change their physical placement/state. Later setSprite changes Rohde11 to
 NPC_ROHDE170; it does not rename him to nonally128.
 
 All rows use eas_Init. Bowie explicitly waits for eas_Init, then custom
-speed20/20→jump idle; Astral128, King129 and Minister130 each get the same
-custom speed20/20→idle. Other rows retain init speed32/32 unless later changed.
+speed20/20→jump idle; Astral128, King129, Minister130 and Elis131 each get the
+same custom speed20/20→idle, in that order. The five companion rows—Rohde11,
+Chester2, Luke10, Jaha3 and Peter7—declare eas_Init's32/32 without a custom20
+override here; the follower-reuse caveat above still applies.
 eas_Init's orientUp writes FLAGS_B orientation0, **not** independent FACING.
 Refresh reads and rewrites existing FACING. The #1190 correction remains
 binding: init does not replace declared Down/Right with facingUp. Autofacing,
@@ -194,10 +196,11 @@ map requests, waits, parallel movements and repeated gestures. It describes a
 procession and reactions without invented dialogue or marriage/awakening flag.
 W installs a stream and waits for its pointer to reach eas_Idle; A installs
 without that wait. R/L/U/D mean Right/Left/Up/Down; counts are source operands.
-`waitN` means csWaitN. Setup/speed requests above precede these rows.
+`waitN` means csWaitN. The setup row repeats the complete speed-object set.
 
-| Phase | Ordered requests after setup |
+| Phase | Ordered requests |
 | --- | --- |
+|Setup|mapLoad20,19,33; loadMapEntities ce_492CC; W Bowie eas_Init; W custom speed20/20→idle for Bowie, Astral128, King129, Minister130, Elis131 in that order.|
 |Bowie greets court|setSprite Rohde170; fadeInB; wait60; setPos Bowie25,35/R; W Bowie DR1→R1; wait30; W Bowie D4; face Bowie L; W Astral R1; W King R1; wait60; nod Astral; nod King; nod Bowie; wait40; W Bowie U4; face Bowie L; wait80.|
 |Elis joins|setPos Elis25,35/R; W Elis DR1; wait40; nod Bowie; wait60; **A Bowie D4**; W Elis R1→D3; face Bowie L; face Elis L; A eas_Jump Astral; A eas_Jump King; W eas_Jump Minister; wait40. Elis's wait does not join Bowie's earlier stream.|
 |Court reactions|face Minister D; wait30; face King U; nod Minister; wait60; face Astral U; wait30; face King D; nod Astral; wait40; face King R; wait20; face Astral R; wait40; face Bowie U; wait20; face Elis D; wait60; face Bowie L; wait10; face Elis L; wait30.|
@@ -457,6 +460,16 @@ separate receipt and handoff; no prior receipt is replaced. Direct01 caught a
 missing N in this document's238 token array. Correcting that array and the
 local expected list leaves source and selected output unchanged; retain the
 failed receipt rather than replacing it.
+
+Independent source review found a P2 after original author/main direct checks
+and exact-head CI passed: this prose omitted Elis131 from the custom20/20
+set. Those completed PASS results, including main's reproduction-main-01 at
+0.4728s, remain preserved with that omission. The corrected paragraph and setup
+ledger include all five speed20 actors; only the five companion rows retain
+the declared init32/32 classification. `local/issue1192/focused-correction.py`
+checks source → complete speed-object set → prose and the two CheckBattle
+summaries with a fresh receipt. It does not rerun the original full direct
+review, capture, lowering or unrelated gates.
 
 **Unknown:** natural reach, live flags/party/followers/HP/aliases/input/debug/
 escape-pointer state, empty-force behavior, service completion/interruption,

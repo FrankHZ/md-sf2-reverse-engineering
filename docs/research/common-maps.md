@@ -19,8 +19,9 @@ owned by the existing `sf2-map-camera-control-runtime-v1` H3 evidence; including
 in this static inventory adds no camera runtime claim. `SwitchMap` scans six-byte
 records until a negative source-map value and takes the first source-map entry whose flag is set.
 `CheckBattle` accepts `-1` as current map, requires the battle-unlocked flag, treats `-1` trigger X/Y
-as wildcards, writes the battle rectangle, and returns `-1` when no record matches. A completed match
-clears its unlocked flag.
+as wildcards, writes the battle rectangle, and returns `-1` when no record matches. For a match,
+an already-set battle-completed flag causes its unlocked flag to be cleared; when the completed
+flag is clear, the unlocked flag is retained. Both paths return the matching battle index.
 
 Before flag 399, egress returns the hardcoded game-start map/coordinates/facing. Otherwise it scans
 four-byte savepoint records with a `-1` terminator, defaulting to `(1,1,UP)` if absent. Raft reset
