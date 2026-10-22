@@ -1,5 +1,7 @@
 # Battle40 regions, terrain changes and first control
 
+Next: [Battle40 outcomes and Odd Eye's aftermath](./battle40-outcomes-and-odd-eye-aftermath.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** Battle40 has four
 regions, twenty STARTING enemies and two independently guarded layout
 scenes. Region checks, held region flags, scene flags and turn admission
