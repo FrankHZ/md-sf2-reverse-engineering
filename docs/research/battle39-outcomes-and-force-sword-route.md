@@ -492,10 +492,17 @@ through their own helpers. S80 changes portrait placement, not identity.
 S's actual sprite/portrait follows its current alias. Lemon dialogue
 likewise uses live ally appearance. Ordinary alias/HP/service boundaries
 from the preceding opening owner remain: setActscriptWait waits for Idle;
-RL installs right/left alternation with30 waits, Jump toggles motion flag
-and submits up/down relative steps with5 waits; Anim2 sets animation-speed
-state. setFacing/movement of ordinary allies can skip at HP0, while
-pseudo31 bypasses that ally test. `csc2C_followEntity` tests the high byte
+RL installs right/left alternation with30 waits. eas_Jump disables
+auto-facing with ac_autoFacing OFF (opcode15 hex), requests relative
+(0,−1), waits5, requests(0,+1), waits5, requests(0,0), restores
+auto-facing with ac_autoFacing ON and jumps to eas_Idle. ac_motion is
+the separate opcode14 hex; Anim2 sets animation-speed state.
+setFacing/csc23 checks ordinary-ally0–29 HP and can skip at HP0;
+pseudo31 bypasses that test. csc2D/entityActions, csc14 inline scripts,
+csc15/setActscript and csc29/setDest have no HP gate. Supplied Lemon28
+HP0 therefore does not suppress installation or execution of moveUp4
+or the later two Jump scripts; valid aliases and progressing entity
+services remain premises. `csc2C_followEntity` tests the high byte
 of the word operand (0 here) before reading the whole identity: its
 alive precheck is Bowie0, even for Peter/Lemon follow. Do not infer the
 three follow installations from dialogue completion alone.
