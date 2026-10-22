@@ -260,14 +260,16 @@ retains population on west scroll; a later explicit55 request can select34.
 | Battle36, Prism Flowers53 | [Opening](./battle36-initialization-and-opening.md), [activation/control](./battle36-activation-and-first-turn-dispatch.md), [laser/results](./battle36-prism-flower-laser.md), [outcomes](./battle36-outcomes-and-galam-return.md). | Laser is a deeper action slice, not every action.36 completion is not a predicate of the separate37 zone/coordinate row. |
 | Battle37, Red Baron77 | [Opening](./battle37-initialization-and-opening.md), [double-turn/control](./battle37-activation-and-first-turn-dispatch.md), [outcomes/Lemon](./battle37-outcomes-and-lemon-aftermath.md). | Aftermath does not recruit Lemon. No full Red Baron action audit. |
 | Map77→66; Battle38/Geshp | [Admission](./granseal-overworld-return-and-battle38-admission.md), [opening](./battle38-initialization-and-opening.md), [spawns/control](./battle38-activation-and-first-turn-dispatch.md), [Burst Rocks](./battle38-burst-rock-explosion.md), [outcomes](./battle38-outcomes-and-geshp-aftermath.md). | Earlier66 encounter rows can win. Rock construction/HP restoration is not observed playback/all Geshp actions. Early engine66 selection does not cover late content. |
+| Late Yeel05, Chaz and Lemon | [Complete selected chapter](./late-yeel-chaz-and-lemon-recruitment.md) covers both66 entrances, late residents/search, piano/stairs, both930 story branches, distinct joins and return/revisit. | Static coverage only; membership, active party, actor pose and following differ. Natural terrain/service/save and late production bindings remain unproved. |
 
 ## Force Sword, Devils Head and the final tower
 
 [Battle39 opening/control](./battle39-opening-and-first-control.md) and
 [outcomes/Force Sword](./battle39-outcomes-and-force-sword-route.md) cover
 Map66→shrine42/head41, independent attraction/extraction, selected sword use and
-conditional Lemon recruitment. The Map41 entrance is accepted; other recruitment
-entrances do not become complete. [Labyrinth28/40 admission](./devils-head-labyrinth-and-battle40-admission.md)
+conditional Lemon recruitment. Map41 and [late Yeel05](./late-yeel-chaz-and-lemon-recruitment.md)
+retain separate recruitment predicates; these owners do not establish all entrances.
+[Labyrinth28/40 admission](./devils-head-labyrinth-and-battle40-admission.md)
 separates facing scripts, live copies and outgoing54 request; no persistent
 puzzle-completion predicate is inferred.
 
@@ -382,13 +384,13 @@ set, not proof that no source or generic helper evidence exists.
 | Creed choices/later alternatives | Partial: [recruitment owner](./creed-return-fairy-and-recruitment-choices.md) covers initial/F22 offers, refusal and actual join/follow paths for four recruits. | Complete later journey, every setup and ability to recruit everyone on a naturally reached save are not established. |
 | Dwarven Village29 and smith; separate mine30 | [Village29 lifecycle](./dwarven-village-and-mithril-smithing.md) connects77 admission, seven residents/search/eighteen warps, actual smith placement/readiness/collection and exit/revisit. Earlier30 recovery/Cannon remains a separate accepted chapter via68. | Complete static account; natural access, full church/shop services, presentation, saves and production smithing remain unproved. Existing helper/transaction/caller H3 retains only its bounded seams. Source interior/exterior names do not connect29 and30. |
 | Arm/Claude and Magic Tunnel63/64 | [Moun Arm award](./moun-town-painter-and-golem-arm.md) and [Hub/Claude account](./magic-tunnel-hub-and-claude-recruitment.md) connect acquisition boundary, both talk/item-use entries, actual removal, complete awakening/join/follow, bridge/pipe transitions and exits/revisit. | Complete selected static branch; no natural journey from Moun, custody by a fixed member, guaranteed active/following Claude, production binding or save durability follows. |
-| Later Yeel/Chaz | Partial: late Yeel530/28 setups declare Chaz. | Full optional-route account remains open; Claude coverage does not close this separate recruit. |
-| Lemon | Partial across [Red Baron aftermath](./battle37-outcomes-and-lemon-aftermath.md) and [Map41 sword/head entry](./battle39-outcomes-and-force-sword-route.md). | After37 does not recruit;41 conditional join is accepted. Other entrances remain unorganized by that one owner. |
+| Later Yeel/Chaz | [Late Yeel account](./late-yeel-chaz-and-lemon-recruitment.md) connects530/28 population selection, all late interactions/search, piano and underground scenes, Chaz talk/join/follow and return/revisit. | Complete selected static chapter; no natural route, guaranteed active/following Chaz, service presentation, save or late production acceptance. |
+| Lemon | [Red Baron aftermath](./battle37-outcomes-and-lemon-aftermath.md), [Map41 sword/head entry](./battle39-outcomes-and-force-sword-route.md) and [Yeel zone recruitment](./late-yeel-chaz-and-lemon-recruitment.md#chaz-join-lemon-join-and-changed-party-states) retain their separate gates and lifetimes. | After37 does not recruit;41 and05 conditional joins are organized. F28/active60/F71/F945 differ; no all-entrances/all-recruits census follows. |
 | Dojo45 and hidden Battle0 | Accepted bounded chapter owners. | Optional Dojo and special EndGame/reset caller do not close other optional encounters. |
 | Battle14 | Dedicated [static encounter/repeat/outcome account](./battle14-desert-encounter-and-outcomes.md). | Natural order/state, actual airborne overread results, full tactics/runtime and production consumption remain unproved. |
 | Fairy Woods44 | Dedicated [static trial/records account](./battle44-fairy-woods-trial-and-records.md). | Complete declared formation/regions and hidden/respawn/leader/timer/result/return consumers; natural play, all tactics, chest custody, exact presentation/time and persistence remain unproved. |
 | Battle28 bridge branch | Dedicated [static entry/scenes/formation/control/outcome/return account](./battle28-bridge-and-outcomes.md). | All action/AI decisions, natural traversal and late production consumption remain unproved; no physical collapse/countdown inferred from staging. |
-| Late town revisits, shop/church/Caravan, promotion/equipment | Selected alternatives/services/warps where linked; [Hub63/Pipe64](./magic-tunnel-hub-and-claude-recruitment.md) now owns that bounded tunnel branch. Global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/travel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
+| Late town revisits, shop/church/Caravan, promotion/equipment | Selected alternatives/services/warps where linked; [Hub63/Pipe64](./magic-tunnel-hub-and-claude-recruitment.md) and [late Yeel05](./late-yeel-chaz-and-lemon-recruitment.md) own those bounded returns. Global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/travel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
 
 The29 smith entry and Chaz declarations use pinned
 `data/maps/entries/map29/mapsetups/s2_entityevents.asm` and
@@ -396,8 +398,9 @@ The29 smith entry and Chaz declarations use pinned
 The [Claude owner](./magic-tunnel-hub-and-claude-recruitment.md#talk-and-explicit-item-use-custody-and-result)
 now follows both Map63 entity talk and `s5_itemevents.asm:Map63_ItemEvent0`
 through physical Arm removal and `scripts.asm:cs_5CBB4`, including separate
-membership/active/follower lifetimes. Chaz references above remain declaration
-identities only, without a complete optional-route claim.
+membership/active/follower lifetimes. The [Yeel owner](./late-yeel-chaz-and-lemon-recruitment.md)
+also follows actual late pointers/callbacks and all selected scene bodies;
+its Chaz account extends beyond the declaration identities.
 
 ## Cross-chapter consumption gaps
 
@@ -460,7 +463,11 @@ The [Hub63/Claude account](./magic-tunnel-hub-and-claude-recruitment.md) closes
 that connected static tunnel/recruitment gap; it adds no natural/runtime,
 production or save acceptance.
 
-**Recommendation, not dispatch:** later revisits and Yeel/Chaz remain
+The [late Yeel account](./late-yeel-chaz-and-lemon-recruitment.md) closes that
+selected static chapter, including Chaz and Yeel's separate Lemon entry;
+it adds no natural/runtime, design, production or save acceptance.
+
+**Recommendation, not dispatch:** other later revisits remain
 optional-content decisions. These are alternatives for
 main-gate planning, not a numbered queue or Epic close decision.
 
