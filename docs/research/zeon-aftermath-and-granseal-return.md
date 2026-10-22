@@ -815,3 +815,5 @@ original/remake playability. Static completeness is not natural execution.
 Freeze clean pushed Draft PR for independent main-gate acceptance; same
 task owns corrections. No merge, next dispatch, cleanup, ref deletion or
 archival is authorized.
+
+Continue with [Granseal epilogue interactions and Castle2F admission](./granseal-epilogue-and-castle-admission.md) for the town events, Astral choice and escort, and the next castle-entry boundary.
