@@ -203,9 +203,10 @@ counter-1; startEntity sets1. `ac_motion OFF` disables animation, not travel;
 orientDown changes FLAGS_B orientation bits, **not FACING**; refresh requests
 sprite update separately. setFacing writes FACING/update; setPos writes
 position/destination/facing, without resetting travel/script. For actual
-allies0–29, setPos/facing/stop and follow have HP guards; follower/NPC IDs
+allies0–29, setPos/facing/stop have HP guards; follower/NPC IDs
 bypass them, while action installation/text/shiver have different gates.
-Dead Peter/Bowie therefore need not receive every apparent scene operation.
+Dead Peter/Bowie therefore need not receive every apparent placement/pose
+operation. followEntity has the distinct high-byte precheck described below.
 
 Shiver saves/restores size/counter around three flash/size cycles. Quake2/0
 directly writes amplitude; camera destinations wait for scroll, cameraSpeed
@@ -708,11 +709,21 @@ warp to Tristan.
 
 ## Actual return consumption and the two exits
 
-**Confirmed:** final follow instructions resolve physical aliases and call
-AddFollower with slot offsets2=(-24,0),1=(0,-24),3=(0,24): Caravan129 follows
-Bowie, B follows Caravan, Peter follows Caravan. Dead actual Peter can skip
-its follower installation. These are current entity actions/relationships,
-not future flag-driven population changes. `csc07_warp` writes event word1,
+**Confirmed:** `sf2cutscenemacros.asm:followEntity` emits opcode word2C and
+three operand words: follower, leader and relative slot. Before resolving
+the full follower word, `mapscriptengine_1.asm:csc2C_followEntity` reads only
+`move.b (a6),d0`, its **high byte**, and calls
+AdjustScriptPointerByCharacterAliveStatus with D7=6. All three after28
+followers129/31/7 encode a high byte0, so **each call tests live Bowie HP**.
+HP0 makes the helper advance A6 past the six operand bytes and discard
+the handler's helper-return address; AddFollower is skipped and map-script
+execution continues. Nonzero Bowie HP permits full-word alias resolution
+and AddFollower with offsets2=(-24,0),1=(0,-24),3=(0,24): Caravan129 follows
+Bowie, B follows Caravan, Peter follows Caravan. Peter HP0 alone does not
+skip his follow call. Each call samples Bowie independently; a change to0
+between calls preserves earlier installed relationships and skips the reached
+later ones. These are current entity actions/relationships, not future
+flag-driven population changes. `csc07_warp` writes event word1,
 PARAM1=0,PARAM2=255,PARAM3=16,PARAM4=30,PARAM5=Right separately; it does not
 load another map or unwind the battle call.
 
@@ -754,9 +765,10 @@ retreat use their actual explicit savepoint seed; never assume47/Tristan.
 |428 held,478 held,88 clear|Admit and initialize; skip before/start; clear528 can still load neutral woman.|
 |428/528 held|Admit this time while clearing428; no enemy upgrade; skip neutral/after; shared join/flags still run.|
 |88 held|Supplied selectors/queue branch; no incoming47/28 repair, fresh healing or hooks.|
-|Clear528 victory after completes|Warp bytes select retained CURRENT47/28 at16,30; complete scene actors retained.|
+|Clear528 victory after completes|Warp bytes select retained CURRENT47/28 at16,30; scene actors retained, with follow relationships only where each call's Bowie-HP precheck admitted installation.|
 |Held528 victory|Member seed selects fresh explicit47/255 population; no Cameela scene.|
 |Dead/fewer/full/empty party; changed HP/mapping|Placement, seed, count/control, follow and join behavior differ; no fixed12 or guaranteed Bowie mapping.|
+|Bowie HP changes between final follow calls|Each high-byte0 precheck samples Bowie again; HP0 skips that call without undoing earlier installations or stopping the scene. Peter HP0 alone is not this predicate.|
 |Changed current map/crop/savepoint/parameters|Each later consumer reads live values; no repaired coordinates/caller/forced town.|
 |Interrupted text/action/fade/join/flags or pending overwrite|Only reached prefix is established; no rollback/completed suffix promise.|
 
@@ -800,6 +812,7 @@ assuming row ordinal is the fixed ally identity in a controlled package.
 | --- | --- |
 |Program producer/Content types|`remake_exploration_programs.py` maps selected scene-map/population, position/facing, animation, priority-as-bool, quake, camera, flash/presentation, follow, inline actions and queued warp. Reader constructs their typed instructions. Map47, all sprite resources, scene aliases, HP gates, text/name/portrait controls and actual caller lifecycle need admitted conversion and validation. Types do not prove this scene executes.|
 |Entity orientation/refresh|Producer explicitly lowers ac_orient to FLAGS_B mask3 and ac_updateSprite to refresh-sprite, separately from face; current code agrees with source distinction. Size/resize/actions have explicit representations or native boundaries; do not equate declaration to exact original presentation.|
+|Follow precheck|Producer's followEntity branch emits follower/leader IDs and table-derived offsets without the original high-byte Bowie-HP precheck. Content reads a typed FollowEntity; ProgramRunner resolves aliases then calls FollowerMotion.Install, which installs the relationship/motion settings without an HP test. These consumers do not implement the source's per-call skip/continue distinction. No engine correction or lowering is included here.|
 |Native/Unsupported|Unmatched source operations emit native-call; action lowering has UnsupportedEntityAction. Reader maps native-call to UnsupportedInstruction; ProgramRunner rejects before advancing/committing that instruction while retaining earlier prefixes. Scene maps are selection-gated. This account has run **no** lowering, so it does not invent a fresh per-command native/compile result or label an unexecuted suffix accepted.|
 |Battle Domain/Application|Current typed actors, orders (including FOLLOW_TARGET0), regions, agility and bounded outcome primitives can express parts. They do not bypass producer/reader admission, supply all HEAL4/DISPEL/ATTACK/BOOST/FLAME AI decisions, implement this SENTRY/Monk repertoire or authorize leader cleanup. ReadOutcome explicitly notes leader cleanup/nonempty defeated programs need their supported seam; empty script alone does not implement the shared28 leader tail.|
 |Outcome/map caller|After/join/return primitives and retained/rebuilt map operations need the actual victory PARAM overwrite, CURRENT retaining CURRENT_BATTLE28 and scene aliases, repeat seed, live savepoint/retreat and ordinary Suspend semantics. ProgramRunner/MapTransfer's finite accepted early scenarios are not proof of this new late caller composition.|
