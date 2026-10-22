@@ -3,7 +3,9 @@
 Evidence date: 2026-10-22. **Confirmed:** accepted research owners describe a
 conditional story spine from the Map3 opening through both continents, the return
 to Grans, Zeon, the epilogue, credits and Battle0's reset caller. That spine has
-explicit content gaps, including Battle44. The [Battle14 desert account](./battle14-desert-encounter-and-outcomes.md)
+explicit content gaps. The [Fairy Woods44 account](./battle44-fairy-woods-trial-and-records.md)
+connects Map23/24 invitation, hidden/respawning formation, timer/record and returns.
+The [Battle14 desert account](./battle14-desert-encounter-and-outcomes.md)
 connects Map70 random requests, complete base formation, repeat upgrades, control, drops and returns.
 The [Battle15 shrine account](./battle15-shrine-approach-and-outcomes.md)
 connects exterior61, the complete scenes/formation/control boundary and conditional outcomes/exits.
@@ -304,7 +306,7 @@ playable Godot epilogue, all boss moves or Epic1053 acceptance.
 and [cutscene data](./battle-cutscene-data.md) own built table domains. Enum and
 coordinate table have slots0–44; cutscene routing has a different larger domain.
 Structural presence/empty hooks are not content acceptance. This check maps
-**0–43** to the chapters and notes44 as an additional optional gap. It does not
+**0–43** to the chapters and44 to its separate optional trial account. It does not
 count documents as completion units.
 
 | Slots | Content-account boundary |
@@ -319,13 +321,13 @@ count documents as completion units.
 | 26–27 | Separate opening/init, activation/first-call and outcome owners; first call is not an executed individual action. |
 | 28 | [Bridge47 account](./battle28-bridge-and-outcomes.md): both74 entrances, full before/after programs, live formation/sixteen enemies/neutral alias, first dispatch/control predicates, conditional terminal/escape/Suspend and retained/fresh returns. All tactical choices, natural traversal and implementation remain outside its static boundary; Tristan/Caves still enters0/29 independently. |
 | 29–43 | Late entry/opening, activation or first-control and outcome owners. Laser/Burst Rock exceptions do not establish all-AI coverage. |
-| 44, outside0–43 | **Not organized as story content:** Fairy Woods,24. Tables/generic battle evidence do not supply a location/trial/repeat/outcome account. Distinct from Fairy Cave32. |
+| 44, outside0–43 | [Fairy Woods trial](./battle44-fairy-woods-trial-and-records.md):23 east exit/24 invitation, complete12/15/14/1 declaration, hidden/respawn/leader terminal, timer/snapshot/record, chest availability and conditional returns. Distinct from Fairy Cave32; natural play, all tactics, persistence and production44 remain outside its static boundary. |
 
 ### Direct evidence for encounter gaps and the bridge branch
 
 This bounded source check supplements accepted owners. The dedicated28 owner
-fills its declared static content boundary; the dedicated15 and14 owners do likewise,
-while44 remains an encounter gap. It does not
+fills its declared static content boundary; the dedicated15/14 and optional44 owners
+do likewise. It does not
 classify natural order/mandatory status. Actual records/producers at
 the pin, rather than comment names alone, establish the following:
 
@@ -358,9 +360,11 @@ the pin, rather than comment names alone, establish the following:
   effects, including the actual CURRENT return caller. That is static content
   coverage, not a new runtime observation or all-AI account.
 
-For44, only `sf2enums.asm:BATTLE_FAIRY_WOODS=44`, row44→24 and
-`data/maps/entries/map24/mapsetups/s6_initfunction.asm`'s44-unlock/544 accesses
-identify an omission. No trial mechanics or repeatability conclusion follows.
+For44, `sf2enums.asm:BATTLE_FAIRY_WOODS=44`, row44→24 and Map24 init are now
+joined by the [complete optional-trial owner](./battle44-fairy-woods-trial-and-records.md).
+It separates invitation wording from the actual leader sweep, seconds from callback
+snapshot/record, declared chests from the USA stride5 lookup, and fresh/retry/
+Suspend/outcome callers. This is static coverage, not natural or playable completion.
 
 ## Optional content and branches
 
@@ -380,7 +384,7 @@ set, not proof that no source or generic helper evidence exists.
 | Lemon | Partial across [Red Baron aftermath](./battle37-outcomes-and-lemon-aftermath.md) and [Map41 sword/head entry](./battle39-outcomes-and-force-sword-route.md). | After37 does not recruit;41 conditional join is accepted. Other entrances remain unorganized by that one owner. |
 | Dojo45 and hidden Battle0 | Accepted bounded chapter owners. | Optional Dojo and special EndGame/reset caller do not close other optional encounters. |
 | Battle14 | Dedicated [static encounter/repeat/outcome account](./battle14-desert-encounter-and-outcomes.md). | Natural order/state, actual airborne overread results, full tactics/runtime and production consumption remain unproved. |
-| Fairy Woods44 | Structural/producer evidence; named content gap. | Local content/formation/control/outcome/return; no invented ordering or automatic runtime queue. |
+| Fairy Woods44 | Dedicated [static trial/records account](./battle44-fairy-woods-trial-and-records.md). | Complete declared formation/regions and hidden/respawn/leader/timer/result/return consumers; natural play, all tactics, chest custody, exact presentation/time and persistence remain unproved. |
 | Battle28 bridge branch | Dedicated [static entry/scenes/formation/control/outcome/return account](./battle28-bridge-and-outcomes.md). | All action/AI decisions, natural traversal and late production consumption remain unproved; no physical collapse/countdown inferred from staging. |
 | Late town revisits, shop/church/Caravan, promotion/equipment, magic tunnels | Selected alternatives/services/warps where linked; global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/tunnel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
 
@@ -442,8 +446,11 @@ The [dedicated Battle14 account](./battle14-desert-encounter-and-outcomes.md) cl
 the named connected static encounter gap, including conditional repeat upgrade
 and held-equipment drop limits; it adds no natural/runtime or playable acceptance.
 
-**Recommendation, not dispatch:**44 remains an optional encounter gap. Dwarf village/smith
-and later revisits are optional-content decisions. These are alternatives for
+The [Fairy Woods44 account](./battle44-fairy-woods-trial-and-records.md) closes the
+named connected static trial gap without adding runtime/design/playable acceptance.
+
+**Recommendation, not dispatch:** dwarf village/smith and later revisits remain
+optional-content decisions. These are alternatives for
 main-gate planning, not a numbered queue or Epic close decision.
 
 ## Verification boundary

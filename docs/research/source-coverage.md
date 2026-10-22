@@ -657,8 +657,10 @@ complete scenes/formation/control boundary and outcomes/returns. The
 both50 admissions, complete scenes/formation/control boundary, hidden chest and outcomes/exits.
 The [Battle14 desert owner](./battle14-desert-encounter-and-outcomes.md) connects Map70 requests,
 base formation/conditional repeat upgrades, empty hooks, control, held-item drop and outcomes/exits.
-The [story frontier](./story-content-coverage.md#encounter-omission-check) retains Battle44
-and other optional-content gaps; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
+The [Fairy Woods44 owner](./battle44-fairy-woods-trial-and-records.md) connects Map23/24 invitation,
+hidden/respawning formation, leader terminal, timer/record and conditional returns.
+The [story frontier](./story-content-coverage.md#encounter-omission-check) retains other optional-content
+gaps; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
 separates that research from original runtime, English design and current remake capability.
 It does not extend H2/H3 fixture counts or establish full-game/natural-path completion.
 
