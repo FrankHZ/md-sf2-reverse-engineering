@@ -10,6 +10,8 @@ entities/layout from the saved return instead of retaining that staging.
 Map54 exits lead to Map28 or Map56. Natural completion and playable
 remake support remain **Unknown**.
 
+Continue at [Ancient Tower ascent, Creed and Battle41 admission](./ancient-tower-ascent-creed-and-battle41-admission.md).
+
 ## Agreement and evidence
 
 Standard rigor for [Issue #1162](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1162)
