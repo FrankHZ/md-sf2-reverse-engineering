@@ -9,6 +9,9 @@ selected only at a later CheckBattle. The default Map59 setup supplies
 the intervening warp when its live flags admit it. Natural completion,
 presentation and playable remake support remain **Unknown**.
 
+Continue with [Battle43 initialization](./battle43-initialization.md) for the complete
+formation, refreshed values and Zeon/Elis reconstruction before first activation.
+
 ## Agreement, provenance and method
 
 Standard rigor for [Issue #1174](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1174)
@@ -244,7 +247,7 @@ retained state; it is not a battle-state snapshot restore.
 Fixed fields are X/Y/facing/sprite bytes and script long. Native
 InitializeMapEntities tests sprite>=MAPSPRITES_SPECIALS_START240;
 Zeon uses ENTITY_SPECIAL_SPRITE47, appends47 to the nonally alias list,
-sets entity number128 and does not advance the ordinary allocation
+sets ENTNUM32, distinct from scene logical130, and does not advance the ordinary allocation
 counter. Its layer starts0 through clr.l d6. Galam/Elis are ordinary
 nonallies. With n admitted followers and p/l=1 when Peter/Lemon fixed
 rows allocate anew, Galam physical n+p+l+1, Elis n+p+l+2, Zeon47,
