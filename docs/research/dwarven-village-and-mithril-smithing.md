@@ -138,7 +138,7 @@ asserted frame durations:
 |2127|Residents nevertheless expect to leave soon|N,W1|
 |2128|Praise for the local smith|N,W2|
 |2129|Custom orders are available|N,W1|
-|2130|Mithril is scarce|N,W2|
+|2130|Mithril is scarce|W2|
 |2131|Take held Mithril to the smith|N,W1|
 
 The church tail resolves `j_ChurchMenu` `$20004`→ChurchMenu `$20A02`.
