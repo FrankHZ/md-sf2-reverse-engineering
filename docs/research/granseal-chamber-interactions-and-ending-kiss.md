@@ -78,11 +78,17 @@ No logical-ID-as-slot or natural population observation follows.
 |133 Maid|22,7/Up|eas_Init|
 
 eas_Init sets accel factors0, speed32/32, acceleration/deceleration off,
-obstruction bit7 on, collision-check bits5/6 clear, autofacing on, facingUp,
-immersion clear, sprite size24, refresh and jump idle. Declared facing and
-the subsequently serviced init are distinct. Elis's InitFixedSprite additionally
-disables autofacing and animation before refresh/idle; it does not set sleep
-status or HP. F982's nonally setPos has no ally-HP suppression.
+obstruction bit7 on, collision-check bits5/6 clear, autofacing on, orientation
+0/Up in FLAGS_B low two bits, immersion clear, sprite size24, refresh and jump
+idle. ac_orientUp encodes opcode$1B/operand0; entityscriptengine_2.asm's
+esc1B_setEntityOrientation changes FLAGS_B, not the independent FACING field.
+Both eas_Init and Elis's InitFixedSprite retain the incoming actual facing:
+esc0A_updateSprite reads FACING into D6, then ChangeEntityMapsprite writes
+that same value back. ac_setFacing/esc22 instead writes FACING explicitly.
+Later movement/autofacing can also change it; orientation0 does not mean
+facingUp. InitFixedSprite additionally disables autofacing and animation before
+refresh/idle; it does not set sleep status or HP. F982's nonally setPos has no
+ally-HP suppression.
 
 Map20's chest table `$A5434..$A5436` and other-item table `$A5436..$A5438`
 each contain only endWord. They supply no map-specific collectible. The
@@ -469,6 +475,17 @@ first description display, and an ambiguous typed-relative-motion formula.
 Earlier direct PASS guarded source order but missed those prose expressions;
 the current check explicitly binds their corrected wording. No old PASS is
 relabelled or removed.
+
+Independent review found a P2 after the author/main direct checks and original
+exact-head CI passed: this owner called ac_orientUp "facingUp" and implied
+servicing init would replace declared facing. The corrected relation above
+distinguishes opcode1B's FLAGS_B orientation bits from opcode22's FACING write
+and refresh's retained FACING input. All original PASS receipts remain with
+that omission explicit. `local/issue1190/focused-orientation.py` checks only
+this macro → dispatch → field → refresh → corrected-prose chain, the bounded
+document diff/private boundary and preserved old receipts, using a fresh output.
+Do not rerun the full direct recipe, capture, lowering or unrelated gates for
+this correction.
 
 Preserve `local/issue1188/handoff.md` and `handoff-initial.md`: original direct
 and CI PASS missed kind4/5→427/428 meanings and portrait/turn-before-disable
