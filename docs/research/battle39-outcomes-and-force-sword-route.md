@@ -1,5 +1,7 @@
 # Battle39 outcomes, Force Sword and Devils Head entry
 
+Next: [Devils Head labyrinth and Battle40 admission](./devils-head-labyrinth-and-battle40-admission.md).
+
 Evidence date: 2026-10-21. **Confirmed (static):** Battle39 can end through
 the gated Hydra128 leader sweep or the ordinary zero-enemy count; defeat
 has priority. Evil Ring and Holy Thunder are separate conditional
