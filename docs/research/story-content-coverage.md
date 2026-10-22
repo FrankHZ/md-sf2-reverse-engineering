@@ -55,9 +55,20 @@ No dialogue transcript, source asset or private payload is reproduced here.
 | Surface | Current accepted boundary | What it does not establish |
 | --- | --- | --- |
 | Original static story content | Chapter owners below reach ending/credits/Battle0 reset, with named gaps and conditional links. Global map/script/battle tables provide structural coverage separately. | Natural continuity, all optional content, all combat mechanics or whole-game semantic completion. |
-| Original runtime observations | [Natural opening](./map3-battle01-natural-route.md), [messenger acceptance](./map3-messenger-acceptance.md) and [explicit-bridge player-ready admission](./map3-battle01-admission.md) retain their exact seams; the broader [audit](./map3-battle01-audit.md#current-milestone-applicability) and [replay hard stop](./original-reference-replay-capability.md#current-lineage-hard-stop) own additional evidence and limits. | A natural original playthrough from the opening through every chapter, Battle01 victory or the ending. The bridge is explicitly non-natural. Remake acceptance cannot supply original observations. |
+| Original runtime observations | The [accepted original frontier](../design/synthesis/map3-battle01-readiness.md#accepted-original-frontier) records controlled R1 through the savestate-linked messenger/castle/tower route, natural Battle01 admission, selected player/AI actions, natural victory, after-program return and stable Map57 field readiness. [PR504's native result](./map3-messenger-acceptance.md#native-victory-and-stable-field-readiness) and [PR526's ordinary-input result](./map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515) establish these bounded observations and the subsequent one-step Down effect. | Natural visible New/load, uninterrupted wall-time execution, all action branches, later chapters/ending, complete presentation or hardware parity. Savestate-linked original observations remain distinct from remake acceptance. |
 | English design | [Roadmap](../design/documentation-roadmap.md#current-baseline-and-near-term-synthesis), [story framework](../design/synthesis/story-progression.md) and accepted [Battle27 activation/first-call guide](../design/synthesis/battle27-activation-and-first-turn-dispatch.md); [PR1044](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1044), merge `dee915fd`. | Research after that boundary has not automatically become English synthesis; Chinese synchronization has its own deferred policy. |
 | Remake production | Accepted [Map3–Battle01 composed milestone](../design/synthesis/map3-battle01-readiness.md#accepted-current-milestone), Battle02 outcomes, and selected early Yeel→Battle03 play/control. [PR1050](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1050), merge `fe8ac968`, and [PR1052](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1052), merge `13cce997`, are ancestors of accepted main. [Application](../../remake/docs/application/session-and-programs.md#yeel-guide-zone-request-and-sleep-continuation), [trust](../../remake/docs/content/profiles-and-trust.md#selected-third-encounter) and [battlefield rendering](../../remake/docs/godot/battle-scenes.md#battlefield-maps) own actual behavior. | Battle03 outcomes/Hawel recruitment/Battle04, later campaign, full services, save/load or full-game parity. Controlled initial remake state and modern presentation are explicit. PR692 is an independent UI topic and supplies no capability here. |
+
+The [acquisition owner](./map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
+and [research audit](./map3-battle01-audit.md) retain the selected winning lineage
+and its failures; the accepted frontier distinguishes PR504's stable return from
+PR526's later single Down read, movement acceptance and settled displacement.
+These observations start at controlled R1 and validate compatible saved parents;
+they are not a natural New/load flow or uninterrupted execution. Earlier
+[opening](./map3-battle01-natural-route.md) and [seeded R2d bridge](./map3-battle01-admission.md)
+keep their own narrower projections. R2d's seeded actor1 and the [frozen replay
+failures](./original-reference-replay-capability.md#current-lineage-hard-stop)
+do not downgrade the later accepted natural admission/winning observations.
 
 The [capability document](../../remake/docs/capability-status.md#current-engineering-frontier)
 retains candidate/pending wording in those two implementation agreements.
@@ -289,7 +300,7 @@ count documents as completion units.
 | Slots | Content-account boundary |
 | --- | --- |
 | 0 | Hidden chapter: selected formation/control/laser/actual returns. Other boss actions remain outside it. |
-| 1 | Opening static and bounded runtime owners; full natural original battle remains Unknown. |
+| 1 | Accepted savestate-linked original route/admission, selected winning actions, victory/after-program/stable return and one subsequent Down input/effect; [current original frontier](../design/synthesis/map3-battle01-readiness.md#accepted-original-frontier). All action branches, natural New/load, uninterrupted execution and hardware/full-presentation claims remain outside that bounded acceptance. |
 | 2–7 | Early content/outcome/admission; not complete encounter-specific initialization/activation/actions. |
 | 8–13 | Continent/eastern selected admissions/openings/outcomes/local content; not full tactical processing per encounter. |
 | **14** | **Content gap:** Southeast Desert,70. [May/admission table](./ribble-may-through-battle10-admission.md) and [random caller contract](./map-event-random-battle-state.md) describe producer/selection, not a dedicated formation/opening/outcome/location account. |
