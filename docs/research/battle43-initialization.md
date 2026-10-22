@@ -1,5 +1,7 @@
 # Battle43 initialization, Zeon and the complete formation
 
+Continue with [Battle43 activation, round queue and first control](./battle43-activation-and-first-control.md).
+
 Evidence date: 2026-10-22. **Confirmed (static):** Battle43 selects
 12 formation slots,16 STARTING enemies,one region and two points.
 Zeon128 is rebuilt at physical47; neutral Elis uses combat159 backing
