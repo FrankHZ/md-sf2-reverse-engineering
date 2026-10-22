@@ -3,7 +3,9 @@
 Evidence date: 2026-10-22. **Confirmed:** accepted research owners describe a
 conditional story spine from the Map3 opening through both continents, the return
 to Grans, Zeon, the epilogue, credits and Battle0's reset caller. That spine has
-explicit content gaps, including Battles14 and15. The [Battle28 bridge account](./battle28-bridge-and-outcomes.md)
+explicit content gaps, including Battles14 and44. The [Battle15 shrine account](./battle15-shrine-approach-and-outcomes.md)
+connects exterior61, the complete scenes/formation/control boundary and conditional outcomes/exits.
+The [Battle28 bridge account](./battle28-bridge-and-outcomes.md)
 covers its conditional entry, complete scenes/formation/control boundary and outcomes/returns.
 It is not a complete campaign
 walkthrough, an all-content denominator or proof of naturally continuous play.
@@ -138,11 +140,12 @@ separate movement request, alignment, boarding completion, mode write and
 scroll/no-scroll. [Kraken/Battle16 entry](./south-parmecia-through-kraken-battle16-entry.md)
 on49 uses416 independently of raft mode. [Outcomes/disembarking/Hassan9](./battle16-outcomes-through-hassan-entry.md)
 separate victory transport, defeat/Egress savepoints and town population.
-Battles14 and15 are **content gaps**, not implicitly completed predecessors.
+Battle14 remains a **content gap**; the separate [Battle15 shrine account](./battle15-shrine-approach-and-outcomes.md)
+does not make either encounter an implicitly completed predecessor.
 
 | Branch / onward encounter | Accepted owner and boundary | Remaining connection |
 | --- | --- | --- |
-| Hassan/Rohde; Ribble8/tree, separate Map50 chest regions | [Possession/choice caller](./hassan-ancestry-and-rohde-caravan-choice.md), [Panel/tree/Achilles Sword](./ribble-tree-opening-and-achilles-sword.md). | Recognition neither acquires nor consumes the sword; acceptance neither joins Rohde nor acquires Caravan. Selected chests exclude external shrine61/Battle15 and do not prove a walk between50's regions. |
+| Hassan/Rohde; Ribble8/tree, separate Map50 chest regions | [Possession/choice caller](./hassan-ancestry-and-rohde-caravan-choice.md), [Panel/tree/Achilles Sword](./ribble-tree-opening-and-achilles-sword.md), [exterior61/Battle15](./battle15-shrine-approach-and-outcomes.md). | Recognition neither acquires nor consumes the sword; acceptance neither joins Rohde nor acquires Caravan. The separate shrine account does not prove a walk between50's regions. |
 | Hassan→Map69; Battle17 | [Departure/shared outcomes](./hassan-departure-and-battle17-outcomes.md). | Walking zone producer differs from raft control;417 is independent of418. Empty hooks retain shared work. |
 | Map69→68→Taros12; Battle18 | [Entry/warning/opening](./southwest-parmecia-through-taros-battle18-entry.md), [outcomes/Caravan](./battle18-outcomes-and-caravan-acquisition.md). | Admission precedes shrine init. Vehicle actor, flags and return seed differ. Not Taros's complete tactical repertoire. |
 | Optional Rick; Caravan toward19 | [Rick](./hassan-rick-recruitment.md), [boarding/travel/landing](./caravan-boarding-and-southwest-parmecia-travel.md). | Rick is separate optional interaction. Caravan mode lacks walking's19 zone producer; landing and later request are separate. |
@@ -307,7 +310,7 @@ count documents as completion units.
 | 2–7 | Early content/outcome/admission; not complete encounter-specific initialization/activation/actions. |
 | 8–13 | Continent/eastern selected admissions/openings/outcomes/local content; not full tactical processing per encounter. |
 | **14** | **Content gap:** Southeast Desert,70. [May/admission table](./ribble-may-through-battle10-admission.md) and [random caller contract](./map-event-random-battle-state.md) describe producer/selection, not a dedicated formation/opening/outcome/location account. |
-| **15** | **Content gap:** Shrine South of Ribble,50. [Panel/Sword](./ribble-tree-opening-and-achilles-sword.md) covers selected chests/tree and conditional415 interception; external61 and full battle content are outside scope. |
+| 15 | [Shrine account](./battle15-shrine-approach-and-outcomes.md):69/61 approach, full exterior population/opening, both50 admissions, complete scenes/formation/control boundary, hidden Golem/chest/drop conditions, outcomes and three exits. Natural paths, all tactics and implementation remain outside its static boundary; [Panel/Sword custody](./ribble-tree-opening-and-achilles-sword.md) retains its separate scope. |
 | 16–25 | Southern/Creed/North Cliff selected fresh initialization/outcomes/map links; not every region/first-control/action path. |
 | 26–27 | Separate opening/init, activation/first-call and outcome owners; first call is not an executed individual action. |
 | 28 | [Bridge47 account](./battle28-bridge-and-outcomes.md): both74 entrances, full before/after programs, live formation/sixteen enemies/neutral alias, first dispatch/control predicates, conditional terminal/escape/Suspend and retained/fresh returns. All tactical choices, natural traversal and implementation remain outside its static boundary; Tristan/Caves still enters0/29 independently. |
@@ -317,7 +320,8 @@ count documents as completion units.
 ### Direct evidence for encounter gaps and the bridge branch
 
 This bounded source check supplements accepted owners. The dedicated28 owner
-fills its declared static content boundary;14/15 remain gaps. It does not
+fills its declared static content boundary; the dedicated15 owner does likewise,
+while14/44 remain gaps. It does not
 classify natural order/mandatory status. Actual records/producers at
 the pin, rather than comment names alone, establish the following:
 
@@ -332,7 +336,10 @@ the pin, rather than comment names alone, establish the following:
   precedes final follows/end; caller sets730 only on return. Before/after tables
   select `bbcs_15` / `abcs_battle15` in `data/battles/entries/battle15/`.
   Map50's no-scroll return to61 and selected chest/tree region are separate
-  records; no naturally walked external-shrine connection is accepted here.
+  records. The [dedicated shrine owner](./battle15-shrine-approach-and-outcomes.md)
+  now organizes the full approach/opening, scenes, battle data/control boundary,
+  hidden143 and outcomes/exits. No naturally walked connection among Map50's
+  storage regions, complete AI or original story-runtime observation is added.
 - **28:** row28→47; enum `BATTLE_PANGOAT_VALLEY_BRIDGE`.
   `data/maps/entries/map74/mapsetups/s3_zoneevents.asm:Map74_ZoneEvent0`
   with527 clear sets427, posts reload, then sets428/429/430. Its warp table
@@ -358,7 +365,7 @@ set, not proof that no source or generic helper evidence exists.
 | Branch | Current account | Missing or intentionally unreviewed boundary |
 | --- | --- | --- |
 | Opening extras, May, East Shrine, Bedoe demonstration/rescue, Polca choices | Accepted bounded chapter owners. | Every NPC/item/itinerary and all future consequences are not exhaustively reviewed. Independent gates must not become a mandatory quest chain. |
-| Panel/tree/Sword and shrine approach | Partial: search/custody/Rohde predicates accepted. |61 approach/door and15 content;50 storage regions are not a proven continuous route. |
+| Panel/tree/Sword and shrine approach | Accepted bounded [custody/tree](./ribble-tree-opening-and-achilles-sword.md) and [61/15 chapter](./battle15-shrine-approach-and-outcomes.md), with Rohde's possession predicate separate. |50 storage regions are not a proven continuous route; complete tactics, natural actor/service completion and production15 remain outside the static account. |
 | Rick, Elric, Taya, Skreech, Janet, Rohde, Higins, Jaro, Frayja, Gyan, Zynk, Sheela | Accepted selected joining/following/capacity scenes. | Not all-recruits/all-entries census. Skreech rescue and Jaro/Frayja multi-stage transitions retain conditions; membership/following differ. |
 | Creed choices/later alternatives | Partial: [recruitment owner](./creed-return-fairy-and-recruitment-choices.md) covers initial/F22 offers, refusal and actual join/follow paths for four recruits. | Complete later journey, every setup and ability to recruit everyone on a naturally reached save are not established. |
 | Dwarven Village29/30 and smith | Partial: earlier30 recovery/Cannon accepted. [Menus](./common-menus.md#static-service-menu-state-machines), [item auxiliary data](./core-stats-data-inventory.md#item-auxiliary-catalog) and service H3 own helper/order/fulfillment seams. | Later village access/setup/interactions, local smith caller and full player service experience are not an accepted connected account. Helper H3 is not village traversal. Source29's tail to `j_BlacksmithMenu` identifies an entry, not completed service. |
@@ -419,8 +426,12 @@ whole declared static branch, through conditional outcomes, full Cameela scene
 and both return connections. It does not prove that the chapter spine must traverse28 or that
 the later campaign is playable, and creates no all-AI/runtime closure queue.
 
-**Recommendation, not dispatch:** Battle15/external61 is a useful follow-up because Panel/Sword explicitly
-excludes its approach;14 is a separate random-encounter gap. Dwarf village/smith
+Battle15's [dedicated account](./battle15-shrine-approach-and-outcomes.md) closes
+the named external61/15 static content gap while preserving separate Panel/Sword
+custody, natural/runtime, design and remake boundaries.
+
+**Recommendation, not dispatch:**14 is a separate random-encounter gap and44
+remains an optional encounter gap. Dwarf village/smith
 and later revisits are optional-content decisions. These are alternatives for
 main-gate planning, not a numbered queue or Epic close decision.
 
