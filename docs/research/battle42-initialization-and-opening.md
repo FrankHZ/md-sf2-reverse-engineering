@@ -677,11 +677,14 @@ coordination and reproduction aids.
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run --locked python -X utf8 local/issue1170/review.py <configured-source-disasm-root> --receipt local/issue1170/direct-committed-01.json --committed
+uv run --locked python -X utf8 local/issue1170/review.py <configured-source-disasm-root> --receipt local/issue1170/direct-reproduction-01.json --committed --snapshots local/issue1170/direct-01.json
 git diff --check
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
+Each run must choose a receipt path that does not yet exist; change the
+example name after using it and never overwrite historical results.
+The snapshots option reuses the retained direct-01 source snapshots.
 The source argument ends in disasm. The sole selected observation took
 0.1266s and is reused, not repeated for a commit change. Apply ADR0004's
 relevant complete-data/provenance/date/polarity/width/order/selector/
