@@ -381,20 +381,23 @@ set, not proof that no source or generic helper evidence exists.
 | Rick, Elric, Taya, Skreech, Janet, Rohde, Higins, Jaro, Frayja, Gyan, Zynk, Sheela | Accepted selected joining/following/capacity scenes. | Not all-recruits/all-entries census. Skreech rescue and Jaro/Frayja multi-stage transitions retain conditions; membership/following differ. |
 | Creed choices/later alternatives | Partial: [recruitment owner](./creed-return-fairy-and-recruitment-choices.md) covers initial/F22 offers, refusal and actual join/follow paths for four recruits. | Complete later journey, every setup and ability to recruit everyone on a naturally reached save are not established. |
 | Dwarven Village29 and smith; separate mine30 | [Village29 lifecycle](./dwarven-village-and-mithril-smithing.md) connects77 admission, seven residents/search/eighteen warps, actual smith placement/readiness/collection and exit/revisit. Earlier30 recovery/Cannon remains a separate accepted chapter via68. | Complete static account; natural access, full church/shop services, presentation, saves and production smithing remain unproved. Existing helper/transaction/caller H3 retains only its bounded seams. Source interior/exterior names do not connect29 and30. |
-| Arm/Claude and later Yeel/Chaz | Partial: [Moun Arm award](./moun-town-painter-and-golem-arm.md) is accepted but stops before later Golem recruitment/item use. | Separate Map63 item-event/script identifies the Arm/Claude branch; late Yeel530/28 setups declare Chaz. Neither supplies a full accepted optional-route account here. Arm acquisition alone does not establish Claude joining. |
+| Arm/Claude and Magic Tunnel63/64 | [Moun Arm award](./moun-town-painter-and-golem-arm.md) and [Hub/Claude account](./magic-tunnel-hub-and-claude-recruitment.md) connect acquisition boundary, both talk/item-use entries, actual removal, complete awakening/join/follow, bridge/pipe transitions and exits/revisit. | Complete selected static branch; no natural journey from Moun, custody by a fixed member, guaranteed active/following Claude, production binding or save durability follows. |
+| Later Yeel/Chaz | Partial: late Yeel530/28 setups declare Chaz. | Full optional-route account remains open; Claude coverage does not close this separate recruit. |
 | Lemon | Partial across [Red Baron aftermath](./battle37-outcomes-and-lemon-aftermath.md) and [Map41 sword/head entry](./battle39-outcomes-and-force-sword-route.md). | After37 does not recruit;41 conditional join is accepted. Other entrances remain unorganized by that one owner. |
 | Dojo45 and hidden Battle0 | Accepted bounded chapter owners. | Optional Dojo and special EndGame/reset caller do not close other optional encounters. |
 | Battle14 | Dedicated [static encounter/repeat/outcome account](./battle14-desert-encounter-and-outcomes.md). | Natural order/state, actual airborne overread results, full tactics/runtime and production consumption remain unproved. |
 | Fairy Woods44 | Dedicated [static trial/records account](./battle44-fairy-woods-trial-and-records.md). | Complete declared formation/regions and hidden/respawn/leader/timer/result/return consumers; natural play, all tactics, chest custody, exact presentation/time and persistence remain unproved. |
 | Battle28 bridge branch | Dedicated [static entry/scenes/formation/control/outcome/return account](./battle28-bridge-and-outcomes.md). | All action/AI decisions, natural traversal and late production consumption remain unproved; no physical collapse/countdown inferred from staging. |
-| Late town revisits, shop/church/Caravan, promotion/equipment, magic tunnels | Selected alternatives/services/warps where linked; global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/tunnel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
+| Late town revisits, shop/church/Caravan, promotion/equipment | Selected alternatives/services/warps where linked; [Hub63/Pipe64](./magic-tunnel-hub-and-claude-recruitment.md) now owns that bounded tunnel branch. Global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/travel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
 
 The29 smith entry and Chaz declarations use pinned
 `data/maps/entries/map29/mapsetups/s2_entityevents.asm` and
 `data/maps/entries/map05/mapsetups/s1_entities_530.asm` / `s1_entities_28.asm`.
-The separate Claude identity uses Map63's `mapsetups/s5_itemevents.asm:Map63_ItemEvent0` →
-`scripts.asm:cs_5CBB4`, which contains `join ALLY_CLAUDE`. Only these entry/
-declaration/join identities are used; no complete optional-route research is claimed.
+The [Claude owner](./magic-tunnel-hub-and-claude-recruitment.md#talk-and-explicit-item-use-custody-and-result)
+now follows both Map63 entity talk and `s5_itemevents.asm:Map63_ItemEvent0`
+through physical Arm removal and `scripts.asm:cs_5CBB4`, including separate
+membership/active/follower lifetimes. Chaz references above remain declaration
+identities only, without a complete optional-route claim.
 
 ## Cross-chapter consumption gaps
 
@@ -453,7 +456,11 @@ named connected static trial gap without adding runtime/design/playable acceptan
 The [Village29/smith account](./dwarven-village-and-mithril-smithing.md) closes the
 connected static village/service gap; it adds no runtime/design/playable acceptance.
 
-**Recommendation, not dispatch:** later revisits, Arm/Claude and Yeel/Chaz remain
+The [Hub63/Claude account](./magic-tunnel-hub-and-claude-recruitment.md) closes
+that connected static tunnel/recruitment gap; it adds no natural/runtime,
+production or save acceptance.
+
+**Recommendation, not dispatch:** later revisits and Yeel/Chaz remain
 optional-content decisions. These are alternatives for
 main-gate planning, not a numbered queue or Epic close decision.
 
