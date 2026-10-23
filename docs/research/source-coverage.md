@@ -692,6 +692,14 @@ recruit Slade and stored FOLLOW_ENEMY0 is not a SENTRY movement command. Current
 admission excludes5, with SENTRY/movement/AI-word, ranged/equipment/BLAZE and suspended-state
 limits explicit. Existing entrance/outcome owners remain separate; no new fixture, runtime,
 all-action or consumer frontier is claimed.
+The [Battle06 account](./battle06-opening-and-first-control.md) connects its complete6/9/1/0
+selection and before scene/text to Map66/OVERWORLD metadata, actual party versus scene actors,
+Dark Cleric HEAL1/HEALER3/live-follow129, equipped Galam enemies, initially untriggered region0
+and distinct NONE/special-order standby through conditional first-control dispatch. Before writes407;
+victory supplies506 separately. The random-upgrade selector omits6. Current production excludes6,
+with HEALER3/SENTRY, cleric prowess, movement/AI-word, ranged/equipment/spell and suspended-state
+limits explicit. Existing entrance/outcome owners retain their endpoints; this adds no fixture,
+runtime observation, all-action acceptance or consumer frontier.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
