@@ -672,6 +672,11 @@ The [Battle02 account](./battle02-initialization-and-first-control.md) now joins
 formation/orders to fresh/suspended initialization, changed party/death/capacity state, enemy refresh,
 activation/spawn/round and first-control routing. Existing entrance/outcome owners retain their
 conditional connections; controlled production admission/support limits remain separate.
+The [Battle03 account](./battle03-initialization-and-first-control.md) reuses the common lifecycle
+and joins its12/6/1/0 declaration to conditional Yeel egress assignment, region0/15 activation,
+the bat's masked placement item, completed503 upgrades and conditional first-control dispatch.
+The original airborne exclusion defect and production conversion/support limits remain explicit;
+this static account adds no natural arrival, runtime observation or all-action acceptance.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
