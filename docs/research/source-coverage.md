@@ -709,6 +709,17 @@ reach conditional first dispatch. The actual random-upgrade selector omits7. Pro
 hovering/extra-round-action data are expressible, while Smoke prowess/DISPEL, HEALER3/cleric
 prowess, ranged/equipment/spell and suspended-state limits remain explicit. Existing admission/
 outcome owners retain their endpoints; no fixture, runtime, all-action or consumer frontier changes.
+The [Battle08 account](./battle08-initialization-and-first-control.md) connects its complete13/11/4/1
+selection to Map72 area`(1,32,32,30)`, actual party/capacity and one F508-gated HP0 worker.
+It reuses the complete before owner and preserves F6/HP-aware Kiwi relocation and actual speaker130.
+Thirteen templates do not recruit thirteen allies. NORTH_CLIFF8 is in the actual random-upgrade
+list:508/effective-level/category/bounds/exclusions/retry/RNG selection precedes definition copy.
+All fresh positions miss four sloping regions under integer projection/CCR; six special-order
+region enemies stop on inactive standby, while five15/15 enemies bypass it. Distinct point0,
+enemy128 and ally0 orders reach conditional first dispatch. Production excludes8; repeat-upgrade,
+STEALTH_ARCHER/ranged/Hunter prowess, MAGE/FREEZE, equipment/refresh/capacity and suspend limits
+remain explicit. Existing before/outcome/New Granseal owners retain their scope; no fixture count,
+runtime observation, all-action acceptance or consumer frontier changes.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
