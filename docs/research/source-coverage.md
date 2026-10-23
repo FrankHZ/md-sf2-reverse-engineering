@@ -778,6 +778,24 @@ Peter/arbitrary party and suspend remain limits; Hovering/formation/orders/dual-
 mechanisms exist. Descriptive resistance grants no executable attack/spell support. Existing
 admission/leader-outcome/Bedoe owners, retained failures, fixture counts and runtime/design/
 production frontiers remain unchanged; no natural party/first actor/action claim is added.
+The [Battle13 account](./battle13-initialization-and-first-control.md) connects complete12/16/3/1
+and sole Map13 wildcard/crop32×32 to independent413/463/513/88 and empty hooks.
+Actual Gerhalt F9/conditional41/capacity/HP and Peter's prior Volcanon join/AI-bit2 clear differ
+from templates/scene actors; F513-gated Luke neutral159 at16,13 has HP0/neutral bit3 and differs
+from ally10 membership/later F75 following/join; its physical mapping write is offset31, not63.
+Six base definitions retain gear, resistance/
+prowess and BLAZE2/HEAL2/BLAST1; the selected healing helper returns HEAL1 while checking the
+unmasked HEAL2 operand's5 MP cost. Random/substitution and special-drop tables omit13.
+All12 fresh positions miss three ordered regions by72 integer projection/CCR triangle tests.
+Primary-first2/2 belongs to134/136 following live135, while138 is1/15/NONE; no alternate-order
+selection follows. NONE versus assigned-follow standby and five15/15 enemies remain separate.
+Point0(9,24), live128/live135 and sets2/6/7/9/14 reach conditional control, not a fixed actor.
+Production excludes13. Existing definition lookup/formation/orders/standby/Hovering/activation/
+round mechanisms differ from trusted conversion, MAGE/ARCHER/range2–2, Monk/Zombie prowess,
+gear/CURSE refresh, attack/healing-spell AI, actual Gerhalt/Peter/Luke classes/join/control,
+neutral159/F513 and suspend requirements. Descriptive resistance grants no executable damage/
+status support. Existing admission/outcome/later-recruitment owners, retained failures, fixture
+counts and runtime/design/production frontiers remain unchanged; no natural state/action claim.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
