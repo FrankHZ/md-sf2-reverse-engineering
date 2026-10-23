@@ -813,6 +813,24 @@ SWARM count/threshold/re-wait/stream15, AQUATIC/Kraken costs, Arm/Head ranges, a
 expressions, AQUA execution, actual party/control/refresh/suspend and Head special mapping/services.
 Descriptive resistance/spells are not executable support. No new natural observation, fixture
 counter, runtime/design/production frontier or retained failure status follows.
+The [Battle17 account](./battle17-initialization-and-first-control.md) connects complete12/14/2/0
+and ordered Map69 row9-before17/crop0,31/30×32 to independent417/467/517/88, actual party,
+healing/gear refresh and first conditional control. Hassan/zone/raft/Rohde/outcome owners retain
+scope. All fourteen rows and six complete definitions retain gear/spells/resistance/prowess.
+F517 selection precedes definition copy: REGULAR/MAGE/HEALER/FLYING and explicit BRASS_GUNNER
+classification differ. Launcher60 uses melee0..35; ordinary eligible candidates60..185 fail signed
+bounds, consume two RNG draws and fall back to60. Gargoyle's count0 exclusion scan can overread
+65,536 bytes, with no guaranteed successful substitution or safe base return. Special-drop table
+omits17; placement NOTHING retains definition gear. All48 triangle substitutions miss both regions;
+only135/136 assign0, but unassigned1 is still tested/cached. Assigned ally0 standby stops; twelve
+15/15 enemies bypass it. Live ally1/0/enemy141 differ from templates/points. Exact0/2/6/7 streams
+have MOVE_ORDER only in2/7; Monk HEAL2 input's returned HEAL1/check5MP remains explicit. Base
+round/control and repeated outcomes are conditional, not a fixed actor/action. Production excludes17.
+Generic definitions/formation/Flying/standby/live-follow/dead-target/round support differs from
+trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
+Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
+No new natural observation, fixture count, runtime/design/production frontier or retained failure
+status follows; other18–25 content limits remain qualified.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
