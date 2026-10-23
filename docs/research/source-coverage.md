@@ -684,6 +684,14 @@ Battle04 is not a random-upgrade encounter and is not admitted by the current pr
 producer/reader; class/movement/AI-word, ranged/equipped and suspended-entry limits remain explicit.
 Capture dialogue does not prove forced defeat. Existing admission/outcome owners remain separate;
 no runtime observation, all-action claim, fixture count or consumer frontier changes.
+The [Battle05 account](./battle05-initialization-and-first-control.md) connects its complete6/8/1/1
+selection and empty hooks to Map16/CASTLE metadata, actual party versus templates, equipped
+knight/archer/mage/soldier refresh, BLAZE1 operands, initially untriggered region0, SENTRY versus
+standby and first-control dispatch. It is not a random-upgrade encounter; six templates do not
+recruit Slade and stored FOLLOW_ENEMY0 is not a SENTRY movement command. Current production
+admission excludes5, with SENTRY/movement/AI-word, ranged/equipment/BLAZE and suspended-state
+limits explicit. Existing entrance/outcome owners remain separate; no new fixture, runtime,
+all-action or consumer frontier is claimed.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
