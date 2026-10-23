@@ -195,9 +195,12 @@ This is source control flow, not proof of successful suspend/save restoration.
 
 `HealLivingAndImmortalAllies` scans all30 ally slots, irrespective of joined
 flags. It skips ordinary HP0 allies, but always handles Peter7/Lemon28. For a
-handled ally it restores HP/MP to maxima, retains only STUN/POISON/CURSE
-(`status & 7`) and refreshes derived stats. Thus ordinary death survives new
-entry, and a living stunned member need not be able to act after placement.
+handled ally it restores HP/MP to maxima and first writes `status & 7`
+(STUN/POISON/CURSE). This is intermediate state: the following
+`UpdateCombatantStats` excludes old CURSE from its status mask, refreshes stats
+and recomputes CURSE from equipped cursed items. Supplied CURSE without such
+equipment clears; equipped cursed gear can set it. Thus ordinary death survives
+new entry, and a living stunned member need not be able to act after placement.
 
 `UpdateForce` scans IDs0–29 in ascending order. Only joined flag `0+id` enters
 the force list; within it active flag `32+id` chooses battle party versus
