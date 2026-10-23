@@ -830,7 +830,7 @@ Generic definitions/formation/Flying/standby/live-follow/dead-target/round suppo
 trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
 Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
 No new natural observation, fixture count, runtime/design/production frontier or retained failure
-status follows; other22–25 content limits remain qualified.
+status follows; other23–25 content limits remain qualified.
 The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
 Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
 seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
@@ -872,7 +872,7 @@ formation/type4 regions/Flying/LEADER/valid-point/live orders/round support diff
 admission/conversion,519 selection, gear/ranges/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
 spell/item AI,16 consumption/drop/deals and actual party/refresh/control/suspend requirements.
 No fixture count, natural observation, runtime/design/production frontier or completed failure
-status changes; remaining22–25 content limits stay qualified.
+status changes; remaining23–25 content limits stay qualified.
 The [Battle20 account](./battle20-initialization-and-first-control.md) joins12/12/0/0,
 Map51's sole wildcard20/crop18×26 and independent420/470/520/88 to actual party/final-CURSE
 refresh and first conditional control. Approach/request, outcome/Elric and passage owners
@@ -892,7 +892,7 @@ Existing Flying/live-order/dead-target/zero-region/round mechanisms differ from 
 SWARM count/threshold/re-wait/stream15, HEALER3/healing/DISPEL/offensive spell decisions, selected
 poison/Orc prowess/gear/ranges/MAGE/BRASS_GUNNER, neutral mapping/services and actual party/status/
 control/suspend requirements. No fixture metric, natural observation, four-frontier or completed
-failure status changes; remaining22–25 content limits stay qualified.
+failure status changes; remaining23–25 content limits stay qualified.
 The [Battle21 account](./battle21-initialization-and-first-control.md) joins12/12/4/0,
 sole Map67 wildcard21/crop21,0/32×42 and independent421/471/521/88 to actual party/
 final-CURSE refresh and conditional first control. All24 records, four exact regions and
@@ -911,7 +911,25 @@ Production excludes21; formation/live-order/Flying/region/round mechanisms are r
 separately from trusted conversion, signed geometry/cache, ENHANCED/gear/movers/prowess,
 exact0/2/healing/DISPEL/offensive spells/items/drop/repeat and party/refresh/control/suspend.
 Opening/outcome owners retain scenes/leader sweep/return. No fixture metric, natural/runtime/
-design/production frontier or completed failure changes;22–25 limits stay qualified.
+design/production frontier or completed failure changes;23–25 limits stay qualified.
+The [Battle22 account](./battle22-initialization-and-first-control.md) joins12/16/0/1,
+all28 records, Map22 row22/crop9,0/30×30 and422/472/522/88 to actual party/final-CURSE
+refresh and conditional control. Six full chess definitions preserve King89 raw0,
+Bishop80's actual enum, enhanced versus declared power, copied gear/ranges/prowess,
+spells/movers/AI and refresh. All15/15/STARTING and zero regions require no geometry
+helper or hidden wave. Nine SWARM actors use1/3/6 thresholds; Bishop131's table6 does
+not gate HEALER4. HP-only128–138 omits139–143; full-HP count0 waiting, damage bypass
+and re-healed wait precede normal cache/order work. Exact2/3/7/9/14/15 streams,
+HEALER3 MOVE2 versus HEALER4 MOVE1, valid King point0/live128/137/136/132/134,
+candidate-local HEAL3 and actual BLAZE/FREEZE/BLAST/item filters retain conditions.
+KingAGI161 supplies ordinary33 plus extra, not a fixed first actor. F522-clear159/158
+neutralHP0/physical ENTNUM and writes31/30 versus readers63/62 remain distinct from
+King128 and actual party. Production excludes22; LEADER/valid point/live-order/
+zero-region/round primitives are reusable, separately from trusted conversion,
+SWARM count/threshold/re-wait/exact15, exact2/3 AI, enhanced/gear/prowess/spells/movers,
+neutral and actual party/status/control/suspend gaps. Entry/outcome/reward owners
+retain their scope. No fixture metric, four-frontier or completed failure changes;
+natural state/actions remain Unknown and23–25 limits qualified.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
