@@ -50,6 +50,10 @@ budgeted below one minute/512 MiB, with small receipts/prose; the author pair
 comparison completed in 0.081s. No new comparison framework or installation.
 Replan material contradiction or expansion; Unknowns are not a runtime queue.
 
+The [initialization/first-control account](./battle24-initialization-and-first-control.md)
+owns preceding regions, repeat selection, AI/spell/item custody and conditional
+dispatch. This owner retains outcome selection, return and cave preparation.
+
 ## Actual end checks and Battle24 discriminators
 
 **Confirmed:** `battleloop_1.asm:@IsBattleEnd` executes the defeated hook,
@@ -106,7 +110,9 @@ entries are not repaired by these outcome handlers.
 1. Heal all30 living allies plus Peter7/Lemon28 even when dead: HP/MP maxima,
    existing status masked to STUN/POISON/CURSE, then recomputed stats. Other
    dead allies stay dead. Membership is not the healing predicate; equipment
-   effects still apply. Battle44's timer special does not apply.
+   effects still apply: UpdateCombatantStats removes incoming CURSE, then
+   re-derives final ally CURSE from current equipped cursed gear. The intermediate
+   mask is not final status. Battle44's timer special does not apply.
 2. PARAM2 receives CURRENT_MAP. UpdateForceAndGetFirstBattlePartyMemberIndex
    rebuilds membership and chooses the first joined-and-active ID ascending,
    **not first living**. Its X/Y plus BATTLE_AREA_X/Y are added as bytes into

@@ -292,8 +292,11 @@ membership, health or a particular slot; current map followers do not enlist.
 
 Healing already visited all30 independently of membership: living allies and
 Peter7/Lemon28 get HP/MP maxima, status masked to existing STUN/POISON/CURSE,
-then UpdateCombatantStats. Other dead allies skip. Equipment/stat rebuilding
-can affect the final status; there is no blanket revival or roster replacement.
+then UpdateCombatantStats. Other dead allies skip. UpdateCombatantStats removes
+incoming CURSE from its working mask, then
+re-derives final ally CURSE from current equipped cursed items. The intermediate
+healing mask alone does not preserve final CURSE; there is no blanket revival
+or roster replacement.
 
 The complete sixteen enemy records follow. All secondary orders are NONE;
 regions are shown primary/secondary. AI values are LEADER14, ATTACKER1/2/3=
@@ -416,6 +419,10 @@ fade-in, then returns. An absent combatant0 is not repaired into a valid roster
 by this load. The Battle44 timer branch does not apply. The empty start wrapper
 then returns. **Stop immediately before BattleLoop:@Start calls ActivateEnemies**;
 no turn generation, actions, victory/defeat/Egress or playable acceptance is claimed.
+
+The [continuation account](./battle24-initialization-and-first-control.md) joins
+this endpoint to region/AI/spell/item/round and first conditional control; it
+retains the departure and cave boundaries here.
 
 ## Changed-state review and reproduction
 
