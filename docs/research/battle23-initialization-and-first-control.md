@@ -207,7 +207,7 @@ All12 templates into both triangles give24 substitutions and zero hits:
 | 3,2,4 | Third edge4→2, horizontal Y19–21 | Y19–21 versus allyY3–8:00 | vertex3 Y15, projection0:10 |
 
 For the second triangle, edges3→2 and4→3 pass before4→2 rejects.
-On4→2, `Yproj=15+trunc(−15*(X−9)/−17)`; X2 gives21, X3 gives20,
+On4→2, `Yproj=15+trunc(15*(X−9)/−17)`; X2 gives21, X3 gives20,
 X4 gives19. Thus the actual first-rejection witnesses cover each placement,
 not just their rectangle bounding box. A smaller living party can use a prefix
 of these positions and still miss; a supplied, moved or saved ally has a new
