@@ -158,10 +158,12 @@ An empty party has no pre-loop safety guard establishing a valid natural start.
 
 The [general membership consumer](./battle02-initialization-and-first-control.md#joined-active-dead-and-capacity)
 is separate: `JoinForce` sets joined, rebuilds lists, and calls `JoinBattleParty`
-only when the current active count is **below12**. At12 it leaves the incoming
-member in reserve; it does not select thirteen because this spriteset has13
-templates. Direct `JoinBattleParty` itself sets the active flag without that
-capacity test. Already supplied flags can therefore differ from ordinary joining;
+only when the current active count is **below12**. At12 or above it skips that
+activation call: a newly joined inactive member remains in reserve, while an
+already-active member keeps its active flag. It neither evicts an existing
+member nor selects thirteen because this spriteset has13 templates. Direct
+`JoinBattleParty` itself sets the active flag without that capacity test.
+Already supplied flags can therefore differ from ordinary joining;
 this is not proof such a thirteen-member state is naturally reached. No selected
 before/start operation joins Kiwi or mandates any fixed party, class or level.
 
