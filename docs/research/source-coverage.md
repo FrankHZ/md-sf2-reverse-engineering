@@ -763,6 +763,21 @@ formation/order/Flying/round mechanisms are not missing. Coordinate-trigger admi
 refresh/equipped AI, Hunter/Witch/Bat movement/prowess/spells, arbitrary party/Peter and suspend
 remain explicit limits. Adjacent admission/outcome/Polca owners retain their scope; no natural
 state/actions/darkness/timing/persistence, fixture count, runtime observation or consumer frontier changes.
+The [Battle12 account](./battle12-initialization-and-first-control.md) connects complete12/12/4/1
+and sole Map52 wildcard/crop32×32 to independent412/462/512/88, empty dispatch hooks, actual
+party/refresh and scene-to-battle replacement. The random list and independent drop table omit12;
+no512 substitution or Battle10 airborne upgrade processing follows. All12 fresh positions miss
+four ordered regions under integer projection/CCR. Cloud129 uses1/3, Witch131/Hobgoblin137 use0/1,
+three others2/15 and six15/15; primary-first/sticky-secondary activation differs from NONE standby
+movement. Fixed point0(22,8), live128 and sets0/2/6/7/14 reach conditional control. Complete Archer/
+Cloud/Monk/Witch/Hobgoblin definitions retain gear, resistance/prowess and HEAL2/BLAST1/FREEZE1;
+HEALER3 is commandset2, not HEAL3; selected healing AI returns HEAL1 but its unmasked operand
+tests HEAL2's5 MP cost. Production excludes12. Trusted definition conversion, ARCHER/
+MAGE/range2–2, Monk prowess/sets0/2 AI, general gear/CURSE refresh, attack/healing spell AI,
+Peter/arbitrary party and suspend remain limits; Hovering/formation/orders/dual-region/round
+mechanisms exist. Descriptive resistance grants no executable attack/spell support. Existing
+admission/leader-outcome/Bedoe owners, retained failures, fixture counts and runtime/design/
+production frontiers remain unchanged; no natural party/first actor/action claim is added.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
