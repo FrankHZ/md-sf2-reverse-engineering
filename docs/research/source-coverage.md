@@ -747,6 +747,22 @@ with saturation. Generic cleanup/victory is not that award. Production excludes1
 mechanisms do not supply upgrades, general gear/spells/movement/prowess/party/suspend or Ring/
 action-drop/rare-deals consumers. Adjacent route/outcome/shrine owners retain their scope; no
 natural state/action/custody, fixture count, runtime observation or consumer frontier changes.
+The [Battle11 account](./battle11-initialization-and-first-control.md) connects complete12/10/4/1
+to exact Map48 trigger15,26/crop27×32, row11-before25 and independent411/461/511/88.
+Actual party/refresh and rebuilt battle entities differ from the retained admission owner's
+complete34-record/seven-text/Plane-B opening population. The real random list omits11: upgrade
+returns original definitions before level/category/exclusion/RNG even with511 set; no airborne
+upgrade defect follows here. All placement items are NOTHING and the separate drop table has
+no11 entry; Hobgoblin's Middle Axe/LEADER14 grants no special loot or leader-only victory.
+All12 fresh positions miss four ordered regions by integer projection/CCR. Assigned follow stops
+inactive standby, NONE permits conditional local movement, and three15/15 enemies bypass it.
+Fixed point0(15,4), live enemy128 and ally0 differ; set6 lacks MOVE_ORDER and set7 NONE fails its
+first ordered command before trying the remaining stream. Sets6/7/9/14 reach conditional first
+control, without a fixed actor. Production excludes11; existing descriptive Hobgoblin/Middle Axe,
+formation/order/Flying/round mechanisms are not missing. Coordinate-trigger admission, general
+refresh/equipped AI, Hunter/Witch/Bat movement/prowess/spells, arbitrary party/Peter and suspend
+remain explicit limits. Adjacent admission/outcome/Polca owners retain their scope; no natural
+state/actions/darkness/timing/persistence, fixture count, runtime observation or consumer frontier changes.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
