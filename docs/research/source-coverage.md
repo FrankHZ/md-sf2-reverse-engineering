@@ -733,6 +733,20 @@ while Bat poison prowess/BLAZE2, Hunter movement/range/prowess, Witch MAGE/FREEZ
 loadouts/general refresh/capacity, Peter AI/class/party and saved-state limits remain explicit.
 Existing admission/outcome/Ribble owners retain their scope; no fixture count, runtime observation,
 all-action acceptance or consumer frontier changes.
+The [Battle10 account](./battle10-initialization-and-first-control.md) connects its complete12/12/3/1
+selection to Map70 area`(0,0,32,32)`, actual May/Peter membership/AI/follower distinctions,
+empty hooks, no neutral and independent410/460/510/88. F510 effective-level/category/RNG
+upgrades begin at ordinaryE20 before definition copy; three Bats retain the airborne count0 defect.
+All twelve fresh positions miss three ordered regions under integer projection/CCR. Assigned
+point/follow orders stop inactive standby, NONE permits conditional local movement and five15/15
+enemies bypass it. Distinct point0/live137/134/ally0 and sets6/7/9 reach conditional first control.
+Witch129's successful AddItem returns unequipped19 after masking declared EQUIPPED/drop bits;
+ATT+5 or automatic support use does not follow. Actual held19/action targetDies/ally actor/enemy129,
+once-bit4 and recipient capacity govern the selected drop; dead/full recipient uses RARE deals
+with saturation. Generic cleanup/victory is not that award. Production excludes10; reusable shared
+mechanisms do not supply upgrades, general gear/spells/movement/prowess/party/suspend or Ring/
+action-drop/rare-deals consumers. Adjacent route/outcome/shrine owners retain their scope; no
+natural state/action/custody, fixture count, runtime observation or consumer frontier changes.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
