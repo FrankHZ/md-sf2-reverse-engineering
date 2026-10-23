@@ -830,7 +830,7 @@ Generic definitions/formation/Flying/standby/live-follow/dead-target/round suppo
 trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
 Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
 No new natural observation, fixture count, runtime/design/production frontier or retained failure
-status follows; other20–25 content limits remain qualified.
+status follows; other21–25 content limits remain qualified.
 The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
 Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
 seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
@@ -872,7 +872,27 @@ formation/type4 regions/Flying/LEADER/valid-point/live orders/round support diff
 admission/conversion,519 selection, gear/ranges/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
 spell/item AI,16 consumption/drop/deals and actual party/refresh/control/suspend requirements.
 No fixture count, natural observation, runtime/design/production frontier or completed failure
-status changes; remaining20–25 content limits stay qualified.
+status changes; remaining21–25 content limits stay qualified.
+The [Battle20 account](./battle20-initialization-and-first-control.md) joins12/12/0/0,
+Map51's sole wildcard20/crop18×26 and independent420/470/520/88 to actual party/final-CURSE
+refresh and first conditional control. Approach/request, outcome/Elric and passage owners
+retain their boundaries. All24 records and five full Harpy44/Madam70/Priest79/Orc12/Launcher60
+definitions retain gear/spells/resistance/prowess/movement; random-upgrade and special-drop
+tables omit20. Zero regions return before geometry/cache/assignment work; all15/15/STARTING
+rows bypass normal standby without a wave. SWARM128/134/139 use3/2/1; ordinary137/138 use6.
+ALLIES12−2/DBF10..0 checks HP128–138 only, omitting actual139 and neutral159, fresh count0.
+Damage bypasses waiting; full healing may restore it. STAY/empty movement precedes normal
+cache clearing/orders, while all exits clear temporary obstructions. Exact2/6/9/15 streams,
+live131/129/133/136, dead-target promotion and earlier-success short-circuits remain conditional.
+Harpy DISPEL has actual SUPPORT/5MP/area-score≥2/station consumers; HEAL3 retains the corrected
+candidate-local downgrade and fresh-command reset. F520-clear neutral159 hasHP0/6,6/physical
+ENTNUM but writes31/read63/FF, distinct from Elric13/active45 and later recruitment. Its complete
+immersion/double-speed four-facing loop is not observed presentation. Production excludes20.
+Existing Flying/live-order/dead-target/zero-region/round mechanisms differ from trusted conversion,
+SWARM count/threshold/re-wait/stream15, HEALER3/healing/DISPEL/offensive spell decisions, selected
+poison/Orc prowess/gear/ranges/MAGE/BRASS_GUNNER, neutral mapping/services and actual party/status/
+control/suspend requirements. No fixture metric, natural observation, four-frontier or completed
+failure status changes; remaining21–25 content limits stay qualified.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
