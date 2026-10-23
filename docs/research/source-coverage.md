@@ -796,6 +796,23 @@ gear/CURSE refresh, attack/healing-spell AI, actual Gerhalt/Peter/Luke classes/j
 neutral159/F513 and suspend requirements. Descriptive resistance grants no executable damage/
 status support. Existing admission/outcome/later-recruitment owners, retained failures, fixture
 counts and runtime/design/production frontiers remain unchanged; no natural state/action claim.
+The [Battle16 account](./battle16-initialization-and-first-control.md) connects complete12/11/0/0
+and sole Map49 wildcard/crop30×30 to independent416/466/516/88, actual party/refresh and scene
+replacement. The full intro/raft/Luke and leader/outcome/Hassan owners retain their boundaries.
+Complete Kraken Leg10/Arm59/Head87 definitions include resistance/prowess, no gear, AQUA1 and
+Head AGI153/double turns; unknownByte0 does not change Head87 identity. Random/substitution and
+independent drop tables omit16. Zero regions/points causes no polygon tests or assigned activation;
+15/15 normal AI bypasses standby. Eight SWARM actors and three ordinary legs133/134/138 differ.
+Threshold table5/4/2/2/3/0/0/4/1/3/0 uses ALLIES12−2/DBF10..0: exactly eleven HP-only checks over
+128–138, fresh0, without counting undeclared dead slots. Damage bypasses waiting; full healing
+can restore it. SWARM STAY/empty movement precedes normal-path tested-cache clearing. Complete
+15/6 streams, live135/131 orders and distinct ordinary AQUATIC/special Kraken costs reach
+conditional control, not a fixed actor/action. Production excludes16. Existing descriptive lookup,
+formation/NONE/live orders/zero-region/extra-turn support differs from trusted conversion,
+SWARM count/threshold/re-wait/stream15, AQUATIC/Kraken costs, Arm/Head ranges, all three prowess
+expressions, AQUA execution, actual party/control/refresh/suspend and Head special mapping/services.
+Descriptive resistance/spells are not executable support. No new natural observation, fixture
+counter, runtime/design/production frontier or retained failure status follows.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
