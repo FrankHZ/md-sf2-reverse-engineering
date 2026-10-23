@@ -1,6 +1,6 @@
 # Southwest Parmecia through Taros / Battle18 entry
 
-Evidence date: 2026-10-13. **Confirmed:** the western Map69 transfer scrolls
+Evidence date: 2026-10-13; refresh/neutral recheck: 2026-10-23. **Confirmed:** the western Map69 transfer scrolls
 into Map68 in place; the shrine request instead returns through MainLoop's
 battle scan. F418 admits Battle18 before Map12 exploration init can test F725.
 Without admission, F725 clear runs the warning and requests a retreat; F725 set
@@ -390,8 +390,12 @@ text, fade, lookup and action progress remain conditional service dependencies.
 map12/battle18, clears region flags90–105, heals living allies plus immortal
 Peter/Lemon, initializes ally/enemy positions, clears AI memory, calls LoadBattle
 with d0=0 and invokes the start wrapper. Healing restores HP/MP maxima for those
-eligible and retains only existing STUN/POISON/CURSE status bits; it does not
-revive other dead allies or grant membership.
+eligible. Its intermediate status mask retains STUN/POISON/CURSE; the subsequent
+UpdateCombatantStats clears CURSE and reconstructs it from actually equipped
+cursed gear for an ally. The intermediate mask is not the final status promise.
+It does not revive other dead allies or grant membership. The complete
+[Battle18 initialization/first-control account](./battle18-initialization-and-first-control.md)
+continues beyond this entry owner's stopping boundary.
 
 Slot18 of `data/battles/spritesets/entries.asm` selects `BattleSpriteset18`
 at `0x1B4546`: 12 ally placements, 14 enemies, five AI regions, zero AI points.
@@ -429,10 +433,14 @@ The rebuild also has a distinct completion-flag-gated neutral tail. With F518
 clear, `data/battles/global/battleneutralentities.asm`'s `VERSUS_TAROS` record
 adds Caravan at `(12,5)`, **Left**, with `eas_Motionless`. It starts with logical
 combatant159, zeroes max/current HP and status, ORs the neutral bit into activation,
-writes its combatant X/Y and declares/maps a new physical actor from that row.
+writes its combatant X/Y and declares a physical actor from that row. The lookup
+write is a separate predecrement from ENEMIES ($FFB160), landing at $FFB15F,
+lookup index31. GetEntityIndexForCombatant(159) reads index63 at $FFB17F, which
+remains $FF in the fresh rebuild; DeclareNewEntity does not repair this mapping.
 F518 set skips this neutral tail, even if F468 clear allowed the before-scene
 Caravan to appear. The old scene lookup129 is not retained: battle lookup129
-now belongs to its enemy row, and the neutral Caravan uses159. This is a fresh
+now belongs to its enemy row. Combatant159 and the new physical Caravan do not
+establish a working logical159 lookup. This is a fresh
 neutral declaration, not vehicle acquisition, party membership or a carry-over
 of the scene's Down-facing animation-stop command. Taros likewise gets a rebuilt
 special-sprite actor from its combatant row; repeated coordinates do not preserve
