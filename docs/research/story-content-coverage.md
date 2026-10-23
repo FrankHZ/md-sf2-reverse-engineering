@@ -213,6 +213,7 @@ require Dynamite or Elric membership.
 [Battle25 entry](./north-cliff-entry-through-battle25-admission.md) connect Map72
 to North Cave48 at separate request/consumer boundaries. Removals, effects and
 caller flags are ordered partial effects, not one rollback transaction.
+[Battle25 initialization/first control](./battle25-initialization-and-first-control.md),
 [Battle25 outcomes/Ketto](./battle25-outcomes-through-ketto-entry.md) and
 [Ketto/merchant relocation](./ketto-interactions-and-merchant-relocation.md)
 reach departure. Shop/church entry does not complete every service or revisit.
@@ -354,7 +355,7 @@ count documents as completion units.
 | 22 | [Initialization/SWARM/dual neutrals/first control](./battle22-initialization-and-first-control.md) joins12/16/0/1, six full bases and actual party/final-CURSE refresh. Nine actual SWARM actors use thresholds1/3/6; HP-only128–138 omits139–143. Exact2/3/7/9/14/15 streams, valid King point0/live128/137/136/132/134, candidate-local HEAL3 and King extra entry differ. F522-gated159/158 write31/30 while ordinary readers use63/62. Natural state/actions/first actor remain unproved; production excludes22. |
 | 23 | [Initialization/region/AQUA2/first control](./battle23-initialization-and-first-control.md) joins12/12/1/1, actual party/final-CURSE, one initially missed region, live ally0 versus point0 and complete6/7/9/14 streams. AQUA2 costs0 but its packed`$68` misses AQUA1's`$28` shortcut; Willard165 gives37/30 round bases. No repeat substitution/drop/neutral/SWARM. Natural state/first actor/actions remain unproved; production excludes23. |
 | 24 | [Initialization/regions/upgrades/spells/items/first control](./battle24-initialization-and-first-control.md) joins12/16/3/1, actual party/final-CURSE, all72 fresh triangle misses, primary/secondary activation and full2/6/7/9/14 streams. F524 E34/category/retry/unsafe airborne selection, AURA1 local rank/area priority, BLAST3/BLAZE3 category choices, unreachable automatic BOOST2, masked Blizzard/Herb and independent17/0 drops retain actual conditions. No natural state/first actor/action/loot claim; production excludes24. |
-| 25 | North Cave selected fresh initialization/outcomes/map links; not every region/first-control/action path. |
+| 25 | [Initialization/regions/follow chains/spells/items/first control](./battle25-initialization-and-first-control.md) joins12/15/3/0, five full bases, all72 fresh triangle misses, equal1/1 primary priority, live128/132/133/139/142 and exact2/6/9 streams. No repeat substitution, point/LEADER/SWARM or neutral is selected. Learned ATTACK/BOOST fail SUPPORT’s early gate; AURA/BLAST/BLAZE and masked Herbs/independent133/142 once22/23 drops retain actual conditions. Admission/opening/outcome/return owners retain scope. Natural state/first actor/actions/loot remain unproved; production excludes25. |
 | 26–27 | Separate opening/init, activation/first-call and outcome owners; first call is not an executed individual action. |
 | 28 | [Bridge47 account](./battle28-bridge-and-outcomes.md): both74 entrances, full before/after programs, live formation/sixteen enemies/neutral alias, first dispatch/control predicates, conditional terminal/escape/Suspend and retained/fresh returns. All tactical choices, natural traversal and implementation remain outside its static boundary; Tristan/Caves still enters0/29 independently. |
 | 29–43 | Late entry/opening, activation or first-control and outcome owners. Laser/Burst Rock exceptions do not establish all-AI coverage. |
@@ -796,7 +797,8 @@ stream, AQUATIC/Kraken costs, Arm/Head ranges, all three prowess expressions,
 AQUA execution, arbitrary party/Peter/Luke/control, general refresh, saved-state
 and Head special mapping/services remain explicit limits. Descriptive records
 do not grant executable resistance/spell/status support. Fixture counters,
-retained failures and all four frontiers remain unchanged. Battle25 limits
+retained failures and all four frontiers remain unchanged. All-action/natural-state and
+special-battle limits
 remain qualified; this owner selects no next task automatically.
 
 ### Battle17 repeat upgrades, live follows and first conditional control
@@ -830,7 +832,8 @@ standby/live-order/dead-target/round primitives differ from trusted conversion,
 F517 upgrades, BRASS_GUNNER/MAGE, ranged/equipped refresh, stun/Golem/Monk prowess,
 exact0/2 healing/spell AI, arbitrary parties/control and suspend requirements.
 No fixture metrics, original observation, design/production frontier or retained
-failure status changes. Battle25 content limits remain qualified; no next task
+failure status changes. All-action/natural-state and special-battle limits remain
+qualified; no next task
 is selected automatically.
 
 ### Battle18 Taros equipment, regions and first conditional control
@@ -863,7 +866,8 @@ signed geometry/cache, out-of-table point access, selected prowess/gear/ranges,
 MAGE/BRASS_GUNNER, HEALER3/spell/item AI, Bowie gate/counter/drop/deals and
 neutral mapping/services. General refresh, actual parties/control and suspend
 remain limited. No fixture count, original observation, design/production
-frontier or completed failure is changed; Battle25 limits remain qualified.
+frontier or completed failure is changed; all-action/natural-state and special-battle
+limits remain qualified.
 
 ### Battle19 repeat selection, Shining Ball and first conditional control
 
@@ -898,7 +902,7 @@ point/live-order/round mechanisms exist, separately from trusted admission,
 selected519 conversion, gear/range/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
 spell/item decisions,16 use/drop/deals and actual party/refresh/control/suspend
 requirements. No code, fixture count, original runtime/design/production frontier
-or retained failure changes; remaining Battle25 limits stay qualified.
+or retained failure changes; all-action/natural-state and special-battle limits stay qualified.
 
 ### Battle20 Harpy SWARM, neutral Elric and first conditional control
 
@@ -927,7 +931,7 @@ Production excludes20. Flying/live-order/dead-target/zero-region/round support
 is reusable, separately from trusted conversion, SWARM thresholds/count/re-wait/
 stream15, HEALER3/healing/DISPEL/spell decisions, poison/Orc prowess, gear/ranges,
 MAGE/BRASS_GUNNER, neutral mapping/services and party/status/control/suspend.
-No fixture metric, four-frontier or retained failure changes; remaining Battle25
+No fixture metric, four-frontier or retained failure changes; all-action/natural-state and special-battle
 limits stay qualified. This does not select another task automatically.
 
 ### Battle21 regions, repeat upgrades, item custody and first control
@@ -958,7 +962,8 @@ mechanisms are reusable, separately from trusted conversion, signed geometry/
 cache, ENHANCED/gear/movers/prowess, exact0/2/healing/DISPEL/spell/item/drop/
 repeat and actual party/refresh/control/suspend gaps. No fixture metric, four-
 frontier or completed failure changes; natural state/actions/loot remain
-Unknown and Battle25 content limits remain qualified. No next task is selected.
+Unknown and all-action/natural-state and special-battle limits remain qualified. No next
+task is selected.
 
 ### Battle22 chess SWARM, dual neutrals and first conditional control
 
@@ -987,7 +992,8 @@ Production excludes22. Existing LEADER/valid-point/live-order/zero-region/round
 mechanisms are reusable, separately from trusted conversion, SWARM count/threshold/
 re-wait/exact15, exact2/3 AI, gear/prowess/enhanced/spell/mover, neutral and actual
 party/status/control/suspend gaps. No fixture metric, four-frontier or completed
-failure changes; natural state/actions remain Unknown and Battle25 limits qualified.
+failure changes; natural state/actions remain Unknown; all-action and special-battle
+limits stay qualified.
 
 ### Battle23 region activation, AQUA2 and first conditional control
 
@@ -1021,7 +1027,7 @@ standby and round mechanisms are reusable; precise gaps are trusted selection,
 signed geometry/cache lifetime, ENHANCED/prowess/AQUA decisions/effects, actual
 party/refresh/status/control/suspend and actor/services composition. No new
 fixture metric, natural observation, runtime/design/production frontier or
-completed failure change follows. Remaining Battle25 limits stay qualified.
+completed failure change follows. All-action/natural-state and special-battle limits stay qualified.
 
 ### Battle24 initialization, regions, spells, items and first control
 
@@ -1061,7 +1067,45 @@ AURA/offensive/item decisions and actual party/status/suspend/service gaps.
 The actual Content mover switch rejects STEALTH_ARCHER despite generic Stealth
 terrain costs. Existing departure/cave/outcome owners retain their scope.
 No fixture metric, four-frontier, natural observation or retained failure changes;
-remaining Battle25 content limits and all-action/natural-state Unknowns stay qualified.
+all-action/natural-state and special-battle limits stay qualified.
+
+### Battle25 regions, live follow chains and first conditional control
+
+**Confirmed:** the [complete account](./battle25-initialization-and-first-control.md)
+joins Map48's exact11/25 triggers, selected crop28,0/32×32 and independent
+425/475/525/88 to empty hooks, actual party/final-CURSE, terrain/CAVE background
+and12/15/3/0. All27 actors/364bytes and full ordinal18/81/45/62/17 definitions
+retain raw/spellPower/level/stats/resistance/prowess, four items/spells, mover/AI
+and actual difficulty/equipment refresh. F525 cannot enable random upgrades;
+no25 neutral/region program/point/LEADER/SWARM is selected. HalfEXP1,
+after-position5 and timer44 remain separate.
+
+All72 signed-projection/CCR triangle substitutions miss three exact regions.
+Tested misses versus persistentF90–92, equal1/1 primary priority/sticky-secondary,
+ten assigned versus five15/15 actors and conditional160 alias remain distinct.
+Inactive assigned non-NONE follows stop standby; NONE allows local movement.
+Live129/130→128,131→132→133,138→139 and141→142 use current immediate-target
+positions, not fixed points/physical IDs. Exact2/6/9 streams/prepasses,
+dead-target promotion and earlier success do not fix tactics. Demon130's
+HEALER3 grants no TYPE_HEAL spell or item.
+
+Dark Soldier ATTACK1 passes TYPE_SUPPORT getter but fails early full-word
+MUDDLE2/DISPEL gate before MP/targets/station, as does BOOST2. AURA1 retains
+7MP/area priority/local01/station; BLAST3/BLAZE3 retain full-key affordable
+rank/category/station/effect boundaries. Large Axe is adjacent ATT+25;
+copied equipment and AddItem807F-masked Herb2000/6000 have different permissions.
+Weapon NOTHING getter termination, conditional Herb use/consumption and
+independent133/142 held0 once22/23 no-RNG action drops require actual
+actor/death/inventory/once/remove/receipt/capacity/deals order.
+
+Production excludes25, including exact coordinate-trigger producer/trust
+selection. Formation/live orders/Flying/round/control mechanisms are reusable;
+signed geometry/cache, ENHANCED/prowess/gear/STEALTH_ARCHER, exact2 and spell/
+item/party/status/suspend/services remain conversion limits. Existing admission,
+opening and outcome/return owners retain scope. No fixture metric, four-frontier,
+natural observation or completed failure changes. All-action, natural-state,
+special-battle/production limits and unassessed town/state census remain;
+this selected set is not full-game completion or an automatic next queue.
 
 ## Verification boundary
 

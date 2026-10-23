@@ -1,6 +1,6 @@
 # North Cliff entry through Battle25 admission
 
-Evidence date: 2026-10-14. **Confirmed:** Map72's opened-entrance warp
+Evidence date: 2026-10-23. **Confirmed:** Map72's opened-entrance warp
 requests Map48 `(55,29)`, Up. An intact ordinary request selects Battle25
 only with F425 set; completion525 clears that unlock after selection rather
 than declining the same entry. Fresh entry uses empty before/start scripts,
@@ -8,7 +8,10 @@ twelve ally placement slots, fifteen enemy records and three regions.
 **Inferred:** this stages the North Cave encounter after the accepted opening.
 **Unknown:** natural traversal, supplied state, completed load/presentation,
 usable control and save persistence. Stop at the fresh start-dispatcher return
-immediately before `ActivateEnemies`.
+immediately before `ActivateEnemies`. The
+[initialization/first-control continuation](./battle25-initialization-and-first-control.md)
+owns the selected region, live-order, spell/item and conditional dispatch join;
+this owner retains admission/opening and its original endpoint.
 
 ## Agreement and provenance
 
@@ -244,7 +247,10 @@ the member's identity, inventory or AI.
 
 The preceding `HealLivingAndImmortalAllies` visits all30 independent of
 membership: living allies and Peter7/Lemon28 get max HP/MP, status masked to
-existing STUN/POISON/CURSE, then UpdateCombatantStats. Other dead allies skip;
+existing STUN/POISON/CURSE as an intermediate mask. UpdateCombatantStats then
+removes incoming CURSE and recomputes final ally CURSE from currently equipped
+cursed gear; that mask alone does not establish final status. Other dead allies
+skip;
 this is not blanket revival or a new force. Rohde11 joining, active43, health,
 class/equipment and placement are separate. Neither his map actor nor the
 cannon scene guarantees a battle slot, transfers an item here, or overrides
