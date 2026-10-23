@@ -720,6 +720,19 @@ enemy128 and ally0 orders reach conditional first dispatch. Production excludes8
 STEALTH_ARCHER/ranged/Hunter prowess, MAGE/FREEZE, equipment/refresh/capacity and suspend limits
 remain explicit. Existing before/outcome/New Granseal owners retain their scope; no fixture count,
 runtime observation, all-action acceptance or consumer frontier changes.
+The [Battle09 account](./battle09-initialization-and-first-control.md) connects its complete12/11/2/0
+selection to Map69 area`(0,0,48,32)`, actual party/refresh, empty hooks and no neutral entry.
+Peter's joined7/active39/AI bit2/follower67 states remain independent; templates/following prove
+no fixed party or first actor. F509/effective-level/category/bounds/exclusions/shared retry/RNG
+selection precedes definition copy, including the actual airborne count0 defect for both Bats.
+All twelve fresh positions miss two ordered regions under integer projection/CCR. Region-assigned
+NONE permits conditional standby movement, follow stops inactive standby and three15/15 enemies
+bypass it. Live enemy128/ally0 and no point destination reach conditional first dispatch.
+Production excludes9; Flying/Hovering and shared standby/follow/round mechanisms are reusable,
+while Bat poison prowess/BLAZE2, Hunter movement/range/prowess, Witch MAGE/FREEZE, equipped
+loadouts/general refresh/capacity, Peter AI/class/party and saved-state limits remain explicit.
+Existing admission/outcome/Ribble owners retain their scope; no fixture count, runtime observation,
+all-action acceptance or consumer frontier changes.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
