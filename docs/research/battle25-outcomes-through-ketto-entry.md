@@ -1,6 +1,6 @@
 # Battle25 outcomes through Ketto entry
 
-Evidence date: 2026-10-14. **Confirmed:** Battle25's empty outcome scripts
+Evidence date: 2026-10-23. **Confirmed:** Battle25's empty outcome scripts
 retain the shared death, victory, defeat and escape wrappers. Victory returns
 to a member-derived Map48 position without an immediate battle scan. Separate
 north-cave exits request Map72, where battle admission can intervene before
@@ -21,6 +21,7 @@ design, remake/UI, glossary or Chinese write. Concurrent #994 synthesis and
 UI692 remain independent; no unmerged conclusion or stacked dependency.
 
 Consume accepted [Battle25 admission](./north-cliff-entry-through-battle25-admission.md),
+the [initialization/first-control continuation](./battle25-initialization-and-first-control.md),
 [Battle24 outcomes](./battle24-outcomes-through-north-cliff-preparation.md),
 [Battle11 admission](./east-shrine-return-through-battle11-admission.md),
 [Battle11 outcomes](./battle11-outcomes-through-polca-arrival.md),
@@ -104,7 +105,10 @@ by the empty Battle25 hook.
 
 1. HealLivingAndImmortalAllies scans all30 allies: living allies and Peter7/
    Lemon28 even if dead get maximum HP/MP, existing status masked to
-   STUN/POISON/CURSE, and stat recomputation. Other dead allies remain dead;
+   STUN/POISON/CURSE as an intermediate mask. UpdateCombatantStats removes
+   incoming CURSE and recomputes final ally CURSE from currently equipped
+   cursed gear; the intermediate mask is not final status. Other dead allies
+   remain dead;
    joined/active membership is not this predicate. Battle44's timer exception
    does not apply.
 2. Seed PARAM2 from CURRENT_MAP. UpdateForceAndGetFirstBattlePartyMemberIndex
