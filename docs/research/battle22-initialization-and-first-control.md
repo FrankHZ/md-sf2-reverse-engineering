@@ -77,8 +77,11 @@ admission, F422 write and surviving `(22,0,0,Right)` request.
 
 Background22 is CHESSBOARD17, not the terrain-dependent OVERWORLD255 selector;
 terrain slot22 points to `entries/battle22/terrain.bin`. Leader-presence22 is-1,
-independent of commandset14 and AGI161. Half-EXP selects only1, and the special
-after-position table only44; neither selects22. The random-battle list and
+independent of commandset14 and AGI161. Half-EXP selects only1. The complete
+`data/battles/global/afterbattlepositions.asm` selects only BATTLE_GALAM_CASTLE5
+and `abp_Battle5`, consumed by `ApplyPositionsAfterEnemyLeaderDies` in
+`code/gameflow/battle/cutscenes/afterenemyleaderdeathpositions.asm`; neither table
+selects22. Battle44's timer special is separate. The random-battle list and
 special-drop table omit22. Completion does not install Battle21's random upgrades
 or a special chess item drop. Generic action item rules remain separate.
 
