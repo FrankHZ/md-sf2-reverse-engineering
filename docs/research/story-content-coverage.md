@@ -97,14 +97,14 @@ followers, recruitment and battle admission remain separate.
 | --- | --- | --- |
 | Map3; castle19/20/21, passage40, tower57; Battle01 | [Optional interactions](./map3-optional-interactions.md), [castle unlock](./map3-castle-battle-unlock.md), [admission](./map3-battle01-admission.md), [turn/action chain](./map3-battle01-turn-control.md) through [victory return](./map3-battle01-victory-return.md). | Optional records are not required observed actions. Action-effect/completion/finalization owners remain reachable from the turn owner; the static spine is not original executed victory. |
 | Battle01 return; exorcism/commission, Jaha; Battle02/Map66 | [Return through Battle02](./battle01-to-battle02-content-route.md), [Battle02 initialization/first dispatch](./battle02-initialization-and-first-control.md). | Conditional unlock and separate admission; complete selected static initialization/control account, not a naturally walked continuation or all-action audit. |
-| Battle02 return; Yeel5/Kazin; Battle03/Map66 | [Return through Battle03](./battle02-to-battle03-content-route.md). | Yeel guidance does not write the unlock and is not a proved prerequisite. Following is not Kazin recruitment. |
+| Battle02 return; Yeel5/Kazin; Battle03/Map66 | [Return through Battle03](./battle02-to-battle03-content-route.md), [Battle03 initialization/first dispatch](./battle03-initialization-and-first-control.md). | Yeel guidance does not write the unlock and is not a proved prerequisite. Following is not Kazin recruitment. The selected static account separates region0/15 activation, masked bat item and completed-repeat upgrades; it is not a natural arrival or all-action observation. |
 | Battle03 return; Hawel house43; Battle04 | [Hawel-house route](./battle03-to-battle04-content-route.md). | House scene recruits Kazin/writes404; Battle03's empty after-script does neither. House admission does not require proved Battle03 completion. |
 | Battle04 outcomes; Galam17/16; Battle05 | [Captivity/guard admission](./battle04-to-battle05-content-route.md). | Victory and special defeat have different consumers; escape differs. No unavoidable defeat claim. |
 | Battle05 outcomes; Galam exits18/66; Battle06 | [Jewel/Slade/escape](./battle05-to-battle06-content-route.md). | Joining, current following and returned requests differ. |
 | Battle06 return; Granseal3/19, tower58; Battle07 | [Occupied town, optional Kiwi, royal following](./battle06-to-battle07-content-route.md), then [Battle07 aftermath](./battle07-outcomes-and-aftermath-handoff.md). | Earlier before-program supplies407; victory supplies506. After07 posts a return before later follower/flag work; rebuilding does not preserve all scene actors. |
 
-Battle02 now has its own complete selected static initialization, activation and
-first-dispatch account. Battles03–07 do not inherit that encounter-specific
+Battles02/03 now have their own complete selected static initialization, activation and
+first-dispatch accounts. Battles04–07 do not inherit that encounter-specific
 coverage, and no complete all-action audit follows for any of these encounters.
 
 ## Leaving Grans and establishing New Granseal
@@ -318,7 +318,8 @@ count documents as completion units.
 | 0 | Hidden chapter: selected formation/control/laser/actual returns. Other boss actions remain outside it. |
 | 1 | Accepted savestate-linked original route/admission, selected winning actions, victory/after-program/stable return and one subsequent Down input/effect; [current original frontier](../design/synthesis/map3-battle01-readiness.md#accepted-original-frontier). All action branches, natural New/load, uninterrupted execution and hardware/full-presentation claims remain outside that bounded acceptance. |
 | 2 | [Initialization/first dispatch](./battle02-initialization-and-first-control.md) joins the complete4/6/0/1 declaration to fresh/suspended entry, changed joined/active/dead/capacity state, enemy refresh, no-region AI and randomized control routing. Existing entrance/outcome owners retain conditional links; natural arrival/first actor, all actions and general production-party equivalence remain unproved. |
-| 3–7 | Early content/outcome/admission; not complete encounter-specific initialization/activation/actions. |
+| 3 | [Initialization/first dispatch](./battle03-initialization-and-first-control.md) joins12/6/1/0 formation, conditional Yeel EGRESS, region0 versus15/15, masked bat item and503 repeat upgrades to the actual consumers. Natural state/first actor, unsafe airborne scan results, all actions and general production equivalence remain unproved. |
+| 4–7 | Early content/outcome/admission; not complete encounter-specific initialization/activation/actions. |
 | 8–13 | Continent/eastern selected admissions/openings/outcomes/local content; not full tactical processing per encounter. |
 | 14 | [Southeast Desert account](./battle14-desert-encounter-and-outcomes.md): Map70 request/cooldown and10-before14 scan, complete formation/empty hooks, conditional repeat upgrades, region/control predicates, Power Stick conditions and outcomes/returns/exits. Natural reach, unsafe airborne scan results, all tactics and production14 remain outside its static boundary. |
 | 15 | [Shrine account](./battle15-shrine-approach-and-outcomes.md):69/61 approach, full exterior population/opening, both50 admissions, complete scenes/formation/control boundary, hidden Golem/chest/drop conditions, outcomes and three exits. Natural paths, all tactics and implementation remain outside its static boundary; [Panel/Sword custody](./ribble-tree-opening-and-achilles-sword.md) retains its separate scope. |
@@ -457,7 +458,7 @@ unassessed is not an assertion that all its source is missing or already explain
 | Remaining label | Disposition and semantic evidence | Consequence for planning |
 | --- | --- | --- |
 | Creed late return/recruitment | **Confirmed:** `data/maps/mapsetups.asm` selects Map33's baseline last for F22, overriding F786. Baseline `s1_entities.asm` declares the four recruits; `s6_initfunction.asm:byte_5ABEE` still independently gates their placement on F784 and each joined flag. `s2_entityevents.asm:Map33_EntityEvent3–6` tests F22 before F787. The complete offers/successes, layout copy and current/fresh actor differences are already in the [recruitment](./creed-return-fairy-and-recruitment-choices.md), [restoration](./creed-restoration-and-basement-departure.md) and [handoff](./oddler-stays-and-fairy-handoff.md) owners. F22 is Frayja's joined flag: [Battle33's join consumer](./battle33-initialization-and-opening.md#keyed-texts-join-ceremony-and-actual-replacement-rule) connects `data/battles/entries/battle33/cs_beforebattle.asm:join ALLY_FRAYJA` through JoinForce. | No additional four-recruit scene investigation is justified by the old partial label. F22 is not a Battle22-completion gate. Existing Map33 exits to34/67 and the accepted return selectors do not prove a natural late journey, collision access or four successful recruitments on one save. Keep those runtime/itinerary questions at their owners. |
-| Early encounter initialization | **Confirmed:** the [Battle02 account](./battle02-initialization-and-first-control.md) joins all selected formation/order operands to fresh/suspended entry, enemy refresh, activation/spawn/round and first-control consumers, beside its existing entrance/outcome owners. It distinguishes the four-member scan limit from the live placement cursor and follows no-region15/15 through actual AI routing. | The finite Battle02 static account is organized. It adds no natural arrival, fixed first actor, all-action or arbitrary-party production claim. The existing importer already admits2/3; its controlled identities, capacity rejection and unsupported suspended entry remain explicit. Other early-encounter limits remain qualified and have not each been traced into new tasks. |
+| Early encounter initialization | **Confirmed:** the [Battle02 account](./battle02-initialization-and-first-control.md) joins all selected formation/order operands to fresh/suspended entry, enemy refresh, activation/spawn/round and first-control consumers. The [Battle03 account](./battle03-initialization-and-first-control.md) reuses that lifecycle and adds its12/6/1/0 formation, conditional Yeel egress assignment, region0 versus15/15, masked bat item and503 repeat upgrades with the airborne defect retained. | These finite static accounts add no natural arrival, fixed first actor, all-action or arbitrary-party production claim. The existing importer already admits2/3; controlled identities, capacity rejection, general refresh, original upgrade selection and suspended-entry limits remain explicit. Other early-encounter limits remain qualified and have not each been traced into new tasks. |
 | Town revisits | **Confirmed:** named changed populations already occur in the chapter owners, including [restored Pacalon/Frayja](./pacalon-return-frayja-and-battle31-admission.md#fresh-towncastle-lifetime-and-restored-population), the F22 Creed alternatives, Hub63 and late Yeel above. Pacalon's F530 selector changes the castle entity/event pointers while shared init tests joined22; it is a real selected return account, not just a first-visit label. | Do not reopen those selected returns. No full-map/state comparison was made to identify every other late NPC/chest/service variation. The residual census is intentionally unassessed: its state combinations and user outcome are not specified by this denominator. No concrete additional town chapter is recommended from that absence alone. |
 | Generic services, promotion/equipment | **Confirmed:** [common menus](./common-menus.md#static-service-menu-state-machines) owns the complete built eight-source service state machines, including Church promotion selection/item removal/SetClass→Promote and Caravan Join/Depot/Item/Purge. Its [caller inventory](./common-menus.md#static-service-menu-state-machines) retains all69 direct transfers and selected bounded return observations. [Common stats](./common-stats.md), [field items](./field-item-effects.md) and [smith29](./dwarven-village-and-mithril-smithing.md) retain their helper and local lifecycle boundaries. | No new generic service inventory is warranted by a town's call to ShopMenu/ChurchMenu/CaravanMenu. Original UI/service completion, persistence and unobserved callers stay Unknown; actual service implementation is a consumer task. This does not assert all equipment/promotions or every location's eligibility has been semantically exhausted. A future local account must name the omitted caller/state relationship. |
 
@@ -481,10 +482,22 @@ until four living actors are found: a dead active member consumes one of the
 four member iterations without advancing the placement cursor; excess members
 leave the active party.
 
-The account checks the existing producer, Content reader, common initialization,
+### Battle03 initialization through first dispatch
+
+The Battle03 [dedicated account](./battle03-initialization-and-first-control.md)
+adds all twelve formation positions and six enemy rows without treating the
+templates as joined members. Its first fresh region check cannot be triggered by
+the actual ally formation south of region0; two enemies use inactive standby
+while four15/15 enemies can enter ordinary AI. The bat's declared AI-use/drop
+bits are masked by AddItem, and completed503 can upgrade enemy definitions through
+the existing random-battle algorithm, including its unsafe airborne exclusion
+scan. Before-program Yeel EGRESS assignment remains conditional on fresh entry
+and clear453. None of this establishes natural state or an actual first actor.
+
+The accounts check the existing producer, Content reader, common initialization,
 Application entry/round flow and selected source-order AI. These already admit
-Battle02; controlled ally identity admission, capacity rejection, general refresh
-and suspended-state limits remain distinct from original behavior. No engine
+Battles02/03; controlled ally identity admission, capacity rejection, general refresh,
+repeat upgrade selection and suspended-state limits remain distinct from original behavior. No engine
 change, new fixture, natural original observation or all-action completion is
 implied. Existing entrance/outcome owners keep their separate conditional
 connections and provenance. Runtime and production Unknowns do not reopen the
