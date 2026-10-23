@@ -103,8 +103,8 @@ followers, recruitment and battle admission remain separate.
 | Battle05 outcomes; Galam exits18/66; Battle06 | [Jewel/Slade/escape](./battle05-to-battle06-content-route.md). | Joining, current following and returned requests differ. |
 | Battle06 return; Granseal3/19, tower58; Battle07 | [Occupied town, optional Kiwi, royal following](./battle06-to-battle07-content-route.md), then [Battle07 aftermath](./battle07-outcomes-and-aftermath-handoff.md). | Earlier before-program supplies407; victory supplies506. After07 posts a return before later follower/flag work; rebuilding does not preserve all scene actors. |
 
-Battles02–04 now have their own complete selected static initialization, activation and
-first-dispatch accounts. Battles05–07 do not inherit that encounter-specific
+Battles02–05 now have their own complete selected static initialization, activation and
+first-dispatch accounts. Battles06–07 do not inherit that encounter-specific
 coverage, and no complete all-action audit follows for any of these encounters.
 
 ## Leaving Grans and establishing New Granseal
@@ -320,7 +320,8 @@ count documents as completion units.
 | 2 | [Initialization/first dispatch](./battle02-initialization-and-first-control.md) joins the complete4/6/0/1 declaration to fresh/suspended entry, changed joined/active/dead/capacity state, enemy refresh, no-region AI and randomized control routing. Existing entrance/outcome owners retain conditional links; natural arrival/first actor, all actions and general production-party equivalence remain unproved. |
 | 3 | [Initialization/first dispatch](./battle03-initialization-and-first-control.md) joins12/6/1/0 formation, conditional Yeel EGRESS, region0 versus15/15, masked bat item and503 repeat upgrades to the actual consumers. Natural state/first actor, unsafe airborne scan results, all actions and general production equivalence remain unproved. |
 | 4 | [Opening/initialization/first dispatch](./battle04-initialization-and-first-control.md) joins5/8/3/1, complete before scene/text keys, non-upgradable definitions/equipment, three regions and point/follow orders to consumers. No fresh initial trigger; two15/15 enemies bypass standby. Natural state/first actor and all actions remain unproved; current conversion does not admit4. |
-| 5–7 | Early content/outcome/admission; not complete encounter-specific initialization/activation/actions. |
+| 5 | [Initialization/first dispatch](./battle05-initialization-and-first-control.md) joins6/8/1/1, empty hooks, actual party, equipped enemies/BLAZE1, region0 standby and five15/15 enemies with distinct SENTRY/follow bindings to consumers. No fresh initial trigger; natural state/first actor and all actions remain unproved; current conversion does not admit5. |
+| 6–7 | Early content/outcome/admission; not complete encounter-specific initialization/activation/actions. |
 | 8–13 | Continent/eastern selected admissions/openings/outcomes/local content; not full tactical processing per encounter. |
 | 14 | [Southeast Desert account](./battle14-desert-encounter-and-outcomes.md): Map70 request/cooldown and10-before14 scan, complete formation/empty hooks, conditional repeat upgrades, region/control predicates, Power Stick conditions and outcomes/returns/exits. Natural reach, unsafe airborne scan results, all tactics and production14 remain outside its static boundary. |
 | 15 | [Shrine account](./battle15-shrine-approach-and-outcomes.md):69/61 approach, full exterior population/opening, both50 admissions, complete scenes/formation/control boundary, hidden Golem/chest/drop conditions, outcomes and three exits. Natural paths, all tactics and implementation remain outside its static boundary; [Panel/Sword custody](./ribble-tree-opening-and-achilles-sword.md) retains its separate scope. |

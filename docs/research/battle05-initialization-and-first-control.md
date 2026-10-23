@@ -277,10 +277,14 @@ no seed reset or fixed first actor follows. Even range0 draws advance the
 main seed; standby uses the separate thinking RNG.
 
 A sentinel requests round preparation. A reached actor enters
-`ExecuteIndividualTurn`: HP0 skips; MUDDLE, AI-controlled bit2, opponent-control
-and ally auto-battle choose AI preparation. After cursor/view/status windows
-and movement-grid work, SLEEP/STUN choose NoAction; otherwise the control
-predicates choose actual AI execution or player input. Stop at that dispatch,
+`ExecuteIndividualTurn`: HP0 skips. MUDDLE and AI-controlled bit2 take priority
+in choosing AI preparation. Otherwise enemies with opponent-control disabled
+and allies with auto-battle enabled choose AI preparation; enabled opponent-control
+skips that AI preparation. After shared cursor/view/status windows and movement-grid
+work, SLEEP/STUN choose NoAction. The control predicates are then checked again:
+MUDDLE/AI-controlled still take priority; absent those conditions, an enemy with
+opponent-control disabled executes AI, while enabled reaches player input.
+Allies use their auto-battle predicate. Stop at that dispatch,
 not an executed action or guaranteed first player-ready state. Suspended entry
 can consume its saved queue instead.
 
