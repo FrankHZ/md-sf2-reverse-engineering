@@ -677,6 +677,13 @@ and joins its12/6/1/0 declaration to conditional Yeel egress assignment, region0
 the bat's masked placement item, completed503 upgrades and conditional first-control dispatch.
 The original airborne exclusion defect and production conversion/support limits remain explicit;
 this static account adds no natural arrival, runtime observation or all-action acceptance.
+The [Battle04 account](./battle04-initialization-and-first-control.md) connects its complete5/8/3/1
+selection and before scene/text keys to actual party initialization, equipment refresh,
+three initially untriggered regions, point/follow orders, standby and first-control dispatch.
+Battle04 is not a random-upgrade encounter and is not admitted by the current production
+producer/reader; class/movement/AI-word, ranged/equipped and suspended-entry limits remain explicit.
+Capture dialogue does not prove forced defeat. Existing admission/outcome owners remain separate;
+no runtime observation, all-action claim, fixture count or consumer frontier changes.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
