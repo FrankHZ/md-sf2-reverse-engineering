@@ -700,6 +700,15 @@ victory supplies506 separately. The random-upgrade selector omits6. Current prod
 with HEALER3/SENTRY, cleric prowess, movement/AI-word, ranged/equipment/spell and suspended-state
 limits explicit. Existing entrance/outcome owners retain their endpoints; this adds no fixture,
 runtime observation, all-action acceptance or consumer frontier.
+The [Battle07 account](./battle07-opening-and-first-control.md) connects its complete7/10/4/1
+selection and28-key before confrontation to Map58/TOWER_INTERIOR metadata, actual party,
+ten enemies and five F507-gated HP0 neutral actors. Seven templates do not recruit Kiwi;
+F83 clears only with the executed before. Four initially untriggered regions, distinct standby
+and live-follow129/133/136, unused point0, Smoke extra turns/DISPEL and equipped Galam refresh
+reach conditional first dispatch. The actual random-upgrade selector omits7. Production excludes7;
+hovering/extra-round-action data are expressible, while Smoke prowess/DISPEL, HEALER3/cleric
+prowess, ranged/equipment/spell and suspended-state limits remain explicit. Existing admission/
+outcome owners retain their endpoints; no fixture, runtime, all-action or consumer frontier changes.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
