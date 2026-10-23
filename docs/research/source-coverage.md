@@ -830,7 +830,7 @@ Generic definitions/formation/Flying/standby/live-follow/dead-target/round suppo
 trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
 Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
 No new natural observation, fixture count, runtime/design/production frontier or retained failure
-status follows; other19–25 content limits remain qualified.
+status follows; other20–25 content limits remain qualified.
 The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
 Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
 seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
@@ -849,6 +849,30 @@ type3 region rejection/signed geometry/cache, out-of-table point access, selecte
 ranges, MAGE/BRASS_GUNNER, HEALER3/spell/item AI, Bowie gate/counter/drop/deals, neutral mapping/
 services and actual party/refresh/control/suspend requirements. No new natural observation,
 fixture count, runtime/design/production frontier or completed failure status follows.
+The [Battle19 account](./battle19-initialization-and-first-control.md) joins12/15/3/1,
+Map68's sole wildcard19/crop5,19/48×32 and independent419/469/519/88 to actual
+party/final-CURSE refresh, six full bases and first conditional control. Caravan/request,
+outcome and village owners retain scope. F519 repeat selection uses E29+, actual categories,
+bounds/exclusions/retry/RNG, Launcher melee fallback and unsafe Gargoyle count0. Base stats/turns
+are not a repeated roster. All72 signed-projection/CCR triangle substitutions miss three type4
+regions; tested cache/persistent flags, primary1/0/2, eight15/15 actors and NONE/live-follow standby
+are distinct. Declared point0(14,19), live128/133/135/139/140 and exact2/6/7/9/14 streams
+retain short-circuit/dead-target conditions. Priest HEAL3/BLAST2 and Madam FREEZE2 use actual
+consumers; for current local input`$80`, healing's C0/A0/80 keys,20/3/10 costs and
+nonself≥11MP promotion differ from HEAL2. The caller writes the selected local entry before
+station selection; a failed candidate carries downgraded`$40/$00` into later candidates, limiting
+them to HEAL1/check5 or3MP without that promotion. Learned slots stay unchanged; a new HEAL
+command rereads them. PR1245's original16f4233a mechanical PASS missed this local lifetime;
+its independent P2 and original receipts remain preserved in the primary account.
+Successful AddItem masks Ball6010→0010; earlier equipped Power Stick also stops attack-item
+selection before Ball. Conditional use consumes the actual slot. Independent battle19/row1/16/
+bit6 drop requires targetDies/held16, no drop RNG, once-bit/removal and living-actor capacity or
+RARE-deals. Leader sweep grants no automatic action loot. Production excludes19. Generic
+formation/type4 regions/Flying/LEADER/valid-point/live orders/round support differs from trusted
+admission/conversion,519 selection, gear/ranges/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
+spell/item AI,16 consumption/drop/deals and actual party/refresh/control/suspend requirements.
+No fixture count, natural observation, runtime/design/production frontier or completed failure
+status changes; remaining20–25 content limits stay qualified.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.

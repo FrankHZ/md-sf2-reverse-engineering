@@ -14,7 +14,7 @@ persistence. No mandatory victory-before-entry ordering is established.
 Standard rigor under [Issue #856](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/856)
 and [the content epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 Accepted starting base: `b49b787198077c420124024ac621ef1daa3789d4`.
-This sole document owns admitted Battle19 entry/outcomes and independent Map23
+This document owns admitted Battle19 entry/outcomes and independent Map23
 entrance through immediate population/init/conditional control. There are no
 shared edits or stacked dependencies. Stop at immediate outcome return,
 conditional Map23 control, or an unrelated battle admission. Exclude combat
@@ -97,6 +97,12 @@ argument alone does not establish a consistent resumed Battle19.
 
 ### Actual initial roster and repeat boundary
 
+Initialization clarification date: 2026-10-23. The
+[complete initialization and first-control account](./battle19-initialization-and-first-control.md)
+now owns the full definitions, F519 selection, activation/orders, Shining Ball
+custody and conditional first control. The following roster is entry context;
+it does not supersede that account's computed consumer boundaries.
+
 **Confirmed:** `getbattlespritesetsubsection.asm` selects slot19 of
 `data/battles/spritesets/entries.asm`: BattleSpriteset19 at `0x1B46BE`.
 The complete `spriteset19.asm` has 12 ally rows, 15 enemy rows, three AI regions
@@ -111,9 +117,11 @@ clears all30 ally X values and rebuilds current membership. Active-list identiti
 receive positions; dead members consume an iteration/list slot without advancing
 the placement row. Remaining members beyond capacity can leave the active party.
 Twelve placements do not establish twelve living participants. Shared healing
-restores living allies and immortal Peter/Lemon to HP/MP maxima, preserving only
-existing STUN/POISON/CURSE bits; it does not revive every dead ally or grant
-membership/following.
+restores living allies and immortal Peter/Lemon to HP/MP maxima. Its intermediate
+status mask retains STUN/POISON/CURSE; the subsequent UpdateCombatantStats
+preserves STUN/POISON and derives final CURSE from equipped cursed items.
+Old CURSE alone does not survive final refresh. This does not revive every dead
+ally or grant membership/following.
 
 | Enemy slots | Base type and local starting positions, in slot order |
 | --- | --- |
