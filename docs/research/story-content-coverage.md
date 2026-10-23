@@ -192,7 +192,7 @@ encounter, outside this account.
 | --- | --- | --- |
 | Devil's Tail67/Battle21→Mansion33 | [Opening/initial roster](./battle21-opening-and-initial-roster.md), [regions/upgrades/items/first control](./battle21-initialization-and-first-control.md), [outcomes](./battle21-outcomes-and-devils-tail-return.md), [Goliath obstruction](./creed-mansion-entry-and-first-goliath-scene.md). | Entry does not automatically run Goliath's zone scene. |
 | Magic door→Desktop22/Battle22 | [Shrinking/transfer](./creed-magic-door-and-desktop-transfer.md), [arrival](./desktop-kingdom-first-arrival.md), [King permission](./desktop-kingdom-interactions-through-battle22-entry.md), [initialization/first control](./battle22-initialization-and-first-control.md), [outcomes](./battle22-outcomes-and-desktop-return.md). | Door gate is independent of earlier Goliath flag. Reward announcement is not Balloon acquisition. Nine SWARM actors, truncated HP count, valid King point0 and dual neutrals reach conditional control; natural/all-action claims remain outside it. |
-| Balloon→Floor World26→Burrow27/Battle23 | [Acquisition/use/departure](./cotton-balloon-through-floor-world-entry.md), [landing](./floor-world-first-arrival.md), [interactions/exits](./floor-world-interactions-and-exits.md), [Burrow/admission](./willard-burrow-through-battle23-entry.md), [initial roster](./battle23-initialization-and-roster.md), [outcomes](./battle23-outcomes-and-burrow-return.md). | Chest flag, custody, own-tile use and force-wide removal differ. Ring scene is not an exit prerequisite. |
+| Balloon→Floor World26→Burrow27/Battle23 | [Acquisition/use/departure](./cotton-balloon-through-floor-world-entry.md), [landing](./floor-world-first-arrival.md), [interactions/exits](./floor-world-interactions-and-exits.md), [Burrow/admission](./willard-burrow-through-battle23-entry.md), [initial roster](./battle23-initialization-and-roster.md), [activation/AQUA2/first control](./battle23-initialization-and-first-control.md), [outcomes](./battle23-outcomes-and-burrow-return.md). | Chest flag, custody, own-tile use and force-wide removal differ. Ring scene is not an exit prerequisite. |
 | Restoration→Evil Spirit34→return | [Restoration](./creed-restoration-and-basement-departure.md), [shrine entry](./evil-spirit-shrine-entry-and-scene-admission.md), [consultation](./evil-spirit-consultation-and-zone-return.md), [Fairy/recruit offers](./creed-return-fairy-and-recruitment-choices.md), [Oddler stays](./oddler-stays-and-fairy-handoff.md). | Current actors and future populations differ. Eight offers cover named initial/F22 alternatives, not every natural return itinerary. Narration/lore is not independently established world fact. |
 
 ## Returning for the Cannon and opening North Cliff
@@ -351,7 +351,8 @@ count documents as completion units.
 | 20 | [Initialization/SWARM/neutral/first control](./battle20-initialization-and-first-control.md) joins12/12/0/0, actual party/final-CURSE refresh, five complete definitions/gear/poison/DISPEL/HEAL3/BLAST2/FREEZE2 and no random substitution/drop. All15/15/STARTING, zero-region cache return, exact2/6/9/15 streams and live131/129/133/136 orders differ. SWARM128/134/139 use3/2/1 and HP-only128–138 count0, omitting real139; damage bypass/re-healed wait is conditional. Neutral159 writes31/read63, separate from ally13/active45; production excludes20. |
 | 21 | [Initialization/regions/upgrades/items/first control](./battle21-initialization-and-first-control.md) joins12/12/4/0, six full bases, all96 fresh triangle misses, F521 selection/unsafe airborne scan, live128/131/135 and exact0/2/6/9 streams. Masked Herb/Ring custody and independent62/20 drops/once7/8 remain conditional. Existing opening/outcome owners retain scenes/returns. Natural party/repeated roster/actions/loot remain unproved; production excludes21. |
 | 22 | [Initialization/SWARM/dual neutrals/first control](./battle22-initialization-and-first-control.md) joins12/16/0/1, six full bases and actual party/final-CURSE refresh. Nine actual SWARM actors use thresholds1/3/6; HP-only128–138 omits139–143. Exact2/3/7/9/14/15 streams, valid King point0/live128/137/136/132/134, candidate-local HEAL3 and King extra entry differ. F522-gated159/158 write31/30 while ordinary readers use63/62. Natural state/actions/first actor remain unproved; production excludes22. |
-| 23–25 | Creed/North Cliff selected fresh initialization/outcomes/map links; not every region/first-control/action path. |
+| 23 | [Initialization/region/AQUA2/first control](./battle23-initialization-and-first-control.md) joins12/12/1/1, actual party/final-CURSE, one initially missed region, live ally0 versus point0 and complete6/7/9/14 streams. AQUA2 costs0 but its packed`$68` misses AQUA1's`$28` shortcut; Willard165 gives37/30 round bases. No repeat substitution/drop/neutral/SWARM. Natural state/first actor/actions remain unproved; production excludes23. |
+| 24–25 | Creed/North Cliff selected fresh initialization/outcomes/map links; not every region/first-control/action path. |
 | 26–27 | Separate opening/init, activation/first-call and outcome owners; first call is not an executed individual action. |
 | 28 | [Bridge47 account](./battle28-bridge-and-outcomes.md): both74 entrances, full before/after programs, live formation/sixteen enemies/neutral alias, first dispatch/control predicates, conditional terminal/escape/Suspend and retained/fresh returns. All tactical choices, natural traversal and implementation remain outside its static boundary; Tristan/Caves still enters0/29 independently. |
 | 29–43 | Late entry/opening, activation or first-control and outcome owners. Laser/Burst Rock exceptions do not establish all-AI coverage. |
@@ -793,7 +794,7 @@ stream, AQUATIC/Kraken costs, Arm/Head ranges, all three prowess expressions,
 AQUA execution, arbitrary party/Peter/Luke/control, general refresh, saved-state
 and Head special mapping/services remain explicit limits. Descriptive records
 do not grant executable resistance/spell/status support. Fixture counters,
-retained failures and all four frontiers remain unchanged. Other23–25 limits
+retained failures and all four frontiers remain unchanged. Other24–25 limits
 remain qualified; this owner selects no next task automatically.
 
 ### Battle17 repeat upgrades, live follows and first conditional control
@@ -827,7 +828,7 @@ standby/live-order/dead-target/round primitives differ from trusted conversion,
 F517 upgrades, BRASS_GUNNER/MAGE, ranged/equipped refresh, stun/Golem/Monk prowess,
 exact0/2 healing/spell AI, arbitrary parties/control and suspend requirements.
 No fixture metrics, original observation, design/production frontier or retained
-failure status changes. Other23–25 content limits remain qualified; no next task
+failure status changes. Other24–25 content limits remain qualified; no next task
 is selected automatically.
 
 ### Battle18 Taros equipment, regions and first conditional control
@@ -860,7 +861,7 @@ signed geometry/cache, out-of-table point access, selected prowess/gear/ranges,
 MAGE/BRASS_GUNNER, HEALER3/spell/item AI, Bowie gate/counter/drop/deals and
 neutral mapping/services. General refresh, actual parties/control and suspend
 remain limited. No fixture count, original observation, design/production
-frontier or completed failure is changed; other23–25 limits remain qualified.
+frontier or completed failure is changed; other24–25 limits remain qualified.
 
 ### Battle19 repeat selection, Shining Ball and first conditional control
 
@@ -895,7 +896,7 @@ point/live-order/round mechanisms exist, separately from trusted admission,
 selected519 conversion, gear/range/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
 spell/item decisions,16 use/drop/deals and actual party/refresh/control/suspend
 requirements. No code, fixture count, original runtime/design/production frontier
-or retained failure changes; remaining23–25 limits stay qualified.
+or retained failure changes; remaining24–25 limits stay qualified.
 
 ### Battle20 Harpy SWARM, neutral Elric and first conditional control
 
@@ -924,7 +925,7 @@ Production excludes20. Flying/live-order/dead-target/zero-region/round support
 is reusable, separately from trusted conversion, SWARM thresholds/count/re-wait/
 stream15, HEALER3/healing/DISPEL/spell decisions, poison/Orc prowess, gear/ranges,
 MAGE/BRASS_GUNNER, neutral mapping/services and party/status/control/suspend.
-No fixture metric, four-frontier or retained failure changes; remaining23–25
+No fixture metric, four-frontier or retained failure changes; remaining24–25
 limits stay qualified. This does not select another task automatically.
 
 ### Battle21 regions, repeat upgrades, item custody and first control
@@ -955,7 +956,7 @@ mechanisms are reusable, separately from trusted conversion, signed geometry/
 cache, ENHANCED/gear/movers/prowess, exact0/2/healing/DISPEL/spell/item/drop/
 repeat and actual party/refresh/control/suspend gaps. No fixture metric, four-
 frontier or completed failure changes; natural state/actions/loot remain
-Unknown and23–25 content limits remain qualified. No next task is selected.
+Unknown and24–25 content limits remain qualified. No next task is selected.
 
 ### Battle22 chess SWARM, dual neutrals and first conditional control
 
@@ -984,7 +985,41 @@ Production excludes22. Existing LEADER/valid-point/live-order/zero-region/round
 mechanisms are reusable, separately from trusted conversion, SWARM count/threshold/
 re-wait/exact15, exact2/3 AI, gear/prowess/enhanced/spell/mover, neutral and actual
 party/status/control/suspend gaps. No fixture metric, four-frontier or completed
-failure changes; natural state/actions remain Unknown and23–25 limits qualified.
+failure changes; natural state/actions remain Unknown and24–25 limits qualified.
+
+### Battle23 region activation, AQUA2 and first conditional control
+
+**Confirmed:** the [complete account](./battle23-initialization-and-first-control.md)
+joins sole Map27 row23/crop23,14/27×16 and independent423/473/523/88 to empty
+hooks, actual party/final-CURSE and12/12/1/1. All24 records/306bytes, point0(22,3)
+and full ordinal Willard90(raw0)/Rat15/Ooze16 definitions retain stats, resistance,
+prowess, spellPower, four items/spells and actual difficulty refresh. All copied/
+row items are NOTHING. Random-upgrade, special-drop and neutral tables omit23;
+halfEXP selects1 and after-leader positioning5, separately from timer44.
+
+All24 signed-projection/CCR triangle substitutions miss region0's exact
+(9,0),(9,15),(26,15),(26,0). Tested misses, persistentF90, normal AI cache reset
+and later/saved positions remain distinct; extra160 is the conditional deals
+alias, not another enemy. Assigned0/15 actors131–136 differ from six15/15;
+NONE136 can build standby movement, while assigned live follows131–135 cannot.
+Raw0 follows live ally0, not point0/enemy128;129/130 follow128 and138 follows137.
+Complete6/7/9/14 streams retain prepasses, dead-target promotion, no MOVE_ORDER
+on6 and earlier-success conditions; no SWARM/hidden wave/region script is selected.
+
+Ooze learns AQUA2/`$68`, MP0/range1–1/radius0/power15/BUBBLE_BREATH variation2,
+TYPE_ATTACK without AFFECTEDBYSILENCE. Ordinary enemy usability retains level2
+atMP0; confused/ally whitelist excludes AQUA. Full`$68` stored in ATTACK_COMMAND_SPELL
+misses exact`$28` AQUA1 shortcut: with spell/physical candidates RNG6 selects spell
+on2/4, otherwise physical; spell-only still draws. Priorities/stations/paths and
+earlier order success remain necessary. Willard enhanced has no learned spell.
+Willard165 gives ordinary37/extra30 bases, not a fixed first actor or usable input.
+
+Production excludes23. Existing STEALTH, LEADER, valid point/live-follow,
+standby and round mechanisms are reusable; precise gaps are trusted selection,
+signed geometry/cache lifetime, ENHANCED/prowess/AQUA decisions/effects, actual
+party/refresh/status/control/suspend and actor/services composition. No new
+fixture metric, natural observation, runtime/design/production frontier or
+completed failure change follows. Remaining24–25 limits stay qualified.
 
 ## Verification boundary
 

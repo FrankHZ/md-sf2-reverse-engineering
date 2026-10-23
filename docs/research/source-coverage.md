@@ -830,7 +830,7 @@ Generic definitions/formation/Flying/standby/live-follow/dead-target/round suppo
 trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
 Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
 No new natural observation, fixture count, runtime/design/production frontier or retained failure
-status follows; other23–25 content limits remain qualified.
+status follows; other24–25 content limits remain qualified.
 The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
 Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
 seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
@@ -872,7 +872,7 @@ formation/type4 regions/Flying/LEADER/valid-point/live orders/round support diff
 admission/conversion,519 selection, gear/ranges/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
 spell/item AI,16 consumption/drop/deals and actual party/refresh/control/suspend requirements.
 No fixture count, natural observation, runtime/design/production frontier or completed failure
-status changes; remaining23–25 content limits stay qualified.
+status changes; remaining24–25 content limits stay qualified.
 The [Battle20 account](./battle20-initialization-and-first-control.md) joins12/12/0/0,
 Map51's sole wildcard20/crop18×26 and independent420/470/520/88 to actual party/final-CURSE
 refresh and first conditional control. Approach/request, outcome/Elric and passage owners
@@ -892,7 +892,7 @@ Existing Flying/live-order/dead-target/zero-region/round mechanisms differ from 
 SWARM count/threshold/re-wait/stream15, HEALER3/healing/DISPEL/offensive spell decisions, selected
 poison/Orc prowess/gear/ranges/MAGE/BRASS_GUNNER, neutral mapping/services and actual party/status/
 control/suspend requirements. No fixture metric, natural observation, four-frontier or completed
-failure status changes; remaining23–25 content limits stay qualified.
+failure status changes; remaining24–25 content limits stay qualified.
 The [Battle21 account](./battle21-initialization-and-first-control.md) joins12/12/4/0,
 sole Map67 wildcard21/crop21,0/32×42 and independent421/471/521/88 to actual party/
 final-CURSE refresh and conditional first control. All24 records, four exact regions and
@@ -911,7 +911,7 @@ Production excludes21; formation/live-order/Flying/region/round mechanisms are r
 separately from trusted conversion, signed geometry/cache, ENHANCED/gear/movers/prowess,
 exact0/2/healing/DISPEL/offensive spells/items/drop/repeat and party/refresh/control/suspend.
 Opening/outcome owners retain scenes/leader sweep/return. No fixture metric, natural/runtime/
-design/production frontier or completed failure changes;23–25 limits stay qualified.
+design/production frontier or completed failure changes;24–25 limits stay qualified.
 The [Battle22 account](./battle22-initialization-and-first-control.md) joins12/16/0/1,
 all28 records, Map22 row22/crop9,0/30×30 and422/472/522/88 to actual party/final-CURSE
 refresh and conditional control. Six full chess definitions preserve King89 raw0,
@@ -929,7 +929,25 @@ zero-region/round primitives are reusable, separately from trusted conversion,
 SWARM count/threshold/re-wait/exact15, exact2/3 AI, enhanced/gear/prowess/spells/movers,
 neutral and actual party/status/control/suspend gaps. Entry/outcome/reward owners
 retain their scope. No fixture metric, four-frontier or completed failure changes;
-natural state/actions remain Unknown and23–25 limits qualified.
+natural state/actions remain Unknown and24–25 limits qualified.
+The [Battle23 account](./battle23-initialization-and-first-control.md) joins12/12/1/1,
+all24 records/306bytes, sole Map27 row23/crop23,14/27×16 and423/473/523/88 to
+actual party/final-CURSE and conditional control. Full ordinal Willard90(raw0)/Rat15/
+Ooze16 definitions preserve stats/resistance/prowess/spellPower/AI, empty gear and
+AQUA2. No repeat substitution/drop/neutral/SWARM is selected; halfEXP1, after-leader
+positioning5 and timer44 are independent. All24 source projection/CCR cases miss
+region0; tested misses/cache reset/persistentF90 and extra160's conditional deals
+alias differ. Six0/15 versus six15/15 actors, NONE standby, live ally0 versus valid
+point0(22,3), live128/137, exact6/7/9/14/prepasses and dead-target promotion retain
+conditions. AQUA2/`$68` costs0 and passes ordinary enemy usability atMP0, but the
+confused/ally whitelist excludes it. Full`$68` misses exact`$28` AQUA1 category shortcut;
+RNG6 remains before spell/physical selection, then actual priorities/stations/paths.
+Willard enhanced/no learned spells and AGI165 ordinary37/extra30 do not establish an
+action or first actor. Production excludes23. Existing STEALTH/LEADER/point/live-order/
+standby/round mechanisms differ from trusted selection, signed geometry/cache,
+ENHANCED/prowess/AQUA/party/refresh/status/control/suspend and actor/services gaps.
+Admission/outcome owners retain scenes and return. No fixture metric, natural
+observation, four-frontier or completed failure status changes;24–25 stay qualified.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
