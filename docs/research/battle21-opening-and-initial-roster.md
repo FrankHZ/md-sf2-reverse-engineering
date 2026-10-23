@@ -263,8 +263,12 @@ imposed named roster: InitializeAllAlliesBattlePositions consumes only their
 positions for the supplied party, not their AI/item/order fields.
 
 `battleloop/heallivingandimmortalallies.asm` restores HP/MP maxima for living
-allies and immortal Peter 7/Lemon 28, retains only existing STUN/POISON/CURSE
-bits and updates stats. It does not join anyone or revive other dead allies.
+allies and immortal Peter 7/Lemon 28. Its intermediate status mask retains
+STUN/POISON/CURSE; UpdateCombatantStats then preserves STUN/POISON and derives
+final CURSE from equipped cursed items, rather than retaining an old CURSE bit
+alone. It does not join anyone or revive other dead allies. The
+[initialization/first-control owner](./battle21-initialization-and-first-control.md)
+continues through regions, live orders, repeat selection and actual item custody.
 `battleloop/initializecombatants.asm:InitializeAllAlliesBattlePositions` clears
 all 30 ally X positions to -1, calls `code/common/stats/battleparty.asm:UpdateForce`
 (joined/active flags, ascending ally IDs), then uses that list. A dead member

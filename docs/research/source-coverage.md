@@ -830,7 +830,7 @@ Generic definitions/formation/Flying/standby/live-follow/dead-target/round suppo
 trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
 Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
 No new natural observation, fixture count, runtime/design/production frontier or retained failure
-status follows; other21–25 content limits remain qualified.
+status follows; other22–25 content limits remain qualified.
 The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
 Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
 seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
@@ -872,7 +872,7 @@ formation/type4 regions/Flying/LEADER/valid-point/live orders/round support diff
 admission/conversion,519 selection, gear/ranges/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
 spell/item AI,16 consumption/drop/deals and actual party/refresh/control/suspend requirements.
 No fixture count, natural observation, runtime/design/production frontier or completed failure
-status changes; remaining21–25 content limits stay qualified.
+status changes; remaining22–25 content limits stay qualified.
 The [Battle20 account](./battle20-initialization-and-first-control.md) joins12/12/0/0,
 Map51's sole wildcard20/crop18×26 and independent420/470/520/88 to actual party/final-CURSE
 refresh and first conditional control. Approach/request, outcome/Elric and passage owners
@@ -892,7 +892,26 @@ Existing Flying/live-order/dead-target/zero-region/round mechanisms differ from 
 SWARM count/threshold/re-wait/stream15, HEALER3/healing/DISPEL/offensive spell decisions, selected
 poison/Orc prowess/gear/ranges/MAGE/BRASS_GUNNER, neutral mapping/services and actual party/status/
 control/suspend requirements. No fixture metric, natural observation, four-frontier or completed
-failure status changes; remaining21–25 content limits stay qualified.
+failure status changes; remaining22–25 content limits stay qualified.
+The [Battle21 account](./battle21-initialization-and-first-control.md) joins12/12/4/0,
+sole Map67 wildcard21/crop21,0/32×42 and independent421/471/521/88 to actual party/
+final-CURSE refresh and conditional first control. All24 records, four exact regions and
+six full Skeleton17/Orc12/Harpy44/Launcher60/Madam70/Priest79 bases retain gear/spells/
+resistance/prowess/movement and Skeleton ENHANCED. All96 fresh signed-projection triangles
+miss; tested-cache/persistent flags, primary0/1/2/3 versus15/15, NONE/live128/131/135
+standby and exact0/2/6/9 streams remain conditional. Harpy names imply no SWARM. F521
+admits E31/category/bounds/exclusions/two-attempt repeat selection; BRASS_GUNNER melee
+falls back and FLYING count0 is unsafe, without asserting an installed repeated roster. AddItem807F
+strips Herb2000 AI-use/Ring4094 equipped/drop metadata, retaining copied weapons and no
+Ring DEF+5. Actual item/HEAL/SUPPORT/attack filters, earlier-slot termination, DISPEL
+area scoring and candidate-local HEAL3 differ from declarations. Independent135 held62/
+once7 and129 held20/once8 drops need ally actor/action death, take no selected drop RNG,
+and retain removal/capacity/actorHP/RARE-deals/once and conditional item-use boundaries.
+Production excludes21; formation/live-order/Flying/region/round mechanisms are reusable,
+separately from trusted conversion, signed geometry/cache, ENHANCED/gear/movers/prowess,
+exact0/2/healing/DISPEL/offensive spells/items/drop/repeat and party/refresh/control/suspend.
+Opening/outcome owners retain scenes/leader sweep/return. No fixture metric, natural/runtime/
+design/production frontier or completed failure changes;22–25 limits stay qualified.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.

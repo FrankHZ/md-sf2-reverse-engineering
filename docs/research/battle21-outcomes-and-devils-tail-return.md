@@ -120,10 +120,15 @@ this source path does not prove successful save/load persistence.
 
 **Confirmed:** `battleloop_2.asm:BattleLoop_Victory` first calls
 `battleloop/heallivingandimmortalallies.asm`. Across all 30 ally slots it heals
-living allies and immortal Peter 7/Lemon 28 to HP/MP maxima, retains only existing
-STUN/POISON/CURSE bits and updates stats. It neither requires membership nor
-joins anyone, and does not revive other dead allies. Battle44's timer-window
-special case is not selected.
+living allies and immortal Peter 7/Lemon 28 to HP/MP maxima. Its intermediate
+mask retains STUN/POISON/CURSE; UpdateCombatantStats preserves STUN/POISON and
+derives final CURSE from equipped cursed items, so an old CURSE bit alone does
+not survive refresh. It neither requires membership nor joins anyone, and does
+not revive other dead allies. The
+[initialization/item owner](./battle21-initialization-and-first-control.md#item-selection-conditional-use-and-independent-drops)
+retains actual Herb/Ring slots and independent Broad Sword135/Ring129 once7/8
+drops; the leader sweep here does not guarantee loot from every removed enemy.
+Battle44's timer-window special case is not selected.
 
 Before checking F521, victory writes parameter2=CURRENT_MAP; parameters3/4=
 first active member's combatant X/Y plus BATTLE_AREA_X/Y, using byte arithmetic;
