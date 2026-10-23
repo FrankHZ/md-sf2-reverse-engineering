@@ -25,7 +25,8 @@ Reuse [Battle21's accepted entry consumers](./battle21-opening-and-initial-roste
 [battle-loop research](./battle-loop.md), the
 [control/lifecycle contract](../design/contracts/battle-control-lifecycle.md),
 [cutscene routing](./battle-cutscenes.md) and
-[spriteset inventory](./battle-spriteset-data.md). Fresh entry stops at
+[spriteset inventory](./battle-spriteset-data.md). The [first-control continuation](./battle22-initialization-and-first-control.md)
+owns subsequent SWARM, orders and dispatch. Fresh entry here stops at
 `BattleLoop:@Start`, **before ActivateEnemies**. Suspended entry stops before
 `@IndividualTurns_Loop`. Exclude tactical/AI execution, damage, outcomes,
 leader-death/after scenes, terrain decoding, a whole renderer audit, postbattle
@@ -151,8 +152,11 @@ the placement's type/index, item and AI fields are not copied into that ally.
 
 Healing has already run: `battleloop/heallivingandimmortalallies.asm` restores
 HP/MP maxima for living allies and always for Peter7/Lemon28, retains only
-existing STUN/POISON/CURSE bits, and updates stats. Other dead allies remain
-dead. It neither joins members nor changes their classes/inventories.
+existing STUN/POISON/CURSE bits as an intermediate mask, then updates stats.
+`code/common/stats/updatecombatantstats.asm:UpdateCombatantStats` removes incoming
+CURSE and derives final ally CURSE from equipped cursed gear; stale CURSE with
+uncursed gear is cleared, and cursed equipment can add it. STUN/POISON remain.
+Other dead allies remain dead. It neither joins members nor changes their classes/inventories.
 A dead listed member consumes one of the twelve party-loop slots without
 advancing the placement record. Later living members therefore use earlier
 unconsumed positions, not their numeric ally-ID row. Any members beyond twelve

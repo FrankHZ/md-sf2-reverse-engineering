@@ -96,6 +96,9 @@ the leader tail at that check. The debug kill-all branch is a separate caller,
 not evidence of natural victory. All earlier services must return to reach
 the next count/write; no rollback is supplied for an unfinished prefix.
 
+The [first-control account](./battle22-initialization-and-first-control.md) owns
+SWARM, live/point orders, the two neutral actors and conditional turn dispatch.
+
 ## Victory seed, completion flags and exploration entry
 
 **Confirmed:** `battleloop_2.asm:BattleLoop_Victory` performs this order for both
@@ -103,7 +106,11 @@ first and repeat victory:
 
 1. Heal living allies and immortal Peter 7/Lemon 28 via
    `battleloop/heallivingandimmortalallies.asm`: HP/MP maxima, retain only
-   existing STUN/POISON/CURSE bits, update stats. Other dead allies stay dead;
+   existing STUN/POISON/CURSE bits only as an intermediate mask, then update stats.
+   `code/common/stats/updatecombatantstats.asm:UpdateCombatantStats` removes incoming
+   CURSE and derives final ally CURSE from equipped cursed items; stale CURSE
+   with uncursed gear clears, while cursed gear can add it. STUN/POISON remain.
+   Other dead allies stay dead;
    membership is not a healing prerequisite. Battle44's timer special is absent.
 2. Seed PARAM2=CURRENT_MAP; PARAM3/4=first active member's combatant X/Y plus
    BATTLE_AREA_X/Y with byte arithmetic; PARAM5=that member's mapped battle-actor
