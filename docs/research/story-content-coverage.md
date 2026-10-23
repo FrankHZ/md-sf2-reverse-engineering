@@ -20,7 +20,8 @@ branches, actual service completion/timing, hardware behavior and durable saves.
 ## Scope and reading rules
 
 This owner maintains the current story-content coverage relationship for
-[Issue1196 / Epic1053](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1196).
+[Epic1053](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1053),
+including the bounded [remaining-gap assessment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1212).
 **Standard** rigor fits a cross-owner documentation assessment: chapters need
 traceable entry/exit boundaries, conditional connections and explicit omissions.
 The outcome supports selecting the next coherent research slice and prevents
@@ -381,7 +382,7 @@ set, not proof that no source or generic helper evidence exists.
 | Opening extras, May, East Shrine, Bedoe demonstration/rescue, Polca choices | Accepted bounded chapter owners. | Every NPC/item/itinerary and all future consequences are not exhaustively reviewed. Independent gates must not become a mandatory quest chain. |
 | Panel/tree/Sword and shrine approach | Accepted bounded [custody/tree](./ribble-tree-opening-and-achilles-sword.md) and [61/15 chapter](./battle15-shrine-approach-and-outcomes.md), with Rohde's possession predicate separate. |50 storage regions are not a proven continuous route; complete tactics, natural actor/service completion and production15 remain outside the static account. |
 | Rick, Elric, Taya, Skreech, Janet, Rohde, Higins, Jaro, Frayja, Gyan, Zynk, Sheela | Accepted selected joining/following/capacity scenes. | Not all-recruits/all-entries census. Skreech rescue and Jaro/Frayja multi-stage transitions retain conditions; membership/following differ. |
-| Creed choices/later alternatives | Partial: [recruitment owner](./creed-return-fairy-and-recruitment-choices.md) covers initial/F22 offers, refusal and actual join/follow paths for four recruits. | Complete later journey, every setup and ability to recruit everyone on a naturally reached save are not established. |
+| Creed choices/later alternatives | Accepted selected static account: [recruitment owner](./creed-return-fairy-and-recruitment-choices.md) covers the complete shared interaction table, initial/F22 offers, refusal and actual join/follow paths for all four candidates; [restoration](./creed-restoration-and-basement-departure.md) and [Oddler handoff](./oddler-stays-and-fairy-handoff.md) retain setup/init alternatives. | F22's late population and offers are already explained. Natural return, ordinary contact, every travel itinerary and recruiting everyone on a naturally reached save remain unproved; they do not imply another missing recruitment scene. See the [bounded reassessment](#remaining-labels-and-next-content-task). |
 | Dwarven Village29 and smith; separate mine30 | [Village29 lifecycle](./dwarven-village-and-mithril-smithing.md) connects77 admission, seven residents/search/eighteen warps, actual smith placement/readiness/collection and exit/revisit. Earlier30 recovery/Cannon remains a separate accepted chapter via68. | Complete static account; natural access, full church/shop services, presentation, saves and production smithing remain unproved. Existing helper/transaction/caller H3 retains only its bounded seams. Source interior/exterior names do not connect29 and30. |
 | Arm/Claude and Magic Tunnel63/64 | [Moun Arm award](./moun-town-painter-and-golem-arm.md) and [Hub/Claude account](./magic-tunnel-hub-and-claude-recruitment.md) connect acquisition boundary, both talk/item-use entries, actual removal, complete awakening/join/follow, bridge/pipe transitions and exits/revisit. | Complete selected static branch; no natural journey from Moun, custody by a fixed member, guaranteed active/following Claude, production binding or save durability follows. |
 | Later Yeel/Chaz | [Late Yeel account](./late-yeel-chaz-and-lemon-recruitment.md) connects530/28 population selection, all late interactions/search, piano and underground scenes, Chaz talk/join/follow and return/revisit. | Complete selected static chapter; no natural route, guaranteed active/following Chaz, service presentation, save or late production acceptance. |
@@ -390,7 +391,7 @@ set, not proof that no source or generic helper evidence exists.
 | Battle14 | Dedicated [static encounter/repeat/outcome account](./battle14-desert-encounter-and-outcomes.md). | Natural order/state, actual airborne overread results, full tactics/runtime and production consumption remain unproved. |
 | Fairy Woods44 | Dedicated [static trial/records account](./battle44-fairy-woods-trial-and-records.md). | Complete declared formation/regions and hidden/respawn/leader/timer/result/return consumers; natural play, all tactics, chest custody, exact presentation/time and persistence remain unproved. |
 | Battle28 bridge branch | Dedicated [static entry/scenes/formation/control/outcome/return account](./battle28-bridge-and-outcomes.md). | All action/AI decisions, natural traversal and late production consumption remain unproved; no physical collapse/countdown inferred from staging. |
-| Late town revisits, shop/church/Caravan, promotion/equipment | Selected alternatives/services/warps where linked; [Hub63/Pipe64](./magic-tunnel-hub-and-claude-recruitment.md) and [late Yeel05](./late-yeel-chaz-and-lemon-recruitment.md) own those bounded returns. Global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/travel/service-UI/persistence census. All-map parsing and helpers do not close these experiences. |
+| Late town revisits, shop/church/Caravan, promotion/equipment | Selected alternatives/services/warps where linked; [Hub63/Pipe64](./magic-tunnel-hub-and-claude-recruitment.md) and [late Yeel05](./late-yeel-chaz-and-lemon-recruitment.md) own those bounded returns. Global [menus](./common-menus.md), [map content](./map-content.md), [search](./field-search-control.md), [item effects](./field-item-effects.md) retain mechanisms. | No exhaustive late-state NPC/chest/travel census was selected. Generic service state machines already have static owners; their runtime/UI/persistence limits and production support are separate. A new content task needs a named missing selector/callback relationship, not this broad label. See the [dispositions below](#remaining-labels-and-next-content-task). |
 
 The29 smith entry and Chaz declarations use pinned
 `data/maps/entries/map29/mapsetups/s2_entityevents.asm` and
@@ -440,47 +441,95 @@ passes or a repair queue. Battle0's accepted Suspend correction preserves the
 original author/main/CI PASS that missed that exclusion; the focused correction
 does not validate unrelated source content.
 
-Battle28's [dedicated account](./battle28-bridge-and-outcomes.md) now spans the
-whole declared static branch, through conditional outcomes, full Cameela scene
-and both return connections. It does not prove that the chapter spine must traverse28 or that
-the later campaign is playable, and creates no all-AI/runtime closure queue.
+The dedicated Battle14/15/28/44, Village29/smith, Hub63/Claude and late
+Yeel/Chaz/Lemon accounts in the tables above cover their declared static
+branches. Their runtime, design, production and save limits remain explicit;
+those limits do not reopen the same static content tasks.
 
-Battle15's [dedicated account](./battle15-shrine-approach-and-outcomes.md) closes
-the named external61/15 static content gap while preserving separate Panel/Sword
-custody, natural/runtime, design and remake boundaries.
+## Remaining labels and next content task
 
-The [dedicated Battle14 account](./battle14-desert-encounter-and-outcomes.md) closes
-the named connected static encounter gap, including conditional repeat upgrade
-and held-equipment drop limits; it adds no natural/runtime or playable acceptance.
+This is an incremental review within the chapter/encounter/selected-branch
+denominator above. **Confirmed** below describes the inspected owner and source
+boundary. **Inferred** prioritizes a useful next account. A category left
+unassessed is not an assertion that all its source is missing or already explained.
 
-The [Fairy Woods44 account](./battle44-fairy-woods-trial-and-records.md) closes the
-named connected static trial gap without adding runtime/design/playable acceptance.
+| Remaining label | Disposition and semantic evidence | Consequence for planning |
+| --- | --- | --- |
+| Creed late return/recruitment | **Confirmed:** `data/maps/mapsetups.asm` selects Map33's baseline last for F22, overriding F786. Baseline `s1_entities.asm` declares the four recruits; `s6_initfunction.asm:byte_5ABEE` still independently gates their placement on F784 and each joined flag. `s2_entityevents.asm:Map33_EntityEvent3–6` tests F22 before F787. The complete offers/successes, layout copy and current/fresh actor differences are already in the [recruitment](./creed-return-fairy-and-recruitment-choices.md), [restoration](./creed-restoration-and-basement-departure.md) and [handoff](./oddler-stays-and-fairy-handoff.md) owners. F22 is Frayja's joined flag: [Battle33's join consumer](./battle33-initialization-and-opening.md#keyed-texts-join-ceremony-and-actual-replacement-rule) connects `data/battles/entries/battle33/cs_beforebattle.asm:join ALLY_FRAYJA` through JoinForce. | No additional four-recruit scene investigation is justified by the old partial label. F22 is not a Battle22-completion gate. Existing Map33 exits to34/67 and the accepted return selectors do not prove a natural late journey, collision access or four successful recruitments on one save. Keep those runtime/itinerary questions at their owners. |
+| Early encounter initialization | **Confirmed:** the [Battle02 entry account](./battle01-to-battle02-content-route.md#battle-02-data-and-admission-semantics) declares header4/6/0/1, source types and empty hooks, but explicitly stops short of the initialized roster/activation account. The [outcome owner](./battle02-to-battle03-content-route.md) covers its distinct returns. `data/battles/spritesets/spriteset02.asm` also declares ordered positions, commandsets, MOVE_TO/FOLLOW_ENEMY operands and an AI point; [inventory coverage](./battle-spriteset-data.md) does not explain their complete consumer relationships. | A finite static organization gap exists for Battle02 between admission and first dispatch. It is not missing source, an empty-script extraction failure or a missing importer. The other early-encounter limitations in the encounter table remain qualified; this review has not traced every one into a separate task. |
+| Town revisits | **Confirmed:** named changed populations already occur in the chapter owners, including [restored Pacalon/Frayja](./pacalon-return-frayja-and-battle31-admission.md#fresh-towncastle-lifetime-and-restored-population), the F22 Creed alternatives, Hub63 and late Yeel above. Pacalon's F530 selector changes the castle entity/event pointers while shared init tests joined22; it is a real selected return account, not just a first-visit label. | Do not reopen those selected returns. No full-map/state comparison was made to identify every other late NPC/chest/service variation. The residual census is intentionally unassessed: its state combinations and user outcome are not specified by this denominator. No concrete additional town chapter is recommended from that absence alone. |
+| Generic services, promotion/equipment | **Confirmed:** [common menus](./common-menus.md#static-service-menu-state-machines) owns the complete built eight-source service state machines, including Church promotion selection/item removal/SetClass→Promote and Caravan Join/Depot/Item/Purge. Its [caller inventory](./common-menus.md#static-service-menu-state-machines) retains all69 direct transfers and selected bounded return observations. [Common stats](./common-stats.md), [field items](./field-item-effects.md) and [smith29](./dwarven-village-and-mithril-smithing.md) retain their helper and local lifecycle boundaries. | No new generic service inventory is warranted by a town's call to ShopMenu/ChurchMenu/CaravanMenu. Original UI/service completion, persistence and unobserved callers stay Unknown; actual service implementation is a consumer task. This does not assert all equipment/promotions or every location's eligibility has been semantically exhausted. A future local account must name the omitted caller/state relationship. |
 
-The [Village29/smith account](./dwarven-village-and-mithril-smithing.md) closes the
-connected static village/service gap; it adds no runtime/design/playable acceptance.
+The Pacalon check uses `data/maps/mapsetups.asm:msMap 36`,
+`map36/mapsetups/pointertable_530.asm`, `s1_entities_530.asm`,
+`s2_entityevents_530.asm` and shared `s6_initfunction.asm` under
+`data/maps/entries/`. The service check uses actual ShopMenu, ChurchMenu and
+CaravanMenu selectors under `code/common/menus/` and their accepted complete
+statement/caller owners, not filenames as evidence of service completion.
 
-The [Hub63/Claude account](./magic-tunnel-hub-and-claude-recruitment.md) closes
-that connected static tunnel/recruitment gap; it adds no natural/runtime,
-production or save acceptance.
+### Recommended complete account: Battle02 initialization through first dispatch
 
-The [late Yeel account](./late-yeel-chaz-and-lemon-recruitment.md) closes that
-selected static chapter, including Chaz and Yeel's separate Lemon entry;
-it adds no natural/runtime, design, production or save acceptance.
+**Inferred recommendation, not dispatch:** organize the whole selected Battle02
+static encounter handoff next. Its users are the content/engine maintainer and
+the independent reviewer deciding which original rules an early encounter
+conversion must preserve under changed valid party state. It has a finite source
+surface beside current production, with accepted entrance and outcome accounts;
+that makes it more actionable than an unspecified all-town census, another
+already-explained Creed offer, or runtime closure of generic services.
 
-**Recommendation, not dispatch:** other later revisits remain
-optional-content decisions. These are alternatives for
-main-gate planning, not a numbered queue or Epic close decision.
+The missing deliverable is an original-source account joining **all** selected
+formation/AI-point/behavior rows to fresh/suspended initialization, refreshed
+enemy data, activation/region/spawn processing and the first individual-turn
+call. Reuse the linked admission, empty before/start/after hooks, absent region
+hook and outcome/return owners to give one readable encounter boundary. Do not
+reinvestigate the castle-to-Jaha chapter or replace its provenance. In
+`code/gameflow/battle/battleloop/initializecombatants.asm`,
+`InitializeAllAlliesBattlePositions` reads `BATTLE_PARTY_MEMBERS` separately
+from the formation cursor, skips a dead member without advancing that cursor,
+and has an excess-party removal tail. This concrete consumer is why four
+declared ally rows alone are insufficient; neither four fixed live actors nor
+a natural starting party follows from them.
+
+Dependencies and minimum stopping boundary:
+
+- Consume the pinned spriteset02, row2 map/terrain/global metadata, all selected
+  cutscene slots, and the accepted [battle lifecycle](./battle-loop.md),
+  [AI](./battle-ai.md) and [Battle02 entry/outcome](./battle02-to-battle03-content-route.md)
+  owners. Follow actual initialization, LoadBattle, activation, region/spawn,
+  turn generation and ExecuteIndividualTurn routing. Include changed joined/
+  active/dead/capacity, repeat/intro and suspended-entry premises; keep RNG and
+  supplied entry state explicit rather than promising a fixed first actor.
+- Relate these facts to the **existing** `prepare_encounter` in
+  [the producer](../../src/sf2tool/remake_exploration_battles.py),
+  [PrivateBattleScenarioReader](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
+  and [BattleInitializationRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleInitializationRules.cs).
+  They already export/read selected2/3 records and carry an AllyFormation into
+  common initialization. [Production trust](../../remake/docs/content/profiles-and-trust.md#selected-second-encounter)
+  and [current Battle02 outcomes](../../remake/docs/application/session-and-programs.md#battle02-outcomes-and-live-facing)
+  retain the actual accepted consumer boundaries. No absent-engine claim or
+  replacement extractor follows from this documentation gap; implementation
+  cannot prove original behavior.
+- Stop after explaining the conditional first control/AI routing and linking
+  the already-owned outcomes/returns. Do not execute every tactical action,
+  prescribe a win sequence, observe a natural journey, add fixtures/platforms,
+  lower content or repair production in that research task. Any discovered
+  consumer defect needs its own declared owner. This review identifies the
+  gap; it does not supply the missing full trace or accept that next task.
+
+No additional item is dispatched here, and this recommendation does not close
+Epic1053 or change any of the four frontiers.
 
 ## Verification boundary
 
-Read complete root README, documentation index and source-coverage, then relevant
-complete sections of chapter owners, actual table/producer records and production
-owners for asserted relationships. Check negative claims against declared scope
-as well as positive references. Filenames/keywords alone cannot prove coverage.
+Read complete root README, documentation index and source-coverage, then the
+complete related owner and relevant complete sections of adjacent chapter owners,
+actual table/producer records and production owners for asserted relationships.
+Check negative claims against declared scope as well as positive references.
+Filenames/keywords alone cannot prove coverage.
 
-Direct checks cover links/anchors, UTF-8/LF, exact three-path scope, unchanged
-fixture-counter table, finite encounter records/producers, consumer Git ancestry
-and private boundary. The ignored recipe and semantic claim-to-owner review are
+Direct checks cover links/anchors, UTF-8/LF, exact declared path scope, unchanged
+fixture-counter table and four-frontier section, finite source selectors/callers,
+current production relationships and private boundary. The ignored recipe and semantic claim-to-owner review are
 provided in the Issue handoff with full dependencies; use a fresh receipt name.
 On clean committed head load existing private config in the same process, then
 run `uv run sf2 verify plan --base origin/main --head HEAD` and inspect actual
