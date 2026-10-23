@@ -24,6 +24,9 @@ Begin at [Willard Burrow through Battle23 admission](./willard-burrow-through-ba
 Reuse the corrected [Battle22 lifecycle](./battle22-initialization-and-roster.md),
 [battle-loop research](./battle-loop.md), [control/lifecycle contract](../design/contracts/battle-control-lifecycle.md),
 [cutscene routing](./battle-cutscenes.md) and [spriteset inventory](./battle-spriteset-data.md).
+The [activation, AQUA2 and first-control continuation](./battle23-initialization-and-first-control.md)
+owns the subsequent region/order/round/conditional-dispatch join and precise
+production conversion limits. This initial-roster boundary remains unchanged.
 Fresh entry stops at `BattleLoop:@Start`, **before ActivateEnemies** (the actual
 source label), region activation and initial round creation. Suspended entry
 stops at `@IndividualTurns_Loop`, before reading/executing an individual turn.
@@ -166,8 +169,10 @@ HP/MP maxima for living allies and always for Peter (7)/Lemon (28), masks status
 existing STUN/POISON/CURSE (`$0007`), then calls UpdateCombatantStats. That
 shared stat rebuild recomputes current stats/equipment effects and curse;
 the intermediate mask is not a guarantee that every final status bit is
-unchanged. Other dead allies are skipped. No class, inventory or joined flag
-is replaced by the formation data, and no reserve/follower is auto-enlisted.
+unchanged. UpdateCombatantStats excludes incoming CURSE from its next mask,
+then equipped cursed ally items can set it again: final CURSE is gear-derived,
+not preservation of the incoming bit. Other dead allies are skipped. No class,
+inventory or joined flag is replaced by the formation data, and no reserve/follower is auto-enlisted.
 
 A dead listed member consumes a party-loop slot without advancing the placement
 pointer. Later living members take earlier unconsumed coordinates. Twelve is

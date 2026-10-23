@@ -20,6 +20,7 @@ schema, fixture, tooling, design or remake edit. Accepted #934 design is
 disjoint; there is no stacked dependency. The result supports the next English guide.
 
 Consume accepted [Battle23 initialization/roster](./battle23-initialization-and-roster.md),
+[activation/AQUA2/first conditional control](./battle23-initialization-and-first-control.md),
 [Willard Burrow admission](./willard-burrow-through-battle23-entry.md),
 [Battle22 outcome consumers](./battle22-outcomes-and-desktop-return.md),
 [battle loop](./battle-loop.md), [control/lifecycle contract](../design/contracts/battle-control-lifecycle.md),
@@ -124,7 +125,9 @@ The debug branch is not evidence of natural victory.
    all 30 slots, living allies plus Peter7/Lemon28 even when dead; restore
    HP/MP maxima, retain only existing STUN/POISON/CURSE bits, then recompute
    stats. Other dead allies stay dead. Membership is not a healing predicate;
-   equipment/stat recomputation still follows the mask. Battle44's timer
+   equipment/stat recomputation still follows the mask. That refresh excludes
+   incoming CURSE, then restores it from equipped cursed ally gear; final CURSE
+   is not the intermediate retained bit. Battle44's timer
    special is absent for23.
 2. Set PARAM2=CURRENT_MAP. Call UpdateForceAndGetFirstBattlePartyMemberIndex;
    use that member's combatant X/Y plus BATTLE_AREA_X/Y with byte addition
