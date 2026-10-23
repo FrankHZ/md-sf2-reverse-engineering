@@ -830,7 +830,25 @@ Generic definitions/formation/Flying/standby/live-follow/dead-target/round suppo
 trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
 Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
 No new natural observation, fixture count, runtime/design/production frontier or retained failure
-status follows; other18–25 content limits remain qualified.
+status follows; other19–25 content limits remain qualified.
+The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
+Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
+seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
+sword/Rohde producers and outcomes/Caravan owners retain scope. Fresh HP0 neutral159 writes
+lookup31 while the159 reader uses63; its sprite is not a working mapping. All96 triangle
+substitutions miss five regions, including two type3 triangles and negative projection. Primary-first
+activation/cache, NONE/live-follow standby and seven15/15 actors differ. Exact2/6/7/9/14 streams
+use live128/137/ally0; Taros's LEADER prepass reads absent point0 through the following12/15
+header before MOV0. Equipped110 supports conditional BOLT2 item use, not a performed cast;
+Monk's HEAL2 input retains HEAL1/check5MP. Bowie0's equipped61 initial gate, F112/toggle lifetime,
+double retention and counter reset/exclusion are separate. Sword drop requires target death,
+actual110, zero range32 draw and clear once-bit24 before removal/inventory/rare-deals. Two Taros
+round entries do not fix first actor/action/loot. Production excludes18. Generic definitions,
+formation, dual activation, Flying, LEADER and extra-turn support differ from trusted admission,
+type3 region rejection/signed geometry/cache, out-of-table point access, selected prowess/gear/
+ranges, MAGE/BRASS_GUNNER, HEALER3/spell/item AI, Bowie gate/counter/drop/deals, neutral mapping/
+services and actual party/refresh/control/suspend requirements. No new natural observation,
+fixture count, runtime/design/production frontier or completed failure status follows.
 The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
 retains the already-explained Creed late offers and generic services, other qualified encounter
 limits and the unassessed town/state census; it selects no automatic replacement task.
