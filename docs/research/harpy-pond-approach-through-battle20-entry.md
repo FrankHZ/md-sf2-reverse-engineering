@@ -1,6 +1,6 @@
 # Harpy Pond approach through Battle20 entry
 
-Evidence date: 2026-10-14. **Confirmed:** the selected Map51 approach runs the
+Evidence date: 2026-10-23. **Confirmed:** the selected Map51 approach runs the
 confrontation, sets F420 inside it, publishes a same-map warp, and sets F470 only
 after the script returns. The separate exit warning runs only while F470 is
 clear. Ordinary consumption of the retained confrontation request admits
@@ -24,7 +24,9 @@ Consume accepted [pond entry/population](./elven-village-departure-through-harpy
 [battle routing](./battle-cutscenes.md), [lifecycle](./battle-loop.md) and
 [spriteset inventory](./battle-spriteset-data.md).
 
-Stop at fresh BattleLoop's `@Start` label, before ActivateEnemies, or at the F88
+The [initialization/SWARM/first-control account](./battle20-initialization-and-first-control.md)
+owns the subsequent activation/count/order/dispatch boundary and complete definitions.
+This entry account stops at fresh BattleLoop's `@Start` label, before ActivateEnemies, or at the F88
 saved-entry branch before individual turns. Stop an unrelated request/admission
 at its own boundary. Exclude activation, region/spawn execution, turn generation,
 individual turns, tactics, damage, outcomes, after/defeated scenes, Elric rescue
@@ -293,8 +295,10 @@ F399, then tests F88. On the fresh F88-clear branch it:
 4. Reaches `@Start`; this account stops **before** ActivateEnemies.
 
 `battleloop/heallivingandimmortalallies.asm` restores eligible HP/MP maxima,
-retains only existing STUN/POISON/CURSE status bits and updates stats. It does
-not revive other dead allies or join anyone. Initial exploration HP/mapping
+initially retains existing STUN/POISON/CURSE (`status & 7`), then updates stats.
+That refresh preserves STUN/POISON and recomputes final CURSE from equipped
+cursed items; a supplied CURSE bit alone does not survive. It does not revive
+other dead allies or join anyone. Initial exploration HP/mapping
 problems are not repaired before the earlier approach merely because fresh
 battle will heal later. PLAYER_TYPE is normalized at BattleLoop, not by the
 approach warp. No saved raft coordinate write is established by that mode clear.
@@ -390,8 +394,12 @@ with **F520 clear**, the actual `table_NeutralBattleEntities` entry in
 `data/battles/global/battleneutralentities.asm` supplies one actor: `(6,6)`, Down,
 ELRIC_BASE, `eas_WhirlsInWater`. The neutral loop starts at combatant 159, zeroes
 max/current HP and status, ORs the neutral activation bit, writes combatant X/Y,
-and declares/maps a new physical actor. This uses battle lookup 159, not ally 13
-or a carried exploration lookup. The action enables immersion/double animation
+and declares a new physical actor. The actual predecrement write stores that
+physical index at lookup31 (`$FFB15F`), while GetEntityIndexForCombatant(159)
+reads lookup63 (`$FFB17F`), left FF on this fresh path. DeclareNewEntity stores
+the physical cursor as ENTNUM and does not repair that mismatch. Combatant159,
+lookup31, the physical actor and ally13 are separate; there is no working159
+binding or carried exploration lookup here. The action enables immersion/double animation
 speed and loops refreshed Right/Up/Left/Down facings with wait 10 each; initial
 Down is not a permanently held facing or an observed drowning animation.
 
