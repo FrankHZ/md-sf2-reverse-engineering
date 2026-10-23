@@ -143,7 +143,7 @@ Healing/refresh happens after the before scene, not before its actor operations.
 
 Peter's AI bit2/actual membership, Luke's independent recruitment and Rohde's
 following/unlock state retain their prior owners. Peter may revive while remaining
-reserve/follower-only. Rohde following does not set joined19/active51. Template
+reserve/follower-only. Rohde11 following does not set joined11/active43. Template
 AI/gear does not overwrite actual allies; an AI-controlled ally uses set6, not
 template HEALER1. ClearAiMemory resets48 last-target bytes to-1 and48 memory
 bytes to0, not combatant AI bit2 or the tested-region word.
