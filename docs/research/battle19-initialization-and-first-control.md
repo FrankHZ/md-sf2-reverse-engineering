@@ -402,10 +402,12 @@ sorts descending with ties retained, then tries targets until a valid station
 is found. These priorities precede the per-target level/range choice and do not
 grant a heal to a dead, full-health or unreachable actor.
 
-For actual learned entry`$80`, DetermineHealingSpellLevel extracts known rank2
+For a candidate whose **current incoming local spellEntry is`$80`**, initially
+read from learned HEAL3, DetermineHealingSpellLevel extracts incoming rank2
 (zero-based). M3–14 initially selects d2=0; M≥15 selects2, including M>28
-because rank3/HEAL4 is not known. Its faulty shift5 plus **unmasked d4=$80**
-then checks these exact getter keys:
+because incoming rank3/HEAL4 is absent. Its faulty shift5 plus **unmasked
+d4=$80** checks the following exact getter keys. This table is conditional on
+that current input; it does not describe every candidate in one HEAL command.
 
 | Trial d2 | Getter key /resolved cost | Returned rank when affordable |
 | --- | --- | --- |
@@ -413,17 +415,50 @@ then checks these exact getter keys:
 | 1, after decrement | `$A0` /ATLAS3 absent, getter defaults to first HEAL1,3MP | Converted1→0 =HEAL1 |
 | 0 | `$80` /HEAL3,10MP | 0 =HEAL1 |
 
-The getter compares whole entry bytes and does not mutate d4. This is not an
-affordable-level algorithm repaired in prose. With the command's initial3MP gate,
-the helper fails M3–14 at MP3–9, returns HEAL1 there at MP≥10; for M≥15 it
-returns HEAL1 at MP3–19 or HEAL3 at MP≥20. The caller then promotes a returned
-HEAL1 to **HEAL2** for a nonself target at MP≥11 when known rank≥2. Self targets
-do not receive that promotion. Thus nonself M3–14 uses HEAL1 at10MP, HEAL2 at≥11;
-nonself M≥15 uses HEAL1 at3–10, HEAL2 at11–19, HEAL3 at≥20. Actual casting
-cost/range follows the final spell, not the erroneous checked key. Fresh29MP
-therefore can select HEAL2 for a qualifying small deficit or HEAL3 for M≥15,
-not the earlier HEAL2-input/HEAL1-check5MP result. Candidate priority, path,
-range, earlier stream success, status and later depletion remain conditional.
+The getter compares whole entry bytes and does not mutate d4. For **current
+input`$80`** and the command's initial3MP gate, the helper fails M3–14 at MP3–9,
+returns HEAL1 there at MP≥10; for M≥15 it returns HEAL1 at MP3–19 or HEAL3 at
+MP≥20. The caller promotes returned HEAL1 to **HEAL2** for a nonself target at
+MP≥11 only when the **current local entry's rank** is≥2. Self targets do not
+receive that promotion. On that same`$80` input, nonself M3–14 selects HEAL1
+at10MP, HEAL2 at≥11; nonself M≥15 selects HEAL1 at3–10, HEAL2 at11–19,
+HEAL3 at≥20. Actual casting cost/range follows the selected spell, not the
+erroneous checked key. These are single-candidate input conditions;29MP and a
+learned HEAL3 slot alone do not establish the result for a later candidate.
+
+The caller's local lifetime matters. `heal.asm:@CheckSpellLevel` reads
+`spellEntry(a6)` into d4 at line315. `@UpdateSpellEntry` writes this candidate's
+selected rank back to that local byte at344–348 **before** range/station
+selection. If DetermineAttackPosition fails,373–381 advances d6/decrements d5
+and branches back to `@FindPositionForTargets_Loop`, without calling
+GetNextHealingSpell again. The next candidate therefore receives the retained
+local`$80`, downgraded`$40`, or downgraded`$00`, rather than automatically
+receiving the original learned HEAL3. If the helper returns-1, the caller skips
+the local write and advances with the previous entry unchanged. No MP is spent
+by these failed selection attempts.
+
+| Current incoming local entry after an earlier candidate | Next candidate's helper/promotion boundary |
+| --- | --- |
+| `$40` /HEAL2 | Incoming rank1 prevents the M≥15 promotion to rank2. For any M>2 the helper starts d2=0, checks key`$40`/HEAL2 cost5, and returns HEAL1 at MP≥5 or failure at MP3/4. The caller's current-rank≥2 test fails even at29MP; no nonself HEAL2 promotion occurs. A successful level choice writes`$00` before its station test. |
+| `$00` /HEAL1 | Incoming rank0 likewise starts d2=0 for any M>2, checks key`$00`/HEAL1 cost3 and returns HEAL1 at MP≥3. No nonself promotion occurs; the local remains`$00`. |
+
+M≤2 still fails without a local update; these rows remain subject to the earlier
+living/injury candidate filters, current MP, order and an available station.
+Neither local downgrade changes the combatant's learned spell slots. A new
+independent `aiCommand_Heal` invocation initializes its locals; on reaching
+`@CheckHealingSpell` it calls GetNextHealingSpell again. With the unchanged learned
+slot it starts from`$80` again. This is neither permanent spell unlearning nor
+a reset for each candidate inside the current command.
+
+A source-backed supplied-state counterexample is activated Priest132 at29MP,
+leader Orc128 at20/30HP (priority13), and Priest129 at10/30HP (priority12).
+If Orc128 has no HEAL2 station and Priest129 subsequently has a HEAL1 station,
+Orc's deficit10 first changes local`$80→$40` through nonself promotion, then
+fails station selection. Priest129's deficit20 now enters with`$40`, selects
+HEAL1/check5MP and changes local`$40→$00`; it cannot select the HEAL3 claimed
+by an unconditional deficit≥15/MP≥20 rule. The conditional stations are supplied
+premises, not a naturally reached position or performed heal. Candidate order,
+path/range, earlier stream success, status and resource depletion remain conditional.
 
 ## Shining Ball: declaration, retained bits and use
 
@@ -572,6 +607,11 @@ intermediate-status/final-CURSE results,
 and Battle16/17's completed findings/failures. PR1243's initial `a30bc4c5`
 mechanical PASS did not catch Rohde19/51; corrected `50baf80c` establishes11/43
 before accepted merge. This document does not replay or relabel those failures.
+PR1245's initial `16f4233a` direct checks/CI passed, but
+[independent P2 review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1245#issuecomment-6366643680)
+found that its HEAL3 MP summary generalized current`$80` input across all
+candidates. The local-entry lifetime and`$40/$00` boundaries above correct that
+claim; the original PASS receipts remain mechanical results, not semantic closure.
 
 Reproduce at the pin/base by reading all27 rows, three regions, declared point
 and six full bases, then named callers/consumers above. Resolve Map68's sole19
@@ -579,9 +619,12 @@ and independent globals/hooks before fresh/saved claims. Re-derive E−19/q,
 categories/bounds/exclusions/retry/seed and copy order; keep unsafe airborne
 outcomes Unknown. Substitute every placement into both triangles of each region
 with signed projection/CCR and edge order. Separate cache, region assignments,
-NONE/follow standby, actual referents and stream short-circuiting. Trace learned
-`$80` through helper keys`$C0/$A0/$80`, default lookup, cost20/3/10 and nonself
-promotion before reporting HEAL3 behavior. Follow`$6010→$0010`, slot0 getter
+NONE/follow standby, actual referents and stream short-circuiting. Trace current
+local`$80` through helper keys`$C0/$A0/$80`, default lookup, cost20/3/10 and
+nonself promotion, then follow UpdateSpellEntry and failed-station continuation
+into subsequent`$40/$00` inputs before reporting HEAL3 behavior. Distinguish
+unchanged learned slots and the next independent HEAL command's fresh read.
+Follow`$6010→$0010`, slot0 getter
 termination, conditional use/removal and independent targetDies/held16/bit6/
 capacity/RARE-deals in their actual order. Inspect each production rejection
 independently of descriptive source data.

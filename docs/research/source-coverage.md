@@ -858,7 +858,12 @@ are not a repeated roster. All72 signed-projection/CCR triangle substitutions mi
 regions; tested cache/persistent flags, primary1/0/2, eight15/15 actors and NONE/live-follow standby
 are distinct. Declared point0(14,19), live128/133/135/139/140 and exact2/6/7/9/14 streams
 retain short-circuit/dead-target conditions. Priest HEAL3/BLAST2 and Madam FREEZE2 use actual
-consumers; healing's C0/A0/80 keys,20/3/10 costs and nonself≥11MP promotion differ from HEAL2.
+consumers; for current local input`$80`, healing's C0/A0/80 keys,20/3/10 costs and
+nonself≥11MP promotion differ from HEAL2. The caller writes the selected local entry before
+station selection; a failed candidate carries downgraded`$40/$00` into later candidates, limiting
+them to HEAL1/check5 or3MP without that promotion. Learned slots stay unchanged; a new HEAL
+command rereads them. PR1245's original16f4233a mechanical PASS missed this local lifetime;
+its independent P2 and original receipts remain preserved in the primary account.
 Successful AddItem masks Ball6010→0010; earlier equipped Power Stick also stops attack-item
 selection before Ball. Conditional use consumes the actual slot. Independent battle19/row1/16/
 bit6 drop requires targetDies/held16, no drop RNG, once-bit/removal and living-actor capacity or
