@@ -41,16 +41,16 @@
 
 开篇连接城镇交互、城堡/塔事件与战斗，随后通过被俘、塔后续、地震和乘船离开改变世界。**已确认：** 选定开篇有受限原版观察；后续局部指南解释静态结果/返回与事件门槛。地震城镇出口、登船选择、出航场景和损坏船只抵达是不同交接，并非一次过渡。脚本搬移也不等于玩家再次决定移动。
 
-用[开篇至 Battle01](../../synthesis/opening-through-battle01.md)阅读连贯开端，用[码头出航](../../synthesis/earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
+用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航](../../synthesis/earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
-<summary>详细英文指南及其局部边界</summary>
+<summary>详细指南及其局部边界（前三篇中文，其余英文）</summary>
 
-[开篇至 Battle 01](../../synthesis/opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
+[开篇至 Battle 01（中文）](opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
 
-接着读 [Battle 01 返回至 Battle 02 准入](../../synthesis/battle01-return-through-battle02.md)，了解下一段有条件、由源码相连的内容：返回城堡、驱魔/委任、Jaha 加入及西出口准入。它保留替代调用方与状态/选择器条件。其中的**已确认静态内容**和**推断**叙事联系不扩展下文的原版观察前沿或重制验收；自然连续性与合法行走仍为**未知**。
+接着读 [Battle 01 返回至 Battle 02 准入（中文）](battle01-return-through-battle02.md)，了解下一段有条件、由源码相连的内容：返回城堡、驱魔/委任、Jaha 加入及西出口准入。它保留替代调用方与状态/选择器条件。其中的**已确认静态内容**和**推断**叙事联系不扩展下文的原版观察前沿或重制验收；自然连续性与合法行走仍为**未知**。
 
-[Battle 02 结果至 Battle 03 准入](../../synthesis/battle02-outcome-through-battle03.md)继续解释结果/返回、有条件的 Yeel/Kazin 指引，以及独立的 Map66 区域（事件）请求/消费者路径。跟随不同于招募；Yeel 并非已证明的遭遇前提。本段同样保留静态/自然和原版/重制边界。
+[Battle 02 结果至 Battle 03 准入（中文）](battle02-outcome-through-battle03.md)继续解释结果/返回、有条件的 Yeel/Kazin 指引，以及独立的 Map66 区域（事件）请求/消费者路径。跟随不同于招募；Yeel 并非已证明的遭遇前提。本段同样保留静态/自然和原版/重制边界。
 
 [Battle 03 结果至 Battle 04 准入](../../synthesis/battle03-outcome-through-battle04.md)继续经过条件返回、Hawel 住宅初始化、Kazin 招募及独立出口请求/遭遇选择器。住宅默认与重复配置、已加入/随从/解锁状态仍有区别；自然行走、调用方/呈现/持久性，以及已初始化的 Battle04 仍为未知。
 
@@ -878,7 +878,7 @@ flowchart TD
 
 ## H4 验收与扩展门
 
-超出已接受[开篇段落](../../synthesis/opening-through-battle01.md)的扩展，需要针对具体新路线或持久性主张的证据，而非更多标签解释。下方清单描述更广战役/持久性主张，不为已接受局部段落增设门禁。针对更广主张，证据必须：
+超出已接受[开篇段落（中文）](opening-through-battle01.md)的扩展，需要针对具体新路线或持久性主张的证据，而非更多标签解释。下方清单描述更广战役/持久性主张，不为已接受局部段落增设门禁。针对更广主张，证据必须：
 
 1. 从已识别原版 New/load 状态出发，具显式存档溯源；
 2. 在自然调用方记录当前地图、战斗索引、相关标志增量、所选配置、所选事件/程序、对话游标变化、名册变更和循环交接；

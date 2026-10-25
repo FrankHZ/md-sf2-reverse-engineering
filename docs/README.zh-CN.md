@@ -22,6 +22,15 @@
 
 一条具体路线是总览 → 剧情推进中的 [Taros/Caravan 示例（中文）](./design/zh-CN/synthesis/story-progression.md#完整示例taros-与-caravan)
 → 剑的持有/装备、遭遇准入、结局、获取与登乘的各自证据。
+
+开场至 Battle03 准入的详细中文阅读路线是：
+
+1. [开篇至 Battle 01：地点、人物与返回](./design/zh-CN/synthesis/opening-through-battle01.md)：选定住宅/学校、信使、城堡/塔、Battle01 和可用返回；区分原版观察与已接受现代组合。
+2. [Battle 01 返回至 Battle 02 准入](./design/zh-CN/synthesis/battle01-return-through-battle02.md)：有条件的城堡驱魔/委任、Jaha 加入和调用方解锁，以及西出口遭遇选择。
+3. [Battle 02 结果至 Battle 03 准入](./design/zh-CN/synthesis/battle02-outcome-through-battle03.md)：结果与替代返回、Yeel/Kazin 内容及独立的大地图请求/准入；跟随不同于招募，Yeel 不是已证明的必需前提。
+
+后两篇解释源码条件连接，不证明自然连续行程，也不扩展止于 Battle01 可用返回的重制里程碑。
+本段止于 Battle03 准入；Hawel 住宅、Battle03 结果及其他未译细节仍回退英文，并在指南链接中标明。
 [详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)

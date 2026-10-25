@@ -633,11 +633,21 @@
     },
     {
       "source": "docs/design/synthesis/battle01-return-through-battle02.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle01-return-through-battle02.md",
+      "sourceSha256": "9b095004f2df08245ec82fcc61f9175cd6fb66b9d786c283689ef813822acf97",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25",
+      "mirrorSha256": "1e92f41f775aede7c68e66feb6088632f560bcc8f6e53f20a1bf342f1a24ad0b"
     },
     {
       "source": "docs/design/synthesis/battle02-outcome-through-battle03.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle02-outcome-through-battle03.md",
+      "sourceSha256": "1be80a01150617d22cd14eeb87268503bdac473ecfcd98b897547d3e42684a66",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25",
+      "mirrorSha256": "00ef083ce4c41c28c36ae2414a036a53c100d6033192e64069a115ed803d62c1"
     },
     {
       "source": "docs/design/synthesis/battle03-outcome-through-battle04.md",
@@ -944,7 +954,12 @@
     },
     {
       "source": "docs/design/synthesis/opening-through-battle01.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/opening-through-battle01.md",
+      "sourceSha256": "7dbcf39451801b27db3a1a58e9dcc0407f0377194f02085caf6e43a857af4288",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25",
+      "mirrorSha256": "1f9d472b41a2d14f2352faffe1afe183a03a3a3c7cb82b669fbf47284982536c"
     },
     {
       "source": "docs/design/synthesis/pacalon-castle-entry-and-first-visit.md",
@@ -1016,7 +1031,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "d626891e881139f0aec8efa023889945c08aeaba7f9ec8c0b549f21d8ce1a758",
+      "mirrorSha256": "c1b57048da3f4ac07bca44649f7f4873733f87d95414ebe711aefbc194b65c06",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
