@@ -1,6 +1,6 @@
 # 战术战斗循环与状态交接
 
-> 本文件是 [`tactical-battle-loop.md`](../../synthesis/tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签使用固定中文译法，源码标识符、fixture ID 与路径原样保留。除已同步的中文游戏总览及本文内部章节外，下列链接指向规范英文所有者；尚未同步的镜像不代替这些来源。
+> 本文件是 [`tactical-battle-loop.md`](../../synthesis/tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签使用固定中文译法，源码标识符、fixture ID 与路径原样保留。五个已同步主题之间使用中文导航；合同、详细指南及其他范围外所有者仍链接规范英文。
 
 一场战斗连接三类选择与后果：战斗员能站在哪里、能从该状态提交什么行动，以及效果结算后留下什么。
 随后，控制器决定能否继续下一次行动，还是必须把结果返回调用方。**推断的设计联系：** 定位、行动资格与持久资源形成共同的战术循环。
@@ -11,7 +11,7 @@
 静态调用顺序能确立请求与局部状态，不能证明动画、服务或返回场景地图已在可见层面完成。精确参数和证明仍由链接的所有者维护。
 
 建议依次阅读：入场与调度 → 移动与行动选择 → 结算 → 单次行动后检查 → 结果与返回。
-[剧情推进（规范英文）](../../synthesis/story-progression.md#read-story-content-in-segments)提供遭遇准入与章节背景。
+[剧情推进](story-progression.md#分段阅读故事内容)提供遭遇准入与章节背景。
 通用规则之后的[遭遇比较](#遭遇规则如何改变通用循环)解释装备门禁、阵营变化、特殊攻击、重复试炼与重置调用方。
 原版规则、已观察游玩、已接受的重制选择及生产支持具有[下文所述的不同边界](#原版保真与现代化)。
 
@@ -186,7 +186,7 @@ AI 资格是额外过滤，与玩家持有不同。使用后构建器消耗非�
 EXP 命令回放可跨越等级阈值并刷新成长，而不恢复当前 HP/MP。击杀的物品掉落查找、一次性标志、移除与接收方/特卖路由，
 独立于伤害和金币奖励。因此，物品栏已满可影响物品交付，但不会撤销已经结算的击杀。
 精确算术与受限交付观察仍由[交战奖励](../../contracts/combat-resolution.md#9-award-confirmed-battle-01-exp)和
-[法术奖励](../../contracts/spell-resolution.md)维护；更广的成长/经济背景见[成长与经济（规范英文）](../../synthesis/progression-and-economy.md)。
+[法术奖励](../../contracts/spell-resolution.md)维护；更广的成长/经济背景见[成长与经济](progression-and-economy.md)。
 
 ## 行动后、单次行动后与结果
 <a id="动作后回合后与结果"></a>
@@ -238,7 +238,7 @@ HP 归零与之后的死亡列表清理是不同步骤。清理记录适用的�
 
 另有调用方例外：隐藏 **Battle0** 返回 EndGame。对于每次实际胜利、败北或获准撤退返回，该调用方丢弃返回参数，
 执行软件重置转移，而非转入探索。它的 Suspend 选择返回菜单，不存档，也不离开战斗。实际硬件/SRAM 保留及重置后菜单仍为**未知**。
-[剧情推进（规范英文）](../../synthesis/story-progression.md)与
+[剧情推进](story-progression.md)与
 [Battle0 重置所有者](../../../research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)保留该例外；通用规则说明不扩展其遭遇档案。
 
 其他位置的正常挂起路径会复制已用秒数、设置标志 88、请求 SaveGame 并向 WitchSuspend 转移。
@@ -262,7 +262,7 @@ HP 归零与之后的死亡列表清理是不同步骤。清理记录适用的�
 ### 装备可以限制效果：Taros
 
 **已确认静态：** Battle18 准入测试其解锁，而非 Sword 持有或装备。
-[Taros/Caravan 章节示例（规范英文）](../../synthesis/story-progression.md#worked-example-taros-and-the-caravan)解释探索选择如何提供该解锁。
+[Taros/Caravan 章节示例](story-progression.md#完整示例taros-与-caravan)解释探索选择如何提供该解锁。
 随后全新交战按阵型坐标放置实际已加入且出战的队伍；印出的十二份己方模板不会招募十二名治疗者，也不会替换队伍装备和 AI。
 Taros 的特殊精灵是呈现映射。完成标志未设置时，中立 Caravan 的 HP 为零，不计入剩余敌人。
 可见 Caravan 或 Rohde 的随从角色均不表示已取得交通工具。参见[名册与中立所有者](../../../research/battle18-initialization-and-first-control.md#twelve-templates-and-the-actual-party)。
@@ -308,7 +308,7 @@ Taros Sword 掉落则需要行动侧死亡、实际持有物品、随机门禁�
 已加入资格保留，出战资格清除。这允许之后选择他出战，不会自动让他在下场战斗出战。
 完成标志已设置会跳过整段场景，包括这些修复；共享加入尾部属于 Bowie。败北/获准撤退不运行胜利招募。
 参见[结果/队伍所有者](../../../research/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)与
-[Moun 章节（规范英文）](../../synthesis/story-progression.md#jaros-defection-frayjas-joining-and-mouns-survivors)，了解独立的后续剧情条件。
+[Moun 章节](story-progression.md#jaro-叛离frayja-加入与-moun-幸存者)，了解独立的后续剧情条件。
 完成过场、成为随从与永久军团成员资格不能互相推导。
 
 ### 特殊行动替代普通 AI：Prism Flowers
@@ -342,7 +342,7 @@ Flowers 也不同于目标首领：enemy128 是 **Executioner**，不是 Flower�
 Bowie 存活时，Executioner 的行动侧死亡可触发首领清场；其他敌人仍计数时，摧毁全部八个 Flowers 本身不会获胜。
 首次胜利运行 Geshp 战后场景，并使用场景前队伍种子返回 Map53；完成标志已设置则跳过场景。
 [结果所有者](../../../research/battle36-outcomes-and-galam-return.md#terminal-selection-leader-cleanup-and-accounting)与
-[Galam 区域章节（规范英文）](../../synthesis/story-progression.md#prism-flowers-red-baron-and-geshp-returns)保留独立奖励、返回与后续准入规则。
+[Galam 区域章节](story-progression.md#prism-flowersred-baron-与-geshp-返回)保留独立奖励、返回与后续准入规则。
 友军误伤或首领清理不证明存在归属己方的击杀/掉落交易。
 
 ### 重复试炼增加结果与重试状态：Fairy Woods
@@ -388,7 +388,7 @@ Bowie 存活时，其行动侧死亡可经清理移除剩余存活敌人，即�
 Row0 坐标是通配符；完成 F500 已设置时会清除解锁，但仍在该次调用选择 Battle0。这是具体的特殊调用方，
 不是可自由进入的 Magic Tunnel 遭遇，也不允许从任意地图启动。
 [结尾准入所有者](../../../research/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)与
-[结尾章节（规范英文）](../../synthesis/story-progression.md#credits-finale-completion-storage-and-the-hidden-battle)区分之前的完成存储/显示序列与战斗入场。
+[结尾章节](story-progression.md#字幕终场完成存储与隐藏战斗)区分之前的完成存储/显示序列与战斗入场。
 继承的 F88 有给定状态恢复路径；普通 Battle0 Suspend 选择不能产生它。
 
 首领身份不决定终局规则。虽然 enemy128 是 Zeon，Battle0 的首领存在字节为零：他的死亡**不会**清除其他敌人。
@@ -409,7 +409,7 @@ Row0 坐标是通配符；完成 F500 已设置时会清除解锁，但仍在该
 ### 原版知识与已观察游玩
 
 即使较后的章节研究闭合了某个调用方、标志或目的地，上述源码支持规则仍保留静态限制。
-较早“所有结果的战役含义都未知”这一全局陈述如今过宽：[剧情推进（规范英文）](../../synthesis/story-progression.md)与
+较早“所有结果的战役含义都未知”这一全局陈述如今过宽：[剧情推进](story-progression.md)与
 [内容覆盖](../../../research/story-content-coverage.md#four-different-frontiers)链接了贯穿结尾/重置的已接受章节联系。
 自然完整战役游玩、所有合法行动、完整挂起持久化及硬件呈现仍为**未知**。
 已接受的[原版前沿](../../synthesis/map3-battle01-readiness.md#accepted-original-frontier)不会把受控 H3 算术/选择用例提升为自然行动历史。
@@ -460,7 +460,7 @@ EGRESS、更广法术/物品/状态、特殊敌人及遭遇专用程序，在台
 | 行动排序、物品使用与演出构建 | [行动构建](../../contracts/battle-action-construction.md)、[行动研究](../../../research/battle-actions.md)；`sf2-battle-actions-static-v1`。 |
 | 伤害、魔法、辅助、奖励与持久回放 | [物理交战](../../contracts/combat-resolution.md)、[法术](../../contracts/spell-resolution.md)、[运行时算术](../../../research/runtime-rng-and-battle-math.md)；各合同具名 H3 子集，包括上文 SILENCE 失败示例。 |
 | 命令请求与呈现的区别 | [演出引擎](../../../research/battle-scene-engine.md)；`sf2-battle-scene-engine-static-v1`。实际当前消费者仍由能力台账及其链接所有者维护。 |
-| 章节终局优先级、调用方目的地或特殊返回 | [剧情推进（规范英文）](../../synthesis/story-progression.md)及其已接受结果调查；上文链接的共享终局优先级与 Battle0 所有者限定较早聚合摘要。 |
+| 章节终局优先级、调用方目的地或特殊返回 | [剧情推进](story-progression.md)及其已接受结果调查；上文链接的共享终局优先级与 Battle0 所有者限定较早聚合摘要。 |
 
 **范围约定 — Standard：** 跨系统依赖要求源码/主张审阅；限定结果是可读的通用战术规则与五个代表遭遇比较，包括必要条件与非成功路径。
 验收沿总览 → 规则/比较 → 具名证明进行，涵盖取消、无效/无目标、可选重试与特殊调用方返回，
