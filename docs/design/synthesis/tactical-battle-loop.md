@@ -43,9 +43,18 @@ and [save contract](../contracts/save-system.md) own those separate boundaries.
 **Confirmed static:** each new round activates enemies, requests the region program, admits and
 animates spawning enemies, then generates turn order. Activation changes an enemy's control state;
 it is separate from being placed, scheduled and choosing an action. An inactive but placed, living
-enemy can enter the schedule and later take its standby route. Hidden/respawning candidates have
-separate admission gates; a failed reset skips that candidate, with the failure cause still
-**Unknown**. A tested region is also distinct from an activated region.
+enemy can enter the schedule and later take its standby route. A tested region is also distinct
+from an activated region.
+
+Hidden/respawning candidates have separate admission gates. **Confirmed static reset refusals:**
+a candidate must be within the encounter's declared enemy entries, and its starting square must not
+match any ally or enemy's stored coordinates. That occupancy check includes dead combatants and the
+candidate itself. Refusal leaves the candidate unplaced with zero current and maximum HP and omits
+it from the spawning list. A later attempt still depends on the spawn mode and its applicable
+region-flag and maximum-HP gates; failure does not promise an unconditional retry or eventual
+appearance. The newer [spawn/reset inspection](../../research/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)
+qualifies the older lifecycle summary. Natural occurrence of these refusals and completed spawn
+presentation remain **Unknown**.
 
 Only placed, living combatants enter the generated order. Agility supplies a base, with ordered
 random adjustments; the high agility bit can produce a second entry. Sorting preserves equal-score
