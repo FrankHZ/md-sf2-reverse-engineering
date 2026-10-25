@@ -125,7 +125,8 @@ A found item offers the special path; missing or declined special choice can fal
 promotion. SORC has an extra confirmation whose refusal restarts selection. On the accepted special
 path, the selected holder/slot receives `RemoveItemBySlot` before the class and promotion requests.
 The route then calls `SetClass` followed by `Promote`, requests SORC default-spell replacement or
-MMNK/NINJ weapon removal where selected, and later requests stored level one and EXP zero.
+MMNK/NINJ weapon unequipping where selected, and later requests stored level one and EXP zero.
+Unequipping leaves the weapon carried; it is distinct from removing the special promotion item.
 The promotion route does not contain a gold-decrease call; Raise's price must not be reused as a
 promotion price. These are ordered source requests, not a runtime-closed transaction or proof of
 all resulting stats, inventory edges, prompt presentation or persistence.
@@ -285,9 +286,11 @@ boundaries:
 - `199 + 24 -> 200 -> 100`, still with only one level-up.
 
 At base level 40 and promoted level 99, the command still subtracts 100 and calls `LevelUp`.
-`LevelUp` returns 255, leaves the capped level unchanged, and the command leaves EXP at zero. A
-remake cannot replace this sequence with a generic loop or discard-at-cap rule without recording an
-intentional deviation.
+`LevelUp` returns 255 and leaves the capped level unchanged. In the observed `76 + 24` cap cases,
+the subtraction leaves zero EXP. In general, the command retains the remainder after its one
+100-point subtraction; a capped `LevelUp` result does not clear that remainder. A remake cannot
+replace this sequence with a generic loop or discard-at-cap rule without recording an intentional
+deviation.
 
 ### 4. Apply level-up and refresh combatant state
 
