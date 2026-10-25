@@ -6,12 +6,15 @@
   boundaries, and the in-process save actions described below.
 - **Inferred original behavior:** these independently confirmed seams form a reusable progression
   architecture in which map, flag, party, and battle state select later local behavior.
-- **Unknown original behavior:** a complete normal-play chronology, plot-beat meaning, player-choice
-  consequences, route exclusivity, full save persistence, and player-visible story presentation.
+- **Unknown original behavior:** a complete normal-play chronology, unreviewed plot/choice
+  consequences, route exclusivity, full save persistence and unobserved story presentation. Selected
+  static chapter meanings and bounded original observations keep their narrower linked owners.
 - Remake status: implementation-neutral Layer B synthesis; current engine direction belongs to
   [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md). This document selects no
   campaign rewrite or narrative data model.
-- Evidence date: 2026-08-02.
+- Framework evidence date: 2026-08-02; chapter orientation and the worked example consume the
+  accepted owners at `3c56beebc9584957baf9f1a6e438267db6c1a8c6` under the
+  [current Standard-rigor scope agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 - Source baseline: `ShiningForceCentral/SF2DISASM` `master`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`.
 
@@ -22,7 +25,8 @@ progression. It is not a plot summary and not a chronological walkthrough. A sou
 incoming reference, or a successful handler-local replay does not establish that a normal save reaches
 that code, when it reaches it, what the player sees, or what the event means in the fiction.
 
-The safe synthesis is therefore a **progression framework**, not a campaign route:
+The chapter reading route below explains selected accepted content dependencies. The underlying
+**progression framework** remains bounded; it does not establish a naturally played campaign:
 
 1. top-level control chooses battle or exploration from current state;
 2. current map plus ordered flags selects a six-part map setup;
@@ -32,12 +36,53 @@ The safe synthesis is therefore a **progression framework**, not a campaign rout
 6. save services can serialize the bounded combatant-data region, but complete subsystem persistence
    is not yet demonstrated.
 
-The [documentation roadmap](../documentation-roadmap.md) deliberately places this synthesis after the
-[gameplay overview](gameplay-overview.md), [tactical battle loop](tactical-battle-loop.md), and
-[progression/economy synthesis](progression-and-economy.md). Those documents explain the local
-systems that story progression coordinates; none supplies missing narrative chronology.
+Enter from the [gameplay overview](gameplay-overview.md#follow-the-loop-and-choose-a-reading-depth),
+then use the chapter groups for world changes and the worked example for one connected dependency.
+[Tactical Battle Loop](tactical-battle-loop.md) and [Progression and Economy](progression-and-economy.md)
+explain the local systems these chapters coordinate. The
+[documentation roadmap](../documentation-roadmap.md) owns the scope and review sequence; none of
+these explanations supplies missing natural chronology.
 
 ## Read Story Content in Segments
+
+These six groups are an **Inferred editorial reading order**, based on meaningful world changes and
+content dependencies. They are not the original authors' chapters, a mandatory battle sequence or
+proof of a continuous walk. **Confirmed static** below means that a named accepted owner supports
+the particular selector, operation or conditional handoff. Its source order does not prove natural
+arrival, completed presentation, player control or durable saves.
+
+Read each orientation first. Expand its detailed English guides for exact local behavior, then use
+the linked research for proof. The later groups provide a bounded skeleton and accepted-evidence
+routes; they do not create a new detailed late-campaign series. The
+[coverage owner](../../research/story-content-coverage.md#four-different-frontiers) distinguishes
+static research, original observations, English synthesis and remake support.
+
+1. [Grans opening and departure](#grans-opening-and-departure).
+2. [New Granseal and eastern Parmecia](#new-granseal-and-eastern-parmecia).
+3. [Southern travel, Caravan and Creed](#southern-travel-caravan-and-creed), including the
+   [Taros/Caravan worked example](#worked-example-taros-and-the-caravan).
+4. [Northern travel, Pacalon, Tristan and Mitula](#northern-travel-pacalon-tristan-and-mitula).
+5. [Moun, Nazca and the return to Grans](#moun-nazca-and-the-return-to-grans).
+6. [Final confrontations and ending](#final-confrontations-and-ending).
+
+### Grans opening and departure
+
+The opening connects town interaction, castle/tower events and battle, then changes the world through
+captivity, the tower aftermath, earthquake and departure by ship. **Confirmed:** the selected opening
+has bounded original observations; later local guides explain static outcome/return and event gates.
+The earthquake-town exit, boarding choice, departure scene and damaged-ship arrival are distinct
+handoffs rather than one transition. A scripted relocation is not another player movement decision.
+
+Use [opening through Battle01](opening-through-battle01.md) for the connected start and
+[docks departure](earthquake-town-through-docks-departure.md) for its actual Yes/No branch. Optional
+Kiwi and other opening interactions remain beside their local conditions in the guides below.
+[Grans coverage](../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)
+and [departure coverage](../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)
+route to accepted evidence. Defeat, escape and repeat setups keep their own returns; neither a
+battle number nor the departure staging proves a naturally uninterrupted journey.
+
+<details>
+<summary>Detailed English guides and their local limits</summary>
 
 [Opening through Battle 01](opening-through-battle01.md) connects the selected Map 3 opening,
 messenger, castle/royal/tower phases, encounter and usable return. It supplies the location/entity/
@@ -97,6 +142,29 @@ Map73 first/repeat selection, optional Kiwi content, landing/crowd instructions 
 Jaha/plank scene. Two in-script Map14 loads bypass its init; F700 is written after script return
 and before conditional control. Actor-reference reuse, follower/party state, natural arrival and
 services/pending outcomes retain their limits; player plank progression and Battle08 remain separate.
+
+</details>
+
+### New Granseal and eastern Parmecia
+
+Landing does not immediately establish a settled new town. The plank/rescue encounter and its
+outcome precede the selected construction/address and rebuilt population boundaries. From New
+Granseal, local conditions connect Peter's introduction and audience with eastern travel, Ribble,
+Polca and Bedoe. **Confirmed static:** speaking, following, joining the force and admission to the
+next encounter have separate consumers. Twelve formation places do not recruit twelve allies.
+
+Read the [plank and rescue guide](damaged-ship-plank-through-battle08.md),
+[Peter's audience](peter-castle-audience-through-town-return.md) and
+[Volcanon audience](bedoe-to-volcanon-audience.md) for those changes. Optional
+[May](ribble-may-through-battle10-admission.md), [East Shrine](battle10-outcomes-through-east-shrine-visit.md),
+[Bedoe hatchling rescue](bedoe-hatchling-flight-and-rescue.md) and
+[Oddler choices](polca-oddler-choice-and-following.md) are conditional branches, not a required chain.
+The [eastern chapter evidence](../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)
+keeps the separate encounters and returns. Polca's raft grant prepares a later travel option;
+[boarding](polca-raft-boarding-through-south-parmecia-entry.md) is a separate action boundary.
+
+<details>
+<summary>Detailed English guides and their local limits</summary>
 
 [Damaged-ship plank choices through Battle08 admission](damaged-ship-plank-through-battle08.md) continues
 with the optional plank response, explicit/same-map entry alternatives, timber handover and repeated
@@ -255,6 +323,35 @@ can retain an old F75 follower. All six attributed texts and join446 lead throug
 conditional F42/cache, current hide and later F416 effects, without transaction or retry repair.
 It stops at conditional exploration control, retaining actor/HP, natural-route, service/presentation,
 input and persistence Unknowns; Luke's Down1 proves neither boarding nor Battle14/16 route order.
+
+</details>
+
+### Southern travel, Caravan and Creed
+
+Transport and item custody connect this group's systems. A raft grant differs from boarding or
+landing; Hassan's Rohde proposal differs from Taros admission; Sword custody differs from Bowie's
+equipped attack eligibility. First victory can change the Caravan population condition while
+leaving the player walking. The [worked example](#worked-example-taros-and-the-caravan) explains
+these selected dependencies and their failure/refusal branches without prescribing a travel order.
+
+Beyond the Caravan, [Elven Village entry](battle19-outcomes-through-elven-village-entry.md) is
+independent of Battle19 victory. [Elric's recruitment](battle20-outcomes-and-elric-recruitment.md),
+Fairy Cave and Creed's small-world passages have separate interaction and outcome gates. Returning
+to normal size, consulting the Evil Spirit and leaving with the Fairy are likewise distinct
+boundaries. Optional [Rick](hassan-rick-recruitment.md), village exploration, the
+[Fairy Woods trial](../../research/battle44-fairy-woods-trial-and-records.md) and
+[Creed recruitment choices/refusal](creed-return-fairy-and-recruitment-choices.md) retain their own
+owners; the trial link is research, not a detailed English guide.
+
+Accepted evidence routes cover [southern transport and Taros](../../research/story-content-coverage.md#southern-parmecia-transport-the-sword-and-taros),
+[Elven Village through Fairy Cave](../../research/story-content-coverage.md#elven-village-harpy-pond-and-fairy-cave)
+and [Creed/consultation](../../research/story-content-coverage.md#creeds-small-worlds-and-the-consultation).
+The [desert encounter](../../research/battle14-desert-encounter-and-outcomes.md) and
+[separate shrine approach](../../research/battle15-shrine-approach-and-outcomes.md) are accepted
+static research branches; numbering them Battle14/15 does not place them on a mandatory itinerary.
+
+<details>
+<summary>Detailed English guides and their local limits</summary>
 
 [Polca raft boarding and South Parmecia entry](polca-raft-boarding-through-south-parmecia-entry.md)
 continues from that control boundary through separate type3 production/physical alignment, staged
@@ -618,6 +715,35 @@ universal one-time gift rule, all-actor completion or an open-route proof.
 Independent init/dialogue flags, aliases/HP/mode, interrupted prefixes, inherited
 speech, service/control/save and natural-reach Unknowns remain explicit. The
 guide stops before Cannon use, subsequent journeys or New Granseal/Astral.
+
+</details>
+
+### Northern travel, Pacalon, Tristan and Mitula
+
+The return for the Cannon, Astral's following, Dynamite and North Cliff is organized around what each
+interaction changes. **Confirmed static:** those gifts, recruitment and outgoing requests have
+independent conditions; the return audience does not test Cannon, and Janet does not require
+Dynamite. The [North Cliff opening](north-cliff-opening-and-rohde-recruitment.md) is a later Rohde
+combat-recruitment boundary, separate from his earlier proposal and Caravan-driver scene.
+
+Detailed English guides below reach Ketto, Higins, drought-state Pacalon and Battle27's first turn
+dispatch. Start with [Cannon/North Cliff evidence](../../research/story-content-coverage.md#returning-for-the-cannon-and-opening-north-cliff)
+and [Ketto/Pacalon evidence](../../research/story-content-coverage.md#ketto-higins-and-drought-state-pacalon).
+After that detailed-guide frontier, use accepted **research** for the
+[Battle27 outcome/Tristan admission](../../research/battle27-outcomes-through-tristan-admission.md)
+and the [Tristan–Mitula–restored-rain route](../../research/story-content-coverage.md#tristan-mitula-and-restored-rain-returns).
+The latter separates caves/shrine requests, the exterior encounter, Zalbard's outcome and the
+later return through Tristan/Pacalon. Battle31's result does not itself join Frayja or admit Battle32;
+a later zone/scan is required.
+
+The [bridge/Battle28 branch](../../research/battle28-bridge-and-outcomes.md) is separate from the
+route toward Battle29; its staging proves no physical collapse or countdown. Optional
+[Taya](../../research/mitula-shrine-exploration-and-taya-recruitment.md) and
+[Skreech](../../research/mitula-return-and-skreech-recruitment.md) remain conditional; Skreech's
+rescue-state dependency does not establish that every earlier Bedoe visit rescued him.
+
+<details>
+<summary>Detailed English guides and their local limits</summary>
 
 [New Granseal return and Astral following](new-granseal-return-and-astral-following.md)
 continues along selected30→68→73→6→7 connections, with Map68's Battle19
@@ -1103,6 +1229,190 @@ natural reach, actual state/seed/first actor, completed services/presentation,
 control and persistence. No AI/action, completed turn, outcome, later story,
 observed or remake frontier advances.
 
+</details>
+
+### Moun, Nazca and the return to Grans
+
+This group's orientation comes from accepted **research**, beyond the detailed English-guide
+frontier above. The world changes through Moun's events and the Nazca ship, then through separate
+post-crash travel and return encounters. Read
+[Moun/Jaro/Nazca approach](../../research/story-content-coverage.md#moun-jaro-and-the-nazca-approach)
+for Jaro's side-change versus later join, Frayja's joining boundary, Zynk following and the independent
+Arm award. An awarded Arm is not an awakened or recruited Claude.
+
+[Nazca/Dojo/Roft](../../research/story-content-coverage.md#nazca-ship-optional-dojo-and-roft)
+connects Cameela's outcome and Sky Orb custody to separately gated boarding/departure, voyage,
+shootdown, crash and outward travel. Posted transitions and in-scene loads have different consumers;
+no composed playable voyage follows from their static connection. Roft and Battle35 are separate
+admissions, and the tables do not decide which is naturally visited first. Zynk's Roft recruitment
+does not require Battle35 victory.
+
+[Grans-return evidence](../../research/story-content-coverage.md#grans-return-prism-flowers-lemon-and-geshp)
+then routes Prism Flowers, Red Baron/Lemon aftermath, Geshp and late Yeel. Battle36 completion is not
+a predicate of the separate Battle37 admission, and Red Baron's aftermath does not itself recruit Lemon.
+Optional [Dojo/Sheela](../../research/dojo-exploration-and-sheela-recruitment.md),
+[Arm/Claude and the Magic Tunnel](../../research/magic-tunnel-hub-and-claude-recruitment.md),
+[Dwarven Village smithing](../../research/dwarven-village-and-mithril-smithing.md) and
+[late Yeel/Chaz/Lemon](../../research/late-yeel-chaz-and-lemon-recruitment.md) each have their own
+custody, interaction, membership or revisit conditions. Those accounts do not make every service
+transaction, itinerary or save persistent, and no new detailed guide is supplied here.
+
+### Final confrontations and ending
+
+Accepted **research** supplies this final reading skeleton. The
+[Force Sword/Devils Head/tower route](../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower)
+separates attraction/extraction and selected Sword use from later labyrinth and tower admission.
+Lemon's conditional recruitment has more than one local owner; carrying a Sword or hearing Creed
+speak does not replace the actual admission predicates. The labyrinth's live layout changes are
+not proof of a persistent puzzle-completion state.
+
+The final encounters retain separate openings, conditional control and outcomes. In particular,
+[Battle42's result](../../research/battle42-outcomes-and-zeon-admission.md) sets Zeon's unlock;
+only a later scan can select Battle43, with Battle42 checked first. [Zeon's outcome](../../research/battle43-outcomes-and-ending-admission.md)
+is ending admission, not a completed epilogue or free exploration.
+[Ending/credits evidence](../../research/story-content-coverage.md#epilogue-credits-and-the-hidden-battle)
+continues through sealing/return, the two-years-later town, castle council/chamber interactions and
+credits. Optional hints and the chamber's actual Yes/No kiss prompt are distinct; minister hints
+are not the prompt's tested prerequisites.
+
+The [credits/finale owner](../../research/ending-credits-finale-and-bonus-admission.md) and
+[hidden Battle0/reset owner](../../research/battle00-bonus-battle-and-reset.md) close this reading
+spine. Battle0 uses a special caller: its victory, defeat or admitted retreat returns to software
+reset rather than ordinary exploration, and ordinary Suspend is refused before saving. These
+accepted static links prove neither a naturally completed ending nor hardware persistence or a
+playable remake epilogue. Selected boss-action accounts and optional branches retain their limits;
+they do not establish every legal action or a complete content census.
+
+## Worked example: Taros and the Caravan
+
+The question is how an exploration item, an encounter rule and a later traversal option connect.
+**Inferred design connection:** the Sword puzzle prepares a way to confront Taros, and the first
+victory prepares Caravan travel. **Confirmed static** rules below explain each selected dependency.
+They are conditional links, not a naturally uninterrupted itinerary, a winning strategy or admitted
+remake content. Fnnn identifies the named source flag only where it helps distinguish consumers.
+
+### Acquire an item, then decide whether to accept Rohde
+
+The [Ribble puzzle guide](ribble-tree-opening-and-achilles-sword.md) connects Wooden Panel use,
+tree opening and the separate Achilles Sword chest. To request the opening, select the Panel for
+field use while the player is in one of the two admitted positions facing the tree. Holding it
+elsewhere is insufficient. After a returning opening script, the handler sets the open-state flag
+and attempts removal by item identity. That flag alone proves neither removal nor Sword custody.
+
+The Sword chest still needs its own facing-offset search and inventory room. With no carrier space,
+the completing capacity path restores availability instead of granting the item. A successful receipt
+adds an **unequipped** item. Neither a chest flag nor the tree's open state equips Bowie, and shared
+shrine-map storage does not prove a walk between the Panel and Sword regions.
+
+[Talking to Rohde](hassan-ancestry-and-rohde-caravan-choice.md#talking-to-rohde) initially searches
+joined-force inventories, including reserves. The Sword need not be on Bowie or equipped for this
+recognition. Without it and before recognition has been recorded, Rohde dismisses the interaction
+without offering the choice. His later repeat choice has its own recognition-state gate and need
+not search inventory again; this is not a fresh universal possession test.
+
+Rohde's actual Yes/No prompt permits refusal. Accepting writes his proposal-acceptance F725, follower
+F84 and Battle18-unlock F418, then requests following; refusal bypasses those acceptance writes.
+It neither consumes/equips the Sword nor acquires the Caravan nor recruits Rohde into combat.
+The [choice guide](hassan-ancestry-and-rohde-caravan-choice.md#choosing-yes-or-no) owns the repeat and
+selected-item alternatives. Those alternatives do not require imposing one Sword→Hassan itinerary.
+
+### Admission and the warning answer different questions
+
+At the [Taros shrine scan](southwest-parmecia-through-taros-battle18-entry.md#battle-selection-comes-before-the-shrine-warning),
+F418 admits Battle18 **before exploration initialization**. The scan does not test Sword possession,
+equipment, Rohde membership or F725. The accepted Yes path produces several flags together, but
+their consumers remain independent. An independently supplied unlock can admit a party that fails
+the later equipment rule.
+
+With F418 clear, shrine exploration instead checks F725: clear runs Taros's warning and requests
+retreat, set skips the warning. Bowie's nod and the withdrawal are scripted, with no Yes/No prompt.
+Do not describe that gesture as player consent. Pending requests and returning services still
+condition the actual return; a playable pause in the shrine is not guaranteed. Even a completed
+battle does not substitute for F725 at this warning check.
+
+### Equipped eligibility is a combat condition
+
+The [Battle18 initialization and rule owner](../../research/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)
+is newer than the admission guide's pre-activation endpoint. It supplies the actual party/equipment
+and first-conditional-control boundary. The initial Taros damage gate in Battle18 permits the
+selected attack only when the actor is **Bowie**, the action is **ATTACK**, the current target has
+Taros's enemy definition and Bowie's actual equipped weapon is the **Achilles Sword**. Merely
+carrying the Sword, another ally equipping it, or Bowie choosing spell/item use does not meet that
+initial gate. Eligibility still guarantees no hit, amount of damage, completed turn or victory.
+
+This is the initial action-script/damage-helper boundary, not a theorem about every target/effect
+or counter path. The owner retains its lifetime and counter-direction exceptions. Formation places,
+scene speakers and a neutral Caravan sprite are not proof of actual combat membership or acquired
+transport. Taros's separate conditional Sword drop also does not grant the Caravan.
+
+### Outcome changes the next world state
+
+The [outcome/acquisition guide](battle18-outcomes-and-caravan-acquisition.md#what-ends-the-battle)
+separates victory, defeat and admitted Egress/Angel Wing. Taros's defeat can trigger the leader
+cleanup, but zero allies is checked before zero enemies: Bowie's simultaneous death does not become
+victory. Defeat restores Bowie's HP, halves gold and uses the supplied savepoint. An admitted retreat
+spends its own MP/item and uses the savepoint without the defeat gold penalty. Neither runs the
+acquisition scene; retreat availability itself remains conditional.
+
+First victory, with completion F518 clear, runs Rohde's demonstration. Its terminal writes set
+Caravan-acquisition F65 and clear his ordinary follower F84; victory later clears F418 and sets
+F518. His driver speech and narrated accompaniment do not join Rohde to the force. The shared join
+tail is Bowie's. Repeat victory skips that scene and preserves supplied F65/F84, so completion alone
+does not repair a missing acquisition flag.
+
+The return position was seeded before the scene and does not come from its dramatic staging.
+Fresh shrine exploration checks F725 before hiding Taros for completion; a clear F725 can still
+produce the warning/retreat. The shrine has no F65-selected Caravan follower. A later admitted fresh
+overworld population can declare that follower while the player remains walking. Scene vehicle,
+neutral battle actor, acquisition flag and current controller are separate facts.
+
+### Board separately to use the traversal option
+
+The [boarding/travel guide](caravan-boarding-and-southwest-parmecia-travel.md#walking-requests-boarding-c-requests-a-menu)
+explains the next attempted action. An eligible directional walking attempt at the selected boarding
+layout attribute, outside battle and with F65 set, can post the boarding event. Acquisition did not
+post it, and obstruction or an unmet condition can prevent that producer. The event's returning
+shrink/follower sequence changes the player to Caravan mode 1 **only at its end**. Missing actors,
+stalled services or a partial sequence do not guarantee that mode change or usable control.
+
+Caravan movement can then request warps or landing according to its own layout/controller rules.
+Landing has a separate return to walking mode 0. Walking's zone producer can subsequently request
+Battle19; the Caravan controller has no such producer. This does not forbid an independently
+supplied unlock admitting Battle19 on a separate map scan. Likewise C interaction's Caravan-menu
+call is a different admission and proves no storage or party transaction. Optional
+[Rick recruitment](hassan-rick-recruitment.md) is not a mandatory detour between acquisition and use.
+
+**Unknown:** the natural approach and uninterrupted custody/travel, actual flags/party/gear, completed
+services and presentation, responsive control and save/resume persistence for this composed example.
+The [current production frontier](../../../remake/docs/capability-status.md) excludes Battle18 and
+this transport chain; accepted static explanation grants neither engine support nor distribution
+rights. The example makes the conditions understandable without closing those gaps.
+
+### Evidence review for this example
+
+This explanation reuses the accepted reviews in the five starting owners: the
+[Sword guide's trace/review](ribble-tree-opening-and-achilles-sword.md#evidence-trace-and-review-limits),
+[admission guide's trace/review](southwest-parmecia-through-taros-battle18-entry.md#evidence-trace-and-review-boundary),
+[Battle18 initialization/rules](../../research/battle18-initialization-and-first-control.md),
+[outcome guide's trace/review](battle18-outcomes-and-caravan-acquisition.md#evidence-trace-and-review-boundary)
+and [boarding guide's trace/review](caravan-boarding-and-southwest-parmecia-travel.md#evidence-trace-and-review-boundary).
+Rohde's [choice owner](hassan-ancestry-and-rohde-caravan-choice.md) supplies the distinct refusal and
+repeat conditions. Their relevant map/dialogue/roster/combat/service boundaries keep the exact
+source, fixture/schema/consumer identities, reproduction commands and accepted handoffs.
+
+The review distinguishes masked receipt from equipped-weapon lookup, F418 admission from F725
+warning selection, first/repeat F518 from acquisition F65, and F65 population from the final mode 1
+write. Public fixture projections do not contain a composed Sword→Taros→Caravan run; the newer
+Battle18 rule account adds no executable encounter fixture. The selected accepted source joins,
+rather than aggregate fixture counts or the admission guide's earlier stop, support the combat
+paragraph. No new extraction, runtime acquisition or historical comparison is required for this
+prose. No conflict requiring a Layer A repair was selected. The detailed owners retain their
+completed failures and Unknowns. Separately, [#1047's completed-result handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1047#issuecomment-6204168133)
+preserves twelve unresolved comparisons; they are not interrupted runs or new evidence for this
+example.
+
+## Original observations and remake support
+
 **Confirmed bounded original observation:** the
 [current original frontier](map3-battle01-readiness.md#accepted-original-frontier) now reaches from
 controlled R1 through a savestate-linked winning route and stable Map57 return; a separate accepted
@@ -1120,8 +1430,10 @@ hardware timing and wider reachability remain separate **Unknowns**.
 
 ## Pre-Synthesis Evidence Audit
 
-The synthesis was checked against the exact executable owners instead of relying on prose or source
-names alone. The audit kept the following distinctions intact:
+The original framework audit below was checked against exact executable owners; its reproduced
+results are retained evidence, not new runs for this chapter revision. The
+[worked example review](#evidence-review-for-this-example) covers the selected newer content.
+The historical audit did not rely on prose or source names alone. It kept these distinctions intact:
 
 - [gameflow research](../../research/gameflow-core.md) owns the static `MainLoop` and
   `ExplorationLoop` ordering. It has no runtime fixture for exact transition frames or interrupt-edge
@@ -1364,23 +1676,40 @@ without rewriting source-backed facts.
 
 ## What Is Not Yet a Story Route
 
-The following remain **Unknown** and block any claim that the original campaign has been reconstructed:
+The selected chapter and example owners above already explain bounded prompt consequences, flag
+uses, dialogue/speaker attribution, optional interactions and outcome/return branches. They retain
+their **Confirmed** static facts and **Inferred** meanings; unobserved natural execution is a separate
+limit. The following remain **Unknown** beyond those selected accounts and observations, and limit a
+claim to a complete, naturally played campaign:
 
-1. which of the 304 programs and 184 transfers execute in a normal playthrough;
-2. the initial and reachable game-flag sets for each save/progression point;
-3. a chronological ordering of maps, battles, dialogue, roster changes, and transitions;
-4. whether any yes/no prompt creates a persistent or mutually exclusive route;
-5. the narrative meaning of numeric flags, source labels, map IDs, and battle-unlock operands;
-6. complete story-state persistence across save, load, process restart, and power loss;
-7. decoded dialogue, speakers, plot beats, animation, audio, input cadence, and visible timing;
-8. optional-content, missable-content, failure, backtracking, and post-battle route behavior.
+1. exhaustive normal-play reach across all 304 programs and 184 transfers;
+2. the complete initial and reachable game-flag sets for every save/progression point;
+3. a full naturally reached chronology of maps, battles, dialogue, roster changes and transitions;
+4. persistent or mutually exclusive route consequences beyond each reviewed prompt's supplied-state
+   branches and mutations;
+5. narrative meanings of unreviewed flags, source labels, map IDs and battle-unlock operands;
+6. complete story-state persistence across save, load, process restart and power loss;
+7. unobserved natural dialogue/presentation, animation, audio, input cadence and visible timing;
+8. exhaustive optional/missable-content, failure, backtracking, revisit and post-battle behavior
+   across campaign states, beyond the named local branches.
 
-These gaps require grouped runtime observations from natural callers and known save states. Source-name
-interpretation, isolated target execution, or a synthetic all-flags experiment is not a substitute.
+A gap warrants new research only when it blocks a concrete explanation or implementation decision
+and accepted owners cannot answer it. Choose the smallest evidence boundary for that claim; a static
+content question does not automatically require runtime work. A necessary natural-execution claim
+needs observations from its natural callers and identified save states; source-name interpretation,
+isolated target execution or a synthetic all-flags experiment cannot supply that reachability.
+This list creates no automatic observation queue or new gate on the accepted selected accounts.
 
 ## Evidence Matrix
 
-| Boundary | Evidence label and bounded claim | Exact executable owners | Remaining question |
+This matrix retains the historical framework audit's named fixtures and results. Its remaining
+questions describe what **those fixtures alone** do not establish, rather than global Unknowns that
+supersede the selected chapter, example or later observation owners above. In particular, a generic
+handler fixture's lack of prompt consequences, content or speakers does not erase a later accepted
+local source account; an observed seam likewise keeps its own execution boundary. Historical data
+and failures remain unchanged.
+
+| Boundary | Evidence label and bounded claim | Exact executable owners | Remaining question for these fixtures |
 | --- | --- | --- | --- |
 | top-level gameflow | **Confirmed static** map switching, battle sentinel/call order, a returning `BattleLoop` invocation passing through map switching again, exploration return, and event-before-action branch priority | [gameflow research](../../research/gameflow-core.md); `sf2-gameflow-core-static-v1` ([`gameflow-core-static-v1.json`](../../../tests/fixtures/h2/gameflow-core-static-v1.json)) | Runtime timing, battle-outcome semantics, transition frames, normal campaign chronology |
 | complete script graph | **Confirmed static** 304-program/13,515-command corpus and resolved explicit transfers | [common-scripting research](../../research/common-scripting.md); `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)) | Normal-save admission and reachable-route ordering |
