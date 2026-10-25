@@ -636,7 +636,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/gameplay-overview.md",
       "sourceSha256": "c7be7228c7d15b9824828aaef577cdf3ce94e64f35928608b27cab13b1131399",
-      "mirrorSha256": "f6fbdb8c562aff26ae58e76ac1256ca1e5387f253ace52d990e6e382d723c58d",
+      "mirrorSha256": "198863c0ec37954a20fe220f9bd5e682b9dc9976cc770787a63cf34bb9dd5005",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -645,7 +645,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map-design-principles.md",
       "sourceSha256": "b9d6c24e12433d92b05a1a843e757efdbbcaccd9531a287f2a6f52a3f1f05a1f",
-      "mirrorSha256": "05cb3a189b4f7357053a1ef8841ff3581672a8eaaffb1e55ed8ad463a636079e",
+      "mirrorSha256": "6686573ff36ededd89f8b4833f0fce4b8653a2e1ce29958b22bbf6ea0ce85ae0",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -667,7 +667,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/progression-and-economy.md",
       "sourceSha256": "b1afce8048ec054d1762f268aedac9aee8b88c8f4c95fbc99a15346206e7c8eb",
-      "mirrorSha256": "81798142ce54c44f586ed4b3061a928c58eea51004d22c4e624e190861c63f09",
+      "mirrorSha256": "9bc80518a7671b92c65dfebdc3c1a909ab1cdd63ae2ec0d8eff2990839130089",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -675,17 +675,17 @@
       "source": "docs/design/synthesis/story-progression.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
-      "sourceSha256": "071993afd3401e53fbdc4f6cd62e4fd9ac29e1b8f78eb31e9b91aef23c003b03",
-      "mirrorSha256": "b610b17e63d3576813fe7337690e702f97d87f91da80f494cb94b7d126b0a6eb",
+      "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
+      "mirrorSha256": "d626891e881139f0aec8efa023889945c08aeaba7f9ec8c0b549f21d8ce1a758",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/tactical-battle-loop.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/tactical-battle-loop.md",
       "sourceSha256": "bbe50c6f29ea618787051488f16855f86d5fdf51c3224e2db41d21a01372b535",
-      "mirrorSha256": "d8aa25072e3858242380b795649e3c264cf3d288c6cb28685ddbdd0401b0bdc8",
+      "mirrorSha256": "92d953f5b02c385f9289cc461bc72f39b112cc2e0745f096ec97a32988669320",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     }

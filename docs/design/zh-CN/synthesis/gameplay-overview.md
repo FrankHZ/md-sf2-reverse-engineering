@@ -10,8 +10,8 @@
 
 > 本文件是规范英文 [`gameplay-overview.md`](../../synthesis/gameplay-overview.md) 的中文镜像，翻译基线为
 > `f154275e875bd6cfd13496784a2f2ddaba775677`。英文始终是审阅基线；本镜像遵循
-> [`glossary.md`](../../glossary.md) R1–R7。本文指向其他主题、合同和详细指南的链接明确使用规范英文，
-> 以免尚未同步的中文镜像或旧锚点改变证据边界。
+> [`glossary.md`](../../glossary.md) R1–R7。五个已同步主题之间使用中文页面及相应章节；
+> 合同、详细指南与其他范围外文档仍明确链接规范英文。
 
 游玩把移动、交互与世界及军团（我方部队）的变化连接起来。探索时，玩家移动、面向实体或可搜索地点，并请求交互。
 地图和剧情状态决定接下来发生什么：对话、物品转移、名册变更、地图过渡或战斗。
@@ -38,14 +38,14 @@
 
 | 读者问题 | 后续阅读 |
 | --- | --- |
-| 战斗员可以尝试什么，回合（单次行动）如何变成效果与结局？ | [战术战斗循环（规范英文）](../../synthesis/tactical-battle-loop.md)。 |
-| 成员资格、成长、装备、物品、法术与服务怎样约束后续选择？ | [成长与经济（规范英文）](../../synthesis/progression-and-economy.md)与[军团一节](#军团成员资格出战角色与角色成长)。 |
-| 世界各部分之间会发生什么变化，哪些分支有独立门槛？ | [剧情推进的六组章节（规范英文）](../../synthesis/story-progression.md#read-story-content-in-segments)。 |
-| 地点、朝向、布局、交互与过渡状态怎样组合？ | [地图设计原则（规范英文）](../../synthesis/map-design-principles.md)。 |
+| 战斗员可以尝试什么，回合（单次行动）如何变成效果与结局？ | [战术战斗循环](tactical-battle-loop.md)。 |
+| 成员资格、成长、装备、物品、法术与服务怎样约束后续选择？ | [成长与经济](progression-and-economy.md)与[军团一节](#军团成员资格出战角色与角色成长)。 |
+| 世界各部分之间会发生什么变化，哪些分支有独立门槛？ | [剧情推进的六组章节](story-progression.md#分段阅读故事内容)。 |
+| 地点、朝向、布局、交互与过渡状态怎样组合？ | [地图设计原则](map-design-principles.md)。 |
 | 哪些状态在返回后保留，实际保存的又是什么？ | [返回世界与持久化](#返回世界与持久化继续游玩与保存游戏是两回事)及[存档合同（规范英文）](../../contracts/save-system.md)。 |
 
-要看一个跨系统例子，可沿[南方旅行章节（规范英文）](../../synthesis/story-progression.md#southern-travel-caravan-and-creed)
-读到 [Taros 与车队（规范英文）](../../synthesis/story-progression.md#worked-example-taros-and-the-caravan)。
+要看一个跨系统例子，可沿[南方旅行章节](story-progression.md#南方旅行caravan-与-creed)
+读到 [Taros 与车队](story-progression.md#完整示例taros-与-caravan)。
 它连接了有条件的 Sword 拾取、Rohde 的提议、遭遇准入、Bowie 的已装备武器规则、结局，以及另行发起的通行选项。
 物品未在手、拒绝、无效攻击和非胜利返回，解释了为什么不能把这些连接读成必然推进。
 详细指南保存精确参数与证据，章节页解释它们之间的关系。
@@ -81,7 +81,7 @@ Taros 与车队操作尚未获准作为生产内容。[覆盖所有者（规范�
 
 [地图探索（规范英文）](../../contracts/map-exploration.md)说明几何、工作布局保留、有序选择器与移动规则；
 [游戏流程研究（规范英文）](../../../research/gameflow-core.md)说明事件/输入优先级与交互准入。
-[地图设计原则（规范英文）](../../synthesis/map-design-principles.md)解释结构性内容。
+[地图设计原则](map-design-principles.md)解释结构性内容。
 **未知：**战役整体的路线质量、作者意图和原版移动手感。已接受私有切片中实际到达的地图/移动使用方有其自己的
 [组合边界（规范英文）](../../contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding)；
 这不证明硬件帧一致，也不证明每张地图的行为。
@@ -103,7 +103,7 @@ Taros 与车队操作尚未获准作为生产内容。[覆盖所有者（规范�
 在该组合内，实际到达的呈现语义已获接受。**未知的原版行为**仍包括未观察调用方、完整的原版服务时序与硬件输出；
 较早的垫片（shim）仍只是处理器观察，不会追溯性地证明未使用垫片的显示。
 
-[剧情推进（规范英文）](../../synthesis/story-progression.md)提供更广泛的状态路由解释；
+[剧情推进](story-progression.md)提供更广泛的状态路由解释；
 [出战队伍/名册状态（规范英文）](../../contracts/party-roster-state.md)说明命令与运行时边界。
 [连续场景（规范英文）](../../contracts/map3-battle01-continuous-scenario.md)拥有实际到达的路线及源码/使用方连接。
 如果较早的综合文字仍保留更宽泛的未知项，实际到达行为以这些范围更窄的当前所有者为准。
@@ -130,7 +130,7 @@ Taros 与车队操作尚未获准作为生产内容。[覆盖所有者（规范�
 
 定义和参数见[出战队伍/名册状态（规范英文）](../../contracts/party-roster-state.md)、
 [通用属性（规范英文）](../../../research/common-stats.md)、[升级（规范英文）](../../contracts/level-up.md)与
-[伙伴成长（规范英文）](../../../research/ally-growth.md)；[成长与经济（规范英文）](../../synthesis/progression-and-economy.md)
+[伙伴成长（规范英文）](../../../research/ally-growth.md)；[成长与经济](progression-and-economy.md)
 连接各奖励阶段。**未知：**完整的玩家名册选择空间、招募生命周期及战役层面的成长体验。
 已接受切片的名册与成长结果并未闭合这些更广泛问题。
 
@@ -161,7 +161,7 @@ Taros 与车队操作尚未获准作为生产内容。[覆盖所有者（规范�
 奖励与结局状态将局部战术循环重新连接到成长和世界。这解释了战术决策的选择空间，
 但不推荐策略，也不推断公平性、平衡或节奏。
 
-参阅[战术战斗循环（规范英文）](../../synthesis/tactical-battle-loop.md)、
+参阅[战术战斗循环](tactical-battle-loop.md)、
 [战斗循环研究（规范英文）](../../../research/battle-loop.md)、[交战结算（规范英文）](../../contracts/combat-resolution.md)、
 [法术结算（规范英文）](../../contracts/spell-resolution.md)及[随机性（规范英文）](../../contracts/randomness.md)。
 已接受切片已经到达行动/AI/回合（单次行动）/演出的组合；更广泛行动类别与调用方状态仍保留各所有者的限制。
@@ -196,7 +196,7 @@ Cure 用例观察了有序的状态与装备提交；Save 用例观察了提示�
 如果缺少战役与平衡上下文，玩家遇到这些约束的频率，以及它们是否形成稀缺或反复刷取压力，仍属**未知**。
 
 [服务合同（规范英文）](../../contracts/service-interactions.md)、[法术合同（规范英文）](../../contracts/spell-resolution.md)、
-[通用属性（规范英文）](../../../research/common-stats.md)及[成长与经济（规范英文）](../../synthesis/progression-and-economy.md)
+[通用属性（规范英文）](../../../research/common-stats.md)及[成长与经济](progression-and-economy.md)
 拥有这些区别与参数表。源码清单或一次成功战斗不等于战役经济。
 实际到达的 HEAL/物品呈现属于连续组合；切片之外的服务菜单仍保留各自的证据与实现限制。
 
@@ -206,8 +206,8 @@ Cure 用例观察了有序的状态与装备提交；Save 用例观察了提示�
 普通 `BattleLoop` 返回则经过地图切换直接进入探索，不会立即再做一次战斗检查。
 传送式探索返回会重新进入外层准入路径；滚动留在探索内部，不执行该扫描。
 [游戏流程所有者（规范英文）](../../../research/gameflow-core.md#main-and-exploration-contract)与
-[地图生命周期解释（规范英文）](../../synthesis/map-design-principles.md#return-and-persistence)保留这些调用方区别。
-隐藏 Battle0 返回 EndGame 的软件重置路径，详见[战术返回说明（规范英文）](../../synthesis/tactical-battle-loop.md#returning-from-battle-is-not-yet-usable-exploration)。
+[地图生命周期解释](map-design-principles.md#返回与持久性)保留这些调用方区别。
+隐藏 Battle0 返回 EndGame 的软件重置路径，详见[战术返回说明](tactical-battle-loop.md#从战斗返回尚不等于可用探索)。
 从控制器返回是一个边界；地图稳定且可用输入则是后一个边界，在下文演示切片中另行确立。
 
 下图展示源码已确认的路由骨架。实线箭头表示已记录的控制交接，虚线箭头概括**推断**的跨系统关系。
@@ -322,11 +322,11 @@ flowchart TD
 
 | 方向 | 已接受的知识与所有者 | 尚待解答的问题 | 有用的后续工作类型 |
 | --- | --- | --- | --- |
-| 探索与地图内容 | [地图探索（规范英文）](../../contracts/map-exploration.md)中的有序配置/事件、工作布局、交互与移动规则；[地图设计原则（规范英文）](../../synthesis/map-design-principles.md)中的结构性解读；已演示一条连接路线。 | 读者还应理解哪些可达交互与路线，重制又应在必经切片之外提供哪些？ | 综合可以组织现有地图/交互内容。新的可达性/结果主张需要原版研究；更广泛的可玩探索需要产品决定。 |
-| 剧情与世界推进 | [剧情推进（规范英文）](../../synthesis/story-progression.md)和[对话（规范英文）](../../contracts/dialogue-system.md)中的标志/程序/对话/过渡边界，以及[连续场景（规范英文）](../../contracts/map3-battle01-continuous-scenario.md)中实际到达的时间顺序。 | 其他剧情路径的时间顺序与后果有哪些证据支持，而非由源码名称暗示含义？ | 先组织已接受的程序/状态关系。新的战役时间顺序或选择后果需要原版研究；叙事变更需要产品决定。 |
+| 探索与地图内容 | [地图探索（规范英文）](../../contracts/map-exploration.md)中的有序配置/事件、工作布局、交互与移动规则；[地图设计原则](map-design-principles.md)中的结构性解读；已演示一条连接路线。 | 读者还应理解哪些可达交互与路线，重制又应在必经切片之外提供哪些？ | 综合可以组织现有地图/交互内容。新的可达性/结果主张需要原版研究；更广泛的可玩探索需要产品决定。 |
+| 剧情与世界推进 | [剧情推进](story-progression.md)和[对话（规范英文）](../../contracts/dialogue-system.md)中的标志/程序/对话/过渡边界，以及[连续场景（规范英文）](../../contracts/map3-battle01-continuous-scenario.md)中实际到达的时间顺序。 | 其他剧情路径的时间顺序与后果有哪些证据支持，而非由源码名称暗示含义？ | 先组织已接受的程序/状态关系。新的战役时间顺序或选择后果需要原版研究；叙事变更需要产品决定。 |
 | 出战队伍、职业与成长 | [出战队伍/名册（规范英文）](../../contracts/party-roster-state.md)中不同的成员资格/出战/AI/随从状态；[升级（规范英文）](../../contracts/level-up.md)中有源码支持的成长与刷新。 | 支持怎样的完整玩家选择与容量生命周期，招募、转职、装备和成长在战役中怎样相连？ | 综合可以解释已接受的角色/职业内容。更广泛的生命周期和数值应用缺口需要研究；名册或平衡变更需要产品决定。 |
-| 战术规则与遭遇 | [战术战斗循环（规范英文）](../../synthesis/tactical-battle-loop.md)所链接的局部控制、移动/目标、结算与结局所有者，以及已接受、实际到达的 Battle 01 组合。 | 哪些尚未观察的行动、AI、地形或遭遇分支与下一个有界行为有关？已接受合同能否共同支持该行为？ | 组织现有行动/遭遇内容。具体缺失的原版规则需要研究；扩大行动范围或重平衡需要产品决定。这不意味着要建立通用模拟器。 |
-| 物品、法术、服务与经济 | [成长与经济（规范英文）](../../synthesis/progression-and-economy.md)、[法术（规范英文）](../../contracts/spell-resolution.md)和[服务（规范英文）](../../contracts/service-interactions.md)中的有界法术/物品/奖励流程，包括教堂运行时接缝。 | 服务何时何地获准，之后重新加载会保留什么，怎样的战役上下文足以支持资源或曲线解释？ | 综合可以连接现有定义与交易规则。新的准入/持久化或战役主张需要研究；现代服务 UX 或经济变化需要产品决定。 |
+| 战术规则与遭遇 | [战术战斗循环](tactical-battle-loop.md)所链接的局部控制、移动/目标、结算与结局所有者，以及已接受、实际到达的 Battle 01 组合。 | 哪些尚未观察的行动、AI、地形或遭遇分支与下一个有界行为有关？已接受合同能否共同支持该行为？ | 组织现有行动/遭遇内容。具体缺失的原版规则需要研究；扩大行动范围或重平衡需要产品决定。这不意味着要建立通用模拟器。 |
+| 物品、法术、服务与经济 | [成长与经济](progression-and-economy.md)、[法术（规范英文）](../../contracts/spell-resolution.md)和[服务（规范英文）](../../contracts/service-interactions.md)中的有界法术/物品/奖励流程，包括教堂运行时接缝。 | 服务何时何地获准，之后重新加载会保留什么，怎样的战役上下文足以支持资源或曲线解释？ | 综合可以连接现有定义与交易规则。新的准入/持久化或战役主张需要研究；现代服务 UX 或经济变化需要产品决定。 |
 | 持久化与重新进入 | [存档系统（规范英文）](../../contracts/save-system.md)中的原版槽位及进程内存档/挂起边界；当前里程碑排除用户持久化。 | 哪些原版状态经过完整生命周期仍能保留，应提供怎样的现代存档/恢复行为？ | 如果保真主张需要，原版保留/失败行为须通过研究确立。现代存储与恢复需要先作产品决定再实现；可操作地图返回已有独立的已接受边界。 |
 | 界面、反馈与可访问性 | [当前里程碑（规范英文）](../../synthesis/map3-battle01-readiness.md#accepted-current-milestone)及[呈现所有者（规范英文）](../../../../remake/docs/godot/presentation.md)中的实际到达使用方语义与已接受的输入/文本/音乐选择。 | 在这个私有键盘切片之外，希望获得怎样更广泛的信息、可访问性、资产与输入体验？ | 综合可以解释已接受的反馈与偏差。更广泛的 UX/美术/输入覆盖需要产品选择；只有具体必需的语义缺口才足以支持原版呈现研究，并非每项硬件未知都要研究。 |
 
