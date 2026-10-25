@@ -1676,23 +1676,40 @@ without rewriting source-backed facts.
 
 ## What Is Not Yet a Story Route
 
-The following remain **Unknown** and block any claim that the original campaign has been reconstructed:
+The selected chapter and example owners above already explain bounded prompt consequences, flag
+uses, dialogue/speaker attribution, optional interactions and outcome/return branches. They retain
+their **Confirmed** static facts and **Inferred** meanings; unobserved natural execution is a separate
+limit. The following remain **Unknown** beyond those selected accounts and observations, and limit a
+claim to a complete, naturally played campaign:
 
-1. which of the 304 programs and 184 transfers execute in a normal playthrough;
-2. the initial and reachable game-flag sets for each save/progression point;
-3. a chronological ordering of maps, battles, dialogue, roster changes, and transitions;
-4. whether any yes/no prompt creates a persistent or mutually exclusive route;
-5. the narrative meaning of numeric flags, source labels, map IDs, and battle-unlock operands;
-6. complete story-state persistence across save, load, process restart, and power loss;
-7. decoded dialogue, speakers, plot beats, animation, audio, input cadence, and visible timing;
-8. optional-content, missable-content, failure, backtracking, and post-battle route behavior.
+1. exhaustive normal-play reach across all 304 programs and 184 transfers;
+2. the complete initial and reachable game-flag sets for every save/progression point;
+3. a full naturally reached chronology of maps, battles, dialogue, roster changes and transitions;
+4. persistent or mutually exclusive route consequences beyond each reviewed prompt's supplied-state
+   branches and mutations;
+5. narrative meanings of unreviewed flags, source labels, map IDs and battle-unlock operands;
+6. complete story-state persistence across save, load, process restart and power loss;
+7. unobserved natural dialogue/presentation, animation, audio, input cadence and visible timing;
+8. exhaustive optional/missable-content, failure, backtracking, revisit and post-battle behavior
+   across campaign states, beyond the named local branches.
 
-These gaps require grouped runtime observations from natural callers and known save states. Source-name
-interpretation, isolated target execution, or a synthetic all-flags experiment is not a substitute.
+A gap warrants new research only when it blocks a concrete explanation or implementation decision
+and accepted owners cannot answer it. Choose the smallest evidence boundary for that claim; a static
+content question does not automatically require runtime work. A necessary natural-execution claim
+needs observations from its natural callers and identified save states; source-name interpretation,
+isolated target execution or a synthetic all-flags experiment cannot supply that reachability.
+This list creates no automatic observation queue or new gate on the accepted selected accounts.
 
 ## Evidence Matrix
 
-| Boundary | Evidence label and bounded claim | Exact executable owners | Remaining question |
+This matrix retains the historical framework audit's named fixtures and results. Its remaining
+questions describe what **those fixtures alone** do not establish, rather than global Unknowns that
+supersede the selected chapter, example or later observation owners above. In particular, a generic
+handler fixture's lack of prompt consequences, content or speakers does not erase a later accepted
+local source account; an observed seam likewise keeps its own execution boundary. Historical data
+and failures remain unchanged.
+
+| Boundary | Evidence label and bounded claim | Exact executable owners | Remaining question for these fixtures |
 | --- | --- | --- | --- |
 | top-level gameflow | **Confirmed static** map switching, battle sentinel/call order, a returning `BattleLoop` invocation passing through map switching again, exploration return, and event-before-action branch priority | [gameflow research](../../research/gameflow-core.md); `sf2-gameflow-core-static-v1` ([`gameflow-core-static-v1.json`](../../../tests/fixtures/h2/gameflow-core-static-v1.json)) | Runtime timing, battle-outcome semantics, transition frames, normal campaign chronology |
 | complete script graph | **Confirmed static** 304-program/13,515-command corpus and resolved explicit transfers | [common-scripting research](../../research/common-scripting.md); `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)) | Normal-save admission and reachable-route ordering |
