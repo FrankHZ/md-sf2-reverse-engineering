@@ -130,10 +130,12 @@ keeps integrated source acceptance separate from the bounded playable remake mil
 The selected five English themes and their Chinese mirrors are accepted; #434's map-exploration
 contract and mirror are separately accepted. The [Chinese reader entry](./README.zh-CN.md) routes
 to those mirrors and labels English fallbacks.
-[Bounded repair](./design/documentation-roadmap.md#bounded-translation-repair-agreement) addresses
-remaining mirror drift and index/navigation gaps before assessing pending translations; the glossary,
-translation index and existing `sf2 zh-meta` checks retain synchronization ownership. This is not
-global translation PASS or completion of the bilingual epic.
+The [bounded repair agreement](./design/documentation-roadmap.md#bounded-translation-repair-agreement)
+now has synchronized existing mirrors, including the general contracts and continuous-scenario/readiness
+pair. The global translation index checks PASS: indexed mirrors are current, while pending documents
+still fall back to their canonical English owners. The glossary, translation index and existing
+`sf2 zh-meta` checks retain synchronization ownership. Metadata PASS does not mean every design
+document is translated or the bilingual epic is complete.
 
 - [`glossary.md`](./design/glossary.md)
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md)
