@@ -2,8 +2,7 @@
 
 - Status: Layer B design synthesis over accepted evidence; the foundation was user-accepted under
   [Issue #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669).
-- This reading structure consumes accepted `main` at
-  `3c56beebc9584957baf9f1a6e438267db6c1a8c6` under the
+- This reading structure consumes accepted `main` evidence under the
   [current scope agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 - Audience: readers choosing which gameplay directions to understand more deeply, and researchers,
   design authors and implementers following those directions to their evidence owners.
@@ -252,9 +251,15 @@ menus outside that slice keep their separate evidence and implementation limits.
 ## World return and persistence: continuing play is distinct from saving it
 
 **Confirmed original routing:** the outer loop applies flag-driven map switching before checking
-for battle. A battle return passes through map switching again; a warp-style exploration transition
-also returns to that loop. Returning from a controller is one boundary. A settled map with usable
-input is a later boundary, established separately in the demonstrated slice below.
+for battle. An ordinary `BattleLoop` return instead passes through map switching directly into
+exploration, without another immediate battle check. A warp-style exploration return re-enters the
+outer admission route; scrolling stays within exploration and does not perform that scan. The
+[gameflow owner](../../research/gameflow-core.md#main-and-exploration-contract) and
+[map lifecycle explanation](map-design-principles.md#return-and-persistence) retain these caller
+distinctions. Hidden Battle0 returns to EndGame's software-reset path, as the
+[tactical return account](tactical-battle-loop.md#returning-from-battle-is-not-yet-usable-exploration)
+explains. Returning from a controller is one boundary. A settled map with usable input is a later
+boundary, established separately in the demonstrated slice below.
 
 The following diagram shows the source-confirmed routing skeleton. Solid arrows express recorded
 control handoffs; dashed arrows summarize **Inferred** cross-system relationships. They do not
@@ -266,6 +271,7 @@ flowchart TD
     Route -->|"battle selected"| Battle["Battle entry and turns"]
     Explore --> Event["Map event / player action"]
     Event -->|"warp-style return"| Route
+    Explore -->|"scroll within exploration"| Explore
     Event -.-> Local["Dialogue, flags, roster and item effects"]
     Local -.-> Explore
     Explore -.-> Services["Menus and resource services"]
@@ -273,7 +279,11 @@ flowchart TD
     Battle --> Action["Player / AI choice and action resolution"]
     Action --> Checks["Deaths, after-turn effects and outcome checks"]
     Checks -->|"continue"| Action
-    Checks -->|"outcome and return"| Route
+    Checks -->|"outcome"| Caller["Battle caller consumes return"]
+    Battle -->|"admitted retreat"| Caller
+    Caller -->|"ordinary MainLoop caller"| ReturnMap["Map switching after battle"]
+    ReturnMap --> Explore
+    Caller -->|"Battle0 / EndGame caller"| Reset["Software reset transfer"]
     Action -.-> Growth["Rewards, growth and later character state"]
     Growth -.-> Action
     Services -.-> Save["Original save service"]
@@ -388,10 +398,10 @@ means choosing a remake behavior. A direction can need more than one kind of wor
 | Persistence and re-entry | Original slots and in-process save/suspend boundaries in [save-system](../contracts/save-system.md); current milestone excludes user persistence. | What original state survives the complete lifecycle, and what modern save/recovery behavior should be offered? | Original survival/failure behavior needs research if required by a fidelity claim. Modern storage and recovery require a product decision before implementation; usable field return already has its separate accepted boundary. |
 | Interface, feedback and accessibility | Reached consumer semantics and accepted input/text/music choices in the [current milestone](map3-battle01-readiness.md#accepted-current-milestone) and [presentation owner](../../../remake/docs/godot/presentation.md). | Which wider information, accessibility, asset and input experience is wanted beyond this private keyboard slice? | Synthesis can explain accepted feedback and deviations. Wider UX/art/input coverage requires product choices; original presentation research is justified only by a concrete required semantic gap, not every hardware Unknown. |
 
-The [accepted roadmap](../documentation-roadmap.md#delivery-order-and-acceptance) now orders the
-English theme revisions, beginning with this reading structure and the Taros/Caravan example.
-Main-gate independently assesses that first delivery before extending the chapter explanation;
-these directions do not dispatch new research. Chinese synchronization remains deferred until the
-selected English sources are stable. Detailed tactical, resource, story and map syntheses remain
-reading owners; their revisions are separately scoped. This document must stop at the linked evidence
-boundary when a wider answer would require a new fact, decision, acquisition or owner change.
+The [roadmap's selected English source set](../documentation-roadmap.md#selected-english-source-set-and-reconciliation)
+now connects the five themes and six chapter groups. No substantive rewrite of these selected themes
+remains planned in this round; independent integrated acceptance and merge establish their stability.
+The directions above concern questions beyond the delivered explanations and dispatch no new
+research. Chinese synchronization still requires that recorded stability and a separately scoped
+translation batch. This document must stop at the linked evidence boundary when a wider answer
+would require a new fact, decision, acquisition or owner change.
