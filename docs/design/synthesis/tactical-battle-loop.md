@@ -143,7 +143,8 @@ spell category and usable level; item getters also check battle usability, equip
 conditions. Rejection is not uniform: some attack-item failures end that search instead of trying a
 later inventory slot. The healing command requires a permitted spell and sufficient MP (minimum 3 MP
 for HEAL, 7 MP for AURA) before its spell route; otherwise it can fall back to an eligible healing item.
-Living same-side healing targets must also meet the command's at-or-below-two-thirds-HP gate.
+The ordinary healing-target scan admits living same-side candidates at or below two thirds HP;
+Healing Rain retains its separate earlier admission gate in the AI owner.
 A caster with no affordable healing spell and no qualifying item cannot create a heal merely because
 the commandset contains Healing. These are **Confirmed static** gates, not a universal player-menu
 refusal model or runtime proof of every threshold/packed-entry edge.
