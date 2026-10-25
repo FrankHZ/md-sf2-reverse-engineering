@@ -684,10 +684,10 @@
       "source": "docs/design/synthesis/tactical-battle-loop.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/tactical-battle-loop.md",
-      "sourceSha256": "c4339f9a82fc658964479649d0ffa36a70c764631d0fa89f08eca01b83cccf05",
-      "mirrorSha256": "3ffb74e0261af113b27793e55c794e3a3d0c000575284b804f0151df06027631",
+      "sourceSha256": "bbe50c6f29ea618787051488f16855f86d5fdf51c3224e2db41d21a01372b535",
+      "mirrorSha256": "d8aa25072e3858242380b795649e3c264cf3d288c6cb28685ddbdd0401b0bdc8",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     }
   ]
 }
