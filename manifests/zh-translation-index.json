@@ -626,10 +626,230 @@
       "source": "docs/design/documentation-roadmap.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
-      "sourceSha256": "a9943721171fc057e37201edc8fd2cc6bd82bbb67602b3826c420c341c868448",
-      "mirrorSha256": "673999a645ec9866627db4e1405912f8e3c0115f6a527b2f89ae56bbaf654e7b",
+      "sourceSha256": "e4cb8faa2d9126f585c2ce97229fa53791e748813457e7a6ad0fbe5483e48b78",
+      "mirrorSha256": "5338104508ee1c2bd20e04d0b721b3f3f054fabbb95fad7dfcc57812c14a8459",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle01-return-through-battle02.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle02-outcome-through-battle03.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle03-outcome-through-battle04.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle04-outcomes-through-battle05.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle05-outcomes-through-battle06.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle06-outcomes-through-battle07.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle07-outcomes-and-aftermath.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle08-outcomes-through-new-granseal-handoff.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle09-outcomes-through-ribble-welcome.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle10-outcomes-through-east-shrine-visit.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle11-outcomes-through-polca-arrival.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle12-outcomes-through-bedoe-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle13-outcomes-through-polca-raft-grant.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle16-outcomes-through-hassan-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle18-outcomes-and-caravan-acquisition.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle19-outcomes-through-elven-village-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle20-outcomes-and-elric-recruitment.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle21-opening-and-initial-roster.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle21-outcomes-and-devils-tail-return.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle22-initialization-and-roster.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle22-outcomes-and-desktop-return.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle23-initialization-and-roster.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle23-outcomes-and-burrow-return.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle24-outcomes-through-north-cliff-preparation.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle25-outcomes-through-ketto-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-activation-and-first-turn-dispatch.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-admission-and-geshp-confrontation.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-initialization-and-roster.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-outcomes-and-higins-recruitment.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-return-through-pacalon-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle27-activation-and-first-turn-dispatch.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/battle27-initialization-and-opening.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-hatchling-flight-and-rescue.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-king-address-through-first-audience.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-return-through-battle13-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-to-volcanon-audience.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/cotton-balloon-through-floor-world-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/creed-magic-door-and-desktop-transfer.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/creed-mansion-entry-and-first-goliath-scene.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/creed-restoration-and-basement-departure.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/creed-return-fairy-and-recruitment-choices.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/damaged-ship-plank-through-battle08.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/desktop-kingdom-first-arrival.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/earthquake-town-through-docks-departure.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/east-shrine-return-through-battle11-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/elven-village-conversations-and-local-exploration.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/elven-village-departure-through-harpy-pond-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/evil-spirit-consultation-and-zone-return.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/evil-spirit-shrine-entry-and-scene-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/fairy-cave-exploration-and-devils-tail-return.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/floor-world-first-arrival.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/floor-world-interactions-and-exits.md",
+      "status": "pending"
     },
     {
       "source": "docs/design/synthesis/gameplay-overview.md",
@@ -639,6 +859,30 @@
       "mirrorSha256": "198863c0ec37954a20fe220f9bd5e682b9dc9976cc770787a63cf34bb9dd5005",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/harpy-pond-approach-through-battle20-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/harpy-pond-departure-through-fairy-cave-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/hassan-departure-and-battle17-outcomes.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/hassan-rick-recruitment.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/ketto-interactions-and-merchant-relocation.md",
+      "status": "pending"
     },
     {
       "source": "docs/design/synthesis/map-design-principles.md",
@@ -659,7 +903,87 @@
       "translatedDate": "2026-10-03"
     },
     {
+      "source": "docs/design/synthesis/new-granseal-castle-year-later-control.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-departure-through-battle09.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-departure-through-battle24-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-inventor-and-dynamite-gift.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-janet-recruitment-and-departure.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-return-and-astral-following.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-town-through-peter-introduction.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/north-cliff-entry-through-battle25-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/north-cliff-opening-and-rohde-recruitment.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/oddler-stays-and-fairy-handoff.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/opening-through-battle01.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/pacalon-castle-entry-and-first-visit.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/pacalon-departure-to-battle27-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/pacalon-interactions-and-castle-handoff.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/peter-castle-audience-through-town-return.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/synthesis/phase4-bootstrap-plan.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/polca-departure-through-luke-recruitment.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/polca-fairy-through-battle12-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/polca-oddler-choice-and-following.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/post-tower-return-through-earthquake-entry.md",
       "status": "pending"
     },
     {
@@ -670,6 +994,22 @@
       "mirrorSha256": "9bc80518a7671b92c65dfebdc3c1a909ab1cdd63ae2ec0d8eff2990839130089",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/ribble-may-through-battle10-admission.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/ribble-tree-opening-and-achilles-sword.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/south-parmecia-through-kraken-battle16-entry.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/southwest-parmecia-through-taros-battle18-entry.md",
+      "status": "pending"
     },
     {
       "source": "docs/design/synthesis/story-progression.md",
@@ -688,6 +1028,18 @@
       "mirrorSha256": "92d953f5b02c385f9289cc461bc72f39b112cc2e0745f096ec97a32988669320",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/volcanon-return-through-bedoe-king-choice.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/voyage-through-damaged-ship-control.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/synthesis/willard-burrow-through-battle23-entry.md",
+      "status": "pending"
     }
   ]
 }
