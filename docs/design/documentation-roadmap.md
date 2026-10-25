@@ -91,13 +91,13 @@ reviewers.
 
 ## Current Baseline and Near-Term Synthesis
 
-**Current scope agreement — Standard.** The next English design round consumes accepted data
+**Current scope agreement — Standard.** This English design round consumes accepted data
 under [Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514). Its outcome is a
 readable account of the game's connected rules, world progression and player choices that supports
 later design and implementation decisions. Standard rigor fits known evidence owners with
 cross-system dependencies: declare each theme's claims and acceptance, independently review them,
-and reassess at the first representative delivery. This round does not select a new engine,
-rebalance the game or expand the playable milestone.
+and reassess when a new claim or ownership conflict changes the scope. This round does not select
+a new engine, rebalance the game or expand the playable milestone.
 
 ### Accepted starting point
 
@@ -106,7 +106,7 @@ The [Gameplay Overview](synthesis/gameplay-overview.md) remains the reader entry
 [Progression and Economy](synthesis/progression-and-economy.md),
 [Story Progression](synthesis/story-progression.md) and
 [Map Design Principles](synthesis/map-design-principles.md) remain the thematic owners. Their
-accepted material is reusable; this plan does not imply their revisions have already been written.
+accepted revisions provide the connected explanations selected below.
 Existing detailed story guides remain available through Story Progression and the
 [design index](../README.md#design), including the
 [Battle27 activation guide](synthesis/battle27-activation-and-first-turn-dispatch.md).
@@ -119,6 +119,55 @@ not a naturally played walkthrough, every NPC/chest/service visit, every legal c
 an exhaustive content census. Later research has not automatically become accepted synthesis.
 The coverage owner's [remaining dispositions](../research/story-content-coverage.md#remaining-labels-and-next-content-task)
 select no automatic collection queue.
+
+### Selected English source set and reconciliation
+
+The bounded English source set is exactly these five existing synthesis files. Each now has its
+substantive explanation; **no further substantive rewrite is planned for any of them in this round**.
+This disposition concerns the selected themes, not all design contracts or detailed chapter guides.
+
+| Selected source | Current reader responsibility | Substantive rewrite remaining |
+| --- | --- | --- |
+| [gameplay-overview.md](synthesis/gameplay-overview.md) | Connected loop, theme entry and original/observed/remake/production boundaries. | None planned. |
+| [story-progression.md](synthesis/story-progression.md) | Six chapter groups through ending/reset, selected optional branches and the Taros/Caravan dependency example. | None planned. |
+| [tactical-battle-loop.md](synthesis/tactical-battle-loop.md) | Common choices, resolution and returns, with five encounter comparisons and their exceptions. | None planned. |
+| [progression-and-economy.md](synthesis/progression-and-economy.md) | Membership, class, equipment and growth joined to receipt, capacity, spending and recovery. | None planned. |
+| [map-design-principles.md](synthesis/map-design-principles.md) | Attempted interaction, dialogue continuation, transport, live/rebuilt state and persistence boundaries. | None planned. |
+
+**Integrated candidate disposition:** prepared for independent main-gate reader acceptance, not
+self-accepted. The review route is overview → appropriate theme → chapter/example → named evidence,
+with thematic and chapter links back to useful reading entry points. Its connected example follows
+[Ribble/Achilles → Taros → Caravan](synthesis/story-progression.md#worked-example-taros-and-the-caravan):
+capacity/refusal, custody versus equipment, admission versus effect, first/repeat and non-victory
+returns, acquisition versus boarding, and separate service access. Complementary Creed/Jaro,
+reward/smith and Polca no-scroll/scroll branches check membership/control, resource and lifecycle
+seams. These are selected static connections and bounded observations, not one naturally played
+campaign or an all-content audit. Detailed review routes, exact candidate base/head/tree and actual
+check results belong to [Issue #1280](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1280)
+and its PR.
+
+Stability becomes effective only after main-gate independently accepts and merges the integrated
+candidate and confirms this no-planned-rewrite disposition. Main-gate records the exact accepted
+merged source revision in that handoff before a separate translation dispatch. This is eligibility
+for those five sources, not translated content, global translation PASS or completion of bilingual
+Epic #514. [#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434) selects the distinct
+[map-exploration contract](contracts/map-exploration.md); its source readiness must be assessed
+separately and is not conferred by this synthesis set. Existing Chinese mirrors and source anchors,
+including drift and failures, remain unchanged.
+
+The retained questions are precise limits on the explanation, not planned rewrites or automatic
+research tasks:
+
+| Retained question | Owning boundary |
+| --- | --- |
+| Natural campaign reach, every legal action/interaction and unobserved caller/presentation completion. | [Story coverage's four frontiers](../research/story-content-coverage.md#four-different-frontiers) and the selected chapter/encounter owners. Static connections do not extend the original observed route. |
+| Complete promotion mutation, all-roster choices and campaign balance/scarcity. | [Party/resource judgment boundary](synthesis/progression-and-economy.md#judgment-boundary), [promotion](synthesis/progression-and-economy.md#definitions-current-class-and-promotion) and their named contracts. No optimal-build or universal curve claim is made. |
+| Full transport/return lifecycles and durable save/suspend survival. | [Map return/persistence](synthesis/map-design-principles.md#return-and-persistence), [resource persistence](synthesis/progression-and-economy.md#persistence-boundary) and [save contract](contracts/save-system.md). Save-domain inclusion, save return and durable storage remain separate. |
+| Broader playable content, hardware fidelity and future UI/UX or save choices. | [Capability owner](../../remake/docs/capability-status.md), [accepted milestone](synthesis/map3-battle01-readiness.md#accepted-current-milestone) and [accepted/future choices](synthesis/gameplay-overview.md#made-remake-choices-and-remaining-product-choices). English coverage grants no production admission. |
+
+Historical original/modern failures, #1047's twelve completed unresolved comparisons and prior
+actual diagnostics, corrections and CI remain with the linked evidence and Issue/PR owners.
+No historical suite is rerun or relabeled to establish this source disposition.
 
 The [Map3–Battle01 readiness owner](synthesis/map3-battle01-readiness.md#accepted-current-milestone)
 and [retained comparison owner](../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
@@ -161,11 +210,11 @@ framework or wholesale file moves. Length follows content and readability, not a
 
 ### Delivery order and acceptance
 
-These are five milestones, not five mandatory files or one task per row. Each executable Issue
-owns one coherent reader outcome and exact paths. The first milestone has a representative delivery
-before expansion; later Issue boundaries follow that review rather than precreating a large backlog.
+These five acceptance boundaries govern the selected source set, not one task per row or a new
+writing queue. Each executable Issue owns one coherent reader outcome and exact paths; independent
+review judges reader usefulness as well as evidence interpretation.
 
-| Milestone | Reader question and planned deliverable | Starting owners and dependencies | Acceptance boundary |
+| Milestone | Reader question and deliverable | Owners and dependencies | Acceptance boundary |
 | --- | --- | --- | --- |
 | 1. Connected overview and campaign structure | How do the systems fit together, what changes across the world, and where do choices branch? Refresh the overview and turn Story Progression into a chapter-oriented route with links to existing detail. Extend the later chapter explanation from accepted research. | Existing overview/story owners; [chapter coverage](../research/story-content-coverage.md), [gameflow](../research/gameflow-core.md), [dialogue](contracts/dialogue-system.md), [roster](contracts/party-roster-state.md). | A reader can follow qualified entry, prerequisite, encounter/outcome and return connections through the selected chapter spine to the ending, find optional branches and distinguish static connections from observed play. Every selected group is explained or explicitly bounded; chronological numbering is not proof. |
 | 2. Tactical rules and encounter composition | What can a combatant do, how is a turn resolved, what activates enemies, and what changes between encounters? Revise Tactical Battle Loop and organize evidence-backed encounter differences with representative examples. | [Battle control](contracts/battle-control-lifecycle.md), [actions](contracts/battle-action-construction.md), [navigation](contracts/battlefield-navigation.md), [AI](contracts/battle-ai-decision.md), [combat](contracts/combat-resolution.md), [spells](contracts/spell-resolution.md), selected encounter research linked by coverage. | Explain legal actions, movement/target conditions, resolution, enemy activation/control, outcome and retry/return boundaries. Separate common rules from boss, neutral, repeat and special-encounter exceptions; an initial formation or first dispatch does not prove a played battle or every AI decision. No simulator, difficulty rating or balance proposal. |
@@ -173,29 +222,20 @@ before expansion; later Issue boundaries follow that review rather than precreat
 | 4. Exploration, interaction and continuity | How do movement, interaction, map transitions, dialogue, transport and world changes compose, and which state survives each kind of return? Update Map Design Principles and the relevant story/overview sections, separating save/suspend from ordinary map return. | [Map exploration](contracts/map-exploration.md), [dialogue](contracts/dialogue-system.md), [map-entry state](contracts/map-entry-routing-state.md), [save](contracts/save-system.md), [input](contracts/input-system.md), accepted scene/service/transport owners. | Explain conditional interactions, current versus rebuilt entities, story gates, return/re-entry and persistence limits. Summarize accepted feedback/input/audio choices by linking their owners; no new UI layout, art/accessibility choice, save design or hardware-parity target. |
 | 5. Integrated reader acceptance | Can a reader move from overview to a theme, through a chapter example, and back to its evidence without contradictions? Reconcile cross-links and repeated explanations; record the selected English themes that are stable and any deferred questions. | All accepted theme revisions; roadmap and existing navigation; independent main-gate review. | Review at least one connected route plus an optional/refusal or failure branch across themes. Verify consistent terminology, state distinctions and original/remake boundaries, not just links. Unexplained claimed transitions return to their owner. English completion does not complete the bilingual Epic. |
 
-**First executable outcome:** milestone 1 starts with the reading structure and one worked
-cross-system example, rather than rewriting the entire corpus at once. Use the accepted
+Integrated review uses the existing reading structure and worked cross-system example. Its accepted
+detail remains in the
 [sword acquisition guide](synthesis/ribble-tree-opening-and-achilles-sword.md),
 [Taros admission guide](synthesis/southwest-parmecia-through-taros-battle18-entry.md),
 [Battle18 initialization/first-control research](../research/battle18-initialization-and-first-control.md),
 [Caravan acquisition guide](synthesis/battle18-outcomes-and-caravan-acquisition.md) and
 [Caravan travel guide](synthesis/caravan-boarding-and-southwest-parmecia-travel.md).
-This example should connect an item/encounter condition, battle and outcome boundaries, acquisition
-and a later traversal option. Include a supported refusal/failure or missing-prerequisite branch;
-when an outcome is not established, expose that precise gap rather than fill it with a story.
-The example explains only accepted links and does not assert a naturally uninterrupted itinerary.
-
-The first Issue should own bounded edits to the overview and story owner, plus only necessary
-navigation. Detailed reference owners remain read-only unless a concrete correction is separately
-scoped. Its review must show that the explanation helps a reader understand those dependencies
-without duplicating detailed traces. Main-gate then records continue, narrow or revise before
-extending the chapter groups. This is an engineering checkpoint, not another required user approval.
-
-Milestone 2 follows the accepted milestone 1 structure; milestones 3 and 4 consume stable terminology
-from the preceding themes. A finding may require a narrow earlier-theme correction, with explicit
-ownership transfer. Main-gate serializes roadmap/index and other shared edits. This plan does not
-require parallel writers or open-ended agent sessions. Milestone 5 is a cross-theme acceptance pass,
-not a new research campaign or another general document rewrite.
+The example connects an item/encounter condition, battle and outcome boundaries, acquisition and a
+later traversal option, preserving refusal/failure and missing-prerequisite branches. An outcome
+not established remains a precise gap; the example asserts no naturally uninterrupted itinerary.
+Detailed reference owners remain read-only unless a concrete correction is separately scoped.
+Main-gate serializes roadmap/index and other shared edits. Integrated acceptance checks these
+connections and repeated terminology across themes; it is not another general rewrite or research
+campaign. A new contradiction returns to its owner before the affected claim expands.
 
 ### Evidence, effort and stopping rules
 
@@ -214,14 +254,13 @@ answer it. Such an Issue names the smallest missing condition and required evide
 instruction to collect all remaining data. Existing detailed failures and #1047's completed
 unresolved comparisons remain preserved, not relabeled as interruptions or rerun to clear prose.
 
-This is a documentation program using existing text and public facts. Initial planning assumes one
+This is a documentation program using existing text and public facts. Work uses one
 active theme writer, independent review and sequential integration, with small Markdown diffs and
 local review notes. No new raw acquisition, private payload copy, generated data corpus, database,
 comparison framework or maintained checker is needed. The uncertain cost is evidence reconciliation
-and readable synthesis, not processing volume. Do not promise calendar completion before the first
-delivery; use its actual authoring, review and correction effort to size the remaining Issues.
-If a second theme needs the same fact copied, a task cannot define its reader question, or evidence
-repair starts dominating explanation, reassess ownership and scope before scaling. Necessary design
+and readable synthesis, not processing volume. Use actual authoring, review and correction effort
+when sizing any later expansion. If a theme needs the same fact copied, a task cannot define its
+reader question, or evidence repair starts dominating explanation, reassess ownership and scope before scaling. Necessary design
 and review are not sacrificed to an arbitrary cost or document-length target.
 
 Each slice requires direct prose/scope, relative-link/anchor, UTF-8/private-boundary and
@@ -231,10 +270,11 @@ suites for this round. Independent review checks evidence interpretation and rea
 a mechanical PASS alone is insufficient. Leave a clean committed/pushed Draft PR for independent
 acceptance. No historical report, private input or retained failure is deleted by this plan.
 
-This plan owns only the roadmap and Epic coordination. Subsequent English writing uses separately
-scoped Issues. Chinese mirrors, glossary and translation anchors remain untouched until a selected
-English theme is accepted and has no planned substantive rewrite in this round. Record that stable
-source before dispatching its translation batch; [#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434)
+This roadmap owns the current agreement and source disposition; Issues own task coordination.
+Any later English expansion uses a separately scoped Issue. Chinese mirrors, glossary and translation
+anchors remain untouched until a selected English theme is accepted and has no planned substantive
+rewrite in this round. Record that stable source before dispatching its translation batch;
+[#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434)
 remains deferred. [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) and its UI/UX
 tasks keep product ownership; [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638)
 remains paused. This round does not authorize production admission, new art, save/load implementation,

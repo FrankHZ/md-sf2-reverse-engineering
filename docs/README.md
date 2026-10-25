@@ -122,8 +122,12 @@ evidence denominators; story prose does not add fixture or index credit.
 Contracts express implementation-neutral original behavior; synthesis explains accepted research and
 separately identified remake choices. Remake implementation does not establish original evidence.
 Start with the [roadmap's current English-first agreement](./design/documentation-roadmap.md#current-baseline-and-near-term-synthesis):
-the accepted overview leads to the current opening-through-Battle01 content segment. Later segments
-and wider thematic revisions require separate dispatch. [Chinese synchronization is deferred](./design/documentation-roadmap.md#authoring-language-policy)
+the [overview](./design/synthesis/gameplay-overview.md) leads to story/chapters, tactical rules,
+party/resources and exploration/continuity. [Story Progression's six chapter groups](./design/synthesis/story-progression.md#read-story-content-in-segments)
+connect selected accepted static content through ending/reset, with detailed guides and evidence
+at their named boundaries. The [five-theme source disposition](./design/documentation-roadmap.md#selected-english-source-set-and-reconciliation)
+keeps integrated source acceptance separate from the bounded playable remake milestone.
+[Chinese synchronization is deferred](./design/documentation-roadmap.md#authoring-language-policy)
 until each selected English theme is independently accepted and stable; existing drift remains explicit.
 The glossary and existing `sf2 zh-meta` commands retain ownership of eventual translation QA.
 
