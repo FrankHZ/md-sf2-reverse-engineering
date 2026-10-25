@@ -30,9 +30,10 @@ remains the review baseline unless a localization batch defines another explicit
 is deferred until the selected theme's English source is stable. Stability means its substantive
 English revisions have been independently accepted and merged, and no planned rewrite remains for
 that theme in this round. Main-gate records that readiness before dispatching a separately scoped
-translation batch. [#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434) remains
-deferred; completing the baseline calibration alone does not dispatch it or establish stability for
-all themes. Chinese translation and continuing synchronization remain eventual epic deliverables.
+translation batch. [#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434) tracks its
+separately scoped synchronization from an independently assessed stable map-exploration source;
+completing the baseline calibration alone does not establish stability for all themes. Chinese
+translation and continuing synchronization remain eventual epic deliverables.
 
 During this English round, preserve existing Chinese mirrors, glossary and translation metadata,
 including known drift and retained diagnostic failures. Do not refresh source anchors to conceal
@@ -275,7 +276,8 @@ Any later English expansion uses a separately scoped Issue. Chinese mirrors, glo
 anchors remain untouched until a selected English theme is accepted and has no planned substantive
 rewrite in this round. Record that stable source before dispatching its translation batch;
 [#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434)
-remains deferred. [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) and its UI/UX
+tracks its separately scoped accepted-source translation.
+[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) and its UI/UX
 tasks keep product ownership; [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638)
 remains paused. This round does not authorize production admission, new art, save/load implementation,
 full-game parity or a general comparator.
