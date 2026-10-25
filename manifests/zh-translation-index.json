@@ -19,10 +19,10 @@
       "source": "docs/design/contracts/audio-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/audio-system.md",
-      "sourceSha256": "8ebc53c0ed72b25be33f7acd79fe8d1ea39eaad5624645f102ac4f963309ce0f",
-      "mirrorSha256": "6132cdeea0250ed6de43c460b1e8f0f37b86b19e30ddc21c79ef067f0b5f64e9",
+      "sourceSha256": "1444b674cd9e5453b2d408924e853c3213ba65a43d50b61f2e8bdb4753c8fee9",
+      "mirrorSha256": "f82dcfcbb5e4da33ae3a4eea81c2ec3cab4fe800c25dd913d1dc00981d8e0523",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/battle-action-construction.md",
@@ -37,10 +37,10 @@
       "source": "docs/design/contracts/battle-ai-decision.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-ai-decision.md",
-      "sourceSha256": "6d8fdc5744384fa4156ed7e49744ebc64e9b7fa0aa5158fb548551ce9237a681",
-      "mirrorSha256": "df49787a7551495c4d5c8eab39624d8fd42c0d8fc68bc5145ff2367d2a8d24bb",
+      "sourceSha256": "3030bb6eadcd2f3a2f534f93ed91d5a11be793ad66c0cca4caf121639f2f5a1b",
+      "mirrorSha256": "7c5dfe9f9539f6dc16fbb28ebb1cedf2b3db5a6c9bdf3345b9a75af677373aaf",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/battle-background-graphics-data.md",
@@ -55,10 +55,10 @@
       "source": "docs/design/contracts/battle-control-lifecycle.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-control-lifecycle.md",
-      "sourceSha256": "8dba0ec2904e8e41c039518fba36cfeec401fddbfc65008815f6df5e3a4d382a",
-      "mirrorSha256": "98b69635bdc17ba514ac136e0686cba79cbb39f24c030e1c3904451103c26da2",
+      "sourceSha256": "6a359689c8456c20192e0781a4734f064f7e2e3b9fbaf240498b0b0073248db5",
+      "mirrorSha256": "511e2f7244ffa5d1c0b3adc240662a433bd4170aa0bd535793fe0fef7e85e703",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/battle-cutscene-routing.md",
@@ -181,10 +181,10 @@
       "source": "docs/design/contracts/dialogue-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/dialogue-system.md",
-      "sourceSha256": "039bab8f24d80ddf546d8a85406a57c0f4ae7ad062d41af3d5211124e1e39dca",
-      "mirrorSha256": "09e52aac5500897235ff04afaef1ff7ae74b663eded95e1e68cdf0fda4fa5129",
+      "sourceSha256": "a89c96402c01b37535b9073f63ca24d5596deb043ed6e4ff8b1e8e376fc57e01",
+      "mirrorSha256": "2550956a3a4942f250c523a2c1fda38f0a0be8e377be8ac600749cc813e4ca95",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/enemy-definition-data.md",
@@ -374,10 +374,10 @@
       "source": "docs/design/contracts/music-wait-service.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/music-wait-service.md",
-      "sourceSha256": "732e4fc565f84dccf57249b1eb887a40c751ffd21df45b2941623c635d2a6463",
-      "mirrorSha256": "26abdc8f8ef77f9227a36f921ea3f69c7b61064508cb1799e5e9da2ba6eed55b",
+      "sourceSha256": "61eda86600ccc3a0b5e8d9d788e0726df94dadffa91d7e99b82948f2cf54bb86",
+      "mirrorSha256": "562d2a63cf06b6d12dba2a8a6778c34b1b4eac8dec8075dc57f7f7f5efc9f390",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/name-table-lookup-service.md",
@@ -410,10 +410,10 @@
       "source": "docs/design/contracts/party-roster-state.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/party-roster-state.md",
-      "sourceSha256": "8f03630a5c0587d55175d1df908015050e9c0b7b9f3f6f76ab6f372f7cb4436b",
-      "mirrorSha256": "669904e8360e3163096d46af888a241cd3b8e6261e4a47aa9f9befee1d072f53",
+      "sourceSha256": "e0859c2f8682eb5ac0dc9f5754e0a08096dea16beb4eaccda03b4e716b0c6a0e",
+      "mirrorSha256": "de3d2fcbd117a67cd223a939abc206940e4a7218b26028b06c3ba397dccf3799",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/portrait-graphics-data.md",
@@ -437,10 +437,10 @@
       "source": "docs/design/contracts/randomness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/randomness.md",
-      "sourceSha256": "e9ffd68d952a20d450f040f1c19f34a1427d42e946bb10e2db7e9f24a716da74",
-      "mirrorSha256": "0cf3da7f2e2283773a719133271830ff9274f53c4f3dcc8f4fa1ab5b377f5b84",
+      "sourceSha256": "8612ac34dfa2a880fdfd5e95e3b3aa28d30b0064709cdc9e34da455bc2567de7",
+      "mirrorSha256": "eb5a6ce4c2d8f90ea09147fd4981899ee3673bbd24907b611afe95c64115c499",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/rom-header-data.md",

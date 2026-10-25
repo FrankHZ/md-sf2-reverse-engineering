@@ -2,14 +2,14 @@
 
 - **已确认的原版结构与有界行为：** 十种源码命名的地图脚本命令形式、它们的物理流布局、命名处理器的分支/变更/调用顺序、源码位置语料、直接/有效调用方身份，以及到 common-stats 与随从所有者的溯源连接。
 - **推断的原版行为：** 本合同中没有推断。
-- **未知的原版行为：** 正常剧情可达性、名册/列表容量、玩家可见的名册/败北结果，以及物理/跨进程 SRAM 持久性。
-- 重制状态：实现无关的 Phase 3 合同；尚未选择任何引擎。
+- **未知的原版行为：** 正常剧情可达性、名册/列表容量、玩家可见的名册/死亡结果，以及物理/跨进程 SRAM 持久性。
+- 重制状态：实现无关的 Phase 3 合同；实现方向与能力状态由 [ADR 0019](../../../decisions/0019-state-and-content-driven-remake-engine.md) 和[重制能力台账](../../../../remake/docs/capability-status.md)负责。
 
 > 本文件是 [`party-roster-state.md`](../../contracts/party-roster-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 导入边界
 
-重制导入器必须把源码形式 `join`、`jumpIfDefeatedByLastAttack`、`jumpIfDead`、`allyDefeated`、`updateDefeatedAllies`、`reviveAlly`、`joinBatParty`、`joinForceAI`、`resetForceBattleStats` 与 `addNewFollower` 保留为不同的有序命令。它必须保留每个命令的原始字节宽度、操作数宽度与流偏移、源码程序身份、命令索引与原始操作数文本。它必须保留两个完整的 304 行程序总数语料，包括零行与两个零使用名册/败北形式；零源码使用次数并不确立运行时不可达性。
+重制导入器必须把源码形式 `join`、`jumpIfDefeatedByLastAttack`、`jumpIfDead`、`allyDefeated`、`updateDefeatedAllies`、`reviveAlly`、`joinBatParty`、`joinForceAI`、`resetForceBattleStats` 与 `addNewFollower` 保留为不同的有序命令。它必须保留每个命令的原始字节宽度、操作数宽度与流偏移、源码程序身份、命令索引与原始操作数文本。它必须保留两个完整的 304 行程序总数语料，包括零行与两个零使用名册/死亡形式；零源码使用次数并不确立运行时不可达性。
 
 导入器必须分别保留宏与处理器标签。特别是，`jumpIfDefeatedByLastAttack` 是处理器 `csc0E_jumpIfForceMemberInList` 的源码宏标签；绝不得把它静默归一化为新的语义命令名。`jumpIfDead` 与 `csc0F_jumpIfCharacterDead` 同样是独立的源码身份。任何面向引擎的名称只能作为显式版本化的重制决定添加，而不能替代这些源码标签。
 
@@ -35,7 +35,7 @@
 
 可执行证据是 `tests/fixtures/h2/map-script-engine-static-v1.json` 处、字段 `forceStateCommandFacts` 的测试夹具 ID `sf2-map-script-engine-static-v1`；其验证器是 `src/sf2tool/h2/map_script_engine.py`。它固定上游提交、US ROM 哈希、处理器地址、完整 304 程序源码位置/总数语料、段守卫、调用方映射与 common-stats 溯源身份。嵌套的 `forceStateCommandFacts.activePartyCommandFacts` 字段固定另外四种形式、它们的 29 个位置、源码所有者身份与它们自己的 304 行总数语料。
 
-名册/败北矩阵是 `tests/fixtures/h3/force-state-roster-death-v1.json` 处、测试夹具 ID `sf2-force-state-roster-death-runtime-v1`；其验证器是 `src/sf2tool/h3/force_state_roster_death.py`。它确认固定的 14 个处理器案例矩阵：已加入成员的 absent/already-present、败北列表 empty/hit/miss、HP dead/live、败北追加、败北更新的 offscreen/onscreen，以及 revive 的 empty/hit-first/hit-middle/miss。它还确认已加入成员资格和 HP 位于原版 4,016 字节 `COMBATANT_DATA` 的 SaveGame/LoadGame 域内，而 `DEAD_COMBATANTS_LIST` 及其长度位于该域外。只有会变更的 absent-join 案例执行原版 SaveGame、对已加入标志字节的窄范围逆向毒化、原版 LoadGame 和原版 `CheckFlag`，并记录独立推导出的选定物理 SRAM 字节、校验和字节及 `SAVE_FLAGS` 已占用位。HP 案例是已保存域中的分支观察，而非合成的 Save/poison/Load 证据；列表案例是处理器局部的范围恢复事实，并非持久化主张。激活出战队伍矩阵是 `tests/fixtures/h3/force-state-active-party-v1.json` 处、测试夹具 ID `sf2-force-state-active-party-runtime-v1`；其验证器是 `src/sf2tool/h3/force_state_active_party.py`。它确认有界的处理器局部标志/列表时序、激活/加入状态、重置服务顺序与随从分配/列表效果；重制版仍必须通过
+名册/死亡矩阵是 `tests/fixtures/h3/force-state-roster-death-v1.json` 处、测试夹具 ID `sf2-force-state-roster-death-runtime-v1`；其验证器是 `src/sf2tool/h3/force_state_roster_death.py`。它确认固定的 14 个处理器案例矩阵：已加入成员的 absent/already-present、败北列表 empty/hit/miss、HP dead/live、败北追加、败北更新的 offscreen/onscreen，以及 revive 的 empty/hit-first/hit-middle/miss。它还确认已加入成员资格和 HP 位于原版 4,016 字节 `COMBATANT_DATA` 的 SaveGame/LoadGame 域内，而 `DEAD_COMBATANTS_LIST` 及其长度位于该域外。只有会变更的 absent-join 案例执行原版 SaveGame、对已加入标志字节的窄范围逆向毒化、原版 LoadGame 和原版 `CheckFlag`，并记录独立推导出的选定物理 SRAM 字节、校验和字节及 `SAVE_FLAGS` 已占用位。HP 案例是已保存域中的分支观察，而非合成的 Save/poison/Load 证据；列表案例是处理器局部的范围恢复事实，并非持久化主张。激活出战队伍矩阵是 `tests/fixtures/h3/force-state-active-party-v1.json` 处、测试夹具 ID `sf2-force-state-active-party-runtime-v1`；其验证器是 `src/sf2tool/h3/force_state_active_party.py`。它确认有界的处理器局部标志/列表时序、激活/加入状态、重置服务顺序与随从分配/列表效果；重制版仍必须通过
 `force-state/active-party-ai-follower/normal-story-reachability`、
 `force-state/active-party-ai-follower/save-load-capacity-lifecycle` 与
 `force-state/active-party-ai-follower/player-visible-presentation`
