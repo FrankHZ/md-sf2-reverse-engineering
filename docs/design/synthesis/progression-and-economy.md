@@ -1,12 +1,12 @@
 # Progression and Economy
 
-- Status: **Confirmed** party/development rules at the static and bounded observed seams below,
+- Status: **Confirmed** party/development and resource rules at the static and bounded observed seams below,
   with **Inferred** connections to later choices and explicit **Unknown** campaign and lifecycle limits.
 - Audience: readers following the [Gameplay Overview](gameplay-overview.md#the-force-membership-active-roles-and-character-growth),
   researchers, fidelity implementers and designers.
-- Scope: explain membership, class/promotion, equipment, learned magic and reward-driven growth;
-  retain bounded resource/service material for the subsequent resource explanation. This is not
-  all-roster coverage, a campaign economy, milestone 3 completion or Chinese readiness.
+- Scope: connect membership, class/promotion, equipment, learned magic and reward-driven growth
+  with item custody, gold, capacity, spending and recovery. This is not all-roster/service coverage,
+  a campaign balance model, natural complete play or Chinese readiness.
 
 ## Reading Route and Current Agreement
 
@@ -16,16 +16,17 @@ existing thematic owner is sufficient. Start with [party development](#party-dev
 [battle-driven progression](#battle-driven-progression) into the
 [worked example](#worked-example-growth-changes-preparation-without-healing), then use the
 [evidence matrix](#evidence-matrix) for exact rules and fixtures. The
-[resource/service sections](#gold-and-item-economy-boundaries) retain an interim boundary; detailed
-shopping, custody, storage and service-choice synthesis belongs to the sequential resource outcome.
+[resource/service sections](#gold-and-item-economy-boundaries) connect receipt, capacity and spending;
+the [two resource examples](#connected-resource-examples) follow those choices across refusal and revisit.
 [Story Progression](story-progression.md#read-story-content-in-segments) owns where recruitment and
 service opportunities connect to the world; [Tactical Battle Loop](tactical-battle-loop.md) owns
 whether a prepared actor's selected action is legal and effective.
 
 The outcome is to explain how a retained member's class, equipment, spells and growth become inputs
-to later choices. It does not choose a best party, promotion time, balance curve, new product policy,
-engine architecture or acquisition programme. Definitions and controlled observations remain separate
-from natural campaign reach, presentation and current remake support.
+to later choices, and how resources enable or constrain those choices. It does not choose a best party,
+promotion time, balance curve, new product policy, engine architecture or acquisition programme.
+Definitions and controlled observations remain separate from natural campaign reach, presentation
+and current remake support.
 
 ## Judgment Boundary
 
@@ -155,7 +156,7 @@ makes an intended action effective. The accepted smith
 [equipment continuation](../../research/dwarven-village-and-mithril-smithing.md#fulfillment-inventory-and-optional-equipment)
 retains both source order and bounded observations, including a previously equipped Dark Sword
 blocking replacement while the newly received weapon remains carried. Detailed fulfillment/custody
-belongs to the resource explanation.
+appears in the [smith service account](#mithril-orders-placement-readiness-and-collection).
 
 Broken and cursed describe different constraints. The
 [tactical item route](tactical-battle-loop.md#items-custody-equipment-and-use-are-separate) distinguishes
@@ -362,31 +363,255 @@ every successful join or EXP award grants an immediate usable new action.
 
 These are resource mutations, not proof of how or when the player is shown a reward summary.
 
+### Sources, receipts and the capacity decision
+
+Gold, EXP and an item do not arrive through one indivisible reward. The
+[tactical reward handoff](tactical-battle-loop.md#rewards-become-persistent-through-their-own-routes)
+separates action construction from replayed gold/EXP commands and the kill-side item route.
+Battle 01's EXP adjustment is not a gold reduction; the [growth account](#battle-driven-progression)
+explains what stored EXP can subsequently change. The drop facts above describe success **after**
+the named battle/enemy/item preconditions, not a prize attached to every victory. Leader cleanup
+alone does not produce an earned kill/drop. The three conditional boss weapons retain their RNG
+gate; the other matching records need no drop RNG, but still need their held item and clear once-bit.
+The once-bit is set before enemy removal and delivery, so a failed direct route is not an unclaimed
+item waiting to retry. A rare fallback is a Deals count, not custody in a member's usable slot.
+
+**Confirmed static:** ordinary field Search has a different handoff. The
+[field-search owner](../../research/field-search-control.md#confirmed-static-spine) distinguishes
+encoded gold content (which calls `IncreaseGold`) from an item pickup. Item delivery tries the leader's
+four slots first, then the rebuilt joined-force alternatives. If none has room, `CloseChest` and
+`RefillNonChestItem` restore the claim path; it is not the battle-drop discard/Deals route. An opened
+chest flag or changed working-layout block can precede this capacity resolution. Exact Search dispatch,
+coordinates and later reload behavior belong to their map/field owners, not an assumed universal
+"collect treasure" action. This is source order, without a naturally observed pickup or save guarantee.
+
+A mandatory story receipt can instead require making room. The
+[Sky Orb](story-progression.md#nazca-cameela-and-the-sky-orb) and
+[Force Sword](story-progression.md#attract-the-leader-extract-the-sword-then-use-it)
+paths scan joined inventories without an active/alive filter. When all are full, cancel, declined
+discard, an unsellable selection or an equipped cursed item can loop rather than finish. A rare
+discard requests Deals and continues selection; the returning replacement path needs an accepted
+non-rare discard. The caller therefore does not guarantee completion for every full inventory.
+The Orb actor is hidden before its award attempt; Sword extraction's flag is written after the scene
+without a separate grant-result check. Neither is an independent certificate of custody or equipment.
+
+An optional custom receipt need not use either policy. The
+[Moun Arm](story-progression.md#optional-moun-interactions-and-the-arms-custody) question can be
+declined; all joined members full reports failure with the Arm still claimable and no discard menu.
+Success adds it before recording the award. Losing it later does not clear that record, and an
+interruption can leave custody before the record. These examples explain why a content flag, helper
+request, successful receipt and later usable result must be named separately. They do not establish
+a complete income catalog, item abundance or campaign scarcity.
+
+### Custody, storage and active membership
+
+There are three different capacity questions:
+
+| Limit | What it constrains | What it does not imply |
+| --- | --- | --- |
+| Four member-held item slots | A particular member's next item receipt; equipped gear still occupies a slot. | No force-wide four-item cap, auto-equip, healing or guaranteed exchange. |
+| Twelve ordinary active members | Caravan Join's relief choice and ordinary auto-activation; see [party membership](#joining-fighting-following-and-being-alive). | Reserves still belong to the force and can be inventory recipients in named routes; explicit Jaro conversion remains an exception. |
+| Sixty-four Caravan stored items | Depot's separate deposit guard. | No extra member slots, active-party place, or proof that boarding grants every depot action. |
+
+**Confirmed source-static service:** [Caravan actions](../contracts/service-interactions.md#caravan-source-boundary)
+select Join/Depot/Item/Purge. Join has a twelve-member comparison before choosing relief; its relief
+path requests leave then join. Purge requests leaving the active party, distinct from losing joined
+membership or deleting held items. Empty reserve/active lists and cancelled selections return through
+their respective paths; Join has a separate zero-HP confirmation and relief/Purge refuse the leader.
+Neither action revives a member. The [Taros/boarding example](story-progression.md#worked-example-taros-and-the-caravan)
+separates acquisition, boarding/traversal and the C-interaction menu handoff. A transport state or a
+named menu caller proves neither a completed storage transaction nor natural service availability.
+
+Depot offers Look/Deposit/Derive/Drop; "Derive" is the source's withdrawal label. Deposit refuses its
+full-storage boundary before member selection; cancellation or selected equipped-cursed refusal
+also precedes `AddItemToCaravan -> DropItemBySlot`. Withdrawal to a member with room
+requests `AddItem -> RemoveItemFromCaravan`; full recipient capacity selects the exchange path,
+`RemoveItemBySlot -> RemoveItemFromCaravan -> AddItem -> AddItemToCaravan`.
+Empty storage returns without withdrawal; item/recipient cancellation can leave or restart selection.
+Exchange checks the selected member item for equipped curse before its removal. Thus exchanging
+requires its own selected member item and guards. It is not a free extra slot or a universal refund scheme.
+Depot Drop has an unsellable guard and tests rarity separately after removal for a Deals request.
+Look's price display is not a sale or a gold credit.
+
+Item offers Use/Give/Equip/Drop. Give has separate cancellation, self-give, normal and exchange
+branches: normal transfer adds to the recipient before removing from the donor; self-give removes
+then adds; full-recipient exchange removes both selected items before the two adds. Equipped-cursed
+checks can reject the selected transfer or exchange. Use calls `UseItemOnField` before its removal
+request; this call order does not establish that every selected item has an effective field use.
+Equip is the source-selected equip-screen handoff. Drop and its rare Deals request are separate from
+Use, Sell and Deposit. [Tactical item choices](tactical-battle-loop.md#items-custody-equipment-and-use-are-separate)
+own the battle-specific give/drop/use rules; the
+[field-item owner](../../research/field-item-effects.md) owns field eligibility/effects.
+
+At the lower [Caravan/Deals storage boundary](../contracts/caravan-and-deals-state.md), Caravan add
+strips status bits, full add is ignored, and removal compacts with an `ITEM_NOTHING` tail. That
+contract deliberately keeps capacity and the numeric normalization mask outside its scope; the
+sixty-four service guard above comes from the common-menu owner. Neither normalization nor the
+service's ordered calls prove every equipment/broken-state consequence of a complete deposit/retrieve
+cycle. Deals has independent packed four-bit counts, saturating additions and ignored zero removals;
+the observed battle-drop case supplies `14 -> 15`/saturation, without making it a general menu result.
+These are stores and boundaries, not interchangeable inventories.
+
 ### Source-static service exchanges
 
-The original service rail confirms route dataflow and helper-call order. The current
-[service contract](../contracts/service-interactions.md) additionally owns bounded Raise/Cure/Save
-runtime observations, and the [smithing account](../../research/dwarven-village-and-mithril-smithing.md)
-owns later source/caller and controlled transaction evidence. The table is an interim route, not a
-complete service explanation; each row retains its evidence level.
+This stable heading routes earlier readers into the expanded service account. The
+[service contract](../contracts/service-interactions.md) owns action order, cancellation and direct
+resource calls. Current Raise/Cure/Save observations and later smithing review add only their named
+seams. Shared diamond/selection cancellation and local action loops are source-confirmed; they do
+not prove identical rollback, complete service visits, presentation or return to usable exploration.
 
-| Surface | Confirmed source-static price or gate | Confirmed mutation-call order | Runtime boundary |
-| --- | --- | --- | --- |
-| Shop Buy | 16-bit item price; gold and four-slot checks precede recipient path | `DecreaseGold -> AddItem` | Final gold/item state, cancellation side effects, and persistence are **Unknown**. |
-| Shop Sell | `(price * 3) >> 2`; unsellable and rare checks are distinct | `IncreaseGold -> DropItemBySlot`, with a conditional Deals helper | Rounding is source dataflow; helper outcomes are not covered by a service H3 fixture. |
-| Shop Repair | `price >> 2`; broken-item gate | `DecreaseGold -> RepairItemBySlot` | Final repaired state is **Unknown** at runtime. |
-| Deals purchase | 16-bit item price; gold and four-slot checks | `DecreaseGold -> AddItem -> RemoveItemFromDeals` | Failure rollback/atomicity and persistence are **Unknown**. |
-| Church Raise | Level-based price; promoted-data surcharge | Ordered payment, HP increase and mapsprite completion | **Confirmed bounded runtime:** equality-inclusive affordability and final HP `min(maxHP,200)`. Wider UI, caller and persistence limits remain at the [Raise seam](../contracts/service-interactions.md#church-raise-runtime-seam). |
-| Church Cure | Distinct poison, stun and item-price curse costs | Poison → stun → curse, with separate payment/status/equipment commits | **Confirmed bounded runtime:** ordered costs and final mutations in the named [Cure cohort](../contracts/service-interactions.md#church-cure-runtime-seam); broader admission, UI and persistence remain unclosed. |
-| Church Save | Prompt-dependent save versus initial exit | Accepted branch copies current map to Egress, sets flag 399 and calls `SaveGame`; later continue/suspend split | **Confirmed bounded runtime:** save call/return, with suspend observed only to its entry. [Save seam](../contracts/service-interactions.md#church-save-runtime-seam) does not prove durable storage or complete suspend. |
-| Church Promote | level 20 plus regular/special promotion-data gates | `SetClass -> Promote`; special branches include item/spell/weapon handling | Complete stat effects, item edge cases, and persistence are **Unknown**. |
-| Caravan | force 12, storage 64, and member inventory 4 are distinct guards | Deposit adds to caravan before member drop; derive/give have distinct normal and exchange sequences | Helper-internal results and persistence are **Unknown**. |
-| Blacksmith placement and fulfillment | Mithril, promoted/eligible class and payment; four-order post-placement continuation is not an admission gate | Placement, readiness and fulfillment are separate stages; received-item commitment precedes optional equipment | **Confirmed source and bounded controlled observations:** later [smithing owner](../../research/dwarven-village-and-mithril-smithing.md#smith-entry-party-list-and-order-classification) covers picker/class/RNG order, revisit flag and fulfillment. Natural complete service play, measured RNG distribution and durable persistence remain **Unknown**. |
+#### Shop: stock, price, recipient and commitment
 
-The confirmed battle-drop route into Deals is runtime evidence. Shop and caravan use of
-Deals retains its source-static boundary unless a named observation owns the same path; the smith's
-separately observed add/equip seams do not establish Deals runtime behavior. These two evidence
-levels must not be merged merely because they touch the same stored field.
+**Confirmed static:** Buy takes the current shop's count-prefixed item row, selected by
+`CURRENT_SHOP_INDEX`. The [item catalog](../contracts/item-definition-data.md#shop-and-debug-catalogs)
+owns the definitions and lookup; a listed definition or price is not natural availability in a
+particular chapter. Ordinary catalog stock and mutable Deals counts have different owners. Deals
+lists only identities with nonzero counts that are **absent from the current shop row**. A stored
+rare item therefore need not appear in that shop's Deals list, and "rare" does not mean an independent
+unlimited shop catalog.
+
+| Action | Source prerequisites/refusals before the resource calls | Ordered resource requests |
+| --- | --- | --- |
+| Buy | Stock/item selection, price confirmation, gold at least the definition's word price, recipient selection and held count below four. Full recipient can reselect or abandon; the weapon-equippability warning can be accepted for carrying. | `DecreaseGold -> AddItem`, followed separately by optional equipment. |
+| Deals purchase | Nonempty filtered Deals list, then the price/recipient route above; cancellation or no stock returns toward the action menu. | `DecreaseGold -> AddItem -> RemoveItemFromDeals`, then optional equipment. |
+| Sell | Member/item selection; unsellable item refused; confirmation; selected equipped cursed weapon/ring can be refused. Source price is `(price * 3) >> 2`. | `IncreaseGold -> DropItemBySlot`, then a conditional rare-item `AddItemToDeals`. |
+| Repair | Selected item must have the broken bit; confirmation, affordable `price >> 2`, and the selected equipped-cursed check must pass. Unbroken, declined or unaffordable paths return to selection without these calls. | `DecreaseGold -> RepairItemBySlot`. |
+
+The actual [shop statement records](../../../tests/fixtures/h2/common-menus-static-v1.json), not a
+helper's name, establish these branches and unsigned affordability comparisons (equality passes).
+Buy/Deals debit and add before asking whether to equip. Declining equipment or refusing removal of
+old cursed equipment does not undo those earlier requests. The post-add equipment path recounts
+inventory and uses count minus one; its source assumptions are not an arbitrary-hole repair rule.
+Sell credits before its drop request; Repair pays before its repair request. There is no universal
+atomicity/refund guarantee here. Final shop helper outcomes, interrupted UI effects and persistence
+remain **Unknown** at this service boundary even where lower helpers or a smith seam have observations.
+Buy/Sell/Repair repeat their selection paths and non-exit actions return toward the action menu;
+this control flow is not an observed complete shopping visit.
+
+Repair, Cure and Raise solve different problems. Repair addresses a carried item's broken state;
+Cure addresses selected status/equipment commits; Raise addresses a zero-HP member. A repair is not
+proof of curse removal, item replacement, member HP recovery or future action legality. Battle use
+can consume an item or reach the equipment break/destruction route at its own
+[tactical boundary](tactical-battle-loop.md#items-custody-equipment-and-use-are-separate); receiving or
+repairing an item does not establish that every action may use it.
+
+#### Church: recovery, promotion and saving
+
+**Confirmed bounded Raise:** the [Raise seam](../contracts/service-interactions.md#church-raise-runtime-seam)
+enters the Church route, skips living members and processes dead members in list order. Price is
+stored level times ten, plus the promotion-data-dependent 200 surcharge. Decline or insufficient
+gold reaches no payment/HP/mapsprite helper in the named cases; exact funds passes. Accepted payment
+precedes HP increase and mapsprite completion, with current HP `min(maxHP,200)`. This does not assert
+MP restoration, removal of every status, complete caller/UI flow or a durable save.
+
+**Confirmed bounded Cure:** the [Cure seam](../contracts/service-interactions.md#church-cure-runtime-seam)
+retains poison then stun then curse, with separate affordability, confirmation and commits. Poison
+costs ten and stun twenty; each payment precedes its status write. Curse uses the selected cursed
+held item's price shifted right two; the observed Dark Sword costs 4250. Its payment precedes
+`UnequipAllItemsIfNotCursed` and stat-refresh completion. A no-status case has nothing to cure;
+decline and one-below-funds cases do not become success merely because the menu was entered. The
+ordered success case spends `4280 -> 4270 -> 4250 -> 0`, rather than applying one flat cure charge.
+The named cohort owns the final status/equipment mutations; it does not establish every Cure caller,
+UI/presentation or persistent aftermath.
+
+**Confirmed source-static Promote:** use the [party-development explanation](#definitions-current-class-and-promotion)
+for class mappings, level twenty, target-list special-item search, special confirmation and ordered
+item/class/spell/weapon requests. Promotion has no gold-decrease call in this route. The removed
+special item is a different resource from an unequipped MMNK/NINJ weapon, which remains carried.
+Complete promotion effects remain **Unknown**; successful Raise/Cure evidence does not close them.
+
+**Confirmed bounded Save:** the [Save seam](../contracts/service-interactions.md#church-save-runtime-seam)
+separates initial refusal from save and later continue/suspend. In the controlled first prompt,
+nonzero exits without SaveGame/Fade/Witch callbacks; zero copies current map to Egress, sets flag399,
+and calls original `SaveGame`. Positive records observe entry, effective return and call-site return.
+The zero post-save prompt reaches the menu exit; nonzero observes a controlled Fade return and
+original `WitchSuspend` **entry**, not full suspend or its return. These selector values are observed
+inputs, not proof of user-facing prompt meaning. Save requests no HP/item recovery and has no payment
+call in this route. It is a lifecycle choice with a different evidence boundary from Raise or Cure.
+
+Recovery also has non-service routes. [Healing magic](tactical-battle-loop.md#magic-healing-and-support)
+uses missing HP and its own MP/effect/reward conditions; a held healing item needs its admitted use
+and consumption path. [Battle returns](tactical-battle-loop.md#victory-defeat-and-admitted-retreat-leave-different-state)
+distinguish defeat's Bowie recovery/gold halving from paid retreat. The smith village's exploration
+entry separately calls the living/immortal-ally healer: the
+[entry owner](../../research/dwarven-village-and-mithril-smithing.md#all-eighteen-warps-and-f80-lifetime)
+pins thirty allies, living plus Peter/Lemon, HP/MP restore, retained status mask and equipment-derived
+CURSE refresh. This is not blanket revival or removal of all afflictions whenever any map returns.
+Growth still increases maxima without necessarily healing current HP/MP.
+
+### Mithril orders: placement, readiness and collection
+
+The later [village/smith owner](../../research/dwarven-village-and-mithril-smithing.md)
+connects an actual Map29 tail caller, placement, readiness and fulfillment. Its complete source/caller
+review and retained controlled observations supersede a whole-lifecycle blanket Unknown, while
+natural access, complete service play, presentation and durable persistence stay **Unknown**.
+A commission's material owner, class-selected customer and eventual recipient are independent.
+The stored order records only an item, not those people or a countdown.
+
+**Confirmed source placement:** material selection must supply the exact Mithril word; cancellation
+can leave or return to material selection. Customer class must be promoted and in the eligible-class
+table; a refused confirmation retries the customer, while insufficient funds returns without charge.
+Exact 5000 gold passes. The committed order is payment, pending-count increment, material slot drop,
+weapon picker/order write, then clear flag80. Charge/removal precede selection storage, with no checked
+rollback on a failed drop or full order array. The outer menu ordinarily avoids starting placement
+with four unfulfilled orders; the **post-placement** effective-count comparison stops continuation at
+four. It must not be recast as a free-slot admission check inside placement. A supplied full-array
+helper case proves no-write, not that ordinary play naturally loses resources that way.
+
+Class selects the weapon row deterministically for the first eight matched groups; normally admitted
+BRN/RDBN uses a preceding range-two fallback between two rows. Selection then tests sequential random
+ranges 16,8,4,1, accepting the first zero. Even range one advances the seed. These conditional,
+correlated draws are not independent final item percentages. The
+[class/RNG owner](../../research/dwarven-village-and-mithril-smithing.md#complete-class-mapping-and-sequential-rng)
+keeps exact classes/items; this synthesis adds no probability model or optimal commission advice.
+
+**Confirmed source readiness:** a successful placement clears flag80. Explicit exploration entry
+sets80, so an admitted leave/reenter via Map77/29 can classify existing nonzero order words as ready
+on the next smith visit. Waiting, walking or CURRENT-map stairs supply no such producer; no elapsed
+time field appears. Ready/pending classification is shared through that bit, not per-order age.
+If a visit retains refused ready orders and places another, clearing80 makes all surviving words
+classify pending on reopening. Save/load readiness cannot be inferred just from the stored flag.
+
+**Confirmed source fulfillment and bounded helper/transaction observations:** ready orders are tried
+in slot order. Recipient cancellation or full-capacity refusal retains that order while the outer
+loop can try later slots. A recipient below four slots can accept carrying despite an equippability
+warning. At commitment, `AddItem` precedes order-word clear and fulfilled-count increment; the caller
+does not test the add result before clear. Ordinary capacity was checked earlier, without a universal
+interruption or changed-state guarantee. Optional equipment comes **after** receipt/order clear;
+declining it or refusing old cursed equipment retains the new carried weapon with the order gone.
+The [equipment seam](../../research/dwarven-village-and-mithril-smithing.md#fulfillment-inventory-and-optional-equipment)
+includes the Dark Sword obstruction and refreshed CURSE. It supplies neither a refund nor recreated
+Mithril. Complete UI, natural end-to-end revisit/collection and persistence are not proven by those
+controlled entries or the separate caller-return rail that bypasses the service body.
+
+### Connected resource examples
+
+**Reward -> capacity -> later custody.** In the observed enemy-drop boundary, a matched rare item
+with a successful required roll and clear once-bit loses its enemy custody before routing. A living
+actor with four held items cannot receive it, so the rare branch requests Deals; a non-rare item in
+the same failed direct route is discarded. A later shop can offer that Deals identity only if its
+count is nonzero and its ordinary stock excludes it. Source-confirmed purchase then needs funds and
+a recipient with room, then requests gold debit, item addition and Deals decrement. A full recipient can force
+reselection or abandonment before that payment. An admitted Caravan withdrawal/exchange or member
+transfer offers a different capacity route; acquiring/boarding the Caravan alone supplies none of
+those transactions. Ordinary Search can instead restore a full-capacity chest claim, while the
+mandatory Orb/Sword may remain in their discard loop. These are deliberately different fallback
+policies, not one observed continuous loot-to-shopping journey.
+
+**Spending -> equipment -> later eligibility, with revisit.** A selected eligible promoted customer,
+Mithril owner and 5000 gold can pass smith placement; an unpromoted customer is sent back to selection
+and insufficient funds returns before charge. After admitted placement the weapon is already chosen,
+but clear80 leaves it pending. A later explicit village reentry can set readiness; waiting on the
+stairs cannot. At collection a full recipient can leave the order uncollected. With room, receipt
+commits before optional equipment. The bounded cursed-old-weapon refusal leaves the new weapon
+carried, without its equipped contribution. Church Cure's separately observed paid curse/equipment
+commits can change that obstruction; the next equip/action must still pass its actual consumers.
+The [party equipment account](#carried-gear-becomes-an-equipped-contribution) and
+[Taros action gate](tactical-battle-loop.md#equipment-can-gate-an-effect-taros) show why carrying,
+equipping and a legal/effective attack are different questions, without suggesting a Mithril weapon
+meets Taros's particular Sword rule. This connection is **Inferred** preparation logic across named
+seams, not a naturally played smith-to-Church-to-battle trace or a guarantee that Cure equips the new
+item. Neither payment nor returning from the service saves the changed state automatically.
 
 ## Persistence Boundary
 
@@ -394,6 +619,15 @@ The [save-system contract](../contracts/save-system.md) confirms a two-slot repr
 save/load/copy/delete helper order, and a bounded in-process action matrix. It does not establish
 cross-process SRAM survival, interrupted writes, or the persistence of every service, Deals, caravan,
 order, drop-flag, gold, EXP, or combatant mutation across all lifecycle paths.
+
+**Confirmed static save-domain membership:** the later
+[smith serialization review](../../research/dwarven-village-and-mithril-smithing.md#existing-observations-and-serialization-boundary)
+binds SaveGame's 4,016 logical bytes to all thirty ally records and their item words, current gold,
+game flags (including readiness80) and the four order words. The smith's stack counters are transient;
+payment/collection does not call SaveGame. Domain inclusion is distinct from an in-memory mutation,
+from Church requesting and returning from SaveGame, and from storage surviving another process or
+power cycle. A later explicit exploration entry may set80 even if a loaded flag was clear. Map return,
+service return or an ending completion bit is not an automatic save of all force state.
 
 Therefore this synthesis may identify fields as persistent within an observed replay or original
 state structure, but it does not claim that every connected mutation has an end-to-end save/load H3
@@ -415,6 +649,8 @@ existence of `SaveGame` as proof for every subsystem. This does not dispatch a n
 | enemy gold | **Confirmed static/runtime** 103 used rows plus unused tail, and increase/cap/carry cases | [enemy rewards research](../../research/enemy-promotions.md); `sf2-enemy-gold-v1` ([`enemy-gold-v1.json`](../../../tests/fixtures/h2/enemy-gold-v1.json)) and `sf2-gold-boundaries-v1` ([`gold-boundaries-v1.json`](../../../tests/fixtures/h3/gold-boundaries-v1.json)) | DecreaseGold and non-battle callers |
 | enemy item drops and Deals routing | **Confirmed static/runtime** 30 records, three random items, one-time flags, recipient routing, and nibble saturation | `sf2-enemy-item-drops-v1` ([`enemy-item-drops-v1.json`](../../../tests/fixtures/h2/enemy-item-drops-v1.json)) and `sf2-enemy-item-drop-behavior-v1` ([`enemy-item-drop-behavior-v1.json`](../../../tests/fixtures/h3/enemy-item-drop-behavior-v1.json)) | Player-visible reward flow and full save lifecycle |
 | service economy | **Confirmed static** prices/gates/calls; **Confirmed bounded runtime** Church Raise/Cure/Save and selected smith helper/transaction seams | [service contract](../contracts/service-interactions.md), [common menus](../../research/common-menus.md), [smithing](../../research/dwarven-village-and-mithril-smithing.md); `sf2-common-menus-static-v1` ([fixture](../../../tests/fixtures/h2/common-menus-static-v1.json)) | Complete promotion effects, unobserved caller/admission/return, atomicity and durable persistence |
+| receipt and capacity | **Confirmed static** ordinary Search restoration versus mandatory discard and optional Arm refusal | [field Search](../../research/field-search-control.md), [Orb](../../research/battle34-outcomes-and-sky-orb-handoff.md#sky-orb-mandatory-inventory-award), [Sword](../../research/battle39-outcomes-and-force-sword-route.md#map42-attraction-extraction-and-mandatory-inventory), [Arm](../../research/moun-town-painter-and-golem-arm.md#arm-of-golem-appearance-and-search-admission) | Natural receipt, interrupted control and persistence |
+| storage and active selection | **Confirmed static** separate capacities, transfer/exchange requests, normalization and packed counts | [service](../contracts/service-interactions.md), [Caravan/Deals](../contracts/caravan-and-deals-state.md); common-menu and common-stats fixtures | Complete menu/helper results and lifecycle |
 | shared state helpers | **Confirmed static** helper surface; runtime claims belong to their named clamp/caller fixtures | [common-stats research](../../research/common-stats.md); `sf2-common-stats-static-v1` ([`common-stats-static-v1.json`](../../../tests/fixtures/h2/common-stats-static-v1.json)) | Caller-dependent mutation outcomes outside existing H3 fixtures |
 | save handoff | **Confirmed representation and bounded in-process actions** | [save contract](../contracts/save-system.md); `sf2-tech-services-static-v1` ([`tech-services-static-v1.json`](../../../tests/fixtures/h2/tech-services-static-v1.json)) and `sf2-witch-save-actions-runtime-v1` ([`witch-save-actions-v1.json`](../../../tests/fixtures/h3/witch-save-actions-v1.json)) | Cross-process/power-loss behavior and subsystem-complete persistence |
 
@@ -463,7 +699,7 @@ service completion, persistence, or player-visible outcomes.
 
 ### Party-development evidence review
 
-The current revision reviewed the accepted research/contracts against the selected fixture payloads,
+The accepted party-development revision reviewed the research/contracts against the selected fixture payloads,
 source-shaped statement records and their schema/verifier/CLI owners. It did not rerun the historical
 H2/H3 commands above. Exact parameters remain at those owners rather than becoming another catalog.
 
@@ -480,6 +716,30 @@ These are claim-review dispositions, not new original observations or blanket te
 synchronization. Existing completed comparison failures and corrections remain at their
 [retained evidence owner](../../../remake/docs/evidence/retained-comparisons.md); this document does
 not reset or reclassify them.
+
+### Resource/service evidence review
+
+The resource revision consumed the accepted party explanation and tactical reward/item/return
+account, then reviewed the current source-shaped records and later owners. No historical H2/H3,
+comparison or translation run was repeated. This is reconciliation of existing evidence, not a new
+runtime acquisition or a second price/drop catalog.
+
+| Selected explanation | Surfaces checked and disposition |
+| --- | --- |
+| Reward and receipt routes | Existing gold/drop fixtures and the tactical/growth review retain the once-bit/RNG/removal/recipient order. Field-search control prose/fixture and its schema/verifier retain leader-first capacity and close/refill. Later Orb, Sword and Moun owners bind their actual callers to mandatory looping versus optional refusal; no general rollback or battle-drop fallback is imported into Search. |
+| Shop and Caravan | `sf2-common-menus-static-v1` complete selected `shop.routeOperations`/list helpers and `caravan.routeOperations`/`routeDerived`; `common-menus-shop.schema.json`, `common-menus-caravan.schema.json`, `menus.py:_shop_static_contract`/`_caravan_static_contract`, existing focused source/fixture checks and CLI ownership. Checked ordinary selection, full/empty/cancel, price comparisons and guarded mutation order. Calls and post-payment equipment branches remain static; twelve/four/sixty-four and price/physical-size fields stay distinct. |
+| Lower storage and definitions | Item-definition, combatant-state and Caravan/Deals contracts; common-stats inventory facts and item-auxiliary shop consumer. Keep the storage contract's deliberate capacity/mask exclusion visible rather than pretending it supplies the service's numeric guard or a full transaction. Rarity, equipped curse, broken status and unsellable are different consumers. |
+| Raise/Cure/Save | Current service contract and `sf2-church-raise-lifecycle-runtime-v1`, `sf2-church-cure-lifecycle-runtime-v1`, `sf2-church-save-lifecycle-runtime-v1` payloads; their source guards, schemas, observer/readback assertions and CLI routes. Exact-cost/one-below/decline, `poison-stun-curse-ordered-success`, and `slot2-save-rest-suspend-boundary` retain their own admissions and stops. The older common-menu static paragraphs' final-HP/continuation Unknowns remain historical at that seam; the newer bounded observations control this account, not a complete natural service guarantee. |
+| Smith and later use | Later village owner's complete placement, class/RNG, entry/readiness, fulfillment and serialization reviews; selected `sf2-blacksmith-mithril-runtime-v6` helper/transaction/fulfillment/precommit/equip/prompt payloads and `blacksmith_mithril.py` schema/assertion boundaries. All-occupied no-write, pre-payment refusal, post-add order clear and cursed replacement refusal differ. Common-menu's older static summaries do not erase these newer bounded observations; the caller-return representative bypasses the body. No natural complete village session, measured distribution or durable save is inferred. |
+
+The two resource examples compose different accepted seams and explicitly qualify that composition;
+no fixture is presented as an end-to-end reward/shop or smith/Church/battle session. Original
+in-memory behavior, static save-domain inclusion, a requested/returned save, natural observed play,
+remake choice and production support remain separate judgments. The
+[retained comparison owner](../../../remake/docs/evidence/retained-comparisons.md) and Issue/PR records
+retain #1047's twelve completed unresolved comparisons and #1260/#1268/#1269/#1272's original and
+corrected results, invocation failures and actual CI. Chinese mirrors and source anchors retain
+existing drift; this English revision neither repairs nor reclassifies those results.
 
 ## Original Fidelity and Modernization
 
@@ -507,11 +767,11 @@ are not new obligations merely because this explanation changed.
 The [capability owner](../../../remake/docs/capability-status.md) records the bounded Battle01 growth,
 spell-upgrade and outcome consumers, unsupported broader rules and deferred save/load. A source
 contract, a controlled original observation and an implemented production capability answer different
-questions. Adding this party explanation advances none of those executable frontiers. Current
+questions. Adding this party/resource explanation advances none of those executable frontiers. Current
 verification follows the [development/verification scope](../../../remake/docs/development-and-verification.md#scope).
 
-The sequential resource outcome may deepen the existing item/gold/recovery/service explanation while
-preserving this party-development owner. All-roster choice analysis, optimal growth/promotion,
-campaign balance, unclosed promotion effects and broader persistence remain **Unknown** or future
+This connected party/resource account consumes the accepted party-development outcome and the
+named service evidence. Milestone acceptance remains independent main-gate review. All-roster choice
+analysis, optimal growth/promotion, campaign balance, unclosed promotion effects and broader persistence remain **Unknown** or future
 scoped design/research decisions. They are not an automatic emulator queue. Independent English
 acceptance and the roadmap's later stability decision precede any separate Chinese synchronization.
