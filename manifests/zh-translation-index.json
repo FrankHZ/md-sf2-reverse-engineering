@@ -361,10 +361,10 @@
       "source": "docs/design/contracts/map3-battle01-continuous-scenario.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map3-battle01-continuous-scenario.md",
-      "sourceSha256": "2171c370759a1870cc3d824e72d874271149f3d9324152dfd975353bb23c5fe9",
-      "mirrorSha256": "6f151e308a856197c050e7d9c48faf965cd7d85c0ec9a76088d61b9a7a55f267",
+      "sourceSha256": "18dd484a1205db187854ec6c31e2d7aa2b11e15d3f811dd298031655f275ccd5",
+      "mirrorSha256": "da8ec8057eabfdea9b69774f3d5d16b224a991cf4f529aaf41a071ecc0be5b9d",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-09-22"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/map3-controlled-admission.md",
@@ -897,10 +897,10 @@
       "source": "docs/design/synthesis/map3-battle01-readiness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map3-battle01-readiness.md",
-      "sourceSha256": "826af49407883318223e7a84b4ea396c3a99f1239317cc07dc42b8a438293ac0",
-      "mirrorSha256": "c5a55212b73f5eb1d7bb15fed90f6be1f60c18cc89d7a9f9d92d2c6435fd0c3b",
+      "sourceSha256": "23e42284084ae6dbc7ca803c6ee29332a6a26144e8045614b34e70b667433042",
+      "mirrorSha256": "cb9c726c0a0d697c472770ab0b806fec0b46afbf0db4e7b9ad6116ce27332942",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-10-03"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/new-granseal-castle-year-later-control.md",

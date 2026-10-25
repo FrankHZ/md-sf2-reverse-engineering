@@ -1,173 +1,611 @@
-<a id="map-3-to-battle-01-continuous-scenario-contract"></a>
 # Map 3 至 Battle 01 连续场景合同
 
-- 状态：**Accepted comparison definitions（比较定义已接受）**；已有受限离线 reference binding；剩余绑定与 H4 执行 OPEN。
-- 已接受证据基线：`57d6cc296b77283eb5ee8a00b5121ecdfd132e1a`，包含 PR #504 的 neutral endpoint、PR #526 已接受的有界战后 Down extension、PR #528 保留的首次比较，以及 PR #533 修正后的 selected-R1 inputs 与比较。PR #504 acquisition source 保持为 `9c3ea03ac5f5b467ee744f1ac624870da2408443`。PR #526 拥有原版 extension；PR #528/#533 拥有实际比较结果。
+- 状态：**当前私有里程碑已通过独立组合审阅接受**；[就绪所有者](../../synthesis/map3-battle01-readiness.md#accepted-current-milestone)记录完整当前范围及未变化的历史报告限制。
+- 历史原版/首次比较证据基线：`57d6cc296b77283eb5ee8a00b5121ecdfd132e1a`，包括 PR #504 中性端点、PR #526 已接受有界战后 Down 扩展、PR #528 保留首次比较及 PR #533 修正选定 R1 输入/比较。PR #504 采集源码仍为 `9c3ea03ac5f5b467ee744f1ac624870da2408443`。PR #526 拥有原版扩展；PR #528/#533 拥有实际比较结果。
 - 产品：[ADR 0010](../../../decisions/0010-map3-battle01-product-acceptance.md)，`1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`。
-- 范围：受控准入、自然必经路线、获胜战斗与战后 field 边界；组合既有所有者，不注册 fixture、schema 或研究关联。
+- 范围：一次受控准入、自然必经路线、获胜战斗及战后野外边界。组合已有所有者，不注册测试夹具、schema 或研究关联。
 
-本文件同步[英文合同](../../contracts/map3-battle01-continuous-scenario.md)，英文为审阅基线。证据标签按 AGENTS 保留精确英文 Confirmed / Inferred / Unknown，可附中文解释；其他术语遵循[术语表](../../glossary.md)，源码标识符保持原样。
+本文件同步[英文合同](../../contracts/map3-battle01-continuous-scenario.md)，英文为审阅基线；术语和证据标签遵循[术语表](../../glossary.md)，源码标识符保持原样。
 
-<a id="evidence-and-result-rules"></a>
 ## 证据与结果规则
 
-原版 expected 来自[准入合同](../../contracts/map3-controlled-admission.md)、[研究字段审计](../../../research/map3-battle01-audit.md#accepted-evidence-and-exact-field-mapping)及[已接受最终采集](../../../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)。后者拥有私有成功 prepared-68..86 链、18 个已验证 parent pair、实际 input/checkpoint/observer 记录和只读复现命令。源码固定于上述对象；ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`，SF2DISASM 为 `c834c652b6862bc5679fd7f69a38a7093206efc6`，模拟器为 BizHawk 2.11.1 / Genesis Plus GX。
+[当前键盘范围](../../../decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope)优先于旧设备/设置描述：A 必需、C 为补充，B/D 排除在当前执行及里程碑总计之外。保留历史比较不增加要求。
 
-精确逐步值由私有记录提供，本合同不创造公开 golden。旧败局和失败请求不属于获胜输入流，其失败/成本保留在研究所有者。prepared-86 是 terminal/nonresumable，旧 first-player-ready terminal 也不能用作 continuation parent。
+### 现代时钟适用性
 
-每条比较结果必须标明 layer、assertion、原版所有者/Git 对象/记录位置、逻辑 checkpoint、expected/actual 语义值、输入序号、remake 观测序号与结果/原因。私有 payload 留在本地，公开结果只含安全身份与有界差异。下述字段名是比较词汇，不是新 wire schema。
+[已接受现代有限音乐修订](../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)控制下文原版比较。原版记录、投影器值及已完成结果仍是不可变证据。受影响原版整段历史比较是声明时钟偏差的历史诊断，不能改成新通过断言或不变现代黄金值。执行比较前报告适用性；已有投影器不自动实施政策切换。普通现代获胜/返回能力已由 PR #588 独立接受；该有界验收不补齐所有可执行 H4 绑定或连续 9A 变体。
 
-- `PASS`：双方值存在，命名边界上的断言成立。
-- `FAIL`：已观测不匹配、禁止的转换、runtime error、必需动作不受支持、在已有可观测执行中缺少必需 host completion，或有归属的 timeout。
-- `Unavailable`：必需私有输入/溯源、原版 expected 字段或 actual 观测能力缺失。列明哪一侧/字段；不得填零、空列表或 remake 输出。原版值仍**Unknown**（**未知**）时定义为 OPEN，执行为 `Unavailable`，不能 skipped/PASS。已观测 FAIL 与 unavailable 断言同时保留。
+| 层 | 现代时钟下的要求 |
+| --- | --- |
+| 1 | 保留受控准入、溯源及初始状态；不在运行中重设种子。 |
+| 2–3 | 保留必经空间路线、选择、剧情/调用方效果及有效移动。依赖时序的 NPC 阶段及选定导航历史可以不同。 |
+| 4–5 | 保留自然遭遇及同状态局部初始化/战斗/RNG 规则。原版 seed0x6DC1、actor2、选定分数数组、回合/顺序/103 次行动获胜历史属于历史比较，不是现代必需结果。 |
+| 6–7 | 保留自然胜利、完整战后程序、标志、返回及稳定可用野外控制。依赖历史的奖励、等级、属性、物品、RNG 和 gold420 是原版事实，不是无条件现代端点要求。 |
+| 8–9 | 保留 7C 资产及必需键盘 A 的真实消费/完成；相同语义输入下单独比较补充设置。有限音乐遵循已接受逻辑时钟并要求实际完成。 |
+| 10 | 显式报告现代时钟及受影响下游差异；不全面豁免其他缺陷。 |
 
-十层全部必需；整体 PASS 要求全部必需断言和 accessibility variants 通过。证据就绪、定义审阅、实际 H4 执行分别报告。准入后重启 session、注入 story state、重设 seed、直接进入战斗或跳过战后程序均违反连续性。全程保持同一 session identity 与单调观测，保留拒绝/error 记录。不要求 frame/pixel/waveform/chip/hardware 相等，但影响玩法的 timing、因果顺序和输入阻塞仍在范围内。
+同状态算术和源码特定规则仍可独立比较。旧 HEAL、下个行动者及其他 FAIL 保留结果和未解决原因。另行准入时，受控原版种子注入只是比较技术，不能证明自然连续性。
 
-<a id="evidenced-gameplay-waits"></a>
+原版预期值来自[准入合同](../../contracts/map3-controlled-admission.md)、[研究字段审计](../../../research/map3-battle01-audit.md#accepted-evidence-and-exact-field-mapping)及[已接受最终采集](../../../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)。后者拥有私有成功 prepared-68..86 谱系、18 对已验证父子关系、实际输入/检查点/观察器记录及只读复现命令。源码固定如上；ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`，上游 SF2DISASM 为 `c834c652b6862bc5679fd7f69a38a7093206efc6`，模拟器为 BizHawk 2.11.1 / Genesis Plus GX。
+私有记录提供精确逐步值，本文不制造公开黄金值。较早败局及失败请求排除在获胜输入流外，其失败和成本仍归 Research。Prepared-86 是已终止且不可续跑的终端；较早首个玩家就绪终端也不是续跑父级。
+
+每条比较结果必须标明层、断言、原版所有者/Git 对象/记录位置、逻辑检查点、预期及实际语义值、输入序号、重制观察序号和结果/原因。私有载荷留本地；公开结果只含安全身份及有界差异。下文字段名是比较词汇，不是新传输 schema。
+
+- `PASS`：双方均存在，命名边界上的声明断言成立。
+- `FAIL`：已观察不匹配、禁止转换、运行时错误、不支持必需行动、原本可观察执行中缺必需宿主完成，或有归属超时。
+- `Unavailable`：缺必需私有输入/溯源、原版预期字段或实际观察能力。标明缺失侧/字段，不能用零、空列表或重制输出替代。原版值仍**未知**的定义为 OPEN，执行为 `Unavailable`，不能跳过/PASS。已观察 FAIL 与不可用断言同时保留。
+
+各层全部必需。整段 PASS 要求全部必需断言及无障碍变体通过；分别报告证据就绪、定义审阅及实际 H4 执行。准入后会话重启、注入剧情状态、重设种子、直接战斗入口或战后程序捷径均使连续性失败。全程保持同一会话身份及单调观察，不能丢弃拒绝/错误记录。不要求帧、像素、波形、芯片或硬件相等；影响玩法的时序、因果顺序及输入阻塞仍在范围内。
+
 ## 有证据支持的玩法等待
 
-[ADR 0010 已接受的 Option A](../../../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)允许将有证据支持的玩家等待纳入外部逻辑输入流。共享 main RNG、选定回合的精确 score/order 和全部后续玩法断言保持不变。本节定义政策；原版调度绑定及实现符合性仍为 OPEN。
+[ADR 0010 已接受 Option A](../../../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)允许将有证据支持的玩家等待纳入外部逻辑输入流。保留共享主 RNG 和同状态规则比较；选定整段历史断言遵循上文适用性表。本节定义政策；当前选定服务/消费者绑定参与下文已接受组合。这些接缝以外原版调度仍未知。
 
-每个准入 Wait 必须标明符合条件的输入 consumer/occurrence、源码 caller 或 service、enable 状态与 phase、起止边界，以及相对于其他活动服务的顺序。一次逻辑机会使符合条件的服务推进一次；它不是渲染帧，也不是抽取随机数的命令。压缩计数必须有证据支持每次等价重复。原版 frame/order/PC 可定位溯源，但不是 host 调度目标。保留的 neutral schedules 未经该映射不具备准入资格；PCM 经过秒数或从 seed 反推均不能补足证据。缺失绑定保持 Unknown（未知）/Unavailable，并同时保留已有 FAIL。
+每个准入 Wait 必须标明符合条件输入消费者/发生实例、源码调用方或服务、启用状态及阶段、起止边界和相对于其他活动服务的顺序。一次逻辑机会使符合条件服务推进一次，不是渲染帧或抽取随机数命令。压缩计数要求每次等价重复都有证据。原版帧/顺序/PC 可定位溯源，不是宿主调度目标。保留中性调度未经映射不具资格；PCM 经过秒数及倒推种子不能提供该映射。缺绑定保持未知/Unavailable，同时保留已有 FAIL。
 
-源码定义的必需逻辑工作由状态/内容和已消费命令导出：保留 enable gates、计数器、条件分支、RNG/copy 效果及有证据支持的服务顺序。不得将其重复计作玩家 Wait 输入。玩家 Wait 仅适用于已命名且符合条件的 consumer。Host 渲染、文本揭示和音频交付延迟不产生额外逻辑机会或积压 tick 债，completion token 释放之后也不补跑这些延迟。Cue 播放期间必需的逻辑工作仍须执行。Production session 消费通用命令与状态/内容，不读取外部 reference 的 seed checkpoints、actors、抽取总数或 replay schedule。
+源码定义必需工作从状态/内容及已消费命令导出：保留启用门控、计数器、条件分支、RNG/副本效果及有证据服务顺序，不重复计作玩家 Wait 输入。玩家 Wait 只适用于命名且符合条件消费者。宿主渲染、文字揭示和音频交付延迟不产生额外逻辑机会或 tick 债，完成令牌释放后也一样。提示播放期间必需逻辑工作仍执行。生产会话消费通用命令与状态/内容，不消费外部参考的种子检查点、行动者、抽取总数或回放调度。
 
-命令就绪要求其 consumer 符合条件、必需前置逻辑完成，且所需实际 presentation/acknowledgement 条件满足。环境 entity scripts 忙碌本身不会阻塞 field 输入；玩家已停稳也不能证明这些服务已停止。接受输入的 poll 仍须在 input test 前保留源码 preamble 和服务。批量逻辑机会必须与逐次推进具有相同边界和顺序。每个活动 mode/caller 的顺序分别证明，不强加一套全局 entity/text/scene 顺序。选择 polling preamble 前必须绑定实际 text consumer：acknowledgement 不自动等同于 W1/W2 RNG call。Animation 的实际 completion token 本身不会终止仍必需的 spell service updates；释放必须遵循有证据支持的逻辑终止条件。
+命令就绪要求消费者符合条件、必需前置工作完成，且满足必需实际呈现/确认条件。环境实体脚本忙碌本身不阻塞野外输入；玩家停稳不证明这些服务已停止。接受轮询必须在输入测试前保留源码前置工作和服务。批量逻辑机会必须保留逐次机会相同的边界和顺序。每个活动模式/调用方分别证明顺序，不强加通用实体/文字/演出序列。选择轮询前置工作前先绑定实际文字消费者：确认不自动等于 W1/W2 RNG 调用。动画实际完成令牌本身不终止仍必需法术服务更新；释放遵循有证据逻辑终止条件。
 
 | 类别 | 必需逻辑与就绪边界 | 剩余证据边界 |
 | --- | --- | --- |
-| Field 移动 | 已消费的移动将源码 movement 与符合条件的 entity services 推进至下一输入/event 边界，保留 collision/retry 和 action phases。一次按住输入可消费多次移动；符合条件时主动等待另行表示。 | 原版 publication/poll 的精确 phase 和早期逐次 RNG caller 归属仍 Unknown（未知）。 |
-| Warp | 保留到达的 warp 分支、transition enable/disable phases、entity retain/reset 规则和 event-before-action 优先级；目标初始化及必需 presentation 完成并返回 field consumer 后才释放。 | 选定 transition 的完整服务调度仍 Unknown（未知）；目标相同或 frame delta 不能证明该调度。 |
-| Dialogue | 保留准入的 text/control-token 工作、wait-poll RNG/copy 和受 gate 控制的 portrait counters。Reveal-only Confirm 只完成揭示，不消费 acknowledgement 或增加 gameplay poll。所需 reveal/ack/choice 完成后释放。 | 被 shim 的 text returns 或 IDs 不证明自然 reveal、wait、portrait 的交错顺序。 |
-| 有限音频 | 将必需逻辑工作推进到有证据支持的 source audio end，并在释放前要求匹配 cue/token 的实际 finite-player completion。实际播放先结束不能跳过逻辑工作；后结束也不能增加 gameplay ticks。 | 源码 command/timer/end-predicate phase 及其服务交错仍 Unknown（未知）。PCM 时长不是逻辑 tick 预算。 |
-| Battle reaction | 保留已到达的 operand-dependent 分支、源码 loop counters、抽取和交错服务，直至效果消费与必需 scene completion。Reduced flash 改变 projection，不改变逻辑工作。 | 静态 loop 结构不证明自然分支到达或整个 scene 的抽取总数。 |
-| Healing fairy | 从准入 payload/state 导出实例及更新；保留 phase、位置、条件及周期 RNG calls、update gates 和 termination/cleanup 顺序后才释放。 | 自然 caller writes 与 termination controls 的顺序需要精确绑定；host animation 时长不是源码 lifetime。 |
+| 野外移动 | 已消费移动将源码移动及符合条件实体服务推进至下一输入/事件边界，保留碰撞/重试及行动阶段。按住可消费多次移动；符合条件主动等待另行表达。 | 精确原版发布/轮询阶段及早期逐次抽取调用方归属未知。 |
+| 传送 | 保留已到达传送分支、转移启用/禁用阶段、实体保留/重置规则及事件先于行动优先级；目的地初始化及必需呈现完成、返回野外消费者后释放。 | 选定转移完整服务调度未知；相同目的地或帧差不建立调度。 |
+| 对话 | 保留准入文字/控制令牌工作、等待轮询 RNG/副本及受门控肖像计数器。仅揭示 Confirm 完成揭示，不消费确认或增加玩法轮询。必需揭示/确认/选择后释放。 | 垫片文字返回或 ID 不建立自然揭示、等待和肖像交错。 |
+| 有限音频 | 应用[已接受现代时钟](../../contracts/music-wait-service.md#accepted-modern-finite-music-policy)，释放前要求匹配提示/代次的实际有限播放器完成。实际提前完成不跳过逻辑工作；更晚交付不增加玩法 tick。 | 源码命令/计时器/结束谓词阶段及交错仍未知；现代映射是声明偏差。PCM 时长不是逻辑 tick 预算。 |
+| 战斗反应 | 保留已到达操作数相关分支、源码循环计数器、抽取及交错服务，直至已消费效果及必需演出完成。减闪只改变投影，不改变逻辑工作。 | 静态循环结构不证明自然分支到达或整场演出抽取总数。 |
+| 治疗精灵 | 从准入载荷/状态导出实例及更新，保留阶段、位置、条件及周期 RNG 调用、更新门控和终止/清理顺序，再释放。 | 自然调用方写入及终止控制顺序需精确绑定；宿主动画时长不是源码存活期。 |
 
-既有[探索](../../contracts/map-exploration.md#entity-movement-and-action-timing)、[随机性](../../contracts/randomness.md)、[对话](../../contracts/dialogue-system.md)、[音乐等待](../../contracts/music-wait-service.md)和[战斗场景](../../contracts/battle-scene-presentation.md)所有者继续拥有各自有界源码规则与 Unknown（未知）项。此政策不将静态事实升级为 Confirmed（已确认）runtime 观测，也不证明某个命名音乐服务就是所到达 SoundWait 的 caller。交互等待速率和具体 scheduler 行为仍需后续有界实现合同。
+已有[探索](../../contracts/map-exploration.md#entity-movement-and-action-timing)、[随机性](../../contracts/randomness.md)、[对话](../../contracts/dialogue-system.md)、[音乐等待](../../contracts/music-wait-service.md)及[战斗演出](../../contracts/battle-scene-presentation.md)所有者保留有界源码规则及未知项。本政策不把静态事实升级为已确认运行时观察，也不证明命名音乐服务为已到达 SoundWait 调用方。交互等待速率及具体调度器行为需要后续有界实现合同。
 
-9A 在 instant/adjustable text、输入映射和 flash settings 间比较相同语义 Wait/ack 流。不同有效输入检查应确认：额外一个有证据支持的玩家 Wait 执行其符合条件的服务，并可能改变后续玩法。设置检查应确认：慢速揭示加 reveal-only Confirm，在同一语义 Wait/ack 边界上与 instant text 保持相同 state/RNG。两类检查本身均不证明选定历史的精确 parity。既有 260-step plan 必须补充新准入绑定才能声明符合此政策；已有 5,340 PASS / 2 FAIL / 40 Unavailable 保持不变，不保证 pre-round seed `0x6DC1` 或 H4 接受。
+9A 在即时/可调文字、映射及减闪设置间比较相同语义 Wait/ack 流。不同有效输入检查要求额外有证据玩家 Wait 执行符合条件服务，可能改变后续玩法。设置检查要求慢速揭示加仅揭示 Confirm，在相同语义 Wait/ack 边界与即时文字保持状态/RNG。两者均不单独建立精确选定历史一致性。已有 260 步计划需要新准入绑定才能声称符合政策；已有 5,340 PASS / 2 FAIL / 40 Unavailable 不变，不保证回合前种子 `0x6DC1` 或 H4 验收。
 
-<a id="admitted-state-and-ordered-route"></a>
 ## 准入状态与有序路线
 
-使用 R1 fixture `sf2-map3-admitted-start-runtime-v1` / case `controlled-new-map3-default` 在首次 `WaitForEvent` 的逻辑投影。按已记录宽度与含义比较 map、位置、朝向、flow、party/roster、gold、flags、stats、items、spells。[投影限制](../../../research/map3-battle01-audit.md#what-the-admitted-projection-does-not-contain)仍有效：公开 R1 缺 status，四个 item bytes 不是四个完整双字节槽位，normalized time 不是 raw time。获胜链的继承 status、完整装备、RNG/copy 和相关 NPC phase 必须来自已接受私有 readback。不能假定 reset POISON=0，不能使用 R2d seeded actor/order，也不能强加 `0x1234` 为自然 seed。缺失 readback 保持 OPEN。
+通过准入合同逻辑投影，在首次 `WaitForEvent` 使用 R1 测试夹具 `sf2-map3-admitted-start-runtime-v1`、用例 `controlled-new-map3-default`。按已记录宽度及含义比较地图、位置、朝向、流程、出战队伍/名册、金币、标志、属性、物品及法术。[投影限制](../../../research/map3-battle01-audit.md#what-the-admitted-projection-does-not-contain)有约束力：公开 R1 省略状态，不含四个完整双字节物品槽；归一化时间不是原始时间。从已接受私有读回获取获胜谱系继承状态、完整装备、RNG/副本及相关 NPC 阶段。不能假定重置 POISON=0、使用 R2d 注入行动者/顺序或强加 `0x1234` 为自然种子。下文离线绑定现已输出选定状态、四个完整物品字、NPC 记录及 RNG 字节。其他缺读回保持 OPEN。
 
-选定顺序：
+原版选定参考顺序如下（现代适用性见上文）：
 
-1. 受控 Map3 opening → 真实 messenger/prompt 接受 → follower-ready closure/F603 → gate `cs_51652`/F604 → north warp 与 Map19 init return。
-2. Map19 `(26,30)` 输入 → 实际位移 `(26,29)` → royal/guard programs/returns → 自然城堡/塔 Maps21/40/57。必须保留选定链每个中间 source operation/warp checkpoint，不能只比较最终 map 列表。可选互动/FieldMenu 不属于该参考路线，但不可遗漏必需 dialogue/choice/trigger。
-3. CheckBattle/new-battle branch → before `bbcs_01` → LoadBattle → start `ms_Empty`/F451 → activation/region/spawn/order generation → 实际首个 actor **2**，`ControlBattleEntity` 在 WaitForVInt 后、input read 前。脚本 `loadMapFadeIn` 场景变化不是额外玩家 warp。
-4. 成功逻辑决策至 round **14** / turn **103**：movement、STAY、physical attack、HEAL 1、Medical Herb，包含该链实际 target/resource/scene/effect/after-turn 结果。较早 herb/Heal/defeat 分支的值仅证明本分支，不得拼入获胜 expected。4A 仍要求一次 cancel/reselect；未观测的原版分支（含 herb cancel）保持 OPEN。
-5. 自然胜利 → `abcs_battle01` → shared tail/enclosing return → F401 clear → F501 set → BattleLoop D4=1 → SwitchMap return → ExplorationLoop → Map57 `ms_Void` → 稳定 field 边界。
+1. 受控 Map3 开场 → 真实 messenger/提示接受 → 随从就绪关闭/F603 → 门控 `cs_51652`/F604 → 北传送及 Map19 初始化返回。
+2. Map19 在 `(26,30)` 输入 → 实际位移 `(26,29)` → royal/guard 程序及返回 → 自然城堡/塔 Maps21/40/57。保留选定谱系每个中间源码操作/传送检查点，不能只保留最终地图列表。可选交互/FieldMenu 不在参考路线内；不能省略必需对话/选择/触发。
+3. CheckBattle/新战斗分支 → `bbcs_01` 前 → LoadBattle → 开始 `ms_Empty`/F451 → 激活/区域/生成/行动顺序生成 → 实际首个行动者 **2**，`ControlBattleEntity` 在 WaitForVInt 后、输入前。脚本 `loadMapFadeIn` 场景变化不是额外玩家传送。
+4. 选定成功逻辑决策至回合 **14**、单次行动 **103**：移动、STAY、物理攻击、HEAL 1 及 Medical Herb 使用，包含该谱系实际目标、资源、演出/效果及行动后结果。较早 herb/Heal/败局分支只证明自己的值，不能拼入获胜预期流。一次取消/重选仍是 4A 要求；未观察原版分支（含 herb cancel）保持 OPEN。
+5. 自然胜利 → `abcs_battle01` → 共享尾部/外层返回 → F401 清除 → F501 设置 → BattleLoop D4=1 → SwitchMap 返回 → ExplorationLoop → Map57 `ms_Void` → 稳定野外边界。
 
-最终原版链在 frame 58657 胜利、60945 战后程序返回、61009/61010 稳定。这些是证据定位，不是 remake 时钟目标。**67 个匹配的 reached operation pairs** 不等于静态 80 记录的 dispatcher iterations；静态语料还含嵌入 entity actions/data。R2b/R3/R4a 静态所有者解释规则/结构，只有选定观测证明自然到达。已验证 savestate-linked 连续性不声称不中断墙钟或自然 New/load。
+最终原版链确认胜利帧 58657、战后程序返回 60945、稳定帧 61009/61010。这些定位证据，不是重制时钟目标。有 **67 对匹配已到达操作**，不是 80 次分发器迭代：静态 80 条记录语料包含嵌入实体行动/数据。静态 R2b/R3/R4a 解释规则/结构；只有选定观察建立自然到达。即时存档串接的已验证原版连续性不声称不中断墙钟或自然 New/load 流程。
 
-<a id="ten-h4-comparison-layers"></a>
 ## 十层 H4 比较
 
-各行共同输入为声明的准入、成功逻辑输入流和该行已接受原版记录。相等指语义值，不指对象布局或 PC。后节列出 actual 既有 surface 和缺口。
+各行输入为声明准入、选定成功逻辑输入流及该行已接受原版记录。要求整段历史相等前应用现代时钟适用性表。可比较相等使用语义值，不是对象布局或 PC。下节映射标识已有实际界面及缺覆盖。
 
-| Layer | 字段及原版 expected 来源 | 对 actual remake 的必需断言 |
+| 层 | 字段及原版预期来源 | 对实际重制观察的必需断言 |
 | --- | --- | --- |
-| 1 — admission | R1 投影与选定链 readback：map、player position/facing、party/joined/active lists、flags、gold、逐 actor level/HP/MP/stats/status/items/spells、RNG、相关 continuation phase；ROM/source/configuration/parent identities | 首次用户命令前逻辑起点精确相等；分别校验溯源、完整槽位/status。按 1A 报告受控构造。fixed seed 必须来自已接受链；未映射 RNG/time dependency 保持 OPEN。 |
-| 2 — input/route | 有序成功 input records：checkpoint、logical action、actor、direction、target、choice、accept/reject、movement/transition 结果 | 逻辑决策与上述路线因果 handoff 相同。比较接受的 destination/trigger 和 cancel/reselect 效果，不比较按键持有帧数。每个 ally turn 均可由玩家操作 Confirm/Cancel。物理请求缺逻辑解码则 OPEN，不能猜。 |
-| 3 — world/story | R2/R2a 与选定链：map/setup selection、program/operation entry-return、dialogue ID/speaker/choice、entity position/facing/visibility、roster/followers、flag before/after | reached mutation 相等，因果顺序相同；map load、entity motion、dialogue 在规定 wait 完成。比较实际选定 operation/branch，静态 corpus membership 不足。真实 YesNoPrompt return 有证据，shimmed DisplayText consumption 没有。 |
-| 4 — natural encounter | 选定 CheckBattle/load/start/first-control records；R2c/R2d 仅供字段结构：battle ID、before/start programs、F88/F451、region flags 90–105、party/combatants、position/stats/status/equipment、activation/spawn、turn scores/order/cursor、first actor、readiness guards | 自然路线建立 Battle01，程序完成后才交给手动控制；比较 actor 2 与选定精确初始值。无阻塞 script/modal/transfer/action/target/scroll。原版 window count 2/palette mode 5 是允许的非阻塞呈现，不要求 host 字节同值。 |
-| 5 — battle | 选定 action/checkpoint/scene records 与 R3a–R3d/局部规则：round/order/actor/control、movement origin/path/destination、action/resource/slot/target、AI choice/memory、RNG before/range/value/after、follow-up kind、逐 target HP/MP/status/death、item removal、EXP/level/stats/spells/gold/drop、after-turn/outcome | 逐项匹配 reached 决策与 consumed effect 顺序，包括资源消耗和 RNG 结果。比较 WriteBattlesceneScript 前 HP 与 EndBattlescene 消费后 HP，不能使用脚本计算临时 HP。有证据的每次 RNG draw/effect 必须配对；draw mapping 缺失即使末端 HP 相同也 OPEN。round 14/actor history 不能成为 gameplay legality。 |
-| 6 — victory/return | 选定末段与 R4a：winning condition、eligible-party healing、reached after-program operations/effects、joins、F401/F501、controller result、transfer/setup | 自然胜利和全部 reached entry/return 成对；shared tail 在 enclosing return 前，继而 flags clear/set、D4=1 等效结果与 exploration handoff。源码 `0x477E8` 的 `ms_Void` 是 Map57 精确 fallback。单个 return 不替代战后消费。 |
-| 7 — endpoint | 已接受的有界原版端点与 RA-12 input/effect 证据；显式提供 PR #526 extension 时可投影，actual comparison 仍开放 | 比较全部 scenario state，不能有 pending battle/script/modal/transfer；在两个 host update 边界观测 settled player/camera，不造原版帧相等要求。settled endpoint 之后，接受有独立证据支持的 Down，并比较实际 displacement/state effect。PR #526 提供原版 expected effect，但 actual run 尚未到达该边界；此断言与完整 5B 仍 OPEN。 |
-| 8 — save/7C | 6A restart；每个 reached original scene dialogue/map/sprite/portrait/animation/music/SFX identity/binding 的私有清单与 ROM/source/extraction 溯源 | 无用户 save/load/suspend/checkpoint surface；restart 重建 layer 1。每个 consumed original scene resource 绑定已准入原版私有内容。缺私有输入为 Unavailable；必需原版场景内容的已观测 authored substitute 为 7C FAIL。MUSIC_JOIN/MUSIC_SAD_JOIN chord loops 和 host mute 不满足原版音频。公开发行仍在范围外。 |
-| 9 — 8D presentation | reached program/operation 与 scene/dialogue/animation/audio resource identities、dispatch/consumer/ack boundaries、blocking/resulting state，来自 accepted source 与 bounded observation | 匹配语义 identity/因果顺序；按下节观测实际 host use 与 completion/ack。request/mailbox pair、程序 return 或 counter 单独不能使 delivery PASS。缺原版消费证据 OPEN；缺 host 观测 Unavailable。不使用截图。 |
-| 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A 与下述清单 | 每个已接受 deviation 及其 expected behavior 独立命名输出，即使 PASS。不允许隐含排除、缺输入豁免或新增未接受 deviation。 |
+| 1 — 准入 | R1 投影及选定谱系读回：地图、玩家位置/朝向、出战队伍/已加入/出战列表、标志、金币、每行动者等级/HP/MP/属性/状态/物品/法术、RNG 及相关续接阶段；ROM/源码/配置/父级身份 | 首次用户命令前逻辑起点精确相等；分别校验溯源及完整槽位/状态。按 1A 报告受控构造。固定种子须为已接受谱系种子；未映射 RNG/时间依赖为 OPEN。 |
+| 2 — 输入/路线 | 有序成功输入记录：检查点、逻辑行动、行动者、方向、目标、选择、接受/拒绝及结果移动/转换 | 上文路线相同逻辑决策及因果交接。比较已接受目的地/触发及取消/重选效果，不比较按住帧数。每个己方角色单次行动都可由用户操作 Confirm/Cancel。物理请求缺逻辑解码为 OPEN，不猜测。 |
+| 3 — 世界/剧情 | R2/R2a 及选定谱系：地图/配置选择、程序/操作入口返回、对话 ID/说话者/选择、实体位置/朝向/可见性、名册/随从、标志前后 | 已到达状态变更及相对因果顺序相等；地图加载、实体移动及对话须在各自必需等待处完成。比较选定操作及分支；仅静态语料成员关系不足。真实 YesNoPrompt 返回是证据，垫片 DisplayText 消费不是。 |
+| 4 — 自然遭遇 | 选定 CheckBattle/加载/开始/首次控制记录；R2c/R2d 仅字段结构：战斗 ID、之前/开始程序、F88/F451、区域标志 90–105、出战队伍/战斗员、位置/属性/状态/装备、激活/生成、行动分数/顺序/游标、首个行动者及就绪守卫 | 自然路线创建 Battle01，程序完成后才手动控制。比较局部初始化规则；现代时钟下 actor2 及依赖历史选定值保留为原版诊断。清除阻塞脚本/模态/转移/行动/目标/滚动状态。原版 window count 2/palette mode 5 是允许的非阻塞呈现，不要求宿主字节同值。 |
+| 5 — 战斗 | 选定行动/检查点/演出记录及 R3a–R3d/局部规则：回合/顺序/行动者/控制、移动起点/路径/目的地、行动/资源/槽位/目标、AI 选择/记忆、RNG 前/范围/值/后、后续打击类型、逐目标 HP/MP/状态/死亡、物品移除、EXP/等级/属性/法术/金币/掉落、行动后及结果 | 同状态/输入比较每项已到达规则及已消费效果，含消耗及 RNG。原版完整获胜历史为现代时钟下诊断。比较 WriteBattlesceneScript 前 HP 与已消费 EndBattlescene，不用临时脚本计算 HP。有证据的每次抽取/效果配对；即使端点 HP 匹配，缺抽取映射仍 OPEN。不把回合 14 或行动者历史硬编码为玩法合法性。 |
+| 6 — 胜利/返回 | 选定最终段及 R4a：获胜条件、符合条件队伍恢复、已到达战后程序操作/效果、加入、F401/F501、控制器结果、转移/配置选择 | 要求自然胜利、完整已到达操作入口/返回配对，先共享尾部再外层返回，然后清除/设置标志、D4=1 等效结果及探索交接。源码 `0x477E8` 的 `ms_Void` 是 Map57 精确回退选择。单次已完成返回不替代战后程序消费。 |
+| 7 — 端点 | 已接受有界原版端点及 RA-12 输入/效果证据；显式提供时绑定可选 PR #526 扩展投影；当前实际返回验收属于组合里程碑 | 比较全部场景状态，无待处理战斗/脚本/模态/转移；跨两个宿主更新边界观察玩家/摄像机停稳，不虚构原版帧相等。实际端点停稳后接受独立有证据 Down，比较实际位移/状态效果。PR #588 观察返回控制及 Left；命名 Down 比较和两个独立标识停稳宿主更新边界仍为独立 H4 断言。 |
+| 8 — 存档/7C | 6A 重启规则；每个已到达原版场景对话/地图/精灵/肖像/动画/音乐/SFX 身份及绑定的私有清单和 ROM/源码/提取溯源 | 无用户存档/读档/挂起/检查点界面；重启重建第 1 层。每个已消费原版场景资源解析为准入原版私有内容。缺私有输入为 Unavailable；已观察必需原版场景内容被自编替代使 7C 失败。MUSIC_JOIN/MUSIC_SAD_JOIN 和弦循环及宿主静音不满足原版音频。公开发行仍在范围外。 |
+| 9 — 8D 呈现 | 已到达程序/操作及演出/对话/动画/音频资源身份、分发/消费者/确认边界、阻塞及结果状态，来自已接受源码及有界观察 | 匹配语义身份及因果顺序，按下文观察实际宿主使用/完成/确认。请求/邮箱对、程序返回或计数器单独不能使交付 PASS。缺原版消费证据为 OPEN；缺宿主证据为 Unavailable。禁止截图。 |
+| 10 — 偏差 | ADR0010 1A/2A/4A/6A/9A/10A；下文清单 | 每个已接受偏差及预期行为输出独立命名结果，即使 PASS。不隐含排除，不豁免缺输入，不发明新偏差。 |
 
-Layer 8 区分原版场景内容与现代界面资源。按既有[呈现所有者](../../../../remake/docs/content/presentation-assets.md#fonts-theme-and-input-glyphs)与 9A 边界，现代 HUD/theme、语义 input glyphs 和 fonts 检查已接受作者/许可、准入 asset binding 及配置的 input/accessibility 行为；不额外要求 ROM 原版字体或 UI 资源。这是既有边界，不新增 deviation，也不豁免原版场景 dialogue/graphics/animation/music/SFX 溯源。
+第 8 层区分原版场景内容与现代界面资源。按已有[呈现所有者](../../../../remake/docs/content/presentation-assets.md#fonts-theme-and-input-glyphs)及 9A 边界，现代 HUD/主题、语义输入字形及字体检查已接受作者/许可、准入资产绑定及配置输入/无障碍行为，不要求 ROM 原版字体或 UI 资源。这应用既有边界，不加偏差，不豁免原版场景对话、图形、动画、音乐或 SFX 溯源。
 
-<a id="exact-observed-endpoint"></a>
 ## 精确已观测端点
 
-**Confirmed**（**已确认**），仅限已接受原版末段：map **57**、player tile **(5,12)**、raw **(1920,4608)**、facing **3/DOWN**、battle sentinel **255**、F401=false、F501=true；party/joined/active roster **[0,1,2]**，gold **420**。三名 ally 的 status-effect word 均为零。
+**已确认**，限已接受原版最终段：地图 **57**，玩家瓦片 **(5,12)**、原始位置 **(1920,4608)**、朝向 **3/DOWN**，战斗哨兵值 **255**，F401=false、F501=true；出战队伍/已加入/出战名册 **[0,1,2]**，金币 **420**。三个状态效果字均为零。
 
-| Actor | Level | HP current/max | MP current/max | Raw item slots | Raw spell slots |
+| 行动者 | 等级 | HP 当前/上限 | MP 当前/上限 | 原始物品槽位 | 原始法术槽位 |
 | --- | ---: | --- | --- | --- | --- |
 | Bowie / 0 | 1 | 12/12 | 8/8 | `[199,127,127,127]` | `[10,63,63,63]` |
 | Sarah / 1 | 2 | 12/12 | 12/12 | `[213,127,127,127]` | `[0,63,63,63]` |
 | Chester / 2 | 2 | 12/12 | 0/0 | `[184,127,127,127]` | `[63,63,63,63]` |
 
-item identity 按 `0x7F` mask 解码并保留 equipped state；127 是 empty。用既有 source decoder 保留 spell identity/rank 和 empty 63，不以名称/字符串比较。没有剩余 herbs。其他 stats/flags/records 从已接受 private terminal 比较，不从摘要补齐。player field entity position 不等于 ally battle-record position。RNG bytes `[188,203,0,0]`、copy 188 和 raw time `(frame=170, seconds=674, secondsFrames=40)` 是溯源/readback 值；需要合理的语义 RNG mapping，不要求 raw host-clock 相等。
+物品身份以掩码 `0x7F` 解码，保留装备状态；127 是空槽。用已有源码解码器保留法术身份/等级及空值 63，不用字符串/名称相等。没有剩余药草。其余属性/标志/记录必须从已接受私有终端比较，不能从摘要补齐。玩家野外实体位置不是己方战斗记录位置。RNG 字节 `[188,203,0,0]`、副本 188 和原始时间 `(frame=170, seconds=674, secondsFrames=40)` 是溯源/读回值：要求有依据语义 RNG 映射，不要求原始宿主时钟相等。
 
-movement/camera settled，map-event word/typewriting/pending returns/active consumers 为零，无 map program/battle return/transfer/modal。两帧都有原版 input poll，末次 player poll `0x4FF8` 读到 0。generic window-state byte 1 不是阻塞 dialogue。这是 PR #504 未改变、terminal/nonresumable 的 neutral endpoint。
+移动/摄像机停稳，地图事件字/打字/待处理返回/活动消费者为零，无地图程序/战斗返回/转移/模态。两个中性帧均有原版输入轮询；最终玩家轮询 `0x4FF8` 读取 0。通用窗口状态字节 1 不代表阻塞对话。这是 PR #504 未变、已终止且不可续跑中性端点。
 
-**Confirmed**（**已确认，有界 RA-12 extension，PR #526**）：新的兼容 natural chain 重现该 pre-input endpoint，然后在 61011 帧观察一个 Down frame。`esc02_controlCharacter` 于 `0x4FF8` 从 `PLAYER_1_INPUT`（`0xFFDE97`）读取值 2，D7=48 表示选择此 input source；`loc_52E8`（`0x52E8`）接受目的地增量 D2=0、D3=32、D4=0、D5=384。经过 13 个 neutral frame，player 在 61023/61024 帧稳定于 Map57 `(5,13)`、raw `(1920,4992)`、facing DOWN，保留原版 raw displacement、battle255、F401=false、F501=true，且无阻塞 consumer。这是独立接受的 terminal pair，不修改 PR #504 terminal，也不使其可恢复。RA-12 的有界 ordinary-input 接受与位移已有证据。projector 保留 PR #504 neutral endpoint，并通过显式 `--extension-root` 可选绑定此独立 extension；H4 在该边界仍无 actual observation。
+**已确认（已接受有界 RA-12 扩展，PR #526）：**新兼容自然链重现输入前端点，随后在 61011 观察一个 Down 帧。`esc02_controlCharacter` 于 `0x4FF8` 从 `PLAYER_1_INPUT`（`0xFFDE97`）读取 2，D7=48 选择该输入来源；`loc_52E8` 于 `0x52E8` 接受目的地增量 D2=0、D3=32、D4=0、D5=384。13 个中性帧后，玩家在 61023/61024 停稳于 Map57 `(5,13)`，原始 `(1920,4992)`，朝向 DOWN，具有原版原始位移、battle255、F401=false、F501=true，无阻塞消费者。
+这是独立已接受终端对，不修改 PR #504 终端或使其可续跑。有证据支持 RA-12 有界普通输入接受及位移。投影器保留 PR #504 中性端点，并通过显式 `--extension-root` 可选绑定独立扩展；旧 H4 诊断在该边界没有实际观察。PR #588 提供现代返回控制及 Left，不能替代命名 Down 比较。
 
-<a id="mapping-to-existing-actual-observations"></a>
-## 既有 actual 观测映射
+## 既有实际观察映射
 
-以下只读映射描述已接受实现，不是原版证据，也不声称 observer 完整。优先复用：
+这些只读映射描述已接受实现界面，不是原版证据或完整观察器覆盖声明。新增机制前先复用：
 
-| 既有 surface | 比较用途及限制 |
+| 既有界面 | 比较用途及限制 |
 | --- | --- |
-| [SessionContract.cs](../../../../remake/src/Sf2.Remake.Application/Runtime/SessionContract.cs) | `CommandEnvelope` SessionId/ExpectedRevision/Actor/Command；`SessionResult` Failure/StopReason/Observations；`SessionSnapshot` Mode/Active/Story/Selection。`SessionObservation` Sequence/Revision/Kind/Actor/Target/Before/After/From/To/RandomRange/RandomValue/Program 提供有序语义变化。按 source meaning 映射；序号只需单调，不必等于原版 callback count。采集每个 result，不能只取最新 snapshot。 |
-| [ExplorationSessionView.ReadObservationJson](../../../../remake/game/src/Exploration/ExplorationSessionView.cs) | `sessionId`、`map`、`party`、`partyLists`、`gold`、`flags`、`mainSeed`、`entities` position/facing/moving/busy、`cursor`、`wait`、`token`、`stop`、`battleMounted`、`textId`、`speaker`、`speakerFlags`、`visibleCharacters`、`totalCharacters`、`observations`、failure fields。按 content identity 将 `map-57` 映射为 map 57。无 story wait/cursor、entity settled、battle view released 支持 readiness，但单独不证明 input delivery 或全部 stats。 |
-| [BattleSessionView.ReadObservationJson](../../../../remake/game/src/Battles/BattleSessionView.cs) | `round`、`turnOrder`、`queueCursor`、`actor`、`stage`、`target`、`spell`、`itemSlot`、`inventories`（actor 与持有物品字）、`previewX/Y`、`actors`、`mainSeed`、`thinkingSeed`、`gold`、`regionFlags`、`aiMemory`、`observations`、failure fields。PR #521 已接受 `SelectItem`、live carried inventory/slot 及普通 healing-item 使用后的消耗。host 投影缺值时使用 typed snapshot，不可伪造 per-draw/scene-consumption record。 |
-| [ExplorationPresentation](../../../../remake/game/src/Exploration/ExplorationPresentation.cs) 与 exploration projection | `presentation.activeCue`、`completedCueToken/Kind`、sprite request/ready、gesture/fade/mosaic counters、`soundStarts/Fades`、`error`。token/kind 必须关联真实 `CompletePresentation`、actual resource/node、state transition。aggregate counter 不标识 cue，也不证明完整播放/asset provenance；缺 correlation 保持实现 OPEN。 |
-| [既有 outcome probe](../../../../remake/game/probes/engine_battle01_outcome_observation.gd)、[9A 所有者](../../../../remake/docs/verification/host.md#native-9a-observation) | 复用 actual input、single-session、wait/token、after-program、return、movement 观测方法。既有 PASS 是有界实现证据，不是本获胜原版 trace 或连续 H4 PASS。physical driver/hot-plug 和完整 export 未验证。 |
+| [SessionContract.cs](../../../../remake/src/Sf2.Remake.Application/Runtime/SessionContract.cs) | `CommandEnvelope` SessionId/ExpectedRevision/Actor/Command；`SessionResult` Failure/StopReason/Observations；`SessionSnapshot` Mode/Active/Story/Selection。`SessionObservation` Sequence/Revision/Kind/Actor/Target/Before/After/From/To/RandomRange/RandomValue/Program 提供有序语义变化。按源码含义匹配；序号只需单调，不必等于原版回调数量。采集每个结果，不能只取最新快照。 |
+| [ExplorationSessionView.ReadObservationJson](../../../../remake/game/src/Exploration/ExplorationSessionView.cs) | `sessionId`、`map`、`party`、`partyLists`、`gold`、`flags`、`mainSeed`，`entities` 位置/朝向/移动/忙碌，`cursor`、`wait`、`token`、`stop`、`battleMounted`、`textId`、`speaker`、`speakerFlags`、`visibleCharacters`、`totalCharacters`、`observations` 及失败字段。按内容身份将 `map-57` 归一化为源码地图 57。无剧情等待/游标、实体停稳及战斗视图释放支持就绪，但不单独证明输入交付或全部属性。 |
+| [BattleSessionView.ReadObservationJson](../../../../remake/game/src/Battles/BattleSessionView.cs) | `round`、`turnOrder`、`queueCursor`、`actor`、`stage`、`target`、`spell`、`itemSlot`、`inventories`（行动者及持有物品字）、`previewX/Y`、`actors`、`mainSeed`、`thinkingSeed`、`gold`、`regionFlags`、`aiMemory`、`observations` 及失败字段。宿主投影缺值时使用类型化快照。已接受 PR #521 提供 `SelectItem`、实时持有物品栏/槽位观察，含普通治疗物品使用后消耗。不得伪造逐次抽取或演出消费记录。 |
+| [ExplorationPresentation](../../../../remake/game/src/Exploration/ExplorationPresentation.cs) 及探索投影 | `presentation.activeCue`、`completedCueToken/Kind`、精灵请求/就绪字段、动作/淡入淡出/马赛克计数器、`soundStarts/Fades`、`error`。令牌/类型配对真实 `CompletePresentation`、实际资源/节点和状态转换。聚合计数不标识提示或证明完整播放/资产溯源；缺关联在受影响比较保持 Unavailable。 |
+| [已有结果探针](../../../../remake/game/probes/engine_battle01_outcome_observation.gd)、[9A 所有者](../../../../remake/docs/verification/host.md#native-9a-observation) | 复用实际输入、单会话、等待/令牌、战后程序、返回和移动观察方法。先前 PASS 是有界实现证据，不是本获胜原版轨迹或连续 H4 PASS。物理驱动/热插拔及完整导出未验证。 |
 
-<a id="presentation-and-accessibility-assertions"></a>
 ## 呈现与无障碍断言
 
-每个 reached cue 按因果顺序比较 `(program, operation, resource, subject, occurrence)`。保留 request → actual consumer start/use → required completion/ack → resumed program/input 的边。独立并发 cue 不强造 hardware total order；Unknown（未知） dependency 明示。presentation wait 仅能由匹配 token/kind 和必需 consumer completion 结束；scene committed HP/resource effect 要出现在对应 resolution edge。
+每个已到达提示按因果顺序比较 `(program, operation, resource, subject, occurrence)`。保留请求 → 实际消费者开始/使用 → 必需完成/确认 → 恢复程序/输入边。独立并发提示不虚构硬件全序。未知依赖显式保留。呈现等待只有匹配令牌/类型及必需消费者完成才结束；演出已提交 HP/资源效果须在对应结算边出现。
 
-- Dialogue：比较 text ID、speaker/portrait、choice result、实际显示的 private content binding、reveal completion、acknowledgement、wait release。[研究呈现审计](../../../research/map3-battle01-audit.md#presentation-sufficiency-under-8d)记录 `0x6260` 的 `display-text-rts`；ID/return 不证明 unshimmed original acknowledgement。即使 remake Label 正常，该原版边界仍 OPEN。
-- Animation/scene：比较 source entity/resource/action identity、可见 host consumer，以及依赖 program/input 恢复前必需的 motion/gesture/fade completion。被裁剪/缺席的 subject 必须遵循有证据的语义规则，不能默算 rendered completion。
-- Audio：command namespace/resource 绑定 original private asset 和实际 player start；检查 reached replacement/fade/stop/resume。persistent music 保持至必需 replacement/stop，不造 track-ended event。末段 **106 dispatch/mailbox pairs** 仅证明有界 source seam，不证明完整消费或 7C 溯源。
+- 对话：比较文字 ID、说话者/肖像及选择结果、实际显示私有内容绑定、揭示完成、确认及等待释放。[研究呈现审计](../../../research/map3-battle01-audit.md#presentation-sufficiency-under-8d)记录 `0x6260` 的 `display-text-rts`；ID/返回不证明未经垫片原版确认。即使重制 Label 正常，该缺失原版边界仍 OPEN。
+- 动画/演出：比较源码实体/资源/行动身份、可见宿主消费者，以及依赖程序/输入恢复前必需移动/动作/淡入淡出完成。裁剪/缺席主体须遵循有证据语义规则，不能静默计作渲染完成。
+- 音频：命令命名空间/资源绑定私有原版资产及实际播放器开始，要求已到达替换/淡出/停止/恢复边。持久音乐持续至必需替换/停止，不虚构曲目结束事件。最终段 **106 对分发/邮箱记录**只建立有界源码接缝，不建立完整消费或 7C 溯源。
 
-Battle scene 需要独立 consumer 证据。对每个 reached action/target/follow-up，将已接受 `InitializeBattlescene` → `ExecuteBattlesceneScript` → `EndBattlescene` 观测绑定到[battle-scene 合同](../../contracts/battle-scene-presentation.md)：scene occurrence、actor/target、background/actor/weapon/spell-animation resource IDs、有序 scene command/operands、reached dialogue identity、HP/MP/resource effect edge、blocking/wait/completion boundary。actual host 必须标识对应 mounted scene/resources、开始/完成的 animation/dialogue consumers、匹配 completion token 或等效 occurrence identity、committed effect 与 battlefield input 返回。要求 initialization 先于 command consumption，required wait 先于依赖推进，consumed effects 先于 EndBattlescene 等效释放，blocking scene 未完成时不得释放输入。缺 original resource/order binding 保持 OPEN；缺 actual observation 为 Unavailable，已观测遗漏必需 scene 为 FAIL。当前 [BattlePresentation](../../../../remake/game/src/Battles/BattlePresentation.cs)仅投影 board markers/status/roster，不证明 battle-scene animation/dialogue consumption。这是显式 layer-9 实现缺口，独立于 exploration cue services、battle-state correctness 与 private audio 工作。不需要 original pixels/frame durations。
+战斗演出需自己的消费者证据。每个已到达行动/目标/后续打击，将已接受 `InitializeBattlescene` → `ExecuteBattlesceneScript` → `EndBattlescene` 观察绑定[战斗演出合同](../../contracts/battle-scene-presentation.md)：演出发生实例、行动者/目标、背景/行动者/武器/法术动画资源 ID、有序演出命令/操作数、已到达对话身份、HP/MP/资源效果边及阻塞/等待/完成边界。
+实际宿主证据须标识对应挂载演出/资源、开始/完成动画/对话消费者、匹配完成令牌或等效实例身份、已提交效果及战场输入返回。断言初始化先于命令消费、各必需等待先于依赖推进、已消费效果先于 EndBattlescene 等效释放，阻塞演出工作未完不得释放输入。缺原版资源/顺序绑定仍 OPEN；缺实际观察为 Unavailable，已观察遗漏必需演出为 FAIL。
+当前 [BattleSessionView](../../../../remake/game/src/Battles/BattleSessionView.cs)挂载 `BattleSceneView`，按[呈现所有者](../../../../remake/docs/godot/presentation.md)观察已到达私有演出、治疗及野外死亡消费者。PR #588 确认普通获胜演出/结果路径。完整原版资源/顺序绑定和逐实例实际消费者/完成对应仍是第 9 层要求；仅已接受能力及聚合计数不能通过。不要求原版像素或帧时长。
 
-9A 分别报告 variant identity/settings，并将相同 layer 2/3/5/7 玩法决策/状态与 baseline 比较：default/remapped keyboard/gamepad、standard/swapped Confirm/Cancel、reduced-flash/normal、instant/adjustable text。未执行必需 variant 为 Unavailable。swapping 只改物理绑定，不改命令含义。reduced-flash 抑制 white overlay，但完成相同 token/kind/state effect。adjustable text 首次 Confirm 揭示未完成文字而不消费 wait，后一次才 acknowledge；instant 仍需 acknowledge，choice 保留 Yes/No。original device cadence/text duration 不要求相等。必须观察 actual host settings/input/projection，不能仅注入 SessionCommand；既有 authored paired observation 不替代 continuous variant execution。
+[当前键盘范围](../../../decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope)要求默认键盘 A。B/D 为排除历史设备画像；C 是可选键盘诊断，不是额外整段路线门禁。补充设置比较保留自己的身份及第 2/3/5/7 层差异。交换只改物理绑定，不改命令含义。减闪须抑制白色覆盖层，仍完成相同令牌/类型及状态效果。可调文字首次 Confirm 揭示未完文字而不消费等待，后次 Confirm 才确认；即时文字仍需确认，选择保留 Yes/No。原版设备节奏及文字时长不是相等字段。观察实际宿主设置/输入/投影，不只直接注入 SessionCommand。已有自编成对观察不替代连续变体执行。
 
-Layer 10 独立报告：受控构造（1A/layers1–2）；排除 optional 但保留 mandatory route（2A/layers2–3）；有证据 fixed seed/logical trace、manual agency、禁止 live reseed（4A/layers1,2,5,7）；无 save surface 与 restart equivalence（6A/layers1,8）；所有 9A variants 的 acknowledgement/state equivalence（layers2,3,5,7,9）；每个明确 out-of-domain safe/Unsupported 行为（10A/affected layer）。out-of-domain safety 不得豁免 in-domain required action。7C private-only handling 是产品边界，不是 deviation。
+第 10 层单独报告现代有限音乐时钟及受影响历史（layers2–5/7/9）、受控构造（1A/layers1–2）、排除可选交互且保留必经路线（2A/layers2–3）、有证据固定种子/逻辑轨迹及手动自主权、无运行中重设种子（4A/layers1,2,5,7）、无存档界面及重启等价（6A/layers1,8）、当前必需键盘范围及单独报告补充设置（layers2,3,5,7,9），以及每个显式标识域外安全/Unsupported 行为（10A/受影响层）。域外安全不能豁免域内必需行动。7C 仅私有处理是产品边界，不是偏差。
 
-<a id="offline-reference-bindings"></a>
+第 10 层还单独报告[已接受快速文字语音省略](../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-fast-text-speech-omission)（layers8/9）：即时/全部揭示跳过被省略字符揭示的语音，揭示本身保留已有尾音及正常源码特定确认音。后续合法替换仍允许。仅揭示不得确认、发出确认音、增加 tick/RNG 推进或等待已省略语音。不要求每次 Ack 都有 cue67 或尾音在 Ack 前结束。省略符合性、相同语义 Wait/Ack 状态等价及实际音频生命周期覆盖分别报告。已接受省略不能把不可用正常揭示语音、完成或资源溯源变为 PASS。[音频所有者](../../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)记录有界观察及剩余揭示尾音观察限制。
+
 ## 离线参考绑定
 
-使用维护的[只读投影器](../../../../src/sf2tool/remake_h4_reference.py)，显式选择本地 retained `issue496`，输出必须是自己工作区 `local/` 内的新文件：
+运行维护中[只读投影器](../../../../src/sf2tool/remake_h4_reference.py)，显式指定本地操作方保留 `issue496` 目录及本工作树新输出：
 
 ```powershell
 . ./local/private-inputs.ps1
 uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRoot --output local/issue522/reference.json
-# 绑定另行接受的 ordinary-input effect 时，指定新的输出：
+# 绑定另行接受的普通输入效果时，指定新输出：
 uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRoot --extension-root $acceptedExtensionRoot --output local/issue538/reference.json
 ```
 
-`$acceptedEvidenceRoot` 指向已接受的 prepared-68..86；`$acceptedExtensionRoot` 显式指向另行接受的 `issue515` prepared-02..20。两者都不会被隐式选取。未提供 extension 时，RA-12 标为 `accepted-extension-unbound`，不表示缺少原版证据；旧投影仍可复现。程序显式读取这 19 个目录；复用 `_read_segment`，仅在私有 globals 副本中将 `repo_path("local")` containment lookup 绑定到证据所在 local 根。原采集模块及可写 helper 不变。终端 86 使用 `require_resumable=False`；不 load、seal、reconcile 或重写旧 state。校验既有文件摘要、prepared config/input identity、固定 ROM/upstream/runner/observer、parent pair link、ordinal/累计 accounting、成功请求与实际 frame delivery。identity 错误或不支持的映射使命令失败，不产生 comparison PASS。记录的原 observer/runner identity 是来源，不用当前 collector 替代。
+`$acceptedEvidenceRoot` 指已接受 prepared-68..86 证据；`$acceptedExtensionRoot` 显式指另行已接受 `issue515` prepared-02..20 证据。两者均不隐式选取。无扩展参数时 RA-12 为 `accepted-extension-unbound`，不是缺原版证据；旧投影可复现。
+投影器显式读取19个目录。复用 `_read_segment` 的隔离全局副本，唯一 `repo_path("local")` 包含性查找选择证据本地根；采集模块和全部可写辅助函数不变。终端86使用 `require_resumable=False`；不加载、封存、协调或重写状态。检查已有文件摘要、准备配置/输入身份、固定 ROM/上游/运行器/观察器身份、父子链接、序号/累计核算和成功请求/帧交付。身份不匹配或不支持映射使命令失败，不产出比较 PASS。上文保留观察器/运行器身份拥有记录，不是今天采集器实现。
 
-生成 JSON 为私有输出，不是公开 fixture/schema。每个绑定含 prepared segment、JSONL 文件与一基行号、kind/order/frame 及最近 request ordinal；order 仅定位原版记录，不要求现代时序相等。`logicalInputs` 将 movement poll、prompt choice、menu return、committed player decision 按顺序关联。`requests` 区分 **2,798 controller schedules** 与 **18 acquisition saves**；后者不是 6A 用户存档。neutral schedule 只保留 timing/RNG 来源，不能猜成 STAY/Confirm，也不能在缺少[所需 consumer/phase/order 证据](../../contracts/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)时准入为 gameplay Wait。request result state 是整次请求结束的实际观测，不是每次先前 movement poll 的独立效果；逐 movement arrival 与完整 field logical-input normalization 仍可能 OPEN。
+生成 JSON 私有，不是公开测试夹具/schema。每个投影含准备段、JSONL 文件名及一基行号、事件类型/顺序/帧和最近请求序号。顺序定位原版观察，不是现代调度要求。`logicalInputs` 有序关联移动轮询、提示选择、菜单返回及已提交玩家决策。`requests` 分别保留 **2,798 次控制器调度**和 **18 次采集存档**；后者均不是 6A 玩家存档行动。
+中性调度仍为时序/RNG 溯源，不能虚构 STAY/Confirm，缺[必需消费者/阶段/顺序证据](#有证据支持的玩法等待)也不能准入玩法 Wait。请求结果状态是实际请求结束观察，不是对每个早前移动轮询推断的效果。边界未提供时，完整逐移动到达和野外逻辑输入归一化仍 OPEN。
 
-**Confirmed**（**已确认**），限所选原版链：
+**已确认**，限此选定原版链：
 
-| 绑定 | 来源与语义边界 | 覆盖及限制 |
+| 绑定 | 来源及语义边界 | 覆盖 / 限制 |
 | --- | --- | --- |
-| `admission`、`inherited` | prepared-68 的 `natural:r1` 与 `r1:inherited-status-and-live-entities` | map/位置/朝向、具名 flags、party/joined/active、gold、序列化 combatant 字段、四个完整二字节物品槽与 status word；48 个 physical entity 与 logical index table，位置/destination/facing/layer/action-script/wait。R1 实际 seed bytes `[153,23,0,0]`、copy 0。R1 未输出的完整 flags、base-stat/prowess/EXP 不得用之后状态补齐。 |
-| `requests/movements/choices/menus/decisions` | 成功 command/result 与真实 source consumer | 两次 Yes；41 个已提交玩家动作：21 Stay、13 Attack、3 CastSpell（HEAL 1）、4 UseItem（Medical Herb）。itemSlot 从零计数，对照 actor 当前四字 inventory；此链 menu/player return 无 cancel sentinel，cancel/reselect 分支仍缺。 |
-| `encounter/turns/checkpoints` | natural/load/start/activate/region/spawn/generation/dispatch 与函数前后 | first actor 2、103 dispatched turns、14 generated orders，combatant/status/equipment 及已序列化 AI 前后状态；full combatant records 的 AI memory 尚待解码；main/debug RNG callback 不采集 thinking-helper draw。 |
-| `scenes`、decision `effects` | WriteBattlesceneScript 前 → ApplyActionEffect 前 → Initialize/Execute → EndBattlescene 后 | 44 scenes；在 consumed boundary 比较 HP/MP/status/items/EXP/gold。player-return targets 是候选列表；真正 effect target 使用 construction 后列表。此次每个 effect 只有一 target；多目标解码尚不支持，显式失败。 |
-| `rng` | base generator 与 debug-aware wrapper 的 entry/return/draw | 2,935 base advances 使用 D6 range/D7 result，全部满足已有 16-bit 更新与缩放规则；250 wrapper 使用 D0 range/result，匹配内部 base call，**不是额外 draw**。caller PC/consumer scope 仅定位来源，不证明具体 draw-to-effect。thinking-copy draw 及这些 callback 外的 frame/menu mutation 仍 OPEN。 |
-| `story/operationPairs/audioPairs` | script/operation/text/warp/setup 与真实 sound consumer/mailbox | 全链 363 对 reached operation，其中 after-program 67 对；2,552 dispatch/mailbox pairs，末段 106 对。只证明 source seam，不证明视觉/听觉 delivery。 |
-| `victory/endpoint`，可选 `postVictoryInput` | victory/after-tail/enclosing return/flag/loop/transfer 与 terminal stop | PR #504 neutral endpoint；terminal accounting 的 item/status/HP/MP 与保留 RAM 独立对照，完整 flags 对照 128 bytes。field 位置与 battle combatant 坐标分开。可选 PR #526 投影验证独立链、18 个重现的前缀状态、旧 neutral endpoint 匹配、原版 Down 接受及 Map57 `(5,13)` 的稳定 state、朝向、readiness、flags、party、resources。它仅提供 expected fields；actual 缺席仍为 `Unavailable`。 |
+| `admission`、`inherited` | prepared-68 `natural:r1`、`r1:inherited-status-and-live-entities` | 地图/位置/朝向、命名标志、出战队伍/已加入/出战列表、金币、序列化战斗员字段、完整四个双字节物品槽及状态字；48条物理实体记录及逻辑下标表、位置/目的地/朝向/图层/行动脚本/等待字段。R1 种子字节 `[153,23,0,0]`、副本0是实际读回。R1 未输出完整标志数组、基础属性/特殊攻击概率/EXP 字段保持不可用，后续状态不能填补。 |
+| `requests`、`movements`、`choices`、`menus`、`decisions` | 成功命令/结果及实际源码消费者记录 | 两次 Yes 返回；41个提交玩家行动：21 Stay、13 Attack、3 CastSpell（HEAL 1）、4 UseItem（Medical Herb）。物品槽从零计数，对照行动者实时四字物品栏校验。谱系菜单返回/玩家返回均无取消哨兵值；取消/重选仍缺分支。 |
+| `encounter`、`turns`、`checkpoints` | 选定自然/加载/开始/激活/区域/生成/顺序生成/分发及调用前后记录 | 实际首个行动者2，103次分发单次行动，14次顺序生成；战斗员/状态/装备及序列化 AI 前后状态。完整战斗员记录的 AI 记忆解码仍 OPEN；主/调试 RNG 回调不采集思考辅助抽取。 |
+| `scenes` 及决策 `effects` | WriteBattlesceneScript 前 → ApplyActionEffect 前 → Initialize/Execute 演出 → EndBattlescene 后 | 44个演出发生实例；在已消费边界比较前后 HP/MP/状态/物品/EXP/金币。玩家返回 `targets` 是候选列表，使用构建后效果列表，不能视为全部命中。每个已到达效果单目标；不支持多目标解码则显式失败。 |
+| `rng` | GenerateRandomNumber 入口/返回/抽取及识别调试的包装器 | 2,935次基础推进使用 D6 范围/D7 结果，均重现已接受16位更新及缩放结果。250个包装器结果使用 D0 范围/结果，匹配嵌套基础调用，**不是额外抽取**。调用方 PC/外层消费者范围定位证据，不证明单次抽取至效果关联。思考副本抽取及观察调用外帧/菜单变更仍 OPEN。 |
+| `story`、`operationPairs`、`audioPairs` | 命名脚本/操作/文字/传送/配置记录；实际声音消费者/邮箱记录 | 全链363对匹配已到达操作，含已接受67对战后程序；2,552对分发/邮箱（最终段106）。证明已到达源码接缝，不证明渲染/听觉交付。 |
+| `victory`、`endpoint`，可选 `postVictoryInput` | 自然胜利、战后尾部/外层返回/标志/循环/转移及终端停止记录；独立已接受扩展请求/读取/接受/停止记录 | 上文 PR #504 中性端点；终端核算及物品/状态/HP/MP 与保留 RAM 交叉检查，完整终端标志与全部128字节检查。野外坐标与战斗员坐标分开。可选 PR #526 投影验证独立链、全部18个重现前缀状态、旧中性端点匹配、原版 Down 接受及停稳 Map57 `(5,13)` 状态、朝向、就绪、标志、队伍和资源。只提供预期字段；缺实际结果为 `Unavailable`。 |
 
-数字 action mapping 来自 `map3-battle01-action-effect-static-v1` dispatch 与 battle-AI/function 的 STAY consumer。item mask/slot 使用已接受 herb config 与 item/stat owner；spell identity/rank 使用既有 spell/AI packing。不同 RNG 寄存器合同由 [randomness](../../contracts/randomness.md) 和 `rng-v1` / `debug-rng-v1` fixture 拥有。expected 不来自 remake code。
+数字行动映射由 `map3-battle01-action-effect-static-v1` 分发及战斗 AI/函数所有者的 STAY 消费者拥有。物品掩码/槽位语义来自已接受药草配置及物品/属性所有者；法术下标/等级打包遵循已有法术/AI 所有者。[随机性合同](../../contracts/randomness.md)及已有 `rng-v1` / `debug-rng-v1` 测试夹具拥有不同生成器寄存器合同。预期值不来自重制代码。
 
-`coverage` 按十层列出字段组。`decoded` 只表示原版字段有可执行绑定，没有 actual remake 时 `comparisonResult` 始终 `Unavailable`。`retained-not-decoded` 是既有待解码记录，`static-supported` 是静态规则，`missing-semantic-binding` 是解释缺口；`missing-original-detail` / `missing-original-branch` 与 `missing-remake-observation` 分别报告原版细节/分支与 actual 缺失。它们均不自动派生 native 队列。
+`coverage` 跨十层列举字段组。参考状态 `decoded` 只表示命名原版字段有可执行绑定；无实际重制观察时 `comparisonResult` 仍 `Unavailable`。`retained-not-decoded` 标识可改编既有源码记录，`static-supported` 标识已接受规则，`missing-semantic-binding` 标识未解决解释；`missing-original-detail` / `missing-original-branch` 区分采集缺口与 `missing-remake-observation`。均不自动排队原生工作。
 
-既有 [dialogue](../../contracts/dialogue-system.md)、[text/font](../../contracts/text-and-font-system.md)、[music wait](../../contracts/music-wait-service.md) 与 [battle scene](../../contracts/battle-scene-presentation.md) 提供静态 identity/解码/command order/resource/wait 规则，可支持继续离线绑定；不能将 shimmed DisplayText return 变成自然 reveal/ack，将 mailbox 变成播放，将 scene entry/end 变成逐 command animation/resource-consumption trace。原版音频资产与实际 host consumer 仍是独立要求，不引入硬件/frame/pixel/waveform equality。
+已有[对话](../../contracts/dialogue-system.md)、[文字/字体](../../contracts/text-and-font-system.md)、[音乐等待](../../contracts/music-wait-service.md)及[战斗演出](../../contracts/battle-scene-presentation.md)合同提供静态身份、解码、命令顺序、资源和等待规则，可支持更多离线绑定；不能将垫片 DisplayText 返回变为自然揭示/确认证据、声音邮箱变为播放、演出入口/结束变为逐命令动画/资源消费轨迹。完整原版音频资产及实际宿主消费者观察仍为独立要求，不引入硬件/帧/像素/波形相等。
 
-验收采用完整链直接命令、真实 action/scene/RNG/terminal 映射检查、具备配置时的 normal repository check、文档/翻译校验与 committed dependency plan。不增加 verification-code 测试、CLI、公共 payload、schema 或 planner rule；保守 planner 选择不能扩大本 slice 的 native/full 授权。失败/不完整投影保留 ignored，修正记在 Issue handoff。reference projection 永远不等于 H4 PASS。
+本适配器验证为直接完整链命令、真实行动/演出/RNG/终端映射检查、配置要求的正常仓库检查、文档/翻译检查及已提交依赖计划。不增加验证代码测试、CLI 注册、公开载荷、schema 或规划器规则；保守规划器选择不授权本切片外原生/full 执行。失败/不完整投影保留在忽略输出，修正记入 Issue 交接。投影参考从不是 H4 PASS。
 
-<a id="remaining-acceptance-work"></a>
+
 ## 剩余验收工作
 
-**Unknown / OPEN 原版字段**（**未知**）：R1 未序列化的完整 flags 与基础属性/prowess/EXP、已接受单次 Down extension 以外的完整 field logical-input effect、AI 内部 memory/thinking draw、逐 draw-to-effect 映射与 timing normalization、cancel/reselect、unshimmed required dialogue 与其他不完整 8D consumer boundary。PR #526 仅关闭有界 RA-12 input/effect observation，不证明完整 5B、剩余 8D 或里程碑。projector 保留 PR #504 neutral terminal，仅在显式提供独立接受的根目录时绑定 extension payload。
+[当前验收映射](../../synthesis/map3-battle01-readiness.md#current-required-comparison-boundary)记录十三项有界准入、规则、资源和消费者义务的独立验收。下文组合谓词保留各自精确证据边界。Main-gate 已在[已接受边界](../../synthesis/map3-battle01-readiness.md#accepted-current-milestone)独立审阅必需父级覆盖、共享证据依赖及偏差，接受完整当前里程碑。历史/默认报告保持不变；缺少可选上下文仍可能产生 Unavailable，不使已接受显式组合失效。
 
-**Confirmed**（**已确认的比较结果**）：PR #528 的已完成 baseline 报告 5,336 PASS、6 FAIL、40 Unavailable；六个失败和原报告作为历史证据保留。PR #533 将 connected selected R1 product inputs 修正为 source NewGame gold 60 和完整起始 item words，同时保留独立 controlled R1 fixture 的 gold 0/four-byte projection。修正后的 actual host run 完成 normalized field route、73 个 reached text ID 与 natural first actor 2，然后因 diagnostic next-actor divergence 停止。报告 5,340 PASS、2 FAIL、40 Unavailable，`milestonePass: false`。Gold 60 在准入时确认；完整 item arrays 在 natural first control 实际观测，且与 pinned NewGame source 支持的起始槽位相符：Bowie `[199,0,127,127]`、Sarah `[213,0,0,127]`、Chester `[184,0,127,127]`。这些后续 inventories 不能证明 admission `SourceLoadout`，actual projection 中该值仍为 null。First-round order 仍不同；首次 diagnostic STAY 后，original next actor 是 Bowie，actual 是 Sarah；host exit 2 与该比较结果互证。PR #526 post-victory extension 现可选投影；此 actual run 仍未到达。NPC phase 与 timing/RNG mapping 仍 Unknown。该修正比较仍不是 H4 接受。
+**保留的原版投影限制（未知）：**完整 R1 标志及序列化核算以外字段、已接受单次 Down 扩展以外的完整逻辑野外输入效果、详细 AI 记忆/思考抽取、逐次抽取至效果映射及时序归一化、取消/重选、未经垫片的必需对话及其他不完整 8D 消费者边界。下文绑定区分已解码值、保留但未解码字段、静态规则、缺失原版细节及缺失重制观察。PR #526 只关闭有界 RA-12 输入/效果观察，不建立完整 5B、剩余 8D 或里程碑。投影器保留 PR #504 中性终端，仅在提供独立已接受根目录时绑定扩展载荷。
 
-**OPEN 内容/实现**：7C 音频与完整 reached asset provenance、snapshot/cue correlation、actual battle-scene consumers、连续比较剩余覆盖及适用 host/9A 执行。现有 comparator 已有 accepted diagnostic result；其余 layers/variants 尚未完成。Medical Herb 和 carried inventory 观测已由 PR #521（`78c201c3`）接受：普通 `SelectItem`、live inventory、`ReadObservationJson` 的 `inventories`/`itemSlot` 及使用后消耗可供 actual 映射；它不是此连续比较的 PASS。音频（#517）与 battle scenes（#523）仍是独立 OPEN 实现。不得用 remake 限制删除原版 reached action。已接受比较定义不代表完整定义或里程碑就绪。[就绪台账](../synthesis/map3-battle01-readiness.md)记录闭合，main-gate 独立验收。离线投影不执行 H4，不启动 native acquisition。
+**已确认的实际比较结果（PR #528，PR #533 修正）：**PR #528 已完成基线报告 5,336 PASS、6 FAIL、40 Unavailable；最早差异为准入金币、三名己方角色物品数组、首回合顺序及诊断性下一行动者。六个失败及其报告仍是历史证据。PR #533 将相连选定 R1 产品输入修正为源码 NewGame 金币 60 和完整起始物品字，保留独立受控 R1 测试夹具的金币 0/四字节投影。
+使用保留原版参考与计划的新实际运行报告 5,340 PASS、2 FAIL、40 Unavailable；准入金币及三名己方角色自然首次控制时的实时物品数组现已匹配。准入金币 60 已确认。完整物品数组在自然首次控制时观察，与固定 NewGame 源码支持的起始槽位一致：Bowie、Sarah、Chester 分别为 `[199,0,127,127]`、`[213,0,0,127]`、`[184,0,127,127]`。这些后续物品栏不证明准入 `SourceLoadout`，后者仍为 null。首回合顺序仍不同，诊断性首次 STAY 后原版下一行动者为 Bowie、实际为 Sarah；宿主退出码 2 是互证的停止。实际投影中准入 `SourceLoadout` 仍为 null，不能用后续物品栏证明。已接受 PR #526 战后扩展现可选投影；该实际运行未到达。NPC 阶段及时序/RNG 映射仍未知。修正比较仍不是 H4 验收。
+
+**当前已接受集成：**资源、音频与战斗演出证明提供各自命名局部义务；就绪映射将其连接到保留连续路线及较早文字/移动/操作证据。Medical Herb 与持有物品栏仍是已接受有界能力。显式 #517 快速文字政策保留受控揭示尾段证明及历史 C 限制。仅凭 Issue 状态不能建立消费者声明。当前必需键盘 A、补充 C、排除 B/D 遵循 ADR0010；旧变体缺口不增加必需执行。
+必需父级覆盖、不变当前依赖及共享发生实例/输入/效果兼容性已有独立验收。完整当前私有里程碑按键盘 A、现代时钟和 7C/8D/10A 语义接受。这是已有已执行比较和连续路线/父级证据的组合验收；未生成新的完整可执行现代报告或修正后完整 A 轨迹。历史 A10/default/矩阵结果及限定范围 `milestonePass=false` 值不变。硬件 8C、全游戏一致性和公开发行在此验收之外。
+不要因当前重制限制删除预期合同中已到达行动。[就绪台账](../../synthesis/map3-battle01-readiness.md#accepted-current-milestone)拥有最终验收依据与保留未知项；[审阅路线](../../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)定位支持检查。离线参考投影不执行 H4，也不启动原生采集。
+
+## 可执行现代适用性比较
+
+已有比较器的 `--profile modern-continuous` 读取已接受普通 JSON 样本/结果流、独立结果 JSON、实际设置及记录的宿主结果。默认旧 JSONL/计划画像保留原始诊断语义与已完成结果。从工作树所有的忽略输入中，选择带已接受 Down 扩展的保留原版投影；两种画像都不重设生产种子或修改原版投影器/黄金值。
+
+每项断言在求值前记录适用性：`applicable`、`historical-diagnostic` 或 `required-unobserved`，并记录原版所有者/记录及实际文件/记录。历史不匹配保留原始结果及独立计数。当前必需 FAIL 和 Unavailable 控制当前结论；缺原版语义绑定区别于缺实际宿主观察或选择/溯源。十个必需层及命名变体均按范围保留。败北/其他未到达返回类型及排除的硬件节奏不成为获胜画像前提。
+
+普通观察器在返回输入首次就绪且 *Left 之前*、Down 之前及 Down 之后，分别标记两个独立宿主更新读取。各对中观察玩家/摄像机/就绪保持停稳不变，不发出玩法 Wait。保留已接受 Left，再要求从已到达现代格子执行合法普通 Down。原版绝对终端坐标/资源是历史诊断；局部位移、朝向、碰撞和真实输入就绪仍必需。
+
+`matrix --matrix-scope current-keyboard` 独立于提供哪些报告，声明必需 A、排除 B/D、可选补充 C。只有 A 计入当前数量、必需报告及剩余义务。缺失、格式错误或失败的 A 不能通过；其保留报告中剩余十三个不可用子项仍阻止该报告通过。当前就绪所有者核算其已接受组合。C 的比较、实际报告失败与未知项单独可见。B/D 历史仍可读，但不进入当前门禁。A 自相等只关闭该显式范围下沿用旧名的矩阵义务，不是完整 H4 或所有设置一致性。
+
+物理输入消费由实际同步分发区间与提交结果建立；自动结果保留最近序号仅作上下文。仅揭示 Confirm 是交付操作，不是确认。D 等待实际 Label 自然揭示就绪，不发出玩法 Wait。有序逻辑观察保留全部操作数。宿主专属文字揭示通知和单次自动治疗演出交付通知单独保留，必须不改变玩法/RNG 服务；实际确认及演出转换仍有序。此时序区分不豁免必需原版同状态或消费者绑定。
+
+现代交付区分遵循维护中的宿主/应用所有者：[`ExplorationSessionView._Process`](../../../../remake/game/src/Exploration/ExplorationSessionView.cs) 在实际 Label 交付后发送 `CompleteTextReveal`；[`BattleSceneView.Consume/Acknowledge`](../../../../remake/game/src/Battles/BattleSceneView.cs) 区分揭示、计时确认及 `CompletePresentation`；[`BattleSceneContinuation.Submit`](../../../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs) 只在模拟或确认时推进治疗逻辑，交付则标记 `Delivered`。这是现代消费规则，不是原版硬件时序证据。
+
+**已确认的有界实际设置比较：**四个命名获胜画像具有相同的 717 次已消费物理输入、34,568 条有序逻辑观察、35 个行动状态、准入、资源/RNG 以及返回玩家/摄像机/就绪读取对。D 使用显式增量的双音频选择；A/B/C 复用的依据为实际使用资产未变，且先前未解决的精确语音请求未出现。C 仅揭示 Confirm 不提交命令；D 只确认已交付文字。
+保留 A-D02 矩阵虽有四个变体 PASS，仍为 `Unavailable`、`milestonePass=false`：这些会话仍缺三个准入物品字段、准入阶段映射、必经操作至消费映射、同状态规则/RNG 映射、完整已到达资源溯源及必需未经垫片的消费者绑定。设置相等不关闭八项义务。
+单独观察的新 A 会话提供准入定义和实际挂载资源/音频记录；这些字段不能回填 A-D02。其三个物品父项通过，五个原版阶段、操作、规则、资源及消费者父项在该保留报告中仍开放。后续组合验收由就绪所有者记录；不重标任何历史结果。
+
+### 准入与必需子项义务
+
+现代报告在 `coverageObligations` 中保留八个命名覆盖义务及必需子断言名称和聚合结果。`assertions` 保存求值后的子项；父项数量与断言数量分开。未到达原版行动类型仍为历史子项，不进入必需父项结果。只有全部适用必需子项通过，父项才通过。已观察差异为 FAIL；缺预期观察或语义连接，即使报告能显示候选值，也保持 `required-unobserved`。每个不可用子项命名 `missingSide`、原版所有者/绑定及实际记录位置。矩阵携带父项行和剩余子断言。删除不透明占位符或只选简单子项均不能关闭父项。
+
+现代报告校验器拒绝选定范围错误、重复或缺失必需名称、矛盾子项结果、不一致的有序父项成员/计数及不一致报告摘要。历史诊断不进入必需计数。FAIL 优先于 Unavailable；`milestonePass` 必须是必需结论隐含的精确布尔值。这些规则由独立 C# 报告完整性工具通过不变 Python 入口拥有，见[受控验证路线](../../../../remake/docs/evidence/retained-comparisons.md#h4-report-integrity-controls)。断言类型构建及校验使用选定参考/报告元数据，保留有序错误及惰性读取失败。已有 modern/matrix 调用方仍在成功发布或获取发生实例证据前拒绝完整性失败。工具兼容性不补出缺失原版观察，也不改变八个玩法证据边界。
+
+现代断言分类、有序覆盖/摘要组装也通过一个调用方所有会话使用 C# 比较工具。它保留先适用性后相等、`value == expected` 操作数顺序、溯源/路径回退、首子项层、必需/历史成员关系，以及先追加断言后追加分组的效果。Python 保留文件/SQLite IO、外层报告元数据及发布；最终完整性拒绝仍必需。[组装控制](../../../../remake/docs/evidence/retained-comparisons.md#h4-report-assembly-controls)覆盖完整报告、部分失败、源码存活期及分离的调用方发布。这项工具归属变更不接受额外原版行为或玩法证据。
+
+`--controlled-start` 显式选择**候选**队伍定义。`candidateDefinitions` 将文件/行动者/槽位值与实际准入覆盖/进度分开记录。现代有效装备解析顺序为显式 `SourceLoadout`，然后 `Progress.SourceLoadout`，最后同次运行已加载部署定义。该优先级描述重制；独立原版预期是参考的完整 R1 物品字。
+候选相等、当前启动选择、读取器预检及后续战斗物品栏，均不能观察准入投影省略的部署定义。两项实际覆盖均为 null，**且同会话准入定义未被观察**时，有效字及身份保持 Unavailable。不选择默认输入，不把缺失值强制为零。首次命令前快照可以针对显式选定冻结输入，标识实际会话准入遭遇、部署/行动者及定义操作数。野外启动不实例化战斗行动者；有效物品采用上文优先级，之后实际已加载/就绪行动者仅互证同一会话。此实际观察不需要新原版路线。见[观察所有者](../../../../remake/docs/evidence/retained-comparisons.md#same-session-actual-observation)。
+
+已到达获胜画像的封闭必需子项类型如下：
+
+| 父项 | 必需子项与比较边界 |
+| --- | --- |
+| 三个行动者物品父项 | 每个行动者四个完整有效 ushort 槽位；独立比较的候选定义槽位；实际准入装备身份及覆盖/进度/定义解析。后续物品栏只互证。 |
+| 相关准入阶段/字段 | 命名 R1 标志及 joined/active 列表；中性逻辑消费者就绪；种子副本观察/相关性；开场嘴部/视野门控；已占物理槽位及位置/目的地/朝向/图层；直接 slot5/6/8 原版 waitTimer 相等，显式选定封存 R1 指针/模板/偏移至游标及已消费源码移动门控绑定，以及移动门控/速度/行程/标志对应；候选职业/等级/上限/属性/法术字及同次运行有效定义身份。不要求未观察完整标志、填充核算、RAM-PC 相等或硬件时间。 |
+| 必经操作消费 | 实际采用路线/配置/调用方分支操作数及发生实例；调用方返回前已等待实体移动/动作/淡入淡出；对话说话者/控制令牌发生实例及选择效果；路线名册/标志写入；传送目的地/配置释放；前后效果及共享尾部返回配对；命名返回剧情标志及加入/标志/返回因果顺序。源码操作可降低成多条类型化指令：仅计数不构成对应。 |
+| 同状态规则/RNG | 记录的主抽取字更新/范围/结果及保留映像通道；行动分数/平分/顺序抽取；物理范围/闪避/会心/浮动/二连/反击；HEAL 消耗/恢复/精灵机会；到达物品行动时的槽位/移除/资源效果；EXP/金币/成长/习得法术/行动后/结果；AI 思考/选择/记忆/移动；野外文字/肖像/NPC 服务门控及抽取效果。同操作数比较已到达规则，不能比较完整历史获胜顺序。 |
+| 已到达 7C 资源 | 已到达地图图集/图层；实体精灵/肖像/动作；已显示私有文字/令牌/字体绑定；演出行动者/武器/治疗/死亡资源；演出背景/地面实际 ID；已到达音频命令/计时器/PCM 溯源及播放生命周期。连接源码选择/提取与实际使用。不要求全语料/逐帧清单或硬件相等。 |
+| 未经垫片的确认/演出消费者 | W1 令牌/接受读取/服务门控对应；W2 接受读取/校验/令牌返回；普通 JOIN 在匹配有限完成后接受输入；恢复前实体移动/动作/淡入淡出完成；战斗命令/资源/等待/效果/结束边；音频替换/淡出/停止/恢复依赖。要求真实使用/完成及发生实例身份，不能用请求或聚合计数。 |
+
+直接准入比较绑定选定已占实体几何及原版行走等待计时器、命名标志/列表/就绪、候选定义及返回剧情标志/返回边。记录主抽取在每个实际种子/范围使用既有原版 H3 生成器模型，独立于重制 RNG 代码。该算术比较不证明源码抽取至效果关联、AI 思考流、服务机会或整个行动规则。原版 `RANDOM_SEED_COPY=0` 对实际 null 保持显式。独立选定[种子组合](#准入种子副本组合)可以决定初始副本相关性，不独自解决开场嘴部/视野。[开场控制绑定](#受控开场控制绑定)单独使用有界原版读回。
+显式封存 R1 见证与选定编译内容下，行走准入通过固定分配器/模板将三个指针绑定到语义游标/移动状态及已消费等待行为。[行走源码所有者](../../../research/map3-messenger-acceptance.md#walking-admission-continuation)提供预期阶段；重制起始值及程序名不提供。未选择时，这些已有报告子项仍 Unavailable；当前已接受组合保留显式选择及独立证据。
+
+[行走模块所有者](../../../operations/bounded-inspection-and-review.md#h4-join-and-walking-module-route)保留独立源码、阶段、归一化移动及已消费门控贡献。其源码结构/接口控制不增加历史准入或自然到达证据。
+
+行走连接处数字操作数与布尔字段保持区分：`actionCursor`、内容数字操作数及原始移动/门控坐标不能使用布尔值；`moving` 必须为真实布尔值。保留有效整数/浮点数字相等。已存在类型矛盾在算术归一化前独立贡献 False；其他缺失/None 贡献不能抹去它。已有缺值及精确内容模板比较边界不变。
+
+已有行走移动/就绪子项比较活动轴与方向、以瓦片为单位携带的总行程及剩余距离、配置速度/加速度操作数、加速/减速、碰撞/阻挡及自动朝向门控。不能从剩余距离重建总行程。原版速度大小/存储及帧时长在现代时钟边界外；带符号方向及实际阻塞/非阻塞续接仍必需。未使用标志位保留为溯源，不新增寄存器相等要求。源码导出下一等待时长内首次同会话样本证明消费，不固定样本下标或服务次数。隐藏的 `WaitingForMotion` 布尔值为推断；已观察等待/移动效果为已确认。本准入绑定不关闭完整已等待移动/动作/淡入淡出或实体消费者类型、原版自然时序、整段路线 NPC/RNG 调度或碰撞语料。
+
+### 准入种子副本组合
+
+实现为 [`admission_seed.py`](../../../../src/sf2tool/remake_h4/admission_seed.py)，AI、野外服务、modern 及限定范围 CLI 消费者通过已有比较模块导入共享。[AI/种子依赖路线](../../../operations/bounded-inspection-and-review.md#h4-ai-and-seed-module-route)保留下文历史锁存与已接受当前机制的不同证明职责。
+
+可选 `admission_seed_binding` 只替换必需 `admission seed-copy byte` 子项，组合选定原版非恢复路径、历史 A 实际 W2 交付及已接受 PR621 修正机制，不比较修正后完整 A 采集。没有显式证据上下文，原直接子项保留原有不可用比较。
+
+**已确认的源码及选定观察：**固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` 的 `BattleLoop` 检查 flag88。已存战斗分支绕过战前脚本，所以仅发现文件中读取器之前有文字写入并不足够。注册原版 `issue496/prepared-72` 在 `battle:loop` 记录 flag88=false（checkpoint line201/order43737），进入 `bbcs_01`（204/43740），调用返回 PC`0x647E` 的 W2 主 RNG（310/44324），返回 range256 抽取（312/44326），返回脚本（4011/55393），再分发单次行动（4124/55652）。候选已有源码/ROM/配置/观察器/运行器身份绑定该选择，不能任意拼接独立行。
+
+`bbcs_01` 从 text2292 开始，后续文字/行动工作前必经无条件 W2。在 `textfunctions_1.asm:loc_6472`，`GenerateRandomNumber` 使用主流，在输入/服务续接前于 `0x647E` 写入结果字节。W1 和菱形菜单同样覆盖该字节而不使用旧值。固定源码中仍使用的符号副本读取器为 `GenerateRandomValueSigned`，由战斗 AI 经 `GenerateRandomNumberUnderD6` 到达；`GenerateRandomValueUnsigned` 只有未调用的 `WaitForRandomValueToMatch` 包装器。结合选定正常分支及已完成脚本，这建立相关行动读取器之前的写入。不准入恢复战斗、其他调用方或未指定间接代码。
+
+**已确认的当前机制：**已接受合并 `bbf98c8ddbd04500d57165a958f78f86a9ff209b` 在 `CopyTextSeed` 替换活动 Party 思考映像高字节，经 `BattleEntry` 携带，并将 `CurrentRandomSeedCopy` 与 `Story.RandomSeedCopy` 分开投影。三个已执行 `FieldTextCopyReplacesInitialAiByteBeforeEntryAndAiKeepsItsUpdatedByte` 用例覆盖普通 W1/W2 确认、合法入场及首次自动 AI，使用两个旧高字节和两个保留低 24 位映像。保留 TRX 与适配器退出回执是断言执行/编译证据，不是合成运行时事件。直接对照已接受源码绑定当前使用；依赖变化需要重新审阅。
+
+历史 A 选定 text2292 input407/token23128/result13797 独立提供实际主抽取/副本/等待/读取顺序及副本算术。原版帧推进与严格观察顺序必须和源码链一致。物理输入跨度/序号必须拥有 Submit；input-after、结果及状态按会话/修订/观察序号/模式连接，快照操作数匹配。事件修订必须推进、序号严格推进，二者均在 input-before 之后且位于全部可用结束通道以内，最终事件必须关闭 Submit。副本提交必须在抽取提交后。数组位置或单个选定 ID 均不证明这些关系。已知倒序/不匹配即使另一通道或时钟操作数缺失也保持 FAIL。
+旧 null/仅文字锁存和后续活动 `12340000` 保留为独立**历史 FAIL**，即使组合必需子项通过。当前错误副本或外来会话使必需谓词失败；无关缺证据不能掩盖。缺证据仍为 **Unavailable**，包括后续收敛但缺副本。原版 R1 copy0 保留其观察值，不能从 null 推断。
+
+**未知：**其他 24 位思考映像、后续原版首次 AI 值及修正后完整路线宿主轨迹。这些义务独立。限定范围 PASS 的 `milestonePass=false`；只有 main-gate 可接受义务缩减。
+
+### 受控开场控制绑定
+
+显式 `admission-context.opening` 下，`admission_opening_binding` 只替换必需 `opening mouth/view controls before first source write` 子项。它连接两个独立证据域：选定受控原版 R1 及其首次源码读取器，以及历史 A 自己的初始状态和物理输入边界。它们不共享会话或时钟。PR621 已接受种子机制仍独立，不隐含修正后完整 A 执行。
+
+[开场模块路线](../../../operations/bounded-inspection-and-review.md#h4-opening-admission-module-route)保留有序检查与证明边界。数字开场操作数拒绝布尔替代，保留整数/浮点相等；预期布尔值保持严格。None 与缺证据保留原义，可用矛盾优先。
+
+**已确认（有界原版观察）：**[受控开场标量读回](../../../research/map3-messenger-acceptance.md#controlled-opening-scalar-readback)在输入前 R1 观察 mouth0/view0，然后在首次字形读取器观察 mouth0，在首次准入覆盖读取/选择观察 view0；后者保留源码选定的 D7=24；脚本返回清除发生更晚。必须具有冻结源码/ROM/输入/观察器/运行器/配置身份、完成状态、恢复、准入阶段、源码 PC 及单调帧/输入/顺序连接。这些值不再依赖后续存储零值的逆向推断。
+
+观察器类型/输入身份/已完成 R1 和程序返回标志必须与冻结候选及宿主已审阅材料、运行时身份和停止原因一致。全部命名范围恢复标志必须通过；`outputRemoved=false` 是有意保留证据。生产者记录数量、连续顺序和已见钩子集合必须描述完整紧凑记录集。终端快照必须等于返回脚本记录，并在最终帧完成与恢复之前。部分记录集旁声称完整是矛盾；缺记录通道仍不可用。
+
+每条准入记录独立隐含 `frame - inputFrame = R1.frame` 和 `emulatorFrame - inputFrame = R1.emulatorFrame`。两个纪元起点无需相等。即使 R1 行或其他操作数缺失，已知方程也必须一致。分别排序的时钟列表不能建立该关系。最终返回必须关闭生产者记录数量和选定输入前缀。可用失败完成/恢复/身份/纪元证据优先于无关缺字段。
+
+单独注册历史会话 `99755635-cad5-4fff-bc88-b70fcc5f017b` 的 `samples[0]` 为 revision/sequence4、tick0：map3、FieldInput、中性游标/等待/调用方及 mouth0/view0。首次物理 left 输入连接此前状态，并拥有 revision/sequence5 的 result0，包括移动请求事件和后状态。`cs-5145c` 调用方选定开场设置不得与准入矛盾。下标选择保留证据，不定义玩法合法性或必需服务次数。已知错误值、外来身份、倒序或输入/结果不匹配，即使旁有无关缺证据也失败。后续零值不能替代缺失初始状态。
+
+此子项建立准入控制对应及源码侧相关性。稀疏历史 A 结果不发出独立首次字形设置/读取事件或每个视野操作数，因此不独立建立逐服务时序或一一原版/重制字形事件映射。已有服务消费者保留自己的验收范围。选定源码 text510/511/483 没有延迟令牌，因此未到达延迟读取器为**未知**，不是强制路线扩展。自然标题/重置祖先、硬件时序、其他思考映像位及后续首次 AI 值仍独立。缺显式原版或实际准入证据时此子项为 **Unavailable**。完整 H4 及八项义务仍须独立 main-gate 验收。
+
+剩余操作/规则/资源/消费者连接命名必需操作数及缺失侧。源码 PC 至类型化指令对应、同状态行动前置条件、逐资源溯源及消费者完成边，如现有记录无法绑定，需要另行有界工作。本比较器不实现第二套战斗引擎或通用源码解释器。命名原版 text483 W1 见证及普通 JOIN 接缝保留有界范围；W2 循环入口或垫片 DisplayText RTS 不能替代未观察的接受读取。战斗演出背景/地面位置不提供资源 ID。
+新 A 的成功绑定节点 ID、纹理/可见性及实际完成记录提供实际侧，区分 Present 前信号投影及之后轮询。其连续音频回执标识实际开始/停止/结束/淡出及终端持续声音；等待令牌不是播放 ID。选定 A 音频依赖绑定见下文。其他原版资源选择器/溯源及必需依赖消费者连接保留各自未知项，不排队采集，也不把未走分支加作前提。
+
+### 选定物理规则与消费者绑定
+
+可选 `physical_consumer_binding` 只替换必需 `physical range/dodge/critical/spread/double/counter effects` 子项。限定范围命令及 modern `--physical-context` 共用谓词。实现为 [`physical_binding.py`](../../../../src/sf2tool/remake_h4/physical_binding.py)；[职责/依赖路线](../../../operations/bounded-inspection-and-review.md#h4-physical-module-route)区分源码计算、证据连接及演出效果，保留已有 CLI/导入入口。独立上下文提供完整保留战斗清单及原版通道下标；候选遗漏不能重新定义哪些攻击需证据。场景序号、已知赢家及固定伤害总数不是交战规则。
+
+**已确认：**选定历史 A 采集，生产者 `4d1d1b05f143ed872ceca6ff258cfca2b4087d90`，含 25 次物理准备：14 次玩家、11 次自动敌方行动。27 次打击含三次闪避、一次会心及两次第二击；没有到达反击。这是该采集清单事实，不是另一战斗的必需数量。最终玩家攻击连接自己的 action-selected outcome record68；summary75 在胜利对话后，不能用前一记录作其战斗状态。
+
+预期规则来自固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、[物理合同](../../contracts/combat-resolution.md)、[行动构建](../../contracts/battle-action-construction.md)及 [RNG 合同](../../contracts/randomness.md)。源码初始职业及 battle01 部署绑定准入队伍/敌人身份；已装备物品定义绑定范围，原版压缩 battle01 地形和移动类型表绑定地形保护。特殊攻击概率及会心表提供抽取资格和范围。候选伤害及呈现精灵不提供这些预期参数。要求选定源码初始队伍声明及初始部署/移动类型快照；此比较不建立任意缺失部署/画像连接。
+已审阅已到达源码子集为未转职 SDMN/PRST/KNTE 对 GIZMO、status0、ATT8–10/DEF4–5 和仅 ATT 武器56/71/85。不建立转职/修改特殊攻击概率、Gisarme、Burst Rock 或特殊空手规则；未到达反击保持显式。
+
+谓词使用实时 ATT/DEF/HP、状态、装备、部署及完整主种子映像。检查有序闪避/会心/浮动/二连/反击抽取、粘滞反击请求及后续打击资格，再将首击/第二击/反击分发关联到持久 HP 效果。两次浮动抽取使用同一浮动前上界；即使 HP 到零，反应伤害也不钳位。物理效果必须在同次 Submit 中前一命令完成之后、自身阶段开始之前。HP 延迟至自己的命令才提交，并在周围选定实时状态中检查。闪避没有带 HP 值事件，持久 HP 必须不变。缺操作数为 Unavailable；已知错误算术、身份或效果即使旁有无关缺证据也保持 FAIL。
+
+物理值匹配双向区分 JSON 布尔与数字，包括嵌套对象/列表叶子：`false` 不匹配 `0`，`true` 不匹配 `1`。`1`/`1.0` 等相等数字表示保留相等；独立整数域/时钟检查仍适用。调用方允许时显式 `null` 只匹配显式 `null`。缺预期或观察操作数使用缺失标记，产生 Unavailable，不能变为 `null`、零或矛盾。对象匹配必需子集。实际列表更短为 Unavailable，更长为 FAIL；配对叶子矛盾即使旁有缺失叶子也为 FAIL。有序事件调用方保留类型/顺序及缺事件规则；不改变其他比较类型的匹配语义。
+
+会话、结果下标、修订及观察序号标识每个保留边界。物理玩家确认经输入下标及结果区间绑定；自动行动保留因果输入及后续 Submit/状态链。结果源码下标绑定最近适用输入区间，前后快照连接保留结果/状态边界；仅存在序号不证明归属。两条时钟轴必须非负，按输入、事件、结果及完成边界推进。一次 Submit 可以完成一场演出并准备下一场。
+投影连接实际结果快照及宿主更新时最近输入。宿主轮询要求当前阶段令牌；Present 前信号投影要求对应完成。仅令牌不能建立输入或结果归属。演出阶段令牌还绑定正确打击与反应。保留的范围外目标尝试按预览目的地的源码武器范围检查。演出完成后 FieldSpin/FieldExit/FieldSettle 投影仍是独立死亡/演出义务的诊断。
+
+**未知：**历史完整 A RNG/AI 轨迹、行动顺序生成、未访问物理分支及完整呈现/硬件时序在此子项外。选定源码求值器准入普通无异常状态、非诅咒武器效果；不支持源码效果保持显式。成功概率计算不能虚构反击观察。奖励、成长、AI 选择及野外/死亡服务保留各自必需比较。限定范围 PASS 不改变历史 FAIL，也不授权 main-gate 跳过独立验收。
+
+### 选定奖励、成长与结果消费者绑定
+
+实现为 [`reward_binding.py`](../../../../src/sf2tool/remake_h4/reward_binding.py)，按[奖励模块路线](../../../operations/bounded-inspection-and-review.md#h4-reward-module-route)划分源码义务、证据/账本及返回消费者归属。已有 CLI/导入入口及本合同已到达资源组限制不变。
+
+可选 `reward_consumer_binding` 只提供必需 `EXP/gold/growth/spell learning and after-turn/outcome effects` 子项。限定范围 `reward` 与 modern `--reward-context` 使用同一谓词。源码初始画像、实时前置条件、完整选定结果信封及独立保留清单建立覆盖；最终 EXP/金币总数或已知获胜路线不能建立覆盖。
+
+**已确认的选定观察：**历史 A 生产者 `4d1d1b05f143ed872ceca6ff258cfca2b4087d90` 到达 28 场演出、17 条 EXP 指令、六次金币奖励、一次升级、六次击杀记功/死亡清理、84 次行动后调用和 85 次行动提交。行动后与行动数量之差包括最终胜利路径，其在另一次行动后调用前退出。这是采集清单事实，不是玩法配额。选取后保留原始记录下标及两条时钟轴，含自动/STAY 工作及嵌套演出准备。
+
+预期值来自固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` 及已接受 [EXP/金币规则](../../contracts/combat-resolution.md#9-award-confirmed-battle-01-exp)、[成长规则](../../contracts/level-up.md)、[法术顺序](../../contracts/spellbook-state.md#learnspell-chronology)及[战斗生命周期](../../contracts/battle-control-lifecycle.md)。初始职业/属性/物品/法术定义绑定实际准入溯源与源码初始战斗操作数。源码 GIZMO 定义提供敌方等级/maxHP 及金币表身份。已有物理源码算术提供伤害操作数；已接受 HEAL1 子集提供治疗恢复。候选奖励总数不提供预期金额。
+
+已到达源码初始 SDMN/PRST/KNTE 子集检查伤害/击杀及治疗 EXP 累加器、上限、Battle01 敌方目标减半、有序随机调整、指令饱和及一次阈值扣除。金币在准备期间变化；EXP 延迟至自己的 Reward 命令。两者所属结果状态分开检查。成长使用源码曲线及五对有序属性，随后刷新派生 ATT/DEF；升级时当前 HP/MP 不变。观察到的新等级未到达源码法术阈值，已存/已学法术数组必须不变。
+
+这不是通用 EXP 模型：复用辅助函数将伤害限制为剩余 HP，原版 `CalculateDamageExp` 则在分子中使用原始伤害。本已到达 level1/2 己方对 level0-GIZMO 资源组中，致命击杀 EXP 及行动上限掩盖差异。其他等级差和过量伤害操作数必须先有自己的源码比较，才能扩展谓词适用性。
+
+击杀记功属于已完成源码行动；清理在行动后处理前移除死亡目标部署。每次已到达行动后调用都是 status0，且没有源码恢复装备；当前资源不变。阵营/领袖检查在最终行动提交前建立胜利。状态到期、恢复装备、习得法术、转职/上限/极端属性成长及败北路径不属于此选定子集观察，留在其声明之外。
+
+**已确认的组合持久化：**结果后首个携带队伍的状态，即使中间有仅身份/空视图，也保留。源码初始属性、已观察成长效果和该状态 `Party.Progress` 一致；检查实际成员关系、源码装备、EXP、击杀、金币及符合条件存活己方角色恢复后的 HP/MP。源码战后 JOIN 和解锁/完成标志操作在返回期间保持顺序与效果。首个队伍证据缺失或为空，不能静默改用后续非空快照。正确最终攻击决策仍为 outcome record68；后续对话摘要不是其行动前状态。
+每项所属结果/返回操作必须有已接受结果信封。后续保留金币快照必须与贯穿返回的合法奖励余额一致；此选定结果没有准入的中间金币操作。未来改变金币的结果需自己的已接受操作绑定，不能假定余额稳定。
+
+**未知：**生产者战斗视图缺即时实时敏捷及可变基础 ATT。组合持久化不虚构这些观察。完整演出/资源消费、行动顺序生成、AI 和野外服务仍独立。奖励投影绑定阶段令牌、结果身份、宿主输入归属及完成。`signal-before-Present` 保留刚完成阶段令牌，即使其结果开始下一阶段；令牌必须在两条时钟轴上拥有精确完成及演出发生实例，不能用更早同名阶段替代。
+它们不建立完整渲染。缺证据贡献 Unavailable；已知错误算术、成员关系、顺序或身份即使旁有无关缺字段也保持 FAIL。限定范围 PASS 保留 `milestonePass=false`，需要独立验收。
+
+通过[限定范围奖励路线](../../../../remake/docs/evidence/retained-comparisons.md#scoped-reward-and-outcome-comparison)复现。
+
+### 选定战斗演出命令与消费者绑定
+
+实现遵循[战斗演出模块路线](../../../operations/bounded-inspection-and-review.md#h4-battle-scene-module-route)，已有读取器显式传给提取后的组合。动画序列及观察入口进度属于各阶段。缺阶段操作数不能继承早前阶段序列，也不能在完成检查引发未初始化变量错误。仅缺源码仍 Unavailable；独立矛盾清单/覆盖证据仍决定 FAIL。
+
+限定范围 `battle-scene` 谓词求值已有第 9 层子项 `battle scene command/resources/wait/effect/end consumer edges`。输入为保留现代 A 演出选择，通过原始下标连接已接受物理、HEAL、奖励/结果及 AI 选择。奖励清单独立于候选阶段观察提供演出覆盖。源码命令构建和序列字节为预期行为；实际挂载资源、完成快照及物理输入提供消费证据。谓词不把当前渲染器代码升级为原版判定依据。
+
+[演出合同](../../contracts/battle-scene-presentation.md)拥有 Initialize/Execute/End、行动者侧选择、己方入口零跳过、敌方播放、frame-15 保持及命令身份。选定源码动画文件和消息模板从固定 SF2DISASM 对象读取。物理源码操作数复用已接受解析器及行动归约器；原始伤害与钳位 HP 损失保持区分。会心文字由独立源码打击选择，会心效果单独检查；删除该事件不能把普通伤害消息变成预期会心消息。HEAL 使用已接受施法者/目标及逻辑游标，奖励消息使用实际源码绑定 EXP/成长/金币操作数。零属性成长不发成长消息。本资源组仍为未转职 SDMN/PRST/KNTE，武器 71/85/56 对 GIZMO，加 HEAL1；不增加矛、物品、转职、败北或未到达法术声明。
+
+必需连接包括：
+
+- 独立准备/结束覆盖及每行动有序阶段，含多次打击及同结果内结束/下一初始化；
+- 精确会话、生产者、原始下标、两条逻辑时钟、因果输入序号及宿主更新；`signal-before-Present` 保留完成的**旧**令牌，即使包含它的结果已开始新阶段；
+- 挂载行动者/背景/地面/武器资源、源码动画选择器、已到达帧顺序/偏移、武器翻转及采样反应状态；全部动画条目及最终完成均必需，未采样反应 tick 仍未知；
+- 可见挂载消息 Label、源码消息、就绪文字及所属按下 Confirm，不把确认阶段视为自动渲染器完成；
+- 精确下标 HEAL 游标至实际精灵/尘埃资源、可见性与位置，含空/已清理效果；实际反应/奖励效果属于必需转换，并与所属行动者状态一致；
+- 源码野外死亡批次顺序、朝向、退出资源、隐藏清理，及后续实际野外挂接、已接受返回和已交付野外控制。
+
+规范栅格溯源及音频生成/淡出消费保留已接受 PR606 与 PR619 证明。物理/HEAL/奖励/AI 规则验收归各自谓词。本子项检查共享身份及附加演出消费者边，不重跑或替代那些义务。已执行消费者依赖复用机制前直接对照已接受 `4311e009`；这些依赖以外源码变化不因 HEAD 改变而使其失效。
+
+**已确认：**选定现代生产者在获胜结果进入 Exploration、野外视图尚未挂接时省略旧演出快照。因此最终 FieldSettle 有实际未完成前状态及有序完成/效果结果，没有直接 `completed=true` 视图快照。此有界语义终端转换可组合：匹配死亡批次/令牌、此前已交付 FieldExit 和清理、已隐藏演出/死亡节点且无未完成精灵效果、同所有者 AI 记录中实际 **false** `inputDelivery`，及经挂接、返回、野外输入的有序 settle/death-end/Victory/commit/program/fade 路径。另一归约副本缺 `inputDelivery` 不等于 false。嵌套事件修订可早于外层结果最终修订；连接由有序归属支配。固定令牌/下标值或路线数量从不使候选合格。
+
+终端内部完成标志仍为**推断**，延迟**未知**，`directCompletedSnapshot=false` 保持显式。普通非消息阶段仍需实际完成投影及非输入归属。显式 `inputDelivery=true` 与自动完成矛盾。归约所有者省略该标志时，结果必须在输入分发跨度之外、两个连续独立枚举输入之间，因果序号、逻辑时钟及宿主更新匹配。缺包围输入仍 Unavailable。终端提交与前一行动释放保留独立物理清单的初始行动者。
+缺前提为 Unavailable；已知错误行动者/令牌/时钟/资源、可见死亡节点、失败结果、竞争写入者、结束倒序、由输入交付的终端或错误野外所有者，即使旁有缺证据也 FAIL。不证明原版帧时序、像素、武器图层/Y 投影、修正后完整 A 路线或已完成里程碑。历史种子锁存及 HEAL 时序失败保留。Main-gate 拥有独立验收及义务关闭。
+
+### 选定野外服务规则与消费者绑定
+
+可选 `field_service_binding` 只提供 `field text/portrait/NPC service draw-to-effect gates` 子项。限定范围 `field-service` 与 modern `--field-context` 使用同一谓词。这是有界原版规则/当前机制组合，不重建历史剥离回调或建立修正后连续路线。限定范围 PASS 保持 `milestonePass=false`。
+
+实现位于[野外服务模块所有者](../../../operations/bounded-inspection-and-review.md#h4-field-service-module-route)。旧入口显式提供文档读取器。回执/时钟准入先于逐行比较；每用例拥有自己的 Wait 边状态、检查顺序及覆盖。严格值相等与部分前驱连接分开，缺操作数不能抹去已观察矛盾。源码演化和实际 Draw 资源消费保留独立所有者。
+
+**已确认的源码规则：**固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` 拥有 `code/common/tech/randomnumbergenerator.asm:GenerateRandomNumber`、`code/common/menus/portraitfunctions.asm:VInt_PerformPortraitBlinking`，以及 `code/common/scripting/entity/entityscriptengine_2.asm:VInt_UpdateEntities`、`esc00_wait`、`esc01_waitUntilDestination`、`esc06_walkRandomly`。独立模型复用研究 RNG 原语及 H3 物理移动算术。候选引擎输出不提供预期种子、目的地或计数器。
+物理移动先于行动分发；到达在带符号计时器分发前释放移动等待。随机行走最多四次有序尝试，含半径、平坦地图及其他实体目的地拒绝。肖像眨眼先于嘴部；未注册工作不消费计数器或肖像 RNG。已注册眨眼在3关闭，在0打开/重置抽取；打字嘴部在5打开，在0关闭/重置抽取；非打字嘴部在大于5时保持，在小于等于5时关闭/重置抽取。
+
+**已确认的当前机制：**已接受 PR618 对象 `0fe122f548a9a2f882ea3cc524d3937bde7e34b9` 及执行 `0f1e82ee-33fd-4aa3-a3c5-af025ad1dd54` 保留单独通过的肖像计数器、轮询副本、点头、保持摄像机、事件尾部及准入用例。绑定检查身份/结果及不变实体行动、肖像、物理移动和研究模型依赖。当前种子传递另行复用已接受 PR621 执行及上文已有准入种子谓词。已接受 W1/W2、文字材料、已等待移动/操作、地图及音频声明保留所有者，不隐含不可用逐回调读取。
+
+**已确认的有界实际效果：**合法自编包经 Content、GameSession、GameRoot 加载。普通输入/结果/Draw 观察绑定独立画像、会话、构建、实体槽位、结构化行动程序、行动游标、`waitingForMotion`、碰撞输入、有效调用方门控及两条时钟。肖像用例覆盖禁用/启用实体、注册/关闭、打字/非打字、眨眼/嘴部重置及实际眼睛/嘴部瓦片/资源消费。NPC 用例覆盖半径拒绝、静止实体阻挡、平坦墙拒绝及到达后 wait2 释放。有序服务/写入者事件与源码计算净种子、目的地、行程、速度、计时器及游标必须一致。每个变化的眼睛/嘴部状态及肖像关闭必须在下一结果前有实际 Draw。
+准入 NPC 域只有一个随机行动者、静止受控玩家及至多一个静止阻挡者；坡面、随从、隐藏行动者、多个随机行动者及更广带符号计时器用例在此证明之外。
+
+入口结果只有在开始时观察到未注册且不关闭肖像工作、结束时已注册且静止，才可包含多个服务。完整有序事件列表包含肖像窗口服务，随后恰好一次注册，再在匹配程序位置执行声明的 SetTextCursor/ShowText 续接。采集在全部观察后恰有一份终端回执，用例身份匹配选定启动/进程/画像。状态、结果、事件、输入及已消费资源观察中的修订、观察序号和模拟 tick 是非负整数域；仅相对相等不足。带符号移动及肖像计数器保留源码域。
+玩法等待拥有一次新的 V 按下：立即行动要求已按下且就绪状态，之后重复还要求持续未取消按住及已观察输入重复就绪/聚焦。释放或其他行动结束重复归属；持续按住时的重复按下，必须先释放再新按下才能重新武装。
+
+tick 差等于实际服务次数；固定次数不是规则。计数器/眼睛/嘴部不变，不出现肖像 RNG。禁用实体保留全部相关移动/游标/计时器/程序状态及种子。启用入口额外要求单个声明的静止 radius0 随机行走/跳转循环：每服务四次源码导出半径拒绝，净种子效果有序。任意续接、改变门控/程序、过早注册或额外 RNG 均使该例外失败。已注册/文字多服务结果仍 Unavailable。
+
+**推断：**准入入口批次内中间 NPC 尝试及内部逐服务读取遵循命名源码和已接受机制；只有有界净效果被直接观察。**未知：**历史剥离回调状态、自然原版首次读取/时序及更广 NPC/碰撞域。历史 A 脱接种子锁存仍 **FAIL**。缺必要观察贡献 Unavailable；独立错误值、顺序或身份即使旁有缺字段仍 FAIL。独立集成与剩余义务关闭属于 main-gate。
+
+使用[限定范围野外服务路线](../../../../remake/docs/evidence/retained-comparisons.md#scoped-field-service-comparison)复现。
+
+### 选定 AI 规则与消费者绑定
+
+实现为 [`ai_binding.py`](../../../../src/sf2tool/remake_h4/ai_binding.py)，按 [AI/种子模块路线](../../../operations/bounded-inspection-and-review.md#h4-ai-and-seed-module-route)区分源码规则、证据/状态连接及决策交付。已有比较模块 CLI/导入入口仍可用；AI 匹配合同不由物理匹配替换。
+
+可选 `ai_consumer_binding` 只提供 `AI thinking draw/choice/memory and movement decision` 子项。限定范围 `ai` 和 modern `--ai-context` 使用同一谓词。其声明组合匹配的历史调用方状态与已接受当前种子传递机制，不建立修正后连续路线。
+
+**已确认的选定观察：**历史生产者 `4d1d1b05f143ed872ceca6ff258cfca2b4087d90` 的 46 个所属结果含 50 次 AI 决策：27 次待命、12 次追击、11 次物理攻击，含 79 次思考抽取、27 次记忆效果、24 个评分候选及 11 个选定目标。完整选定移动清单跨玩家/自动工作，含 150 次开始、150 次到达和 103 次完成。这是证据清单事实，不是合法性或路线配额。选取后保留原始下标、完整结果信封、失败操作、紧邻前驱状态、两条时钟及因果输入归属。缺事件或首次读取操作数不能改用后续充分快照。
+
+预期规则来自固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、已有 H2 解析器及已接受 [AI 决策](../../contracts/battle-ai-decision.md)、[导航](../../contracts/battlefield-navigation.md)、[随机性](../../contracts/randomness.md)合同。命名原版源码为 `determineaistandbymovement_1/2.asm`、`thinkingairng.asm`、`attack/prioritizetargets.asm`、`command/move.asm`、`battlefield/determineattackposition.asm`、`battlefield/buildmovestringfunctions.asm` 及 Battle01 的 `spriteset01.asm`、地形和职业/移动类型表。候选引擎输出及 AI 实现不提供预期分数、目标或路径。
+
+有界准入分支为源码 GIZMO 指令集 6/7、无主/次命令、无可用物品/法术、存活 status0 调用方，以及有物理候选时 ATTACK1 script3。源码激活及记忆在每个实际调用方读取；显式检查 script3 激活列。不证明全部原版难度选择器或其他指令集。模型检查待命锚点偏移及资格、拒绝采样思考抽取、候选顺序、潜在伤害分数、源码职业平分决胜、目标选择、追击及移动串顺序。潜在伤害是 AI 评分操作数，实际打击伤害属于物理子项。
+
+**已确认的组合消费者：**每次思考抽取更新思考映像的源码高字节，保留其他 24 位。AI 专属结果期间独立主映像不变；同时生成回合的结果保留独立主抽取边界。调用方记忆/最后目标、有序效果及紧邻行动者和记忆投影一致。
+最后写入者检查从首个战斗快照经选定间隙及非 AI 结果携带思考/记忆效果；后续每快照必须一致。源码路径绑定有序自动段开始/到达、移动完成及已提交位置。Stay 可以移动；无移动 Stay 没有 movement-finished 事件。物理选择还经精确身份复用已接受物理信封，绑定实际首击目标；仅演出准备没有目标，不能证明交付。
+每项必需自动移动、演出/行动及提交消费者必须属于已接受结果，包括复用物理信封。拒绝消费者即使另一前提缺失也 FAIL；无关拒绝输入诊断仍保留。已测试区域掩码跟随有序清除及后续区域测试写入，贯穿所属后状态和中间保留状态。后续合法写入者取代清零；仅清除标记不能证明交付掩码。
+
+**已确认的当前机制依赖：**已接受 PR621 合并 `bbf98c8ddbd04500d57165a958f78f86a9ff209b` 为 W1/W2 保留 low24 value3408025、为 W2 保留11259375，初始高字节各03/12，执行 `FieldTextCopyReplacesInitialAiByteBeforeEntryAndAiKeepsItsUpdatedByte`。保留执行 `b4adba34-a764-4ebb-abcf-a3149653ffae` 三个用例均通过：copy4E 经正常入场、思考 ranges8/2/2 和 values0/1/0、destination(4,6)、十六进制 memory13，以及独立于文字诊断锁存的更新活动 AI 字节。已接受适配器编译也通过。已有准入种子谓词验证精确结果、原版副本/调用方证据及当前副本/入场/投影代码。
+
+相关 AI、初始化、状态、移动及行动消费者在生产者、已接受修正与当前文件间直接比较。`BattleAdvancer`、`BattleTurnFlow` 后来暴露回合生成诊断；`TurnOrderRules` 记录候选、抽取和未排序槽位。队列行动者分发及种子/记忆初始化区域不变。逐调用方组合消费观察到的行动者/状态，不从诊断推断行动顺序。证明依赖变化需要重新审阅，产生 Unavailable，不能自动复用。
+
+**保留 FAIL：**历史 A 脱接种子锁存仍 FAIL，局部同状态 AI 检查不能重标该行。**未知：**修正后完整路线、产生的行动顺序/新选择、原版自然首次 AI 最后写入者、未记录渲染路径/插值、其他 AI 分支及完整呈现。行动分数/顺序仍为独立义务。缺必要调用方/记忆证据为 Unavailable；独立已知错误值、身份或顺序即使旁有缺字段也 FAIL。限定范围 PASS 保留 `milestonePass=false`。
+
+使用[限定范围 AI 路线](../../../../remake/docs/evidence/retained-comparisons.md#scoped-ai-consumer-comparison)复现。
+
+### 选定 HEAL 规则与消费者绑定
+
+实现为 [`heal_binding.py`](../../../../src/sf2tool/remake_h4/heal_binding.py)，经 [HEAL 模块路线](../../../operations/bounded-inspection-and-review.md#h4-heal-module-route)组合。数字证据接受相等整数/浮点值但拒绝布尔：选定状态或演出投影中，`true` 都不能替代法术等级 `1`。布尔字段同样要求布尔值。必需操作数显式 `None` 保留 HEAL 的 Unavailable 含义；数字类型矛盾即使旁有缺证据仍 FAIL。
+
+`HEAL recovery/cost/fairy opportunity and seed effects` 子项使用已接受 [HEAL 1 规则](../../contracts/spell-resolution.md#confirmed-heal-1-subset)和[合法恢复窗口证明](../../../research/map3-messenger-acceptance.md#legal-heal-recovery-window-completion)。选定必需键盘 A 资源组含三次 PRST HEAL 1 行动，包括自疗。这是证据清单，不是玩法限制或固定机会配额。
+
+**已确认：**限定范围谓词将法术/目标选择及物理确认绑定到同会话/Submit，检查准备时延迟资源，将紧邻 HP、MP、EXP 效果逐项连接实时行动者状态。恢复受存活目标缺失 HP 上限限制；消耗与奖励使用独立源码规则及两次实际奖励抽取。后续行动选择快照不能替代紧邻效果，因敌方行动可能介入。每个可用操作数独立检查；缺目标 HP 不能掩盖错误 MP。
+MP 在进入 `SpellCost` 时应用，HP 在进入 `Reaction` 时应用，EXP 随后在进入 `Reward` 时应用。每项效果必须位于前一命令完成与自身阶段开始之间，匹配实际演出投影。实时资源在各自命令前延迟应用，此后贯穿选定行动状态保留已应用值。缺边界为 Unavailable；与两种允许资源状态均不一致的值仍矛盾。准备奖励抽取还将事件修订/序号绑定到确认 Submit。
+
+精灵配置及每次逻辑机会使用固定原版配置/更新/控制器算术，含移动、条件抽取、尘埃、停止及清理。控制器值大于二时在精灵/尘埃处理前直接分发到清理，不能产生最终更新抽取。抽取将行动者、事件修订/序号、范围、结果、种子携带绑定到实际前后精灵状态。无抽取机会也算必需证据。源码施法字节及目标待机头提供必需工作；已接受逻辑文字工作以已到达消息作调用方操作数。文字内容保真度保留独立所有者。计时确认是输入先于服务；呈现交付不增加精灵工作。保留宿主帧数或原版 CPU 中断数量都不定义配额。
+
+实际 Present 后 `host-poll` 观察提供演出状态。`warpRecords.state.scene` 投影仍可能描述前一演出，不是后状态见证。同一修订重复投影必须一致。最终 Submit 还可能推进 AI 或开始敌方演出：选定 HEAL 结束事件序列限定其效果；无关工作后的整次 Submit 种子不能改称 HEAL 返回种子。
+
+缺选定结果、投影或操作数仍 **Unavailable**；已知矛盾即使旁有缺证据也 **FAIL**。[限定范围命令](../../../../remake/docs/evidence/retained-comparisons.md#scoped-heal-consumer-comparison)与现代子项使用同一谓词，具有独立上下文及原始数组下标。限定范围 PASS 始终保留 `milestonePass=false`，不能独自关闭其他子项。
+
+**已确认的历史失败：**prepared04 CP2059–2091 有三次原版中断，对比两次显式逻辑恢复服务；之后恢复文字种子/游标比较也失败。这些已完成失败保留。**未知：**被中断 CPU 上下文、完整历史窗口门控及完整原版演出时序。已接受逻辑时钟证明不把该历史变为通过，也不建立修正后完整 A RNG/AI 轨迹或战斗演出保真度。
+
+### 选定 W1 消费者绑定
+
+[W1 源码合同](../../contracts/dialogue-system.md#reached-w1-consumer-binding)及命名原版 text483 接受读取见证拥有原版规则。限定范围比较器绑定保留键盘 A 选择的68个独立令牌发生实例和120次轮询（68次接受、52次中性）。数量标识证据，不施加玩法配额。源码文字、生产者及有序控制令牌位置区别于脚本运行文字游标。原始下标、会话、物理输入、令牌、前修订和完整 Submit 结果标识每个消费者。
+
+[W1 模块所有者](../../../operations/bounded-inspection-and-review.md#h4-w1-module-route)区分选择/信封、源码文字、NPC/肖像服务及保留状态组合。旧绑定和源码资源组常量仍为别名。类型特定匹配器与有序检查独立保留缺失性和已知矛盾；模块边界不增加服务时序、瞬态关闭状态或更广分支标志证据。源码文字生产者不可用时，说话者/标志比较仍 Unavailable；缺源码不能虚构默认说话者。独立输入/会话矛盾仍失败。
+W1 数字操作数接受相等整数/浮点表示，但从不接受布尔替代零或一。预期布尔同样要求布尔；缺数字操作数仍 Unavailable，独立观察矛盾仍 FAIL。
+
+**已确认：**可执行谓词检查必需 range256 抽取/副本/等待/读取顺序、条件肖像抽取、保留副本字节、符合条件逻辑服务及源码续接。每个选定 Submit，包括揭示/打字及独立选择交付，将结果会话/修订/观察序号/模式连接自身状态及有序事件信封。可用相邻原版记录和物理前状态限定事件推进。覆盖含任何 W1 专属操作，因此轮询清单外孤立抽取/等待/输入/接受是矛盾。共享文字副本事件要求 W1 或另行归属 W2 所有者；揭示/选择交付不能隐藏它。缺字段与可用错误值保持区分。
+释放或仅揭示交付不能提供接受轮询。中性 Wait 保留同一符合条件消费者。已知矛盾旁有缺证据仍 **FAIL**；省略必需操作数仍 **Unavailable**。源码程序及精灵至肖像选择器由已有编译器从固定干净反汇编获取。实际调用方、实体启用、视野、肖像注册、嘴部控制及时钟操作数属于同一就绪状态。Trap6 激活返回实体调用方后继续保留；仅调用方类别不决定抑制。
+
+源码肖像服务先递减眨眼，按条件抽取 range120，再在 W1 清除打字门控下按条件为嘴部抽取 range5。每次观察条件抽取必须匹配源码范围、输入种子、结果、输出种子及输入检查前位置。源码 `OpenPortraitWindow` 守卫保留已开窗口：续接531选择分支直到535都保留原始肖像方向；后续打开请求不替换这些标志。
+
+两个已到达实体服务消费原本未标记的行走 RNG。保留源码生产者历史绑定 entity128 的 `Map3_ZoneEvent6`/`MakeEntityWalk` 安装及 entity130 默认地图行走声明，包含贯穿两个输入的竞争移动写入。固定 map3 布局字节独立解码为选定历史布局；源码门/屋顶/标志写入矩形不覆盖测试格子。实际就绪行动者、计时器、半径、目的地占用及源码 `esc06_walkRandomly` 规则导出至多四次尝试。entity128 向西成功；entity130 在阻塞格子拒绝三次向北后接受向东。预期尝试数量是半径/碰撞测试结果，不能为凑记录末种子而搜索。实际目的地、计时器、速度重置及完整服务后种子必须一致。
+导出任一静止行走前，绑定实际两轴位置等于目的地且携带 X/Y 行程为零。固定 `entityscriptengine_2.asm:VInt_UpdateEntities` 中，`UpdateEntityData` 在行动脚本分发前运行，读取位置、目的地、携带行程/速度以判断移动。仅报告 `moving=false` 不能证明静止边。静止可保留残余速度；零行程时仅改变目标不能证明坐标移动。此有界静止准入不是通用移动模型；到达 wait20 不隐含 `esc01_waitUntilDestination` 在等待到期前再次运行。
+
+三个物理输入同时含 W1 Submit 和独立选择窗口 Submit。完整输入跨度绑定，选择交付期间 W1 玩法身份不变；后者事件不能改标 W1 服务。十五次肖像关闭输入缺精确 Submit 后完整快照。源码关闭、显式注销/关闭续接、完整 Submit 状态及独立标识后续副本见证组合这些边；后续快照仍是后续观察。源码窗口在另一肖像服务消费已移除计数器前关闭。
+
+**未知：**text483 命名接缝以外完整原版实时服务字节/时序、关闭移除的瞬态肖像计数器/打字恢复，以及 W1 恢复边界之后分支标志真值。续接检查准入源码分支路径至首个阻塞消费者，不替代操作流标志合同。此选定历史 A 证明不建立修正后整段路线 RNG/AI 轨迹、全部 NPC 调度、战斗演出时序或另一 H4 子项。[限定范围命令](../../../../remake/docs/evidence/retained-comparisons.md#scoped-w1-consumer-comparison)与现代子项共享谓词；限定范围 PASS 始终保留 `milestonePass=false`，关闭子项前需要独立 main-gate 审阅。
+
+### 组合 W2 消费者绑定
+
+[已接受 W2 政策](../../contracts/dialogue-system.md#w2-composed-semantic-acceptance)为 `W2 accepting read/validation indicator and token return` 提供源码、调用方及实际消费者谓词。限定范围比较器求值保留默认键盘 A 清单：16次接受、14次中性轮询，两个 text575 发生实例分开。清单定义本证据选择，不定义玩法合法性或通用文字 ID 准入规则。独立发生实例上下文必须保留已接受源码程序/指令/文字对应、会话、序号、令牌及原始数组位置。候选不能靠丢记录定义自己必需清单。
+
+[W2 模块所有者](../../../operations/bounded-inspection-and-review.md#h4-w2-module-route)区分独立源码续接、选定连接、调用方/服务、指示器及校验比较。旧绑定与资源组常量仍为别名。W2 操作数匹配保留相等整数/浮点表示，拒绝数字证据的布尔替代，包括已清除指示器。布尔预期严格，缺操作数仍 Unavailable，独立矛盾仍 FAIL。
+
+**已确认：**每个选定输入将前令牌/游标/就绪连接原结果跨度、完整 Submit 修订及后快照。实际 W2 事件必须按抽取/副本/等待/读取/接受排序，含一次服务机会及接受后调用方续接。可用事件修订必须属于输入/结果修订区间并非递减；内部事件无需等于终端 Submit 修订。固定干净源码经已有 `OriginalPrograms` 编译器降低，检查恢复生产者/指令/操作顺序及终端游标。源码跳转保留不同目标程序。非终端 W2 在原生产者恢复剩余文字；不支持续接路径仍**未知**。
+已接受 range256 模型检查抽取及保留文字副本字节。调用方/服务启用、肖像状态及视野门控从对应就绪状态读取；仅实体调用方类型不足，因 Trap6 可重激活服务。text2292 的保留完整就绪状态先于中性轮询；完整输入/结果边将同令牌和门控携带到接受。同修订重复投影必须在相关状态一致，不能计作多个发生实例。
+
+16份实际 validation67 `started` 回执按会话及完整 Submit 结果修订连接。每次接受 Submit 必须恰好一个匹配开始，含命名序列选择之外回执；额外开始是矛盾，缺播放仍 **Unavailable**。内部 accepted-event 修订不是声音回执修订。十四个指示器见证为同 Submit 状态；最终2299/2303发生实例使用后续2300/2304输入状态，保留各自身份。源码清除/恢复及已接受行为组合两个后续观察；它们不是中间宿主绘制观察。后续文字可能已重新启用打字，不能将其值改称瞬态恢复 W2 标志。
+
+已知矛盾即使另一必需边缺失也 **FAIL**。缺输入、结果、调用方门控、副本、指示器或校验证据仍 **Unavailable**。显式上下文下，[限定范围命令](../../../../remake/docs/evidence/retained-comparisons.md#scoped-w2-consumer-comparison)及现代比较 W2 子项共用谓词；无上下文不能通过。完整采集使用只读取上下文命名样本/输入/结果下标，不物化整条时间线。限定范围 PASS 只求值本 W2 子项，始终保留 `milestonePass=false`，不重算旧聚合或决定无关子项关闭。
+
+**未知：**精确原版内部接受读取指令/时间、完整历史门控字节，以及两个中间同 Submit 宿主绘制/时间。这些诊断独立于已接受组合谓词。旧 A 观察早于实时 AI 种子绑定修正，是历史 W2 消费者证据，不是修正后 RNG/AI 轨迹。W1、HEAL 时序/游标失败、行动顺序生成输入、地图/资源绑定、原版音频分发及设置变体保留自己的验收边界。
+
+### 已到达行动顺序规则与结果绑定
+
+**已确认的源码规则：**已接受[行动顺序构建](../../contracts/battle-control-lifecycle.md#turn-order-construction)及其 `battle01-turn-order-v1.json` / `turn-order-boundaries-v1.json` H3 测试夹具拥有已部署/存活准入、源码候选顺序、低七位敏捷、有序有界抽取、额外行动构建、字节环绕及稳定降序带符号字节排序。带符号分数边界要求完整 64 槽缓冲区，包括哨兵值及源码 62 趟冒泡。重制生成队列从不能提供预期队列。
+
+实际生成器现从单次执行返回有序候选（含跳过候选）、真实 Roll 范围/前后/结果、未排序缓冲区和排序槽位。Application 将不可变已完成生成事实以 `TurnGeneration` 附在已有 `round-rng` 事件，含会话/回合和完整种子映像。激活/生成准入、玩法状态、种子推进、事件类型/顺序/序号及队列消费保留原机制。当前准入激活路径在生成前不消费种子。不使用回放、存储生成历史、逐帧轨迹通道或第二状态权威提供这些事实。
+
+[限定范围比较](../../../../remake/docs/evidence/retained-comparisons.md#scoped-turn-order-rule-comparison)从独立读取实时状态名册及已接受原版规则，导出资格、有序抽取、分数、带符号稳定排序及退出种子。绑定实际生成会话/回合/修订/序号、候选覆盖、每次抽取、两个完整缓冲区及实际状态队列。省略候选/抽取记录，在残存身份保持源码顺序时仍 Unavailable；重复、外来连接、改序或算术矛盾为 FAIL。独立矛盾优先于缺操作数或另一缺发生实例。仅实际队列与状态队列相等不能使源码规则比较 PASS。
+
+**已确认的受控 Application 证明：**合法自编 `practice-yard` Start，配合 medic 显式额外回合行动和正常 Confirm/STAY 命令，产生三个选定回合生成。实际候选/抽取/分数/顺序/种子/状态绑定 PASS；独立遗漏/矛盾控制及原版带符号/平分边界测试夹具读回支持比较。引擎行为检查保留死亡/未部署排除、零范围抽取、额外行动、带符号哨兵值、稳定平分及种子携带。这是受控输入的局部规则/结果证明，不是原版自然历史、必需 A 消费或完整 H4 验收。
+
+**已确认的保留 A 证据限制：**A 编译于 `4d1d1b05f143ed872ceca6ff258cfca2b4087d90`，有聚合回合种子边及队列，但省略实时敏捷、额外回合行动、处理顺序和候选抽取/未排序分数事实。初始定义及重建预期抽取不能制造缺失实际操作数。采集也早于已接受文字副本/AI 种子修正。没有下文显式组合，已有必需 `turn candidate score draws and tie/order result` 诊断仍 **Unavailable**；限定范围受控证明不回填它。自然轨迹等价及已接受接缝外源码边界仍**未知**。不隐含新路线、原生/模拟器启动、完整 H4 重算或矩阵；已接受音频绑定独立。
+
+#### 当前行动顺序规则与队列消费组合
+
+可选 `turn_order_consumer_binding` 组合两个独立必需部分。第一部分复用上文已接受实际三回合生成证明，对照原版规则，并直接比较已测试/当前生成器、激活、状态、队列及 Application 依赖。第二部分以历史实际安装队列作输入，消费原版选择/跳过/游标/轮转/结果规则；这些队列从不提供预期生成。只有显式组合可提供命名当前语义子项；默认历史诊断及缺失实际操作数保留独立结果。
+
+[行动顺序模块所有者](../../../operations/bounded-inspection-and-review.md#h4-turn-module-route)区分源码生成、已执行证明适用性、提供的时钟/证据、HP 知识及队列推进。生成匹配严格；消费者匹配保留整数值 JSON 时钟表示。有序分组检查保留数量及有界示例。模块边界不为缺操作数增加源码到达或证据。
+
+七个已测试/当前依赖守卫保留精确已接受对象/当前文件字节比较。相等可读依赖保留原生成/消费者结论。字节变化使已执行证明不可复用，输出 Unavailable 及更新原因；已测试对象和当前文件读取失败分别报告 Unavailable、读取原因和错误类型。两种情况都不证明玩法矛盾或提供 PASS。错误生产者/源码/已测试身份、伪造选择或独立观察队列/时钟/HP/输入矛盾仍 FAIL。依赖不可用时消费者检查仍继续，组合结果保留两种诊断、FAIL 优先。意外非 I/O 异常不改称缺证明。
+
+**已确认（有界已执行比较）：**保留选择含十二次完整 64 槽队列安装。独立保留清单/选择回执及源码通道下标定义消费者前沿。每个已到达哨兵前槽位要求实际准入行动/提交或零 HP 跳过。观察前沿有 85 次行动提交及五次死亡跳过；这是清单事实，不是合法性配额。较早回合在轮转前到达哨兵。最后已到达槽位有真实 Victory 及所属提交；实际敌人 HP 此时为零，因此剩余存活槽位以终端结果作依据，不是最终回合豁免。已接受源码生成证明继续支配全部 64 槽、恰好 62 趟的带符号排序、稳定平分、额外条目及参与哨兵。
+
+提供候选记录必须覆盖独立选定源码下标、完整语义清单、已安装队列、调用方/输入身份及可用实时状态叶子。历史包装器序号显式从一计数；采集通道下标从零计数。重复发布要求精确事件身份/载荷一致及所属事件有序。失败所属消费者、错误槽位/行动者/存亡状态/游标、幽灵轮转或矛盾提供队列，即使缺生成证据也 FAIL。缺提交、跳过、轮转、输入通道或状态叶子仍 Unavailable；移除它们不能缩短预期前沿。
+两条逻辑时钟轴必须为非负整数应用时钟。事件按序号/修订在所属结果边界内推进，最后事件关闭结果序号。已交付后状态会话/修订/序号必须等于该结果。只在观察器视图挂接前接缝，具有前一结果身份和精确重发事件时，允许空挂接投影；不能用后续无关状态替代后状态。初始队列样本连接所属首次控制结果。
+每个物理输入有有序不重叠源码下标区间及推进前后时钟，由选定相邻结果限定，并在提供的精确边界连接。直接结果属于区间内；自动结果在输入后状态之后、下一输入之前。二者均需因果输入序号。无选定行动者的演出输入仍属于因果覆盖。缺时钟或边界为 Unavailable；负数/小数时钟、倒置区间或矛盾归属即使另一部分缺失也 FAIL。
+省略快照 HP/部署叶子报告缺观察，不抹去先前已知值；缺权威 HP 写入则使携带 HP 失效，直至后续实际观察恢复，不能用旧值填缺失变更。不消费槽位的拒绝目标/输入诊断单独记录，后状态必须保留队列。移动、演出等待和 Cancel 不消费条目。
+
+限定范围 `turn-order --turn-context` 与 modern `--turn-context` 使用同一谓词。现代提供通道在适用保留接缝求值；依赖证据不能填补缺失提供队列/控制/输入通道或忽略矛盾当前记录。见[验证配方](../../../../remake/docs/evidence/retained-comparisons.md#composed-turn-rule-and-consumer-verification)。
+
+**推断：**不变已接受机制及独立有证据的保留调用方支持当前语义组合。这不是新执行修正后完整 A 轨迹。**未知：**历史 A 省略的实时敏捷/额外行动/顺序、逐次抽取/未排序分数、修正后连续行动者/队列历史，以及已接受接缝以外原版自然时序或状态/多个额外行动边界。旧种子锁存、HEAL、终端/溯源失败保留自己的证据/结果。独立组合报告的 `milestonePass=false`；不关闭完整 H4、设置矩阵或整体里程碑验收。
+
+### 已到达音频消费者组合绑定
+
+音频替换/淡出/停止/恢复子项使用独立固定原版规则、已接受实际机制观察及完整选定默认键盘 A 依赖清单，不要求每次现代播放都新做原版观察。原版命令/计时器/PCM 材料溯源仍为独立已到达资源声明；邮箱分发从不证明播放。
+
+| 已到达依赖 | 必需实际关联 |
+| --- | --- |
+| 已开始音乐/音效 | 准入提示/命令/计时器/PCM 及格式；真实 Playing 开始；唯一关联自然结束、合法已覆盖槽位/共享停止，或仍在播放的准入终端循环。 |
+| 战斗 Initialize/End 淡出 | 逻辑阶段生产者、同会话/token253、旧音乐停止、己方/敌方演出音乐或战场恢复、实际完成阶段及匹配逻辑释放。HEAL 使用已有演出交付边界；其他行动使用 scene-step-completed。 |
+| 有限 JOIN/此前音乐 | 源码 Sound 代次及 SoundWait 辅助函数、匹配实际有限结束、已接受逻辑结束及连接等待释放、普通输入/Confirm 和调用方野外返回前重启此前提示。 |
+| 装饰尾音 | 源码导出槽位类别和已接受完整 PCM 替换规则，在共享音乐/淡出释放时保留独立 type-2 音效。后续合法替换允许；停止从不制造 Finished 或产品等待。 |
+
+**已确认的选定实际清单：**保留完整 A 通道含1049份连续回执、497次唯一关联开始、496次实际结束/停止及一个持续战场循环。全部56次演出淡出连接独立阶段生产者及实际完成/释放边界；有限 JOIN 实例连接代次/辅助函数、结束、此前重启及依赖返回。这是复现测量，不是必需数量或合法状态限制。缺选定通道/完成为 Unavailable；身份、顺序或非法停止矛盾为 FAIL。同提示重叠但缺保留实例身份时为 Unavailable，不能按 FIFO 猜测。
+
+已知阶段/行动、辅助函数/完成提示及 Confirm 会话矛盾，即使另一选定身份字段缺失也 FAIL。仅缺观察保持 Unavailable；不虚构声部身份或缺失完成。[音频模块路线](../../../operations/bounded-inspection-and-review.md#h4-audio-module-route)区分这些消费者，保留有序检查、播放/释放锚及已有有界报告传输。
+
+[已接受受控揭示见证](../../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)独立于 A 省略逐字语音，证明 Option A 实时尾音机制。其不变揭示/语音/输入方法和当前准入 PCM 允许复用。历史 C 自然揭示区间仍未知且不回填；C 在当前必需 A 范围外。通用 SoundFade 未在本源码清单到达，保留自编服务见证。原版 JOIN 完成/通道/F0/队列/交错及硬件时序仍未知。其他消费者子项和完整 H4 保留独立结果。[限定范围音频命令](../../../../remake/docs/evidence/retained-comparisons.md#scoped-audio-consumer-comparison)求值此子项，不重建完整 H4 报告或运行路线/矩阵。
+
+### 有界普通 JOIN 消费者绑定
+
+[JOIN 模块所有者](../../../operations/bounded-inspection-and-review.md#h4-join-and-walking-module-route)在每个退出保留真实入口、四文件准入、部分结果及 False 优先于缺失的最终处理。源码/行及实际消费者状态保持逐调用独立；读取器及报告发布属于调用方。结构控制不替代已接受见证或完整历史比较，不引入新玩法或原版音乐完成声明。
+
+已有普通 JOIN 子项只有具备显式封存[获胜谱系见证](../../../research/map3-messenger-acceptance.md#winning-lineage-plain-join-witness)及实际有限播放、输入和依赖调用方绑定才可通过。缺命名证据为 Unavailable；已观察矛盾为 FAIL。可选证据从不回填另一会话。
+
+绑定实际播放仍待完成时的逻辑结束、结束信号时匹配播放代次、辅助函数返回、实际此前曲目重启及其在普通输入前的呈现完成。代次身份与等待令牌分开。过渡快照可能显示域音乐已恢复，但实际播放器仍报告已完成 JOIN 代次；后续普通输入投影必须显示此前曲目无错播放。唯一音乐区间只证明这次未中断 JOIN 发生实例，不证明 SFX 声部代次或其他打断。
+
+提前 Wait 和 Confirm 必须不产生结果或状态变化。普通 Wait 以同令牌/游标服务一个 tick；Confirm 接受该令牌、推进至文字关闭，不增加 tick 或 RNG 抽取。两者都不是 W1/W2 发生实例。关闭、选定十 tick 程序等待、随从/守卫效果、脚本/调用方续接及 F603 先于可用野外输入。源码操作数仍为预期效果；实际观察提供发生实例及消费。下标、文字 ID 和测量种子是证据定位，不是生产限制。
+
+比较器增加有界 JOIN 播放/重启及调用方子集。完整选定 A 音频替换/淡出/停止/恢复使用上文组合绑定；其他操作/消费者/规则义务和资源类型保留当前要求映射中的独立已接受所有者。未见原版辅助函数返回顺序为推断；原版音乐完成及通道/F0/队列/残留/交错仍未知。现代有限音乐仍为已接受偏差。
+
+已完成首次 D 尝试在战前 text 2297 停止，实际 `AdapterError` 为 `presentation-unavailable` / `audio-command-ambiguous`，尽管 `SessionResult.failure` 为 null。旧目录缺 Timer B 189 的精确 speech 70/73，且有多个其他候选。两项独立审阅有限 PCM 增加及实际 D 播放由[音频边界](../../../../remake/docs/godot/audio.md#audio-boundary)拥有。修正增量选择完成 D；生产选择器及输入/时钟政策不变。
+历史原版轨迹不匹配和失败 D 报告保留。两个原版独立导出（49.3339547 秒 / 2,400 转储帧）独立于不变保留自然路线/RNG 账本，不建立新自然原版路线或硬件时序声明。
+
+### 离线已到达原版材料连接
+
+现代比较可将显式选定同次运行世界/演出输入连接到挂载资源 ID 及连续音频开始。进程回执提供选定输入，不能按运行目录名选择。基础演出证明使用已有 42 栅格候选、源码包及清单，含原版 ROM/上游固定值和记录提取器身份。Fingerprint-v1 重现历史 `bfcb819fe61cf6b7f2a3a45822f6de51e411e559` 四组件 CRLF 检出字节；当前实现及 Git LF 指纹单独报告，不能替代。选定累计演出的三个野外死亡栅格在基础证明之外。
+
+可见节点绑定背景/地面 ID 可关闭有界材料子项。已有地图/图层、实体/肖像/动作、行动者/武器/治疗/死亡三个子项需完整已到达源码及实际使用清单。野外绘制从真正绘制纹理暴露独立逻辑图块/瓦片/优先级要求和选择器；可见实体及肖像保留逻辑主体/姿势和已分配纹理选择器。去重仅限逻辑地图访问、阶段、图层或主体及源码选择器。返回同地图是新访问，由实际地图加载事件标识，不由目录名或帧计数器标识。可见精灵节点暴露绑定栅格 ID；野外死亡记录即使演出视图隐藏也保留实际行动者纹理。
+离线连接复用固定规范地图、ROM、图集、精灵/肖像、野外死亡解码器及已接受私有提取元数据。仅选定导出不能关闭已到达使用子项。缺操作数为 Unavailable；错误源码、访问、主体、阶段或纹理仍 FAIL。无这些通道的旧采集保留缺证据。显示私有令牌/字体/字形子项采用下文完整已到达绑定。
+
+每个实际开始音频提示必须经选定世界音频、固定干净资产检出及其已有已到达或 Town/JOIN 溯源记录唯一解析。比较原始 PCM、运行时 WAV PCM 及不变原版采集区间；WAV 容器摘要是独立身份。命令、录制计时器、格式、截取、循环及回执身份必须一致。已有精确计时器优先再唯一有限选择政策保留请求及录制计时器：command66 的四次 requested203/recorded189 开始是已接受有限录制回退，不是203自然原版播放证据。已有流连续性、生命周期平衡及终端持续音乐仍必需；不虚构声部代次或终端结束。
+
+材料来源为第7C层断言。原版自然逐实例分发、邮箱时序、因果等待及消费者完成仍为操作/消费者断言。缺这些连接不要求另一历史战斗轨迹来建立材料来源。可选选择从不回填旧会话。缺证据为 Unavailable；矛盾已观察内容或身份为 FAIL。完整显示文字材料子项对命名连续 A 通过。该历史报告仍有其他三个资源类型及五个宽泛父项不完整。矩阵自关闭后，A 剩22子项；保留 B/C/D 各37，不回填。这些报告结果与当前组合验收分开。
+
+### 完整已到达显示文字材料绑定
+
+比较器入口使用[文字材料模块所有者](../../../operations/bounded-inspection-and-review.md#h4-text-material-module-route)，显式传入读取器及有界存储依赖。源码准入在相同已捕获错误后保留部分操作数；类型化战斗操作数异常保留外层发生实例边界。有序检查、独立必需清单及 False 优先于缺失的聚合不变。源码结构/接口观察使用有界源码导出/构造控制，不替代 PR601 已接受历史 A 证据或扩展下文声明。
+
+已有显示文字/令牌/字体/字形子项，将同次运行进程回执选定世界和演出连接到只读显式选定、固定于已接受版本的 SF2DISASM 检出。全部导入文字及成员名必须等于源码。ASCII 符号及字宽使用已有字体读取器及源码/ROM 一致性测试夹具；私有提取字体字节必须匹配已接受身份。Battle01 敌方选择器经固定 spriteset 源码解析。记录源码摘要采用历史 Windows CRLF 表示，从 Git 对象重现而不改变输入。
+
+每个已到达野外文字跨度，包括 outcome2305..2310，将会话/令牌/修订与有序 ShowText 生产者及选定文字游标推进配对。必需清单来自逻辑 ShowText 事件、源码 W1/W2 边界及已到达接受事件：非终端源码等待在接受事件令牌处产生下一跨度。终端接受不增加跨度；未访问续接不增加要求。删除某续接全部投影但保留逻辑生产时，必须仍 Unavailable。预期 Units/控制类型/符号/字宽及投影必须匹配实际挂载 Label 文字。
+每个已到达战斗消息令牌，将准备、类型化行动/反应、会心/HP/EXP/金币/成长操作数及源码生产者选择器与实际 Label 配对。必需战斗令牌来自保留的受支持含消息阶段逻辑开始，独立于两个演出投影通道。原始反应 Amount 提供未钳位致命数字，不能用裁剪 HP 损失替代。渲染字符串不能选择预期源码模板。缺失或未配对发生实例使整个子项保持 Unavailable；独立观察矛盾仍 FAIL。
+
+缺操作数局部贡献 Unavailable。可用野外及战斗发生实例、源码内容、阶段和字体检查继续贡献；缺早期野外 Units 或战斗行动操作数不能抑制后续/独立矛盾。无论两节顺序如何，False 优先于 Unavailable。即使观察 Units 或 End 缺失，源码跨度边界仍决定预期野外投影。结果保留逻辑/源码必需清单及实际连接，不固定发生实例数量，也不加额外行。
+
+野外与战斗采用相同已接受现代配置字体边界：挂载 FontFile 字体面、字体族/样式/下标、大小及系统回退许可。当前挂载默认 Open Sans SemiBold/SemiBold/face0，field16、battle9。字体面 index0 是数字：接受 integer0 和 float0.0，布尔 false 即使 Python 数字相等也矛盾。缺字体/字体面列表仍 Unavailable；已观察字体面中缺下标则是矛盾。系统回退许可必须为布尔 true。原版符号/字宽溯源与实际现代 Label 消费分开检查。逐字符回退、精确字形塑形、原版位图及像素相等仍未知/在材料断言之外。控制令牌身份不证明未观察原版 W2 接受读取或控制副作用。
+
+可选 EntityWaitRelease 原样保留供消费者工作，但因旧采集缺失而排除在共同玩法事件投影外。仅对配对历史基线实体，在旧实体缺 isScriptIdle 时才从实际比较省略该字段。身份、顺序及其他操作数精确；双方都有 idle 则比较，预期有但实际缺则失败。历史基线 PASS 不证明未观察 idle 状态。现代矩阵保留每会话自己的证据，新 A 不能回填 B/C/D。
+
+### 完整已到达野外移动与消费者绑定
+
+比较器入口委托[野外移动模块所有者](../../../operations/bounded-inspection-and-review.md#h4-field-motion-module-route)，显式传入读取器及有界存储依赖。源码准入、发生实例清单、保持等待、释放/交接、恢复及绘制适用性保留相同有序检查、逐实例状态及 False 优先于缺失聚合。结构提取保存的试点和构造控制仅建立命名源码/接口等价，不重跑或替代 PR603 已接受完整历史 A-02 证据，不建立新的正向完整路线覆盖，也不改变下文玩法/比较谓词。
+
+两个已有完整子项 `awaited entity motion/gesture/fade before caller return` 和 `entity motion/gesture/fade consumer start/completion before resume` 使用同一完整已到达清单。逻辑 `program-instruction`、专用 `nod-started` 和 `full-fade-started` 生产者独立于保留消费者通道定义清单。初始战后程序淡入淡出可在返回视图存在前发布；前置逻辑源码指令标识类型化跨度。普通传送辅助函数方向跟随逻辑传送/转移边界。未访问源码程序不增加发生实例要求。固定数量、端点名称及渲染选择器不能选择已接受行为。
+
+同次运行选定世界与固定源码，必须在每个已到达程序的全部有序生产者操作数一致。复用源码解析器/降低过程；保留源码语句/操作码、生产者序号及类型化位置。已接受现代加载器/结果包装器及普通传送辅助函数按各自命名组合处理。每个已等待安装绑定会话/令牌/主体/物理槽位、源码等待政策、保持游标/调用方、带符号目的地及释放谓词。源码非等待/永久安装不虚构局部完成要求。内联非等待相对行动将每个目的地绑定到实际命令入口姿态；累加请求移动会虚构到达等待。释放后隐藏或重定位是依赖命令，不是保持中的移动端点。
+
+实际消费绑定观察绘制身份、逻辑姿态、视口相交及 Nod/颤动/马赛克阶段；通用提示绑定真实有限交接。即使野外几何缺失，调色板/白色节点也有活动消费者。依赖续接前恢复源码动画、标志、全局精灵大小、调色板端点及临时周期。保留交接前最后绘制；不要求每 tick 一绘制或同步终端栅格。Rect2 边检查使用 float32 算术。保留 JSON 的舍入经过时间在通用阶段边界表示狭窄序列化区间，不归一化玩法或声称原版时序。
+
+缺证据局部贡献 Unavailable。独立观察错误主体、政策、目的地、阶段、恢复、端点或续接顺序，即使另有缺字段/实例也 FAIL。消费者关闭既包含源码/等待/效果谓词，也含实际使用。删除已生产实例全部消费者通道必须保留清单，并使整个连接 Unavailable。不加必需行、部分 PASS 子集或归一化例外。已有原版证据、旧变体适用性及其他类型保留各自验收边界；这两个连接不能关闭完整 H4。
+
+必需可见动作阶段独立于残存绘制记录：Nod 的 normal-before/lowered/normal-after、颤动两个交替偏移及马赛克有方向图块推进。逻辑姿态及已接受视口决定阶段可见性；隐藏/被裁剪阶段不强制绘制。残存初始 Update 前绘制不能建立后续阶段使用。缺整个必需可见阶段为 Unavailable；独立错误残存阶段为 FAIL。保持 EntityWait 政策必须与源码和谓词释放一致，待处理移动/效果等待不能暴露野外输入就绪。缺字段独立评估。保存淡入淡出周期/调色板基值及颤动恢复操作数在等待期间保留入口身份；恢复比较完成状态与该入口，不与终端记录虚构匹配值比较。
+
+### 完整已到达操作流绑定
+
+[操作流模块所有者](../../../operations/bounded-inspection-and-review.md#h4-operation-flow-module-route)以显式源码/状态/存储依赖组合相同入口。结构验收使用完整源码区域映射、有界完整有序报告及真实接口/发布观察。构造控制及命名源码编译不是新历史 A03 运行或自然到达证据。PR604 最终已接受证据及四项谓词修复不变；历史 calls4107/12608 仍缺必需调用内栈观察。
+
+下列五个已有完整子项在 `remake_h4_comparison.py:operation_flow_binding` 使用同一完整已到达源码/效果绑定：
+
+- `taken route/setup/caller branch operands and occurrence`
+- `dialogue speaker/control-token occurrence and choice effect`
+- `route roster/flag writes at their source branch`
+- `warp destination/setup initialization before field release`
+- `before/after operation effects and shared-tail return pairing`
+
+同次运行选定世界必须等于固定源码完整有序已到达程序体，含被调用程序体、地图初始化及显式现代加载器/返回组合。观察 PC、标志、坐标操作数、保持调用方栈帧及外层返回建立实际路线。源码调用要求匹配嵌套返回及续接；后续相同 PC 不足。对话复用完整显示文字绑定，独立连接每个已接受选择及源码分支/标志效果。带计数名册前缀、源码标志写入及安装随从效果保留分支顺序。
+
+调用栈证据必须在该调用内、外层返回之前出现；后续无关栈不能填缺区间。`SessionResult.ProgramControlReads` 在每个实际 call/return Commit 前后保留不可变完整栈，含会话、修订、观察序号、源码操作及结果游标。延迟源码地图脚本返回在实际 `AfterService` Commit 记录。因此同 Submit 的调用/程序体/返回无需人为让出或新玩法事件。读取器配对首个外层返回及完整调用前恢复；缺操作数仍 Unavailable，矛盾读取仍 FAIL。无这些读取的旧采集保留缺区间。
+
+普通传送独立选择首个匹配固定地图事件、目的地/加载模式、标志选择默认配置及加载初始化、两个加载服务及真实野外就绪。后续初始化器只有在源码指令和保留传送请求建立链时，才可覆盖请求玩家姿态。战斗选择和显式结果返回是独立操作：最后实时战斗姿态与源码胜利地图/朝向选择返回目的地。转移数量不能配对边界。
+
+首个保持目的地边界比较实际玩家朝向与请求及中间源码朝向覆盖。源码配置声明、随从标志及已有己方精灵降低提供重建分配身份、物理槽位和精灵；保留模式加载保持此前物理分配，并应用中间源码精灵变化。检查该边界全部保留物理上下文。缺朝向/槽位/精灵操作数贡献 Unavailable；已存在错误效果独立于其他缺操作数保持 FAIL。
+
+前后效果含物理位置/朝向/精灵/隐藏变化、源码重置 HP/MP、实际摄像机脱离、有序场景地图加载、源码单服务等待及后续实体替换，以及外层返回前源码共享尾部 JOIN/解锁/完成写入。待战斗至野外接缝的摄像机身份是实时会话逻辑视野，不伪造缺失野外行动者投影。较早呈现前摄像机投影不能替代新依赖读取。缺证据局部贡献 Unavailable；观察矛盾即使另一操作数缺失仍 FAIL。不引入必需行、部分 PASS 子集、固定轨迹数量或玩法归一化。
+
+摄像机脱离要求显式存在 null 目标操作数；缺键不证明脱离。共享尾部标记标识操作但不建立效果：在外层返回前独立比较源码定义标志变化、带计数 JOIN 成员关系与实际状态，计入中间合法写入者。缺状态为 Unavailable；错误标志/成员关系即使另缺效果操作数也 FAIL。
+
+修正 `abcs-battle01` 程序体含源码摄像机脱离及地图/实体加载间单 tick 等待，保留真实服务、效果及 PC 后果。有界修正 A 观察中，九个已接受战后程序前检查点和现代 Left 基线保持精确；没有证据要求改变 Left 基线。历史 A/B/C/D 矩阵保留自己的内容身份。修正 A 不能与旧 B/C/D 组成当前同内容矩阵；这些保留资源组/完整报告结果仍 Unavailable。当前键盘范围不要求这些变体。复现与证据由[操作流验证路线](../../../../remake/docs/evidence/retained-comparisons.md#complete-operation-flow-comparison)拥有。
+
+有界 JOIN 的实际有限播放可早于逻辑辅助函数工作完成；逻辑推进仍必须到达选定结束步，在采样前武装，并完成一个完整三服务组；两道门控及实际此前曲目重启都先于普通输入和调用方返回。只有观察到晚完成保持区间时，才要求对应保持样本或输入尝试。提前完成提示可在最后逻辑服务立即恢复，没有终端保持样本。绑定实际请求/代次、辅助令牌/游标、服务组、回执、完成及返回；不能为匹配旧观察而虚构平台期。
+
+设置矩阵保留原始事件顺序及精确差异。一个匹配有限 JOIN 实际完成，可在仅该发生实例的 music-step/helper-service 记录间对应，前提是每个实际来源独立建立请求/代次、回执、武装及符合条件推进、完整辅助函数组、两道门控及调用方返回。所有其他载荷/顺序、输入/准入、战斗/端点、队伍/金币和主种子操作数保持相等。报告完整性或源码矛盾即使另一操作数缺失也失败。缺必要证明仍 Unavailable。规则不含流排序/删除或语义值变化。跨非辅助操作或任一释放/返回边界不属于对应。
+
+已到达视觉完整性采用独立逻辑清单：保留几何及源码布局的地图图层/图块/瓦片/绘制遍次/主体覆盖，以及逻辑状态和源码解码的肖像身份/镜像/眼睛/嘴部/组合瓦片。要求和使用通道同时遗漏仍是缺义务。各可用发生实例局部求值；缺早前操作数不能掩盖后续矛盾。保留 A02/B02 观察缺当前可变工作布局操作数，保留精确逐 Submit 诊断 Unavailable；选定基础布局不证明运行时门/标志/屋顶状态。单独提供[组合交付边界](#组合可变地图交付)可履行命名可变地图类别；缺该证据地图子项仍 Unavailable。实体/肖像及演出绑定保留各自结果。
+
+已到达资源源码/配对判断、要求归约、精灵/野外死亡演出观察、发生实例/范围/会话/最新访问身份、实际纹理谓词、独立逻辑清单/图层几何及带计数检查/见证/类型状态，由独立 [C# 比较工具](../../../../remake/docs/evidence/retained-comparisons.md#c-resource-comparison-tool)实现。Python 调用方仍选择源码解码器、拥有清单存储、选择关系变体和前缀计数，再发布相同有序资源报告。逐发生实例、精灵实例、尘埃及行动者异常边界保留部分贡献。带计数检查保留启用类型、首次出现顺序、显式身份与定位区分、每检查/结果八个见证；空、不可用及矛盾类型状态分开。一个限定范围子项与资源归约共享状态，在提前/仅源码返回时关闭。
+有序源码地图转换及独立会话/投影上下文决定资源身份。命名绘制遍次及源码字优先级先于阶段成员关系；残存实际使用不能提供自己的逻辑清单。Python 已有阶段集合和访问排序器仍为存储边界。清单变更用有界有序确认：部分失败追加保留实际先前写入，不回放或回滚；C# 只在确认后发布检查。生成使用及要求仍为独立逻辑状态后果，不能作为自身覆盖来源。后期分组行失败保留此前检查及当前权重/定位。
+实现边界保留原版源码独立性、数字相等、部分异常前缀及精确重数，不增加原版运行时观察，也不把保留可变布局未知项变成验收。[源码对应](../../../operations/bounded-inspection-and-review.md#h4-remaining-migration-and-resource-process)拥有有界移植审阅。
+
+视觉源码资格共享同一子项和带计数报告。C# 检查选定源码绑定/固定值、逻辑布局字、图集元数据/配方/视觉相等、必需图块/瓦片字及野外死亡扩展原版跨度/分配。Python 保留显式选定文件/Git/ROM 读取和已有规范/纹理/压缩解码器。完整逻辑字段及编码图集文字保留相等语义；字节测量不以新摘要替代逻辑比较。仅源码准备及源码加载内存边界保留解码状态。必需字检查在已有捕获边界内先于实际使用/归约；野外死亡检查保留三帧扩展与 base42 的区别，在早前 false 检查后继续后续解码。条件 IO、后期读取/解码失败前缀仍是离线合同的一部分。构造移植控制不增加原版解码器或运行时验收。
+
+独立 `reached_materials` 演出/音频来源报告在视觉绑定完成后，也使用该独立 C# 工具。Python 保留选定文件/Git/预检/WAV 读取和字节测量。C# 拥有冻结 base42/源码/指纹/栅格谓词、可见背景及行动者/武器连接、唯一已到达音频来源、采集/PCM 元数据及回执计时器政策。每个有序检查/连接和重复均保留；False、不可用及空类型结果分开。条件 IO 和部分异常前缀遵循原调用方，包括早前演出连接在后续音频失败后仍保留。这是离线材料来源对应；自然分发、消费者时序、音频播放和原版运行时未知项保留独立验收边界。
+
+有界 A/B 对应通过，原始严格不匹配证据保留。已接受采集性能工作后，单独分配 C/D 原生观察以各自不变设置/起点/队伍及完整有界终端完成路线。成功观察冻结；比较实际流，不重跑 A/B 或回填会话。[当前 C/D 所有者](../../../../remake/docs/evidence/retained-comparisons.md#current-cd-settings-capture)记录比较及范围边界。D 后续离线比较因用户范围取消；已完成采集及部分比较证据保留。C 是补充。仅原生完成不建立当前键盘 H4 验收或全部设置等价。
+
+### 组合可变地图交付
+
+当前键盘 A 交付声明组合固定原版规则、完整保留事件/样本适用性及独立受控机制/绘制观察，不声称历史采集在每次 Submit 都记录工作布局格子或坐标绘制。这些通道仍**未知**（比较值 Unavailable），已发布报告不可变。从源码及采样历史重建的原版调用方状态仍为**推断**。
+
+`map_consumer_binding` 为 `map` 命令及资源/现代比较可选 `--map-context` 共用有界谓词，只替换准入 Map3/Map19 类别的可变布局前提；源码图集/纹理、其他地图、玩法及其他资源子项保留独立检查。成功独立地图报告不是完整 H4 或里程碑验收。任何已知源码/实际矛盾优先于无关缺证据。
+
+[可变地图模块所有者](../../../operations/bounded-inspection-and-review.md#h4-mutable-map-module-route)区分保留适用性、受控输入/转移谱系、源码布局重建及实际 Draw 消费。旧绑定/源码/绘制导入仍为别名。逐绑定身份跟踪及逐绘制精灵着色保留原存活期和检查顺序；模块边界不增加历史观察或交付类别。
+
+| 必需行为类别 | 源码前提 | 独立实际见证 |
+| --- | --- | --- |
+| Map3 默认/标志关闭及房屋门/屋顶 | `map03/3-flag-events.asm`、`4-step-events.asm`、`5-roof-events.asm`；选定上下文 flag506 保持清除 | 普通 door row0 复制、roof row0 保存/清除/恢复、重复读取/绘制及标志关闭加载 |
+| Map3 学校变更及保留加载 | Door row5 复制源码图块；roof row9 保存/清除；当前地图传送保持工作布局及忙碌/保存状态 | 普通学校门、两次楼梯转移、保留已开门/已保存屋顶、退出恢复及新重复绘制 |
+| Map19 行走屋顶 | `map19/5-roof-events.asm` row1 选择共享大屋顶目的地 | 整个矩形的基础、普通进入清除/保存及退出恢复 |
+| Map19 重建进入屋顶 | `mapload.asm` 新地图路径清除忙碌状态并重建；`ToggleRoofOnMapLoad` 选择首个包含位置的源码矩形 | 普通 Map19→Map20→Map19 交通；新保存字等于原版源码，不是继承的已清除字 |
+
+表中行号从零计数；实际 `RecordOrdinal` 从一计数。复制尺寸、目的地、源码字及瓦片选择器来自固定表及已有 H2 解码器。`PerformMapBlockCopyScript` 忙碌处理及 `code/common/maps/mapload.asm` 保留/重建分支拥有原版机制。受控学校路径含源码 Sarah 对话（`Map3_EntityEvent0` → `cs_513D6`）和首个地下室 Zone7 文字；楼梯使用对角拓扑。受控起点不覆盖实时行动者或工作格子。Map20 只提供交通。未走 flag506 开启或替代配置不增加必需场景。
+
+适用性选择保留样本和 Submit 结果中完整相关变化区间及有序变更/移动生产者。核算每个选定记录及生产者，检查源码标志写入者和默认配置门控，拒绝未覆盖门/屋顶类别。其他复制组依据源码和保留历史分类为未变；缺中间调用方操作数时为**推断**。稀疏坐标未使用本身不证明排除。新重置/加载/转移操作或未覆盖类别使交付保持 Unavailable。
+
+每个受控区域绑定地图/会话/修订/观察序号、完整工作及相交保存字清单、忙碌序号、新请求/绘制身份及无溢出。可见格子依据源码图块字、逻辑平面原点、视口及原版精灵着色生成独立预期绘制多重集，含低/高优先级、绘制遍次/主体、零前景抑制、裁剪目的地及纹理坐标。正 float32 亚像素矩形仍是绘制；坐标比较只允许 0.002 像素序列化误差。屏外格子需要逻辑字校验，不虚构绘制。缺必需绘制/操作数仍 Unavailable；额外绘制或错误源码字、选择器、几何、优先级、会话均失败。缺早期区域/使用不能抑制可用后续矛盾。重复读取/绘制不改变逻辑快照。
+
+受控观察连接用例开始会话及有序普通输入/就绪状态链。转移修订与序号必须在一次普通输入内、其传送开始之后，并到达对应保留/重建区域消费的状态。另一会话内部自洽布局/绘制身份不能建立该谱系。
+
+行动者准入遵循 `ExplorationPresentation`：24-by-24 源像素边界缩放到视口后决定屏幕相交；行动者绘制遍次从四开始，为每个行动者及每个适用高平面恢复递增。报告可见性、尺寸及遍次值必须与独立导出约束一致。缺行动者操作数限制受影响掩码声明，不抑制完整平面绘制几何或其他可用矛盾。

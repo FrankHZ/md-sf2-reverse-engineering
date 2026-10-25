@@ -1,7 +1,7 @@
 # 文档索引
 
 这是当前中文阅读入口。[英文索引](./README.md)是规范索引；证据、合同与决策以各自的英文所有者为准。
-设计翻译遵循[术语表](./design/glossary.md)。下面区分已接受的中文镜像、尚待同步的旧镜像与英文回退；
+设计翻译遵循[术语表](./design/glossary.md)。下面区分已有中文镜像及其审阅状态与英文回退；
 缺少中文译文不表示缺少研究或英文说明。
 
 先检查 Git 提交、工作树、改动和进程，再沿[任务恢复入口（英文）](./operations/agent-resume.md)定位最近的所有者。
@@ -39,10 +39,10 @@
 不保证其来源仍然最新；`pending` 表示尚无中文镜像，阅读时回退到英文规范源。英文实质变化后须复核译文，不能仅刷新 hash 消除漂移。
 用现有 `uv run sf2 zh-meta list` 查看记录、`uv run sf2 zh-meta test` 检查当前全局状态；范围外失败继续保留为 FAIL。
 
-当前仍待修复的已有镜像是音频、战斗 AI、战斗控制、对话、音乐等待、队伍名册、随机性七份合同，
-以及连续 Map3–Battle01 场景与就绪性两份文档。涉及这些内容时，优先读[英文合同/综合索引](./README.md#design)，
-尤其以[当前就绪性（英文）](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)为准；
-旧中文镜像不能替代其当前接受边界。剩余 pending 是翻译缺口，不是待补原版研究的自动队列。
+已有镜像已完成同步修复，包括七份通用合同及[连续 Map3–Battle01 场景](./design/zh-CN/contracts/map3-battle01-continuous-scenario.md)
+和[就绪台账](./design/zh-CN/synthesis/map3-battle01-readiness.md#当前已接受里程碑)。当前全局索引检查 PASS：已有镜像的来源/术语表/译文锚均为当前版本，链接和结构检查通过。
+这只表示已索引镜像同步，不表示全部设计文档已有译文，也不表示 #514 完成。剩余 `pending` 沿英文规范源阅读；它们是翻译缺口，不是待补原版研究的自动队列。
+历史原版/现代失败及 [#1047 的十二项已完成未解决比较](./research/story-content-coverage.md#unknowns-retained-failures-and-next-decision)仍由证据所有者保留，当前组合验收不改写其结果。
 
 ## 工程、研究与验收入口
 
