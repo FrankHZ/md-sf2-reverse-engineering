@@ -59,7 +59,7 @@
 
 ### 新战斗
 
-**已确认静态顺序：** 新战斗清除经过秒数、执行战前与开战过场接缝、清除战斗区域标志 90 到 105、治愈合格队伍、初始化己方与敌人战斗状态并加载战斗。战斗间治愈步骤：
+**已确认静态顺序：** 新战斗清除经过秒数，执行战前过场接缝，清除战斗区域标志 90 到 105，治疗符合条件的出战队伍，依次初始化己方、敌人战斗状态，清除 AI 记忆，加载战斗，最后执行开战过场接缝。已接受的[精确新战斗入口轨迹](../../../research/battle21-opening-and-initial-roster.md#admission-fresh-entry-and-scene-gates)在固定源码基线的 `code/gameflow/battle/battleloop_1.asm:BattleLoop` 中记录了此顺序。战斗间治疗步骤：
 
 - 跳过其他死亡己方角色，但总是处理 Peter (7) 与 Lemon (28)；
 - 把当前 HP 与 MP 恢复到最大值；
@@ -69,7 +69,7 @@
 
 ### 恢复战斗
 
-**已确认静态顺序：** 挂起入口恢复已保存秒数计数器、清除标志 88、清除 AI 记忆、重载战斗状态并恢复单回合循环。AI 记忆重置用 `0xFF` 填充 48 个最后目标字节，并把 48 个记忆字节清零。
+**已确认静态顺序：** 挂起入口恢复已保存秒数计数器、清除标志 88、清除 AI 记忆、重载战斗状态并恢复单次行动循环。AI 记忆重置用 `0xFF` 填充 48 个最后目标字节，并把 48 个记忆字节清零。
 
 这证明代码内交接，而非跨进程 SRAM 持久性、断电恢复、精确恢复 UI 或自然挂起存档生命周期。那些保持 **未知**，并继续受[存档系统合同](../../contracts/save-system.md)约束。
 
@@ -82,7 +82,7 @@
 3. 敌人生成准入与动画；
 4. 行动顺序生成。
 
-战斗员字节为 `0xFF` 的单回合条目开始下一回合。哨兵与四步顺序是保真事实；帧时序与呈现是否与这些调用重叠未闭合。
+战斗员字节为 `0xFF` 的单次行动入口开始下一回合。哨兵与四步顺序是保真事实；帧时序与呈现是否与这些调用重叠未闭合。
 
 ## 区域激活与生成准入
 
@@ -115,7 +115,7 @@
 | 自然 Battle 01，种子 `0x1234` | 九个条目；有序分数为 `0:109`、`2:8`、`1:6`、`128:6`、`133:6`、`129:4`、`130:4`、`131:4`、`132:4` |
 | 受控边界，种子 `0x0000` | 死亡己方 2 与未放置敌人 128 缺席；AGI 128 给战斗员 0 分数 0 与 255；AGI 127 给战斗员 1 分数 135，按带符号 `-121` 排序；相等正分数保留插入顺序 |
 
-实现必须在这些接缝保留字节回绕、带符号比较、稳定平局、第二回合构建与 RNG 消耗顺序。状态修改敏捷、多个 AGI >=128 战斗员、超出已观察用例的溢出与其他战斗保持 **未知**。
+实现必须在这些接缝保留字节回绕、带符号比较、稳定平局、第二次行动构建与 RNG 消耗顺序。状态修改敏捷、多个 AGI >=128 战斗员、超出已观察用例的溢出与其他战斗保持 **未知**。
 
 ## 死亡工作列表与战斗员清理
 
@@ -125,12 +125,12 @@
 
 `ProcessKilledCombatants` 在工作列表为空时立即返回。否则其持久清理边界：
 
-- 为死亡己方递增败北，或把敌人死亡计入 `BATTLESCENE_FIRST_ALLY`；
+- 为死亡己方角色递增败北次数，或把敌人死亡计入 `BATTLESCENE_FIRST_ALLY`；
 - 把 X 与 Y 清除为 `-1`；
 - 清除状态并重建派生属性；
 - 把关联实体移到 `0x7000,0x7000`。
 
-源码还包含视觉遍。其显示、动画、音频与时序保持 **未知**；适配器不得从持久变更顺序推断它们。
+源码还包含视觉处理阶段。其显示、动画、音频与时序保持 **未知**；适配器不得从持久变更顺序推断它们。
 
 ## 动作后与回合后顺序
 
@@ -160,7 +160,7 @@
 | 普通败北 | `D4 = -1` | 恢复队长 HP；用无符号向下整除把金币减半；获得战斗退出位置 |
 | Battle 4 败北 | `D4 = 0` | 完成/升级硬编码战斗路径而非普通败北 |
 
-这些返回码不定义战役含义、存档时序、渲染后果或完整 Jaro、升级与退出特例面。单回合 EGRESS/Angel Wing 也通过另一个所有者使用零退出结果；它不得与 Battle 4 失败原因混为一谈。
+这些返回码不定义战役含义、存档时序、渲染后果或完整 Jaro、升级与退出特例面。单次行动中的 EGRESS/Angel Wing 也通过另一个所有者使用零退出结果；它不得与 Battle 4 失败原因混为一谈。
 
 ## 相邻静态控制边界
 
@@ -205,7 +205,7 @@ H4 应比较规范状态与有序事件，而非原版 RAM 地址。完整遭遇
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 入口、回合顺序、死亡检查、结果、相邻选择器 | **已确认静态** | `sf2-battle-control-static-v1`（[`battle-control-static-v1.json`](../../../../tests/fixtures/h2/battle-control-static-v1.json)） | 挂起持久性、升级/Jaro/退出边界、渲染/时序 |
-| 名册生命周期、生成、计数、清理、回合/状态入口点 | **已确认静态** | `sf2-battle-loop-static-v1`（[`battle-loop-static-v1.json`](../../../../tests/fixtures/h2/battle-loop-static-v1.json)） | 重置失败原因、视觉遍、未解析辅助行为 |
+| 名册生命周期、生成、计数、清理、回合/状态入口点 | **已确认静态** | `sf2-battle-loop-static-v1`（[`battle-loop-static-v1.json`](../../../../tests/fixtures/h2/battle-loop-static-v1.json)） | 重置失败原因、视觉处理阶段、未解析辅助行为 |
 | Battle 01 区域激活 | **已确认运行时，受限** | `sf2-battle01-region-activation-v1`（[`battle01-region-activation-v1.json`](../../../../tests/fixtures/h3/battle01-region-activation-v1.json)）与 `sf2-battle01-secondary-activation-v1`（[`battle01-secondary-activation-v1.json`](../../../../tests/fixtures/h3/battle01-secondary-activation-v1.json)） | 后期回合、其他战斗、自然次区域数据、过场时序 |
 | 行动顺序构建 | **已确认运行时，受限** | `sf2-battle01-turn-order-v1`（[`battle01-turn-order-v1.json`](../../../../tests/fixtures/h3/battle01-turn-order-v1.json)）与 `sf2-turn-order-boundaries-v1`（[`turn-order-boundaries-v1.json`](../../../../tests/fixtures/h3/turn-order-boundaries-v1.json)） | 其他 AGI/状态/调用方状态与战斗 |
 | 单步回合后状态生命周期 | **已确认运行时，受限** | `sf2-after-turn-status-lifecycle-v1`（[`after-turn-status-lifecycle-v1.json`](../../../../tests/fixtures/h3/after-turn-status-lifecycle-v1.json)） | 多回合自然状态、其他分支、消息时序 |
