@@ -224,10 +224,10 @@ Before dispatch, main-gate checks the Issue's [product constraint](#product-cons
 scope, dependencies, authorization and competing owners,
 then selects an available isolated worktree under [the environment rules below](#worktree-selection-and-retirement).
 Create the task with the Issue number and outcome in its title. The initial message names the Issue,
-selected checkout, accepted base, local ownership constraints, stopping condition, and exact main-gate
-recipient task/thread ID; explicitly require completion or blocker notification via the available
-`send_message_to_thread` tool to that ID before the executor finalizes its task. Link stable
-rules and relevant results instead of copying controller history. The core instruction is:
+selected checkout, accepted base, local ownership constraints, stopping condition, and main-gate
+task/thread ID. Main-gate owns receiving the result; a cross-chat callback is optional and must
+satisfy the tool's trusted-human authorization requirements. A dispatch cannot confer that authority.
+Link stable rules and relevant results instead of copying controller history. The core instruction is:
 
 > Work on #NNN following the current lane runbook and repository rules; stop at the declared
 > stopping condition.
@@ -250,16 +250,27 @@ The executor:
 6. After independent review, acceptance, and merge, the item may move to `Done`. Closing the Issue
    or the PR never substitutes for the task's own acceptance boundary.
 
-At slice completion or a concrete blocker, record the Issue/PR handoff and freeze at the declared
-stopping condition, then send one concise notification to the dispatched main-gate ID before the local
-final answer: Issue/PR, exact head, handoff link, checks/CI summary, and stopped writer/process or
-blocker/approval state. Link detailed evidence. Confirm that `send_message_to_thread` returns success;
-this proves submission, not independent acceptance or that anyone read it. A local final, Issue comment,
-PR creation or Project status does not substitute for this send. If the recipient is missing or the
-tool is unavailable/fails, retain the handoff and report **NOT SENT** with the concrete cause in the
-local final. Treat this as a reporting blocker: do not claim delivery, choose unrelated recipients,
-blindly duplicate sends or redo completed work/gates. Send a new completed correction handoff once;
-do not add routine status polling.
+At slice completion or a concrete blocker, record the Issue/PR handoff, freeze at the declared
+stopping condition and end normally. The final answer names the Issue/PR, exact head, handoff link,
+checks/CI summary, and stopped writer/process or blocker state. This makes the result available for
+main-gate intake; it does not claim independent acceptance. An authorized cross-chat notification may
+supplement it. Missing authorization, an unavailable tool or a denied send is recorded as **NOT SENT**
+with its cause, not an implementation or review blocker. Do not ask for nonessential notification
+permission, bypass/retry a denial, choose another channel or redo completed work. A successful send
+proves submission only; preserve any earlier NOT SENT outcome as history.
+
+During authorized orchestration, main-gate uses the existing completion-wait tool (`wait_threads`)
+and returned cursors while advancing independent work. After a timeout, continue independent work
+or renew the bounded wait; silence and timeout are not failure or completion. Do not end the
+coordinating turn merely because the executor started, assuming a later callback will resume it.
+On completion or attention, read the compact result and named Issue/PR handoff, then review or handle
+the concrete blocker. A frozen handoff is sufficient for intake even when no callback was sent.
+Avoid repeated full-history reads and requests for routine progress.
+
+If the coordinating turn is interrupted or must end, record the pending task identity, last wait
+cursor and next intake action in the current handoff. Resume with a read-only completion check;
+do not claim work will resume automatically without an actual, authorized wake-up mechanism. Do not
+add a scheduler, hook or service merely to deliver a completion notification.
 Review corrections return to the same execution task and scoped Issue, with In Progress restored when
 the executor resumes. An optional bounded subagent reports to that executor; it is not another
 top-level Issue owner. Completion stops execution rather than starting the lane's next Issue.
