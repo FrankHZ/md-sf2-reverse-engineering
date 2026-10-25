@@ -15,9 +15,10 @@ field return visibly completed. Exact parameters and proof remain in the linked 
 
 Read entry and scheduling → movement and action choice → resolution → after-turn checks → outcome
 and return. [Story Progression](story-progression.md#read-story-content-in-segments) provides encounter
-admission and chapter context. This page explains common rules; representative encounter composition
-is a separate reader outcome. Original rules, observed play, accepted remake choices and production
-support have [different boundaries below](#original-fidelity-and-modernization).
+admission and chapter context. After the common rules, the
+[encounter comparison](#how-encounter-rules-change-the-common-loop) explains equipment gates, side
+changes, special attacks, repeat trials and a reset caller. Original rules, observed play, accepted
+remake choices and production support have [different boundaries below](#original-fidelity-and-modernization).
 
 ## Entering Battle and Selecting a Turn
 
@@ -361,6 +362,240 @@ restoration. Suspend, an outcome return and a usable map return remain separate 
 [save-system boundaries](../contracts/save-system.md) for persistence rather than assuming every
 battle exit saves the force.
 
+## How Encounter Rules Change the Common Loop
+
+An encounter can change who is present, who controls a turn, which effects are admitted, what ends
+battle and what the caller does afterward. **Inferred design connection:** these are independent
+axes of the common loop. A boss appearance, an activated region or a completion flag cannot stand
+in for all of them. The five comparisons below explain distinct rules, rather than rank difficulty
+or prescribe a party. **Confirmed static** applies to their conditions and source-defined
+consequences; none is a newly observed complete encounter or a production-support claim.
+
+| Encounter | Distinctive condition | Consequence for the shared loop |
+| --- | --- | --- |
+| [Taros / Battle18](#equipment-can-gate-an-effect-taros) | Admission and Bowie's equipped Achilles attack are separate tests. | Entering battle does not make an attack effective; conditional loot and acquired transport have later, independent gates. |
+| [Jaro / Battle32](#a-side-change-is-not-manual-control-jaro) | A region scene converts an enemy into an AI-controlled ally; first victory has another recruitment scene. | Position, side, scheduling, control and lasting party state can change at different points. |
+| [Prism Flowers / Battle36](#a-special-action-replaces-ordinary-ai-prism-flowers) | Flower kind and laser direction select a dedicated path before ordinary commands. | An ally on the ray can trigger a shot whose later hit list also contains enemies; the Flowers are not the leader objective. |
+| [Fairy Woods / Battle44](#a-repeat-trial-adds-result-and-retry-state-fairy-woods) | Optional admission, hidden/reappearing enemies and a separate result/record flow. | A leader-based terminal rule coexists with a timed challenge; a better record is unnecessary for another attempt. |
+| [Hidden Battle0](#the-caller-changes-the-destination-hidden-battle0) | EndGame admits the encounter and consumes every actual battle return. | Zeon has no leader sweep here; victory, defeat and admitted retreat all reach software reset. |
+
+### Equipment can gate an effect: Taros
+
+**Confirmed static:** Battle18 admission tests its unlock, not Sword custody or equipment. The
+[Taros/Caravan chapter example](story-progression.md#worked-example-taros-and-the-caravan) explains
+how the exploration choices can supply that unlock. Fresh combat then places the actual joined,
+active party using formation coordinates; the twelve printed ally templates do not recruit twelve
+healers or replace the party's gear and AI. Taros's special sprite is presentation mapping. With
+completion clear, the neutral Caravan has zero HP and does not count as a remaining enemy.
+Neither a visible Caravan nor Rohde's follower role means transport has been acquired. See the
+[roster and neutral owner](../../research/battle18-initialization-and-first-control.md#twelve-templates-and-the-actual-party).
+
+At initial action-script construction in Battle18, the effective conjunction is **Bowie + ATTACK +
+a target with Taros's enemy definition + an actually equipped Achilles Sword**. Carrying it without
+equipping it, another ally attacking with it, or Bowie choosing spell/item use does not satisfy that
+conjunction. For example, Bowie's attack while merely carrying the Sword sets the ineffective toggle;
+when its Taros damage helper is reached, it requests the ineffective message and returns before HP
+loss and damage/kill rewards. An eligible attack still needs the later hit/damage path. The
+[equipment-gate owner](../../research/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)
+bounds this initial test and its lifetime: it is not a claim of immunity to every possible effect,
+every later target or every counter path.
+
+The terminal rule is separate again. With Bowie alive and enemy128/Taros at zero HP, the defeated
+hook can queue the remaining living enemies for cleanup; returning cleanup can remove them from
+the count. The common defeat-first priority still applies, with no second defeated hook in the
+after-turn suffix. This is not a requirement to defeat every initial enemy individually. Taros
+Sword loot instead needs its own action-side death, actual held item, successful random gate and
+clear once-bit. A living recipient with room receives it; zero HP or full inventory takes the
+rare-item Deals fallback. Leader cleanup does not manufacture a successful item-drop transaction; the
+[loot owner](../../research/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody)
+keeps those conditions distinct from victory.
+
+First victory with completion clear runs the acquisition scene: its reached terminal writes grant
+Caravan acquisition and clear Rohde's ordinary following flag, without joining Rohde to the force.
+Repeat victory skips that scene and preserves the supplied acquisition state; it does not repair a
+missing Caravan flag. Victory returns a shrine-map seed taken before the scene, while defeat and
+admitted retreat use the supplied savepoint and their different costs. Neither loss nor retreat
+runs the acquisition scene. Later boarding has its own traversal conditions. The
+[outcome/acquisition guide](battle18-outcomes-and-caravan-acquisition.md) owns that handoff and the
+warning that may still precede shrine exploration; victory alone does not promise usable transport
+or immediate field control.
+
+### A side change is not manual control: Jaro
+
+**Confirmed static:** Battle32's two region conditions can admit the same Jaro scene. A held region
+flag and clear shared played flag F386 are required; fresh placement alone does not prove either
+region was reached. The wrapper sets F386 **before** running the scene, and ordinary fresh entry
+does not clear it. If the scene never reaches conversion, or is interrupted after that flag write,
+a later call with F386 held skips it. This is a retained-state boundary, not guaranteed completion
+or an automatic retry. The [region admission owner](../../research/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)
+keeps geometry, activation and scene history separate.
+
+When reached, conversion takes enemy143's coordinates, zeros its current HP and removes its battle
+coordinates, then positions ally Jaro23 there. It sets joined/active membership and copies the
+physical actor lookup, without copying enemy HP/stats, healing Jaro or allocating a new sprite.
+The explicit active-party write can exceed the ordinary twelve-member capacity; it is not proof
+of a general capacity-safe recruitment rule. The scene's later nonzero `joinForceAI` operand sets
+AI-control bit2. A visible Jaro, a converted ally and a manually controlled turn are therefore
+different facts. The [logical/physical conversion owner](../../research/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases)
+retains the precise prefix and interruption limits.
+
+Scheduling then tests Jaro's **own** placement, HP and current agility. A dead ally Jaro is not
+revived by conversion and contributes no turn; the former enemy's agility is not inherited.
+If eligible and routed through his new AI bit, he takes ally AI rather than ordinary manual input.
+No fixed first actor or one-for-one schedule replacement follows. Already-joined Jaro also causes
+the fresh enemy initializer to skip143 **without clearing its old fields**; if a conversion is
+subsequently admitted, it still reads that retained slot. The
+[initialization owner](../../research/battle32-initialization-and-opening.md#jaro-joined-list-empty-list-and-skipped-old-slot)
+and [queue owner](../../research/battle32-activation-jaro-and-first-turn-dispatch.md#eligibility-agirng-and-first-call)
+bound these changed premises instead of assuming the normal-looking scene repaired them.
+
+First victory's later scene can recruit Jaro even when the region conversion never occurred.
+Its reached suffix joins him, clears only the AI-control bit, removes him from the active battle
+party and requests following: joined membership survives, while active membership is clear. This
+permits future party selection; it does not leave him automatically active for the next battle.
+Already-held completion skips the whole scene, including those repairs, and the shared join tail
+is Bowie's. Defeat/admitted retreat do not run the victory recruitment. See the
+[outcome/party owner](../../research/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)
+and the [Moun chapter](story-progression.md#jaros-defection-frayjas-joining-and-mouns-survivors)
+for the separate onward story conditions. A completed cutscene, a follower and permanent force
+membership must not be inferred from one another.
+
+### A special action replaces ordinary AI: Prism Flowers
+
+**Confirmed static:** Battle36 fresh initialization places twenty STARTING enemies, including eight
+Prism Flowers. All ordinary spawn candidates are absent through the unchanged mode scan; that does
+not exclude later event/debug requests or changed spawn modes. Three regions can affect other
+enemies, but no Battle36 region scene exists in the selected table. Placed living enemies can be
+scheduled before activation, and first dispatch still depends on actual party, current agility and
+RNG. The [initialization owner](../../research/battle36-initialization-and-opening.md#map-full-formation-and-definitions)
+and [activation/spawn owner](../../research/battle36-activation-and-first-turn-dispatch.md#complete-activation-rows-and-normal-spawn-candidates)
+separate those declarations from executed control.
+
+For a living Flower actually routed to AI, its unchanged 15/15 trigger pair bypasses the ordinary
+inactive-enemy standby gate. The kind93 branch then selects line-attacker AI **before** ordinary
+commandset execution. HEALER1, zero MOV and a LASER spell-list entry do not implement this rule.
+Changed non15 triggers with no active bit can instead select standby; opponent player control can
+bypass AI preparation. Sleep/Stun can also stop later action execution after preparation. The
+[special control owner](../../research/battle36-activation-and-first-turn-dispatch.md#first-individual-turn-control-and-the-flower-kind-branch)
+explains why no single placement or AI label guarantees a shot.
+
+The laser's direction comes from the battle/ordinal table, independently of display facing. From
+the actor's current position it scans a one-square-wide cardinal ray in fixed 48-by-48 tactical
+storage, without testing walls, ordinary spell range or the narrower battle crop. The AI first inserts
+eligible living, positioned, non-neutral **allies** into occupancy. With Flower130 at `(6,11)`, an
+otherwise lone ally at `(8,12)` misses its rightward ray: AI chooses STAY without searching another
+direction or repositioning. Move that ally to `(8,11)` and the ray admits action6. These are
+**Confirmed static supplied-state deductions**, not recorded natural turns; unchanged initial party
+placements miss all eight rays, but earlier actors can change the first actually reached decision.
+
+The selected first ally serves later targeting focus; it is not the final damage list. Action
+construction rebuilds occupancy from **both factions**, collects the current ray and sorts by
+combatant ID. An enemy at `(10,11)` can therefore be hit along with the triggering ally. If all
+targets have left or died by reconstruction, action6 can retain its message/animation requests
+with no target effects, rather than becoming a fresh STAY. For ordinary valid targets, the laser
+uses base power 16 and two ordinary variance draws, yielding 12–16 damage before the HP clamp.
+It does not use ATT/DEF, terrain protection, ordinary spell resistance or an MP charge. Forced debug inputs
+have separate exceptions. Temporary HP calculation, restored construction state and later reaction
+playback remain distinct. The [laser owner](../../research/battle36-prism-flower-laser.md#occupancy-decision-and-changed-state-examples)
+connects ray, reconstruction and damage, without proving completed animation or a played round.
+
+The Flowers are also distinct from the objective: enemy128 is the **Executioner**, not a Flower or
+the later Geshp scene actor. His action-side death with Bowie alive can trigger the leader sweep;
+destroying all eight Flowers while other enemies still count does not by itself win. First victory
+runs its Geshp aftermath and returns to Map53 using the pre-scene party seed; held completion skips
+the scene. The [outcome owner](../../research/battle36-outcomes-and-galam-return.md#terminal-selection-leader-cleanup-and-accounting)
+and [Galam-region chapter](story-progression.md#prism-flowers-red-baron-and-geshp-returns)
+retain the separate reward, return and onward-admission rules. Friendly fire or leader cleanup is
+not proof of an ally-earned kill/drop transaction.
+
+### A repeat trial adds result and retry state: Fairy Woods
+
+**Confirmed static:** the optional trial is Map24/Battle44, reached from Elven Village's east exit,
+not Fairy Cave. Without the battle unlock or completion-result branch, map initialization invites
+an attempt. Confirming Yes requests the start warp and sets F444; No or B requests return to the
+village without starting. MainLoop checks battle admission before map initialization, so a supplied
+unlock can bypass the invitation. Even held completion F544 does not reject a simultaneously
+unlocked battle: selection clears the unlock but admits that invocation. The
+[invitation/admission owner](../../research/battle44-fairy-woods-trial-and-records.md#east-exit-admission-and-invitation)
+keeps the prompt, pending warp, admission and fresh battle distinct. Formation again places the
+actual party; it does not select a fixed twelve-character trial team.
+
+This encounter changes the lifetime of enemies. Region-gated HIDDEN mode permits a first appearance
+only while maximum HP is zero; after successful appearance and ordinary death it does not reappear
+in that unchanged trial. Literal mode3 can reappear after later death while its region stays held
+and reset succeeds, at a later round prefix rather than immediately during the kill. Refusals at
+the declared bound or occupied starting square preserve the common failed-reset state, including
+the dead/self occupancy case explained above. Later attempts still depend on mode and HP/region
+conditions; there is no unconditional spawning promise. A fresh retry reconstructs definitions/regions separately. See the
+[spawn lifetime owner](../../research/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance).
+
+The invitation asks how fast all hidden monsters can be defeated, but the terminal predicate is
+not an all-fifteen-kills requirement. Enemy128 is **Bubbling Ooze**, with leader sweep enabled.
+Its action-side death while Bowie lives can remove the remaining living enemies through cleanup,
+even if hidden entries never appeared. Defeat still has priority if both factions are exhausted;
+a leader death from after-turn effects does not gain an extra defeated hook in that same suffix.
+The empty hooks and record congratulations add no trial completion item prize. This
+[objective/reward boundary](../../research/battle44-fairy-woods-trial-and-records.md#queue-control-terminal-and-rewards)
+qualifies the challenge wording without assigning difficulty or an intended strategy.
+
+Timing introduces several states, not one stopwatch. Fresh battle resets the seconds longword,
+but leaves the separate frame subcounter unchanged. Every sixty enabled contextual updates advance
+the seconds counter. The timer window callback copies changed seconds into a result snapshot;
+closing/removing that callback can freeze the snapshot while the counter continues. Ordinary action scenes close/reopen the window,
+so hiding it does not establish a clock pause. Victory heals first and then closes it; the trial
+result is the last callback copy, potentially updated during the close wait, not an exact sampled
+leader-kill instant. Displayed digits have their own minute clamp, unlike the dialogue formatter.
+These are source counter/callback operations, **not hardware duration measurements**. The
+[timer owner](../../research/battle44-fairy-woods-trial-and-records.md#timer-lifetime-snapshot-record-and-save-boundary)
+keeps counters, visible formatting, snapshot and best record separate.
+
+Victory returns to Map24 result initialization. Only an **unsigned strictly smaller** snapshot
+updates the best record; equal/slower results leave it unchanged. That update is RAM state, with
+no SaveGame call in this result branch. The record lies in the separately serialized save range,
+which does not prove a completed save or durable best time. Both result branches request village
+return and then clear completion. With the victory unlock also cleared, a later east-exit visit
+can invite another attempt regardless of record success. The
+[result/retry owner](../../research/battle44-fairy-woods-trial-and-records.md#victory-result-record-comparison-and-retry)
+bounds this repeat route without claiming a naturally played return-and-retry cycle.
+
+Defeat or admitted Egress/Angel Wing produces no new completion record and retains its ordinary
+recovery/gold or payment rules. Its supplied savepoint is not necessarily the invitation/result's
+village exit. Ordinary Suspend is allowed here, unlike Battle0; an admitted saved-state entry
+resumes the saved queue/seconds instead of rebuilding a fresh trial. Actual save completion,
+hardware timing and persistence remain **Unknown**. The
+[loss/retreat/suspend owner](../../research/battle44-fairy-woods-trial-and-records.md#defeat-escape-suspend-and-the-village-stopping-boundary)
+retains those separate retry/return conditions.
+
+### The caller changes the destination: hidden Battle0
+
+**Confirmed static:** following the ending, EndGame clears entities, sets F400, supplies map63 and
+calls the battle selector. Row0's coordinates are wildcards; held completion F500 clears the unlock
+but still selects Battle0 on that call. This is the concrete special caller, not a freely entered
+Magic Tunnel encounter or permission to start it from any map. The
+[ending admission owner](../../research/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)
+and [ending chapter](story-progression.md#credits-finale-completion-storage-and-the-hidden-battle)
+keep the preceding completion-storage/display sequence separate from battle entry. Inherited F88
+has a supplied-state resume route; the ordinary Battle0 Suspend choice cannot create it.
+
+Boss identity does not determine the terminal rule. Although enemy128 is Zeon, Battle0's leader
+presence byte is zero: his death does **not** sweep other enemies. Remaining placed, living enemies
+can keep the battle running. The common Bowie-loss override and defeat-first priority still apply.
+First victory requests the short game-over text, reaches the shared Bowie join tail and records
+completion; held completion skips that text. Defeat instead restores Bowie and halves gold;
+admitted retreat pays its spell/item cost and bypasses the ordinary victory/defeat suffixes.
+Cancel, no target or insufficient MP grants no escape. Suspend is refused before its prompt,
+flag write or save request and returns to the battle menu, rather than resetting the game.
+
+Unlike the ordinary MainLoop returns illustrated above, **every actual victory, defeat or admitted
+retreat return goes back to EndGame**, which ignores the result and map parameters. It requests
+white fade, clears contextual VInts, disables display/interrupts, restores the initial stack and
+jumps through the start vector: a software reset. A calculated retreat savepoint is therefore not
+field travel under this caller. A waiting/interrupted/nonreturning service does not prove the reset
+suffix ran. The [Battle0 outcome/reset owner](../../research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
+ends at that transfer; post-reset menus, new-game-plus behavior and durable retention of later HP,
+gold, items or outcome flags remain **Unknown**. The earlier SRAM-mapped ending bit is not a save
+of the hidden encounter's outcomes.
+
 ## Original Fidelity and Modernization
 
 ### Original knowledge and observed play
@@ -438,10 +673,12 @@ Use this table to move from a rule to its proof, not as a second action/fixture 
 | A chapter's terminal priority, caller destination or special return | [Story Progression](story-progression.md) and its accepted outcome investigations; the shared terminal-priority and Battle0 owners linked above qualify older aggregate summaries. |
 
 **Scope agreement — Standard:** cross-system dependencies require source/claim review; the bounded
-outcome is readable common tactical rules with necessary conditions and non-happy paths. Acceptance
-follows overview → rule → named proof and a cancellation/failure route, with evidence labels,
-incoming anchors and original/modern/production distinctions intact. No acquisition, simulator,
-encounter-comparison expansion, engine change, translation or new checker is included.
+outcome is readable common tactical rules and five representative encounter comparisons, with
+necessary conditions and non-happy paths. Acceptance follows overview → rule/comparison → named
+proof, including cancellation, ineffective/no-target, optional retry and special-caller returns,
+with evidence labels, incoming anchors and original/modern/production distinctions intact. No
+acquisition, exhaustive encounter catalogue, simulator, engine change, translation or new checker
+is included.
 
 The pre-synthesis review inspected relevant research, all six core contracts plus the stricter
 battle-functions control contract, selected fixture payloads and their schema/verifier boundaries,
@@ -454,3 +691,14 @@ Older grouped runtime queues remain unresolved questions under
 new acquisition obligations. The AI fixture's older thinking "low byte" wording is qualified by the
 accepted randomness owner's high-byte operand; its observations are preserved. No Layer A owner,
 fixture or historical failure is silently repaired by this explanation.
+
+The encounter comparison reviewed the selected Battle18, Battle32, Battle36, Battle44 and Battle0
+research owners and their chapter contexts. It reuses their accepted source/consumer reviews;
+shared action, AI, lifecycle, local-control and save contracts/fixtures establish narrower seams,
+not complete encounter observations. In particular, older Taros shorthand about an "ally" attack
+is read through the newer Bowie's-identity/equipped-weapon inspection, and laser "first target"
+means decision/focus input rather than the reconstructed hit list. The review record on
+[Issue #1269](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1269) names the selected
+surfaces and dispositions. Timer storage, interrupted Jaro conversion, repeat gates and EndGame's
+reset retain their explicit limits; these comparisons create no runtime-closure queue or new
+production admission.
