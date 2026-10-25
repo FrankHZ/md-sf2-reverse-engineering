@@ -13,7 +13,7 @@
   [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md). This document selects no
   campaign rewrite or narrative data model.
 - Framework evidence date: 2026-08-02; chapter orientation and the worked example consume the
-  accepted owners at `4258510e0c28002b431ded44334f2d4f9f449ab0` under the
+  accepted owners at `f6da6b1bd5384ce60d77e74271d8f8f3bc404a7a` under the
   [current Standard-rigor scope agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 - Source baseline: `ShiningForceCentral/SF2DISASM` `master`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`.
@@ -54,8 +54,8 @@ arrival, completed presentation, player control or durable saves.
 Read each orientation first. Expand its detailed English guides for exact local behavior, then use
 the linked research for proof. The northern chapter reaches conditional Battle32 admission;
 the Moun/Nazca chapter continues through the Grans return and the next encounter's conditional
-handoff. The final group retains a bounded skeleton and accepted-evidence route. These groups do
-not create a new detailed late-campaign series. The
+handoff. The final group connects the Sword and tower route to the epilogue and hidden-battle reset.
+These groups do not create a new detailed late-campaign series. The
 [coverage owner](../../research/story-content-coverage.md#four-different-frontiers) distinguishes
 static research, original observations, English synthesis and remake support.
 
@@ -1888,29 +1888,386 @@ remain unchanged, as do the retained completed failures and deferred Chinese syn
 
 ### Final confrontations and ending
 
-Accepted **research** supplies this final reading skeleton. The
-[Force Sword/Devils Head/tower route](../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower)
-separates attraction/extraction and selected Sword use from later labyrinth and tower admission.
-Lemon's conditional recruitment has more than one local owner; carrying a Sword or hearing Creed
-speak does not replace the actual admission predicates. The labyrinth's live layout changes are
-not proof of a persistent puzzle-completion state.
+This chapter continues the [Geshp-to-Battle39 handoff](#onward-handoff-and-evidence-limits): a later
+Map66 zone can unlock Battle39, but the subsequent scan still gives earlier eligible encounters
+precedence. **Inferred design connection:** the final route links an acquired key weapon, an opened
+entrance, labyrinth and tower transitions, successive confrontations, and a return whose remaining
+decisions concern Elis. These are connected content dependencies, not a mandatory numbered itinerary.
 
-The final encounters retain separate openings, conditional control and outcomes. In particular,
-[Battle42's result](../../research/battle42-outcomes-and-zeon-admission.md) sets Zeon's unlock;
-only a later scan can select Battle43, with Battle42 checked first. [Zeon's outcome](../../research/battle43-outcomes-and-ending-admission.md)
-is ending admission, not a completed epilogue or free exploration.
-[Ending/credits evidence](../../research/story-content-coverage.md#epilogue-credits-and-the-hidden-battle)
-continues through sealing/return, the two-years-later town, castle council/chamber interactions and
-credits. Optional hints and the chamber's actual Yes/No kiss prompt are distinct; minister hints
-are not the prompt's tested prerequisites.
+The operations below are **Confirmed static** within their linked accepted owners. Dialogue meanings
+are attributed to their speakers; gestures and scene requests are not additional player choices.
+Natural traversal, completed presentation and durable saves remain **Unknown** beyond the named
+observations. The [Force Sword/tower coverage](../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower)
+and [ending coverage](../../research/story-content-coverage.md#epilogue-credits-and-the-hidden-battle)
+provide the evidence route; [original observations and remake support](#original-observations-and-remake-support)
+keep their existing frontiers. Fnnn denotes a numbered game flag; map/battle numbers and actor
+aliases identify local source records rather than a guaranteed physical actor or natural itinerary.
 
-The [credits/finale owner](../../research/ending-credits-finale-and-bonus-admission.md) and
-[hidden Battle0/reset owner](../../research/battle00-bonus-battle-and-reset.md) close this reading
-spine. Battle0 uses a special caller: its victory, defeat or admitted retreat returns to software
-reset rather than ordinary exploration, and ordinary Suspend is refused before saving. These
-accepted static links prove neither a naturally completed ending nor hardware persistence or a
-playable remake epilogue. Selected boss-action accounts and optional branches retain their limits;
-they do not establish every legal action or a complete content census.
+| Connection | What enables the next part | Important alternative or limit |
+| --- | --- | --- |
+| Battle39 → shrine and Devils Head | Victory returns to Map66; declared entrances connect Map41 and shrine42. | Outcome, reaching a marked exit and completing the transfer are separate. |
+| Shrine → opened head | Search can extract the Force Sword; selected use at Map41's specified position/facing opens the head. | Attraction, receipt, equipment, use and Lemon's membership have separate conditions. |
+| Labyrinth28 → Odd Eye battlefield54 | An outgoing marked warp can request Map54; unlock F440 admits Battle40. | Live step copies do not create a persistent solved-puzzle flag. |
+| Odd Eye return → tower56 | Map54 has south and north exits; the north request enters Map56. | The aftermath's actors/positions are replaced on ordinary return. |
+| Creed/ascent → Battle41 → stairway60 | Creed's zone can set F441; a later map56/Y24 scan can select Battle41. | Talking alone does not unlock it; stairway travel has its own marker/request callers. |
+| Stairway → Galam42 → Zeon43 | Held F999 substitutes Map58 requests with Map59; eligible Battle42 precedes Battle43. The full first Battle42 aftermath sets F443. | Victory return bypasses an immediate battle scan; a later request supplies it. |
+| Zeon → Granseal epilogue | Victory sets F543; selected ordinary59 init admits the later scene and its posted Granseal return. | The battle aftermath is not the complete sealing/evacuation scene. |
+| Town → council → chamber | Astral's accepted escort sets F981; the council-return suffix sets F982. | Council dialogue selects Bowie; the chamber separately asks the player whether to kiss Elis. |
+| Accepted kiss → credits/finale → hidden Battle0 | Returned services enter the ending caller, which supplies map63 and unlock F400. | Ending storage, battle outcomes and software reset are different boundaries. |
+
+#### Battle39's result and the shrine approach
+
+[Battle39's opening/control owner](../../research/battle39-opening-and-first-control.md) separates
+its staged introduction from fresh combat initialization and conditional first control. Its Hydra
+uses ordinary leader AI; the absence of regions does not make the enemies absent or the battle
+already won. The [outcome owner](../../research/battle39-outcomes-and-force-sword-route.md#terminal-detection-and-selected39-hooks)
+retains defeat priority: Bowie at HP0 loses even if enemies are also gone. With Bowie alive and
+Hydra128 at HP0, the leader hook can sweep remaining enemies out of counting; ordinary zero-enemy
+counting can also win without that hook. This does not award every enemy's declared item. Evil Ring
+and Holy Thunder require their separate action-side drop transactions; a living enemy removed by
+the sweep does not supply such a transaction.
+
+The chapter reuses the [common outcome/return mechanics](tactical-battle-loop.md#post-action-after-turn-and-outcome), with local
+exceptions linked here rather than repeating the full algorithm. For unchanged Battle39, victory has no
+authored aftermath, rejoins Bowie through the shared join-byte0 call, clears unlock F439 and sets
+completion F539. It returns a Map66 position seeded from the first active member before the aftermath
+wrapper, not a fixed shrine coordinate. Defeat halves gold and restores Bowie through the common
+path; admitted Egress/Angel Wing pays its own MP/item and bypasses those defeat effects. Both reach
+39's special egress helper, which clears F439 even with F539 clear. Neither completes the encounter.
+A later return to the Y28 zone can rearm F439 only with F538 held and F539 clear; a completed F539 does not
+itself erase an independently supplied F439 at that zone.
+
+[Map41's two entrances](../../research/battle39-outcomes-and-force-sword-route.md#map-connections-and-complete-local-data)
+lead to separate head and shrine-exterior areas. Map41 connects onward to shrine42 and, at the head,
+labyrinth28; the shrine has internal current-map transfers and a return to41. The warp records add
+no F539, Sword or Lemon predicate. Layout markers, collision and the reached request caller still
+matter, so a declared entrance is not a proven walk from the victory return. The Sword is acquired
+through a setup description callback, not a chest record or a Battle39 reward.
+
+#### Attract the leader, extract the Sword, then use it
+
+The [shrine owner](../../research/battle39-outcomes-and-force-sword-route.md#map42-attraction-extraction-and-mandatory-inventory)
+keeps three operations distinct. At the invoked 19,21 zone, held F999 and clear F901 admit the attraction
+scene, then set F901 after it returns. Narration describes the jewel's light drawing the leader;
+FOLLOWER_B comments on the opening. The scene changes the working layout but neither grants the
+Sword nor sets extraction F902. Missing F999 or held F901 skips attraction; F902 is not tested there.
+
+For a Search targeting 39,2 with F902 clear, the active field-menu Search callback runs extraction,
+then sets F902. It does not require F999, F901, Battle39 completion or Lemon. The shortcut investigation
+uses a different callback: with F902 clear it describes the embedded Sword without extracting it.
+Once F902 is held, either description uses its post-extraction fallback even if the item is no longer
+in inventory. These are different attempted actions at the same target, not inconsistent accounts
+of one automatic pickup.
+
+Extraction requests a mandatory Force Sword (item 67) receipt through the joined force's inventory service.
+It scans for a member with room without an HP/active-party filter, and does not equip the weapon.
+If all inventories are full, the selected mandatory path enters discard selection: cancel, declined
+confirmation, an unsellable item or an equipped cursed item loops rather than finishing receipt.
+Removing a rare item adds it to Deals and loops back to selection too; the nonrare removal branch
+returns a slot for the replacement. The service's unchecked result and interrupted UI remain limits.
+F902 is written after the enclosing scene, without a separate grant-result test; it is not an
+independent receipt, inventory or equipment certificate.
+
+Revisit behavior likewise cannot be reduced to one "Sword obtained" state. Held F901 replays two
+layout copies on fresh load; held F902 replays the Sword's replacement. Extraction's live large copy
+is replayed under F901, not F902. Supplied F901-clear/F902-held can therefore skip extraction yet still
+admit attraction; losing the item does not reset either flag here. Partial live copies or inventory
+effects can precede the flags, without rollback. A current-map transfer and a fresh rebuild must
+retain their respective layout semantics.
+
+At [Devils Head](../../research/battle39-outcomes-and-force-sword-route.md#map41-opening-and-lemon-recruitment),
+active Search with the head still closed checks the joined force for a held Sword and can describe
+the mouth slit; the shortcut description instead gives the warning. The actual opening is Item →
+Use: select a held Force Sword, with the player's first entity at 6,8 facing Up. The holder need not
+be Bowie, HERO-class or equipped; selected possession reaches the callback through the field menu.
+Its match does not additionally test F999/F901/F902/F539/F71. Wrong position, facing or item takes the
+generic no-effect path. This event does not consume the Sword.
+
+Clear F930 runs the opening and then sets F930. If Lemon28 is not joined, a separate authored appeal
+and invitation scene joins him, installs his follow and then sets F71; there is no Yes/No refusal in
+that sequence. Already joined Lemon skips that recruitment and F71 write. Held F930 skips both bodies
+and repairs neither missing membership nor missing F71. An interrupted opening can thus leave F930
+held before recruitment; later reentry restores the open-head layout without replaying the appeal.
+This is an alternative to [late Yeel recruitment](#late-yeel-the-piano-chaz-and-lemon), with its own
+predicates: do not import Yeel's conditions or treat follower F71 as joined/active membership.
+The head's declared warp targets labyrinth28,16,30/Up; reaching and consuming it remains separate
+from the successful item-use scene.
+
+#### Labyrinth interaction and the Odd Eye admission
+
+The [labyrinth owner](../../research/devils-head-labyrinth-and-battle40-admission.md#default-zone-callback-and-the-two-direction-scripts)
+explains the local action rather than a solved maze. When its default zone callback is dispatched,
+it waits for physical entity 0 to stop, then reads that entity's facing byte. Right0 selects a
+right-down movement script; every nonzero byte selects left-down with an additional delay before
+the jump. These scripts act through Bowie's alias and write no story flags. Their relative movement
+starts from serviced current positions, so the entry coordinate alone cannot predict a final tile.
+Empty fixed-NPC records still allow ordinary player/follower initialization.
+
+[Two step-triggered layout copies](../../research/devils-head-labyrinth-and-battle40-admission.md#working-layout-copies-f100-and-ordered-exits)
+can alter the live working map through the door-marker caller. They set no completion flag and are
+not replayed from a saved step history. A separate held F100 copy applies on fresh load; F100 is also
+battle region10's numeric flag, with its own producers and clearing rules. The labyrinth does not
+set or clear it. Incoming F100 can therefore change the rebuilt layout independently of these steps.
+None of those copies proves a permanently solved puzzle, passable decoded route or durable save.
+
+The outgoing marked warp at row Y15 can request Map54,16,41/Up; Y31 instead requests a return to
+Devils Head. A wildcard X in these records does not make every tile on either row marked or
+passable. [Map54's Battle40 scan](../../research/devils-head-labyrinth-and-battle40-admission.md#map54-admission-fallback-and-reentry-interface)
+requires F440, whose known earlier producer is the Nazca handoff, rather than a labyrinth-solved
+predicate or Sword possession. With F440 clear, the scan falls through to ordinary exploration.
+With F440 held it selects Battle40; already-held F540 clears F440 only after selection and still returns Battle40 on
+that call. Ordinary Map54 has a void setup fallback with player/followers, not a missing-map failure.
+
+#### Odd Eye's farewell and the tower ascent
+
+[Battle40's result and aftermath](../../research/battle40-outcomes-and-odd-eye-aftermath.md) again
+retain defeat priority and a Bowie-alive/leader-HP0 sweep. Its Fairy Tear and Counter Sword are
+conditional action drops; Counter Sword also needs its selected random draw. Victory alone does
+not guarantee either. On first completion the F540-guarded aftermath stages Odd Eye as scene131,
+separate from combat128. Odd Eye recalls travelling with the group as Oddler, acknowledges their
+strength and wishes for a life without being a devil. Peter urges him to live; Lemon remembers him,
+and the authored FOLLOWER_B speech redirects blame toward Zeon and urges the group onward. These
+are attributed meanings of requested dialogue, not proof that every current alias is that speaker.
+
+The [ordinary return](../../research/battle40-outcomes-and-odd-eye-aftermath.md#ordinary-exploration-rebuild-and-exits)
+uses the Map54 seed saved before staging. It rebuilds ordinary entities and layout rather than
+retaining the farewell's actors, positions, effects or follow chain. Live aftermath copies and
+flag-conditioned reload copies differ; an unconditional live copy does not newly set F388. Held F540
+skips the scene on repeat victory but still joins Bowie, clears F440, sets F540 and uses the preseed.
+Defeat/admitted retreat leave F440 retained when F540 was clear, and clear it when F540 was already held;
+they neither run the farewell nor newly complete40. Egress destination remains live savepoint state.
+
+Map54's south exit requests labyrinth28; the north exit requests tower56,16,48/Up. Their records add
+no F540 or Creed test. The [tower owner](../../research/ancient-tower-ascent-creed-and-battle41-admission.md)
+then separates conversation, services, internal travel and battle admission. Speaking to Creed128
+with F903 clear runs his welcome, sets F903 after return, then offers Church services. Repeats skip the
+welcome and still offer services. Creed says he came to help and provides priest services where
+there is no nearby church. Talking or canceling a service writes neither F441 nor F904; only a confirmed
+Church Save updates the egress selection to this map before SaveGame. Mere arrival is insufficient.
+
+The invoked 43,40 zone tests F904 first. If clear, it runs the welcome only if F903 is clear, then sets
+F903, unlock F441 and F904. If F904 is held it does nothing, even with F441 missing. Talking first and
+reaching the zone first therefore differ: the former leaves the battle locked until the zone;
+the latter can unlock without a later conversation. A zone return goes back to exploration's wait
+loop. A subsequent [map56/Y24 scan](../../research/ancient-tower-ascent-creed-and-battle41-admission.md#selected-battle41-boundary)
+needs F441 and the matching Y; the initial 16,48 entry misses it. Held F541 can clear F441 while still
+selecting Battle41 on that call. Hearing Creed alone never substitutes for this chain.
+
+The tower's internal CURRENT-map warps retain actors, aliases, temporary flags and working layout
+when no battle takes priority. Explicit requests to another map rebuild that destination. Internal
+arrival at 43,40 is not an automatic zone invocation; movement markers and event dispatch remain
+necessary. These distinctions also apply to the later stairway, rather than treating every fade as
+a fresh floor or every declared stair pair as a guaranteed inverse walking route.
+
+#### The stairway, Galam and the later Zeon scan
+
+Battle41 has its own [Reaper opening and conditional first control](../../research/battle41-opening-activation-and-first-control.md);
+Creed's service NPC is not that combat identity. [Battle41's outcome owner](../../research/battle41-outcomes-and-ancient-tower-stairway.md#empty-aftermath-return-seed-and-state-ownership)
+records no authored aftermath or new recruit: shared join-byte0 rejoins Bowie, victory clears F441
+and sets F541, then ordinary Map56 rebuild uses the pre-scene first-active-member seed. The conditional
+Holy Staff drop is independent of victory. Defeat/admitted retreat neither complete41 nor rerun the
+Creed zone; with old F541 clear they retain F441, with it held they clear F441. No outcome changes F903/F904.
+There is consequently no local automatic repair of a spent F904 with missing F441.
+
+A separate marked tower exit at Y5 requests stairway60,57,24/Up. There is no battle-map row for60.
+Its [internal CURRENT transfers and outgoing requests](../../research/battle41-outcomes-and-ancient-tower-stairway.md#all23-warps-and-direct-receiving-interfaces)
+retain or rebuild state by their actual target type. Earlier exact warp rows can beat a later
+wildcard, so a row coordinate is not a sufficient route description. One outgoing request names58,
+13,36/Up. MainLoop's SwitchMap substitutes59 only with F999 held, retaining those coordinates; clear F999
+keeps58 and its older Battle7 interface. Another exit to57 retains the older Battle1 interface.
+Neither Battle41 victory nor carrying the Sword performs the substitution or writes F999.
+
+For effective Map59, the scan checks Battle42 before Battle43, each with its own unlock. Held F442 wins even if
+F443 is also held; held F542 clears F442 yet still selects Battle42 now. [Galam's first aftermath](../../research/battle42-outcomes-and-zeon-admission.md#complete-aftermath-in-narrative-order)
+is guarded by F542. It loads the scene and separately rebuilds its actors: scene128 Galam,129 Elis
+and130 Zeon are not combat slots or the later ending setup's aliases. Elis's waking, Galam's movement,
+tremors and Zeon's confrontation lead to the group's resolve to fight; the ending of this script
+sets unlock F443. Scene gestures and speech do not recruit Elis, change her combat HP or initialize43.
+
+[Full first Battle42 victory](../../research/battle42-outcomes-and-zeon-admission.md#return-loop-and-conditional-battle43-handoff)
+therefore gives scene sets F443 → join Bowie → clear F442 → set F542 → ordinary59 rebuild. The battle return
+bypasses an immediate CheckBattle. With F543 clear, held F999 and F443 make the default setup post a new
+59,13,34/Up request. Only after that event is consumed does MainLoop scan again and potentially
+select Battle43. No player-controlled interval between fights is proved. If F442 is still/re-again held,
+42 wins first; completed F542 does not make the scan skip it. If F542 was already held at victory,
+its skipped scene does not recreate a missing F443. Supplied clear F999 takes the earlier Nazca init
+branch instead, which can rearm F442 as well as F443. Keep those local states rather than assuming an
+immutable "next boss" pointer. Defeat/admitted retreat use live egress state and do not grant the
+scene's unlock or new completion.
+
+#### Zeon victory admits the ending; the later scene supplies the return
+
+[Battle43's outcome](../../research/battle43-outcomes-and-ending-admission.md#victory-defeat-retreat-and-repeated-completion)
+retains defeat priority and its own conditional Healing Rain transaction. A full first victory runs
+after43 with F543 clear: it hides battle Zeon's alias, requests successive layout/effect changes, writes
+return parameters59,12,11/Up and clears follower flags F67/F70/F71/F76. Shared join0 then precedes clear F443
+and set F543. The warp command's parameters replace the earlier member seed and are returned through
+BattleLoop; exploration clears that posted event on entry. It is not a second independently consumed
+warp. Held F543 skips that scene on repeat victory, retaining its member seed and follower state while
+still joining/setting completion. Defeat/admitted retreat run no after43 or new F543; clear old F543
+retains F443, held old F543 clears it. None of these branches establishes a completed epilogue.
+
+On stable F543, ordinary59 population and init select the ending setup, whose body checks F543 again
+before calling the [full later aftermath](../../research/zeon-aftermath-and-granseal-return.md).
+The selectors are separate live reads, not one atomic scene snapshot. No separate played-ending
+guard is proved at this entrance. Battle Zeon128 and neutral Elis are replaced by that setup's
+effects, fixed allies and nonallies; the actor identities must be read afresh.
+
+In the authored scene Galam appears to recover, then becomes Zeon's hostage confrontation. Peter's
+removal of the jewel and Zeon's recovery are narrated and staged, without inventory AddItem/RemoveItem.
+Lemon persists through the attacks and takes Galam away in the disappearance sequence. Astral reports
+that Elis is breathing; Mitula identifies her coma and poisoning, requests both jewels for resealing
+and tells the party to evacuate. She links later awakening to poison leaving and a kiss, with an
+uncertain recovery interval. Astral interprets the disturbance as sealing; Bowie carries Elis during
+the retreat.
+These are speaker/narrator meanings supported by the scene requests, not a new combat, poison-status,
+jewel-ownership or permanent party-removal transaction. After43's cleared follower flags, the scene's
+hides/aliases and joined membership remain separate state channels.
+
+The [shared tail](../../research/zeon-aftermath-and-granseal-return.md#shared-tail-scene-load-reset-text-and-posted-return)
+loads Granseal scenery while retaining scene actors; it does not yet build the town's population.
+Narration states two years have passed after resealing, and retained Woman136 comments on Elis's
+complexion. This is a narrative time jump, not a clock/calendar increment. The tail clears F384/F385,
+resets all 30 allies' battle stats and posts Granseal3,56,3/Down. That reset includes unjoined,
+reserve and HP0 records, restoring HP/MP and recalculating current stats without erasing levels,
+EXP, inventory or membership. STUN/POISON survive; CURSE is recomputed from equipped cursed items,
+so the intermediate status mask is not a guarantee of final curse retention. No save call occurs.
+
+The pending request is consumed before ordinary controlled-player action. MainLoop still applies
+SwitchMap: clear F640 gives3; held F640 substitutes earthquake4, which this tail does not prevent.
+Stable F543 on Map3 wins its later setup selection, rebuilds ordinary residents and allies, and runs
+an rts-only init. The prior carry pose, scene population and temporary follows are not the new town.
+A separate Map59 zone36 can invoke the tail alone under F543, without proving the preceding carry,
+sealing or evacuation; a returned prefix likewise proves none of the omitted work.
+
+#### Granseal's residents, Astral's escort and the council
+
+The [town epilogue owner](../../research/granseal-epilogue-and-castle-admission.md#what-the-residents-say)
+attributes the recovery and reconstruction reports to residents. Workers report Elis's improvement
+and a Lemon memorial; allies discuss Astral's summons and the kiss. Their ordinary conversations do
+not awaken Elis, award items, recruit anyone or choose the kisser. Optional searches and the staged
+Woman135/Man136 exchange retain their own interactions. Fresh Man136 is not the retained Woman136
+who spoke over the earlier Granseal scenery. The west-side zone invokes a guard's approach and
+restriction dialogue; its cited order against leaving is not a global exit-table lock.
+
+[Talking to town Astral138](../../research/granseal-epilogue-and-castle-admission.md#astrals-choice-and-complete-escort)
+asks whether Bowie is ready for the castle. Yes0 displays the accepted response, sets F981 before
+running the escort, and posts Castle2F19,26,30/Up. No or B-cancel displays Astral's objection and
+returns without escort; it does not clear an already-held F981. The callback has no one-time F981 guard,
+so another Yes can request the escort again. A held F981 can also be an interrupted prefix, not
+proof of castle arrival. The scripted follows are temporary entity work, not recruitment, and their
+completion is separate from the posted map request.
+
+On ordinary19 entry, selected F543/F982 init removes unjoined optional Sheela/May/Chaz actors from the
+map without changing their membership and requests Rohde's NPC sprite. Its [council branch](../../research/granseal-royal-council-and-chamber-admission.md#admission-and-actor-continuity)
+needs F981 held and F982 clear. Clear F981, or already-held F982, takes music/fade without replaying the
+council. The scene's dialogue nominates and selects Bowie: Peter/Luke recommend him, Jaha offers
+himself, Sarah reacts, Kazin accompanies her offstage and Astral confirms the choice. May's own
+contribution depends on her joined flag. There is no player Yes/No vote here and no marriage or
+party-membership write implied by the speeches.
+
+Only after the full council returns does init set F982 and terminate the temporary follower list.
+Sarah/Kazin's hides remove current aliases without unjoining them. Current actors remain in their
+scene state, while later interactions immediately reselect F982's event table against those aliases.
+A future ordinary rebuild uses F982's different population; setting the flag does not already perform
+that rebuild. Repeated guest conversations are optional dialogue, not another council or another
+choice. The shared stairs can request chamber20,23,37/Down without a table-level F981/F982 test; actual
+markers and travel remain necessary. Map20 uses F543, not F982, as its final setup selector. Held F982
+only moves the Minister in its short init; neither init kisses Elis or writes hint flags.
+
+#### The Minister's hints and the player's actual kiss choice
+
+The [chamber interactions](../../research/granseal-chamber-interactions-and-ending-kiss.md#zone-admission-flags-and-complete-choice-route)
+separate optional advice from acceptance. At the invoked X26/wildcard-Y zone, held F982 and clear F983
+admit the Minister's first hint, then set F983; repeats skip it. At 27,52, clear F984 admits the second
+hint and then sets F984, with no F982/F983 check. Ordinary Minister conversation also varies with F982,
+but does not set those hint flags. Searches describe books, a closet and Elis; her portrait-eye
+service and sleeping description do not write her HP, a sleep status or an awakening flag.
+
+At the invoked 19,52 zone, the actual kiss question checks none of F982/F983/F984. It fades sound,
+initializes Bowie's action script, requests a shiver and asks the question through raw YesNoPrompt.
+Yes0 runs the approach and kiss-picture service; No or B-cancel restores sound driver/town music
+and returns. Refusal leaves hint flags as they were and stores no permanent choice; a later admitted
+dispatch can ask again. A stationary player is not promised automatic retriggering. Thus minister
+hints are not encoded prerequisites, and an authored shiver before the prompt is not player consent.
+
+On Yes, [the approach and service](../../research/granseal-chamber-interactions-and-ending-kiss.md#kiss-service-resourcewindow-interface-and-return)
+request movement, presentation resources, window work and waits. Motion installation does not prove
+every earlier movement finished, and live HP/alias/service state still matters. The local bodies
+write no marriage, awakening or ending-completion flag. Only after the kiss script returns does the
+caller enter PlayEndingCredits. That call boundary distinguishes an accepted answer, a requested
+picture and completed services without requiring a transcript or inventing an awakened world actor.
+
+#### Credits, finale, completion storage and the hidden battle
+
+The [credits/finale owner](../../research/ending-credits-finale-and-bonus-admission.md#credits-entry-portraits-and-completion)
+continues the returned Yes branch. Credits build the joined-force portrait list without filtering
+by HP or restricting it to the active battle party, and progress through staff data under their
+contextual services. Their local bodies contain no controller-skip branch; this does not prove
+external interruption impossible. After credits return, the castle finale stages Bowie, Elis, the
+court and arriving companions without dialogue or a marriage/awakening flag. Scripted nods and
+arrivals are not additional choices. The caller then tail-enters WitchEnd and EndGame rather than
+returning to ordinary chamber exploration.
+
+[EndGame's completion write](../../research/ending-credits-finale-and-bonus-admission.md#witchend-text-and-completion-storage)
+sets bit7 of the SRAM-mapped SAVE_FLAGS byte, preserving the other bits. This is separate from
+story F543, any selected save slot's data and a SaveGame/checksum operation. The witch's release and
+farewell belong to the attributed ending text; the following witch/jewel display requests and long
+wait are not measured hardware timing. Existing bit7 is not unique proof this route ran because
+other accepted writers exist. Hardware write success, power-loss retention and a saved whole-party
+ending are **Unknown** at this boundary.
+
+After the jewel presentation and additional-content notice, [the special caller](../../research/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)
+clears entities, sets unlock F400, supplies map63 and calls CheckBattle, then BattleLoop. The selected
+row0 uses wildcard coordinates; held completion F500 clears F400 but still selects0 on that invocation.
+This is a concrete EndGame admission, not ordinary travel from the Magic Tunnel or a general
+entitlement to Battle0 from any map. Inherited suspend F88 remains its distinct supplied-state path;
+the normal Battle0 menu cannot produce it.
+
+[Hidden Battle0](../../research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
+uses no leader sweep: defeating its Zeon alone leaves other countable enemies, and defeat still
+wins simultaneous terminal conditions. First victory requests its short game-over text, rejoins
+Bowie, clears F400 and sets F500; already-held F500 skips the text while retaining the wrapper/flag work.
+Defeat performs the common Bowie recovery/gold loss. Admitted Egress or Angel Wing requires the
+ordinary actionable-player selection/payment conditions, then bypasses victory and defeat suffixes;
+cancel, insufficient MP or an unconfirmed target does not admit escape. Ordinary Suspend is refused
+before its prompt, flag F88 write, SaveGame or WitchSuspend: selecting it returns to the battle menu.
+
+For every actual victory, defeat or admitted-retreat return, EndGame ignores the return parameters
+and result. It requests white fade, clears contextual VInts, disables display/interrupts, restores
+the initial stack, loads the start vector and jumps to it. Egress coordinates calculated inside
+BattleLoop do not cause field exploration under this caller. This explicit **software reset** is
+the chapter endpoint. A waiting/interrupted/nonreturning service does not establish that it occurred;
+resulting menus, new-game-plus behavior and durable post-reset state remain **Unknown**. The earlier
+SRAM-mapped bit write does not serialize the hidden battle's later HP, gold, items or outcome flags.
+
+#### Evidence review and chapter boundary
+
+This chapter reviewed the fourteen named [final-route and epilogue owners](../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower),
+their selected source/caller joins, attributed text and changed-state tables, reusing their retained
+reviews rather than replaying source extraction or runtime observations.
+The stricter local boundaries govern the account: attraction versus receipt/use, live versus rebuilt
+layout, conversation versus unlock, current versus future actors, outcome versus later scan,
+scripted gesture versus choice, scene request versus return, and completion storage versus saving.
+Earlier static/handler summaries do not supersede those later selected facts. In particular, the
+later [all-ally refresh derivation](../../research/zeon-aftermath-and-granseal-return.md#shared-tail-scene-load-reset-text-and-posted-return)
+qualifies older summaries that describe the intermediate curse mask as final status retention.
+
+The historical selector fixture `sf2-map-setup-selection-runtime-v1`
+([payload](../../../tests/fixtures/h3/map-setup-selection-v1.json)) includes Map3's F543 and Map19's F982
+last-held cases; it does not observe these epilogue visits. The transition fixture
+`sf2-map-script-transition-runtime-v1`
+([payload](../../../tests/fixtures/h3/map-script-transition-v1.json)) observes bounded handler/event
+production, not the chapter's natural travel, event consumption, completed services or presentation.
+Their schemas, focused verifier/test owners and reproduction commands remain at the linked research
+and [historical evidence matrix](#evidence-matrix); no replay or new runtime closure is implied.
+
+Native/service refusals, unbound production content, interrupted prefixes and retained detailed-owner
+failures remain with their owners; Chinese synchronization stays deferred. This final chapter supplies
+a readable static dependency account through reset. It does
+not accept the whole chapter spine or five-theme round, complete Chinese synchronization, expand
+the original observation frontier or deliver a playable remake campaign. Those judgments retain
+their independent owners and acceptance boundaries.
 
 ## Worked example: Taros and the Caravan
 
