@@ -121,15 +121,19 @@ evidence denominators; story prose does not add fixture or index credit.
 
 Contracts express implementation-neutral original behavior; synthesis explains accepted research and
 separately identified remake choices. Remake implementation does not establish original evidence.
-Start with the [roadmap's current English-first agreement](./design/documentation-roadmap.md#current-baseline-and-near-term-synthesis):
+Start with the [roadmap's current agreement](./design/documentation-roadmap.md#current-baseline-and-near-term-synthesis):
 the [overview](./design/synthesis/gameplay-overview.md) leads to story/chapters, tactical rules,
 party/resources and exploration/continuity. [Story Progression's six chapter groups](./design/synthesis/story-progression.md#read-story-content-in-segments)
 connect selected accepted static content through ending/reset, with detailed guides and evidence
 at their named boundaries. The [five-theme source disposition](./design/documentation-roadmap.md#selected-english-source-set-and-reconciliation)
 keeps integrated source acceptance separate from the bounded playable remake milestone.
-[Chinese synchronization is deferred](./design/documentation-roadmap.md#authoring-language-policy)
-until each selected English theme is independently accepted and stable; existing drift remains explicit.
-The glossary and existing `sf2 zh-meta` commands retain ownership of eventual translation QA.
+The selected five English themes and their Chinese mirrors are accepted; #434's map-exploration
+contract and mirror are separately accepted. The [Chinese reader entry](./README.zh-CN.md) routes
+to those mirrors and labels English fallbacks.
+[Bounded repair](./design/documentation-roadmap.md#bounded-translation-repair-agreement) addresses
+remaining mirror drift and index/navigation gaps before assessing pending translations; the glossary,
+translation index and existing `sf2 zh-meta` checks retain synchronization ownership. This is not
+global translation PASS or completion of the bilingual epic.
 
 - [`glossary.md`](./design/glossary.md)
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md)
