@@ -13,7 +13,7 @@
   [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md). This document selects no
   campaign rewrite or narrative data model.
 - Framework evidence date: 2026-08-02; chapter orientation and the worked example consume the
-  accepted owners at `3c56beebc9584957baf9f1a6e438267db6c1a8c6` under the
+  accepted owners at `5366df4333330091430bfd3c7940db1f9223661f` under the
   [current Standard-rigor scope agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 - Source baseline: `ShiningForceCentral/SF2DISASM` `master`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`.
@@ -52,8 +52,9 @@ the particular selector, operation or conditional handoff. Its source order does
 arrival, completed presentation, player control or durable saves.
 
 Read each orientation first. Expand its detailed English guides for exact local behavior, then use
-the linked research for proof. The later groups provide a bounded skeleton and accepted-evidence
-routes; they do not create a new detailed late-campaign series. The
+the linked research for proof. The northern chapter continues through conditional Battle32 admission;
+the Moun/Nazca and final groups retain bounded skeletons and accepted-evidence routes. They do not
+create a new detailed late-campaign series. The
 [coverage owner](../../research/story-content-coverage.md#four-different-frontiers) distinguishes
 static research, original observations, English synthesis and remake support.
 
@@ -727,20 +728,242 @@ Dynamite. The [North Cliff opening](north-cliff-opening-and-rohde-recruitment.md
 combat-recruitment boundary, separate from his earlier proposal and Caravan-driver scene.
 
 Detailed English guides below reach Ketto, Higins, drought-state Pacalon and Battle27's first turn
-dispatch. Start with [Cannon/North Cliff evidence](../../research/story-content-coverage.md#returning-for-the-cannon-and-opening-north-cliff)
+dispatch. They remain the introduction to this chapter; start with
+[Cannon/North Cliff evidence](../../research/story-content-coverage.md#returning-for-the-cannon-and-opening-north-cliff)
 and [Ketto/Pacalon evidence](../../research/story-content-coverage.md#ketto-higins-and-drought-state-pacalon).
-After that detailed-guide frontier, use accepted **research** for the
-[Battle27 outcome/Tristan admission](../../research/battle27-outcomes-through-tristan-admission.md)
-and the [Tristan–Mitula–restored-rain route](../../research/story-content-coverage.md#tristan-mitula-and-restored-rain-returns).
-The latter separates caves/shrine requests, the exterior encounter, Zalbard's outcome and the
-later return through Tristan/Pacalon. Battle31's result does not itself join Frayja or admit Battle32;
-a later zone/scan is required.
+The following explanation continues from Battle27 outcomes through **conditional Battle32 admission**,
+using the accepted [Tristan–Mitula–restored-rain owners](../../research/story-content-coverage.md#tristan-mitula-and-restored-rain-returns).
 
-The [bridge/Battle28 branch](../../research/battle28-bridge-and-outcomes.md) is separate from the
-route toward Battle29; its staging proves no physical collapse or countdown. Optional
-[Taya](../../research/mitula-shrine-exploration-and-taya-recruitment.md) and
-[Skreech](../../research/mitula-return-and-skreech-recruitment.md) remain conditional; Skreech's
-rescue-state dependency does not establish that every earlier Bedoe visit rescued him.
+**Confirmed static** applies to the selected conditions, operations and handoffs below. Narrative
+connections are **Inferred**, with dialogue attributed to its speakers. The table is a reading aid:
+each travel request and interaction must actually be reached and consumed under its live state.
+It proves neither a collision-free walk between the listed places nor a naturally played chronology.
+A local scene record below means its script returned, separately from membership or completed effects.
+Completed services, presentation, usable control and save persistence remain **Unknown** here;
+original observations and remake production keep their separate owners below.
+
+| Reached boundary | What changes or becomes possible | Separate condition or alternative |
+| --- | --- | --- |
+| Battle27 outcome → northern overworld | Victory records completion and returns to Map74 exploration. | Tristan requires its own entrance request; defeat/admitted retreat use the selected egress destination. |
+| Bridge side branch | Entering the bridge can admit Battle28; its first victory has the rescue/Cameela scene. | Its unlock is required. Neither bridge entry nor victory is a tested prerequisite for the caves or Battle29. |
+| Tristan → caves → shrine exterior | Town conversations point toward Mitula; cave exits request the exterior. | The exterior scan admits Battle29 only while its unlock is held; otherwise it admits exploration. |
+| Exterior → shrine interior | Battle29 victory returns outside; a separate door-zone scene changes the door state. | The interior request and Battle30 unlock are separate from that result and door scene. |
+| Zalbard outcome → shrine exploration | First Battle30 victory can run the Mitula scene; completion selects later restored-state content. | Taya requires a separate interaction/search. Defeat/admitted retreat do not newly complete this battle. |
+| Shrine → Tristan → Pacalon | Separate exits and a south scroll connect the return; restored-state populations offer changed conversations. | Skreech requires the earlier rescue state and a clear local scene record. Frayja's castle offer is another interaction. |
+| Frayja offer → Battle31 → onward scan | The offer unlocks Battle31 and records following separately; victory returns to Pacalon town. | Battle32 needs its own unlock and Map74 scan. Battle31 completion and Frayja membership are not its prerequisites. |
+
+#### Battle27 returns and the optional bridge
+
+[Battle27's outcome owner](../../research/battle27-outcomes-through-tristan-admission.md)
+separates winning the encounter from entering Tristan. With the selected state unchanged, victory
+clears Battle27's unlock, records completion, then enters fresh Map74 exploration without scanning
+for another battle first. Its return position comes from the first active party member's current
+battle coordinates and mapped facing; it is not a fixed town entrance. The empty after program
+still has a shared Bowie membership tail, but supplies no new companion or Tristan-arrival event.
+The explicit Map74 entrance at `(52,20)` separately requests Tristan, whose map has no battle row.
+
+Defeat and admitted Egress or Angel Wing take the egress route instead. Retreat here assumes the
+selected escape action passed its availability and resource checks; cancellation or an unavailable
+action is not a retreat return. Defeat restores Bowie's HP
+and halves gold; admitted retreat pays its spell/item cost without that defeat penalty. These paths
+do not newly record Battle27 completion or run its after program. Their destination depends on the
+actual egress selection: a possible Tristan savepoint return differs from the overworld entrance.
+Earlier combat and item changes are not rolled back. Winning also does not newly unlock Battles28–30:
+the separate northern-overworld zone can have set those unlocks together before Battle27 was won.
+
+The [Pangoat Valley Bridge/Battle28 owner](../../research/battle28-bridge-and-outcomes.md)
+explains a side branch with two overworld entrances. Its battle requires the bridge unlock; with that
+clear, the same map request selects exploration. The opening presents monsters eating the bridge
+and a stranded woman asking for help. Urgent dialogue and quake requests establish no countdown or
+physical bridge-collapse rule. In the first selected victory scene, the apparent woman reveals
+herself as Cameela, demands the Jewel of Evil and withdraws after the confrontation with the adviser.
+The projectile, sprite changes and spoken jewel demand are scene operations; they perform no jewel
+transfer or combat damage transaction.
+
+That first victory returns through a current-map reload retaining the bridge scene's actors and
+battle state. A repeat victory with completion already held skips the after scene and rebuilds fresh
+bridge exploration instead. Defeat/admitted retreat use egress and do not newly complete the branch.
+The bridge's two exits separately request Map74; a later overworld scan can still select an eligible
+Battle27 before Battle32. Cameela's departure and advice about Tristan do not transport the party
+there. Nothing in these selected tables makes bridge victory mandatory for the shrine route.
+
+#### Tristan's people and the cave route to Mitula
+
+[Tristan's local owner](../../research/tristan-entry-interactions-and-exits.md)
+describes a town whose selected population depends on Battle30 completion. Before that state is held,
+residents speak of Mitula's rule, drought, missing shrine visitors and the shrine beyond the caverns;
+a fairy mentions the Ground Orb at Mitula's statue. These conversations provide directions and lore,
+without granting an Orb, setting a local quest gate or moving the party. Item and weapon shops and a
+church have separate callbacks. Contact offers their services; it does not establish an affordable
+purchase, healing or a completed save. Searches can describe the statue, welcome sign and Code book,
+while the town's pickup tables declare no item awards.
+
+Four town exits request the [Tristan caves](../../research/tristan-caves-and-shrine-exterior-admission.md).
+The caves have no fixed setup population, conversations or local scripted quest gate. Their travel
+table includes returns to town, room transfers within the caves, and two exits requesting the shrine
+exterior. Some room links are asymmetric, so they must not be read as an automatically reversible
+path. Three declared chests offer Protect Milk and Healing Seeds only through the separate search
+and inventory consumers; they are not prerequisites for the exterior request.
+
+A consumed exterior request has its own admission decision. With Battle29's unlock held it selects
+Battle29; with that unlock clear it selects exterior exploration. Battle27's completion alone does
+not establish the unlock's history, and the bridge's Battle28 is on a different map. A held completion
+flag does not veto an otherwise eligible battle in this scan: the selector clears its unlock while
+still admitting it once. This also matters for return visits throughout the chapter.
+
+#### Outside the shrine, then Zalbard and Mitula
+
+[Battle29's result and exterior owner](../../research/battle29-outcomes-and-shrine-exterior-route.md)
+keeps victory, the invitation and entry into the shrine distinct. Victory clears that battle's
+unlock, records completion and returns to fresh exterior exploration at a member-derived position.
+It supplies no new recruit or Battle30 unlock. Defeat/admitted retreat use the configured egress
+selection and do not newly complete Battle29.
+
+Separately reaching either door-zone trigger can run the invitation scene while its scene record is
+clear. The dialogue identifies Zalbard, invites the party inside and distracts Astral with Odd Eye's
+name; these are attributed narrative statements. The scene copies the working door blocks and sets
+their later-load selector; only after the script returns does the callback record that return. Door
+layout, that selector and scene completion can therefore differ after interruption or changed state.
+An existing scene record does not repair an inconsistent closed layout. None is the Battle30 unlock.
+
+Two exterior exits request the shrine interior; two others request the caves. The interior scan
+selects Battle30 only if its independent unlock is held, otherwise exploration. No new win, door
+scene or item requirement is tested by those warp rows themselves. Actual passage still depends
+on reaching their layout/caller boundary, so the table is not proof that a closed door can be walked
+through. Exact scene and layout mechanics remain with the exterior owner.
+
+The [Battle30 outcome/Mitula owner](../../research/battle30-outcomes-and-mitula-scene.md)
+continues the selected Zalbard encounter. Its leader-cleanup hook can remove the remaining living
+enemies after the selected leader death, while terminal counts independently determine the result;
+this account does not claim every Zalbard action or a complete boss strategy. On a first selected
+victory, the after scene stages Zalbard's disappearance in the Ground Orb's light and Mitula's return.
+Astral credits the Orb; Mitula warns about Zeon's recovery, discusses the jewels and sealed power,
+and directs the party to hear storytellers before going to Grans. Those words and effects grant no
+Orb, jewel, sword or transport. The Orb is a scene actor, not an inventory reward.
+
+Victory saves its member-derived Map1 return position before that scene. The scene changes actors
+and following without replacing the saved seed; after it returns, the shared tail runs, Battle30's
+unlock clears and completion is set. Exploration then starts in the shrine without another battle
+scan. With completion already held, victory skips the Mitula scene but still has the shared tail
+and final flag writes. Defeat/admitted retreat skip that after scene and do not newly set completion;
+they use actual egress selection rather than a promised shrine return. For these battles, common
+victory/entry healing does not revive every dead ally or clear every status condition.
+
+#### Shrine exploration and optional Taya
+
+[Shrine exploration](../../research/mitula-shrine-exploration-and-taya-recruitment.md)
+provides the next local choices. Eight lore interactions tell of Arc Valley, the rival devils,
+the jewels, the holy sword and the tower's seal. They supply stories, not inventory or onward unlocks.
+Separate room warps retain current-map state; the south exits request the exterior. A rearmed
+Battle30 or Battle29 unlock can divert those respective room/exterior requests back into combat,
+even if completion is held. Ordinary cleared unlocks permit the exploration returns instead.
+
+Taya is optional: activating the object at `(44,26)`, or reaching its separate search-description
+callback, runs the reveal while its local scene record is clear. There is no Yes/No refusal inside
+the scene, and no local Battle30-completion or existing-membership check in those callbacks. Taya
+speaks of returning from stone, identifies herself as Mitula's sorceress and offers help. The scene
+then calls her force join and installs current following; her later Nazca suggestion posts no travel
+request. Leaving without the interaction/search leaves this recruitment unattempted.
+
+Joined membership, active battle-party status, a field actor and the scene record are separate.
+The join sets membership; capacity below twelve permits setting her active bit, while a full party
+does not clear an already-held active bit. This call does not initialize her stats or heal her.
+Only after the script returns is that return recorded. An existing record with missing membership
+skips the scene rather than repairing it; without the record, a separately reached scene can repeat
+a join even when membership already exists. Fresh entry after joining hides the object and discards the temporary
+scene follower arrangement; Taya has no ordinary flag-follower row. Neither a join announcement nor
+her actor's presence proves a currently active battle slot or durable save.
+
+Four shrine chests separately offer a Critical Sword, Mithril, Power Water and a Healing Seed.
+A reached chest still needs the search/layout and inventory transaction. If every eligible inventory
+is full, the normal failure branch restores the closed chest and acquisition flag instead of granting
+the item; an already-acquired flag produces an empty result. These awards are separate from the Orb
+scene and optional recruitment. They are not a new exhaustive collection route.
+
+#### Return through Tristan and optional Skreech
+
+The [return owner](../../research/mitula-return-and-skreech-recruitment.md)
+connects separate south exits from the shrine to its exterior, from the exterior to the caves,
+and from the caves to Tristan. A rearmed exterior Battle29 can interrupt that return; town and caves
+have no battle rows. With Battle30 completion held, fresh Tristan selects its changed population:
+conversations now thank the party for Mitula/Pacalon, discuss the devil threat, a western sky ship
+and Moun's closed gate. Shops, church and local descriptions remain available through their own
+callbacks. Reading these changed lines is not a fresh reward or proof of all the events they mention.
+
+This alternate town setup also declares Skreech off map and adds a zone at `(24,18)`. The scene runs
+only when the earlier Bedoe rescue-state flag is held and its own local scene record is clear. Without the
+rescue state it is unavailable; with the local scene record held it skips, without repairing membership or
+following. The later check reads the rescue flag: it does not prove that every Bedoe visit, flight
+or earlier interaction rescued him. Changing the population selector after loading also does not
+rebuild the actors to match the new callbacks.
+
+The selected scene presents Skreech's flight, recognition of the leader who saved him, thanks and
+request to accompany the party. It contains no Yes/No answer: if reached through its join command,
+it sets membership and conditionally active status under the same capacity distinction as Taya,
+then requests field following. Only script return permits setting the local scene record. Interruption
+can leave membership set before that record; a fresh visit rebuilds actors and does not preserve the
+scene's flight/follower arrangement. His fixed actor, joined status, active status and temporary
+following therefore describe different things. The south exit does not require either Skreech or
+Taya and makes its own Map74 request.
+
+#### Restored rain, Pacalon and Frayja's offer
+
+[Pacalon's return owner](../../research/pacalon-return-frayja-and-battle31-admission.md)
+starts only if Map74 exploration was admitted. A separately reached south scroll requests the earlier
+drought-region map, substituting its restored-rain version while Battle30 completion is held.
+That scroll retains current actors and does not scan for battles or reconstruct a town. Separate
+entrances request Pacalon town, then the castle. A preheld Battle31 unlock can already intercept the
+town request before a castle visit; the castle itself has no battle row.
+
+Town and castle select their own restored-state content. The town has puddle/well changes; castle
+residents describe rain, recovery, remaining weakness and pride shaken by human rescuers. The king's
+thanks is dialogue without another quest gate. Shops, church and existing pickups retain their own
+conditions. Restored weather content does not establish that a service completed or every centaur
+recovered, and changing a selector after entry does not replace the already-built population.
+
+In the restored castle table, Frayja's interaction runs the offer while its return record is clear. Frayja
+credits Mitula's rescue and asks to accompany the party to help Moun's survivors; Peter supports it.
+There is no Yes/No refusal in this script. It requests Frayja's following, then unlocks Battles31,
+33 and34. After script return, the callback sets the offer return record and then the ordinary follower
+flag. It never joins Frayja to the force or sets an active battle-party slot. Even the requested
+following can skip on its Bowie-HP check and uses current actor mappings; the later flags do not
+certify completed following.
+An existing offer return record skips the scene and does not rearm a cleared Battle31 unlock.
+
+The castle's separate south exit requests town. With the Battle31 unlock held, that scan admits the
+encounter; with it clear, town exploration remains possible. Holding completion as well clears the
+unlock while still selecting Battle31 once. Thus the narrated decision to go together, the current
+follower, the later rebuilt flag-follower and admission to battle are separate boundaries.
+
+#### Battle31 outcomes and conditional onward admission
+
+[Battle31's outcome/onward owner](../../research/battle31-outcomes-and-battle32-admission.md)
+records victory through the shared terminal and empty-after-script wrappers. Victory clears its
+unlock, sets its own completion and returns to fresh Pacalon town exploration at a member-derived
+position, without an intervening battle scan. Frayja's ordinary follower flag can rebuild a field
+actor there without force membership. The after tail joins Bowie, not Frayja, and writes neither
+Battle32's unlock nor completion. Defeat and admitted Egress/Angel Wing instead select the Pacalon
+castle savepoint for this battle. Defeat restores Bowie's HP and halves gold; retreat pays its own
+cost without those defeat effects. Neither newly completes Battle31 or undoes earlier mutations.
+
+A later town south exit, restored-region entry and north scroll are separate requests returning
+toward Map74. The scroll does not automatically run its zone. At the separately reached northern
+zone, Battle27 still incomplete selects the earlier unlock branch, setting Battle27 and Battles28–30
+unlocks. With Battle27 completed, the callback sets Battle32's unlock and posts a reload only if the
+Frayja offer return record is held and Battle32 is not completed. Missing that offer or already-completed
+Battle32 produces no new writes; it does not erase a previously held unlock. Battle31 completion,
+Frayja force membership and active status are not tests here.
+
+After that request is consumed, the ordered Map74 scan still gives an eligible Battle27 priority.
+Only with that earlier unlock clear can held Battle32 unlock select Battle32; with neither, the
+request returns to exploration. Completion can clear a selected unlock without cancelling that
+scan's battle admission. This is conditional admission, not an automatic reward for Battle31 victory
+or an irreversible campaign sequence.
+
+**Next boundary:** stop before the [Battle32 opening](../../research/battle32-initialization-and-opening.md).
+Its body, Jaro's side-change, Frayja's later force join, Moun and Nazca remain beyond this chapter's
+delivered explanation, routed through [the next group](#moun-nazca-and-the-return-to-grans).
+The original observed and remake frontiers do not advance with this static chapter.
 
 <details>
 <summary>Detailed English guides and their local limits</summary>
@@ -1233,9 +1456,9 @@ observed or remake frontier advances.
 
 ### Moun, Nazca and the return to Grans
 
-This group's orientation comes from accepted **research**, beyond the detailed English-guide
-frontier above. The world changes through Moun's events and the Nazca ship, then through separate
-post-crash travel and return encounters. Read
+This group's orientation comes from accepted **research**, beyond the preceding chapter's
+conditional Battle32-admission boundary. The world changes through Moun's events and the Nazca ship,
+then through separate post-crash travel and return encounters. Read
 [Moun/Jaro/Nazca approach](../../research/story-content-coverage.md#moun-jaro-and-the-nazca-approach)
 for Jaro's side-change versus later join, Frayja's joining boundary, Zynk following and the independent
 Arm award. An awarded Arm is not an awakened or recruited Claude.
