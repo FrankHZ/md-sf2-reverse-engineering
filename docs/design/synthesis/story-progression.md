@@ -13,7 +13,7 @@
   [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md). This document selects no
   campaign rewrite or narrative data model.
 - Framework evidence date: 2026-08-02; chapter orientation and the worked example consume the
-  accepted owners at `5366df4333330091430bfd3c7940db1f9223661f` under the
+  accepted owners at `4258510e0c28002b431ded44334f2d4f9f449ab0` under the
   [current Standard-rigor scope agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 - Source baseline: `ShiningForceCentral/SF2DISASM` `master`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`.
@@ -52,9 +52,10 @@ the particular selector, operation or conditional handoff. Its source order does
 arrival, completed presentation, player control or durable saves.
 
 Read each orientation first. Expand its detailed English guides for exact local behavior, then use
-the linked research for proof. The northern chapter continues through conditional Battle32 admission;
-the Moun/Nazca and final groups retain bounded skeletons and accepted-evidence routes. They do not
-create a new detailed late-campaign series. The
+the linked research for proof. The northern chapter reaches conditional Battle32 admission;
+the Moun/Nazca chapter continues through the Grans return and the next encounter's conditional
+handoff. The final group retains a bounded skeleton and accepted-evidence route. These groups do
+not create a new detailed late-campaign series. The
 [coverage owner](../../research/story-content-coverage.md#four-different-frontiers) distinguishes
 static research, original observations, English synthesis and remake support.
 
@@ -1456,29 +1457,434 @@ observed or remake frontier advances.
 
 ### Moun, Nazca and the return to Grans
 
-This group's orientation comes from accepted **research**, beyond the preceding chapter's
-conditional Battle32-admission boundary. The world changes through Moun's events and the Nazca ship,
-then through separate post-crash travel and return encounters. Read
-[Moun/Jaro/Nazca approach](../../research/story-content-coverage.md#moun-jaro-and-the-nazca-approach)
-for Jaro's side-change versus later join, Frayja's joining boundary, Zynk following and the independent
-Arm award. An awarded Arm is not an awakened or recruited Claude.
+This chapter continues from [conditional Battle32 admission](#battle31-outcomes-and-conditional-onward-admission).
+Its connected subject is the changing party, Moun's survivors and the ancient ship, followed by
+separate post-crash travel, Roft and the Grans-return encounters. Optional recruitment and smithing
+sit beside their own gates. The evidence routes are
+[Moun/Jaro/Nazca approach](../../research/story-content-coverage.md#moun-jaro-and-the-nazca-approach),
+[Nazca/Dojo/Roft](../../research/story-content-coverage.md#nazca-ship-optional-dojo-and-roft) and
+[Grans return](../../research/story-content-coverage.md#grans-return-prism-flowers-lemon-and-geshp).
 
-[Nazca/Dojo/Roft](../../research/story-content-coverage.md#nazca-ship-optional-dojo-and-roft)
-connects Cameela's outcome and Sky Orb custody to separately gated boarding/departure, voyage,
-shootdown, crash and outward travel. Posted transitions and in-scene loads have different consumers;
-no composed playable voyage follows from their static connection. Roft and Battle35 are separate
-admissions, and the tables do not decide which is naturally visited first. Zynk's Roft recruitment
-does not require Battle35 victory.
+**Confirmed static** describes the selected conditions, operations and returns below. Narrative
+connections are **Inferred**, with claims attributed to speakers. Each encounter, interaction or
+travel request must actually be reached under its live state; this reading order proves no continuous
+walk or mandatory sequence. A request, an in-scene map load, a returning initializer and usable player
+control are different endpoints. Natural execution, completed presentation/services and full save
+persistence remain **Unknown** beyond the linked observations. This chapter grants no late-game
+remake support.
 
-[Grans-return evidence](../../research/story-content-coverage.md#grans-return-prism-flowers-lemon-and-geshp)
-then routes Prism Flowers, Red Baron/Lemon aftermath, Geshp and late Yeel. Battle36 completion is not
-a predicate of the separate Battle37 admission, and Red Baron's aftermath does not itself recruit Lemon.
-Optional [Dojo/Sheela](../../research/dojo-exploration-and-sheela-recruitment.md),
-[Arm/Claude and the Magic Tunnel](../../research/magic-tunnel-hub-and-claude-recruitment.md),
-[Dwarven Village smithing](../../research/dwarven-village-and-mithril-smithing.md) and
-[late Yeel/Chaz/Lemon](../../research/late-yeel-chaz-and-lemon-recruitment.md) each have their own
-custody, interaction, membership or revisit conditions. Those accounts do not make every service
-transaction, itinerary or save persistent, and no new detailed guide is supplied here.
+| Reached boundary | Change or onward possibility | Separate condition or alternative |
+| --- | --- | --- |
+| Battle32 → Moun | A conditional region scene changes Jaro's side; first victory has a later recruitment scene and returns to the northern overworld. | Fresh placements alone do not trigger his conversion. Moun entry and Battle33 need their own request/unlock. |
+| Battle33 → town/underground | Frayja joins in the opening; first victory has the rock/Zynk scene. Underground interactions can join Gyan and establish Zynk following. | Town population, Zynk membership and Arm custody have separate authorities. |
+| Nazca approach → Battle34 | A later explicit Nazca request can admit Cameela's encounter. Its first victory attempts the Sky Orb award. | West scrolling does not scan for a battle. Inventory capacity/discard can prevent the award helper returning. |
+| Boarding → voyage → crash | A completion-gated zone requests the ship; exact Orb use and the underground Zynk record admit departure. | Boarding does not test Orb possession. The crash record and later unlocks come after five returning scenes. |
+| Post-crash → Dojo/Roft region | The shared ship exit and a scene return establish a Nazca-overworld context. Dojo is optional; a west scroll leads to the Roft region. | Astral's conversation is not an exit condition. Battle35 and Roft town are separate admissions. |
+| Roft → Galam region | Zynk has a town recruitment; the region connects Prism Flowers, Red Baron and the Dry Stone/village branch. | Zynk does not require Battle35 victory; Battle37 does not require Battle36 completion. |
+| Grans overworld → Geshp/Yeel | Red Baron completion can enable a later Geshp-unlock zone. Yeel offers separate local scenes and recruits. | Older eligible encounters can win the overworld scan; Lemon's aftermath is not recruitment. |
+| Geshp return → next chapter | A later zone can unlock Battle39; the next chapter owns its body and the Force Sword route. | Battle38 victory does not itself run that zone, scan or battle. |
+
+The ordinary outcome distinction is shared across these encounters; use the
+[Battle35 outcome/return account](../../research/battle35-outcomes-and-roft-return.md#victory-seed-empty-after-wrapper-and-completion-tail)
+and its [defeat/retreat branch](../../research/battle35-outcomes-and-roft-return.md#defeat-egress-and-angel-wing-actual-destination-state)
+for exact mechanics. Victory records completion and clears the corresponding unlock after the
+selected after program; an already completed encounter can skip its first after scene. The saved
+return position precedes that scene and normally comes from the first active member's actual battle
+position and mapped facing, with the encounter crop added. Scene staging is not a new return seed.
+Defeat restores Bowie and halves gold; admitted Egress/Angel Wing pays its own resource cost and
+uses the actual egress destination. Those unsuccessful paths do not newly complete the encounter or
+run its victory scene, and they do not roll back prior combat/item changes. Cancellation or a refused
+escape is not a retreat. A later scan can still admit a held unlock even when completion is already
+recorded, clearing that unlock while selecting the encounter on that scan.
+
+#### Jaro's defection, Frayja's joining and Moun's survivors
+
+[Battle32's Jaro owner](../../research/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)
+separates a conditional change during battle from the later ceremony. Either selected region can
+admit the scene while its shared played flag is clear; the wrapper sets that flag before the script.
+The untouched fresh formation misses both regions, so an opening template is no proof of conversion.
+When reached, the conversion removes the enemy Jaro combatant from battle coordinates, copies his
+position and physical actor reference to ally Jaro, sets membership/active status and enables AI
+control, including forced active admission at capacity. It does not copy enemy HP or initialize/heal
+the ally, so a living turn is not guaranteed. The scene attributes his defection to rejecting the devils. An interruption can leave the played flag set before conversion, without
+an automatic retry or repair.
+
+The [first Battle32 victory scene](../../research/battle32-outcomes-and-moun-entry.md#complete-after-scene-actions-and-text)
+presents Jaro asking to serve the force, independently of whether the region conversion occurred.
+It calls the join ceremony and clears his AI-control bit,
+then explicitly removes him from the active battle party and installs physical following. Joining,
+being AI controlled, being deployed and following are therefore different changes. There is no player
+Yes/No recruitment choice here. Fresh overworld reconstruction does not preserve the scene's entire
+following chain. Two separate overworld entrances request Moun; Battle33 admission needs its own
+unlock, supplied by Frayja's earlier Pacalon offer, rather than Battle32 completion or Jaro membership.
+With that unlock clear, the request can enter town exploration instead.
+
+[Battle33's opening](../../research/battle33-initialization-and-opening.md#keyed-texts-join-ceremony-and-actual-replacement-rule)
+attributes the gate opening to Frayja using a key, then presents his distress at the hostile welcome
+and request to fight. The narration performs no inventory-key test or removal. His earlier following
+has not already recruited him: this opening calls the formal join, then ensures active membership.
+If he is not already active, its replacement helper selects the first dead member among the tested
+prefix, otherwise the last member of the rebuilt active list; this is no player-selected substitution.
+The ordinary full-party case can thus send another member back to the Caravan. The opening separately
+records its local scene state and clears Frayja's follower flag before later reconstruction. Its
+changed/short-list limits remain in the owner; it is not a general safe party-replacement service.
+
+[Battle33's first victory](../../research/battle33-outcomes-and-zynk-handoff.md#complete-rock-and-zynk-scene)
+has the moving-rock/Zynk scene: Zynk says survivors are below and asks the party to follow. The rock,
+Zynk's current physical actor and the later layout-copy record are separate effects. This scene
+neither joins Zynk nor sets his ordinary follower flag. Fresh Moun exploration reconstructs actors
+and layout from their current flags, rather than preserving the scene's positions. Two declared
+underground entrances are independent of a Zynk-membership test; their actual terrain/movement
+admission remains unobserved.
+
+In the [underground](../../research/moun-underground-gyan-and-zynk.md#gyans-complete-zone-scene-and-formal-recruitment),
+the initial zone scene presents Gyan learning that the tunnel and a route home are available, then
+choosing to help oppose the devils instead. It formally joins him and attempts current following;
+only after return does its caller set the shared record that selects populated town/underground
+content. A full active party can leave this ordinary recruit in reserve. Changing that record
+switches subsequent callbacks while retaining the inhabitants already loaded.
+Zynk's [separate interaction](../../research/moun-underground-gyan-and-zynk.md#zynks-entity-scene-and-later-reconstruction)
+expresses his wish to reach Grans, installs following, then records the follower flag and local
+conversation state. It does not join him. Interrupted following and interrupted flag writes can
+therefore produce different current and rebuilt parties; neither the rock scene nor an untriggered
+opening establishes his later recruitment.
+
+#### Optional Moun interactions and the Arm's custody
+
+[Populated Moun](../../research/moun-town-painter-and-golem-arm.md#residents-and-ordinary-interaction)
+adds residents, shops and church access beside the underground return. Their selected conversations
+and services have their own callers; arriving does not complete a transaction or collect every item.
+The [painter](../../research/moun-town-painter-and-golem-arm.md#painter-first-choice-movement-revisit-and-picture)
+records the first interaction before asking its Yes/No question. Declining, including B, repeats the
+plea and choice rather than exiting. Acceptance proceeds with the staged painting scene; later talks
+use repeat dialogue. A separate investigation of the picture location uses that same record. An
+interrupted first attempt can consequently select repeat dialogue or the picture request without
+proving a completed portrait. No rendered painting is established by this source path.
+
+The [Arm of Golem](../../research/moun-town-painter-and-golem-arm.md#arm-of-golem-appearance-and-search-admission)
+is a custom Search interaction, separate from ordinary chest/ground-item pickup and from the painter.
+A town zone first reveals its current actor and records appearance after the scene. At its location,
+menu Search can reach the pickup callback; the ordinary quick action has a different eligibility
+value. Appearance and a clear award record permit the actual pickup question. Answering No leaves
+it alone; Yes tries the joined force's inventories, including reserves, rather than only Bowie's slots. With
+all members full this caller reports failure and leaves the Arm claimable; it enables no discard menu.
+Success adds the item before recording the award and moving the actor off map.
+
+[Reload/retry consequences](../../research/moun-town-painter-and-golem-arm.md#award-removal-and-reload-are-separate-state-changes)
+make the distinction useful: a populated-town reload with appearance recorded but no award clears
+the appearance record, so a later zone can show it again. An award record suppresses another pickup
+even if the item has since been lost. Conversely, interruption after item addition but before that
+record can leave custody without the record. No automatic reconciliation is supplied. Owning an Arm
+is only an item condition for the separate [Claude excursion](#optional-magic-tunnel-and-claude).
+
+#### Nazca, Cameela and the Sky Orb
+
+The [Moun-to-Nazca route](../../research/moun-to-nazca-and-battle34-admission.md)
+returns through the northern overworld. Its west scroll loads the Nazca region while retaining the
+current population and exploration call; it performs no battle scan or fresh population setup.
+A later explicit Nazca entrance request can select Battle34 if its unlock is held. Frayja's earlier
+offer supplies that unlock independently of Moun's population or Zynk following; absent unlock,
+the request selects exploration. Encounter numbering and the scroll alone supply no admission.
+
+In the [first Battle34 aftermath](../../research/battle34-outcomes-and-sky-orb-handoff.md#complete-cameela-geshp-and-orb-scene),
+Cameela acknowledges defeat, reveals the Orb, explains its use for the vessel and begins warning of
+Geshp's flowers. Geshp threatens her and claims the trap was planned; the adviser reacts to her killing
+and suspects a trap. Zynk's optional following-dependent lines associate the flowers with ancient
+borders. These are attributed narrative meanings. The physical Cameela, Geshp and Orb actors are
+scene resources: Geshp's remote speech does not prove an on-map arrival, and the death presentation
+is separate from the preceding battle outcome. Wish Staff and the conditional Iron Ball are
+[action-side drops](../../research/battle34-outcomes-and-sky-orb-handoff.md#terminal-selection-cleanup-and-separate-battle-drops),
+with their own attack/item/drop conditions; they are not the Sky Orb or guaranteed victory awards.
+
+The scene [hides its Orb actor before attempting the inventory award](../../research/battle34-outcomes-and-sky-orb-handoff.md#sky-orb-mandatory-inventory-award).
+The helper first tries every joined member, including reserves/dead members. If all are full, this
+caller requires the discard flow: cancel or refusing a discard loops, unsellable items are refused,
+and cursed equipped items can also be refused. Discarding a rare item sends it to Deals and continues
+selection rather than immediately accepting the newly freed slot; a returning replacement requires
+an accepted non-rare discard. Static code therefore does not guarantee that every full-inventory
+state can finish this award. The hidden actor can coexist with unfinished inventory/scene progress.
+Item addition also precedes its messages and the battle-completion tail. Completion already held
+skips the whole after scene without checking or repairing missing Orb custody.
+
+#### Boarding, launch and the interrupted voyage
+
+[Boarding](../../research/nazca-ship-boarding-and-departure-admission.md#boarding-request-and-actor-preconditions)
+uses a Nazca zone with Battle34 completion held. It sequentially requests shrinking/movement for
+Bowie, Peter and the current adviser follower, and conditionally Zynk when his follower flag is held,
+then posts the ship-interior request. It does not test inventory, the underground Zynk conversation
+record or the crash flag. An unreturned actor wait can prevent the request altogether. Fresh ship
+setup stages crew and suppresses ordinary followers; joined-state hiding is separate from those
+fixed templates. A crew position does not prove recruitment.
+
+[Launch](../../research/nazca-ship-boarding-and-departure-admission.md#sky-orb-producer-callback-and-launch-boundary)
+is a different action: use the Sky Orb while standing at the ship's `(8,11)` tile, facing Left.
+The matching callback requires the crash record clear and the underground Zynk conversation record
+held. Without the latter it gives the selected refusal/advice dialogue instead of launching. Wrong
+position/facing/item or a held crash record returns through the generic no-effect item path. Natural
+menu selection ordinarily supplies an owned item; the callback itself does not recheck custody.
+Neither a visible scene Orb nor Battle34 completion alone meets these use conditions. Boarding and
+launch supply no new Yes/No departure choice.
+
+The [voyage program](../../research/nazca-voyage-and-map59-arrival.md#admission-and-complete-voyage-order)
+requests vibration, Zynk's cockpit movement and lift/travel services, alternates ship interior and
+Nazca-overworld scene loads, reconstructs stage actors, then publishes a Map59 request. It removes
+no Sky Orb, joins nobody and sets neither the crash record nor later encounter unlocks. These scene
+loads do not each pass through ordinary exploration/battle admission. The final request needs its
+separate consumer and live destination selectors: with the later battle unlocks and completion/crash
+states clear, fresh Map59 exploration dispatches the enemy conference. Changed flags can select a
+different boundary; a map name is not proof of an encounter or arrival with usable control.
+
+The [shootdown/crash account](../../research/nazca-ship-shootdown-and-crash-handoff.md#five-scenes-in-source-order)
+connects that conference, Prism Flower preparations, flight cutaways, firing and the damaged ship's
+descent. Scene projectiles, flashes and dialogue portray the attack; they implement no battle damage
+or ally-HP loss. The last scene posts a return to the ship. Only after all five scenes return does
+the initializer record the crash, select the Dojo as egress map and set several later encounter
+unlocks, including Prism Flowers. A published warp or an earlier scene map change does not establish
+that tail. Interrupted services can leave a reached prefix without those later writes or control.
+The earlier voyage plus this sequence leaves Orb custody unchanged under uninterrupted calls and
+no external mutation; retaining it does not permit another launch with the crash record held.
+
+Fresh [post-crash ship entry](../../research/post-crash-ship-and-nazca-overworld-return.md#first-post-crash-scene-and-return-to-event-waiting)
+uses the alternate crew/init path. Peter complains about the landing and looks for Astral; the local
+record is temporary, set after the scene, and cleared by a later fresh entry. Astral's separate talk
+warns of pursuit, urges evacuation and hides his current actor before another temporary record is
+set. Talking to him is no condition of the shared exit. That exit requests Nazca; normally cleared
+Battle34 unlock permits exploration, whereas a supplied held unlock can readmit the encounter.
+
+With the crash record held, the
+[Nazca initializer's outward-return scenes](../../research/post-crash-ship-and-nazca-overworld-return.md#map55-initializer-and-the-resulting-map75-context)
+load the overworld in-scene, rebuild current followers and move Bowie before returning through the
+existing exploration call in the new map context. Astral can be recreated from his ordinary follower
+flag despite the ship actor's earlier hide. This is neither a new battle scan nor a guarantee of
+usable input: pending events take priority and the motion/display services must finish. The current
+boarding/voyage compiler limits and native/special-actor gaps remain with the owners; these static
+connections do not constitute a playable voyage package.
+
+#### Optional Dojo and Sheela
+
+The [Dojo branch](../../research/dojo-exploration-and-sheela-recruitment.md#entrance-live-setup-and-the-two-areas)
+is a separate Nazca-overworld entrance, with no crash or recruitment predicate in its warp row.
+It is not a prerequisite of Roft. Local monks offer training conversation and a priest calls the
+church service. Search records offer Mithril, a Vigor Ball and a Brave Apple only if their actual
+search/marker and collected-state conditions pass. Full force inventories take the existing pickup
+failure/flag-repair path; arriving or hearing a service offer grants none of them.
+
+An [invoked zone at Y17](../../research/dojo-exploration-and-sheela-recruitment.md#zone-admission-and-complete-recruitment-command-order)
+can run Sheela's scene while she is unjoined. The dialogue identifies her as Astral's former pupil
+and attributes her purpose to the Red Baron conflict. The scene eventually calls her join and
+installs temporary following; it has no Yes/No recruitment prompt or inventory cost. Ordinary join
+admits her to the active party only when capacity permits, so a full party can gain a reserve member.
+A later zone with membership held skips the scene even if an earlier post-join effect was interrupted.
+The [return/revisit owner](../../research/dojo-exploration-and-sheela-recruitment.md#join-effects-changed-states-and-five-returns)
+distinguishes internal retained-population warps from fresh overworld exits: the latter lose Sheela's
+scene-only following, without undoing membership. None establishes mandatory or naturally walked
+travel from the Dojo to the next encounter.
+
+#### Roft, Petro and Zynk's separate recruitment
+
+The [west Nazca scroll](../../research/nazca-to-roft-and-battle35-admission.md#west-scroll-and-the-regional-declarations)
+loads the Roft region with retained population and no battle scan. A subsequently invoked regional
+zone, while Battle35 is incomplete, sets its unlock and posts a current-map reload. Only the later
+scan can admit the encounter. A separate town warp requests Roft and its conditional greeting.
+Neither table nor script makes town entry and Battle35 a forced sequence.
+
+[Battle35's outcome](../../research/battle35-outcomes-and-roft-return.md)
+has empty defeated/after scripts, but its leader rule can remove remaining enemies after the selected
+leader dies with Bowie alive. Victory returns to regional exploration; it is not a town-arrival or
+Zynk-recruitment scene. Heat Axe is a separate conditional action-side drop. Defeat/admitted retreat
+use the actual egress state, without a Battle35-specific Roft destination. Roft's entrance and its
+church savepoint are distinct seeds.
+
+[Roft's local account](../../research/roft-town-interactions-and-zynk-recruitment.md#two-zone-callbacks-and-their-changed-state-admission)
+explains the Petro scene and the later Zynk zone separately. The conversation presents Petro and
+Paseran's lost flight/home hopes; its animation/music/text operations neither delete Petro nor write
+his HP. The caller records the scene after return. The recruitment zone requires that record and
+either Zynk's ordinary follower flag, or the alternative later-state combination: F921 held, Zynk
+unjoined and the first-talk record from Paseran (resident137) held on this visit. The other resident's
+talk sets a different record and is insufficient for that alternative. A fresh revisit clears the
+temporary talk records; F921's init can set the Petro-scene record without replaying that scene.
+The follower branch does not test the alternative's membership/talk guards. None tests Battle35
+victory. Exact changed-state predicates remain at the owner rather than implying a universal
+conversation itinerary.
+
+The [recruitment scene](../../research/roft-town-interactions-and-zynk-recruitment.md#complete-zynk-scene-join-and-following)
+attributes Zynk's anger and decision to fight to the devils' cruelty. It formally joins him, then
+clears ordinary Zynk following and installs a scene chain; the zone clears the follower flag again
+after return. Active-party admission is capacity-dependent. Thus the earlier underground companion
+can become a force member here without guaranteeing deployment or permanent field following.
+Completed membership can coexist with interrupted dialogue/following. Shops, church, searches and
+the explicit return to the region remain separate actions.
+
+#### Galam-region travel, Dry Stone and optional smithing
+
+[Roft's exit and the west regional scroll](../../research/roft-to-galam-and-battle36-admission.md#roft-departure-and-retained-regional-scrolling)
+connect to the Galam region. The scroll performs no fresh entry or encounter scan. Two independent
+entrances request the Prism Flowers map; its battle needs the Prism Flowers unlock supplied by the
+shootdown tail. On the region itself, the invoked default zone can independently unlock Red Baron
+and request a reload while that encounter is incomplete. Neither it nor Red Baron's admission tests
+Prism Flowers completion. Skipping a visit, defeating a numbered encounter and reaching a zone are
+therefore different prerequisites.
+
+The [Dry Stone interaction](../../research/roft-to-galam-and-battle36-admission.md#dry-stone-caller-scene-and-changed-layout-lifetime)
+requires using that item at `(43,42)`, facing Left. First use records its flag before the rumble/quake
+and working-layout copy; repeat use reports no effect and does not replay the scene. Both retain the
+Stone. A later base-layout load applies the recorded copy, whereas an ordinary current-map reload
+retains the existing layout. An interrupted first scene can therefore leave the flag and current
+terrain disagreeing. The region separately declares a Dwarven Village entrance; changed layout,
+passability, a matching warp and a natural walk are distinct claims. This village is not the earlier
+mine where the Fairy/Cannon account takes place.
+
+The [village smith](../../research/dwarven-village-and-mithril-smithing.md#complete-placement-gates-and-committed-order)
+can commission a weapon from Mithril for an eligible promoted class, following confirmation and
+sufficient gold. Material owner, customer class and later recipient are separate selections. Cancel,
+wrong material, an unpromoted/ineligible customer or insufficient funds follows its own refusal/retry
+branch; no weapon follows merely from talking. Payment and Mithril removal precede the selected
+weapon's order write. The weapon is chosen then, rather than at collection, and the four order slots
+are the ordinary capacity boundary. Interrupted or changed storage is not protected by rollback.
+
+[Readiness](../../research/dwarven-village-and-mithril-smithing.md#all-eighteen-warps-and-f80-lifetime)
+uses an exploration-entry flag, not elapsed time: successful placement clears it, and a later explicit
+exploration entry can set it again. Waiting, walking stairs or repeating talk supplies no new ready
+transition. Internal current-map warps retain the flag; leaving and explicitly reentering can make
+orders ready under the stated route conditions. At [collection](../../research/dwarven-village-and-mithril-smithing.md#fulfillment-inventory-and-optional-equipment),
+cancel or full recipient inventory can leave an order uncollected. A recipient unable to equip the
+weapon can still agree to carry it. Delivery precedes the optional equip step, so declining equipment
+or being blocked by cursed equipment does not restore the order or refund material/gold. Placing
+another order clears readiness for surviving orders on the next menu entry. Village return to the
+region faces its existing battle selector; a smithing detour does not bypass regional encounters.
+
+#### Prism Flowers, Red Baron and Geshp returns
+
+[Battle36's outcome](../../research/battle36-outcomes-and-galam-return.md)
+records Prism Flowers completion and returns to its map using the pre-scene seed. In the first
+after scene Geshp notices the lost Flowers and threatens to return with Red Baron. His staged map
+and actor changes neither overwrite that seed nor start Battle37. Battle Sword is a separate
+action-side drop from the Executioner, not a victory award. Either map exit requests the Galam
+region, whose later zone/scan remains independent of Battle36 completion.
+
+[Battle37's first aftermath](../../research/battle37-outcomes-and-lemon-aftermath.md#complete-lemon-scene-and-identity-boundaries)
+presents the defeated Red Baron as Lemon after the mask removal. Lemon recalls killings, the adviser
+attributes them to devil control, and Lemon departs speaking of fatal penance. The later explanation
+of his immortality is dialogue, not a new HP rule. The scene's ally Lemon actor differs from the
+combat Red Baron; neither this scene nor the common after-join tail recruits Lemon. Red Baron's
+Dark Sword is not a victory award, and this encounter has no enemy-drop record. Victory records
+completion and rebuilds regional exploration at the saved member position, rather than the scene's
+last pose. A repeat can skip the revelation while still taking the common outcome path.
+
+The [south scroll to the Granseal overworld](../../research/granseal-overworld-return-and-battle38-admission.md)
+retains actors without scanning battles. Only a subsequently invoked Y9/Y10 zone, with Red Baron
+complete and Geshp incomplete, sets the Geshp unlock and posts a reload. The separate ordered scan
+can then select Battle38. Four older eligible overworld encounters precede it, including a completed
+one whose unlock is still held; a default zone can also request an older random encounter. They can
+preempt Geshp on that scan. The battle crop is an output, not a requirement that the party stand
+inside its rectangle. Red Baron completion alone is neither an automatic request nor a fresh
+prerequisite rechecked by Battle38's selector.
+
+[Battle38's outcome](../../research/battle38-outcomes-and-geshp-aftermath.md#complete-geshp-scene-and-identities)
+separates combat Geshp's defeat from the later scene Geshp, effect actors and off-screen speaker.
+Geshp tries to escape; the adviser offers mercy, then the remote speaker condemns him over the
+failed jewel mission. The adviser reacts to Zeon's cruelty and the party resolves to continue.
+These attributed meanings do not turn scene effects into another combat action. Buster Shot is a
+conditional action-side drop, not an aftermath reward. First victory can run that scene; completion
+already held skips it. The common tail clears the unlock and records completion, then fresh Map66
+exploration rebuilds actors at the pre-scene seed. Defeat/admitted retreat retains the common
+unsuccessful-outcome distinction above. Neither result automatically visits Yeel or runs Battle39.
+
+#### Optional Magic Tunnel and Claude
+
+The [Magic Tunnel account](../../research/magic-tunnel-hub-and-claude-recruitment.md)
+connects the Granseal overworld entrance and Achilles Shrines with the hub, its bridge toggles,
+internal warps and scripted Pipe journeys. Those are optional declarations beside the Grans return,
+not proof of a naturally walked detour or a new Arm award. They have separate layout/actor lifetimes;
+scripted Pipe reconstruction and fresh entry differ from retained current-map travel. Returning to
+an overworld or shrine still faces its own encounter selection.
+
+For [Claude](../../research/magic-tunnel-hub-and-claude-recruitment.md#talk-and-explicit-item-use-custody-and-result),
+talking while he is unjoined searches the joined force for an Arm of Golem. Without one it gives the
+selected missing-Arm dialogue. With one it attempts removal before awakening; explicit Arm use at
+`(21,26)`, facing Up, is another caller. The removal searches the whole joined force, including
+reserves/dead members, so the consumed Arm need not be the menu-selected holder's copy. Neither
+caller requires Moun's award record. They ignore the removal result before the scene; an injected
+matching item request is therefore no proof of natural possession or a guaranteed transaction.
+
+The [awakening scene](../../research/magic-tunnel-hub-and-claude-recruitment.md#awakening-membership-and-immediate-following)
+presents restored movement and Claude's offer to protect the party, then joins him and appends current
+following. A full active party can gain him in reserve. An interruption after removal but before join
+can lose the Arm without recruiting him; membership committed before unfinished following makes
+later guarded calls skip repair. Fresh entry or a Pipe rebuild loses scene-only Claude following
+while retaining membership. An Arm collected in Moun, a changed statue sprite and an active combatant
+are therefore three different boundaries.
+
+#### Late Yeel: the piano, Chaz and Lemon
+
+[Late Yeel](../../research/late-yeel-chaz-and-lemon-recruitment.md#live-setup-complete-late-populations-and-local-interactions)
+has two separate overworld entrances and late populations selected by the older shrine-battle
+completion flag or, with higher priority, Lemon's membership. Its entrances themselves test neither
+recruit. Current actors and later callbacks can disagree if flags change without reconstruction.
+The first selected late initializer can stage Lemon's guilt and cliff scene, then record it; later
+visits use his immersed pose instead. Dialogue explains his immortality, but the scene writes no
+HP death or recruitment. Joining Lemon selects a different initializer that bypasses that prefix.
+Talking to him or investigating the hole can produce separate text/pose branches, not the join.
+
+[Investigating the piano](../../research/late-yeel-chaz-and-lemon-recruitment.md#piano-and-the-church-entrance-scene)
+while its record is clear offers a real Yes/No question. No/B returns without opening the stair;
+Yes requests music/quake, copies the church stair cell, then records it. An interruption between
+copy and flag can leave partial progress; a fresh layout load later consumes the flag. The subsequent
+church zone needs that record and its own clear scene record. Its scene presents the priest mistaking
+the party for devils, then recognition of Hawel's son Chaz. The continuation differs by the later
+story flag F930: clear discusses Chaz's work and questions; held discusses the solved secret/tower.
+Neither branch joins Chaz or warps the party underground. The caller records completion only after
+return; actual stair/warp admission is another step.
+
+The [underground initializer](../../research/late-yeel-chaz-and-lemon-recruitment.md#late-init-cliff-scene-and-underground-return)
+uses its own one-time record and actual physical entry position, checked after any preceding Lemon
+scene. It is not triggered just because the piano or church dialogue completed. Its F930-clear
+continuation presents the adviser seeking the Holy Sword, Chaz searching books and finding an
+incomplete passage, and the party being urged to seek the sword/door; the held branch acknowledges
+the later knowledge and asks for a safe return. Neither joins Chaz nor sets F930. These alternate
+conversations do not establish a forced dialogue order or open the final tower. Current-map stairs
+retain actors/layout while rerunning init; fresh visits rebuild them and apply recorded layout copies.
+
+[Talking to Chaz](../../research/late-yeel-chaz-and-lemon-recruitment.md#chaz-join-lemon-join-and-changed-party-states)
+is the separate recruitment scene: he requests travel, the adviser initially objects, Peter supports
+him and the adviser agrees. The scene calls join and current following, with no player Yes/No,
+Sword-possession check or local F930/stair/conversation-record prerequisite. There is no local
+already-joined guard on that talk, although later fresh init moves joined Chaz off map. With Chaz
+joined and Lemon unjoined, an actually invoked Y42 zone can run Lemon's request-to-fight scene. It
+joins Lemon, installs following, then only after return records his ordinary following and local
+state. A post-join interruption can leave membership held without those later effects; the next
+zone then skips the scene. Ordinary capacity can put either recruit in reserve, and joining does
+not heal, reset class/items or guarantee deployment.
+
+Yeel's [overworld exits](../../research/late-yeel-chaz-and-lemon-recruitment.md#entrances-resources-and-six-exits)
+remain separate requests and can be intercepted by eligible encounters on return. Internal stairs,
+service visits and optional searches are not all-content or persistent-save guarantees. Lemon also
+has an [alternative later recruitment owner](../../research/battle39-outcomes-and-force-sword-route.md#map41-opening-and-lemon-recruitment)
+with its own conditions; Yeel recruitment requires no Sword use, and that later route is outside
+this chapter.
+
+#### Onward handoff and evidence limits
+
+After the [Geshp return](../../research/battle38-outcomes-and-geshp-aftermath.md#exploration-rebuild-and-battle39-admission-boundary),
+a later invoked overworld Y28 zone needs Battle38 complete and Battle39 incomplete to set the next
+unlock and post a reload. Return from Battle38 itself performs no new battle scan. On the later
+scan, earlier eligible Map66 encounters, including a reheld Geshp unlock, can still win before Battle39.
+This is the outgoing interface to [Final confrontations and ending](#final-confrontations-and-ending),
+before Battle39's body, Force Sword acquisition/use, Devils Head and the final tower/ending.
+
+This chapter reuses the accepted owners' selected source/consumer joins and changed-state reviews.
+The review checked their opening/activation/outcome distinctions, keyed-text attribution, inventory
+and join/follower operations, request consumers and fresh-versus-retained returns. The linked
+[roster contract](../contracts/party-roster-state.md#evidence-and-runtime-boundary) and its
+`sf2-force-state-active-party-runtime-v1` fixture confirm handler-local seams, not these natural
+recruitments; the [service contract](../contracts/service-interactions.md#blacksmith-source-boundary)
+and `sf2-common-menus-static-v1` retain the smith's source ordering, not completed village visits.
+The later local accounts supply meanings and predicates absent from those historical generic
+fixtures; their old Unknowns do not supersede the selected static facts. No raw extraction, new
+runtime, lowering rerun or historical comparison is added. Native/special-entity and unbound late
+content gaps remain with their owners; the [original and remake frontiers](#original-observations-and-remake-support)
+remain unchanged, as do the retained completed failures and deferred Chinese synchronization.
+
 
 ### Final confrontations and ending
 
