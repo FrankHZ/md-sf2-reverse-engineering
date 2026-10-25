@@ -666,10 +666,10 @@
       "source": "docs/design/synthesis/progression-and-economy.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/progression-and-economy.md",
-      "sourceSha256": "7c55556b198b55398657fbc61beafd9a7543238d05c0a83476eeca00fab45f6e",
-      "mirrorSha256": "8213f6e015d164a27d55aba065242007ab9c624208a7506bd09774728295d52d",
+      "sourceSha256": "b1afce8048ec054d1762f268aedac9aee8b88c8f4c95fbc99a15346206e7c8eb",
+      "mirrorSha256": "9349a6c9c197d38a5dc7039240d7bf9299e24b0fbe36a38d73bc860f8a290b99",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/story-progression.md",
