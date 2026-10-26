@@ -29,8 +29,8 @@
 | [New Granseal 与东部 Parmecia（中文）](./design/zh-CN/synthesis/story-progression.md#new-granseal-与东部-parmecia) | 从[木板选择至 Battle08 准入（中文）](./design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md)，经 Peter、Ribble、East Shrine、Polca 与 Bedoe，至[Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md)。 |
 | [南方旅行、Caravan 与 Creed（中文）](./design/zh-CN/synthesis/story-progression.md#南方旅行caravan-与-creed) | 从[木筏登乘与 South Parmecia 入场（中文）](./design/zh-CN/synthesis/polca-raft-boarding-through-south-parmecia-entry.md)，经 Kraken、Hassan、Taros/Caravan、Elven Village 和 Harpy Pond，接续[Fairy Cave 探索（中文）](./design/zh-CN/synthesis/fairy-cave-exploration-and-devils-tail-return.md)、Battle21、Creed 门事件与[Desktop 首次抵达（中文）](./design/zh-CN/synthesis/desktop-kingdom-first-arrival.md)。之后的 Desktop/Creed 细节回退英文。 |
 | [北方旅行、Pacalon、Tristan 与 Mitula（中文）](./design/zh-CN/synthesis/story-progression.md#北方旅行pacalontristan-与-mitula) | 章节导读连接 Cannon/North Cliff、Ketto、Pacalon、Tristan 与 Mitula；详细指南回退英文。 |
-| [Moun、Nazca 与返回 Grans（中文）](./design/zh-CN/synthesis/story-progression.md#mounnazca-与返回-grans) | 章节导读连接 Moun 幸存者、Nazca 航行与返回 Grans，并保留可选招募/锻造分支；详细指南回退英文。 |
-| [最终对决与结局（中文）](./design/zh-CN/synthesis/story-progression.md#最终对决与结局) | 章节导读连接 Sword、塔路线、尾声、亲吻选择及字幕/隐藏战斗重置；详细指南回退英文。 |
+| [Moun、Nazca 与返回 Grans（中文）](./design/zh-CN/synthesis/story-progression.md#mounnazca-与返回-grans) | 章节导读连接 Moun 幸存者、Nazca 航行与返回 Grans，并保留可选招募/锻造分支；细节与证据沿章节链接阅读英文研究所有者。 |
+| [最终对决与结局（中文）](./design/zh-CN/synthesis/story-progression.md#最终对决与结局) | 章节导读连接 Sword、塔路线、尾声、亲吻选择及字幕/隐藏战斗重置；细节与证据沿章节链接阅读英文研究所有者。 |
 
 也可沿总览 → [Taros/Caravan 完整示例（中文）](./design/zh-CN/synthesis/story-progression.md#完整示例taros-与-caravan)
 → 物品容量/拒绝、剑的持有与装备、遭遇准入/结果、获取与登乘的各自证据，查看跨系统依赖。
