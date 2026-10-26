@@ -129,7 +129,7 @@
 
 交通与物品持有把本组系统连接起来。授予木筏不同于登筏或登陆；Hassan 的 Rohde 提议不同于 Taros 准入；Sword 持有不同于 Bowie 装备后攻击资格。首次胜利可以改变 Caravan 人口条件，同时让玩家继续步行。[完整示例](#完整示例taros-与-caravan)解释这些选定依赖及其失败/拒绝分支，不规定旅行顺序。
 
-在 Caravan 之外，[Elven Village 入场](../../synthesis/battle19-outcomes-through-elven-village-entry.md)独立于 Battle19 胜利。[Elric 招募](../../synthesis/battle20-outcomes-and-elric-recruitment.md)、Fairy Cave 与 Creed 小世界通道有各自的交互和结果门槛。恢复正常大小、咨询 Evil Spirit 和带 Fairy 离开同样是不同边界。可选 [Rick](hassan-rick-recruitment.md)、村庄探索、[Fairy Woods 试炼](../../../research/battle44-fairy-woods-trial-and-records.md)及 [Creed 招募选择/拒绝](../../synthesis/creed-return-fairy-and-recruitment-choices.md)保留各自所有者；试炼链接通向研究，并非详细英文指南。
+在 Caravan 之外，[Elven Village 入场（中文）](battle19-outcomes-through-elven-village-entry.md)独立于 Battle19 胜利。[Elric 招募（中文）](battle20-outcomes-and-elric-recruitment.md)、Fairy Cave 与 Creed 小世界通道有各自的交互和结果门槛。恢复正常大小、咨询 Evil Spirit 和带 Fairy 离开同样是不同边界。可选 [Rick](hassan-rick-recruitment.md)、村庄探索、[Fairy Woods 试炼](../../../research/battle44-fairy-woods-trial-and-records.md)及 [Creed 招募选择/拒绝](../../synthesis/creed-return-fairy-and-recruitment-choices.md)保留各自所有者；试炼链接通向研究，并非详细英文指南。
 
 已接受证据路线覆盖[南方交通与 Taros](../../../research/story-content-coverage.md#southern-parmecia-transport-the-sword-and-taros)、[Elven Village 至 Fairy Cave](../../../research/story-content-coverage.md#elven-village-harpy-pond-and-fairy-cave)及 [Creed/咨询](../../../research/story-content-coverage.md#creeds-small-worlds-and-the-consultation)。[沙漠遭遇](../../../research/battle14-desert-encounter-and-outcomes.md)和[独立神殿进路](../../../research/battle15-shrine-approach-and-outcomes.md)是已接受静态研究分支；编号 Battle14/15 不会使它们成为必经行程。
 
@@ -156,17 +156,17 @@
 
 [Caravan 登乘与 Southwest Parmecia 旅行](caravan-boarding-and-southwest-parmecia-travel.md)解释新 Map68 人口前的选定神殿出口/准入、F65 跟随与传入模式的区别、numeric2 登乘、实际 mode1/opcode7 移动和 numeric4 登陆。逻辑行动者、原始物理槽、后缀/最后行动者等待及标志驱动的动作重装保持区别。步行独立的 default19 回调保留首次/重复计数器/RNG 决策、打包重载 X0/zoneY/残留朝向/声音和 F419 通配准入。它止于条件步行控制或 Battle19 交接，保留部分执行/服务/自然路线/持久性限制，不声称菜单事务、地形重建、村庄内容或战斗结果。
 
-[Battle19 结果与独立 Elven Village 入场](../../synthesis/battle19-outcomes-through-elven-village-entry.md)解释空场景目标及共享包装器/首领/Bowie 加入效果、新/恢复入场、首次/重复胜利种子及败北/逃脱存档点。Map68 到 Map23 的独立入口不以 victory19 为前提；默认/F762 居民、传入随从/模式、仅返回的 init 及条件控制不同于结果返回。它止于村庄交互、楼梯、Map24/Battle20 及后续旅行之前，保留自然路线、服务和持久性未知项。
+[Battle19 结果与独立 Elven Village 入场（中文）](battle19-outcomes-through-elven-village-entry.md)解释空场景目标及共享包装器/首领/Bowie 加入效果、新/恢复入场、首次/重复胜利种子及败北/逃脱存档点。Map68 到 Map23 的独立入口不以 victory19 为前提；默认/F762 居民、传入随从/模式、仅返回的 init 及条件控制不同于结果返回。它止于村庄交互、楼梯、Map24/Battle20 及后续旅行之前，保留自然路线、服务和持久性未知项。
 
-[Elven Village 对话与局部探索](../../synthesis/elven-village-conversations-and-local-exploration.md)解释可选默认/F762 对话、仅文本的 F13 分支、教堂调用边界与局部描述/物品。物品种类优先级先于描述；已加入列表收件人选择、重复/物品栏满时回滚及当前地图楼梯保留仍有条件。它止于教堂调用/返回或条件 Map23 控制，保留调用方、自然访问、服务/输入和持久性未知项，不声称招募、物品使用或后续旅行。
+[Elven Village 对话与局部探索（中文）](elven-village-conversations-and-local-exploration.md)解释可选默认/F762 对话、仅文本的 F13 分支、教堂调用边界与局部描述/物品。物品种类优先级先于描述；已加入列表收件人选择、重复/物品栏满时回滚及当前地图楼梯保留仍有条件。它止于教堂调用/返回或条件 Map23 控制，保留调用方、自然访问、服务/输入和持久性未知项，不声称招募、物品使用或后续旅行。
 
-[Elven Village 离开至 Harpy Pond 入场](../../synthesis/elven-village-departure-through-harpy-pond-entry.md)解释选定村庄出口、保留人口的独立向西滚动、完整求救与共享池塘提示。直接/脚本请求、init 前 F420 准入及 F520 人口与 F470 提示仍分开。它止于条件池塘控制、另一待处理/获准继续或开场前 Battle20 准入，保留行动者/HP/模式/服务与自然路线未知项，不声称救援/招募、通道、接近/出口警告或战斗内容。
+[Elven Village 离开至 Harpy Pond 入场（中文）](elven-village-departure-through-harpy-pond-entry.md)解释选定村庄出口、保留人口的独立向西滚动、完整求救与共享池塘提示。直接/脚本请求、init 前 F420 准入及 F520 人口与 F470 提示仍分开。它止于条件池塘控制、另一待处理/获准继续或开场前 Battle20 准入，保留行动者/HP/模式/服务与自然路线未知项，不声称救援/招募、通道、接近/出口警告或战斗内容。
 
-[Harpy Pond 接近至 Battle20 入场](../../synthesis/harpy-pond-approach-through-battle20-entry.md)解释选定对峙、独立南方警告/出口及有序 F420/请求/F470 交接。共享空 before/start 目标、条件出战队伍布置、重建敌人与独立中立 Elric 159 不同于探索演员及军团成员资格。新入场止于 ActivateEnemies 前，挂起入场止于各自单次行动前，保留传入状态、服务/输入/呈现和自然路线未知项，不声称结果、救援/招募或后续旅行。
+[Harpy Pond 接近至 Battle20 入场（中文）](harpy-pond-approach-through-battle20-entry.md)解释选定对峙、独立南方警告/出口及有序 F420/请求/F470 交接。共享空 before/start 目标、条件出战队伍布置、重建敌人与独立中立 Elric 159 不同于探索演员及军团成员资格。新入场止于 ActivateEnemies 前，挂起入场止于各自单次行动前，保留传入状态、服务/输入/呈现和自然路线未知项，不声称结果、救援/招募或后续旅行。
 
-[Battle20 结果与 Elric 招募](../../synthesis/battle20-outcomes-and-elric-recruitment.md)解释首次/重复胜利、败北/逃脱与完整招募场景，直至即时条件池塘控制或选定存档点继续。军团成员资格、临时场景跟随与新 F520 人口仍分开；传入标志/出战队伍/HP/查找及服务/持久性未知项均明确保留。它止于池塘离开、通道、Fairy Cave/Creed 与 Battle21 之前。
+[Battle20 结果与 Elric 招募（中文）](battle20-outcomes-and-elric-recruitment.md)解释首次/重复胜利、败北/逃脱与完整招募场景，直至即时条件池塘控制或选定存档点继续。军团成员资格、临时场景跟随与新 F520 人口仍分开；传入标志/出战队伍/HP/查找及服务/持久性未知项均明确保留。它止于池塘离开、通道、Fairy Cave/Creed 与 Battle21 之前。
 
-[Harpy Pond 离开至 Fairy Cave 入场](../../synthesis/harpy-pond-departure-through-fairy-cave-entry.md)解释独立池塘出口、Map67 准入/人口、Elric 条件通道场景及 Map32 实际 ms_Void/共享入场边界。当前图块、返回后 F751、待处理请求与已完成控制仍有区别。它止于条件洞穴控制、无关待处理继续或开场前 Battle21 准入，保留行动者/模式/服务、自然路线和持久性未知项，不声称后续洞穴探索或 Creed 内容。
+[Harpy Pond 离开至 Fairy Cave 入场（中文）](harpy-pond-departure-through-fairy-cave-entry.md)解释独立池塘出口、Map67 准入/人口、Elric 条件通道场景及 Map32 实际 ms_Void/共享入场边界。当前图块、返回后 F751、待处理请求与已完成控制仍有区别。它止于条件洞穴控制、无关待处理继续或开场前 Battle21 准入，保留行动者/模式/服务、自然路线和持久性未知项，不声称后续洞穴探索或 Creed 内容。
 
 [Fairy Cave 探索与 Devil's Tail 返回](../../synthesis/fairy-cave-exploration-and-devils-tail-return.md)继续解释四个宝箱奖励、实体优先的 C 与搜索、收件人/回滚及后续布局重新应用。两个洞穴出口保留独立 F421/F521 准入和条件 Map67 控制；东返回 `(57,24)` 不选择 F520。岩石检查保留 F751/F13/HP 与当前 Peter 映射，独立于通道打开。它止于已完成条件局部交互/搜索、Map67 控制/请求或开场前 Battle21 准入；自然访问、服务和持久性仍为未知，不含 Creed 或战斗内容。
 
