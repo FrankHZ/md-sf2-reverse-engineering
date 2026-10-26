@@ -8,7 +8,7 @@ Creed 召唤 Evil Spirit，询问 Zeon。首次接触受阻，Peter 因而提醒
 
 本指南从[神殿入口与场景准入](evil-spirit-shrine-entry-and-scene-admission.md)继续，消费已接受 main `9de649eb1da588065f513b5d0f32819636bb8933` 上 #949/PR952 的[完整咨询研究](../../../research/evil-spirit-consultation-and-zone-return.md)。它解释完整场景，止于有条件的调用方/包装器返回。后续步行返回、宅邸重新入场、Fairy 事件、招募及 Oddler 离开仍为独立边界。此 Layer B 解释不选择重制行为或新运行时工作。
 
-继续阅读 [Creed 返回、Fairy 跟随与招募选择（英文）](../../synthesis/creed-return-fairy-and-recruitment-choices.md)，了解独立宅邸返回与紧接的房间交互。
+继续阅读 [Creed 返回、Fairy 跟随与招募选择（中文）](creed-return-fairy-and-recruitment-choices.md)，了解独立宅邸返回与紧接的房间交互。
 
 ## 谁在场，以及什么准入场景
 
