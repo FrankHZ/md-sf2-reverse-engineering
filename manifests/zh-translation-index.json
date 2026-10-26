@@ -705,15 +705,30 @@
     },
     {
       "source": "docs/design/synthesis/battle09-outcomes-through-ribble-welcome.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle09-outcomes-through-ribble-welcome.md",
+      "sourceSha256": "333f1872a2c81731036281a8fddfb1ac8879df1bd0646973f3e7aaba9ad6f122",
+      "mirrorSha256": "e05e0496cb1b8ac4375e1336163b150825d25be1e7522e70e380bc6c2d932ab2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle10-outcomes-through-east-shrine-visit.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle10-outcomes-through-east-shrine-visit.md",
+      "sourceSha256": "e946c6b7f27c62732b474cc466159b516287be7163ecfcf7537217a4debfb2e7",
+      "mirrorSha256": "d3db444bd00b5ac611a3a43be7ae806305fc0b2b7db28969e7bdd42fe1e78fd6",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle11-outcomes-through-polca-arrival.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle11-outcomes-through-polca-arrival.md",
+      "sourceSha256": "9bf6e4900ff7f5d97c30a60b0129351f4ce6660f216b20e2d608db652db8eee5",
+      "mirrorSha256": "e979d4d25f5f178e6db9c4462ec442753bef8106a1e0eae7e1245319891cae28",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle12-outcomes-through-bedoe-entry.md",
@@ -881,7 +896,12 @@
     },
     {
       "source": "docs/design/synthesis/east-shrine-return-through-battle11-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/east-shrine-return-through-battle11-admission.md",
+      "sourceSha256": "69c548e84b1ca3f219aa8e053b9a77d7b3ca1591f88f15aedd951eca1e98f6a2",
+      "mirrorSha256": "c18b418c7d8cab200c1ea9e4f50c4752c88df783ff62dfb69a082d679cd5549d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/elven-village-conversations-and-local-exploration.md",
@@ -976,7 +996,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/new-granseal-departure-through-battle09.md",
       "sourceSha256": "b803df6994bb5688e28d36f100f3e3f65022bd28975498d4a2d98f097a68b2ec",
-      "mirrorSha256": "129f4d1f1a4415f9d6c4a8b95149f8ced9fd4915bf37e60e8bb4520716eb5099",
+      "mirrorSha256": "72c838de88984b7b3cd39a081dc7f3f7f12adeb012fcb36a7eb9e2de57c2df01",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1057,7 +1077,12 @@
     },
     {
       "source": "docs/design/synthesis/polca-fairy-through-battle12-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-fairy-through-battle12-admission.md",
+      "sourceSha256": "f7b68363bdd7ab31110dfea6447bebff0f2b687fdd13f9a51e77ea23c50ec756",
+      "mirrorSha256": "6bb5313008bf7118272e2b9a589273280ef7d47d04f07c7756e831dd5553d7e2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/polca-oddler-choice-and-following.md",
@@ -1087,7 +1112,12 @@
     },
     {
       "source": "docs/design/synthesis/ribble-may-through-battle10-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/ribble-may-through-battle10-admission.md",
+      "sourceSha256": "bf0b373c1208272ce0ea04afb0ca78358250e73372479ec8b9b6189b51a196a7",
+      "mirrorSha256": "c246b2097986e5c28da8dd9c51701c3a697ef2489a81b0cb6bb1a2145222d3d9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/ribble-tree-opening-and-achilles-sword.md",
@@ -1116,7 +1146,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "75bc5be8676d8080556a6bd597f6a9297a43aefb1d4997afd65e67fadf88a0b4",
+      "mirrorSha256": "1ae378881b3fe42e312f1c58d0b53191978b674ec0bf8721a5aa74e7c66506d6",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
