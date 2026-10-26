@@ -732,7 +732,12 @@
     },
     {
       "source": "docs/design/synthesis/battle12-outcomes-through-bedoe-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle12-outcomes-through-bedoe-entry.md",
+      "sourceSha256": "9238d1265c19f1cff4e16a341aec75dd7731302e373157a7ecc621d59f1c2af7",
+      "mirrorSha256": "8eec6cf15123d97b678fe78c3805b79b654ee25d51f1047910d4811182a4d8c8",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle13-outcomes-through-polca-raft-grant.md",
@@ -821,11 +826,21 @@
     },
     {
       "source": "docs/design/synthesis/bedoe-hatchling-flight-and-rescue.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-hatchling-flight-and-rescue.md",
+      "sourceSha256": "710e406f2afb364c777abcbefcf2c7e981bc3bfd80f5e960f60329911052de53",
+      "mirrorSha256": "f79a3291b7b386bbd8466fd2e67ab25ffaf35495caf96bd7fe3e274a0a47f25f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/bedoe-king-address-through-first-audience.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-king-address-through-first-audience.md",
+      "sourceSha256": "67a0dae6dbb1ce12d17b2ca310dba7fceb5fbd677b093c66594493f72be00fbb",
+      "mirrorSha256": "a5863d9e610d1422cac3c813a0fe8bc5b426b76b6a0302ed668761346d9a9d20",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/bedoe-return-through-battle13-admission.md",
@@ -833,7 +848,12 @@
     },
     {
       "source": "docs/design/synthesis/bedoe-to-volcanon-audience.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-to-volcanon-audience.md",
+      "sourceSha256": "970174c3f4aa58820dd96fc97554c992fae15e1ca706c5f3004cd5bee967f390",
+      "mirrorSha256": "f01931248a012fbde3874730613a4becda164d740c2c2020c06a1ee38d5bc667",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
@@ -1080,7 +1100,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/polca-fairy-through-battle12-admission.md",
       "sourceSha256": "f7b68363bdd7ab31110dfea6447bebff0f2b687fdd13f9a51e77ea23c50ec756",
-      "mirrorSha256": "6bb5313008bf7118272e2b9a589273280ef7d47d04f07c7756e831dd5553d7e2",
+      "mirrorSha256": "7984cb976d179f1ff63abea574b6541c2ab8c753b373667b3f838902da6e2637",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1146,7 +1166,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "1ae378881b3fe42e312f1c58d0b53191978b674ec0bf8721a5aa74e7c66506d6",
+      "mirrorSha256": "e22a851df688ddd7e131a0819ec3c841ecb54557383ebf2b38ab1c55ffcb5110",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1161,7 +1181,12 @@
     },
     {
       "source": "docs/design/synthesis/volcanon-return-through-bedoe-king-choice.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/volcanon-return-through-bedoe-king-choice.md",
+      "sourceSha256": "ac9614fe1594ed8b3fb82d12c09c1ebcd1235b97ad464814b688f93b7cd3eca2",
+      "mirrorSha256": "1c4a5a4e661be742a81324f53c7f611b358b0ab81a205948a48cb73736b55058",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/voyage-through-damaged-ship-control.md",

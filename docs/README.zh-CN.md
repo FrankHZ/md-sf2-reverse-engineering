@@ -63,7 +63,8 @@ Grans 开场经 Hawel、Galam、塔楼后续和地震撤离，至航行登陆/�
 下一段的 [Ribble 欢迎（中文）](./design/zh-CN/synthesis/battle09-outcomes-through-ribble-welcome.md)接续 Battle09 结果，经可选 May 招募、East Shrine 与洞窟返回，
 到达 [Polca 仙女互动至 Battle12 准入（中文）](./design/zh-CN/synthesis/polca-fairy-through-battle12-admission.md)。六篇详细指南及可选/条件边界集中在
 [New Granseal 与东部 Parmecia 章节（中文）](./design/zh-CN/synthesis/story-progression.md#new-granseal-与东部-parmecia)，不构成必经链或自然连续游玩证明。
-后续 [Battle12 结果至 Bedoe 入场（英文）](./design/synthesis/battle12-outcomes-through-bedoe-entry.md)及其他未译细节仍回退英文。
+继续沿 [Battle12 结果至 Bedoe 入场（中文）](./design/zh-CN/synthesis/battle12-outcomes-through-bedoe-entry.md)，经国王讲话/首次觐见、Volcanon、可选国王选择与雏鸟救援；
+五篇详细指南及其独立准入、状态和条件控制边界仍集中在上述剧情章节。后续 [Bedoe 返回至 Battle13 准入（英文）](./design/synthesis/bedoe-return-through-battle13-admission.md)及其他未译细节仍回退英文。
 [详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)
