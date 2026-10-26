@@ -6,7 +6,7 @@ Luke 离开场景呈现他自愿与 Bowie 同行和战斗。Polca 选定南出�
 
 **已确认静态内容与控制流：**已接受的[研究所有者](../../../research/polca-departure-through-luke-recruitment.md)支持下文准入、完整场景和直接消费者。**推断：**归属交流描绘 Luke 自愿参加旅程。**未知：**自然离开、实际传入状态、服务完成、可见表现、响应输入及存档/读档持久性。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
 
-两次请求及当前/未来跟随见 [Polca 的 Oddler 选择与跟随](polca-oddler-choice-and-following.md)；市长交易见[木筏授予](battle13-outcomes-through-polca-raft-grant.md)。本指南解释选定离开至条件探索控制。登乘、河流旅行和随后战斗准入仍在边界外。不增加重制能力或产品决策。接续 [Polca 木筏登乘与 South Parmecia 入场（英文）](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)，了解独立玩家请求、分阶段 mode2 提交及两个选定 Map69 入场生命周期。该指南保留本场景接触与自然路线限制。
+两次请求及当前/未来跟随见 [Polca 的 Oddler 选择与跟随](polca-oddler-choice-and-following.md)；市长交易见[木筏授予](battle13-outcomes-through-polca-raft-grant.md)。本指南解释选定离开至条件探索控制。登乘、河流旅行和随后战斗准入仍在边界外。不增加重制能力或产品决策。接续 [Polca 木筏登乘与 South Parmecia 入场（中文）](polca-raft-boarding-through-south-parmecia-entry.md)，了解独立玩家请求、分阶段 mode2 提交及两个选定 Map69 入场生命周期。该指南保留本场景接触与自然路线限制。
 
 ## 离开 Polca 并到达场景
 

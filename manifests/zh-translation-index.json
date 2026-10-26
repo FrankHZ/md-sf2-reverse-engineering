@@ -750,14 +750,19 @@
     },
     {
       "source": "docs/design/synthesis/battle16-outcomes-through-hassan-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle16-outcomes-through-hassan-entry.md",
+      "sourceSha256": "e631095ee0cc14ede642873ac48b38068d571755f9e04a0a78c5e6d13947a0a8",
+      "mirrorSha256": "23e500a9842a540eaaa63d281c9e5610939a68ed36aff2a8a5f0d9015b387c57",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle18-outcomes-and-caravan-acquisition.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/battle18-outcomes-and-caravan-acquisition.md",
       "sourceSha256": "a26f91f12b347d83473073252597fb9cb08ecd0e14b495302b09ca3e693e0d7d",
-      "mirrorSha256": "f28c569002ffbd49e27cc3959b7522c06daa6c7bf01ceb9871c55f69986d5494",
+      "mirrorSha256": "b0e28c5658c5a79841dc492c71b0178844969076af9a60eaa7a99cebee7a273f",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -870,7 +875,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
       "sourceSha256": "48592dd8c55d746313c0cf7ebd9322f6e5b3d66b194d56b9a37c9b0ffe87a096",
-      "mirrorSha256": "ef7de92daf65745ce9ae599da5c1ad606c324a6726cfb0e5ac6c6ebba31679e7",
+      "mirrorSha256": "fcfeca82d5ee5e969033a5307066423eb017da5eed55305256930e2c14471a3b",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -980,15 +985,30 @@
     },
     {
       "source": "docs/design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/hassan-ancestry-and-rohde-caravan-choice.md",
+      "sourceSha256": "c235aa5dec81308f85e0e10c36480059bb0f34f73ce401402ff9e4815751b4e8",
+      "mirrorSha256": "46bb0cb9ad4df88999224168c33ca4c69c932d01e97ab93b10398c8393baa3e1",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/hassan-departure-and-battle17-outcomes.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/hassan-departure-and-battle17-outcomes.md",
+      "sourceSha256": "ac052eb3f693ce982ebd11437b0e03f3025d3174703339d04d04bbb33aa457c1",
+      "mirrorSha256": "c172d6d65c06e3d008b35e53144c9b19253249496cb5387d81ee0d956933b9b2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/hassan-rick-recruitment.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/hassan-rick-recruitment.md",
+      "sourceSha256": "b402be3b37a0719f811f02688059a20c7f80fd8c5d3e00aa2cfbfc12ade8984c",
+      "mirrorSha256": "31ad1c5c4f470b93213ea64c3222f8fb3afb95eb8774167ed2beb8746e29e472",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/ketto-interactions-and-merchant-relocation.md",
@@ -999,7 +1019,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map-design-principles.md",
       "sourceSha256": "b9d6c24e12433d92b05a1a843e757efdbbcaccd9531a287f2a6f52a3f1f05a1f",
-      "mirrorSha256": "827d3ef3884fdbc81f53b8bce49c43a4cfe9bcf5d06f407e8c4ab865e104629e",
+      "mirrorSha256": "bd9ff834686136fbf53deb88e23b48f3b01e26e59edf3a4d417bc0d804dd188c",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1106,7 +1126,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md",
       "sourceSha256": "e10ec5ed6fd674976b6c7f7086ab082bdfdd86240c7c25ba9cc6d2fed350f110",
-      "mirrorSha256": "eeae525ef0b34fb114533f449815e36656764190648f6b441893f06b04c135be",
+      "mirrorSha256": "966d70b841658d840d1fcb20f145e5e3b1f6c0fc720cc028d09f288997d1f134",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1130,7 +1150,12 @@
     },
     {
       "source": "docs/design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-raft-boarding-through-south-parmecia-entry.md",
+      "sourceSha256": "fe836a737d0980f49fcde8193fc24a3f0bf082ad79b4819350a6e612b15b596f",
+      "mirrorSha256": "dfe46fed246b127966dd58df7aaca2f38782fd88af94588cb75336c7e80f4f6a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/post-tower-return-through-earthquake-entry.md",
@@ -1164,20 +1189,25 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/ribble-tree-opening-and-achilles-sword.md",
       "sourceSha256": "ac132d730f6be22e96ce1aeee5eee69f18bade6870c0e0fd422dcf9571d547ec",
-      "mirrorSha256": "78505c2b1bd69ad472598c8beb38ca1b14fbadecb54b01ac69ca4f2e2fc9a046",
+      "mirrorSha256": "0145797da1f8166fea35d2dfccd1373c473d6957228362070d52e25c5f64712c",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/south-parmecia-through-kraken-battle16-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/south-parmecia-through-kraken-battle16-entry.md",
+      "sourceSha256": "8f8f8aa78ce38a931221cf6e27fef0ad169474325cdf354280cece157950a9e0",
+      "mirrorSha256": "293a744cb2b6846b0718947c26570014705ee6379f15d69c421f664f5f206085",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/southwest-parmecia-through-taros-battle18-entry.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/southwest-parmecia-through-taros-battle18-entry.md",
       "sourceSha256": "c738b11c072a33690ddbde59ef4e1153e7b9358f2b7cfdcdaccab00e6a4a24e5",
-      "mirrorSha256": "19a84652f82fc7a854b7ba98a2a19a5555ef9d8b0883794d9c63a08c24d3ff05",
+      "mirrorSha256": "80df6f4c632f1ec133ade879136fe2bf734ee230093b11a46f84b0d80504d7fc",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1186,7 +1216,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "ff347078e25fe753cdd2e2103c747897a9d2b11df47dfdf0dd010de23ffb0393",
+      "mirrorSha256": "34d86113b8ba5a10c5f9903d4552be969db444f68b27f91201af7e762affcab4",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },

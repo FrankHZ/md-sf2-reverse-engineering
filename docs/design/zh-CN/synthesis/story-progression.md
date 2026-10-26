@@ -74,7 +74,7 @@
 
 登陆并不立即确立一个安顿完毕的新城镇。木板/救援遭遇及其结果先于选定建设/演说和重建人口边界。从 New Granseal 出发，局部条件把 Peter 的介绍与觐见连接到东行、Ribble、Polca 和 Bedoe。**已确认静态内容：** 说话、跟随、加入军团和下一场遭遇准入有独立消费者。十二个编队位置不会招募十二名伙伴。
 
-阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择（中文）](polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏（英文）](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
+阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择（中文）](polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏（中文）](polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
 
 <details>
 <summary>详细指南及其局部边界（本组选定二十一篇中文）</summary>
@@ -125,32 +125,34 @@
 
 ### 南方旅行、Caravan 与 Creed
 
+木筏登乘、Kraken 与 Hassan 的六篇详细指南已有中文镜像，并接续既有 Taros/Caravan 示例；本章后续尚未翻译的详细指南仍沿英文链接阅读。
+
 交通与物品持有把本组系统连接起来。授予木筏不同于登筏或登陆；Hassan 的 Rohde 提议不同于 Taros 准入；Sword 持有不同于 Bowie 装备后攻击资格。首次胜利可以改变 Caravan 人口条件，同时让玩家继续步行。[完整示例](#完整示例taros-与-caravan)解释这些选定依赖及其失败/拒绝分支，不规定旅行顺序。
 
-在 Caravan 之外，[Elven Village 入场](../../synthesis/battle19-outcomes-through-elven-village-entry.md)独立于 Battle19 胜利。[Elric 招募](../../synthesis/battle20-outcomes-and-elric-recruitment.md)、Fairy Cave 与 Creed 小世界通道有各自的交互和结果门槛。恢复正常大小、咨询 Evil Spirit 和带 Fairy 离开同样是不同边界。可选 [Rick](../../synthesis/hassan-rick-recruitment.md)、村庄探索、[Fairy Woods 试炼](../../../research/battle44-fairy-woods-trial-and-records.md)及 [Creed 招募选择/拒绝](../../synthesis/creed-return-fairy-and-recruitment-choices.md)保留各自所有者；试炼链接通向研究，并非详细英文指南。
+在 Caravan 之外，[Elven Village 入场](../../synthesis/battle19-outcomes-through-elven-village-entry.md)独立于 Battle19 胜利。[Elric 招募](../../synthesis/battle20-outcomes-and-elric-recruitment.md)、Fairy Cave 与 Creed 小世界通道有各自的交互和结果门槛。恢复正常大小、咨询 Evil Spirit 和带 Fairy 离开同样是不同边界。可选 [Rick](hassan-rick-recruitment.md)、村庄探索、[Fairy Woods 试炼](../../../research/battle44-fairy-woods-trial-and-records.md)及 [Creed 招募选择/拒绝](../../synthesis/creed-return-fairy-and-recruitment-choices.md)保留各自所有者；试炼链接通向研究，并非详细英文指南。
 
 已接受证据路线覆盖[南方交通与 Taros](../../../research/story-content-coverage.md#southern-parmecia-transport-the-sword-and-taros)、[Elven Village 至 Fairy Cave](../../../research/story-content-coverage.md#elven-village-harpy-pond-and-fairy-cave)及 [Creed/咨询](../../../research/story-content-coverage.md#creeds-small-worlds-and-the-consultation)。[沙漠遭遇](../../../research/battle14-desert-encounter-and-outcomes.md)和[独立神殿进路](../../../research/battle15-shrine-approach-and-outcomes.md)是已接受静态研究分支；编号 Battle14/15 不会使它们成为必经行程。
 
 <details>
 <summary>详细指南及其局部边界（未译篇目回退英文）</summary>
 
-[Polca 登筏与 South Parmecia 入场](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)从该控制边界继续，经过独立 type3 产生/物理对齐、分阶段 Bowie/木筏/列表变化，最后才提交 mode2。Physical31、FOLLOWER_D159/lookup63 与 FOLLOWER_B31 保持区别；群体等待仅轮询列表最后一名行动者。实际 mode2 选择 opcode8，type5 则作为下筏请求的另一停止边界。两个选定南方行都解析到 Map69，与 Southeast70 不同：row6 经条件 F409/F417 准入和新人口返回，row9 则在探索内保留 X/朝向和现有行动者，不经过该扫描。它止于请求、init 前战斗准入或条件控制，保留自然路线、传入状态、服务/呈现/输入和持久性未知项；单凭 F416 不会开始任何 Map69 战斗。
+[Polca 登筏与 South Parmecia 入场](polca-raft-boarding-through-south-parmecia-entry.md)从该控制边界继续，经过独立 type3 产生/物理对齐、分阶段 Bowie/木筏/列表变化，最后才提交 mode2。Physical31、FOLLOWER_D159/lookup63 与 FOLLOWER_B31 保持区别；群体等待仅轮询列表最后一名行动者。实际 mode2 选择 opcode8，type5 则作为下筏请求的另一停止边界。两个选定南方行都解析到 Map69，与 Southeast70 不同：row6 经条件 F409/F417 准入和新人口返回，row9 则在探索内保留 X/朝向和现有行动者，不经过该扫描。它止于请求、init 前战斗准入或条件控制，保留自然路线、传入状态、服务/呈现/输入和持久性未知项；单凭 F416 不会开始任何 Map69 战斗。
 
-[South Parmecia、Kraken 现身与 Battle16 入场](../../synthesis/south-parmecia-through-kraken-battle16-entry.md)继续解释选定 Map69 row0→Map49 与 F416/F516 准入，区分 F466 开场/start 和 F88 存档入场。完整遭遇有四个 Peter 与三个条件 FOLLOWER_B 台词位置；场景行动者、共享 ENTNUM 精灵槽及所请求服务，不同于随后已治疗、受成员资格影响的战斗员重建。Map49 无准入时的后备分支选择 ms_Void。它止于空 start 包装器之后，早于激活/单次行动/交战/结果，保留传入状态、自然路线、服务/呈现/输入和持久性未知项，不要求 Battle14/15 前提。
+[South Parmecia、Kraken 现身与 Battle16 入场](south-parmecia-through-kraken-battle16-entry.md)继续解释选定 Map69 row0→Map49 与 F416/F516 准入，区分 F466 开场/start 和 F88 存档入场。完整遭遇有四个 Peter 与三个条件 FOLLOWER_B 台词位置；场景行动者、共享 ENTNUM 精灵槽及所请求服务，不同于随后已治疗、受成员资格影响的战斗员重建。Map49 无准入时的后备分支选择 ms_Void。它止于空 start 包装器之后，早于激活/单次行动/交战/结果，保留传入状态、自然路线、服务/呈现/输入和持久性未知项，不要求 Battle14/15 前提。
 
-[Battle16 结果、下筏与条件 Hassan 入场](../../synthesis/battle16-outcomes-through-hassan-entry.md)继续解释首领/败北优先级、首次/重复胜利与不同的 Polca 败北/逃脱返回。胜利读取后续场景元组并跳过 CheckBattle；选定 Hassan 传送使用普通探索消费，不以显式下筏为前提。元组保存、行动者移动、等待列表最后行动者及按标志恢复跟随先于 mode0。F518 演员选择与 F518/F65/F12 init 保留缺席 Rick 查找→main0 和 F84 Rohde 跟随限制。它止于城镇交互之前的条件控制，保留自然路线、传入状态、服务/输入和持久性未知项；入城保留交通模式，不证明可用步行。
+[Battle16 结果、下筏与条件 Hassan 入场](battle16-outcomes-through-hassan-entry.md)继续解释首领/败北优先级、首次/重复胜利与不同的 Polca 败北/逃脱返回。胜利读取后续场景元组并跳过 CheckBattle；选定 Hassan 传送使用普通探索消费，不以显式下筏为前提。元组保存、行动者移动、等待列表最后行动者及按标志恢复跟随先于 mode0。F518 演员选择与 F518/F65/F12 init 保留缺席 Rick 查找→main0 和 F84 Rohde 跟随限制。它止于城镇交互之前的条件控制，保留自然路线、传入状态、服务/输入和持久性未知项；入城保留交通模式，不证明可用步行。
 
-[Hassan 祖先传说与 Rohde 的 Caravan 选择](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md)解释独立祭司区域（事件）、Rohde 交谈/选定物品准入、完整首次/重复选择及条件跟随/控制。搜索已加入成员持剑不同于 physical0 在 `(16,58)` 使用选定 Sword；重复交谈跳过搜索，被抑制的物品使用返回子菜单。F726、F727、F725 保留不同抑制职责；F84/F418 及 Rohde 跟随当前 FOLLOWER_B 不赋予军团成员资格、F65 解锁或物品消费。所归属传说、实际传入行动者/HP/输入、未完成服务、新人口差异和可用控制仍受限或未知。它止于获得、Rick、离开、Taros 和 Caravan 操作之前。
+[Hassan 祖先传说与 Rohde 的 Caravan 选择](hassan-ancestry-and-rohde-caravan-choice.md)解释独立祭司区域（事件）、Rohde 交谈/选定物品准入、完整首次/重复选择及条件跟随/控制。搜索已加入成员持剑不同于 physical0 在 `(16,58)` 使用选定 Sword；重复交谈跳过搜索，被抑制的物品使用返回子菜单。F726、F727、F725 保留不同抑制职责；F84/F418 及 Rohde 跟随当前 FOLLOWER_B 不赋予军团成员资格、F65 解锁或物品消费。所归属传说、实际传入行动者/HP/输入、未完成服务、新人口差异和可用控制仍受限或未知。它止于获得、Rick、离开、Taros 和 Caravan 操作之前。
 
 [Ribble 树开口与 Achilles Sword](ribble-tree-opening-and-achilles-sword.md)单独解释选定宝箱容量及物品使用谜题，不作为时间线攻略。搜索使用朝向偏移瓦片；Panel 使用要求 physical 0 位于精确朝 Up 的行。场景返回先于 F731、军团范围按物品移除及已处理使用，部分/重复/新加载效果有别。Map50 的 F415 通配 Battle15 准入与树边探索竞争；F515 在选择后清除解锁。指南止于条件 Sword 持有与返回 Ribble，链接 Rohde 持有检查，不声称神殿区域间行走、强制战斗顺序或 Caravan 获得。
 
-[Hassan 离开、Battle17 入场与条件返回](../../synthesis/hassan-departure-and-battle17-outcomes.md)解释北出口及有序通配 Battle9/17 优先级，独立于 Rohde 的 F418。步行区域（事件）、默认 Battle9 和实际木筏控制有别；重复计数器/RNG 决策与残留重载字节不证明概率或位置保留。空钩子保留共享入场/结果工作。首次/重复胜利使用选定成员的最终位置种子；败北/Egress 选择 Hassan，并有条件重置已保存木筏。它止于准入/start 或条件新探索/控制，保留状态、服务、自然路线和持久性限制。
+[Hassan 离开、Battle17 入场与条件返回](hassan-departure-and-battle17-outcomes.md)解释北出口及有序通配 Battle9/17 优先级，独立于 Rohde 的 F418。步行区域（事件）、默认 Battle9 和实际木筏控制有别；重复计数器/RNG 决策与残留重载字节不证明概率或位置保留。空钩子保留共享入场/结果工作。首次/重复胜利使用选定成员的最终位置种子；败北/Egress 选择 Hassan，并有条件重置已保存木筏。它止于准入/start 或条件新探索/控制，保留状态、服务、自然路线和持久性限制。
 
 [Southwest Parmecia、Taros 警告与条件 Battle18 入场](southwest-parmecia-through-taros-battle18-entry.md)解释向西原地滚动及独立神殿请求，其中 F418 战斗准入先于 F725 探索 init。完整警告/撤退与对峙保留行动者/HP/服务限制。新交战重建用 F518-clear neutral159/Left/HP0 替代场景 Caravan129/Down；F468 开场与 F518 完成独立起作用。它止于条件探索返回、无关准入或激活前 start，不声称车辆获得、Sword 伤害或已观察可玩性。自然路线、传入状态、完成/输入和持久性仍为未知。
 
 [Battle18 结果与 Caravan 获得](battle18-outcomes-and-caravan-acquisition.md)解释首领清理与先败北后胜利的区别、首次/重复后续、Rohde 完整演示、实际 F65/F84 变化与共享 Bowie 加入。场景 Caravan128、before129、neutral159 与 raw physical1 保持区别；台词和分阶段运动不提供成员资格或交通操作。胜利保留更早的返回种子，F725 警告先于 F518 移出；败北/Egress 使用传入 EGRESS_MAP，并非强制 Hassan。它止于即时条件探索/控制或无关准入，保留存档点/木筏、行动者/服务、呈现、自然路线和持久性限制。Caravan 操作、Rick 及后续旅行仍在范围外。
 
-[Hassan 可选 Rick 招募](../../synthesis/hassan-rick-recruitment.md)解释独立 F518 人口、F12/F44 成员资格、临时 F256 与 F65 上下文、普通交谈准入及完整对话。即时加入/确认与当前物理跟随保留 HP/容量、名册快照、目的地朝向、查找及重复/自身目标限制。新人口与现有人口重入有别；不提供持久 Rick 随从标志或强制返回路线。它止于条件普通控制/重入，自然可达、服务/输入/呈现和持久性为未知。Caravan 操作与后续旅行仍独立。
+[Hassan 可选 Rick 招募](hassan-rick-recruitment.md)解释独立 F518 人口、F12/F44 成员资格、临时 F256 与 F65 上下文、普通交谈准入及完整对话。即时加入/确认与当前物理跟随保留 HP/容量、名册快照、目的地朝向、查找及重复/自身目标限制。新人口与现有人口重入有别；不提供持久 Rick 随从标志或强制返回路线。它止于条件普通控制/重入，自然可达、服务/输入/呈现和持久性为未知。Caravan 操作与后续旅行仍独立。
 
 [Caravan 登乘与 Southwest Parmecia 旅行](caravan-boarding-and-southwest-parmecia-travel.md)解释新 Map68 人口前的选定神殿出口/准入、F65 跟随与传入模式的区别、numeric2 登乘、实际 mode1/opcode7 移动和 numeric4 登陆。逻辑行动者、原始物理槽、后缀/最后行动者等待及标志驱动的动作重装保持区别。步行独立的 default19 回调保留首次/重复计数器/RNG 决策、打包重载 X0/zoneY/残留朝向/声音和 F419 通配准入。它止于条件步行控制或 Battle19 交接，保留部分执行/服务/自然路线/持久性限制，不声称菜单事务、地形重建、村庄内容或战斗结果。
 
@@ -643,9 +645,9 @@ Yes 时，[接近和服务](../../../research/granseal-chamber-interactions-and-
 
 Sword 宝箱仍需自身朝向偏移搜索及物品栏空间。无持有者空间时，完成的容量路径恢复可用性，不授予物品。成功收取增加**未装备**物品。宝箱标志和树打开状态均不为 Bowie 装备，共享神殿地图存储也不证明 Panel 与 Sword 区域间行走。
 
-[与 Rohde 交谈](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md#talking-to-rohde)最初搜索已加入军团物品栏，包括后备。识别不要求 Sword 在 Bowie 身上或已装备。没有 Sword 且识别尚未记录时，Rohde 结束交互，不提供选择。之后重复选择有自身识别状态门槛，不必再搜索物品栏；不是每次重新进行的通用持有测试。
+[与 Rohde 交谈](hassan-ancestry-and-rohde-caravan-choice.md#与-rohde-交谈)最初搜索已加入军团物品栏，包括后备。识别不要求 Sword 在 Bowie 身上或已装备。没有 Sword 且识别尚未记录时，Rohde 结束交互，不提供选择。之后重复选择有自身识别状态门槛，不必再搜索物品栏；不是每次重新进行的通用持有测试。
 
-Rohde 实际 Yes/No 提示允许拒绝。接受写入提议接受 F725、随从 F84 和 Battle18 解锁 F418，再请求跟随；拒绝绕过这些接受写入。既不消费/装备 Sword，也不获得 Caravan 或招募 Rohde 参战。[选择指南](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md#choosing-yes-or-no)拥有重复和选定物品替代分支。这些替代分支不要求规定唯一 Sword→Hassan 行程。
+Rohde 实际 Yes/No 提示允许拒绝。接受写入提议接受 F725、随从 F84 和 Battle18 解锁 F418，再请求跟随；拒绝绕过这些接受写入。既不消费/装备 Sword，也不获得 Caravan 或招募 Rohde 参战。[选择指南](hassan-ancestry-and-rohde-caravan-choice.md#选择-yes-或-no)拥有重复和选定物品替代分支。这些替代分支不要求规定唯一 Sword→Hassan 行程。
 
 ### 准入与警告回答不同问题
 
@@ -671,13 +673,13 @@ F418 未设时，神殿探索改为检查 F725：未设运行 Taros 警告并请
 
 [登乘/旅行指南](caravan-boarding-and-southwest-parmecia-travel.md#步行请求登乘c-请求菜单)解释下一次尝试行动。在战斗外、F65 已设时，选定登乘布局属性处符合资格的方向步行尝试可发布登乘事件。获得本身未发布，阻挡或未满足条件可阻止产生方。事件返回的缩小/随从序列**仅在末尾**将玩家切至 Caravan mode 1。缺行动者、服务停滞或部分序列不保证模式变化或可用控制。
 
-随后 Caravan 移动可依自身布局/控制器规则请求传送或登陆。登陆独立返回 walking mode 0。步行区域（事件）产生方随后可请求 Battle19；Caravan 控制器没有该产生方。不禁止独立传入解锁在另一次地图扫描准入 Battle19。同样，C 交互的 Caravan 菜单调用是不同准入，不证明存储或队伍事务。可选 [Rick 招募](../../synthesis/hassan-rick-recruitment.md)不是获得与使用之间必经绕路。
+随后 Caravan 移动可依自身布局/控制器规则请求传送或登陆。登陆独立返回 walking mode 0。步行区域（事件）产生方随后可请求 Battle19；Caravan 控制器没有该产生方。不禁止独立传入解锁在另一次地图扫描准入 Battle19。同样，C 交互的 Caravan 菜单调用是不同准入，不证明存储或队伍事务。可选 [Rick 招募](hassan-rick-recruitment.md)不是获得与使用之间必经绕路。
 
 **未知：** 该组合示例的自然接近及不中断持有/旅行、实际标志/出战队伍/装备、服务与呈现完成、响应控制及存档/恢复持久性。[当前生产前沿](../../../../remake/docs/capability-status.md)不含 Battle18 和该交通链；已接受静态解释既不授予引擎支持，也不授予分发权。示例让条件可理解，不闭合这些缺口。
 
 ### 本示例的证据审阅
 
-本解释复用五个起始所有者中的已接受审阅：[Sword 指南追踪/审阅](ribble-tree-opening-and-achilles-sword.md#证据追踪与审查限制)、[准入指南追踪/审阅](southwest-parmecia-through-taros-battle18-entry.md#证据追踪与审查边界)、[Battle18 初始化/规则](../../../research/battle18-initialization-and-first-control.md)、[结果指南追踪/审阅](battle18-outcomes-and-caravan-acquisition.md#证据追踪与审查边界)及[登乘指南追踪/审阅](caravan-boarding-and-southwest-parmecia-travel.md#证据追踪与审查边界)。Rohde [选择所有者](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md)提供不同拒绝与重复条件。相关地图/对话/名册/交战/服务边界保留精确源码、测试夹具/schema/消费者身份、复现命令和已接受交接。
+本解释复用五个起始所有者中的已接受审阅：[Sword 指南追踪/审阅](ribble-tree-opening-and-achilles-sword.md#证据追踪与审查限制)、[准入指南追踪/审阅](southwest-parmecia-through-taros-battle18-entry.md#证据追踪与审查边界)、[Battle18 初始化/规则](../../../research/battle18-initialization-and-first-control.md)、[结果指南追踪/审阅](battle18-outcomes-and-caravan-acquisition.md#证据追踪与审查边界)及[登乘指南追踪/审阅](caravan-boarding-and-southwest-parmecia-travel.md#证据追踪与审查边界)。Rohde [选择所有者](hassan-ancestry-and-rohde-caravan-choice.md)提供不同拒绝与重复条件。相关地图/对话/名册/交战/服务边界保留精确源码、测试夹具/schema/消费者身份、复现命令和已接受交接。
 
 审阅区分掩码收取与已装备武器查找、F418 准入与 F725 警告选择、首次/重复 F518 与获得 F65，以及 F65 人口与最终 mode 1 写入。公共测试夹具投影不包含组合 Sword→Taros→Caravan 运行；较新 Battle18 规则说明不增加可执行遭遇测试夹具。支持交战段落的是选定已接受源码连接，而非聚合测试夹具计数或准入指南更早停止点。本文不要求新提取、运行时获取或历史比较。未选出需要 Layer A 修复的冲突。详细所有者保留已完成失败与未知项。另有 [#1047 已完成结果交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1047#issuecomment-6204168133)保留十二项未解决比较；它们不是中断运行，也不是本示例新证据。
 

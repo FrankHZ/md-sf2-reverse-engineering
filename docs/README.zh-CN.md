@@ -31,8 +31,8 @@
 4. [Caravan 登乘与 Southwest Parmecia 旅行](./design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md)：获取/随从与 mode 1 登乘的区别、登陆、独立步行 Battle19 请求；C 菜单路径止于调用，不证明服务事务。
 
 这是条件依赖的阅读顺序，不是自然必经攻略；Sword 持有、装备与伤害规则保持各自边界。
-[Hassan/Rohde 的提议（英文）](./design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md)、
-[Rick 可选招募（英文）](./design/synthesis/hassan-rick-recruitment.md)及其他未译相邻指南仍回退英文；
+[Hassan/Rohde 的提议（中文）](./design/zh-CN/synthesis/hassan-ancestry-and-rohde-caravan-choice.md)、
+[Rick 可选招募（中文）](./design/zh-CN/synthesis/hassan-rick-recruitment.md)也已有中文镜像；其他未译相邻指南仍回退英文。
 四篇指南各自的证据追踪和未知项保留静态连接、实际观察、表现/输入与持久性的限制。
 
 Grans 开场经 Hawel、Galam、塔楼后续和地震撤离，至航行登陆/损坏船只条件控制的详细中文阅读路线是：
@@ -64,7 +64,7 @@ Grans 开场经 Hawel、Galam、塔楼后续和地震撤离，至航行登陆/�
 到达 [Polca 仙女互动至 Battle12 准入（中文）](./design/zh-CN/synthesis/polca-fairy-through-battle12-admission.md)。六篇详细指南及可选/条件边界集中在
 [New Granseal 与东部 Parmecia 章节（中文）](./design/zh-CN/synthesis/story-progression.md#new-granseal-与东部-parmecia)，不构成必经链或自然连续游玩证明。
 继续沿 [Battle12 结果至 Bedoe 入场（中文）](./design/zh-CN/synthesis/battle12-outcomes-through-bedoe-entry.md)，经国王讲话/首次觐见、Volcanon、可选国王选择与雏鸟救援；
-五篇详细指南及其独立准入、状态和条件控制边界仍集中在上述剧情章节。再沿 [Bedoe 返回至 Battle13 准入（中文）](./design/zh-CN/synthesis/bedoe-return-through-battle13-admission.md)，经 Battle13 结果、市长木筏交易和可选 Oddler 选择，至 [Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md)；四篇详细指南及跟随/成员资格、木筏配置/登乘、调用方/控制的区别仍集中在同一章节，不构成必经顺序。之后 [Polca 木筏登乘与 South Parmecia 入场（英文）](./design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md)及其他未译细节仍回退英文。
+五篇详细指南及其独立准入、状态和条件控制边界仍集中在上述剧情章节。再沿 [Bedoe 返回至 Battle13 准入（中文）](./design/zh-CN/synthesis/bedoe-return-through-battle13-admission.md)，经 Battle13 结果、市长木筏交易和可选 Oddler 选择，至 [Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md)；四篇详细指南及跟随/成员资格、木筏配置/登乘、调用方/控制的区别仍集中在同一章节，不构成必经顺序。之后沿[南方旅行、Caravan 与 Creed 章节（中文）](./design/zh-CN/synthesis/story-progression.md#南方旅行caravan-与-creed)，从 [Polca 木筏登乘与 South Parmecia 入场（中文）](./design/zh-CN/synthesis/polca-raft-boarding-through-south-parmecia-entry.md)经过 Kraken 和 Hassan，接续既有 Taros/Caravan 示例。六篇新镜像的详细清单和条件边界集中在该章节；后续未译细节仍回退英文。
 [详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)
