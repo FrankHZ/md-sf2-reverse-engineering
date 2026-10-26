@@ -786,11 +786,21 @@
     },
     {
       "source": "docs/design/synthesis/battle21-opening-and-initial-roster.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle21-opening-and-initial-roster.md",
+      "sourceSha256": "d87f79eae8c8bcc0939c6161c50e3ca10705eba67c13c5caeab9edb051222e7c",
+      "mirrorSha256": "1e9d0e6c1d6aaebd26e25959018de816040edac90fe580514f3c541480bc37ca",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle21-outcomes-and-devils-tail-return.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle21-outcomes-and-devils-tail-return.md",
+      "sourceSha256": "c5273c2deceb9f81a84666fd501667bae681bce02def3fcdcfebab2415d9b5ce",
+      "mirrorSha256": "9f38a2db9b89b0762998a8131434a3d0eeaeeedb29c78212a5ca0cb52f8cc56c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle22-initialization-and-roster.md",
@@ -899,11 +909,21 @@
     },
     {
       "source": "docs/design/synthesis/creed-magic-door-and-desktop-transfer.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-magic-door-and-desktop-transfer.md",
+      "sourceSha256": "cf4d344b1aad894cffa38afc1dbdd8d27d4a31b5e546c095d42e77c82be90b79",
+      "mirrorSha256": "556f39f82f59d517af2828453feae869e95c389f2a25da17d97a864572f6342a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/creed-mansion-entry-and-first-goliath-scene.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-mansion-entry-and-first-goliath-scene.md",
+      "sourceSha256": "7ed3f57bf8c6e614f6042743ef9a5d7167522f61cbefc42aa3fcaea9f3503fa9",
+      "mirrorSha256": "e1dcb6361fd953a4fb4330e1543d0f2bc3062008250c3a39d17a2e7cf9efc03d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/creed-restoration-and-basement-departure.md",
@@ -924,7 +944,12 @@
     },
     {
       "source": "docs/design/synthesis/desktop-kingdom-first-arrival.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/desktop-kingdom-first-arrival.md",
+      "sourceSha256": "30334c94887ebe0c5b8ddfc2d8550dbfd48ebb0e306a7a0c566f1ef53b9192de",
+      "mirrorSha256": "9e3012d87801e6823d2cf264279d2521c0912e476432d9ad934af104c1da403b",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md",
@@ -976,7 +1001,12 @@
     },
     {
       "source": "docs/design/synthesis/fairy-cave-exploration-and-devils-tail-return.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/fairy-cave-exploration-and-devils-tail-return.md",
+      "sourceSha256": "c26676783f50a2d00d0f09de9ab62f1db1a9ab8e3de977f4c67192093d1b6c5c",
+      "mirrorSha256": "edc75d189ca99591cd9b97944fb01680f64d72165b06120722fe87d70aad95ac",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/floor-world-first-arrival.md",
@@ -1009,7 +1039,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/harpy-pond-departure-through-fairy-cave-entry.md",
       "sourceSha256": "e95db4cf49e5c3393c2404e784599b7b6094b43f7e0ae8b84dc1a46b59d54230",
-      "mirrorSha256": "58070bd30cd6c366d3ece535c214a22cbaa38657120f52564dfd2d811d85271b",
+      "mirrorSha256": "f76c3538aff15a4dce8982d00364c53c3255202d66769c10f91073181616f813",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1246,7 +1276,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "055b958c819832e28d3a36f1b8da9fca7cc84ba70635be826d2eb341a2185d69",
+      "mirrorSha256": "7fe66199df7783f676ba72b6ea7d88b37511c61cd6dc39a60d89300bca55ed59",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },

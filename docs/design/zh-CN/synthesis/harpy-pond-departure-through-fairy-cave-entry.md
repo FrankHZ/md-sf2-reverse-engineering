@@ -6,7 +6,7 @@
 
 **已确认：**已接受静态程序及其使用方确立下述条件顺序。**推断：**Elric 台词与图块改变表现打开通道。**未知：**自然旅行、传入行动者／出战队伍／运输状态、服务完成、渲染表现、响应输入及存档持久性。对话为归属台词，不证明此前与 仙女 相遇。
 
-本指南接续 [Battle20 结果与 Elric 招募](battle20-outcomes-and-elric-recruitment.md)，使用已接受的[离开与洞穴入场研究](../../../research/harpy-pond-departure-through-fairy-cave-entry.md)。止于条件 Map32 入场控制、无关待处理继续，或开场前 Battle21 准入。独立范围的局部内容与返回见 [Fairy Cave 探索与 Devil's Tail 返回（英文）](../../synthesis/fairy-cave-exploration-and-devils-tail-return.md)。洞穴探索、宝箱、搜索、岩石检查对话、后续移动、Creed 内容及战斗开场／结果均不在本指南范围内。Fnnn 表示标志 nnn；记录及行索引从零开始。坐标、等待及声音 ID 是源码操作数，不是观察位置、实测时长或可听结果。
+本指南接续 [Battle20 结果与 Elric 招募](battle20-outcomes-and-elric-recruitment.md)，使用已接受的[离开与洞穴入场研究](../../../research/harpy-pond-departure-through-fairy-cave-entry.md)。止于条件 Map32 入场控制、无关待处理继续，或开场前 Battle21 准入。独立范围的局部内容与返回见 [Fairy Cave 探索与 Devil's Tail 返回（中文）](fairy-cave-exploration-and-devils-tail-return.md)。洞穴探索、宝箱、搜索、岩石检查对话、后续移动、Creed 内容及战斗开场／结果均不在本指南范围内。Fnnn 表示标志 nnn；记录及行索引从零开始。坐标、等待及声音 ID 是源码操作数，不是观察位置、实测时长或可听结果。
 
 ## 离开池塘独立于警告
 
