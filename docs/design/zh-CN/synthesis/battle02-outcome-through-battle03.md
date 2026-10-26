@@ -236,7 +236,7 @@ F502、F72 和 Yeel 访问都不是其门禁。
 [选定 Battle03 依赖](../../../research/battle02-to-battle03-content-route.md#source-battle03-entry-dependencies)
 拥有 F453 与 Egress 条件。共享控制器的 Battle01 证据不证明已初始化的 Battle03 出战队伍、激活或首次行动。
 
-接着读 [Battle 03 结果至 Battle 04 准入（英文）](../../synthesis/battle03-outcome-through-battle04.md)，
+接着读 [Battle 03 结果至 Battle 04 准入（中文）](battle03-outcome-through-battle04.md)，
 了解有条件返回、Hawel 住宅场景、Kazin 招募及独立出口/准入路径。
 它保留自然路线与随从状态的未知，不扩展重制支持。
 

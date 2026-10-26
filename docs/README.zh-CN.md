@@ -35,14 +35,18 @@
 [Rick 可选招募（英文）](./design/synthesis/hassan-rick-recruitment.md)及其他未译相邻指南仍回退英文；
 四篇指南各自的证据追踪和未知项保留静态连接、实际观察、表现/输入与持久性的限制。
 
-开场至 Battle03 准入的详细中文阅读路线是：
+开场经 Hawel、Galam 至 Battle07 准入的详细中文阅读路线是：
 
 1. [开篇至 Battle 01：地点、人物与返回](./design/zh-CN/synthesis/opening-through-battle01.md)：选定住宅/学校、信使、城堡/塔、Battle01 和可用返回；区分原版观察与已接受现代组合。
 2. [Battle 01 返回至 Battle 02 准入](./design/zh-CN/synthesis/battle01-return-through-battle02.md)：有条件的城堡驱魔/委任、Jaha 加入和调用方解锁，以及西出口遭遇选择。
 3. [Battle 02 结果至 Battle 03 准入](./design/zh-CN/synthesis/battle02-outcome-through-battle03.md)：结果与替代返回、Yeel/Kazin 内容及独立的大地图请求/准入；跟随不同于招募，Yeel 不是已证明的必需前提。
+4. [Battle 03 结果至 Battle 04 准入](./design/zh-CN/synthesis/battle03-outcome-through-battle04.md)：Hawel 住宅默认/重复内容、Kazin 正式加入，以及独立住宅出口与遭遇选择。
+5. [Battle 04 结果至 Battle 05 准入](./design/zh-CN/synthesis/battle04-outcomes-through-battle05.md)：胜利/特殊败北/逃脱、Galam 俘虏与通道、Slade 跟随及守卫条件解锁；不证明剧情必败。
+6. [Battle 05 结果至 Battle 06 准入](./design/zh-CN/synthesis/battle05-outcomes-through-battle06.md)：独立位置/HP 调用、首次完成宝石场景与 Slade 招募、Galam 出口及入场时 F407 写入。
+7. [Battle06 结果、Granseal 内容与 Battle07 准入](./design/zh-CN/synthesis/battle06-outcomes-through-battle07.md)：F506 内容、可选 Kiwi 招募、王室跟随和条件塔请求；保留 F401 拦截、F999 替换及跳过分支。
 
-后两篇解释源码条件连接，不证明自然连续行程，也不扩展止于 Battle01 可用返回的重制里程碑。
-本段止于 Battle03 准入；Hawel 住宅、Battle03 结果及其他未译细节仍回退英文，并在指南链接中标明。
+后六篇解释源码条件连接，不证明自然连续行程，也不扩展止于 Battle01 可用返回的重制里程碑。
+本段止于 Battle07 准入；[Battle07 结果与探索交接（英文）](./design/synthesis/battle07-outcomes-and-aftermath.md)及其他未译细节仍回退英文，并在指南链接中标明。
 [详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)

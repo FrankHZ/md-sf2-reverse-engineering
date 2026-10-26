@@ -647,23 +647,43 @@
       "sourceSha256": "1be80a01150617d22cd14eeb87268503bdac473ecfcd98b897547d3e42684a66",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25",
-      "mirrorSha256": "00ef083ce4c41c28c36ae2414a036a53c100d6033192e64069a115ed803d62c1"
+      "mirrorSha256": "90604f861cd4a2fce227a48c6b8dc852b2fee3d53bfb23192eabeeddc66bf0f5"
     },
     {
       "source": "docs/design/synthesis/battle03-outcome-through-battle04.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle03-outcome-through-battle04.md",
+      "sourceSha256": "204392c54e64e4a019633ffdf7854d07c964ad7e389c4421ed2f18340efc4991",
+      "mirrorSha256": "0d717cc232fb6c16d3df842efa4397ce88fddce2a32d2c7a97d8dd9ade250720",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle04-outcomes-through-battle05.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle04-outcomes-through-battle05.md",
+      "sourceSha256": "ffb0f60e30f78ab740c01e6134d0aedcd6caabd587f658e7f8f318b2cfdb2d10",
+      "mirrorSha256": "c8f2275e6689a6fff4552f6e812c4b965afbdb3968ae4d0eb365ba120ac2cd39",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle05-outcomes-through-battle06.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle05-outcomes-through-battle06.md",
+      "sourceSha256": "26a6484a44dd57afc1be190ac6c28c76741356a0b7fee7cb144cf85963099127",
+      "mirrorSha256": "c230e2c1c682ea3a099311776860924e3abdcbf76242bfa39386992a16e9f6cb",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle06-outcomes-through-battle07.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle06-outcomes-through-battle07.md",
+      "sourceSha256": "e75205471cb0a4dd78ae3af90d59ff6065c0c3caffee9a3e215005c8bb6e413b",
+      "mirrorSha256": "e5817731ec20c7e6920d2b354f1179198793ef9faa77e954e5328423af0fca0f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle07-outcomes-and-aftermath.md",
@@ -1051,7 +1071,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "e60e0126ef454d6ec854a3b77b66ecdd6ae3059dac922349f7d2e72f68e2997e",
+      "mirrorSha256": "9793297bff050bc6bbc2dd8dc55665197a4fad37273ac03e00dd6e47843d4737",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
