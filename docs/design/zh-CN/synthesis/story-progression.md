@@ -44,7 +44,7 @@
 用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航（中文）](earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
-<summary>详细指南及其局部边界（本组十一篇中文；下一组选定十二篇中文，其余细节回退英文）</summary>
+<summary>详细指南及其局部边界（本组十一篇中文；下一组选定二十一篇中文）</summary>
 
 [开篇至 Battle 01（中文）](opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
 
@@ -74,10 +74,10 @@
 
 登陆并不立即确立一个安顿完毕的新城镇。木板/救援遭遇及其结果先于选定建设/演说和重建人口边界。从 New Granseal 出发，局部条件把 Peter 的介绍与觐见连接到东行、Ribble、Polca 和 Bedoe。**已确认静态内容：** 说话、跟随、加入军团和下一场遭遇准入有独立消费者。十二个编队位置不会招募十二名伙伴。
 
-阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择](../../synthesis/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
+阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择（中文）](polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏（英文）](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
 
 <details>
-<summary>详细指南及其局部边界（本组选定十七篇中文；其余回退英文）</summary>
+<summary>详细指南及其局部边界（本组选定二十一篇中文）</summary>
 
 [损坏船只的木板选择至 Battle08 准入（中文）](damaged-ship-plank-through-battle08.md)继续解释可选木板回应、显式/同地图入口替代分支、木料交付与重复救援请求。F408/请求产生先于调用方 F703/EGRESS_MAP 写入；Map72 准入与 F458 before/start 分发仍不同于场景演员和交战名册。它止于 ActivateEnemies 之前，保留待处理、行走、随从/服务和挂起入场限制。
 
@@ -113,13 +113,13 @@
 
 [Bedoe 雏鸟飞行与救援（中文）](bedoe-hatchling-flight-and-rescue.md)解释独立可选内容：演示、重复宣称、坠落/救援及各调用方的条件返回。F722 选择配置；F723 控制飞行/重复，而 F13/F724 独立控制救援，不以 F799 国王选择为前提。共享速度/精灵/优先级状态、不等待的行动者、真正隐藏与仅改坐标的 init、依赖 HP 的跟随，以及保留/重建映射仍分开。它止于这些调用方/控制边界，保留自然访问、传入状态、接触、服务/呈现和持久性未知项；不承诺未来 Skreech 招募。
 
-[Bedoe 返回至 Battle13 准入](../../synthesis/bedoe-return-through-battle13-admission.md)沿选定主路线继续经过南/西出口请求、变化后的 Polca 人口、恶魔对峙、Gerhalt 加入及条件新战斗开始。F513/F799/F710 配置优先级不同于 F710/F799/F715 区域（事件）及独立 F413 准入；F74 提供 Astral/国王/大臣，而非 Gerhalt。F9/F41/缓存时序、健康、跟随与 AI 保持区别。脚本安排的 birdmen 死亡呈现与 Luke 被中断的动画/移动不证明交战死亡或固定位置。解锁/请求先于调用方 F715 和消费；空 before/start 脚本、F463/F88 替代分支及战斗人口重建保留各自边界。它止于 ActivateEnemies 之前，自然旅行、传入状态、服务/呈现与可玩性均为未知；雏鸟内容不施加前提或强制顺序，也不声称木筏履约或 Luke 招募。
+[Bedoe 返回至 Battle13 准入（中文）](bedoe-return-through-battle13-admission.md)沿选定主路线继续经过南/西出口请求、变化后的 Polca 人口、恶魔对峙、Gerhalt 加入及条件新战斗开始。F513/F799/F710 配置优先级不同于 F710/F799/F715 区域（事件）及独立 F413 准入；F74 提供 Astral/国王/大臣，而非 Gerhalt。F9/F41/缓存时序、健康、跟随与 AI 保持区别。脚本安排的 birdmen 死亡呈现与 Luke 被中断的动画/移动不证明交战死亡或固定位置。解锁/请求先于调用方 F715 和消费；空 before/start 脚本、F463/F88 替代分支及战斗人口重建保留各自边界。它止于 ActivateEnemies 之前，自然旅行、传入状态、服务/呈现与可玩性均为未知；雏鸟内容不施加前提或强制顺序，也不声称木筏履约或 Luke 招募。
 
-[Battle13 结果至 Polca 木筏授予](../../synthesis/battle13-outcomes-through-polca-raft-grant.md)继续经过首次/重复胜利、不同的 Bedoe 败北/Egress、Luke 同行标志、新 Polca 人口及可选村长交易。F75 不同于 Luke 成员资格/HP/AI；F718/F717/F716 调用方优先级先于临时接触，仅场景返回才到达依次 F716/F64/Map72 `(43,48)` 写入。当前跟随、hide133 与未来重建仍独立。它止于条件调用方/控制返回，保留自然可达、行动者/服务、呈现与持久性未知项；配置好的木筏状态不证明 Polca 当前存在木筏、河流可用或已登筏。Oddler 选择/离开和后续旅行仍在范围外。
+[Battle13 结果至 Polca 木筏授予（中文）](battle13-outcomes-through-polca-raft-grant.md)继续经过首次/重复胜利、不同的 Bedoe 败北/Egress、Luke 同行标志、新 Polca 人口及可选村长交易。F75 不同于 Luke 成员资格/HP/AI；F718/F717/F716 调用方优先级先于临时接触，仅场景返回才到达依次 F716/F64/Map72 `(43,48)` 写入。当前跟随、hide133 与未来重建仍独立。它止于条件调用方/控制返回，保留自然可达、行动者/服务、呈现与持久性未知项；配置好的木筏状态不证明 Polca 当前存在木筏、河流可用或已登筏。Oddler 选择/离开和后续旅行仍在范围外。
 
-[Polca 的 Oddler 选择与跟随](../../synthesis/polca-oddler-choice-and-following.md)解释独立的 Y11/Y30 请求、首次拒绝返回，以及第二次拒绝后无需再次提示便汇合的恳求。F89 记录已返回选择；F717/F718 调用方谓词不同于内部 F68/clear75/F718 及未来人口。当前 Peter→Bowie、140→Peter、Luke→140 不同于列表顺序、之后 FOLLOWER_B31 构建/NPC140 init 移除。它止于两个调用方/条件控制返回，保留输入、行动者/HP、服务/呈现和持久性未知项；实际 Polca 离开、河流/登筏、Battle14 和招募仍独立。
+[Polca 的 Oddler 选择与跟随（中文）](polca-oddler-choice-and-following.md)解释独立的 Y11/Y30 请求、首次拒绝返回，以及第二次拒绝后无需再次提示便汇合的恳求。F89 记录已返回选择；F717/F718 调用方谓词不同于内部 F68/clear75/F718 及未来人口。当前 Peter→Bowie、140→Peter、Luke→140 不同于列表顺序、之后 FOLLOWER_B31 构建/NPC140 init 移除。它止于两个调用方/条件控制返回，保留输入、行动者/HP、服务/呈现和持久性未知项；实际 Polca 离开、河流/登筏、Battle14 和招募仍独立。
 
-[Polca 离开与 Luke 招募](../../synthesis/polca-departure-through-luke-recruitment.md)继续解释选定南传送、条件战斗中断及独立 F716-set/F10-clear init。新建随从与独立木筏映射不同于当前地图人口；新分配 Luke 可保留旧 F75 随从。全部六条归属台词及 join446 通向独立 F10、条件 F42/缓存、当前隐藏与后续 F416 效果，没有事务或重试修复。它止于条件探索控制，保留行动者/HP、自然路线、服务/呈现、输入与持久性未知项；Luke 的 Down1 既不证明登筏，也不证明 Battle14/16 路线顺序。
+[Polca 离开与 Luke 招募（中文）](polca-departure-through-luke-recruitment.md)继续解释选定南传送、条件战斗中断及独立 F716-set/F10-clear init。新建随从与独立木筏映射不同于当前地图人口；新分配 Luke 可保留旧 F75 随从。全部六条归属台词及 join446 通向独立 F10、条件 F42/缓存、当前隐藏与后续 F416 效果，没有事务或重试修复。它止于条件探索控制，保留行动者/HP、自然路线、服务/呈现、输入与持久性未知项；Luke 的 Down1 既不证明登筏，也不证明 Battle14/16 路线顺序。
 
 </details>
 

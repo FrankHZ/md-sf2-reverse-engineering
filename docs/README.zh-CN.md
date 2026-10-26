@@ -64,7 +64,7 @@ Grans 开场经 Hawel、Galam、塔楼后续和地震撤离，至航行登陆/�
 到达 [Polca 仙女互动至 Battle12 准入（中文）](./design/zh-CN/synthesis/polca-fairy-through-battle12-admission.md)。六篇详细指南及可选/条件边界集中在
 [New Granseal 与东部 Parmecia 章节（中文）](./design/zh-CN/synthesis/story-progression.md#new-granseal-与东部-parmecia)，不构成必经链或自然连续游玩证明。
 继续沿 [Battle12 结果至 Bedoe 入场（中文）](./design/zh-CN/synthesis/battle12-outcomes-through-bedoe-entry.md)，经国王讲话/首次觐见、Volcanon、可选国王选择与雏鸟救援；
-五篇详细指南及其独立准入、状态和条件控制边界仍集中在上述剧情章节。后续 [Bedoe 返回至 Battle13 准入（英文）](./design/synthesis/bedoe-return-through-battle13-admission.md)及其他未译细节仍回退英文。
+五篇详细指南及其独立准入、状态和条件控制边界仍集中在上述剧情章节。再沿 [Bedoe 返回至 Battle13 准入（中文）](./design/zh-CN/synthesis/bedoe-return-through-battle13-admission.md)，经 Battle13 结果、市长木筏交易和可选 Oddler 选择，至 [Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md)；四篇详细指南及跟随/成员资格、木筏配置/登乘、调用方/控制的区别仍集中在同一章节，不构成必经顺序。之后 [Polca 木筏登乘与 South Parmecia 入场（英文）](./design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md)及其他未译细节仍回退英文。
 [详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)
