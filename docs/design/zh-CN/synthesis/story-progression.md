@@ -7,7 +7,7 @@
 - 框架证据日期：2026-08-02；章节导读与完整示例在[当前 Standard 严谨度范围约定](../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)下，使用 `f6da6b1bd5384ce60d77e74271d8f8f3bc404a7a` 的已接受所有者。
 - 源码基线：`ShiningForceCentral/SF2DISASM` `master` `c834c652b6862bc5679fd7f69a38a7093206efc6`。
 
-> 本文是[规范英文原文](../../synthesis/story-progression.md)的中文镜像，完整同步的英文基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文始终是审阅基线；本镜像遵循 [glossary](../../glossary.md) R1–R7。五个已同步主题之间使用中文导航；详细指南、证据合同及其他范围外文档仍链接规范英文。正文中的审阅、中文同步延期及验收判断保留英文基线当时的时间与范围；本镜像的同步不产生新观察，也不扩大原版或重制支持。
+> 本文是[规范英文原文](../../synthesis/story-progression.md)的中文镜像，完整同步的英文基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文始终是审阅基线；本镜像遵循 [glossary](../../glossary.md) R1–R7。五个已同步主题和选定已译详细指南之间使用中文导航；未译详细指南、证据合同及其他范围外文档仍链接规范英文。正文中的审阅、中文同步延期及验收判断保留英文基线当时的时间与范围；本镜像的同步不产生新观察，也不扩大原版或重制支持。
 
 ## 判断边界
 
@@ -44,7 +44,7 @@
 用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航](../../synthesis/earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
-<summary>详细指南及其局部边界（前三篇中文，其余英文）</summary>
+<summary>详细指南及其局部边界（前七篇中文，其余英文）</summary>
 
 [开篇至 Battle 01（中文）](opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
 
@@ -52,13 +52,13 @@
 
 [Battle 02 结果至 Battle 03 准入（中文）](battle02-outcome-through-battle03.md)继续解释结果/返回、有条件的 Yeel/Kazin 指引，以及独立的 Map66 区域（事件）请求/消费者路径。跟随不同于招募；Yeel 并非已证明的遭遇前提。本段同样保留静态/自然和原版/重制边界。
 
-[Battle 03 结果至 Battle 04 准入](../../synthesis/battle03-outcome-through-battle04.md)继续经过条件返回、Hawel 住宅初始化、Kazin 招募及独立出口请求/遭遇选择器。住宅默认与重复配置、已加入/随从/解锁状态仍有区别；自然行走、调用方/呈现/持久性，以及已初始化的 Battle04 仍为未知。
+[Battle 03 结果至 Battle 04 准入（中文）](battle03-outcome-through-battle04.md)继续经过条件返回、Hawel 住宅初始化、Kazin 招募及独立出口请求/遭遇选择器。住宅默认与重复配置、已加入/随从/解锁状态仍有区别；自然行走、调用方/呈现/持久性，以及已初始化的 Battle04 仍为未知。
 
-[Battle 04 结果至 Battle 05 准入](../../synthesis/battle04-outcomes-through-battle05.md)随后区分胜利/特殊败北/逃脱，解释 Galam 监狱/城堡内容、Slade 跟随与守卫的条件解锁/请求。它止于 before/start，保留自然行走、行动者/重入和出战队伍未知项；源码分支不证明强制败北或连续攻略。
+[Battle 04 结果至 Battle 05 准入（中文）](battle04-outcomes-through-battle05.md)随后区分胜利/特殊败北/逃脱，解释 Galam 监狱/城堡内容、Slade 跟随与守卫的条件解锁/请求。它止于 before/start，保留自然行走、行动者/重入和出战队伍未知项；源码分支不证明强制败北或连续攻略。
 
-[Battle05 结果至 Battle06 准入](../../synthesis/battle05-outcomes-through-battle06.md)继续说明独立的位置/HP 消费者、首次完成的宝石场景与 Slade 加入、Galam 出口及条件 row-6 选择/before/start。F407 在入场时写入，并非完成时写入，也不证明 Battle07 路线；行走、调用方/出战队伍/重入和呈现仍为未知。
+[Battle05 结果至 Battle06 准入（中文）](battle05-outcomes-through-battle06.md)继续说明独立的位置/HP 消费者、首次完成的宝石场景与 Slade 加入、Galam 出口及条件 row-6 选择/before/start。F407 在入场时写入，并非完成时写入，也不证明 Battle07 路线；行走、调用方/出战队伍/重入和呈现仍为未知。
 
-[Battle06 结果至 Battle07 准入](../../synthesis/battle06-outcomes-through-battle07.md)继续说明随结果变化的返回、F506 城镇/城堡内容、可选 Kiwi 招募、王室跟随和条件塔请求。F407 准入与 F506 内容仍分开；F401 拦截、F999 替换和 F457/F88 跳过分支保留行走、随从/重入及出战队伍未知项。
+[Battle06 结果至 Battle07 准入（中文）](battle06-outcomes-through-battle07.md)继续说明随结果变化的返回、F506 城镇/城堡内容、可选 Kiwi 招募、王室跟随和条件塔请求。F407 准入与 F506 内容仍分开；F401 拦截、F999 替换和 F457/F88 跳过分支保留行走、随从/重入及出战队伍未知项。
 
 [Battle07 结果与探索交接](../../synthesis/battle07-outcomes-and-aftermath.md)随后解释胜利/重复/败北/逃脱、分阶段的塔后续，以及独立的宝石/当前跟随/持久标志效果。返回请求先于脚本/调用方完成；空 Map58 配置在条件恢复控制之前重建随从。F999、冲突随从标志、自然服务完成和后续行走仍是明确限制；指南止于紧接的 Map58 出站所有者。
 
