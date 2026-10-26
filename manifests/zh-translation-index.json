@@ -861,7 +861,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/battle26-activation-and-first-turn-dispatch.md",
       "sourceSha256": "f81a3ad373acf594700cbdb3ac54ec89498ad959cfcb8d4a495c6361cbc7453b",
-      "mirrorSha256": "fe575396af5f5e5a34478b9bf8f22c05b1ddde0ef2578146daf940d4cac1e05b",
+      "mirrorSha256": "a374e8244990969f5c94e3012ac2f8f646c5b3e1ccb2d9d7d666d9c306151913",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-26"
     },
@@ -885,19 +885,39 @@
     },
     {
       "source": "docs/design/synthesis/battle26-outcomes-and-higins-recruitment.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle26-outcomes-and-higins-recruitment.md",
+      "sourceSha256": "cda5522e2fc5c434e7fa3cfcbb446b2d6d6b39e987dd6bd30b7f9b3a9c4cabf9",
+      "mirrorSha256": "1108801cd7bfd09d7a608c9f9d48656f467ba5eef75ec83aa7bcba93d3cafb93",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/battle26-return-through-pacalon-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle26-return-through-pacalon-entry.md",
+      "sourceSha256": "db18c528d854b4d93e800ccc269280360f143b529406a685364c30944fce0ebf",
+      "mirrorSha256": "5457951a62f1adfcc35b8d3a5c450425443d63c3bc8e615a403186cb937db119",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/battle27-activation-and-first-turn-dispatch.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle27-activation-and-first-turn-dispatch.md",
+      "sourceSha256": "87937a5daa3d60d6454a4d2a9d6aed4ad9218a9899ebc40c889a81522108f408",
+      "mirrorSha256": "a7e1055e6ee2d85ab78f88cef930d4c2f064b5066aa577b03e9b33113ab6bc34",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/battle27-initialization-and-opening.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle27-initialization-and-opening.md",
+      "sourceSha256": "de0fbfe13ffe7e3d62a2b5472c873633bce31c208e7962750212f9fd06b8a7b7",
+      "mirrorSha256": "75fd505a9fc727f95a04610e692f0cff393ec9ff0587c5c85a4214583d45f432",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/bedoe-hatchling-flight-and-rescue.md",
@@ -1288,15 +1308,30 @@
     },
     {
       "source": "docs/design/synthesis/pacalon-castle-entry-and-first-visit.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/pacalon-castle-entry-and-first-visit.md",
+      "sourceSha256": "04e45260c31007dc9e583fcef882a095b0bfbdf232c3231865cd5e5eecbcfd16",
+      "mirrorSha256": "d43b34083bf38e2c59131aec970e68f2142a5465e2b9c8033f0376bd705cd1b0",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/pacalon-departure-to-battle27-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/pacalon-departure-to-battle27-admission.md",
+      "sourceSha256": "2d43b3b358923b0f1f2c08f8fc56a6fcd46f0b6aafd399bd4e7a6c6e376d051b",
+      "mirrorSha256": "b60f7b799701c11d1a86d47b8e5dcb04d864d4ab5f9e4357e7d0a3d1374caf8b",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/pacalon-interactions-and-castle-handoff.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/pacalon-interactions-and-castle-handoff.md",
+      "sourceSha256": "19a3a870c63d4ac1a1e3778debf77e64d4a28c393d1114444ff5201bc2a3825f",
+      "mirrorSha256": "ecdc05862dee6684440b7c3c3431ef916e3663ebbdd0f589a93d8794d40abe16",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/peter-castle-audience-through-town-return.md",
@@ -1406,7 +1441,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "065df23118e4d459d2be07aa6a87295e0ca6b627290c95a0a3dfe1638ae34fec",
+      "mirrorSha256": "5a1bc709e6bf8d30db6aac4b3f9526438aa00a2973615171bf2f2ee6ca7201c4",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
