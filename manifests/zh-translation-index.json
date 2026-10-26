@@ -627,7 +627,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
       "sourceSha256": "e4cb8faa2d9126f585c2ce97229fa53791e748813457e7a6ad0fbe5483e48b78",
-      "mirrorSha256": "5338104508ee1c2bd20e04d0b721b3f3f054fabbb95fad7dfcc57812c14a8459",
+      "mirrorSha256": "a420825e8d19b51c47d8058bf294b7c5c1153faa85e83fe780b08ca7ba5ccb12",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -699,7 +699,12 @@
     },
     {
       "source": "docs/design/synthesis/battle18-outcomes-and-caravan-acquisition.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle18-outcomes-and-caravan-acquisition.md",
+      "sourceSha256": "a26f91f12b347d83473073252597fb9cb08ecd0e14b495302b09ca3e693e0d7d",
+      "mirrorSha256": "f28c569002ffbd49e27cc3959b7522c06daa6c7bf01ceb9871c55f69986d5494",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle19-outcomes-through-elven-village-entry.md",
@@ -787,7 +792,12 @@
     },
     {
       "source": "docs/design/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
+      "sourceSha256": "48592dd8c55d746313c0cf7ebd9322f6e5b3d66b194d56b9a37c9b0ffe87a096",
+      "mirrorSha256": "ef7de92daf65745ce9ae599da5c1ad606c324a6726cfb0e5ac6c6ebba31679e7",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/cotton-balloon-through-floor-world-entry.md",
@@ -899,7 +909,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map-design-principles.md",
       "sourceSha256": "b9d6c24e12433d92b05a1a843e757efdbbcaccd9531a287f2a6f52a3f1f05a1f",
-      "mirrorSha256": "6686573ff36ededd89f8b4833f0fce4b8653a2e1ce29958b22bbf6ea0ce85ae0",
+      "mirrorSha256": "827d3ef3884fdbc81f53b8bce49c43a4cfe9bcf5d06f407e8c4ab865e104629e",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1016,7 +1026,12 @@
     },
     {
       "source": "docs/design/synthesis/ribble-tree-opening-and-achilles-sword.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/ribble-tree-opening-and-achilles-sword.md",
+      "sourceSha256": "ac132d730f6be22e96ce1aeee5eee69f18bade6870c0e0fd422dcf9571d547ec",
+      "mirrorSha256": "78505c2b1bd69ad472598c8beb38ca1b14fbadecb54b01ac69ca4f2e2fc9a046",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/south-parmecia-through-kraken-battle16-entry.md",
@@ -1024,14 +1039,19 @@
     },
     {
       "source": "docs/design/synthesis/southwest-parmecia-through-taros-battle18-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/southwest-parmecia-through-taros-battle18-entry.md",
+      "sourceSha256": "c738b11c072a33690ddbde59ef4e1153e7b9358f2b7cfdcdaccab00e6a4a24e5",
+      "mirrorSha256": "19a84652f82fc7a854b7ba98a2a19a5555ef9d8b0883794d9c63a08c24d3ff05",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/story-progression.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "c1b57048da3f4ac07bca44649f7f4873733f87d95414ebe711aefbc194b65c06",
+      "mirrorSha256": "e60e0126ef454d6ec854a3b77b66ecdd6ae3059dac922349f7d2e72f68e2997e",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1040,7 +1060,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/tactical-battle-loop.md",
       "sourceSha256": "bbe50c6f29ea618787051488f16855f86d5fdf51c3224e2db41d21a01372b535",
-      "mirrorSha256": "92d953f5b02c385f9289cc461bc72f39b112cc2e0745f096ec97a32988669320",
+      "mirrorSha256": "d80649836fe3b66ffee4ffb704816acae81eae45af4e06e01584886cd721db89",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
