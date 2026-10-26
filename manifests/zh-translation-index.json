@@ -768,11 +768,21 @@
     },
     {
       "source": "docs/design/synthesis/battle19-outcomes-through-elven-village-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle19-outcomes-through-elven-village-entry.md",
+      "sourceSha256": "103b181002e9685ed7eb44f60efc4b117e06274ae22769419aded614bb043943",
+      "mirrorSha256": "60cc678b9152f6ac2942d4d7a1a11a97412faf5d93154cf22cc8ef0ff0714680",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle20-outcomes-and-elric-recruitment.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle20-outcomes-and-elric-recruitment.md",
+      "sourceSha256": "942267747ed2700c02cc6a020b0da16e8532492eca843d37a6ac66d6f0840d1f",
+      "mirrorSha256": "5b9f665773b97437089ccebaad0fbf0f209fb39a9f835f89505f723dec1b99a8",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle21-opening-and-initial-roster.md",
@@ -875,7 +885,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
       "sourceSha256": "48592dd8c55d746313c0cf7ebd9322f6e5b3d66b194d56b9a37c9b0ffe87a096",
-      "mirrorSha256": "fcfeca82d5ee5e969033a5307066423eb017da5eed55305256930e2c14471a3b",
+      "mirrorSha256": "6554f23896c824504d26653323b1036c2fd23b11b3e0096314e39d26363ab487",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -940,11 +950,21 @@
     },
     {
       "source": "docs/design/synthesis/elven-village-conversations-and-local-exploration.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/elven-village-conversations-and-local-exploration.md",
+      "sourceSha256": "deb7bae740dd8f5e86416d96dc356932dc43a044a3c905a98e14f8e4414b6580",
+      "mirrorSha256": "89450120ff2ee371dbdbb50f79d91c75d42e2158f6e1099e6bc83883a13799b4",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/elven-village-departure-through-harpy-pond-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/elven-village-departure-through-harpy-pond-entry.md",
+      "sourceSha256": "238632a9625217892303d5ed3b333ce8de0cad81cd7997d2c9ce5394980c26c2",
+      "mirrorSha256": "a7e92fa642b7a1563ed329aade0b70ecd24ea629ce97fc250b63c00b3f6ef788",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/evil-spirit-consultation-and-zone-return.md",
@@ -977,11 +997,21 @@
     },
     {
       "source": "docs/design/synthesis/harpy-pond-approach-through-battle20-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/harpy-pond-approach-through-battle20-entry.md",
+      "sourceSha256": "ef720f865d76fe49f1fa57c4cf9a9a2cf219e55a09d394d0f6274b3dff12f6fa",
+      "mirrorSha256": "4c125576c09affdb61406d7257302934c872b10bf34e58792b87b5ad51328cf2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/harpy-pond-departure-through-fairy-cave-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/harpy-pond-departure-through-fairy-cave-entry.md",
+      "sourceSha256": "e95db4cf49e5c3393c2404e784599b7b6094b43f7e0ae8b84dc1a46b59d54230",
+      "mirrorSha256": "58070bd30cd6c366d3ece535c214a22cbaa38657120f52564dfd2d811d85271b",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md",
@@ -1216,7 +1246,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "34d86113b8ba5a10c5f9903d4552be969db444f68b27f91201af7e762affcab4",
+      "mirrorSha256": "055b958c819832e28d3a36f1b8da9fca7cc84ba70635be826d2eb341a2185d69",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
