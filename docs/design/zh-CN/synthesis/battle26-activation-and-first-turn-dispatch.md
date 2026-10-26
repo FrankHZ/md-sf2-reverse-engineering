@@ -10,7 +10,7 @@
 
 本指南在新 LoadBattle 与 start 包装器返回后的 `BattleLoop:@Start`，接续 [Battle26 初始编队与中立 Higins](battle26-initialization-and-roster.md)。消费完整已接受[激活与分发研究](../../../research/battle26-activation-and-first-turn-dispatch.md)，包括变化状态分析。[准入与对峙指南](battle26-admission-and-geshp-confrontation.md)拥有更早剧情场景。场景行动者与初始化指令集名称均不建立谁控制单次行动。
 
-Standard 严谨级别区分区域几何、已检查标志、激活字、生成模式、调度记录与被调用行动。这是 [#514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下 [#1014](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1014)的英文 Layer B 结果，[路线图（英文）](../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)拥有当前协议。不增加原版发现、引擎政策或运行时观察。已执行单次行动、战术、移动、伤害、结果、招募与后续探索在本指南终点外。[Battle26 结果与 Higins 招募（英文回退）](../../synthesis/battle26-outcomes-and-higins-recruitment.md)从已接受结果证据继续到返回 MainLoop 交接，不提供中间交战记录或之后城镇准入。独立 UI 工作不在此提供证据。
+Standard 严谨级别区分区域几何、已检查标志、激活字、生成模式、调度记录与被调用行动。这是 [#514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下 [#1014](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1014)的英文 Layer B 结果，[路线图（英文）](../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)拥有当前协议。不增加原版发现、引擎政策或运行时观察。已执行单次行动、战术、移动、伤害、结果、招募与后续探索在本指南终点外。[Battle26 结果与 Higins 招募（中文）](battle26-outcomes-and-higins-recruitment.md)从已接受结果证据继续到返回 MainLoop 交接，不提供中间交战记录或之后城镇准入。独立 UI 工作不在此提供证据。
 
 以下全部**已确认**原版声明是从固定 SF2DISASM [`c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)与锁定 USA retail 基线的已接受 Layer A 作条件推导，不是新 Battle26 游玩。研究所有者保留指令地址、源码路径、别名与复现命令。Fnnn 表示标志 nnn；激活表所列为十六进制字。
 
