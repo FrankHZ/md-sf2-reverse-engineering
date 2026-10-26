@@ -8,7 +8,7 @@ Fairy 请求见生病的矮人，为他检查，随后布置明亮的恢复序�
 
 本指南接续 [Oddler 留下与 Fairy 交接](oddler-stays-and-fairy-handoff.md)，使用 main `c430f26f69a01a0f6e917660e34503c6bcccbec4` 上[已接受的 #961 研究](../../../research/creed-departure-dwarf-recovery-and-cannon-gift.md)及其已接受前篇。它止于紧接的实体/区域（事件）返回及相关重新入场后果。Cannon 使用、后续旅程和 New Granseal/Astral 内容在本指南之外。此 Layer B 解释不选择重制规则或新观察工作。
 
-[返回 New Granseal 与 Astral 跟随（英文）](../../synthesis/new-granseal-return-and-astral-following.md)独立接续选定的矿洞至城堡返回及回顾式顾问觐见；不把持有 Cannon 设为觐见前提。
+[返回 New Granseal 与 Astral 跟随（中文）](new-granseal-return-and-astral-following.md)独立接续选定的矿洞至城堡返回及回顾式顾问觐见；不把持有 Cannon 设为觐见前提。
 
 ## 离开 Creed，进入矿洞
 
