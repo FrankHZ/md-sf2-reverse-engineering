@@ -741,7 +741,12 @@
     },
     {
       "source": "docs/design/synthesis/battle13-outcomes-through-polca-raft-grant.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle13-outcomes-through-polca-raft-grant.md",
+      "sourceSha256": "45af2b209079707286e92470af80bbbc7a0afa1496ca59b4fbe9bddc8f4363cf",
+      "mirrorSha256": "ec6f35ad5bac15e8e178df2ef686e218406e5183af1c5496d66304cb34845a9a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle16-outcomes-through-hassan-entry.md",
@@ -844,7 +849,12 @@
     },
     {
       "source": "docs/design/synthesis/bedoe-return-through-battle13-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-return-through-battle13-admission.md",
+      "sourceSha256": "ce7319390f9251e9088a8694f8411a099fb2320bdb7f16a08b36d3d5235ac6a8",
+      "mirrorSha256": "3057bcd37a92e6cbda824649db6a8d79703fd545683daec6737fa0236f675f15",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/bedoe-to-volcanon-audience.md",
@@ -1093,7 +1103,12 @@
     },
     {
       "source": "docs/design/synthesis/polca-departure-through-luke-recruitment.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md",
+      "sourceSha256": "e10ec5ed6fd674976b6c7f7086ab082bdfdd86240c7c25ba9cc6d2fed350f110",
+      "mirrorSha256": "eeae525ef0b34fb114533f449815e36656764190648f6b441893f06b04c135be",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/polca-fairy-through-battle12-admission.md",
@@ -1106,7 +1121,12 @@
     },
     {
       "source": "docs/design/synthesis/polca-oddler-choice-and-following.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-oddler-choice-and-following.md",
+      "sourceSha256": "0ba918feec27167eea4730c32d9fc7e44f93535f83a0604811d6c7a97539bd2e",
+      "mirrorSha256": "0da261fde9ae1902fac0499d0f9ef4fe191bed03a39da0a783da4830a0a03f4e",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md",
@@ -1166,7 +1186,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "e22a851df688ddd7e131a0819ec3c841ecb54557383ebf2b38ab1c55ffcb5110",
+      "mirrorSha256": "ff347078e25fe753cdd2e2103c747897a9d2b11df47dfdf0dd010de23ffb0393",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1184,7 +1204,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/volcanon-return-through-bedoe-king-choice.md",
       "sourceSha256": "ac9614fe1594ed8b3fb82d12c09c1ebcd1235b97ad464814b688f93b7cd3eca2",
-      "mirrorSha256": "1c4a5a4e661be742a81324f53c7f611b358b0ab81a205948a48cb73736b55058",
+      "mirrorSha256": "2d4bd709b22557f678155d5540daae36a8a2d68843983f25615b0fde71c308a4",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
