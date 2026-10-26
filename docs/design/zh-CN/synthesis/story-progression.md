@@ -7,7 +7,7 @@
 - 框架证据日期：2026-08-02；章节导读与完整示例在[当前 Standard 严谨度范围约定](../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)下，使用 `f6da6b1bd5384ce60d77e74271d8f8f3bc404a7a` 的已接受所有者。
 - 源码基线：`ShiningForceCentral/SF2DISASM` `master` `c834c652b6862bc5679fd7f69a38a7093206efc6`。
 
-> 本文是[规范英文原文](../../synthesis/story-progression.md)的中文镜像，完整同步的英文基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文始终是审阅基线；本镜像遵循 [glossary](../../glossary.md) R1–R7。五个已同步主题和选定已译详细指南之间使用中文导航；未译详细指南、证据合同及其他范围外文档仍链接规范英文。正文中的审阅、中文同步延期及验收判断保留英文基线当时的时间与范围；本镜像的同步不产生新观察，也不扩大原版或重制支持。
+> 本文是[规范英文原文](../../synthesis/story-progression.md)的中文镜像，完整同步的英文基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文始终是审阅基线；本镜像遵循 [glossary](../../glossary.md) R1–R7。主题与现有详细指南之间使用中文导航；明示英文规范源、证据合同、研究、ADR 及引擎/验收的链接保留各自所有者。全部已索引设计文档均有独立验收的完整中文镜像。正文中的历史审阅与验收判断保留英文基线当时的时间与范围；当前同步规则见[中文路线图](../documentation-roadmap.md)。本镜像的同步不产生新观察，也不扩大原版或重制支持。
 
 ## 判断边界
 
@@ -28,7 +28,7 @@
 
 这六组是依据有意义的世界变化与内容依赖形成的**推断性编辑阅读顺序**。它们不是原作者的章节、强制战斗顺序或连续行走的证明。下文的**已确认静态内容**表示具名的已接受所有者支持特定选择器、操作或条件交接。其源码顺序不证明自然抵达、完整呈现、玩家控制或持久存档。
 
-先读各组导读，再展开详细指南（已译中文，其余回退英文）了解精确局部行为，最后通过研究链接查证。北方章节到达条件 Battle32 准入；Moun/Nazca 章节继续经由返回 Grans，到达下一场遭遇的条件交接。最后一组把 Sword 和塔路线连接至尾声与隐藏战斗重置。这些分组不另建一套详细后期战役系列。[覆盖所有者](../../../research/story-content-coverage.md#four-different-frontiers)区分静态研究、原版观察、英文综合与重制支持。
+先读各组导读，再展开现有中文详细指南了解精确局部行为，最后通过英文研究链接查证。后期章节直接链接英文研究的部分没有另立设计指南，不是待译指南。北方章节到达条件 Battle32 准入；Moun/Nazca 章节继续经由返回 Grans，到达下一场遭遇的条件交接。最后一组把 Sword 和塔路线连接至尾声与隐藏战斗重置。这些分组不另建一套详细后期战役系列。[覆盖所有者](../../../research/story-content-coverage.md#four-different-frontiers)区分静态研究、原版观察、英文综合与重制支持。
 
 1. [Grans 开篇与离开](#grans-开篇与离开)。
 2. [New Granseal 与东部 Parmecia](#new-granseal-与东部-parmecia)。
@@ -44,7 +44,7 @@
 用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航（中文）](earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
-<summary>详细指南及其局部边界（本组十一篇中文；下一组选定二十一篇中文）</summary>
+<summary>详细指南及其局部边界（中文）</summary>
 
 [开篇至 Battle 01（中文）](opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
 
@@ -77,7 +77,7 @@
 阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择（中文）](polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏（中文）](polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
 
 <details>
-<summary>详细指南及其局部边界（本组选定二十一篇中文）</summary>
+<summary>详细指南及其局部边界（中文）</summary>
 
 [损坏船只的木板选择至 Battle08 准入（中文）](damaged-ship-plank-through-battle08.md)继续解释可选木板回应、显式/同地图入口替代分支、木料交付与重复救援请求。F408/请求产生先于调用方 F703/EGRESS_MAP 写入；Map72 准入与 F458 before/start 分发仍不同于场景演员和交战名册。它止于 ActivateEnemies 之前，保留待处理、行走、随从/服务和挂起入场限制。
 
@@ -125,7 +125,7 @@
 
 ### 南方旅行、Caravan 与 Creed
 
-木筏登乘、Kraken 与 Hassan 的六篇详细指南已有中文镜像，并接续既有 Taros/Caravan 示例；本章后续尚未翻译的详细指南仍沿英文链接阅读。
+本章现有详细指南均有中文镜像，从木筏登乘、Kraken 与 Hassan 接续 Taros/Caravan，再经 Elven Village、Fairy Cave 与 Creed 的小世界、咨询及离开。可选分支仍放在各自门槛旁；英文研究链接提供证据。
 
 交通与物品持有把本组系统连接起来。授予木筏不同于登筏或登陆；Hassan 的 Rohde 提议不同于 Taros 准入；Sword 持有不同于 Bowie 装备后攻击资格。首次胜利可以改变 Caravan 人口条件，同时让玩家继续步行。[完整示例](#完整示例taros-与-caravan)解释这些选定依赖及其失败/拒绝分支，不规定旅行顺序。
 
@@ -134,7 +134,7 @@
 已接受证据路线覆盖[南方交通与 Taros](../../../research/story-content-coverage.md#southern-parmecia-transport-the-sword-and-taros)、[Elven Village 至 Fairy Cave](../../../research/story-content-coverage.md#elven-village-harpy-pond-and-fairy-cave)及 [Creed/咨询](../../../research/story-content-coverage.md#creeds-small-worlds-and-the-consultation)。[沙漠遭遇](../../../research/battle14-desert-encounter-and-outcomes.md)和[独立神殿进路](../../../research/battle15-shrine-approach-and-outcomes.md)是已接受静态研究分支；编号 Battle14/15 不会使它们成为必经行程。
 
 <details>
-<summary>详细指南及其局部边界（未译篇目回退英文）</summary>
+<summary>详细指南及其局部边界（中文）</summary>
 
 [Polca 登筏与 South Parmecia 入场](polca-raft-boarding-through-south-parmecia-entry.md)从该控制边界继续，经过独立 type3 产生/物理对齐、分阶段 Bowie/木筏/列表变化，最后才提交 mode2。Physical31、FOLLOWER_D159/lookup63 与 FOLLOWER_B31 保持区别；群体等待仅轮询列表最后一名行动者。实际 mode2 选择 opcode8，type5 则作为下筏请求的另一停止边界。两个选定南方行都解析到 Map69，与 Southeast70 不同：row6 经条件 F409/F417 准入和新人口返回，row9 则在探索内保留 X/朝向和现有行动者，不经过该扫描。它止于请求、init 前战斗准入或条件控制，保留自然路线、传入状态、服务/呈现/输入和持久性未知项；单凭 F416 不会开始任何 Map69 战斗。
 
@@ -299,7 +299,7 @@ Taya 是可选的：激活 `(44,26)` 物体，或到达其独立搜索描述回�
 **下一边界：** 止于 [Battle32 开场](../../../research/battle32-initialization-and-opening.md)之前。其主体、Jaro 换边、Frayja 后续加入军团、Moun 和 Nazca 超出本章已交付解释，经[下一组](#mounnazca-与返回-grans)继续。静态章节不推进原版观察与重制前沿。
 
 <details>
-<summary>详细指南及其局部边界（未译篇目回退英文）</summary>
+<summary>详细指南及其局部边界（中文）</summary>
 
 [New Granseal 返回与 Astral 跟随](new-granseal-return-and-astral-following.md)沿选定30→68→73→6→7 连接继续，Map68 的 Battle19 拦截与保留边界滚动不同于新入场/历史。802-priority/805-clear 觐见欢迎队伍，听 Peter 报告 Elis，并叙述此前旅程。国王要求打败 Zeon、救出 Elis；Astral 提议 Tristan 并作为顾问同行。Minister128、king129 和当前 Astral139 要求实际映射；变化的707 init、HP、别名与异步动作保留已接受限制。调色板重映射/恢复、公告音乐与直接持有输入确认不证明可见完成或交战军团招募。Peter 当前跟随检查 Bowie HP；139 随后跟随实际探索列表最后条目，不必是已有 Peter。脚本70 先于调用方805/70 及 physical0 包装器等待。新70 派生 B31 与805 省略 resident139 独立于当前跟随。重复/直接/中断前缀、自然可达、服务、可用控制和存档持久性明确保留；Janet 与 North Cave 仍是独立后续边界。
 
@@ -513,7 +513,7 @@ Yeel [大地图出口](../../../research/late-yeel-chaz-and-lemon-recruitment.md
 
 [Geshp 返回](../../../research/battle38-outcomes-and-geshp-aftermath.md#exploration-rebuild-and-battle39-admission-boundary)之后，后续调用的大地图 Y28 区域（事件）需要 Battle38 完成且 Battle39 未完成，才设置下一解锁并发布重载。Battle38 返回自身不进行新战斗扫描。之后扫描中，较早符合资格的 Map66 遭遇（包括重新持有 Geshp 解锁）仍可先于 Battle39。这是通向[最终对决与结局](#最终对决与结局)的出站接口，止于 Battle39 主体、Force Sword 获得/使用、Devils Head 及最终塔/结局之前。
 
-本章复用已接受所有者的选定源码/消费者连接和变化状态审阅。审阅检查其开场/激活/结果区别、具键文本归属、物品栏及加入/随从操作、请求消费者和新/保留返回。链接的[名册合同](../../contracts/party-roster-state.md#evidence-and-runtime-boundary)及 `sf2-force-state-active-party-runtime-v1` 测试夹具确认处理器局部接缝，不确认这些自然招募；[服务合同](../../contracts/service-interactions.md#blacksmith-source-boundary)和 `sf2-common-menus-static-v1` 保留铁匠源码顺序，不确认已完成村庄访问。后续局部说明提供历史通用测试夹具缺失的含义与谓词；旧未知项不取代选定静态事实。不增加原始提取、新运行时、降低过程重跑或历史比较。原生/特殊实体与未绑定后期内容缺口仍由所有者负责；[原版与重制前沿](#原版观察与重制支持)不变，保留的已完成失败及延后的中文同步同样不变。
+本章复用已接受所有者的选定源码/消费者连接和变化状态审阅。审阅检查其开场/激活/结果区别、具键文本归属、物品栏及加入/随从操作、请求消费者和新/保留返回。链接的[名册合同](../../contracts/party-roster-state.md#evidence-and-runtime-boundary)及 `sf2-force-state-active-party-runtime-v1` 测试夹具确认处理器局部接缝，不确认这些自然招募；[服务合同](../../contracts/service-interactions.md#blacksmith-source-boundary)和 `sf2-common-menus-static-v1` 保留铁匠源码顺序，不确认已完成村庄访问。后续局部说明提供历史通用测试夹具缺失的含义与谓词；旧未知项不取代选定静态事实。不增加原始提取、新运行时、降低过程重跑或历史比较。原生/特殊实体与未绑定后期内容缺口仍由所有者负责；[原版与重制前沿](#原版观察与重制支持)不变，保留的已完成失败同样不变。该英文章节当时延后中文同步的范围已由后续独立翻译验收接续，不改变历史证据。
 
 ### 最终对决与结局
 
@@ -633,7 +633,7 @@ Yes 时，[接近和服务](../../../research/granseal-chamber-interactions-and-
 
 历史选择器测试夹具 `sf2-map-setup-selection-runtime-v1`（[载荷](../../../../tests/fixtures/h3/map-setup-selection-v1.json)）包括 Map3 的 F543 和 Map19 的 F982 最后持有用例；未观察这些尾声访问。过渡测试夹具 `sf2-map-script-transition-runtime-v1`（[载荷](../../../../tests/fixtures/h3/map-script-transition-v1.json)）观察受限处理器/事件产生，不观察本章自然旅行、事件消费、服务完成或呈现。其 schema、聚焦验证器/测试所有者及复现命令保留在链接研究和[历史证据矩阵](#证据矩阵)；不暗示回放或新运行时闭合。
 
-原生/服务拒绝、未绑定生产内容、中断前缀及保留的详细所有者失败均留在各自所有者中；中文同步仍延后。本最终章节提供直至重置的可读静态依赖说明。它不验收整个章节主线或五主题轮次，不完成中文同步，不扩展原版观察前沿，也不交付可玩重制战役。这些判断保留独立所有者和验收边界。
+原生/服务拒绝、未绑定生产内容、中断前缀及保留的详细所有者失败均留在各自所有者中。该英文章节切片提供直至重置的可读静态依赖说明；它当时不承担整个章节主线、五主题轮次或中文同步的验收，也不扩展原版观察前沿或交付可玩重制战役。现有设计语料的中文镜像此后已独立验收；各项判断仍保留自己的所有者和验收边界。
 
 ## 完整示例：Taros 与 Caravan
 

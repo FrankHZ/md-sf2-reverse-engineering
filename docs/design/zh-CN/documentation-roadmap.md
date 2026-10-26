@@ -13,9 +13,9 @@
 
 非英文本地化从英文规范源出发，按术语表规则以独立批次进行，检查术语一致性、链接完整性、证据标签保留与 fixture 可追溯性。`docs/design/zh-CN/` 下的中文镜像是派生文档；除非某个本地化批次另有明确政策，英文源始终是审阅基线。
 
-**已确认的当前顺序决定：** [设计文档 Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) 下的中文同步，以已独立验收、合并且在所选轮次中没有计划实质重写的英文源为基线。五个选定主题源与其中文镜像已在下述边界内接受。[#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434) 的[地图探索合同](../contracts/map-exploration.md)及中文镜像另经独立验收，其来源就绪性独立于五主题判定。这些验收不表示所有合同或详细指南均已稳定或有译文。
+**已确认的当前来源与语言状态：** 全部 165 份已索引的英文规范设计文档均已有完整中文镜像，并在[设计文档 Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) 下独立验收、合并。该语料覆盖 `docs/design/` 下的路线图、合同、主题综合及现有详细指南；术语表负责术语规范，不另设镜像。其中也包括单独审阅的[地图探索合同](contracts/map-exploration.md)、仍为**提议（Proposed）**的[受控准入合同](contracts/map3-controlled-admission.md)和仍为**历史（Historical）**的[引导计划](synthesis/phase4-bootstrap-plan.md)。译文验收不会提升提案状态、恢复已被取代的实现指导，或改变原版证据。
 
-当前协议先修复已有镜像与读者导航，再评估缺失的译文。保留术语表、未经复核的译文锚、已知漂移和已完成的诊断失败。必须先翻译并审阅实质内容，再显式重新锚定对应记录；新增 pending 记录不代表完成翻译。限定范围验收或今后的全局元数据 PASS 均不等于双语 Epic 完成。
+中文同步使用已独立验收、合并，且在选定范围内实质内容稳定的英文源。验收需要完整双语内容与读者路线审阅，并通过原有术语表/索引检查；仅有元数据 PASS 并不充分。下文持续同步协议约束未来来源变化。本次最终导航修订仍须独立验收；main-gate 另行判断 #514 是否可以关闭。该设计语料不包括英文研究、ADR、引擎文档或游戏脚本汉化。
 
 ## 设计信息架构
 
@@ -48,11 +48,11 @@
 
 ## 当前基线与近期综合
 
-**当前范围协议 — Standard。** 已接受的英文设计解释与当前有边界的中文同步，消费 [Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) 下已接受的数据。目标是以可读方式说明游戏中相连的规则、世界推进与玩家选择，为后续设计和实现决策提供支持。证据所有者已知，但存在跨系统依赖，因此采用 Standard：声明各主题的主张与验收，独立审阅；新主张或归属冲突改变范围时重新评估。本协议不选择新引擎、不重新平衡游戏，也不扩大可玩里程碑。
+**当前范围协议 — Standard。** 已接受的双语设计语料及其持续同步，消费 [Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) 下已接受的数据。目标是以可读方式说明游戏中相连的规则、世界推进与玩家选择，为后续设计和实现决策提供支持。证据所有者已知，但存在跨系统依赖，因此采用 Standard：声明各主题的主张与验收，独立审阅；新主张或归属冲突改变范围时重新评估。本协议不选择新引擎、不重新平衡游戏，也不扩大可玩里程碑。
 
 ### 已接受的起点
 
-[玩法总览](../synthesis/gameplay-overview.md)仍是读者入口。已有的[战术战斗循环](../synthesis/tactical-battle-loop.md)、[成长与经济](../synthesis/progression-and-economy.md)、[剧情推进](../synthesis/story-progression.md)和[地图设计原则](../synthesis/map-design-principles.md)仍是主题所有者。它们已接受的修订提供下述相连解释。既有详细剧情指南仍可经剧情推进与[设计索引](../../README.md#design)访问，包括 [Battle27 激活指南](../synthesis/battle27-activation-and-first-turn-dispatch.md)。
+[玩法总览](synthesis/gameplay-overview.md)仍是读者入口。已有的[战术战斗循环](synthesis/tactical-battle-loop.md)、[成长与经济](synthesis/progression-and-economy.md)、[剧情推进](synthesis/story-progression.md)和[地图设计原则](synthesis/map-design-principles.md)仍是主题所有者。它们已接受的修订提供下述相连解释。既有详细剧情指南仍可经剧情推进与[设计索引](../../README.md#design)访问，包括 [Battle27 激活指南](synthesis/battle27-activation-and-first-turn-dispatch.md)。
 
 [剧情内容覆盖所有者](../../research/story-content-coverage.md#four-different-frontiers)区分原版静态研究、原版观察、英文综合和重制生产。已接受的静态章节连接延伸至结尾、字幕和 Battle0 重置，并包含选定的可选遭遇与分支。这支持有限定的战役层面说明，不是自然游玩攻略、每个 NPC/宝箱/服务访问、每种合法交战行动或穷尽的内容普查。后续研究不会自动成为已接受综合。覆盖所有者的[剩余处置](../../research/story-content-coverage.md#remaining-labels-and-next-content-task)没有选择自动采集队列。
 
@@ -68,22 +68,22 @@
 | [progression-and-economy.md](../synthesis/progression-and-economy.md) | 将成员、职业、装备与成长连接到接收、容量、支出和恢复。 | 无计划。 |
 | [map-design-principles.md](../synthesis/map-design-principles.md) | 交互尝试、对话继续、交通、当前/重建状态与持久化边界。 | 无计划。 |
 
-**已接受的整体来源处置：** 这五份英文源已通过 main-gate 独立读者验收并合并，本轮无计划实质重写。其中文主题镜像也已独立验收并合并。审阅路线为总览 → 对应主题 → 章节/示例 → 具名证据，主题及章节链接返回有用的阅读入口。相连示例沿 [Ribble/Achilles → Taros → Caravan](../synthesis/story-progression.md#worked-example-taros-and-the-caravan) 展开：容量/拒绝、持有与装备、准入与效果、首次/重复及非胜利返回、获取与登乘，以及独立的服务访问。补充的 Creed/Jaro、奖励/smith 与 Polca no-scroll/scroll 分支检查成员/控制、资源及生命周期交接。这些是选定的静态连接与有限观察，不是一次自然游玩的战役或全内容审计。详细审阅路线、精确接受源对象及实际检查结果由 [Issue #1280](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1280) 及其 PR 保存。[中文读者入口](../../README.zh-CN.md)通往已接受的主题镜像与另行接受的地图探索镜像；翻译索引记录它们经审阅的版本锚。
+**已接受的整体来源处置：** 这五份英文源已通过 main-gate 独立读者验收并合并，本轮无计划实质重写。其中文主题镜像也已独立验收并合并。审阅路线为总览 → 对应主题 → 章节/示例 → 具名证据，主题及章节链接返回有用的阅读入口。相连示例沿 [Ribble/Achilles → Taros → Caravan](synthesis/story-progression.md#完整示例taros-与-caravan) 展开：容量/拒绝、持有与装备、准入与效果、首次/重复及非胜利返回、获取与登乘，以及独立的服务访问。补充的 Creed/Jaro、奖励/smith 与 Polca no-scroll/scroll 分支检查成员/控制、资源及生命周期交接。这些是选定的静态连接与有限观察，不是一次自然游玩的战役或全内容审计。详细审阅路线、精确接受源对象及实际检查结果由 [Issue #1280](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1280) 及其 PR 保存。[中文读者入口](../../README.zh-CN.md)经已接受主题通往中文章节指南和英文证据所有者；翻译索引记录完整已索引设计语料经审阅的版本锚。
 
-验收严格覆盖五个选定主题与 #434 的独立合同，不表示全部设计文档、全局翻译 PASS 或双语 Epic #514 完成。未复核镜像保留锚与失败。未翻译的细节转到英文所有者；没有中文镜像不代表原版研究或英文解释缺失。
+五主题来源处置构成整体主题基线。此后，更广设计语料也已在各文档范围内完成独立的全文双语验收。直至 Battle27 的现有章节指南均有中文对应文档。后期章节中没有独立设计指南的部分直接链接英文研究；这些是证据路线，不是待译的中文设计指南。语料覆盖不会扩大自然游玩证明、研究覆盖或重制支持。
 
 保留问题是对解释的明确限制，不是计划重写或自动研究任务：
 
 | 保留问题 | 所属边界 |
 | --- | --- |
 | 自然战役可达性、每种合法行动/交互及未观察的调用者/呈现完成。 | [剧情覆盖的四个前沿](../../research/story-content-coverage.md#four-different-frontiers)及选定章节/遭遇所有者。静态连接不延伸原版已观察路线。 |
-| 完整转职变更、全名册选择与战役平衡/稀缺性。 | [队伍/资源判断边界](../synthesis/progression-and-economy.md#judgment-boundary)、[转职](../synthesis/progression-and-economy.md#definitions-current-class-and-promotion)及所列合同。不主张最优配装或通用曲线。 |
-| 完整交通/返回生命周期，以及存档/挂起相关状态能否持久保留。 | [地图返回/持久化](../synthesis/map-design-principles.md#return-and-persistence)、[资源持久化](../synthesis/progression-and-economy.md#persistence-boundary)及[存档合同](../contracts/save-system.md)。进入存档域、存档返回与持久存储仍相互独立。 |
-| 更广可玩内容、硬件保真与未来 UI/UX 或存档选择。 | [能力所有者](../../../remake/docs/capability-status.md)、[已接受里程碑](../synthesis/map3-battle01-readiness.md#accepted-current-milestone)及[已接受/未来选择](../synthesis/gameplay-overview.md#made-remake-choices-and-remaining-product-choices)。英文覆盖不授予生产准入。 |
+| 完整转职变更、全名册选择与战役平衡/稀缺性。 | [队伍/资源判断边界](synthesis/progression-and-economy.md#判断边界)、[转职](synthesis/progression-and-economy.md#定义当前职业与转职)及所列合同。不主张最优配装或通用曲线。 |
+| 完整交通/返回生命周期，以及存档/挂起相关状态能否持久保留。 | [地图返回/持久化](synthesis/map-design-principles.md#返回与持久性)、[资源持久化](synthesis/progression-and-economy.md#持久性边界)及[存档合同](../contracts/save-system.md)。进入存档域、存档返回与持久存储仍相互独立。 |
+| 更广可玩内容、硬件保真与未来 UI/UX 或存档选择。 | [能力所有者](../../../remake/docs/capability-status.md)、[已接受里程碑](../synthesis/map3-battle01-readiness.md#accepted-current-milestone)及[已接受/未来选择](synthesis/gameplay-overview.md#已作出的重制选择与尚待决定的产品选择)。英文覆盖不授予生产准入。 |
 
 历史原版/现代版失败、#1047 的十二个已完成但未解决的比较，以及先前实际诊断、修正与 CI，仍由链接的证据及 Issue/PR 所有者保存。不通过重跑历史套件或改标签来建立此来源处置。
 
-[Map3–Battle01 就绪性所有者](../synthesis/map3-battle01-readiness.md#accepted-current-milestone)与[保留比较所有者](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)保存已接受组合及已完成失败。原版观察保留[独立边界](../synthesis/map3-battle01-readiness.md#accepted-original-frontier)。当前生产支持由[能力台账](../../../remake/docs/capability-status.md)、所链接的消费者及[覆盖区分](../../research/story-content-coverage.md#four-different-frontiers)负责。重组文字不会推进这些边界。历史报告、失败比较与未知问题仍由原所有者负责；本计划既不以 PASS 替换它们，也不重启它们。[Phase 4 引导计划](../synthesis/phase4-bootstrap-plan.md)保留为历史；[ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md)负责当前引擎方向。
+[Map3–Battle01 就绪性所有者](../synthesis/map3-battle01-readiness.md#accepted-current-milestone)与[保留比较所有者](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)保存已接受组合及已完成失败。原版观察保留[独立边界](../synthesis/map3-battle01-readiness.md#accepted-original-frontier)。当前生产支持由[能力台账](../../../remake/docs/capability-status.md)、所链接的消费者及[覆盖区分](../../research/story-content-coverage.md#four-different-frontiers)负责。重组文字不会推进这些边界。历史报告、失败比较与未知问题仍由原所有者负责；本计划既不以 PASS 替换它们，也不重启它们。[Phase 4 引导计划](synthesis/phase4-bootstrap-plan.md)保留为历史；[ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md)负责当前引擎方向。
 
 ### 阅读结构与归属
 
@@ -121,19 +121,21 @@
 
 每个切片须直接检查文字/范围、相对链接/锚、UTF-8/私有边界与 `git diff --check`，并按仅文档政策运行配置中的已提交 planner，记录实际 scoped CI。翻译切片使用现有术语表、索引及源到镜像的直接标签、结构、fixture 和锚检查；在限定交接处运行既有全局 `zh-meta test`，保留任何范围外 FAIL。本协议不启动普通/完整 Python、.NET、Godot 或 H3/H4 全套。独立审阅判断证据解读和读者价值；机械 PASS 不充分。交付干净、已提交并推送的 Draft PR，等待独立验收。本计划不删除历史报告、私有输入或保留失败。
 
-本路线图负责当前协议与来源处置；Issue 负责工作协调。后续英文扩展须另定 Issue。更多中文翻译需要自己的来源稳定性评估及限定文件/验收范围；五主题和 #434 的接受不使其他来源自动就绪。[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) 及其 UI/UX 任务保留产品归属；[#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) 继续暂停。本轮不授权生产准入、新美术、存档/读档实现、全游戏一致性或通用比较器。
+本路线图负责当前协议与来源处置；Issue 负责工作协调。后续英文扩展或中文同步须另定 Issue，分别评估来源稳定性，声明精确文件与验收边界。现有语料的验收不会预先接受后续来源修订或新增文档。[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) 及其 UI/UX 任务保留产品归属；[#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638) 继续暂停。本轮不授权生产准入、新美术、存档/读档实现、全游戏一致性或通用比较器。
 
 ### 有边界的翻译修复协议
 
-先按三个连贯批次修复已有镜像，依序集成：
+此处保留既有章节锚，现负责持续同步。经审阅的基线中，已索引设计语料共有 165 份来源、165 份已译镜像、零 pending，来源/术语表/镜像漂移均为零。使用 `uv run --locked sf2 zh-meta test` 复现当前状态；使用 `uv run --locked sf2 zh-meta list` 查看逐文档状态与经审阅的版本锚。计数只描述该语料，不代表全部仓库文档、游戏文本或原版完整性。
 
-1. **索引、路线图与导航：** 登记全部英文规范源，将缺少镜像的来源列为 pending；修正本协议、完整翻译最终路线图，并恢复当前双语阅读路线。其他每条译文记录原样保留。范围外漂移保持 FAIL。
-2. **七份通用合同：** 对已有音频、战斗 AI、战斗控制、对话、音乐等待、队伍名册和随机性镜像，分别复核已接受来源后同步。保留行为与证据边界，不修改英文规范合同。
-3. **连续场景与就绪性：** 同步已有连续 Map3–Battle01 场景和就绪性镜像，保留已接受的当前组合、原版前沿限制及历史失败；随后复核全局索引和翻译诊断。
+后续每次变化遵循以下规则：
 
-完成这些修复后，按读者需求及已接受来源的稳定性，独立评估剩余 90 份 pending 文档。它们是翻译缺口，不是自动启动 2.25 MB 翻译、新研究队列或宣布 #514 完成的授权。不创建逐文件微任务或新的目录/同步框架。持续同步复用当前索引与直接检查；英文实质变更须有经审阅的中文更新，或明确的待同步缺口。
+1. **确认来源稳定。** 使用已接受的 `main`，确认来源所有者与实际实质变化，翻译前检查竞争工作或计划重写。新增或扩展的英文文档须单独评估来源稳定性与读者范围。
+2. **翻译并审阅内容。** 按现有术语表更新完整的受影响镜像。独立审阅含义、条件、拒绝/失败分支、证据标签、标识符与 fixture 序列。Historical 和 Proposed 身份及带日期的诊断保留原有语境。双语审阅总览 → 主题 → 章节/示例 → 证据路线，包含可选分支与有用的返回链接。
+3. **明确链接职责。** 读者链接可以使用已接受的中文对应文档及相应章节。英文规范源、源码/溯源、fixture、研究、ADR 和引擎/验收链接继续指向各自所有者。后期英文研究须标为研究，不能称为未译设计指南。保留既有锚，或核对并修复其传入引用。
+4. **只为已审阅的变化更新版本锚。** 完成实质双语审阅后，仅更新受影响的索引记录，保留无关记录和术语表元数据。若英文变更先获接受而镜像尚未同步，保留旧的已审阅锚，并明确报告同步缺口；不能只刷新 hash 或日期来消除漂移。`pending` 表示尚无镜像；保留的 translated 记录则可能存在来源漂移。两种状态都不是新的研究队列。
+5. **验证并交接。** 在同一进程加载保留的私有输入配置后运行原有全局检查，并直接检查范围、链接/章节锚、语义目标、元数据和私有边界。按仅文档政策检查干净提交上的 planner 与实际 scoped CI。即使元数据通过，仍须独立的全文双语和读者路线验收；保留所有已完成失败与未知项。
 
-索引/导航切片检查约 34 KB 的 roadmap 来源、两份导航页与 88 条缺失记录；工作量与文档字节数线性相关，输出是小型文本/JSON。后续合同和里程碑批次在各自限定范围内复用相同检查。来源分歧、需要新研究，或证据修复主导翻译时，先重新评估再扩展。本协议不授予新采集、引擎能力、UI/UX 选择、游戏脚本汉化或清理权限。精确派发、结果与剩余失败由链接的 [Epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) 及其限定 Issue/PR 负责。
+复用当前术语表、索引、镜像与直接检查，无需新目录、同步框架或逐文件微任务队列。来源分歧、新研究需求或证据修复开始主导翻译时，须在扩展前重新评估范围。本协议不授予新采集、引擎能力、UI/UX 选择、游戏脚本汉化或清理权限。精确派发与审阅结果由链接的 [Epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) 及其限定 Issue/PR 保存；main-gate 负责独立集成和 Epic 的最终验收判断。
 
 ## 长期方向
 

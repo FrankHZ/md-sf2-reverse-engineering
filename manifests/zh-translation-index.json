@@ -631,10 +631,10 @@
       "source": "docs/design/documentation-roadmap.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
-      "sourceSha256": "e4cb8faa2d9126f585c2ce97229fa53791e748813457e7a6ad0fbe5483e48b78",
-      "mirrorSha256": "a420825e8d19b51c47d8058bf294b7c5c1153faa85e83fe780b08ca7ba5ccb12",
+      "sourceSha256": "131e0759ce9ce66dbb348648e508406eb98b0814dd78d88829159f9c277a78f4",
+      "mirrorSha256": "995e43570d5486a2e08a3b782715440391b706cd7b8a48a90ef2c46fb1d367d7",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-10-25"
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/battle01-return-through-battle02.md",
@@ -1136,7 +1136,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/gameplay-overview.md",
       "sourceSha256": "c7be7228c7d15b9824828aaef577cdf3ce94e64f35928608b27cab13b1131399",
-      "mirrorSha256": "198863c0ec37954a20fe220f9bd5e682b9dc9976cc770787a63cf34bb9dd5005",
+      "mirrorSha256": "82e1b9166c2385e96c94bb0be005fd372ae8141ed3d8926bc764b3ab32748432",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1199,7 +1199,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map-design-principles.md",
       "sourceSha256": "b9d6c24e12433d92b05a1a843e757efdbbcaccd9531a287f2a6f52a3f1f05a1f",
-      "mirrorSha256": "bd9ff834686136fbf53deb88e23b48f3b01e26e59edf3a4d417bc0d804dd188c",
+      "mirrorSha256": "ea7f3246bcb6ab3f920e4ed756ec4d952aa3b5b0cb8c6737904389e87df52bc1",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1406,7 +1406,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/progression-and-economy.md",
       "sourceSha256": "b1afce8048ec054d1762f268aedac9aee8b88c8f4c95fbc99a15346206e7c8eb",
-      "mirrorSha256": "9bc80518a7671b92c65dfebdc3c1a909ab1cdd63ae2ec0d8eff2990839130089",
+      "mirrorSha256": "76993304f1ad7c128ddbb82d1bc34d600aa9732420919e4105bd93c45e929d8f",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1451,7 +1451,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "5a1bc709e6bf8d30db6aac4b3f9526438aa00a2973615171bf2f2ee6ca7201c4",
+      "mirrorSha256": "62b32962ad5229957eeb2886839f9c19fa5b0cd3166fe661924628b0422f3415",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1460,7 +1460,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/tactical-battle-loop.md",
       "sourceSha256": "bbe50c6f29ea618787051488f16855f86d5fdf51c3224e2db41d21a01372b535",
-      "mirrorSha256": "d80649836fe3b66ffee4ffb704816acae81eae45af4e06e01584886cd721db89",
+      "mirrorSha256": "3983a80850b2bb32f3d0d13cba918d9828617934c9a5134665c5804414973078",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
