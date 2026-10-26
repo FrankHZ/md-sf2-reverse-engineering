@@ -804,11 +804,21 @@
     },
     {
       "source": "docs/design/synthesis/battle22-initialization-and-roster.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle22-initialization-and-roster.md",
+      "sourceSha256": "1a299d6ed7c2d76590f1254ea132bb4de7d3f1f7be3c56351025fead49272ea4",
+      "mirrorSha256": "b30e34893b3ffaecaeff221bb3691781c466080f908f161e9a18b73cacdc43cd",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle22-outcomes-and-desktop-return.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle22-outcomes-and-desktop-return.md",
+      "sourceSha256": "983268659a7bafdcf2ef4b0a30aa83692c13c60fee23b1520c2303b957e6bcbb",
+      "mirrorSha256": "f7bc1272cf8b9c59be56228194e735cb2cc433bf7dbfbac22fe04779d9b07d25",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle23-initialization-and-roster.md",
@@ -901,7 +911,12 @@
     },
     {
       "source": "docs/design/synthesis/cotton-balloon-through-floor-world-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/cotton-balloon-through-floor-world-entry.md",
+      "sourceSha256": "cd72de56031f132bf7bc98fd38bf77cef4180275cee8a75c00cb8f311f3413e2",
+      "mirrorSha256": "539317aee1ca67fa1f57b5c24c616caa2b67fe54ddb434f789ba25dc156aa3cf",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md",
@@ -947,13 +962,18 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/desktop-kingdom-first-arrival.md",
       "sourceSha256": "30334c94887ebe0c5b8ddfc2d8550dbfd48ebb0e306a7a0c566f1ef53b9192de",
-      "mirrorSha256": "9e3012d87801e6823d2cf264279d2521c0912e476432d9ad934af104c1da403b",
+      "mirrorSha256": "6f753209acf13b78c34e863611a20940f1885280bdb99304c33fa3cc77565edc",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/desktop-kingdom-interactions-through-battle22-entry.md",
+      "sourceSha256": "e35236d78117c6a8772fcaaa560b7896f8af2c7aae4920e8c49a6ce1cd5114fc",
+      "mirrorSha256": "185ba8c682c2d0824041cf4992d4b9f2137eb5bf90dfe30bd62c80118052e6aa",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/earthquake-town-through-docks-departure.md",
@@ -1010,11 +1030,21 @@
     },
     {
       "source": "docs/design/synthesis/floor-world-first-arrival.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/floor-world-first-arrival.md",
+      "sourceSha256": "22527e8066814f6d2e3b0cfefe7248f3183f6351138b529f4de9bf837e17c328",
+      "mirrorSha256": "571f8729aeb56664a11d3cda5d995f124df0a1be60da8799951fdcce1077357a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/floor-world-interactions-and-exits.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/floor-world-interactions-and-exits.md",
+      "sourceSha256": "20b39e8d465b3638802e8de1d28500bc3c0263147012178c86289387c98d257d",
+      "mirrorSha256": "8168d581dfa2c53fd4067bf18cf0e0d9595c01d2b0662decc3a5af5700fef9d2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/gameplay-overview.md",
@@ -1276,7 +1306,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "7fe66199df7783f676ba72b6ea7d88b37511c61cd6dc39a60d89300bca55ed59",
+      "mirrorSha256": "b2152f5c246d5c502e226aaa957b65dd9afa3146c24c3f03b51a47cab5316c57",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
