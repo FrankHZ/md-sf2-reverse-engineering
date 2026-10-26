@@ -168,17 +168,17 @@
 
 [Harpy Pond 离开至 Fairy Cave 入场（中文）](harpy-pond-departure-through-fairy-cave-entry.md)解释独立池塘出口、Map67 准入/人口、Elric 条件通道场景及 Map32 实际 ms_Void/共享入场边界。当前图块、返回后 F751、待处理请求与已完成控制仍有区别。它止于条件洞穴控制、无关待处理继续或开场前 Battle21 准入，保留行动者/模式/服务、自然路线和持久性未知项，不声称后续洞穴探索或 Creed 内容。
 
-[Fairy Cave 探索与 Devil's Tail 返回](../../synthesis/fairy-cave-exploration-and-devils-tail-return.md)继续解释四个宝箱奖励、实体优先的 C 与搜索、收件人/回滚及后续布局重新应用。两个洞穴出口保留独立 F421/F521 准入和条件 Map67 控制；东返回 `(57,24)` 不选择 F520。岩石检查保留 F751/F13/HP 与当前 Peter 映射，独立于通道打开。它止于已完成条件局部交互/搜索、Map67 控制/请求或开场前 Battle21 准入；自然访问、服务和持久性仍为未知，不含 Creed 或战斗内容。
+[Fairy Cave 探索与 Devil's Tail 返回（中文）](fairy-cave-exploration-and-devils-tail-return.md)继续解释四个宝箱奖励、实体优先的 C 与搜索、收件人/回滚及后续布局重新应用。两个洞穴出口保留独立 F421/F521 准入和条件 Map67 控制；东返回 `(57,24)` 不选择 F520。岩石检查保留 F751/F13/HP 与当前 Peter 映射，独立于通道打开。它止于已完成条件局部交互/搜索、Map67 控制/请求或开场前 Battle21 准入；自然访问、服务和持久性仍为未知，不含 Creed 或战斗内容。
 
-[Battle21 开场与初始名册](../../synthesis/battle21-opening-and-initial-roster.md)解释完整拒绝/威胁对峙与条件新配置。传入 F421/F521 准入、F471 场景选择及 F88 存档入场保持独立；裁切/源码坐标、场景演员、实际出战队伍布置和成功物品掩码保留不同消费者。新入场止于 ActivateEnemies 前，挂起入场止于各自单次行动前，不声称结果/Creed 或战术；自然可达、服务、升级后的名册、呈现和持久性仍为未知。
+[Battle21 开场与初始名册（中文）](battle21-opening-and-initial-roster.md)解释完整拒绝/威胁对峙与条件新配置。传入 F421/F521 准入、F471 场景选择及 F88 存档入场保持独立；裁切/源码坐标、场景演员、实际出战队伍布置和成功物品掩码保留不同消费者。新入场止于 ActivateEnemies 前，挂起入场止于各自单次行动前，不声称结果/Creed 或战术；自然可达、服务、升级后的名册、呈现和持久性仍为未知。
 
-[Battle21 结果与 Devil's Tail 返回](../../synthesis/battle21-outcomes-and-devils-tail-return.md)继续说明首领清理与 HP 变更、两个有序结果检查及完整首次后续场景。重复种子、裁切场景与完整地图返回、成员资格与随从映射及新人口仍分开。它止于条件 Map67 控制/待处理或传入败北继续，早于宅邸 init；自然可达、传入状态、已完成服务和持久性仍为未知。
+[Battle21 结果与 Devil's Tail 返回（中文）](battle21-outcomes-and-devils-tail-return.md)继续说明首领清理与 HP 变更、两个有序结果检查及完整首次后续场景。重复种子、裁切场景与完整地图返回、成员资格与随从映射及新人口仍分开。它止于条件 Map67 控制/待处理或传入败北继续，早于宅邸 init；自然可达、传入状态、已完成服务和持久性仍为未知。
 
-[Creed Mansion 入口与首次 Goliath 阻拦](../../synthesis/creed-mansion-entry-and-first-goliath-scene.md)继续经过独立门口/请求/准入、基线配置及完整首次区域（事件）场景。最后设置的指针、传入行动者、当前门图块复制与 F774、延后的包装器/控制仍分开。它止于缩小前的条件首次场景返回/重复；自然访问、已完成服务、渲染表现、可用控制和持久性仍为未知。
+[Creed Mansion 入口与首次 Goliath 阻拦（中文）](creed-mansion-entry-and-first-goliath-scene.md)继续经过独立门口/请求/准入、基线配置及完整首次区域（事件）场景。最后设置的指针、传入行动者、当前门图块复制与 F774、延后的包装器/控制仍分开。它止于缩小前的条件首次场景返回/重复；自然访问、已完成服务、渲染表现、可用控制和持久性仍为未知。
 
-[Creed 魔法门与 Desktop 转移](../../synthesis/creed-magic-door-and-desktop-transfer.md)继续解释独立 F783 区域（事件）门槛、完整警告/缩小/收取场景及条件 Map22 请求/准入。临时精灵操作、叙述中的拾取、当前门图块复制与 F422/F522 战斗选择仍分开。它止于目的地人口/init 或 Battle22 开场之前；自然可达、传入状态、并发/服务完成、渲染拾取和可用控制仍为未知。
+[Creed 魔法门与 Desktop 转移（中文）](creed-magic-door-and-desktop-transfer.md)继续解释独立 F783 区域（事件）门槛、完整警告/缩小/收取场景及条件 Map22 请求/准入。临时精灵操作、叙述中的拾取、当前门图块复制与 F422/F522 战斗选择仍分开。它止于目的地人口/init 或 Battle22 开场之前；自然可达、传入状态、并发/服务完成、渲染拾取和可用控制仍为未知。
 
-[Desktop Kingdom 首次抵达与条件控制](../../synthesis/desktop-kingdom-first-arrival.md)从已准入的新探索继续，经过基线人口、完整落地/讨论/告别及建立跟随。传入映射、临时精灵操作、选定并发等待和调用方写入的 F776，仍不同于叙事归属和持久大小。它止于交互、cs_5996E 或 Battle22 内容之前的条件局部首次抵达返回/重复；自然可达、实际状态、服务/动作完成、可见/可听表现、有用控制和持久性仍为未知。
+[Desktop Kingdom 首次抵达与条件控制（中文）](desktop-kingdom-first-arrival.md)从已准入的新探索继续，经过基线人口、完整落地/讨论/告别及建立跟随。传入映射、临时精灵操作、选定并发等待和调用方写入的 F776，仍不同于叙事归属和持久大小。它止于交互、cs_5996E 或 Battle22 内容之前的条件局部首次抵达返回/重复；自然可达、实际状态、服务/动作完成、可见/可听表现、有用控制和持久性仍为未知。
 
 [Desktop 对话与 Chessboard 挑战](../../synthesis/desktop-kingdom-interactions-through-battle22-entry.md)继续解释村民、Eric/Karna、受限 Caravan/Church 交接、King Ponpei 许可及棋子。F777 许可、独立守卫标志、Y16 的通配 X 区域（事件）分发、遭遇完成、待处理传送和实际战斗准入保持区别。它止于开场/名册之前的 BattleLoop 入场，或条件局部绕过/返回；交谈不招募或开始交战，传说/夸口不定义机制。自然可达、实际状态、服务/包装器/呈现完成、有用控制和持久性仍为未知。
 

@@ -20,52 +20,23 @@
 | 交互、对话、交通、返回与地图重建怎样组合，哪些状态能保留？ | [地图设计原则](./design/zh-CN/synthesis/map-design-principles.md) | [Map Design Principles](./design/synthesis/map-design-principles.md) |
 | 六组章节如何推进，必需条件与可选分支在哪里？ | [剧情推进](./design/zh-CN/synthesis/story-progression.md) | [Story Progression](./design/synthesis/story-progression.md) |
 
-一条具体路线是总览 → 剧情推进中的 [Taros/Caravan 示例（中文）](./design/zh-CN/synthesis/story-progression.md#完整示例taros-与-caravan)
-→ 剑的持有/装备、遭遇准入、结局、获取与登乘的各自证据。
+按章节选择详细阅读入口；完整指南清单、可选分支与精确条件集中在[剧情推进（中文）](./design/zh-CN/synthesis/story-progression.md#分段阅读故事内容)。
+这些是条件连接的阅读分组，不是自然必经攻略，也不扩展止于 Battle01 可用返回的重制里程碑。
 
-该示例的四篇详细中文指南是：
+| 章节 | 有用的入口与接续 |
+| --- | --- |
+| [Grans 开篇与离开（中文）](./design/zh-CN/synthesis/story-progression.md#grans-开篇与离开) | 从[开篇至 Battle01（中文）](./design/zh-CN/synthesis/opening-through-battle01.md)，经 Hawel、Galam、塔楼和地震撤离，至[航行登陆与损坏船只控制（中文）](./design/zh-CN/synthesis/voyage-through-damaged-ship-control.md)。 |
+| [New Granseal 与东部 Parmecia（中文）](./design/zh-CN/synthesis/story-progression.md#new-granseal-与东部-parmecia) | 从[木板选择至 Battle08 准入（中文）](./design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md)，经 Peter、Ribble、East Shrine、Polca 与 Bedoe，至[Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md)。 |
+| [南方旅行、Caravan 与 Creed（中文）](./design/zh-CN/synthesis/story-progression.md#南方旅行caravan-与-creed) | 从[木筏登乘与 South Parmecia 入场（中文）](./design/zh-CN/synthesis/polca-raft-boarding-through-south-parmecia-entry.md)，经 Kraken、Hassan、Taros/Caravan、Elven Village 和 Harpy Pond，接续[Fairy Cave 探索（中文）](./design/zh-CN/synthesis/fairy-cave-exploration-and-devils-tail-return.md)、Battle21、Creed 门事件与[Desktop 首次抵达（中文）](./design/zh-CN/synthesis/desktop-kingdom-first-arrival.md)。之后的 Desktop/Creed 细节回退英文。 |
+| [北方旅行、Pacalon、Tristan 与 Mitula（中文）](./design/zh-CN/synthesis/story-progression.md#北方旅行pacalontristan-与-mitula) | 章节导读连接 Cannon/North Cliff、Ketto、Pacalon、Tristan 与 Mitula；详细指南回退英文。 |
+| [Moun、Nazca 与返回 Grans（中文）](./design/zh-CN/synthesis/story-progression.md#mounnazca-与返回-grans) | 章节导读连接 Moun 幸存者、Nazca 航行与返回 Grans，并保留可选招募/锻造分支；细节与证据沿章节链接阅读英文研究所有者。 |
+| [最终对决与结局（中文）](./design/zh-CN/synthesis/story-progression.md#最终对决与结局) | 章节导读连接 Sword、塔路线、尾声、亲吻选择及字幕/隐藏战斗重置；细节与证据沿章节链接阅读英文研究所有者。 |
 
-1. [Ribble 树洞开启与 Achilles Sword](./design/zh-CN/synthesis/ribble-tree-opening-and-achilles-sword.md)：两个宝箱的容量/拒绝/重试、精确位置与朝向的 Panel 使用、条件 Sword 持有与返回。
-2. [Southwest Parmecia、Taros 警告与 Battle18 进入](./design/zh-CN/synthesis/southwest-parmecia-through-taros-battle18-entry.md)：独立的警告/撤退和战斗准入，首次/重复战前程序及激活前交接。
-3. [Battle18 结果与 Caravan 获取](./design/zh-CN/synthesis/battle18-outcomes-and-caravan-acquisition.md)：首次/重复胜利、败北/逃脱、Rohde 演示、F65/F84 变化及紧接的条件返回。
-4. [Caravan 登乘与 Southwest Parmecia 旅行](./design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md)：获取/随从与 mode 1 登乘的区别、登陆、独立步行 Battle19 请求；C 菜单路径止于调用，不证明服务事务。
-
-这是条件依赖的阅读顺序，不是自然必经攻略；Sword 持有、装备与伤害规则保持各自边界。
-[Hassan/Rohde 的提议（中文）](./design/zh-CN/synthesis/hassan-ancestry-and-rohde-caravan-choice.md)、
-[Rick 可选招募（中文）](./design/zh-CN/synthesis/hassan-rick-recruitment.md)也已有中文镜像；其他未译相邻指南仍回退英文。
-四篇指南各自的证据追踪和未知项保留静态连接、实际观察、表现/输入与持久性的限制。
-
-Grans 开场经 Hawel、Galam、塔楼后续和地震撤离，至航行登陆/损坏船只条件控制的详细中文阅读路线是：
-
-1. [开篇至 Battle 01：地点、人物与返回](./design/zh-CN/synthesis/opening-through-battle01.md)：选定住宅/学校、信使、城堡/塔、Battle01 和可用返回；区分原版观察与已接受现代组合。
-2. [Battle 01 返回至 Battle 02 准入](./design/zh-CN/synthesis/battle01-return-through-battle02.md)：有条件的城堡驱魔/委任、Jaha 加入和调用方解锁，以及西出口遭遇选择。
-3. [Battle 02 结果至 Battle 03 准入](./design/zh-CN/synthesis/battle02-outcome-through-battle03.md)：结果与替代返回、Yeel/Kazin 内容及独立的大地图请求/准入；跟随不同于招募，Yeel 不是已证明的必需前提。
-4. [Battle 03 结果至 Battle 04 准入](./design/zh-CN/synthesis/battle03-outcome-through-battle04.md)：Hawel 住宅默认/重复内容、Kazin 正式加入，以及独立住宅出口与遭遇选择。
-5. [Battle 04 结果至 Battle 05 准入](./design/zh-CN/synthesis/battle04-outcomes-through-battle05.md)：胜利/特殊败北/逃脱、Galam 俘虏与通道、Slade 跟随及守卫条件解锁；不证明剧情必败。
-6. [Battle 05 结果至 Battle 06 准入](./design/zh-CN/synthesis/battle05-outcomes-through-battle06.md)：独立位置/HP 调用、首次完成宝石场景与 Slade 招募、Galam 出口及入场时 F407 写入。
-7. [Battle06 结果、Granseal 内容与 Battle07 准入](./design/zh-CN/synthesis/battle06-outcomes-through-battle07.md)：F506 内容、可选 Kiwi 招募、王室跟随和条件塔请求；保留 F401 拦截、F999 替换及跳过分支。
-8. [Battle07 结果与探索交接](./design/zh-CN/synthesis/battle07-outcomes-and-aftermath.md)：四类结果、分阶段塔楼场景、宝石/当前跟随/持久标志，以及脚本和调用方完成后空 Map58 配置重建与条件控制。
-9. [塔后返回至地震城镇入场](./design/zh-CN/synthesis/post-tower-return-through-earthquake-entry.md)：条件塔楼/城堡请求、独立 Astral 对话、F640 地图替换和首次/重复地震场景；止于初始化后控制/事件读取。
-10. [地震城镇出口至码头出航](./design/zh-CN/synthesis/earthquake-town-through-docks-departure.md)：变化后的港口、同地图登船、老人 Yes/No 选择、F74 清除与实体重建，以及脚本内 Map66 加载后的条件 Map73 请求。
-11. [航行登陆至损坏船只控制](./design/zh-CN/synthesis/voyage-through-damaged-ship-control.md)：首次/重复选择、可选 Kiwi、人群登陆及 Jaha 木板场景；两次脚本内 Map14 加载绕过 init，F700 先于条件控制读取写入。
-
-后十篇解释源码条件连接，不证明自然连续行程，也不扩展止于 Battle01 可用返回的重制里程碑。
-从此处接续 New Granseal 与 Peter 的六篇详细中文指南：
-
-1. [木板选择至 Battle08 准入](./design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md)：可选木板回应与重复救援请求、请求先于调用方写入，以及激活前开场边界。
-2. [Battle08 结果至 New Granseal 城堡交接](./design/zh-CN/synthesis/battle08-outcomes-through-new-granseal-handoff.md)：首次/重复与非胜利返回、工人后续、条件建设和脚本后 F705；止于城堡 init 前。
-3. [New Granseal 城堡：一年后讲话与首次控制交接](./design/zh-CN/synthesis/new-granseal-castle-year-later-control.md)：配置/场景选择、实体群重建及 F707/F411 后的条件控制读取。
-4. [New Granseal 城镇：Peter 首次登场](./design/zh-CN/synthesis/new-granseal-town-through-peter-introduction.md)：独立 F706/F701 触发、接待与隐藏；不把场景动作当作招募或持久遣离。
-5. [Peter 城堡觐见与返回城镇](./design/zh-CN/synthesis/peter-castle-audience-through-town-return.md)：加入/出战/AI、临时/持久跟随、礼物叙事与静态效果差异及城镇条件控制。
-6. [New Granseal 出发至 Battle09 准入](./design/zh-CN/synthesis/new-granseal-departure-through-battle09.md)：滚动与普通入场、部分重载和有序选择；止于激活前空 start 返回。
-
-这仍是条件连接的阅读路线，不证明自然必经行程、可用输入或扩展重制里程碑；服务完成与持久性未知保留在各指南。
-下一段的 [Ribble 欢迎（中文）](./design/zh-CN/synthesis/battle09-outcomes-through-ribble-welcome.md)接续 Battle09 结果，经可选 May 招募、East Shrine 与洞窟返回，
-到达 [Polca 仙女互动至 Battle12 准入（中文）](./design/zh-CN/synthesis/polca-fairy-through-battle12-admission.md)。六篇详细指南及可选/条件边界集中在
-[New Granseal 与东部 Parmecia 章节（中文）](./design/zh-CN/synthesis/story-progression.md#new-granseal-与东部-parmecia)，不构成必经链或自然连续游玩证明。
-继续沿 [Battle12 结果至 Bedoe 入场（中文）](./design/zh-CN/synthesis/battle12-outcomes-through-bedoe-entry.md)，经国王讲话/首次觐见、Volcanon、可选国王选择与雏鸟救援；
-五篇详细指南及其独立准入、状态和条件控制边界仍集中在上述剧情章节。再沿 [Bedoe 返回至 Battle13 准入（中文）](./design/zh-CN/synthesis/bedoe-return-through-battle13-admission.md)，经 Battle13 结果、市长木筏交易和可选 Oddler 选择，至 [Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md)；四篇详细指南及跟随/成员资格、木筏配置/登乘、调用方/控制的区别仍集中在同一章节，不构成必经顺序。之后沿[南方旅行、Caravan 与 Creed 章节（中文）](./design/zh-CN/synthesis/story-progression.md#南方旅行caravan-与-creed)，从 [Polca 木筏登乘与 South Parmecia 入场（中文）](./design/zh-CN/synthesis/polca-raft-boarding-through-south-parmecia-entry.md)经过 Kraken 和 Hassan，接续既有 Taros/Caravan 示例。随后沿 [Battle19 结果与独立 Elven Village 入场（中文）](./design/zh-CN/synthesis/battle19-outcomes-through-elven-village-entry.md)，经可选村庄探索、Harpy Pond 与 Elric 招募，至 [Fairy Cave 条件入场（中文）](./design/zh-CN/synthesis/harpy-pond-departure-through-fairy-cave-entry.md)。各段详细清单和独立条件边界集中在该章节；后续未译细节仍回退英文。
-[详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
+也可沿总览 → [Taros/Caravan 完整示例（中文）](./design/zh-CN/synthesis/story-progression.md#完整示例taros-与-caravan)
+→ 物品容量/拒绝、剑的持有与装备、遭遇准入/结果、获取与登乘的各自证据，查看跨系统依赖。
+四篇详细中文指南及 Ribble、Hassan/Rohde、可选 Rick 的相邻入口均可从该章节找到。
+Sword 持有、装备和伤害规则保持各自边界；静态连接、实际观察、表现/输入与持久性限制仍由各指南保留。
+[详细章节指南（英文）](./README.md#design)提供其他未译细节及其规范所有者；中文镜像不把静态连接写成自然连续游玩。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)
 已在 #434 中另行评估来源稳定性并独立验收。它解释受控地图/交互边界；其接受独立于上述五主题，不表示所有地图或服务运行时均已验证。
