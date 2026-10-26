@@ -23,6 +23,18 @@
 一条具体路线是总览 → 剧情推进中的 [Taros/Caravan 示例（中文）](./design/zh-CN/synthesis/story-progression.md#完整示例taros-与-caravan)
 → 剑的持有/装备、遭遇准入、结局、获取与登乘的各自证据。
 
+该示例的四篇详细中文指南是：
+
+1. [Ribble 树洞开启与 Achilles Sword](./design/zh-CN/synthesis/ribble-tree-opening-and-achilles-sword.md)：两个宝箱的容量/拒绝/重试、精确位置与朝向的 Panel 使用、条件 Sword 持有与返回。
+2. [Southwest Parmecia、Taros 警告与 Battle18 进入](./design/zh-CN/synthesis/southwest-parmecia-through-taros-battle18-entry.md)：独立的警告/撤退和战斗准入，首次/重复战前程序及激活前交接。
+3. [Battle18 结果与 Caravan 获取](./design/zh-CN/synthesis/battle18-outcomes-and-caravan-acquisition.md)：首次/重复胜利、败北/逃脱、Rohde 演示、F65/F84 变化及紧接的条件返回。
+4. [Caravan 登乘与 Southwest Parmecia 旅行](./design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md)：获取/随从与 mode 1 登乘的区别、登陆、独立步行 Battle19 请求；C 菜单路径止于调用，不证明服务事务。
+
+这是条件依赖的阅读顺序，不是自然必经攻略；Sword 持有、装备与伤害规则保持各自边界。
+[Hassan/Rohde 的提议（英文）](./design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md)、
+[Rick 可选招募（英文）](./design/synthesis/hassan-rick-recruitment.md)及其他未译相邻指南仍回退英文；
+四篇指南各自的证据追踪和未知项保留静态连接、实际观察、表现/输入与持久性的限制。
+
 开场至 Battle03 准入的详细中文阅读路线是：
 
 1. [开篇至 Battle 01：地点、人物与返回](./design/zh-CN/synthesis/opening-through-battle01.md)：选定住宅/学校、信使、城堡/塔、Battle01 和可用返回；区分原版观察与已接受现代组合。
