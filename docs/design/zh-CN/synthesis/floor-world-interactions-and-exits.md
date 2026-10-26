@@ -253,7 +253,7 @@ F779/F780 在范围外。战斗准入有独立所有者。
 自然几何/可达性及后续目的地行为仍独立。这些退出既不消费环，也不消费 balloon，
 不写 EGRESS_MAP、PLAYER_TYPE、已保存木筏状态或新剧情/招募标志。
 本指南止于目的地实体群/init、隧道脚本及 Battle23 钩子、名册、激活或结果之前。
-已接受后续 [Willard Burrow 探索与 Battle23 准入（英文）](../../synthesis/willard-burrow-through-battle23-entry.md)
+已接受后续 [Willard Burrow 探索与 Battle23 准入（中文）](willard-burrow-through-battle23-entry.md)
 解释新实体群、局部穿行及独立获准对峙，直至 BattleLoop 调用。
 它保留行动者/别名、坐标及待处理请求限制，止于战斗初始化或目的地 Floor World/Creed init 之前。
 

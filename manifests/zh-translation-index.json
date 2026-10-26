@@ -822,11 +822,21 @@
     },
     {
       "source": "docs/design/synthesis/battle23-initialization-and-roster.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle23-initialization-and-roster.md",
+      "sourceSha256": "2929b97ebd6f0ebb0e5beee273dfc69a3cd1ca9690b0ca94e7c30ef7cc23bfff",
+      "mirrorSha256": "f916ee68ec65413c81d0c1d1de7f532019b3f18ce4662de54df4a2381620e73c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle23-outcomes-and-burrow-return.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle23-outcomes-and-burrow-return.md",
+      "sourceSha256": "064deb7cf65d1984708ca7201d23ea9225552f04c3b1ab19cef15283286a6e8d",
+      "mirrorSha256": "f2464d2bb5a1f347de0c0664179a3678698751ecd46f319955ec7638fc9e3bde",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle24-outcomes-through-north-cliff-preparation.md",
@@ -942,7 +952,12 @@
     },
     {
       "source": "docs/design/synthesis/creed-restoration-and-basement-departure.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-restoration-and-basement-departure.md",
+      "sourceSha256": "61d2a128b5798920883870725ef11d96319ac173cde54b1fbce9b089c71e38ea",
+      "mirrorSha256": "60e13120e28ebe114ab46ee951e7d429f33653b641bc9afdefba26b1ef64c4d3",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/creed-return-fairy-and-recruitment-choices.md",
@@ -1013,11 +1028,21 @@
     },
     {
       "source": "docs/design/synthesis/evil-spirit-consultation-and-zone-return.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/evil-spirit-consultation-and-zone-return.md",
+      "sourceSha256": "bb40caa802e2b500ad9311a04597b223ea87c2484addc966cffbf2db15ee2c72",
+      "mirrorSha256": "a18cc0cdc0080096cdc99bc1fbf635a8955affedce18b39b8ca2bbd2f1caa845",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/evil-spirit-shrine-entry-and-scene-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/evil-spirit-shrine-entry-and-scene-admission.md",
+      "sourceSha256": "8776be6f230a69317f245ba69de53d11f910d7601f081505c53cfa1a89b5db35",
+      "mirrorSha256": "1127599a50e85bbb226f3417e29a661930a8296bfae788ee3e14dddff3744ac9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/fairy-cave-exploration-and-devils-tail-return.md",
@@ -1042,7 +1067,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/floor-world-interactions-and-exits.md",
       "sourceSha256": "20b39e8d465b3638802e8de1d28500bc3c0263147012178c86289387c98d257d",
-      "mirrorSha256": "8168d581dfa2c53fd4067bf18cf0e0d9595c01d2b0662decc3a5af5700fef9d2",
+      "mirrorSha256": "8e0b2a0e71c8604aa916789307949cd48bd06afc710b7d95df852468159a599e",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1306,7 +1331,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "b2152f5c246d5c502e226aaa957b65dd9afa3146c24c3f03b51a47cab5316c57",
+      "mirrorSha256": "efd4e33771999f8f5cc402f2635cb4d923853ca9034d5c91d2e335ce819ed3c6",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1339,7 +1364,12 @@
     },
     {
       "source": "docs/design/synthesis/willard-burrow-through-battle23-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/willard-burrow-through-battle23-entry.md",
+      "sourceSha256": "f5ee81cc063064bfbd55426a8a0d81496f93cc16f9f7c6bb38084c8e215933c0",
+      "mirrorSha256": "7248b3bcb7613e8ab653d7f3c5e30f5de59246ca92ead4913281d141502611aa",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     }
   ]
 }
