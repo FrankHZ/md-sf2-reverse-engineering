@@ -4,7 +4,7 @@ South Parmecia 选定的西侧出口通过滚动进入 Southwest Parmecia，探�
 
 **已确认：**已接受的[研究所有者](../../../research/southwest-parmecia-through-taros-battle18-entry.md)确立这些条件转移、完整警告与战前场景，以及全新／已保存进入边界。**推断：**对话将 Taros 呈现为取得 Caravan 的障碍。**未知：**自然旅程、实际传入状态、服务完成、表现、可用输入及持久性。Fnnn 表示标志 nnn；坐标单位为地图瓦片，表索引从零开始。等待计数、摄像机速度和移动操作数描述源码请求，不是实测时长。
 
-前一选定区域见 [Hassan 离开与 Battle17 返回（英文）](../../synthesis/hassan-departure-and-battle17-outcomes.md)，独立的接受／跟随写入见 [Rohde 的提议（英文）](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md)，有条件的物品持有见 [Achilles Sword 谜题](ribble-tree-opening-and-achilles-sword.md)。这些链接不确立必需的时间顺序旅程。本指南停止于有条件的探索返回、无关战斗准入或 Battle18 激活前的开始交接。独立的结果／场景及紧接的返回边界见 [Battle18 结果与 Caravan 获取](battle18-outcomes-and-caravan-acquisition.md)。Caravan 操作、Rick 与后续旅行需要各自的所有者；此处未观察交战或可玩回合（单次行动）。
+前一选定区域见 [Hassan 离开与 Battle17 返回（中文）](hassan-departure-and-battle17-outcomes.md)，独立的接受／跟随写入见 [Rohde 的提议（中文）](hassan-ancestry-and-rohde-caravan-choice.md)，有条件的物品持有见 [Achilles Sword 谜题](ribble-tree-opening-and-achilles-sword.md)。这些链接不确立必需的时间顺序旅程。本指南停止于有条件的探索返回、无关战斗准入或 Battle18 激活前的开始交接。独立的结果／场景及紧接的返回边界见 [Battle18 结果与 Caravan 获取](battle18-outcomes-and-caravan-acquisition.md)。Caravan 操作、Rick 与后续旅行需要各自的所有者；此处未观察交战或可玩回合（单次行动）。
 
 ## 两种转移，不同后果
 

@@ -4,7 +4,7 @@
 
 **推断：**这是预期的 Panel／树／Sword 关联。**已确认：**下文选定的宝箱、物品使用、场景、物品栏和地图请求规则来自已接受的[研究所有者](../../../research/ribble-tree-opening-and-achilles-sword.md)。**未知：**自然接近、在共用神殿地图内行走、场景／服务实际完成、开启画面的渲染、连续持有、可用控制以及存档／恢复持久性。本指南是有条件的玩法内容说明，不规定它与编号战斗或 Hassan 对话之间的必经顺序。
 
-Fnnn 表示标志 nnn；坐标单位为地图瓦片；记录索引从零开始。Map8 为 Ribble，Map50 为 `MAP_ACHILLES_SHRINES`，Map61 则是独立的 `MAP_RIBBLE_SHRINE_EXTERIOR`。共用 Map50 身份并不能证明其不同区域之间存在步行路径。城镇配置见 [Ribble 的欢迎（英文）](../../synthesis/battle09-outcomes-through-ribble-welcome.md)，后续持有检查调用方见 [Hassan 的 Rohde 选择（英文）](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md#talking-to-rohde)。两者都不是此处新增的前置条件。
+Fnnn 表示标志 nnn；坐标单位为地图瓦片；记录索引从零开始。Map8 为 Ribble，Map50 为 `MAP_ACHILLES_SHRINES`，Map61 则是独立的 `MAP_RIBBLE_SHRINE_EXTERIOR`。共用 Map50 身份并不能证明其不同区域之间存在步行路径。城镇配置见 [Ribble 的欢迎（中文）](battle09-outcomes-through-ribble-welcome.md)，后续持有检查调用方见 [Hassan 的 Rohde 选择（中文）](hassan-ancestry-and-rohde-caravan-choice.md#与-rohde-交谈)。两者都不是此处新增的前置条件。
 
 ## 两个宝箱，两次独立的持有判定
 
@@ -109,7 +109,7 @@ Panel/Sword 持有状态及 F731 既不能确立这两个标志的值，也不�
 
 选定返回记录行 2 要求 `(42,24)`、无滚动、Map8、目标 `(16,20)`、Down。它不检查 Sword 或宝箱标志。若请求保留下来，相同使用方到达 Ribble，且无 Map8 战斗记录行；重新进入选择按标志选定的城镇配置，在 F731 设置时应用它，并在有条件地交还控制之前运行已接受的 May 相关初始化。传送／重新加载不会移除 Sword。**有条件的成功接收**在此返回之前使所选携带者取得物品；自然步行离开、不间断持有及可用输入仍属未知。
 
-这种持有状态可以满足 Rohde 首次交谈时对已加入成员物品栏的搜索，包括后备成员；Sword 不必由 Bowie 携带或装备。Rohde 的所选物品路径则要求实际选择 Sword，并满足其独立的 `(16,58)` 谓词。F147/F731 不是持有检查，Rohde 也不消耗 Sword。他的选择见[独立 Hassan 指南（英文）](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md)。本指南停止于有条件的 Ribble 返回／持有状态及该交叉引用，不包含外部神殿接近、Rick、Battle17/18、Rohde 重放或 Caravan 操作。
+这种持有状态可以满足 Rohde 首次交谈时对已加入成员物品栏的搜索，包括后备成员；Sword 不必由 Bowie 携带或装备。Rohde 的所选物品路径则要求实际选择 Sword，并满足其独立的 `(16,58)` 谓词。F147/F731 不是持有检查，Rohde 也不消耗 Sword。他的选择见[独立 Hassan 指南（中文）](hassan-ancestry-and-rohde-caravan-choice.md)。本指南停止于有条件的 Ribble 返回／持有状态及该交叉引用，不包含外部神殿接近、Rick、Battle17/18、Rohde 重放或 Caravan 操作。
 
 ## 证据追踪与审查限制
 

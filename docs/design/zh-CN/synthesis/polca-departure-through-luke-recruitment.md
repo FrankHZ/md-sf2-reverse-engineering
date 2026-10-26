@@ -1,12 +1,12 @@
 # Polca 出发与 Luke 招募
 
-> 本文是[规范英文原文](../../synthesis/polca-departure-through-luke-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](polca-departure-through-luke-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Luke 离开场景呈现他自愿与 Bowie 同行和战斗。Polca 选定南出口请求大地图，招募场景可在地图初始化期间运行。它创建和调度一个 Luke 行动者，让 Luke 加入军团，随后移动并隐藏该行动者，再写入后续战斗解锁。这些是独立有序效果：陪同、场景出现、加入军团与在战斗中出战是不同状态。
 
 **已确认静态内容与控制流：**已接受的[研究所有者](../../../research/polca-departure-through-luke-recruitment.md)支持下文准入、完整场景和直接消费者。**推断：**归属交流描绘 Luke 自愿参加旅程。**未知：**自然离开、实际传入状态、服务完成、可见表现、响应输入及存档/读档持久性。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
 
-两次请求及当前/未来跟随见 [Polca 的 Oddler 选择与跟随](polca-oddler-choice-and-following.md)；市长交易见[木筏授予](battle13-outcomes-through-polca-raft-grant.md)。本指南解释选定离开至条件探索控制。登乘、河流旅行和随后战斗准入仍在边界外。不增加重制能力或产品决策。接续 [Polca 木筏登乘与 South Parmecia 入场（英文）](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)，了解独立玩家请求、分阶段 mode2 提交及两个选定 Map69 入场生命周期。该指南保留本场景接触与自然路线限制。
+两次请求及当前/未来跟随见 [Polca 的 Oddler 选择与跟随](polca-oddler-choice-and-following.md)；市长交易见[木筏授予](battle13-outcomes-through-polca-raft-grant.md)。本指南解释选定离开至条件探索控制。登乘、河流旅行和随后战斗准入仍在边界外。不增加重制能力或产品决策。接续 [Polca 木筏登乘与 South Parmecia 入场（中文）](polca-raft-boarding-through-south-parmecia-entry.md)，了解独立玩家请求、分阶段 mode2 提交及两个选定 Map69 入场生命周期。该指南保留本场景接触与自然路线限制。
 
 ## 离开 Polca 并到达场景
 

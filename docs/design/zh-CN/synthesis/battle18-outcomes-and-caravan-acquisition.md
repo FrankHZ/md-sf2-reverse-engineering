@@ -4,7 +4,7 @@
 
 **已确认：**已接受的[研究所有者](../../../research/battle18-outcomes-and-caravan-acquisition.md)确立条件结果路径、完整首次胜利程序、选定变更及紧接的返回。**推断：**其对话与调度将 Rohde 呈现为 Caravan 的驾驶者，以缩小作为进入其中的解释。**未知：**自然结果、实际传入状态、渲染出的消失／返回、服务完成、可用控制及持久性。
 
-此前的条件准入见 [Taros 警告与 Battle18 进入](southwest-parmecia-through-taros-battle18-entry.md)，独立的接受／跟随写入见 [Rohde 的提议（英文）](../../synthesis/hassan-ancestry-and-rohde-caravan-choice.md)。两者都不提供自然获胜路线。本指南停止于紧接的条件探索／控制边界或无关战斗准入。不包含 Sword 伤害、交战模拟、Caravan 操作／菜单／存储、Rick 及后续旅行。独立的[可选 Rick 招募指南（英文）](../../synthesis/hassan-rick-recruitment.md)说明有条件的 Hassan 实体生成及当前成员资格／跟随，不确立必需的神殿至 Hassan 返回。独立的 [Caravan 登乘与 Southwest Parmecia 旅行指南](caravan-boarding-and-southwest-parmecia-travel.md)说明选定神殿出口／准入、mode1 登乘／移动／登陆及步行的独立 Battle19 请求；其条件控制／准入边界不提供自然行程或菜单事务。Fnnn 表示标志 nnn；坐标单位为地图瓦片，索引从零开始。下文等待与速度均为源码操作数，不是实测时间。对话采用转述。
+此前的条件准入见 [Taros 警告与 Battle18 进入](southwest-parmecia-through-taros-battle18-entry.md)，独立的接受／跟随写入见 [Rohde 的提议（中文）](hassan-ancestry-and-rohde-caravan-choice.md)。两者都不提供自然获胜路线。本指南停止于紧接的条件探索／控制边界或无关战斗准入。不包含 Sword 伤害、交战模拟、Caravan 操作／菜单／存储、Rick 及后续旅行。独立的[可选 Rick 招募指南（中文）](hassan-rick-recruitment.md)说明有条件的 Hassan 实体生成及当前成员资格／跟随，不确立必需的神殿至 Hassan 返回。独立的 [Caravan 登乘与 Southwest Parmecia 旅行指南](caravan-boarding-and-southwest-parmecia-travel.md)说明选定神殿出口／准入、mode1 登乘／移动／登陆及步行的独立 Battle19 请求；其条件控制／准入边界不提供自然行程或菜单事务。Fnnn 表示标志 nnn；坐标单位为地图瓦片，索引从零开始。下文等待与速度均为源码操作数，不是实测时间。对话采用转述。
 
 ## 战斗如何结束
 
@@ -127,7 +127,7 @@ F64 未设置时保留已保存木筏坐标。F64 已设置时，存档点选择
 | Polca13 或 Bedoe10 | Map72 `(43,48)` |
 | 其他任意表选择 | 哨兵默认 Map69 `(42,15)` |
 
-这些是保存位置写入，不是登乘、模式规范化或立即在返回地图放置。传入 EGRESS_MAP9 时，返回为 Hassan `(8,9)`、Up。其已接受的[实体生成／初始化指南（英文）](../../synthesis/battle16-outcomes-through-hassan-entry.md#hassans-cast-and-conditional-control)保留默认／F518 替代阵容、普通随从、共享初始化及依赖 F65 的 Rohde 移出。首次败北留下 F518 未设置；重复败北保留它。两者都不设置 F65 或清除 F84。重置到 69 的木筏不会被放在城镇 9。初始化／服务之后，没有待处理工作时允许有条件地交还控制。这一已接受初始化不隐含任何 Rick 交互或调查。
+这些是保存位置写入，不是登乘、模式规范化或立即在返回地图放置。传入 EGRESS_MAP9 时，返回为 Hassan `(8,9)`、Up。其已接受的[实体生成／初始化指南（中文）](battle16-outcomes-through-hassan-entry.md#hassan-实体群与条件控制)保留默认／F518 替代阵容、普通随从、共享初始化及依赖 F65 的 Rohde 移出。首次败北留下 F518 未设置；重复败北保留它。两者都不设置 F65 或清除 F84。重置到 69 的木筏不会被放在城镇 9。初始化／服务之后，没有待处理工作时允许有条件地交还控制。这一已接受初始化不隐含任何 Rick 交互或调查。
 
 直接败北／Egress 返回也绕过 CheckBattle。其他传入地图有各自的 SwitchMap、配置／初始化及待处理行为；其继续路径在此为未知，而非假定等同 Hassan。实际 EGRESS_MAP 仍为传入状态，不是强制城镇或自然败北行程。不一致的 map255 使用既有实体分支，不执行全新重建。停止于紧接的条件返回／控制边界；不准入全地图初始化调查。
 
