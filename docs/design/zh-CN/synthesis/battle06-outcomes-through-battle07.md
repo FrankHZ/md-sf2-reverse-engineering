@@ -8,7 +8,7 @@ Battle06 胜利准备大地图返回；选定城镇与城堡内容描述 Galam �
 
 本英文指南的中文镜像承接 [Battle05 结果至 Battle06 准入](battle05-outcomes-through-battle06.md)。它消费[已接受分段研究](../../../research/battle06-to-battle07-content-route.md)，止于 Battle07 before/start，早于其结算。[路线图](../documentation-roadmap.md#当前基线与近期综合)拥有 [#715](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/715) 的 Standard 严谨度协议。此处不接受可玩重制能力或新观察。
 
-接着读 [Battle07 结果与探索交接（英文）](../../synthesis/battle07-outcomes-and-aftermath.md)，了解胜利/重复/败北/逃脱、长塔楼场景及条件恢复探索。
+接着读 [Battle07 结果与探索交接（中文）](battle07-outcomes-and-aftermath.md)，了解胜利/重复/败北/逃脱、长塔楼场景及条件恢复探索。
 
 下方原版源码路径、标签、地址、对话绑定和选定数字值归该研究所有者，固定至 `ShiningForceCentral/SF2DISASM` `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA 零售 ROM 身份。`Fnnn` 表示标志 nnn；源码路径相对 `disasm/`。Map3 是 Granseal，Maps19/20/21 是城堡 2F/1F/3F，Map66 是王国大地图，Maps40/57/60/58 是塔外/入口/楼梯/地下房间。这些是源码身份，不是从楼梯注释推断的楼层名。
 

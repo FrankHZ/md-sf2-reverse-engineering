@@ -681,13 +681,18 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/battle06-outcomes-through-battle07.md",
       "sourceSha256": "e75205471cb0a4dd78ae3af90d59ff6065c0c3caffee9a3e215005c8bb6e413b",
-      "mirrorSha256": "e5817731ec20c7e6920d2b354f1179198793ef9faa77e954e5328423af0fca0f",
+      "mirrorSha256": "d28ec224c4b942ff05f2ee350ea7e2a6ce29b87f04bc55caccd3aeb7874f89fe",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle07-outcomes-and-aftermath.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle07-outcomes-and-aftermath.md",
+      "sourceSha256": "8c93a08493c1c09f687fac39f0a2e05e35de050ef5e8681415b3b7d822a45bc0",
+      "mirrorSha256": "b68a72ab44dbcf97698e65cd4cbb852980956b715a1b530387496aef6e11357e",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle08-outcomes-through-new-granseal-handoff.md",
@@ -857,7 +862,12 @@
     },
     {
       "source": "docs/design/synthesis/earthquake-town-through-docks-departure.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/earthquake-town-through-docks-departure.md",
+      "sourceSha256": "be6c5014c76dcae3407474a488382d3c6990fcbb66c50d6f30976d2e9ae830b6",
+      "mirrorSha256": "e750c6bf4130976c56c77d82d8c4b361f50b3efb0566988c9390fbd8ea5c49dc",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/east-shrine-return-through-battle11-admission.md",
@@ -1029,7 +1039,12 @@
     },
     {
       "source": "docs/design/synthesis/post-tower-return-through-earthquake-entry.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/post-tower-return-through-earthquake-entry.md",
+      "sourceSha256": "ca4216188c98987b2977e1c0bd6831a784c00fb30899723add78b1e3621076c6",
+      "mirrorSha256": "6faf346140ee3b74939d6c1a9b7d59c7fa67e3bd36302e1a265a2684d84a8f5a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/progression-and-economy.md",
@@ -1071,7 +1086,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "9793297bff050bc6bbc2dd8dc55665197a4fad37273ac03e00dd6e47843d4737",
+      "mirrorSha256": "d54844145c496b8a4c07dd15cb390469ebb5a8b12f6d975e7a10ca494e0e79ba",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1090,7 +1105,12 @@
     },
     {
       "source": "docs/design/synthesis/voyage-through-damaged-ship-control.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/voyage-through-damaged-ship-control.md",
+      "sourceSha256": "b3b6952ca0e8fdf68b288c24589c8325b6b8da492124cfec46c0f3a3e1b9dbe6",
+      "mirrorSha256": "e5c64cb69e031acb234f74900ecaaad4ee7269979be57120547f8e480b96ed4a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/willard-burrow-through-battle23-entry.md",

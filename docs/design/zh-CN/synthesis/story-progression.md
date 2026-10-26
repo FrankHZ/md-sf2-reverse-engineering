@@ -41,10 +41,10 @@
 
 开篇连接城镇交互、城堡/塔事件与战斗，随后通过被俘、塔后续、地震和乘船离开改变世界。**已确认：** 选定开篇有受限原版观察；后续局部指南解释静态结果/返回与事件门槛。地震城镇出口、登船选择、出航场景和损坏船只抵达是不同交接，并非一次过渡。脚本搬移也不等于玩家再次决定移动。
 
-用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航](../../synthesis/earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
+用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航（中文）](earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
-<summary>详细指南及其局部边界（前七篇中文，其余英文）</summary>
+<summary>详细指南及其局部边界（本组十一篇中文；下一组未译细节回退英文）</summary>
 
 [开篇至 Battle 01（中文）](opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
 
@@ -60,13 +60,13 @@
 
 [Battle06 结果至 Battle07 准入（中文）](battle06-outcomes-through-battle07.md)继续说明随结果变化的返回、F506 城镇/城堡内容、可选 Kiwi 招募、王室跟随和条件塔请求。F407 准入与 F506 内容仍分开；F401 拦截、F999 替换和 F457/F88 跳过分支保留行走、随从/重入及出战队伍未知项。
 
-[Battle07 结果与探索交接](../../synthesis/battle07-outcomes-and-aftermath.md)随后解释胜利/重复/败北/逃脱、分阶段的塔后续，以及独立的宝石/当前跟随/持久标志效果。返回请求先于脚本/调用方完成；空 Map58 配置在条件恢复控制之前重建随从。F999、冲突随从标志、自然服务完成和后续行走仍是明确限制；指南止于紧接的 Map58 出站所有者。
+[Battle07 结果与探索交接（中文）](battle07-outcomes-and-aftermath.md)随后解释胜利/重复/败北/逃脱、分阶段的塔后续，以及独立的宝石/当前跟随/持久标志效果。返回请求先于脚本/调用方完成；空 Map58 配置在条件恢复控制之前重建随从。F999、冲突随从标志、自然服务完成和后续行走仍是明确限制；指南止于紧接的 Map58 出站所有者。
 
-[塔后返回至地震城镇入场](../../synthesis/post-tower-return-through-earthquake-entry.md)继续经过选定的塔/城堡出口、独立 Astral 对话、地震地图替换及首次/重复城镇初始化。它止于条件控制/事件读取；合法行走、调用方/随从状态与自然服务完成仍为未知，后续撤离另行处理。
+[塔后返回至地震城镇入场（中文）](post-tower-return-through-earthquake-entry.md)继续经过选定的塔/城堡出口、独立 Astral 对话、地震地图替换及首次/重复城镇初始化。它止于条件控制/事件读取；合法行走、调用方/随从状态与自然服务完成仍为未知，后续撤离另行处理。
 
-[地震城镇出口至码头出航](../../synthesis/earthquake-town-through-docks-departure.md)继续经过变化后的港口、同地图登船、老人的 Yes/No 选择及分阶段出航。它区分随从标志清除、行动者重建、脚本内 Map66 加载与条件 Map73 请求交接。行走、占位、随从/服务/待处理状态及独立区域（事件）表异常保留各自限制；目的地初始化和后续航行不在其范围内。
+[地震城镇出口至码头出航（中文）](earthquake-town-through-docks-departure.md)继续经过变化后的港口、同地图登船、老人的 Yes/No 选择及分阶段出航。它区分随从标志清除、行动者重建、脚本内 Map66 加载与条件 Map73 请求交接。行走、占位、随从/服务/待处理状态及独立区域（事件）表异常保留各自限制；目的地初始化和后续航行不在其范围内。
 
-[航行登陆至损坏船只控制](../../synthesis/voyage-through-damaged-ship-control.md)随后解释 Map73 首次/重复选择、可选 Kiwi 内容、登陆/人群指令，以及脚本安排的 Jaha/木板场景。两次脚本内 Map14 加载绕过其 init；F700 在脚本返回后、条件控制前写入。行动者引用复用、随从/出战队伍状态、自然抵达与服务/待处理结果保留各自限制；玩家木板推进与 Battle08 仍分开。
+[航行登陆至损坏船只控制（中文）](voyage-through-damaged-ship-control.md)随后解释 Map73 首次/重复选择、可选 Kiwi 内容、登陆/人群指令，以及脚本安排的 Jaha/木板场景。两次脚本内 Map14 加载绕过其 init；F700 在脚本返回后、条件控制前写入。行动者引用复用、随从/出战队伍状态、自然抵达与服务/待处理结果保留各自限制；玩家木板推进与 Battle08 仍分开。
 
 </details>
 
