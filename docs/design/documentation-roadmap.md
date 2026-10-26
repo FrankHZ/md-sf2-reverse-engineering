@@ -25,20 +25,23 @@ glossary's rules, with terminology consistency, link integrity, evidence-label p
 fixture-trace QA. A zh-CN mirror under `docs/design/zh-CN/` is a derivative; the English source
 remains the review baseline unless a localization batch defines another explicit policy.
 
-**Confirmed current sequencing decision:** Chinese synchronization under
-[the design-documentation epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)
-uses independently accepted, merged English sources with no planned substantive rewrite in the
-selected round. The five selected thematic sources and their Chinese mirrors are accepted within
-the boundaries below. [#434](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/434)'s
-[map-exploration contract](contracts/map-exploration.md) and Chinese mirror are separately accepted;
-their readiness was assessed independently of the five themes. These acceptances do not establish
-stability or translated coverage for every contract or detailed guide.
+**Confirmed current source and language disposition:** all 165 indexed canonical design sources
+have complete zh-CN mirrors, independently accepted and merged under
+[the design-documentation epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
+This corpus covers the roadmap, contracts, thematic synthesis and existing detailed guides under
+`docs/design/`, excluding the glossary, which governs terminology rather than having a mirror.
+It includes the separately reviewed [map-exploration contract](contracts/map-exploration.md),
+the **Proposed** [controlled-admission contract](contracts/map3-controlled-admission.md) and the
+**Historical** [bootstrap plan](synthesis/phase4-bootstrap-plan.md). Translation acceptance does not
+promote a proposal, restore superseded implementation guidance or change original evidence.
 
-The current agreement repairs existing mirrors and reader navigation before assessing absent
-translations. Preserve the glossary, unreviewed translated anchors, known drift and completed
-diagnostic failures. Translate and review substantive content before explicitly re-anchoring its
-record; adding a pending record does not translate a document. Neither a bounded acceptance nor a
-later global metadata PASS completes the bilingual epic.
+Chinese synchronization uses independently accepted, merged English sources whose substantive
+content is stable for the selected scope. Full bilingual content and reader-route review, alongside
+the original glossary/index checks, establish acceptance; a metadata PASS alone is insufficient.
+The continuing agreement below governs future source changes. Content and navigation changes
+require independent semantic and reader-route acceptance; main-gate owns integration and epic
+completion decisions. This design corpus does not include English research, ADRs, engine documentation
+or game-script localization.
 
 ## Design Information Architecture
 
@@ -92,8 +95,8 @@ reviewers.
 
 ## Current Baseline and Near-Term Synthesis
 
-**Current scope agreement — Standard.** The accepted English design explanations and current
-bounded Chinese synchronization consume accepted data
+**Current scope agreement — Standard.** The accepted bilingual design corpus and its continuing
+synchronization consume accepted data
 under [Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514). Its outcome is a
 readable account of the game's connected rules, world progression and player choices that supports
 later design and implementation decisions. Standard rigor fits known evidence owners with
@@ -148,13 +151,15 @@ reward/smith and Polca no-scroll/scroll branches check membership/control, resou
 seams. These are selected static connections and bounded observations, not one naturally played
 campaign or an all-content audit. Detailed review routes, exact accepted source objects and actual
 check results belong to [Issue #1280](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1280)
-and its PR. The [Chinese reader entry](../README.zh-CN.md) routes to the accepted theme mirrors and
-the separately accepted map-exploration mirror; the translation index records their reviewed anchors.
+and its PR. The [Chinese reader entry](../README.zh-CN.md) routes through the accepted themes to
+Chinese chapter guides and English evidence owners; the translation index records reviewed anchors
+for the complete indexed design corpus.
 
-Acceptance covers exactly the five selected themes plus #434's distinct contract, not all design
-documents, global translation PASS or completion of bilingual Epic #514. Unreviewed mirrors retain
-their anchors and failures. Untranslated detail falls back to its English owner; an absent Chinese
-mirror does not mean that the original research or English explanation is absent.
+The five-theme source disposition is the integrated thematic baseline. The broader corpus has since
+received independent full bilingual acceptance within each document's scope. Existing chapter guides
+through Battle27 have Chinese counterparts. Later chapter explanations link directly to English
+research where no separate design guide exists; those links are evidence routes, not pending Chinese
+design guides. Corpus coverage does not extend natural-play proof, research coverage or remake support.
 
 The retained questions are precise limits on the explanation, not planned rewrites or automatic
 research tasks:
@@ -275,9 +280,9 @@ a mechanical PASS alone is insufficient. Leave a clean committed/pushed Draft PR
 acceptance. No historical report, private input or retained failure is deleted by this plan.
 
 This roadmap owns the current agreement and source disposition; Issues own task coordination.
-Any later English expansion uses a separately scoped Issue. Further Chinese translation requires
-its own source-stability assessment and bounded file/acceptance scope; acceptance of the five themes
-and #434 does not confer that readiness on other sources.
+Any later English expansion or Chinese synchronization uses a separately scoped Issue with its own
+source-stability assessment, exact files and acceptance boundary. Existing corpus acceptance does not
+pre-accept later source revisions or new documents.
 [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) and its UI/UX
 tasks keep product ownership; [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638)
 remains paused. This round does not authorize production admission, new art, save/load implementation,
@@ -285,31 +290,44 @@ full-game parity or a general comparator.
 
 ### Bounded translation repair agreement
 
-Repair existing mirrors first in three coherent, sequentially integrated batches:
+This established section anchor now owns continuing synchronization. The indexed design corpus is
+165 sources, 165 translated mirrors, zero pending and zero source/glossary/mirror drift at the reviewed
+baseline. Reproduce the current state with `uv run --locked sf2 zh-meta test`; use
+`uv run --locked sf2 zh-meta list` for per-document status and reviewed version anchors. Counts describe
+this corpus, not all repository documentation, game text or original-game completeness.
 
-1. **Index, roadmap and navigation:** register every canonical source, adding absent mirrors as
-   pending; correct this agreement, translate the complete final roadmap, and restore current bilingual
-   reader routes. Preserve every other translated record exactly. Outside-scope drift remains FAIL.
-2. **Seven general contracts:** synchronize the existing audio, battle AI, battle control, dialogue,
-   music wait, party roster and randomness mirrors against separately reviewed accepted
-   sources. Preserve their behavioral and evidence boundaries; do not change the canonical contracts.
-3. **Continuous scenario and readiness:** synchronize the existing continuous Map3–Battle01 scenario
-   and readiness mirrors, preserving accepted current composition, original-frontier limits and
-   historical failures; then review the global index and translation diagnostics.
+For each later change:
 
-After those repairs, independently assess the remaining 90 pending documents by reader need and
-accepted source stability. They are a translation gap, not an automatic 2.25 MB translation run,
-new research queue or authorization to declare #514 complete. Do not create per-file microtasks or a
-new catalog/synchronization framework. Continuing synchronization reuses the current index and direct
-checks; English substantive changes require reviewed Chinese updates or an explicit pending gap.
+1. **Establish a stable source.** Consume accepted `main`, identify the source's owner and actual
+   substantive changes, and check competing work or planned rewrites before translating. A new or
+   expanded English document receives its own source-stability and reader-scope assessment.
+2. **Translate and review the content.** Update the complete affected mirror under the existing
+   glossary. Independently review meaning, conditions, refusal/failure branches, evidence labels,
+   identifiers and fixture sequences. Keep Historical and Proposed identities and dated diagnostics
+   in their original context. Review the overview → theme → chapter/example → evidence route in both
+   languages, including optional branches and useful return links.
+3. **Keep link roles explicit.** Reader links may use accepted Chinese counterparts and corresponding
+   sections. Canonical-English, source/provenance, fixture, research, ADR and engine/acceptance links
+   stay with their owners. Later English research is labeled as research, not as an untranslated
+   design guide. Preserve established anchors or verify and repair their incoming references.
+4. **Re-anchor only reviewed changes.** Update only the affected index records after real bilingual
+   review, preserving unrelated records and glossary metadata. If a source change is accepted before
+   its mirror is synchronized, retain the old reviewed anchor and report the synchronization gap;
+   do not clear drift by refreshing hashes or dates alone. `pending` means no mirror exists, whereas
+   a retained translated record can have source drift. Neither status is a new research queue.
+5. **Verify and hand off.** Run the original global checks after loading the retained private-input
+   configuration in the same process, plus direct scope, links/fragments, semantic targets, metadata
+   and private-boundary checks. Inspect the clean-head planner and actual scoped CI under the
+   documentation-only policy. Independent full bilingual and reader-route acceptance remains
+   necessary even when metadata passes; preserve every completed failure and Unknown.
 
-The index/navigation slice inspects roughly 34 KB of roadmap source, two navigation pages and 88
-missing records, using work linear in document bytes and small text/JSON outputs. The later contract
-and milestone batches reuse the same checks with their own bounded scopes. Source disagreement,
-new research needs or evidence repair dominating translation triggers reassessment before expansion.
-This agreement grants no new acquisition, engine capability, UI/UX choice, game-script localization
-or cleanup. Exact dispatch, results and remaining failures belong to the linked
-[epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) and its scoped Issues/PRs.
+Reuse the current glossary, index, mirrors and direct checks. No new catalog, synchronization
+framework or per-file microtask queue is needed. Source disagreement, a new research requirement or
+evidence repair dominating translation triggers scope reassessment before expansion. This agreement
+grants no new acquisition, engine capability, UI/UX choice, game-script localization or cleanup.
+Exact dispatch and review results belong to the linked
+[epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) and its scoped Issues/PRs;
+main-gate owns independent integration and the epic's final acceptance decision.
 
 ## Long-Term Directions
 

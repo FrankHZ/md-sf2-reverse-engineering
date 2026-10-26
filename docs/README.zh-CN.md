@@ -1,8 +1,8 @@
 # 文档索引
 
 这是当前中文阅读入口。[英文索引](./README.md)是规范索引；证据、合同与决策以各自的英文所有者为准。
-设计翻译遵循[术语表](./design/glossary.md)。下面区分已有中文镜像及其审阅状态与英文回退；
-缺少中文译文不表示缺少研究或英文说明。
+设计翻译遵循[术语表](./design/glossary.md)。全部 165 份已索引设计文档均有经独立全文双语验收、合并的中文镜像；
+英文研究、ADR 与引擎文档保留各自所有者，不属于这份设计翻译语料。
 
 先检查 Git 提交、工作树、改动和进程，再沿[任务恢复入口（英文）](./operations/agent-resume.md)定位最近的所有者。
 常规任务无需通读全局索引或覆盖率台账。仓库文档和精确 Git 对象是持久记录；旧聊天与历史启动脚本不是新指令。
@@ -10,7 +10,7 @@
 ## 玩法与设计阅读路线
 
 从[玩法总览（中文）](./design/zh-CN/synthesis/gameplay-overview.md)开始，再选主题，沿章节/示例链接进入合同与研究证据。
-下列五主题英文源及中文镜像已经独立验收并合并；它们支持限定的规则与章节说明，不证明自然全流程、全部内容或生产支持。
+下列主题连接已接受的中文合同与现有详细指南；它们支持限定的规则与章节说明，不证明自然全流程、全部内容或生产支持。
 
 | 读者问题 | 已接受的中文主题 | 英文规范源 |
 | --- | --- | --- |
@@ -36,26 +36,22 @@
 → 物品容量/拒绝、剑的持有与装备、遭遇准入/结果、获取与登乘的各自证据，查看跨系统依赖。
 四篇详细中文指南及 Ribble、Hassan/Rohde、可选 Rick 的相邻入口均可从该章节找到。
 Sword 持有、装备和伤害规则保持各自边界；静态连接、实际观察、表现/输入与持久性限制仍由各指南保留。
-[详细章节指南（英文）](./README.md#design)提供其他未译细节及其规范所有者；中文镜像不把静态连接写成自然连续游玩。
+[设计索引（英文）](./README.md#design)保留完整规范文档导航；后期细节若直接链接英文研究，表示其证据职责，并非尚待翻译的设计指南。中文镜像不把静态连接写成自然连续游玩。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)
 已在 #434 中另行评估来源稳定性并独立验收。它解释受控地图/交互边界；其接受独立于上述五主题，不表示所有地图或服务运行时均已验证。
-其他可用参考包括[存档](./design/zh-CN/contracts/save-system.md)与[输入](./design/zh-CN/contracts/input-system.md)的既有中文镜像；
-新增结论仍须回到它们链接的英文证据所有者。
+其他参考包括[存档](./design/zh-CN/contracts/save-system.md)与[输入](./design/zh-CN/contracts/input-system.md)的中文镜像；新增结论仍须回到它们链接的英文证据所有者。
+私有里程碑的中文说明见[连续 Map3–Battle01 场景](./design/zh-CN/contracts/map3-battle01-continuous-scenario.md)与[就绪台账](./design/zh-CN/synthesis/map3-battle01-readiness.md#当前已接受里程碑)；下方工程表保留其英文规范验收入口。
+另可阅读仍为**提议（Proposed）**的[Map3 受控准入合同（中文）](./design/zh-CN/contracts/map3-controlled-admission.md)及仍为**历史（Historical）**、作为实现指导已被取代的[Phase4 引导计划（中文）](./design/zh-CN/synthesis/phase4-bootstrap-plan.md)。两者的当前适用性说明通往现行验收和引擎所有者；译文接受不提升其状态。
 
 ## 翻译状态与持续同步
 
-[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前协议；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)
-规定先修复已有镜像，再按读者需求与来源稳定性评估缺译文档。三个修复批次依次为索引/路线图/导航、七份通用合同、连续场景/就绪性。
-这不是整库自动翻译或 #514 完成声明。
+[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。当前已索引设计语料为 165 份来源、165 份完整译文、零 pending、零来源/术语表/镜像漂移；各文档在自身范围内已独立全文双语验收并合并。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
 
-[翻译索引](../manifests/zh-translation-index.json)是逐文档状态与审阅版本锚的入口。`translated` 表示已有经锚定的译文，
-不保证其来源仍然最新；`pending` 表示尚无中文镜像，阅读时回退到英文规范源。英文实质变化后须复核译文，不能仅刷新 hash 消除漂移。
-用现有 `uv run sf2 zh-meta list` 查看记录、`uv run sf2 zh-meta test` 检查当前全局状态；范围外失败继续保留为 FAIL。
+[翻译索引](../manifests/zh-translation-index.json)记录逐文档状态与审阅版本锚。使用 `uv run --locked sf2 zh-meta list` 查看记录、`uv run --locked sf2 zh-meta test` 复现全局检查。元数据 PASS 只证明检查器覆盖的同步、链接、结构与 fixture 约束，不能替代全文语义与读者路线验收。
 
-已有镜像已完成同步修复，包括七份通用合同及[连续 Map3–Battle01 场景](./design/zh-CN/contracts/map3-battle01-continuous-scenario.md)
-和[就绪台账](./design/zh-CN/synthesis/map3-battle01-readiness.md#当前已接受里程碑)。当前全局索引检查 PASS：已有镜像的来源/术语表/译文锚均为当前版本，链接和结构检查通过。
-这只表示已索引镜像同步，不表示全部设计文档已有译文，也不表示 #514 完成。剩余 `pending` 沿英文规范源阅读；它们是翻译缺口，不是待补原版研究的自动队列。
+未来英文实质变更或新增文档须先确认 accepted main 来源与稳定性，再限定范围、完整翻译和独立审阅。只更新已审阅的受影响记录，其他记录与术语表元数据保持不变。尚未同步时保留旧锚并明确报告漂移，不能只刷新 hash 或日期。`translated` 表示有已锚定译文，不保证来源仍最新；`pending` 表示无镜像，应回退英文。它们都不是原版研究或采集队列。持续同步不包括游戏脚本汉化，也不扩大重制能力。
+
 历史原版/现代失败及 [#1047 的十二项已完成未解决比较](./research/story-content-coverage.md#unknowns-retained-failures-and-next-decision)仍由证据所有者保留，当前组合验收不改写其结果。
 
 ## 工程、研究与验收入口

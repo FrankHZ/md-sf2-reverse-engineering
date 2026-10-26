@@ -127,15 +127,16 @@ party/resources and exploration/continuity. [Story Progression's six chapter gro
 connect selected accepted static content through ending/reset, with detailed guides and evidence
 at their named boundaries. The [five-theme source disposition](./design/documentation-roadmap.md#selected-english-source-set-and-reconciliation)
 keeps integrated source acceptance separate from the bounded playable remake milestone.
-The selected five English themes and their Chinese mirrors are accepted; #434's map-exploration
-contract and mirror are separately accepted. The [Chinese reader entry](./README.zh-CN.md) routes
-to those mirrors and labels English fallbacks.
-The [bounded repair agreement](./design/documentation-roadmap.md#bounded-translation-repair-agreement)
-now has synchronized existing mirrors, including the general contracts and continuous-scenario/readiness
-pair. The global translation index checks PASS: indexed mirrors are current, while pending documents
-still fall back to their canonical English owners. The glossary, translation index and existing
-`sf2 zh-meta` checks retain synchronization ownership. Metadata PASS does not mean every design
-document is translated or the bilingual epic is complete.
+All 165 indexed design sources have complete, independently accepted Chinese mirrors, with zero
+pending or source/glossary/mirror drift at the reviewed baseline. The [Chinese reader entry](./README.zh-CN.md)
+connects themes, chapter guides and English evidence owners. Later chapter sections that link directly
+to English research are not pending Chinese design guides. English remains canonical; translation
+does not advance original observations or playable remake support.
+The [continuing synchronization agreement](./design/documentation-roadmap.md#bounded-translation-repair-agreement)
+uses the existing glossary, translation index and original `sf2 zh-meta` checks. Future source changes
+require stable accepted content, full bilingual review and reader-route acceptance before affected
+anchors are updated. Metadata PASS alone is insufficient. Content and navigation changes require
+independent semantic and reader-route acceptance; main-gate owns integration and epic completion decisions.
 
 - [`glossary.md`](./design/glossary.md)
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md)
@@ -322,7 +323,7 @@ document is translated or the bilingual epic is complete.
 - [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
-- [`phase4-bootstrap-plan.md`](./design/synthesis/phase4-bootstrap-plan.md)
+- [`phase4-bootstrap-plan.md`](./design/synthesis/phase4-bootstrap-plan.md) — **Historical** proposal; current implementation guidance is superseded
 - [`ally-definition-data.md`](./design/contracts/ally-definition-data.md)
 - [`enemy-definition-data.md`](./design/contracts/enemy-definition-data.md)
 - [`item-definition-data.md`](./design/contracts/item-definition-data.md)
@@ -344,7 +345,7 @@ document is translated or the bilingual epic is complete.
 - [`party-membership-state.md`](./design/contracts/party-membership-state.md)
 - [`combat-resolution.md`](./design/contracts/combat-resolution.md)
 - [`exploration-control-flow.md`](./design/contracts/exploration-control-flow.md)
-- [`map3-controlled-admission.md`](./design/contracts/map3-controlled-admission.md)
+- [`map3-controlled-admission.md`](./design/contracts/map3-controlled-admission.md) — **Proposed** bounded R1 admission contract; current acceptance has separate owners
 - [`startup-control-flow.md`](./design/contracts/startup-control-flow.md)
 - [`standalone-map-script-program-data.md`](./design/contracts/standalone-map-script-program-data.md)
 - [`debug-control-flow.md`](./design/contracts/debug-control-flow.md)

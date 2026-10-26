@@ -3,7 +3,7 @@
 <a id="map-design-principles-evidence-bounded-structural-patterns"></a>
 <a id="地图设计原则证据受限的结构模式"></a>
 
-> 本文件是 [`map-design-principles.md`](../../synthesis/map-design-principles.md) 的中文镜像，审阅基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。五个已同步主题之间使用中文导航；合同、详细指南和其他范围外所有者明确链接规范英文。正文中的修订、审计、复现与中文就绪判断均保留英文来源当时的范围；本批不产生新原版证据，也不完成其他镜像。
+> 本文件是 [`map-design-principles.md`](../../synthesis/map-design-principles.md) 的中文镜像，审阅基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。主题与现有详细指南之间使用中文导航；明示英文规范源、证据、研究、ADR 与引擎/验收的链接保留各自所有者。全部已索引设计文档已有独立验收的完整中文镜像；正文中的历史修订、审计与复现保留英文来源当时的范围，不产生新原版证据。当前同步规则见[中文路线图](../documentation-roadmap.md)。
 
 探索把一次行动尝试与它留下的状态连接起来。玩家移动或转向，面向一个行动者或可搜索的地点，然后请求交互。当前地图、标志、工作地形和当前活动的行动者共同决定该请求能否到达处理器。一次已返回的对话可能改变标志或配置交通工具；离开再回来时，地点可能根据这些条件重建。战斗返回又能改变这次重建。继续游玩与保存游戏是两个独立边界。
 
@@ -26,7 +26,7 @@
 
 当前 Standard 约定见[文档路线图（英文）](../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)与 [Issue #1276](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1276)。读者应能沿着“条件 → 尝试行动 → 状态改变或被拒绝 → 继续执行或返回”理解流程。只修改现有的本主题所有者。研究、合同、其他主题、代码、UI/UX 与中文镜像仍归各自所有者。解释已接受事实不需要空间分析、原版观察或验证平台。
 
-保持四条前沿独立：已接受的原版静态知识延伸到选定结尾与重置路径；有界原版观察有各自的 [Map3–Battle01 证据谱系（英文）](../../synthesis/map3-battle01-readiness.md#accepted-original-frontier)；英文综合在具名范围内使用这些证据；生产能力归[重制能力台账（英文）](../../../../remake/docs/capability-status.md)所有。已接受的私有连续 [Map3–Battle01 胜利与可用返回（英文）](../../synthesis/map3-battle01-readiness.md#accepted-current-milestone)没有实现 Polca、木筏行程或 Taros。更广路线、碰撞/呈现用例与耐久持久性，在其所有者如此标记的地方仍为 **未知**。重新组织本说明既不确立全游戏完整性，也不确立整合英文的稳定性或中文同步就绪。
+保持四条前沿独立：已接受的原版静态知识延伸到选定结尾与重置路径；有界原版观察有各自的 [Map3–Battle01 证据谱系（英文）](../../synthesis/map3-battle01-readiness.md#accepted-original-frontier)；英文综合在具名范围内使用这些证据；生产能力归[重制能力台账（英文）](../../../../remake/docs/capability-status.md)所有。已接受的私有连续 [Map3–Battle01 胜利与可用返回（英文）](../../synthesis/map3-battle01-readiness.md#accepted-current-milestone)没有实现 Polca、木筏行程或 Taros。更广路线、碰撞/呈现用例与耐久持久性，在其所有者如此标记的地方仍为 **未知**。重新组织本说明不确立全游戏完整性。英文来源与中文镜像的独立验收及后续来源稳定性，另由路线图负责。
 
 ## 行动与交互
 
@@ -242,4 +242,4 @@ Caravan 有另一套生命周期。[Taros 的结果/获取（中文）](battle18
 
 剩余限制取决于具体主张。解释另一个已接受章节，可以复用其有来源的条件与分支/返回边界。真正新增的可遍历性、可见取景、自然可达或持久性主张，需要在该精确使用方/生命周期处提供证据；未解决问题留在其所有者处，直到具名决定要求更多。空间度量、渲染语料比较与正常路线采集不是本说明的前提，也不是自动排期工作。
 
-[保留比较（英文）](../../../../remake/docs/evidence/retained-comparisons.md)保留已完成失败与十二项已完成但未解决的比较。早期审计、原始/修正检查与 CI 仍归各自交接；不会为了清除文字中的问题重跑历史 suite。[英文优先政策（英文）](../../documentation-roadmap.md#authoring-language-policy)保留中文漂移与源码锚，直到独立翻译批次。独立 main-gate 审阅与整合读者验收仍与本主题完成分开。
+[保留比较（英文）](../../../../remake/docs/evidence/retained-comparisons.md)保留已完成失败与十二项已完成但未解决的比较。早期审计、原始/修正检查与 CI 仍归各自交接；不会为了清除文字中的问题重跑历史 suite。当时英文修订保留的中文漂移已由独立翻译验收处理；[英文优先政策（英文）](../../documentation-roadmap.md#authoring-language-policy)继续要求后续变更先审阅内容，再更新受影响版本锚。独立 main-gate 审阅与整合读者验收仍与本主题完成分开。
