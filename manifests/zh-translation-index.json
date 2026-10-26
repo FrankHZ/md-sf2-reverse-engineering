@@ -930,7 +930,12 @@
     },
     {
       "source": "docs/design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md",
+      "sourceSha256": "beadba305ed912a60286afdf15f960e48baf116b6bd5fb5286df65b9a6eb7a78",
+      "mirrorSha256": "fd07b811f0a78eccf5ef634c3234d830f8d317481ab232d06e72dd0cadebec64",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/creed-magic-door-and-desktop-transfer.md",
@@ -961,7 +966,12 @@
     },
     {
       "source": "docs/design/synthesis/creed-return-fairy-and-recruitment-choices.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-return-fairy-and-recruitment-choices.md",
+      "sourceSha256": "db5c465bccd6739c01ad10acaf049a0bf80a8955783ed90faec5e4bac1893546",
+      "mirrorSha256": "880029d9b9ab68000384021ee0925f08425a87802ed0c0d6ae982940dce2e101",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/damaged-ship-plank-through-battle08.md",
@@ -1031,7 +1041,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/evil-spirit-consultation-and-zone-return.md",
       "sourceSha256": "bb40caa802e2b500ad9311a04597b223ea87c2484addc966cffbf2db15ee2c72",
-      "mirrorSha256": "a18cc0cdc0080096cdc99bc1fbf635a8955affedce18b39b8ca2bbd2f1caa845",
+      "mirrorSha256": "8a02af287e474f9954cddfafda081d07f2f9eb0e8f3c6a45b0cbf6f5a8061341",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1200,7 +1210,12 @@
     },
     {
       "source": "docs/design/synthesis/oddler-stays-and-fairy-handoff.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/oddler-stays-and-fairy-handoff.md",
+      "sourceSha256": "83c0c46a4daac47b83e5ea799617c10279812ba6e9a34e95f6ed0d78e9386297",
+      "mirrorSha256": "25664de8c5aaa1717205bcf2f4b800a20409caa35f66c945afec2d25b2d61969",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/opening-through-battle01.md",
@@ -1331,7 +1346,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "efd4e33771999f8f5cc402f2635cb4d923853ca9034d5c91d2e335ce819ed3c6",
+      "mirrorSha256": "e97b53e87d170e9f4bd7c6375ff743c0ba08b187db870233dd738d1c7f711a72",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
