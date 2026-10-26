@@ -44,7 +44,7 @@
 用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航（中文）](earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
-<summary>详细指南及其局部边界（本组十一篇中文；下一组选定六篇中文，其余细节回退英文）</summary>
+<summary>详细指南及其局部边界（本组十一篇中文；下一组选定十二篇中文，其余细节回退英文）</summary>
 
 [开篇至 Battle 01（中文）](opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
 
@@ -74,10 +74,10 @@
 
 登陆并不立即确立一个安顿完毕的新城镇。木板/救援遭遇及其结果先于选定建设/演说和重建人口边界。从 New Granseal 出发，局部条件把 Peter 的介绍与觐见连接到东行、Ribble、Polca 和 Bedoe。**已确认静态内容：** 说话、跟随、加入军团和下一场遭遇准入有独立消费者。十二个编队位置不会招募十二名伙伴。
 
-阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见](../../synthesis/bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May](../../synthesis/ribble-may-through-battle10-admission.md)、[East Shrine](../../synthesis/battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援](../../synthesis/bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择](../../synthesis/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
+阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见](../../synthesis/bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援](../../synthesis/bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择](../../synthesis/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
 
 <details>
-<summary>详细指南及其局部边界（本组选定六篇中文；其余回退英文）</summary>
+<summary>详细指南及其局部边界（本组选定十二篇中文；其余回退英文）</summary>
 
 [损坏船只的木板选择至 Battle08 准入（中文）](damaged-ship-plank-through-battle08.md)继续解释可选木板回应、显式/同地图入口替代分支、木料交付与重复救援请求。F408/请求产生先于调用方 F703/EGRESS_MAP 写入；Map72 准入与 F458 before/start 分发仍不同于场景演员和交战名册。它止于 ActivateEnemies 之前，保留待处理、行走、随从/服务和挂起入场限制。
 
@@ -91,17 +91,17 @@
 
 [New Granseal 离开至 Battle09 准入（中文）](new-granseal-departure-through-battle09.md)继续经过离城、选定先东后南的大地图连接及条件遭遇准入。滚动保留探索/同行群体状态；普通入口与部分重新加载到达有序战斗选择。特定/默认区域（事件）、携带的请求字节与 F409/F509/F459 保持区别。它止于敌人激活之前的空 start 分发器返回，自然旅行、行动者/请求存活、服务完成和战斗就绪仍为未知。
 
-[Battle09 结果至 Ribble 欢迎](../../synthesis/battle09-outcomes-through-ribble-welcome.md)继续解释可变战斗返回、独立城镇入场、猜疑与 Peter 的说明。独立欢迎门槛，以及居民重新加载、门重建、屋顶恢复和当前跟随的不同效果均明确保留。它止于村长调用方之后及首次条件恢复控制，自然旅行、行动者/服务完成、待处理状态与可见村庄变化仍为未知。
+[Battle09 结果至 Ribble 欢迎（中文）](battle09-outcomes-through-ribble-welcome.md)继续解释可变战斗返回、独立城镇入场、猜疑与 Peter 的说明。独立欢迎门槛，以及居民重新加载、门重建、屋顶恢复和当前跟随的不同效果均明确保留。它止于村长调用方之后及首次条件恢复控制，自然旅行、行动者/服务完成、待处理状态与可见村庄变化仍为未知。
 
-[Ribble 可选 May 招募至 Battle10 准入](../../synthesis/ribble-may-through-battle10-admission.md)继续解释线性邀请、不同的已加入/出战/当前跟随状态、方向指引与选定离开。普通入场重建实体；向东滚动绕过战斗选择，而部分区域（事件）请求到达有序 Battle10/14 准入。它止于 ActivateEnemies 之前的空 start 分发器返回，明确保留行动者/出战队伍、请求、服务、跨存档呈现与自然路线限制。
+[Ribble 可选 May 招募至 Battle10 准入（中文）](ribble-may-through-battle10-admission.md)继续解释线性邀请、不同的已加入/出战/当前跟随状态、方向指引与选定离开。普通入场重建实体；向东滚动绕过战斗选择，而部分区域（事件）请求到达有序 Battle10/14 准入。它止于 ActivateEnemies 之前的空 start 分发器返回，明确保留行动者/出战队伍、请求、服务、跨存档呈现与自然路线限制。
 
-[Battle10 结果至可选 East Shrine 访问](../../synthesis/battle10-outcomes-through-east-shrine-visit.md)继续解释可变战斗返回、独立神殿入口、误认身份、祖父的讲述和邀请。独立持久/临时门槛允许不同交互顺序；当前 129 跟随不同于 F77 下以 30 重建。它止于老人调用方之后及首次条件控制交接，保留映射、服务、存档/重入和自然路线限制。该可选分支不建立强制 Battle11 路线。
+[Battle10 结果至可选 East Shrine 访问（中文）](battle10-outcomes-through-east-shrine-visit.md)继续解释可变战斗返回、独立神殿入口、误认身份、祖父的讲述和邀请。独立持久/临时门槛允许不同交互顺序；当前 129 跟随不同于 F77 下以 30 重建。它止于老人调用方之后及首次条件控制交接，保留映射、服务、存档/重入和自然路线限制。该可选分支不建立强制 Battle11 路线。
 
-[East Shrine 返回至 Battle11 洞穴准入](../../synthesis/east-shrine-return-through-battle11-admission.md)从可选神殿出口或 Battle10 直接返回继续，经过选定滚动/固定连接、精确 F411 准入和 Peter 与 hobgoblin 的对话。F461 开场/F88 恢复、无配置洞穴探索、随从选择的位置及后续战斗员替换仍分开。它止于 ActivateEnemies 之前的新战斗 start 分发器返回，保留中断、行动者/出战队伍/服务/待处理和黑暗呈现限制。未建立强制神殿路线。
+[East Shrine 返回至 Battle11 洞穴准入（中文）](east-shrine-return-through-battle11-admission.md)从可选神殿出口或 Battle10 直接返回继续，经过选定滚动/固定连接、精确 F411 准入和 Peter 与 hobgoblin 的对话。F461 开场/F88 恢复、无配置洞穴探索、随从选择的位置及后续战斗员替换仍分开。它止于 ActivateEnemies 之前的新战斗 start 分发器返回，保留中断、行动者/出战队伍/服务/待处理和黑暗呈现限制。未建立强制神殿路线。
 
-[Battle11 结果至 Polca 首次 Oddler 抵达](../../synthesis/battle11-outcomes-through-polca-arrival.md)继续说明可变洞穴返回、携带的 egress、选定出口与独立 F413 城镇准入。首次 X24 事件安排受伤男孩与村民反应，随后在调用方 F711 处理和 F710 写入之前显式重新加载 F710 居民。跟随被重建，也可能保留相同目标/偏移。它止于首次条件恢复控制，保留行动者/HP/映射、服务/待处理、呈现与自然路线限制；它既不招募 Oddler，也不招募 Gerhalt。
+[Battle11 结果至 Polca 首次 Oddler 抵达（中文）](battle11-outcomes-through-polca-arrival.md)继续说明可变洞穴返回、携带的 egress、选定出口与独立 F413 城镇准入。首次 X24 事件安排受伤男孩与村民反应，随后在调用方 F711 处理和 F710 写入之前显式重新加载 F710 居民。跟随被重建，也可能保留相同目标/偏移。它止于首次条件恢复控制，保留行动者/HP/映射、服务/待处理、呈现与自然路线限制；它既不招募 Oddler，也不招募 Gerhalt。
 
-[Polca 妖精交互至 Battle12 准入](../../synthesis/polca-fairy-through-battle12-admission.md)继续解释可选乌龟试探、妖精离开、独立东出口及搜寻恶魔对峙。F711 调用方/替代产生方状态、实际事件查找和临时/重建跟随保持区别。F412 立即准入、F512 空人口与 F714/F712 init 可以改变普通场景分支。场景解锁/请求先于调用方 F713 与消费；通配准入、实际战斗布置及 F462/F88 分支仍分开。它止于 ActivateEnemies 之前的新战斗 start 分发器返回，自然旅行、传入行动者、服务/待处理及渲染变身均为未知；帮助乌龟不是出口前提。
+[Polca 妖精交互至 Battle12 准入（中文）](polca-fairy-through-battle12-admission.md)继续解释可选乌龟试探、妖精离开、独立东出口及搜寻恶魔对峙。F711 调用方/替代产生方状态、实际事件查找和临时/重建跟随保持区别。F412 立即准入、F512 空人口与 F714/F712 init 可以改变普通场景分支。场景解锁/请求先于调用方 F713 与消费；通配准入、实际战斗布置及 F462/F88 分支仍分开。它止于 ActivateEnemies 之前的新战斗 start 分发器返回，自然旅行、传入行动者、服务/待处理及渲染变身均为未知；帮助乌龟不是出口前提。
 
 [Battle12 结果至 Bedoe 初始守卫相遇](../../synthesis/battle12-outcomes-through-bedoe-entry.md)继续说明首领识别、首次/重复山地返回、Peter 回应、选定 Bedoe 入口及守卫质问、认出身份和请求。HP/F512 首领/加入尾部、独立 F714/F712 回应和 F722 配置选择仍分开。最终守卫布置先于调用方 F719 及可选 F720 地图外移动；当前跟随不证明持久性。它止于默认/替代 init 之后与首次条件恢复控制，早于国王演说/觐见，保留自然路线、行动者/出战队伍/AI、服务/待处理和呈现未知项。
 
