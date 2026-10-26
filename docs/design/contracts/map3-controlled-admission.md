@@ -6,6 +6,25 @@
   exploration boundary, without requiring the original Witch/New lifecycle in the product, inventing
   a natural route, or starting Phase 4 implementation
 
+## Current Applicability
+
+This **Proposed** contract retains its evidence date and bounded R1 fixture projection. It is not the
+current milestone-readiness ledger. The [continuous-scenario contract](map3-battle01-continuous-scenario.md)
+owns later route and comparison requirements, and the
+[readiness ledger](../synthesis/map3-battle01-readiness.md#accepted-current-milestone) owns the accepted
+current private milestone at the composed 8D/H4 boundary. [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
+and its [modern-clock amendment](../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
+control current fidelity and clock applicability; [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md)
+owns the adopted engine direction and implementation boundary. Prospective implementation/H4 and
+Phase 4 start language below describes this local proposal, not current implementation status.
+
+Later acceptance does not enlarge this fixture projection, promote this contract's status, or
+resolve its original Unknowns. In particular, the original controlled R1 fixture's gold 0/four-byte
+item projection remains distinct from the later connected selected-R1 corrections to gold 60 and
+complete starting item words, whose results and limits belong to the
+[continuous-scenario comparison record](map3-battle01-continuous-scenario.md#remaining-acceptance-work).
+Historical failures and report verdicts remain unchanged.
+
 ## Judgment Boundary
 
 This contract begins with the accepted controlled result recorded by
@@ -22,10 +41,14 @@ exploration action. It does not own the natural route into Map 3 or any behavior
 - **Accepted product direction**: ADR 0010 option 1A permits the remake to construct that accepted
   result directly. Product admission requires result equivalence at the first exploration boundary;
   it does not require call, program-counter, menu, naming, save-service, or chronology equivalence.
-- **Unknown**: a natural player-visible New or load flow; the raw original time-counter values;
+- **Unknown** (not established by this local R1 evidence seam): a natural player-visible New or load
+  flow; the raw original time-counter values;
   whether another natural or controlled start has the same RNG state; natural Map 3 movement,
   dialogue, menu, event, transition, or battle admission; all later battle and endpoint behavior;
   complete presentation, audio, timing, and hardware observations; and save persistence.
+
+These are limits of this seam's evidence, not a list of current product gaps; later accepted owners
+retain their own evidence and acceptance boundaries.
 
 The accepted fixture remains the golden. This document names bounded field categories and comparison
 rules instead of copying its values into a second, weaker source of truth.
@@ -134,11 +157,15 @@ normalization capability and label. It MUST NOT describe the normalized values a
 facts. The product-admission result MUST NOT inherit a zero clock merely because the evidence harness
 uses this transformation.
 
-### Future product clock
+### Product clock ownership
 
-The product deterministic clock is a separate Application/H4 input under ADR 0011. Its epoch, first
-step, and mapping to later accepted timing evidence remain future contract work. Until that work is
-accepted, this contract admits no original-time equality and chooses no product clock value.
+The product deterministic clock is a separate Application/H4 input under ADR 0011. Current policy is
+owned by [ADR 0010's accepted modern clock](../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock),
+with comparison applicability in the
+[continuous-scenario contract](map3-battle01-continuous-scenario.md#modern-clock-applicability).
+This local R1 seam establishes no original epoch, first step or mapping to later timing evidence;
+it admits no original-time equality and chooses no product clock value. Its unpublished original
+counters and post-boundary normalization do not make the accepted product clock future work.
 
 ### Controlled RNG observation
 
@@ -216,7 +243,7 @@ Phase 4 start.
 | [Map and Exploration](map-exploration.md) | owns generic selector, init, entity, camera, map-script, and exploration rails; this contract does not absorb their broader fixtures or behaviors |
 | state/data contracts | retain flag, roster, party, combatant, item, spell, class, and content field semantics; this contract composes one fixture-owned snapshot without redefining those fields |
 | [Story Progression](../synthesis/story-progression.md) | may explain accepted progression architecture but cannot turn this controlled seam into a natural story route |
-| [Map 3 to Battle 01 Readiness](../synthesis/map3-battle01-readiness.md) | remains the separate **NOT READY** ledger and owns no evidence through this document |
+| [Map 3 to Battle 01 Readiness](../synthesis/map3-battle01-readiness.md#accepted-current-milestone) | owns the accepted current composed 8D/H4 milestone; this local contract supplies only its bounded R1 seam |
 
 This contract explicitly excludes R2 natural Map 3 movement, dialogue, menu, event, transition, and
 battle admission; R3 Battle 01 playthrough; R4 victory, after-program, return, and stable endpoint;
@@ -251,8 +278,8 @@ R2, R3, R4, or complete 8C closure.
 | post-boundary time normalization | **Confirmed controlled harness policy** | same fixture and verifier | does not choose the product deterministic clock |
 | controlled RNG state | **Confirmed for one case** | same fixture | not a universal natural-start seed or later RNG trace |
 | direct product construction | **Accepted product direction** | [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md) option 1A | implementation and H4 execution require the separate Phase 4 start |
-| authoritative state, deterministic clock/RNG, content admission, and layered receipts | **Accepted architecture constraint** | [ADR 0011](../../decisions/0011-phase4-remake-runtime-architecture.md) | exact product clock and later scenario facts remain future accepted inputs |
-| natural route through endpoint and complete 8C | **Excluded / Unknown** | [Research audit](../../research/map3-battle01-audit.md) and later R2-R4/H4 owners | readiness remains **NOT READY** |
+| authoritative state, deterministic clock/RNG, content admission, and layered receipts | **Accepted architecture constraint** | [ADR 0011](../../decisions/0011-phase4-remake-runtime-architecture.md) | this seam supplies no product clock or later scenario facts; current clock and engine direction belong to ADR 0010 and ADR 0019 as linked above |
+| natural route through endpoint and complete 8C | **Excluded / Unknown** | [Research audit](../../research/map3-battle01-audit.md) and [continuous-scenario owner](map3-battle01-continuous-scenario.md) | excluded from this local R1 seam; current composed 8D/H4 acceptance belongs to the [readiness ledger](../synthesis/map3-battle01-readiness.md#accepted-current-milestone); hardware 8C is outside that acceptance |
 
 ## Reproduction
 
