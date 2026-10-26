@@ -35,7 +35,7 @@
 [Rick 可选招募（英文）](./design/synthesis/hassan-rick-recruitment.md)及其他未译相邻指南仍回退英文；
 四篇指南各自的证据追踪和未知项保留静态连接、实际观察、表现/输入与持久性的限制。
 
-开场经 Hawel、Galam 至 Battle07 准入的详细中文阅读路线是：
+Grans 开场经 Hawel、Galam、塔楼后续和地震撤离，至航行登陆/损坏船只条件控制的详细中文阅读路线是：
 
 1. [开篇至 Battle 01：地点、人物与返回](./design/zh-CN/synthesis/opening-through-battle01.md)：选定住宅/学校、信使、城堡/塔、Battle01 和可用返回；区分原版观察与已接受现代组合。
 2. [Battle 01 返回至 Battle 02 准入](./design/zh-CN/synthesis/battle01-return-through-battle02.md)：有条件的城堡驱魔/委任、Jaha 加入和调用方解锁，以及西出口遭遇选择。
@@ -44,9 +44,13 @@
 5. [Battle 04 结果至 Battle 05 准入](./design/zh-CN/synthesis/battle04-outcomes-through-battle05.md)：胜利/特殊败北/逃脱、Galam 俘虏与通道、Slade 跟随及守卫条件解锁；不证明剧情必败。
 6. [Battle 05 结果至 Battle 06 准入](./design/zh-CN/synthesis/battle05-outcomes-through-battle06.md)：独立位置/HP 调用、首次完成宝石场景与 Slade 招募、Galam 出口及入场时 F407 写入。
 7. [Battle06 结果、Granseal 内容与 Battle07 准入](./design/zh-CN/synthesis/battle06-outcomes-through-battle07.md)：F506 内容、可选 Kiwi 招募、王室跟随和条件塔请求；保留 F401 拦截、F999 替换及跳过分支。
+8. [Battle07 结果与探索交接](./design/zh-CN/synthesis/battle07-outcomes-and-aftermath.md)：四类结果、分阶段塔楼场景、宝石/当前跟随/持久标志，以及脚本和调用方完成后空 Map58 配置重建与条件控制。
+9. [塔后返回至地震城镇入场](./design/zh-CN/synthesis/post-tower-return-through-earthquake-entry.md)：条件塔楼/城堡请求、独立 Astral 对话、F640 地图替换和首次/重复地震场景；止于初始化后控制/事件读取。
+10. [地震城镇出口至码头出航](./design/zh-CN/synthesis/earthquake-town-through-docks-departure.md)：变化后的港口、同地图登船、老人 Yes/No 选择、F74 清除与实体重建，以及脚本内 Map66 加载后的条件 Map73 请求。
+11. [航行登陆至损坏船只控制](./design/zh-CN/synthesis/voyage-through-damaged-ship-control.md)：首次/重复选择、可选 Kiwi、人群登陆及 Jaha 木板场景；两次脚本内 Map14 加载绕过 init，F700 先于条件控制读取写入。
 
-后六篇解释源码条件连接，不证明自然连续行程，也不扩展止于 Battle01 可用返回的重制里程碑。
-本段止于 Battle07 准入；[Battle07 结果与探索交接（英文）](./design/synthesis/battle07-outcomes-and-aftermath.md)及其他未译细节仍回退英文，并在指南链接中标明。
+后十篇解释源码条件连接，不证明自然连续行程，也不扩展止于 Battle01 可用返回的重制里程碑。
+本组止于损坏船只的条件控制边界；下一章从[玩家木板选择至 Battle08 准入（英文）](./design/synthesis/damaged-ship-plank-through-battle08.md)继续，其他未译细节仍回退英文，并在指南链接中标明。
 [详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)
