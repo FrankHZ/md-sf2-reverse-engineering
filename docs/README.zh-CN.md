@@ -46,7 +46,7 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 
 ## 翻译状态与持续同步
 
-[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。当前已索引设计语料为 165 份来源、165 份完整译文、零 pending、零来源/术语表/镜像漂移；各文档在自身范围内已独立全文双语验收并合并。本次最终导航仍须独立审阅，由 main-gate 另行判断 #514 是否可关闭。
+[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。当前已索引设计语料为 165 份来源、165 份完整译文、零 pending、零来源/术语表/镜像漂移；各文档在自身范围内已独立全文双语验收并合并。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
 
 [翻译索引](../manifests/zh-translation-index.json)记录逐文档状态与审阅版本锚。使用 `uv run --locked sf2 zh-meta list` 查看记录、`uv run --locked sf2 zh-meta test` 复现全局检查。元数据 PASS 只证明检查器覆盖的同步、链接、结构与 fixture 约束，不能替代全文语义与读者路线验收。
 

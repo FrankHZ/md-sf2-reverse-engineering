@@ -38,9 +38,10 @@ promote a proposal, restore superseded implementation guidance or change origina
 Chinese synchronization uses independently accepted, merged English sources whose substantive
 content is stable for the selected scope. Full bilingual content and reader-route review, alongside
 the original glossary/index checks, establish acceptance; a metadata PASS alone is insufficient.
-The continuing agreement below governs future source changes. The final navigation revision still
-requires independent acceptance; main-gate separately decides closure of #514. This design corpus
-does not include English research, ADRs, engine documentation or game-script localization.
+The continuing agreement below governs future source changes. Content and navigation changes
+require independent semantic and reader-route acceptance; main-gate owns integration and epic
+completion decisions. This design corpus does not include English research, ADRs, engine documentation
+or game-script localization.
 
 ## Design Information Architecture
 

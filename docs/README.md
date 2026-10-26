@@ -135,8 +135,8 @@ does not advance original observations or playable remake support.
 The [continuing synchronization agreement](./design/documentation-roadmap.md#bounded-translation-repair-agreement)
 uses the existing glossary, translation index and original `sf2 zh-meta` checks. Future source changes
 require stable accepted content, full bilingual review and reader-route acceptance before affected
-anchors are updated. Metadata PASS alone is insufficient; main-gate independently accepts this
-final navigation change and separately decides completion of the bilingual epic.
+anchors are updated. Metadata PASS alone is insufficient. Content and navigation changes require
+independent semantic and reader-route acceptance; main-gate owns integration and epic completion decisions.
 
 - [`glossary.md`](./design/glossary.md)
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md)
