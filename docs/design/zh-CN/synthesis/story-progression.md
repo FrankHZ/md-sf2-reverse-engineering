@@ -28,7 +28,7 @@
 
 这六组是依据有意义的世界变化与内容依赖形成的**推断性编辑阅读顺序**。它们不是原作者的章节、强制战斗顺序或连续行走的证明。下文的**已确认静态内容**表示具名的已接受所有者支持特定选择器、操作或条件交接。其源码顺序不证明自然抵达、完整呈现、玩家控制或持久存档。
 
-先读各组导读，再展开详细英文指南了解精确局部行为，最后通过研究链接查证。北方章节到达条件 Battle32 准入；Moun/Nazca 章节继续经由返回 Grans，到达下一场遭遇的条件交接。最后一组把 Sword 和塔路线连接至尾声与隐藏战斗重置。这些分组不另建一套详细后期战役系列。[覆盖所有者](../../../research/story-content-coverage.md#four-different-frontiers)区分静态研究、原版观察、英文综合与重制支持。
+先读各组导读，再展开详细指南（已译中文，其余回退英文）了解精确局部行为，最后通过研究链接查证。北方章节到达条件 Battle32 准入；Moun/Nazca 章节继续经由返回 Grans，到达下一场遭遇的条件交接。最后一组把 Sword 和塔路线连接至尾声与隐藏战斗重置。这些分组不另建一套详细后期战役系列。[覆盖所有者](../../../research/story-content-coverage.md#four-different-frontiers)区分静态研究、原版观察、英文综合与重制支持。
 
 1. [Grans 开篇与离开](#grans-开篇与离开)。
 2. [New Granseal 与东部 Parmecia](#new-granseal-与东部-parmecia)。
@@ -44,7 +44,7 @@
 用[开篇至 Battle01（中文）](opening-through-battle01.md)阅读连贯开端，用[码头出航（中文）](earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
-<summary>详细指南及其局部边界（本组十一篇中文；下一组未译细节回退英文）</summary>
+<summary>详细指南及其局部边界（本组十一篇中文；下一组选定六篇中文，其余细节回退英文）</summary>
 
 [开篇至 Battle 01（中文）](opening-through-battle01.md)连接选定的 Map 3 开篇、信使、城堡/王室/塔阶段、遭遇和可用返回。它在已接受证据上提供地点/实体/对话/遭遇阅读路线，将额外交互与条件分支同必需的已观察内容分开。
 
@@ -74,22 +74,22 @@
 
 登陆并不立即确立一个安顿完毕的新城镇。木板/救援遭遇及其结果先于选定建设/演说和重建人口边界。从 New Granseal 出发，局部条件把 Peter 的介绍与觐见连接到东行、Ribble、Polca 和 Bedoe。**已确认静态内容：** 说话、跟随、加入军团和下一场遭遇准入有独立消费者。十二个编队位置不会招募十二名伙伴。
 
-阅读[木板与救援指南](../../synthesis/damaged-ship-plank-through-battle08.md)、[Peter 觐见](../../synthesis/peter-castle-audience-through-town-return.md)及 [Volcanon 觐见](../../synthesis/bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May](../../synthesis/ribble-may-through-battle10-admission.md)、[East Shrine](../../synthesis/battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援](../../synthesis/bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择](../../synthesis/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
+阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见](../../synthesis/bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May](../../synthesis/ribble-may-through-battle10-admission.md)、[East Shrine](../../synthesis/battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援](../../synthesis/bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择](../../synthesis/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
 
 <details>
-<summary>详细英文指南及其局部边界</summary>
+<summary>详细指南及其局部边界（本组选定六篇中文；其余回退英文）</summary>
 
-[损坏船只的木板选择至 Battle08 准入](../../synthesis/damaged-ship-plank-through-battle08.md)继续解释可选木板回应、显式/同地图入口替代分支、木料交付与重复救援请求。F408/请求产生先于调用方 F703/EGRESS_MAP 写入；Map72 准入与 F458 before/start 分发仍不同于场景演员和交战名册。它止于 ActivateEnemies 之前，保留待处理、行走、随从/服务和挂起入场限制。
+[损坏船只的木板选择至 Battle08 准入（中文）](damaged-ship-plank-through-battle08.md)继续解释可选木板回应、显式/同地图入口替代分支、木料交付与重复救援请求。F408/请求产生先于调用方 F703/EGRESS_MAP 写入；Map72 准入与 F458 before/start 分发仍不同于场景演员和交战名册。它止于 ActivateEnemies 之前，保留待处理、行走、随从/服务和挂起入场限制。
 
-[Battle08 结果至 New Granseal 城堡交接](../../synthesis/battle08-outcomes-through-new-granseal-handoff.md)继续解释首次/重复胜利、败北/逃脱、工人与封堵隧道场景、条件 Map73 建设及其出站请求。BattleLoop 直接读取返回字段，不同于探索消费待处理请求；F705 由 init 调用方在脚本之后写入。行动者/随从、重置、服务与自然路线限制均明确保留。它止于 Map7 目的地 init 之前。
+[Battle08 结果至 New Granseal 城堡交接（中文）](battle08-outcomes-through-new-granseal-handoff.md)继续解释首次/重复胜利、败北/逃脱、工人与封堵隧道场景、条件 Map73 建设及其出站请求。BattleLoop 直接读取返回字段，不同于探索消费待处理请求；F705 由 init 调用方在脚本之后写入。行动者/随从、重置、服务与自然路线限制均明确保留。它止于 Map7 目的地 init 之前。
 
-[New Granseal 城堡：一年后的演说与首次控制交接](../../synthesis/new-granseal-castle-year-later-control.md)继续解释配置优先级、首次/重复 init、重建/贸易演说、遣散及显式普通人口重新加载。调用方 F707/F411 写入先于首次待处理/控制读取；同地图显示加载、行动者映射与具名/未加入角色等待保留各自限制。它止于该读取，不声称自然抵达、服务完成或实际可用控制。
+[New Granseal 城堡：一年后的演说与首次控制交接（中文）](new-granseal-castle-year-later-control.md)继续解释配置优先级、首次/重复 init、重建/贸易演说、遣散及显式普通人口重新加载。调用方 F707/F411 写入先于首次待处理/控制读取；同地图显示加载、行动者映射与具名/未加入角色等待保留各自限制。它止于该读取，不声称自然抵达、服务完成或实际可用控制。
 
-[New Granseal 城镇：Peter 的首次介绍](../../synthesis/new-granseal-town-through-peter-introduction.md)继续经过条件城堡离开、城镇配置/init、水手/守卫介绍及 Peter 的接待。F706 与 F701 独立控制两个区域（事件）；调用方标志在脚本返回后写入。隐藏及具名/未加入角色动作仍不同于招募、持久遣离与抵达。它止于 Peter 之后首次待处理/控制读取，不声称自然旅行或可用输入。
+[New Granseal 城镇：Peter 的首次介绍（中文）](new-granseal-town-through-peter-introduction.md)继续经过条件城堡离开、城镇配置/init、水手/守卫介绍及 Peter 的接待。F706 与 F701 独立控制两个区域（事件）；调用方标志在脚本返回后写入。隐藏及具名/未加入角色动作仍不同于招募、持久遣离与抵达。它止于 Peter 之后首次待处理/控制读取，不声称自然旅行或可用输入。
 
-[Peter 城堡觐见及返回城镇](../../synthesis/peter-castle-audience-through-town-return.md)继续说明条件城堡准入、Astral 留下、Peter 加入/AI 及不同跟随机制、赠礼的叙事/状态不一致与城镇重入。请求产生先于调用方依次写 F702、F67；目的地配置/init 先于首次待处理/控制读取。它止于此，自然旅行、已观察金币、服务完成与可用输入均为未知。
+[Peter 城堡觐见及返回城镇（中文）](peter-castle-audience-through-town-return.md)继续说明条件城堡准入、Astral 留下、Peter 加入/AI 及不同跟随机制、赠礼的叙事/状态不一致与城镇重入。请求产生先于调用方依次写 F702、F67；目的地配置/init 先于首次待处理/控制读取。它止于此，自然旅行、已观察金币、服务完成与可用输入均为未知。
 
-[New Granseal 离开至 Battle09 准入](../../synthesis/new-granseal-departure-through-battle09.md)继续经过离城、选定先东后南的大地图连接及条件遭遇准入。滚动保留探索/同行群体状态；普通入口与部分重新加载到达有序战斗选择。特定/默认区域（事件）、携带的请求字节与 F409/F509/F459 保持区别。它止于敌人激活之前的空 start 分发器返回，自然旅行、行动者/请求存活、服务完成和战斗就绪仍为未知。
+[New Granseal 离开至 Battle09 准入（中文）](new-granseal-departure-through-battle09.md)继续经过离城、选定先东后南的大地图连接及条件遭遇准入。滚动保留探索/同行群体状态；普通入口与部分重新加载到达有序战斗选择。特定/默认区域（事件）、携带的请求字节与 F409/F509/F459 保持区别。它止于敌人激活之前的空 start 分发器返回，自然旅行、行动者/请求存活、服务完成和战斗就绪仍为未知。
 
 [Battle09 结果至 Ribble 欢迎](../../synthesis/battle09-outcomes-through-ribble-welcome.md)继续解释可变战斗返回、独立城镇入场、猜疑与 Peter 的说明。独立欢迎门槛，以及居民重新加载、门重建、屋顶恢复和当前跟随的不同效果均明确保留。它止于村长调用方之后及首次条件恢复控制，自然旅行、行动者/服务完成、待处理状态与可见村庄变化仍为未知。
 

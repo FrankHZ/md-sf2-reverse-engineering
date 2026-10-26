@@ -4,7 +4,7 @@
 
 出航场景将船送向大陆。**推断的叙事连接：**航行抵达 Parmecia，猛烈登陆促使难民回收木材，而 Jaha 尝试帮忙后，众人要求 Bowie 将木板带到甲板上。**已确认静态内容：**Map73 首次抵达 init 包含整个序列，在脚本内将当前地图改为 Map14，返回后写入 F700。**未知：**自然抵达、服务完成、实际行动者状态，以及随后事件读取是否允许玩家控制。
 
-本文承接[地震城镇出口至码头出航](earthquake-town-through-docks-departure.md)。已接受的[研究所有者](../../../research/voyage-through-damaged-ship-control.md)提供固定源码、对话、内联动作及调用方审阅。本指南支持内容/设计规划，止于 Map14 首次初始化后的控制/事件读取。下一条件分段见[损坏船只木板选择至 Battle08 准入（英文）](../../synthesis/damaged-ship-plank-through-battle08.md)；城镇建设仍独立。本指南不增加重制能力。[路线图](../documentation-roadmap.md#当前基线与近期综合)拥有 [#731](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/731) 的 Standard 严谨度协议。
+本文承接[地震城镇出口至码头出航](earthquake-town-through-docks-departure.md)。已接受的[研究所有者](../../../research/voyage-through-damaged-ship-control.md)提供固定源码、对话、内联动作及调用方审阅。本指南支持内容/设计规划，止于 Map14 首次初始化后的控制/事件读取。下一条件分段见[损坏船只木板选择至 Battle08 准入（中文）](damaged-ship-plank-through-battle08.md)；城镇建设仍独立。本指南不增加重制能力。[路线图](../documentation-roadmap.md#当前基线与近期综合)拥有 [#731](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/731) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。源码引用使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。

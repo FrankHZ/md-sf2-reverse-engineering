@@ -50,7 +50,17 @@ Grans 开场经 Hawel、Galam、塔楼后续和地震撤离，至航行登陆/�
 11. [航行登陆至损坏船只控制](./design/zh-CN/synthesis/voyage-through-damaged-ship-control.md)：首次/重复选择、可选 Kiwi、人群登陆及 Jaha 木板场景；两次脚本内 Map14 加载绕过 init，F700 先于条件控制读取写入。
 
 后十篇解释源码条件连接，不证明自然连续行程，也不扩展止于 Battle01 可用返回的重制里程碑。
-本组止于损坏船只的条件控制边界；下一章从[玩家木板选择至 Battle08 准入（英文）](./design/synthesis/damaged-ship-plank-through-battle08.md)继续，其他未译细节仍回退英文，并在指南链接中标明。
+从此处接续 New Granseal 与 Peter 的六篇详细中文指南：
+
+1. [木板选择至 Battle08 准入](./design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md)：可选木板回应与重复救援请求、请求先于调用方写入，以及激活前开场边界。
+2. [Battle08 结果至 New Granseal 城堡交接](./design/zh-CN/synthesis/battle08-outcomes-through-new-granseal-handoff.md)：首次/重复与非胜利返回、工人后续、条件建设和脚本后 F705；止于城堡 init 前。
+3. [New Granseal 城堡：一年后讲话与首次控制交接](./design/zh-CN/synthesis/new-granseal-castle-year-later-control.md)：配置/场景选择、实体群重建及 F707/F411 后的条件控制读取。
+4. [New Granseal 城镇：Peter 首次登场](./design/zh-CN/synthesis/new-granseal-town-through-peter-introduction.md)：独立 F706/F701 触发、接待与隐藏；不把场景动作当作招募或持久遣离。
+5. [Peter 城堡觐见与返回城镇](./design/zh-CN/synthesis/peter-castle-audience-through-town-return.md)：加入/出战/AI、临时/持久跟随、礼物叙事与静态效果差异及城镇条件控制。
+6. [New Granseal 出发至 Battle09 准入](./design/zh-CN/synthesis/new-granseal-departure-through-battle09.md)：滚动与普通入场、部分重载和有序选择；止于激活前空 start 返回。
+
+这仍是条件连接的阅读路线，不证明自然必经行程、可用输入或扩展重制里程碑；服务完成与持久性未知保留在各指南。
+下一段从 [Battle09 结果至 Ribble 欢迎（英文）](./design/synthesis/battle09-outcomes-through-ribble-welcome.md)继续；其他未译细节仍回退英文，并在指南链接中标明。
 [详细章节指南（英文）](./README.md#design)仍提供精确条件和所有者；未译的详细指南沿英文链接阅读，不把静态连接写成自然连续行程。
 
 [地图探索合同（中文）](./design/zh-CN/contracts/map-exploration.md)及其[英文规范源](./design/contracts/map-exploration.md)
