@@ -840,7 +840,12 @@
     },
     {
       "source": "docs/design/synthesis/battle24-outcomes-through-north-cliff-preparation.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle24-outcomes-through-north-cliff-preparation.md",
+      "sourceSha256": "b047096f05b1dd6bbf405480eb16575651158b5a5e1d0b5433597c599caf5019",
+      "mirrorSha256": "35017bc63ab96863148d9c037126539764345f1348811c85500334e1ce27f8a9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle25-outcomes-through-ketto-entry.md",
@@ -933,7 +938,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md",
       "sourceSha256": "beadba305ed912a60286afdf15f960e48baf116b6bd5fb5286df65b9a6eb7a78",
-      "mirrorSha256": "fd07b811f0a78eccf5ef634c3234d830f8d317481ab232d06e72dd0cadebec64",
+      "mirrorSha256": "4df26b20ae1be4ad079ec9812ba3f9cfc713a83c9083b7f3a9d3b2b652569a28",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1177,19 +1182,39 @@
     },
     {
       "source": "docs/design/synthesis/new-granseal-departure-through-battle24-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-departure-through-battle24-admission.md",
+      "sourceSha256": "3e756584bbddcc968276d69e064ca3686c3228fbadf65f9e3d3cb1f65ca17552",
+      "mirrorSha256": "beee7726a5a983378d0cc83edbcd90545cc0ee0e363aaed79bbfe19990e78878",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/new-granseal-inventor-and-dynamite-gift.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-inventor-and-dynamite-gift.md",
+      "sourceSha256": "9eba7441a362432635304ae567a8fb95ab883c5ff88acbda037d278b6fdde30f",
+      "mirrorSha256": "48e78127fe9c8f572ee7301c7db23c8429b7ec0c0e97541b12d02ea17e74c2da",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/new-granseal-janet-recruitment-and-departure.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-janet-recruitment-and-departure.md",
+      "sourceSha256": "d794b3fabb6f3b47def19e776d4d58487429d59ba5c2a02d90fe013378128b3b",
+      "mirrorSha256": "d2493e5363d9da987e22a5ed78643536ff18f4c83f3d46900f10b3e4f416e58d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/new-granseal-return-and-astral-following.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-return-and-astral-following.md",
+      "sourceSha256": "0ac2706ba7dd6c731d6b8c95fd66edd1d0fedd2bbc8c1a9e1ce4df8ea8390a09",
+      "mirrorSha256": "8776da9b8bde27d7e84f71a5ff314c90f4e0ec8cb54e73c6370af4b329eb986e",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/new-granseal-town-through-peter-introduction.md",
@@ -1206,7 +1231,12 @@
     },
     {
       "source": "docs/design/synthesis/north-cliff-opening-and-rohde-recruitment.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/north-cliff-opening-and-rohde-recruitment.md",
+      "sourceSha256": "0a36eaccbba3a2b5495262da22ffb95c406cd417c75cc5031b1d468b47466247",
+      "mirrorSha256": "83fcbdd2bd0f7ae9c14a20a6db1a45daa0ddcdd22cf4d7bfa88895899bae5230",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/oddler-stays-and-fairy-handoff.md",
@@ -1346,7 +1376,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "e97b53e87d170e9f4bd7c6375ff743c0ba08b187db870233dd738d1c7f711a72",
+      "mirrorSha256": "bf0c7e3e7bda3567eecae857a40eeb1bc5b93487d9b040e6b5a8ab0e6a740ec0",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
