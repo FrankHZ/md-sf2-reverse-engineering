@@ -368,7 +368,12 @@
     },
     {
       "source": "docs/design/contracts/map3-controlled-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/map3-controlled-admission.md",
+      "sourceSha256": "c284b2c7fed163a068f74fb0eb68c2b0ddcb6cd5f9afaa3530a5383f2beccb53",
+      "mirrorSha256": "d50c69e98aba674db6f3718b2f87fb9a0a37c80548e5c75381934315040e71de",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/contracts/music-wait-service.md",
@@ -1344,7 +1349,12 @@
     },
     {
       "source": "docs/design/synthesis/phase4-bootstrap-plan.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/phase4-bootstrap-plan.md",
+      "sourceSha256": "894d16d6fc6a07e25c56dc68ff29c646eb617977c1083f140152a3ed026e1e89",
+      "mirrorSha256": "67d9d6941963d4fd21458f53cb66dfa2d88edc54572f74e35308a85346172c65",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/polca-departure-through-luke-recruitment.md",
