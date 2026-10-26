@@ -239,7 +239,7 @@ Mode 0 使用 eas_ControlledCharacter；mode 1 使用源码名 eas_Raft（Carava
 摄像机重载和 init 返回均不进入该分支，不重建实体群，也不将主角色恢复至 `(0,0)`。
 传入模式和实际场景变更仍有影响。本指南止于此条件首次抵达/重复边界，在交互、战后场景或 Chessboard 准入/内容之前。
 
-后续独立阅读 [Desktop 对话与 Chessboard 挑战（英文）](../../synthesis/desktop-kingdom-interactions-through-battle22-entry.md)，
+后续独立阅读 [Desktop 对话与 Chessboard 挑战（中文）](desktop-kingdom-interactions-through-battle22-entry.md)，
 了解居民/服务、King Ponpei 许可及条件 Battle22 准入。本首次抵达指南保留局部返回/重复停止点。
 
 ## 证据审阅与改变状态限制
