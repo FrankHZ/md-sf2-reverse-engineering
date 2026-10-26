@@ -696,7 +696,12 @@
     },
     {
       "source": "docs/design/synthesis/battle08-outcomes-through-new-granseal-handoff.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle08-outcomes-through-new-granseal-handoff.md",
+      "sourceSha256": "13b1ff723b65f1657ebc2cfb04931ea1dad1dde4033e378fd40b6c8b9e8e9cf5",
+      "mirrorSha256": "ceb090458ae3f5a3268f5b97d7ee1e67ff0c0f2b75f3db6e9dccb6fbba906224",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/battle09-outcomes-through-ribble-welcome.md",
@@ -850,7 +855,12 @@
     },
     {
       "source": "docs/design/synthesis/damaged-ship-plank-through-battle08.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md",
+      "sourceSha256": "476870bdd68d5cc6b690b3712d913f950dc2b73222d40036ee43b72e26a9b5ad",
+      "mirrorSha256": "8dfa09d5da7bb8c1d1ead1aca8b9d8d2d74cb01fe9a4528ff51045491405f07c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/desktop-kingdom-first-arrival.md",
@@ -954,11 +964,21 @@
     },
     {
       "source": "docs/design/synthesis/new-granseal-castle-year-later-control.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-castle-year-later-control.md",
+      "sourceSha256": "20a353f0bee5cedf5eed454eb86e436b3a23b2bc652ed521940046dce81149e0",
+      "mirrorSha256": "b0da2edb71f7200314f418190a7cbeb40fba51c6bd93a6a59e209e4fcf77b64d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/new-granseal-departure-through-battle09.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-departure-through-battle09.md",
+      "sourceSha256": "b803df6994bb5688e28d36f100f3e3f65022bd28975498d4a2d98f097a68b2ec",
+      "mirrorSha256": "129f4d1f1a4415f9d6c4a8b95149f8ced9fd4915bf37e60e8bb4520716eb5099",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/new-granseal-departure-through-battle24-admission.md",
@@ -978,7 +998,12 @@
     },
     {
       "source": "docs/design/synthesis/new-granseal-town-through-peter-introduction.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-town-through-peter-introduction.md",
+      "sourceSha256": "25a90a916110719c82fcc49b107f3d07d8e73e87c4463a745f27a81c53944345",
+      "mirrorSha256": "1abd922d15af6dcdbe75778839e6e8497f1f8310f8c9414068abf79b01c5b0a7",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/north-cliff-entry-through-battle25-admission.md",
@@ -1015,7 +1040,12 @@
     },
     {
       "source": "docs/design/synthesis/peter-castle-audience-through-town-return.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/peter-castle-audience-through-town-return.md",
+      "sourceSha256": "5941092ec17cb88c7476827bb6512cac65a5a4c48eaa12e052350826dc160063",
+      "mirrorSha256": "e8a6cd542f6befd94d54c9726cf505b479488df3ec6df9495ff3adba419b4a0f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/phase4-bootstrap-plan.md",
@@ -1086,7 +1116,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
-      "mirrorSha256": "d54844145c496b8a4c07dd15cb390469ebb5a8b12f6d975e7a10ca494e0e79ba",
+      "mirrorSha256": "75bc5be8676d8080556a6bd597f6a9297a43aefb1d4997afd65e67fadf88a0b4",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
@@ -1108,7 +1138,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/voyage-through-damaged-ship-control.md",
       "sourceSha256": "b3b6952ca0e8fdf68b288c24589c8325b6b8da492124cfec46c0f3a3e1b9dbe6",
-      "mirrorSha256": "e5c64cb69e031acb234f74900ecaaad4ee7269979be57120547f8e480b96ed4a",
+      "mirrorSha256": "03811b45be4444f2a7b2e80d332281681edc4abeca32f8730eed57f8dbdbe0c0",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-10-25"
     },
