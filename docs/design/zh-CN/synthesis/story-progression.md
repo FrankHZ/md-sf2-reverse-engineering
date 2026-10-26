@@ -74,10 +74,10 @@
 
 登陆并不立即确立一个安顿完毕的新城镇。木板/救援遭遇及其结果先于选定建设/演说和重建人口边界。从 New Granseal 出发，局部条件把 Peter 的介绍与觐见连接到东行、Ribble、Polca 和 Bedoe。**已确认静态内容：** 说话、跟随、加入军团和下一场遭遇准入有独立消费者。十二个编队位置不会招募十二名伙伴。
 
-阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见](../../synthesis/bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援](../../synthesis/bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择](../../synthesis/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
+阅读[木板与救援指南（中文）](damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](ribble-may-through-battle10-admission.md)、[East Shrine（中文）](battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择](../../synthesis/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏](../../synthesis/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
 
 <details>
-<summary>详细指南及其局部边界（本组选定十二篇中文；其余回退英文）</summary>
+<summary>详细指南及其局部边界（本组选定十七篇中文；其余回退英文）</summary>
 
 [损坏船只的木板选择至 Battle08 准入（中文）](damaged-ship-plank-through-battle08.md)继续解释可选木板回应、显式/同地图入口替代分支、木料交付与重复救援请求。F408/请求产生先于调用方 F703/EGRESS_MAP 写入；Map72 准入与 F458 before/start 分发仍不同于场景演员和交战名册。它止于 ActivateEnemies 之前，保留待处理、行走、随从/服务和挂起入场限制。
 
@@ -103,15 +103,15 @@
 
 [Polca 妖精交互至 Battle12 准入（中文）](polca-fairy-through-battle12-admission.md)继续解释可选乌龟试探、妖精离开、独立东出口及搜寻恶魔对峙。F711 调用方/替代产生方状态、实际事件查找和临时/重建跟随保持区别。F412 立即准入、F512 空人口与 F714/F712 init 可以改变普通场景分支。场景解锁/请求先于调用方 F713 与消费；通配准入、实际战斗布置及 F462/F88 分支仍分开。它止于 ActivateEnemies 之前的新战斗 start 分发器返回，自然旅行、传入行动者、服务/待处理及渲染变身均为未知；帮助乌龟不是出口前提。
 
-[Battle12 结果至 Bedoe 初始守卫相遇](../../synthesis/battle12-outcomes-through-bedoe-entry.md)继续说明首领识别、首次/重复山地返回、Peter 回应、选定 Bedoe 入口及守卫质问、认出身份和请求。HP/F512 首领/加入尾部、独立 F714/F712 回应和 F722 配置选择仍分开。最终守卫布置先于调用方 F719 及可选 F720 地图外移动；当前跟随不证明持久性。它止于默认/替代 init 之后与首次条件恢复控制，早于国王演说/觐见，保留自然路线、行动者/出战队伍/AI、服务/待处理和呈现未知项。
+[Battle12 结果至 Bedoe 初始守卫相遇（中文）](battle12-outcomes-through-bedoe-entry.md)继续说明首领识别、首次/重复山地返回、Peter 回应、选定 Bedoe 入口及守卫质问、认出身份和请求。HP/F512 首领/加入尾部、独立 F714/F712 回应和 F722 配置选择仍分开。最终守卫布置先于调用方 F719 及可选 F720 地图外移动；当前跟随不证明持久性。它止于默认/替代 init 之后与首次条件恢复控制，早于国王演说/觐见，保留自然路线、行动者/出战队伍/AI、服务/待处理和呈现未知项。
 
-[Bedoe 国王演说与首次觐见](../../synthesis/bedoe-king-address-through-first-audience.md)继续说明报告、散开的守卫、Luke 问候、介绍、Zeon 警告和前往 Volcanon 的邀请。F720/F721 独立允许场景；F722 替换其区域（事件）表。真正隐藏不同于重入时移至地图外，而共享 147/148 位置依赖先前场景和传入状态。最终命令建立 Peter 跟随 Bowie，不加入任何人。它止于觐见调用方之后及条件控制，保留自然楼层/顺序、行动者/映射、服务/待处理和呈现未知项；神殿旅行与 Volcanon 仍独立。
+[Bedoe 国王演说与首次觐见（中文）](bedoe-king-address-through-first-audience.md)继续说明报告、散开的守卫、Luke 问候、介绍、Zeon 警告和前往 Volcanon 的邀请。F720/F721 独立允许场景；F722 替换其区域（事件）表。真正隐藏不同于重入时移至地图外，而共享 147/148 位置依赖先前场景和传入状态。最终命令建立 Peter 跟随 Bowie，不加入任何人。它止于觐见调用方之后及条件控制，保留自然楼层/顺序、行动者/映射、服务/待处理和呈现未知项；神殿旅行与 Volcanon 仍独立。
 
-[Bedoe 至 Volcanon 觐见](../../synthesis/bedoe-to-volcanon-audience.md)继续经过显式神殿入口、保留人口的当前地图入口、Peter 返回/介绍、Volcanon 拒绝、宝石建议与 Peter 的承诺。场景归于 Volcanon，不同于 speaker128 的 birdman 映射。只有 F722 控制场景准入；后续 F722/F711 写入、F7 成员资格、依赖容量的 F39/缓存列表、AI bit2 清除、未变的 F67 和当前跟随保持区别。它止于首次条件 Map11 控制，保留传入状态、自然楼层、服务/待处理和呈现未知项；其选定返回在下文另行继续。
+[Bedoe 至 Volcanon 觐见（中文）](bedoe-to-volcanon-audience.md)继续经过显式神殿入口、保留人口的当前地图入口、Peter 返回/介绍、Volcanon 拒绝、宝石建议与 Peter 的承诺。场景归于 Volcanon，不同于 speaker128 的 birdman 映射。只有 F722 控制场景准入；后续 F722/F711 写入、F7 成员资格、依赖容量的 F39/缓存列表、AI bit2 清除、未变的 F67 和当前跟随保持区别。它止于首次条件 Map11 控制，保留传入状态、自然楼层、服务/待处理和呈现未知项；其选定返回在下文另行继续。
 
-[Volcanon 返回至 Bedoe 国王选择](../../synthesis/volcanon-return-through-bedoe-king-choice.md)继续说明选定神殿返回、可选 Zeon 问题、拒绝/重复和 Creed/河流/木筏建议，直至 Luke 被要求离开。F722 独立于 F799/F724 选择配置；F75 可提供随从 Luke 代替固定行，F67 提供 Peter。Yes 必须确认，No/B 共用拒绝，无输入则保持待处理。基于目的地的朝向没有 HP 守卫；等待动作、隐藏失效、后续仅改坐标的 init 及保存的物理国王朝向恢复仍分开。仅脚本返回才到达 F799。它止于调用方之后及条件控制，保留自然楼层、传入状态、输入/服务/待处理和呈现未知项。Bedoe 出口、Polca/木筏履约、雏鸟/救援、Luke 招募和 Battle13 仍独立。
+[Volcanon 返回至 Bedoe 国王选择（中文）](volcanon-return-through-bedoe-king-choice.md)继续说明选定神殿返回、可选 Zeon 问题、拒绝/重复和 Creed/河流/木筏建议，直至 Luke 被要求离开。F722 独立于 F799/F724 选择配置；F75 可提供随从 Luke 代替固定行，F67 提供 Peter。Yes 必须确认，No/B 共用拒绝，无输入则保持待处理。基于目的地的朝向没有 HP 守卫；等待动作、隐藏失效、后续仅改坐标的 init 及保存的物理国王朝向恢复仍分开。仅脚本返回才到达 F799。它止于调用方之后及条件控制，保留自然楼层、传入状态、输入/服务/待处理和呈现未知项。Bedoe 出口、Polca/木筏履约、雏鸟/救援、Luke 招募和 Battle13 仍独立。
 
-[Bedoe 雏鸟飞行与救援](../../synthesis/bedoe-hatchling-flight-and-rescue.md)解释独立可选内容：演示、重复宣称、坠落/救援及各调用方的条件返回。F722 选择配置；F723 控制飞行/重复，而 F13/F724 独立控制救援，不以 F799 国王选择为前提。共享速度/精灵/优先级状态、不等待的行动者、真正隐藏与仅改坐标的 init、依赖 HP 的跟随，以及保留/重建映射仍分开。它止于这些调用方/控制边界，保留自然访问、传入状态、接触、服务/呈现和持久性未知项；不承诺未来 Skreech 招募。
+[Bedoe 雏鸟飞行与救援（中文）](bedoe-hatchling-flight-and-rescue.md)解释独立可选内容：演示、重复宣称、坠落/救援及各调用方的条件返回。F722 选择配置；F723 控制飞行/重复，而 F13/F724 独立控制救援，不以 F799 国王选择为前提。共享速度/精灵/优先级状态、不等待的行动者、真正隐藏与仅改坐标的 init、依赖 HP 的跟随，以及保留/重建映射仍分开。它止于这些调用方/控制边界，保留自然访问、传入状态、接触、服务/呈现和持久性未知项；不承诺未来 Skreech 招募。
 
 [Bedoe 返回至 Battle13 准入](../../synthesis/bedoe-return-through-battle13-admission.md)沿选定主路线继续经过南/西出口请求、变化后的 Polca 人口、恶魔对峙、Gerhalt 加入及条件新战斗开始。F513/F799/F710 配置优先级不同于 F710/F799/F715 区域（事件）及独立 F413 准入；F74 提供 Astral/国王/大臣，而非 Gerhalt。F9/F41/缓存时序、健康、跟随与 AI 保持区别。脚本安排的 birdmen 死亡呈现与 Luke 被中断的动画/移动不证明交战死亡或固定位置。解锁/请求先于调用方 F715 和消费；空 before/start 脚本、F463/F88 替代分支及战斗人口重建保留各自边界。它止于 ActivateEnemies 之前，自然旅行、传入状态、服务/呈现与可玩性均为未知；雏鸟内容不施加前提或强制顺序，也不声称木筏履约或 Luke 招募。
 

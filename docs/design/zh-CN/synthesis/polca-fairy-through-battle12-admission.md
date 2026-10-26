@@ -8,7 +8,7 @@ Polca 提供可选遭遇：一只乌龟请求帮助翻身。Bowie 和 Peter 收�
 
 止于新战斗 start 分发器返回、紧邻 `ActivateEnemies` 之前。交战、结果、`cs_5C622`、Bedoe/Volcanon 场景和后继发现均在本文之外。Fnnn 表示标志 nnn；地图和战斗编号保留源码含义。
 
-继续阅读 [Battle12 结果至 Bedoe 初始卫兵遭遇（英文）](../../synthesis/battle12-outcomes-through-bedoe-entry.md)，了解首领识别、首次/重复山地返回、Peter 独立回应及选定 Bedoe 入场。该指南保留结果、配置/行动者、调用方/服务和自然路径限制，止于国王讲话/觐见之前的初始条件性控制。
+继续阅读 [Battle12 结果至 Bedoe 初始卫兵遭遇（中文）](battle12-outcomes-through-bedoe-entry.md)，了解首领识别、首次/重复山地返回、Peter 独立回应及选定 Bedoe 入场。该指南保留结果、配置/行动者、调用方/服务和自然路径限制，止于国王讲话/觐见之前的初始条件性控制。
 
 ## 帮助乌龟是可选互动
 
