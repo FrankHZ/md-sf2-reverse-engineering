@@ -1,5 +1,36 @@
 # Gameplay Rules and Composition
 
+## Finite enemy-leader cleanup
+
+An authored v8 encounter can bind `LeaderCleanupDefinition` through the
+[closed Content binding](../content/profiles-and-trust.md#authored-leader-cleanup-binding).
+It maps Bowie and each enemy source slot explicitly. Enemy128 is the defeated-hook gate;
+`Physical.Leader`, processing order and Taros enemy-definition88 are separate identities.
+`BattleOutcomeRules.DefeatedHook` requires living Bowie and zero-HP gate. Held completion skips
+only the empty defeated program, not the leader tail. Nonempty programs and private leader
+encounters remain Unsupported.
+
+`BattleDeathBatch` retains action positive-to-zero deaths in reaction order, then appends every
+positive-HP enemy in source-slot order, including already-unplaced actors. Forced entries are
+explicitly distinguished from action deaths. The sweep never changes HP or constructs attacks.
+At accepted field exit, each enemy entry credits a kill to the retained first ally; allied action
+deaths credit their own defeats. The existing capped counter policy clears placement/status.
+Admitted sleep has no stat modifier to recompute; wider stat/status refresh remains unsupported.
+Only the original action earns damage/end EXP and death gold; the sweep adds no EXP, gold or drops.
+Outcome counts placed living combatants after cleanup and checks allied defeat first.
+
+**Confirmed static support:** the [Battle18 outcome owner](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#outcome-selection-and-shared-battle-boundary)
+anchors pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. Under
+`disasm/code/gameflow/battle/`, `cutscenes/battleendcutscenesstart.asm:ExecuteBattleCutscene_Defeated`
+and `battleendcutscenesend.asm:loc_47C48` own eligibility and the source-slot append;
+`battleloop/processkilledcombatants.asm:ProcessKilledCombatants` owns spin/exit, kill-or-defeat
+bookkeeping and removal. `battleloop_1.asm` performs defeat-before-victory after each killed-list
+pass and calls the defeated hook only at the first checkpoint. `battlefunctions/executeindividualturn.asm`
+clears the death list each turn; its no-action/dead branches do not initialize first-ally custody.
+`battleactions/battleactionsengine_1.asm:battlesceneScript_InitializeActors` assigns that custody
+from the admitted scene's initial ally (including the ally target of an enemy physical attack).
+These static facts do not establish original natural reach or hardware timing.
+
 ## Finite Taros physical effectiveness
 
 The optional `BattleDefinition.TarosEffectiveness` binds one admitted encounter to explicit source
@@ -51,7 +82,7 @@ double/counter lifetime, source-supported sleep, real command/scene waits, dupli
 reward-failure prefix retention. Existing `SleepAndFlyingTests` preserves the construction/playback
 split. The [native recipe](../development-and-verification.md#taros-authored-observation) checks the
 actual Godot message, HP delivery and resumed input. Full Battle18, all-action immunity, drops/Deals,
-leader cleanup and Caravan remain outside this implementation; original natural/hardware behavior
+private leader cleanup and Caravan remain outside this physical implementation; original natural/hardware behavior
 remains **Unknown** at its existing evidence boundary.
 
 ## Finite EGRESS action

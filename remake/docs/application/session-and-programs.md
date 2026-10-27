@@ -1,5 +1,34 @@
 # Session and Resumable Programs
 
+## Ordered leader cleanup and retained accounting
+
+`BattleActionCommitter` owns the first post-action checkpoint for completed scenes and no-scene
+Stay, sleeping, dead and automatic-standby turns in cleanup-enabled encounters. It evaluates the
+existing defeated hook, combines ordinary deaths with the finite source-ordered survivor sweep,
+and starts `BattleFieldDeathContinuation` before asking the outcome policy. A held completion
+flag records the skipped empty program while still admitting the sweep.
+
+`EngineBattleState.FirstAlly` starts unknown and is assigned by each real admitted physical,
+HEAL or item scene. No-scene turns preserve it; they do not substitute the current actor.
+A reached nonempty cleanup without that custody fails `death-first-ally-context` before cleanup
+or outcome publication. Controlled starts cannot invent prior source scene state. Unsupported
+ranged enemy/spell/special-scene callers are not admitted by this extension.
+
+The extracted continuation retains only caller/destination/first-ally operands and the immutable
+ordered worklist. It has no synthetic `BattleActionResolution` and no second actor snapshot.
+All listed actors pass through twelve spin deliveries, three exit deliveries and one settle
+wait. Accounting/removal is one finite publication at the last exit. Stale/duplicate commands
+reject against the live token. If accounting fails, the accepted earlier presentation remains;
+if outcome selection fails after accounting, the settle token and cleaned state remain, so retry
+cannot repeat kills or rewards. `GameSession` remains the sole snapshot publisher.
+
+After settle the ordinary publisher performs defeat-first outcome selection, otherwise after-turn
+work and queue consumption. Sleep completion does not repeat the defeated hook at its second
+checkpoint; a later individual turn has its own first checkpoint. The existing outcome/after/
+defeat/return programs carry party accounting back to usable exploration. See the
+[rule/source owner](../domain/gameplay-rules.md#finite-enemy-leader-cleanup) and
+[native recipe](../development-and-verification.md#leader-cleanup-authored-observation).
+
 ## Ineffective physical scene continuation
 
 Taros physical construction uses the existing `BattleActionResolution` transaction and single

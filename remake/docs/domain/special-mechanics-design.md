@@ -47,7 +47,7 @@ The following static code reads and accepted implementation owners control over 
 | Flying and physical sleep | **Supported bounded rules and delivery.** [Sleep/Flying tests](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs) and the [Yeel/Battle03 owner](../application/session-and-programs.md#yeel-guide-zone-request-and-sleep-continuation) cover movement, sleep construction, skip and recovery. SLEEP spell, Stun and other statuses are separate gaps. |
 | Flags, conditional/call programs, followers, region activation and typed waits | **Supported primitives**, not missing infrastructure. [Program runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs), [party flags](../../src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs), [activation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs). Reached battle-region scenes, conversions and nonzero spawn are unsupported consumers. |
 | Later ordinary map/dialogue bindings using only admitted operations | **Content/delivery gap only for those operations.** Reuse typed programs, selected maps and private preparation; do not infer an entire later encounter is content-only. Private encounter pins still admit the selected 1/2/3 boundary. |
-| Taros | **Authored physical-effectiveness rule/content/feedback implemented** at the [bounded owner](gameplay-rules.md#finite-taros-physical-effectiveness). Wider encounter/cleanup/loot remains a gap; no drop/Deals transaction. [Outcome reader](../../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) rejects `outcome-enemy-leader` and nonempty `defeated-program`; current hook cannot execute leader cleanup. |
+| Taros | **Authored physical-effectiveness rule/content/feedback implemented** at the [bounded owner](gameplay-rules.md#finite-taros-physical-effectiveness). Authored [leader cleanup](gameplay-rules.md#finite-enemy-leader-cleanup) is implemented through explicit source-slot binding and the existing outcome return. Wider encounter/loot remains a gap; no drop/Deals transaction. The outcome reader still rejects unbound enemy leaders, private leader encounters and nonempty defeated programs. |
 | Jaro | **Lifecycle/interface + rule + content gap.** Activation rejects `region-program`; [turn flow](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs) rejects `control-side` for ally automatic. Actor faction/control come from immutable deployment; this is not a supported live conversion merely because enums exist. |
 | Prism Flowers | **Decision/action + projection + content gap.** [Automatic result](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) has one opposing target and no chosen special action; [movement completion](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs) turns a target into Physical. Damage reaction arrays do not implement action6. |
 | Fairy Woods | **Spawn lifecycle + round continuation + trial state/content gap.** Nonzero `SpawnMode` rejects; runtime maximum HP normally comes from definition/progress, without dormant source maxHP0. No trial counter/snapshot/record lifecycle is bound. |
@@ -88,7 +88,7 @@ an independently mutable controller.
 
 The [implementation agreement](../capability-status.md#taros-physical-effectiveness-implementation-agreement)
 and [rule owner](gameplay-rules.md#finite-taros-physical-effectiveness) now implement the smaller
-authored physical-only option. The table below retains the wider staged design; cleanup/loot and
+authored physical gate, followed by the bounded [leader-cleanup agreement](../capability-status.md#leader-cleanup-implementation-agreement). The table below retains the wider staged design; loot and
 chapter binding are still proposed. Source dodge/critical/follow-up/end-EXP ordering and later sleep
 are preserved at the implementation owner; ineffective is not a zero-total-RNG or zero-end-EXP action.
 
@@ -118,7 +118,7 @@ TarosEffectiveness PrepareInitialEffectiveness(BattleDefinition encounter,
     BattleActorState actor, BattleActionRef action, BattleActorState initialTarget);
 // Prepared action owns the value; doubles retain it, counter construction follows its own rule.
 LeaderCleanupPlan PrepareDefeatedCleanup(EngineBattleState current);
-// Finite ordered ActorRefs, no arbitrary state edits and no invented kill/drop awards.
+// Finite ordered ActorRefs; actual killed-list kill bookkeeping, no sweep damage EXP/gold/drop.
 ```
 
 Drop execution needs its own finite state: enemy inventory, encounter drop-once bits, recipient
@@ -143,7 +143,7 @@ leader and enemy dead; Taros dead without an action drop; full/dead recipient; h
 the same draw; first versus repeat completion. Original natural trajectories remain **Unknown**.
 The smaller option is a physical-effectiveness-only authored slice using existing combat. It is
 cheap to debug but cannot claim complete Taros victory/loot. Recommended later staging is that
-gate, leader cleanup, then inventory/drop and chapter binding; no generic damage-hook platform.
+accepted gate and authored leader cleanup, then inventory/drop and chapter binding; no generic damage-hook platform.
 
 ## Jaro: region programs and two logical actors sharing a visual
 

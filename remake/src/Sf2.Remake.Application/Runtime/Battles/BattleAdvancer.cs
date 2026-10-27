@@ -74,7 +74,15 @@ internal static class BattleAdvancer
                 var actor = BattleTurnFlow.QueuedActor(battle);
                 if (actor.Hp == 0)
                 {
-                    battle = BattleTurnFlow.ConsumeEntry(battle); revision++;
+                    if (battle.Definition.LeaderCleanup is not null)
+                    {
+                        var skipped = new SessionSnapshot(current.SessionId, revision, sequence,
+                            new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
+                        var skippedCommit = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
+                        if (skippedCommit.BattleScene is not null) return new(skippedCommit, observations.AsReadOnly(), skippedCommit.StopReason);
+                        battle = skippedCommit.Battle; revision = skippedCommit.Revision; sequence = skippedCommit.ObservationSequence;
+                    }
+                    else { battle = BattleTurnFlow.ConsumeEntry(battle); revision++; }
                     observations.Add(new(++sequence, revision, "dead-entry-skipped", actor.Actor));
                     continue;
                 }
@@ -84,7 +92,7 @@ internal static class BattleAdvancer
                         new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
                     observations.Add(new(++sequence, revision, "sleeping-action-skipped", actor.Actor));
                     skipped = new(current.SessionId, revision, sequence, skipped.Active, current.Story, skipped.StopReason);
-                    var pending = BattleAfterTurnContinuation.Begin(skipped, actor.Actor, observations);
+                    var pending = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
                     return new(pending, observations.AsReadOnly(), pending.StopReason);
                 }
                 if (actor.Control == BattleControl.Player)
@@ -102,7 +110,16 @@ internal static class BattleAdvancer
                 if (actor.Control != BattleControl.Automatic || actor.AiStrategy is not { } strategy)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
                 var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression);
-                var delivery = BattleMovementContinuation.BeginAutomatic(beforeAction.WithStory(current.Story), actor.Actor, action, observations, rules);
+                SessionResult delivery;
+                if (action.QueueOnly && battle.Definition.LeaderCleanup is not null)
+                {
+                    // Source standby still returns to the post-action hook. It never
+                    // initializes BATTLESCENE_FIRST_ALLY or fabricates a battle scene.
+                    var standby = BattleActionCommitter.Publish(beforeAction.WithStory(current.Story), action.Battle,
+                        actor.Actor, action.Destination, action.Effects, observations, rules);
+                    delivery = new(standby, observations.AsReadOnly(), standby.StopReason);
+                }
+                else delivery = BattleMovementContinuation.BeginAutomatic(beforeAction.WithStory(current.Story), actor.Actor, action, observations, rules);
                 if (delivery.Failure is not null || delivery.Snapshot.BattleMovement is not null || delivery.Snapshot.BattleScene is not null) return delivery;
                 var committed = delivery.Snapshot;
                 battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;

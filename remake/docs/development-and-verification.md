@@ -14,6 +14,39 @@ Documentation upkeep uses Standard rigor: current behavior/navigation and preser
 the acceptance boundary. It changes no gameplay, original evidence, UX policy or verification
 framework. Historical dispatch plans and audit dispositions belong to Git/Issues, not this guide.
 
+## Leader cleanup authored observation
+
+Use `--authored-package <absolute path to remake/content/authored/leader-cleanup.json>` with the
+ordinary host. Enter interacts with the ferryman; Enter acknowledges the before text. At battle
+control, Enter confirms the position, F chooses ATTACK, Tab selects `enemy`, and Enter commits.
+Acknowledge ordinary scene/result text with Enter. The gate and living survivor use the existing
+field death phases, followed by victory text and usable exploration; Left moves the returned player.
+
+After loading `local/private-inputs.ps1`, forcing `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and building
+the actual adapter Debug configuration from `remake/`, run from the repository root:
+
+```powershell
+$package = (Resolve-Path -LiteralPath 'remake/content/authored/leader-cleanup.json').Path
+$project = (Resolve-Path -LiteralPath 'remake/game').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+  --script res://probes/engine_leader_cleanup_observation.gd -- --authored-package $package
+```
+
+Keep APPDATA/LOCALAPPDATA/TEMP, report and logs inside the fresh owning-worktree run directory;
+absolute package paths avoid Godot's project-cwd resolution. Reuse the selected installation and
+project. Reuse an owned running instance when available; otherwise start it for actual presenter
+observation. The probe submits ordinary keys and reads real state, phase tokens, marker visibility,
+HP, rewards, ordered events and errors. No screenshots, injected state, synthetic successful
+completion, exports or bulk capture. Budget <180s and <5MiB/run; retain launch and completed failures.
+
+`LeaderCleanupTests` covers real attack/return, source-slot/caller variations, simultaneous leader
+loss, held completion, unplaced survivors, accounting and retry boundaries. Run affected scene,
+physical, sleep, Taros and outcome behavior plus `uv run sf2 verify engine`, `uv run sf2 verify adapter`
+and the clean committed planner. Corrections rerun their affected tests; exact-head CI establishes
+the final public selection. Prior results and twelve unresolved #1047 comparisons stay preserved.
+This is authored engine/presenter acceptance, not full Battle18, private outcome or hardware parity.
+
 ## Taros authored observation
 
 Use the ordinary host with `--authored-package remake/content/authored/taros-effectiveness.json`.

@@ -1,5 +1,20 @@
 # Battle Presentation
 
+## Leader survivor field removal
+
+The existing battlefield projection consumes `DeadActors` from the finite field continuation for
+ordinary deaths and positive-HP swept enemies alike. It applies the same spin/exit phases and keeps
+placed actors visible until removal commits, then hides their markers. Unplaced listed enemies
+still receive bookkeeping without inventing a map position. `BattleSceneState` exposes field-only
+metadata safely without a physical action, reward or displayed combat-scene sides. The presenter
+chooses no source identities or kill policy.
+
+The [authored leader-cleanup observation](../development-and-verification.md#leader-cleanup-authored-observation)
+uses ordinary interaction and ATTACK input, actual spin/exit/settle state and marker visibility,
+then the ordinary victory program and field movement. No Godot menu/layout or presentation code
+change was required; the existing field consumer accepts the extended worklist. Original timing,
+pixels and full Battle18 remain outside this modern authored observation.
+
 ## Ineffective physical feedback
 
 `BattleSceneView` consumes the semantic `Ineffective` reaction through the existing physical scene.
@@ -361,8 +376,9 @@ The reproduction and completed failure records belong to the
 
 ## Battlefield death batches
 
-The common action continuation retains newly defeated combatants on their battlefield cells until
-its field exit completes. The close-up panel hides after `scene-ended`; the same action still blocks
+The finite field continuation retains ordinary action deaths on their battlefield cells until
+its field exit completes. The explicit authored leader binding also appends positive-HP enemies,
+including unplaced entries; see [leader survivor removal](#leader-survivor-field-removal). The close-up panel hides after `scene-ended`; the same action still blocks
 input, automatic advancement and outcome programs. The defeated hook runs before the batch, then
 all members turn twelve times, one sound116 request starts the three effect63 directions, and only
 then are positions/status and kills/defeats cleaned. A final settle releases the action. Empty batches
@@ -399,8 +415,8 @@ random-branch scripts. No gameplay RNG call is added at a field delivery complet
 interleavings and hardware timing. The source can add waits when queued sprite loads reach seven;
 those are not an unconditional frame allowance. Source timing, natural multi-death, special entity32,
 random scripted battlefield entities and after-turn status deaths are not established by this
-bounded consumer. Current physical actions produce at most one casualty; multi-member domain cleanup
-is separately exercised without pretending those producers exist. Option A, 8D/H4 and the retained
+bounded consumer. Current physical actions produce at most one casualty; the explicit authored
+leader sweep supplies a real multi-member field worklist without inventing multi-kill attacks. Option A, 8D/H4 and the retained
 HEAL recovery opportunity mismatch remain open; no padding, trace-count fitting or reseeding is used.
 
 Actual enemy-death and ally-counter-death normal/reduced consumers exercise sprite63,116BD and
