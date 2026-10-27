@@ -158,7 +158,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor)),
             healingItems: PrivateBattleActionBindings.HealingItems(definitions),
             sourceMapRegion: new(new("map-" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
-                new(encounter.Area.X, encounter.Area.Y)));
+                new(encounter.Area.X, encounter.Area.Y)),
+            retreatSpells: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatSpells(definitions) : []);
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         BattleTurnFlow.ValidateStart(battle, inputStart);
         return new(new("private-encounter", [battle], definitions), inputStart);

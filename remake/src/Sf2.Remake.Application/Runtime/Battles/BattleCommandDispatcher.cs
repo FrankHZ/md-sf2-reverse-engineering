@@ -57,8 +57,9 @@ internal static class BattleCommandDispatcher
                             choice.Action == SessionAction.Item ? "select-item" : "unknown-action", "action",
                             choice.Action is not (SessionAction.Heal or SessionAction.Item)),
                     };
-                case SelectSpell spell when CanSelect(BattleActionKind.Healing):
-                    return Select(new(BattleActionKind.Healing, spell.Spell));
+                case SelectSpell spell when CanSelect(BattleActionKind.Healing) || CanSelect(BattleActionKind.Retreat):
+                    return Select(new(battle.Definition.RetreatSpells.ContainsKey(spell.Spell)
+                        ? BattleActionKind.Retreat : BattleActionKind.Healing, spell.Spell));
                 case SelectItem item when CanSelect(BattleActionKind.Item):
                     return Select(new(BattleActionKind.Item, ItemSlot: item.Slot));
                 case SelectBattleAction choice when CanSelect(choice.Action.Kind):
@@ -87,12 +88,13 @@ internal static class BattleCommandDispatcher
             _ = BattleChoices.RequireAction(rules, battle, selection.Actor, action);
             var kind = action.Kind switch
             {
+                BattleActionKind.Retreat => SessionAction.Retreat,
                 BattleActionKind.Healing => SessionAction.Heal, BattleActionKind.Physical => SessionAction.PhysicalAttack,
                 BattleActionKind.Item => SessionAction.Item, _ => SessionAction.Stay,
             };
             string observation = action.Kind switch
             {
-                BattleActionKind.Healing => "spell-selected", BattleActionKind.Physical => "physical-selected",
+                BattleActionKind.Healing or BattleActionKind.Retreat => "spell-selected", BattleActionKind.Physical => "physical-selected",
                 BattleActionKind.Item => "item-selected", _ => "stay-selected",
             };
             return Selected(current, new(selection.Actor, selection.Preview,
@@ -117,6 +119,7 @@ internal static class BattleCommandDispatcher
             return Reject(current, "incomplete-action", "selection");
         var action = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
             selected, selection.Target, sceneContent, requireSceneContent);
+        if (action.Retreat is not null) return BattleRetreatContinuation.Begin(current, action);
         if (action.Reactions.Count > 0)
             return BattleSceneContinuation.Begin(current, action, [], sceneContent: sceneContent);
         var observations = new List<SessionObservation>();

@@ -13,7 +13,8 @@ internal static class BattleOutcomeSelection
         BattleProgressionRules.Invoke(rule.Identity, "outcome", () =>
         {
             var outcome = rule.Check(battle);
-            if (outcome is { } kind && (!Enum.IsDefined(kind) || battle.Definition.Outcome is null))
+            if (outcome is { } kind && (kind is not (BattleOutcomeKind.Victory or BattleOutcomeKind.Defeat) ||
+                battle.Definition.Outcome is null))
                 throw new InvalidOperationException("Invalid outcome.");
             return outcome;
         });

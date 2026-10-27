@@ -1,0 +1,109 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "Explicit INITIAL Battle02 EGRESS acceptance: Map66 (29,32), four joined/active members, F399 held, Battle02 unlocked/incomplete, no raft state. Pair with battle02-outcome-party.json: learned EGRESS1, Bowie max/current MP8. The admitted outcome route supplies initial EGRESS_MAP3 (no preceding church writer); live SetEgressMap overrides it. MP7 rejection uses a separately declared initial max/current MP7 variant. No injection, teleport, snapshot replacement, restart or reseed after initial start. Walk from the returned Map3 savepoint to Battle02 in the same session. Original natural learning/chronology remains Unknown.",
+  "start": {
+    "map": "map-66",
+    "player": "entity-0",
+    "position": {
+      "x": 29,
+      "y": 32
+    },
+    "facing": 3,
+    "speed": 32,
+    "flags": [
+      0,
+      1,
+      2,
+      3,
+      32,
+      33,
+      34,
+      35,
+      80,
+      89,
+      256,
+      399,
+      402,
+      451,
+      501,
+      600,
+      601,
+      602,
+      603,
+      604,
+      605,
+      607,
+      608,
+      609,
+      610
+    ],
+    "mapPalettes": [
+      {
+        "map": "map-3",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-19",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-20",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-21",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      },
+      {
+        "map": "map-40",
+        "base": {
+          "color2": 3204,
+          "color3": 34
+        }
+      },
+      {
+        "map": "map-57",
+        "base": {
+          "color2": 3240,
+          "color3": 34
+        }
+      },
+      {
+        "map": "map-66",
+        "base": {
+          "color2": 3716,
+          "color3": 36
+        }
+      }
+    ],
+    "display": {
+      "period": 3,
+      "base": {
+        "color2": 3716,
+        "color3": 36
+      },
+      "current": {
+        "color2": 3716,
+        "color3": 36
+      },
+      "visibility": "base-restored"
+    },
+    "textSettings": {
+      "messageSpeed": 2,
+      "mouthControl": 0,
+      "viewSpeed": 0
+    }
+  }
+}

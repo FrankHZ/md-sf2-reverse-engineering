@@ -1,5 +1,48 @@
 # Session and Resumable Programs
 
+## Paid retreat and field return
+
+`BattleActionKind.Retreat` and `SessionAction.Retreat` keep a learned retreat spell in the ordinary
+semantic spell/target query. `GameSession.Submit` preserves envelope rejection and selects one finite
+`BattleRetreatContinuation` while `ActiveBattle.Retreat` is present. No field program or ordinary
+attack scene impersonates that pending action. `HasBattleControl` is false throughout delivery.
+
+Confirmation revalidates the live action/self target/MP and publishes movement plus payment once.
+`retreat-mp-paid` records the actual before/after MP before `retreat-text-requested`. The continuation
+requires `CompleteTextReveal`, then acknowledgement, then matching effect and close completions.
+Each service after text has its own token. Wrong/stale/duplicate commands and tokenless simulation
+cannot pay or release a later wait. Return failure preserves the paid battle, Return phase/token and
+any already-applied repeat unlock update. Ordinary outcome rules cannot manufacture a retreat exit.
+
+After closure, held completion clears its corresponding unlock; clear completion preserves unlock.
+Neither path newly sets completion, runs the defeated/after-turn suffix, performs a victory join,
+revives the defeated leader or halves gold. `Sf2OutcomeReturnPolicy.Start(Retreat)` reads live
+`StoryState.EgressMap`, or the explicit controlled initial route selection if no writer has run.
+It resolves only admitted outcome savepoint bindings. Unknown maps and F399-clear or F64/F640-held
+source branches fail explicitly. The selected private binding is Map3 `(32,13)`, Up; this is not a
+universal fixed-map rule. Authored tests select two different live admitted anchors.
+
+The caller then heals eligible living/immortal allies through the existing outcome recovery rule,
+builds the field projection, and runs the admitted `ReturnProgram` under `OutcomeMapLoaded`.
+The ordinary map load/setup/fade must finish before usable field control. Dead ordinary allies stay
+dead; members 7/28 retain the existing immortal exception. No-status selected input is supported;
+unimplemented status refresh remains an explicit failure. Later HP/MP recovery does not refund or
+remove the earlier paid observation. Walking reentry uses `BattleEntry` and its fresh enemy/queue
+initialization, living-member recovery and carried party/loadout/growth/accounting/RNG.
+
+**Confirmed static join:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`battlefunctions_1.asm:ExecuteBattleaction_Egress/UpdateBattleUnlockedFlag`,
+`executeindividualturn.asm`, `battleloop/getegresspositionforbattle.asm`,
+`common/maps/egressinit.asm`, `data/maps/global/savepointmapcoords.asm` and
+`exploration/explorationfunctions_2.asm:ExplorationLoop` establish payment, bypass, return selection
+and caller healing-before-fade. `battleloop/heallivingandimmortalallies.asm` separates ordinary dead
+members from 7/28 and refreshes after resource recovery. The accepted
+[admission/payment owner](../../../docs/research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
+and [supplied-map caller owner](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#victory-map12-control-or-warningretreat)
+retain original evidence and Unknowns. Reproduce the bounded source inspection with `rg -n` on those
+symbols in the pinned local checkout, and the modern behavior with the
+[EGRESS recipe](../verification/field-programs.md#battle02-egress-and-walking-retry).
+
 ## Yeel guide, zone request and sleep continuation
 
 The selected early Yeel program preserves texts784–787, source portraits and synchronous caller

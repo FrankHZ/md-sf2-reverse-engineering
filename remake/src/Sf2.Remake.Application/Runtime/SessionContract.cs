@@ -11,7 +11,7 @@ public sealed record SessionFailure(SessionFailureKind Kind, string Code, string
 public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
 public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady }
-public enum SessionAction { Stay, Heal, PhysicalAttack, Item }
+public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat }
 
 public abstract record SessionCommand;
 public sealed record Move(ExplorationDirection Direction) : SessionCommand;
@@ -60,6 +60,7 @@ public sealed class BattleSelection
     public BattleActionRef? ActionReference => Action switch
     {
         SessionAction.Heal when Spell is { } spell => new(BattleActionKind.Healing, spell),
+        SessionAction.Retreat when Spell is { } retreat => new(BattleActionKind.Retreat, retreat),
         SessionAction.Item when ItemSlot is { } slot => new(BattleActionKind.Item, ItemSlot: slot),
         SessionAction.PhysicalAttack => new(BattleActionKind.Physical),
         SessionAction.Stay => new(BattleActionKind.Stay),
@@ -69,7 +70,7 @@ public sealed class BattleSelection
 
 public abstract record ActiveSessionState;
 public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null,
-    BattleMovementState? Movement = null) : ActiveSessionState;
+    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -89,7 +90,8 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
-    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null;
+    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null;
+    public BattleRetreatState? BattleRetreat => (Active as ActiveBattle)?.Retreat;
     public BattleSceneState? BattleScene => (Active as ActiveBattle)?.Scene;
     public BattleMovementState? BattleMovement => (Active as ActiveBattle)?.Movement;
     public EngineBattleState Battle => Active is ActiveBattle battle ? battle.Battle :

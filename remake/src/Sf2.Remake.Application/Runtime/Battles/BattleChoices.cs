@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattlePresentationKind { Healing, Physical, Item, None }
+public enum BattlePresentationKind { Healing, Physical, Item, None, Retreat }
 public sealed record BattleTargetChoice(ActorRef Actor, bool Enabled, SessionFailure? Reason);
 public sealed record BattleActionChoice(BattleActionRef Action, string Label, BattlePresentationKind Presentation,
     byte? MinimumRange, byte? MaximumRange, bool Empty, bool Enabled, SessionFailure? Reason,
@@ -57,7 +57,11 @@ internal static class BattleChoices
                     admission.MinimumRange != item.MinimumRange || admission.MaximumRange != item.MaximumRange) ||
                 action.Kind == BattleActionKind.Stay && (admission.MinimumRange is not null || admission.MaximumRange is not null) ||
                 action.Kind != BattleActionKind.Healing && admission.Spell is not null ||
-                action.Kind != BattleActionKind.Item && admission.Item is not null)
+                action.Kind != BattleActionKind.Item && admission.Item is not null ||
+                action.Kind == BattleActionKind.Retreat && (admission.Retreat is not { } retreat ||
+                    !battle.Definition.RetreatSpells.TryGetValue(action.Spell!.Value, out var knownRetreat) || retreat != knownRetreat ||
+                    admission.MinimumRange != 0 || admission.MaximumRange != 0) ||
+                action.Kind != BattleActionKind.Retreat && admission.Retreat is not null)
                 throw new InvalidOperationException("Invalid action admission.");
             return admission;
         });
@@ -67,7 +71,7 @@ internal static class BattleChoices
     {
         bool valid = action.Kind switch
         {
-            BattleActionKind.Healing => action.ItemSlot is null && action.Spell is { } spell &&
+            BattleActionKind.Healing or BattleActionKind.Retreat => action.ItemSlot is null && action.Spell is { } spell &&
                 battle.GetActor(actor).Spells.Contains(spell),
             BattleActionKind.Item => action.Spell is null && action.ItemSlot is { } slot && slot >= 0 &&
                 slot < (battle.GetActor(actor).SourceLoadout?.Items.Count ?? 0),
@@ -164,14 +168,21 @@ internal static class BattleChoices
                     BattleActionKind.Healing => BattlePresentationKind.Healing,
                     BattleActionKind.Physical => BattlePresentationKind.Physical,
                     BattleActionKind.Item => BattlePresentationKind.Item,
+                    BattleActionKind.Retreat => BattlePresentationKind.Retreat,
                     _ => BattlePresentationKind.None,
                 };
                 options.Add(new(offer.Action, offer.Label, presentation, admission?.MinimumRange, admission?.MaximumRange,
                     offer.Empty, failure is null, failure, targets.AsReadOnly()));
             }
         }
+        // Finite spell effects have different rules, but retain the actor's learned ordering.
+        var learned = battle.GetActor(selection.Actor).Spells.ToList();
+        var spells = options.Where(option => option.Action.Spell is not null)
+            .OrderBy(option => learned.IndexOf(option.Action.Spell!.Value)).ToArray();
+        int spellIndex = 0;
+        var ordered = options.Select(option => option.Action.Spell is null ? option : spells[spellIndex++]).ToArray();
         return new(current.SessionId, current.Revision, selection.Actor, selection.Stage,
-            selection.Preview.Destination, options.AsReadOnly());
+            selection.Preview.Destination, Array.AsReadOnly(ordered));
 
         BattleChoicesSnapshot Failed(SessionFailure failure) => new(current.SessionId, current.Revision,
             selection.Actor, selection.Stage, selection.Preview.Destination, options.AsReadOnly(), failure);

@@ -8,6 +8,15 @@ namespace Sf2.Remake.Content.Scenarios;
 // start policy; checking the source equipment must never apply its bonus a second time.
 internal static class PrivateBattleActionBindings
 {
+    internal static IEnumerable<RetreatSpellDefinition> RetreatSpells(PrivateBattleDefinitions definitions)
+    {
+        Require(definitions.Spells.TryGetValue(new("egress", 1), out var spell) &&
+            spell is { BaseId: 10, Code: "EGRESS", MpCost: 8, Radius: 0, Power: 0, MinimumRange: 0, MaximumRange: 0 } &&
+            spell.PropertiesExpression == "TYPE_SPECIAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE",
+            "source-egress-definition", "spells.egress", true);
+        yield return new(spell!.Spell, spell.MpCost);
+    }
+
     internal static IEnumerable<HealingItemDefinition> HealingItems(PrivateBattleDefinitions definitions)
     {
         // Accepted item 0 delegates to HEALIN-1. Other carried families remain explicit unsupported commands.

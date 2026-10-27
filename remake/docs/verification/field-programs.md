@@ -1,5 +1,77 @@
 # Field and Program Verification
 
+## Battle02 EGRESS and walking retry
+
+Use the [High agreement](../capability-status.md#battle02-egress-implementation-agreement) and
+[payment/return owner](../application/session-and-programs.md#paid-retreat-and-field-return).
+Reuse the selected [Battle02 outcome world and inputs](#battle02-outcomes-and-retry), installed Godot,
+current private selections and existing project. The new start is
+[`engine-battle02-egress-start.json`](../../reference/inputs/engine-battle02-egress-start.json), paired
+with [`battle02-outcome-party.json`](../../reference/inputs/battle02-outcome-party.json): learned
+EGRESS1 and initial max/current MP8. This is explicitly controlled learning/resources, not original
+natural reach. There is no injection, restart, teleport, snapshot replacement or reseeding after start.
+
+After loading the current worktree configuration in the same process and `uv sync --locked`, run
+`uv run sf2 verify engine` and `uv run sf2 verify adapter`. Focused corrections run the actual behavior
+project with `--filter FullyQualifiedName~BattleRetreatTests`, from `remake/`, using the protected
+absolute `DOTNET_BIN` and CLI home. Build the actual Debug host before native observation:
+
+```powershell
+$repo = (& git rev-parse --show-toplevel).Trim()
+. (Join-Path $repo 'local/private-inputs.ps1')
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+# Load the retained Battle02 outcome selections in this same process.
+$env:SF2_PRIVATE_CONTROLLED_START = Join-Path $repo 'remake/reference/inputs/battle02-outcome-party.json'
+$start = Join-Path $repo 'remake/reference/inputs/engine-battle02-egress-start.json'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $repo 'local/issue1341/native-NN.json'
+$env:SF2_EGRESS_CASE = 'success'
+Push-Location (Join-Path $repo 'remake')
+try {
+    & $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+    & $env:GODOT_BIN --headless --fixed-fps 60 --path game `
+        --script res://probes/engine_battle02_egress_observation.gd -- --private-exploration-start $start
+} finally { Pop-Location }
+```
+
+Use fresh report/log destinations and worktree-local APPDATA/LOCALAPPDATA/TEMP for the native process;
+retain its exit code and errors. No process was retained at dispatch; rebuilding and launching the
+changed adapter is required acceptance. Ordinary human play uses the same startup without
+`--headless`, `--fixed-fps` or `--script`. Arrows move; Enter chooses/commits; H selects learned EGRESS
+and self; Escape cancels. After feedback, walk through the Map3 church door and Granseal west exit.
+
+The observer uses real host keys for selection/cancel/cast and field walking, reads actual projected
+text, tone/effect and closure, then checks recovered field party and fresh Battle02 entry. A limited
+observer call repeats a completion already delivered by the actual view and must be rejected.
+Focus signals and process suspension must retain the pending wait and payment. Successful completion
+is never supplied by that observer call. Semantic checkpoints are bounded; no images or bulk captures.
+
+For the independent MP7 rejection start, set `SF2_EGRESS_CASE=mp7`. Make a new ignored copy of the
+controlled party with Bowie's `maxMp` and `mp` both 7; update the secondary Battle02 party definition
+the same way before startup. Fresh entry ordinarily heals to maxMP, so merely reducing initial `mp`
+would not test the intended boundary. Copy the small selected secondary inputs beneath the variant
+world directory and retain **relative contained paths** in `encounters`; change its `start` to the
+matching party copy. Keep source provenance/world content unchanged. Point the root controlled start
+and world selections at that initial variant. Content must still reject inconsistent party baselines,
+absolute encounter paths or escaping inputs; do not relax those guards to make a variant load.
+
+The focused tests exercise MP7/8, learned/self/live-envelope admission, cancel, sleep/Silence
+separation, exactly-once staged cost, wrong/duplicate delivery, return failure, held/clear completion,
+two live admitted return maps, ordinary-dead/immortal recovery and command-driven same-session retry.
+Authored mixed-effect inputs retain learned order; malformed prepared resources/RNG cannot publish.
+Original EGRESS timing/media remains Unknown; the [authored presentation](../godot/battle-scenes.md#authored-egress-delivery)
+is deliberate. Other-map private EGRESS and broader status refresh remain unsupported.
+
+Resource plan: one producer/native process at a time; reuse the roughly 122 MiB accepted world, keep
+any variant package below 128 MiB, new derived storage below 256 MiB, each semantic report/log below 5 MiB,
+180 seconds per observation and 2 GiB host headroom. Complexity is linear in the selected package plus
+bounded field navigation; no network acquisition/model API cost or all-map collection. The success
+pilot completed in about 8 seconds with a sub-1 MiB report, making the separate failure variant sufficient.
+Retained malformed variant input and its corrected package together remain below the storage budget;
+do not expand to more packages without reassessment. Current exact results, completed test/setup
+failures and process state belong to the Issue/PR handoff, not a new aggregate queue. Preserve the
+twelve unresolved #1047 comparisons and original inputs; do not rerun retired/full suites.
+
+
 Select the affected program, logical field service, map transition or actual presentation handoff.
 
 ## Yeel guide through Battle03
