@@ -1,5 +1,42 @@
 # Development and Verification
 
+## AURA authored observation
+
+Launch `remake/content/authored/aura-healing.json` with `--authored-package`. Enter opens actions,
+H cycles AURA1–4, Tab cycles centers and Enter confirms. AURA4 selects self and recovers living
+placed allies in source-slot order, including neutral/distant actors. Escape cancels. Confirm advances
+recovery/reward messages before next-turn control.
+
+Load `local/private-inputs.ps1` in every launching process; preserve the configured absolute SDK and
+shared CLI home and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Run affected `AuraHealingTests`,
+`AuraHealingSessionTests` and `HealingRulesTests`, configured `uv run sf2 verify engine`,
+`uv run sf2 verify adapter`, and the existing Godot Debug build. Preserve completed failures and
+rerun affected cases after correction. On a clean committed head inspect
+`uv run sf2 verify plan --base origin/main --head HEAD`, then exact-head CI and direct
+ownership/source-size/private/document review. No research/full/H4/emulator gate is selected.
+[Issue #1359](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1359) retains the current
+CI/failure handoff. The twelve #1047 comparison Unknowns and
+[predecessor failures](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1357#issuecomment-6451208918)
+remain unchanged.
+
+Reuse the owned installation/project. Launch when no instance is retained or changed adapter
+assemblies need loading. Put APPDATA/LOCALAPPDATA/TEMP, logs and report in a fresh ignored
+`local/issue1359/` directory, then run:
+
+```powershell
+$project = (Resolve-Path -LiteralPath 'remake/game').Path
+$package = (Resolve-Path -LiteralPath 'remake/content/authored/aura-healing.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+  --script res://probes/engine_aura_observation.gd -- --authored-package $package
+```
+
+The observer uses ordinary keys and window hide/focus lifecycle events, reads real session/draw/error
+state and ordered cost/recovery/contribution/award facts, then moves the next actor in the same
+session. It injects no gameplay state or presentation completion and takes no screenshots. Each
+witness stays below 180 seconds/5 MiB with compact transition samples. This proves authored delivery, not
+natural source reach, fairy RNG or original media/timing.
+
 ## Caravan authored observation
 
 Launch `remake/content/authored/caravan-travel.json` with `--authored-package`. Right boards the

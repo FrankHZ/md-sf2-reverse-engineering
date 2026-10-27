@@ -100,7 +100,7 @@ public sealed class SessionRules
             if (!battle.GetActor(actor).Spells.Contains(spellRef) ||
                 !battle.Definition.Spells.TryGetValue(spellRef, out var admitted) || spell != admitted)
                 throw new InvalidOperationException("Invalid admitted spell.");
-            if (spellRef.Level is < 1 or > 3) throw new BattleRuleException("healing-animation", "spell.level", true);
+            if (!spell.IsAura && spellRef.Level is < 1 or > 3) throw new BattleRuleException("healing-animation", "spell.level", true);
             if (battle.GetActor(actor).Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
             return new(spell.MinimumRange, spell.MaximumRange, Spell: spell);
         }

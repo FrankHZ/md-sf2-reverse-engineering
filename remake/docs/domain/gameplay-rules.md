@@ -1,5 +1,55 @@
 # Gameplay Rules and Composition
 
+## Authored AURA group healing
+
+`HealingSpellDefinition.Targets` distinguishes Single, AuraRadius and AuraAllAllies. Ordinary
+HEAL/Herb keep their existing scalar behavior. AURA is a finite family; authored IDs are references,
+not legality predicates. Source order comes from existing `Initialization.SourceCombatants`,
+independently of Prism, processing order or actor names.
+
+| Level | MP | Center range | Radius | Power |
+| --- | --- | --- | --- | --- |
+| 1 | 7 | 0–3 | 1 | 15 |
+| 2 | 11 | 0–3 | 2 | 15 |
+| 3 | 15 | 0–3 | 2 | 30 |
+| 4 | 20 | 0 | dedicated all-ally scan | full missing HP per target |
+
+AURA1–3 select a living placed non-neutral teammate center using the provisional caster position.
+Inclusive Manhattan radius selects living placed non-neutral allies, sorted by source index.
+AURA4's range-zero center is self, still selected through the non-neutral grid. Its later slot 0–29
+scan includes every living placed ally, including neutral/distant allies. Dead/unplaced actors never
+recover. Source grid writes in increasing index order; production admission already forbids living
+cell overlap and out-of-map placement, so invalid-memory overwrite behavior is not emulated.
+
+Recovery is min(power, missing HP); AURA4's power 255 sentinel resolves each target's missing HP.
+An AURA encounter admits maximum HP 1–32767: bsc0B interprets its delta as signed, and IncreaseAndClampWord
+also checks the sign of currentHP+delta. Higher domains are Unsupported rather than emulated.
+The ally priest contributes max(10, floor(25*recovery/maxHP)) per target to one accumulator capped at 25.
+Full HP still contributes 10. The progression owner emits ordered `healing-exp-contribution` facts
+(target, accumulator before/after), then one range 16 plus/minus pair and one award, without teammate
+halving. Credit/growth retain their later boundaries.
+
+**Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`data/stats/spells/spelldefs.asm` AURA rows and these paths under `code/gameflow/battle/`:
+
+- `battlefunctions/battlefunctions_2.asm:ProcessBattleEntityControlPlayerInput` spell MP/range/choice branch;
+  `battlefield/buildactionrangegrids.asm:BuildSpellRangeGrid/ApplyRelativeCoordinatesListToGrid`;
+  `battlefield/buildtargetsarray.asm:BuildTargetsArray`;
+  `battlefield/populatetargetslist.asm:PopulateTargetsList/PopulateTargetsListWithAllAllies`.
+- `battleactions/sorttargets.asm:battlesceneScript_SortTargets`;
+  `battleactions/battleactionsengine_1.asm:WriteBattlesceneScript`;
+  `battleactions/createbattlesceneanimation.asm:battlesceneScript_PerformAnimation`;
+  `battleactions/castspell.asm:spellEffect_Heal`.
+- `battleactions/earnexp.asm:battlesceneScript_CalculateHealingExp/battlesceneScript_AddExpAndApplyHealingCap`;
+  `battleactions/giveexpandgold.asm:battlesceneScript_GiveExpAndGold`;
+  `battlescenes/battlesceneengine_0.asm:bsc0B_executeAllyReaction/bsc0F_giveExp`.
+
+The signed addition owner is `code/common/stats/combatantstats_3.asm:IncreaseAndClampWord`.
+Reproduce inspection with `git -C <registered-upstream-checkout> show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>`.
+The accepted [AURA contract](../../../docs/design/contracts/spell-resolution.md#confirmed-aura-target-and-accumulation-subset)
+retains bounded H3 geometry/accumulation evidence. These joins establish structure, not natural
+original casting or presentation timing; engine tests are not original-game evidence.
+
 ## Jaro conversion and source ally commandset6
 
 The [scope agreement](../capability-status.md#authored-jaro-conversion-agreement) admits one authored

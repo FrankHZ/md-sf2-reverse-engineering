@@ -119,6 +119,18 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     "duplicate-spell", "spells.id/level");
                 continue;
             }
+            if (Text(effect, "kind") == "aura")
+            {
+                Object(effect, "spell.effect", "kind", "adjustedPower", "fullRecovery", "radius");
+                bool all = key.Level == 4;
+                Require(Boolean(effect, "fullRecovery") == all, "aura-full-recovery", "spell.effect.fullRecovery", true);
+                var aura = new HealingSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
+                    (ushort)Number(effect, "adjustedPower", 0, 65535), (byte)Number(spell, "minimumRange", 0, 255),
+                    (byte)Number(spell, "maximumRange", 0, 255), all ? HealingTargets.AuraAllAllies : HealingTargets.AuraRadius,
+                    (byte)Number(effect, "radius", 0, 255));
+                Require(!retreats.ContainsKey(key) && spells.TryAdd(key, aura), "duplicate-spell", "spells.id/level");
+                continue;
+            }
             Object(effect, "spell.effect", "kind", "adjustedPower", "fullRecovery");
             Require(Text(effect, "kind") == "heal", "spell-effect", "spell.effect.kind", true);
             Require(effect.GetProperty("fullRecovery").ValueKind is JsonValueKind.False or JsonValueKind.True,
