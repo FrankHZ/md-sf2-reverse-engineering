@@ -12,9 +12,9 @@ public sealed class ScenarioDefinition
 {
     internal ScenarioDefinition(string package, IEnumerable<BattleDefinition> encounters, PrivateBattleDefinitions? privateDefinitions = null, ExplorationDefinition? exploration = null,
         BattleSceneDefinition? battleScenes = null, IEnumerable<BattleStartInput>? encounterStarts = null,
-        IEnumerable<BattleSceneDefinition>? encounterScenes = null)
+        IEnumerable<BattleSceneDefinition>? encounterScenes = null, BattleStoryDefinition? battleStory = null)
     {
-        Package = package; PrivateDefinitions = privateDefinitions; Exploration = exploration; BattleScenes = battleScenes;
+        Package = package; PrivateDefinitions = privateDefinitions; Exploration = exploration; BattleScenes = battleScenes; BattleStory = battleStory;
         Encounters = new ReadOnlyDictionary<string, BattleDefinition>(
             encounters.ToDictionary(encounter => encounter.Encounter, StringComparer.Ordinal));
         EncounterStarts = new ReadOnlyDictionary<string, BattleStartInput>((encounterStarts ?? [])
@@ -23,6 +23,9 @@ public sealed class ScenarioDefinition
             .ToDictionary(scene => scene.Encounter, StringComparer.Ordinal));
     }
     public string Package { get; }
+    public BattleStoryDefinition? BattleStory { get; }
+    internal IReadOnlyDictionary<string, StoryProgram> Programs => Exploration?.Programs ?? BattleStory!.Programs;
+    public IReadOnlyDictionary<int, string> Texts => Exploration?.Texts ?? BattleStory!.Texts;
     public ExplorationDefinition? Exploration { get; }
     public BattleSceneDefinition? BattleScenes { get; }
     public IReadOnlyDictionary<string, BattleStartInput> EncounterStarts { get; }

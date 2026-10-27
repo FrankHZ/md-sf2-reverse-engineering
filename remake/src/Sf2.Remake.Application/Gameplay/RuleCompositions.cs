@@ -23,6 +23,7 @@ public static class RuleCompositions
     internal static IReadOnlyList<KeyValuePair<BattleStrategyRef, IBattleDecisionRule>> SourceDecisions() =>
         Array.AsReadOnly<KeyValuePair<BattleStrategyRef, IBattleDecisionRule>>([
             new(new("stay"), new StayBattleDecision()),
+            new(new("source-ally-physical"), new SourceAllyAi()),
             new(new("prism-laser"), new PrismLaserDecision()),
             new(new("attack-then-approach"), new AttackThenApproachAi()),
             new(new("source-orders"), new SourceEnemyAi())]);

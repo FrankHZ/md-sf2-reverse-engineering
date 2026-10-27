@@ -44,8 +44,9 @@ public sealed class GameSession
             return new SessionStartFailed(new(SessionFailureKind.ContentError, "missing-encounter", "start.encounter", "missing encounter"));
         try
         {
+            definition.BattleStory?.RequireStart(encounter, start);
             rules = rules.Bind(definition.Encounters.Values, start.Actors);
-            var result = BattleAdvancer.Start(encounter, start, rules);
+            var result = ContinueStory(definition, BattleAdvancer.Start(encounter, start, rules), rules);
             return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
         }
         catch (BattleDecisionRuleFault error)
@@ -84,6 +85,13 @@ public sealed class GameSession
         }
     }
 
+    private static SessionResult ContinueStory(ScenarioDefinition definition, SessionResult result, SessionRules rules)
+    {
+        if (result.Failure is not null || result.Snapshot.BattleRound is not { Program: true } || result.Snapshot.Story.Wait is not null)
+            return result;
+        return ProgramRunner.Run(definition, result.Snapshot, result.Observations.ToList(), rules);
+    }
+
     public SessionResult Submit(CommandEnvelope envelope)
     {
         ArgumentNullException.ThrowIfNull(envelope);
@@ -93,7 +101,7 @@ public sealed class GameSession
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
-        bool roundActive = current.BattleRound is not null;
+        bool roundActive = current.BattleRound is { Program: false };
         bool retreatActive = current.BattleRetreat is not null;
         bool sceneActive = current.BattleScene is not null;
         bool movementActive = current.BattleMovement is not null;
@@ -112,8 +120,7 @@ public sealed class GameSession
             : sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command, Rules)
             : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command, Rules)
             : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
-        if (!programActive && !retreatActive && !ReferenceEquals(result.Snapshot, current))
-            result = result with { Snapshot = result.Snapshot.WithStory(current.Story) };
+        result = ContinueStory(Definition, result, Rules);
         if (result.Failure is null && !programActive && !retreatActive) result = BattleOutcome.Begin(Definition, result, Rules);
         _current = result.Snapshot;
         return result;

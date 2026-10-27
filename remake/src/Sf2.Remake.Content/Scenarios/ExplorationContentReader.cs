@@ -38,6 +38,7 @@ internal static class ExplorationContentReader
         Object(root, "document", "formatVersion", "package", "battle", "world", "start");
         _ = Number(root, "formatVersion", 8, 8);
         var battle = AuthoredScenarioPackageReader.DecodeBattle(root.GetProperty("battle"), allowLeaderCleanup: true);
+        Require(battle.Definition.BattleStory is null, "world-battle-story", "battle.battleStory", true);
         return Read(Id(root, "package"), root.GetProperty("world"), root.GetProperty("start"), battle, authored: true);
     }
 
@@ -464,11 +465,17 @@ internal static class ExplorationContentReader
             LoadMode: mode == "preserve" ? MapLoadMode.Preserve : MapLoadMode.Rebuild);
     }
 
-    private static StoryInstruction ReadInstruction(JsonElement row)
+    internal static StoryInstruction ReadInstruction(JsonElement row)
     {
         string opcode = Text(row, "op");
         switch (opcode)
         {
+            case "convert-battle-actor":
+                Object(row, opcode, "op", "enemySlot", "allySlot");
+                return new ConvertBattleActor(Number(row, "enemySlot", 128, 159), Number(row, "allySlot", 0, 29));
+            case "join-force-ai":
+                Object(row, opcode, "op", "allySlot", "value");
+                return new JoinBattleForceAi(Number(row, "allySlot", 0, 29), (ushort)Number(row, "value", 0, 65535));
             case "end": Object(row, opcode, "op"); return new EndProgram();
             case "end-map-script": Object(row, opcode, "op"); return new EndProgram(true);
             case "return": Object(row, opcode, "op"); return new ReturnProgram();

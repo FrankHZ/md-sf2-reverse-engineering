@@ -8,10 +8,11 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 // a completed cursor retains that prefix if subsequent queue generation fails.
 public sealed class BattleRoundState
 {
-    internal BattleRoundState(IReadOnlyList<ActorRef> appearances, int cursor, WaitToken token)
-    { Appearances = appearances; Cursor = cursor; Token = token; }
+    internal BattleRoundState(IReadOnlyList<ActorRef> appearances, int cursor, WaitToken token, bool program = false)
+    { Appearances = appearances; Cursor = cursor; Token = token; Program = program; }
     public IReadOnlyList<ActorRef> Appearances { get; }
     public int Cursor { get; }
+    public bool Program { get; }
     public WaitToken Token { get; }
     public ActorRef? Actor => Cursor < Appearances.Count ? Appearances[Cursor] : null;
     public PresentationCueKind CompletionKind => PresentationCueKind.EntityEffect;
@@ -22,23 +23,55 @@ internal static class BattleRoundContinuation
     internal static SessionResult Begin(SessionSnapshot current, List<SessionObservation> observations)
     {
         var battle = current.Battle;
-        long revision = current.Revision + 1, sequence = current.ObservationSequence;
-        IReadOnlyList<ActorRef> appearances = [];
         if (battle.Definition.Initialization is not null)
         {
             battle = BattleActivationRules.BeforeRound(battle);
-            observations.Add(new(++sequence, revision, "regions-tested", After: battle.Regions!.Tested));
-            observations.Add(new(++sequence, revision, "region-program-none"));
-            var batch = BattleSpawnRules.Populate(battle);
-            battle = batch.Battle; appearances = batch.Appearances;
-            foreach (var effect in batch.Effects)
-                observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));
-            observations.Add(new(++sequence, revision, "spawn-list-ready", After: appearances.Count));
+            current = ProgramRunner.Commit(current, new ActiveBattle(battle, null), current.Story,
+                observations, "regions-tested");
+            var row = battle.Definition.Initialization!.RegionPrograms.FirstOrDefault(row =>
+                battle.Regions!.Flags[row.Region] && !current.Story.Flags.Contains(row.PlayedFlag));
+            if (row is not null)
+            {
+                // The wrapper commits the flag before entering any program operation.
+                // A single selected row is retained through all waits; never rescan on resume.
+                var round = new BattleRoundState([], 0, new(current.ObservationSequence + 1), program: true);
+                current = ProgramRunner.Commit(current, new ActiveBattle(battle, null, Round: round),
+                    current.Story.Copy(new(row.Program, 0), flags: ProgramRunner.Flags(current.Story, row.PlayedFlag, true)),
+                    observations, "region-program-started", row.Program);
+                return new(current, observations.AsReadOnly(), current.StopReason);
+            }
+            current = ProgramRunner.Commit(current, current.Active, current.Story, observations, "region-program-none");
         }
-        if (appearances.Count > 0)
-            observations.Add(new(++sequence, revision, "appearance-started", appearances[0]));
-        var pending = Snapshot(current, battle, new(appearances, 0, new(sequence)), revision, sequence);
-        return appearances.Count > 0 ? new(pending, observations.AsReadOnly(), pending.StopReason) : Generate(pending, observations);
+        return Populate(current, observations);
+    }
+
+    internal static SessionResult ResumeProgram(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
+    {
+        var populated = Populate(current, observations);
+        return populated.Failure is not null || populated.Snapshot.BattleRound is not null ? populated
+            : BattleAdvancer.Advance(populated.Snapshot, observations, rules);
+    }
+
+    private static SessionResult Populate(SessionSnapshot current, List<SessionObservation> observations)
+    {
+        try
+        {
+            var battle = current.Battle;
+            long revision = current.Revision + 1, sequence = current.ObservationSequence;
+            IReadOnlyList<ActorRef> appearances = [];
+            if (battle.Definition.Initialization is not null)
+            {
+                var batch = BattleSpawnRules.Populate(battle);
+                battle = batch.Battle; appearances = batch.Appearances;
+                foreach (var effect in batch.Effects)
+                    observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));
+                observations.Add(new(++sequence, revision, "spawn-list-ready", After: appearances.Count));
+            }
+            if (appearances.Count > 0) observations.Add(new(++sequence, revision, "appearance-started", appearances[0]));
+            var pending = Snapshot(current, battle, new(appearances, 0, new(sequence)), revision, sequence);
+            return appearances.Count > 0 ? new(pending, observations.AsReadOnly(), pending.StopReason) : Generate(pending, observations);
+        }
+        catch (BattleRuleException error) { return ProgramRunner.Failure(current, observations, error); }
     }
 
     internal static SessionResult Submit(SessionSnapshot current, SessionCommand command, SessionRules rules)

@@ -60,7 +60,7 @@ public sealed class SessionRules
             foreach (var deployment in encounter.Deployments)
             {
                 BattleTurnFlow.ValidateDeployment(deployment);
-                if (deployment.Control != BattleControl.Automatic) continue;
+                if (deployment.Control != BattleControl.Automatic && !deployment.SourceAllyControl) continue;
                 var rule = Decision(deployment.AiStrategy!.Value);
                 BattleDecisionRules.Invoke(rule, "deployment-admission", () =>
                 { rule.RequireDeployment(deployment); return true; });
@@ -77,7 +77,7 @@ public sealed class SessionRules
 
     internal void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input)
     {
-        if (deployment.Control != BattleControl.Automatic) return;
+        if (deployment.Control != BattleControl.Automatic && !deployment.SourceAllyControl) return;
         var rule = Decision(deployment.AiStrategy!.Value);
         BattleDecisionRules.Invoke(rule, "start-admission", () =>
         { rule.RequireStart(deployment, input); return true; });

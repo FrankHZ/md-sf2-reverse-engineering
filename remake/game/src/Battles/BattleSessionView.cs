@@ -58,6 +58,7 @@ public sealed partial class BattleSessionView : Control
     private BattleSceneView _scene = null!;
     private BattleRetreatView _retreat = null!;
     private BattleAppearanceView _appearance = null!;
+    private BattleStoryView _story = null!;
     internal SessionAudio? Audio { get; set; }
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
@@ -88,6 +89,7 @@ public sealed partial class BattleSessionView : Control
         _help = AddLabel("Help");
         _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
         _retreat = new BattleRetreatView { Name = "BattleRetreat" }; AddChild(_retreat);
+        _story = new BattleStoryView { Name = "BattleStory" }; AddChild(_story);
         _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; AddChild(_appearance);
         Arrange();
     }
@@ -154,7 +156,7 @@ public sealed partial class BattleSessionView : Control
         _started = true;
         _session = session;
         _result = result;
-        if (first) { _scene.Configure(session, _input.Settings, Audio); _retreat.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings); }
+        if (first) { _scene.Configure(session, _input.Settings, Audio); _retreat.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings); _story.Configure(session, _map); }
         if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
             !ReferenceEquals(_mapScenes, session.ActiveBattleScenes))
         {
@@ -190,6 +192,11 @@ public sealed partial class BattleSessionView : Control
     public override void _Process(double delta)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleRound is { Program: true })
+        {
+            if (_session.Current.StopReason is not (SessionStopReason.Unsupported or SessionStopReason.Faulted) && _story.Consume() is { } completion) Send(completion);
+            return;
+        }
         if (_session?.Current.BattleRound is not null)
         {
             if (_appearance.Consume(delta) is { } completion) Send(completion);
@@ -217,6 +224,8 @@ public sealed partial class BattleSessionView : Control
     internal void HandleAction(GameAction action)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleRound is { Program: true })
+        { if (_story.Acknowledge(action) is { } acknowledgement) Send(acknowledgement); return; }
         if (_session?.Current.BattleRound is not null) return;
         if (_session?.Current.BattleRetreat is not null)
         { if (_retreat.Acknowledge(action) is { } ack) Send(ack); return; }
@@ -326,7 +335,8 @@ public sealed partial class BattleSessionView : Control
             _session.QueryBattleChoices().Items.Select(option => $"{option.Slot + 1}: {option.Label}" +
                 (option.Slot == selection.ItemSlot ? " · selected" : "") +
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
-        _map.Present(projection);
+        _map.Present(projection, _session.Current);
+        _story.Present();
         _scene.Present();
         _retreat.Present();
         _appearance.Present();
@@ -369,7 +379,7 @@ public sealed partial class BattleSessionView : Control
             revision = current?.Revision, observationSequence = current?.ObservationSequence,
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
             cursor = current?.Battle.Cursor, actor = current?.Selection?.Actor.Value, round = current?.Battle.Round,
-            failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(),
+            failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(),
             hasBattleControl = current?.HasBattleControl, movement = _map.ObserveMovement(), fieldActors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
             actors = current?.Battle.Actors.Select(actor => new { actor = actor.Actor.Value, hp = actor.Hp,
                 mp = actor.Mp, exp = actor.Exp, kills = actor.Kills, defeats = actor.Defeats }),
@@ -400,7 +410,9 @@ public sealed partial class BattleSessionView : Control
         {
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
             rules = _session?.Rules.Identity, battleChoices = choices, healingChoices = choices,
-            scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), observationSequence = current?.ObservationSequence,
+            scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(), observationSequence = current?.ObservationSequence,
+            visualAliases = current?.Battle.Visuals?.Aliases.Select(p => new { actor = p.Key.Value, slot = p.Value }),
+            physicalVisuals = current?.Battle.Visuals?.Visuals.Values, cameraFocus = _map.CameraFocus,
             initializationPolicy = current?.Battle.StartPolicy,
             regionFlags = current?.Battle.Regions?.Flags, regionsTested = current?.Battle.Regions?.Tested,
             turnOrder = current?.Battle.TurnOrder.Select(entry => new { actor = entry.Actor?.Value, score = entry.AlteredAgility }),

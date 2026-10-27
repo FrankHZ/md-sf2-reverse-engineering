@@ -109,7 +109,7 @@ internal static class BattleCommandDispatcher
     {
         var observation = new SessionObservation(current.ObservationSequence + 1, current.Revision + 1, kind, selection.Actor);
         var snapshot = new SessionSnapshot(current.SessionId, current.Revision + 1, observation.Sequence,
-            current.Battle, selection, SessionStopReason.PlayerInput);
+            new ActiveBattle(current.Battle, selection), current.Story, SessionStopReason.PlayerInput);
         return new(snapshot, Array.AsReadOnly([observation]), SessionStopReason.PlayerInput);
     }
 

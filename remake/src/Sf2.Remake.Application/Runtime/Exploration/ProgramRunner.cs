@@ -32,6 +32,8 @@ internal static class ProgramRunner
                 if (current.Story.Wait is not null) return Finish(Result(current, observations));
                 if (current.Story.Cursor is not { } cursor)
                 {
+                    if (current.BattleRound is { Program: true })
+                        return Finish(BattleRoundContinuation.ResumeProgram(current, observations, rules));
                     if (current.Story.BattleRequest && current.Story.EventCaller is null)
                     {
                         current = SourceRandomBattleRunner.Consume(definition, current, observations, rules);
@@ -66,9 +68,8 @@ internal static class ProgramRunner
                     }
                     if (current.Story.Continuation == ProgramContinuation.BattleStartFinished)
                     {
-                        var result = BattleAdvancer.Advance(current, observations, rules);
-                        return Finish(result with { Snapshot = result.Snapshot.WithStory(current.Story.Copy(null,
-                            continuation: ProgramContinuation.FieldInput)) });
+                        current = current.WithStory(current.Story.Copy(null, continuation: ProgramContinuation.FieldInput));
+                        return Finish(BattleAdvancer.Advance(current, observations, rules));
                     }
                     current = MapEventDispatcher.Finish(current, observations);
                     if (current.Story.Wait is not null) continue;
@@ -89,10 +90,16 @@ internal static class ProgramRunner
                             logicalView: view with { TargetSlot = field.PlayerEntity.Slot }));
                     return Finish(Result(Stop(current, SessionStopReason.PlayerInput), observations));
                 }
-                if (!definition.Exploration!.Programs.TryGetValue(cursor.Program, out var program) ||
+                if (!definition.Programs.TryGetValue(cursor.Program, out var program) ||
                     cursor.Instruction < 0 || cursor.Instruction >= program.Instructions.Count)
                     throw new BattleRuleException("program-cursor", "program.cursor");
                 StoryInstruction instruction = program.Instructions[cursor.Instruction];
+                if (current.BattleRound is { Program: true } && instruction is not
+                    (EndProgram { SourceMapScript: false } or ReturnProgram or JumpProgram or BranchFlag or CallProgram { ActivateEntities: false } or WriteFlag or
+                    SetTextCursor or ShowText { ExplicitWindows: false, UseEventSpeaker: false } or CloseText or
+                    WaitProgramTicks or ConvertBattleActor or JoinBattleForceAi or SetEntityFacing { Facing: < 4 } or SetCameraEntity or SetCameraTarget or
+                    PresentCue { Kind: PresentationCueKind.CameraWait, FullBlack: null, Entity: null, Position: null, Resource: null, DurationTicks: null }))
+                    throw new BattleRuleException("battle-program-instruction", "program." + instruction.GetType().Name, true);
                 var callersBefore = current.Story.Callers;
                 if (instruction is UnsupportedInstruction unsupported)
                     throw new BattleRuleException("program-opcode", unsupported.Source + ":" + unsupported.Opcode, true);
@@ -101,6 +108,25 @@ internal static class ProgramRunner
                 var token = new WaitToken(checked(current.ObservationSequence + 1));
                 switch (instruction)
                 {
+                    case ConvertBattleActor convert:
+                        current = BattleStoryOperations.Convert(current, convert, observations);
+                        story = current.Story.Copy(Next(cursor)); active = current.Active; break;
+                    case JoinBattleForceAi joinAi:
+                        current = BattleStoryOperations.JoinAi(current, joinAi, observations);
+                        story = current.Story.Copy(Next(cursor)); active = current.Active; break;
+                    case SetCameraEntity camera when current.BattleRound is { Program: true }:
+                        if (camera.Entity is not { } cameraActor) throw new BattleRuleException("battle-camera-entity", "program.camera", true);
+                        var cameraVisual = BattleStoryOperations.Visual(current, cameraActor);
+                        story = story.Copy(story.Cursor, cameraEntitySlot: cameraVisual.Slot, clearCameraTarget: true); break;
+                    case SetEntityFacing facing when current.BattleRound is { Program: true }:
+                        var facingActor = current.Battle.Actors.SingleOrDefault(a => a.Actor.Value == facing.Entity.Value)
+                            ?? throw new BattleRuleException("battle-story-entity", "program.entity", true);
+                        // The source facing opcode skips the lookup itself for HP0 allies.
+                        if (facingActor.IsAlly && facingActor.Hp == 0) break;
+                        _ = BattleStoryOperations.Visual(current, facing.Entity);
+                        active = ((ActiveBattle)current.Active) with { Battle = current.Battle.With(
+                            visuals: current.Battle.Visuals!.Face(facingActor.Actor, facing.Facing),
+                            actors: current.Battle.Actors.Select(a => a.Actor == facingActor.Actor ? a.With(facing: facing.Facing) : a)) }; break;
                     case SetEgressMap egress:
                         story = story.Copy(story.Cursor, egressMap: egress.Map); break;
                     case SourceRandomBattle random:
@@ -226,20 +252,22 @@ internal static class ProgramRunner
                         }
                         break;
                     case ShowText text:
+                        if (current.BattleRound is { Program: true } && text.Speaker is { } battleSpeaker)
+                            _ = BattleStoryOperations.Visual(current, battleSpeaker);
                         int selectedText = text.TextId ?? current.Story.TextCursor;
                         int nextTextCursor = text.TextId is null ? checked(current.Story.TextCursor + 1) : current.Story.TextCursor;
-                        if (!definition.Exploration!.Texts.ContainsKey(selectedText))
+                        if (!definition.Texts.ContainsKey(selectedText))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
                         if (text.ExplicitWindows && current.Story.TextSettings is not null)
                         {
-                            story = ExplorationTextRunner.Begin(definition.Exploration, current, text, token, definition);
+                            story = ExplorationTextRunner.Begin(definition.Exploration!, current, text, token, definition);
                             break;
                         }
                         if (text.ExplicitWindows && !program.EntitiesRunning &&
                             current.Story is { EntityEvent: { } context, PortraitWindow: ClosedPortraitWindow,
                                 Continuation: ProgramContinuation.FieldInput, EnteringBattle: null } &&
                             current.Exploration!.TryResolveEntity(context.Entity, out var eventActor) &&
-                            eventActor.Sprite is { } eventSprite && definition.Exploration.Visuals is { } eventVisuals &&
+                            eventActor.Sprite is { } eventSprite && definition.Exploration!.Visuals is { } eventVisuals &&
                             eventVisuals.Sprites.TryGetValue(eventSprite, out var eventVisual) && eventVisual.Portrait is null &&
                             definition.Exploration.TextTokens.TryGetValue(selectedText, out var tokens) &&
                             tokens.Any(part => part.Kind == ExplorationTextTokenKind.Wait1) &&
@@ -441,6 +469,7 @@ internal static class ProgramRunner
                     instruction is EndProgram && story.Wait is not ViewWait { ScriptReturn: true })
                     reads.Add(ControlRead(current, cursor, instruction.GetType().Name, callersBefore));
             }
+            catch (BattleStoryOperations.PrefixFailure error) { return Finish(Failure(error.Snapshot, observations, error.Error)); }
             catch (BattlePolicyFault error) { return Finish(Failure(current, observations, error)); }
             catch (BattleRuleException error) { return Finish(Failure(current, observations, error)); }
         }

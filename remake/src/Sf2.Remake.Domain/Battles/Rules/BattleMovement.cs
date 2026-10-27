@@ -80,7 +80,7 @@ internal static class BattleMovement
     {
         var actor = battle.GetActor(actorRef);
         var costs = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
-        foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Faction != actor.Faction))
+        foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Position is not null && a.Faction != actor.Faction))
             costs[Offset(opponent.Position!)] = -1;
         return WeightedMovement.Build(costs, Offset(actor.Position!), actor.Definition.Move * 2);
     }

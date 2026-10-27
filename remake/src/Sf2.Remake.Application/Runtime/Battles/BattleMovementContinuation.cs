@@ -82,6 +82,8 @@ internal static class BattleMovementContinuation
         var delivered = current.Battle.GetActor(movement.Actor).Facing == movement.Facing ? current.Battle :
             current.Battle.With(actors: current.Battle.Actors.Select(actor =>
                 actor.Actor == movement.Actor ? actor.With(facing: (byte)movement.Facing) : actor));
+        if (delivered.Visuals is { } visuals)
+            delivered = delivered.With(visuals: visuals.Place(movement.Actor, movement.To, (byte)movement.Facing));
         int next = movement.Segment + 1;
         if (next < movement.Path.Count - 1)
         {

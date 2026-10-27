@@ -5,7 +5,7 @@ using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
 
-// Finite authored source initialization; no private battle import or region program.
+// Finite authored source initialization and ordered region programs; no private battle import.
 internal static class AuthoredBattleInitializationReader
 {
     internal static BattleDeploymentInitialization? Placement(JsonElement row)
@@ -25,8 +25,16 @@ internal static class AuthoredBattleInitializationReader
             Require(deployments.All(d => d.Initialization is null), "initialization-policy", "encounter.initialization");
             return null;
         }
-        Object(input, "initialization", "regions", "regionProgram", "enemyCount", "sourceCombatants");
-        Require(Text(input, "regionProgram") == "none", "region-program", "encounter.initialization.regionProgram", true);
+        ObjectOptional(input, "initialization", "regionPrograms", "regions", "regionProgram", "enemyCount", "sourceCombatants");
+        string programMode = Text(input, "regionProgram");
+        Require(programMode is "none" or "authored", "region-program", "encounter.initialization.regionProgram", true);
+        var programs = input.TryGetProperty("regionPrograms", out _) ? Array(input, "regionPrograms").Select(row =>
+        {
+            Object(row, "regionProgram", "region", "playedFlag", "program");
+            return new BattleRegionProgramRow((byte)Number(row, "region", 0, 15), Number(row, "playedFlag", 0, 65535), Id(row, "program"));
+        }).ToArray() : [];
+        Require(programMode == "authored" ? programs.Length is > 0 and <= 16 : programs.Length == 0,
+            "region-program-rows", "initialization.regionPrograms");
         List<BattleActivationRegion> regions = [];
         foreach (var region in Array(input, "regions"))
         {
@@ -44,7 +52,9 @@ internal static class AuthoredBattleInitializationReader
             Object(row, "combatant", "slot", "actor");
             Require(slots.TryAdd(Number(row, "slot", 0, 159), new(Id(row, "actor"))), "duplicate-source-slot", "initialization.sourceCombatants");
         }
-        return new(regions, BattleRegionProgram.None, sourceCombatants: slots, enemyCount: Number(input, "enemyCount", 1, 32));
+        Require(programs.All(p => regions.Any(r => r.Id == p.Region)), "missing-activation-region", "initialization.regionPrograms");
+        return new(regions, programMode == "authored" ? BattleRegionProgram.Authored : BattleRegionProgram.None,
+            sourceCombatants: slots, enemyCount: Number(input, "enemyCount", 1, 32), regionPrograms: programs);
     }
 
     internal static (bool? Initialized, ushort? Word) Start(JsonElement input)

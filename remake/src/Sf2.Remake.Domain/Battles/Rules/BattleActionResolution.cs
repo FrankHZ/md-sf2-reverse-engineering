@@ -28,7 +28,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         Require(ReferenceEquals(Battle.Definition, before.Definition) && Battle.MainSeed == before.MainSeed &&
             Battle.Round == before.Round && Battle.Cursor == before.Cursor && Battle.Gold == before.Gold &&
             ReferenceEquals(Battle.ItemCustody, before.ItemCustody) && Equals(Battle.DeathCredit, before.DeathCredit) &&
-            ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && Battle.Queue.SequenceEqual(before.Queue) &&
+            ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && ReferenceEquals(Battle.Visuals, before.Visuals) && Battle.Queue.SequenceEqual(before.Queue) &&
             Battle.Actors.Count == before.Actors.Count && actor.Control == BattleControl.Automatic &&
             actor.Hp > 0 && actor.Position is not null);
         Require(before.Regions is null ? Battle.Regions is null : Battle.Regions is { } regions &&
@@ -172,7 +172,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Equals(Prepared.DeathCredit, before.DeathCredit) && ReferenceEquals(Prepared.Definition, before.Definition) && Prepared.ThinkingSeed == before.ThinkingSeed &&
             Prepared.Round == before.Round && Prepared.Cursor == before.Cursor &&
             (allowGold || Prepared.Gold == before.Gold) && ReferenceEquals(Prepared.StartPolicy, before.StartPolicy) &&
-            ReferenceEquals(Prepared.Regions, before.Regions) && Prepared.Queue.SequenceEqual(before.Queue) &&
+            ReferenceEquals(Prepared.Regions, before.Regions) && ReferenceEquals(Prepared.Visuals, before.Visuals) && Prepared.Queue.SequenceEqual(before.Queue) &&
             Prepared.Actors.Count == before.Actors.Count);
         var expectedCustody = (inventory ?? before).ItemCustody;
         Require(ReferenceEquals(Prepared.ItemCustody, expectedCustody) || Prepared.ItemCustody is { } actual &&

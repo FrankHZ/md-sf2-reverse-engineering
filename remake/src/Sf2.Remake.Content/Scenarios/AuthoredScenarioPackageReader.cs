@@ -41,13 +41,15 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     internal static ScenarioReadAccepted DecodeBattle(JsonElement root, bool allowLeaderCleanup = false)
     {
         ObjectOptional(root, "document", "items", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters",
+            .. root.TryGetProperty("battleStory", out _) ? new[] { "battleStory" } : [],
             .. root.TryGetProperty("dropItems", out _) ? new[] { "dropItems" } : []]);
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
         var start = root.GetProperty("start");
-        ObjectOptional(start, "start", "itemCustody", "encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors");
+        ObjectOptional(start, "start", "itemCustody", ["encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors",
+            .. start.TryGetProperty("story", out _) ? new[] { "story" } : []]);
         Require(Text(start, "initialVitals") == "authored-controlled", "initial-vitals-policy", "start.initialVitals");
         string selectedEncounter = Id(start, "encounter");
         uint mainSeed = WordImage(start, "mainSeed"), thinkingSeed = WordImage(start, "thinkingSeed");
@@ -235,7 +237,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var placements = new List<BattleDeploymentDefinition>();
             foreach (var placement in Array(encounter, "placements"))
             {
-                ObjectOptional(placement, "placement", "initialization", "actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y");
+                ObjectOptional(placement, "placement", "initialization", ["actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y",
+                    .. placement.TryGetProperty("controlPolicy", out _) ? new[] { "controlPolicy" } : []]);
                 var actorRef = new ActorRef(Id(placement, "actor"));
                 Require(actors.ContainsKey(actorRef), "missing-actor", "placements.actor");
                 var actor = actors[actorRef];
@@ -258,7 +261,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(BattleTerrainRules.MovementCost(tile) > 0, "blocked-placement", "placements");
                 Require(!placements.Any(a => a.Actor == actorRef), "duplicate-placement", "placements.actor");
                 Require(!placements.Any(a => a.ProcessingOrder == order), "duplicate-processing-order", "placements.processingOrder");
-                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position, AuthoredBattleInitializationReader.Placement(placement));
+                bool sourceControl = placement.TryGetProperty("controlPolicy", out _);
+                if (sourceControl) Require(Text(placement, "controlPolicy") == "source-ally-activation", "control-policy", "placements.controlPolicy", true);
+                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position, AuthoredBattleInitializationReader.Placement(placement), sourceControl);
                 BattleTurnFlow.ValidateDeployment(deployment);
                 placements.Add(deployment);
             }
@@ -275,7 +280,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var startActors = new List<BattleActorStartInput>();
         foreach (var input in Array(start, "actors"))
         {
-            ObjectOptional(input, "start.actor", "initialization", "actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride");
+            ObjectOptional(input, "start.actor", "initialization", ["actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride",
+                .. input.TryGetProperty("absent", out _) ? new[] { "absent" } : [],
+                .. input.TryGetProperty("retainDeadPosition", out _) ? new[] { "retainDeadPosition" } : []]);
             MapPosition? position = null;
             var overrideInput = input.GetProperty("positionOverride");
             if (overrideInput.ValueKind != JsonValueKind.Null)
@@ -286,10 +293,14 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var initialized = AuthoredBattleInitializationReader.Start(input);
             startActors.Add(new(new ActorRef(Id(input, "actor")), (ushort)Number(input, "hp", 0, 65535),
                 (byte)Number(input, "mp", 0, 255), (byte)Number(input, "exp", 0, 99),
-                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized));
+                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized,
+                Absent: input.TryGetProperty("absent", out _) && Boolean(input, "absent"),
+                RetainDeadPosition: input.TryGetProperty("retainDeadPosition", out _) && Boolean(input, "retainDeadPosition")));
         }
+        var battleStory = BattleStoryReader.Read(root, encounters.Values);
+        var storyStart = BattleStoryReader.Start(start, encounters[selectedEncounter]);
         var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
-            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, dropItems));
+            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, dropItems), storyFlags: storyStart.Flags, visuals: storyStart.Visuals, retainedSourceSlots: storyStart.Retained);
         BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
         // Drop/initialization-enabled encounters need fresh enemies on each entry. Their
         // controlled start is a definition input, never a replacement for live allies.
@@ -299,11 +310,11 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         {
             var input = new BattleStartInput(encounter.Encounter,
                 startActors.Where(actor => encounter.Deployments.Any(row => row.Actor == actor.Actor)),
-                mainSeed, thinkingSeed, startInput.Gold, itemCustody: startInput.ItemCustody);
+                mainSeed, thinkingSeed, startInput.Gold, itemCustody: startInput.ItemCustody, storyFlags: startInput.StoryFlags, visuals: startInput.Visuals, retainedSourceSlots: startInput.RetainedSourceSlots);
             BattleTurnFlow.ValidateStart(encounter, input);
             return input;
         }).ToArray();
-        return new(new ScenarioDefinition(package, encounters.Values, encounterStarts: defaults), startInput);
+        return new(new ScenarioDefinition(package, encounters.Values, encounterStarts: defaults, battleStory: battleStory), startInput);
     }
 
     private static ushort StartStatus(JsonElement input)

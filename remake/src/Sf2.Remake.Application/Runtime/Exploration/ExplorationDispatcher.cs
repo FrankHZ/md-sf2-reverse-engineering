@@ -297,7 +297,7 @@ internal static class ExplorationDispatcher
                         current = ExplorationMusicRunner.BeforeService(current, observations);
                         bool entityUpdates = current.Story.EntityServices ?? (current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
-                                definition.Exploration!.Programs[location.Program].EntitiesRunning);
+                                definition.Programs[location.Program].EntitiesRunning);
                         var pendingMove = (current.Story.Wait as EntityWait)?.PendingMove;
                         EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world
                             ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,

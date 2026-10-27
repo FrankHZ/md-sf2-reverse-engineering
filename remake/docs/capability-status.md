@@ -1,5 +1,33 @@
 # Remake Capability Status
 
+## Authored Jaro conversion agreement
+
+**High rigor; implemented authored subset:** Issue #1355 adds one authored region-triggered
+conversion and supported ally automatic turns. Round activation, the shared story cursor/callers/waits,
+two logical actors, membership snapshots, live control and one visual cross ownership boundaries.
+The accepted outcome is ordinary movement → next eligible round → typed scene → conversion/join →
+automatic ally physical action → usable player movement, with changed valid state and content.
+
+Use one finite round continuation and the existing ProgramRunner/StoryState. Region rows commit the
+first matching played flag before execution. Conversion preserves enemy and ally resource ownership,
+source operation order, the named thirteen-member exception and explicit retained visual input.
+Only source commandset6 physical ally decisions are in scope; no private Battle32, victory recruitment,
+generic faction/roster/AI system, original media/timing, save/load or UI redesign is implied.
+
+Acceptance is staged: prove typed battle wait/resume and retained failure prefix before adding the
+conversion; then changed-state engine behavior and a single ordinary-key native witness, followed by
+scoped engine/adapter/build checks and exact-head CI. Bounds remain62 actors/16 regions; scans are
+linear over those finite lists and no bulk acquisition is needed. Native output is bounded to180s/5MiB.
+The linked layer/design owners carry implemented interfaces and limitations. Research is
+unchanged; natural original reach, alias timing and original presentation remain **Unknown**.
+
+The playable package is `remake/content/authored/jaro-conversion.json`. The
+[rule owner](domain/gameplay-rules.md#jaro-conversion-and-source-ally-commandset6),
+[session owner](application/session-and-programs.md#battle-context-region-programs),
+[content owner](content/profiles-and-trust.md#authored-battle-story-admission),
+[presentation owner](godot/presentation.md#authored-battle-region-scene) and
+[native recipe](development-and-verification.md#jaro-conversion-authored-observation) define the boundary.
+
 ## Hidden-enemy lifecycle agreement
 
 **High rigor:** initialization, source region activation, round scheduling, staged appearance and
@@ -13,7 +41,7 @@ four-actor native witness uses compact transition samples within180s/5MiB; no ac
 output is needed. Expand the scope only if these bounds or dependencies cease to hold.
 
 Ordinary ally movement can trigger an admitted region. The next round retains the source checked-word
-lifetime, activates enemies, passes the no-region-program boundary, resets the entire candidate list
+lifetime, activates enemies, runs any admitted region program, resets the entire candidate list
 in source-slot order, delivers each real appearance, then generates turns. Dormant effective maxHP0
 is separate from the immutable definition. Mode2 requires dead plus held non15 region plus maxHP0;
 mode3 omits the maximum-HP condition. Refused bound/occupied resets leave HP/maxHP0 and absent placement
@@ -32,7 +60,7 @@ selection and exact-head CI complete candidate verification; main-gate independe
 
 Admitted reset content uses explicit source slots/bound, modes0/2/3, difficulty0, no enemy growth and
 only unequipped Herb/empty loadouts with empty source spell slots for resettable enemies. Mode1,
-region programs/Jaro, private Battle44, trial timer/score/records/saving and original asset/audio/timing
+unadmitted/private region programs, private Battle44, trial timer/score/records/saving and original asset/audio/timing
 parity remain **Unsupported**. Natural original trigger/appearance reach remains **Unknown**. Existing
 Prism known-none death credit, physical/sleep behavior, item custody and outcome rules remain dependencies.
 All predecessor failures and the twelve unresolved #1047 comparisons retain their original owners;
@@ -259,7 +287,7 @@ full-game parity and public distribution remain outside the accepted boundary.
 | Medical Herb battle scenes | **Implemented bounded consumer:** live inventory consumption during construction, deferred mode2 HP recovery without MP cost, single-ally display/target switch/restoration, EXP/growth and end-of-scene input release. Uses source item animation NONE/Nothing and SFX113, with no fairy or physical recoil draws. Wounded controlled entry and full-HP source-world normal/reduced observations cover different boundaries; natural timing and whole-scene HEAL parity remain unfinished. [Scene owner](godot/battle-scenes.md#medical-herb-scenes). |
 | Enemy physical decision | **Implemented subset:** already-active, physical-only ATTACK1/script3, admitted source movers with MOV1–63. Reverse candidate/RNG order, signed raw-priority cohort and capped result, Regular class table for named classes when needed, largest-movement/later-collected tie, shared physical/reward/death/control path. Missing reached class/physical capability remains atomic Unsupported; earlier commits and the failed queue entry survive. |
 | Zero-target commandset06 continuation | **Implemented subset:** ATTACK1, unavailable HEAL1 and SUPPORT return failure; MOVE1 selects a living target from complete raw costs0–127, walks fixed cost4 then corrects the station with the legal MOV grid. Movement or origin Stay returns success and ends the action; no same-turn attack, RNG/resource or last-target change. High/incomplete target costs remain atomic Unsupported. |
-| Remaining battle behavior | **Unsupported beyond admitted capabilities:** nonempty defeated programs/private or unbound enemy-leader cleanup, battle-region programs, ally automatic control, spawn modes beyond authored0/2/3, unadmitted private/special laser inputs, unadmitted EGRESS/Angel Wing and broader equipment/spell/status families. Growth and ordinary victory/defeat/return are implemented for the bound content above and below; Battle03 Flying/physical sleep is implemented below. Missing bindings or unsupported reached effects still reject at their owning boundary, preserving any prior committed prefix. The [Proposed special-mechanics design](domain/special-mechanics-design.md) separates missing content, rules and state/interface extensions; it does not enable these mechanisms. |
+| Remaining battle behavior | **Unsupported beyond admitted capabilities:** nonempty defeated programs/private or unbound enemy-leader cleanup, unadmitted/private battle-region programs and broader ally automatic control, spawn modes beyond authored0/2/3, unadmitted private/special laser inputs, unadmitted EGRESS/Angel Wing and broader equipment/spell/status families. Growth and ordinary victory/defeat/return are implemented for the bound content above and below; Battle03 Flying/physical sleep is implemented below. Missing bindings or unsupported reached effects still reject at their owning boundary, preserving any prior committed prefix. The [Proposed special-mechanics design](domain/special-mechanics-design.md) separates missing content, rules and state/interface extensions; it does not enable these mechanisms. |
 
 ## Common Exploration and Programs
 
@@ -292,7 +320,7 @@ source provenance and reproduction.
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
 | Item acquisition, area descriptions and setup-event selection | none | **Unsupported** | their only consumers were legacy; accepted contracts and research remain for a future reached consumer |
-| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, Jaro conversion, private Battle36/wider Prism inputs, private/wider hidden-enemy content and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
+| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, private Battle32 and its full Jaro victory consumer, private Battle36/wider Prism inputs, private/wider hidden-enemy content and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a
 new capability, receipt, or matrix row unless they independently cross a trust, authority, versioned-port,

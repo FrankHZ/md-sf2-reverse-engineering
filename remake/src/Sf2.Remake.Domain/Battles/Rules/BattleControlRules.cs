@@ -22,12 +22,13 @@ internal static class BattleControlRules
 
     internal static EngineBattleState EnterPlayer(EngineBattleState current, ActorRef actorRef)
     {
-        if (current.StartPolicy is not { } policy) return current;
+        var policy = current.StartPolicy;
+        if (policy is null && !current.GetActor(actorRef).Deployment.SourceAllyControl) return current;
         var actor = current.GetActor(actorRef);
         ushort? word = actor.ActivationWord;
-        if (actor.IsAlly && word is null) word = policy.MissingCandidateAllyWord;
+        if (actor.IsAlly && word is null) word = policy?.MissingCandidateAllyWord;
         var decision = Classify(actor.IsAlly, actor.Hp, actor.Position?.X ?? 255, actor.Position?.Y ?? 255,
-            actor.Status, word, policy.AllyAutoBattle, policy.OpponentControl);
+            actor.Status, word, policy?.AllyAutoBattle ?? false, policy?.OpponentControl ?? false);
         if (decision != BattleControlAdmission.Player)
             throw new BattleRuleException("player-control-" + decision.ToString().ToLowerInvariant(), "actor.control", true);
         // Admission precedes the candidate-only controlled supplement. Other allies remain unspecified.

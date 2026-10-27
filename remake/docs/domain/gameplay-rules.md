@@ -1,5 +1,56 @@
 # Gameplay Rules and Composition
 
+## Jaro conversion and source ally commandset6
+
+The [scope agreement](../capability-status.md#authored-jaro-conversion-agreement) admits one authored
+composition. `ConvertBattleActor(enemySlot, allySlot)` binds two existing logical actors through
+`SourceCombatants`. It reads retained enemy placement, writes enemy currentHP0/absent placement,
+copies only coordinates to the ally, and leaves each actor's definition, maximums, MP, stats,
+loadout, status and activation intact. Dead allies remain dead. A null retained coordinate stays
+absent; it is never replaced with the enemy definition's fresh starting coordinate.
+
+`MapPartyMembership.Rebuild` uses the shared story flags. Conversion sets joined, rebuilds the list
+snapshot, conditionally writes active below12, then explicitly writes active regardless of capacity.
+The list can therefore lag the active flag. This named source operation permits thirteen active
+flags without changing general party capacity. The alias copy runs last and can fail after those
+committed writes. `JoinBattleForceAi(nonzero)` preserves the activation word OR4 across JoinForce's
+joined/list/conditional-active writes, then publishes it. Zero clears only bit2 and does not join or
+rebuild. These are the source subroutine/opcode orders, not an atomic roster transaction.
+
+`BattleDeploymentDefinition.SourceAllyControl` explicitly selects live activation bit2 as the
+player/automatic authority. The immutable strategy is `source-ally-physical`; ordinary authored
+control retains its earlier meaning. Queue generation still uses live placement/HP/agility, and
+sleep/dead-entry handling remains in ordinary turn flow. No enemy slot is substituted into the queue.
+
+**Confirmed static clarification:** at pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:
+
+- `code/gameflow/battle/ai/startaicontrol.asm:StartAiControl` sends allies directly to
+  `@HandleAiCommandset` with6, skipping enemy checked-word clear, activation/standby, special-attacker,
+  dead-follow promotion and path-mode preprocessing.
+- `data/battles/global/aicommandsets.asm:AiCommandset06` orders ATTACK1, HEAL1, SUPPORT, MOVE1, STAY.
+  `ai/command/support.asm:aiCommand_Support` immediately fails for an ally. The admitted loadout has
+  four empty item127 slots and four source spell63 slots, no learned spells, ordinary range1 physical
+  attack and difficulty0. Item/spell/neutral/MUDDLE/auto-battle and other difficulty paths remain Unsupported.
+- `ai/command/attack/prioritizetargets.asm:AdjustTargetPriorityForAttackByDifficulty` selects Script3
+  for an ally at difficulty0. Opponent targets follow ascending source slots; reachable priorities
+  draw thinking RNG in reverse order. `PhysicalTargetRules.ScriptThree` is reused only for that raw
+  score. `ai/command/attack/determinebattleaction.asm:@MultipleTargets` bypasses enemy >=15 class
+  preference for allies. The raw-max cohort is collected backwards; the final signed movement
+  comparison selects greatest movement, replacing equal values. Output priority caps at15. Selection
+  draws no additional RNG. `ai/command/attack.asm:@ValidTarget_Attack` skips the enemy-only LastTarget write.
+- `ai/command/move.asm:aiCommand_Move` targets living placed opponents. Its post-sort enemy-bit test
+  reads the final cost in d0, not the mover ID. The shared `AiMovementRules.Pursue` is reused only for
+  complete0..127 raw target costs, stable nearest-target order, approach and legal occupancy. No
+  attack runs HEAL1/SUPPORT failure then MOVE1 without RNG. Unreachable/128 costs remain Unsupported.
+
+The abbreviated AI paths above share `code/gameflow/battle/`. The accepted
+[conversion research](../../../docs/research/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases)
+and [AI contract](../../../docs/design/contracts/battle-ai-decision.md) retain original evidence.
+`JaroConversionTests`, `BattleRegionProgramTests` and `SourceAllyAiTests` exercise actual remake
+behavior, including changed IDs/slots/state, prefix failures and automatic-to-manual transition.
+Natural original scene reach, original alias timing and original presentation remain **Unknown**.
+
 ## Hidden-enemy reset and source regions
 
 **Confirmed static source:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
