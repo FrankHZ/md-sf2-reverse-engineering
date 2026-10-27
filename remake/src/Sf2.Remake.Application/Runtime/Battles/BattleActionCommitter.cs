@@ -17,8 +17,8 @@ internal static class BattleActionCommitter
         bool hook = !defeatedHookHandled && BattleOutcomeSelection.DefeatedHook(rules.Outcome, battle);
         deaths ??= BattleDeathBatch.Empty;
         if (hook) deaths = deaths.AppendSurvivors(battle);
-        if (deaths.Actors.Count > 0 && (battle.FirstAlly is not { } first ||
-            !battle.GetActor(first).IsAlly))
+        if (deaths.Actors.Count > 0 && (battle.DeathCredit is null ||
+            battle.DeathCredit.Ally is { } first && !battle.GetActor(first).IsAlly))
             throw new BattleRuleException("death-first-ally-context", "battle.firstAlly", true);
         // Outcome must not run before the ordered removal is committed.
         var outcome = deaths.Actors.Count == 0 ? BattleOutcomeSelection.Check(rules.Outcome, battle) : null;
@@ -38,7 +38,7 @@ internal static class BattleActionCommitter
         {
             var pending = new SessionSnapshot(current.SessionId, revision, sequence,
                 new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
-            return BattleFieldDeathContinuation.Begin(pending, new(actor, destination, battle.FirstAlly!.Value), deaths, observations);
+            return BattleFieldDeathContinuation.Begin(pending, new(actor, destination, battle.DeathCredit!), deaths, observations);
         }
         bool sleep = outcome is null && battle.GetActor(actor).Hp > 0 && (battle.GetActor(actor).Status & 0xC0) != 0;
         if (outcome is null && !sleep) observations.Add(new(++sequence, revision, "after-turn", actor));

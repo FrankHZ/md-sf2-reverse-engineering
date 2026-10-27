@@ -35,7 +35,7 @@ public sealed class SessionRules
         Outcome = outcome ?? RuleCompositions.SourceOutcome();
         OutcomeReturn = outcomeReturn ?? RuleCompositions.SourceOutcomeReturn();
         SourceStory = sourceStory ?? RuleCompositions.SourceStory();
-        Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), new Sf2RetreatAction(), item, stay]);
+        Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), new Sf2RetreatAction(), new Sf2.Remake.Domain.Gameplay.Sf2.PrismLaser(), item, stay]);
     }
     internal IBattleProgressionRule Progression { get; }
     internal IBattleOutcomeRule Outcome { get; }
@@ -55,6 +55,8 @@ public sealed class SessionRules
     {
         if (_bindingFailure is { } code) throw new BattleRuleException(code, "rules.decisions", true);
         foreach (var encounter in encounters)
+        {
+            encounter.PrismLaser?.RequireDefinition(encounter);
             foreach (var deployment in encounter.Deployments)
             {
                 BattleTurnFlow.ValidateDeployment(deployment);
@@ -65,6 +67,7 @@ public sealed class SessionRules
                 if (inputs?.FirstOrDefault(input => input.Actor == deployment.Actor) is { } input)
                     RequireStart(deployment, input);
             }
+        }
         return this;
     }
 

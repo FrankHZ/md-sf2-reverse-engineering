@@ -1,5 +1,37 @@
 # Development and Verification
 
+## Prism laser authored observation
+
+Use `remake/content/authored/prism-laser.json` with ordinary `--authored-package` startup. Both allies
+start off the ray. Enter/Space/Enter commits Stay for each, producing no laser. On their next turns,
+Up moves each onto the ray; wait for movement delivery, then Enter/Space/Enter commits Stay. Enter
+acknowledges laser and damage/death messages. The Flower hits companion, leader and sentry in source
+slot order, removes the two HP1 targets without ally kill credit, and returns leader control.
+Down demonstrates usable movement. No particular IDs/order are engine legality conditions.
+
+Load `local/private-inputs.ps1` in the launch process, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`,
+and build the actual adapter Debug configuration using the configured absolute SDK. Reuse the owned
+Godot/project; only startup needs a new instance when none is retained. With a fresh ignored
+worktree-local run directory for APPDATA/LOCALAPPDATA/TEMP/logs/report, run from repository root:
+
+```powershell
+$project = (Resolve-Path -LiteralPath 'remake/game').Path
+$package = (Resolve-Path -LiteralPath 'remake/content/authored/prism-laser.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+  --script res://probes/engine_prism_laser_observation.gd -- --authored-package $package
+```
+
+The probe uses ordinary keys only, with compact semantic view/input/error observations. Bound each
+run to180s and5MiB; no screenshots, media capture, post-start mutation or fabricated completion.
+Actual `PrismLaserTests`/`PrismLaserSessionTests` also cover empty reconstruction/scene completion,
+changed directions/positions/slots, normal damage, rejection, leader sweep and retained failure prefixes.
+Run `uv run sf2 verify engine`, affected adapter, clean committed dependency plan and exact-head CI.
+Preserve completed failures and correct their affected tests rather than repeat a completed aggregate.
+Historical #1341/#1343/#1345/#1347/#1349 failures and twelve unresolved #1047 comparisons remain with
+their existing owners. No retired/full/H4/emulator run follows from this authored slice.
+
+
 Use this entry for environment, scope and check selection. Choose a focused recipe only for an
 affected behavior: [host/input](verification/host.md), [battle/rules/scenes](verification/battles.md)
 or [field/programs](verification/field-programs.md). [Retained evidence](evidence/retained-comparisons.md)

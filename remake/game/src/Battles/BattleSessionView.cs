@@ -400,6 +400,7 @@ public sealed partial class BattleSessionView : Control
             round = current?.Battle.Round, revision = current?.Revision,
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed, gold = current?.Battle.Gold,
             itemCustody = current?.Battle.ItemCustody,
+            deathCredit = current?.Battle.DeathCredit,
             queueCursor = current?.Battle.Cursor,
             aiMemory = current?.Battle.Actors.Where(a => a.Control == BattleControl.Automatic)
                 .Select(a => new { actor = a.Actor.Value, memory = a.AiMemory, lastTarget = a.LastTarget?.Value }).ToArray(),

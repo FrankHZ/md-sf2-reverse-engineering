@@ -1,5 +1,54 @@
 # Gameplay Rules and Composition
 
+## Finite Prism laser
+
+`PrismLaserDefinition` binds each actor to an explicit source combatant slot (allies0–29,
+enemies128–159) and each Flower to a cardinal direction0right/1up/2left/3down. Processing order,
+actor name and display facing do not select the ray. `PrismLaserDecision` implements the admitted
+kind93 branch under ordinary enemy automatic control and unconditional15/15 activation. Existing
+sleep turn handling prevents a sleeping actor from executing; other actor status/control and
+non15/standby configurations remain Unsupported.
+
+**Confirmed static source:** SF2DISASM pin `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/gameflow/battle/ai/startaicontrol.asm` (`StartAiControl`, `ProcessLineAttackerAi`),
+`getlaserfacing.asm` (`GetLaserFacing`), `battleactions/battleactionsengine_1.asm`
+(`battlesceneScript_DetermineTargetsByAction`, `battlesceneScript_InitializeActors`),
+`battleactions/battleactionsengine_2.asm` (`battlesceneScript_ApplyActionEffect`),
+`battleactions/inflictdamage.asm` (`battlesceneScript_InflictDamage`), `battleloop/processkilledcombatants.asm` (`ProcessKilledCombatants`) and `code/common/stats/combatantstats_2.asm`
+(`IncreaseKills`). The [laser research owner](../../../docs/research/battle36-prism-flower-laser.md)
+retains the source ray/occupancy/RNG/message boundary; its historical consumer-gap audit describes
+its inspected baseline, not this authored implementation. No new original runtime finding is claimed.
+
+Decision scans one cardinal ray over48×48 tactical coordinates, omitting HP0, absent/off-grid and
+neutral-bit3 actors, and chooses the nearest eligible ally or Stay without movement or RNG.
+Preparation uses current occupancy from both factions, sorts by explicit source slot, and ignores
+whether the old focus remains eligible. Walls, terrain, ordinary range and rendered crop do not stop
+the ray. Eligible overlap is explicitly rejected instead of approximating source overwrite semantics.
+All edge origins, signed-high/malformed HP, unknown activation words, target statuses and special
+kinds remain closed. The authored binding declares ordinary initial activation word0; a missing
+binding is not an inferred original state.
+
+Each ordinary target receives base16 minus two main-stream `RNG(3)` results, with minimum1 before
+HP clamp. The same range is used twice and the stream continues in sorted order; thinking RNG is
+unchanged. Construction writes only its RNG, preserving HP/MP/status for reaction playback. The
+calculated amount remains distinct from actual HP loss. It never enters ATT/DEF, land, resistance,
+MP, dodge/critical, counter/double, reward or item-drop algorithms. Existing reaction-motion RNG
+runs later at its own boundary; this is not a claim about total original animation RNG.
+
+The accounting source join is explicit: action6 writes FIRST_ALLY=FF in InitializeActors;
+ProcessKilledCombatants calls IncreaseKills for an enemy death, but IncreaseKills tests the signed
+byte and returns for FF. `BattleDeathCredit(null)` therefore means **known no ally**; a null context
+means **unknown**, while a context containing an ally retains ordinary scene credit. Laser entry
+replaces prior credit even with zero targets. Ally deaths increment their own defeats; enemy deaths
+and leader sweeps remove without kills, EXP, gold or invented drops. Unknown credit still rejects
+before death publication. Ordinary physical and healing validators keep their own target rules.
+
+`PrismLaserTests` and `PrismLaserSessionTests` exercise the rule and actual automatic/scene/field
+consumers, including empty reconstruction, changed IDs/order, stale completion and retry after a
+later accounting failure. The authored [host observation](../development-and-verification.md#prism-laser-authored-observation)
+establishes usable modern delivery; natural original reach and hardware fidelity remain **Unknown**.
+
+
 ## Finite physical-action item drops
 
 `EnemyItemDropRules` is a fixed SF2 physical-construction service. Its evidence owners are the
@@ -53,8 +102,8 @@ encounters remain Unsupported.
 `BattleDeathBatch` retains action positive-to-zero deaths in reaction order, then appends every
 positive-HP enemy in source-slot order, including already-unplaced actors. Forced entries are
 explicitly distinguished from action deaths. The sweep never changes HP or constructs attacks.
-At accepted field exit, each enemy entry credits a kill to the retained first ally; allied action
-deaths credit their own defeats. The existing capped counter policy clears placement/status.
+At accepted field exit, each enemy entry credits a kill when the retained context contains an ally;
+known-none laser custody suppresses that increment. Allied action deaths credit their own defeats. The existing capped counter policy clears placement/status.
 Admitted sleep has no stat modifier to recompute; wider stat/status refresh remains unsupported.
 Only the original action earns damage/end EXP and death gold; the sweep adds no EXP, gold or drops.
 Outcome counts placed living combatants after cleanup and checks allied defeat first.

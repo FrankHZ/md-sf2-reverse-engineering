@@ -20,7 +20,7 @@ internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors, IReadOnl
     }
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) Clean(
-        EngineBattleState battle, ActorRef firstAlly, IBattleProgressionRule rule)
+        EngineBattleState battle, ActorRef? firstAlly, IBattleProgressionRule rule)
     {
         List<BattleEffect> effects = [];
         foreach (var id in Actors)
@@ -30,14 +30,17 @@ internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors, IReadOnl
             // must still be consumed when positive-HP or unplaced; their exactly-once
             // custody is the field continuation, never an inferred HP mutation.
             if (Forced?.Contains(id) != true && (dead.Hp != 0 || dead.Position is null)) continue;
-            var owner = dead.IsAlly ? dead : battle.GetActor(firstAlly);
-            ushort before = (dead.IsAlly ? owner.Defeats : owner.Kills)
-                ?? throw new BattleRuleException("unspecified-death-accounting", "actor", true);
-            ushort after = BattleProgressionRules.Invoke(rule.Identity, "death-accounting", () =>
-                dead.IsAlly ? rule.Defeats(before) : rule.Kills(before));
-            battle = battle.With(actors: battle.Actors.Select(a => a.Actor != owner.Actor ? a :
-                dead.IsAlly ? a.With(defeats: after) : a.With(kills: after)));
-            effects.Add(new(dead.IsAlly ? "defeats" : "kills", owner.Actor, before, after));
+            if (dead.IsAlly || firstAlly is not null)
+            {
+                var owner = dead.IsAlly ? dead : battle.GetActor(firstAlly!.Value);
+                ushort before = (dead.IsAlly ? owner.Defeats : owner.Kills)
+                    ?? throw new BattleRuleException("unspecified-death-accounting", "actor", true);
+                ushort after = BattleProgressionRules.Invoke(rule.Identity, "death-accounting", () =>
+                    dead.IsAlly ? rule.Defeats(before) : rule.Kills(before));
+                battle = battle.With(actors: battle.Actors.Select(a => a.Actor != owner.Actor ? a :
+                    dead.IsAlly ? a.With(defeats: after) : a.With(kills: after)));
+                effects.Add(new(dead.IsAlly ? "defeats" : "kills", owner.Actor, before, after));
+            }
             // Admitted status-free, ATT-only equipment needs no derived-stat change.
             battle = battle.With(actors: battle.Actors.Select(a => a.Actor == id ? a.With(clearPosition: true, status: 0) : a));
             effects.Add(new("death-cleanup", id, 1, 0));

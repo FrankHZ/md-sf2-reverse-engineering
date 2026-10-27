@@ -10,16 +10,24 @@ internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Ac
     BattleItemReceipt? Receipt = null);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
-    MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false)
+    MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false, BattleActionRef? ChosenAction = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actorRef)
     {
         static void Require(bool valid)
         { if (!valid) throw new InvalidOperationException("Invalid automatic decision."); }
         var actor = before.GetActor(actorRef);
+        Require(ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser));
+        if (ChosenAction is not null)
+        {
+            PrismLaser.RequireActor(before, actorRef);
+            Require(Target is not null && Path.Count == 1 && Destination == actor.Position && !QueueOnly &&
+                ReferenceEquals(Battle, before) && Effects.Count == 0 &&
+                PrismLaser.Targets(before, actorRef, alliesOnly: true).FirstOrDefault()?.Actor == Target);
+        }
         Require(ReferenceEquals(Battle.Definition, before.Definition) && Battle.MainSeed == before.MainSeed &&
             Battle.Round == before.Round && Battle.Cursor == before.Cursor && Battle.Gold == before.Gold &&
-            ReferenceEquals(Battle.ItemCustody, before.ItemCustody) &&
+            ReferenceEquals(Battle.ItemCustody, before.ItemCustody) && Equals(Battle.DeathCredit, before.DeathCredit) &&
             ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && Battle.Queue.SequenceEqual(before.Queue) &&
             Battle.Actors.Count == before.Actors.Count && actor.Control == BattleControl.Automatic &&
             actor.Hp > 0 && actor.Position is not null);
@@ -89,15 +97,20 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
+        Require((action.Kind == BattleActionKind.PrismLaser) == (Laser is not null));
         Require(action.Kind is BattleActionKind.Retreat or BattleActionKind.Item || Retreat is null);
         Require(action.Kind == BattleActionKind.Physical || Reactions.All(reaction => reaction.Receipt is null));
         switch (action.Kind)
         {
+            case BattleActionKind.PrismLaser when action == new BattleActionRef(BattleActionKind.PrismLaser):
+                ValidateState(before, actor, destination);
+                PrismLaser.Validate(this, before, actor, destination, target);
+                break;
             case BattleActionKind.Retreat when action.Spell is { } retreatSpell && action.ItemSlot is null && target == actor:
                 ValidateState(before, actor, destination);
                 Require(admission.Retreat is { } retreat && Retreat == new SpellRetreatPayment(retreat.Spell, retreat.MpCost) && retreat.Spell == retreatSpell &&
@@ -151,9 +164,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     private void ValidateState(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleSourceLoadout? consumedLoadout = null, bool allowGold = false, EngineBattleState? inventory = null)
     {
-        BattleMovement.RequireStop(before, actor, destination);
+        // A stationary laser has no movement-range/occupancy-grid operation. Its
+        // own ray admission also permits departed/off-crop targets.
+        if (Laser is null) BattleMovement.RequireStop(before, actor, destination);
+        else Require(destination == before.GetActor(actor).Position);
         Require(Actor == actor && Destination == destination &&
-            ReferenceEquals(Prepared.Definition, before.Definition) && Prepared.ThinkingSeed == before.ThinkingSeed &&
+            Equals(Prepared.DeathCredit, before.DeathCredit) && ReferenceEquals(Prepared.Definition, before.Definition) && Prepared.ThinkingSeed == before.ThinkingSeed &&
             Prepared.Round == before.Round && Prepared.Cursor == before.Cursor &&
             (allowGold || Prepared.Gold == before.Gold) && ReferenceEquals(Prepared.StartPolicy, before.StartPolicy) &&
             ReferenceEquals(Prepared.Regions, before.Regions) && Prepared.Queue.SequenceEqual(before.Queue) &&

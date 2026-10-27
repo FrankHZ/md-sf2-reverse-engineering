@@ -27,7 +27,7 @@ internal static class BattleDecisionRules
             decision.Validate(battle, actor);
             // A discarded admission preview uses the same selected physical rule as execution.
             // No future construction seed or resources survive this seam.
-            if (decision.Target is { } target)
+            if (decision.ChosenAction is null && decision.Target is { } target)
             {
                 try
                 {

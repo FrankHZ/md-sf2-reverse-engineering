@@ -1,5 +1,27 @@
 # Battle Presentation
 
+## Authored Prism laser
+
+`PrismLaserView` draws a small deterministic tactical-ray diagram using Godot primitives. A purple
+origin charges for0.35s, a visible beam fires for0.30s, and settles for0.25s. These are authored modern
+presentation durations, not original animation timing. The actual view clock releases the scene's
+ActionAnimation token; ordinary Enter input acknowledges the laser-specific announcement and results.
+Empty shots use the same charge/fire/settle and complete without a fabricated target. Each subsequent
+reaction highlights its real target and faction with current HP; existing field death delivery removes
+the ordered list and returns control.
+
+The semantic source selection is message319 (authored paraphrase), animation21/enemy selector95(hex),
+loading sound103, firing sound108 and enemy music5. This slice supplies its own visual only: it does
+not deliver or claim the original animation, those sounds/music, original assets or hardware timing.
+Diagnostic `laser` fields expose actual stage/beam visibility, origin/direction, focus and targets,
+plus current target side. `BattleSessionView.deathCredit` is read-only and preserves its existing
+`itemCustody` field. No menu/input/layout redesign is included.
+
+The [native recipe](../development-and-verification.md#prism-laser-authored-observation) observes
+actual ordinary-input on/off-ray play, announcement, charge/fire/settle, both target factions,
+ordered deaths, accounting and subsequent movement without screenshots or injected completion.
+
+
 ## Leader survivor field removal
 
 The existing battlefield projection consumes `DeadActors` from the finite field continuation for

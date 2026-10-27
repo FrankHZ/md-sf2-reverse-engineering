@@ -14,6 +14,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 internal sealed partial class BattleSceneView : Control
 {
     private readonly Dictionary<(string Encounter, string Resource), ImageTexture> _textures = [];
+    private PrismLaserView _laser = null!;
     private Node2D _canvas = null!;
     private ColorRect _sceneBlack = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
@@ -59,6 +60,7 @@ internal sealed partial class BattleSceneView : Control
         }
         for (int i = 0; i < 23; i++) _fairyDust.Add(Sprite("FairyDust" + i, Vector2.Zero));
         foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) { sprite.ZIndex = 3; sprite.Hide(); }
+        _laser = new PrismLaserView { Name = "PrismLaser", ZIndex = 4 }; _canvas.AddChild(_laser); _laser.Hide();
         Hide();
     }
 
@@ -68,12 +70,23 @@ internal sealed partial class BattleSceneView : Control
     internal void Present()
     {
         var state = _session.Current.BattleScene;
-        if (state is null) { Hide(); _state = null; return; }
+        if (state is null) { Hide(); _laser.Hide(); _state = null; return; }
         if (state.IsFieldDeath) Hide(); else Show();
         if (_state?.Token == state.Token) { _state = state; ProjectHealing(state); return; }
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
+            _laser.Hide();
+            if (state.Laser is not null && !state.IsFieldDeath)
+            {
+                if (Content is not null) throw new InvalidOperationException("prism-private-presentation-unsupported");
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon, _allyStatus, _enemyStatus }) node.Hide();
+                foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
+                _sceneBlack.Show(); _laser.Present(state, _session.Current.Battle);
+                _message.Text = Message(state);
+                _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
+                return;
+            }
             if (state.IsFieldDeath)
             {
                 Hide();
@@ -94,7 +107,7 @@ internal sealed partial class BattleSceneView : Control
             }
             _background.Show(); _backgroundWrap.Show(); _ground.Show(); _ally.Show(); _allyStatus.Show();
             var battle = _session.Current.Battle;
-            var actor = battle.GetActor(state.Actor); var target = battle.GetActor(state.Target);
+            var actor = battle.GetActor(state.Actor); var target = battle.GetActor(state.Target!.Value);
             var ally = battle.GetActor(state.DisplayedAlly!.Value);
             var enemy = state.DisplayedEnemy is { } enemyRef ? battle.GetActor(enemyRef) : null;
             _enemy.Visible = _enemyStatus.Visible = enemy is not null;
@@ -182,6 +195,12 @@ internal sealed partial class BattleSceneView : Control
                 return new CompletePresentation(state.Token, state.CompletionKind);
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
         }
+        if (state.Laser is not null)
+        {
+            if (!_laser.Advance(_elapsed)) return null;
+            _completed = true;
+            return new CompletePresentation(state.Token, state.CompletionKind);
+        }
         if (state.Healing is { } healing && state.Phase is not (BattleScenePhase.Initialize or BattleScenePhase.End))
         {
             if (!healing.LogicalComplete) return new AdvanceSimulation(state.Token);
@@ -233,7 +252,7 @@ internal sealed partial class BattleSceneView : Control
             {
                 _frameIndex = index;
                 var frame = _frames[index];
-                bool ally = _session.Current.Battle.GetActor(state.Phase == BattleScenePhase.ActionAnimation ? state.Actor : state.Target).IsAlly;
+                bool ally = _session.Current.Battle.GetActor(state.Phase == BattleScenePhase.ActionAnimation ? state.Actor : state.Target!.Value).IsAlly;
                 if (frame.Frame != 15) SetFrame(ally, frame.Frame);
                 var sprite = ally ? _ally : _enemy;
                 sprite.Position = (ally ? new Vector2(136,64) : new Vector2(16,48)) + new Vector2(frame.X,frame.Y);
@@ -244,7 +263,7 @@ internal sealed partial class BattleSceneView : Control
         {
             duration = state.Motion.Count / 60.0;
             _logicalReaction = Math.Min((int)(_elapsed * 60), state.Motion.Count - 1);
-            bool ally = _session.Current.Battle.GetActor(state.Target).IsAlly;
+            bool ally = _session.Current.Battle.GetActor(state.Target!.Value).IsAlly;
             var node = ally ? _ally : _enemy;
             var offset = state.Motion[_logicalReaction];
             var shift = _settings.ReducedFlash ? Vector2.Zero : new Vector2(offset.X, -offset.Y);
@@ -335,9 +354,9 @@ internal sealed partial class BattleSceneView : Control
         {
             BattleScenePhase.SleepMessage => 338,
             BattleScenePhase.SleepTurnMessage => state.SleepTurnText!.Value,
-            BattleScenePhase.ActionMessage => state.ActionKind switch { "item-use" => 275, "physical-second" => 293, "physical-counter" => 292, _ => 273 },
+            BattleScenePhase.ActionMessage => state.ActionKind switch { "prism-laser" => 319, "item-use" => 275, "physical-second" => 293, "physical-counter" => 292, _ => 273 },
             BattleScenePhase.ResultMessage => state.ReactionKind == "Ineffective" ? 289 : state.ReactionKind == "Recovery" ? 298 : state.ReactionKind == "Dodge" ? 286 : state.Critical ? (ally ? 287 : 288) : (ally ? 284 : 285),
-            BattleScenePhase.DeathMessage => _session.Current.Battle.GetActor(state.Target).IsAlly ? 291 : 290,
+            BattleScenePhase.DeathMessage => _session.Current.Battle.GetActor(state.Target!.Value).IsAlly ? 291 : 290,
             BattleScenePhase.ItemDroppedMessage => 396, BattleScenePhase.ItemReceivedMessage => 395,
             BattleScenePhase.RewardMessage => 263, BattleScenePhase.GoldMessage => 393, _ => -1,
         };
@@ -347,9 +366,9 @@ internal sealed partial class BattleSceneView : Control
                 BattleGrowthNoticeKind.Agility => 270, BattleGrowthNoticeKind.Spell => 271, _ => -1 };
         if (id < 0) return "";
         string name = ActorName(state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ItemReceivedMessage ? state.Actor :
-            state.Phase is BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage ? state.RewardActor!.Value : state.Target);
+            state.Phase is BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage ? state.RewardActor!.Value : state.Target!.Value);
         int amount = state.GrowthNotice?.Amount ?? (state.Phase == BattleScenePhase.RewardMessage ? state.RewardAmount : state.Phase == BattleScenePhase.GoldMessage ? state.GoldAmount : state.Amount);
-        string text = Content?.Texts.GetValueOrDefault(id) ?? (id == 396 ? "{NAME} dropped {ITEM}." : id == 395 ? "{NAME} received {ITEM}." : id == 289 ? "The attack is ineffective against {NAME}." : id == 338 ? "{NAME} fell asleep." : id == 306 ? "{NAME} is sleeping." : id == 354 ? "{NAME} has awakened." : state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
+        string text = Content?.Texts.GetValueOrDefault(id) ?? (id == 319 ? "{NAME} fires a prism laser!" : id == 396 ? "{NAME} dropped {ITEM}." : id == 395 ? "{NAME} received {ITEM}." : id == 289 ? "The attack is ineffective against {NAME}." : id == 338 ? "{NAME} fell asleep." : id == 306 ? "{NAME} is sleeping." : id == 354 ? "{NAME} has awakened." : state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
             state.Phase == BattleScenePhase.RewardMessage ? "{NAME} earned {#} EXP." : state.Phase == BattleScenePhase.GoldMessage ? "Found {#} gold." : "{NAME}: {#}");
         // Text timing remains the existing product setting. No battle speech bleeps:
         // source bsc10/bsc11 clear CURRENT_SPEECH_SFX.
@@ -394,6 +413,7 @@ internal sealed partial class BattleSceneView : Control
     }
     internal object Observe() => new
     {
+        laser = _state?.Laser is not null ? _laser.Observe() : null,
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
         fieldDeath = _state is { IsFieldDeath: true } field ? new { actors = field.DeadActors.Select(a => a.Value),
             step = field.FieldStep, facing = field.FieldFacing, delay = field.FieldDelay } : null,
@@ -402,7 +422,7 @@ internal sealed partial class BattleSceneView : Control
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,
         reactionAmount = _state?.Amount,
         item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell,
-        spellAnimationSelector = _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        spellAnimationSelector = _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

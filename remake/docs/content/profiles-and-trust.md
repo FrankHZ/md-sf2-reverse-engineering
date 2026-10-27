@@ -1,5 +1,22 @@
 # Runtime Profiles and Trust
 
+## Authored Prism binding
+
+The public `prism-laser.json` package uses the ordinary authored host and48×48 tactical domain.
+Its encounter's `prismLaser` contains explicit primary/secondary region15 and one `combatants` row
+per deployment: actor, source slot, `ordinary` or `prism-flower` kind, and null or cardinal direction.
+The Flower requires the `prism-laser` automatic strategy; source slot is independent of processing
+order and direction is independent of display facing. This declares ordinary initial activation
+word0, no neutral actors and no special target/debug behavior; it does not import Battle36.
+
+Admission rejects missing/duplicate or wrong-faction slots, unknown kinds/directions, non15 regions,
+edge Flower origins, signed-high maximum HP and mixed Taros effectiveness. Live rules reject unsafe
+changed states/eligible overlap. Definition copies through growth and world-outcome binding retain
+the finite Prism binding. Ordinary source enemies, private chapter admission and general spell
+content remain unchanged. The [implementation agreement](../capability-status.md#prism-laser-implementation-agreement)
+sets the limited authored and presentation claim.
+
+
 Content owns external bytes, paths, source identity, closed formats and validated immutable
 definitions. Profiles select admission and permitted claims; they do not fork gameplay authority.
 See [architecture](../architecture.md), [rule composition](../domain/gameplay-rules.md) and

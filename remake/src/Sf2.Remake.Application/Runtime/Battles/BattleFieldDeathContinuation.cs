@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Runtime.Battles;
 
 // Retained source caller/accounting operands, not a synthetic physical action.
-internal sealed record FieldDeathTurn(ActorRef Actor, MapPosition? Destination, ActorRef FirstAlly);
+internal sealed record FieldDeathTurn(ActorRef Actor, MapPosition? Destination, BattleDeathCredit Credit);
 
 internal static class BattleFieldDeathContinuation
 {
@@ -45,7 +45,7 @@ internal static class BattleFieldDeathContinuation
                     if (step < 2) { step++; next = BattleScenePhase.FieldExit; }
                     else
                     {
-                        var cleanup = scene.Deaths.Clean(battle, turn.FirstAlly, rules.Progression);
+                        var cleanup = scene.Deaths.Clean(battle, turn.Credit.Ally, rules.Progression);
                         battle = cleanup.Battle;
                         foreach (var effect in cleanup.Effects)
                             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));
