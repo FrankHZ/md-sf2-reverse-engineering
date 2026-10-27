@@ -41,7 +41,7 @@ internal static class ExplorationDispatcher
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
-            display: start.Display, textSettings: start.TextSettings);
+            display: start.Display, textSettings: start.TextSettings, stepCounter: map.Caravan?.InitialStepCounter);
         story = ExplorationTextRunner.Initialize(world, story);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
             SessionStopReason.SimulationWait), [], rules);
@@ -304,6 +304,8 @@ internal static class ExplorationDispatcher
                                 fieldControl: existingFieldInput || pendingMove is not null) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
                         var story = active is ActiveExploration serviced ? ExplorationTextRunner.AfterEntities(serviced.World, current.Story) : current.Story;
+                        foreach (int sound in tickResult?.Sounds ?? [])
+                            current = ProgramRunner.Commit(current, active, story, observations, "entity-sound", sound.ToString(System.Globalization.CultureInfo.InvariantCulture));
                         if (tickResult?.Failure is { } failure)
                         {
                             story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
@@ -312,16 +314,17 @@ internal static class ExplorationDispatcher
                         }
                         if (story.Wait is EntityWait { PendingMove: not null } fieldMove && tickResult?.FieldMove is { } field)
                         {
-                            if (field.Moved && story.StepCounter is > 0)
+                            if (field.Moved && tickResult.World.TravelMode == FieldTravelMode.Walking && story.StepCounter is > 0)
                                 story = story.Copy(story.Cursor, story.Wait, stepCounter: (short)(story.StepCounter.Value - 1));
                             story = story.Copy(null, field.Moved && field.Event?.Kind != ExplorationEventKind.Warp
                                 ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
                                 simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
-                            if (field.VehicleEvent == 2)
+                            if (field.VehicleEvent is 2 or 4)
                             {
                                 current = ProgramRunner.Commit(current, active,
-                                    story.Copy(new(CaravanPrograms.Boarding, 0)), observations, "caravan-boarding-requested");
+                                    story.Copy(new(field.VehicleEvent == 2 ? CaravanPrograms.Boarding : CaravanPrograms.Landing, 0)),
+                                    observations, field.VehicleEvent == 2 ? "caravan-boarding-requested" : "caravan-landing-requested");
                                 return ProgramRunner.Run(definition, current, observations, rules);
                             }
                             if (field.DoorOpened)
@@ -347,8 +350,6 @@ internal static class ExplorationDispatcher
                             if (!field.Moved) return ProgramRunner.Run(definition, current, observations, rules);
                             continue;
                         }
-                        foreach (int sound in tickResult?.Sounds ?? [])
-                            current = ProgramRunner.Commit(current, active, story, observations, "entity-sound", sound.ToString(System.Globalization.CultureInfo.InvariantCulture));
                         EntityWaitRelease? releasedEntityWait = null;
                         if (story.Wait is EntityEventFacingWait)
                         { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor,

@@ -198,13 +198,16 @@ internal static class MapTransfer
         }
         var entities = map.Entities.Where(entity => entity.Entity != player).Select(entity =>
             new ExplorationEntity(entity.Entity, EntityMotionState.At(entity.Position, entity.Facing, entity.Speed) with
-                { FlagsA = entity.Obstruction ? (byte)0x20 : (byte)0 }, entity.Visible, entity.Actions, Sprite: entity.Sprite)).ToList();
-        entities.Insert(0, new(player, EntityMotionState.At(position, facing, speed), true));
+                { FlagsA = entity.Obstruction ? (map.Caravan is null ? (byte)0x20 : (byte)0xE0) : (byte)0 }, entity.Visible, entity.Actions, Sprite: entity.Sprite)).ToList();
+        entities.Insert(0, new(player, EntityMotionState.At(position, facing, speed), true, Sprite: map.Caravan is { } caravan ?
+            party.Actors.Single(actor => actor.Actor == caravan.PlayerAppearance.Actor).Hp == 0
+                ? caravan.PlayerAppearance.DefeatedSprite : caravan.PlayerAppearance.Sprite : null));
         return MapEventDispatcher.RoofOnLoad(new(map, layout, player, entities, party));
     }
 
     internal static ExplorationState LoadScene(ExplorationDefinition definition, ExplorationState world, LoadSceneMap load)
     {
+        CaravanRuntime.RequireOrdinaryMapOperation(world);
         if (!definition.Maps.TryGetValue(load.Map, out var map)) throw new BattleRuleException("missing-map", "scene.map");
         // csc48 changes the displayed layout/view; entity allocation, map init and battle selection
         // are separate calls. Keep the running program, party and physical entities intact here.
@@ -214,6 +217,7 @@ internal static class MapTransfer
 
     internal static (ExplorationState World, StoryState Story) ReloadScene(SessionSnapshot current, ReloadSceneMap reload)
     {
+        CaravanRuntime.RequireOrdinaryMapOperation(current.Exploration!);
         ExplorationTextRunner.ValidateContext(current);
         var story = current.Story;
         var world = current.Exploration!;
@@ -232,6 +236,7 @@ internal static class MapTransfer
 
     internal static StoryState BindScene(SessionSnapshot current, ExplorationState next, LoadSceneMap load)
     {
+        CaravanRuntime.RequireOrdinaryMapOperation(current.Exploration!);
         ExplorationTextRunner.ValidateContext(current);
         var story = current.Story;
         if (story.Warp is not null)
@@ -256,6 +261,7 @@ internal static class MapTransfer
         MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules? rules = null)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
+        CaravanRuntime.RequireOrdinaryMapOperation(world);
         if (!definition.Exploration!.Maps.TryGetValue(map, out var target))
             throw new BattleRuleException("missing-map", "map");
         target = target.SelectSetup(current.Story.Flags);

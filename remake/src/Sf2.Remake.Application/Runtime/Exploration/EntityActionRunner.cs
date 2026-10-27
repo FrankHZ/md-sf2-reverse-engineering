@@ -61,6 +61,13 @@ internal static class EntityActionRunner
                 {
                 switch (program.Actions[entity.ActionCursor])
                 {
+                    case FollowPhysical follow:
+                        var leader = CaravanRuntime.Physical(Publish(), follow.Slot).Motion;
+                        motion = EntityMotion.Follow(motion, leader, follow.X, follow.Y,
+                            (fx, fy) => fx is >= 0 and < 64 && fy is >= 0 and < 64 && world.Layout[fx, fy] < 0xC000);
+                        yield = true;
+                        break;
+                    case MoveOwnFacing own: motion = EntityMotion.FacingRelative(motion, motion, own.Distance); break;
                     case MoveToPhysicalFacing relativePhysical:
                         var physicalTarget = CaravanRuntime.Physical(Publish(), relativePhysical.Slot).Motion;
                         motion = EntityMotion.FacingRelative(motion, physicalTarget, relativePhysical.Distance);
@@ -131,7 +138,8 @@ internal static class EntityActionRunner
                     case SetGlobalSpriteSize size: spriteSize = size.Size; motion = motion with { WaitTimer = 0 }; break;
                     case RefreshEntitySprite refresh:
                         if (!entity.WaitingForSprite)
-                            entity = entity with { SpriteRequest = checked(entity.SpriteRequest + 1), WaitingForSprite = true };
+                            entity = entity with { SpriteRequest = checked(entity.SpriteRequest + 1), WaitingForSprite = true,
+                                RenderSize = (motion.FlagsB & 8) != 0 ? spriteSize : (ushort)24 };
                         if (entity.SpriteReady != entity.SpriteRequest) { next--; yield = true; }
                         else entity = entity with { WaitingForSprite = false };
                         break;

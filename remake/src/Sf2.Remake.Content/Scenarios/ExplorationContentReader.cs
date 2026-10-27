@@ -94,6 +94,7 @@ internal static class ExplorationContentReader
         {
             ObjectOptional(row, "map", "input", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup",
                 .. row.TryGetProperty("setups", out _) ? new[] { "setups" } : System.Array.Empty<string>(),
+                .. row.TryGetProperty("caravan", out _) ? new[] { "caravan" } : System.Array.Empty<string>(),
                 .. row.TryGetProperty("battles", out _) ? new[] { "battles" } : System.Array.Empty<string>(),
                 .. row.TryGetProperty("basePalette", out _) ? new[] { "basePalette" } : System.Array.Empty<string>(),
                 .. row.TryGetProperty("population", out _) ? new[] { "population" } : System.Array.Empty<string>(),
@@ -178,10 +179,12 @@ internal static class ExplorationContentReader
                 {
                     Object(flag, "entryFlag", "flag", "value");
                     return new WriteFlag(Number(flag, "flag", 0, 65535), Boolean(flag, "value"));
-                }) : null, palette, Array(row, "areas").Where(area => area.TryGetProperty("view", out _)).Select(ReadViewArea), setups, routes));
+                }) : null, palette, Array(row, "areas").Where(area => area.TryGetProperty("view", out _)).Select(ReadViewArea), setups, routes, row.TryGetProperty("caravan", out var caravan)
+                    ? CaravanContentReader.Read(caravan, entities, new(Id(start, "player")), battle) : null));
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
+        CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
             world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation) : null,
             world.TryGetProperty("memberNames", out _) ? Array(world, "memberNames").Select(name =>
@@ -218,7 +221,8 @@ internal static class ExplorationContentReader
         Require(flags.Distinct().Count() == flags.Length, "duplicate-flag", "start.flags");
         ProgramLocation? entryProgram = start.TryGetProperty("program", out var entry) ? Location(entry) : null;
         if (entryProgram is { } programEntry)
-            Require(programEntry.Instruction == 0 && definition.Programs.ContainsKey(programEntry.Program),
+            Require(programEntry.Instruction == 0 && definition.Programs.ContainsKey(programEntry.Program) &&
+                programEntry.Program is not (Application.Runtime.Exploration.CaravanPrograms.Boarding or Application.Runtime.Exploration.CaravanPrograms.Landing),
                 "program-entry", "start.program");
         var encounters = (world.TryGetProperty("growth", out var growth)
             ? authored ? BattleGrowthReader.BindAuthored(growth, battle.Definition) : BattleGrowthReader.Bind(growth, battle.Definition)

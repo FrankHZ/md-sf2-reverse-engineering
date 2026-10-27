@@ -1,30 +1,56 @@
 # Session and Resumable Programs
 
-## Caravan boarding checkpoint
+## Caravan boarding, travel and landing
 
-The Issue #1357 pilot uses existing StoryProgram/EntityActionProgram execution and sprite-ready
-requests. `CaravanDefinition` binds a logical FOLLOWER_A separately from raw physical0/1 and supplies
-an explicit current physical list. `ExplorationState.CurrentEntities` retains that list;
-`TravelMode` commits Walking→Caravan only after the reached boarding prefix and last-suffix-actor
-idle wait. It is not inferred from a sprite, F65 or an empty motion queue. Mode1 travel and landing,
-external content admission and ordinary-host delivery are not yet implemented at this checkpoint.
+`CaravanDefinition` supplies explicit authored bindings; `ExplorationState.TravelMode` and
+`CurrentEntities` belong to the same live world as its physical actors and logical aliases.
+`CaravanPrograms` constructs finite typed story/entity programs for numeric events 2/4.
+`MapEventDispatcher` selects the walking producer or mode1 controller; no presenter toggles mode.
+Walking reaches a 0x3800 marker only after source obstruction and shrunk-bound checks, requires F65
+in exploration, and requests event 2 before raw blocking without moving or decrementing StepCounter.
+The vehicle uses unshrunk bounds, current physical positions only, and no walking slope/zone/step tail.
+It travels on 0x3800 even with raw blocking bits, requests event 4 on other admitted words below 0xC000,
+and otherwise blocks. Both controllers compare the single admitted, loaded area without reselecting
+it after scripted movement or raw physical 1 cloning outside its bounds; only the attempted direction
+is bounded. Unsupported door/warp/copy markers and map replacement fail explicitly.
 
-**Confirmed static source:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
-`code/common/scripting/map/vehiclefunctions.asm:MapEventType2/cs_45284/eas_452BA/byte_45316`,
-`code/common/scripting/entity/entityscriptengine_2.asm:esc0D/esc0E/loc_55C8`, and the
-[accepted Caravan owner](../../../docs/research/caravan-boarding-and-southwest-parmecia-travel.md).
-The typed finite program preserves relative motion, shared resize size, actor resize bit, warp-sound
-request, clone fields, logical relocation to raw coordinates0x6000 and source idle predicates. Raw
-position supports the off-map relocation without broadening `MapPosition`'s legal layout domain.
-Physical motion may naturally produce diagonal facing even though player input is cardinal.
+**Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/map/vehiclefunctions.asm:MapEventType2/cs_45284/eas_452BA/byte_45316/MapEventType4/cs_45348/eas_4536C`,
+`code/common/scripting/entity/entityscriptengine_2.asm:esc02/esc07/esc09/esc0D/esc0E/loc_55C8/esc03`,
+`entityfunctions_3.asm:ApplyActscriptToFollowers/WaitForPartyEntitiesIdle`,
+`code/common/scripting/map/followersfunctions_2.asm:InitializeFollowerActscripts`,
+`data/scripting/entity/followers.asm` and `eas_main.asm`; see the
+[accepted Caravan research](../../../docs/research/caravan-boarding-and-southwest-parmecia-travel.md).
+These static sources do not establish natural original reach, timing or persistence.
 
-Modern tick/sprite delivery is deterministic and does not establish original timing. A missing
-logical actor retains physical0's preceding idle write; zero-speed motion and undelivered sprite
-requests stay pending. The suffix wait observes only its last actor; an earlier stalled actor can
-remain busy at mode commit. Clone copies position/destination/travel/facing, not velocities, sprite,
-HP, membership or aliases. No saved Caravan placement is introduced. Focused actual-engine tests
-in `CaravanTests` cover changed positions/facing/list sizes, logical/raw disagreement, pending/stale
-sprite delivery, retained failure and last-actor-only completion.
+Logical FOLLOWER_A, raw physical 0/1 and the current list suffix are separate operands. Facing-relative
+motion reads current coordinates, bypasses collision and supports the source table's diagonal entries
+created by scripted motion. Clone copies position/destination/travel/facing, not velocity, sprite,
+resources or membership. Raw 0x6000 parking does not enlarge MapPosition's legal layout domain.
+Resize uses per-actor flags and shared SpriteSize; each refresh retains its sampled RenderSize for
+actual presentation. Warp-sound requests retain order; the authored package supplies no original audio.
+
+Both transitions reuse script-idle, physical destination, sprite-ready and view waits. The final
+`PhysicalEntityWait` waits only the last current-list suffix actor, with no invented join-all.
+Empty suffixes return immediately. Missing logical bindings, zero speeds and undelivered sprites
+retain earlier writes and current mode. External admission validates every current-list slot and
+forbids population replacement; reached slot checks do not silently remove or repair entries.
+
+Event 4 first clones raw 0 into the mapped vehicle, restores the admitted live player's appearance
+using its current HP and fixed class binding, then grows/moves the player and current suffix from
+current facing. Mode1 remains authoritative through those waits. Reinstall scans current source
+flag rows, chooses normal versus F65/overworld pointer table and assigns scripts to consecutive slots
+by selected-row ordinal. It does not consult or rebuild the current list. Pointer assignment preserves
+motion; settings execute at the next entity service. Overworld scripts 2/3 retarget while moving;
+ordinary scripts wait for destination. More than five selected rows or missing required slots are
+explicitly Unsupported before reinstall; the already grown scene and mode1 remain committed.
+Only successful reinstall commits mode0. Landing does not itself run a zone or decrement steps.
+
+The source timer operands and modern sprite/camera completion are deterministic delivery boundaries,
+not original frame durations. The public host pauses ticks and completions while hidden/unfocused.
+`CaravanTests` exercises changed state/content, pending/stale completion, source list/lookup
+counterexamples, current/destination obstruction and later ordinary walking through one session.
+No saved vehicle placement, acquisition flow, generic vehicle platform or second publisher exists.
 
 ## Battle-context region programs
 

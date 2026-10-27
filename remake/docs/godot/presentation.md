@@ -1,5 +1,23 @@
 # Godot Host and Presentation
 
+## Authored Caravan projection
+
+The ordinary exploration host draws the Caravan package with public geometric markers. Vehicle
+sprite 62 uses a brown rectangle; player/followers use circles and facing marks. Blue tiles admit
+vehicle travel; the green marker is a later ordinary walking zone. The presenter reads live raw
+coordinates, appearance and per-refresh RenderSize, so off-map actors are clipped rather than removed
+from gameplay. Ordinary Confirm finds adjacent targets using raw motion coordinates, so parked
+physical actors never require an invalid layout position. `authoredDraws` readback carries the actual draw frame, position, size, visibility,
+sprite and sprite-request identity. Sprite-ready completion follows a matching real draw, including
+an intentionally clipped off-map marker. No arbitrary acknowledgement skips the typed program.
+
+The same session supplies travel mode, current physical list, motion and waits. The host owns no
+vehicle position/controller authority. Hidden/unfocused views suspend automatic ticks and sprite
+completions; resume discards timing debt. Existing input envelopes and request IDs reject duplicate
+or stale completion. The authored package has no audio assets: source warp-sound observations are
+retained, but no original audible SFX parity is claimed. The finite witness reads actual state/input/
+draw/errors without screenshots, session injection or synthetic presentation completion.
+
 ## Authored battle-region scene
 
 `BattleStoryView` consumes shared StoryState dialogue/camera/tick waits while the mode remains Battle.

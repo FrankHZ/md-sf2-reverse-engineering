@@ -109,7 +109,7 @@ internal static class ProgramRunner
                 switch (instruction)
                 {
                     case CaravanInstruction caravan:
-                        (active, story) = CaravanRuntime.Execute(current, caravan, story, token);
+                        (active, story) = CaravanRuntime.Execute(definition, current, caravan, story, token);
                         break;
                     case ConvertBattleActor convert:
                         current = BattleStoryOperations.Convert(current, convert, observations);
@@ -218,6 +218,7 @@ internal static class ProgramRunner
                             story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true);
                         active = new ActiveExploration(scene); break;
                     case LoadSceneEntities load:
+                        CaravanRuntime.RequireOrdinaryMapOperation(current.Exploration!);
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case OpenPortrait portrait:

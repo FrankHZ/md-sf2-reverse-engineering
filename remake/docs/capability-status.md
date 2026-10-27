@@ -2,23 +2,39 @@
 
 ## Authored Caravan agreement
 
-**High rigor; in implementation:** Issue #1357 delivers one acquired authored field world through
-boarding, cardinal Caravan travel, landing and later ordinary walking/zone control. Controller,
-physical/logical entity identities, the current physical list, shared waits and presentation cross
-existing owners. GameSession remains the only publisher; position lives in existing entities.
-There is no saved Caravan position, fresh population or party/resource reset at a mode change.
+**High rigor; implemented authored subset:** Issue #1357 delivers
+one acquired authored field world through boarding, cardinal Caravan travel, landing and subsequent
+ordinary walking/zone control. Controller selection, physical/logical identities, current lists,
+shared waits and presentation cross existing owners. GameSession remains the only publisher.
+Position belongs to existing entities; no saved Caravan position, new population or resource reset
+is introduced at mode changes.
 
-The first checkpoint is marker request through resumable boarding and mode1, including retained
-pending/failure prefixes. Main-gate reviews that interface before travel/landing expansion. Final
-acceptance uses changed valid content/state, actual engine tests, scoped engine/adapter/Debug builds
-and a bounded ordinary-key native observation, followed by committed scope planning and exact-head
-CI. Scans are bounded to32 physical actors and a64x64 layout; native witnesses stay below180s/5MiB.
-No bulk processing, private terrain/media acquisition or generic vehicle platform is needed.
+`caravan-travel.json` admits a finite standalone world with explicit F65, physical actors, logical
+FOLLOWER_A, current physical list and live player appearance binding. Boarding distinguishes those
+logical/raw/list operands and commits mode1 after the last suffix actor's source idle predicate.
+Mode1 uses unshrunk bounds and current-only obstruction; it neither emits walking zones nor consumes
+walking steps. Landing restores live HP/class-bound appearance, grows the player/current suffix,
+installs current flag-selected action pointers by active-row ordinal, and only then commits mode0.
+No party/RNG/resource/identity/list normalization occurs. Missing or stalled reached work retains its
+accepted prefix. Earlier suffix actors may remain busy when the last actor releases the source wait.
 
-Acquisition, raft mode, services, travelling transfer/reload, persistence and private Map68 reach are
-out of scope. Unsupported combinations must fail explicitly. Original timing, natural reach and
-durable persistence remain **Unknown**, with previous failure and comparison records retained at
-their existing owners. The transport design and layer owners will record the admitted interface.
+The [session owner](application/session-and-programs.md#caravan-boarding-travel-and-landing),
+[content admission](content/profiles-and-trust.md#authored-caravan-world),
+[transport design](domain/special-mechanics-design.md#transport-possession-mode-position-and-service-access),
+[marker delivery](godot/presentation.md#authored-caravan-projection) and
+[native recipe](development-and-verification.md#caravan-authored-observation) define current support.
+Acceptance uses changed valid positions, facing, IDs, list/flag state, obstruction, failure and pending
+completion cases, affected engine/adapter/Debug checks, actual ordinary-key Godot state/draw readback,
+committed scope planning and exact-head CI. Work remains bounded to 32 physical actors and 64x64 words;
+native witnesses stay below 180s/5MiB. No bulk acquisition or generic vehicle platform is needed.
+
+Acquisition, raft controllers, services, multi-map travel/reload, private Map68, persistence and
+original media/timing remain outside admission. Door/warp/copy markers and population replacement
+fail explicitly. The normal/overworld source pointer tables support at most five selected follower
+rows with existing physical slots; larger or unavailable combinations fail at the reached reinstall
+without mode0. Full source class-to-mapsprite lookup is represented by an admitted immutable class
+binding plus live HP, not a new class system. Natural reach and durable persistence remain **Unknown**;
+previous failures and comparison Unknowns remain at their existing owners.
 
 ## Authored Jaro conversion agreement
 
@@ -340,7 +356,7 @@ source provenance and reproduction.
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
 | Item acquisition, area descriptions and setup-event selection | none | **Unsupported** | their only consumers were legacy; accepted contracts and research remain for a future reached consumer |
-| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, private Battle32 and its full Jaro victory consumer, private Battle36/wider Prism inputs, private/wider hidden-enemy content and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
+| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, private Battle32 and its full Jaro victory consumer, private Battle36/wider Prism inputs, private/wider hidden-enemy content and trial records, wider retreat/special caller return, and raft/full-map transport still need their owned extensions. The standalone authored Caravan controller and boarding/landing are implemented at the agreement above. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a
 new capability, receipt, or matrix row unless they independently cross a trust, authority, versioned-port,
