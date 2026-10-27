@@ -219,6 +219,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Object(encounter, "encounter", ["id", "map", "placements",
                 .. (encounter.TryGetProperty("rewards", out _) ? new[] { "rewards" } : []),
                 .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : []),
+                .. (encounter.TryGetProperty("prismLaser", out _) ? new[] { "prismLaser" } : []),
                 .. (encounter.TryGetProperty("itemDrops", out _) ? new[] { "itemDrops" } : []),
                 .. (encounter.TryGetProperty("leaderCleanup", out _) ? new[] { "leaderCleanup" } : [])]);
             BattleRewardDefinition? rewards = null;
@@ -265,7 +266,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
                 tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems),
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
-                itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems))),
+                itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
+                prismLaser: PrismLaserReader.Read(encounter, placements))),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");

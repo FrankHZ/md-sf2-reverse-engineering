@@ -1,5 +1,29 @@
 # Session and Resumable Programs
 
+## Prism laser continuation
+
+`BattleAutomaticAction.ChosenAction` carries the selected finite laser through the existing automatic
+movement consumer. Ordinary target decisions retain their physical default; a laser focus is not
+substituted for its live hit list. The laser rule rebuilds both factions at construction and retains
+an immutable `PrismLaserShot` with origin, direction, old focus and source-ordered targets.
+
+The existing `BattleSceneState` owns the candidate and token. Empty laser scenes expose no reaction
+target or displayed ally, still pass Initialize → ActionMessage → ActionAnimation → End, then
+resume the ordinary action continuation. Nonempty scenes announce/animate once and enter each
+ordered target/reaction/result/death sequence without announcing another shot. HP/status and reaction
+RNG publish only at the later reaction boundary. Godot completes the finite visual; no observation
+or probe can advance it by claiming success.
+
+`BattleDeathCredit` is one immutable accounting context in the live battle, retained through
+no-scene turns. Scene initialization installs a known-none laser context or ordinary first ally.
+The field continuation captures that context for its ordered death batch. Unknown context remains
+an error; known-none permits enemy removal without kill credit, including a leader sweep. Ally
+defeats remain required. Cleanup finishes before defeat-before-victory/outcome selection. A later
+failure preserves already accepted HP/RNG, removals and token boundaries; retries do not reconstruct
+the shot. Tests cover real automatic input/control, empty scenes, ordered friendly fire, sweep and
+failure recovery. See the [rule/source accounting join](../domain/gameplay-rules.md#finite-prism-laser).
+
+
 ## Battle item custody and receipt playback
 
 `BattleItemCustody` is one immutable value containing separate drop-once bits and per-item Deals
@@ -35,11 +59,12 @@ existing defeated hook, combines ordinary deaths with the finite source-ordered 
 and starts `BattleFieldDeathContinuation` before asking the outcome policy. A held completion
 flag records the skipped empty program while still admitting the sweep.
 
-`EngineBattleState.FirstAlly` starts unknown and is assigned by each real admitted physical,
-HEAL or item scene. No-scene turns preserve it; they do not substitute the current actor.
-A reached nonempty cleanup without that custody fails `death-first-ally-context` before cleanup
+`EngineBattleState.DeathCredit` starts unknown and is assigned by each real admitted physical,
+HEAL or item scene; `FirstAlly` projects its optional ally. Laser assigns known-none as described above.
+No-scene turns preserve the context; they do not substitute the current actor.
+A reached nonempty cleanup without a known context fails `death-first-ally-context` before cleanup
 or outcome publication. Controlled starts cannot invent prior source scene state. Unsupported
-ranged enemy/spell/special-scene callers are not admitted by this extension.
+ranged enemy/spell callers remain outside this extension; the finite laser has its own admitted path.
 
 The extracted continuation retains only caller/destination/first-ally operands and the immutable
 ordered worklist. It has no synthetic `BattleActionResolution` and no second actor snapshot.

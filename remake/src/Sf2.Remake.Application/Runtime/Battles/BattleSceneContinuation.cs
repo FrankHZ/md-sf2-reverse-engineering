@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
@@ -215,26 +216,33 @@ public sealed class BattleSceneState
     internal BattleReaction Reaction => Action.Reactions[ReactionIndex];
     public BattleScenePhase Phase { get; }
     public WaitToken Token { get; }
-    public ActorRef Actor => FieldDeath?.Actor ?? SleepTurn?.Actor ?? Reaction.Actor;
-    public ActorRef Target => FieldDeath?.Actor ?? SleepTurn?.Actor ?? Reaction.Target;
-    public string ActionKind => IsFieldDeath ? "field-death" : IsSleepTurn ? "sleep-turn" : Reaction.Action;
-    public string ReactionKind => IsFieldDeath ? "Removal" : IsSleepTurn ? "Status" : Reaction.Kind.ToString();
+    public PrismLaserShot? Laser => _action?.Laser;
+    public bool HasReaction => _action is not null && ReactionIndex < Action.Reactions.Count;
+    public ActorRef? ReactionTarget => HasReaction ? Reaction.Target : null;
+    public ActorRef Actor => FieldDeath?.Actor ?? SleepTurn?.Actor ?? (Laser is not null ? Action.Actor : Reaction.Actor);
+    public ActorRef? Target => FieldDeath?.Actor ?? SleepTurn?.Actor ?? ReactionTarget;
+    public string ActionKind => IsFieldDeath ? "field-death" : IsSleepTurn ? "sleep-turn" : Laser is not null ? "prism-laser" : Reaction.Action;
+    public string ReactionKind => IsFieldDeath ? "Removal" : IsSleepTurn ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
     public HealingItemDefinition? Item => _action?.Item;
-    public BattleItemReceipt? ItemReceipt => IsSleepTurn || IsFieldDeath ? null : Reaction.Receipt;
+    public BattleItemReceipt? ItemReceipt => !HasReaction ? null : Reaction.Receipt;
     public HealingSpellDefinition? Spell => _action?.Spell;
     public HealingSceneCursor? Healing { get; }
     public bool SwitchesAlly => (Item is not null || Spell is not null) && Actor != Target;
     // InitializeActors / SwitchTargets / Script_End: only one ally occupies this side.
-    public ActorRef? DisplayedAlly => IsSleepTurn || IsFieldDeath ? null : Item is not null || Spell is not null
+    public ActorRef? DisplayedAlly => IsSleepTurn || IsFieldDeath ? null : Laser is not null
+        ? HasReaction && LaserTargetsVisible && Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : null : Item is not null || Spell is not null
         ? Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit ? Target : Actor
         : Action.Prepared.GetActor(Actor).IsAlly ? Actor : Target;
+    private bool LaserTargetsVisible => Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or
+        BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage;
     public ActorRef? DisplayedEnemy => IsSleepTurn || IsFieldDeath || Item is not null || Spell is not null ? null
+        : Laser is not null ? HasReaction && LaserTargetsVisible && !Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : Action.Actor
         : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
-    public bool Critical => !IsSleepTurn && !IsFieldDeath && Reaction.Critical;
-    public int HpChange => IsSleepTurn || IsFieldDeath ? 0 : Reaction.HpAfter - Reaction.HpBefore;
-    public int MpChange => IsSleepTurn || IsFieldDeath ? 0 : Reaction.MpAfter - Reaction.MpBefore;
-    public int Amount => IsSleepTurn || IsFieldDeath ? 0 : Reaction.Amount;
-    public bool TargetDefeated => !IsSleepTurn && !IsFieldDeath && Reaction.HpAfter == 0;
+    public bool Critical => HasReaction && Reaction.Critical;
+    public int HpChange => !HasReaction ? 0 : Reaction.HpAfter - Reaction.HpBefore;
+    public int MpChange => !HasReaction ? 0 : Reaction.MpAfter - Reaction.MpBefore;
+    public int Amount => !HasReaction ? 0 : Reaction.Amount;
+    public bool TargetDefeated => HasReaction && Reaction.HpAfter == 0;
     public ActorRef? RewardActor => _action?.Reward?.Actor;
     public int RewardAmount => _action?.Reward?.Amount ?? 0;
     internal IReadOnlyList<BattleGrowthNotice> Growth { get; }
@@ -273,7 +281,7 @@ internal static class BattleSceneContinuation
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
             healing: action.Spell is null ? null : HealingSceneCursor.Create(action, sceneContent));
-        return Result(current, action.Prepared.With(firstAlly: action.FirstAlly), scene, revision, sequence, observations);
+        return Result(current, action.Prepared.With(deathCredit: new(action.Laser is null ? action.FirstAlly : null)), scene, revision, sequence, observations);
     }
 
     internal static SessionResult Submit(SessionSnapshot current, SessionCommand command) =>
@@ -351,7 +359,7 @@ internal static class BattleSceneContinuation
         {
             case BattleScenePhase.Initialize: next = BattleScenePhase.ActionMessage; break;
             case BattleScenePhase.ActionMessage:
-                observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.Target));
+                observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.ReactionTarget));
                 if (scene.Spell is not null)
                 {
                     var caster = battle.GetActor(scene.Actor);
@@ -362,16 +370,18 @@ internal static class BattleSceneContinuation
                 next = BattleScenePhase.ActionAnimation; break;
             case BattleScenePhase.SpellCost: next = BattleScenePhase.ActionAnimation; break;
             case BattleScenePhase.ActionAnimation:
+                if (scene.Laser is not null)
+                { next = scene.HasReaction ? BattleScenePhase.TargetEnter : BattleScenePhase.End; break; }
                 if (scene.SwitchesAlly) { next = BattleScenePhase.TargetExit; break; }
                 goto case BattleScenePhase.TargetEnter;
             case BattleScenePhase.TargetExit: next = BattleScenePhase.TargetEnter; break;
             case BattleScenePhase.TargetEnter:
-                var beforeReaction = battle.GetActor(scene.Target);
+                var beforeReaction = battle.GetActor(scene.Target!.Value);
                 battle = scene.Action.ApplyReaction(battle, scene.Reaction);
-                if (beforeReaction.Status != battle.GetActor(scene.Target).Status)
-                    observations.Add(new(++sequence, revision, "status", scene.Target, beforeReaction.Status, battle.GetActor(scene.Target).Status));
-                deaths = deaths.Append(beforeReaction, battle.GetActor(scene.Target));
-                if (scene.Critical) observations.Add(new(++sequence, revision, "critical", scene.Actor, Target: scene.Target));
+                if (beforeReaction.Status != battle.GetActor(scene.Target!.Value).Status)
+                    observations.Add(new(++sequence, revision, "status", scene.Target, beforeReaction.Status, battle.GetActor(scene.Target!.Value).Status));
+                deaths = deaths.Append(beforeReaction, battle.GetActor(scene.Target!.Value));
+                if (scene.Critical) observations.Add(new(++sequence, revision, "critical", scene.Actor, Target: scene.ReactionTarget));
                 if (scene.Reaction.Kind == BattleReactionKind.Dodge)
                     observations.Add(new(++sequence, revision, "dodge", scene.Target));
                 else if (scene.Reaction.Kind == BattleReactionKind.Ineffective)
@@ -395,9 +405,9 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.SleepMessage:
                 if (scene.Phase == BattleScenePhase.SleepMessage)
                 {
-                    ushort status = battle.GetActor(scene.Target).Status;
+                    ushort status = battle.GetActor(scene.Target!.Value).Status;
                     battle = scene.Action.ApplySleep(battle, scene.Reaction);
-                    observations.Add(new(++sequence, revision, "sleep-inflicted", scene.Target, status, battle.GetActor(scene.Target).Status));
+                    observations.Add(new(++sequence, revision, "sleep-inflicted", scene.Target, status, battle.GetActor(scene.Target!.Value).Status));
                 }
                 if (scene.TargetDefeated) { next = BattleScenePhase.DeathMessage; break; }
                 if (scene.SwitchesAlly) { next = BattleScenePhase.ActorExit; break; }
@@ -414,7 +424,7 @@ internal static class BattleSceneContinuation
                 goto case BattleScenePhase.ItemReceivedMessage;
             case BattleScenePhase.ItemDroppedMessage: next = BattleScenePhase.ItemReceivedMessage; break;
             case BattleScenePhase.ItemReceivedMessage:
-                if (index + 1 < scene.Action.Reactions.Count) { index++; next = BattleScenePhase.ActionMessage; }
+                if (index + 1 < scene.Action.Reactions.Count) { index++; next = scene.Laser is not null ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage; }
                 else if (scene.Action.Reward is not null)
                 {
                     var reward = scene.Action.CreditReward(battle, rules.Progression);
@@ -453,7 +463,7 @@ internal static class BattleSceneContinuation
                 return BattleAdvancer.Advance(committed, observations, rules);
             default: throw new InvalidOperationException("Unknown battle scene phase.");
         }
-        observations.Add(new(++sequence, revision, "scene-step-started", scene.Action.Reactions[index].Actor, Detail: next.ToString()));
+        observations.Add(new(++sequence, revision, "scene-step-started", (scene.Laser is not null ? scene.Action.Actor : scene.Action.Reactions[index].Actor), Detail: next.ToString()));
         var healing = scene.Healing?.Enter(next);
         if (healing is not null)
         {

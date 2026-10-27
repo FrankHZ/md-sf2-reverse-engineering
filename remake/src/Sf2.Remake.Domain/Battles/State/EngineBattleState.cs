@@ -11,7 +11,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
-public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat }
+public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight }
 public enum BattleControl { Player, Automatic }
@@ -154,9 +154,9 @@ public sealed class BattleDefinition
         IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null,
         IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
         TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
-        EnemyItemDropDefinition? itemDrops = null)
+        EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null)
     {
-        TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
+        PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
@@ -183,20 +183,24 @@ public sealed class BattleDefinition
     public TarosEffectiveness? TarosEffectiveness { get; }
     public LeaderCleanupDefinition? LeaderCleanup { get; }
     public EnemyItemDropDefinition? ItemDrops { get; }
+    public PrismLaserDefinition? PrismLaser { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
 }
+
+// Null context means unknown; a present context with no Ally is the source FF sentinel.
+public sealed record BattleDeathCredit(ActorRef? Ally);
 
 public sealed class EngineBattleState
 {
     internal EngineBattleState(BattleDefinition definition, IEnumerable<BattleActorState> actors,
         uint mainSeed, uint thinkingSeed, int round, IEnumerable<TurnOrderEntry<ActorRef>> queue, int cursor, uint? gold,
         NewBattleStartPolicy? startPolicy = null, BattleRegionState? regions = null, ActorRef? firstAlly = null,
-        BattleItemCustody? itemCustody = null)
+        BattleItemCustody? itemCustody = null, BattleDeathCredit? deathCredit = null)
     {
         Definition = definition; Actors = Array.AsReadOnly(actors.ToArray());
         MainSeed = mainSeed; ThinkingSeed = thinkingSeed; Round = round;
         Queue = Array.AsReadOnly(queue.ToArray()); Cursor = cursor;
-        Gold = gold; StartPolicy = startPolicy; Regions = regions; FirstAlly = firstAlly; ItemCustody = itemCustody;
+        Gold = gold; StartPolicy = startPolicy; Regions = regions; DeathCredit = deathCredit ?? (firstAlly is { } ally ? new(ally) : null); ItemCustody = itemCustody;
     }
     public BattleDefinition Definition { get; }
     public IReadOnlyList<BattleActorState> Actors { get; }
@@ -209,17 +213,18 @@ public sealed class EngineBattleState
     public NewBattleStartPolicy? StartPolicy { get; }
     public BattleRegionState? Regions { get; }
     // Source BATTLESCENE_FIRST_ALLY survives turns without a scene. No start default.
-    public ActorRef? FirstAlly { get; }
+    public ActorRef? FirstAlly => DeathCredit?.Ally;
+    public BattleDeathCredit? DeathCredit { get; }
     public IEnumerable<(ActorRef? Actor, byte AlteredAgility)> TurnOrder => Queue.Select(entry => (entry.Actor, entry.AlteredAgility));
     internal IReadOnlyList<TurnOrderEntry<ActorRef>> Queue { get; }
     public BattleActorState GetActor(ActorRef actor) => Actors.Single(a => a.Actor == actor);
     internal EngineBattleState With(IEnumerable<BattleActorState>? actors = null, uint? mainSeed = null,
         int? round = null, IEnumerable<TurnOrderEntry<ActorRef>>? queue = null, int? cursor = null, uint? gold = null,
         uint? thinkingSeed = null, BattleRegionState? regions = null, ActorRef? firstAlly = null,
-        BattleItemCustody? itemCustody = null) =>
+        BattleItemCustody? itemCustody = null, BattleDeathCredit? deathCredit = null) =>
         new(Definition, actors ?? Actors, mainSeed ?? MainSeed, thinkingSeed ?? ThinkingSeed,
             round ?? Round, queue ?? Queue, cursor ?? Cursor, gold ?? Gold, StartPolicy, regions ?? Regions, firstAlly ?? FirstAlly,
-            itemCustody ?? ItemCustody);
+            itemCustody ?? ItemCustody, deathCredit ?? (firstAlly is { } ally ? new(ally) : DeathCredit));
 }
 
 internal sealed class BattleRuleException(string code, string field, bool unsupported = false)

@@ -1,5 +1,36 @@
 # Remake Capability Status
 
+## Prism laser implementation agreement
+
+**High rigor:** the selected authored action crosses automatic decision, target reconstruction,
+staged scene damage, death accounting and native delivery. The finite implementation uses the
+existing rule/result/session/field-death owners; no general area-action or media platform is added.
+[Issue #1351](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1351) owns coordination;
+this agreement owns scope. Current milestone is bounded authored delivery, pending independent review.
+
+The player can leave the fixed ray empty of allies (Flower stays), then move onto it through ordinary
+commands. Preparation reconstructs both factions in explicit source-slot order, including friendly
+fire and an empty shot after focus departure. One laser announcement and authored charge/fire/settle
+precede later HP/status reactions, ordered removal, ally defeats without ally kill credit, and usable
+control or the existing outcome handoff. Known-no-ally custody replaces an older scene's ally.
+
+Acceptance covers changed directions/facing, IDs/order/positions/HP/neutral state, walls/crop,
+continuous two-draw damage, empty and multi-target consumers, stale tokens, later failure prefixes,
+leader sweep and defeat precedence. Use the dedicated Prism behavior tests, engine gate, adapter build,
+[bounded ordinary-host observation](development-and-verification.md#prism-laser-authored-observation),
+committed dependency plan and exact-head CI. Preserve completed failures; corrections use affected tests.
+
+Only explicit ordinary authored slots, kind93 Flower semantics, unconditional15/15 activation,
+interior origins and normal targets are admitted. Non15 standby/region programs, overlapping eligible
+positions, edge origins, special/Burst Rock/Zeon Guard targets, debug and wider statuses reject.
+No private Battle36, chapter programs, spells/AoE framework, UI redesign, original assets or
+pixel/audio/timing parity. Original natural fired turns remain **Unknown**. Existing physical,
+sleep, leader cleanup and item custody are dependencies; all prior failures and twelve unresolved
+#1047 comparisons remain with their owners. The [rule](domain/gameplay-rules.md#finite-prism-laser),
+[session](application/session-and-programs.md#prism-laser-continuation) and
+[presentation](godot/battle-scenes.md#authored-prism-laser) owners define the exact implemented boundary.
+
+
 ## Battle item-drop implementation agreement
 
 **High rigor:** physical construction, scene playback and cross-mode item custody share one
@@ -187,7 +218,7 @@ full-game parity and public distribution remain outside the accepted boundary.
 | Medical Herb battle scenes | **Implemented bounded consumer:** live inventory consumption during construction, deferred mode2 HP recovery without MP cost, single-ally display/target switch/restoration, EXP/growth and end-of-scene input release. Uses source item animation NONE/Nothing and SFX113, with no fairy or physical recoil draws. Wounded controlled entry and full-HP source-world normal/reduced observations cover different boundaries; natural timing and whole-scene HEAL parity remain unfinished. [Scene owner](godot/battle-scenes.md#medical-herb-scenes). |
 | Enemy physical decision | **Implemented subset:** already-active, physical-only ATTACK1/script3, admitted source movers with MOV1–63. Reverse candidate/RNG order, signed raw-priority cohort and capped result, Regular class table for named classes when needed, largest-movement/later-collected tie, shared physical/reward/death/control path. Missing reached class/physical capability remains atomic Unsupported; earlier commits and the failed queue entry survive. |
 | Zero-target commandset06 continuation | **Implemented subset:** ATTACK1, unavailable HEAL1 and SUPPORT return failure; MOVE1 selects a living target from complete raw costs0–127, walks fixed cost4 then corrects the station with the legal MOV grid. Movement or origin Stay returns success and ends the action; no same-turn attack, RNG/resource or last-target change. High/incomplete target costs remain atomic Unsupported. |
-| Remaining battle behavior | **Unsupported beyond admitted capabilities:** nonempty defeated programs/private or unbound enemy-leader cleanup, battle-region programs, ally automatic control, nonzero spawn, laser action6, unadmitted EGRESS/Angel Wing and broader equipment/spell/status families. Growth and ordinary victory/defeat/return are implemented for the bound content above and below; Battle03 Flying/physical sleep is implemented below. Missing bindings or unsupported reached effects still reject at their owning boundary, preserving any prior committed prefix. The [Proposed special-mechanics design](domain/special-mechanics-design.md) separates missing content, rules and state/interface extensions; it does not enable these mechanisms. |
+| Remaining battle behavior | **Unsupported beyond admitted capabilities:** nonempty defeated programs/private or unbound enemy-leader cleanup, battle-region programs, ally automatic control, nonzero spawn, unadmitted private/special laser inputs, unadmitted EGRESS/Angel Wing and broader equipment/spell/status families. Growth and ordinary victory/defeat/return are implemented for the bound content above and below; Battle03 Flying/physical sleep is implemented below. Missing bindings or unsupported reached effects still reject at their owning boundary, preserving any prior committed prefix. The [Proposed special-mechanics design](domain/special-mechanics-design.md) separates missing content, rules and state/interface extensions; it does not enable these mechanisms. |
 
 ## Common Exploration and Programs
 
@@ -220,7 +251,7 @@ source provenance and reproduction.
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
 | Item acquisition, area descriptions and setup-event selection | none | **Unsupported** | their only consumers were legacy; accepted contracts and research remain for a future reached consumer |
-| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, Jaro conversion, Prism laser, hidden/reappearing enemies and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
+| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, Jaro conversion, private Battle36/wider Prism inputs, hidden/reappearing enemies and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a
 new capability, receipt, or matrix row unless they independently cross a trust, authority, versioned-port,

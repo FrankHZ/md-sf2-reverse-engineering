@@ -7,6 +7,7 @@ internal static class BattleTurnFlow
     internal static EngineBattleState Start(BattleDefinition definition, BattleStartInput start)
     {
         ValidateStart(definition, start);
+        definition.PrismLaser?.RequireDefinition(definition);
         var inputs = start.Actors.ToDictionary(actor => actor.Actor);
         // Deployment order owns turn/candidate order; the external input array is only keyed data.
         var actors = BattleInitializationRules.Deployments(definition, start).Select(deployment =>
@@ -15,7 +16,7 @@ internal static class BattleTurnFlow
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
                 deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
                     ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
-                progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord);
+                progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0));
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
             itemCustody: start.ItemCustody);
