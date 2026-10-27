@@ -2,7 +2,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
-internal enum BattleReactionKind { Damage, Dodge, Recovery, Resource }
+internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resource }
 internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Action,
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
     bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null);
@@ -201,6 +201,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(actorRef != targetRef && actor.Faction != target.Faction && actor.Hp > 0 && target.Hp > 0 &&
             target.Position is not null && Spell is null && Item is null && Reactions.Count is > 0 and <= 3 && CompletionEffects.Count == 0);
         ushort actorHp = actor.Hp, targetHp = target.Hp;
+        bool ineffective = before.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         bool counter = false;
         for (int index = 0; index < Reactions.Count; index++)
         {
@@ -212,16 +213,22 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             var profile = attacker.Definition.Physical ?? throw new BattleRuleException("physical-definition", "actor.physical", true);
             var from = reversed ? target.Position! : destination; var to = reversed ? destination : target.Position!;
             ushort hp = reversed ? actorHp : targetHp;
+            ushort status = defender.Status;
             Require(actorHp > 0 && targetHp > 0 && BattleRange.Contains(from, to, profile.MinimumRange, profile.MaximumRange) &&
                 reaction.Action == (reversed ? "physical-counter" : index == 0 ? "physical-first" : "physical-second") &&
-                reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Dodge && reaction.HpBefore == hp &&
+                reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Dodge or BattleReactionKind.Ineffective && reaction.HpBefore == hp &&
                 reaction.Amount >= 0 && reaction.HpAfter == Math.Max(0, hp - reaction.Amount) &&
                 reaction.MpBefore == defender.Mp && reaction.MpAfter == defender.Mp &&
-                (reaction.Kind != BattleReactionKind.Dodge || reaction.Amount == 0 && !reaction.Critical));
-            Require(reaction.StatusWrite is null || reaction.Kind == BattleReactionKind.Damage && reaction.StatusWrite == defender.Status);
-            Require(reaction.InflictedSleep is null || profile.Critical.InflictsSleep && reaction.Kind == BattleReactionKind.Damage &&
-                reaction.HpAfter > 0 && !reaction.Critical && reaction.StatusWrite == defender.Status &&
-                reaction.InflictedSleep == (ushort)(defender.Status | 0xC0));
+                (reaction.Kind == BattleReactionKind.Damage || reaction.Amount == 0 && !reaction.Critical));
+            Require(reaction.Kind != BattleReactionKind.Ineffective || !reversed && ineffective);
+            Require(reversed || !ineffective || reaction.Kind != BattleReactionKind.Damage);
+            Require(!reversed || (target.Status & 0xC0) == 0 &&
+                !(before.Definition.TarosEffectiveness?.IsTaros(actor) ?? false));
+            Require(reaction.StatusWrite is null || reaction.Kind == BattleReactionKind.Damage && reaction.StatusWrite == status);
+            Require(reaction.InflictedSleep is null || profile.Critical.InflictsSleep && reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Ineffective &&
+                reaction.HpAfter > 0 && !reaction.Critical &&
+                (reaction.Kind == BattleReactionKind.Ineffective ? reaction.StatusWrite is null : reaction.StatusWrite == status) &&
+                reaction.InflictedSleep == (ushort)(status | 0xC0));
             if (reversed) actorHp = reaction.HpAfter; else targetHp = reaction.HpAfter;
         }
         var ally = actor.IsAlly ? actor : target; var enemy = actor.IsAlly ? target : actor;
@@ -239,6 +246,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             facts.Add(new(reaction.Action, reaction.Actor, Target: reaction.Target));
             if (reaction.Kind == BattleReactionKind.Dodge)
                 facts.Add(new("dodge", reaction.Target, reaction.HpBefore, reaction.HpAfter));
+            else if (reaction.Kind == BattleReactionKind.Ineffective)
+                facts.Add(new("ineffective", reaction.Target, reaction.HpBefore, reaction.HpAfter));
             else
             {
                 if (reaction.Critical) facts.Add(new("critical", reaction.Actor, Target: reaction.Target));

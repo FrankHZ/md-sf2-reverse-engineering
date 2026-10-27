@@ -336,7 +336,7 @@ internal sealed partial class BattleSceneView : Control
             BattleScenePhase.SleepMessage => 338,
             BattleScenePhase.SleepTurnMessage => state.SleepTurnText!.Value,
             BattleScenePhase.ActionMessage => state.ActionKind switch { "item-use" => 275, "physical-second" => 293, "physical-counter" => 292, _ => 273 },
-            BattleScenePhase.ResultMessage => state.ReactionKind == "Recovery" ? 298 : state.ReactionKind == "Dodge" ? 286 : state.Critical ? (ally ? 287 : 288) : (ally ? 284 : 285),
+            BattleScenePhase.ResultMessage => state.ReactionKind == "Ineffective" ? 289 : state.ReactionKind == "Recovery" ? 298 : state.ReactionKind == "Dodge" ? 286 : state.Critical ? (ally ? 287 : 288) : (ally ? 284 : 285),
             BattleScenePhase.DeathMessage => _session.Current.Battle.GetActor(state.Target).IsAlly ? 291 : 290,
             BattleScenePhase.RewardMessage => 263, BattleScenePhase.GoldMessage => 393, _ => -1,
         };
@@ -348,7 +348,7 @@ internal sealed partial class BattleSceneView : Control
         string name = ActorName(state.Phase == BattleScenePhase.ActionMessage ? state.Actor :
             state.Phase is BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage ? state.RewardActor!.Value : state.Target);
         int amount = state.GrowthNotice?.Amount ?? (state.Phase == BattleScenePhase.RewardMessage ? state.RewardAmount : state.Phase == BattleScenePhase.GoldMessage ? state.GoldAmount : state.Amount);
-        string text = Content?.Texts.GetValueOrDefault(id) ?? (id == 338 ? "{NAME} fell asleep." : id == 306 ? "{NAME} is sleeping." : id == 354 ? "{NAME} has awakened." : state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
+        string text = Content?.Texts.GetValueOrDefault(id) ?? (id == 289 ? "The attack is ineffective against {NAME}." : id == 338 ? "{NAME} fell asleep." : id == 306 ? "{NAME} is sleeping." : id == 354 ? "{NAME} has awakened." : state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
             state.Phase == BattleScenePhase.RewardMessage ? "{NAME} earned {#} EXP." : state.Phase == BattleScenePhase.GoldMessage ? "Found {#} gold." : "{NAME}: {#}");
         // Text timing remains the existing product setting. No battle speech bleeps:
         // source bsc10/bsc11 clear CURRENT_SPEECH_SFX.

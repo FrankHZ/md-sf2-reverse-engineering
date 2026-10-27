@@ -1,7 +1,8 @@
 # Special Mechanics: Capability Gaps and Staged Extensions
 
 Status: **Proposed engineering design** for the remaining families; the selected Battle02 EGRESS/Angel Wing
-implementation is tracked by the [current agreements](../capability-status.md#battle02-angel-wing-implementation-agreement).
+and Taros physical-effectiveness implementations are tracked by the
+[current agreements](../capability-status.md#taros-physical-effectiveness-implementation-agreement).
 This document is not blanket implementation authorization or an accepted fidelity profile. [Issue #1339](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1339) owns scheduling;
 this document owns the proposed boundaries and decisions. Original facts remain with the linked
 English research/contracts/synthesis owners. No original-game evidence is derived from remake code.
@@ -46,7 +47,7 @@ The following static code reads and accepted implementation owners control over 
 | Flying and physical sleep | **Supported bounded rules and delivery.** [Sleep/Flying tests](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs) and the [Yeel/Battle03 owner](../application/session-and-programs.md#yeel-guide-zone-request-and-sleep-continuation) cover movement, sleep construction, skip and recovery. SLEEP spell, Stun and other statuses are separate gaps. |
 | Flags, conditional/call programs, followers, region activation and typed waits | **Supported primitives**, not missing infrastructure. [Program runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs), [party flags](../../src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs), [activation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs). Reached battle-region scenes, conversions and nonzero spawn are unsupported consumers. |
 | Later ordinary map/dialogue bindings using only admitted operations | **Content/delivery gap only for those operations.** Reuse typed programs, selected maps and private preparation; do not infer an entire later encounter is content-only. Private encounter pins still admit the selected 1/2/3 boundary. |
-| Taros | **Rule + content + finite execution/state extension.** Equipment data exists; no initial Taros effectiveness producer or drop/Deals transaction. [Outcome reader](../../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) rejects `outcome-enemy-leader` and nonempty `defeated-program`; current hook cannot execute leader cleanup. |
+| Taros | **Authored physical-effectiveness rule/content/feedback implemented** at the [bounded owner](gameplay-rules.md#finite-taros-physical-effectiveness). Wider encounter/cleanup/loot remains a gap; no drop/Deals transaction. [Outcome reader](../../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) rejects `outcome-enemy-leader` and nonempty `defeated-program`; current hook cannot execute leader cleanup. |
 | Jaro | **Lifecycle/interface + rule + content gap.** Activation rejects `region-program`; [turn flow](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs) rejects `control-side` for ally automatic. Actor faction/control come from immutable deployment; this is not a supported live conversion merely because enums exist. |
 | Prism Flowers | **Decision/action + projection + content gap.** [Automatic result](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) has one opposing target and no chosen special action; [movement completion](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs) turns a target into Physical. Damage reaction arrays do not implement action6. |
 | Fairy Woods | **Spawn lifecycle + round continuation + trial state/content gap.** Nonzero `SpawnMode` rejects; runtime maximum HP normally comes from definition/progress, without dormant source maxHP0. No trial counter/snapshot/record lifecycle is bound. |
@@ -84,6 +85,12 @@ The following sequences name logical commit points, not hardware timing or instr
 an independently mutable controller.
 
 ## Taros: effectiveness, cleanup, loot and acquisition
+
+The [implementation agreement](../capability-status.md#taros-physical-effectiveness-implementation-agreement)
+and [rule owner](gameplay-rules.md#finite-taros-physical-effectiveness) now implement the smaller
+authored physical-only option. The table below retains the wider staged design; cleanup/loot and
+chapter binding are still proposed. Source dodge/critical/follow-up/end-EXP ordering and later sleep
+are preserved at the implementation owner; ineffective is not a zero-total-RNG or zero-end-EXP action.
 
 **Confirmed static sources:** [initial gate and its lifetime](../../../docs/research/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime),
 [action-drop custody](../../../docs/research/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody),

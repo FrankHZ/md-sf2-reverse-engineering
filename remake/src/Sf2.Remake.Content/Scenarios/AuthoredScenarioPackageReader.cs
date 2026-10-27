@@ -147,6 +147,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     minimum, (byte)Number(item, "maximumRange", minimum, 3));
                 Require(!retreatItems.ContainsKey(id) && healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
             }
+        var weaponItems = Array(root, "encounters").SelectMany(TarosEffectivenessReader.Weapons).Distinct().ToArray();
+        Require(!weaponItems.Any(id => healingItems.ContainsKey(id) || retreatItems.ContainsKey(id)),
+            "conflicting-item-type", "tarosEffectiveness.weaponItems");
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
@@ -160,7 +163,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Require(value.ValueKind == JsonValueKind.Number && value.TryGetUInt16(out _), "item-word", "actors.items");
                 ushort word = value.GetUInt16();
-                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127)) || retreatItems.ContainsKey((byte)(word & 127))),
+                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127)) || retreatItems.ContainsKey((byte)(word & 127)) || weaponItems.Contains((byte)(word & 127))),
                     "missing-item", "actors.items", true);
                 return word;
             }).ToArray();
@@ -209,7 +212,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
         foreach (var encounter in Array(root, "encounters"))
         {
-            ObjectOptional(encounter, "encounter", "rewards", "id", "map", "placements");
+            Object(encounter, "encounter", ["id", "map", "placements",
+                .. (encounter.TryGetProperty("rewards", out _) ? new[] { "rewards" } : []),
+                .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : [])]);
             BattleRewardDefinition? rewards = null;
             if (encounter.TryGetProperty("rewards", out var rewardInput))
             {
@@ -251,7 +256,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             }
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
-            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values)),
+            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
+                tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems))),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");

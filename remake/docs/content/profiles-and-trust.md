@@ -5,6 +5,44 @@ definitions. Profiles select admission and permitted claims; they do not fork ga
 See [architecture](../architecture.md), [rule composition](../domain/gameplay-rules.md) and
 [asset preparation](presentation-assets.md).
 
+## Authored Taros identity binding
+
+A format7 encounter may include the closed optional binding:
+
+```json
+"tarosEffectiveness": {
+  "bowie": "champion",
+  "enemyDefinitions": [
+    {"actor": "guardian", "definition": 88},
+    {"actor": "reserve", "definition": 9}
+  ],
+  "weaponItems": [61]
+}
+```
+
+`TarosEffectivenessReader` resolves the bound ally and enemy `ActorRef`s in that encounter, rejects
+duplicate enemy mappings/weapon identities, requires a Taros88 definition and weapon61, and copies
+the mapping into immutable `BattleDefinition.TarosEffectiveness`. Unmapped actors do not acquire a
+Taros definition. Numeric definitions are explicit source-policy identities; no slot/name/fixture
+string implies them. This opt-in binding represents the selected Battle18 gate in authored content;
+it does not widen private Battle18 admission. Existing region/leader/spawn/defeated-program guards
+remain in force.
+
+`weaponItems` explicitly classifies packed loadout identities as weapons for the source getter.
+The union admits those carried identities during actor decoding; each bound encounter must include
+the package's admitted weapon identities so the first-equipped scan has complete weapon types.
+A weapon cannot also be a healing/retreat item. No automatic equip-class or ATT modifier is inferred:
+authored statistics are controlled inputs, and normal stat refresh/equipment services remain out of
+scope. Live `SourceLoadout` at action construction overrides the immutable starting items.
+Encounter copies made by growth/outcome binding retain the same immutable effectiveness definition;
+existing authored equipped-growth limitations remain explicit.
+
+[taros-effectiveness.json](../../content/authored/taros-effectiveness.json) supplies a small authored
+practice encounter. Both allies carry equipped61 but only `champion` binds Bowie; `guardian` binds88
+independently of processing order. Enemy AI is Stay and no source Battle18 leader/drop/aftermath is
+claimed. The [rule owner](../domain/gameplay-rules.md#finite-taros-physical-effectiveness) and
+[native recipe](../development-and-verification.md#taros-authored-observation) own behavior and delivery.
+
 ## Purpose
 
 Runtime profiles declare where content comes from, which trust checks are required, and which product

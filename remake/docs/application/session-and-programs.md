@@ -1,5 +1,26 @@
 # Session and Resumable Programs
 
+## Ineffective physical scene continuation
+
+Taros physical construction uses the existing `BattleActionResolution` transaction and single
+`GameSession` publisher. `Ineffective` is a finite reaction kind with amount0 and unchanged HP/MP;
+validation rejects damage for a blocked initial strike, an unbound ineffective result, an
+ineffective counter, inappropriate status writes or a Taros-origin counter. It does not execute
+observation strings or accept arbitrary actor patches.
+
+Construction publishes its carried RNG/movement and prepared reactions. `ineffective` is withheld
+from construction observations and emitted once at actual reaction entry. `BattleSceneRules` adds
+no damage recoil/RNG for this kind. The current result message/acknowledgement and subsequent
+sleep, reward and end continuations retain their normal tokens; the supported sleep operand is
+applied only at its later message completion. End EXP credit remains a distinct commit.
+
+Queries/cancel do not prepare or spend. Stale/duplicate delivery cannot repeat the reaction or
+release another wait. A later credit failure retains committed construction/movement, prior
+feedback and the pending cursor/token; retry does not reroll or repeat feedback. The
+[rule owner](../domain/gameplay-rules.md#finite-taros-physical-effectiveness) explains source ordering;
+[TarosEffectivenessTests](../../tests/Sf2.Remake.Engine.Tests/TarosEffectivenessTests.cs) exercises
+these real command and failure boundaries.
+
 ## Paid retreat and field return
 
 `BattleActionKind.Retreat` and `SessionAction.Retreat` keep a learned retreat spell in the ordinary

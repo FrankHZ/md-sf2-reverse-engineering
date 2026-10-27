@@ -1,5 +1,20 @@
 # Battle Presentation
 
+## Ineffective physical feedback
+
+`BattleSceneView` consumes the semantic `Ineffective` reaction through the existing physical scene.
+It selects source message289 when admitted text exists and otherwise the authored message
+"The attack is ineffective against {NAME}." The actual result label is visible and uses the
+ordinary reveal/acknowledgement input. It has amount0 without presenting a zero-damage, dodge or
+critical-damage result. No damaging recoil, hit sound or damage-reaction RNG is requested for it.
+Supported later sleep and ordinary end EXP feedback keep their own continuation boundaries.
+
+The [authored Taros observation](../development-and-verification.md#taros-authored-observation)
+drives ordinary movement/ATTACK/target/confirm for both the wrong actor and bound equipped actor,
+reads actual label/projection/HP/events/errors, and proves usable movement/cancel after both scenes.
+It uses existing authored presentation with no imported Taros assets, screenshots or UI redesign.
+This proves modern delivery, not original Battle18 reach, hardware timing or full encounter parity.
+
 ## Authored EGRESS delivery
 
 The selected retreat does not construct a `BattleSceneState` or play an ordinary attack scene.

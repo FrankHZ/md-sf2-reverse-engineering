@@ -1,5 +1,59 @@
 # Gameplay Rules and Composition
 
+## Finite Taros physical effectiveness
+
+The optional `BattleDefinition.TarosEffectiveness` binds one admitted encounter to explicit source
+identities. `Gameplay/Sf2/TarosEffectiveness` owns the source-specific definition88/weapon61 tests;
+logical `ActorRef` identity and enemy-definition identity are separate from deployment order, name,
+map, package and presentation. Content binds Bowie to an ally, enemy definitions to enemy actors,
+and weapon item types. Absence of the binding leaves the ordinary physical rule unchanged.
+The [authored package](../../content/authored/taros-effectiveness.json) is a controlled semantic
+example, not a private Battle18 import. Its numerical ATT is already supplied; this does not add
+an equipment/stat-refresh or equip-menu service.
+
+At `Sf2PhysicalAction.Prepare`, compute one initial ineffective operand from actor, initial target
+and live `BattleActorState.SourceLoadout`. Scan slots in order for equipped bit128, non-NOTHING
+masked identity and the admitted weapon type. Only the bound Bowie with first equipped weapon61
+satisfies the initial conjunction against definition88. Carrying61, another equipped actor,
+an earlier equipped different weapon or a changed live loadout matters. Broken bit256 does not
+change the masked identity; this getter does not recheck equip classes. Doubles reuse the operand.
+Counter construction passes a cleared operand; separately, a mapped Taros original attacker
+cannot be countered. Taros as original target can counter when the existing survival/status/range
+and rolled-toggle checks allow it. The policy is physical only; it adds no spell/item immunity.
+
+**Confirmed static source ordering:** at SF2DISASM
+[`c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions),
+`battleactionsengine_1.asm:WriteBattlesceneScript` initializes and calls
+`determineineffectiveattack.asm` once. Its second-attack block retains the toggle; the counter
+block clears it. `isabletocounterattack.asm` reads the original actor through a5 for the Taros
+prohibition. `code/common/stats/itemstats.asm:GetEquippedWeapon/GetEquippedItemByType` owns the
+live slot/type scan. The [original research owner](../../../docs/research/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)
+retains provenance, Battle18/F112 context and original natural-reach limits.
+
+| Reached physical step | Ineffective consequence |
+| --- | --- |
+| `attack.asm` / `determinedodge.asm` | Dodge comes first and wins; its existing status skip remains. A dodge does not emit ineffective. |
+| `calculatedamage.asm` / `determinecriticalhit.asm` | Calculate and draw critical before the damage helper. Retain the draw; do not display a critical-damage result for an ineffective return. |
+| `inflictdamage.asm` | Definition88 plus the initial toggle emits message289 and returns before counter halving, two spread draws, damage EXP, HP/death and kill/gold. Emit `Ineffective` with unchanged HP/MP, amount0, no damage status write or recoil. |
+| `attack.asm` / `inflictailment.asm` | The target survives, so supported sleep-critical ailment can still be scheduled after the ineffective message. No new resistance/immunity predicate is inferred. |
+| `determinedoubleandcounter.asm` | Surrounding double/counter draws still occur. Retain the current sticky counter flag and finite first/second/counter dispatch. |
+| `battleactionsengine_2.asm:End` / `giveexpandgold.asm` | A surviving eligible ally still receives the normal two end-EXP draws and minimum1, even with zero accumulated damage EXP. An ineffective result does not fabricate kill/gold or suppress this source award. |
+
+Sleep is a later script operand, not a construction-time live status mutation:
+`sf2battlescenemacros.asm:executeEnemyReaction/executeAllyReaction` write to a6; the later
+`battlescenes/battlesceneengine_0.asm:bsc0A/bsc0B` calls `SetStatusEffects`. Therefore newly scheduled
+sleep cannot remove an already constructed second dodge draw or legal counter. Ineffective has no
+damage status write, so subsequent ineffective playback does not clear earlier sleep. Existing
+ordinary damaging reactions retain their independently constructed status operands.
+
+`TarosEffectivenessTests` covers source-identity and live-slot variations, exact construction RNG,
+double/counter lifetime, source-supported sleep, real command/scene waits, duplicate delivery and
+reward-failure prefix retention. Existing `SleepAndFlyingTests` preserves the construction/playback
+split. The [native recipe](../development-and-verification.md#taros-authored-observation) checks the
+actual Godot message, HP delivery and resumed input. Full Battle18, all-action immunity, drops/Deals,
+leader cleanup and Caravan remain outside this implementation; original natural/hardware behavior
+remains **Unknown** at its existing evidence boundary.
+
 ## Finite EGRESS action
 
 The same finite retreat continuation also accepts Angel Wing through `Sf2ItemAction`, the ordinary

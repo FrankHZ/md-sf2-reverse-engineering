@@ -14,6 +14,39 @@ Documentation upkeep uses Standard rigor: current behavior/navigation and preser
 the acceptance boundary. It changes no gameplay, original evidence, UX policy or verification
 framework. Historical dispatch plans and audit dispositions belong to Git/Issues, not this guide.
 
+## Taros authored observation
+
+Use the ordinary host with `--authored-package remake/content/authored/taros-effectiveness.json`.
+The controlled package starts two allies beside a mapped Taros-type guardian. With the default
+keyboard, move North, Enter, F (ATTACK), Tab (guardian), Enter. The apprentice's equipped61 is
+ineffective because it is not bound Bowie. Repeat those keys with champion for normal damage.
+Ordinary scene acknowledgements are Enter; both paths return to usable battle control.
+
+After loading the worktree's `local/private-inputs.ps1`, forcing
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and building the actual adapter Debug configuration from
+`remake/`, the bounded native recipe is:
+
+```powershell
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path remake/game `
+  --script res://probes/engine_taros_effectiveness_observation.gd -- `
+  --authored-package remake/content/authored/taros-effectiveness.json
+```
+
+Resolve arguments from the repository root (or supply absolute package/project paths). Keep
+APPDATA/LOCALAPPDATA/TEMP and the report/logs inside the owning worktree's ignored run directory;
+use the existing selected editor/project, with no copied installation or new assets. The probe
+submits ordinary keys and reads actual state, result label, delivery events and errors; it has no
+state setters, synthetic completions or images. It checks ineffective HP/gold/status and no recoil,
+effective damage/recoil, and movement/cancel after scene return. Store semantic boundary samples,
+not per-frame world dumps. Budget <180s and <5MiB/run; retain completed failures with their cause.
+
+Run `TarosEffectivenessTests` plus affected `SleepAndFlyingTests`/physical/scene behavior directly,
+then the current `uv run sf2 verify engine`, `uv run sf2 verify adapter` and clean-head planner.
+The observation proves modern authored physical feedback only. No H4, emulator, full/retired suite,
+private Battle18 import, natural original route, all-action immunity, equipment UI or hardware
+presentation claim follows. Earlier #1047/#1341/#1343 failures/results remain preserved.
+
 ## Scope
 
 ### Retired bulk frame workflow
