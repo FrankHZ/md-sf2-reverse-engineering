@@ -1,5 +1,36 @@
 # Remake Capability Status
 
+
+## Taros physical-effectiveness implementation agreement
+
+**Standard rigor:** a bounded physical-action extension uses the existing immutable Content,
+SF2 construction, reaction delivery and sole session publisher. The player outcome is an authored
+controlled battle: ordinary movement/ATTACK/target/confirm gives explicit ineffective feedback
+for the wrong actor or live weapon, while the bound Bowie identity with equipped Achilles damages
+the mapped Taros definition. This is not private Battle18 admission or complete encounter parity.
+
+The finite encounter binding maps logical actors to source enemy-definition identities independently
+of deployment order and binds Bowie plus weapon item types. Compute the ineffective operand once
+at physical construction, retain it for doubles and clear it for counter construction. The separate
+Taros-origin counter prohibition remains. Live inventory wins over starting equipment/possession.
+Dodge/critical precede the damage gate; ineffective skips variance, HP and damage/kill/gold credit.
+Surviving eligible ally end EXP still draws twice and awards minimum1. The source's later supported
+sleep ailment can still execute; an ineffective result does not invent status immunity.
+
+Acceptance is focused engine behavior tests (identity/live loadout/lifetime/RNG/reward/status,
+queries/cancel, real scene wait/stale/failure prefixes), current engine and adapter gates, direct
+source/document/private/ownership checks, and bounded actual Godot keyboard delivery of both
+results through usable control. Native runs stay below180s and5MiB; no new assets, large world,
+emulator, H4 or retired/full aggregate. Independent main-gate integration remains required.
+
+Full Battle18 AI/leader cleanup, loot/Deals, aftermath/Caravan, all-action immunity, equipment
+acquisition/equip interaction and hardware/natural original trajectories remain Unsupported or
+Unknown at their existing owners. Preserve #1047's twelve completed unresolved comparisons and
+all completed #1341/#1343 results; they are not rerun or replaced by this slice. The
+[special-mechanic design](domain/special-mechanics-design.md#taros-effectiveness-cleanup-loot-and-acquisition)
+retains the wider staged proposal. Coordination and exact candidate/check identities belong to
+[Issue #1345](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1345) and its Draft PR.
+
 ## Battle02 Angel Wing implementation agreement
 
 Issue [#1343](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1343) retains **High** rigor:
@@ -138,7 +169,7 @@ source provenance and reproduction.
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
 | Item acquisition, area descriptions and setup-event selection | none | **Unsupported** | their only consumers were legacy; accepted contracts and research remain for a future reached consumer |
-| Special encounters, retreat and transport extensions | [Proposed engineering design](domain/special-mechanics-design.md) | **Selected Battle02 retreat implemented; other consumers proposed/unsupported** | Taros effectiveness/loot/leader cleanup, Jaro conversion, Prism laser, hidden/reappearing enemies and trial records, wider retreat/special caller return, and raft/Caravan travel need the finite extensions described there. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
+| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Private Battle18, Taros loot/leader cleanup, Jaro conversion, Prism laser, hidden/reappearing enemies and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a
 new capability, receipt, or matrix row unless they independently cross a trust, authority, versioned-port,

@@ -265,7 +265,7 @@ internal static class BattleSceneContinuation
         // Computation facts can be observed now; persistent HP/reward facts are emitted only
         // when their commands execute. The typed action, not these observations, owns replay.
         foreach (var effect in construction ?? action.ConstructionEffects)
-            if (effect.Kind is not ("hp" or "mp" or "dodge" or "critical" or "physical-first" or "physical-second" or "physical-counter"))
+            if (effect.Kind is not ("hp" or "mp" or "dodge" or "ineffective" or "critical" or "physical-first" or "physical-second" or "physical-counter"))
                 observations.Add(Observe(effect, ++sequence, revision));
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
@@ -370,6 +370,8 @@ internal static class BattleSceneContinuation
                 if (scene.Critical) observations.Add(new(++sequence, revision, "critical", scene.Actor, Target: scene.Target));
                 if (scene.Reaction.Kind == BattleReactionKind.Dodge)
                     observations.Add(new(++sequence, revision, "dodge", scene.Target));
+                else if (scene.Reaction.Kind == BattleReactionKind.Ineffective)
+                    observations.Add(new(++sequence, revision, "ineffective", scene.Target));
                 else
                 {
                     if (scene.HpChange != 0) observations.Add(new(++sequence, revision, "hp", scene.Target, scene.Reaction.HpBefore, scene.Reaction.HpAfter));

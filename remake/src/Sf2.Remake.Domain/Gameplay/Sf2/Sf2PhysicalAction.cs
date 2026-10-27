@@ -88,6 +88,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         var effects = new List<BattleEffect>();
         var reactions = new List<BattleReaction>();
 
+        bool ineffective = current.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         var first = Hit("physical-first", counter: false);
         bool counterRequested = first.CounterRolled;
         if (targetHp > 0 && first.DoubleRolled)
@@ -99,6 +100,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         }
         var counterRange = target.Definition.Physical!;
         bool counterPerformed = targetHp > 0 && counterRequested && (target.Status & 0xC0) == 0 &&
+            !(current.Definition.TarosEffectiveness?.IsTaros(actor) ?? false) &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);
         // No third/double-counter dispatch exists. A surviving counter still consumes its own
@@ -144,6 +146,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             var targetPosition = counter ? destination : target.Position!;
             ushort hp = counter ? actorHp : targetHp;
             var profile = attacker.Definition.Physical!;
+            ushort status = defender.Status;
             var terrain = current.Definition.Terrain[targetPosition.Y * 48 + targetPosition.X];
             // Ground protection is separate from movement cost, including the
             // moved original actor's destination when it becomes the counter's target.
@@ -151,16 +154,18 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Defense,
                 hp, multiplier, seed, defender.Definition.Mover is BattleMover.Hovering or BattleMover.Flying ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
-                profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (defender.Status & 0xC0) != 0);
+                profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC0) != 0,
+                ineffective: !counter && ineffective);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
-                strike.Dodged ? BattleReactionKind.Dodge : BattleReactionKind.Damage,
-                hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical, strike.Damage,
-                strike.Dodged ? null : defender.Status,
-                strike.SleepInflicted ? (ushort)(defender.Status | 0xC0) : null));
+                strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
+                hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical && !strike.Ineffective, strike.Damage,
+                strike.Dodged || strike.Ineffective ? null : status,
+                strike.SleepInflicted ? (ushort)(status | 0xC0) : null));
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
             if (strike.Dodged) effects.Add(new("dodge", defender.Actor, hp, hp));
+            else if (strike.Ineffective) effects.Add(new("ineffective", defender.Actor, hp, hp));
             else
             {
                 if (strike.Critical) effects.Add(new("critical", attacker.Actor, Target: defender.Actor));

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 [assembly: InternalsVisibleTo("Sf2.Remake.Application")]
 [assembly: InternalsVisibleTo("Sf2.Remake.Content")]
@@ -151,8 +152,10 @@ public sealed class BattleDefinition
         IEnumerable<HealingSpellDefinition> spells, BattleRewardDefinition? rewards = null,
         BattleInitializationDefinition? initialization = null, BattleOutcomeDefinition? outcome = null,
         IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null,
-        IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null)
+        IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
+        TarosEffectiveness? tarosEffectiveness = null)
     {
+        TarosEffectiveness = tarosEffectiveness;
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
@@ -176,6 +179,7 @@ public sealed class BattleDefinition
     public BattleInitializationDefinition? Initialization { get; }
     public BattleOutcomeDefinition? Outcome { get; }
     public BattleMapRegion? SourceMapRegion { get; }
+    public TarosEffectiveness? TarosEffectiveness { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
 }
 
