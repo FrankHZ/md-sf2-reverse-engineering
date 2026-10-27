@@ -38,7 +38,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         catch (UnauthorizedAccessException) { return Rejected("content-read", "document"); }
     }
 
-    internal static ScenarioReadAccepted DecodeBattle(JsonElement root)
+    internal static ScenarioReadAccepted DecodeBattle(JsonElement root, bool allowLeaderCleanup = false)
     {
         ObjectOptional(root, "document", "items", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
@@ -214,7 +214,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         {
             Object(encounter, "encounter", ["id", "map", "placements",
                 .. (encounter.TryGetProperty("rewards", out _) ? new[] { "rewards" } : []),
-                .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : [])]);
+                .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : []),
+                .. (encounter.TryGetProperty("leaderCleanup", out _) ? new[] { "leaderCleanup" } : [])]);
             BattleRewardDefinition? rewards = null;
             if (encounter.TryGetProperty("rewards", out var rewardInput))
             {
@@ -257,7 +258,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
             Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
-                tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems))),
+                tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems),
+                leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup))),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");

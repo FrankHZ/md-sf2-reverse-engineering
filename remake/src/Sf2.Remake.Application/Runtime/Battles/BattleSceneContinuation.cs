@@ -195,10 +195,11 @@ public sealed class BattleSceneState
 {
     internal BattleSceneState(BattleActionResolution? action, BattleScenePhase phase, int reactionIndex,
         WaitToken token, IReadOnlyList<BattleSceneOffset>? motion = null, IReadOnlyList<BattleGrowthNotice>? growth = null, int noticeIndex = 0,
-        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null)
-    { Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
+        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null, FieldDeathTurn? fieldDeath = null)
+    { FieldDeath = fieldDeath; Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
     private readonly BattleActionResolution? _action;
     internal SleepTurnNotice? SleepTurn { get; }
+    internal FieldDeathTurn? FieldDeath { get; }
     public bool IsSleepTurn => SleepTurn is not null;
     public int? SleepTurnText => SleepTurn?.Text;
     internal BattleDeathBatch Deaths { get; }
@@ -209,36 +210,36 @@ public sealed class BattleSceneState
     // Presentation minimums express the explicit Sleep calls only, not total VInts.
     // The admitted standing/idle battlefield has no RNG-producing entity script.
     public int FieldDelay => Phase == BattleScenePhase.FieldSpin ? 3 : Phase == BattleScenePhase.FieldExit ? 8 : 10;
-    internal BattleActionResolution Action => _action ?? throw new InvalidOperationException("After-turn notices have no battle action.");
+    internal BattleActionResolution Action => _action ?? throw new InvalidOperationException("This continuation has no battle action.");
     internal int ReactionIndex { get; }
     internal BattleReaction Reaction => Action.Reactions[ReactionIndex];
     public BattleScenePhase Phase { get; }
     public WaitToken Token { get; }
-    public ActorRef Actor => SleepTurn?.Actor ?? Reaction.Actor;
-    public ActorRef Target => SleepTurn?.Actor ?? Reaction.Target;
-    public string ActionKind => IsSleepTurn ? "sleep-turn" : Reaction.Action;
-    public string ReactionKind => IsSleepTurn ? "Status" : Reaction.Kind.ToString();
+    public ActorRef Actor => FieldDeath?.Actor ?? SleepTurn?.Actor ?? Reaction.Actor;
+    public ActorRef Target => FieldDeath?.Actor ?? SleepTurn?.Actor ?? Reaction.Target;
+    public string ActionKind => IsFieldDeath ? "field-death" : IsSleepTurn ? "sleep-turn" : Reaction.Action;
+    public string ReactionKind => IsFieldDeath ? "Removal" : IsSleepTurn ? "Status" : Reaction.Kind.ToString();
     public HealingItemDefinition? Item => _action?.Item;
     public HealingSpellDefinition? Spell => _action?.Spell;
     public HealingSceneCursor? Healing { get; }
     public bool SwitchesAlly => (Item is not null || Spell is not null) && Actor != Target;
     // InitializeActors / SwitchTargets / Script_End: only one ally occupies this side.
-    public ActorRef? DisplayedAlly => IsSleepTurn ? null : Item is not null || Spell is not null
+    public ActorRef? DisplayedAlly => IsSleepTurn || IsFieldDeath ? null : Item is not null || Spell is not null
         ? Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit ? Target : Actor
         : Action.Prepared.GetActor(Actor).IsAlly ? Actor : Target;
-    public ActorRef? DisplayedEnemy => IsSleepTurn || Item is not null || Spell is not null ? null
+    public ActorRef? DisplayedEnemy => IsSleepTurn || IsFieldDeath || Item is not null || Spell is not null ? null
         : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
-    public bool Critical => !IsSleepTurn && Reaction.Critical;
-    public int HpChange => IsSleepTurn ? 0 : Reaction.HpAfter - Reaction.HpBefore;
-    public int MpChange => IsSleepTurn ? 0 : Reaction.MpAfter - Reaction.MpBefore;
-    public int Amount => IsSleepTurn ? 0 : Reaction.Amount;
-    public bool TargetDefeated => !IsSleepTurn && Reaction.HpAfter == 0;
+    public bool Critical => !IsSleepTurn && !IsFieldDeath && Reaction.Critical;
+    public int HpChange => IsSleepTurn || IsFieldDeath ? 0 : Reaction.HpAfter - Reaction.HpBefore;
+    public int MpChange => IsSleepTurn || IsFieldDeath ? 0 : Reaction.MpAfter - Reaction.MpBefore;
+    public int Amount => IsSleepTurn || IsFieldDeath ? 0 : Reaction.Amount;
+    public bool TargetDefeated => !IsSleepTurn && !IsFieldDeath && Reaction.HpAfter == 0;
     public ActorRef? RewardActor => _action?.Reward?.Actor;
     public int RewardAmount => _action?.Reward?.Amount ?? 0;
     internal IReadOnlyList<BattleGrowthNotice> Growth { get; }
     internal int NoticeIndex { get; }
     public BattleGrowthNotice? GrowthNotice => Phase == BattleScenePhase.GrowthMessage ? Growth[NoticeIndex] : null;
-    public int GoldAmount => IsSleepTurn ? 0 : (int)(Action.ConstructionEffects.Where(effect => effect.Kind == "gold")
+    public int GoldAmount => IsSleepTurn || IsFieldDeath ? 0 : (int)(Action.ConstructionEffects.Where(effect => effect.Kind == "gold")
         .Sum(effect => effect.After!.Value - effect.Before!.Value));
     public bool IsHealingMessage => Healing is not null && Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage;
     public bool RequiresAcknowledgement => Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage
@@ -270,7 +271,7 @@ internal static class BattleSceneContinuation
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
             healing: action.Spell is null ? null : HealingSceneCursor.Create(action, sceneContent));
-        return Result(current, action.Prepared, scene, revision, sequence, observations);
+        return Result(current, action.Prepared.With(firstAlly: action.FirstAlly), scene, revision, sequence, observations);
     }
 
     internal static SessionResult Submit(SessionSnapshot current, SessionCommand command) =>
@@ -280,6 +281,7 @@ internal static class BattleSceneContinuation
     {
         var scene = current.BattleScene!;
         if (scene.IsSleepTurn) return BattleAfterTurnContinuation.Complete(current, command, rules);
+        if (scene.IsFieldDeath) return BattleFieldDeathContinuation.Submit(current, command, rules);
         if (scene.Healing is not { } healing) return Continue(current, command, rules);
         bool advancing = command is AdvanceSimulation { Ticks: 1 } advance && advance.Wait == scene.Token && !healing.LogicalComplete;
         bool acknowledge = command is Acknowledge ack && ack.Wait == scene.Token && scene.RequiresAcknowledgement &&
@@ -438,33 +440,11 @@ internal static class BattleSceneContinuation
                 battle = battle.With(actors: battle.Actors.Select(actor =>
                     actor.Position is not null ? actor.With(facing: 3) : actor));
                 observations.Add(new(++sequence, revision, "scene-ended", scene.Action.Actor));
-                if (BattleOutcomeSelection.DefeatedHook(rules.Outcome, battle))
-                    observations.Add(new(++sequence, revision, "enemy-defeated-program-none"));
-                if (deaths.Actors.Count == 0) return Release();
-                next = BattleScenePhase.FieldSpin; fieldStep = 0;
-                observations.Add(new(++sequence, revision, "field-death-started", scene.Action.Actor));
-                break;
-            case BattleScenePhase.FieldSpin:
-                if (fieldStep < 11) { fieldStep++; next = BattleScenePhase.FieldSpin; }
-                else
-                {
-                    next = BattleScenePhase.FieldExit; fieldStep = 0;
-                    observations.Add(new(++sequence, revision, "field-death-sound", scene.Action.Actor, After: 116));
-                }
-                break;
-            case BattleScenePhase.FieldExit:
-                if (fieldStep < 2) { fieldStep++; next = BattleScenePhase.FieldExit; }
-                else
-                {
-                    var cleanup = deaths.Clean(battle, scene.Action.FirstAlly, rules.Progression);
-                    battle = cleanup.Battle;
-                    foreach (var effect in cleanup.Effects) observations.Add(Observe(effect, ++sequence, revision));
-                    next = BattleScenePhase.FieldSettle; fieldStep = 0;
-                }
-                break;
-            case BattleScenePhase.FieldSettle:
-                observations.Add(new(++sequence, revision, "field-death-ended", scene.Action.Actor));
-                return Release();
+                var ended = new SessionSnapshot(current.SessionId, revision, sequence,
+                    new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
+                var committed = BattleActionCommitter.Publish(ended, battle, scene.Action.Actor,
+                    scene.Action.Destination, [], observations, rules, sceneEnded: true, deaths: deaths);
+                return BattleAdvancer.Advance(committed, observations, rules);
             default: throw new InvalidOperationException("Unknown battle scene phase.");
         }
         observations.Add(new(++sequence, revision, "scene-step-started", scene.Action.Reactions[index].Actor, Detail: next.ToString()));
@@ -478,14 +458,6 @@ internal static class BattleSceneContinuation
         }
         return Result(current, battle, new(scene.Action, next, index, new(sequence), motion, growthNotices, noticeIndex, healing, deaths, fieldStep), revision, sequence, observations);
 
-        SessionResult Release()
-        {
-            var ended = new SessionSnapshot(current.SessionId, revision, sequence,
-                new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
-            var committed = BattleActionCommitter.Publish(ended, battle, scene.Action.Actor,
-                scene.Action.Destination, [], observations, rules, defeatedHookHandled: true).WithStory(current.Story);
-            return BattleAdvancer.Advance(committed, observations, rules);
-        }
     }
 
     private static IReadOnlyList<BattleGrowthNotice> GrowthNotices(BattleActorState before, BattleActorState after)

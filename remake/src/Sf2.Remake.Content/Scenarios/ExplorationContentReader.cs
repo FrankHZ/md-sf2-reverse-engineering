@@ -37,7 +37,7 @@ internal static class ExplorationContentReader
     {
         Object(root, "document", "formatVersion", "package", "battle", "world", "start");
         _ = Number(root, "formatVersion", 8, 8);
-        var battle = AuthoredScenarioPackageReader.DecodeBattle(root.GetProperty("battle"));
+        var battle = AuthoredScenarioPackageReader.DecodeBattle(root.GetProperty("battle"), allowLeaderCleanup: true);
         return Read(Id(root, "package"), root.GetProperty("world"), root.GetProperty("start"), battle, authored: true);
     }
 
@@ -238,7 +238,7 @@ internal static class ExplorationContentReader
             Require(leader is not null && firstEnemy is not null, "outcome-roster", "map.battle.outcome");
             if (authored)
             {
-                Require(encounter.Deployments.All(row => row.Faction != BattleFaction.Enemy || row.Definition.Physical?.Leader != true),
+                Require(encounter.LeaderCleanup is not null || encounter.Deployments.All(row => row.Faction != BattleFaction.Enemy || row.Definition.Physical?.Leader != true),
                     "outcome-enemy-leader", "map.battle.outcome", true);
                 Require(partyFlags is not null && route.Outcome.JoinMember < partyFlags.MemberCount,
                     "outcome-join-member", "map.battle.outcome.joinMember");
@@ -248,9 +248,11 @@ internal static class ExplorationContentReader
                     "outcome-egress", "map.battle.outcome.egress");
             }
             encounters[index] = new(encounter.Encounter, encounter.Map, encounter.Width, encounter.Height, encounter.Terrain,
-                encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, firstEnemy!.Actor), encounter.HealingItems.Values,
-                encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness);
+                encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor), encounter.HealingItems.Values,
+                encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness, encounter.LeaderCleanup);
         }
+        Require(encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
+            "leader-cleanup-outcome", "encounter.leaderCleanup", true);
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
                 battle.Definition.EncounterStarts.Values, battle.Definition.EncounterScenes.Values),
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
@@ -347,7 +349,7 @@ internal static class ExplorationContentReader
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
     {
         ObjectOptional(row, "outcome", "battleOrigin", "after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress");
-        // Non-empty defeated programs and enemy-leader cleanup need their own supported seam.
+        // Nonempty defeated programs remain unsupported; admitted leader cleanup uses its finite binding.
         var egress = row.GetProperty("egress");
         Object(egress, "egress", "map", "position", "facing");
         return new(Required("after"), Number(row, "joinMember", 0, 29),

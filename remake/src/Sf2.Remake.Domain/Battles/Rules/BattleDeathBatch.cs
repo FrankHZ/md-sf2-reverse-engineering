@@ -1,14 +1,23 @@
 namespace Sf2.Remake.Domain.Battles;
 
-// Only newly executed positive-HP -> zero-HP reactions enter this ordered worklist.
+// Action deaths retain reaction order; the leader hook appends living source slots.
+// The batch is consumed once at the field-exit publication, never rebuilt on retry.
 // Positions/resources stay in the battle; the worklist is not another actor snapshot.
-internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors)
+internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors, IReadOnlyList<ActorRef>? Forced = null)
 {
     internal static BattleDeathBatch Empty { get; } = new(Array.Empty<ActorRef>());
 
     internal BattleDeathBatch Append(BattleActorState before, BattleActorState after) =>
         before.Hp > 0 && after.Hp == 0 && !Actors.Contains(after.Actor)
-            ? new(Array.AsReadOnly<ActorRef>([.. Actors, after.Actor])) : this;
+            ? new(Array.AsReadOnly<ActorRef>([.. Actors, after.Actor]), Forced) : this;
+
+    internal BattleDeathBatch AppendSurvivors(EngineBattleState battle)
+    {
+        if (battle.Definition.LeaderCleanup is not { } binding) return this;
+        var appended = binding.Enemies.Where(id => battle.GetActor(id).Hp > 0 && !Actors.Contains(id)).ToArray();
+        return new(Array.AsReadOnly<ActorRef>([.. Actors, .. appended]),
+            Array.AsReadOnly<ActorRef>([.. Forced ?? [], .. appended]));
+    }
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) Clean(
         EngineBattleState battle, ActorRef firstAlly, IBattleProgressionRule rule)
@@ -17,8 +26,10 @@ internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors)
         foreach (var id in Actors)
         {
             var dead = battle.GetActor(id);
-            // Already removed combatants cannot be awarded a second time.
-            if (dead.Hp != 0 || dead.Position is null) continue;
+            // Ordinary action entries remain positive-to-zero transitions. Forced entries
+            // must still be consumed when positive-HP or unplaced; their exactly-once
+            // custody is the field continuation, never an inferred HP mutation.
+            if (Forced?.Contains(id) != true && (dead.Hp != 0 || dead.Position is null)) continue;
             var owner = dead.IsAlly ? dead : battle.GetActor(firstAlly);
             ushort before = (dead.IsAlly ? owner.Defeats : owner.Kills)
                 ?? throw new BattleRuleException("unspecified-death-accounting", "actor", true);

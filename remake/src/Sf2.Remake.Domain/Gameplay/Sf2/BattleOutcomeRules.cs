@@ -19,5 +19,6 @@ internal sealed class BattleOutcomeRules : IBattleOutcomeRule
     }
 
     internal static bool DefeatedHook(EngineBattleState battle) => battle.Definition.Outcome is { } route &&
-        battle.GetActor(route.Leader).Hp > 0 && battle.GetActor(route.DefeatedGateEnemy).Hp == 0;
+        battle.GetActor(battle.Definition.LeaderCleanup?.Bowie ?? route.Leader).Hp > 0 &&
+        battle.GetActor(battle.Definition.LeaderCleanup?.Gate ?? route.DefeatedGateEnemy).Hp == 0;
 }

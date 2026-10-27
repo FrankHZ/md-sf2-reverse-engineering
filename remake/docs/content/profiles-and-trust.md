@@ -5,6 +5,36 @@ definitions. Profiles select admission and permitted claims; they do not fork ga
 See [architecture](../architecture.md), [rule composition](../domain/gameplay-rules.md) and
 [asset preparation](presentation-assets.md).
 
+## Authored leader cleanup binding
+
+Only a v8 authored world with a nested v7 encounter and a valid outcome route admits:
+
+```json
+"leaderCleanup": {
+  "bowie": "leader",
+  "enemySlots": [
+    {"actor": "enemy", "slot": 128},
+    {"actor": "survivor", "slot": 129}
+  ]
+}
+```
+
+`LeaderCleanupReader` requires the sole allied physical leader as Bowie, every deployed enemy
+mapped exactly once, unique source slots128–159 and a slot128 gate. It copies these identities
+into immutable `LeaderCleanupDefinition`; input order, processing order, physical leader flags
+on enemies and Taros enemy-definition mappings do not select the gate or sweep ordering.
+Growth/outcome definition copies retain the binding. A standalone v7 cleanup, missing outcome
+route or nonempty defeated program rejects. The explicit binding is the only relaxation of the
+authored enemy-leader guard; private leader encounters remain guarded by source admission.
+
+[leader-cleanup.json](../../content/authored/leader-cleanup.json) uses existing authored map/text/
+return machinery, an ordinary one-HP gate and a living survivor. It supplies no original assets,
+full Battle18, loot/Deals, Caravan aftermath or original natural-start claim. Controlled inputs
+begin without a previous scene's first ally; a no-scene cleanup requiring that absent custody is
+Unsupported rather than defaulted. The [rule owner](../domain/gameplay-rules.md#finite-enemy-leader-cleanup)
+and [continuation owner](../application/session-and-programs.md#ordered-leader-cleanup-and-retained-accounting)
+define supported runtime semantics.
+
 ## Authored Taros identity binding
 
 A format7 encounter may include the closed optional binding:
@@ -25,8 +55,8 @@ duplicate enemy mappings/weapon identities, requires a Taros88 definition and we
 the mapping into immutable `BattleDefinition.TarosEffectiveness`. Unmapped actors do not acquire a
 Taros definition. Numeric definitions are explicit source-policy identities; no slot/name/fixture
 string implies them. This opt-in binding represents the selected Battle18 gate in authored content;
-it does not widen private Battle18 admission. Existing region/leader/spawn/defeated-program guards
-remain in force.
+it does not widen private Battle18 admission. Region/spawn/nonempty defeated-program guards
+remain in force; authored leader cleanup requires its separate explicit binding above.
 
 `weaponItems` explicitly classifies packed loadout identities as weapons for the source getter.
 The union admits those carried identities during actor decoding; each bound encounter must include
@@ -90,10 +120,11 @@ and admitted source equipment/spell mappings.
 
 An authored `world.maps[].battle.outcome` uses the existing `after`, `defeated`, `defeat`, `return`,
 `joinMember`, `victoryFacing` and `egress` fields. It requires exactly one allied physical leader,
-an enemy roster without enemy leaders, the existing no-op defeated program, valid program references,
+an enemy roster without enemy leaders unless explicitly bound above, the existing no-op defeated
+program, valid program references,
 join membership within `partyFlags`, and traversable in-bounds egress. Private source/provenance
 checks remain on the private entry; this authored entry cannot relabel a private package.
-Nonempty defeated programs, enemy-leader outcomes and wider egress/status behavior are not admitted.
+Nonempty defeated programs, unbound enemy-leader outcomes and wider egress/status behavior are not admitted.
 
 [`progression-outcome-victory`](../../content/authored/progression-outcome-victory.json) and
 [`progression-outcome-defeat`](../../content/authored/progression-outcome-defeat.json) are small authored
