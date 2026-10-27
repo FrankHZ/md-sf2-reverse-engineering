@@ -1,5 +1,25 @@
 # Runtime Profiles and Trust
 
+## Authored AURA admission
+
+Format 7 spell `effect.kind: "aura"` supplies `adjustedPower`, `fullRecovery` and `radius` with
+the existing ID, level, cost and ranges. Operands must match the finite
+[level table](../domain/gameplay-rules.md#authored-aura-group-healing); level 4 requires power 255,
+fullRecovery true and radius 0. Ordinary `heal` admission is unchanged. IDs can vary without
+changing semantics; unsupported variants do not become generic AoE.
+
+AURA requires the complete existing `initialization.sourceCombatants` mapping: each deployment
+exactly once, allies 0–29/enemies 128–159, unique slots and actors. Controlled initialization/activation
+inputs remain explicit. All actors in the encounter require maximum HP 1–32767, preserving source signed
+delta and addition behavior without overflow emulation. The caster must be a player ally unpromoted
+priest; automatic/source-ally switching and enemy/promoted admission are excluded. Reached status 0,
+MP, center and recipient checks run before payment. Full-HP zero recovery remains legal.
+
+The [authored package](../../content/authored/aura-healing.json) includes independent source and
+processing orders, full/dead/unplaced/neutral/distant actors and all learned levels. Valid states
+retain unique in-map living occupancy. Private scene content is explicitly Unsupported for AURA;
+no importer, media binding or additional class/status family is admitted.
+
 ## Authored Caravan world
 
 Format8 optionally supplies `map.caravan` with `followerA`, `currentEntities`, `overworld`,

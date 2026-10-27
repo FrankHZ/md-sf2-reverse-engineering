@@ -1,5 +1,21 @@
 # Battle Presentation
 
+## Authored AURA recovery
+
+`AuraRecoveryView` draws a small authored pulse, recipient identity and live HP/MP through
+`BattleSceneView`. One cast is followed by each source-ordered recipient, including zero recovery.
+Target-specific recovery text and one EXP message require ordinary confirmation. Cast/reaction and
+switch stages complete after actual elapsed delivery; the same session then accepts next-turn
+movement. AURA does not use the HEAL1–3 fairy cursor, private rasters or original animation-selector
+claims. This is an intentional modern presentation boundary.
+
+The scene clock and acknowledgement stop while hidden or focus-suspended, preserving paid resources
+and the wait token. Focus re-entry resumes without catch-up or duplicate completion. Presenter errors
+retain their wait. Observation reports target list, displayed recipient, HP/amount, elapsed time and
+actual draw count. No screenshot or synthetic completion is used. See the
+[source rules](../domain/gameplay-rules.md#authored-aura-group-healing) and
+[native recipe](../development-and-verification.md#aura-authored-observation).
+
 ## Authored Prism laser
 
 `PrismLaserView` draws a small deterministic tactical-ray diagram using Godot primitives. A purple
@@ -284,7 +300,8 @@ cleanup, actor restoration, EXP/growth and input release. Full HP still casts an
 minimum; self-healing preserves the already charged caster MP. Growth consumes the seed carried
 through the scene, not the construction seed. Private scenes require admitted PRST cast content,
 idle parameters and healing rasters; authored packages use an explicitly authored small gesture.
-Other spell effects and HEAL4 remain unsupported. The historical #523/#437 records do not establish full scene or hardware parity; the
+Private AURA, other spell effects and HEAL4 remain unsupported; public authored AURA uses the separate
+consumer above. The historical #523/#437 records do not establish full scene or hardware parity; the
 [current composed milestone](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
 has its separately bounded acceptance.
 

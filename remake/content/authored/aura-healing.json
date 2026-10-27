@@ -1,0 +1,599 @@
+{
+  "formatVersion": 7,
+  "package": "aura-healing",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "recovery-garden",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3203334210,
+    "gold": 73,
+    "actors": [
+      {
+        "actor": "z-priest",
+        "hp": 70,
+        "mp": 80,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "b-center",
+        "hp": 90,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "a-edge",
+        "hp": 1,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "m-full",
+        "hp": 100,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "n-neutral",
+        "hp": 40,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 8
+        }
+      },
+      {
+        "actor": "f-far",
+        "hp": 10,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "d-dead",
+        "hp": 0,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "u-unplaced",
+        "hp": 20,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        },
+        "absent": true
+      },
+      {
+        "actor": "enemy",
+        "hp": 100,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      }
+    ]
+  },
+  "terrains": [
+    {
+      "id": "yard-ground",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "g": {
+          "surface": "open",
+          "protection": "light"
+        },
+        "b": {
+          "surface": "brush",
+          "protection": "heavy"
+        }
+      },
+      "rows": [
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "yard-map",
+      "terrain": "yard-ground"
+    }
+  ],
+  "spells": [
+    {
+      "id": "aura",
+      "level": 1,
+      "mpCost": 7,
+      "minimumRange": 0,
+      "maximumRange": 3,
+      "effect": {
+        "kind": "aura",
+        "adjustedPower": 15,
+        "fullRecovery": false,
+        "radius": 1
+      }
+    },
+    {
+      "id": "aura",
+      "level": 2,
+      "mpCost": 11,
+      "minimumRange": 0,
+      "maximumRange": 3,
+      "effect": {
+        "kind": "aura",
+        "adjustedPower": 15,
+        "fullRecovery": false,
+        "radius": 2
+      }
+    },
+    {
+      "id": "aura",
+      "level": 3,
+      "mpCost": 15,
+      "minimumRange": 0,
+      "maximumRange": 3,
+      "effect": {
+        "kind": "aura",
+        "adjustedPower": 30,
+        "fullRecovery": false,
+        "radius": 2
+      }
+    },
+    {
+      "id": "aura",
+      "level": 4,
+      "mpCost": 20,
+      "minimumRange": 0,
+      "maximumRange": 0,
+      "effect": {
+        "kind": "aura",
+        "adjustedPower": 255,
+        "fullRecovery": true,
+        "radius": 0
+      }
+    }
+  ],
+  "actors": [
+    {
+      "id": "z-priest",
+      "classRule": "unpromoted-priest",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 80,
+      "attack": 11,
+      "defense": 6,
+      "agility": 100,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": [
+        {
+          "id": "aura",
+          "level": 1
+        },
+        {
+          "id": "aura",
+          "level": 2
+        },
+        {
+          "id": "aura",
+          "level": 3
+        },
+        {
+          "id": "aura",
+          "level": 4
+        }
+      ]
+    },
+    {
+      "id": "b-center",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 19,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "a-edge",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 18,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "m-full",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 17,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "n-neutral",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 16,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "f-far",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 600,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 15,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "d-dead",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 14,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "u-unplaced",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 13,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "enemy",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 12,
+      "extraRoundAction": false,
+      "move": 5,
+      "items": [],
+      "spells": []
+    }
+  ],
+  "encounters": [
+    {
+      "id": "recovery-garden",
+      "map": "yard-map",
+      "placements": [
+        {
+          "actor": "z-priest",
+          "x": 3,
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 20,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "b-center",
+          "x": 4,
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 19,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "a-edge",
+          "x": 5,
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 18,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "m-full",
+          "x": 4,
+          "y": 4,
+          "faction": "ally",
+          "processingOrder": 17,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "n-neutral",
+          "x": 3,
+          "y": 4,
+          "faction": "ally",
+          "processingOrder": 16,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "f-far",
+          "x": 9,
+          "y": 7,
+          "faction": "ally",
+          "processingOrder": 15,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "d-dead",
+          "x": 5,
+          "y": 4,
+          "faction": "ally",
+          "processingOrder": 14,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "u-unplaced",
+          "x": 6,
+          "y": 4,
+          "faction": "ally",
+          "processingOrder": 13,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "enemy",
+          "x": 8,
+          "y": 1,
+          "faction": "enemy",
+          "processingOrder": 12,
+          "control": "automatic",
+          "aiStrategy": "stay",
+          "initialization": {
+            "baseAiWord": 0,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        }
+      ],
+      "initialization": {
+        "regions": [],
+        "regionProgram": "none",
+        "enemyCount": 1,
+        "sourceCombatants": [
+          {
+            "slot": 5,
+            "actor": "z-priest"
+          },
+          {
+            "slot": 1,
+            "actor": "b-center"
+          },
+          {
+            "slot": 0,
+            "actor": "a-edge"
+          },
+          {
+            "slot": 3,
+            "actor": "m-full"
+          },
+          {
+            "slot": 2,
+            "actor": "n-neutral"
+          },
+          {
+            "slot": 29,
+            "actor": "f-far"
+          },
+          {
+            "slot": 7,
+            "actor": "d-dead"
+          },
+          {
+            "slot": 9,
+            "actor": "u-unplaced"
+          },
+          {
+            "slot": 128,
+            "actor": "enemy"
+          }
+        ]
+      }
+    }
+  ]
+}

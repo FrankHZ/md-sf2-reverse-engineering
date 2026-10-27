@@ -15,6 +15,8 @@ internal sealed partial class BattleSceneView : Control
 {
     private readonly Dictionary<(string Encounter, string Resource), ImageTexture> _textures = [];
     private PrismLaserView _laser = null!;
+    private AuraRecoveryView _aura = null!;
+    private bool _suspended;
     private Node2D _canvas = null!;
     private ColorRect _sceneBlack = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
@@ -60,9 +62,15 @@ internal sealed partial class BattleSceneView : Control
         }
         for (int i = 0; i < 23; i++) _fairyDust.Add(Sprite("FairyDust" + i, Vector2.Zero));
         foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) { sprite.ZIndex = 3; sprite.Hide(); }
+        _aura = new AuraRecoveryView { Name = "AuraRecovery", ZIndex = 4 }; _canvas.AddChild(_aura); _aura.Hide();
         _laser = new PrismLaserView { Name = "PrismLaser", ZIndex = 4 }; _canvas.AddChild(_laser); _laser.Hide();
         Hide();
     }
+
+    public override void _EnterTree()
+    { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }
+    private void Suspend() => _suspended = true;
+    private void Resume() => _suspended = false;
 
     internal void Configure(GameSession session, InputSettings settings, SessionAudio? audio)
     { _session = session; _settings = settings; _audio = audio; }
@@ -70,13 +78,24 @@ internal sealed partial class BattleSceneView : Control
     internal void Present()
     {
         var state = _session.Current.BattleScene;
-        if (state is null) { Hide(); _laser.Hide(); _state = null; return; }
+        if (state is null) { Hide(); _laser.Hide(); _aura.Hide(); _state = null; return; }
         if (state.IsFieldDeath) Hide(); else Show();
         if (_state?.Token == state.Token) { _state = state; ProjectHealing(state); return; }
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
-            _laser.Hide();
+            _laser.Hide(); _aura.Hide();
+            if (state.IsAura)
+            {
+                if (Content is not null) throw new InvalidOperationException("aura-private-presentation-unsupported");
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon, _allyStatus, _enemyStatus }) node.Hide();
+                foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
+                _sceneBlack.Show(); _aura.Present(state, _session.Current.Battle);
+                _message.Text = Message(state);
+                _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
+                if (state.Phase == BattleScenePhase.Reaction) _audio?.PlayEffect(113);
+                return;
+            }
             if (state.Laser is not null && !state.IsFieldDeath)
             {
                 if (Content is not null) throw new InvalidOperationException("prism-private-presentation-unsupported");
@@ -160,7 +179,8 @@ internal sealed partial class BattleSceneView : Control
 
     internal SessionCommand? Consume(double delta)
     {
-        if (_state is not { } state || Error is not null || _completed) return null;
+        if (_state is not { } state || Error is not null || _completed || _suspended ||
+            (!IsVisibleInTree() && !state.IsFieldDeath) || !CanProcess()) return null;
         if (state.IsFieldDeath)
         {
             _elapsed += delta;
@@ -194,6 +214,12 @@ internal sealed partial class BattleSceneView : Control
                 (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()))
                 return new CompletePresentation(state.Token, state.CompletionKind);
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
+        }
+        if (state.IsAura)
+        {
+            if (!_aura.Advance(_elapsed)) return null;
+            _completed = true;
+            return new CompletePresentation(state.Token, state.CompletionKind);
         }
         if (state.Laser is not null)
         {
@@ -285,6 +311,7 @@ internal sealed partial class BattleSceneView : Control
 
     internal SessionCommand? Acknowledge(GameAction action)
     {
+        if (_suspended || !IsVisibleInTree() || !CanProcess()) return null;
         if (action == GameAction.Wait && _state is { Healing.AtTimedInput: true } waiting && Error is null)
             return new AdvanceSimulation(waiting.Token);
         if (action != GameAction.Confirm || _state is not { RequiresAcknowledgement: true } state || Error is not null) return null;
@@ -347,6 +374,10 @@ internal sealed partial class BattleSceneView : Control
 
     private string Message(BattleSceneState state)
     {
+        if (state.IsAura && state.Phase == BattleScenePhase.ActionMessage)
+            return $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}.";
+        if (state.IsAura && state.Phase == BattleScenePhase.ResultMessage)
+            return $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP.";
         if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost) return healing.ActionText;
         if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop) return recovery.RecoveryText;
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
@@ -413,6 +444,8 @@ internal sealed partial class BattleSceneView : Control
     }
     internal object Observe() => new
     {
+        aura = _state?.IsAura == true ? _aura.Observe() : null,
+        suspended = _suspended,
         laser = _state?.Laser is not null ? _laser.Observe() : null,
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
         fieldDeath = _state is { IsFieldDeath: true } field ? new { actors = field.DeadActors.Select(a => a.Value),
@@ -422,7 +455,7 @@ internal sealed partial class BattleSceneView : Control
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,
         reactionAmount = _state?.Amount,
         item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell,
-        spellAnimationSelector = _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        spellAnimationSelector = _state?.IsAura == true ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)
@@ -463,5 +496,6 @@ internal sealed partial class BattleSceneView : Control
         texturePresent = node.Texture is not null, visible = node.IsVisibleInTree(),
     };
     public override void _ExitTree()
-    { foreach (var texture in _textures.Values) texture.Dispose(); _textures.Clear(); }
+    {
+        GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume; foreach (var texture in _textures.Values) texture.Dispose(); _textures.Clear(); }
 }

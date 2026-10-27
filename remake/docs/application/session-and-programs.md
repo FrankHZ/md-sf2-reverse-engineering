@@ -1,5 +1,26 @@
 # Session and Resumable Programs
 
+## Ordered AURA recovery
+
+AURA uses ordinary spell/target/confirm commands and existing healing preparation and scene owners.
+`ValidateHealing` requires the exact ordered eligible recipient list, valid deferred recoveries,
+unchanged unrelated state and a valid construction RNG chain. Selection/cancellation, unavailable
+options and stale commands do not publish resources or RNG.
+
+Construction publishes movement and one award RNG computation with ordered contribution facts;
+persistent HP/MP/EXP remain unchanged. One ActionMessage completion pays MP. SpellCost and one
+ActionAnimation precede the first recovery. Each TargetEnter completion applies its recovery and
+emits `healing-recovery`, including zero amounts. ResultMessage advances to the next exit/entry
+without repeating cast/payment. The last result proceeds through idle/stop/restoration to one credit,
+reward text and live-seed growth. End releases the existing after-turn/next-control path. Self
+recovery preserves paid MP. Later credit/growth refusal retains the committed prefix, token and
+queue; retry cannot replay earlier recipients/payment.
+
+Authored AURA has no `HealingSceneCursor` fairy work. Finite actual delivery owns its waits;
+the [view](../godot/battle-scenes.md#authored-aura-recovery) makes no original opportunity/RNG parity
+claim. HEAL keeps its existing fairy continuation; physical/Herb/Prism retain their existing paths.
+The [rule owner](../domain/gameplay-rules.md#authored-aura-group-healing) owns source provenance.
+
 ## Caravan boarding, travel and landing
 
 `CaravanDefinition` supplies explicit authored bindings; `ExplorationState.TravelMode` and

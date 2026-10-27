@@ -40,8 +40,13 @@ public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Powe
 
 public sealed record RetreatSpellDefinition(SpellRef Spell, byte MpCost);
 
+public enum HealingTargets { Single, AuraRadius, AuraAllAllies }
 public sealed record HealingSpellDefinition(
-    SpellRef Spell, byte MpCost, ushort Power, byte MinimumRange, byte MaximumRange);
+    SpellRef Spell, byte MpCost, ushort Power, byte MinimumRange, byte MaximumRange,
+    HealingTargets Targets = HealingTargets.Single, byte Radius = 0)
+{
+    public bool IsAura => Targets is HealingTargets.AuraRadius or HealingTargets.AuraAllAllies;
+}
 
 public sealed class BattleActorDefinition
 {

@@ -331,7 +331,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(ConstructionEffects.Count(effect => effect.Kind == "item-consumed") == 1);
     }
 
-    // The finite HEAL authority boundary: construction may move only the selected
+    // The finite healing authority boundary: construction may move only the selected
     // actor and advance main RNG. HP, MP and progress are later scene publications.
     internal void ValidateHealing(EngineBattleState before, ActorRef actorRef, MapPosition destination,
         HealingSpellDefinition spell, ActorRef targetRef)
@@ -339,25 +339,34 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         void Require(bool valid) { if (!valid) throw new InvalidOperationException("Invalid prepared HEAL transition."); }
         BattleMovement.RequireStop(before, actorRef, destination);
         var actor = before.GetActor(actorRef);
-        var target = before.GetActor(targetRef);
+        var targets = HealingTargetRules.Resolve(before, actorRef, destination, spell, targetRef);
         Require(Actor == actorRef && Destination == destination && Spell == spell && Item is null);
         ValidateState(before, actorRef, destination);
-        Require(Reactions.Count == 1 && CompletionEffects.Count == 0);
-        var reaction = Reactions[0];
-        Require(target.Hp > 0 && target.Faction == actor.Faction && target.Position is not null &&
-            BattleRange.Contains(destination, targetRef == actorRef ? destination : target.Position, spell.MinimumRange, spell.MaximumRange));
-        Require(reaction.Actor == actorRef && reaction.Target == targetRef && reaction.Action == "heal" &&
-            reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
-            reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
-            reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
-            reaction.StatusWrite is null && reaction.InflictedSleep is null);
+        Require(Reactions.Count == targets.Count && Reactions.Count > 0 && CompletionEffects.Count == 0);
+        for (int i = 0; i < targets.Count; i++)
+        {
+            var target = targets[i]; var reaction = Reactions[i];
+            Require(reaction.Actor == actorRef && reaction.Target == target.Actor && reaction.Action == "heal" &&
+                reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
+                reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
+                reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
+                reaction.StatusWrite is null && reaction.InflictedSleep is null);
+        }
         Require(actor.Mp >= spell.MpCost);
         Require(Reward is null || Reward.Actor == actorRef && Reward.Amount > 0);
         uint seed = before.MainSeed;
         // The rule owns draw count, purpose and range. This boundary checks that
-        // construction contains only random facts and carries the actual chain.
+        // construction carries only ordered contribution facts and the actual random chain.
+        int contributionIndex = 0, accumulated = 0;
         foreach (var effect in ConstructionEffects)
         {
+            if (effect.Kind == "healing-exp-contribution")
+            {
+                Require(contributionIndex < Reactions.Count && effect.Actor == actorRef &&
+                    effect.Target == Reactions[contributionIndex].Target && effect.Before == accumulated &&
+                    effect.After >= accumulated && effect.After <= 25 && effect.RandomRange is null && effect.RandomValue is null);
+                accumulated = checked((int)effect.After!.Value); contributionIndex++; continue;
+            }
             Require(effect.Kind.StartsWith("rng-", StringComparison.Ordinal) && effect.Kind.Length > 4 &&
                 effect.Actor == actorRef && effect.Target is null && effect.RandomRange is not null);
             var draw = BattleRandom.NextMain(seed, effect.RandomRange!.Value);
@@ -365,6 +374,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 effect.RandomValue == draw.Value);
             seed = draw.After;
         }
+        Require(contributionIndex == 0 || contributionIndex == Reactions.Count);
         Require(Prepared.MainSeed == seed);
     }
 

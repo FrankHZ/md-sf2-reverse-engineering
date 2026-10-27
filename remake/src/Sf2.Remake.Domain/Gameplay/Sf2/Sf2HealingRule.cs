@@ -11,10 +11,16 @@ internal sealed class Sf2HealingRule : IHealingRule
         if (!actor.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
-        if (spellRef.Level is < 1 or > 3)
+        if (!spell.IsAura && spellRef.Level is < 1 or > 3)
             throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest)
             throw new BattleRuleException("healing-class", "actor.classRule", true);
+        if (spell.IsAura)
+        {
+            HealingTargetRules.ValidateAura(battle.Definition);
+            if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Status != 0)
+                throw new BattleRuleException("aura-caster", "actor", true);
+        }
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return spell;
     }
@@ -24,18 +30,25 @@ internal sealed class Sf2HealingRule : IHealingRule
         HealingTargetRules.QueryTargets(battle, actor);
 
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
-        MapPosition destination, HealingSpellDefinition spell, ActorRef targetRef) =>
-        HealingTargetRules.RequireTarget(battle, actorRef, destination, spell.MinimumRange, spell.MaximumRange, targetRef);
+        MapPosition destination, HealingSpellDefinition spell, ActorRef targetRef)
+    {
+        _ = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
+        return battle.GetActor(targetRef);
+    }
     public BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef, IBattleProgressionRule progression)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
         var spell = RequireSpell(battle, actorRef, spellRef);
         var actor = battle.GetActor(actorRef);
-        var target = RequireTarget(battle, actorRef, destination, spell, targetRef);
-        int recovery = Math.Min(spell.Power, target.MaxHp - target.Hp);
-        BattleReaction[] reactions = [new(actorRef, targetRef, "heal", BattleReactionKind.Recovery, target.Hp,
-            (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)];
+        var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
+        BattleReaction[] reactions = targets.Select(target =>
+        {
+            int recovery = spell.Targets == HealingTargets.AuraAllAllies ? target.MaxHp - target.Hp :
+                Math.Min(spell.Power, target.MaxHp - target.Hp);
+            return new BattleReaction(actorRef, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
+                (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);
+        }).ToArray();
         var award = BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Healing, reactions);
         var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
             ? a.With(position: destination) : a), mainSeed: award.Seed);

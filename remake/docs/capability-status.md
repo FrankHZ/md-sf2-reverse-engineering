@@ -1,5 +1,33 @@
 # Remake Capability Status
 
+## Authored AURA agreement
+
+**High rigor; implemented authored subset:** Issue #1359 adds player AURA1–4 for
+`UnpromotedPriest`: legal center selection, source-slot ordered recovery, one MP payment,
+one shared capped healing EXP award, and usable next-turn control in the same session.
+Target identity, preparation, staged resources and actual scene delivery cross existing owners.
+This extends healing/action/progression/scene boundaries without a general effects system.
+
+The [rule/source owner](domain/gameplay-rules.md#authored-aura-group-healing),
+[content admission](content/profiles-and-trust.md#authored-aura-admission),
+[session stages](application/session-and-programs.md#ordered-aura-recovery),
+[authored view](godot/battle-scenes.md#authored-aura-recovery) and
+[native recipe](development-and-verification.md#aura-authored-observation) define acceptance.
+Tests vary levels, centers/positions/slots/IDs, dead/unplaced/neutral/full/distant targets,
+range/radius and signed-HP boundaries, exact/insufficient MP, cancellation/stale input,
+zero/nonzero recovery, cap/growth and retained-prefix failure. Actual Godot ordinary input observes
+all recipients, hidden/focus suspension and next-turn movement. Main-gate owns independent acceptance.
+
+Resolution sorts at most 30 ally/32 enemy bindings: O(N log N) time, O(N) state/output. No capture
+or media acquisition is needed; each native witness stays below 180 seconds/5 MiB. Maximum HP in an AURA
+encounter is 1–32767, avoiding source signed delta/addition overflow. Existing valid states retain
+unique in-map living occupancy. The player ally priest must have status 0. Promoted classes,
+enemy healers, status-family expansion, private AURA imports and original fairy/media/timing parity
+are outside admission. Natural original casting and opportunity timing remain **Unknown**.
+The twelve #1047 comparison Unknowns and
+[predecessor failure handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1357#issuecomment-6451208918)
+remain unchanged.
+
 ## Authored Caravan agreement
 
 **High rigor; implemented authored subset:** Issue #1357 delivers

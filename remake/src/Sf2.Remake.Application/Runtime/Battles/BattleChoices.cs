@@ -103,7 +103,14 @@ internal static class BattleChoices
             var patient = rule.RequireTarget(battle, actor, destination, action, target);
             if (!ReferenceEquals(patient, battle.GetActor(target))) throw new InvalidOperationException("Invalid admitted target.");
             if (action.Kind == BattleActionKind.Healing)
-                HealingSceneCursor.RequireContent(battle, actor, target, content, requireContent);
+            {
+                if (battle.Definition.Spells[action.Spell!.Value].IsAura)
+                {
+                    if (content is not null || requireContent)
+                        throw new BattleRuleException("aura-private-presentation", "battleScenes", true);
+                }
+                else HealingSceneCursor.RequireContent(battle, actor, target, content, requireContent);
+            }
             return patient;
         });
     }

@@ -65,6 +65,7 @@ internal static class BattleTurnFlow
             Require(activeAllies.Distinct().Count() == activeAllies.Count && activeAllies.All(actor =>
                 definition.Deployments.Any(row => row.Actor == actor && row.Faction == BattleFaction.Ally)), "active-party", "start.activeAllies");
         }
+        Sf2.Remake.Domain.Gameplay.Sf2.HealingTargetRules.ValidateAura(definition);
         BattleInitializationRules.Validate(definition, start);
         var occupied = new HashSet<MapPosition>();
         int allies = 0, enemies = 0, turns = 0;
