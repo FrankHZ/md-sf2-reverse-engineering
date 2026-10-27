@@ -216,6 +216,34 @@ public sealed class BattleRetreatTests
         Assert.Throws<InvalidOperationException>(() => invalid.Validate(before, Caster, actor.Position!, reference, Caster, admission));
     }
 
+    [Fact]
+    public void OrdinaryOutcomeRuleCannotPublishRetreatWithoutThePaidAction()
+    {
+        var session = StartRetreat(8);
+        Accept(session, new Confirm());
+        Accept(session, new ChooseAction(SessionAction.Stay));
+        var before = session.Current;
+        var rules = new SessionRules("invalid-retreat-outcome", session.Rules.Healing,
+            RuleCompositions.SourcePhysical(), RuleCompositions.SourceItem(), RuleCompositions.SourceStay(),
+            outcome: new UnpaidRetreatOutcome());
+        Assert.Throws<BattlePolicyFault>(() => BattleOutcomeSelection.Check(rules.Outcome, before.Battle));
+        var result = BattleCommandDispatcher.Submit(before, new Confirm(), rules);
+        Assert.Equal(SessionFailureKind.InvariantFailure, result.Failure?.Kind);
+        Assert.Same(before, result.Snapshot);
+        Assert.Empty(result.Observations);
+        Assert.Null(result.Snapshot.BattleRetreat);
+        Assert.Equal(8, result.Snapshot.Battle.GetActor(Caster).Mp);
+        Assert.Equal(101u, result.Snapshot.Battle.Gold);
+        Assert.Null(result.Snapshot.Exploration);
+    }
+
+    private sealed class UnpaidRetreatOutcome : IBattleOutcomeRule
+    {
+        public string Identity => "unpaid-retreat";
+        public BattleOutcomeKind? Check(EngineBattleState battle) => BattleOutcomeKind.Retreat;
+        public bool DefeatedHook(EngineBattleState battle) => false;
+    }
+
     private static void RejectUnchanged(GameSession session, SessionCommand command)
     { var before = session.Current; Assert.NotNull(Send(session, command).Failure); Assert.Same(before, session.Current); }
     private static void Select(GameSession session)

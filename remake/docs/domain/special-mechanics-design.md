@@ -407,7 +407,7 @@ proposal an architectural prerequisite for any rule.
 
 ## Recommended first implementation: retreat and playable retry
 
-**Implemented bounded outcome, pending independent integration:** in the existing selected Battle02 world, a player controlling a living Bowie
+**Implemented bounded outcome:** in the existing selected Battle02 world, a player controlling a living Bowie
 with learned EGRESS1 and sufficient MP can select it, confirm the eligible self target, pay8 MP,
 complete the retreat presentation, reach usable field control at the admitted egress destination,
 then walk back into Battle02 with fresh enemies in the same session. Payment must occur even though

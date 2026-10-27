@@ -4,7 +4,7 @@
 
 Issue [#1341](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1341) uses **High** rigor:
 spell admission, payment, actual delivery, return/recovery and fresh entry cross four runtime layers.
-The bounded implementation is complete for independent review; integration remains main-gate-owned.
+The bounded implementation connects those layers through the existing common session.
 The outcome is a living, player-controlled Bowie selecting learned EGRESS1, confirming self, paying
 8 MP once, receiving feedback, returning to usable Map3 exploration and walking into fresh Battle02
 in the same session. The starting learned spell/party/resources are explicitly controlled inputs.
