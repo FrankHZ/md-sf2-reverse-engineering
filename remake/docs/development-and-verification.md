@@ -1,5 +1,42 @@
 # Development and Verification
 
+## Caravan authored observation
+
+Launch `remake/content/authored/caravan-travel.json` with `--authored-package`. Right boards the
+nearby marker after actual motion/shrinking. Five more Right inputs drive across the admitted river;
+another Right lands. Down then Up demonstrates ordinary walking and its green zone flag. Arrow keys
+are cardinal commands; stages own control until their existing motion/sprite/view waits complete.
+
+Load `local/private-inputs.ps1` in the launching process and force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Build the existing Godot project in Debug with the configured
+SDK. Reuse the owned installation/project and running instance. Start an instance when none is
+available; rebuilding changed adapter code requires loading that build. Put APPDATA/LOCALAPPDATA/TEMP
+and logs/reports in a fresh ignored
+`local/issue1357/` subdirectory. Run the existing observer:
+
+```powershell
+$project = (Resolve-Path -LiteralPath 'remake/game').Path
+$package = (Resolve-Path -LiteralPath 'remake/content/authored/caravan-travel.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+  --script res://probes/engine_caravan_observation.gd -- --authored-package $package
+```
+
+The probe uses ordinary keys, temporarily hides/shows the view to exercise suspension, and reads
+actual session/draw/error state. It does not inject gameplay state or complete engine waits itself.
+Each witness is bounded to 180s/5MiB and records compact transition samples. Check same-session
+boarding/travel/landing, real position/scale/appearance delivery, preserved list/step counter during
+travel/landing, ordinary Confirm while the physical Caravan is parked off-map, exactly two mode
+commits, and later walking/zone behavior.
+
+Run affected `CaravanTests`, configured `uv run sf2 verify engine`, `uv run sf2 verify adapter` and
+Debug build. On the clean committed head inspect `uv run sf2 verify plan --base origin/main --head HEAD`,
+then exact-head CI and direct docs/diff/private/source-size review. Preserve completed failures and
+rerun affected cases only after correction; no research/full/H4/emulator suite is selected here.
+Prior failures remain in the [predecessor handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1355#issuecomment-6445201005),
+and the twelve #1047 comparison Unknowns remain unchanged. Natural source reach, original timing,
+full raft behavior and durable transport persistence remain Unknown or outside this admission.
+
 ## Jaro conversion authored observation
 
 Launch `remake/content/authored/jaro-conversion.json` with `--authored-package`. Up twice, then

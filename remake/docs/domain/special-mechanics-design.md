@@ -52,7 +52,7 @@ The following static code reads and accepted implementation owners control over 
 | Prism Flowers | **Bounded authored implementation.** The [finite laser owner](gameplay-rules.md#finite-prism-laser) implements chosen automatic action, live source-ordered hits, known-no-ally accounting and real authored delivery. Private Battle36, non15 activation, special/edge/debug inputs and original audio/visual timing remain gaps. |
 | Fairy Woods | **Authored spawn lifecycle implemented; private trial state/content gap.** Modes2/3 use finite dormant state, source integer regions and staged round appearances. Private Battle44, trial counter/snapshot/record lifecycle remain unbound. |
 | EGRESS / Angel Wing / Battle0 caller | **Selected Battle02 retreat implemented; wider caller gap**, not missing ordinary defeat. [State types](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) now admit the finite Retreat action/result alongside ordinary actions and Victory/Defeat; [return policy](../../src/Sf2.Remake.Application/Runtime/Exploration/IOutcomeReturnPolicy.cs) requires a field anchor. No session-end destination or suspend gameplay exists. |
-| Raft / Caravan | **Travel state/rules/consumer + content gap**, not just an acquisition flag. [Walking dispatcher](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationDispatcher.cs), [map events](../../src/Sf2.Remake.Application/Runtime/Exploration/MapEventDispatcher.cs) and the finite [entity-action runner](../../src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs) execute walking/motion/warp/zone work, not vehicle controllers or boarding/landing. |
+| Raft / Caravan | **Standalone authored Caravan implemented; raft/full-map travel unsupported.** The [session owner](../application/session-and-programs.md#caravan-boarding-travel-and-landing) covers finite mode1 control and typed events2/4 with live entities and current lists. Acquisition/services/persistence remain separate. |
 
 Accepted merge evidence for the related ledger corrections is
 [ordinary policy composition](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/f08bcf9f),
@@ -371,38 +371,28 @@ Full raft event5 consumption, naturally traversed routes and durable transport p
 **Unknown** at these owners. Read the numeric consumers: mode1/opcode7 is Caravan and mode2/opcode8
 is raft despite the misleading source opcode names.
 
-Existing reusable primitives are `EntityMotion`, follower motion, logical/physical entity allocation,
-working-map mutation, ordered events, typed program waits and map transfers. They are not vehicle
-rules. `OriginalMapTraversal`/`MapEventDispatcher.Move` implement walking; `EntityActionRunner` has
-a closed instruction switch and a reached `UnsupportedEntityAction` failure. The
-[source compiler](../../../src/sf2tool/remake_exploration_programs.py) retains unhandled native
-operations rather than implementing named `cs_45284`/`cs_45348` consumers or numeric vehicle
-controllers. Thus no hidden production transport platform needs replacing.
+The implemented finite Caravan subset reuses entity motion, physical/logical bindings, working layout,
+typed story/actions and existing waits. `FieldTravelMode` distinguishes walking from Caravan;
+`CurrentEntities` retains the explicit current physical list. Acquisition flags are still story state.
+The [content owner](../content/profiles-and-trust.md#authored-caravan-world) admits one controlled
+standalone world; it does not reconstruct Map68 or fresh population.
 
-| State / phase | Proposed minimal owner and behavior |
+| State / phase | Implemented boundary |
 | --- | --- |
-| Acquired | Keep F64/F65 and chapter flags in story authority; grant programs do not set travel mode. First/repeat gates remain ordinary content. |
-| Parked vehicle | Session story/world state owns vehicle map/position/facing across map replacement. A visible entity is a derived population result under mode/map/flag conditions, not a second saved position. |
-| Boarding | Domain validates the selected marker/event context and raft physical alignment where required. Caravan's actual boarding consumer has no raft-style alignment recheck. Application executes shrink/follower/motion prefix and sets mode only at the reached final write. |
-| Travelling | Finite `TravelMode` Walking/Caravan/Raft chooses its own source movement rule using existing layout/motion primitives. Vehicle bounds, current-cell obstruction and markers differ from walking. Do not emit walking zone6 or decrement its step counter from vehicle motion. |
-| Landing | Application retains event4 Caravan or event5 raft continuation and actual waits. Caravan grows current listed actors and installs flag-selected follower actions before mode0; it does not rebuild every identity/list. Stalls retain the prefix and mode1. Raft landing remains unsupported until its consumer is sufficiently specified. |
-| Map entry and services | Rebuild population only at its existing map-entry boundary from world/story state. C-interaction service eligibility is separate from boarding; no warehouse or party UI appears merely because transport exists. |
+| Acquired | F65 enables the walking marker producer; it does not imply mode1 or fresh population. C-button services remain separate. |
+| Parked Caravan | Live physical entity position/facing are authoritative. Numeric events2/4 do not write the raft's saved map/X/Y. No persistent Caravan VehiclePlacement is inferred. |
+| Boarding | After obstruction and before raw blocking, the0x3800 producer requests event2. The program uses logical FOLLOWER_A separately from raw0/1 and the current-list suffix; no raft alignment recheck or resource reset. Mode1 follows actual waits. |
+| Travelling | Mode1/opcode7 uses unshrunk bounds and current-only physical obstruction. Marker travel has no walking zone/counter/sound tail. Door/warp/copy combinations fail explicitly in this admission. |
+| Landing | Event4 clones/restores/grows live actors, waits only the last current suffix actor, installs flag-selected follower scripts by active-row ordinal, then commits mode0. It neither rebuilds population/list nor triggers a zone. Partial failures retain mode1 and the committed scene. |
+| Reentry and services | Map replacement, persistence, fresh acquisition and services are Unsupported in this standalone composition. Future work requires its own source/acceptance boundary; parked persistence is not assumed. |
 
-Sketch: `VehiclePlacement(MapId, MapPosition, Facing)` in persistent-in-session world state,
-`TravelMode` for authoritative control, and a finite boarding/landing continuation at the existing
-program/event runner. Do not add a separate vehicle actor inventory/party authority. Godot receives
-current mode, visible bindings, sprite scale/follower state and pending motion/effect; its completion
-cannot independently toggle travel mode or choose a landing square.
-
-Required variations: acquired but absent/wrong-map vehicle; unacquired visible prop; misaligned raft;
-valid Caravan marker without a raft-style recheck; interrupted boarding before final mode write;
-blocked travel and landing; follower list changed before landing; walking after landing reaches a
-zone while vehicle motion does not; map reentry preserves parked state but rebuilds visibility.
-The smallest alternative is scripted transport travel between fixed maps. It may be a deliberate
-authored travel feature, but does not implement controlled source travel/landing and would need
-replacement. A finite travel mode with shared motion is less total work for the requested behavior
-than either that endpoint shortcut or a generic vehicle/navigation framework. Begin with Caravan's
-specified complete landing path; do not fill raft's consumer gap with an assumed mirror operation.
+Changed-state coverage includes acquired clear/set, nonaligned Caravan, logical/raw-slot disagreement,
+current list length/order/content, zero-speed/pending failure, current versus destination occupancy,
+walking versus travel bounds/counter/zone behavior, live HP-bound appearance and flag-selected action
+reinstall. Actual Godot uses authored markers and modern tick/draw delivery. It makes no original
+sprite, sound or timing claim. Full class-to-mapsprite behavior is an admitted class-specific appearance
+binding; save/load and original natural reach remain Unknown. Raft mode2/event5 is deferred, not a
+mirrored implementation. The broader transport extension remains Proposed beyond this finite subset.
 
 ## Dependencies and proposed order
 
@@ -423,7 +413,7 @@ proposal an architectural prerequisite for any rule.
 | Prism laser | Finite authored decision/action, source-slot binding and visual delivery are implemented; private chapter/special-input gaps remain. [Laser design](#prism-flowers-decision-ray-versus-construction-hit-list). | Independent of broad spell/status completion. Complete Battle36 also requires its ordinary enemy capabilities, leader cleanup and story/resources; laser support alone is not chapter acceptance. |
 | Region programs / Jaro / ally AI | Implemented authored resumable round prefix, live control and visual aliases; [Jaro design](#jaro-region-programs-and-two-logical-actors-sharing-a-visual). | Private Battle32 and full victory recruitment remain separate consumers. Reuse party flags; no requirement to first build Caravan services. Ally AI is a new rule, not a faction toggle on physical enemy AI. |
 | Hidden spawn and trial record | Shared round continuation plus finite reset lifecycle; trial clock/result choice separate. [Fairy design](#fairy-woods-spawning-and-result-state-have-different-lifetimes). | Reuse accepted round-prefix work when available; otherwise introduce only its spawn consumer. Source geometry differences must be resolved before claiming Battle44 activation. Record persistence waits for saving; spawn work need not wait for scoring choice. |
-| Caravan travel / raft | Travel state/controller + selected programs; [transport design](#transport-possession-mode-position-and-service-access). | Independent of full battle import when given explicit initial acquisition. Caravan's complete source consumer is the better first travel slice; raft landing awaits its named gap decision, not a guessed clone. |
+| Caravan travel / raft | Standalone authored Caravan state/controller and programs implemented; raft and full-map consumers deferred; [transport design](#transport-possession-mode-position-and-service-access). | Independent of full battle import when given explicit initial acquisition. Caravan's complete source consumer is the better first travel slice; raft landing awaits its named gap decision, not a guessed clone. |
 | Caravan party/depot/item/purge | Joined/active flags and slots exist; member selection/relief, 64-slot depot, exchange and service continuation absent. [Service contract](../../../docs/design/contracts/service-interactions.md#caravan-source-boundary), [custody](../../../docs/design/synthesis/progression-and-economy.md#custody-storage-and-active-membership). | After one inventory receipt/store rule, implement one service result. Boarding is not required to design the transaction, but natural C-menu availability needs separate field binding. Preserve twelve-member ordinary guard and leader/curse refusals. |
 | Church raise/cure/promote, shop and Mithril | Source contracts exist; production service transactions/UI are not supplied by ordinary outcome healing/growth. [Services](../../../docs/design/contracts/service-interactions.md), [promotion](../../../docs/design/synthesis/progression-and-economy.md#church-recovery-promotion-and-saving), [Mithril orders](../../../docs/design/synthesis/progression-and-economy.md#mithril-orders-placement-readiness-and-collection). | Reuse gold, loadout, class refresh and typed waits; add paid selection/cancel/commit for one service at a time. Promotion needs class/item eligibility and post-change resources; Mithril needs order/readiness/collection state and RNG, not just a shop stock row. |
 | Save/load/suspend | **Unsupported** cross-session persistence; [save contract](../../../docs/design/contracts/save-system.md). No field return, RAM best or egress selection proves storage. | Separate High-rigor acceptance for versioned state, write failure/recovery and real reload. Needed for durable records/resume, not first retreat or in-session transport. Battle0 refusal remains possible without implementing suspend. |

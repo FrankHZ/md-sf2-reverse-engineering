@@ -161,7 +161,8 @@ internal sealed class ExplorationPresentation : IDisposable
                     if (_map != world.Map) { _map = world.Map; _camera = target; }
                     else _camera = _camera.MoveToward(target, (float)(delta * 180));
                 }
-                foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest))
+                foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest &&
+                    (_visuals is not null || world.Definition.Caravan is null)))
                 {
                     _ = Sprite(entity, false);
                     _spriteMounts++;

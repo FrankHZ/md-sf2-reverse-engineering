@@ -1,5 +1,30 @@
 # Runtime Profiles and Trust
 
+## Authored Caravan world
+
+Format8 optionally supplies `map.caravan` with `followerA`, `currentEntities`, `overworld`,
+`playerAppearance` and `stepCounter`. The player occupies physical0; nonplayer entity array order
+supplies physical1 onward, independently of logical IDs. `currentEntities` is an explicit unique
+list of existing nonplayer physical slots (empty is legal); its first entry is skipped by the source
+suffix helpers. It is not reconstructed from F65, sprites or current follower flags.
+`playerAppearance` names the controlled party actor, admitted `BattleClassRule` enum name, normal
+sprite and defeated sprite. Landing rechecks the class binding and reads current HP; no healing or
+party/class mutation is implied. Source player/Caravan mappings that this admitted content cannot
+resolve are rejected rather than defaulted to physical0.
+
+Admission permits one authored map/area with at most 32 physical actors and 64x64 layout words.
+Source population/setup/battle routes, layout copy/door/warp markers, replacement programs and
+external jumps into reserved `caravan-boarding`/`caravan-landing` programs are Unsupported.
+The reader constructs those typed programs from fixed source operations. No new script parser,
+private importer or persistent vehicle placement is added. Current flag-selected normal/overworld
+follower actions are bounded to the source's five pointers and existing slots; unsupported reached
+selection retains the transition prefix and fails before mode0. Content may intentionally start with
+F65 clear or changed current lists; a visible prop does not imply boarding permission.
+
+`caravan-travel.json` supplies public authored terrain, semantic marker sprites, flags and vitals.
+Its initial actor positions are controlled inputs, not proof of original fresh allocation or natural
+Caravan acquisition. It declares no private assets/audio, save/load, services or travelling transfer.
+
 ## Authored battle-story admission
 
 The standalone v7 `jaro-conversion.json` is project-authored controlled content. Optional root

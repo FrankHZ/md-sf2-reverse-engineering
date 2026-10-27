@@ -45,6 +45,15 @@ internal static class EntityMotion
             YVelocity = Signed(target.Y == state.Y ? 0 : target.Y > state.Y ? state.YSpeed : -state.YSpeed) };
     }
 
+    // esc0E/loc_55C8: raw physical current position/facing, no layout or obstruction test.
+    internal static EntityMotionState FacingRelative(EntityMotionState state, EntityMotionState target, int distance)
+    {
+        int dx = target.Facing switch { 0 or 4 or 7 => 1, 2 or 5 or 6 => -1, _ => 0 };
+        int dy = target.Facing switch { 3 or 6 or 7 => 1, 1 or 4 or 5 => -1, _ => 0 };
+        if (target.Facing > 7) throw new Battles.BattleRuleException("caravan-cardinal-facing", "entity.facing", true);
+        return Start(state, Signed(target.X + dx * distance * 384), Signed(target.Y + dy * distance * 384), [])!;
+    }
+
     // The script installs motion after this tick's movement pass. Obstruction retains its cursor.
     internal static EntityMotionState? Start(EntityMotionState state, short x, short y,
         IEnumerable<EntityMotionState> others, bool fieldInput = false)

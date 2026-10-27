@@ -41,7 +41,7 @@ internal static class ExplorationDispatcher
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
-            display: start.Display, textSettings: start.TextSettings);
+            display: start.Display, textSettings: start.TextSettings, stepCounter: map.Caravan?.InitialStepCounter);
         story = ExplorationTextRunner.Initialize(world, story);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
             SessionStopReason.SimulationWait), [], rules);
@@ -304,6 +304,8 @@ internal static class ExplorationDispatcher
                                 fieldControl: existingFieldInput || pendingMove is not null) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
                         var story = active is ActiveExploration serviced ? ExplorationTextRunner.AfterEntities(serviced.World, current.Story) : current.Story;
+                        foreach (int sound in tickResult?.Sounds ?? [])
+                            current = ProgramRunner.Commit(current, active, story, observations, "entity-sound", sound.ToString(System.Globalization.CultureInfo.InvariantCulture));
                         if (tickResult?.Failure is { } failure)
                         {
                             story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
@@ -312,12 +314,19 @@ internal static class ExplorationDispatcher
                         }
                         if (story.Wait is EntityWait { PendingMove: not null } fieldMove && tickResult?.FieldMove is { } field)
                         {
-                            if (field.Moved && story.StepCounter is > 0)
+                            if (field.Moved && tickResult.World.TravelMode == FieldTravelMode.Walking && story.StepCounter is > 0)
                                 story = story.Copy(story.Cursor, story.Wait, stepCounter: (short)(story.StepCounter.Value - 1));
                             story = story.Copy(null, field.Moved && field.Event?.Kind != ExplorationEventKind.Warp
                                 ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
                                 simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
+                            if (field.VehicleEvent is 2 or 4)
+                            {
+                                current = ProgramRunner.Commit(current, active,
+                                    story.Copy(new(field.VehicleEvent == 2 ? CaravanPrograms.Boarding : CaravanPrograms.Landing, 0)),
+                                    observations, field.VehicleEvent == 2 ? "caravan-boarding-requested" : "caravan-landing-requested");
+                                return ProgramRunner.Run(definition, current, observations, rules);
+                            }
                             if (field.DoorOpened)
                                 current = ProgramRunner.Commit(current, active, story, observations, "door-opened");
                             if (field.Event is { Kind: ExplorationEventKind.Warp } warp)
@@ -347,6 +356,9 @@ internal static class ExplorationDispatcher
                             entityServices: story.TextSettings is not null ? false : null); }
                         else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
+                        else if (story.Wait is PhysicalEntityWait physical && active is ActiveExploration physicalWorld &&
+                            CaravanRuntime.Physical(physicalWorld.World, physical.Slot).IsScriptIdle)
+                            story = FinishWait(story);
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
                             explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) &&
                             (entityWait.Completion switch
@@ -400,14 +412,14 @@ internal static class ExplorationDispatcher
         if (player.Busy) return Reject(current, "entity-busy", "player");
         // Admission sees the same control policy as the later player service, without
         // publishing setup or advancing motion/entities before that service.
-        var controlled = world.Population is null ? world : world.WithEntity(player with
+        var controlled = world.Population is null && world.Definition.Caravan is null ? world : world.WithEntity(player with
             { Motion = EntityActionRunner.ControlledMotion(player.Motion) });
         var preview = MapEventDispatcher.Move(controlled, move.Direction, current.Story.Flags);
         if (preview.Outcome.Event is { Kind: ExplorationEventKind.Warp } warp)
         {
             if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp, rules);
         }
-        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
+        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.VehicleEvent is null && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
                 new ActiveExploration(world.WithEntity(player with { Motion = player.Motion with
                     { Facing = preview.World.PlayerEntity.Motion.Facing } })), current.Story, observations, "movement-blocked"),
