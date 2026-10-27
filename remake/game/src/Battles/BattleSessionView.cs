@@ -40,6 +40,9 @@ public sealed partial class BattleSessionView : Control
     private SessionResult? _result;
     private SessionFailure? _startupFailure;
     private bool _started;
+    private bool _inputSuspended;
+    private void SuspendInput() => _inputSuspended = true;
+    private void ResumeInput() => _inputSuspended = false;
     private Label _title = null!;
     private Label _status = null!;
     private Label _roster = null!;
@@ -49,6 +52,7 @@ public sealed partial class BattleSessionView : Control
     private SpellRef? _spellCandidate;
     private int? _itemCandidate;
     private Label _items = null!;
+    private Label _equipment = null!;
     private BattleMapViewport _map = null!;
     private BattleDefinition? _mapDefinition;
     private BattleSceneDefinition? _mapScenes;
@@ -83,6 +87,7 @@ public sealed partial class BattleSessionView : Control
         _hud.AddChild(_hudContent);
         _title = AddLabel("Title");
         _status = AddLabel("Status");
+        _equipment = AddLabel("Equipment");
         _spells = AddLabel("Spells");
         _items = AddLabel("Items");
         _roster = AddLabel("Roster");
@@ -100,14 +105,22 @@ public sealed partial class BattleSessionView : Control
         _help.Text = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
             $"{input.Hint(GameAction.Spell)}: select / cycle learned spells and levels; target self\n" +
             $"{input.Hint(GameAction.Item)}: select / cycle carried items; target self\n" +
+            $"{input.Hint(GameAction.Equipment)}: equipment; directions cycle, confirm equips, cancel returns\n" +
             $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
             $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: cancel all provisional choices\n" +
             $"{input.Hint(GameAction.Wait)}: wait at a healing message\n\nAI and rounds advance automatically.";
     }
 
-    public override void _EnterTree() => GetViewport().SizeChanged += Arrange;
+    public override void _EnterTree()
+    {
+        GetViewport().SizeChanged += Arrange;
+        GetWindow().FocusExited += SuspendInput;
+        GetWindow().FocusEntered += ResumeInput;
+    }
     public override void _ExitTree()
     {
+        GetWindow().FocusExited -= SuspendInput;
+        GetWindow().FocusEntered -= ResumeInput;
         ObservationCapture.Find(this)?.ViewDetached("battle");
         GetViewport().SizeChanged -= Arrange;
     }
@@ -223,7 +236,7 @@ public sealed partial class BattleSessionView : Control
 
     internal void HandleAction(GameAction action)
     {
-        if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_startupFailure is not null || _inputSuspended || !IsVisibleInTree()) return;
         if (_session?.Current.BattleRound is { Program: true })
         { if (_story.Acknowledge(action) is { } acknowledgement) Send(acknowledgement); return; }
         if (_session?.Current.BattleRound is not null) return;
@@ -233,6 +246,16 @@ public sealed partial class BattleSessionView : Control
         if (_session?.Current.BattleScene is not null)
         { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.HasBattleControl != true) return;
+        if (_session.Current.Selection is { Stage: BattleSelectionStage.EquipmentChoice } equipmentSelection &&
+            action is GameAction.Up or GameAction.Right or GameAction.Down or GameAction.Left or GameAction.Equipment)
+        {
+            var options = _session.QueryBattleChoices().Equipment;
+            if (options.Count == 0) return;
+            int index = options.ToList().FindIndex(option => option.Slot == equipmentSelection.EquipmentSlot);
+            int step = action is GameAction.Up or GameAction.Left ? -1 : 1;
+            Send(new SelectEquipment(options[(index + step + options.Count) % options.Count].Slot));
+            return;
+        }
         SessionCommand? command = action switch
         {
             GameAction.Up => new Move(ExplorationDirection.North),
@@ -243,6 +266,7 @@ public sealed partial class BattleSessionView : Control
             GameAction.Stay => new ChooseAction(SessionAction.Stay),
             GameAction.Cancel => new Cancel(),
             GameAction.Attack => new ChooseAction(SessionAction.PhysicalAttack),
+            GameAction.Equipment => new BeginEquipment(),
             _ => null,
         };
         if (command is not null) Send(command);
@@ -295,7 +319,7 @@ public sealed partial class BattleSessionView : Control
             bool wasActionChoice = current.Selection?.Stage == BattleSelectionStage.ActionChoice;
             bool isActionChoice = _result.Snapshot.Selection?.Stage == BattleSelectionStage.ActionChoice;
             if (wasActionChoice != isActionChoice) PlayUiSound?.Invoke(65);
-            else if (command is SelectSpell or SelectItem or Cancel) PlayUiSound?.Invoke(66);
+            else if (command is SelectSpell or SelectItem or SelectEquipment or Cancel) PlayUiSound?.Invoke(66);
             else if (command is Confirm) PlayUiSound?.Invoke(67);
         }
         if (_startupFailure is not null) return;
@@ -327,6 +351,13 @@ public sealed partial class BattleSessionView : Control
         _status.Text = projection.Status;
         _roster.Text = projection.Roster;
         var selection = _session.Current.Selection;
+        var equipmentChoices = _session.QueryBattleChoices().Equipment;
+        var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
+        _equipment.Text = currentActor?.Definition.Equipment is null ? "" :
+            $"Equipment ({_input.Hint(GameAction.Equipment)}): {equipmentChoices.FirstOrDefault(o => o.Equipped)?.Label ?? "Unarmed"} · ATT {currentActor.Attack} · range {BattleEquipment.Physical(currentActor)!.MinimumRange}–{BattleEquipment.Physical(currentActor)!.MaximumRange}\n" +
+            (selection?.Stage != BattleSelectionStage.EquipmentChoice ? "" : string.Join("\n", equipmentChoices.Select(option =>
+                $"{(option.Slot == selection.EquipmentSlot ? "> " : "  ")}{(option.Slot == 4 ? "" : $"slot {option.Slot + 1}: ")}{option.Label} · ATT {option.Attack} · range {option.MinimumRange}–{option.MaximumRange}")) +
+                $"\n{_input.Hint(GameAction.Confirm)} equips · {_input.Hint(GameAction.Cancel)} restores selection");
         _spells.Text = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             _session.QueryBattleChoices().Spells.Select(option =>
                 option.Label + (option.Spell == selection.Spell ? " · selected" : "") +
@@ -431,6 +462,10 @@ public sealed partial class BattleSessionView : Control
             target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
             itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items.Text,
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
+            equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment.Text, equipmentVisible = _equipment.IsVisibleInTree(),
+            equipmentActors = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, baseAttack = a.BaseAttack,
+                attack = a.Attack, equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),
+                minimumRange = BattleEquipment.Physical(a)?.MinimumRange, maximumRange = BattleEquipment.Physical(a)?.MaximumRange }),
             spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells.Text,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,

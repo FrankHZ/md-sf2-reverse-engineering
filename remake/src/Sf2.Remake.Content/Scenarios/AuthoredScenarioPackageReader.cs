@@ -42,7 +42,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     {
         ObjectOptional(root, "document", "items", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters",
             .. root.TryGetProperty("battleStory", out _) ? new[] { "battleStory" } : [],
-            .. root.TryGetProperty("dropItems", out _) ? new[] { "dropItems" } : []]);
+            .. root.TryGetProperty("dropItems", out _) ? new[] { "dropItems" } : [],
+            .. root.TryGetProperty("weapons", out _) ? new[] { "weapons" } : [],
+            .. root.TryGetProperty("growth", out _) ? new[] { "growth" } : []]);
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
@@ -162,7 +164,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     minimum, (byte)Number(item, "maximumRange", minimum, 3));
                 Require(!retreatItems.ContainsKey(id) && healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
             }
-        var weaponItems = Array(root, "encounters").SelectMany(TarosEffectivenessReader.Weapons).Distinct().ToArray();
+        var weapons = BattleEquipmentReader.Weapons(root, allowLeaderCleanup);
+        var weaponItems = Array(root, "encounters").SelectMany(TarosEffectivenessReader.Weapons)
+            .Concat(weapons.Select(w => w.ItemId)).Distinct().ToArray();
         var dropItems = EnemyItemDropReader.Items(root);
         Require(dropItems.Keys.All(id => id == 0 ? !weaponItems.Contains(id) && !retreatItems.ContainsKey(id) :
             !healingItems.ContainsKey(id) && !retreatItems.ContainsKey(id)), "conflicting-item-type", "dropItems");
@@ -171,8 +175,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
-            ObjectOptional(actor, "actor", "physical", "id", "classRule", "level", "maxHp", "maxMp",
-                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells");
+            ObjectOptional(actor, "actor", "physical", ["id", "classRule", "level", "maxHp", "maxMp",
+                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells",
+                .. actor.TryGetProperty("equipment", out _) ? new[] { "equipment" } : []]);
             var id = new ActorRef(Id(actor, "id"));
             string className = Text(actor, "classRule");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
@@ -224,7 +229,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 127), Boolean(actor, "extraRoundAction"),
-                (byte)Number(actor, "move", 1, 255), learned, physical, sourceLoadout: loadout);
+                (byte)Number(actor, "move", 1, 255), learned, physical, sourceLoadout: loadout,
+                equipment: BattleEquipmentReader.Actor(actor, weapons, weaponItems));
+            BattleEquipmentReader.Validate(definition);
             Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
         }
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
@@ -308,6 +315,12 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized,
                 Absent: input.TryGetProperty("absent", out _) && Boolean(input, "absent"),
                 RetainDeadPosition: input.TryGetProperty("retainDeadPosition", out _) && Boolean(input, "retainDeadPosition")));
+        }
+        if (root.TryGetProperty("growth", out var growthRows))
+        {
+            Require(!allowLeaderCleanup, "growth-standalone-only", "growth", true);
+            encounters = BattleGrowthReader.BindAuthored(growthRows, new ScenarioDefinition(package, encounters.Values))
+                .ToDictionary(encounter => encounter.Encounter, StringComparer.Ordinal);
         }
         var battleStory = BattleStoryReader.Read(root, encounters.Values);
         var storyStart = BattleStoryReader.Start(start, encounters[selectedEncounter]);

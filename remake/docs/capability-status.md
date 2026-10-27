@@ -1,5 +1,28 @@
 # Remake Capability Status
 
+## Authored battle equipment agreement
+
+**High rigor; implemented bounded subset:** one standalone authored player can inspect eligible
+carried weapon slots, preview ATT/range, equip or choose admitted Unarmed, and return to the same
+battle action menu. The live loadout supplies attack identity, contribution and range, including after
+nonzero base-stat growth. Session authority, slot identity, base/derived stats, action validation and
+input projection cross existing owners; no second inventory or stat service is introduced.
+
+Acceptance includes duplicate IDs in separate slots, class mismatch/nonweapon carry, zero/four eligible
+weapon edges, pure preview/cancel, one confirmation publication, stale/invalid refusal, live range and
+counter validation, growth and continued ordinary control. The
+[domain/source owner](domain/gameplay-rules.md#authored-battle-weapon-equipment),
+[admission](content/profiles-and-trust.md#authored-weapon-admission),
+[session boundary](application/session-and-programs.md#battle-equipment-selection), and
+[native recipe](development-and-verification.md#battle-equipment-authored-observation) define this slice.
+
+Four held slots bound selection to O(4); one commit copies existing battle actor state, O(N), with no
+RNG or acquisition. One authored package, small engine tests and one semantic witness (<180 seconds,
+<2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give/Drop, field/services,
+connected/private chapter preparation and persistence remain Unsupported. Original natural reach,
+presentation/timing and the twelve #1047 Unknowns remain unchanged. Authored weapon names, numerical
+bonuses and presentation are example inputs, not newly confirmed original definitions.
+
 ## Authored AURA agreement
 
 **High rigor; implemented authored subset:** Issue #1359 adds player AURA1–4 for
@@ -190,7 +213,7 @@ new assets or capture platform is required. Current milestone is implementation 
 complete, with independent main-gate acceptance pending in
 [Issue #1349](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1349).
 
-Full/private Battle18, wider action families, shops/Deals purchase, Caravan/depot, equip interaction,
+Full/private Battle18, wider action families, shops/Deals purchase, Caravan/depot, connected/private equip interaction,
 save/load, original natural acquisition and hardware parity remain outside scope. The twelve #1047
 comparison failures and prior completed failures remain preserved. Reassess before any wider action,
 service or persistence expansion; this bounded state lifetime does not authorize one.
@@ -239,7 +262,7 @@ results through usable control. Native runs stay below180s and5MiB; no new asset
 emulator, H4 or retired/full aggregate. Independent main-gate integration remains required.
 
 Full Battle18 AI/private leader admission, wider loot/service bindings, aftermath/Caravan, all-action immunity, equipment
-acquisition/equip interaction and hardware/natural original trajectories remain Unsupported or
+acquisition/connected equip interaction and hardware/natural original trajectories remain Unsupported or
 Unknown at their existing owners. Preserve #1047's twelve completed unresolved comparisons and
 all completed #1341/#1343 results; they are not rerun or replaced by this slice. The
 [special-mechanic design](domain/special-mechanics-design.md#taros-effectiveness-cleanup-loot-and-acquisition)
@@ -345,7 +368,7 @@ full-game parity and public distribution remain outside the accepted boundary.
 | Private initialized entry | **Implemented subset:** actual trusted encounter plus pinned selected enemy/class/item/spell exports and external controlled PlayerReady party/start enter the common session. New-battle heal/effective ATT, initial AI/region state, activation/program/spawn admission, carried first queue and candidate control lead to common movement/cancel. Required regular/healer/Centaur/hovering/Stealth/Flying movers work. Unknown accounting stays null; source baseline/loadout/words/provenance remain retained. |
 | Private source enemy continuation | **Implemented subset:** actual common player commands reach inactive anchor-relative standby, evolving occupancy/memory, region activation and source set6/set7 no-action pursuit, then the next live player. Source NONE orders, activation/tested words, last target and both RNG channels remain intact. Standby/pursuit calculations have one production owner; one common movement/action publisher commits results. Reached physical operands use the shared action binding below; failures remain atomic. Nonempty move-order/action categories and broader status/neutral behavior remain Unsupported. |
 | Private actions and spell selection | **Implemented subset:** actual class prowess/adjacent ATT-only equipment, source HEAL1–3 and pinned enemy gold bind to common physical/reward/death/after-turn. Hovering/Flying share airborne dodge and priority; only Flying ignores ground land protection. The logical Spell action (default H / Pad North) cycles learned spells and levels without content reordering; engine owns legality/resources. Explicit external accounting enables actual enemy/player/kill/HEAL continuation; natural counters and seeds remain Unknown. Selected Battle02 EGRESS/Angel Wing is implemented at the agreement above; wider effects remain Unsupported. The connected private world binds growth and terminal programs below; broader M2 capabilities and hardware 8C remain incomplete; current milestone acceptance is recorded below. |
-| Ordinary physical attack and rewards | **Implemented subset:** regular-ground, status-free, no equipment, explicit paired critical chance/bonus definitions (1/32 plus half or1/16 plus quarter); source-ordered first/second/reversed counter, dodge/critical/spread, per-action EXP/gold, ordinary enemy/ally cleanup, capped kills/defeats and next living control. Both authored physical packages support either legal kill order. |
+| Ordinary physical attack and rewards | **Implemented subset:** regular-ground, status-free, frozen or explicitly admitted authored ATT-only equipment, explicit paired critical chance/bonus definitions (1/32 plus half or1/16 plus quarter); source-ordered first/second/reversed counter, dodge/critical/spread, per-action EXP/gold, ordinary enemy/ally cleanup, capped kills/defeats and next living control. Both authored physical packages support either legal kill order. |
 | Physical battle scene execution | **Implemented bounded consumer:** typed construction, animation/reaction, result/death, EXP/growth/gold and end waits retain input and turn ownership. Damage reactions advance shared-main RNG by 24 source draws each; growth uses the carried seed. Godot consumes privately prepared actor/weapon/environment frames and source music2/5, hit81/83 and level102 SFX through actual audio. Normal/reduced-flash observations preserve gameplay/RNG. HEAL has the separate bounded consumer below; modern text/fade timing and controlled native entry do not prove original timing, final pixels or H4. [Scene owner](godot/battle-scenes.md#physical-battle-scenes). |
 | HEAL spell scenes | **Implemented bounded consumer:** HEAL1–3 MP-before-cast, one/one/two source-rule fairies, shared-main RNG, self/other HP recovery, stop/cleanup before rewards/input, private rasters and actual77/113 audio. Function comparison under externally supplied opportunities/control passes; normal/reduced native semantic events match. **Unknown:** continuous original opportunity admission; recovery bsc0B is the first observed divergence and produces intermediate RNG differences. The accepted selected HEAL/scene composition supplies the current milestone obligation; this historical timing divergence remains with its owner. [Exact boundary](godot/battle-scenes.md#heal-spell-scenes). |
 | Medical Herb battle scenes | **Implemented bounded consumer:** live inventory consumption during construction, deferred mode2 HP recovery without MP cost, single-ally display/target switch/restoration, EXP/growth and end-of-scene input release. Uses source item animation NONE/Nothing and SFX113, with no fairy or physical recoil draws. Wounded controlled entry and full-HP source-world normal/reduced observations cover different boundaries; natural timing and whole-scene HEAL parity remain unfinished. [Scene owner](godot/battle-scenes.md#medical-herb-scenes). |

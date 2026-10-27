@@ -1,0 +1,282 @@
+{
+  "formatVersion": 7,
+  "package": "battle-equipment",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "guardian-practice",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3203334210,
+    "gold": 100,
+    "actors": [
+      {
+        "actor": "champion",
+        "hp": 200,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "guardian",
+        "hp": 500,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "reserve",
+        "hp": 500,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      }
+    ]
+  },
+  "terrains": [
+    {
+      "id": "stone-court-terrain",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "p": {
+          "surface": "open",
+          "protection": "none"
+        }
+      },
+      "rows": [
+        "#########",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#########"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "stone-court-map",
+      "terrain": "stone-court-terrain"
+    }
+  ],
+  "spells": [],
+  "actors": [
+    {
+      "id": "champion",
+      "classRule": "unpromoted-swordsman",
+      "level": 1,
+      "maxHp": 200,
+      "maxMp": 0,
+      "attack": 25,
+      "defense": 4,
+      "agility": 30,
+      "extraRoundAction": false,
+      "move": 6,
+      "items": [
+        178,
+        61,
+        50,
+        0
+      ],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 0,
+        "special": "none"
+      },
+      "equipment": {
+        "baseAttack": 20
+      }
+    },
+    {
+      "id": "guardian",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 500,
+      "maxMp": 0,
+      "attack": 12,
+      "defense": 4,
+      "agility": 8,
+      "extraRoundAction": false,
+      "move": 6,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "reserve",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 500,
+      "maxMp": 0,
+      "attack": 12,
+      "defense": 4,
+      "agility": 4,
+      "extraRoundAction": false,
+      "move": 6,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 0,
+        "special": "none"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "guardian-practice",
+      "map": "stone-court-map",
+      "placements": [
+        {
+          "actor": "champion",
+          "x": 1,
+          "y": 2,
+          "faction": "ally",
+          "processingOrder": 4,
+          "control": "player",
+          "aiStrategy": null
+        },
+        {
+          "actor": "guardian",
+          "x": 2,
+          "y": 2,
+          "faction": "enemy",
+          "processingOrder": 142,
+          "control": "automatic",
+          "aiStrategy": "stay"
+        },
+        {
+          "actor": "reserve",
+          "x": 7,
+          "y": 5,
+          "faction": "enemy",
+          "processingOrder": 154,
+          "control": "automatic",
+          "aiStrategy": "stay"
+        }
+      ],
+      "rewards": {
+        "halvedExperience": true
+      },
+      "tarosEffectiveness": {
+        "bowie": "champion",
+        "enemyDefinitions": [
+          {
+            "actor": "guardian",
+            "definition": 88
+          },
+          {
+            "actor": "reserve",
+            "definition": 9
+          }
+        ],
+        "weaponItems": [
+          50,
+          61
+        ]
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": 0,
+      "name": "Healing Herb",
+      "effect": "consumable-healing",
+      "power": 10,
+      "minimumRange": 0,
+      "maximumRange": 1
+    }
+  ],
+  "weapons": [
+    {
+      "id": 50,
+      "name": "Practice blade",
+      "type": "weapon",
+      "classMask": 1,
+      "cursed": false,
+      "attackBonus": 5,
+      "minimumRange": 1,
+      "maximumRange": 2
+    },
+    {
+      "id": 61,
+      "name": "Achilles",
+      "type": "weapon",
+      "classMask": 1,
+      "cursed": false,
+      "attackBonus": 10,
+      "minimumRange": 1,
+      "maximumRange": 1
+    }
+  ],
+  "growth": [
+    {
+      "actor": "champion",
+      "classId": 0,
+      "stats": [
+        {
+          "start": 100,
+          "projected": 100,
+          "curve": []
+        },
+        {
+          "start": 0,
+          "projected": 0,
+          "curve": []
+        },
+        {
+          "start": 20,
+          "projected": 20,
+          "curve": []
+        },
+        {
+          "start": 10,
+          "projected": 10,
+          "curve": []
+        },
+        {
+          "start": 30,
+          "projected": 30,
+          "curve": []
+        }
+      ],
+      "spells": []
+    }
+  ]
+}

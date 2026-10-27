@@ -73,7 +73,7 @@ internal static class BattleGrowthRules
         effects.Add(new("level", actor.Actor, actor.Level, level));
         // Maxima grow; current HP/MP do not heal. Reapply the admitted ATT-only equipment once.
         return actor.With(exp: (byte)total, progress: progress,
-            attack: (byte)Math.Min(200, progress.BaseAttack + growth.AttackBonus));
+            attack: (byte)Math.Min(200, progress.BaseAttack + BattleEquipment.Contribution(actor.Definition, loadout)));
     }
 
     internal static int Gain(StatGrowth growth, byte level, int current, ActorRef actor,

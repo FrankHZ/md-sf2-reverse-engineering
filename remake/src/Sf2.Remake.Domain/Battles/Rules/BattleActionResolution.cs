@@ -237,7 +237,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Require(!counter && (reversed ? index > 0 : index < 2 && reaction.Actor == actorRef && reaction.Target == targetRef));
             counter = reversed;
             var attacker = reversed ? target : actor; var defender = reversed ? actor : target;
-            var profile = attacker.Definition.Physical ?? throw new BattleRuleException("physical-definition", "actor.physical", true);
+            var profile = BattleEquipment.Physical(attacker) ?? throw new BattleRuleException("physical-definition", "actor.physical", true);
             var from = reversed ? target.Position! : destination; var to = reversed ? destination : target.Position!;
             ushort hp = reversed ? actorHp : targetHp;
             ushort status = defender.Status;

@@ -1,5 +1,41 @@
 # Gameplay Rules and Composition
 
+## Authored battle weapon equipment
+
+`BattleEquipment` operates on existing `SourceLoadout` slot words. An explicitly opted-in actor has
+one immutable starting base ATT; `BattleActorProgress.BaseAttack` takes over after growth. The live
+first equipped admitted weapon contributes ATT, clamped to 200. Unarmed contributes zero and uses
+range 1. `BattleGrowthRules`, actor reconstruction, physical query/target/resolution and
+`BattleActionResolution` validation consume this live contribution/range. Counter range belongs to
+the actual counterattacker. Profiles without mutable equipment retain their frozen definition/growth
+behavior. Neither repeated confirmation nor growth stacks the old bonus.
+
+Eligibility uses weapon type and the source class bit (`1 << classId`). Offers preserve carried slot
+order and duplicate identities. Zero eligible weapons yields no interaction; one to three eligible
+slots include Unarmed sentinel4; four eligible slots overwrite the source menu's Unarmed cell.
+Selecting a slot clears only admitted weapon equipped bits and sets the chosen slot's bit128. No
+inventory removal, compaction, item transfer, other flags, resource payment, movement commit or turn
+consumption occurs. Broken weapons, equipped nonweapons, multiple equipped weapons, wrong-class
+initial equipment, unsupported classes/status/control and inconsistent live ATT reject explicitly.
+
+**Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
+`disasm/`: `code/common/stats/itemstats.asm:GetEquippableWeapons/GetEquippableItemsByType`,
+`IsItemEquippable/IsWeaponOrRingEquippable`, `GetEquippedWeapon`, `EquipItemBySlot` and
+`UnequipItemBySlotIfNotCursed`; `code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+`@CheckItemMenuChoice_Equip`, `sub_24C4E`, `CreatePulsatingAttackRangeGrid`, `EquipNewItemInBattle`
+and `loc_24C44`. The source pre-fills the fourth menu cell with Unarmed/slot4, then overwrites entries
+sequentially. It restores old preview equipment before the final equip helper, and returns to
+`@StartBattleMenu`. The source's cursed refusal exists but is outside this admitted subset.
+
+The [item-definition contract](../../../docs/design/contracts/item-definition-data.md),
+[level refresh](../../../docs/design/contracts/level-up.md#confirmed-current-and-derived-stat-refresh)
+and [equipment synthesis](../../../docs/design/synthesis/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution)
+own original metadata/refresh evidence. Pure immutable candidate calculation is the remake's preview
+implementation, not an observation of original UI timing. `BattleEquipmentTests` and
+`BattleEquipmentSessionTests` reproduce engine behavior with varied base stats, masks, names, ranges,
+slots, nonzero growth, invalid state and current counter equipment. The original natural route and
+full equipment/status fidelity remain **Unknown**.
+
 ## Authored AURA group healing
 
 `HealingSpellDefinition.Targets` distinguishes Single, AuraRadius and AuraAllAllies. Ordinary
@@ -270,7 +306,8 @@ map, package and presentation. Content binds Bowie to an ally, enemy definitions
 and weapon item types. Absence of the binding leaves the ordinary physical rule unchanged.
 The [authored package](../../content/authored/taros-effectiveness.json) is a controlled semantic
 example, not a private Battle18 import. Its numerical ATT is already supplied; this does not add
-an equipment/stat-refresh or equip-menu service.
+an equipment/stat-refresh or equip-menu service by itself. The separate
+[mutable authored equipment binding](#authored-battle-weapon-equipment) now supplies that bounded interaction.
 
 At `Sf2PhysicalAction.Prepare`, compute one initial ineffective operand from actor, initial target
 and live `BattleActorState.SourceLoadout`. Scan slots in order for equipped bit128, non-NOTHING

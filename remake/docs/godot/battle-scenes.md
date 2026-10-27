@@ -1,5 +1,20 @@
 # Battle Presentation
 
+## Authored equipment feedback
+
+The existing semantic battle HUD displays current equipment, ATT and physical range. At battle
+`ActionChoice`, E / Pad Start opens the finite weapon selection. Directions (or E) cycle eligible
+slots; Enter confirms and Escape cancels back to battle actions. Each candidate displays its slot,
+name, prospective ATT and range; Unarmed appears only under the source slot-count policy.
+
+The view submits `BeginEquipment`/`SelectEquipment`/ordinary Confirm/Cancel to the session. Its
+preview does not replace authoritative actor state. Focus loss and hiding block equipment input;
+resuming retains the pending choice. Confirmed equipment remains through later movement/action
+cancellation. This is authored text feedback through the existing HUD, not the frozen PR692 diamond
+redesign, original equipment-window graphics, pulsating original range grid or source timing parity.
+The [native observation](../development-and-verification.md#battle-equipment-authored-observation)
+reads actual choices, label visibility/text, state, input results and subsequent scene feedback.
+
 ## Authored AURA recovery
 
 `AuraRecoveryView` draws a small authored pulse, recipient identity and live HP/MP through
