@@ -10,6 +10,8 @@ public enum MapLoadMode { Rebuild, Preserve }
 
 public abstract record StoryInstruction;
 public abstract record SourceStoryInstruction : StoryInstruction;
+public sealed record ConvertBattleActor(int EnemySlot, int AllySlot) : StoryInstruction;
+public sealed record JoinBattleForceAi(int AllySlot, ushort Value) : StoryInstruction;
 public sealed record EndProgram(bool SourceMapScript = false) : StoryInstruction;
 public sealed record JumpProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) : StoryInstruction;

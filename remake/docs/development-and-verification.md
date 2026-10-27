@@ -1,5 +1,40 @@
 # Development and Verification
 
+## Jaro conversion authored observation
+
+Launch `remake/content/authored/jaro-conversion.json` with `--authored-package`. Up twice, then
+Enter/Space/Enter, moves and stays inside the trigger. The next eligible round commits the played
+flag and conversion; Enter acknowledges each of two paraphrased dialogue windows. The new queue
+returns leader control; another Enter/Space/Enter permits the allied automatic physical action.
+Enter acknowledges ordinary battle messages. Down proves usable later player movement.
+
+Load the worktree's `local/private-inputs.ps1` in the launching process; force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Reuse the configured SDK/Godot and build the adapter Debug
+configuration. No instance was retained at transfer, so startup for this witness is required. Use a
+fresh ignored `local/issue1355/` subdirectory for APPDATA/LOCALAPPDATA/TEMP, log and report:
+
+```powershell
+$project = (Resolve-Path -LiteralPath 'remake/game').Path
+$package = (Resolve-Path -LiteralPath 'remake/content/authored/jaro-conversion.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+  --script res://probes/engine_jaro_conversion_observation.gd -- --authored-package $package
+```
+
+The witness supplies ordinary keys only and reads the running session/nodes/input/errors. It observes
+same-session scene delivery, changed retained coordinates, physical alias/camera geometry and visible
+facing, automatic ally combat, played-flag
+suppression and usable movement. Each run is bounded to180s/5MiB; no screenshots, frame collection,
+state injection or fabricated completions. Changed/dead/retained actors, alternate IDs/slots,
+list/control/RNG rules and pending failures are covered by the small engine behavior tests. Run
+`uv run sf2 verify engine`, affected `uv run sf2 verify adapter` and Debug build, plus the clean
+committed planner interpreted as engine-only, direct docs/private/diff/source-size checks and CI.
+
+Preserve completed failures and narrow correction runs under the Issue handoff. Predecessor failures
+remain at [PR1354](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1354#issuecomment-6434646121);
+the twelve #1047 Unknown comparisons are unchanged. No full/research/H4/retired/emulator suite or
+private Battle32 acquisition is implied. Original natural reach, alias timing and presentation remain Unknown.
+
 ## Hidden-spawn authored observation
 
 Start `remake/content/authored/hidden-spawns.json` through `--authored-package`. Up moves the ally

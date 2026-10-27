@@ -45,10 +45,10 @@ The following static code reads and accepted implementation owners control over 
 | --- | --- |
 | Physical, HEAL, Herb, Stay; growth and ordinary victory/defeat | **Supported within admitted content.** [Action/progression seams](gameplay-rules.md#implemented-progression-and-outcome-policies), `BattleGrowthTests`, `Battle02OutcomeTests` and the [Battle02 return owner](../application/session-and-programs.md#battle02-outcomes-and-live-facing) include real growth, live party accounting, defeat cost and retry. Full-game item/effect coverage does not follow. |
 | Flying and physical sleep | **Supported bounded rules and delivery.** [Sleep/Flying tests](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs) and the [Yeel/Battle03 owner](../application/session-and-programs.md#yeel-guide-zone-request-and-sleep-continuation) cover movement, sleep construction, skip and recovery. SLEEP spell, Stun and other statuses are separate gaps. |
-| Flags, conditional/call programs, followers, region activation and typed waits | **Supported primitives**, not missing infrastructure. [Program runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs), [party flags](../../src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs), [activation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs). Reached battle-region scenes and conversions remain unsupported; the [authored hidden-enemy lifecycle](../capability-status.md#hidden-enemy-lifecycle-agreement) consumes modes2/3. |
+| Flags, conditional/call programs, followers, region activation and typed waits | **Supported primitives**, not missing infrastructure. [Program runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs), [party flags](../../src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs), [activation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs). The [authored Jaro composition](../capability-status.md#authored-jaro-conversion-agreement) consumes a finite battle-region scene and two-actor conversion; the [authored hidden-enemy lifecycle](../capability-status.md#hidden-enemy-lifecycle-agreement) consumes modes2/3. |
 | Later ordinary map/dialogue bindings using only admitted operations | **Content/delivery gap only for those operations.** Reuse typed programs, selected maps and private preparation; do not infer an entire later encounter is content-only. Private encounter pins still admit the selected 1/2/3 boundary. |
 | Taros | **Authored physical-effectiveness rule/content/feedback implemented** at the [bounded owner](gameplay-rules.md#finite-taros-physical-effectiveness). Authored [leader cleanup](gameplay-rules.md#finite-enemy-leader-cleanup) is implemented through explicit source-slot binding and the existing outcome return. Authored physical drops, direct receipt/rare Deals fallback and session custody are implemented at the [finite drop owner](gameplay-rules.md#finite-physical-action-item-drops). Wider private encounter/aftermath remains a gap. The outcome reader still rejects unbound enemy leaders, private leader encounters and nonempty defeated programs. |
-| Jaro | **Lifecycle/interface + rule + content gap.** Activation rejects `region-program`; [turn flow](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs) rejects `control-side` for ally automatic. Actor faction/control come from immutable deployment; this is not a supported live conversion merely because enums exist. |
+| Jaro | **Authored finite composition implemented.** Region programs share StoryState and ProgramRunner; two logical actors retain resources while a visual alias is copied. Explicit source control consumes live bit2 and physical-only ally commandset6. Private Battle32 and victory recruitment remain unbound. |
 | Prism Flowers | **Bounded authored implementation.** The [finite laser owner](gameplay-rules.md#finite-prism-laser) implements chosen automatic action, live source-ordered hits, known-no-ally accounting and real authored delivery. Private Battle36, non15 activation, special/edge/debug inputs and original audio/visual timing remain gaps. |
 | Fairy Woods | **Authored spawn lifecycle implemented; private trial state/content gap.** Modes2/3 use finite dormant state, source integer regions and staged round appearances. Private Battle44, trial counter/snapshot/record lifecycle remain unbound. |
 | EGRESS / Angel Wing / Battle0 caller | **Selected Battle02 retreat implemented; wider caller gap**, not missing ordinary defeat. [State types](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) now admit the finite Retreat action/result alongside ordinary actions and Victory/Defeat; [return policy](../../src/Sf2.Remake.Application/Runtime/Exploration/IOutcomeReturnPolicy.cs) requires a field anchor. No session-end destination or suspend gameplay exists. |
@@ -163,7 +163,7 @@ and [victory membership](../../../docs/research/battle32-outcomes-and-moun-entry
 | Physical alias | Reuse field logical-to-physical lookup concepts for a battle visual binding. Two logical actors may refer to one visual slot; presentation ownership is not actor identity. Copy the alias without allocating/healing a new actor; do not serialize Godot node IDs as gameplay data. |
 | Queue | Region conversion precedes round generation. Generate from the resulting live ally placement/HP/agility; do not substitute an enemy queue slot or grant an immediate manual turn. Existing queued-dead handling remains distinct from future control changes. |
 
-Proposed sequence in the existing round continuation:
+Implemented finite sequence in the existing round continuation:
 
 ```text
 activation -> first eligible region row -> commit played flag F386
@@ -172,19 +172,18 @@ activation -> first eligible region row -> commit played flag F386
  -> spawning phase -> generate queue from live state -> eligible actor control
 ```
 
-`BattleTurnFlow.GenerateRound` currently performs activation and generation synchronously.
-`BattleAdvancer` additionally restores the incoming `Story` around advancement. Split this actual
-round prefix into resumable stages before admitting a region program; otherwise the scene cannot
-wait safely or its flags can be lost. Reuse `ProgramRunner`'s call/wait machinery with explicit
-battle context, audit operations that assume `ActiveExploration`, and retain battle resources/queue.
-Do not fabricate an exploration session and copy its endpoint back.
+`BattleRoundContinuation` now retains a Program stage before reset/appearance and queue generation.
+`ProgramRunner` retains `ActiveBattle` and shared PC/callers/waits; GameSession and BattleAdvancer
+preserve accepted story writes instead of restoring incoming StoryState. A whitelist admits only
+battle-safe typed operations; unsupported field operations keep the reached prefix.
 
-Content declares ordered region/program/played-flag rows and the two actor/visual references.
-Finite proposed instructions are `ConvertBattleActor(enemy, ally)` and `SetBattleControl(ally,
-Automatic, strategy)`; the source-specific converter computes the listed deltas, and the runner
-publishes the source-ordered prefix. General roster mutation is not granted to a story callback.
-Godot receives the current visual binding, actor labels/control and existing text/camera waits;
-it does not decide that a friendly appearance makes input available.
+Content declares ordered region/program/played-flag rows, explicit source-slot actor bindings and
+retained visual aliases. `ConvertBattleActor` and `JoinBattleForceAi` preserve the source-ordered
+membership/list/activation writes. `SourceAllyControl` reads live bit2 for the explicitly admitted
+ally deployment. `SourceAllyAi` implements finite empty-loadout commandset6, with ally-specific target
+selection and no enemy preprocessing/LastTarget write. The [implementation owner](gameplay-rules.md#jaro-conversion-and-source-ally-commandset6)
+records pinned source clarification and Unsupported boundaries. Godot consumes current bindings and
+typed text/camera waits without making nodes or friendly appearance authoritative.
 
 Dead ally23 must stay dead and unscheduled. Already-joined23 can leave143 uninitialized by the
 fresh initializer; the source scene still reads retained143 without a membership guard. A modern
@@ -268,7 +267,7 @@ hidden enemy appears; the invitation's wording is not an all-fifteen-kills predi
 | STARTING / HIDDEN / literal3 definition | Content admits only implemented modes, source starting position and region references. Preserve source triangle/quad form and integer region predicate; current four-vertex geometric admission alone is insufficient for the trial's type3 row. |
 | Dormant versus loaded definition | Add finite runtime spawn initialization state to `BattleActorState`; its effective maxHP resolves to zero while uninitialized, otherwise existing definition/progress. Do not mutate the shared actor definition or duplicate ordinary maxHP authority. Initialize this state explicitly for fresh/controlled entries. |
 | Reset attempt | Domain checks source bound and all coordinate occupancy, including dead/self occupants. Success restores source stats/loadout/placement/orders and retains the passed activation word. Refusal sets max/currentHP0 and absent placement while retaining activation/held regions; it is not an exception or successful appearance. |
-| Round prefix | Application runs activation → region program → ordered reset candidates → actual spawn presentation → generation. The complete reset list publishes before the first appearance; retain list/cursor/wait so resumption cannot reset twice or generate early. The finite spawn continuation is implemented; Jaro remains unsupported. |
+| Round prefix | Application runs activation → region program → ordered reset candidates → actual spawn presentation → generation. The complete reset list publishes before the first appearance; retain list/cursor/wait so resumption cannot reset twice or generate early. The finite spawn continuation and authored Jaro program stage are implemented; private/trial consumers remain unbound. |
 | Fresh retry | Reinitialize encounter actors/regions separately from session best record. No immediate regeneration inside a death reaction and no persisted queue inferred from a new attempt. |
 
 HIDDEN requires dead plus held region and maxHP0. Successful appearance followed by ordinary death
@@ -422,7 +421,7 @@ proposal an architectural prerequisite for any rule.
 | Leader cleanup / Taros | Authored effectiveness, cleanup and physical drops are implemented; private encounter/aftermath gaps remain. [Taros design](#taros-effectiveness-cleanup-loot-and-acquisition). | Complete Taros chapter still waits for private encounter and actual aftermath bindings. Cleanup is reusable by Prism/Fairy objectives, not by Battle0. |
 | Attack/area spells, AURA, DETOX, BOOST/SLOW, MUDDLE and wider statuses | HEAL/physical sleep supported; other effects lack admitted action rules, multi-target/status publication and presentation. [Spell contract](../../../docs/design/contracts/spell-resolution.md). | Add one concrete action family through existing preparation/reaction/after-turn owners. AURA multi-target recovery and DETOX status clearing are distinct; buffs require refresh/counter expiry; MUDDLE needs control/target semantics. Prism's finite multi-target work can inform these but is not a mandatory universal spell foundation. |
 | Prism laser | Finite authored decision/action, source-slot binding and visual delivery are implemented; private chapter/special-input gaps remain. [Laser design](#prism-flowers-decision-ray-versus-construction-hit-list). | Independent of broad spell/status completion. Complete Battle36 also requires its ordinary enemy capabilities, leader cleanup and story/resources; laser support alone is not chapter acceptance. |
-| Region programs / Jaro / ally AI | Resumable round prefix, live control and visual aliases; [Jaro design](#jaro-region-programs-and-two-logical-actors-sharing-a-visual). | Before genuine Jaro conversion and source ally-automatic dispatch. Reuse party flags; no requirement to first build Caravan services. Ally AI is a new rule, not a faction toggle on physical enemy AI. |
+| Region programs / Jaro / ally AI | Implemented authored resumable round prefix, live control and visual aliases; [Jaro design](#jaro-region-programs-and-two-logical-actors-sharing-a-visual). | Private Battle32 and full victory recruitment remain separate consumers. Reuse party flags; no requirement to first build Caravan services. Ally AI is a new rule, not a faction toggle on physical enemy AI. |
 | Hidden spawn and trial record | Shared round continuation plus finite reset lifecycle; trial clock/result choice separate. [Fairy design](#fairy-woods-spawning-and-result-state-have-different-lifetimes). | Reuse accepted round-prefix work when available; otherwise introduce only its spawn consumer. Source geometry differences must be resolved before claiming Battle44 activation. Record persistence waits for saving; spawn work need not wait for scoring choice. |
 | Caravan travel / raft | Travel state/controller + selected programs; [transport design](#transport-possession-mode-position-and-service-access). | Independent of full battle import when given explicit initial acquisition. Caravan's complete source consumer is the better first travel slice; raft landing awaits its named gap decision, not a guessed clone. |
 | Caravan party/depot/item/purge | Joined/active flags and slots exist; member selection/relief, 64-slot depot, exchange and service continuation absent. [Service contract](../../../docs/design/contracts/service-interactions.md#caravan-source-boundary), [custody](../../../docs/design/synthesis/progression-and-economy.md#custody-storage-and-active-membership). | After one inventory receipt/store rule, implement one service result. Boarding is not required to design the transaction, but natural C-menu availability needs separate field binding. Preserve twelve-member ordinary guard and leader/curse refusals. |

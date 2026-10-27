@@ -16,8 +16,8 @@ internal static class BattleAdvancer
         var battle = BattleTurnFlow.Start(definition, start);
         List<SessionObservation> observations = [];
         if (start.NewBattle is not null) observations.Add(new(1, 0, "new-battle-initialized"));
-        var result = Advance(new(Guid.NewGuid(), 0, observations.Count, battle,
-            null, SessionStopReason.SimulationWait), observations, rules);
+        var result = Advance(new(Guid.NewGuid(), 0, observations.Count, new ActiveBattle(battle, null),
+            new Exploration.StoryState(start.StoryFlags, partyLists: MapPartyMembership.Rebuild(start.StoryFlags, Content.Scenarios.BattleStoryDefinition.PartyFlags)), SessionStopReason.SimulationWait), observations, rules);
         // A private new-battle entry is one transaction through supported initial control.
         if (start.NewBattle is not null && result.Failure is { } failure)
             throw new BattleRuleException(failure.Code, failure.Field,
@@ -30,9 +30,7 @@ internal static class BattleAdvancer
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
     {
-        var result = AdvanceCore(current, observations, rules);
-        return ReferenceEquals(result.Snapshot.Story, current.Story) ? result
-            : result with { Snapshot = result.Snapshot.WithStory(current.Story) };
+        return AdvanceCore(current, observations, rules);
     }
 
     private static SessionResult AdvanceCore(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
@@ -47,7 +45,7 @@ internal static class BattleAdvancer
             try
             {
                 if (BattleOutcomeSelection.Check(rules.Outcome, battle) is not null)
-                    return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait),
+                    return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait),
                         observations.AsReadOnly(), SessionStopReason.SimulationWait);
                 if (BattleTurnFlow.AtRoundEnd(battle))
                 {
@@ -89,10 +87,10 @@ internal static class BattleAdvancer
                     revision++;
                     observations.Add(new(++sequence, revision, "player-control", actor.Actor));
                     var selection = new BattleSelection(actor.Actor, preview, BattleSelectionStage.Movement);
-                    var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, battle, selection, SessionStopReason.PlayerInput);
+                    var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(battle, selection), current.Story, SessionStopReason.PlayerInput);
                     return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
                 }
-                var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
+                var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
                 if (actor.Control != BattleControl.Automatic || actor.AiStrategy is not { } strategy)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
                 var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression);
@@ -112,19 +110,19 @@ internal static class BattleAdvancer
             }
             catch (BattlePolicyFault error)
             {
-                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.Faulted),
                     observations.AsReadOnly(), SessionStopReason.Faulted, BattleChoices.Failure(error));
             }
             catch (BattleDecisionRuleFault error)
             {
-                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.Faulted),
                     observations.AsReadOnly(), SessionStopReason.Faulted,
                     new(SessionFailureKind.InvariantFailure, "decision-rule-failure", "rules.decisions",
                         $"{error.Identity}: {error.Operation}"));
             }
             catch (BattleActionRuleFault error)
             {
-                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.Faulted),
                     observations.AsReadOnly(), SessionStopReason.Faulted, BattleChoices.Failure(error));
             }
             catch (BattleRuleException error)
@@ -132,12 +130,12 @@ internal static class BattleAdvancer
                 // Keep the last committed state. A rejected round, control admission or
                 // enemy action cannot publish partial changes or random draws.
                 var reason = error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted;
-                return new(new(current.SessionId, revision, sequence, battle, null, reason), observations.AsReadOnly(), reason,
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, reason), observations.AsReadOnly(), reason,
                     new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.InvariantFailure,
                         error.Code, error.Field, error.Code.Replace('-', ' ')));
             }
         }
-        return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait),
+        return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait),
             observations.AsReadOnly(), SessionStopReason.SimulationWait);
     }
 }

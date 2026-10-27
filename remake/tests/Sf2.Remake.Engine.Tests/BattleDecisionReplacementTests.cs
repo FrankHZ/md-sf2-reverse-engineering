@@ -169,6 +169,7 @@ public sealed class BattleDecisionReplacementTests
     }
 
     [Theory]
+    [InlineData("visuals")]
     [InlineData("throw")]
     [InlineData("hp")]
     [InlineData("foreign-memory")]
@@ -186,7 +187,12 @@ public sealed class BattleDecisionReplacementTests
     public void FailedDecisionPublishesNothingAndRetainsEarlierPlayerCommitAndAutomaticQueueEntry(string fault)
     {
         var rule = new BrokenDecision(fault);
-        var session = Open(Document("decision-rule-demo"), Rules(rule)); var before = session.Current.Battle;
+        var document = Document("decision-rule-demo");
+        if (fault == "visuals") document["start"]!["story"] = JsonNode.Parse("""
+            {"flags":[],"retainedSourceSlots":[],"aliases":[{"actor":"raider","slot":5}],
+             "visuals":[{"slot":5,"appearance":"raider","x":0,"y":0,"facing":3}]}
+            """);
+        var session = Open(document, Rules(rule)); var before = session.Current.Battle;
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var result = Send(session, new Confirm());
         Assert.Equal(SessionFailureKind.InvariantFailure, result.Failure!.Kind);
@@ -195,6 +201,7 @@ public sealed class BattleDecisionReplacementTests
         Assert.Equal(SessionStopReason.Faulted, result.StopReason);
         Assert.Equal(before.MainSeed, result.Snapshot.Battle.MainSeed);
         Assert.Equal(before.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
+        Assert.Same(before.Visuals, result.Snapshot.Battle.Visuals);
         Assert.Equal(before.Actors.Select(actor => (actor.Hp, actor.Position, actor.LastTarget, actor.AiMemory)),
             result.Snapshot.Battle.Actors.Select(actor => (actor.Hp, actor.Position, actor.LastTarget, actor.AiMemory)));
         Assert.Equal(1, result.Snapshot.Battle.Cursor); Assert.Equal(Raider, BattleTurnFlow.QueuedActor(result.Snapshot.Battle).Actor);
@@ -328,6 +335,7 @@ public sealed class BattleDecisionReplacementTests
             var result = _inner.Decide(battle, actor, physical);
             return fault switch
             {
+                "visuals" => result with { Battle = result.Battle.With(visuals: new(new Dictionary<ActorRef, int>(), [])) },
                 "hp" => result with { Battle = result.Battle.With(actors: result.Battle.Actors.Select(row => row.Actor == actor ? row.With(hp: 1) : row)) },
                 "foreign-memory" => result with { Battle = result.Battle.With(actors: result.Battle.Actors.Select(row => row.Actor == actor ? row : row.With(aiMemory: 1))) },
                 "position" => result with { Battle = result.Battle.With(actors: result.Battle.Actors.Select(row => row.Actor == actor ? row.With(position: result.Destination) : row)) },

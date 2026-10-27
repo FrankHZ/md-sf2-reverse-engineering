@@ -1,10 +1,46 @@
 # Session and Resumable Programs
 
+## Battle-context region programs
+
+Physical position is updated at initial placement and acknowledged movement delivery, never by
+blanket snapshot synchronization. Conversion's intermediate logical placement preserves the old
+ally physical slot even when the later alias copy fails. Decision/action transaction invariants
+preserve the visual state; selected rules cannot replace or drop its mappings.
+
+The finite round order is activation → first eligible ordered region row → played flag → shared
+ProgramRunner → spawn/reset/appearance → queue. Wrapper admission tests only region and played flag;
+it adds no HP, joined-membership or conversion-completion guard. Both matching rows choose the first.
+`BattleRoundState.Program` retains the round stage while `ActiveBattle` and the existing `StoryState`
+cursor, callers and typed wait remain authoritative. It never creates an exploration world.
+
+Standalone authored battle programs/texts live in `BattleStoryDefinition`; they use the same typed
+instruction decoder, ProgramRunner and completion dispatcher as field programs. Battle-safe operations
+are ordinary flag/branch/jump/call/return/end, text cursor/simple dialogue/close, ticks, semantic camera
+target/CameraWait, facing, `ConvertBattleActor` and `JoinBattleForceAi`. Field-only operations reject
+at the reached PC. Source map-script epilogues, entity-service calls, rich field text/media and other
+presentation cues are not silently admitted. Story updates survive BattleAdvancer, selection commands
+and GameSession publication; no outer incoming-story restore can erase the program's writes.
+
+`BattleStoryOperations` commits conversion and JoinForce steps in source order. A late invalid alias
+returns the last committed snapshot with unchanged conversion PC and the played flag held. Such an
+Unsupported session remains stopped; it is not reset/retried from the wrapper. Wrong/stale completions
+at a valid wait reject without advancing PC, RNG, conversion or queue. Actual matching acknowledgement
+or presentation completion resumes once, including nested calls. The existing spawn phase runs only
+after the program returns; queue generation sees the resulting live actors. A later battle-action
+failure retains the ordinary committed movement/scene prefix.
+
+`BattleVisualState` holds explicit logical-to-physical aliases and retained physical appearance,
+coordinates/facing for the finite authored scene. Camera/text resolves that alias even for a dead
+ally; facing skips the lookup for HP0 allies. Logical combat identity and resources stay with the two
+actors. Godot projects the bound appearance and ordinary movement from the session, never deciding
+faction/control from a sprite. Full original physical entity services and Battle32 victory recruitment
+are separate unsupported consumers. See the [rule owner](../domain/gameplay-rules.md#jaro-conversion-and-source-ally-commandset6).
+
 ## Round prefix and appearance continuation
 
-`BattleRoundContinuation` uses the existing `GameSession` publisher. Activation and the no-region-
-program boundary precede the ordered whole-list reset. One immutable `BattleRoundState` then holds
-only successful actor IDs, appearance cursor and completion token; live actors remain solely in
+`BattleRoundContinuation` uses the existing `GameSession` publisher. Activation and the optional battle-context
+program stage precede the ordered whole-list reset. One immutable `BattleRoundState` then holds
+successful actor IDs, appearance cursor and completion token; live actors remain solely in
 `EngineBattleState`. Both successful and refused reset facts are observable. No future battle or
 parallel region store is retained.
 

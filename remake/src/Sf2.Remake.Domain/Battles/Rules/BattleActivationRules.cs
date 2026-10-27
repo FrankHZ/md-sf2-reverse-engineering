@@ -7,7 +7,7 @@ internal static class BattleActivationRules
     internal static void Validate(BattleDefinition definition)
     {
         var initialization = definition.Initialization!;
-        if (initialization.RegionProgram != BattleRegionProgram.None)
+        if (initialization.RegionProgram == BattleRegionProgram.Required)
             throw new BattleRuleException("region-program", "encounter.regionProgram", true);
         var ids = new HashSet<byte>();
         foreach (var region in initialization.Regions)
@@ -16,6 +16,9 @@ internal static class BattleActivationRules
                 region.Vertices.Any(point => point is null || point.X >= 48 || point.Y >= 48))
                 throw new BattleRuleException("activation-region", "encounter.regions");
         }
+        if (initialization.RegionPrograms.Any(row => !ids.Contains(row.Region) || row.PlayedFlag is < 0 or > 65535 || string.IsNullOrWhiteSpace(row.Program)) ||
+            initialization.RegionProgram != BattleRegionProgram.Authored && initialization.RegionPrograms.Count != 0)
+            throw new BattleRuleException("region-program-rows", "encounter.regionPrograms");
         foreach (var deployment in definition.Deployments)
         {
             if (deployment.Initialization is not { } source)

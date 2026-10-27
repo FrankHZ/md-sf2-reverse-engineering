@@ -97,7 +97,8 @@ public sealed class BattleActorState
     public BattleDeploymentDefinition Deployment { get; }
     public BattleActorDefinition Definition => Deployment.Definition;
     public BattleFaction Faction => Deployment.Faction;
-    public BattleControl Control => Deployment.Control;
+    public BattleControl Control => Deployment.SourceAllyControl
+        ? (ActivationWord & 4) != 0 ? BattleControl.Automatic : BattleControl.Player : Deployment.Control;
     public BattleStrategyRef? AiStrategy => Deployment.AiStrategy;
     public int ProcessingOrder => Deployment.ProcessingOrder;
     public bool IsAlly => Faction == BattleFaction.Ally;
@@ -139,7 +140,7 @@ public sealed class BattleActorState
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,
     int ProcessingOrder, BattleControl Control, BattleStrategyRef? AiStrategy, MapPosition Position,
-    BattleDeploymentInitialization? Initialization = null)
+    BattleDeploymentInitialization? Initialization = null, bool SourceAllyControl = false)
 {
     public ActorRef Actor => Definition.Actor;
 }
@@ -196,9 +197,9 @@ public sealed class EngineBattleState
     internal EngineBattleState(BattleDefinition definition, IEnumerable<BattleActorState> actors,
         uint mainSeed, uint thinkingSeed, int round, IEnumerable<TurnOrderEntry<ActorRef>> queue, int cursor, uint? gold,
         NewBattleStartPolicy? startPolicy = null, BattleRegionState? regions = null, ActorRef? firstAlly = null,
-        BattleItemCustody? itemCustody = null, BattleDeathCredit? deathCredit = null)
+        BattleItemCustody? itemCustody = null, BattleDeathCredit? deathCredit = null, BattleVisualState? visuals = null)
     {
-        Definition = definition; Actors = Array.AsReadOnly(actors.ToArray());
+        Visuals = visuals; Definition = definition; Actors = Array.AsReadOnly(actors.ToArray());
         MainSeed = mainSeed; ThinkingSeed = thinkingSeed; Round = round;
         Queue = Array.AsReadOnly(queue.ToArray()); Cursor = cursor;
         Gold = gold; StartPolicy = startPolicy; Regions = regions; DeathCredit = deathCredit ?? (firstAlly is { } ally ? new(ally) : null); ItemCustody = itemCustody;
@@ -216,16 +217,17 @@ public sealed class EngineBattleState
     // Source BATTLESCENE_FIRST_ALLY survives turns without a scene. No start default.
     public ActorRef? FirstAlly => DeathCredit?.Ally;
     public BattleDeathCredit? DeathCredit { get; }
+    public BattleVisualState? Visuals { get; }
     public IEnumerable<(ActorRef? Actor, byte AlteredAgility)> TurnOrder => Queue.Select(entry => (entry.Actor, entry.AlteredAgility));
     internal IReadOnlyList<TurnOrderEntry<ActorRef>> Queue { get; }
     public BattleActorState GetActor(ActorRef actor) => Actors.Single(a => a.Actor == actor);
     internal EngineBattleState With(IEnumerable<BattleActorState>? actors = null, uint? mainSeed = null,
         int? round = null, IEnumerable<TurnOrderEntry<ActorRef>>? queue = null, int? cursor = null, uint? gold = null,
         uint? thinkingSeed = null, BattleRegionState? regions = null, ActorRef? firstAlly = null,
-        BattleItemCustody? itemCustody = null, BattleDeathCredit? deathCredit = null) =>
+        BattleItemCustody? itemCustody = null, BattleDeathCredit? deathCredit = null, BattleVisualState? visuals = null) =>
         new(Definition, actors ?? Actors, mainSeed ?? MainSeed, thinkingSeed ?? ThinkingSeed,
             round ?? Round, queue ?? Queue, cursor ?? Cursor, gold ?? Gold, StartPolicy, regions ?? Regions, firstAlly ?? FirstAlly,
-            itemCustody ?? ItemCustody, deathCredit ?? (firstAlly is { } ally ? new(ally) : DeathCredit));
+            itemCustody ?? ItemCustody, deathCredit ?? (firstAlly is { } ally ? new(ally) : DeathCredit), visuals ?? Visuals);
 }
 
 internal sealed class BattleRuleException(string code, string field, bool unsupported = false)

@@ -1,5 +1,24 @@
 # Godot Host and Presentation
 
+## Authored battle-region scene
+
+`BattleStoryView` consumes shared StoryState dialogue/camera/tick waits while the mode remains Battle.
+The authored scene shows project-written paraphrased text, focuses the existing map transform on the
+retained visual slot, and accepts ordinary Confirm. A mounted presentation must survive a process
+opportunity before completion or acknowledgement; hidden/suspended views do not deliver. CameraWait
+completes after applying the actual map transform. This is modern semantic delivery, not original
+camera speed, portrait, audio or frame timing. No menu/layout/input redesign is part of this slice.
+
+`BattleMapViewport` maps logical actors to retained physical appearances. Conversion reuses the
+existing marker/sprite node rather than allocating an actor or visual at the conversion boundary.
+Initial placement resolves live coordinates once; acknowledged movement alone updates that physical
+slot's position/facing. Logical conversion writes do not move the old ally slot before alias copy,
+and departed subjects retain their last physical position. Normal movement animates that binding; dead-ally camera/text can retain the physical scene subject
+without reviving gameplay HP. Effective control/activation, aliases, story cursor/callers/wait,
+actual text visibility, camera slot/focus, marker direction indicator and geometry and failures are exposed by the existing
+semantic observation API. Unsupported source physical services/private Battle32 media remain explicit.
+See the [ordinary-key witness](../development-and-verification.md#jaro-conversion-authored-observation).
+
 ## Authored enemy appearance
 
 `BattleAppearanceView` consumes the pending round's actor/list/token through the ordinary battle

@@ -18,6 +18,9 @@ internal sealed partial class BattleMapViewport : Control
     private readonly Dictionary<(int Sprite, int Direction, int Frame), ImageTexture> _textures = [];
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
     private BattleMovementState? _movement;
+    private BattleVisualState? _battleVisuals;
+    private ActorRef PhysicalActor(ActorRef actor) => _battleVisuals is not null && _battleVisuals.Aliases.TryGetValue(actor, out int slot) &&
+        _battleVisuals.Visuals.TryGetValue(slot, out var visual) ? visual.Appearance : actor;
     private double _movementElapsed;
     private double _movementProgress;
     private bool _movementDelivered;
@@ -149,8 +152,9 @@ internal sealed partial class BattleMapViewport : Control
         if (what == NotificationPredelete) ReleaseTextures();
     }
 
-    internal void Present(BattlePresentation projection)
+    internal void Present(BattlePresentation projection, SessionSnapshot current)
     {
+        _battleVisuals = current.Battle.Visuals;
         if (_movement?.Token != projection.Movement?.Token)
         { _movementElapsed = _movementProgress = 0; _movementDelivered = false; }
         _movement = projection.Movement;
@@ -160,10 +164,15 @@ internal sealed partial class BattleMapViewport : Control
         _target.Clear();
         foreach (var actor in projection.Markers)
         {
-            var node = _markers[actor.Actor];
+            var physical = PhysicalActor(actor.Actor);
+            var node = _markers[physical];
+            node.SetMeta("logicalActor", actor.Actor.Value);
+            node.SetMeta("physicalAppearance", physical.Value);
             node.Visible = true; node.Rotation = 0;
             node.Position = new(actor.Position.X * CellSize + 2, actor.Position.Y * CellSize + 4);
-            node.Text = actor.Text;
+            int? shownFacing = _battleVisuals is not null && _battleVisuals.Aliases.TryGetValue(actor.Actor, out int slot) &&
+                _battleVisuals.Visuals.TryGetValue(slot, out var visual) ? visual.Facing : actor.Facing;
+            node.Text = actor.Text + FacingMark(shownFacing);
             node.Modulate = actor.Selected ? Colors.Gold : actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;
             if (actor.Targeted)
             {
@@ -176,12 +185,12 @@ internal sealed partial class BattleMapViewport : Control
                     _board.AddChild(border); _target.Add(border);
                 }
             }
-            if (_sprites.TryGetValue(actor.Actor, out var sprite))
+            if (_sprites.TryGetValue(physical, out var sprite))
             {
                 node.Hide(); sprite.Show();
                 sprite.Position = new((actor.Position.X + 0.5f) * CellSize, (actor.Position.Y + 0.5f) * CellSize);
-                int id = actor.DeathEffect ? 63 : _spriteIds[actor.Actor];
-                int facing = actor.Facing ?? (int)sprite.GetMeta("facing", 3);
+                int id = actor.DeathEffect ? 63 : _spriteIds[physical];
+                int facing = shownFacing ?? (int)sprite.GetMeta("facing", 3);
                 int direction = facing switch { 1 => 0, 3 => 2, _ => 1 };
                 sprite.Texture = Texture(id, direction);
                 sprite.FlipH = facing == 0;
@@ -189,6 +198,16 @@ internal sealed partial class BattleMapViewport : Control
                 sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", facing); sprite.SetMeta("walkingFrame", 0);
             }
         }
+        // A dead converted ally can still be the source camera/text subject. Preserve
+        // the existing physical slot throughout the scene, without a gameplay revival.
+        if (current.BattleRound is { Program: true } && _battleVisuals is not null)
+            foreach (var visual in _battleVisuals.Visuals.Values)
+                if (_markers.TryGetValue(visual.Appearance, out var retained) && !retained.Visible)
+                {
+                    retained.Visible = true; retained.Position = new(visual.Position.X * CellSize + 2, visual.Position.Y * CellSize + 4);
+                    retained.Text = visual.Appearance.Value + FacingMark(visual.Facing); retained.Modulate = Colors.LightCoral;
+                    retained.SetMeta("physicalAppearance", visual.Appearance.Value);
+                }
         foreach (var node in _preview) { _board.RemoveChild(node); node.QueueFree(); }
         _preview.Clear();
         foreach (var position in projection.Preview)
@@ -201,6 +220,17 @@ internal sealed partial class BattleMapViewport : Control
         _focus = projection.Focus;
         Frame();
         ProjectMovement();
+    }
+
+    private static string FacingMark(int? facing) => facing switch
+    { 0 => " >", 1 => " ^", 2 => " <", 3 => " v", _ => "" };
+
+    internal void PresentStoryCamera(SessionSnapshot current)
+    {
+        var position = current.Story.CameraEntitySlot is { } slot && current.Battle.Visuals is { } visuals &&
+            visuals.Visuals.TryGetValue(slot, out var visual) ? visual.Position : current.Story.CameraTarget;
+        if (position is null) return;
+        _focus = [position]; Frame(); QueueRedraw();
     }
 
     internal CompletePresentation? ConsumeMovement(double delta, bool reduced)
@@ -221,13 +251,14 @@ internal sealed partial class BattleMapViewport : Control
         var from = new Vector2(movement.From.X, movement.From.Y);
         var to = new Vector2(movement.To.X, movement.To.Y);
         var position = from.Lerp(to, (float)_movementProgress) * CellSize;
-        _markers[movement.Actor].Position = position + new Vector2(2, 4);
-        if (_sprites.TryGetValue(movement.Actor, out var sprite))
+        var physical = PhysicalActor(movement.Actor);
+        _markers[physical].Position = position + new Vector2(2, 4);
+        if (_sprites.TryGetValue(physical, out var sprite))
         {
             int direction = movement.Facing switch { 1 => 0, 3 => 2, _ => 1 };
             int frame = _movementProgress is > 0 and < 1 ? (int)(_movementProgress * 4) % 2 : 0;
             sprite.Position = position + Vector2.One * (CellSize / 2f);
-            sprite.Texture = Texture(_spriteIds[movement.Actor], direction, frame);
+            sprite.Texture = Texture(_spriteIds[physical], direction, frame);
             sprite.FlipH = movement.Facing == 0;
             sprite.SetMeta("facing", movement.Facing); sprite.SetMeta("walkingFrame", frame);
         }
@@ -284,6 +315,7 @@ internal sealed partial class BattleMapViewport : Control
             worldSize.Y <= Size.Y ? (Size.Y - worldSize.Y) / 2 : Mathf.Clamp(desired.Y, Size.Y - worldSize.Y, 0));
     }
 
+    internal IReadOnlyList<MapPosition> CameraFocus => _focus;
     internal int BoardChildren => _board.GetChildCount();
     public string ReadTerrainJson() => System.Text.Json.JsonSerializer.Serialize(new
     {
@@ -306,8 +338,9 @@ internal sealed partial class BattleMapViewport : Control
     internal bool PreviewInsideMap => _preview.Count > 0 && GetGlobalRect().Encloses(_preview[^1].GetGlobalRect());
     internal IEnumerable<object> ObserveActors(IEnumerable<BattleActorState> actors) => actors.Select(a =>
     {
-        var node = _markers[a.Actor];
-        return new { id = a.Actor.Value, hp = a.Hp, mp = a.Mp, exp = a.Exp, kills = a.Kills, defeats = a.Defeats, x = a.Position?.X, y = a.Position?.Y,
+        var physical = PhysicalActor(a.Actor);
+        var node = _markers[physical];
+        return new { id = a.Actor.Value, physicalAppearance = physical.Value, control = a.Control.ToString(), facing = a.Facing, hp = a.Hp, mp = a.Mp, exp = a.Exp, kills = a.Kills, defeats = a.Defeats, x = a.Position?.X, y = a.Position?.Y,
             initialized = a.Initialized, maxHp = a.MaxHp, maxMp = a.MaxMp, level = a.Level, defense = a.Defense, move = a.Definition.Move,
             learned = a.Spells, leader = a.Definition.Physical?.Leader == true,
             attack = a.Attack, sourceAttack = a.Definition.Attack, mover = a.Definition.Mover.ToString(),
@@ -316,8 +349,8 @@ internal sealed partial class BattleMapViewport : Control
             primaryOrder = a.Deployment.Initialization?.PrimaryOrder, secondaryOrder = a.Deployment.Initialization?.SecondaryOrder,
             commandset = a.Deployment.Initialization?.AiCommandset,
             items = a.SourceLoadout?.Items, spells = a.SourceLoadout?.Spells,
-            nodeX = node.Position.X, nodeY = node.Position.Y, nodeRotation = node.Rotation, nodeAlpha = node.Modulate.A, visible = _sprites.TryGetValue(a.Actor, out var image) ? image.Visible : node.Visible, text = node.Text,
-            sprite = _sprites.TryGetValue(a.Actor, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
+            nodeX = node.Position.X, nodeY = node.Position.Y, nodeRotation = node.Rotation, nodeAlpha = node.Modulate.A, visible = _sprites.TryGetValue(physical, out var image) ? image.Visible : node.Visible, text = node.Text,
+            sprite = _sprites.TryGetValue(physical, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
                 resourceSelector = sprite.Texture is ImageTexture bound && _resourceSelectors.TryGetValue(bound, out var selector)
                     ? selector : null,
                 texturePresent = sprite.Texture is not null, visibleInTree = sprite.IsVisibleInTree(),

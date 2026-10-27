@@ -14,19 +14,27 @@ internal static class BattleTurnFlow
         {
             var input = inputs[deployment.Actor];
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
-                deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
+                input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
                     ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
                 progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0),
-                initialized: input.Initialized ?? true);
+                initialized: input.Initialized ?? true, retainDeadPosition: input.RetainDeadPosition);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
-            regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody);
-        return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);
+            regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals);
+        if (start.NewBattle is not null) initial = BattleInitializationRules.Initialize(initial, start);
+        return initial.Visuals is { } visuals ? initial.With(visuals: visuals.ProjectStart(initial.Actors)) : initial;
     }
 
     // Encounter policy is validated at Content admission and reusable session start, even for dead actors.
     internal static void ValidateDeployment(BattleDeploymentDefinition deployment)
     {
+        if (deployment.SourceAllyControl)
+        {
+            Require(deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
+                deployment.AiStrategy is { Value: "source-ally-physical" } && deployment.Initialization is not null,
+                "source-ally-control", "placements.controlPolicy", true);
+            return;
+        }
         Require((deployment.Control == BattleControl.Player && deployment.AiStrategy is null) ||
             (deployment.Control == BattleControl.Automatic && deployment.AiStrategy is { } strategy &&
                 !string.IsNullOrWhiteSpace(strategy.Value)), "control-ai", "placements.control/aiStrategy", true);
@@ -37,6 +45,7 @@ internal static class BattleTurnFlow
     // Used by the real Content admission and again by the reusable public session start boundary.
     internal static void ValidateStart(BattleDefinition definition, BattleStartInput start)
     {
+        Require(start.StoryFlags.All(flag => flag is >= 0 and <= 65535), "story-flag", "start.storyFlags");
         Require(start.Encounter == definition.Encounter, "missing-encounter", "start.encounter");
         Require(definition.ItemDrops is null || start.ItemCustody is not null,
             "drop-custody-unknown", "start.itemCustody", true);
@@ -78,10 +87,13 @@ internal static class BattleTurnFlow
                     "actor-progress", "start.actors.progress");
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
-            Require(input.Status == 0 || start.NewBattle is not null, "actor-status", "start.actors.status", true);
+            Require(input.Status == 0 || start.NewBattle is not null || definition.Initialization?.RegionProgram == BattleRegionProgram.Authored, "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
                 "missing-accounting", "start.actors");
-            if (deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;
+            if (input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;
+            if (deployment.SourceAllyControl)
+                Require(input.ActivationWord is not null, "missing-activation-word", "start.actors.activationWord", true);
+            if (input.Absent) continue;
             var position = input.PositionOverride ?? deployment.Position;
             Require(definition.Contains(position), "start-placement-bounds", "start.actors.positionOverride");
             var tile = definition.Terrain[position.Y * 48 + position.X];

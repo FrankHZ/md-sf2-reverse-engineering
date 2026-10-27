@@ -1,5 +1,35 @@
 # Runtime Profiles and Trust
 
+## Authored battle-story admission
+
+The standalone v7 `jaro-conversion.json` is project-authored controlled content. Optional root
+`battleStory` contains typed `programs` and plain `texts`; it reuses the existing instruction decoder.
+The encounter declares `regionProgram: "authored"` and ordered `regionPrograms` rows with `region`,
+`playedFlag`, and `program`. Rows reference declared source-integer regions and valid program entries.
+Programs/call/branch targets are validated; supported operations are checked again at their reached
+battle context, so an unsupported field instruction preserves the already executed story prefix.
+
+Each actor has one explicit unique source slot. The ally deployment opts into
+`controlPolicy: "source-ally-activation"`, retains `control: "player"`, and binds
+`aiStrategy: "source-ally-physical"`. Its activation word selects live control; no mutable faction
+field is introduced. Controlled `start.actors` can explicitly supply `absent` and `retainDeadPosition`.
+Optional `start.story` contains flags, logical `aliases` (actor/slot), physical `visuals`
+(slot/appearance/x/y/facing), and `retainedSourceSlots`. Physical slots0–48 are finite, and retained
+alias bytes0–255 are preserved: a missing/invalid lookup rejects when used, after preceding writes.
+No sprite or resource is fabricated for an invalid retained alias. Each physical slot requires a
+unique appearance actor in this finite renderer; duplicate appearances are Unsupported. Placed
+logical actors sharing one alias must agree on initial coordinates. World v8 plus nested battleStory
+is explicitly Unsupported; the validated standalone catalog cannot be silently dropped.
+
+An already-joined conversion source requires an explicit retained enemy slot declaration plus actual
+placement override or explicit absence. Fresh initialization is not a substitute for that retained
+slot. HP/MP/status/activation are controlled inputs; immutable stats/loadout belong to the explicitly
+authored actor definition. The engine never imports Battle32's fresh JAR definition to reconstruct
+missing retained data. Source/target ActorRefs and numeric source slots may change together without
+changing conversion legality. This admission adds no private Battle32 importer or natural-start claim.
+The bounded [source ally rule](../domain/gameplay-rules.md#jaro-conversion-and-source-ally-commandset6)
+currently consumes empty items/spells and ordinary unarmed range1 only; broader loadouts remain Unsupported.
+
 ## Authored hidden-spawn initialization
 
 The optional v7 encounter `initialization` reuses `BattleInitializationDefinition`: explicit
@@ -12,7 +42,8 @@ no-trigger sentinel. Type3 uses three vertices; no unused fourth point is inferr
 Each deployment declares `initialization` with `baseAiWord` (null for allies), `spawnMode`0/2/3,
 primary/secondary regions, filler, commandset and primary/secondary orders. Source resettable enemies
 have no growth, unequipped Herb/empty inventory and empty source spells. Difficulty0 is fixed for
-controlled authored reset. Other equipment, modes and region programs reject instead of approximating.
+controlled authored reset. Other equipment and modes reject instead of approximating. The separately admitted authored
+region-program composition is described above.
 
 Controlled actor input declares `initialization: { "initialized": false, "activationWord": 768 }`
 for a dormant mode3 example. Every actor in an initialized controlled encounter supplies both fields;
