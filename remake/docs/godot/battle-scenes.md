@@ -8,6 +8,19 @@ reveal, fresh Confirm acknowledgement, a soft blue effect and authored tone, the
 The scene remains in battle until the matching close completion; field return uses the ordinary
 exploration presenter. Existing menu/input layout is unchanged.
 
+Angel Wing uses the same consumer with a distinct item payment and `CHESTER used Angel Wing!` text
+for the controlled native party. Retreat resolves the existing active scene's admitted member name,
+using the actor's processing order just like the ordinary scene presenter; authored packages without
+that content retain the actor ID fallback. Shared EGRESS formatting uses the same name (Bowie in the
+private start). There is no separate naming registry.
+Normal Item input cycles held slots and selects the eligible self target. The projection exposes the
+actual selected item payment; `paidMp` is absent for Wing. Inventory is already compacted before the
+text request. It never claims a spell cast or starts the Herb recovery scene. The same authored tone,
+pulse and fade are a deliberate modern approximation for both exits. The
+[Wing observer](../verification/field-programs.md#battle02-angel-wing-and-walking-retry) checks actual
+item input/cancel, duplicate delivery, focus/process suspension and retained inventory through walking
+retry. It does not inject successful completions or acquire original media.
+
 `authored-egress-tone-v1` is project-authored PCM16 mono at 22,050 Hz, 7,718 samples, with a sine envelope
 and rising phase `2π(440t+220t²)`, amplitude 12,000 and playback −18 dB. The pulse lasts 450 ms and closure
 200 ms in this modern presenter; these are not original timing or recorded audio. Reduced-flash mode

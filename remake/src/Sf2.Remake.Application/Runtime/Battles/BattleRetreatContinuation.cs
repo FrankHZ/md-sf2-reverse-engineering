@@ -5,10 +5,17 @@ using Sf2.Remake.Domain.Battles;
 namespace Sf2.Remake.Application.Runtime.Battles;
 
 public enum BattleRetreatPhase { Text, Effect, Close, Return }
-public sealed record BattleRetreatState(ActorRef Actor, SpellRef Spell, byte PaidMp, WaitToken Token,
+public sealed record BattleRetreatState(ActorRef Actor, RetreatPayment Payment, WaitToken Token,
     BattleRetreatPhase Phase = BattleRetreatPhase.Text, bool Revealed = false)
 {
-    public string Text => $"{Actor.Value} cast {Spell.Value.ToUpperInvariant()} level {Spell.Level}!";
+    public byte? PaidMp => (Payment as SpellRetreatPayment)?.MpCost;
+    public string Text => TextFor(Actor.Value);
+    public string TextFor(string actorName) => Payment switch
+    {
+        SpellRetreatPayment spell => $"{actorName} cast {spell.Spell.Value.ToUpperInvariant()} level {spell.Spell.Level}!",
+        ItemRetreatPayment item => $"{actorName} used {item.Name}!",
+        _ => throw new InvalidOperationException("Unknown retreat payment."),
+    };
     public PresentationCueKind CompletionKind => Phase == BattleRetreatPhase.Effect
         ? PresentationCueKind.EntityEffect : PresentationCueKind.FadeOut;
 }
@@ -17,18 +24,24 @@ internal static class BattleRetreatContinuation
 {
     internal static SessionResult Begin(SessionSnapshot current, BattleActionResolution action)
     {
-        var cost = action.Retreat!.MpCost;
         var actor = action.Prepared.GetActor(action.Actor);
-        var battle = action.Prepared.With(actors: action.Prepared.Actors.Select(value => value.Actor == action.Actor
-            ? value.With(mp: checked((byte)(actor.Mp - cost))) : value));
+        var payment = action.Retreat!;
+        var battle = payment is SpellRetreatPayment spell
+            ? action.Prepared.With(actors: action.Prepared.Actors.Select(value => value.Actor == action.Actor
+                ? value.With(mp: checked((byte)(actor.Mp - spell.MpCost))) : value))
+            : action.Prepared;
         long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
         List<SessionObservation> observations = [];
         if (current.Battle.GetActor(action.Actor).Position != action.Destination)
             observations.Add(new(++sequence, revision, "movement", action.Actor,
                 From: current.Battle.GetActor(action.Actor).Position, To: action.Destination));
-        observations.Add(new(++sequence, revision, "retreat-mp-paid", action.Actor, actor.Mp, actor.Mp - cost));
+        if (payment is SpellRetreatPayment paidSpell)
+            observations.Add(new(++sequence, revision, "retreat-mp-paid", action.Actor, actor.Mp, actor.Mp - paidSpell.MpCost));
+        else if (payment is ItemRetreatPayment item)
+            observations.Add(new(++sequence, revision, "retreat-item-paid", action.Actor, item.Word, item.Slot));
+        else throw new InvalidOperationException("Unknown retreat payment.");
         observations.Add(new(++sequence, revision, "retreat-text-requested", action.Actor));
-        var retreat = new BattleRetreatState(action.Actor, action.Retreat.Spell, cost, new(sequence));
+        var retreat = new BattleRetreatState(action.Actor, payment, new(sequence));
         var snapshot = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(battle, null, Retreat: retreat), current.Story, SessionStopReason.PresentationWait);
         return new(snapshot, observations.AsReadOnly(), snapshot.StopReason);

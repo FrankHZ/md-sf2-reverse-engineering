@@ -5,7 +5,7 @@ using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
-// Explicitly authored EGRESS approximation: text, a soft blue pulse/tone, then closure.
+// Explicitly authored retreat approximation: text, a soft blue pulse/tone, then closure.
 // No original audio or hardware timing claim. Only actual delivery completes a token.
 internal sealed partial class BattleRetreatView : Control
 {
@@ -57,7 +57,10 @@ internal sealed partial class BattleRetreatView : Control
         if (_state?.Token != state.Token)
         {
             _elapsed = _revealed = 0; _delivered = false;
-            _text.Text = state.Text;
+            var actor = _session.Current.Battle.GetActor(state.Actor);
+            string name = _session.ActiveBattleScenes is { } content
+                ? content.MemberNames[actor.ProcessingOrder] : state.Actor.Value;
+            _text.Text = state.TextFor(name);
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
             if (state.Phase == BattleRetreatPhase.Effect) { _cue.Play(); _cue.StreamPaused = _suspended; }
         }
@@ -105,7 +108,7 @@ internal sealed partial class BattleRetreatView : Control
 
     internal SessionCommand? LastDelivery { get; private set; }
     internal object Observe() => new { active = _state is not null, phase = _state?.Phase.ToString(),
-        token = _state?.Token.Value, paidMp = _state?.PaidMp, revealed = _state?.Revealed,
+        token = _state?.Token.Value, paidMp = _state?.PaidMp, payment = (object?)_state?.Payment, revealed = _state?.Revealed,
         text = _text.Text, visibleCharacters = _text.VisibleCharacters, textVisible = _text.Visible,
         elapsed = _elapsed, delivered = _delivered, suspended = _suspended,
         effectAlpha = _veil.Color.A, cuePlaying = _cue.Playing, cue = "authored-egress-tone-v1" };

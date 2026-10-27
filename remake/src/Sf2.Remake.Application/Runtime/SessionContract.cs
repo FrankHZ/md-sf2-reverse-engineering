@@ -48,13 +48,14 @@ public sealed record CommandEnvelope(Guid SessionId, long ExpectedRevision, Acto
 public sealed class BattleSelection
 {
     internal BattleSelection(ActorRef actor, BattleMovementPreview preview, BattleSelectionStage stage,
-        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null)
-    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; }
+        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null, ushort? itemWord = null)
+    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; ItemWord = itemWord; }
     public ActorRef Actor { get; }
     public BattleMovementPreview Preview { get; }
     public BattleSelectionStage Stage { get; }
     public SessionAction? Action { get; }
     public int? ItemSlot { get; }
+    public ushort? ItemWord { get; }
     public SpellRef? Spell { get; }
     public ActorRef? Target { get; }
     public BattleActionRef? ActionReference => Action switch

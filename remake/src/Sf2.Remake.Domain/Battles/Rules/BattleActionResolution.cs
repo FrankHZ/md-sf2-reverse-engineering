@@ -86,17 +86,17 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatSpellDefinition? Retreat = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
-        Require(action.Kind == BattleActionKind.Retreat || Retreat is null);
+        Require(action.Kind is BattleActionKind.Retreat or BattleActionKind.Item || Retreat is null);
         switch (action.Kind)
         {
             case BattleActionKind.Retreat when action.Spell is { } retreatSpell && action.ItemSlot is null && target == actor:
                 ValidateState(before, actor, destination);
-                Require(admission.Retreat is { } retreat && Retreat == retreat && retreat.Spell == retreatSpell &&
+                Require(admission.Retreat is { } retreat && Retreat == new SpellRetreatPayment(retreat.Spell, retreat.MpCost) && retreat.Spell == retreatSpell &&
                     before.Definition.RetreatSpells.TryGetValue(retreatSpell, out var known) && known == retreat &&
                     before.GetActor(actor).Mp >= retreat.MpCost && Spell is null && Item is null &&
                     Reactions.Count == 0 && Reward is null && ConstructionEffects.Count == 0 &&
@@ -108,6 +108,10 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 break;
             case BattleActionKind.Physical when action.Spell is null && action.ItemSlot is null && target is { } victim:
                 ValidatePhysical(before, actor, destination, victim);
+                break;
+            case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } retreatSlot &&
+                target == actor && admission.RetreatItem is { } wing:
+                ValidateRetreatItem(before, actor, destination, retreatSlot, wing);
                 break;
             case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } slot &&
                 target is { } recipient && admission.Item is { } item:
@@ -124,6 +128,21 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
 
     private static void Require(bool valid)
     { if (!valid) throw new InvalidOperationException("Invalid prepared action transition."); }
+
+    private void ValidateRetreatItem(EngineBattleState before, ActorRef actorRef, MapPosition destination,
+        int slot, RetreatItemDefinition item)
+    {
+        var actor = before.GetActor(actorRef);
+        var loadout = actor.SourceLoadout!;
+        Require(slot >= 0 && slot < loadout.Items.Count && (loadout.Items[slot] & 127) == item.ItemId &&
+            before.Definition.RetreatItems.TryGetValue(item.ItemId, out var known) && known == item &&
+            Retreat == new ItemRetreatPayment(item.ItemId, item.Name, slot, loadout.Items[slot]) &&
+            Spell is null && Item is null && Reactions.Count == 0 && Reward is null &&
+            CompletionEffects.Count == 0 && Prepared.MainSeed == before.MainSeed &&
+            ConstructionEffects.SequenceEqual([new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)]));
+        var items = loadout.Items.ToList(); items.RemoveAt(slot); items.Add(127);
+        ValidateState(before, actorRef, destination, new(items, loadout.Spells));
+    }
 
     private void ValidateState(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleSourceLoadout? consumedLoadout = null, bool allowGold = false)
@@ -240,7 +259,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         var loadout = actor.SourceLoadout ?? throw new BattleRuleException("item-slot", "item.slot");
         Require(slot >= 0 && slot < loadout.Items.Count && (loadout.Items[slot] & 127) != 127 &&
             before.Definition.HealingItems.TryGetValue((byte)(loadout.Items[slot] & 127), out var admitted) && item == admitted &&
-            Item == item && Spell is null && Reactions.Count == 1 && CompletionEffects.Count == 0);
+            Item == item && Spell is null && Retreat is null && Reactions.Count == 1 && CompletionEffects.Count == 0);
         var items = loadout.Items.ToList(); items.RemoveAt(slot); items.Add(127);
         ValidateState(before, actorRef, destination, new(items, loadout.Spells));
         var reaction = Reactions[0];

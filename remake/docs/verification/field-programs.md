@@ -1,5 +1,53 @@
 # Field and Program Verification
 
+## Battle02 Angel Wing and walking retry
+
+Use the [High agreement](../capability-status.md#battle02-angel-wing-implementation-agreement),
+[payment/source owner](../application/session-and-programs.md#paid-retreat-and-field-return) and the
+existing [Battle02 outcome inputs](#battle02-outcomes-and-retry). Pair
+[`engine-battle02-angel-wing-start.json`](../../reference/inputs/engine-battle02-angel-wing-start.json)
+with [`battle02-angel-wing-party.json`](../../reference/inputs/battle02-angel-wing-party.json): Chester
+has MP0, no learned EGRESS and initial items `[184,4,4,0]`. Preserve the root/secondary party definition
+agreement. This is controlled initial custody, not natural acquisition or original chronology.
+
+Reuse the accepted world/install/project. For one initial variant, copy the selected encounter inputs
+into a new ignored directory, retaining their relative contained `encounters` paths. Change only the
+secondary party's Chester items to match the root variant; leave world programs/provenance/other
+definitions unchanged. Point `SF2_PRIVATE_EXPLORATION_CONTENT` at that variant world and
+`SF2_PRIVATE_CONTROLLED_START` at the tracked party. Unsupported packed values, absolute/escaping
+paths and mismatched baselines must still reject. No input, flag, party or RNG changes after startup.
+
+Load `local/private-inputs.ps1` and current retained Battle02 input selections in the launching process;
+use absolute approved SDK/CLI home, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and worktree-local caches/
+TEMP/APPDATA/LOCALAPPDATA. Run `uv sync --locked`, `uv run sf2 verify engine` and
+`uv run sf2 verify adapter`; build the actual Debug host as in the EGRESS recipe below. Then from
+`remake/`, with fresh ignored report/log destinations:
+
+```powershell
+$env:SF2_BATTLEFIELD_CASE = 'battle02'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $repo 'local/issue1343/native-NN.json'
+$start = Join-Path $repo 'remake/reference/inputs/engine-battle02-angel-wing-start.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path game `
+    --script res://probes/engine_battle02_angel_wing_observation.gd -- --private-exploration-start $start
+```
+
+Normal play omits headless/fixed-fps/script. Enter chooses/commits, I cycles held slots, Escape cancels;
+arrows walk. The observer waits for actual Chester control, cycles past the unsupported weapon to
+Wing slot2, cancels, then confirms that slot. Before item feedback it requires `[184,4,0,127]`, MP0,
+no spell payment and unchanged RNG/queue cursor. It reads real actor/item text, tone/pulse/close,
+replays only already-delivered completions for rejection, holds focus/process delivery, reaches usable
+Map3, moves and walks through the church/west exit into fresh Battle02 carrying the paid loadout.
+No screenshots, successful observer completion, teleport, restart or reseed. Focused corrections use
+the actual engine project with `--filter FullyQualifiedName~AngelWingTests`; existing BattleRetreatTests
+and Herb behavior cover regression boundaries. Native EGRESS can use the unchanged recipe below.
+
+Resource method: one producer/native process; O(selected package + bounded navigation), one initial
+variant below128 MiB, total new derived outputs below160 MiB, reports/logs below5 MiB/run, estimated
+180 seconds/run and2 GiB host headroom. Preserve failed setup/observation evidence and small malformed
+party inputs; reassess before another world. No bulk collection, network/media acquisition or API cost.
+All-map/status/campaign support and original timing/media remain Unsupported/Unknown. Exact completed
+checks, failures and process state belong to the Issue/PR handoff, not a tracked progress history.
+
 ## Battle02 EGRESS and walking retry
 
 Use the [High agreement](../capability-status.md#battle02-egress-implementation-agreement) and

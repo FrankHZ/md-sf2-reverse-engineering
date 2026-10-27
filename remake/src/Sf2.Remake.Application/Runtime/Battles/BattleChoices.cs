@@ -53,11 +53,11 @@ internal static class BattleChoices
                 (admission.Spell is not { } spell || !battle.Definition.Spells.TryGetValue(action.Spell!.Value, out var known) || known != spell ||
                     admission.MinimumRange != spell.MinimumRange || admission.MaximumRange != spell.MaximumRange) ||
                 action.Kind == BattleActionKind.Item &&
-                (admission.Item is not { } item || !battle.Definition.HealingItems.TryGetValue(item.ItemId, out var knownItem) || knownItem != item ||
-                    admission.MinimumRange != item.MinimumRange || admission.MaximumRange != item.MaximumRange) ||
+                !ValidItemAdmission(battle, actor, action, admission) ||
                 action.Kind == BattleActionKind.Stay && (admission.MinimumRange is not null || admission.MaximumRange is not null) ||
                 action.Kind != BattleActionKind.Healing && admission.Spell is not null ||
                 action.Kind != BattleActionKind.Item && admission.Item is not null ||
+                action.Kind != BattleActionKind.Item && admission.RetreatItem is not null ||
                 action.Kind == BattleActionKind.Retreat && (admission.Retreat is not { } retreat ||
                     !battle.Definition.RetreatSpells.TryGetValue(action.Spell!.Value, out var knownRetreat) || retreat != knownRetreat ||
                     admission.MinimumRange != 0 || admission.MaximumRange != 0) ||
@@ -65,6 +65,18 @@ internal static class BattleChoices
                 throw new InvalidOperationException("Invalid action admission.");
             return admission;
         });
+    }
+
+    private static bool ValidItemAdmission(EngineBattleState battle, ActorRef actor, BattleActionRef action, BattleActionAdmission admission)
+    {
+        byte id = (byte)(battle.GetActor(actor).SourceLoadout!.Items[action.ItemSlot!.Value] & 127);
+        if (admission.RetreatItem is { } wing)
+            return admission.Item is null && wing.ItemId == id &&
+                battle.Definition.RetreatItems.TryGetValue(id, out var known) && wing == known &&
+                admission.MinimumRange == 0 && admission.MaximumRange == 0;
+        return admission.Item is { } item && item.ItemId == id &&
+            battle.Definition.HealingItems.TryGetValue(id, out var healing) && item == healing &&
+            admission.MinimumRange == item.MinimumRange && admission.MaximumRange == item.MaximumRange;
     }
 
     private static void RequireReference(EngineBattleState battle, ActorRef actor, BattleActionRef action)
