@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal sealed record EntityActionTickResult(ExplorationState World, BattleRuleException? Failure = null,
-    FieldMoveOutcome? FieldMove = null);
+    FieldMoveOutcome? FieldMove = null, IReadOnlyList<int>? Sounds = null);
 
 internal static class EntityActionRunner
 {
@@ -24,6 +24,7 @@ internal static class EntityActionRunner
         ushort spriteSize = world.SpriteSize;
         uint seed = world.Party.MainSeed;
         FieldMoveOutcome? fieldOutcome = null;
+        List<int> sounds = [];
         ExplorationState Publish() => world.WithEntities(entities.Values, spriteSize).WithParty(
             new(world.Party.Encounter, world.Party.Actors, seed, world.Party.ThinkingSeed, world.Party.Gold, world.Party.NewBattle, world.Party.ActiveAllies, world.Party.ItemCustody));
         // Source order: movement for this entity, then its script, then the next entity.
@@ -35,7 +36,7 @@ internal static class EntityActionRunner
             ushort? word = destinationX is >= 0 and < 64 && destinationY is >= 0 and < 64
                 ? world.Layout[destinationX, destinationY] : null;
             entity = entity with { Motion = EntityMotion.Tick(initial, word) };
-            if (fieldControl && world.Population is not null && entity.Slot == world.PlayerEntity.Slot)
+            if (fieldControl && (world.Population is not null || world.Definition.Caravan is not null) && entity.Slot == world.PlayerEntity.Slot)
                 entity = entity with { Motion = ControlledMotion(entity.Motion) };
             entities[entity.Slot] = entity;
             if (fieldMove is not null && entity.Slot == world.PlayerEntity.Slot)
@@ -60,6 +61,22 @@ internal static class EntityActionRunner
                 {
                 switch (program.Actions[entity.ActionCursor])
                 {
+                    case MoveToPhysicalFacing relativePhysical:
+                        var physicalTarget = CaravanRuntime.Physical(Publish(), relativePhysical.Slot).Motion;
+                        motion = EntityMotion.FacingRelative(motion, physicalTarget, relativePhysical.Distance);
+                        break;
+                    case ClonePhysicalPosition clone:
+                        var source = CaravanRuntime.Physical(Publish(), clone.Slot).Motion;
+                        motion = motion with { X = source.X, Y = source.Y, XDestination = source.XDestination,
+                            YDestination = source.YDestination, XTravel = source.XTravel, YTravel = source.YTravel,
+                            Facing = source.Facing, WaitTimer = 0 };
+                        break;
+                    case WaitEntityDestination:
+                        if (motion.IsMoving) { next--; yield = true; }
+                        motion = motion with { WaitTimer = 0 };
+                        break;
+                    case SetActionSprite sprite: entity = entity with { Sprite = sprite.Sprite }; break;
+                    case EntitySound sound: sounds.Add(sound.Command); break;
                     case MoveEntityRelative relative:
                         int x = motion.X + relative.X * 384, y = motion.Y + relative.Y * 384;
                         if (x is < 0 or > 24192 || y is < 0 or > 24192)
@@ -136,7 +153,7 @@ internal static class EntityActionRunner
                 catch (BattleRuleException error)
                 {
                     entities[entity.Slot] = entity;
-                    return new(Publish(), error);
+                    return new(Publish(), error, Sounds: sounds);
                 }
                 if (entity.Actions is not null)
                     entity = entity with { Motion = motion, ActionCursor = next, WaitingForMotion = waitingForMotion };
@@ -145,6 +162,6 @@ internal static class EntityActionRunner
             }
             entities[entity.Slot] = entity;
         }
-        return new(Publish(), FieldMove: fieldOutcome);
+        return new(Publish(), FieldMove: fieldOutcome, Sounds: sounds);
     }
 }

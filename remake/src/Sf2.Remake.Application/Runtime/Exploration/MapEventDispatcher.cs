@@ -3,7 +3,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-internal sealed record FieldMoveOutcome(bool Moved, bool DoorOpened, ExplorationEvent? Event);
+internal sealed record FieldMoveOutcome(bool Moved, bool DoorOpened, ExplorationEvent? Event, int? VehicleEvent = null);
 
 internal static class MapEventDispatcher
 {
@@ -19,9 +19,13 @@ internal static class MapEventDispatcher
         var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && entity.Visible).ToArray();
         // PR559: obstruction precedes the door copy and the marker, even for an
         // otherwise non-passable candidate. A blocked traversal returns the origin.
-        if (world.Population is not null && (player.Motion.FlagsA & 0x20) != 0 && candidate is not null &&
+        if ((world.Population is not null || world.Definition.Caravan is not null) && (player.Motion.FlagsA & 0x20) != 0 && candidate is not null &&
             EntityMotion.FieldObstructed(candidate.X * 384, candidate.Y * 384, others.Select(entity => entity.Motion)))
             return (world, new(false, false, null));
+        if (world.Definition.Caravan is not null && candidate is not null &&
+            world.Definition.Traversal.IsWithinActiveArea(candidate) &&
+            (world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x3800 && flags.Contains(65))
+            return (world, new(false, false, null, 2));
         bool opened = false;
         ExplorationEvent? reached = null;
         if (candidate is not null && world.Definition.Traversal.IsWithinActiveArea(candidate))

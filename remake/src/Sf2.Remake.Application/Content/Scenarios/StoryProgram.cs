@@ -55,7 +55,8 @@ public sealed record LoadSceneEntities(ExplorationPopulation Population, MapPosi
     IReadOnlyList<ExplorationEntityDefinition> Entities) : StoryInstruction;
 public enum EntityScriptInstallation { Preserve, SlotTimer, SlotTimerClearCollision }
 public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Actions, bool Wait,
-    EntityScriptInstallation Installation = EntityScriptInstallation.Preserve) : StoryInstruction;
+    EntityScriptInstallation Installation = EntityScriptInstallation.Preserve,
+    Runtime.Exploration.EntityWaitCompletion? Completion = null) : StoryInstruction;
 public sealed record WaitForEntity(EntityRef Entity) : StoryInstruction;
 public sealed record JoinPartyMember(int Member) : StoryInstruction;
 public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;

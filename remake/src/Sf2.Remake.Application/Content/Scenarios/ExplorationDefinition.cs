@@ -90,8 +90,10 @@ public sealed class ExplorationMapDefinition
         ProgramLocation? onLoad = null, ExplorationBattleRoute? battle = null, ProgramLocation? inputProgram = null, MapSetupRoute? setup = null,
         ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null,
         IEnumerable<WriteFlag>? entryFlags = null, PalettePair? basePalette = null, IEnumerable<ExplorationViewArea>? viewAreas = null,
-        IEnumerable<ExplorationSetupDefinition>? setups = null, IEnumerable<ExplorationBattleRoute>? battles = null)
+        IEnumerable<ExplorationSetupDefinition>? setups = null, IEnumerable<ExplorationBattleRoute>? battles = null,
+        CaravanDefinition? caravan = null)
     {
+        Caravan = caravan;
         Map = map; Layout = layout; Traversal = traversal; Entities = Array.AsReadOnly(entities.ToArray());
         Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad;
         Battles = Array.AsReadOnly((battles ?? (battle is null ? [] : new[] { battle })).ToArray());
@@ -101,6 +103,7 @@ public sealed class ExplorationMapDefinition
         BasePalette = basePalette; ViewAreas = Array.AsReadOnly((viewAreas ?? []).ToArray());
         Setups = new ReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition>((setups ?? []).ToDictionary(value => value.Id));
     }
+    public CaravanDefinition? Caravan { get; }
     public MapId Map { get; }
     public WorkingMapLayout Layout { get; }
     public OriginalMapTraversal Traversal { get; }

@@ -318,6 +318,12 @@ internal static class ExplorationDispatcher
                                 ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
                                 simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
+                            if (field.VehicleEvent == 2)
+                            {
+                                current = ProgramRunner.Commit(current, active,
+                                    story.Copy(new(CaravanPrograms.Boarding, 0)), observations, "caravan-boarding-requested");
+                                return ProgramRunner.Run(definition, current, observations, rules);
+                            }
                             if (field.DoorOpened)
                                 current = ProgramRunner.Commit(current, active, story, observations, "door-opened");
                             if (field.Event is { Kind: ExplorationEventKind.Warp } warp)
@@ -341,12 +347,17 @@ internal static class ExplorationDispatcher
                             if (!field.Moved) return ProgramRunner.Run(definition, current, observations, rules);
                             continue;
                         }
+                        foreach (int sound in tickResult?.Sounds ?? [])
+                            current = ProgramRunner.Commit(current, active, story, observations, "entity-sound", sound.ToString(System.Globalization.CultureInfo.InvariantCulture));
                         EntityWaitRelease? releasedEntityWait = null;
                         if (story.Wait is EntityEventFacingWait)
                         { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor,
                             entityServices: story.TextSettings is not null ? false : null); }
                         else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
+                        else if (story.Wait is PhysicalEntityWait physical && active is ActiveExploration physicalWorld &&
+                            CaravanRuntime.Physical(physicalWorld.World, physical.Slot).IsScriptIdle)
+                            story = FinishWait(story);
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
                             explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) &&
                             (entityWait.Completion switch
@@ -400,14 +411,14 @@ internal static class ExplorationDispatcher
         if (player.Busy) return Reject(current, "entity-busy", "player");
         // Admission sees the same control policy as the later player service, without
         // publishing setup or advancing motion/entities before that service.
-        var controlled = world.Population is null ? world : world.WithEntity(player with
+        var controlled = world.Population is null && world.Definition.Caravan is null ? world : world.WithEntity(player with
             { Motion = EntityActionRunner.ControlledMotion(player.Motion) });
         var preview = MapEventDispatcher.Move(controlled, move.Direction, current.Story.Flags);
         if (preview.Outcome.Event is { Kind: ExplorationEventKind.Warp } warp)
         {
             if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp, rules);
         }
-        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
+        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.VehicleEvent is null && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
                 new ActiveExploration(world.WithEntity(player with { Motion = player.Motion with
                     { Facing = preview.World.PlayerEntity.Motion.Facing } })), current.Story, observations, "movement-blocked"),

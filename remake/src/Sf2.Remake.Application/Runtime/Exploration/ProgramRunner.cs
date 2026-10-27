@@ -78,7 +78,7 @@ internal static class ProgramRunner
                         throw new BattleRuleException("field-display-not-visible", "story.display", true);
                     // WaitForEvent replaces the player's script on successful control return.
                     // Setup belongs to its next entity service; physical motion survives here.
-                    if (current.Exploration is { Population: not null } world &&
+                    if (current.Exploration is { } world && (world.Population is not null || world.Definition.Caravan is not null) &&
                         world.PlayerEntity is { } player &&
                         (player.Actions is not null || player.Follower is not null || player.WaitingForMotion))
                         current = new(current.SessionId, current.Revision, current.ObservationSequence,
@@ -108,6 +108,9 @@ internal static class ProgramRunner
                 var token = new WaitToken(checked(current.ObservationSequence + 1));
                 switch (instruction)
                 {
+                    case CaravanInstruction caravan:
+                        (active, story) = CaravanRuntime.Execute(current, caravan, story, token);
+                        break;
                     case ConvertBattleActor convert:
                         current = BattleStoryOperations.Convert(current, convert, observations);
                         story = current.Story.Copy(Next(cursor)); active = current.Active; break;
@@ -448,8 +451,8 @@ internal static class ProgramRunner
                                 WaitingForMotion = false, Follower = null };
                         });
                         if (motion.Wait) story = current.Story.Copy(cursor, new EntityWait(token, motion.Entity,
-                            Completion: motion.Installation == EntityScriptInstallation.Preserve
-                                ? EntityWaitCompletion.NotBusy : EntityWaitCompletion.ScriptIdle));
+                            Completion: motion.Completion ?? (motion.Installation == EntityScriptInstallation.Preserve
+                                ? EntityWaitCompletion.NotBusy : EntityWaitCompletion.ScriptIdle)));
                         break;
                     case WaitForEntity wait:
                         if (Entity(current, wait.Entity).Busy) story = current.Story.Copy(cursor, new EntityWait(token, wait.Entity));
@@ -530,7 +533,7 @@ internal static class ProgramRunner
             FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
             DialogueWait or W1TextWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
-            EntityWait or TickWait => SessionStopReason.SimulationWait,
+            EntityWait or PhysicalEntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };
         return new(current.SessionId, revision, sequence, active, story, reason);

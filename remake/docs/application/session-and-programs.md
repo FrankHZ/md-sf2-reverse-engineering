@@ -1,5 +1,31 @@
 # Session and Resumable Programs
 
+## Caravan boarding checkpoint
+
+The Issue #1357 pilot uses existing StoryProgram/EntityActionProgram execution and sprite-ready
+requests. `CaravanDefinition` binds a logical FOLLOWER_A separately from raw physical0/1 and supplies
+an explicit current physical list. `ExplorationState.CurrentEntities` retains that list;
+`TravelMode` commits Walking→Caravan only after the reached boarding prefix and last-suffix-actor
+idle wait. It is not inferred from a sprite, F65 or an empty motion queue. Mode1 travel and landing,
+external content admission and ordinary-host delivery are not yet implemented at this checkpoint.
+
+**Confirmed static source:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/map/vehiclefunctions.asm:MapEventType2/cs_45284/eas_452BA/byte_45316`,
+`code/common/scripting/entity/entityscriptengine_2.asm:esc0D/esc0E/loc_55C8`, and the
+[accepted Caravan owner](../../../docs/research/caravan-boarding-and-southwest-parmecia-travel.md).
+The typed finite program preserves relative motion, shared resize size, actor resize bit, warp-sound
+request, clone fields, logical relocation to raw coordinates0x6000 and source idle predicates. Raw
+position supports the off-map relocation without broadening `MapPosition`'s legal layout domain.
+Physical motion may naturally produce diagonal facing even though player input is cardinal.
+
+Modern tick/sprite delivery is deterministic and does not establish original timing. A missing
+logical actor retains physical0's preceding idle write; zero-speed motion and undelivered sprite
+requests stay pending. The suffix wait observes only its last actor; an earlier stalled actor can
+remain busy at mode commit. Clone copies position/destination/travel/facing, not velocities, sprite,
+HP, membership or aliases. No saved Caravan placement is introduced. Focused actual-engine tests
+in `CaravanTests` cover changed positions/facing/list sizes, logical/raw disagreement, pending/stale
+sprite delivery, retained failure and last-actor-only completion.
+
 ## Battle-context region programs
 
 Physical position is updated at initial placement and acknowledged movement delivery, never by

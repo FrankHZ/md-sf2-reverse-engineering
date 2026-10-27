@@ -1,5 +1,25 @@
 # Remake Capability Status
 
+## Authored Caravan agreement
+
+**High rigor; in implementation:** Issue #1357 delivers one acquired authored field world through
+boarding, cardinal Caravan travel, landing and later ordinary walking/zone control. Controller,
+physical/logical entity identities, the current physical list, shared waits and presentation cross
+existing owners. GameSession remains the only publisher; position lives in existing entities.
+There is no saved Caravan position, fresh population or party/resource reset at a mode change.
+
+The first checkpoint is marker request through resumable boarding and mode1, including retained
+pending/failure prefixes. Main-gate reviews that interface before travel/landing expansion. Final
+acceptance uses changed valid content/state, actual engine tests, scoped engine/adapter/Debug builds
+and a bounded ordinary-key native observation, followed by committed scope planning and exact-head
+CI. Scans are bounded to32 physical actors and a64x64 layout; native witnesses stay below180s/5MiB.
+No bulk processing, private terrain/media acquisition or generic vehicle platform is needed.
+
+Acquisition, raft mode, services, travelling transfer/reload, persistence and private Map68 reach are
+out of scope. Unsupported combinations must fail explicitly. Original timing, natural reach and
+durable persistence remain **Unknown**, with previous failure and comparison records retained at
+their existing owners. The transport design and layer owners will record the admitted interface.
+
 ## Authored Jaro conversion agreement
 
 **High rigor; implemented authored subset:** Issue #1355 adds one authored region-triggered
