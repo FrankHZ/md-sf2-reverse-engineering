@@ -33,6 +33,18 @@ internal static class PrivateBattleActionBindings
         yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange);
     }
 
+    internal static IEnumerable<RetreatItemDefinition> RetreatItems(PrivateBattleDefinitions definitions)
+    {
+        if (!definitions.Items.TryGetValue(4, out var item)) yield break;
+        Require(item.Code == "ANGEL_WING" &&
+            item.ItemTypeExpression == "CONSUMABLE" && item.UseSpell == "EGRESS" && item.UseSpellLevel == 1 &&
+            item.EquipFlagsExpression == "NONE" && item.MinimumRange == 0 && item.MaximumRange == 0 &&
+            item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
+            "source-wing-definition", "items", true);
+        _ = RetreatSpells(definitions).Single();
+        yield return new(item!.Id, item.DisplayName);
+    }
+
     internal static PhysicalActorDefinition Physical(PrivateBattleDefinitions definitions, string prowess,
         IEnumerable<ushort> items, bool leader, ushort gold)
     {

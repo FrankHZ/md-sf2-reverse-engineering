@@ -69,7 +69,7 @@ internal static class BattleCommandDispatcher
                     _ = BattleChoices.RequireTarget(rules, battle, selection.Actor, selection.Preview.Destination,
                         action, target.Target, sceneContent, requireSceneContent);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady,
-                        selection.Action, selection.Spell, target.Target, selection.ItemSlot), "target-selected");
+                        selection.Action, selection.Spell, target.Target, selection.ItemSlot, selection.ItemWord), "target-selected");
                 case Confirm when selection.Stage == BattleSelectionStage.CommitReady:
                     return Commit(current, selection, sceneContent, requireSceneContent, rules);
                 default:
@@ -99,7 +99,8 @@ internal static class BattleCommandDispatcher
             };
             return Selected(current, new(selection.Actor, selection.Preview,
                 action.Kind == BattleActionKind.Stay ? BattleSelectionStage.CommitReady : BattleSelectionStage.TargetChoice,
-                kind, action.Spell, itemSlot: action.ItemSlot), observation);
+                kind, action.Spell, itemSlot: action.ItemSlot,
+                itemWord: action.ItemSlot is { } slot ? actor.SourceLoadout!.Items[slot] : null), observation);
         }
 
     }
@@ -117,6 +118,9 @@ internal static class BattleCommandDispatcher
     {
         if (selection.ActionReference is not { } selected)
             return Reject(current, "incomplete-action", "selection");
+        if (selected.ItemSlot is { } slot && (selection.ItemWord is null ||
+            current.Battle.GetActor(selection.Actor).SourceLoadout?.Items.ElementAtOrDefault(slot) != selection.ItemWord))
+            return Reject(current, "stale-item-selection", "item.slot");
         var action = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
             selected, selection.Target, sceneContent, requireSceneContent);
         if (action.Retreat is not null) return BattleRetreatContinuation.Begin(current, action);

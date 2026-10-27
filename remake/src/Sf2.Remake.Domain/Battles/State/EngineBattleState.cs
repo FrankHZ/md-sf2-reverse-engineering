@@ -151,7 +151,7 @@ public sealed class BattleDefinition
         IEnumerable<HealingSpellDefinition> spells, BattleRewardDefinition? rewards = null,
         BattleInitializationDefinition? initialization = null, BattleOutcomeDefinition? outcome = null,
         IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null,
-        IEnumerable<RetreatSpellDefinition>? retreatSpells = null)
+        IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null)
     {
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
@@ -159,6 +159,7 @@ public sealed class BattleDefinition
         Spells = new ReadOnlyDictionary<SpellRef, HealingSpellDefinition>(spells.ToDictionary(s => s.Spell));
         Rewards = rewards; Initialization = initialization; Outcome = outcome; SourceMapRegion = sourceMapRegion;
         RetreatSpells = new ReadOnlyDictionary<SpellRef, RetreatSpellDefinition>((retreatSpells ?? []).ToDictionary(s => s.Spell));
+        RetreatItems = new ReadOnlyDictionary<byte, RetreatItemDefinition>((retreatItems ?? []).ToDictionary(item => item.ItemId));
         HealingItems = new ReadOnlyDictionary<byte, HealingItemDefinition>((healingItems ?? []).ToDictionary(item => item.ItemId));
     }
     public string Encounter { get; }
@@ -170,6 +171,7 @@ public sealed class BattleDefinition
     public IReadOnlyDictionary<SpellRef, HealingSpellDefinition> Spells { get; }
     public IReadOnlyDictionary<byte, HealingItemDefinition> HealingItems { get; }
     public IReadOnlyDictionary<SpellRef, RetreatSpellDefinition> RetreatSpells { get; }
+    public IReadOnlyDictionary<byte, RetreatItemDefinition> RetreatItems { get; }
     public BattleRewardDefinition? Rewards { get; }
     public BattleInitializationDefinition? Initialization { get; }
     public BattleOutcomeDefinition? Outcome { get; }

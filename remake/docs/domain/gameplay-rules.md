@@ -2,6 +2,23 @@
 
 ## Finite EGRESS action
 
+The same finite retreat continuation also accepts Angel Wing through `Sf2ItemAction`, the ordinary
+item-slot action. `BattleDefinition.RetreatItems` holds admitted item definitions separately from
+healing items. Content keeps source ID4 in the SF2 binding: CONSUMABLE / EGRESS1 / range0, no equip
+flags/effects; absent Wing definitions do not affect existing Herb/EGRESS packages. No MP or learned
+spell is required for item use, and any living actionable player ally may confirm self. Query/cancel
+is provisional. Confirmation revalidates control, selected packed word and target; preparation
+compacts exactly the selected slot, preserving all survivor bits/order and appending127. Validation
+allows only that loadout delta and selected movement: no MP/HP, reward, reaction or RNG writes.
+`ItemRetreatPayment` and `SpellRetreatPayment` explicitly distinguish the two costs; Wing never uses
+a dummy spell or an ordinary recovery scene. Existing Herb preparation/reaction/reward is retained.
+
+Authored v7 items admit `"effect":"consumable-retreat"` with power0 and minimum/maximum range0.
+The [source/payment join](../application/session-and-programs.md#paid-retreat-and-field-return) and
+[Wing reproduction](../verification/field-programs.md#battle02-angel-wing-and-walking-retry) own the
+staged return, controlled initial input and limits. Acquisition, equip/break/curse transactions and
+wider item effects remain Unsupported.
+
 `Sf2RetreatAction` implements the existing `IBattleActionRule` boundary for admitted retreat spells.
 `BattleDefinition.RetreatSpells` is separate from healing definitions. Private Battle02 admission
 checks source EGRESS1/base 10, cost 8, range 0/radius 0, power 0 and
@@ -17,8 +34,8 @@ or RNG reject before payment. Mixed healing/retreat offers preserve learned spel
 
 Authored v7 spell input can use `"effect":{"kind":"retreat"}` with explicit `mpCost` and zero minimum/
 maximum range; it needs an admitted field outcome route to return. Private bindings retain their
-source checks and only admit Battle02. This is a finite action addition, not a generalized effect or
-item implementation. [Payment/return](../application/session-and-programs.md#paid-retreat-and-field-return)
+source checks and only admit Battle02. The two finite payment cases share the existing continuation.
+[Payment/return](../application/session-and-programs.md#paid-retreat-and-field-return)
 and the [capability agreement](../capability-status.md#battle02-egress-implementation-agreement) own
 staged delivery, recovery and exclusions.
 

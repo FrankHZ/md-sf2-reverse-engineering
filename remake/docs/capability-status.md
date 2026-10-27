@@ -1,5 +1,34 @@
 # Remake Capability Status
 
+## Battle02 Angel Wing implementation agreement
+
+Issue [#1343](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1343) retains **High** rigor:
+selected-slot payment, delivery, party return and fresh encounter entry cross runtime layers. A living
+actionable player ally uses the normal held-item/self-target path, consumes exactly the selected Wing
+before item feedback, returns to usable exploration and walks into fresh Battle02 in the same session.
+No MP, known EGRESS or Bowie restriction applies. Initial custody/resources are controlled inputs.
+
+Acceptance distinguishes provisional query/cancel, live actor/packed-slot/target/envelope rejection,
+selected-slot compaction with survivor bits/order and empty tail, exactly-once payment before text,
+matching staged completion, paid-prefix retention on failed return, and carried inventory after
+ordinary healing/reentry. Small engine behavior tests cover duplicate Wing IDs/varied slots,
+malformed prepared deltas, held/clear completion failure prefixes and Herb/EGRESS regressions.
+The actual native observer uses MP0/unlearned Chester and two held Wings, cancels then selects slot2,
+reads item feedback/delivery, tests duplicate completion and focus/process suspension, and walks back
+with consumed inventory and fresh enemies/queue. No post-start injection, restart or reseed.
+
+Scope reuses the finite spell/item payment and the accepted retreat continuation/return. Private
+admission is Battle02 with F399 held and F64/F640 clear, admitted live savepoint and status-free party.
+Ordinary outcomes remain Victory/Defeat. Wider map/status support, acquisition/drop/Deals/shop/depot,
+equipment transactions, Battle0/session end, save/suspend, later mechanics and UI redesign remain
+Unsupported or out of scope. PR692 is independent; only selection/confirm semantics overlap.
+The [payment/source owner](application/session-and-programs.md#paid-retreat-and-field-return),
+[gameplay rules](domain/gameplay-rules.md#finite-egress-action) and
+[native recipe](verification/field-programs.md#battle02-angel-wing-and-walking-retry) own details.
+The source join is **Confirmed** static; native observations prove modern behavior only. Natural
+acquisition/chronology and original timing/media remain **Unknown**. Feedback reuses the accepted
+authored tone/pulse/fade without new media. Preserved earlier comparisons/failures are unchanged.
+
 ## Battle02 EGRESS implementation agreement
 
 Issue [#1341](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1341) uses **High** rigor:
@@ -21,7 +50,7 @@ In scope: existing common session, finite EGRESS spell action/retreat continuati
 bindings, existing field-return program and fresh entry. No new framework or second state publisher.
 Private admission binds EGRESS only for Battle02, with F399 held and F64/F640 clear. A live egress
 writer overrides the declared initial map and rejects an unadmitted destination. The selected party
-has no outstanding status effects; broader status refresh remains Unsupported. Other-map EGRESS,
+has no outstanding status effects; broader status refresh remains Unsupported. Other-map EGRESS/
 Angel Wing, Battle0/session end, suspend/save, later special mechanics, campaign expansion and menu
 redesign remain out of scope. PR692 is independent; only existing semantic input/projection sites overlap.
 
@@ -69,7 +98,7 @@ full-game parity and public distribution remain outside the accepted boundary.
 | Godot input and projection | **Implemented:** shared remappable keyboard/standard-gamepad actions, configurable Confirm/Cancel convention and effective HUD hints across exploration, battle and return. Versioned startup settings also select reduced white flashes and instant/adjustable text while preserving real wait/cue completion. [Native 9A observation](verification/host.md#native-9a-observation) covers default/remapped/swapped devices, alternate authored content and the private continuous return. These are intentional modern-interface deviations; physical controller drivers are not observed by injected events. Authored export packaging and original presentation remain unclaimed. |
 | Private initialized entry | **Implemented subset:** actual trusted encounter plus pinned selected enemy/class/item/spell exports and external controlled PlayerReady party/start enter the common session. New-battle heal/effective ATT, initial AI/region state, activation/program/spawn admission, carried first queue and candidate control lead to common movement/cancel. Required regular/healer/Centaur/hovering/Stealth/Flying movers work. Unknown accounting stays null; source baseline/loadout/words/provenance remain retained. |
 | Private source enemy continuation | **Implemented subset:** actual common player commands reach inactive anchor-relative standby, evolving occupancy/memory, region activation and source set6/set7 no-action pursuit, then the next live player. Source NONE orders, activation/tested words, last target and both RNG channels remain intact. Standby/pursuit calculations have one production owner; one common movement/action publisher commits results. Reached physical operands use the shared action binding below; failures remain atomic. Nonempty move-order/action categories and broader status/neutral behavior remain Unsupported. |
-| Private actions and spell selection | **Implemented subset:** actual class prowess/adjacent ATT-only equipment, source HEAL1–3 and pinned enemy gold bind to common physical/reward/death/after-turn. Hovering/Flying share airborne dodge and priority; only Flying ignores ground land protection. The logical Spell action (default H / Pad North) cycles learned spells and levels without content reordering; engine owns legality/resources. Explicit external accounting enables actual enemy/player/kill/HEAL continuation; natural counters and seeds remain Unknown. Selected Battle02 EGRESS is implemented at the agreement above; wider effects remain Unsupported. The connected private world binds growth and terminal programs below; broader M2 capabilities and hardware 8C remain incomplete; current milestone acceptance is recorded below. |
+| Private actions and spell selection | **Implemented subset:** actual class prowess/adjacent ATT-only equipment, source HEAL1–3 and pinned enemy gold bind to common physical/reward/death/after-turn. Hovering/Flying share airborne dodge and priority; only Flying ignores ground land protection. The logical Spell action (default H / Pad North) cycles learned spells and levels without content reordering; engine owns legality/resources. Explicit external accounting enables actual enemy/player/kill/HEAL continuation; natural counters and seeds remain Unknown. Selected Battle02 EGRESS/Angel Wing is implemented at the agreement above; wider effects remain Unsupported. The connected private world binds growth and terminal programs below; broader M2 capabilities and hardware 8C remain incomplete; current milestone acceptance is recorded below. |
 | Ordinary physical attack and rewards | **Implemented subset:** regular-ground, status-free, no equipment, explicit paired critical chance/bonus definitions (1/32 plus half or1/16 plus quarter); source-ordered first/second/reversed counter, dodge/critical/spread, per-action EXP/gold, ordinary enemy/ally cleanup, capped kills/defeats and next living control. Both authored physical packages support either legal kill order. |
 | Physical battle scene execution | **Implemented bounded consumer:** typed construction, animation/reaction, result/death, EXP/growth/gold and end waits retain input and turn ownership. Damage reactions advance shared-main RNG by 24 source draws each; growth uses the carried seed. Godot consumes privately prepared actor/weapon/environment frames and source music2/5, hit81/83 and level102 SFX through actual audio. Normal/reduced-flash observations preserve gameplay/RNG. HEAL has the separate bounded consumer below; modern text/fade timing and controlled native entry do not prove original timing, final pixels or H4. [Scene owner](godot/battle-scenes.md#physical-battle-scenes). |
 | HEAL spell scenes | **Implemented bounded consumer:** HEAL1–3 MP-before-cast, one/one/two source-rule fairies, shared-main RNG, self/other HP recovery, stop/cleanup before rewards/input, private rasters and actual77/113 audio. Function comparison under externally supplied opportunities/control passes; normal/reduced native semantic events match. **Unknown:** continuous original opportunity admission; recovery bsc0B is the first observed divergence and produces intermediate RNG differences. The accepted selected HEAL/scene composition supplies the current milestone obligation; this historical timing divergence remains with its owner. [Exact boundary](godot/battle-scenes.md#heal-spell-scenes). |
@@ -159,7 +188,7 @@ Battle03 outcomes are outside scope. Twelve source ally rows are formation capac
 
 | Selected content | Implemented boundary | Remaining boundary |
 | --- | --- | --- |
-| Bowie / Sarah / Chester / Jaha | SDMN/PRST/KNTE/WARR, ordinary equipment/growth/accounting and HEAL1; live return resources, including dead/unplaced Chester; no F4 recruitment | Selected Battle02 EGRESS is implemented above; wider spell/equipment families remain Unsupported. |
+| Bowie / Sarah / Chester / Jaha | SDMN/PRST/KNTE/WARR, ordinary equipment/growth/accounting and HEAL1; live return resources, including dead/unplaced Chester; no F4 recruitment | Selected Battle02 EGRESS/Angel Wing is implemented above; wider spell/equipment families remain Unsupported. |
 | Huge Rat / Ooze | Existing Stealth/Regular movement, ordinary physical, source set6/priority and scene paths | No wider enemy action family. |
 | Huge Bat | Source Flying movement/land/dodge/AI priority; unarmed sprite23/palette0; sleep critical and full action/after-turn recovery lifecycle | Other ailments, spells/equipment and source animation/timing fidelity remain outside scope. |
 | Field caller/presentation | Source layouts, doors, ordered tables, texts784–787 and portrait/speaker distinctions; typed synchronous narration and CLEAR; one following Kazin after reentry | Later Yeel setups and village services are not implemented. |

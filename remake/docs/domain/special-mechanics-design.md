@@ -1,7 +1,7 @@
 # Special Mechanics: Capability Gaps and Staged Extensions
 
-Status: **Proposed engineering design** for the remaining families; the selected Battle02 EGRESS
-implementation is tracked by [its current agreement](../capability-status.md#battle02-egress-implementation-agreement).
+Status: **Proposed engineering design** for the remaining families; the selected Battle02 EGRESS/Angel Wing
+implementation is tracked by the [current agreements](../capability-status.md#battle02-angel-wing-implementation-agreement).
 This document is not blanket implementation authorization or an accepted fidelity profile. [Issue #1339](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1339) owns scheduling;
 this document owns the proposed boundaries and decisions. Original facts remain with the linked
 English research/contracts/synthesis owners. No original-game evidence is derived from remake code.
@@ -291,6 +291,14 @@ Spawning can be implemented independently while this scoring choice stays Propos
 
 ## Special exits: payment, battle return and session end
 
+**Implemented subset:** selected Battle02 EGRESS and Angel Wing use finite spell-MP/item-slot payments
+and the shared paid retreat continuation. Wing stays an ordinary Item selection, requires self but
+neither MP nor EGRESS, removes the selected live slot before item feedback and retains that paid
+inventory through return/healing/walking retry. See the [current Wing agreement](../capability-status.md#battle02-angel-wing-implementation-agreement)
+and [source/payment owner](../application/session-and-programs.md#paid-retreat-and-field-return).
+The following extension sketch remains the wider-map/terminal-caller design; it grants no all-map,
+Battle0, save/suspend or acquisition support.
+
 **Confirmed static sources:** [Egress/Angel Wing control contract](../../../docs/design/contracts/battle-functions-control-flow.md#egress-and-angel-wing),
 [actual admission/payment/caller](../../../docs/research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
 and [ordinary outcome differences](../../../docs/design/synthesis/tactical-battle-loop.md#victory-defeat-and-admitted-retreat-leave-different-state).
@@ -316,8 +324,9 @@ record EndSession(SessionEndReason Reason) : BattleReturnDestination;
 ```
 
 Reuse current return programs/map load/field readiness only after the retreat-specific prefix.
-Current `OutcomeReturnRules` validates HP/MP-only recovery and field anchors; extending its enum
-without changing those guards/continuations would fall into defeat handling. Source egress uses
+Current `OutcomeReturnRules` validates HP/MP-only recovery and field anchors; ordinary outcome
+selection admits only Victory/Defeat. The paid retreat continuation explicitly selects its own return.
+A future destination must preserve those guards rather than overloading an ordinary outcome. Source egress uses
 live context and may reset raft state; a first slice must declare its admitted flag/map subset and
 retain explicit Unsupported for unimplemented branches. Payment/close/return failures retain the
 already-paid prefix and pending continuation, never refund or pay again on duplicate input.
@@ -382,8 +391,8 @@ specified complete landing path; do not fill raft's consumer gap with an assumed
 
 ## Dependencies and proposed order
 
-Selected Battle02 retreat now uses the finite action/continuation and current agreement linked above;
-Angel Wing, other-map bindings and terminal callers remain proposed. The remaining sequence is
+Selected Battle02 EGRESS and Angel Wing use the finite payment/continuation and current agreements
+linked above; other-map bindings and terminal callers remain proposed. The remaining sequence is
 advice, not a ticket queue or a claim that every later binding is ready. No
 unmerged work is a dependency. PR692's UI files remain separately owned; future semantic menu work
 must consume its accepted state or coordinate shared paths before writing. Do not make that layout
@@ -391,9 +400,9 @@ proposal an architectural prerequisite for any rule.
 
 | Family / owner | Classification and smallest useful follow-up | Ordering reason |
 | --- | --- | --- |
-| Ordinary retreat | Rule + finite action/return extension; selected Battle02 binding. [Exit design](#special-exits-payment-battle-return-and-session-end). | **First recommended player slice.** Existing world, ordinary costs/returns and semantic action UI bound the work; no later chapter, inventory acquisition or save platform. |
+| Ordinary retreat | Rule + finite action/return extension; selected Battle02 binding. [Exit design](#special-exits-payment-battle-return-and-session-end). | **Implemented for Battle02 spell/item retreat.** Existing world, costs/returns and semantic action UI bound the work; wider maps/callers remain unsupported. |
 | Item custody/full-pack fallback | Packed live loadout is supported; acquisition, drop-once and Deals delivery need rules/session store and source-ordered continuations. [Economy receipt routes](../../../docs/design/synthesis/progression-and-economy.md#sources-receipts-and-the-capacity-decision), [Caravan/Deals contract](../../../docs/design/contracts/caravan-and-deals-state.md). | Before complete Taros loot, shop/depot and mandatory receipts. Implement one real receipt policy; field Search restoration, battle Deals and story discard loops are not interchangeable. |
-| Equipment curse/break/use | ATT-only equipped contribution and Herb consumption supported; equip/remove/curse refusal, break state, wider use effects and refresh need rules/action/service binding. [Equipment](../../../docs/design/synthesis/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution), [field effects](../../../docs/research/field-item-effects.md). | Taros gate can consume explicit live equipped input first; a player equip interaction is a separate coherent outcome, needed before a full obtain/equip/fight route. Reuse loadout/refresh; do not invent an equipment framework. |
+| Equipment curse/break/use | ATT-only equipped contribution, Herb consumption and selected Wing retreat supported; equip/remove/curse refusal, break state, wider use effects and refresh need rules/action/service binding. [Equipment](../../../docs/design/synthesis/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution), [field effects](../../../docs/research/field-item-effects.md). | Taros gate can consume explicit live equipped input first; a player equip interaction is a separate coherent outcome, needed before a full obtain/equip/fight route. Reuse loadout/refresh; do not invent an equipment framework. |
 | Leader cleanup / Taros | Hook selection exists, execution/drop gaps remain. [Taros design](#taros-effectiveness-cleanup-loot-and-acquisition). | Effectiveness can precede inventory/Deals; complete Taros chapter waits for these and actual aftermath bindings. Cleanup is reusable by Prism/Fairy objectives, not by Battle0. |
 | Attack/area spells, AURA, DETOX, BOOST/SLOW, MUDDLE and wider statuses | HEAL/physical sleep supported; other effects lack admitted action rules, multi-target/status publication and presentation. [Spell contract](../../../docs/design/contracts/spell-resolution.md). | Add one concrete action family through existing preparation/reaction/after-turn owners. AURA multi-target recovery and DETOX status clearing are distinct; buffs require refresh/counter expiry; MUDDLE needs control/target semantics. Prism's finite multi-target work can inform these but is not a mandatory universal spell foundation. |
 | Prism laser | Decision/action and presentation extension plus selected binding. [Laser design](#prism-flowers-decision-ray-versus-construction-hit-list). | Independent of broad spell/status completion. Complete Battle36 also requires its ordinary enemy capabilities, leader cleanup and story/resources; laser support alone is not chapter acceptance. |
@@ -407,9 +416,9 @@ proposal an architectural prerequisite for any rule.
 
 ## Recommended first implementation: retreat and playable retry
 
-**Implemented bounded outcome:** in the existing selected Battle02 world, a player controlling a living Bowie
-with learned EGRESS1 and sufficient MP can select it, confirm the eligible self target, pay8 MP,
-complete the retreat presentation, reach usable field control at the admitted egress destination,
+**Implemented bounded outcome:** in the existing selected Battle02 world, a player controlling a living actionable ally
+can confirm self with learned EGRESS1 and pay8 MP, or select a held Angel Wing and consume exactly
+that slot without MP/learning, complete the retreat presentation, reach usable field control at the admitted egress destination,
 then walk back into Battle02 with fresh enemies in the same session. Payment must occur even though
 the subsequent ordinary supplied-map exploration entry heals eligible living/immortal allies;
 that later caller recovery is separate from defeat's leader revival/gold halving and victory's
@@ -427,7 +436,7 @@ versus ordinary dead members; never reach it by routing Retreat through the curr
 
 | Observation point | Required resource/state interpretation |
 | --- | --- |
-| After payment, before retreat delivery | Exactly one8-MP deduction from the admitted caster; no defeat gold/leader revival, damage, reward or new completion. This is the payment assertion, not a final-field MP assertion. |
+| After payment, before retreat delivery | Exactly one8-MP deduction for EGRESS, or removal/compaction of the selected Wing slot for item retreat; no defeat gold/leader revival, damage, reward or new completion. This is the payment assertion, not a final-field MP assertion. |
 | Actual battle return | Paid state and retreat-specific unlock handling have completed; destination parameters alone do not prove usable field control. Do not execute victory/defeat suffixes or consume a new battle turn. |
 | Exploration rebuild and usable field | The supplied-map caller applies its eligible-party healing/refresh and map setup/init. Attribute changed HP/MP/status to that stage, retaining dead-member exceptions and prior gold/inventory/flags as required. No claim that paid MP remains deducted after recovery. |
 | Fresh Battle02 reentry | The [fresh-entry contract](../../../docs/design/contracts/battle-control-lifecycle.md#new-battle) heals eligible allies and initializes enemies again; [current initializer](../../src/Sf2.Remake.Domain/Battles/Rules/BattleInitializationRules.cs) already implements that boundary. Preserve identity, growth/loadout/accounting and proper dead/active placement, not an artificial unchanged HP/MP requirement. |
@@ -480,8 +489,8 @@ rerun. Run affected behavior tests, adapter build and dependency-selected checks
 comparison only where the implementation makes a new claim needing it.
 
 Stop when that result works within the declared admitted route, unsupported egress branches remain
-explicit, doc/code boundaries agree and independent review accepts the frozen candidate. Angel Wing,
-all-map egress, battle4 special loss, Battle0 ending, save/suspend, full transport and later chapters
+explicit, doc/code boundaries agree and independent review accepts the frozen candidate.
+All-map egress, battle4 special loss, Battle0 ending, save/suspend, full transport and later chapters
 remain deferred. A discovery requiring a new campaign/persistence platform or additional media
 acquisition changes the scope and must be resolved before expanding; it is not hidden prerequisite
 work for this first slice.

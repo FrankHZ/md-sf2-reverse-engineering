@@ -42,6 +42,7 @@ internal sealed class Sf2RetreatAction : IBattleActionRule
         _ = RequireTarget(battle, actor, destination, action,
             target ?? throw new BattleRuleException("invalid-retreat-target", "target"));
         var moved = battle.With(actors: battle.Actors.Select(value => value.Actor == actor ? value.With(position: destination) : value));
-        return new(moved, actor, destination, [], null, [], [], Retreat: RequireAction(battle, actor, action).Retreat);
+        var definition = RequireAction(battle, actor, action).Retreat!;
+        return new(moved, actor, destination, [], null, [], [], Retreat: new SpellRetreatPayment(definition.Spell, definition.MpCost));
     }
 }

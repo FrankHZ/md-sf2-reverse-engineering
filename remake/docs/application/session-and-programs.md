@@ -14,6 +14,16 @@ Each service after text has its own token. Wrong/stale/duplicate commands and to
 cannot pay or release a later wait. Return failure preserves the paid battle, Return phase/token and
 any already-applied repeat unlock update. Ordinary outcome rules cannot manufacture a retreat exit.
 
+Angel Wing stays `BattleActionKind.Item` / `SessionAction.Item` through the normal carried-slot query
+and self-target selection. Selection retains the packed word; confirmation rejects a changed live
+word, invalid actor/control or target before preparation. `ItemRetreatPayment` carries the selected
+slot/word and admitted item identity/name; `SpellRetreatPayment` carries the learned spell/cost.
+The validated Wing preparation removes only that slot, shifts whole surviving words and appends127.
+Publishing that prepared state and `retreat-item-paid` precedes `retreat-text-requested` in the same
+immutable transition. It does not charge MP, require EGRESS, construct a healing scene, award EXP or
+consume RNG. The common continuation owns all later waits/return; failure retains the paid inventory.
+Field healing and fresh battle entry carry the compacted loadout rather than recreating initial items.
+
 After closure, held completion clears its corresponding unlock; clear completion preserves unlock.
 Neither path newly sets completion, runs the defeated/after-turn suffix, performs a victory join,
 revives the defeated leader or halves gold. `Sf2OutcomeReturnPolicy.Start(Retreat)` reads live
@@ -42,6 +52,21 @@ and [supplied-map caller owner](../../../docs/research/battle18-outcomes-and-car
 retain original evidence and Unknowns. Reproduce the bounded source inspection with `rg -n` on those
 symbols in the pinned local checkout, and the modern behavior with the
 [EGRESS recipe](../verification/field-programs.md#battle02-egress-and-walking-retry).
+
+**Confirmed static Wing join:** at the same pin, `battlefunctions_2.asm` stores the selected item and
+slot, calls `IsItemUsableByCombatant`, builds the item range and confirms a target before dispatch.
+`common/stats/itemstats.asm:IsItemUsableByCombatant` admits non-equipment consumables without an
+equippable-class restriction. `RemoveItemBySlot` reads that slot; `RemoveAndArrangeItems` shifts
+subsequent complete words and writes `ITEM_NOTHING` at the tail. The wrapper also requests stats
+refresh; the admitted consumable has no equip effects and this slice preserves existing gear/stat
+authority. `data/stats/items/itemdefs.asm` item4 is Angel Wing, CONSUMABLE, EGRESS, range0 and no equip
+effects. `ExecuteBattleaction_AngelWing` removes the slot before text275 (`{NAME}` / `{ITEM}`) and
+branches to the shared exit tail. This proves static order, not natural acquisition or original
+runtime delivery. The ordinary Battle02 caller remains distinct from the linked Battle0 caller.
+Reproduce with `rg -n -A 48 'ExecuteBattleaction_AngelWing:'` in the pinned battlefunctions source,
+and `rg -n -A 60 'RemoveAndArrangeItems:|IsItemUsableByCombatant:'` in itemstats. The
+[Wing native recipe](../verification/field-programs.md#battle02-angel-wing-and-walking-retry) proves
+the modern selected-item path only; all-map/status and original media/timing remain Unsupported/Unknown.
 
 ## Yeel guide, zone request and sleep continuation
 
