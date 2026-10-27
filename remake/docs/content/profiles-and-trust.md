@@ -5,6 +5,39 @@ definitions. Profiles select admission and permitted claims; they do not fork ga
 See [architecture](../architecture.md), [rule composition](../domain/gameplay-rules.md) and
 [asset preparation](presentation-assets.md).
 
+## Authored item-drop binding
+
+A v7 authored battle, standalone or inside a v8 world, may declare `dropItems` with explicit `id`,
+`name` and `rare` metadata. Admission is finite: Medical Herb0 and Short Rod86 are non-rare;
+Achilles Sword61, Counter Sword68, Iron Ball102 and Taros Sword110 are rare. These attributes come
+from the pinned item definitions; other identities, contradictory rarity and incompatible item-use metadata reject. The separate
+chance predicate is fixed in the [rule owner](../domain/gameplay-rules.md#finite-physical-action-item-drops).
+Names are authored display labels, never rule selectors. No new use/equip effect is admitted by
+declaring a drop item.
+
+The encounter's optional `itemDrops` contains explicit source `battle`0–44, an `enemySlots` mapping
+of deployed enemy actors to unique combatant slots128–159, and ordered `rows` with `battle`,
+`enemySlot`, `item` and `onceFlag`0–29. Rows may have different battles/slots; the helper matches at
+runtime and requires actual possession. Duplicate once flags and duplicate battle/slot/item rows
+reject. These bindings remain independent of physical leaders and Taros enemy definitions.
+
+The controlled `start` must supply `itemCustody: {"onceFlags": [], "deals": []}` (or explicit held
+flags and `{ "item": 110, "count": 14 }` stock rows). Counts are0–15, flags/items are unique, and
+initial Deals rows require admitted rare items. Omitted counts mean zero only inside an explicitly
+admitted custody value; missing custody is Unsupported. Every participating loadout must be known.
+Definition copies through growth/outcomes preserve drop bindings. Authored worlds containing drops
+retain validated initial actor inputs for every encounter for fresh enemy construction; entry carries live allies and
+custody from the active party instead of resetting them from those inputs. Private admission is
+unchanged and does not acquire drop support.
+
+[battle-drops.json](../../content/authored/battle-drops.json) and
+[battle-drops-full.json](../../content/authored/battle-drops-full.json) use the same ordinary authored
+world/leader-cleanup route with capacity/full-pack variants. Both explicitly start Deals110 at14,
+neighbor61 at3, story flag24 set but drop-once24 clear, and a controlled main seed that reaches zero
+drop draws on both kills. Left after return triggers the authored retry. This is a reproducible
+receipt/custody witness with redistributable structural facts, not natural original acquisition,
+full Battle18, inventory UI, shop stock purchasing, persistence or an asset distribution claim.
+
 ## Authored leader cleanup binding
 
 Only a v8 authored world with a nested v7 encounter and a valid outcome route admits:

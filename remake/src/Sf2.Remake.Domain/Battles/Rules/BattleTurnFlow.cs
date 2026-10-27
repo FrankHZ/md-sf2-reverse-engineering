@@ -17,7 +17,8 @@ internal static class BattleTurnFlow
                     ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
                 progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord);
         });
-        var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle);
+        var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
+            itemCustody: start.ItemCustody);
         return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);
     }
 
@@ -35,6 +36,8 @@ internal static class BattleTurnFlow
     internal static void ValidateStart(BattleDefinition definition, BattleStartInput start)
     {
         Require(start.Encounter == definition.Encounter, "missing-encounter", "start.encounter");
+        Require(definition.ItemDrops is null || start.ItemCustody is not null,
+            "drop-custody-unknown", "start.itemCustody", true);
         Require(start.Gold is null or <= 9999999, "numeric-range", "start.gold");
         if (start.NewBattle is null) Require(start.Gold is not null, "missing-accounting", "start.gold");
         var inputs = new Dictionary<ActorRef, BattleActorStartInput>();
@@ -59,6 +62,8 @@ internal static class BattleTurnFlow
             ValidateDeployment(deployment);
             var input = inputs[deployment.Actor]; var actor = deployment.Definition;
             var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? actor.SourceLoadout;
+            Require(definition.ItemDrops is null || loadout is not null,
+                "drop-inventory-unknown", "start.actors.sourceLoadout", true);
             if (loadout is not null)
                 Require(loadout.Items.Count == 4 && loadout.Spells.Count == 4 && loadout.Items.All(word => word <= 511),
                     "source-loadout", "start.actors.sourceLoadout");

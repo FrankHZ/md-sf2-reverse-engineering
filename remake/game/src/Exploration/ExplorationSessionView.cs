@@ -725,6 +725,7 @@ public sealed partial class ExplorationSessionView : Control
             mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,
             battleMounted = _battleMounted,
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
+            itemCustody = current?.Exploration?.Party.ItemCustody,
             admittedParty = full && current?.Exploration is { } world ? new
             {
                 package = _session!.Definition.Package, origin = _session.Definition.Origin,

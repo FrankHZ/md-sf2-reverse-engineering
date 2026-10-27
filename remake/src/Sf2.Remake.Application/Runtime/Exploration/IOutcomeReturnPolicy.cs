@@ -67,6 +67,7 @@ internal static class OutcomeReturnRules
     private static void Party(ScenarioDefinition definition, BattleStartInput before, BattleStartInput after, bool gold)
     {
         Require(after.Encounter == before.Encounter && after.MainSeed == before.MainSeed && after.ThinkingSeed == before.ThinkingSeed &&
+            ReferenceEquals(after.ItemCustody, before.ItemCustody) &&
             after.NewBattle == before.NewBattle && (after.ActiveAllies is null ? before.ActiveAllies is null : before.ActiveAllies is not null && after.ActiveAllies.SequenceEqual(before.ActiveAllies)) && after.Actors.Count == before.Actors.Count &&
             (gold ? before.Gold.HasValue == after.Gold.HasValue : before.Gold == after.Gold));
         var encounter = definition.Encounters[before.Encounter];

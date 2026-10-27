@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, ItemDroppedMessage, ItemReceivedMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -220,6 +220,7 @@ public sealed class BattleSceneState
     public string ActionKind => IsFieldDeath ? "field-death" : IsSleepTurn ? "sleep-turn" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsSleepTurn ? "Status" : Reaction.Kind.ToString();
     public HealingItemDefinition? Item => _action?.Item;
+    public BattleItemReceipt? ItemReceipt => IsSleepTurn || IsFieldDeath ? null : Reaction.Receipt;
     public HealingSpellDefinition? Spell => _action?.Spell;
     public HealingSceneCursor? Healing { get; }
     public bool SwitchesAlly => (Item is not null || Spell is not null) && Actor != Target;
@@ -243,7 +244,8 @@ public sealed class BattleSceneState
         .Sum(effect => effect.After!.Value - effect.Before!.Value));
     public bool IsHealingMessage => Healing is not null && Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage;
     public bool RequiresAcknowledgement => Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage
-        or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage;
+        or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage
+        or BattleScenePhase.ItemDroppedMessage or BattleScenePhase.ItemReceivedMessage;
     public PresentationCueKind CompletionKind => Phase switch
     {
         BattleScenePhase.Initialize => PresentationCueKind.BattleLoad,
@@ -408,6 +410,10 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.ActorEnter:
                 goto case BattleScenePhase.DeathMessage;
             case BattleScenePhase.DeathMessage:
+                if (scene.ItemReceipt is not null) { next = BattleScenePhase.ItemDroppedMessage; break; }
+                goto case BattleScenePhase.ItemReceivedMessage;
+            case BattleScenePhase.ItemDroppedMessage: next = BattleScenePhase.ItemReceivedMessage; break;
+            case BattleScenePhase.ItemReceivedMessage:
                 if (index + 1 < scene.Action.Reactions.Count) { index++; next = BattleScenePhase.ActionMessage; }
                 else if (scene.Action.Reward is not null)
                 {

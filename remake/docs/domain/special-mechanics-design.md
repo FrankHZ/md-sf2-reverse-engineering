@@ -1,7 +1,7 @@
 # Special Mechanics: Capability Gaps and Staged Extensions
 
-Status: **Proposed engineering design** for the remaining families; the selected Battle02 EGRESS/Angel Wing
-and Taros physical-effectiveness implementations are tracked by the
+Status: **Proposed engineering design** for the remaining families; selected Battle02 EGRESS/Angel Wing,
+Taros physical-effectiveness and authored physical item-drop implementations are tracked by the
 [current agreements](../capability-status.md#taros-physical-effectiveness-implementation-agreement).
 This document is not blanket implementation authorization or an accepted fidelity profile. [Issue #1339](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1339) owns scheduling;
 this document owns the proposed boundaries and decisions. Original facts remain with the linked
@@ -47,7 +47,7 @@ The following static code reads and accepted implementation owners control over 
 | Flying and physical sleep | **Supported bounded rules and delivery.** [Sleep/Flying tests](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs) and the [Yeel/Battle03 owner](../application/session-and-programs.md#yeel-guide-zone-request-and-sleep-continuation) cover movement, sleep construction, skip and recovery. SLEEP spell, Stun and other statuses are separate gaps. |
 | Flags, conditional/call programs, followers, region activation and typed waits | **Supported primitives**, not missing infrastructure. [Program runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs), [party flags](../../src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs), [activation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs). Reached battle-region scenes, conversions and nonzero spawn are unsupported consumers. |
 | Later ordinary map/dialogue bindings using only admitted operations | **Content/delivery gap only for those operations.** Reuse typed programs, selected maps and private preparation; do not infer an entire later encounter is content-only. Private encounter pins still admit the selected 1/2/3 boundary. |
-| Taros | **Authored physical-effectiveness rule/content/feedback implemented** at the [bounded owner](gameplay-rules.md#finite-taros-physical-effectiveness). Authored [leader cleanup](gameplay-rules.md#finite-enemy-leader-cleanup) is implemented through explicit source-slot binding and the existing outcome return. Wider encounter/loot remains a gap; no drop/Deals transaction. The outcome reader still rejects unbound enemy leaders, private leader encounters and nonempty defeated programs. |
+| Taros | **Authored physical-effectiveness rule/content/feedback implemented** at the [bounded owner](gameplay-rules.md#finite-taros-physical-effectiveness). Authored [leader cleanup](gameplay-rules.md#finite-enemy-leader-cleanup) is implemented through explicit source-slot binding and the existing outcome return. Authored physical drops, direct receipt/rare Deals fallback and session custody are implemented at the [finite drop owner](gameplay-rules.md#finite-physical-action-item-drops). Wider private encounter/aftermath remains a gap. The outcome reader still rejects unbound enemy leaders, private leader encounters and nonempty defeated programs. |
 | Jaro | **Lifecycle/interface + rule + content gap.** Activation rejects `region-program`; [turn flow](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs) rejects `control-side` for ally automatic. Actor faction/control come from immutable deployment; this is not a supported live conversion merely because enums exist. |
 | Prism Flowers | **Decision/action + projection + content gap.** [Automatic result](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) has one opposing target and no chosen special action; [movement completion](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs) turns a target into Physical. Damage reaction arrays do not implement action6. |
 | Fairy Woods | **Spawn lifecycle + round continuation + trial state/content gap.** Nonzero `SpawnMode` rejects; runtime maximum HP normally comes from definition/progress, without dormant source maxHP0. No trial counter/snapshot/record lifecycle is bound. |
@@ -121,16 +121,19 @@ LeaderCleanupPlan PrepareDefeatedCleanup(EngineBattleState current);
 // Finite ordered ActorRefs; actual killed-list kill bookkeeping, no sweep damage EXP/gold/drop.
 ```
 
-Drop execution needs its own finite state: enemy inventory, encounter drop-once bits, recipient
-inventory and session Deals stock. Reuse the packed inventory owner and keep once-bits distinct
-from story flags. Source order is qualifying action death/held item → range32 draw → once-bit test
+The implemented [finite physical drop](gameplay-rules.md#finite-physical-action-item-drops) uses
+live packed enemy/recipient inventories and immutable session drop-once/Deals custody. Once-bits
+remain distinct from story flags. Source order is qualifying action death/held item → range32 draw
+for Taros Sword110, Iron Ball102 or Counter Sword68 only → once-bit test
 and set → remove enemy slot → living recipient receipt or rare Deals fallback. An already-held bit
 does not skip the preceding draw. Prepare these no-wait helper operations as one finite candidate
 with ordered facts; do not add a transaction runner between each write. Existing construction
 publication/cursor prevents later delivery from repeating the draw, removal or receipt. A full
-inventory uses Deals, not another ally search.
-The [inventory dependency](#dependencies-and-proposed-order) must exist before calling a complete
-Taros loot path supported. A leader sweep must not award all those action drops.
+inventory sends rare items to Deals and discards non-rare items, without another ally search.
+RARE metadata is independent of the three chance identities. Only direct receipt emits the source
+dropped/received message pair; fallback is silent. Return/reentry carries live party inventory and
+once/Deals custody while fresh enemies regain their initial items. The authored implementation does
+not establish private Battle18 or natural acquisition. A leader sweep awards no action drops.
 
 First victory's after-program can use existing flag/conditional machinery for Caravan acquisition
 and Rohde-following removal once its actual scene operations are admitted. Repeat victory skips
@@ -141,9 +144,9 @@ Counterexamples for implementation: carried-but-unequipped Achilles; another act
 different target definition in the same slot; changed battle; second/counter construction; both
 leader and enemy dead; Taros dead without an action drop; full/dead recipient; held once-bit with
 the same draw; first versus repeat completion. Original natural trajectories remain **Unknown**.
-The smaller option is a physical-effectiveness-only authored slice using existing combat. It is
-cheap to debug but cannot claim complete Taros victory/loot. Recommended later staging is that
-accepted gate and authored leader cleanup, then inventory/drop and chapter binding; no generic damage-hook platform.
+Effectiveness, leader cleanup and finite physical receipt/custody now have authored implementations.
+Complete Taros chapter support still requires its private encounter/after-program bindings and
+independent acceptance; no generic damage-hook platform is proposed.
 
 ## Jaro: region programs and two logical actors sharing a visual
 
@@ -408,9 +411,9 @@ proposal an architectural prerequisite for any rule.
 | Family / owner | Classification and smallest useful follow-up | Ordering reason |
 | --- | --- | --- |
 | Ordinary retreat | Rule + finite action/return extension; selected Battle02 binding. [Exit design](#special-exits-payment-battle-return-and-session-end). | **Implemented for Battle02 spell/item retreat.** Existing world, costs/returns and semantic action UI bound the work; wider maps/callers remain unsupported. |
-| Item custody/full-pack fallback | Packed live loadout is supported; acquisition, drop-once and Deals delivery need rules/session store and source-ordered continuations. [Economy receipt routes](../../../docs/design/synthesis/progression-and-economy.md#sources-receipts-and-the-capacity-decision), [Caravan/Deals contract](../../../docs/design/contracts/caravan-and-deals-state.md). | Before complete Taros loot, shop/depot and mandatory receipts. Implement one real receipt policy; field Search restoration, battle Deals and story discard loops are not interchangeable. |
+| Item custody/full-pack fallback | Packed live loadout and finite authored physical drop/once/Deals custody are implemented; wider acquisition and service receipts still need their own policies. [Economy receipt routes](../../../docs/design/synthesis/progression-and-economy.md#sources-receipts-and-the-capacity-decision), [Caravan/Deals contract](../../../docs/design/contracts/caravan-and-deals-state.md). | Before private Taros, shop/depot and mandatory receipts. The implemented battle receipt does not supply field Search restoration or story discard loops; these policies are not interchangeable. |
 | Equipment curse/break/use | ATT-only equipped contribution, Herb consumption and selected Wing retreat supported; equip/remove/curse refusal, break state, wider use effects and refresh need rules/action/service binding. [Equipment](../../../docs/design/synthesis/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution), [field effects](../../../docs/research/field-item-effects.md). | Taros gate can consume explicit live equipped input first; a player equip interaction is a separate coherent outcome, needed before a full obtain/equip/fight route. Reuse loadout/refresh; do not invent an equipment framework. |
-| Leader cleanup / Taros | Hook selection exists, execution/drop gaps remain. [Taros design](#taros-effectiveness-cleanup-loot-and-acquisition). | Effectiveness can precede inventory/Deals; complete Taros chapter waits for these and actual aftermath bindings. Cleanup is reusable by Prism/Fairy objectives, not by Battle0. |
+| Leader cleanup / Taros | Authored effectiveness, cleanup and physical drops are implemented; private encounter/aftermath gaps remain. [Taros design](#taros-effectiveness-cleanup-loot-and-acquisition). | Complete Taros chapter still waits for private encounter and actual aftermath bindings. Cleanup is reusable by Prism/Fairy objectives, not by Battle0. |
 | Attack/area spells, AURA, DETOX, BOOST/SLOW, MUDDLE and wider statuses | HEAL/physical sleep supported; other effects lack admitted action rules, multi-target/status publication and presentation. [Spell contract](../../../docs/design/contracts/spell-resolution.md). | Add one concrete action family through existing preparation/reaction/after-turn owners. AURA multi-target recovery and DETOX status clearing are distinct; buffs require refresh/counter expiry; MUDDLE needs control/target semantics. Prism's finite multi-target work can inform these but is not a mandatory universal spell foundation. |
 | Prism laser | Decision/action and presentation extension plus selected binding. [Laser design](#prism-flowers-decision-ray-versus-construction-hit-list). | Independent of broad spell/status completion. Complete Battle36 also requires its ordinary enemy capabilities, leader cleanup and story/resources; laser support alone is not chapter acceptance. |
 | Region programs / Jaro / ally AI | Resumable round prefix, live control and visual aliases; [Jaro design](#jaro-region-programs-and-two-logical-actors-sharing-a-visual). | Before genuine Jaro conversion and source ally-automatic dispatch. Reuse party flags; no requirement to first build Caravan services. Ally AI is a new rule, not a faction toggle on physical enemy AI. |

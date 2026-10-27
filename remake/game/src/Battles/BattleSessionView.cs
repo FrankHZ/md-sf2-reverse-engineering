@@ -399,6 +399,7 @@ public sealed partial class BattleSessionView : Control
             failureKind = (_result?.Failure ?? _startupFailure)?.Kind.ToString(),
             round = current?.Battle.Round, revision = current?.Revision,
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed, gold = current?.Battle.Gold,
+            itemCustody = current?.Battle.ItemCustody,
             queueCursor = current?.Battle.Cursor,
             aiMemory = current?.Battle.Actors.Where(a => a.Control == BattleControl.Automatic)
                 .Select(a => new { actor = a.Actor.Value, memory = a.AiMemory, lastTarget = a.LastTarget?.Value }).ToArray(),

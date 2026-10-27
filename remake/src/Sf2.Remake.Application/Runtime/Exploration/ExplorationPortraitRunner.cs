@@ -88,7 +88,7 @@ internal static class ExplorationPortraitRunner
             var party = world.Party;
             var draw = BattleRandom.NextMain(party.MainSeed, range);
             current = ProgramRunner.Commit(current, new ActiveExploration(world.WithParty(
-                new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle))),
+                new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))),
                 current.Story, observations, "rng-portrait-" + kind);
             observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = range, RandomValue = draw.Value };
             return draw.Value;

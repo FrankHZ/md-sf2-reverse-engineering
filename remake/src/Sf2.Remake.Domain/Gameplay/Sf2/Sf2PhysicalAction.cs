@@ -87,6 +87,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         uint seed = current.MainSeed;
         var effects = new List<BattleEffect>();
         var reactions = new List<BattleReaction>();
+        var inventory = current;
 
         bool ineffective = current.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         var first = Hit("physical-first", counter: false);
@@ -118,7 +119,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         {
             // Only a surviving ally who actually attacked earns an award (including a counter).
             if (ally.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
-            var award = BattleProgressionRules.Award(progression, current.With(mainSeed: seed), ally, BattleActionKind.Physical, reactions.AsReadOnly());
+            var award = BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed),
+                inventory.GetActor(ally.Actor), BattleActionKind.Physical, reactions.AsReadOnly());
             seed = award.Seed;
             effects.AddRange(award.Effects);
             reward = new(ally.Actor, award.Amount);
@@ -134,7 +136,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
         // Admitted equipment changes effective ATT only. Status-free after-turn does not change this snapshot;
         // the second faction check therefore has the same continuing result as the first.
-        var prepared = current.With(actors: current.Actors.Select(a => a.Actor == actorRef
+        var prepared = inventory.With(actors: inventory.Actors.Select(a => a.Actor == actorRef
             ? a.With(position: destination) : a), mainSeed: seed, gold: gold);
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), reward,
             effects.AsReadOnly(), []);
@@ -173,6 +175,13 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             }
             if (counter) actorHp = strike.Hp;
             else targetHp = strike.Hp;
+            // WriteBattlesceneScript calls DropEnemyItem after each effect, before
+            // second/counter dispatch and GiveExpAndGold. HP/status playback is later.
+            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), attacker.Actor,
+                defender.Actor, strike.Hp == 0);
+            inventory = dropped.Battle; seed = inventory.MainSeed;
+            effects.AddRange(dropped.Effects);
+            reactions[^1] = reactions[^1] with { Receipt = dropped.Receipt };
             return strike;
         }
 

@@ -25,7 +25,7 @@ internal static class EntityActionRunner
         uint seed = world.Party.MainSeed;
         FieldMoveOutcome? fieldOutcome = null;
         ExplorationState Publish() => world.WithEntities(entities.Values, spriteSize).WithParty(
-            new(world.Party.Encounter, world.Party.Actors, seed, world.Party.ThinkingSeed, world.Party.Gold, world.Party.NewBattle));
+            new(world.Party.Encounter, world.Party.Actors, seed, world.Party.ThinkingSeed, world.Party.Gold, world.Party.NewBattle, world.Party.ActiveAllies, world.Party.ItemCustody));
         // Source order: movement for this entity, then its script, then the next entity.
         foreach (var original in world.AllEntities)
         {

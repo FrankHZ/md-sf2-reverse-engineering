@@ -14,6 +14,41 @@ Documentation upkeep uses Standard rigor: current behavior/navigation and preser
 the acceptance boundary. It changes no gameplay, original evidence, UX policy or verification
 framework. Historical dispatch plans and audit dispositions belong to Git/Issues, not this guide.
 
+## Battle item-drop authored observations
+
+Use `battle-drops.json` and `battle-drops-full.json` under `remake/content/authored/` with the ordinary
+`--authored-package` host. Enter interacts and acknowledges the before text; Enter/F/Tab/Enter selects
+and commits the enemy attack. Enter acknowledges scene text. Direct receipt displays dropped and
+received messages; full-pack Deals fallback is silent. After usable field return, Left walks onto
+the authored retry event; repeat the attack. Both reached drop draws are zero, so the second kill
+exercises the held once bit rather than merely a failed chance roll.
+
+Load `local/private-inputs.ps1` in the launching process, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`,
+and build `game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore` from `remake/` using the
+configured absolute `DOTNET_BIN`. Reuse the existing Godot/project; each variant needs its own startup
+package, with no hot state injection. Set worktree-local APPDATA/LOCALAPPDATA/TEMP, logs and a fresh
+ignored report destination. From the repository root:
+
+```powershell
+$project = (Resolve-Path -LiteralPath 'remake/game').Path
+$package = (Resolve-Path -LiteralPath 'remake/content/authored/battle-drops.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+  --script res://probes/engine_battle_drops_observation.gd -- --authored-package $package
+```
+
+Repeat with `battle-drops-full.json` and a separate destination. The probe submits ordinary keys,
+observes real session/presenter errors, message/token/field-death waits, inventory/accounting,
+once flags and Deals through return and walking reentry, then repeats the kill. It never supplies
+successful completion or post-start state. Compact samples and selected semantic events fit the
+180s/5MiB per-run budget. No screenshots, exports, new media or bulk capture are involved.
+
+Run `EnemyItemDropTests`/`EnemyItemDropSessionTests`, `uv run sf2 verify engine`, affected adapter
+build, and the clean committed planner. Preserve completed failures and rerun only corrected nodes
+or newly affected checks. Native results establish authored engine/host behavior; static source
+provenance and original runtime limits remain with the rule/research owners. Independent review
+and exact-head CI remain required; no H4/emulator or retired aggregate is implied.
+
 ## Leader cleanup authored observation
 
 Use `--authored-package <absolute path to remake/content/authored/leader-cleanup.json>` with the
