@@ -54,12 +54,12 @@ public sealed class BattleActorDefinition
         byte level, ushort maxHp, byte maxMp,
         byte attack, byte defense, byte agility, bool extraRoundAction, byte move, IEnumerable<SpellRef> spells,
         PhysicalActorDefinition? physical = null, BattleMover mover = BattleMover.Regular,
-        BattleSourceLoadout? sourceLoadout = null, BattleGrowthDefinition? growth = null)
+        BattleSourceLoadout? sourceLoadout = null, BattleGrowthDefinition? growth = null, BattleEquipmentDefinition? equipment = null)
     {
         Actor = actor; ClassRule = classRule;
         Level = level; MaxHp = maxHp; MaxMp = maxMp; Attack = attack; Defense = defense;
         Agility = agility; ExtraRoundAction = extraRoundAction; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
-        Mover = mover; SourceLoadout = sourceLoadout; Growth = growth;
+        Mover = mover; SourceLoadout = sourceLoadout; Growth = growth; Equipment = equipment;
     }
     public ActorRef Actor { get; }
     public BattleClassRule ClassRule { get; }
@@ -76,8 +76,9 @@ public sealed class BattleActorDefinition
     public BattleMover Mover { get; }
     public BattleSourceLoadout? SourceLoadout { get; }
     public BattleGrowthDefinition? Growth { get; }
+    public BattleEquipmentDefinition? Equipment { get; }
     internal BattleActorDefinition WithGrowth(BattleGrowthDefinition growth) => new(Actor, ClassRule,
-        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, growth);
+        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, growth, Equipment);
 }
 
 public sealed class BattleActorState
@@ -91,8 +92,8 @@ public sealed class BattleActorState
         Initialized = initialized; Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 && !retainDeadPosition ? null : position;
         Kills = kills; Defeats = defeats; LastTarget = lastTarget;
         Progress = progress is null ? null : progress with { SourceLoadout = SourceLoadout };
-        Attack = attack ?? (progress is null ? deployment.Definition.Attack :
-            (byte)Math.Min(200, progress.BaseAttack + (deployment.Definition.Growth?.AttackBonus ?? 0)));
+        Attack = attack ?? (progress is null && Definition.Equipment is null ? Definition.Attack :
+            (byte)Math.Min(200, BaseAttack + BattleEquipment.Contribution(Definition, SourceLoadout)));
         // PositionBattleEntities declares ordinary allies/enemies with facing3 (DOWN).
         if (facing > 3) throw new ArgumentOutOfRangeException(nameof(facing));
         Facing = facing;
@@ -113,7 +114,7 @@ public sealed class BattleActorState
     public bool Initialized { get; }
     public ushort MaxHp => Initialized ? Progress?.MaxHp ?? Definition.MaxHp : (ushort)0;
     public byte MaxMp => Progress?.MaxMp ?? Definition.MaxMp;
-    public byte BaseAttack => Progress?.BaseAttack ?? (byte)(Definition.Attack - (Definition.Growth?.AttackBonus ?? 0));
+    public byte BaseAttack => Progress?.BaseAttack ?? Definition.Equipment?.BaseAttack ?? (byte)(Definition.Attack - (Definition.Growth?.AttackBonus ?? 0));
     public byte Defense => Progress?.Defense ?? Definition.Defense;
     public byte Agility => Progress?.Agility ?? Definition.Agility;
     public IReadOnlyList<SpellRef> Spells => Progress?.Spells ?? Definition.Spells;

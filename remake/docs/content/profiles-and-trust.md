@@ -1,5 +1,31 @@
 # Runtime Profiles and Trust
 
+## Authored weapon admission
+
+Standalone format7 may declare `weapons` rows with `id`, `name`, `type: "weapon"`, a nonzero unsigned
+32-bit `classMask`, `cursed: false`, `attackBonus` (0–200), and inclusive `minimumRange`/`maximumRange`
+(1–3). Exact-key validation rejects other effects. IDs are unique and cannot also be healing or
+retreat items. Existing Taros type bindings must include all declared weapon identities.
+
+An actor opts in with `equipment: { "baseAttack": N }` (0–200). Its existing initial `attack` must
+match clamped base plus the actual equipped contribution. All declared weapon identities need full
+metadata; physical metadata is required, unpromoted and mapped to an already admitted source class
+(SDMN/WARR/PRST). Player ally control and status0 are required; automatic/source-controlled switching
+is excluded. Initial multiple equipped weapons, wrong-class equipped items, equipped nonweapons and
+broken weapons reject. Class-ineligible weapons can be carried without becoming offers. Other carried
+items retain their slot words, flags and order. Existing profiles without this opt-in are unchanged.
+
+Optional standalone `growth` reuses the authored growth reader's class, five-stat and no-new-spell
+rules. Opted-in equipment removes only its former blanket no-equipped restriction; the growth
+refresh reads current equipment instead of a fixed `AttackBonus`. Connected format8 and private
+imports cannot acquire this equipment feature through the standalone reader.
+
+[battle-equipment.json](../../content/authored/battle-equipment.json) is an authored practice arena:
+a bound Bowie identity (`champion`) carries Achilles while a practice blade is equipped. The weapon
+names, ATT bonuses and arena are authored demonstration values. The existing source-specific Taros
+predicate still checks bound Bowie + physical + mapped Taros + actually equipped Achilles61.
+Rings, cursed/status/break effects, services and later-chapter/save persistence remain Unsupported.
+
 ## Authored AURA admission
 
 Format 7 spell `effect.kind: "aura"` supplies `adjustedPower`, `fullRecovery` and `radius` with
@@ -376,7 +402,7 @@ double/counter rules. Broader speed formulas, arbitrary action counts and new st
 The ordinary source entry delegates to `GameSession.Start(definition, start)`, so a previously admitted
 definition can serve another explicit start with the same boundary checks and fresh runtime actors.
 Definitions never supply hidden session resources. Ordinary spell power remains already adjusted;
-full-recovery remains unsupported; level-up requires the admitted v8 growth described below. The session reads no files/ROM after admission and
+full-recovery outside admitted AURA remains unsupported; level-up requires admitted standalone or v8 growth. The session reads no files/ROM after admission and
 carries its seeds forward. The default loads the tracked yard; `--authored-package <path>` selects
 another bounded package, without an authored-export or original-fidelity claim. Further private AI/action migration follows the
 [ordered boundary](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
@@ -386,8 +412,8 @@ Physical capability is optional per actor: `physical` is a closed object with `m
 (0–65535), and `special` (currently `none`). Current kills/defeats are required start inputs, including
 for nonphysical actors. Other movetypes, critical combinations or special rules return
 Unsupported; a named unpromoted class cannot declare promoted EXP rules. Current ATT/DEF are explicit
-authored effective stats; nonempty equipment and nonzero status remain Unsupported. Ordinary
-weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
+authored effective stats unless the [mutable weapon opt-in](#authored-weapon-admission) supplies its validated base/contribution.
+Unadmitted equipment and nonzero status remain Unsupported. Ordinary weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
 
 `physical.critical` is a closed `{chance, damageBonus}` object. Only these paired values are supported:
 

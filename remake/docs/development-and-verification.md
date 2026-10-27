@@ -1,5 +1,43 @@
 # Development and Verification
 
+## Battle equipment authored observation
+
+Use [battle-equipment.json](../content/authored/battle-equipment.json) in the ordinary host. Enter,
+F, Tab, Enter attacks the adjacent guardian while carrying Achilles; acknowledge the scene with
+Enter. At the next player turn, Enter then E opens equipment. Directions cycle slots (including
+Unarmed when fewer than four eligible weapons); Enter confirms and Escape cancels. Equip Achilles,
+return through movement/action cancellation and repeat the attack to see effective damage.
+
+`BattleEquipmentTests` and `BattleEquipmentSessionTests` cover actual rules, admission and session
+behavior: same/duplicate slots, zero/four eligible slots, masks/nonweapon flags, base/live stats,
+nonzero ATT growth, counter range, stale/invalid input and one publication. Run affected cases with
+the configured absolute SDK; `uv run sf2 verify engine`, `uv run sf2 verify adapter` and the committed
+`uv run sf2 verify plan --base origin/main --head HEAD` own normal scope. Preserve completed failures
+and rerun their cases/files rather than repeating the aggregate to replace its result.
+
+Load `local/private-inputs.ps1` in the launching process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and build the actual adapter Debug configuration with the
+configured SDK. Reuse the owned project/Godot installation. A missing retained instance or a changed
+adapter binary requires startup; no install, extraction or private art is needed. Resolve absolute
+paths before Godot changes its working directory:
+
+```powershell
+$repoRoot = (Get-Location).Path
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_equipment_observation.gd -- `
+  --authored-package (Join-Path $repoRoot 'remake/content/authored/battle-equipment.json')
+```
+
+Keep APPDATA, LOCALAPPDATA, TEMP/TMP, report and logs under the fresh ignored output directory.
+Wait for the actual process/report completion when the Windows GUI launcher returns early. The
+finite probe uses ordinary keys and actual state/labels/errors, including focus/hide input suspension,
+preview/cancel, Unarmed, alternate range, Achilles confirmation, carried/equipped Taros attacks and
+continued movement/cancel. Target <180 seconds and <2 MiB; retain compact semantic boundaries, no
+per-frame dumps or screenshots. This is modern authored semantic acceptance, not original natural
+reach, hardware UI/timing, connected/private equipment or the twelve #1047 Unknowns. Existing
+comparison failures retain their historical owners; the Issue handoff records this slice's failures.
+
 ## AURA authored observation
 
 Launch `remake/content/authored/aura-healing.json` with `--authored-package`. Enter opens actions,

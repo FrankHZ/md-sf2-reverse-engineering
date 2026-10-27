@@ -40,7 +40,7 @@ internal static class BattleGrowthReader
                 Require(scenario.Encounters.Values.SelectMany(encounter => encounter.Deployments)
                     .Where(deployment => deployment.Actor == reference).All(deployment => deployment.Faction == BattleFaction.Ally),
                     "authored-growth-faction", "world.growth.actor", true);
-                Require(actor.SourceLoadout!.Items.All(word => (word & 128) == 0),
+                Require(actor.Equipment is not null || actor.SourceLoadout!.Items.All(word => (word & 128) == 0),
                     "authored-growth-equipment", "world.growth.actor", true);
                 Require(!Array(row, "spells").Any(), "authored-growth-spells", "world.growth.spells", true);
             }

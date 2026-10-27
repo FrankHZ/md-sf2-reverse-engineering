@@ -28,6 +28,21 @@ internal static class BattleCommandDispatcher
         {
             switch (command)
             {
+                case BeginEquipment when selection.Stage == BattleSelectionStage.ActionChoice:
+                    var offers = BattleEquipment.Choices(actor);
+                    if (offers.Count == 0) return Reject(current, "no-equippable-weapons", "equipment");
+                    return Equipment(offers.FirstOrDefault(option => option.Equipped)?.Slot ?? offers[0].Slot);
+                case SelectEquipment equipment when selection.Stage == BattleSelectionStage.EquipmentChoice:
+                    return Equipment(equipment.Slot);
+                case Cancel when selection.Stage == BattleSelectionStage.EquipmentChoice:
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "equipment-cancelled");
+                case Confirm when selection.Stage == BattleSelectionStage.EquipmentChoice:
+                    if (selection.EquipmentSlot is not { } equipmentSlot ||
+                        equipmentSlot < 4 && actor.SourceLoadout?.Items.ElementAtOrDefault(equipmentSlot) != selection.ItemWord)
+                        return Reject(current, "stale-equipment-selection", "equipment.slot");
+                    var equipped = BattleEquipment.Equip(actor, equipmentSlot);
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice),
+                        "equipment-confirmed", battle.With(actors: battle.Actors.Select(a => a.Actor == actor.Actor ? equipped : a)));
                 case Cancel:
                     return BattleMovementContinuation.BeginPlayer(current,
                         new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!), BattleSelectionStage.Movement),
@@ -81,6 +96,14 @@ internal static class BattleCommandDispatcher
         { return new(current, [], current.StopReason, BattleChoices.Failure(error)); }
         catch (BattleActionRuleFault error) { return new(current, [], SessionStopReason.Faulted, BattleChoices.Failure(error)); }
 
+        SessionResult Equipment(int slot)
+        {
+            if (!BattleEquipment.Choices(actor).Any(option => option.Slot == slot))
+                throw new BattleRuleException("equipment-slot", "equipment.slot");
+            return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.EquipmentChoice,
+                itemWord: slot < 4 ? actor.SourceLoadout!.Items[slot] : null, equipmentSlot: slot), "equipment-preview");
+        }
+
         bool CanSelect(BattleActionKind kind) => selection.Stage == BattleSelectionStage.ActionChoice ||
             selection.ActionReference?.Kind == kind && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady;
         SessionResult Select(BattleActionRef action)
@@ -105,11 +128,11 @@ internal static class BattleCommandDispatcher
 
     }
 
-    private static SessionResult Selected(SessionSnapshot current, BattleSelection selection, string kind)
+    private static SessionResult Selected(SessionSnapshot current, BattleSelection selection, string kind, EngineBattleState? battle = null)
     {
         var observation = new SessionObservation(current.ObservationSequence + 1, current.Revision + 1, kind, selection.Actor);
         var snapshot = new SessionSnapshot(current.SessionId, current.Revision + 1, observation.Sequence,
-            new ActiveBattle(current.Battle, selection), current.Story, SessionStopReason.PlayerInput);
+            new ActiveBattle(battle ?? current.Battle, selection), current.Story, SessionStopReason.PlayerInput);
         return new(snapshot, Array.AsReadOnly([observation]), SessionStopReason.PlayerInput);
     }
 

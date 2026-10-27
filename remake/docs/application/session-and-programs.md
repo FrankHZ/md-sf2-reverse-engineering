@@ -1,5 +1,25 @@
 # Session and Resumable Programs
 
+## Battle equipment selection
+
+`BeginEquipment` is admitted at `ActionChoice`; `SelectEquipment(slot)` is admitted only within
+`EquipmentChoice`. Both publish selection only. The query exposes eligible slot labels, current
+equipped markers and prospective ATT/range without constructing an action or mutating battle state.
+Initial focus is the currently equipped slot, Unarmed where offered, or the first weapon when four
+eligible slots exclude Unarmed. A zero-weapon list refuses entry.
+
+Cancel returns to the same action menu and movement preview with authoritative equipment/stats
+unchanged. Confirm revalidates the current actor, status, class/slot eligibility, selected packed
+word and live stats, then publishes equipment and derived ATT together exactly once. The existing
+session envelope rejects wrong session, stale revision, duplicate submission and wrong actor.
+Confirmation returns to `ActionChoice`, not the action committer/scene/turn advancer. A later
+movement/action Cancel preserves confirmed equipment; it never restores a starting loadout.
+
+This is a standalone authored weapon interaction. It introduces no item custody transfer, payment,
+RNG, turn consumption or connected/private persistence. See the
+[domain owner](../domain/gameplay-rules.md#authored-battle-weapon-equipment) and
+[content boundary](../content/profiles-and-trust.md#authored-weapon-admission).
+
 ## Ordered AURA recovery
 
 AURA uses ordinary spell/target/confirm commands and existing healing preparation and scene owners.

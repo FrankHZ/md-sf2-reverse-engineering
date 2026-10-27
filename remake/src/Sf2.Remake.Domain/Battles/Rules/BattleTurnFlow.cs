@@ -77,6 +77,13 @@ internal static class BattleTurnFlow
                 deployment.Initialization?.SpawnMode is 2 or 3 && input.Hp == 0 && input.PositionOverride is null,
                 "dormant-start-state", "start.actors.initialization");
             var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? actor.SourceLoadout;
+            if (actor.Equipment is not null)
+            {
+                BattleEquipment.ValidateLoadout(actor, loadout);
+                Require(deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
+                    !deployment.SourceAllyControl && input.Status == 0 && actor.Physical is not null,
+                    "equipment-actor", "start.actors", true);
+            }
             Require(definition.ItemDrops is null || loadout is not null,
                 "drop-inventory-unknown", "start.actors.sourceLoadout", true);
             if (loadout is not null)

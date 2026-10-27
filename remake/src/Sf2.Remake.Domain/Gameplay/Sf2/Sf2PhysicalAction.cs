@@ -52,7 +52,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     {
         var actor = battle.GetActor(actorRef);
         if (actor.Hp == 0) throw new BattleRuleException("physical-actor", "actor");
-        if (actor.Definition.Physical is not { } physical)
+        if (BattleEquipment.Physical(actor) is not { } physical)
             throw new BattleRuleException("physical-definition", "actor.physical", true);
         if (battle.Definition.Rewards is null)
             throw new BattleRuleException("battle-rewards", "encounter.rewards", true);
@@ -68,7 +68,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             throw new BattleRuleException("physical-target", "target");
         if (target.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
-        var range = battle.GetActor(actorRef).Definition.Physical!;
+        var range = BattleEquipment.Physical(battle.GetActor(actorRef))!;
         if (!BattleRange.Contains(destination, target.Position!, range.MinimumRange, range.MaximumRange))
             throw new BattleRuleException("target-range", "target");
         return target;
@@ -99,7 +99,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             // counter draw does not clear the first success; second-hit death still invalidates it.
             counterRequested |= second.CounterRolled;
         }
-        var counterRange = target.Definition.Physical!;
+        var counterRange = BattleEquipment.Physical(target)!;
         bool counterPerformed = targetHp > 0 && counterRequested && (target.Status & 0xC0) == 0 &&
             !(current.Definition.TarosEffectiveness?.IsTaros(actor) ?? false) &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);

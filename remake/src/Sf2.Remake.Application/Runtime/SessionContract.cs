@@ -10,7 +10,7 @@ public enum SessionFailureKind { IllegalCommand, UnsupportedCapability, ContentE
 public sealed record SessionFailure(SessionFailureKind Kind, string Code, string Field, string Message);
 public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
-public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady }
+public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice }
 public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat }
 
 public abstract record SessionCommand;
@@ -19,6 +19,8 @@ public sealed record ChooseAction(SessionAction Action) : SessionCommand;
 public sealed record SelectBattleAction(BattleActionRef Action) : SessionCommand;
 public sealed record SelectSpell(SpellRef Spell) : SessionCommand;
 public sealed record SelectItem(int Slot) : SessionCommand;
+public sealed record BeginEquipment : SessionCommand;
+public sealed record SelectEquipment(int Slot) : SessionCommand;
 public sealed record SelectTarget(ActorRef Target) : SessionCommand;
 public sealed record Confirm : SessionCommand;
 public sealed record Cancel : SessionCommand;
@@ -48,14 +50,15 @@ public sealed record CommandEnvelope(Guid SessionId, long ExpectedRevision, Acto
 public sealed class BattleSelection
 {
     internal BattleSelection(ActorRef actor, BattleMovementPreview preview, BattleSelectionStage stage,
-        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null, ushort? itemWord = null)
-    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; ItemWord = itemWord; }
+        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null, ushort? itemWord = null, int? equipmentSlot = null)
+    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; ItemWord = itemWord; EquipmentSlot = equipmentSlot; }
     public ActorRef Actor { get; }
     public BattleMovementPreview Preview { get; }
     public BattleSelectionStage Stage { get; }
     public SessionAction? Action { get; }
     public int? ItemSlot { get; }
     public ushort? ItemWord { get; }
+    public int? EquipmentSlot { get; }
     public SpellRef? Spell { get; }
     public ActorRef? Target { get; }
     public BattleActionRef? ActionReference => Action switch
