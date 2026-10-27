@@ -44,7 +44,7 @@ full-game parity and public distribution remain outside the accepted boundary.
 | Medical Herb battle scenes | **Implemented bounded consumer:** live inventory consumption during construction, deferred mode2 HP recovery without MP cost, single-ally display/target switch/restoration, EXP/growth and end-of-scene input release. Uses source item animation NONE/Nothing and SFX113, with no fairy or physical recoil draws. Wounded controlled entry and full-HP source-world normal/reduced observations cover different boundaries; natural timing and whole-scene HEAL parity remain unfinished. [Scene owner](godot/battle-scenes.md#medical-herb-scenes). |
 | Enemy physical decision | **Implemented subset:** already-active, physical-only ATTACK1/script3, admitted source movers with MOV1–63. Reverse candidate/RNG order, signed raw-priority cohort and capped result, Regular class table for named classes when needed, largest-movement/later-collected tie, shared physical/reward/death/control path. Missing reached class/physical capability remains atomic Unsupported; earlier commits and the failed queue entry survive. |
 | Zero-target commandset06 continuation | **Implemented subset:** ATTACK1, unavailable HEAL1 and SUPPORT return failure; MOVE1 selects a living target from complete raw costs0–127, walks fixed cost4 then corrects the station with the legal MOV grid. Movement or origin Stay returns success and ends the action; no same-turn attack, RNG/resource or last-target change. High/incomplete target costs remain atomic Unsupported. |
-| Remaining battle behavior | **Unsupported:** reached level-up, leader-death programs and terminal outcome/return reject the whole action. General AI, other movetypes/critical rules, broader equipment/status/special effects and broader private admission are not implemented by this subset. |
+| Remaining battle behavior | **Unsupported beyond admitted capabilities:** nonempty defeated programs/enemy-leader cleanup, battle-region programs, ally automatic control, nonzero spawn, laser action6, EGRESS/Angel Wing and broader equipment/spell/status families. Growth and ordinary victory/defeat/return are implemented for the bound content above and below; Battle03 Flying/physical sleep is implemented below. Missing bindings or unsupported reached effects still reject at their owning boundary, preserving any prior committed prefix. The [Proposed special-mechanics design](domain/special-mechanics-design.md) separates missing content, rules and state/interface extensions; it does not enable these mechanisms. |
 
 ## Common Exploration and Programs
 
@@ -77,6 +77,7 @@ source provenance and reproduction.
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
 | Item acquisition, area descriptions and setup-event selection | none | **Unsupported** | their only consumers were legacy; accepted contracts and research remain for a future reached consumer |
+| Special encounters, retreat and transport extensions | [Proposed engineering design](domain/special-mechanics-design.md) | **Design only / unsupported consumers** | Taros effectiveness/loot/leader cleanup, Jaro conversion, Prism laser, hidden/reappearing enemies and trial records, paid retreat/special caller return, and raft/Caravan travel need the finite extensions described there. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a
 new capability, receipt, or matrix row unless they independently cross a trust, authority, versioned-port,
@@ -89,7 +90,7 @@ or stable-observation boundary under
 
 Issue [#1051](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1051) uses **Standard** rigor:
 bounded integration of admitted resources into the existing battle board, with one shared decoder
-and no second gameplay/map authority. **Implemented candidate, independent integration pending:**
+and no second gameplay/map authority. **Implemented and merged** in [PR #1052](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1052):
 Battle01–03 draw their selected map regions with one cell/actor/preview transform, tile-priority
 passes and an accepted-target outline. Content preserves per-encounter visual map/origin through
 growth/outcome binding. Authored practice keeps its intended fallback; missing private maps fail
@@ -108,7 +109,7 @@ pixel/timing parity remain **Unknown**; the twelve historical comparison failure
 
 Issue [#1049](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1049) retains **High** rigor:
 ordered field events, party continuity, encounter initialization and staged status/control changes
-cross existing state owners. **Implemented candidate, independent integration pending:** an explicitly
+cross existing state owners. **Implemented and merged** in [PR #1050](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1050): an explicitly
 controlled accepted Battle02 return walks through early Yeel, Kazin's offer/following, exit/reentry
 with one Kazin, and a real Map66 zone request into playable Battle03 in one session. A separate initial
 zone approach with F72/F502 clear proves that neither Kazin nor Battle02 completion is a prerequisite.
@@ -208,8 +209,9 @@ on retry. Run the affected producer, engine behavior tests, adapter build, clean
 scoped CI and two native input/state runs (win; defeat plus retry). Existing failed comparisons remain
 individually classified. The selected world is 127,597,616 bytes under the 134,217,728-byte bound.
 This selection adds small route/program metadata, no new media, with unchanged linear preparation/load
-cost. Runtime outputs and resource measurements remain in the Issue handoff. Human play and independent
-integration remain pending; existing failed comparisons are not reclassified by this bounded acceptance.
+cost. Runtime outputs and resource measurements remain in the Issue handoff. Independent integration
+is complete in [PR #1048](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1048); human play
+remains pending. Existing failed comparisons are not reclassified by this bounded acceptance.
 
 ### Battle01 return through Battle02 implementation agreement
 
