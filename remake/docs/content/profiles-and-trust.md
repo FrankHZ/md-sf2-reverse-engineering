@@ -1,5 +1,32 @@
 # Runtime Profiles and Trust
 
+## Authored hidden-spawn initialization
+
+The optional v7 encounter `initialization` reuses `BattleInitializationDefinition`: explicit
+`enemyCount`1–32, `regionProgram: "none"`, `regions` with unique IDs0–15 and three or four ordered
+`vertices` in0–47, plus `sourceCombatants` actor/slot bindings (allies0–29, enemies128–159). Spawn-enabled
+encounters require exactly one unique slot per deployment. Slots need not equal processing order;
+a slot beyond the declared enemy count produces the source reset refusal. Region15 remains the
+no-trigger sentinel. Type3 uses three vertices; no unused fourth point is inferred.
+
+Each deployment declares `initialization` with `baseAiWord` (null for allies), `spawnMode`0/2/3,
+primary/secondary regions, filler, commandset and primary/secondary orders. Source resettable enemies
+have no growth, unequipped Herb/empty inventory and empty source spells. Difficulty0 is fixed for
+controlled authored reset. Other equipment, modes and region programs reject instead of approximating.
+
+Controlled actor input declares `initialization: { "initialized": false, "activationWord": 768 }`
+for a dormant mode3 example. Every actor in an initialized controlled encounter supplies both fields;
+the mode bits must match deployment. False is allowed only for a dormant mode2/3 enemy with HP0 and
+no placement override. Allies and starting actors cannot use false, including an all-mode0 encounter.
+Initialized dead mode2 is distinct from dormant mode2. Fresh source-policy starts derive dormant state
+from deployment instead. Maximum-HP definitions remain immutable and positive.
+
+`hidden-spawns.json` is a small authored ordinary-host scenario, with source-order binding, one
+live source-AI enemy, one mode2 enemy and one mode3 enemy. It imports no Battle44 data/assets. Existing
+encounter-default storage enables fresh walking retry and keeps live party inventory/custody; no
+new restart manifest or save state is introduced. [Rules](../domain/gameplay-rules.md#hidden-enemy-reset-and-source-regions)
+and the [scope agreement](../capability-status.md#hidden-enemy-lifecycle-agreement) own the semantic limits.
+
 ## Authored Prism binding
 
 The public `prism-laser.json` package uses the ordinary authored host and48×48 tactical domain.

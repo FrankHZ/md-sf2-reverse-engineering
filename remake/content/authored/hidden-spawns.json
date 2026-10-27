@@ -1,0 +1,333 @@
+{
+  "formatVersion": 7,
+  "package": "hidden-spawns",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "hidden-court",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305397760,
+    "thinkingSeed": 3203334210,
+    "gold": 73,
+    "actors": [
+      {
+        "actor": "leader",
+        "hp": 60,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "returner",
+        "hp": 0,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": false,
+          "activationWord": 768
+        }
+      },
+      {
+        "actor": "hidden",
+        "hp": 0,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": false,
+          "activationWord": 512
+        }
+      },
+      {
+        "actor": "sentry",
+        "hp": 60,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      }
+    ]
+  },
+  "terrains": [
+    {
+      "id": "court-ground",
+      "legend": {
+        ".": {
+          "surface": "open",
+          "protection": "none"
+        }
+      },
+      "rows": [
+        "........",
+        "........",
+        "........",
+        "........",
+        "........",
+        "........",
+        "........",
+        "........"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "court",
+      "terrain": "court-ground"
+    }
+  ],
+  "spells": [],
+  "actors": [
+    {
+      "id": "leader",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 60,
+      "maxMp": 0,
+      "attack": 80,
+      "defense": 200,
+      "agility": 100,
+      "extraRoundAction": false,
+      "move": 4,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    },
+    {
+      "id": "returner",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 1,
+      "maxMp": 0,
+      "attack": 1,
+      "defense": 0,
+      "agility": 20,
+      "extraRoundAction": false,
+      "move": 1,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    },
+    {
+      "id": "hidden",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 1,
+      "maxMp": 0,
+      "attack": 1,
+      "defense": 0,
+      "agility": 15,
+      "extraRoundAction": false,
+      "move": 1,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    },
+    {
+      "id": "sentry",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 60,
+      "maxMp": 0,
+      "attack": 1,
+      "defense": 0,
+      "agility": 1,
+      "extraRoundAction": false,
+      "move": 1,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "hidden-court",
+      "map": "court",
+      "placements": [
+        {
+          "actor": "leader",
+          "faction": "ally",
+          "processingOrder": 0,
+          "control": "player",
+          "aiStrategy": null,
+          "x": 2,
+          "y": 4,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "returner",
+          "faction": "enemy",
+          "processingOrder": 1,
+          "control": "automatic",
+          "aiStrategy": "stay",
+          "x": 2,
+          "y": 2,
+          "initialization": {
+            "baseAiWord": 0,
+            "spawnMode": 3,
+            "primaryRegion": 0,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "hidden",
+          "faction": "enemy",
+          "processingOrder": 2,
+          "control": "automatic",
+          "aiStrategy": "stay",
+          "x": 3,
+          "y": 3,
+          "initialization": {
+            "baseAiWord": 0,
+            "spawnMode": 2,
+            "primaryRegion": 0,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "sentry",
+          "faction": "enemy",
+          "processingOrder": 3,
+          "control": "automatic",
+          "aiStrategy": "source-orders",
+          "x": 6,
+          "y": 6,
+          "initialization": {
+            "baseAiWord": 0,
+            "spawnMode": 0,
+            "primaryRegion": 0,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        }
+      ],
+      "initialization": {
+        "regions": [
+          {
+            "id": 0,
+            "vertices": [
+              {
+                "x": 1,
+                "y": 1
+              },
+              {
+                "x": 4,
+                "y": 1
+              },
+              {
+                "x": 4,
+                "y": 3
+              },
+              {
+                "x": 1,
+                "y": 3
+              }
+            ]
+          }
+        ],
+        "regionProgram": "none",
+        "enemyCount": 3,
+        "sourceCombatants": [
+          {
+            "actor": "leader",
+            "slot": 7
+          },
+          {
+            "actor": "returner",
+            "slot": 128
+          },
+          {
+            "actor": "hidden",
+            "slot": 129
+          },
+          {
+            "actor": "sentry",
+            "slot": 130
+          }
+        ]
+      },
+      "rewards": {
+        "halvedExperience": false
+      }
+    }
+  ]
+}

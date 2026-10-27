@@ -1,5 +1,27 @@
 # Session and Resumable Programs
 
+## Round prefix and appearance continuation
+
+`BattleRoundContinuation` uses the existing `GameSession` publisher. Activation and the no-region-
+program boundary precede the ordered whole-list reset. One immutable `BattleRoundState` then holds
+only successful actor IDs, appearance cursor and completion token; live actors remain solely in
+`EngineBattleState`. Both successful and refused reset facts are observable. No future battle or
+parallel region store is retained.
+
+Each actual `EntityEffect` completion advances one appearance. Wrong/stale/duplicate completions
+reject without resetting actors, consuming RNG or generating turns. The complete list is loaded before
+the first appearance, but Godot hides later pending actors. Only after the last appearance does
+`GenerateQueue` consume live placement/HP/agility and main RNG. A later decision failure keeps the
+already delivered appearance prefix and generated queue; it cannot replay reset. Story and item/death
+custody survive the continuation. Outcome selection waits for appearance delivery and otherwise keeps
+its existing precedence, including termination before a new round.
+
+Authored encounters with initialization retain validated immutable encounter starts. The existing
+`BattleEntry` overlays live party allies and custody on fresh enemy defaults; `BattleOutcome` carries
+initialized state with ally vitals/loadout. Fresh mode2 may therefore appear again after an encounter
+return/retry, without being eligible for same-encounter reappearance after an ordinary death. The
+[capability agreement](../capability-status.md#hidden-enemy-lifecycle-agreement) owns acceptance and exclusions.
+
 ## Prism laser continuation
 
 `BattleAutomaticAction.ChosenAction` carries the selected finite laser through the existing automatic

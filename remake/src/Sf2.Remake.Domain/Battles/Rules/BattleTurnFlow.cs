@@ -16,10 +16,11 @@ internal static class BattleTurnFlow
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
                 deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
                     ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
-                progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0));
+                progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0),
+                initialized: input.Initialized ?? true);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
-            itemCustody: start.ItemCustody);
+            regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody);
         return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);
     }
 
@@ -62,6 +63,9 @@ internal static class BattleTurnFlow
         {
             ValidateDeployment(deployment);
             var input = inputs[deployment.Actor]; var actor = deployment.Definition;
+            Require(input.Initialized != false || deployment.Faction == BattleFaction.Enemy &&
+                deployment.Initialization?.SpawnMode is 2 or 3 && input.Hp == 0 && input.PositionOverride is null,
+                "dormant-start-state", "start.actors.initialization");
             var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? actor.SourceLoadout;
             Require(definition.ItemDrops is null || loadout is not null,
                 "drop-inventory-unknown", "start.actors.sourceLoadout", true);
@@ -82,6 +86,8 @@ internal static class BattleTurnFlow
             Require(definition.Contains(position), "start-placement-bounds", "start.actors.positionOverride");
             var tile = definition.Terrain[position.Y * 48 + position.X];
             Require(BattleTerrainRules.MovementCost(tile, actor.Mover) > 0, "blocked-placement", "start.actors.positionOverride");
+            if (deployment.Initialization?.SpawnMode is 2 or 3 &&
+                (start.NewBattle is not null || input.Initialized == false)) continue;
             if (input.Hp == 0 && !(start.NewBattle is not null && (deployment.Faction == BattleFaction.Enemy ||
                 deployment.Initialization?.AllyPartyMember is 7 or 28)))
             {
@@ -104,6 +110,11 @@ internal static class BattleTurnFlow
     internal static EngineBattleState GenerateRound(EngineBattleState battle, out TurnOrderResult<ActorRef> generated)
     {
         if (battle.Definition.Initialization is not null) battle = BattleActivationRules.BeforeRound(battle);
+        return GenerateQueue(battle, out generated);
+    }
+
+    internal static EngineBattleState GenerateQueue(EngineBattleState battle, out TurnOrderResult<ActorRef> generated)
+    {
         generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
             new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Agility, a.Definition.ExtraRoundAction)),
             (ushort)(battle.MainSeed >> 16));

@@ -1,5 +1,40 @@
 # Development and Verification
 
+## Hidden-spawn authored observation
+
+Start `remake/content/authored/hidden-spawns.json` through `--authored-package`. Up moves the ally
+into the trigger; Enter/Space/Enter commits Stay. The source enemy's ordinary turn clears the checked
+word, and the next round resets/appears the returner then hidden enemy. Enter/F/Tab/Enter attacks the
+returner; Enter acknowledges combat messages. Its ordinary death is followed by a later-round actual
+appearance. Down then demonstrates usable movement. No actor IDs or this route define legality.
+
+Load the retained `local/private-inputs.ps1` in the launch process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and build the actual adapter Debug configuration with the
+selected absolute SDK. Reuse the project/installation; a new instance is justified when none is
+retained. Use a fresh worktree-local ignored directory for APPDATA/LOCALAPPDATA/TEMP/logs/report:
+
+```powershell
+$project = (Resolve-Path -LiteralPath 'remake/game').Path
+$package = (Resolve-Path -LiteralPath 'remake/content/authored/hidden-spawns.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+  --script res://probes/engine_hidden_spawns_observation.gd -- --authored-package $package
+```
+
+The bounded probe supplies ordinary keys only after startup. It reads real appearance completion,
+intermediate marker rotation/alpha, settled values, pending-member hiding, ordered queue/appearance
+facts, ordinary death and subsequent movement, with errors surfaced. Each run is limited to180s and
+5MiB semantic output. No screenshots, state mutation or fabricated completion. Engine behavior tests
+cover mode2 death, mode3 return, source geometry/checked bits, reset refusal, input validation, failure
+prefixes and ordinary leader return/retry with retained custody. Use `uv run sf2 verify engine`,
+affected adapter/Debug build, clean committed planner and exact-head CI. Preserve completed failures;
+correct only affected cases instead of rerunning an aggregate to erase a red result.
+
+Prior #1351's seven failures/corrections remain in its
+[handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1352#issuecomment-6434280116), along
+with the earlier #1341/#1343/#1345/#1347/#1349 failures and twelve unresolved #1047 comparisons.
+No full/retired/H4/emulator run or private Battle44 acquisition follows from this slice.
+
 ## Prism laser authored observation
 
 Use `remake/content/authored/prism-laser.json` with ordinary `--authored-package` startup. Both allies

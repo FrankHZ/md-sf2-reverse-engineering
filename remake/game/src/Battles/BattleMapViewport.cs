@@ -125,6 +125,18 @@ internal sealed partial class BattleMapViewport : Control
             }
     }
 
+    internal void PresentAppearance(BattleRoundState round, EngineBattleState battle, float progress, bool reducedMotion)
+    {
+        foreach (var pending in round.Appearances.Skip(round.Cursor + 1))
+        { _markers[pending].Hide(); if (_sprites.TryGetValue(pending, out var sprite)) sprite.Hide(); }
+        if (round.Actor is not { } actor) return;
+        var marker = _markers[actor];
+        marker.PivotOffset = marker.Size / 2;
+        marker.Rotation = reducedMotion ? 0 : Mathf.Tau * 2 * progress;
+        marker.Modulate = new Color(Colors.LightCoral, progress);
+        _focus = [battle.GetActor(actor).Position!]; Frame();
+    }
+
     private void ReleaseTextures()
     {
         foreach (var texture in _textures.Values) texture.Dispose();
@@ -149,7 +161,7 @@ internal sealed partial class BattleMapViewport : Control
         foreach (var actor in projection.Markers)
         {
             var node = _markers[actor.Actor];
-            node.Visible = true;
+            node.Visible = true; node.Rotation = 0;
             node.Position = new(actor.Position.X * CellSize + 2, actor.Position.Y * CellSize + 4);
             node.Text = actor.Text;
             node.Modulate = actor.Selected ? Colors.Gold : actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;
@@ -296,7 +308,7 @@ internal sealed partial class BattleMapViewport : Control
     {
         var node = _markers[a.Actor];
         return new { id = a.Actor.Value, hp = a.Hp, mp = a.Mp, exp = a.Exp, kills = a.Kills, defeats = a.Defeats, x = a.Position?.X, y = a.Position?.Y,
-            maxHp = a.MaxHp, maxMp = a.MaxMp, level = a.Level, defense = a.Defense, move = a.Definition.Move,
+            initialized = a.Initialized, maxHp = a.MaxHp, maxMp = a.MaxMp, level = a.Level, defense = a.Defense, move = a.Definition.Move,
             learned = a.Spells, leader = a.Definition.Physical?.Leader == true,
             attack = a.Attack, sourceAttack = a.Definition.Attack, mover = a.Definition.Mover.ToString(),
             status = a.Status, activationWord = a.ActivationWord, aiMemory = a.AiMemory, lastTarget = a.LastTarget?.Value,
@@ -304,7 +316,7 @@ internal sealed partial class BattleMapViewport : Control
             primaryOrder = a.Deployment.Initialization?.PrimaryOrder, secondaryOrder = a.Deployment.Initialization?.SecondaryOrder,
             commandset = a.Deployment.Initialization?.AiCommandset,
             items = a.SourceLoadout?.Items, spells = a.SourceLoadout?.Spells,
-            nodeX = node.Position.X, nodeY = node.Position.Y, visible = _sprites.TryGetValue(a.Actor, out var image) ? image.Visible : node.Visible, text = node.Text,
+            nodeX = node.Position.X, nodeY = node.Position.Y, nodeRotation = node.Rotation, nodeAlpha = node.Modulate.A, visible = _sprites.TryGetValue(a.Actor, out var image) ? image.Visible : node.Visible, text = node.Text,
             sprite = _sprites.TryGetValue(a.Actor, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
                 resourceSelector = sprite.Texture is ImageTexture bound && _resourceSelectors.TryGetValue(bound, out var selector)
                     ? selector : null,

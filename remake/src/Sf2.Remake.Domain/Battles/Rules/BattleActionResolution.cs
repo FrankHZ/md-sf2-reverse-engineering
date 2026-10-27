@@ -36,7 +36,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         for (int index = 0; index < before.Actors.Count; index++)
         {
             var old = before.Actors[index]; var candidate = Battle.Actors[index];
-            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp &&
+            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position && candidate.Facing == old.Facing &&
                 candidate.Kills == old.Kills && candidate.Defeats == old.Defeats && candidate.Attack == old.Attack &&
                 candidate.Status == old.Status && Equals(candidate.Progress, old.Progress) &&
@@ -184,7 +184,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             var expectedLoadout = old.Actor == actor && consumedLoadout is not null ? consumedLoadout :
                 inventory?.GetActor(old.Actor).SourceLoadout ?? old.SourceLoadout;
             bool changedLoadout = !ReferenceEquals(expectedLoadout, old.SourceLoadout);
-            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp &&
+            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
                 candidate.LastTarget == old.LastTarget && candidate.Attack == old.Attack && candidate.Status == old.Status && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&

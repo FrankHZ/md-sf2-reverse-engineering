@@ -71,7 +71,7 @@ public sealed class BattleSelection
 
 public abstract record ActiveSessionState;
 public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null,
-    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null) : ActiveSessionState;
+    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -91,7 +91,8 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
-    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null;
+    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null;
+    public BattleRoundState? BattleRound => (Active as ActiveBattle)?.Round;
     public BattleRetreatState? BattleRetreat => (Active as ActiveBattle)?.Retreat;
     public BattleSceneState? BattleScene => (Active as ActiveBattle)?.Scene;
     public BattleMovementState? BattleMovement => (Active as ActiveBattle)?.Movement;
