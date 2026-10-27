@@ -1,5 +1,45 @@
 # Gameplay Rules and Composition
 
+## Finite physical-action item drops
+
+`EnemyItemDropRules` is a fixed SF2 physical-construction service. Its evidence owners are the
+[combat contract](../../../docs/design/contracts/combat-resolution.md) and
+[Taros action-drop custody](../../../docs/research/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody),
+including `sf2-enemy-item-drops-v1` and `sf2-enemy-item-drop-behavior-v1`. **Confirmed static source:**
+pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/gameflow/battle/battleactions/{battleactionsengine_1,dropenemyitem}.asm`,
+`code/common/stats/itemstats.asm` (`GetItemSlotContainingIndex`, `RemoveItemBySlot`, `AddItem`),
+and `data/stats/items/itemdefs.asm`. Source inspection distinguishes the helper's mutation from
+the generated `displayMessage` commands; authored observations do not prove natural original reach.
+
+After each first/second/counter effect, the helper requires ally actor, enemy target, local target
+death, matching source battle/combatant slot and an actually held mapped item. Rows retain their
+order, including continuing past a matching battle/slot row whose item is absent. The first matching
+inventory slot wins. Actor names, processing order, `Physical.Leader` and enemy-definition identities
+do not select a drop. Taros Sword110, Iron Ball102 and Counter Sword68 alone draw `RNG(32)` and require
+zero; this occurs before testing the once bit. Other admitted items, including rare Achilles61,
+do not draw. The RARE attribute controls only fallback.
+
+A clear once bit is set, the enemy's slot is removed/compacted, then a living actor receives the
+masked identity in its first empty slot. Enemy equipped/AI/broken status is not received; there is
+no automatic equip or other-ally search. Dead/full recipients route rare items to independent
+per-item Deals counts capped at15, while non-rare items are discarded. The source emits dropped
+message396 and received message395 only after successful direct receipt. Fallback creates no
+message/acknowledgement. Leader sweep never invokes this action helper.
+
+Construction retains immutable inventory/custody and the ordered RNG/removal/receipt facts before
+end EXP/gold construction and later HP/status/reward playback. `BattleActionResolution` validates
+the helper's exact finite effect suffix after each reaction and its resulting state; it does not
+accept arbitrary inventory writes from a replacement physical rule. Re-evaluation is pure candidate
+validation, not a second publication or RNG stream. Queries do not construct actions. A later wait,
+credit, growth or outcome failure retains the accepted prefix and cannot repeat these writes.
+
+`EnemyItemDropTests` and `EnemyItemDropSessionTests` reproduce the actual rule/session behavior.
+The [Content owner](../content/profiles-and-trust.md#authored-item-drop-binding) closes admission to
+the supported metadata; [Application](../application/session-and-programs.md#battle-item-custody-and-receipt-playback)
+owns cross-mode custody. This is physical-only authored receipt support, not private Battle18,
+general item acquisition/equip, shops or cross-session persistence.
+
 ## Finite enemy-leader cleanup
 
 An authored v8 encounter can bind `LeaderCleanupDefinition` through the

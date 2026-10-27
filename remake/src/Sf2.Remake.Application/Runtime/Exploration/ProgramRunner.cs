@@ -373,7 +373,7 @@ internal static class ProgramRunner
                             party.Actors.Select(row => row.Actor != member.Actor ? row : restoreResource.Hp
                                 ? row with { Hp = row.Progress?.MaxHp ?? member.Definition.MaxHp }
                                 : row with { Mp = row.Progress?.MaxMp ?? member.Definition.MaxMp }),
-                            party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies)));
+                            party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody)));
                         break;
                     case MoveEntityNextToPlayer beside:
                         var playerMotion = current.Exploration!.PlayerEntity.Motion;
@@ -487,7 +487,7 @@ internal static class ProgramRunner
         // Repeated joins preserve the live inventory/progress; seeds and gold are not starts.
         return new ActiveExploration(world.WithParty(new(world.Party.Encounter,
             world.Party.Actors.Append(initial[0]), world.Party.MainSeed, world.Party.ThinkingSeed,
-            world.Party.Gold, world.Party.NewBattle, world.Party.ActiveAllies)));
+            world.Party.Gold, world.Party.NewBattle, world.Party.ActiveAllies, world.Party.ItemCustody)));
     }
 
     internal static SessionSnapshot Commit(SessionSnapshot current, ActiveSessionState active, StoryState story,

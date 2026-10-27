@@ -80,7 +80,7 @@ internal static class BattleEntry
         }
         var input = new BattleStartInput(selected.Encounter, actors, world.Party.MainSeed,
             world.Party.ThinkingSeed, world.Party.Gold,
-            world.Party.NewBattle is { } policy ? policy with { SkipIntro = false, BeforeBattleRouted = true } : null, active);
+            world.Party.NewBattle is { } policy ? policy with { SkipIntro = false, BeforeBattleRouted = true } : null, active, world.Party.ItemCustody);
         // Validate and compute the whole initialization before publishing its flags or actor state.
         var battle = BattleTurnFlow.Start(encounter, input);
         var flags = input.NewBattle is null ? story.Flags : story.Flags.Where(flag => flag is < 90 or > 105);

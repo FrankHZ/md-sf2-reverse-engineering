@@ -40,13 +40,14 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
 
     internal static ScenarioReadAccepted DecodeBattle(JsonElement root, bool allowLeaderCleanup = false)
     {
-        ObjectOptional(root, "document", "items", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
+        ObjectOptional(root, "document", "items", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters",
+            .. root.TryGetProperty("dropItems", out _) ? new[] { "dropItems" } : []]);
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
         var start = root.GetProperty("start");
-        Object(start, "start", "encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors");
+        ObjectOptional(start, "start", "itemCustody", "encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors");
         Require(Text(start, "initialVitals") == "authored-controlled", "initial-vitals-policy", "start.initialVitals");
         string selectedEncounter = Id(start, "encounter");
         uint mainSeed = WordImage(start, "mainSeed"), thinkingSeed = WordImage(start, "thinkingSeed");
@@ -148,6 +149,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(!retreatItems.ContainsKey(id) && healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
             }
         var weaponItems = Array(root, "encounters").SelectMany(TarosEffectivenessReader.Weapons).Distinct().ToArray();
+        var dropItems = EnemyItemDropReader.Items(root);
+        Require(dropItems.Keys.All(id => id == 0 ? !weaponItems.Contains(id) && !retreatItems.ContainsKey(id) :
+            !healingItems.ContainsKey(id) && !retreatItems.ContainsKey(id)), "conflicting-item-type", "dropItems");
         Require(!weaponItems.Any(id => healingItems.ContainsKey(id) || retreatItems.ContainsKey(id)),
             "conflicting-item-type", "tarosEffectiveness.weaponItems");
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
@@ -163,7 +167,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Require(value.ValueKind == JsonValueKind.Number && value.TryGetUInt16(out _), "item-word", "actors.items");
                 ushort word = value.GetUInt16();
-                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127)) || retreatItems.ContainsKey((byte)(word & 127)) || weaponItems.Contains((byte)(word & 127))),
+                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127)) || retreatItems.ContainsKey((byte)(word & 127)) || weaponItems.Contains((byte)(word & 127)) || dropItems.ContainsKey((byte)(word & 127))),
                     "missing-item", "actors.items", true);
                 return word;
             }).ToArray();
@@ -215,6 +219,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Object(encounter, "encounter", ["id", "map", "placements",
                 .. (encounter.TryGetProperty("rewards", out _) ? new[] { "rewards" } : []),
                 .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : []),
+                .. (encounter.TryGetProperty("itemDrops", out _) ? new[] { "itemDrops" } : []),
                 .. (encounter.TryGetProperty("leaderCleanup", out _) ? new[] { "leaderCleanup" } : [])]);
             BattleRewardDefinition? rewards = null;
             if (encounter.TryGetProperty("rewards", out var rewardInput))
@@ -259,7 +264,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
             Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
                 tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems),
-                leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup))),
+                leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
+                itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems))),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
@@ -279,9 +285,21 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position));
         }
         var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
-            (uint)Number(start, "gold", 0, 9999999));
+            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, dropItems));
         BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
-        return new(new ScenarioDefinition(package, encounters.Values), startInput);
+        // Drop-enabled authored encounters need fresh enemies on each entry. Their
+        // controlled start is a definition input, never a replacement for live allies.
+        IEnumerable<BattleDefinition> freshEncounters = encounters.Values.Any(encounter => encounter.ItemDrops is not null)
+            ? encounters.Values : [];
+        var defaults = freshEncounters.Select(encounter =>
+        {
+            var input = new BattleStartInput(encounter.Encounter,
+                startActors.Where(actor => encounter.Deployments.Any(row => row.Actor == actor.Actor)),
+                mainSeed, thinkingSeed, startInput.Gold, itemCustody: startInput.ItemCustody);
+            BattleTurnFlow.ValidateStart(encounter, input);
+            return input;
+        }).ToArray();
+        return new(new ScenarioDefinition(package, encounters.Values, encounterStarts: defaults), startInput);
     }
 
     private static ushort StartStatus(JsonElement input)

@@ -1,5 +1,32 @@
 # Session and Resumable Programs
 
+## Battle item custody and receipt playback
+
+`BattleItemCustody` is one immutable value containing separate drop-once bits and per-item Deals
+counts. The active `EngineBattleState` owns it in battle; the active exploration `Party` owns it in
+field mode. `BattleOutcome` transfers it alongside live ally loadouts, progress, accounting and RNG;
+`BattleEntry` consumes that party value when constructing a new battle. No StoryState flags, presenter
+store, pending scene or encounter default becomes a competing live authority. Null means unknown,
+not an empty store, and drop-enabled battle admission rejects it.
+
+All existing party reconstruction paths retain the value: recovery/defeat/retreat, field RNG,
+portrait/text polling, resource restoration, join and encounter entry. The return-policy boundary
+rejects a policy that replaces it. Drop-enabled authored encounters retain immutable controlled
+enemy starts. Reentry reconstructs those enemies but overlays the party's live ally inventory; a
+fresh enemy may hold its initial item again while the retained once bit prevents another receipt.
+
+Physical construction commits inventory/once/Deals exactly once with the accepted action. Each
+reaction may retain a successful `BattleItemReceipt` for later display. After its death message,
+`ItemDroppedMessage` then `ItemReceivedMessage` use the ordinary scene token/acknowledgement path,
+before EXP/growth/gold playback. They do not mutate inventory. A rejected or stale completion cannot
+replay construction; later growth/outcome failure preserves already committed inventory and stock.
+Deals/discard fallback has no new player-facing message or wait. `item-to-deals`/`item-discarded`
+observations and the active-mode `itemCustody` projection expose committed facts to inspection.
+
+The [native recipe](../development-and-verification.md#battle-item-drop-authored-observations)
+observes both variants through real waits and a second ordinary kill. Its authored retry trigger is
+controlled content, not a claim about the original Battle18 encounter-entry/after-program route.
+
 ## Ordered leader cleanup and retained accounting
 
 `BattleActionCommitter` owns the first post-action checkpoint for completed scenes and no-scene

@@ -24,7 +24,7 @@ internal static class BattleOutcome
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Where(actor => actor.IsAlly || definition.EncounterStarts.Count == 0).Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp, actor.Exp,
                     actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord)),
-                battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy);
+                battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, kind, party);
             var map = definition.Exploration!.Maps[route.BattleMap];
             var world = MapTransfer.Build(map, new("entity-0"), selected.ProjectionPosition,
@@ -58,7 +58,7 @@ internal static class BattleOutcome
                 battle.Actors.Where(actor => actor.IsAlly).Select(actor => new BattleActorStartInput(actor.Actor,
                     actor.Hp, actor.Mp, actor.Exp, actor.Kills, actor.Defeats, actor.Status, null,
                     actor.Progress, actor.SourceLoadout, actor.ActivationWord)),
-                battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy);
+                battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, BattleOutcomeKind.Retreat, party);
             // ExplorationLoop heals before fade/load; this is later than retreat payment and closure.
             var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, selected.Party, all: false);

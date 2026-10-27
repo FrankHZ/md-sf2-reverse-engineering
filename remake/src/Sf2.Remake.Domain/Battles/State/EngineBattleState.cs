@@ -153,9 +153,10 @@ public sealed class BattleDefinition
         BattleInitializationDefinition? initialization = null, BattleOutcomeDefinition? outcome = null,
         IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null,
         IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
-        TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null)
+        TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
+        EnemyItemDropDefinition? itemDrops = null)
     {
-        TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup;
+        TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
@@ -181,6 +182,7 @@ public sealed class BattleDefinition
     public BattleMapRegion? SourceMapRegion { get; }
     public TarosEffectiveness? TarosEffectiveness { get; }
     public LeaderCleanupDefinition? LeaderCleanup { get; }
+    public EnemyItemDropDefinition? ItemDrops { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
 }
 
@@ -188,12 +190,13 @@ public sealed class EngineBattleState
 {
     internal EngineBattleState(BattleDefinition definition, IEnumerable<BattleActorState> actors,
         uint mainSeed, uint thinkingSeed, int round, IEnumerable<TurnOrderEntry<ActorRef>> queue, int cursor, uint? gold,
-        NewBattleStartPolicy? startPolicy = null, BattleRegionState? regions = null, ActorRef? firstAlly = null)
+        NewBattleStartPolicy? startPolicy = null, BattleRegionState? regions = null, ActorRef? firstAlly = null,
+        BattleItemCustody? itemCustody = null)
     {
         Definition = definition; Actors = Array.AsReadOnly(actors.ToArray());
         MainSeed = mainSeed; ThinkingSeed = thinkingSeed; Round = round;
         Queue = Array.AsReadOnly(queue.ToArray()); Cursor = cursor;
-        Gold = gold; StartPolicy = startPolicy; Regions = regions; FirstAlly = firstAlly;
+        Gold = gold; StartPolicy = startPolicy; Regions = regions; FirstAlly = firstAlly; ItemCustody = itemCustody;
     }
     public BattleDefinition Definition { get; }
     public IReadOnlyList<BattleActorState> Actors { get; }
@@ -202,6 +205,7 @@ public sealed class EngineBattleState
     public int Round { get; }
     public int Cursor { get; }
     public uint? Gold { get; }
+    public BattleItemCustody? ItemCustody { get; }
     public NewBattleStartPolicy? StartPolicy { get; }
     public BattleRegionState? Regions { get; }
     // Source BATTLESCENE_FIRST_ALLY survives turns without a scene. No start default.
@@ -211,9 +215,11 @@ public sealed class EngineBattleState
     public BattleActorState GetActor(ActorRef actor) => Actors.Single(a => a.Actor == actor);
     internal EngineBattleState With(IEnumerable<BattleActorState>? actors = null, uint? mainSeed = null,
         int? round = null, IEnumerable<TurnOrderEntry<ActorRef>>? queue = null, int? cursor = null, uint? gold = null,
-        uint? thinkingSeed = null, BattleRegionState? regions = null, ActorRef? firstAlly = null) =>
+        uint? thinkingSeed = null, BattleRegionState? regions = null, ActorRef? firstAlly = null,
+        BattleItemCustody? itemCustody = null) =>
         new(Definition, actors ?? Actors, mainSeed ?? MainSeed, thinkingSeed ?? ThinkingSeed,
-            round ?? Round, queue ?? Queue, cursor ?? Cursor, gold ?? Gold, StartPolicy, regions ?? Regions, firstAlly ?? FirstAlly);
+            round ?? Round, queue ?? Queue, cursor ?? Cursor, gold ?? Gold, StartPolicy, regions ?? Regions, firstAlly ?? FirstAlly,
+            itemCustody ?? ItemCustody);
 }
 
 internal sealed class BattleRuleException(string code, string field, bool unsupported = false)

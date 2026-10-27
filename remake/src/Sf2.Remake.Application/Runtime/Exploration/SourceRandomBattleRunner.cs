@@ -28,7 +28,7 @@ internal static class SourceRandomBattleRunner
                     seed = second.After;
                     steps = (short)(second.Value + 2);
                 }
-                party = new(party.Encounter, party.Actors, seed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies);
+                party = new(party.Encounter, party.Actors, seed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody);
             }
         }
         var next = ProgramRunner.Next(caller);

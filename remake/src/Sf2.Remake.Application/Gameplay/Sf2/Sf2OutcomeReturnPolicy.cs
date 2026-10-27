@@ -65,7 +65,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 { Hp = input.Progress?.MaxHp ?? encounter.Deployments.Single(row => row.Actor == leader).Definition.MaxHp } : input),
                 party.MainSeed, party.ThinkingSeed,
                 DefeatGold(party.Gold ?? throw new BattleRuleException("unspecified-gold", "party.gold", true)),
-                party.NewBattle, party.ActiveAllies);
+                party.NewBattle, party.ActiveAllies, party.ItemCustody);
         }
         return new(party, Heal(definition, party, all: false), victory ? route.JoinMember : null,
             victory || selected.CompletedFlag is { } completed && story.Flags.Contains(completed), victory, route.ReturnProgram);
@@ -85,6 +85,6 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
             return input with { Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
                 Mp = input.Progress?.MaxMp ?? deployment.Definition.MaxMp };
         }).ToArray();
-        return new(party.Encounter, actors, party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies);
+        return new(party.Encounter, actors, party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody);
     }
 }

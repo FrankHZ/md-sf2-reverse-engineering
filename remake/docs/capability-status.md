@@ -1,5 +1,36 @@
 # Remake Capability Status
 
+## Battle item-drop implementation agreement
+
+**High rigor:** physical construction, scene playback and cross-mode item custody share one
+`GameSession` publisher. The bounded outcome is an authored allied physical kill that removes an
+actually held, explicitly mapped enemy item and delivers it to the living acting ally, or uses the
+source rare-item Deals fallback. Ordinary outcome return and walking reentry retain live party
+inventory, separate drop-once flags and per-item Deals stock while rebuilding fresh enemies.
+
+The current implementation uses finite immutable definitions/candidates and existing scene/return
+mechanisms. It adds no service, transaction runner or second mutable inventory authority. Missing
+custody rejects before affected publication. Three hard-coded chance identities are separate from
+the RARE attribute. Direct receipt has ordered dropped/received messages; Deals fallback is silent
+and observable as committed state. [Rules](domain/gameplay-rules.md#finite-physical-action-item-drops),
+[custody](application/session-and-programs.md#battle-item-custody-and-receipt-playback) and
+[admission](content/profiles-and-trust.md#authored-item-drop-binding) own the exact boundaries.
+
+Acceptance covers source-order first/second/counter construction, failed/held chance, actual slots,
+status normalization, full/dead recipient, independent saturated stock, sweep exclusion, stale waits,
+later failure, and same-session receipt/full-pack return/reentry through ordinary commands. Use
+actual engine behavior tests, engine/adapter builds, the two
+[bounded native inputs](development-and-verification.md#battle-item-drop-authored-observations),
+committed verification selection and exact-head CI. Each native run is bounded to180s/5MiB; no
+new assets or capture platform is required. Current milestone is implementation and native validation
+complete, with independent main-gate acceptance pending in
+[Issue #1349](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1349).
+
+Full/private Battle18, wider action families, shops/Deals purchase, Caravan/depot, equip interaction,
+save/load, original natural acquisition and hardware parity remain outside scope. The twelve #1047
+comparison failures and prior completed failures remain preserved. Reassess before any wider action,
+service or persistence expansion; this bounded state lifetime does not authorize one.
+
 
 ## Leader cleanup implementation agreement
 
@@ -15,9 +46,9 @@ unplaced survivors, zero-HP exclusions, stale waits, retained accounting after a
 real scene/no-scene first-ally custody, and no second defeated hook after after-turn. Use focused
 engine behavior tests, current engine/adapter gates, one ordinary-key native scenario and exact-head
 CI. Native runs are bounded to <180s and <5MiB; prior failures and twelve unresolved #1047
-comparisons remain retained. Current milestone: bounded implementation and native observation complete;
-freeze the candidate Draft PR for independent main-gate review. No full Battle18/private import,
-nonempty defeated programs, loot/Deals, Caravan,
+comparisons remain retained. Bounded leader cleanup is implemented; the item-drop agreement above
+owns its separate action-drop extension. No full Battle18/private import,
+nonempty defeated programs, Caravan,
 new assets, persistence, general hook platform or hardware parity. Missing first-ally custody is
 explicitly Unsupported before affected cleanup publication; it is never replaced by the current actor.
 
@@ -43,7 +74,7 @@ source/document/private/ownership checks, and bounded actual Godot keyboard deli
 results through usable control. Native runs stay below180s and5MiB; no new assets, large world,
 emulator, H4 or retired/full aggregate. Independent main-gate integration remains required.
 
-Full Battle18 AI/private leader admission, loot/Deals, aftermath/Caravan, all-action immunity, equipment
+Full Battle18 AI/private leader admission, wider loot/service bindings, aftermath/Caravan, all-action immunity, equipment
 acquisition/equip interaction and hardware/natural original trajectories remain Unsupported or
 Unknown at their existing owners. Preserve #1047's twelve completed unresolved comparisons and
 all completed #1341/#1343 results; they are not rerun or replaced by this slice. The
@@ -189,7 +220,7 @@ source provenance and reproduction.
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
 | Item acquisition, area descriptions and setup-event selection | none | **Unsupported** | their only consumers were legacy; accepted contracts and research remain for a future reached consumer |
-| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Private Battle18, Taros loot, Jaro conversion, Prism laser, hidden/reappearing enemies and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
+| Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, Jaro conversion, Prism laser, hidden/reappearing enemies and trial records, wider retreat/special caller return, and raft/Caravan travel still need their owned extensions. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a
 new capability, receipt, or matrix row unless they independently cross a trust, authority, versioned-port,
