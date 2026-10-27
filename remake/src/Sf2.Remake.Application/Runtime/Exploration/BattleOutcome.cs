@@ -12,7 +12,7 @@ internal static class BattleOutcome
     internal static SessionResult Begin(ScenarioDefinition definition, SessionResult result, SessionRules rules)
     {
         var current = result.Snapshot;
-        if (current.Mode != SessionMode.Battle || current.BattleScene is not null || current.BattleMovement is not null || current.BattleRetreat is not null) return result;
+        if (current.Mode != SessionMode.Battle || current.BattleRound is not null || current.BattleScene is not null || current.BattleMovement is not null || current.BattleRetreat is not null) return result;
         var observations = result.Observations.ToList();
         try
         {
@@ -23,7 +23,7 @@ internal static class BattleOutcome
             var battle = current.Battle;
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Where(actor => actor.IsAlly || definition.EncounterStarts.Count == 0).Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp, actor.Exp,
-                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord)),
+                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, kind, party);
             var map = definition.Exploration!.Maps[route.BattleMap];
@@ -57,7 +57,7 @@ internal static class BattleOutcome
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Where(actor => actor.IsAlly).Select(actor => new BattleActorStartInput(actor.Actor,
                     actor.Hp, actor.Mp, actor.Exp, actor.Kills, actor.Defeats, actor.Status, null,
-                    actor.Progress, actor.SourceLoadout, actor.ActivationWord)),
+                    actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, BattleOutcomeKind.Retreat, party);
             // ExplorationLoop heals before fade/load; this is later than retreat payment and closure.

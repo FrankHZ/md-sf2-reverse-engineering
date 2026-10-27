@@ -37,7 +37,7 @@ internal static class BattleAdvancer
 
     private static SessionResult AdvanceCore(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
     {
-        if (current.BattleScene is not null || current.BattleMovement is not null)
+        if (current.BattleRound is not null || current.BattleScene is not null || current.BattleMovement is not null)
             return new(current, observations.AsReadOnly(), SessionStopReason.PresentationWait);
         var battle = current.Battle;
         long revision = current.Revision, sequence = current.ObservationSequence;
@@ -51,24 +51,10 @@ internal static class BattleAdvancer
                         observations.AsReadOnly(), SessionStopReason.SimulationWait);
                 if (BattleTurnFlow.AtRoundEnd(battle))
                 {
-                    var previous = battle;
-                    battle = BattleTurnFlow.GenerateRound(battle, out var generated);
-                    revision++;
-                    if (battle.Regions is { } regions)
-                    {
-                        observations.Add(new(++sequence, revision, "regions-tested", After: regions.Tested));
-                        observations.Add(new(++sequence, revision, "region-program-none"));
-                        observations.Add(new(++sequence, revision, "spawn-modes-admitted"));
-                    }
-                    observations.Add(new(++sequence, revision, "round-started", Before: previous.Round, After: battle.Round));
-                    observations.Add(new(++sequence, revision, "round-rng", Before: previous.MainSeed, After: battle.MainSeed, TurnGeneration: new(
-                        current.SessionId, battle.Round, previous.MainSeed, battle.MainSeed,
-                        Array.AsReadOnly(generated.Candidates.Select(c => new BattleTurnCandidate(c.Actor,
-                            c.ProcessingOrder, c.Placed, c.Hp, c.Agility, c.ExtraRoundAction)).ToArray()),
-                        Array.AsReadOnly(generated.Draws.Select(d => new BattleTurnDraw(d.Actor, d.Turn,
-                            d.Index, d.Range, d.Draw.Before, d.Draw.After, d.Draw.Value)).ToArray()),
-                        Array.AsReadOnly(generated.Unsorted.Select(s => new BattleTurnSlot(s.Actor, s.AlteredAgility)).ToArray()),
-                        Array.AsReadOnly(generated.Slots.Select(s => new BattleTurnSlot(s.Actor, s.AlteredAgility)).ToArray()))));
+                    var prefix = BattleRoundContinuation.Begin(new(current.SessionId, revision, sequence,
+                        new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait), observations);
+                    if (prefix.Failure is not null || prefix.Snapshot.BattleRound is not null) return prefix;
+                    battle = prefix.Snapshot.Battle; revision = prefix.Snapshot.Revision; sequence = prefix.Snapshot.ObservationSequence;
                     continue;
                 }
                 var actor = BattleTurnFlow.QueuedActor(battle);

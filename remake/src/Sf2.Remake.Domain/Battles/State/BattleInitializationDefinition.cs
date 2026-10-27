@@ -38,12 +38,13 @@ public sealed class BattleInitializationDefinition
 {
     internal BattleInitializationDefinition(IEnumerable<BattleActivationRegion> regions, BattleRegionProgram regionProgram,
         IEnumerable<MapPosition>? allyFormation = null, IEnumerable<MapPosition>? aiPoints = null,
-        IReadOnlyDictionary<int, ActorRef>? sourceCombatants = null)
-    { Regions = Array.AsReadOnly(regions.ToArray()); RegionProgram = regionProgram;
+        IReadOnlyDictionary<int, ActorRef>? sourceCombatants = null, int? enemyCount = null)
+    { EnemyCount = enemyCount; Regions = Array.AsReadOnly(regions.ToArray()); RegionProgram = regionProgram;
         AllyFormation = allyFormation is null ? null : Array.AsReadOnly(allyFormation.ToArray());
         AiPoints = Array.AsReadOnly((aiPoints ?? []).ToArray());
         SourceCombatants = new System.Collections.ObjectModel.ReadOnlyDictionary<int, ActorRef>(
             (sourceCombatants ?? new Dictionary<int, ActorRef>()).ToDictionary(row => row.Key, row => row.Value)); }
+    public int? EnemyCount { get; }
     public IReadOnlyList<BattleActivationRegion> Regions { get; }
     public BattleRegionProgram RegionProgram { get; }
     public IReadOnlyList<MapPosition>? AllyFormation { get; }

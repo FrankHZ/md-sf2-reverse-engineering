@@ -1,5 +1,20 @@
 # Godot Host and Presentation
 
+## Authored enemy appearance
+
+`BattleAppearanceView` consumes the pending round's actor/list/token through the ordinary battle
+view. The map focuses the current actor, hides later pending list members, and delivers an authored
+0.6-second spin/fade,0.2-second settle and0.7-second paraphrased appearance notice. Reduced-flash mode
+omits rotation. Focus loss suspends delivery. Only the actual view's completion submits the matching
+`EntityEffect` token; the view never resets actors or generates a queue. Ordinary commands are blocked
+during this finite wait and resume after appearances and automatic work.
+
+The semantic observation includes current stage/token and actual marker rotation/alpha/visibility,
+plus future-member hiding and final control. The [native recipe](../development-and-verification.md#hidden-spawn-authored-observation)
+uses ordinary keys and verifies intermediate/final node values. This is a project-authored visual
+with no original sprites, SFX, frame timing or natural-source reach claim. It adds no menu/layout or
+input redesign to the separately owned UI work.
+
 Godot is the outer composition, semantic input and presentation adapter. Its nodes/textures/audio
 are projections; Application owns gameplay state, program/scene continuation and completion tokens.
 See [audio](audio.md), [battle scenes](battle-scenes.md), [Content assets](../content/presentation-assets.md)

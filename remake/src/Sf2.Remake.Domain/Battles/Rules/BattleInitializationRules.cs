@@ -5,7 +5,20 @@ internal static class BattleInitializationRules
     internal static void Validate(BattleDefinition definition, BattleStartInput start)
     {
         var policy = start.NewBattle;
-        Require((definition.Initialization is null) == (policy is null), "initialization-policy", "start.newBattle");
+        Require(policy is null || definition.Initialization is not null, "initialization-policy", "start.newBattle");
+        if (definition.Initialization is not null)
+        {
+            BattleActivationRules.Validate(definition);
+            BattleSpawnRules.Validate(definition, start);
+            if (policy is null)
+                foreach (var deployment in definition.Deployments)
+                {
+                    var input = start.Actors.Single(a => a.Actor == deployment.Actor);
+                    Require(input.Initialized is not null && input.ActivationWord is not null &&
+                        ((input.ActivationWord.Value >> 8) & 15) == deployment.Initialization!.SpawnMode,
+                        "controlled-initialization", "start.actors.initialization");
+                }
+        }
         if (policy is null) return;
         Require(!string.IsNullOrWhiteSpace(policy.Declaration) && !string.IsNullOrWhiteSpace(policy.EvidenceOwner) &&
             !string.IsNullOrWhiteSpace(policy.BridgeBoundary), "controlled-provenance", "start.newBattle");
@@ -64,6 +77,9 @@ internal static class BattleInitializationRules
         var policy = before.StartPolicy!;
         var actors = before.Actors.Select(actor =>
         {
+            if (!actor.IsAlly && actor.Deployment.Initialization!.SpawnMode >= 2)
+                return actor.With(hp: 0, initialized: false, clearPosition: true,
+                    activationWord: (ushort)(actor.Deployment.Initialization.SpawnMode << 8));
             bool heal = !actor.IsAlly || actor.Hp > 0 || actor.Deployment.Initialization?.AllyPartyMember is 7 or 28;
             bool placed = !actor.IsAlly || (heal && (start.ActiveAllies is null || start.ActiveAllies.Contains(actor.Actor)));
             return new BattleActorState(actor.Deployment,

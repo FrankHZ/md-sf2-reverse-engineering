@@ -1,5 +1,45 @@
 # Gameplay Rules and Composition
 
+## Hidden-enemy reset and source regions
+
+**Confirmed static source:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
+`disasm/`: `code/gameflow/battle/battleloop_1.asm`, `battleloop/initializecombatants.asm`,
+`battleloop/populateenemyspawns.asm`, `battleloop/triggerregions.asm`, `battleloop/spawnenemy.asm`,
+`battleloop/clearaimemory.asm` and `ai/startaicontrol.asm` (the latter paths share
+`code/gameflow/battle/`). The [research owner](../../../docs/research/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)
+retains original provenance and natural-reach limits. Engine tests prove the remake implementation.
+
+`BattleActorState.Initialized` selects zero effective maximum HP when dormant; initialized maximum HP
+still comes from definition/progress. It is not a second numerical maximum. Fresh source initialization
+parks modes2/3 with mode bits alone; controlled input explicitly declares its state/activation.
+`BattleSpawnRules.Populate` scans explicit enemy source slots, independently of processing/display
+order. Dead actors require a held non15 primary or secondary region; primary wins. Activation bits
+are set before mode2's maxHP0 test. Mode3 has no maxHP test. Ordinary death preserves initialized
+maximum HP; it never invokes spawn reset.
+
+Reset tests the declared enemy bound and every retained coordinate, including self/dead occupants.
+Success reloads HP/MP, source attack plus difficulty0 quarter, status, loadout, placement and original
+orders, preserving the passed activation word and external `AiMemory`/`LastTarget` arrays. Refusal
+sets dormant/HP0 and absent placement without clearing activation or region history, so a later
+eligible reset may succeed. The complete reset list is committed before any appearance; subsequent
+candidates see earlier successful placements. Definition loadouts are restricted to unequipped Herb0
+or empty127 and source spell63; equipment/general difficulty refresh remains closed.
+
+`SourceRegionGeometry` implements the source dominant-axis signed integer projection for coordinates
+0..47, where products fit the sign-extended low word. Division truncates toward zero. Triangles use
+1/2/3; quads use 1/2/4 then3/2/4. Edge1→2,3→1,3→2 preserve immediate in-bounds returns, exception
+branches and comparisons with the opposite vertex. The instruction sequence, rather than its comment,
+is authoritative: negative projection uses `move #1,ccr` and returns2; zero denominator uses
+`ori #1,ccr`, retains Z and returns3. This deliberately differs from ideal polygon geometry and
+retains degenerate/reversed/integer-edge behavior in the admitted finite domain.
+
+`BattleRegionState.Tested` persists across rounds. Living placed enemies supply activation calls;
+without one, geometry is not evaluated. Positive signed-HP allies supply candidate points. Held
+flags never clear on a false result. Existing ordinary source AI clears the checked word before its
+activation/standby work; an authored Stay policy does not imitate that source call. Fresh encounters
+start with explicitly empty region state. `HiddenSpawnTests` and `HiddenSpawnSessionTests` exercise
+these rules and their ordinary scene/return consumers, including state retained after later failure.
+
 ## Finite Prism laser
 
 `PrismLaserDefinition` binds each actor to an explicit source combatant slot (allies0–29,

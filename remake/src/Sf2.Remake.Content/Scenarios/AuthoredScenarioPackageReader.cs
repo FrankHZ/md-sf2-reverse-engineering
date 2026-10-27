@@ -217,6 +217,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         foreach (var encounter in Array(root, "encounters"))
         {
             Object(encounter, "encounter", ["id", "map", "placements",
+                .. (encounter.TryGetProperty("initialization", out _) ? new[] { "initialization" } : []),
                 .. (encounter.TryGetProperty("rewards", out _) ? new[] { "rewards" } : []),
                 .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : []),
                 .. (encounter.TryGetProperty("prismLaser", out _) ? new[] { "prismLaser" } : []),
@@ -234,7 +235,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var placements = new List<BattleDeploymentDefinition>();
             foreach (var placement in Array(encounter, "placements"))
             {
-                Object(placement, "placement", "actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y");
+                ObjectOptional(placement, "placement", "initialization", "actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y");
                 var actorRef = new ActorRef(Id(placement, "actor"));
                 Require(actors.ContainsKey(actorRef), "missing-actor", "placements.actor");
                 var actor = actors[actorRef];
@@ -257,13 +258,13 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(BattleTerrainRules.MovementCost(tile) > 0, "blocked-placement", "placements");
                 Require(!placements.Any(a => a.Actor == actorRef), "duplicate-placement", "placements.actor");
                 Require(!placements.Any(a => a.ProcessingOrder == order), "duplicate-processing-order", "placements.processingOrder");
-                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position);
+                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position, AuthoredBattleInitializationReader.Placement(placement));
                 BattleTurnFlow.ValidateDeployment(deployment);
                 placements.Add(deployment);
             }
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
-            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
+            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, initialization: AuthoredBattleInitializationReader.Read(encounter, placements), healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
                 tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems),
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
                 itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
@@ -274,7 +275,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var startActors = new List<BattleActorStartInput>();
         foreach (var input in Array(start, "actors"))
         {
-            Object(input, "start.actor", "actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride");
+            ObjectOptional(input, "start.actor", "initialization", "actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride");
             MapPosition? position = null;
             var overrideInput = input.GetProperty("positionOverride");
             if (overrideInput.ValueKind != JsonValueKind.Null)
@@ -282,16 +283,17 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Object(overrideInput, "start.actor.positionOverride", "x", "y");
                 position = new(Number(overrideInput, "x", 0, 47), Number(overrideInput, "y", 0, 47));
             }
+            var initialized = AuthoredBattleInitializationReader.Start(input);
             startActors.Add(new(new ActorRef(Id(input, "actor")), (ushort)Number(input, "hp", 0, 65535),
                 (byte)Number(input, "mp", 0, 255), (byte)Number(input, "exp", 0, 99),
-                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position));
+                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized));
         }
         var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
             (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, dropItems));
         BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
-        // Drop-enabled authored encounters need fresh enemies on each entry. Their
+        // Drop/initialization-enabled encounters need fresh enemies on each entry. Their
         // controlled start is a definition input, never a replacement for live allies.
-        IEnumerable<BattleDefinition> freshEncounters = encounters.Values.Any(encounter => encounter.ItemDrops is not null)
+        IEnumerable<BattleDefinition> freshEncounters = encounters.Values.Any(encounter => encounter.ItemDrops is not null || encounter.Initialization is not null)
             ? encounters.Values : [];
         var defaults = freshEncounters.Select(encounter =>
         {

@@ -81,9 +81,9 @@ public sealed class BattleActorState
         MapPosition? position, ushort? kills, ushort? defeats, ActorRef? lastTarget = null,
         byte? attack = null, ushort status = 0, ushort? activationWord = null, byte aiMemory = 0,
         BattleActorProgress? progress = null, BattleSourceLoadout? sourceLoadout = null, bool retainDeadPosition = false,
-        byte? primaryOrder = null, byte? secondaryOrder = null, byte facing = 3)
+        byte? primaryOrder = null, byte? secondaryOrder = null, byte facing = 3, bool initialized = true)
     { SourceLoadout = sourceLoadout ?? progress?.SourceLoadout ?? deployment.Definition.SourceLoadout;
-        Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 && !retainDeadPosition ? null : position;
+        Initialized = initialized; Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 && !retainDeadPosition ? null : position;
         Kills = kills; Defeats = defeats; LastTarget = lastTarget;
         Progress = progress is null ? null : progress with { SourceLoadout = SourceLoadout };
         Attack = attack ?? (progress is null ? deployment.Definition.Attack :
@@ -104,7 +104,8 @@ public sealed class BattleActorState
     public ActorRef Actor => Definition.Actor;
     public BattleActorProgress? Progress { get; }
     public byte Level => Progress?.Level ?? Definition.Level;
-    public ushort MaxHp => Progress?.MaxHp ?? Definition.MaxHp;
+    public bool Initialized { get; }
+    public ushort MaxHp => Initialized ? Progress?.MaxHp ?? Definition.MaxHp : (ushort)0;
     public byte MaxMp => Progress?.MaxMp ?? Definition.MaxMp;
     public byte BaseAttack => Progress?.BaseAttack ?? (byte)(Definition.Attack - (Definition.Growth?.AttackBonus ?? 0));
     public byte Defense => Progress?.Defense ?? Definition.Defense;
@@ -129,11 +130,11 @@ public sealed class BattleActorState
         MapPosition? position = null, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null,
         byte? attack = null, ushort? status = null, ushort? activationWord = null, byte? aiMemory = null,
         BattleActorProgress? progress = null, BattleSourceLoadout? sourceLoadout = null, bool clearPosition = false,
-        byte? primaryOrder = null, byte? secondaryOrder = null, byte? facing = null) =>
+        byte? primaryOrder = null, byte? secondaryOrder = null, byte? facing = null, bool? initialized = null) =>
         new(Deployment, hp ?? Hp, mp ?? Mp, exp ?? Exp, clearPosition ? null : position ?? Position, kills ?? Kills, defeats ?? Defeats,
             lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, aiMemory ?? AiMemory,
             progress ?? Progress, sourceLoadout ?? progress?.SourceLoadout ?? SourceLoadout, retainDeadPosition: true,
-            primaryOrder: primaryOrder ?? PrimaryOrder, secondaryOrder: secondaryOrder ?? SecondaryOrder, facing: facing ?? Facing);
+            primaryOrder: primaryOrder ?? PrimaryOrder, secondaryOrder: secondaryOrder ?? SecondaryOrder, facing: facing ?? Facing, initialized: initialized ?? Initialized);
 }
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,
