@@ -1,5 +1,27 @@
 # Battle Presentation
 
+## Authored EGRESS delivery
+
+The selected retreat does not construct a `BattleSceneState` or play an ordinary attack scene.
+`BattleRetreatView` projects `ActiveBattle.Retreat` through the existing battle host: actual text
+reveal, fresh Confirm acknowledgement, a soft blue effect and authored tone, then a close fade.
+The scene remains in battle until the matching close completion; field return uses the ordinary
+exploration presenter. Existing menu/input layout is unchanged.
+
+`authored-egress-tone-v1` is project-authored PCM16 mono at 22,050 Hz, 7,718 samples, with a sine envelope
+and rising phase `2π(440t+220t²)`, amplitude 12,000 and playback −18 dB. The pulse lasts 450 ms and closure
+200 ms in this modern presenter; these are not original timing or recorded audio. Reduced-flash mode
+uses a low constant tint. Instant/adjustable text settings govern delivery only. Original EGRESS
+sound/flash/pixel parity remains **Unknown**; no new capture/import platform or unrelated source cue
+is substituted.
+
+Focus loss pauses retreat input, elapsed delivery and its tone. Process suspension cannot complete
+a wait. The presenter emits one completion per token; the session independently rejects duplicates.
+`RepeatRetreatDeliveryObservation` can replay only a completion already emitted by the real consumer
+for the bounded rejection observation; the successful acceptance route uses actual delivery.
+The [native recipe](../verification/field-programs.md#battle02-egress-and-walking-retry) reads real text,
+effect/tone, tokens, paid resources and field/next-battle control without screenshots.
+
 Application owns staged gameplay publication and wait tokens. Godot consumes the current scene,
 movement and death state, displays admitted resources and submits actual completion. Rule selection
 and legality remain in the [engine](../domain/gameplay-rules.md); runnable observations belong to

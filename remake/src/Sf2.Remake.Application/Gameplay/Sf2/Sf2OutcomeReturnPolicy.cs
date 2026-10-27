@@ -13,6 +13,21 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
     {
         var selected = story.EnteringBattle!;
         var route = selected.Outcome ?? throw new BattleRuleException("outcome-route", "battle.outcome", true);
+        if (kind == BattleOutcomeKind.Retreat)
+        {
+            if (!story.Flags.Contains(399) || story.Flags.Any(flag => flag is 64 or 640))
+                throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
+            // The route is the admitted controlled initial selection when no live writer has run.
+            // A live church/program write overrides that selection, never silently falls back.
+            var map = story.EgressMap ?? route.EgressMap;
+            var admitted = definition.Exploration!.Maps.Values.SelectMany(value => value.Battles)
+                .Select(value => value.Outcome).FirstOrDefault(value => value?.EgressMap == map);
+            if (admitted is null) throw new BattleRuleException("egress-map", "story.egressMap", true);
+            var caster = battle.Actors.First(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null);
+            var retreatOrigin = route.BattleOrigin ?? new MapPosition(0, 0);
+            return new(route.ReturnProgram, new(map, admitted.EgressPosition, admitted.EgressFacing),
+                new(caster.Position!.X + retreatOrigin.X, caster.Position.Y + retreatOrigin.Y), party);
+        }
         var leader = battle.GetActor(battle.Definition.Outcome!.Leader);
         var first = battle.Actors.Where(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null)
             .OrderBy(actor => actor.ProcessingOrder).FirstOrDefault();

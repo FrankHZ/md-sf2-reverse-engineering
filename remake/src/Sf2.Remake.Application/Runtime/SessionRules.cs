@@ -35,7 +35,7 @@ public sealed class SessionRules
         Outcome = outcome ?? RuleCompositions.SourceOutcome();
         OutcomeReturn = outcomeReturn ?? RuleCompositions.SourceOutcomeReturn();
         SourceStory = sourceStory ?? RuleCompositions.SourceStory();
-        Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), item, stay]);
+        Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), new Sf2RetreatAction(), item, stay]);
     }
     internal IBattleProgressionRule Progression { get; }
     internal IBattleOutcomeRule Outcome { get; }
@@ -87,7 +87,7 @@ public sealed class SessionRules
         public string Identity => healing.Identity;
         public BattleActionKind Kind => BattleActionKind.Healing;
         public IReadOnlyList<BattleActionOffer> QueryActions(EngineBattleState battle, ActorRef actor) =>
-            Array.AsReadOnly(battle.GetActor(actor).Spells.Select(spell =>
+            Array.AsReadOnly(battle.GetActor(actor).Spells.Where(spell => !battle.Definition.RetreatSpells.ContainsKey(spell)).Select(spell =>
                 new BattleActionOffer(new(Kind, spell), $"{spell.Value.ToUpperInvariant()} {spell.Level}")).ToArray());
         public BattleActionAdmission RequireAction(EngineBattleState battle, ActorRef actor, BattleActionRef action)
         {

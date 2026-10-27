@@ -4,7 +4,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 internal sealed record BattleActionOffer(BattleActionRef Action, string Label, bool Empty = false);
 internal sealed record BattleActionAdmission(byte? MinimumRange = null, byte? MaximumRange = null,
-    HealingSpellDefinition? Spell = null, HealingItemDefinition? Item = null);
+    HealingSpellDefinition? Spell = null, HealingItemDefinition? Item = null, RetreatSpellDefinition? Retreat = null);
 
 // Queries are disposable and do not construct an action or consume either RNG stream.
 internal interface IBattleActionRule

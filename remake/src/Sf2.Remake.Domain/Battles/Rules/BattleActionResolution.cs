@@ -86,13 +86,22 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatSpellDefinition? Retreat = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
+        Require(action.Kind == BattleActionKind.Retreat || Retreat is null);
         switch (action.Kind)
         {
+            case BattleActionKind.Retreat when action.Spell is { } retreatSpell && action.ItemSlot is null && target == actor:
+                ValidateState(before, actor, destination);
+                Require(admission.Retreat is { } retreat && Retreat == retreat && retreat.Spell == retreatSpell &&
+                    before.Definition.RetreatSpells.TryGetValue(retreatSpell, out var known) && known == retreat &&
+                    before.GetActor(actor).Mp >= retreat.MpCost && Spell is null && Item is null &&
+                    Reactions.Count == 0 && Reward is null && ConstructionEffects.Count == 0 &&
+                    CompletionEffects.Count == 0 && Prepared.MainSeed == before.MainSeed);
+                break;
             case BattleActionKind.Healing when action.Spell is { } spell && target is { } patient &&
                 admission.Spell is { } definition && spell == definition.Spell && action.ItemSlot is null:
                 ValidateHealing(before, actor, destination, definition, patient);

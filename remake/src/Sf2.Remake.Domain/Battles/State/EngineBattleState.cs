@@ -10,7 +10,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
-public enum BattleActionKind { Stay, Healing, Physical, Item }
+public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight }
 public enum BattleControl { Player, Automatic }
@@ -33,9 +33,11 @@ public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool
     byte MinimumRange = 1, byte MaximumRange = 1);
 public sealed record BattleRewardDefinition(bool HalvedExperience);
 public sealed record BattleOutcomeDefinition(ActorRef Leader, ActorRef DefeatedGateEnemy);
-public enum BattleOutcomeKind { Victory, Defeat }
+public enum BattleOutcomeKind { Victory, Defeat, Retreat }
 
 public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Power, byte MinimumRange, byte MaximumRange);
+
+public sealed record RetreatSpellDefinition(SpellRef Spell, byte MpCost);
 
 public sealed record HealingSpellDefinition(
     SpellRef Spell, byte MpCost, ushort Power, byte MinimumRange, byte MaximumRange);
@@ -148,13 +150,15 @@ public sealed class BattleDefinition
         IEnumerable<BattleTerrain> terrain, IEnumerable<BattleDeploymentDefinition> deployments,
         IEnumerable<HealingSpellDefinition> spells, BattleRewardDefinition? rewards = null,
         BattleInitializationDefinition? initialization = null, BattleOutcomeDefinition? outcome = null,
-        IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null)
+        IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null,
+        IEnumerable<RetreatSpellDefinition>? retreatSpells = null)
     {
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
         Spells = new ReadOnlyDictionary<SpellRef, HealingSpellDefinition>(spells.ToDictionary(s => s.Spell));
         Rewards = rewards; Initialization = initialization; Outcome = outcome; SourceMapRegion = sourceMapRegion;
+        RetreatSpells = new ReadOnlyDictionary<SpellRef, RetreatSpellDefinition>((retreatSpells ?? []).ToDictionary(s => s.Spell));
         HealingItems = new ReadOnlyDictionary<byte, HealingItemDefinition>((healingItems ?? []).ToDictionary(item => item.ItemId));
     }
     public string Encounter { get; }
@@ -165,6 +169,7 @@ public sealed class BattleDefinition
     public IReadOnlyList<BattleDeploymentDefinition> Deployments { get; }
     public IReadOnlyDictionary<SpellRef, HealingSpellDefinition> Spells { get; }
     public IReadOnlyDictionary<byte, HealingItemDefinition> HealingItems { get; }
+    public IReadOnlyDictionary<SpellRef, RetreatSpellDefinition> RetreatSpells { get; }
     public BattleRewardDefinition? Rewards { get; }
     public BattleInitializationDefinition? Initialization { get; }
     public BattleOutcomeDefinition? Outcome { get; }

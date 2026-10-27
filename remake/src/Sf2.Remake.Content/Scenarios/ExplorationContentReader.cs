@@ -249,7 +249,7 @@ internal static class ExplorationContentReader
             }
             encounters[index] = new(encounter.Encounter, encounter.Map, encounter.Width, encounter.Height, encounter.Terrain,
                 encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, firstEnemy!.Actor), encounter.HealingItems.Values,
-                encounter.SourceMapRegion);
+                encounter.SourceMapRegion, encounter.RetreatSpells.Values);
         }
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
                 battle.Definition.EncounterStarts.Values, battle.Definition.EncounterScenes.Values),

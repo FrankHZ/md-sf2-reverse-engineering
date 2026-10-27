@@ -12,11 +12,13 @@ internal static class BattleOutcome
     internal static SessionResult Begin(ScenarioDefinition definition, SessionResult result, SessionRules rules)
     {
         var current = result.Snapshot;
-        if (current.Mode != SessionMode.Battle || current.BattleScene is not null || current.BattleMovement is not null) return result;
+        if (current.Mode != SessionMode.Battle || current.BattleScene is not null || current.BattleMovement is not null || current.BattleRetreat is not null) return result;
         var observations = result.Observations.ToList();
         try
         {
             if (BattleOutcomeSelection.Check(rules.Outcome, current.Battle) is not { } kind) return result;
+            if (kind == BattleOutcomeKind.Retreat)
+                throw new BattleRuleException("retreat-requires-action", "battle.outcome", true);
             var route = current.Story.EnteringBattle?.Outcome ?? throw new BattleRuleException("outcome-route", "battle.outcome", true);
             var battle = current.Battle;
             var party = new BattleStartInput(battle.Definition.Encounter,
@@ -34,6 +36,41 @@ internal static class BattleOutcome
             story = ExplorationTextRunner.Initialize(world, story);
             current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations,
                 "outcome-program-started", kind.ToString());
+            return ProgramRunner.Run(definition, current, observations, rules);
+        }
+        catch (BattlePolicyFault error) { return ProgramRunner.Failure(current, observations, error); }
+        catch (BattleRuleException error) { return ProgramRunner.Failure(current, observations, error); }
+    }
+
+    internal static SessionResult ReturnFromRetreat(ScenarioDefinition definition, SessionSnapshot current,
+        List<SessionObservation> observations, SessionRules rules)
+    {
+        try
+        {
+            var route = current.Story.EnteringBattle ?? throw new BattleRuleException("outcome-route", "battle.retreat", true);
+            var battle = current.Battle;
+            if (route.CompletedFlag is { } completed && current.Story.Flags.Contains(completed) &&
+                route.UnlockedFlag is { } unlocked && current.Story.Flags.Contains(unlocked))
+                current = ProgramRunner.Commit(current, current.Active,
+                    current.Story.Copy(null, flags: ProgramRunner.Flags(current.Story, unlocked, false)),
+                    observations, "battle-unlock-cleared", unlocked.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            var party = new BattleStartInput(battle.Definition.Encounter,
+                battle.Actors.Where(actor => actor.IsAlly).Select(actor => new BattleActorStartInput(actor.Actor,
+                    actor.Hp, actor.Mp, actor.Exp, actor.Kills, actor.Defeats, actor.Status, null,
+                    actor.Progress, actor.SourceLoadout, actor.ActivationWord)),
+                battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy);
+            var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, BattleOutcomeKind.Retreat, party);
+            // ExplorationLoop heals before fade/load; this is later than retreat payment and closure.
+            var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, selected.Party, all: false);
+            var map = definition.Exploration!.Maps[route.Outcome!.BattleMap];
+            var world = MapTransfer.Build(map, new("entity-0"), selected.ProjectionPosition,
+                route.Outcome.VictoryFacing, 32, recovered, current.Story.Flags);
+            var story = current.Story.Copy(selected.Program, callers: [],
+                continuation: ProgramContinuation.OutcomeMapLoaded, outcomeReturn: selected.Return,
+                clearCameraEntity: true, clearCameraTarget: true, textWindow: new ClosedTextWindow());
+            story = ExplorationTextRunner.Initialize(world, story);
+            current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations,
+                "retreat-exploration-entry", "eligible party recovery; admitted return program");
             return ProgramRunner.Run(definition, current, observations, rules);
         }
         catch (BattlePolicyFault error) { return ProgramRunner.Failure(current, observations, error); }

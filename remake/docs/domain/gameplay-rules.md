@@ -1,5 +1,27 @@
 # Gameplay Rules and Composition
 
+## Finite EGRESS action
+
+`Sf2RetreatAction` implements the existing `IBattleActionRule` boundary for admitted retreat spells.
+`BattleDefinition.RetreatSpells` is separate from healing definitions. Private Battle02 admission
+checks source EGRESS1/base 10, cost 8, range 0/radius 0, power 0 and
+`TYPE_SPECIAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE`; other effects remain explicit Unsupported offers.
+The source special action bypasses ordinary CastSpell, so its metadata does not introduce a Silence
+gate. Sleeping/dead/unplaced/non-player actors cannot acquire control through this action.
+
+The action requires an actually learned spell and self target. Query does not prepare or draw RNG;
+confirmation repeats admission against live MP and target. Finite validation permits only selected
+movement in prepared state, with no reaction, reward, inventory, resource or RNG mutation. Application
+then owns exactly one payment and the separate retreat continuation. Malformed candidate resources
+or RNG reject before payment. Mixed healing/retreat offers preserve learned spell order.
+
+Authored v7 spell input can use `"effect":{"kind":"retreat"}` with explicit `mpCost` and zero minimum/
+maximum range; it needs an admitted field outcome route to return. Private bindings retain their
+source checks and only admit Battle02. This is a finite action addition, not a generalized effect or
+item implementation. [Payment/return](../application/session-and-programs.md#paid-retreat-and-field-return)
+and the [capability agreement](../capability-status.md#battle02-egress-implementation-agreement) own
+staged delivery, recovery and exclusions.
+
 Domain owns deterministic calculations and immutable state transitions. Application selects one
 immutable composition and owns when each prepared effect is published. Content admits data;
 Godot presents semantic choices and effects. Start with [architecture](../architecture.md) for

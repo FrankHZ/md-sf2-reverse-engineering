@@ -101,11 +101,21 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Require(maps.TryAdd(id, terrain), "duplicate-map", "maps.id");
         }
         var spells = new Dictionary<SpellRef, HealingSpellDefinition>();
+        var retreats = new Dictionary<SpellRef, RetreatSpellDefinition>();
         foreach (var spell in Array(root, "spells"))
         {
             Object(spell, "spell", "id", "level", "mpCost", "minimumRange", "maximumRange", "effect");
             var key = new SpellRef(Id(spell, "id"), (byte)Number(spell, "level", 1, 4));
             var effect = spell.GetProperty("effect");
+            if (Text(effect, "kind") == "retreat")
+            {
+                Object(effect, "spell.effect", "kind");
+                Require(Number(spell, "minimumRange", 0, 0) == 0 && Number(spell, "maximumRange", 0, 0) == 0,
+                    "retreat-range", "spell.range");
+                Require(!spells.ContainsKey(key) && retreats.TryAdd(key, new(key, (byte)Number(spell, "mpCost", 0, 255))),
+                    "duplicate-spell", "spells.id/level");
+                continue;
+            }
             Object(effect, "spell.effect", "kind", "adjustedPower", "fullRecovery");
             Require(Text(effect, "kind") == "heal", "spell-effect", "spell.effect.kind", true);
             Require(effect.GetProperty("fullRecovery").ValueKind is JsonValueKind.False or JsonValueKind.True,
@@ -115,7 +125,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             byte maximum = (byte)Number(spell, "maximumRange", minimum, 255);
             var definition = new HealingSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
                 (ushort)Number(effect, "adjustedPower", 0, 65535), minimum, maximum);
-            Require(spells.TryAdd(key, definition), "duplicate-spell", "spells.id/level");
+            Require(!retreats.ContainsKey(key) && spells.TryAdd(key, definition), "duplicate-spell", "spells.id/level");
         }
         var healingItems = new Dictionary<byte, HealingItemDefinition>();
         if (root.TryGetProperty("items", out _))
@@ -173,7 +183,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Object(reference, "spell-reference", "id", "level");
                 var key = new SpellRef(Id(reference, "id"), (byte)Number(reference, "level", 1, 4));
-                Require(spells.ContainsKey(key), "missing-spell", "actors.spells");
+                Require(spells.ContainsKey(key) || retreats.ContainsKey(key), "missing-spell", "actors.spells");
                 Require(!learned.Contains(key), "duplicate-learned-spell", "actors.spells");
                 learned.Add(key);
             }
@@ -233,7 +243,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             }
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
-            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values)),
+            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values, retreatSpells: retreats.Values)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");

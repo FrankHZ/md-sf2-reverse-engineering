@@ -1,7 +1,8 @@
 # Special Mechanics: Capability Gaps and Staged Extensions
 
-Status: **Proposed engineering design**, not implementation authorization or an accepted fidelity
-profile. [Issue #1339](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1339) owns scheduling;
+Status: **Proposed engineering design** for the remaining families; the selected Battle02 EGRESS
+implementation is tracked by [its current agreement](../capability-status.md#battle02-egress-implementation-agreement).
+This document is not blanket implementation authorization or an accepted fidelity profile. [Issue #1339](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1339) owns scheduling;
 this document owns the proposed boundaries and decisions. Original facts remain with the linked
 English research/contracts/synthesis owners. No original-game evidence is derived from remake code.
 
@@ -49,7 +50,7 @@ The following static code reads and accepted implementation owners control over 
 | Jaro | **Lifecycle/interface + rule + content gap.** Activation rejects `region-program`; [turn flow](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs) rejects `control-side` for ally automatic. Actor faction/control come from immutable deployment; this is not a supported live conversion merely because enums exist. |
 | Prism Flowers | **Decision/action + projection + content gap.** [Automatic result](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) has one opposing target and no chosen special action; [movement completion](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs) turns a target into Physical. Damage reaction arrays do not implement action6. |
 | Fairy Woods | **Spawn lifecycle + round continuation + trial state/content gap.** Nonzero `SpawnMode` rejects; runtime maximum HP normally comes from definition/progress, without dormant source maxHP0. No trial counter/snapshot/record lifecycle is bound. |
-| EGRESS / Angel Wing / Battle0 caller | **Exit/action/interface gap**, not missing ordinary defeat. [State types](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) admit four action kinds and only Victory/Defeat; [return policy](../../src/Sf2.Remake.Application/Runtime/Exploration/IOutcomeReturnPolicy.cs) requires a field anchor. No session-end destination or suspend gameplay exists. |
+| EGRESS / Angel Wing / Battle0 caller | **Selected Battle02 retreat implemented; wider caller gap**, not missing ordinary defeat. [State types](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) now admit the finite Retreat action/result alongside ordinary actions and Victory/Defeat; [return policy](../../src/Sf2.Remake.Application/Runtime/Exploration/IOutcomeReturnPolicy.cs) requires a field anchor. No session-end destination or suspend gameplay exists. |
 | Raft / Caravan | **Travel state/rules/consumer + content gap**, not just an acquisition flag. [Walking dispatcher](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationDispatcher.cs), [map events](../../src/Sf2.Remake.Application/Runtime/Exploration/MapEventDispatcher.cs) and the finite [entity-action runner](../../src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs) execute walking/motion/warp/zone work, not vehicle controllers or boarding/landing. |
 
 Accepted merge evidence for the related ledger corrections is
@@ -381,7 +382,9 @@ specified complete landing path; do not fill raft's consumer gap with an assumed
 
 ## Dependencies and proposed order
 
-This is sequencing advice, not a ticket queue or a claim that every later binding is ready. No
+Selected Battle02 retreat now uses the finite action/continuation and current agreement linked above;
+Angel Wing, other-map bindings and terminal callers remain proposed. The remaining sequence is
+advice, not a ticket queue or a claim that every later binding is ready. No
 unmerged work is a dependency. PR692's UI files remain separately owned; future semantic menu work
 must consume its accepted state or coordinate shared paths before writing. Do not make that layout
 proposal an architectural prerequisite for any rule.
@@ -404,7 +407,7 @@ proposal an architectural prerequisite for any rule.
 
 ## Recommended first implementation: retreat and playable retry
 
-**Proposed outcome:** in the existing selected Battle02 world, a player controlling a living Bowie
+**Implemented bounded outcome, pending independent integration:** in the existing selected Battle02 world, a player controlling a living Bowie
 with learned EGRESS1 and sufficient MP can select it, confirm the eligible self target, pay8 MP,
 complete the retreat presentation, reach usable field control at the admitted egress destination,
 then walk back into Battle02 with fresh enemies in the same session. Payment must occur even though

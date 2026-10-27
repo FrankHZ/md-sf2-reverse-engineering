@@ -56,6 +56,7 @@ public sealed partial class BattleSessionView : Control
     private VBoxContainer _hudContent = null!;
     private readonly List<Label> _hudLabels = [];
     private BattleSceneView _scene = null!;
+    private BattleRetreatView _retreat = null!;
     internal SessionAudio? Audio { get; set; }
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
@@ -85,6 +86,7 @@ public sealed partial class BattleSessionView : Control
         _roster = AddLabel("Roster");
         _help = AddLabel("Help");
         _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
+        _retreat = new BattleRetreatView { Name = "BattleRetreat" }; AddChild(_retreat);
         Arrange();
     }
 
@@ -150,7 +152,7 @@ public sealed partial class BattleSessionView : Control
         _started = true;
         _session = session;
         _result = result;
-        if (first) _scene.Configure(session, _input.Settings, Audio);
+        if (first) { _scene.Configure(session, _input.Settings, Audio); _retreat.Configure(session, _input.Settings); }
         if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
             !ReferenceEquals(_mapScenes, session.ActiveBattleScenes))
         {
@@ -186,6 +188,11 @@ public sealed partial class BattleSessionView : Control
     public override void _Process(double delta)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleRetreat is not null)
+        {
+            if (_retreat.Consume(delta) is { } completion) Send(completion);
+            return;
+        }
         if (_session?.Current.BattleMovement is not null)
         {
             if (_map.ConsumeMovement(delta, _input.Settings.ReducedFlash) is { } completion) Send(completion);
@@ -203,6 +210,8 @@ public sealed partial class BattleSessionView : Control
     internal void HandleAction(GameAction action)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleRetreat is not null)
+        { if (_retreat.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.BattleMovement is not null) return;
         if (_session?.Current.BattleScene is not null)
         { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
@@ -273,7 +282,7 @@ public sealed partial class BattleSessionView : Control
             else if (command is Confirm) PlayUiSound?.Invoke(67);
         }
         if (_startupFailure is not null) return;
-        if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.Item or SessionAction.PhysicalAttack)) _targetCandidate = null;
+        if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.Retreat or SessionAction.Item or SessionAction.PhysicalAttack)) _targetCandidate = null;
         if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
             _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay or SessionAction.Item) _spellCandidate = null;
         if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
@@ -311,6 +320,7 @@ public sealed partial class BattleSessionView : Control
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
         _map.Present(projection);
         _scene.Present();
+        _retreat.Present();
         if (_scene.Error is { } error) FailStartup(new(SessionFailureKind.AdapterError, error, "battleScene", "Battle scene playback is unavailable."));
     }
 
@@ -336,6 +346,11 @@ public sealed partial class BattleSessionView : Control
         return JsonSerializer.Serialize(new { failure, audio = Audio?.ObservePlayback() });
     }
 
+    // Replay only a completion already emitted by the actual retreat consumer.
+    // Native acceptance uses this to verify duplicate delivery at the session boundary.
+    public void RepeatRetreatDeliveryObservation()
+    { if (_retreat.LastDelivery is { } completion) Send(completion); }
+
     // Read-only native observation of the same semantic result and actual projected nodes.
     public string ReadSceneObservationJson()
     {
@@ -345,7 +360,7 @@ public sealed partial class BattleSessionView : Control
             revision = current?.Revision, observationSequence = current?.ObservationSequence,
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
             cursor = current?.Battle.Cursor, actor = current?.Selection?.Actor.Value, round = current?.Battle.Round,
-            failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(),
+            failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(), retreat = _retreat.Observe(),
             hasBattleControl = current?.HasBattleControl, movement = _map.ObserveMovement(), fieldActors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
             actors = current?.Battle.Actors.Select(actor => new { actor = actor.Actor.Value, hp = actor.Hp,
                 mp = actor.Mp, exp = actor.Exp, kills = actor.Kills, defeats = actor.Defeats }),
@@ -376,7 +391,7 @@ public sealed partial class BattleSessionView : Control
         {
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
             rules = _session?.Rules.Identity, battleChoices = choices, healingChoices = choices,
-            scene = _scene.Observe(), observationSequence = current?.ObservationSequence,
+            scene = _scene.Observe(), retreat = _retreat.Observe(), observationSequence = current?.ObservationSequence,
             initializationPolicy = current?.Battle.StartPolicy,
             regionFlags = current?.Battle.Regions?.Flags, regionsTested = current?.Battle.Regions?.Tested,
             turnOrder = current?.Battle.TurnOrder.Select(entry => new { actor = entry.Actor?.Value, score = entry.AlteredAgility }),

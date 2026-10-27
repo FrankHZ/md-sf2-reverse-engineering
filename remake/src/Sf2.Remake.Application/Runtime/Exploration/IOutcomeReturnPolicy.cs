@@ -26,6 +26,8 @@ internal static class OutcomeReturnRules
         {
             var result = rule.Start(definition, battle, story, kind, party);
             Party(definition, party, result.Party, gold: false);
+            if (kind == BattleOutcomeKind.Retreat)
+                Require(result.Program is not null && result.Party.Actors.SequenceEqual(party.Actors));
             Program(definition, result.Program);
             Position(definition, result.Return.Map, result.Return.Position);
             Require(result.Return.Facing <= 3);
