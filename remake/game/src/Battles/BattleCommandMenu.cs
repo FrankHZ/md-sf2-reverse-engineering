@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
@@ -29,6 +30,8 @@ internal sealed partial class BattleCommandMenu : Control
         MouseFilter = MouseFilterEnum.Ignore; AddChild(_layout);
     }
     internal void Arrange(Vector2 size) { Size = size; _layout.Arrange(size); }
+    internal void ConfigureAssets(BattleSceneDefinition? content) => _layout.ConfigureAssets(content);
+    internal void Reset() { _actor = null; _page = Page.Main; _row = _command = 0; TargetCandidate = null; }
 
     internal void Present(SessionSnapshot current, BattleChoicesSnapshot choices, SessionFailure? failure, GameInput input)
     {
@@ -39,7 +42,9 @@ internal sealed partial class BattleCommandMenu : Control
             _page = Page.Main; _command = _row = 0; TargetCandidate = null;
         }
         _actor = selection?.Actor;
-        Visible = current.BattleScene is null;
+        Visible = current.BattleScene is null && current.BattleRetreat is null && current.BattleGive is null &&
+            current.BattleDiscard is null && current.BattleRound is null && selection?.Stage is
+                BattleSelectionStage.Movement or BattleSelectionStage.ActionChoice or BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady;
         if (selection?.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady)
             _page = selection.ActionReference?.Kind == BattleActionKind.Stay ? Page.Commit : Page.Target;
         Refresh();
@@ -47,16 +52,17 @@ internal sealed partial class BattleCommandMenu : Control
 
     internal bool Handle(GameAction action)
     {
-        if (_current?.Selection is not { } selection || _choices is null || selection.Stage == BattleSelectionStage.Movement) return false;
+        if (!Visible || _current?.Selection is not { } selection || _choices is null || selection.Stage == BattleSelectionStage.Movement) return false;
+        if (_page == Page.Main && action is GameAction.Equipment or GameAction.Give or GameAction.Discard) return false;
         if (action == GameAction.Cancel)
         {
             if (_page is Page.Target or Page.Commit)
             {
-                var kind = selection.ActionReference!.Value.Kind;
+                var previous = selection.ActionReference!.Value;
                 Submit(new ReturnToBattleActions());
                 if (_current!.Selection?.Stage != BattleSelectionStage.ActionChoice) return true;
                 TargetCandidate = null;
-                _page = kind == BattleActionKind.Healing ? Page.Magic : kind == BattleActionKind.Item ? Page.Items : Page.Main;
+                _page = previous.ItemSlot is not null ? Page.Items : previous.Spell is not null ? Page.Magic : Page.Main;
                 _row = Mathf.Clamp(_row, 0, Math.Max(0, Options().Length - 1));
             }
             else if (_page != Page.Main) { _page = Page.Main; _row = 0; }
@@ -101,7 +107,12 @@ internal sealed partial class BattleCommandMenu : Control
         Refresh(); return true;
     }
 
-    private BattleActionChoice[] Options() => _choices!.Actions.Where(option => option.Action.Kind == Kinds[_command]).ToArray();
+    private static bool InGroup(BattleActionChoice option, int group) => group switch
+    {
+        1 => option.Action.Spell is not null, 2 => option.Action.ItemSlot is not null,
+        _ => option.Action.Kind == Kinds[group],
+    };
+    private BattleActionChoice[] Options() => _choices!.Actions.Where(option => InGroup(option, _command)).ToArray();
     private BattleActionChoice? SelectedAction() => _choices!.Actions.FirstOrDefault(option => option.Action == _current!.Selection?.ActionReference);
 
     private void Open()
@@ -141,7 +152,7 @@ internal sealed partial class BattleCommandMenu : Control
         for (int i = 0; i < Kinds.Length; i++)
         {
             _layout.Commands[i].Selected = !moving && i == _command;
-            _layout.Commands[i].Available = _choices.Actions.Any(option => option.Action.Kind == Kinds[i] && option.Enabled);
+            _layout.Commands[i].Available = _choices.Actions.Any(option => InGroup(option, i) && option.Enabled);
             _layout.Commands[i].QueueRedraw();
         }
         bool list = !moving && _page is Page.Magic or Page.Items;
@@ -160,6 +171,8 @@ internal sealed partial class BattleCommandMenu : Control
         _layout.Help.Text = moving ? $"{directions}: move\n{confirm}: actions" :
             _page == Page.Target ? $"{KeyHint(GameAction.Target)}: next target\n{confirm}: commit · {cancel}: back" :
             $"{(list ? $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}: choice\n" : _page == Page.Main ? directions + ": command\n" : "")}{confirm}: confirm · {cancel}: back";
+        if (!moving && _page == Page.Main)
+            _layout.Help.Text += $"\n{KeyHint(GameAction.Equipment)}: equip · {KeyHint(GameAction.Give)}: give · {KeyHint(GameAction.Discard)}: drop";
         string description;
         if (moving) description = "Move to a tile, then open the action menu.";
         else if (_page == Page.Target && SelectedAction() is { } selected)

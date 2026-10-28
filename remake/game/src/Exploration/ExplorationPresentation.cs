@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.GodotAdapter.Observation;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Content.Scenarios;
@@ -12,9 +13,8 @@ internal sealed class ExplorationPresentation : IDisposable
 {
     private readonly Control _owner;
     private readonly ExplorationVisuals? _visuals;
-    private readonly Dictionary<MapId, Image> _atlases = [];
-    private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
-    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod), ImageTexture> _sprites = [];
+    private readonly MapBlockTextures _mapTextures = new();
+    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift), ImageTexture> _sprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
@@ -47,11 +47,14 @@ internal sealed class ExplorationPresentation : IDisposable
     }
     private double _cueAge;
     private float _fadeStart;
+    private Color _flashRestore;
+    private int _flashPulse = -1;
     private EntityRef? _gesture;
     private bool _nodding;
     private bool _shivering;
     private EntityRef? _mosaic;
     private bool _mosaicOut;
+    private EntityRef? _storyEffect;
     private MapId? _map;
     private Vector2 _camera;
     private Rect2 _screen;
@@ -93,6 +96,8 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int NodDraws { get; private set; }
     internal int RestoredGestureDraws { get; private set; }
     internal int SoundStarts => _audio.Starts;
+    internal int FlashPulses { get; private set; }
+    internal int FlashRestorations { get; private set; }
     internal int SoundFades { get; private set; }
     internal int SoundCompletions => _audio.Completions;
     internal int SoundStops => _audio.Stops;
@@ -120,6 +125,7 @@ internal sealed class ExplorationPresentation : IDisposable
         mosaic = _mosaic?.Value, mosaicOut = _mosaicOut,
         paletteBrightness = PaletteBrightness, whiteOpacity = WhiteOpacity, reducedFlash = _reducedFlash,
         whiteVisible = _white.IsVisibleInTree(), ownerVisible = _owner.IsVisibleInTree(),
+        flashPulses = FlashPulses, flashRestorations = FlashRestorations, flashPulse = _flashPulse,
     };
 
     internal IReadOnlyList<SessionCommand> Update(double delta, SessionSnapshot current)
@@ -155,7 +161,8 @@ internal sealed class ExplorationPresentation : IDisposable
                     if (_map != world.Map) { _map = world.Map; _camera = target; }
                     else _camera = _camera.MoveToward(target, (float)(delta * 180));
                 }
-                foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest))
+                foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest &&
+                    (_visuals is not null || world.Definition.Caravan is null)))
                 {
                     _ = Sprite(entity, false);
                     _spriteMounts++;
@@ -185,15 +192,24 @@ internal sealed class ExplorationPresentation : IDisposable
                 _ => null,
             };
             if (wait is null)
-            { _cue = null; _cueResource = null; _gesture = null; _mosaic = null; _shivering = _nodding = false; ActiveCue = null; return completions; }
+            { _cue = null; _cueResource = null; _gesture = null; _mosaic = null; _storyEffect = null; _shivering = _nodding = false; ActiveCue = null; return completions; }
             if (CompletedCueToken == wait.Token.Value) return completions;
             if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture or PresentationCueKind.EntityEffect)
                 throw new InvalidOperationException("presentation-map-unavailable");
             if (_cue != wait.Token)
             {
-                _cue = wait.Token; _cueAge = 0; _gesture = null; _mosaic = null; _shivering = _nodding = false;
+                _cue = wait.Token; _cueAge = 0; _gesture = null; _mosaic = null; _storyEffect = null; _shivering = _nodding = false;
                 _cueResource = wait.Cue.Resource;
                 ActiveCue = wait.Cue.Kind.ToString();
+                if (wait.Cue.Kind == PresentationCueKind.FlashWhite)
+                {
+                    if (wait.Cue.Resource != "white-four-pulses" || wait.Cue.DurationTicks is not (> 0 and <= 240))
+                        throw new InvalidOperationException("flash-pulse-binding");
+                    _flashRestore = _white.Color;
+                    _flashPulse = -1;
+                    _cueAge = -delta;
+                    if (_reducedFlash) SuppressedWhiteCues++;
+                }
                 if (wait.Cue.Kind is PresentationCueKind.FadeIn or PresentationCueKind.FadeOut)
                 {
                     if (wait.Cue.Resource is not ("black" or "white")) throw new InvalidOperationException("fade-binding");
@@ -215,17 +231,18 @@ internal sealed class ExplorationPresentation : IDisposable
                 }
                 if (wait.Cue.Kind == PresentationCueKind.Gesture)
                 {
-                    if (wait.Cue.Resource is not ("nod" or "shiver") || wait.Cue.Entity is null) throw new InvalidOperationException("gesture-binding");
+                    if (wait.Cue.Resource is not ("nod" or "shiver" or "shake-head") || wait.Cue.Entity is null) throw new InvalidOperationException("gesture-binding");
                     _gesture = wait.Cue.Entity;
                     _shivering = wait.Cue.Resource == "shiver";
-                    _ = Sprite(current.Exploration!.Entities[_gesture.Value], !_shivering);
+                    _ = Sprite(current.Exploration!.Entities[_gesture.Value], wait.Cue.Resource == "nod");
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.EntityEffect)
                 {
-                    if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out") || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
-                    _mosaic = wait.Cue.Entity;
+                    if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "flash-white") || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
+                    if (wait.Cue.Resource is "slide-in" or "flash-white") _storyEffect = wait.Cue.Entity;
+                    else _mosaic = wait.Cue.Entity;
                     _mosaicOut = wait.Cue.Resource == "mosaic-out";
-                    _ = Sprite(current.Exploration!.Entities[_mosaic.Value], false);
+                    _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false);
                     _cueAge = -delta;
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.BattleLoad)
@@ -258,6 +275,17 @@ internal sealed class ExplorationPresentation : IDisposable
             bool complete;
             switch (wait.Cue.Kind)
             {
+                case PresentationCueKind.FlashWhite:
+                    // csc41(30) requests four flashes. Modern time uses four short on/off
+                    // pulses in one cue; palettes and black modulation remain authoritative.
+                    double pulseDuration = wait.Cue.DurationTicks!.Value / 60.0;
+                    complete = _cueAge >= pulseDuration;
+                    int pulse = Math.Min(3, (int)(_cueAge / pulseDuration * 4));
+                    if (pulse != _flashPulse) { _flashPulse = pulse; FlashPulses++; }
+                    bool on = !complete && (_cueAge / pulseDuration * 8) % 2 < 1;
+                    _white.Color = new Color(1, 1, 1, on && !_reducedFlash ? 1 : 0);
+                    if (complete) { _white.Color = _flashRestore; _flashPulse = -1; FlashRestorations++; }
+                    break;
                 case PresentationCueKind.FadeIn:
                 case PresentationCueKind.FadeOut:
                     float opacity = (float)Math.Clamp(_cueAge / 0.5, 0, 1);
@@ -273,10 +301,10 @@ internal sealed class ExplorationPresentation : IDisposable
                     break;
                 case PresentationCueKind.CameraWait: complete = _camera.DistanceTo(target) < 0.01f; break;
                 case PresentationCueKind.Gesture:
-                    _nodding = !_shivering && _cueAge is >= (10.0 / 60) and < (30.0 / 60);
+                    _nodding = wait.Cue.Resource == "nod" && _cueAge is >= (10.0 / 60) and < (30.0 / 60);
                     // Rendering observes the timeline; culling or a missed phase cannot hold story control.
-                    complete = _cueAge >= (_shivering ? 30.0 : 40.0) / 60; break;
-                case PresentationCueKind.EntityEffect: complete = _cueAge >= 0.5; break;
+                    complete = _cueAge >= (wait.Cue.DurationTicks ?? (_shivering ? 30.0 : 40.0)) / 60; break;
+                case PresentationCueKind.EntityEffect: complete = _cueAge >= (wait.Cue.DurationTicks is { } duration ? duration / 60.0 : 0.5); break;
                 case PresentationCueKind.BattleLoad:
                     // The existing battle board and roster have been mounted for a frame; input is still program-owned.
                     complete = _cueAge > 0; break;
@@ -322,6 +350,9 @@ internal sealed class ExplorationPresentation : IDisposable
             var view = story.LogicalView;
             var background = view is null ? _camera : new Vector2(view.BX.Position / 16f, view.BY.Position / 16f);
             var foreground = view is null ? _camera : new Vector2(view.AX.Position / 16f, view.AY.Position / 16f);
+            // A deterministic bounded displacement; no gameplay RNG or motion is consumed.
+            float quake = world.Quake == 0 || _reducedFlash ? 0 : (story.SimulationTick % 2 == 0 ? world.Quake : -world.Quake);
+            background.Y += quake; foreground.Y += quake;
             if (view is not null) _camera = view.Area.Layer == 0 ? background : foreground;
             // VInt_UpdateSprites selects the area's main plane once before its entity loop.
             // ENTITYDEF_LAYER controls signed window priority, not coordinate selection.
@@ -359,7 +390,8 @@ internal sealed class ExplorationPresentation : IDisposable
                 int actorPass = pass++;
                 bool gesture = sourceNod is not null ? sourceNod.Entity == entity.Entity : _gesture == entity.Entity;
                 bool lowered = gesture && (sourceNod?.Lowered ?? _nodding);
-                var texture = Sprite(entity, lowered);
+                int headShift = gesture && _cueResource == "shake-head" ? ExplorationStoryEffects.HeadShift(_cueAge) : 0;
+                var texture = Sprite(entity, lowered, headShift);
                 var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f);
                 int shiverOffsetX = sourceNod is null && gesture && _shivering ? ((int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1) : 0;
                 point.X += shiverOffsetX;
@@ -403,6 +435,8 @@ internal sealed class ExplorationPresentation : IDisposable
                     MosaicDraws++;
                     if (_mosaicOut) MosaicOutDraws++;
                 }
+                else if (_storyEffect == entity.Entity)
+                    inkRuns = ExplorationStoryEffects.Draw(_owner, texture, destination, inkRuns, mirror, _scale, _cueResource!, _cueAge, _reducedFlash);
                 else
                 {
                     // Godot flips a negative-width texture rect around its unchanged position.
@@ -670,38 +704,22 @@ internal sealed class ExplorationPresentation : IDisposable
 
     private ImageTexture Block(ExplorationMapVisual visual, int block)
     {
-        if (_blocks.TryGetValue((visual.Map, block), out var texture)) return texture;
-        if (block >= visual.Blocks.Count) throw new InvalidOperationException("map-block-binding");
-        if (!_atlases.TryGetValue(visual.Map, out var atlas)) _atlases[visual.Map] = atlas = Image(visual.Atlas);
-        using var image = Godot.Image.CreateEmpty(24, 24, false, Godot.Image.Format.Rgba8);
-        for (int tile = 0; tile < 9; tile++)
-        {
-            int word = visual.Blocks[block][tile], index = (word & 0x3FF) - 0x100;
-            if (index < 0) continue;
-            if (index >= 640) throw new InvalidOperationException("map-tile-binding");
-            for (int y = 0; y < 8; y++)
-                for (int x = 0; x < 8; x++)
-                {
-                    int sx = (word & 0x800) != 0 ? 7 - x : x, sy = (word & 0x1000) != 0 ? 7 - y : y;
-                    image.SetPixel(tile % 3 * 8 + x, tile / 3 * 8 + y,
-                        atlas.GetPixel((index % 16 * 8 + sx) * visual.Scale, (index / 16 * 8 + sy) * visual.Scale));
-                }
-        }
-        _blocks[(visual.Map, block)] = texture = ImageTexture.CreateFromImage(image);
-        _resourceSelectors[texture] = new { kind = "map-block", map = visual.Map.Value, block };
+        var texture = _mapTextures.Block(visual, block);
+        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block });
         return texture;
     }
 
-    private ImageTexture Sprite(ExplorationEntity entity, bool nod)
+    private ImageTexture Sprite(ExplorationEntity entity, bool nod, int headShift = 0)
     {
         if (_visuals is null || entity.Sprite is not { } sprite || !_visuals.Sprites.TryGetValue(sprite, out var visual))
             throw new InvalidOperationException("entity-sprite-binding");
         int direction = entity.Motion.Facing switch { 1 => 0, 3 => 2, _ => 1 };
         int half = entity.Motion.AnimationCounter > 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
-        var key = (sprite, direction, half, nod);
+        var key = (sprite, direction, half, nod, headShift);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
         using var sheet = Image(visual.Directions[direction]);
         using var image = sheet.GetRegion(new(half * 24, 0, 24, 24));
+        ExplorationStoryEffects.ShiftHead(image, headShift);
         if (nod)
         {
             // sub_45D70 moves the central head band down one pixel and clears the top tile row.
@@ -735,7 +753,7 @@ internal sealed class ExplorationPresentation : IDisposable
 
     public void Dispose()
     {
-        foreach (var texture in _blocks.Values.Concat(_sprites.Values).Concat(_portraits.Values)) texture.Dispose();
-        foreach (var image in _atlases.Values) image.Dispose();
+        foreach (var texture in _sprites.Values.Concat(_portraits.Values)) texture.Dispose();
+        _mapTextures.Dispose();
     }
 }

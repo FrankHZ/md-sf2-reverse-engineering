@@ -19,10 +19,10 @@
       "source": "docs/design/contracts/audio-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/audio-system.md",
-      "sourceSha256": "8ebc53c0ed72b25be33f7acd79fe8d1ea39eaad5624645f102ac4f963309ce0f",
-      "mirrorSha256": "6132cdeea0250ed6de43c460b1e8f0f37b86b19e30ddc21c79ef067f0b5f64e9",
+      "sourceSha256": "1444b674cd9e5453b2d408924e853c3213ba65a43d50b61f2e8bdb4753c8fee9",
+      "mirrorSha256": "f82dcfcbb5e4da33ae3a4eea81c2ec3cab4fe800c25dd913d1dc00981d8e0523",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/battle-action-construction.md",
@@ -37,10 +37,10 @@
       "source": "docs/design/contracts/battle-ai-decision.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-ai-decision.md",
-      "sourceSha256": "6d8fdc5744384fa4156ed7e49744ebc64e9b7fa0aa5158fb548551ce9237a681",
-      "mirrorSha256": "df49787a7551495c4d5c8eab39624d8fd42c0d8fc68bc5145ff2367d2a8d24bb",
+      "sourceSha256": "3030bb6eadcd2f3a2f534f93ed91d5a11be793ad66c0cca4caf121639f2f5a1b",
+      "mirrorSha256": "7c5dfe9f9539f6dc16fbb28ebb1cedf2b3db5a6c9bdf3345b9a75af677373aaf",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/battle-background-graphics-data.md",
@@ -55,10 +55,10 @@
       "source": "docs/design/contracts/battle-control-lifecycle.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-control-lifecycle.md",
-      "sourceSha256": "8dba0ec2904e8e41c039518fba36cfeec401fddbfc65008815f6df5e3a4d382a",
-      "mirrorSha256": "98b69635bdc17ba514ac136e0686cba79cbb39f24c030e1c3904451103c26da2",
+      "sourceSha256": "6a359689c8456c20192e0781a4734f064f7e2e3b9fbaf240498b0b0073248db5",
+      "mirrorSha256": "511e2f7244ffa5d1c0b3adc240662a433bd4170aa0bd535793fe0fef7e85e703",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/battle-cutscene-routing.md",
@@ -181,10 +181,10 @@
       "source": "docs/design/contracts/dialogue-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/dialogue-system.md",
-      "sourceSha256": "039bab8f24d80ddf546d8a85406a57c0f4ae7ad062d41af3d5211124e1e39dca",
-      "mirrorSha256": "09e52aac5500897235ff04afaef1ff7ae74b663eded95e1e68cdf0fda4fa5129",
+      "sourceSha256": "a89c96402c01b37535b9073f63ca24d5596deb043ed6e4ff8b1e8e376fc57e01",
+      "mirrorSha256": "2550956a3a4942f250c523a2c1fda38f0a0be8e377be8ac600749cc813e4ca95",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/enemy-definition-data.md",
@@ -298,10 +298,10 @@
       "source": "docs/design/contracts/map-exploration.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-exploration.md",
-      "sourceSha256": "3cc926493bba289336f4e9f4846bee5c1b590f7b7527a2ab57ffcdee05eb1af7",
-      "mirrorSha256": "cafd509acfe7ac42e5b1eea0dbc471415d29fe48b1a4bf036fd778cb7616a446",
+      "sourceSha256": "49e60177eb6226b9158198d28844a3f195e9fff4fe3b0262987af612488941db",
+      "mirrorSha256": "5e24bbfb59c52a92332d4849abd8d49d727dc3906964e2172f5007c15da3cdcc",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-28"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/map-layout-data.md",
@@ -361,23 +361,28 @@
       "source": "docs/design/contracts/map3-battle01-continuous-scenario.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map3-battle01-continuous-scenario.md",
-      "sourceSha256": "2171c370759a1870cc3d824e72d874271149f3d9324152dfd975353bb23c5fe9",
-      "mirrorSha256": "6f151e308a856197c050e7d9c48faf965cd7d85c0ec9a76088d61b9a7a55f267",
+      "sourceSha256": "18dd484a1205db187854ec6c31e2d7aa2b11e15d3f811dd298031655f275ccd5",
+      "mirrorSha256": "794940c42d3fc3c77dbb54479e116484560519735fe829fae67955ef8b0ac47c",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-09-22"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/map3-controlled-admission.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/map3-controlled-admission.md",
+      "sourceSha256": "c284b2c7fed163a068f74fb0eb68c2b0ddcb6cd5f9afaa3530a5383f2beccb53",
+      "mirrorSha256": "d50c69e98aba674db6f3718b2f87fb9a0a37c80548e5c75381934315040e71de",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/contracts/music-wait-service.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/music-wait-service.md",
-      "sourceSha256": "732e4fc565f84dccf57249b1eb887a40c751ffd21df45b2941623c635d2a6463",
-      "mirrorSha256": "26abdc8f8ef77f9227a36f921ea3f69c7b61064508cb1799e5e9da2ba6eed55b",
+      "sourceSha256": "61eda86600ccc3a0b5e8d9d788e0726df94dadffa91d7e99b82948f2cf54bb86",
+      "mirrorSha256": "562d2a63cf06b6d12dba2a8a6778c34b1b4eac8dec8075dc57f7f7f5efc9f390",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/name-table-lookup-service.md",
@@ -410,10 +415,10 @@
       "source": "docs/design/contracts/party-roster-state.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/party-roster-state.md",
-      "sourceSha256": "8f03630a5c0587d55175d1df908015050e9c0b7b9f3f6f76ab6f372f7cb4436b",
-      "mirrorSha256": "669904e8360e3163096d46af888a241cd3b8e6261e4a47aa9f9befee1d072f53",
+      "sourceSha256": "e0859c2f8682eb5ac0dc9f5754e0a08096dea16beb4eaccda03b4e716b0c6a0e",
+      "mirrorSha256": "d3097f62b12d9cd4c1c6fd3c451d831143b0d2d512d79bd5a4d9201ee5f9b1a5",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/portrait-graphics-data.md",
@@ -437,10 +442,10 @@
       "source": "docs/design/contracts/randomness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/randomness.md",
-      "sourceSha256": "e9ffd68d952a20d450f040f1c19f34a1427d42e946bb10e2db7e9f24a716da74",
-      "mirrorSha256": "0cf3da7f2e2283773a719133271830ff9274f53c4f3dcc8f4fa1ab5b377f5b84",
+      "sourceSha256": "8612ac34dfa2a880fdfd5e95e3b3aa28d30b0064709cdc9e34da455bc2567de7",
+      "mirrorSha256": "eb5a6ce4c2d8f90ea09147fd4981899ee3673bbd24907b611afe95c64115c499",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/contracts/rom-header-data.md",
@@ -626,68 +631,865 @@
       "source": "docs/design/documentation-roadmap.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
-      "sourceSha256": "a9943721171fc057e37201edc8fd2cc6bd82bbb67602b3826c420c341c868448",
-      "mirrorSha256": "673999a645ec9866627db4e1405912f8e3c0115f6a527b2f89ae56bbaf654e7b",
+      "sourceSha256": "21db94dad7bcaa1c192dc3514abdd937a195eecc5f920cdc76cbe45a4e9130a4",
+      "mirrorSha256": "b5d9bf95325f15960eed261a67913f9da7aad6c175d98a59b957c805901b6064",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle01-return-through-battle02.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle01-return-through-battle02.md",
+      "sourceSha256": "9b095004f2df08245ec82fcc61f9175cd6fb66b9d786c283689ef813822acf97",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25",
+      "mirrorSha256": "1e92f41f775aede7c68e66feb6088632f560bcc8f6e53f20a1bf342f1a24ad0b"
+    },
+    {
+      "source": "docs/design/synthesis/battle02-outcome-through-battle03.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle02-outcome-through-battle03.md",
+      "sourceSha256": "1be80a01150617d22cd14eeb87268503bdac473ecfcd98b897547d3e42684a66",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25",
+      "mirrorSha256": "90604f861cd4a2fce227a48c6b8dc852b2fee3d53bfb23192eabeeddc66bf0f5"
+    },
+    {
+      "source": "docs/design/synthesis/battle03-outcome-through-battle04.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle03-outcome-through-battle04.md",
+      "sourceSha256": "204392c54e64e4a019633ffdf7854d07c964ad7e389c4421ed2f18340efc4991",
+      "mirrorSha256": "0d717cc232fb6c16d3df842efa4397ce88fddce2a32d2c7a97d8dd9ade250720",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle04-outcomes-through-battle05.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle04-outcomes-through-battle05.md",
+      "sourceSha256": "ffb0f60e30f78ab740c01e6134d0aedcd6caabd587f658e7f8f318b2cfdb2d10",
+      "mirrorSha256": "c8f2275e6689a6fff4552f6e812c4b965afbdb3968ae4d0eb365ba120ac2cd39",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle05-outcomes-through-battle06.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle05-outcomes-through-battle06.md",
+      "sourceSha256": "26a6484a44dd57afc1be190ac6c28c76741356a0b7fee7cb144cf85963099127",
+      "mirrorSha256": "c230e2c1c682ea3a099311776860924e3abdcbf76242bfa39386992a16e9f6cb",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle06-outcomes-through-battle07.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle06-outcomes-through-battle07.md",
+      "sourceSha256": "e75205471cb0a4dd78ae3af90d59ff6065c0c3caffee9a3e215005c8bb6e413b",
+      "mirrorSha256": "d28ec224c4b942ff05f2ee350ea7e2a6ce29b87f04bc55caccd3aeb7874f89fe",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle07-outcomes-and-aftermath.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle07-outcomes-and-aftermath.md",
+      "sourceSha256": "8c93a08493c1c09f687fac39f0a2e05e35de050ef5e8681415b3b7d822a45bc0",
+      "mirrorSha256": "b68a72ab44dbcf97698e65cd4cbb852980956b715a1b530387496aef6e11357e",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle08-outcomes-through-new-granseal-handoff.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle08-outcomes-through-new-granseal-handoff.md",
+      "sourceSha256": "13b1ff723b65f1657ebc2cfb04931ea1dad1dde4033e378fd40b6c8b9e8e9cf5",
+      "mirrorSha256": "ceb090458ae3f5a3268f5b97d7ee1e67ff0c0f2b75f3db6e9dccb6fbba906224",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle09-outcomes-through-ribble-welcome.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle09-outcomes-through-ribble-welcome.md",
+      "sourceSha256": "333f1872a2c81731036281a8fddfb1ac8879df1bd0646973f3e7aaba9ad6f122",
+      "mirrorSha256": "e05e0496cb1b8ac4375e1336163b150825d25be1e7522e70e380bc6c2d932ab2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle10-outcomes-through-east-shrine-visit.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle10-outcomes-through-east-shrine-visit.md",
+      "sourceSha256": "e946c6b7f27c62732b474cc466159b516287be7163ecfcf7537217a4debfb2e7",
+      "mirrorSha256": "d3db444bd00b5ac611a3a43be7ae806305fc0b2b7db28969e7bdd42fe1e78fd6",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle11-outcomes-through-polca-arrival.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle11-outcomes-through-polca-arrival.md",
+      "sourceSha256": "9bf6e4900ff7f5d97c30a60b0129351f4ce6660f216b20e2d608db652db8eee5",
+      "mirrorSha256": "e979d4d25f5f178e6db9c4462ec442753bef8106a1e0eae7e1245319891cae28",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle12-outcomes-through-bedoe-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle12-outcomes-through-bedoe-entry.md",
+      "sourceSha256": "9238d1265c19f1cff4e16a341aec75dd7731302e373157a7ecc621d59f1c2af7",
+      "mirrorSha256": "8eec6cf15123d97b678fe78c3805b79b654ee25d51f1047910d4811182a4d8c8",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle13-outcomes-through-polca-raft-grant.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle13-outcomes-through-polca-raft-grant.md",
+      "sourceSha256": "45af2b209079707286e92470af80bbbc7a0afa1496ca59b4fbe9bddc8f4363cf",
+      "mirrorSha256": "921102ac2b6411207c2c1d9d0d040692408a8e0fe8e4881d784f62d5e6986a1d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle16-outcomes-through-hassan-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle16-outcomes-through-hassan-entry.md",
+      "sourceSha256": "e631095ee0cc14ede642873ac48b38068d571755f9e04a0a78c5e6d13947a0a8",
+      "mirrorSha256": "23e500a9842a540eaaa63d281c9e5610939a68ed36aff2a8a5f0d9015b387c57",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle18-outcomes-and-caravan-acquisition.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle18-outcomes-and-caravan-acquisition.md",
+      "sourceSha256": "a26f91f12b347d83473073252597fb9cb08ecd0e14b495302b09ca3e693e0d7d",
+      "mirrorSha256": "b0e28c5658c5a79841dc492c71b0178844969076af9a60eaa7a99cebee7a273f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle19-outcomes-through-elven-village-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle19-outcomes-through-elven-village-entry.md",
+      "sourceSha256": "103b181002e9685ed7eb44f60efc4b117e06274ae22769419aded614bb043943",
+      "mirrorSha256": "60cc678b9152f6ac2942d4d7a1a11a97412faf5d93154cf22cc8ef0ff0714680",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle20-outcomes-and-elric-recruitment.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle20-outcomes-and-elric-recruitment.md",
+      "sourceSha256": "942267747ed2700c02cc6a020b0da16e8532492eca843d37a6ac66d6f0840d1f",
+      "mirrorSha256": "5b9f665773b97437089ccebaad0fbf0f209fb39a9f835f89505f723dec1b99a8",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle21-opening-and-initial-roster.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle21-opening-and-initial-roster.md",
+      "sourceSha256": "d87f79eae8c8bcc0939c6161c50e3ca10705eba67c13c5caeab9edb051222e7c",
+      "mirrorSha256": "1e9d0e6c1d6aaebd26e25959018de816040edac90fe580514f3c541480bc37ca",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle21-outcomes-and-devils-tail-return.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle21-outcomes-and-devils-tail-return.md",
+      "sourceSha256": "c5273c2deceb9f81a84666fd501667bae681bce02def3fcdcfebab2415d9b5ce",
+      "mirrorSha256": "9f38a2db9b89b0762998a8131434a3d0eeaeeedb29c78212a5ca0cb52f8cc56c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle22-initialization-and-roster.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle22-initialization-and-roster.md",
+      "sourceSha256": "1a299d6ed7c2d76590f1254ea132bb4de7d3f1f7be3c56351025fead49272ea4",
+      "mirrorSha256": "b30e34893b3ffaecaeff221bb3691781c466080f908f161e9a18b73cacdc43cd",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle22-outcomes-and-desktop-return.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle22-outcomes-and-desktop-return.md",
+      "sourceSha256": "983268659a7bafdcf2ef4b0a30aa83692c13c60fee23b1520c2303b957e6bcbb",
+      "mirrorSha256": "f7bc1272cf8b9c59be56228194e735cb2cc433bf7dbfbac22fe04779d9b07d25",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle23-initialization-and-roster.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle23-initialization-and-roster.md",
+      "sourceSha256": "2929b97ebd6f0ebb0e5beee273dfc69a3cd1ca9690b0ca94e7c30ef7cc23bfff",
+      "mirrorSha256": "f916ee68ec65413c81d0c1d1de7f532019b3f18ce4662de54df4a2381620e73c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle23-outcomes-and-burrow-return.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle23-outcomes-and-burrow-return.md",
+      "sourceSha256": "064deb7cf65d1984708ca7201d23ea9225552f04c3b1ab19cef15283286a6e8d",
+      "mirrorSha256": "f2464d2bb5a1f347de0c0664179a3678698751ecd46f319955ec7638fc9e3bde",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle24-outcomes-through-north-cliff-preparation.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle24-outcomes-through-north-cliff-preparation.md",
+      "sourceSha256": "b047096f05b1dd6bbf405480eb16575651158b5a5e1d0b5433597c599caf5019",
+      "mirrorSha256": "35017bc63ab96863148d9c037126539764345f1348811c85500334e1ce27f8a9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/battle25-outcomes-through-ketto-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle25-outcomes-through-ketto-entry.md",
+      "sourceSha256": "d668884418c73d99587fb5ffd0d84e67202e2ccbe99153f7dc724ed9468982f1",
+      "mirrorSha256": "c17d1d2ece14a0761faee7afeab08328f78eda5cb16c13651316e57239b11a36",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-activation-and-first-turn-dispatch.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle26-activation-and-first-turn-dispatch.md",
+      "sourceSha256": "f81a3ad373acf594700cbdb3ac54ec89498ad959cfcb8d4a495c6361cbc7453b",
+      "mirrorSha256": "a374e8244990969f5c94e3012ac2f8f646c5b3e1ccb2d9d7d666d9c306151913",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-admission-and-geshp-confrontation.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle26-admission-and-geshp-confrontation.md",
+      "sourceSha256": "0fe7246208a4cc0d96453021437d1bcd447cbae36dbaf3d9da2b3402b6df5a9c",
+      "mirrorSha256": "b5aa9ba640e7a230cc11b70447de5c72eb8d60ccc3870474cbaed5d518f50cdc",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-initialization-and-roster.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle26-initialization-and-roster.md",
+      "sourceSha256": "9efc43be9e591b64839dcb55f9d9c04bd3188c486946c2b0083a7dccdacd5365",
+      "mirrorSha256": "7c66bfc156e200fdef350246b23070f73247059d929eb95b5ac23e9cdffa60ff",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-outcomes-and-higins-recruitment.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle26-outcomes-and-higins-recruitment.md",
+      "sourceSha256": "cda5522e2fc5c434e7fa3cfcbb446b2d6d6b39e987dd6bd30b7f9b3a9c4cabf9",
+      "mirrorSha256": "1108801cd7bfd09d7a608c9f9d48656f467ba5eef75ec83aa7bcba93d3cafb93",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle26-return-through-pacalon-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle26-return-through-pacalon-entry.md",
+      "sourceSha256": "db18c528d854b4d93e800ccc269280360f143b529406a685364c30944fce0ebf",
+      "mirrorSha256": "5457951a62f1adfcc35b8d3a5c450425443d63c3bc8e615a403186cb937db119",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle27-activation-and-first-turn-dispatch.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle27-activation-and-first-turn-dispatch.md",
+      "sourceSha256": "87937a5daa3d60d6454a4d2a9d6aed4ad9218a9899ebc40c889a81522108f408",
+      "mirrorSha256": "a7e1055e6ee2d85ab78f88cef930d4c2f064b5066aa577b03e9b33113ab6bc34",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/battle27-initialization-and-opening.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/battle27-initialization-and-opening.md",
+      "sourceSha256": "de0fbfe13ffe7e3d62a2b5472c873633bce31c208e7962750212f9fd06b8a7b7",
+      "mirrorSha256": "75fd505a9fc727f95a04610e692f0cff393ec9ff0587c5c85a4214583d45f432",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-hatchling-flight-and-rescue.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-hatchling-flight-and-rescue.md",
+      "sourceSha256": "710e406f2afb364c777abcbefcf2c7e981bc3bfd80f5e960f60329911052de53",
+      "mirrorSha256": "f79a3291b7b386bbd8466fd2e67ab25ffaf35495caf96bd7fe3e274a0a47f25f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-king-address-through-first-audience.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-king-address-through-first-audience.md",
+      "sourceSha256": "67a0dae6dbb1ce12d17b2ca310dba7fceb5fbd677b093c66594493f72be00fbb",
+      "mirrorSha256": "a5863d9e610d1422cac3c813a0fe8bc5b426b76b6a0302ed668761346d9a9d20",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-return-through-battle13-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-return-through-battle13-admission.md",
+      "sourceSha256": "ce7319390f9251e9088a8694f8411a099fb2320bdb7f16a08b36d3d5235ac6a8",
+      "mirrorSha256": "3057bcd37a92e6cbda824649db6a8d79703fd545683daec6737fa0236f675f15",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/bedoe-to-volcanon-audience.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/bedoe-to-volcanon-audience.md",
+      "sourceSha256": "970174c3f4aa58820dd96fc97554c992fae15e1ca706c5f3004cd5bee967f390",
+      "mirrorSha256": "f01931248a012fbde3874730613a4becda164d740c2c2020c06a1ee38d5bc667",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md",
+      "sourceSha256": "48592dd8c55d746313c0cf7ebd9322f6e5b3d66b194d56b9a37c9b0ffe87a096",
+      "mirrorSha256": "6554f23896c824504d26653323b1036c2fd23b11b3e0096314e39d26363ab487",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/cotton-balloon-through-floor-world-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/cotton-balloon-through-floor-world-entry.md",
+      "sourceSha256": "cd72de56031f132bf7bc98fd38bf77cef4180275cee8a75c00cb8f311f3413e2",
+      "mirrorSha256": "539317aee1ca67fa1f57b5c24c616caa2b67fe54ddb434f789ba25dc156aa3cf",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md",
+      "sourceSha256": "beadba305ed912a60286afdf15f960e48baf116b6bd5fb5286df65b9a6eb7a78",
+      "mirrorSha256": "4df26b20ae1be4ad079ec9812ba3f9cfc713a83c9083b7f3a9d3b2b652569a28",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/creed-magic-door-and-desktop-transfer.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-magic-door-and-desktop-transfer.md",
+      "sourceSha256": "cf4d344b1aad894cffa38afc1dbdd8d27d4a31b5e546c095d42e77c82be90b79",
+      "mirrorSha256": "556f39f82f59d517af2828453feae869e95c389f2a25da17d97a864572f6342a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/creed-mansion-entry-and-first-goliath-scene.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-mansion-entry-and-first-goliath-scene.md",
+      "sourceSha256": "7ed3f57bf8c6e614f6042743ef9a5d7167522f61cbefc42aa3fcaea9f3503fa9",
+      "mirrorSha256": "e1dcb6361fd953a4fb4330e1543d0f2bc3062008250c3a39d17a2e7cf9efc03d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/creed-restoration-and-basement-departure.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-restoration-and-basement-departure.md",
+      "sourceSha256": "61d2a128b5798920883870725ef11d96319ac173cde54b1fbce9b089c71e38ea",
+      "mirrorSha256": "60e13120e28ebe114ab46ee951e7d429f33653b641bc9afdefba26b1ef64c4d3",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/creed-return-fairy-and-recruitment-choices.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/creed-return-fairy-and-recruitment-choices.md",
+      "sourceSha256": "db5c465bccd6739c01ad10acaf049a0bf80a8955783ed90faec5e4bac1893546",
+      "mirrorSha256": "880029d9b9ab68000384021ee0925f08425a87802ed0c0d6ae982940dce2e101",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/damaged-ship-plank-through-battle08.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md",
+      "sourceSha256": "476870bdd68d5cc6b690b3712d913f950dc2b73222d40036ee43b72e26a9b5ad",
+      "mirrorSha256": "8dfa09d5da7bb8c1d1ead1aca8b9d8d2d74cb01fe9a4528ff51045491405f07c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/desktop-kingdom-first-arrival.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/desktop-kingdom-first-arrival.md",
+      "sourceSha256": "30334c94887ebe0c5b8ddfc2d8550dbfd48ebb0e306a7a0c566f1ef53b9192de",
+      "mirrorSha256": "6f753209acf13b78c34e863611a20940f1885280bdb99304c33fa3cc77565edc",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/desktop-kingdom-interactions-through-battle22-entry.md",
+      "sourceSha256": "e35236d78117c6a8772fcaaa560b7896f8af2c7aae4920e8c49a6ce1cd5114fc",
+      "mirrorSha256": "185ba8c682c2d0824041cf4992d4b9f2137eb5bf90dfe30bd62c80118052e6aa",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/earthquake-town-through-docks-departure.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/earthquake-town-through-docks-departure.md",
+      "sourceSha256": "be6c5014c76dcae3407474a488382d3c6990fcbb66c50d6f30976d2e9ae830b6",
+      "mirrorSha256": "e750c6bf4130976c56c77d82d8c4b361f50b3efb0566988c9390fbd8ea5c49dc",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/east-shrine-return-through-battle11-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/east-shrine-return-through-battle11-admission.md",
+      "sourceSha256": "69c548e84b1ca3f219aa8e053b9a77d7b3ca1591f88f15aedd951eca1e98f6a2",
+      "mirrorSha256": "c18b418c7d8cab200c1ea9e4f50c4752c88df783ff62dfb69a082d679cd5549d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/elven-village-conversations-and-local-exploration.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/elven-village-conversations-and-local-exploration.md",
+      "sourceSha256": "deb7bae740dd8f5e86416d96dc356932dc43a044a3c905a98e14f8e4414b6580",
+      "mirrorSha256": "89450120ff2ee371dbdbb50f79d91c75d42e2158f6e1099e6bc83883a13799b4",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/elven-village-departure-through-harpy-pond-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/elven-village-departure-through-harpy-pond-entry.md",
+      "sourceSha256": "238632a9625217892303d5ed3b333ce8de0cad81cd7997d2c9ce5394980c26c2",
+      "mirrorSha256": "a7e92fa642b7a1563ed329aade0b70ecd24ea629ce97fc250b63c00b3f6ef788",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/evil-spirit-consultation-and-zone-return.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/evil-spirit-consultation-and-zone-return.md",
+      "sourceSha256": "bb40caa802e2b500ad9311a04597b223ea87c2484addc966cffbf2db15ee2c72",
+      "mirrorSha256": "8a02af287e474f9954cddfafda081d07f2f9eb0e8f3c6a45b0cbf6f5a8061341",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/evil-spirit-shrine-entry-and-scene-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/evil-spirit-shrine-entry-and-scene-admission.md",
+      "sourceSha256": "8776be6f230a69317f245ba69de53d11f910d7601f081505c53cfa1a89b5db35",
+      "mirrorSha256": "1127599a50e85bbb226f3417e29a661930a8296bfae788ee3e14dddff3744ac9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/fairy-cave-exploration-and-devils-tail-return.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/fairy-cave-exploration-and-devils-tail-return.md",
+      "sourceSha256": "c26676783f50a2d00d0f09de9ab62f1db1a9ab8e3de977f4c67192093d1b6c5c",
+      "mirrorSha256": "edc75d189ca99591cd9b97944fb01680f64d72165b06120722fe87d70aad95ac",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/floor-world-first-arrival.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/floor-world-first-arrival.md",
+      "sourceSha256": "22527e8066814f6d2e3b0cfefe7248f3183f6351138b529f4de9bf837e17c328",
+      "mirrorSha256": "571f8729aeb56664a11d3cda5d995f124df0a1be60da8799951fdcce1077357a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/floor-world-interactions-and-exits.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/floor-world-interactions-and-exits.md",
+      "sourceSha256": "20b39e8d465b3638802e8de1d28500bc3c0263147012178c86289387c98d257d",
+      "mirrorSha256": "8e0b2a0e71c8604aa916789307949cd48bd06afc710b7d95df852468159a599e",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/gameplay-overview.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/gameplay-overview.md",
-      "sourceSha256": "29f8f95ee001e9b90c4f0426c1bff241ea21e356f2af8d9b9868506520169d6a",
-      "mirrorSha256": "f596b29a9fc182189913db9177e20a4df99645bce15679aa4426ddef1239f598",
+      "sourceSha256": "c7be7228c7d15b9824828aaef577cdf3ce94e64f35928608b27cab13b1131399",
+      "mirrorSha256": "82e1b9166c2385e96c94bb0be005fd372ae8141ed3d8926bc764b3ab32748432",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/harpy-pond-approach-through-battle20-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/harpy-pond-approach-through-battle20-entry.md",
+      "sourceSha256": "ef720f865d76fe49f1fa57c4cf9a9a2cf219e55a09d394d0f6274b3dff12f6fa",
+      "mirrorSha256": "4c125576c09affdb61406d7257302934c872b10bf34e58792b87b5ad51328cf2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/harpy-pond-departure-through-fairy-cave-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/harpy-pond-departure-through-fairy-cave-entry.md",
+      "sourceSha256": "e95db4cf49e5c3393c2404e784599b7b6094b43f7e0ae8b84dc1a46b59d54230",
+      "mirrorSha256": "f76c3538aff15a4dce8982d00364c53c3255202d66769c10f91073181616f813",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/hassan-ancestry-and-rohde-caravan-choice.md",
+      "sourceSha256": "c235aa5dec81308f85e0e10c36480059bb0f34f73ce401402ff9e4815751b4e8",
+      "mirrorSha256": "46bb0cb9ad4df88999224168c33ca4c69c932d01e97ab93b10398c8393baa3e1",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/hassan-departure-and-battle17-outcomes.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/hassan-departure-and-battle17-outcomes.md",
+      "sourceSha256": "ac052eb3f693ce982ebd11437b0e03f3025d3174703339d04d04bbb33aa457c1",
+      "mirrorSha256": "c172d6d65c06e3d008b35e53144c9b19253249496cb5387d81ee0d956933b9b2",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/hassan-rick-recruitment.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/hassan-rick-recruitment.md",
+      "sourceSha256": "b402be3b37a0719f811f02688059a20c7f80fd8c5d3e00aa2cfbfc12ade8984c",
+      "mirrorSha256": "31ad1c5c4f470b93213ea64c3222f8fb3afb95eb8774167ed2beb8746e29e472",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/ketto-interactions-and-merchant-relocation.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/ketto-interactions-and-merchant-relocation.md",
+      "sourceSha256": "5df9c374872d5cd4dec103ec8f155b7f5ae7a6203d8ed0d7ed0a0115305c81bb",
+      "mirrorSha256": "6540148cae86513585e9ea4ca9012d0667145e28e06a59090c91b6229249fa62",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
     },
     {
       "source": "docs/design/synthesis/map-design-principles.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map-design-principles.md",
-      "sourceSha256": "0f9fc7241bacc9edaab3c3d6dc791ea9c02ab70224bb07009002893d9c78b73d",
-      "mirrorSha256": "69a400a4ecd49af4d91c11210b5c34ab29148cfe80f66088a8bd207476bdd3d2",
+      "sourceSha256": "b9d6c24e12433d92b05a1a843e757efdbbcaccd9531a287f2a6f52a3f1f05a1f",
+      "mirrorSha256": "ea7f3246bcb6ab3f920e4ed756ec4d952aa3b5b0cb8c6737904389e87df52bc1",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/map3-battle01-readiness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map3-battle01-readiness.md",
-      "sourceSha256": "826af49407883318223e7a84b4ea396c3a99f1239317cc07dc42b8a438293ac0",
-      "mirrorSha256": "c5a55212b73f5eb1d7bb15fed90f6be1f60c18cc89d7a9f9d92d2c6435fd0c3b",
+      "sourceSha256": "23e42284084ae6dbc7ca803c6ee29332a6a26144e8045614b34e70b667433042",
+      "mirrorSha256": "cb9c726c0a0d697c472770ab0b806fec0b46afbf0db4e7b9ad6116ce27332942",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-10-03"
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-castle-year-later-control.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-castle-year-later-control.md",
+      "sourceSha256": "20a353f0bee5cedf5eed454eb86e436b3a23b2bc652ed521940046dce81149e0",
+      "mirrorSha256": "b0da2edb71f7200314f418190a7cbeb40fba51c6bd93a6a59e209e4fcf77b64d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-departure-through-battle09.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-departure-through-battle09.md",
+      "sourceSha256": "b803df6994bb5688e28d36f100f3e3f65022bd28975498d4a2d98f097a68b2ec",
+      "mirrorSha256": "72c838de88984b7b3cd39a081dc7f3f7f12adeb012fcb36a7eb9e2de57c2df01",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-departure-through-battle24-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-departure-through-battle24-admission.md",
+      "sourceSha256": "3e756584bbddcc968276d69e064ca3686c3228fbadf65f9e3d3cb1f65ca17552",
+      "mirrorSha256": "beee7726a5a983378d0cc83edbcd90545cc0ee0e363aaed79bbfe19990e78878",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-inventor-and-dynamite-gift.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-inventor-and-dynamite-gift.md",
+      "sourceSha256": "9eba7441a362432635304ae567a8fb95ab883c5ff88acbda037d278b6fdde30f",
+      "mirrorSha256": "48e78127fe9c8f572ee7301c7db23c8429b7ec0c0e97541b12d02ea17e74c2da",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-janet-recruitment-and-departure.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-janet-recruitment-and-departure.md",
+      "sourceSha256": "d794b3fabb6f3b47def19e776d4d58487429d59ba5c2a02d90fe013378128b3b",
+      "mirrorSha256": "d2493e5363d9da987e22a5ed78643536ff18f4c83f3d46900f10b3e4f416e58d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-return-and-astral-following.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-return-and-astral-following.md",
+      "sourceSha256": "0ac2706ba7dd6c731d6b8c95fd66edd1d0fedd2bbc8c1a9e1ce4df8ea8390a09",
+      "mirrorSha256": "8776da9b8bde27d7e84f71a5ff314c90f4e0ec8cb54e73c6370af4b329eb986e",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/new-granseal-town-through-peter-introduction.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/new-granseal-town-through-peter-introduction.md",
+      "sourceSha256": "25a90a916110719c82fcc49b107f3d07d8e73e87c4463a745f27a81c53944345",
+      "mirrorSha256": "1abd922d15af6dcdbe75778839e6e8497f1f8310f8c9414068abf79b01c5b0a7",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/north-cliff-entry-through-battle25-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/north-cliff-entry-through-battle25-admission.md",
+      "sourceSha256": "e5ed4d2cbe71e1bdc845e8df31890a102f832b6af6c885a1c4687f1b101109ad",
+      "mirrorSha256": "7b34dc0b735beafc7ecbc578137173c6815ad82815014a787bcd161e250e68f9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/north-cliff-opening-and-rohde-recruitment.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/north-cliff-opening-and-rohde-recruitment.md",
+      "sourceSha256": "0a36eaccbba3a2b5495262da22ffb95c406cd417c75cc5031b1d468b47466247",
+      "mirrorSha256": "5230e0b8688b3b324279ea4b72df541ed391968bdc7f349369cc63a8de81387d",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/oddler-stays-and-fairy-handoff.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/oddler-stays-and-fairy-handoff.md",
+      "sourceSha256": "83c0c46a4daac47b83e5ea799617c10279812ba6e9a34e95f6ed0d78e9386297",
+      "mirrorSha256": "25664de8c5aaa1717205bcf2f4b800a20409caa35f66c945afec2d25b2d61969",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/opening-through-battle01.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/opening-through-battle01.md",
+      "sourceSha256": "7dbcf39451801b27db3a1a58e9dcc0407f0377194f02085caf6e43a857af4288",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25",
+      "mirrorSha256": "1f9d472b41a2d14f2352faffe1afe183a03a3a3c7cb82b669fbf47284982536c"
+    },
+    {
+      "source": "docs/design/synthesis/pacalon-castle-entry-and-first-visit.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/pacalon-castle-entry-and-first-visit.md",
+      "sourceSha256": "04e45260c31007dc9e583fcef882a095b0bfbdf232c3231865cd5e5eecbcfd16",
+      "mirrorSha256": "d43b34083bf38e2c59131aec970e68f2142a5465e2b9c8033f0376bd705cd1b0",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/pacalon-departure-to-battle27-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/pacalon-departure-to-battle27-admission.md",
+      "sourceSha256": "2d43b3b358923b0f1f2c08f8fc56a6fcd46f0b6aafd399bd4e7a6c6e376d051b",
+      "mirrorSha256": "b60f7b799701c11d1a86d47b8e5dcb04d864d4ab5f9e4357e7d0a3d1374caf8b",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/pacalon-interactions-and-castle-handoff.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/pacalon-interactions-and-castle-handoff.md",
+      "sourceSha256": "19a3a870c63d4ac1a1e3778debf77e64d4a28c393d1114444ff5201bc2a3825f",
+      "mirrorSha256": "ecdc05862dee6684440b7c3c3431ef916e3663ebbdd0f589a93d8794d40abe16",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/peter-castle-audience-through-town-return.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/peter-castle-audience-through-town-return.md",
+      "sourceSha256": "5941092ec17cb88c7476827bb6512cac65a5a4c48eaa12e052350826dc160063",
+      "mirrorSha256": "e8a6cd542f6befd94d54c9726cf505b479488df3ec6df9495ff3adba419b4a0f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/phase4-bootstrap-plan.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/phase4-bootstrap-plan.md",
+      "sourceSha256": "894d16d6fc6a07e25c56dc68ff29c646eb617977c1083f140152a3ed026e1e89",
+      "mirrorSha256": "67d9d6941963d4fd21458f53cb66dfa2d88edc54572f74e35308a85346172c65",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-26"
+    },
+    {
+      "source": "docs/design/synthesis/polca-departure-through-luke-recruitment.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md",
+      "sourceSha256": "e10ec5ed6fd674976b6c7f7086ab082bdfdd86240c7c25ba9cc6d2fed350f110",
+      "mirrorSha256": "966d70b841658d840d1fcb20f145e5e3b1f6c0fc720cc028d09f288997d1f134",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/polca-fairy-through-battle12-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-fairy-through-battle12-admission.md",
+      "sourceSha256": "f7b68363bdd7ab31110dfea6447bebff0f2b687fdd13f9a51e77ea23c50ec756",
+      "mirrorSha256": "7984cb976d179f1ff63abea574b6541c2ab8c753b373667b3f838902da6e2637",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/polca-oddler-choice-and-following.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-oddler-choice-and-following.md",
+      "sourceSha256": "0ba918feec27167eea4730c32d9fc7e44f93535f83a0604811d6c7a97539bd2e",
+      "mirrorSha256": "0da261fde9ae1902fac0499d0f9ef4fe191bed03a39da0a783da4830a0a03f4e",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/polca-raft-boarding-through-south-parmecia-entry.md",
+      "sourceSha256": "fe836a737d0980f49fcde8193fc24a3f0bf082ad79b4819350a6e612b15b596f",
+      "mirrorSha256": "dfe46fed246b127966dd58df7aaca2f38782fd88af94588cb75336c7e80f4f6a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/post-tower-return-through-earthquake-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/post-tower-return-through-earthquake-entry.md",
+      "sourceSha256": "ca4216188c98987b2977e1c0bd6831a784c00fb30899723add78b1e3621076c6",
+      "mirrorSha256": "6faf346140ee3b74939d6c1a9b7d59c7fa67e3bd36302e1a265a2684d84a8f5a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/progression-and-economy.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/progression-and-economy.md",
-      "sourceSha256": "7c55556b198b55398657fbc61beafd9a7543238d05c0a83476eeca00fab45f6e",
-      "mirrorSha256": "8213f6e015d164a27d55aba065242007ab9c624208a7506bd09774728295d52d",
+      "sourceSha256": "b1afce8048ec054d1762f268aedac9aee8b88c8f4c95fbc99a15346206e7c8eb",
+      "mirrorSha256": "76993304f1ad7c128ddbb82d1bc34d600aa9732420919e4105bd93c45e929d8f",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/ribble-may-through-battle10-admission.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/ribble-may-through-battle10-admission.md",
+      "sourceSha256": "bf0b373c1208272ce0ea04afb0ca78358250e73372479ec8b9b6189b51a196a7",
+      "mirrorSha256": "c246b2097986e5c28da8dd9c51701c3a697ef2489a81b0cb6bb1a2145222d3d9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/ribble-tree-opening-and-achilles-sword.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/ribble-tree-opening-and-achilles-sword.md",
+      "sourceSha256": "ac132d730f6be22e96ce1aeee5eee69f18bade6870c0e0fd422dcf9571d547ec",
+      "mirrorSha256": "0145797da1f8166fea35d2dfccd1373c473d6957228362070d52e25c5f64712c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/south-parmecia-through-kraken-battle16-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/south-parmecia-through-kraken-battle16-entry.md",
+      "sourceSha256": "8f8f8aa78ce38a931221cf6e27fef0ad169474325cdf354280cece157950a9e0",
+      "mirrorSha256": "293a744cb2b6846b0718947c26570014705ee6379f15d69c421f664f5f206085",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/southwest-parmecia-through-taros-battle18-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/southwest-parmecia-through-taros-battle18-entry.md",
+      "sourceSha256": "c738b11c072a33690ddbde59ef4e1153e7b9358f2b7cfdcdaccab00e6a4a24e5",
+      "mirrorSha256": "80df6f4c632f1ec133ade879136fe2bf734ee230093b11a46f84b0d80504d7fc",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/story-progression.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
-      "sourceSha256": "071993afd3401e53fbdc4f6cd62e4fd9ac29e1b8f78eb31e9b91aef23c003b03",
-      "mirrorSha256": "b610b17e63d3576813fe7337690e702f97d87f91da80f494cb94b7d126b0a6eb",
+      "sourceSha256": "0ffb9ff7e3e4f26b34d61d0d339de7ca7f5a5e8678a53e295f4d5759f77b0a7d",
+      "mirrorSha256": "62b32962ad5229957eeb2886839f9c19fa5b0cd3166fe661924628b0422f3415",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
     },
     {
       "source": "docs/design/synthesis/tactical-battle-loop.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/tactical-battle-loop.md",
-      "sourceSha256": "c4339f9a82fc658964479649d0ffa36a70c764631d0fa89f08eca01b83cccf05",
-      "mirrorSha256": "3ffb74e0261af113b27793e55c794e3a3d0c000575284b804f0151df06027631",
+      "sourceSha256": "bbe50c6f29ea618787051488f16855f86d5fdf51c3224e2db41d21a01372b535",
+      "mirrorSha256": "3983a80850b2bb32f3d0d13cba918d9828617934c9a5134665c5804414973078",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/volcanon-return-through-bedoe-king-choice.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/volcanon-return-through-bedoe-king-choice.md",
+      "sourceSha256": "ac9614fe1594ed8b3fb82d12c09c1ebcd1235b97ad464814b688f93b7cd3eca2",
+      "mirrorSha256": "2d4bd709b22557f678155d5540daae36a8a2d68843983f25615b0fde71c308a4",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/voyage-through-damaged-ship-control.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/voyage-through-damaged-ship-control.md",
+      "sourceSha256": "b3b6952ca0e8fdf68b288c24589c8325b6b8da492124cfec46c0f3a3e1b9dbe6",
+      "mirrorSha256": "03811b45be4444f2a7b2e80d332281681edc4abeca32f8730eed57f8dbdbe0c0",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
+    },
+    {
+      "source": "docs/design/synthesis/willard-burrow-through-battle23-entry.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/willard-burrow-through-battle23-entry.md",
+      "sourceSha256": "f5ee81cc063064bfbd55426a8a0d81496f93cc16f9f7c6bb38084c8e215933c0",
+      "mirrorSha256": "7248b3bcb7613e8ab653d7f3c5e30f5de59246ca92ead4913281d141502611aa",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-10-25"
     }
   ]
 }

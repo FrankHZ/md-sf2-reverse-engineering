@@ -16,8 +16,8 @@ internal static class BattleAdvancer
         var battle = BattleTurnFlow.Start(definition, start);
         List<SessionObservation> observations = [];
         if (start.NewBattle is not null) observations.Add(new(1, 0, "new-battle-initialized"));
-        var result = Advance(new(Guid.NewGuid(), 0, observations.Count, battle,
-            null, SessionStopReason.SimulationWait), observations, rules);
+        var result = Advance(new(Guid.NewGuid(), 0, observations.Count, new ActiveBattle(battle, null),
+            new Exploration.StoryState(start.StoryFlags, partyLists: MapPartyMembership.Rebuild(start.StoryFlags, Content.Scenarios.BattleStoryDefinition.PartyFlags)), SessionStopReason.SimulationWait), observations, rules);
         // A private new-battle entry is one transaction through supported initial control.
         if (start.NewBattle is not null && result.Failure is { } failure)
             throw new BattleRuleException(failure.Code, failure.Field,
@@ -30,7 +30,12 @@ internal static class BattleAdvancer
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
     {
-        if (current.BattleScene is not null || current.BattleMovement is not null)
+        return AdvanceCore(current, observations, rules);
+    }
+
+    private static SessionResult AdvanceCore(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
+    {
+        if (current.BattleRound is not null || current.BattleScene is not null || current.BattleMovement is not null)
             return new(current, observations.AsReadOnly(), SessionStopReason.PresentationWait);
         var battle = current.Battle;
         long revision = current.Revision, sequence = current.ObservationSequence;
@@ -40,36 +45,39 @@ internal static class BattleAdvancer
             try
             {
                 if (BattleOutcomeSelection.Check(rules.Outcome, battle) is not null)
-                    return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait),
+                    return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait),
                         observations.AsReadOnly(), SessionStopReason.SimulationWait);
                 if (BattleTurnFlow.AtRoundEnd(battle))
                 {
-                    var previous = battle;
-                    battle = BattleTurnFlow.GenerateRound(battle, out var generated);
-                    revision++;
-                    if (battle.Regions is { } regions)
-                    {
-                        observations.Add(new(++sequence, revision, "regions-tested", After: regions.Tested));
-                        observations.Add(new(++sequence, revision, "region-program-none"));
-                        observations.Add(new(++sequence, revision, "spawn-modes-admitted"));
-                    }
-                    observations.Add(new(++sequence, revision, "round-started", Before: previous.Round, After: battle.Round));
-                    observations.Add(new(++sequence, revision, "round-rng", Before: previous.MainSeed, After: battle.MainSeed, TurnGeneration: new(
-                        current.SessionId, battle.Round, previous.MainSeed, battle.MainSeed,
-                        Array.AsReadOnly(generated.Candidates.Select(c => new BattleTurnCandidate(c.Actor,
-                            c.ProcessingOrder, c.Placed, c.Hp, c.Agility, c.ExtraRoundAction)).ToArray()),
-                        Array.AsReadOnly(generated.Draws.Select(d => new BattleTurnDraw(d.Actor, d.Turn,
-                            d.Index, d.Range, d.Draw.Before, d.Draw.After, d.Draw.Value)).ToArray()),
-                        Array.AsReadOnly(generated.Unsorted.Select(s => new BattleTurnSlot(s.Actor, s.AlteredAgility)).ToArray()),
-                        Array.AsReadOnly(generated.Slots.Select(s => new BattleTurnSlot(s.Actor, s.AlteredAgility)).ToArray()))));
+                    var prefix = BattleRoundContinuation.Begin(new(current.SessionId, revision, sequence,
+                        new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait), observations);
+                    if (prefix.Failure is not null || prefix.Snapshot.BattleRound is not null) return prefix;
+                    battle = prefix.Snapshot.Battle; revision = prefix.Snapshot.Revision; sequence = prefix.Snapshot.ObservationSequence;
                     continue;
                 }
                 var actor = BattleTurnFlow.QueuedActor(battle);
-                if (actor.Hp == 0)
+                if (actor.Hp == 0 || actor.Position is null)
                 {
-                    battle = BattleTurnFlow.ConsumeEntry(battle); revision++;
+                    if (battle.Definition.LeaderCleanup is not null)
+                    {
+                        var skipped = new SessionSnapshot(current.SessionId, revision, sequence,
+                            new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
+                        var skippedCommit = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
+                        if (skippedCommit.BattleScene is not null) return new(skippedCommit, observations.AsReadOnly(), skippedCommit.StopReason);
+                        battle = skippedCommit.Battle; revision = skippedCommit.Revision; sequence = skippedCommit.ObservationSequence;
+                    }
+                    else { battle = BattleTurnFlow.ConsumeEntry(battle); revision++; }
                     observations.Add(new(++sequence, revision, "dead-entry-skipped", actor.Actor));
                     continue;
+                }
+                if ((actor.Status & 0xC0) != 0)
+                {
+                    var skipped = new SessionSnapshot(current.SessionId, revision, sequence,
+                        new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
+                    observations.Add(new(++sequence, revision, "sleeping-action-skipped", actor.Actor));
+                    skipped = new(current.SessionId, revision, sequence, skipped.Active, current.Story, skipped.StopReason);
+                    var pending = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
+                    return new(pending, observations.AsReadOnly(), pending.StopReason);
                 }
                 if (actor.Control == BattleControl.Player)
                 {
@@ -79,33 +87,42 @@ internal static class BattleAdvancer
                     revision++;
                     observations.Add(new(++sequence, revision, "player-control", actor.Actor));
                     var selection = new BattleSelection(actor.Actor, preview, BattleSelectionStage.Movement);
-                    var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, battle, selection, SessionStopReason.PlayerInput);
+                    var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(battle, selection), current.Story, SessionStopReason.PlayerInput);
                     return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
                 }
-                var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
+                var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
                 if (actor.Control != BattleControl.Automatic || actor.AiStrategy is not { } strategy)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
                 var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression);
-                var delivery = BattleMovementContinuation.BeginAutomatic(beforeAction.WithStory(current.Story), actor.Actor, action, observations, rules);
+                SessionResult delivery;
+                if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || battle.Definition.Poison && actor.Status == 2))
+                {
+                    // Source standby still returns to the post-action hook. It never
+                    // initializes BATTLESCENE_FIRST_ALLY or fabricates a battle scene.
+                    var standby = BattleActionCommitter.Publish(beforeAction.WithStory(current.Story), action.Battle,
+                        actor.Actor, action.Destination, action.Effects, observations, rules);
+                    delivery = new(standby, observations.AsReadOnly(), standby.StopReason);
+                }
+                else delivery = BattleMovementContinuation.BeginAutomatic(beforeAction.WithStory(current.Story), actor.Actor, action, observations, rules);
                 if (delivery.Failure is not null || delivery.Snapshot.BattleMovement is not null || delivery.Snapshot.BattleScene is not null) return delivery;
                 var committed = delivery.Snapshot;
                 battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
             }
             catch (BattlePolicyFault error)
             {
-                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.Faulted),
                     observations.AsReadOnly(), SessionStopReason.Faulted, BattleChoices.Failure(error));
             }
             catch (BattleDecisionRuleFault error)
             {
-                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.Faulted),
                     observations.AsReadOnly(), SessionStopReason.Faulted,
                     new(SessionFailureKind.InvariantFailure, "decision-rule-failure", "rules.decisions",
                         $"{error.Identity}: {error.Operation}"));
             }
             catch (BattleActionRuleFault error)
             {
-                return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.Faulted),
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.Faulted),
                     observations.AsReadOnly(), SessionStopReason.Faulted, BattleChoices.Failure(error));
             }
             catch (BattleRuleException error)
@@ -113,12 +130,12 @@ internal static class BattleAdvancer
                 // Keep the last committed state. A rejected round, control admission or
                 // enemy action cannot publish partial changes or random draws.
                 var reason = error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted;
-                return new(new(current.SessionId, revision, sequence, battle, null, reason), observations.AsReadOnly(), reason,
+                return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, reason), observations.AsReadOnly(), reason,
                     new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.InvariantFailure,
                         error.Code, error.Field, error.Code.Replace('-', ' ')));
             }
         }
-        return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait),
+        return new(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait),
             observations.AsReadOnly(), SessionStopReason.SimulationWait);
     }
 }

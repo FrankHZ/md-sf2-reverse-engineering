@@ -2,8 +2,9 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
-public enum BattleMover { Regular, Healer, Centaur, Hovering }
-public enum BattleRegionProgram { None, Required }
+public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth, Flying }
+public enum BattleRegionProgram { None, Required, Authored }
+public sealed record BattleRegionProgramRow(byte Region, int PlayedFlag, string Program);
 
 // Declared external controlled inputs; these values are not inferred from original entry.
 public sealed record NewBattleStartPolicy(string Declaration, string EvidenceOwner, string BridgeBoundary,
@@ -37,12 +38,22 @@ public sealed class BattleActivationRegion
 public sealed class BattleInitializationDefinition
 {
     internal BattleInitializationDefinition(IEnumerable<BattleActivationRegion> regions, BattleRegionProgram regionProgram,
-        IEnumerable<MapPosition>? allyFormation = null)
-    { Regions = Array.AsReadOnly(regions.ToArray()); RegionProgram = regionProgram;
-        AllyFormation = allyFormation is null ? null : Array.AsReadOnly(allyFormation.ToArray()); }
+        IEnumerable<MapPosition>? allyFormation = null, IEnumerable<MapPosition>? aiPoints = null,
+        IReadOnlyDictionary<int, ActorRef>? sourceCombatants = null, int? enemyCount = null,
+        IEnumerable<BattleRegionProgramRow>? regionPrograms = null)
+    { EnemyCount = enemyCount; Regions = Array.AsReadOnly(regions.ToArray()); RegionProgram = regionProgram;
+        RegionPrograms = Array.AsReadOnly((regionPrograms ?? []).ToArray());
+        AllyFormation = allyFormation is null ? null : Array.AsReadOnly(allyFormation.ToArray());
+        AiPoints = Array.AsReadOnly((aiPoints ?? []).ToArray());
+        SourceCombatants = new System.Collections.ObjectModel.ReadOnlyDictionary<int, ActorRef>(
+            (sourceCombatants ?? new Dictionary<int, ActorRef>()).ToDictionary(row => row.Key, row => row.Value)); }
+    public int? EnemyCount { get; }
     public IReadOnlyList<BattleActivationRegion> Regions { get; }
     public BattleRegionProgram RegionProgram { get; }
+    public IReadOnlyList<BattleRegionProgramRow> RegionPrograms { get; }
     public IReadOnlyList<MapPosition>? AllyFormation { get; }
+    public IReadOnlyList<MapPosition> AiPoints { get; }
+    public IReadOnlyDictionary<int, ActorRef> SourceCombatants { get; }
 }
 
 public sealed class BattleRegionState

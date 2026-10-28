@@ -39,6 +39,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     internal static int LandMultiplier(BattleTerrain terrain, BattleMover mover = BattleMover.Regular)
     {
         if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
+        if (mover == BattleMover.Flying) return 256;
         // Protection is independent of the movement-cost table, including hovering.
         return terrain.Protection switch
         {
@@ -51,7 +52,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     {
         var actor = battle.GetActor(actorRef);
         if (actor.Hp == 0) throw new BattleRuleException("physical-actor", "actor");
-        if (actor.Definition.Physical is not { } physical)
+        if (BattleEquipment.Physical(actor) is not { } physical)
             throw new BattleRuleException("physical-definition", "actor.physical", true);
         if (battle.Definition.Rewards is null)
             throw new BattleRuleException("battle-rewards", "encounter.rewards", true);
@@ -67,7 +68,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             throw new BattleRuleException("physical-target", "target");
         if (target.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
-        var range = battle.GetActor(actorRef).Definition.Physical!;
+        var range = BattleEquipment.Physical(battle.GetActor(actorRef))!;
         if (!BattleRange.Contains(destination, target.Position!, range.MinimumRange, range.MaximumRange))
             throw new BattleRuleException("target-range", "target");
         return target;
@@ -80,11 +81,18 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         _ = RequireActor(current, actorRef);
         var actor = current.GetActor(actorRef);
         var target = RequireTarget(current, actorRef, destination, targetRef);
+        if (!PoisonTurnRules.SupportedPhysicalStatus(actor.Status) || !PoisonTurnRules.SupportedPhysicalStatus(target.Status) ||
+            !current.Definition.Poison && (actor.Status == 2 || target.Status == 2) ||
+            target.Status == 2 && actor.Definition.Physical!.Critical.InflictsSleep ||
+            actor.Status == 2 && target.Definition.Physical!.Critical.InflictsSleep)
+            throw new BattleRuleException("physical-status", "actors.status", true);
         ushort actorHp = actor.Hp, targetHp = target.Hp;
         uint seed = current.MainSeed;
         var effects = new List<BattleEffect>();
         var reactions = new List<BattleReaction>();
+        var inventory = current;
 
+        bool ineffective = current.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         var first = Hit("physical-first", counter: false);
         bool counterRequested = first.CounterRolled;
         if (targetHp > 0 && first.DoubleRolled)
@@ -94,8 +102,9 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             // counter draw does not clear the first success; second-hit death still invalidates it.
             counterRequested |= second.CounterRolled;
         }
-        var counterRange = target.Definition.Physical!;
-        bool counterPerformed = targetHp > 0 && counterRequested &&
+        var counterRange = BattleEquipment.Physical(target)!;
+        bool counterPerformed = targetHp > 0 && counterRequested && (target.Status & 0xC0) == 0 &&
+            !(current.Definition.TarosEffectiveness?.IsTaros(actor) ?? false) &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);
         // No third/double-counter dispatch exists. A surviving counter still consumes its own
@@ -113,7 +122,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         {
             // Only a surviving ally who actually attacked earns an award (including a counter).
             if (ally.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
-            var award = BattleProgressionRules.Award(progression, current.With(mainSeed: seed), ally, BattleActionKind.Physical, reactions.AsReadOnly());
+            var award = BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed),
+                inventory.GetActor(ally.Actor), BattleActionKind.Physical, reactions.AsReadOnly());
             seed = award.Seed;
             effects.AddRange(award.Effects);
             reward = new(ally.Actor, award.Amount);
@@ -129,7 +139,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
         // Admitted equipment changes effective ATT only. Status-free after-turn does not change this snapshot;
         // the second faction check therefore has the same continuing result as the first.
-        var prepared = current.With(actors: current.Actors.Select(a => a.Actor == actorRef
+        var prepared = inventory.With(actors: inventory.Actors.Select(a => a.Actor == actorRef
             ? a.With(position: destination) : a), mainSeed: seed, gold: gold);
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), reward,
             effects.AsReadOnly(), []);
@@ -141,21 +151,26 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             var targetPosition = counter ? destination : target.Position!;
             ushort hp = counter ? actorHp : targetHp;
             var profile = attacker.Definition.Physical!;
+            ushort status = defender.Status;
             var terrain = current.Definition.Terrain[targetPosition.Y * 48 + targetPosition.X];
             // Ground protection is separate from movement cost, including the
             // moved original actor's destination when it becomes the counter's target.
             int multiplier = LandMultiplier(terrain, defender.Definition.Mover);
             var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Defense,
-                hp, multiplier, seed, defender.Definition.Mover == BattleMover.Hovering ? (ushort)8 : (ushort)32,
+                hp, multiplier, seed, defender.Definition.Mover is BattleMover.Hovering or BattleMover.Flying ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
-                profile.Critical.DamageBonusShift, counter);
+                profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC0) != 0,
+                ineffective: !counter && ineffective);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
-                strike.Dodged ? BattleReactionKind.Dodge : BattleReactionKind.Damage,
-                hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical, strike.Damage));
+                strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
+                hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical && !strike.Ineffective, strike.Damage,
+                strike.Dodged || strike.Ineffective ? null : status,
+                strike.SleepInflicted ? (ushort)(status | 0xC0) : null));
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
             if (strike.Dodged) effects.Add(new("dodge", defender.Actor, hp, hp));
+            else if (strike.Ineffective) effects.Add(new("ineffective", defender.Actor, hp, hp));
             else
             {
                 if (strike.Critical) effects.Add(new("critical", attacker.Actor, Target: defender.Actor));
@@ -163,6 +178,13 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             }
             if (counter) actorHp = strike.Hp;
             else targetHp = strike.Hp;
+            // WriteBattlesceneScript calls DropEnemyItem after each effect, before
+            // second/counter dispatch and GiveExpAndGold. HP/status playback is later.
+            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), attacker.Actor,
+                defender.Actor, strike.Hp == 0);
+            inventory = dropped.Battle; seed = inventory.MainSeed;
+            effects.AddRange(dropped.Effects);
+            reactions[^1] = reactions[^1] with { Receipt = dropped.Receipt };
             return strike;
         }
 
@@ -198,6 +220,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         {
             var before = battle.GetActor(reaction.Target);
             battle = action.ApplyReaction(battle, reaction);
+            battle = action.ApplySleep(battle, reaction);
             deaths = deaths.Append(before, battle.GetActor(reaction.Target));
         }
         var reward = action.ApplyReward(battle, progression);

@@ -10,6 +10,8 @@ public enum MapLoadMode { Rebuild, Preserve }
 
 public abstract record StoryInstruction;
 public abstract record SourceStoryInstruction : StoryInstruction;
+public sealed record ConvertBattleActor(int EnemySlot, int AllySlot) : StoryInstruction;
+public sealed record JoinBattleForceAi(int AllySlot, ushort Value) : StoryInstruction;
 public sealed record EndProgram(bool SourceMapScript = false) : StoryInstruction;
 public sealed record JumpProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) : StoryInstruction;
@@ -18,10 +20,13 @@ public sealed record CallProgram(ProgramLocation Target, bool ActivateEntities =
 public sealed record ReturnProgram : StoryInstruction;
 public sealed record ResetPartyBattleStats : StoryInstruction;
 public sealed record ReturnBattleMap : StoryInstruction;
+public sealed record SetEgressMap(MapId Map) : StoryInstruction;
+public sealed record SourceRandomBattle(int Battle, ProgramLocation OnRequest) : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
-    bool WaitForAcknowledgement = true, bool ExplicitWindows = false) : StoryInstruction;
+    bool WaitForAcknowledgement = true, bool ExplicitWindows = false, int? NameMember = null, int? TextId = null,
+    bool Narration = false) : StoryInstruction;
 public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0) : StoryInstruction;
 public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;
@@ -31,6 +36,14 @@ public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
 public sealed record SetEntitySprite(EntityRef Entity, int Sprite) : StoryInstruction;
 public sealed record SetEntityPriority(EntityRef Entity, bool Value) : StoryInstruction;
+public sealed record SetMapEntityAnimation(EntityRef Entity, byte Counter) : StoryInstruction;
+public sealed record AddMapEntity(EntityRef Entity, MapPosition Position, byte Facing, int Sprite,
+    EntityActionProgram Actions) : StoryInstruction;
+public sealed record RestoreMemberResource(int Member, bool Hp) : StoryInstruction;
+public sealed record SetMapQuake(byte Amount) : StoryInstruction;
+public sealed record ReloadSceneMap(MapPosition Camera) : StoryInstruction;
+public sealed record MoveEntityNextToPlayer(EntityRef Entity, byte Direction) : StoryInstruction;
+public sealed record WaitForEntityMotion(EntityRef Entity) : StoryInstruction;
 public sealed record SetEntityPosition(EntityRef Entity, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record SetEntityVisibility(EntityRef Entity, bool Visible) : StoryInstruction;
 public sealed record HideMapEntity(EntityRef Entity, bool RemoveAliases) : StoryInstruction;
@@ -42,17 +55,22 @@ public sealed record LoadSceneEntities(ExplorationPopulation Population, MapPosi
     IReadOnlyList<ExplorationEntityDefinition> Entities) : StoryInstruction;
 public enum EntityScriptInstallation { Preserve, SlotTimer, SlotTimerClearCollision }
 public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Actions, bool Wait,
-    EntityScriptInstallation Installation = EntityScriptInstallation.Preserve) : StoryInstruction;
+    EntityScriptInstallation Installation = EntityScriptInstallation.Preserve,
+    Runtime.Exploration.EntityWaitCompletion? Completion = null) : StoryInstruction;
 public sealed record WaitForEntity(EntityRef Entity) : StoryInstruction;
 public sealed record JoinPartyMember(int Member) : StoryInstruction;
+public abstract record OutcomePartyInstruction(int Member) : StoryInstruction;
+public sealed record ClearOutcomePartyAi(int Member) : OutcomePartyInstruction(Member);
+public sealed record LeaveOutcomeBattleParty(int Member) : OutcomePartyInstruction(Member);
 public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
 public sealed record WaitProgramTicks(int Ticks) : StoryInstruction;
 public sealed record PresentCue(PresentationCueKind Kind, string? Resource = null,
-    EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null) : StoryInstruction;
+    EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null, int? DurationTicks = null) : StoryInstruction;
 // ExecuteFading is synchronous, full-mask black, with one final VInt service.
 // A supplied period is temporary; null consumes the live period.
 public sealed record FullBlackFade(byte? Period = null);
 public sealed record TransferToMap(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode) : StoryInstruction;
+public sealed record QueueMapWarp(MapId Map, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record UnsupportedInstruction(string Opcode, string Source) : StoryInstruction;
 
 public abstract record EntityAction;
@@ -64,6 +82,7 @@ public sealed record WaitEntityTicks(byte Ticks) : EntityAction;
 public sealed record StopEntityActions : EntityAction;
 public sealed record IdleEntityAction : EntityAction;
 public sealed record SetEntitySpeed(ushort X, ushort Y) : EntityAction;
+public sealed record SetEntityAnimationCounter(byte Counter) : EntityAction;
 public sealed record SetEntityAcceleration(byte X, byte Y) : EntityAction;
 public sealed record ChangeEntityFlags(bool FlagsB, byte Mask, byte Value) : EntityAction;
 public sealed record SetGlobalSpriteSize(ushort Size) : EntityAction;

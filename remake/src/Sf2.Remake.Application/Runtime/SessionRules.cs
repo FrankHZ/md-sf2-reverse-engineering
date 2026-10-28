@@ -35,7 +35,7 @@ public sealed class SessionRules
         Outcome = outcome ?? RuleCompositions.SourceOutcome();
         OutcomeReturn = outcomeReturn ?? RuleCompositions.SourceOutcomeReturn();
         SourceStory = sourceStory ?? RuleCompositions.SourceStory();
-        Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), item, stay]);
+        Actions = Array.AsReadOnly<IBattleActionRule>([physical, new HealingAction(healing), new Sf2RetreatAction(), new Sf2.Remake.Domain.Gameplay.Sf2.PrismLaser(), item, stay]);
     }
     internal IBattleProgressionRule Progression { get; }
     internal IBattleOutcomeRule Outcome { get; }
@@ -55,16 +55,19 @@ public sealed class SessionRules
     {
         if (_bindingFailure is { } code) throw new BattleRuleException(code, "rules.decisions", true);
         foreach (var encounter in encounters)
+        {
+            encounter.PrismLaser?.RequireDefinition(encounter);
             foreach (var deployment in encounter.Deployments)
             {
                 BattleTurnFlow.ValidateDeployment(deployment);
-                if (deployment.Control != BattleControl.Automatic) continue;
+                if (deployment.Control != BattleControl.Automatic && !deployment.SourceAllyControl) continue;
                 var rule = Decision(deployment.AiStrategy!.Value);
                 BattleDecisionRules.Invoke(rule, "deployment-admission", () =>
                 { rule.RequireDeployment(deployment); return true; });
                 if (inputs?.FirstOrDefault(input => input.Actor == deployment.Actor) is { } input)
                     RequireStart(deployment, input);
             }
+        }
         return this;
     }
 
@@ -74,7 +77,7 @@ public sealed class SessionRules
 
     internal void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input)
     {
-        if (deployment.Control != BattleControl.Automatic) return;
+        if (deployment.Control != BattleControl.Automatic && !deployment.SourceAllyControl) return;
         var rule = Decision(deployment.AiStrategy!.Value);
         BattleDecisionRules.Invoke(rule, "start-admission", () =>
         { rule.RequireStart(deployment, input); return true; });
@@ -87,7 +90,7 @@ public sealed class SessionRules
         public string Identity => healing.Identity;
         public BattleActionKind Kind => BattleActionKind.Healing;
         public IReadOnlyList<BattleActionOffer> QueryActions(EngineBattleState battle, ActorRef actor) =>
-            Array.AsReadOnly(battle.GetActor(actor).Spells.Select(spell =>
+            Array.AsReadOnly(battle.GetActor(actor).Spells.Where(spell => !battle.Definition.RetreatSpells.ContainsKey(spell)).Select(spell =>
                 new BattleActionOffer(new(Kind, spell), $"{spell.Value.ToUpperInvariant()} {spell.Level}")).ToArray());
         public BattleActionAdmission RequireAction(EngineBattleState battle, ActorRef actor, BattleActionRef action)
         {
@@ -97,7 +100,7 @@ public sealed class SessionRules
             if (!battle.GetActor(actor).Spells.Contains(spellRef) ||
                 !battle.Definition.Spells.TryGetValue(spellRef, out var admitted) || spell != admitted)
                 throw new InvalidOperationException("Invalid admitted spell.");
-            if (spellRef.Level is < 1 or > 3) throw new BattleRuleException("healing-animation", "spell.level", true);
+            if (!spell.IsAura && spellRef.Level is < 1 or > 3) throw new BattleRuleException("healing-animation", "spell.level", true);
             if (battle.GetActor(actor).Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
             return new(spell.MinimumRange, spell.MaximumRange, Spell: spell);
         }

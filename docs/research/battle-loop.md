@@ -56,9 +56,12 @@ candidates are written to `TARGETS_LIST`; a reset carry/failure skips the candid
 
 `BattleLoop` has separate suspended and new-battle entries. A suspended battle restores the saved
 seconds counter, clears flag 88 and AI memory, reloads state, and resumes the individual-turn loop.
-A new battle clears elapsed seconds, runs the before/start cutscenes, clears region flags 90–105,
-heals the living/immortal party, initializes both rosters, and loads the battle. Each round then runs
-enemy activation, the region cutscene, spawn admission/animation, and turn-order generation.
+A new battle clears elapsed seconds, runs the before-battle cutscene, clears region flags 90–105,
+heals the living/immortal party, initializes allies then enemies, clears AI memory, loads the battle,
+and runs the battle-start cutscene. The accepted [exact fresh-entry trace](./battle21-opening-and-initial-roster.md#admission-fresh-entry-and-scene-gates)
+records this order in `code/gameflow/battle/battleloop_1.asm:BattleLoop` at the pinned source baseline.
+Each round then runs enemy activation, the region cutscene, spawn admission/animation, and turn-order
+generation.
 
 After an action, the loop processes deaths and checks both factions before applying after-turn
 effects; it processes deaths and checks both factions again afterward. A `0xFF` turn-order entry

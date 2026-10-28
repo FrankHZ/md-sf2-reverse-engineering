@@ -113,9 +113,24 @@ readable commands. No claim of final visual quality follows from geometry alone.
 
 For physical attack, set `SF2_DIAMOND_CASE=physical`, a fresh output, and use the existing
 `remake/content/authored/stone-court.json` package. For a bounded private menu observation, load
-registered complete private selections, set CASE=`private`, a fresh output, and replace the entry
-with `--private-battle-start $env:SF2_PRIVATE_CONTROLLED_START`. That case checks menu navigation
-and cancel without committing an action; it is not another continuous opening/outcome comparison.
+registered complete private selections, set CASE=`private`, a fresh output, and use
+`--private-exploration-start remake/reference/inputs/battle01-to-battle02-start.json` with its
+accepted connected world and party. The probe acknowledges the ordinary tower before-battle program
+until player battle control. A legacy standalone battle input lacking map-region/field resources is
+not a substitute. That case checks menu navigation and cancel without committing an action; it is
+not another continuous opening/outcome comparison.
+For original-art acceptance, prepare/select the [private command rasters](../content/presentation-assets.md#private-command-menu-icons)
+and set `SF2_DIAMOND_ORIGINAL_ICONS=1`. Require square command rectangles at all five sizes, mounted
+24×24 textures with nearest sampling, and actual draw readback selecting each normal/selected raster
+as focus moves. The observation has a 150-second deadline. These checks establish resource use and
+geometry, not human visual approval.
+Cases `equipment`, `give` and `discard` use the corresponding existing
+`remake/content/authored/battle-<case>.json` packages. They check that each supplementary shortcut
+opens its existing presenter and Cancel returns to the diamond without spending resources. The
+private pilot's older selected content does not supply every supplementary capability.
+For a partial-resource negative check, copy the prepared private scene into another ignored input,
+remove one command-menu raster and select that copy. Set `SF2_DIAMOND_EXPECT_FAILURE` to
+`command-menu-resource-required`; require the field-owned admission failure before battle control.
 Require exit0, `passed:true`, empty failures and clean Godot errors. Preserve failed reports when
 correcting a layout. The public Release adapter build and engine behavior tests are separate gates;
 no tests of this probe or screenshot audit are added.

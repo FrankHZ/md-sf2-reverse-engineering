@@ -75,6 +75,9 @@ public sealed partial class ExplorationSessionView : Control
     private ulong _lastWaitFrame;
     private ExplorationState? _lastWorld;
     private ExplorationPresentation? _presentation;
+    private sealed record AuthoredEntityDraw(int Slot, int? Sprite, float X, float Y, float Radius,
+        ushort Size, bool Visible, long Request, ulong Frame);
+    private readonly Dictionary<int, AuthoredEntityDraw> _authoredDraws = [];
     private SessionAudio? _audio;
     private SessionFailure? PresentationFailure => _result?.Failure ??
         (_presentation?.Error is { } error ? new(SessionFailureKind.AdapterError,
@@ -162,7 +165,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait or MusicWait or ChoiceWait { Work: not null } ||
+        if ((_session.Current.Exploration?.Definition.Caravan is not null || _session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait or MusicWait or ChoiceWait { Work: not null } ||
             _session.Current.Story.TextSettings is not null && _session.Current.Story.Wait is PresentationWait) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
@@ -182,6 +185,12 @@ public sealed partial class ExplorationSessionView : Control
             _dialogue.VisibleCharacters = (int)_revealed;
             SpeakRevealedCharacters(before, _dialogue.VisibleCharacters);
         }
+        if (_session.Current.Exploration is { Definition.Caravan: not null } authored &&
+            _session.Definition.Exploration!.Visuals is null)
+            foreach (var entity in authored.AllEntities.Where(actor => actor.WaitingForSprite && actor.SpriteReady != actor.SpriteRequest))
+                if (_authoredDraws.TryGetValue(entity.Slot, out var draw) && draw.Request == entity.SpriteRequest &&
+                    draw.Sprite == entity.Sprite && draw.Size == entity.RenderSize)
+                    Send(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
         if (_presentation is { } presentation)
         {
             var beforePresentation = _session.Current.Story.Wait?.Token;
@@ -256,7 +265,7 @@ public sealed partial class ExplorationSessionView : Control
     internal void HandleAction(GameAction action)
     {
         if (action != GameAction.Wait) CancelFieldWait();
-        if (_handedOff || !IsVisibleInTree() || _session is null || _session.Current.HasBattleControl || _session.Current.BattleScene is not null || PresentationFailure is not null) return;
+        if (_handedOff || !IsVisibleInTree() || _session is null || SessionPresentationOwner.IsBattle(_session.Current) || PresentationFailure is not null) return;
         var current = _session.Current;
         if (action == GameAction.Wait)
         {
@@ -313,7 +322,8 @@ public sealed partial class ExplorationSessionView : Control
                 var player = world.PlayerEntity;
                 (int x, int y) = player.Motion.Facing switch { 0 => (1, 0), 1 => (0, -1), 2 => (-1, 0), _ => (0, 1) };
                 var target = world.AllEntities.FirstOrDefault(entity => entity.Entity != world.Player && entity.Visible &&
-                    entity.Position.X == player.Position.X + x && entity.Position.Y == player.Position.Y + y);
+                    entity.Motion.X / 384 == player.Motion.X / 384 + x &&
+                    entity.Motion.Y / 384 == player.Motion.Y / 384 + y);
                 if (target is not null) command = new Interact(target.Entity);
             }
         }
@@ -362,7 +372,7 @@ public sealed partial class ExplorationSessionView : Control
                 _result.Observations.Any(row => row.Kind == "text-w2-accepted"))))
             _audio?.PlayEffect(67);
         if (_result.Failure is null)
-            foreach (var sound in _result.Observations.Where(row => row.Kind == "choice-sound"))
+            foreach (var sound in _result.Observations.Where(row => row.Kind is "choice-sound" or "entity-sound"))
                 _audio?.PlayEffect(int.Parse(sound.Detail!, System.Globalization.CultureInfo.InvariantCulture));
         if (_result.Failure is null)
             foreach (var window in _result.Observations.Where(row => row.Kind == "portrait-window-moving"))
@@ -372,7 +382,7 @@ public sealed partial class ExplorationSessionView : Control
         {
             _releaseBattle(); _releaseBattle = null; _battleMounted = false;
         }
-        if (_result.Failure is null && (_session.Current.HasBattleControl || _session.Current.BattleScene is not null))
+        if (SessionPresentationOwner.IsBattle(_session.Current))
         {
             _handedOff = true;
             _enterBattle!(_result);
@@ -493,13 +503,26 @@ public sealed partial class ExplorationSessionView : Control
             {
                 var rectangle = new Rect2(origin + new Vector2((x - left) * cell, (y - top) * cell), new(cell - 1, cell - 1));
                 bool blocked = (world.Layout[x, y] & 0xC000) == 0xC000;
-                DrawRect(rectangle, blocked ? new Color(0.12f, 0.17f, 0.22f) : new Color(0.24f, 0.33f, 0.32f));
+                DrawRect(rectangle, world.Definition.Caravan is not null && (world.Layout[x, y] & 0x3C00) == 0x3800
+                    ? new Color(0.12f, 0.34f, 0.55f) : (world.Layout[x, y] & 0x3C00) == 0x1400
+                    ? new Color(0.3f, 0.55f, 0.25f) : blocked ? new Color(0.12f, 0.17f, 0.22f) : new Color(0.24f, 0.33f, 0.32f));
             }
-        foreach (var entity in world.AllEntities.Where(entity => entity.Visible))
+        _authoredDraws.Clear();
+        foreach (var entity in world.AllEntities)
         {
             var center = origin + new Vector2((entity.Motion.X / 384f - left + 0.5f) * cell,
                 (entity.Motion.Y / 384f - top + 0.5f) * cell);
-            DrawCircle(center, cell * 0.28f, entity.Entity == world.Player ? new Color(0.9f, 0.76f, 0.36f) : new Color(0.44f, 0.7f, 0.9f));
+            float radius = cell * 0.28f * entity.RenderSize / 24f;
+            bool visible = entity.Visible && entity.Motion.X >= left * 384 && entity.Motion.X <= right * 384 &&
+                entity.Motion.Y >= top * 384 && entity.Motion.Y <= bottom * 384;
+            _authoredDraws[entity.Slot] = new(entity.Slot, entity.Sprite, center.X, center.Y, radius,
+                entity.RenderSize, visible, entity.SpriteRequest, Engine.GetProcessFrames());
+            if (!visible) continue;
+            var color = entity.Entity == world.Player ? new Color(0.9f, 0.76f, 0.36f) : new Color(0.44f, 0.7f, 0.9f);
+            if (entity.Sprite == 62) DrawRect(new(center - new Vector2(radius, radius * 0.7f), new Vector2(radius * 2, radius * 1.4f)), new Color(0.65f, 0.4f, 0.2f));
+            else DrawCircle(center, radius, color);
+            var facing = entity.Motion.Facing switch { 0 => Vector2.Right, 1 => Vector2.Up, 2 => Vector2.Left, _ => Vector2.Down };
+            DrawLine(center, center + facing * radius, Colors.White, 2);
         }
     }
 
@@ -723,6 +746,7 @@ public sealed partial class ExplorationSessionView : Control
             mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,
             battleMounted = _battleMounted,
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
+            itemCustody = current?.Exploration?.Party.ItemCustody,
             admittedParty = full && current?.Exploration is { } world ? new
             {
                 package = _session!.Definition.Package, origin = _session.Definition.Origin,
@@ -749,9 +773,13 @@ public sealed partial class ExplorationSessionView : Control
                     }),
                 }),
             } : null,
+            travelMode = current?.Exploration?.TravelMode.ToString(), currentEntities = current?.Exploration?.CurrentEntities,
+            authoredDraws = _authoredDraws.Values,
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
             continuation = current?.Story.Continuation.ToString(), enteringBattle = current?.Story.EnteringBattle, callers = current?.Story.Callers,
+            stepCounter = current?.Story.StepCounter, battleRequest = current?.Story.BattleRequest,
+            egressMap = current?.Story.EgressMap?.Value, thinkingSeed = current?.Exploration?.Party.ThinkingSeed,
             display = current?.Story.Display, fade = current?.Story.Wait as FullFadeWait,
             warp = current?.Story.Warp, loadServices = (current?.Story.Wait as WarpLoadWait)?.Remaining,
             tickDebt = _tickTime, failureVisible = _failureLabel.Visible,
@@ -780,7 +808,7 @@ public sealed partial class ExplorationSessionView : Control
             entities = current?.Exploration?.AllEntities.Select(entity => new
             {
                 id = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite, facing = entity.Motion.Facing,
-                priority = entity.Priority,
+                priority = entity.Priority, renderSize = entity.RenderSize,
                 follower = entity.Follower, spriteRequest = entity.SpriteRequest, spriteReady = entity.SpriteReady, waitingForSprite = entity.WaitingForSprite,
                 x = entity.Motion.X, y = entity.Motion.Y,
                 targetX = entity.Motion.XDestination, targetY = entity.Motion.YDestination,

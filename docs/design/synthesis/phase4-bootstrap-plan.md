@@ -7,7 +7,7 @@
 - Layer: **Layer B design synthesis** over accepted architecture and readiness boundaries
 - Scope: historical pre-start proposal for Phase 4 project topology, bootstrap admission, CLI gates,
   observation ports, profile separation, and implementation-start checklist
-- Readiness effect: **none**; the Map 3 to Battle 01 ledger remains **NOT READY** for eventual milestone acceptance
+- Readiness effect: **none**; current milestone acceptance belongs to the [readiness ledger](map3-battle01-readiness.md#accepted-current-milestone)
 
 ## Current Reading Route
 
@@ -26,10 +26,17 @@ Use these accepted owners instead:
 - [development and verification](../../../remake/docs/development-and-verification.md) for current
   toolchain selection and scope-dependent checks, rather than the proposed gate/test inventory below.
 
-These implementation owners do not supply original-game evidence or close the
-[readiness ledger](map3-battle01-readiness.md). It remains **NOT READY** for complete continuous
-8C/H4 milestone acceptance. The remainder is a historical record, subordinate to current accepted
-ADRs and owning documents wherever they differ.
+These implementation owners do not supply original-game evidence. The
+[readiness ledger](map3-battle01-readiness.md#accepted-current-milestone) owns the independently
+accepted current private continuous milestone at the composed 8D/H4 boundary; the
+[continuous-scenario contract](../contracts/map3-battle01-continuous-scenario.md) owns its comparison
+rules and retained evidence limits. [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
+replaces hardware-exact 8C with 8D, and its
+[modern-clock amendment](../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
+controls affected historical comparisons. Historical failures, Unknowns and report verdicts remain
+unchanged. The remainder, beginning with Judgment Boundary, preserves the proposal at its original
+audit base, including its readiness, timing and registration assertions; current accepted owners
+control wherever they differ.
 
 ## Judgment Boundary
 

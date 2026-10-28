@@ -19,7 +19,10 @@ internal static class ExplorationContentReader
             else if (value == "{W1}") tokens.Add(new(ExplorationTextTokenKind.Wait1, value));
             else if (value == "{W2}") tokens.Add(new(ExplorationTextTokenKind.Wait2, value));
             else if (value == "{D1}") tokens.Add(new(ExplorationTextTokenKind.Delay1, value));
+            else if (value == "{CLEAR}") tokens.Add(new(ExplorationTextTokenKind.Clear, value));
             else if (value == "{LEADER}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value, 0));
+            else if (value == "{NAME}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value));
+            else if (value == "{CLASS}") tokens.Add(new(ExplorationTextTokenKind.ClassName, value));
             else if (value.StartsWith("{NAME;", StringComparison.Ordinal) && value.EndsWith('}') &&
                 int.TryParse(value.AsSpan(6, value.Length - 7), System.Globalization.NumberStyles.None,
                     System.Globalization.CultureInfo.InvariantCulture, out int member))
@@ -34,17 +37,14 @@ internal static class ExplorationContentReader
     {
         Object(root, "document", "formatVersion", "package", "battle", "world", "start");
         _ = Number(root, "formatVersion", 8, 8);
-        var battle = AuthoredScenarioPackageReader.DecodeBattle(root.GetProperty("battle"));
+        var battle = AuthoredScenarioPackageReader.DecodeBattle(root.GetProperty("battle"), allowLeaderCleanup: true);
+        Require(battle.Definition.BattleStory is null, "world-battle-story", "battle.battleStory", true);
         return Read(Id(root, "package"), root.GetProperty("world"), root.GetProperty("start"), battle, authored: true);
     }
 
     internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null, bool authored = false)
     {
-        ObjectOptional(world, "world", "partyFlags", ["maps", "programs", "texts",
-            .. world.TryGetProperty("textFont", out _) ? new[] { "textFont" } : System.Array.Empty<string>(),
-            .. world.TryGetProperty("growth", out _) ? new[] { "growth" } : System.Array.Empty<string>(),
-            .. world.TryGetProperty("memberNames", out _) ? new[] { "memberNames" } : System.Array.Empty<string>(),
-            .. world.TryGetProperty("presentation", out _) ? new[] { "presentation" } : System.Array.Empty<string>()]);
+        ObjectOptional(world, "world", ["maps", "programs", "texts"], "partyFlags", "textFont", "growth", "memberNames", "presentation");
         MapPartyFlagLayout? partyFlags = null;
         if (world.TryGetProperty("partyFlags", out var membership))
         {
@@ -65,8 +65,7 @@ internal static class ExplorationContentReader
         var programIds = new HashSet<string>();
         foreach (var row in Array(world, "programs"))
         {
-            ObjectOptional(row, "program", "source", ["id", "instructions",
-                .. row.TryGetProperty("entitiesRunning", out _) ? new[] { "entitiesRunning" } : System.Array.Empty<string>()]);
+            ObjectOptional(row, "program", ["id", "instructions"], "source", "entitiesRunning");
             string id = Id(row, "id");
             Require(programIds.Add(id), "duplicate-program", "program.id");
             var instructions = Array(row, "instructions").Select(ReadInstruction).ToArray();
@@ -76,6 +75,7 @@ internal static class ExplorationContentReader
             programs.Add(new(id, instructions, row.TryGetProperty("source", out _) ? Text(row, "source") : null,
                 !row.TryGetProperty("entitiesRunning", out _) || Boolean(row, "entitiesRunning")));
         }
+        Require(start.ValueKind == JsonValueKind.Object, "object-required", "exploration-start");
         var paletteBindings = new Dictionary<MapId, PalettePair>();
         if (start.TryGetProperty("mapPalettes", out _))
             foreach (var binding in Array(start, "mapPalettes"))
@@ -88,11 +88,8 @@ internal static class ExplorationContentReader
         var mapIds = new HashSet<MapId>();
         foreach (var row in Array(world, "maps"))
         {
-            ObjectOptional(row, "map", "input", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup",
-                .. row.TryGetProperty("basePalette", out _) ? new[] { "basePalette" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("population", out _) ? new[] { "population" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("entryFlags", out _) ? new[] { "entryFlags" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("layoutEvents", out _) ? new[] { "layoutEvents" } : System.Array.Empty<string>()]);
+            ObjectOptional(row, "map", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup"],
+                "input", "setups", "caravan", "battles", "basePalette", "population", "entryFlags", "layoutEvents");
             var id = new MapId(Id(row, "id"));
             Require(mapIds.Add(id), "duplicate-map", "world.maps");
             PalettePair? palette = null;
@@ -117,27 +114,20 @@ internal static class ExplorationContentReader
                 }
             var areas = Array(row, "areas").Select(area =>
             {
-                ObjectOptional(area, "area", "overlay", ["minX", "minY", "maxX", "maxY",
-                    .. area.TryGetProperty("view", out _) ? new[] { "view" } : System.Array.Empty<string>()]);
+                ObjectOptional(area, "area", ["minX", "minY", "maxX", "maxY"], "overlay", "view");
                 int minX = Number(area, "minX", 0, width - 1), minY = Number(area, "minY", 0, rows.Length - 1);
                 return new OriginalMapTraversalArea(minX, minY, Number(area, "maxX", minX, width - 1), Number(area, "maxY", minY, rows.Length - 1));
             }).ToArray();
             Require(areas.Length > 0 && areas.Distinct().Count() == areas.Length, "map-areas", "map.areas");
             var entities = ReadEntities(row);
             var events = Array(row, "events").Select(ReadEvent).ToArray();
-            var route = row.GetProperty("battle");
-            ExplorationBattleRoute? encounter = null;
-            if (route.ValueKind != JsonValueKind.Null)
-            {
-                ObjectOptional(route, "battle-route", "load", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start",
-                    .. route.TryGetProperty("outcome", out _) ? new[] { "outcome" } : System.Array.Empty<string>()]);
-                string encounterId = Id(route, "encounter");
-                Require(battle.Definition.Encounters.ContainsKey(encounterId), "missing-encounter", "map.battle");
-                encounter = new(encounterId, NullableNumber(route, "unlockedFlag", 65535), NullableNumber(route, "completedFlag", 65535),
-                    NullableNumber(route, "introFlag", 65535), Location(route.GetProperty("before")), Location(route.GetProperty("start")),
-                    route.TryGetProperty("load", out var load) ? Location(load) : null,
-                    route.TryGetProperty("outcome", out var outcome) ? ReadOutcome(outcome, id) : null);
-            }
+            var routes = row.TryGetProperty("battles", out _)
+                ? Array(row, "battles").Select(route => ReadBattleRoute(route, battle, id)).ToArray()
+                : row.GetProperty("battle").ValueKind == JsonValueKind.Null ? [] : new[] { ReadBattleRoute(row.GetProperty("battle"), battle, id) };
+            Require(!row.TryGetProperty("battles", out _) || row.GetProperty("battle").ValueKind == JsonValueKind.Null && routes.Length > 0,
+                "battle-route-authority", "map.battles");
+            Require(routes.Select(route => route.Encounter).Distinct().Count() == routes.Length, "duplicate-route", "map.battles");
+            ExplorationBattleRoute? encounter = routes.FirstOrDefault();
             MapSetupRoute? setupRoute = null;
             var setup = row.GetProperty("setup");
             if (setup.ValueKind != JsonValueKind.Null)
@@ -156,6 +146,19 @@ internal static class ExplorationContentReader
                 population = ReadPopulation(populationRow);
                 Require(entities.All(entity => entity.Sprite is not null), "population-sprites", "map.entities");
             }
+            var setups = new List<ExplorationSetupDefinition>();
+            if (row.TryGetProperty("setups", out _))
+                foreach (var variant in Array(row, "setups"))
+                {
+                    Object(variant, "map.setup.content", "id", "entities", "events", "onLoad", "input", "population");
+                    var key = new MapSetupId(Id(variant, "id"));
+                    Require(setupRoute is not null && setupRoute.FlagAlternatives.Any(value => value.Setup == key),
+                        "unknown-setup", "map.setups");
+                    Require(setups.All(value => value.Id != key), "duplicate-setup", "map.setups");
+                    setups.Add(new(key, ReadEntities(variant), Array(variant, "events").Select(ReadEvent).ToArray(),
+                        Location(variant.GetProperty("onLoad")), Location(variant.GetProperty("input")),
+                        ReadPopulation(variant.GetProperty("population"))));
+                }
             maps.Add(new(id, new(words), new(areas), entities, events, Location(row.GetProperty("onLoad")), encounter, row.TryGetProperty("input", out var input) ? Location(input) : null, setupRoute, population, row.TryGetProperty("layoutEvents", out var layoutEvents) ? ReadLayoutEvents(layoutEvents) : null, Array(row, "areas").Select(area =>
                 {
                     if (!area.TryGetProperty("overlay", out var offset)) return new MapOverlayOffset(0, 0);
@@ -165,10 +168,12 @@ internal static class ExplorationContentReader
                 {
                     Object(flag, "entryFlag", "flag", "value");
                     return new WriteFlag(Number(flag, "flag", 0, 65535), Boolean(flag, "value"));
-                }) : null, palette, Array(row, "areas").Where(area => area.TryGetProperty("view", out _)).Select(ReadViewArea)));
+                }) : null, palette, Array(row, "areas").Where(area => area.TryGetProperty("view", out _)).Select(ReadViewArea), setups, routes, row.TryGetProperty("caravan", out var caravan)
+                    ? CaravanContentReader.Read(caravan, entities, new(Id(start, "player")), battle) : null));
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
+        CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
             world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation) : null,
             world.TryGetProperty("memberNames", out _) ? Array(world, "memberNames").Select(name =>
@@ -178,12 +183,8 @@ internal static class ExplorationContentReader
             }) : null, texts.Select(pair => new KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>(pair.Key, ReadTextTokens(pair.Value))),
             world.TryGetProperty("textFont", out var font) ? ReadFont(font) : null);
         Link(definition);
-        Object(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags",
-            .. start.TryGetProperty("textSettings", out _) ? new[] { "textSettings" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("display", out _) ? new[] { "display" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("mapPalettes", out _) ? new[] { "mapPalettes" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("program", out _) ? new[] { "program" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("entityPhases", out _) ? new[] { "entityPhases" } : System.Array.Empty<string>()]);
+        ObjectOptional(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags"],
+            "textSettings", "display", "mapPalettes", "program", "entityPhases");
         var selectedMap = new MapId(Id(start, "map"));
         Require(definition.Maps.ContainsKey(selectedMap), "missing-map", "start.map");
         var entityPhases = start.TryGetProperty("entityPhases", out _) ? Array(start, "entityPhases").Select(phase =>
@@ -205,17 +206,17 @@ internal static class ExplorationContentReader
         Require(flags.Distinct().Count() == flags.Length, "duplicate-flag", "start.flags");
         ProgramLocation? entryProgram = start.TryGetProperty("program", out var entry) ? Location(entry) : null;
         if (entryProgram is { } programEntry)
-            Require(programEntry.Instruction == 0 && definition.Programs.ContainsKey(programEntry.Program),
+            Require(programEntry.Instruction == 0 && definition.Programs.ContainsKey(programEntry.Program) &&
+                programEntry.Program is not (Application.Runtime.Exploration.CaravanPrograms.Boarding or Application.Runtime.Exploration.CaravanPrograms.Landing),
                 "program-entry", "start.program");
         var encounters = (world.TryGetProperty("growth", out var growth)
             ? authored ? BattleGrowthReader.BindAuthored(growth, battle.Definition) : BattleGrowthReader.Bind(growth, battle.Definition)
             : battle.Definition.Encounters.Values).ToArray();
-        foreach (var map in maps.Where(map => map.Battle?.Outcome is not null))
+        foreach (var route in maps.SelectMany(map => map.Battles).Where(route => route.Outcome is not null))
         {
             Require(authored ? provenance is null && battle.Definition.PrivateDefinitions is null :
                 battle.Definition.PrivateDefinitions is { Encounter.Scene.EnemyLeaderPresent: false },
                 "outcome-source", "map.battle.outcome", true);
-            var route = map.Battle!;
             Require(definition.Programs[route.Outcome!.DefeatedProgram.Program].Instructions.All(instruction => instruction is EndProgram or ReturnProgram),
                 "defeated-program", "map.battle.outcome.defeated", true);
             int index = System.Array.FindIndex(encounters, encounter => encounter.Encounter == route.Encounter);
@@ -227,7 +228,7 @@ internal static class ExplorationContentReader
             Require(leader is not null && firstEnemy is not null, "outcome-roster", "map.battle.outcome");
             if (authored)
             {
-                Require(encounter.Deployments.All(row => row.Faction != BattleFaction.Enemy || row.Definition.Physical?.Leader != true),
+                Require(encounter.LeaderCleanup is not null || encounter.Deployments.All(row => row.Faction != BattleFaction.Enemy || row.Definition.Physical?.Leader != true),
                     "outcome-enemy-leader", "map.battle.outcome", true);
                 Require(partyFlags is not null && route.Outcome.JoinMember < partyFlags.MemberCount,
                     "outcome-join-member", "map.battle.outcome.joinMember");
@@ -237,9 +238,24 @@ internal static class ExplorationContentReader
                     "outcome-egress", "map.battle.outcome.egress");
             }
             encounters[index] = new(encounter.Encounter, encounter.Map, encounter.Width, encounter.Height, encounter.Terrain,
-                encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, firstEnemy!.Actor), encounter.HealingItems.Values);
+                encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor), encounter.HealingItems.Values,
+                encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness, encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser);
         }
-        return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes),
+        foreach (var operation in programs.SelectMany(p => p.Instructions).OfType<OutcomePartyInstruction>())
+        {
+            Require(authored && partyFlags == new MapPartyFlagLayout(30, 0, 32, 12),
+                "outcome-party-layout", "world.partyFlags", true);
+            var bindings = encounters.SelectMany(e => e.Deployments)
+                .Where(d => d.Faction == BattleFaction.Ally && d.Initialization?.AllyPartyMember == operation.Member)
+                .Select(d => d.Actor).Distinct().ToArray();
+            Require(bindings.Length == 1, "outcome-party-member", "program.member");
+            Require(battle.Start.Actors.Any(a => a.Actor == bindings[0] && a.ActivationWord is not null),
+                "outcome-party-start", "battle.start.actors");
+        }
+        Require(encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
+            "leader-cleanup-outcome", "encounter.leaderCleanup", true);
+        return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
+                battle.Definition.EncounterStarts.Values, battle.Definition.EncounterScenes.Values),
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
                 (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases,
                 start.TryGetProperty("display", out var display) ? ReadDisplay(display) : null,
@@ -319,15 +335,27 @@ internal static class ExplorationContentReader
             (byte)Number(row, "animationCounter", 0, 255), (byte)Number(row, "waitTimer", 0, 255));
     }
 
+    private static ExplorationBattleRoute ReadBattleRoute(JsonElement route, ScenarioReadAccepted battle, MapId map)
+    {
+        ObjectOptional(route, "battle-route", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start"], "load", "outcome");
+        string encounter = Id(route, "encounter");
+        Require(battle.Definition.Encounters.ContainsKey(encounter), "missing-encounter", "map.battle");
+        return new(encounter, NullableNumber(route, "unlockedFlag", 65535), NullableNumber(route, "completedFlag", 65535),
+            NullableNumber(route, "introFlag", 65535), Location(route.GetProperty("before")), Location(route.GetProperty("start")),
+            route.TryGetProperty("load", out var load) ? Location(load) : null,
+            route.TryGetProperty("outcome", out var outcome) ? ReadOutcome(outcome, map) : null);
+    }
+
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
     {
-        Object(row, "outcome", "after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress");
-        // Non-empty defeated programs and enemy-leader cleanup need their own supported seam.
+        ObjectOptional(row, "outcome", "battleOrigin", "after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress");
+        // Nonempty defeated programs remain unsupported; admitted leader cleanup uses its finite binding.
         var egress = row.GetProperty("egress");
         Object(egress, "egress", "map", "position", "facing");
         return new(Required("after"), Number(row, "joinMember", 0, 29),
             Required("defeated"), Required("defeat"), Required("return"), battleMap,
-            (byte)Number(row, "victoryFacing", 0, 3), new(Id(egress, "map")), Position(egress.GetProperty("position")), (byte)Number(egress, "facing", 0, 3));
+            (byte)Number(row, "victoryFacing", 0, 3), new(Id(egress, "map")), Position(egress.GetProperty("position")), (byte)Number(egress, "facing", 0, 3),
+            row.TryGetProperty("battleOrigin", out var origin) ? Position(origin) : null);
         ProgramLocation Required(string name)
         {
             var value = Location(row.GetProperty(name));
@@ -340,8 +368,7 @@ internal static class ExplorationContentReader
     {
         var entities = Array(row, "entities").Select(entity =>
         {
-            ObjectOptional(entity, "entity", "sprite", ["id", "position", "facing", "speed", "visible", "obstruction",
-                .. entity.TryGetProperty("actions", out _) ? new[] { "actions" } : System.Array.Empty<string>()]);
+            ObjectOptional(entity, "entity", ["id", "position", "facing", "speed", "visible", "obstruction"], "sprite", "actions");
             return new ExplorationEntityDefinition(new(Id(entity, "id")), Position(entity.GetProperty("position")),
                 (byte)Number(entity, "facing", 0, 7), (ushort)Number(entity, "speed", 1, 384),
                 Boolean(entity, "visible"), Boolean(entity, "obstruction"), entity.TryGetProperty("sprite", out _) ? Number(entity, "sprite", 0, 255) : null,
@@ -421,7 +448,7 @@ internal static class ExplorationContentReader
             Object(row, "event", ["kind", "x", "y", "program", "marker", "requiredFlag", "requiredValue",
                 .. kind == "source-zone" ? new[] { "actions" } : System.Array.Empty<string>()]);
             return new(kind == "source-zone" ? ExplorationEventKind.SourceZone : kind == "step" ? ExplorationEventKind.Step : ExplorationEventKind.Warp,
-                NullableNumber(row, "x", 63), NullableNumber(row, "y", 63), null,
+                NullableNumber(row, "x", 255), NullableNumber(row, "y", 255), null,
                 RequiredLocation(row.GetProperty("program")), RequiredMarker: (ushort?)NullableNumber(row, "marker", 0x3C00),
                 RequiredFlag: NullableNumber(row, "requiredFlag", 65535), RequiredFlagValue: Boolean(row, "requiredValue"),
                 SourceInit: kind == "source-zone" ? Actions(row) : null);
@@ -436,14 +463,23 @@ internal static class ExplorationContentReader
             LoadMode: mode == "preserve" ? MapLoadMode.Preserve : MapLoadMode.Rebuild);
     }
 
-    private static StoryInstruction ReadInstruction(JsonElement row)
+    internal static StoryInstruction ReadInstruction(JsonElement row)
     {
         string opcode = Text(row, "op");
         switch (opcode)
         {
+            case "convert-battle-actor":
+                Object(row, opcode, "op", "enemySlot", "allySlot");
+                return new ConvertBattleActor(Number(row, "enemySlot", 128, 159), Number(row, "allySlot", 0, 29));
+            case "join-force-ai":
+                Object(row, opcode, "op", "allySlot", "value");
+                return new JoinBattleForceAi(Number(row, "allySlot", 0, 29), (ushort)Number(row, "value", 0, 65535));
             case "end": Object(row, opcode, "op"); return new EndProgram();
             case "end-map-script": Object(row, opcode, "op"); return new EndProgram(true);
             case "return": Object(row, opcode, "op"); return new ReturnProgram();
+            case "egress-map": Object(row, opcode, "op", "map"); return new SetEgressMap(new(Id(row, "map")));
+            case "source-random-battle": Object(row, opcode, "op", "battle", "onRequest");
+                return new SourceRandomBattle(Number(row, "battle", 0, 43), RequiredLocation(row.GetProperty("onRequest")));
             case "reset-party-battle-stats": Object(row, opcode, "op"); return new ResetPartyBattleStats();
             case "battle-return-map": Object(row, opcode, "op"); return new ReturnBattleMap();
             case "retired-map3-entity-scratch": Object(row, opcode, "op"); return new RetiredMap3EntityScratch();
@@ -462,17 +498,20 @@ internal static class ExplorationContentReader
                     (short)Number(row, "y", short.MinValue, short.MaxValue), Boolean(row, "whenEqual"), RequiredLocation(row.GetProperty("target")));
             case "text-cursor": Object(row, opcode, "op", "text"); return new SetTextCursor(Number(row, "text", 0, 65534));
             case "show-text":
-                ObjectOptional(row, opcode, "speakerFlags", ["op", "mode", "speaker",
-                    .. row.TryGetProperty("explicitWindows", out _) ? new[] { "explicitWindows" } : System.Array.Empty<string>(),
-                    .. row.TryGetProperty("waitForAcknowledgement", out _) ? new[] { "waitForAcknowledgement" } : System.Array.Empty<string>(),
-                    .. row.TryGetProperty("useEventSpeaker", out _) ? new[] { "useEventSpeaker" } : System.Array.Empty<string>()]);
+                ObjectOptional(row, opcode, ["op", "mode", "speaker"],
+                    "speakerFlags", "nameMember", "text", "explicitWindows", "waitForAcknowledgement", "narration", "useEventSpeaker");
                 string mode = Text(row, "mode"); Require(mode is "single" or "continued", "text-mode", "program.mode");
+                bool narration = row.TryGetProperty("narration", out _) && Boolean(row, "narration");
+                Require(!narration || row.GetProperty("speaker").ValueKind == JsonValueKind.Null &&
+                    (!row.TryGetProperty("useEventSpeaker", out _) || !Boolean(row, "useEventSpeaker")), "narration-speaker", "program.text");
                 return new ShowText(mode == "single" ? TextDisplayMode.Single : TextDisplayMode.Continued,
                     row.GetProperty("speaker").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "speaker")),
                     row.TryGetProperty("speakerFlags", out _) ? (byte)Number(row, "speakerFlags", 0, 255) : (byte)0,
                     row.TryGetProperty("useEventSpeaker", out _) && Boolean(row, "useEventSpeaker"),
                     !row.TryGetProperty("waitForAcknowledgement", out _) || Boolean(row, "waitForAcknowledgement"),
-                    row.TryGetProperty("explicitWindows", out _) && Boolean(row, "explicitWindows"));
+                    row.TryGetProperty("explicitWindows", out _) && Boolean(row, "explicitWindows"),
+                    row.TryGetProperty("nameMember", out _) ? Number(row, "nameMember", 0, 29) : null,
+                    row.TryGetProperty("text", out _) ? Number(row, "text", 0, 65535) : null, narration);
             case "open-portrait":
                 Object(row, opcode, "op", "entity", "flags");
                 return new OpenPortrait(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")),
@@ -490,6 +529,22 @@ internal static class ExplorationContentReader
                 return new SetEntityFacing(new(Id(row, "entity")), (byte)Number(row, "facing", 0, 7),
                     row.TryGetProperty("refreshSprite", out _) && Boolean(row, "refreshSprite"));
             case "priority": Object(row, opcode, "op", "entity", "value"); return new SetEntityPriority(new(Id(row, "entity")), Boolean(row, "value"));
+            case "entity-animation":
+                Object(row, opcode, "op", "entity", "counter");
+                return new SetMapEntityAnimation(new(Id(row, "entity")), (byte)Number(row, "counter", 0, 255));
+            case "new-entity":
+                Object(row, opcode, "op", "entity", "position", "facing", "sprite", "actions");
+                return new AddMapEntity(new(Id(row, "entity")), Position(row.GetProperty("position")),
+                    (byte)Number(row, "facing", 0, 3), Number(row, "sprite", 30, 255), Actions(row));
+            case "restore-member-resource":
+                Object(row, opcode, "op", "member", "hp");
+                return new RestoreMemberResource(Number(row, "member", 0, 29), Boolean(row, "hp"));
+            case "quake": Object(row, opcode, "op", "amount"); return new SetMapQuake((byte)Number(row, "amount", 0, 255));
+            case "reload-scene-map": Object(row, opcode, "op", "camera"); return new ReloadSceneMap(Position(row.GetProperty("camera")));
+            case "move-next-to-player":
+                Object(row, opcode, "op", "entity", "direction");
+                return new MoveEntityNextToPlayer(new(Id(row, "entity")), (byte)Number(row, "direction", 0, 3));
+            case "wait-motion": Object(row, opcode, "op", "entity"); return new WaitForEntityMotion(new(Id(row, "entity")));
             case "position":
                 Object(row, opcode, "op", "entity", "position", "facing");
                 return new SetEntityPosition(new(Id(row, "entity")), Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 7));
@@ -515,6 +570,10 @@ internal static class ExplorationContentReader
                     installation = Enum.Parse<EntityScriptInstallation>(Text(row, "installation"));
                 }
                 return new StartEntityMotion(new(Id(row, "entity")), Actions(row), Boolean(row, "wait"), installation);
+            case "clear-outcome-party-ai":
+                Object(row, opcode, "op", "member"); return new ClearOutcomePartyAi(Number(row, "member", 0, 29));
+            case "leave-outcome-battle-party":
+                Object(row, opcode, "op", "member"); return new LeaveOutcomeBattleParty(Number(row, "member", 0, 29));
             case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255));
             case "follow":
                 Object(row, opcode, "op", "entity", "leader", "x", "y");
@@ -522,7 +581,7 @@ internal static class ExplorationContentReader
             case "wait-entity": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Id(row, "entity")));
             case "wait-ticks": Object(row, opcode, "op", "ticks"); return new WaitProgramTicks(Number(row, "ticks", 0, 65535));
             case "present":
-                ObjectOptional(row, opcode, "fullBlack", "op", "kind", "resource", "entity", "position");
+                ObjectOptional(row, opcode, ["op", "kind", "resource", "entity", "position"], "fullBlack", "durationTicks");
                 Require(Enum.GetNames<PresentationCueKind>().Contains(Text(row, "kind")), "presentation-cue", "program.kind", true);
                 FullBlackFade? fullBlack = null;
                 if (row.TryGetProperty("fullBlack", out var full))
@@ -534,7 +593,11 @@ internal static class ExplorationContentReader
                 }
                 return new PresentCue(Enum.Parse<PresentationCueKind>(Text(row, "kind")), row.GetProperty("resource").ValueKind == JsonValueKind.Null ? null : Text(row, "resource"),
                     row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")),
-                    row.GetProperty("position").ValueKind == JsonValueKind.Null ? null : Position(row.GetProperty("position")), fullBlack);
+                    row.GetProperty("position").ValueKind == JsonValueKind.Null ? null : Position(row.GetProperty("position")), fullBlack,
+                    row.TryGetProperty("durationTicks", out _) ? Number(row, "durationTicks", 1, 65535) : null);
+            case "queue-warp":
+                Object(row, opcode, "op", "map", "position", "facing");
+                return new QueueMapWarp(new(Id(row, "map")), Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 3));
             case "transfer":
                 Object(row, opcode, "op", "map", "position", "facing", "loadMode");
                 string loadMode = Text(row, "loadMode"); Require(loadMode is "rebuild" or "preserve", "map-load-mode", "program.loadMode", true);
@@ -563,6 +626,7 @@ internal static class ExplorationContentReader
                 case "face": Object(action, opcode, "op", "facing"); actions.Add(new FaceEntity((byte)Number(action, "facing", 0, 7))); break;
                 case "wait": Object(action, opcode, "op", "ticks"); actions.Add(new WaitEntityTicks((byte)Number(action, "ticks", 0, 255))); break;
                 case "speed": Object(action, opcode, "op", "x", "y"); actions.Add(new SetEntitySpeed((ushort)Number(action, "x", 0, 384), (ushort)Number(action, "y", 0, 384))); break;
+                case "animation-counter": Object(action, opcode, "op", "counter"); actions.Add(new SetEntityAnimationCounter((byte)Number(action, "counter", 0, 255))); break;
                 case "acceleration": Object(action, opcode, "op", "x", "y"); actions.Add(new SetEntityAcceleration((byte)Number(action, "x", 0, 255), (byte)Number(action, "y", 0, 255))); break;
                 case "flags":
                     Object(action, opcode, "op", "field", "mask", "value");
@@ -590,7 +654,9 @@ internal static class ExplorationContentReader
             Require(definition.Programs.TryGetValue(target.Program, out var program) && target.Instruction >= 0 &&
                 target.Instruction < program.Instructions.Count, "unresolved-program-target", "program.target");
         }
-        foreach (var map in definition.Maps.Values)
+        foreach (var map in definition.Maps.Values.SelectMany(map => new[] { map }.Concat(map.Setups.Values.Select(setup =>
+            new ExplorationMapDefinition(map.Map, map.Layout, map.Traversal, setup.Entities, setup.Events, setup.OnLoad,
+                inputProgram: setup.InputProgram, population: setup.Population)))))
         {
             if (definition.Visuals is { } visuals)
             {
@@ -603,9 +669,11 @@ internal static class ExplorationContentReader
                     : map.Entities.Select(entity => entity.Sprite);
                 Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites");
             }
-            Target(map.OnLoad); Target(map.InputProgram); Target(map.Battle?.BeforeProgram); Target(map.Battle?.StartProgram); Target(map.Battle?.LoadProgram);
-            if (map.Battle?.Outcome is { } outcome)
+            Target(map.OnLoad); Target(map.InputProgram);
+            foreach (var route in map.Battles)
             {
+                Target(route.BeforeProgram); Target(route.StartProgram); Target(route.LoadProgram);
+                if (route.Outcome is not { } outcome) continue;
                 Target(outcome.AfterProgram); Target(outcome.DefeatedProgram); Target(outcome.DefeatProgram); Target(outcome.ReturnProgram);
                 Require(definition.Maps.ContainsKey(outcome.EgressMap), "missing-map", "map.battle.outcome.egress");
             }
@@ -627,10 +695,15 @@ internal static class ExplorationContentReader
                     case BranchFlag branch: Target(branch.Target); break;
                     case BranchEntityCoordinates branch: Target(branch.Target); break;
                     case CallProgram call: Target(call.Target); break;
+                    case SourceRandomBattle random: Target(random.OnRequest); break;
+                    case SetEgressMap egress: Require(definition.Maps.ContainsKey(egress.Map), "missing-map", "program.egressMap"); break;
                     case TransferToMap transfer: Require(definition.Maps.ContainsKey(transfer.Map), "missing-map", "program.map"); break;
+                    case QueueMapWarp warp: Require(definition.Maps.ContainsKey(warp.Map), "missing-map", "program.map"); break;
                     case LoadSceneMap load: Require(definition.Maps.ContainsKey(load.Map), "missing-map", "program.map"); break;
                     case SetEntitySprite sprite when definition.Visuals is { } visuals:
                         Require(visuals.Sprites.ContainsKey(sprite.Sprite), "missing-sprite-visual", "program.sprite"); break;
+                    case AddMapEntity add when definition.Visuals is { } visuals:
+                        Require(visuals.Sprites.ContainsKey(add.Sprite), "missing-sprite-visual", "program.sprite"); break;
                     case LoadSceneEntities load when definition.Visuals is { } visuals:
                         var sprites = load.Entities.Where(entity => entity.Sprite >= load.Population.AllyCount).Select(entity => entity.Sprite)
                             .Concat((load.Population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite }))

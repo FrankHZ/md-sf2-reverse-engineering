@@ -69,9 +69,12 @@ values. The controller coordinates them; it does not collapse their subsystem ow
 
 ### New Battle
 
-**Confirmed static order:** a new battle clears elapsed seconds, executes the before-battle and
-battle-start cutscene seams, clears battle-region flags 90 through 105, heals the eligible party,
-initializes ally and enemy battle state, and loads the battle. The between-battle healing step:
+**Confirmed static order:** a new battle clears elapsed seconds, executes the before-battle
+cutscene seam, clears battle-region flags 90 through 105, heals the eligible party, initializes
+ally then enemy battle state, clears AI memory, loads the battle, and executes the battle-start
+cutscene seam. The accepted [exact fresh-entry trace](../../research/battle21-opening-and-initial-roster.md#admission-fresh-entry-and-scene-gates)
+records this order in `code/gameflow/battle/battleloop_1.asm:BattleLoop` at the pinned source baseline.
+The between-battle healing step:
 
 - skips other dead allies but always processes Peter (7) and Lemon (28);
 - restores current HP and MP to their maxima;

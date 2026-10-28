@@ -3,7 +3,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
-// useitem / spellEffect_Heal / AdjustSpellPower / RemoveAndArrangeItems / GiveExpAndGold.
+// useitem / ExecuteBattleaction_AngelWing / RemoveAndArrangeItems.
 // This bounded item family has no MP cost, promotion scaling or equipment-break roll.
 internal sealed class Sf2ItemAction : IBattleActionRule
 {
@@ -18,7 +18,7 @@ internal sealed class Sf2ItemAction : IBattleActionRule
             byte id = (byte)(word & 127);
             bool empty = id == 127;
             string label = empty ? "Empty" : battle.Definition.HealingItems.TryGetValue(id, out var item)
-                ? item.Name : $"Item {id}";
+                ? item.Name : battle.Definition.RetreatItems.TryGetValue(id, out var wing) ? wing.Name : $"Item {id}";
             return new BattleActionOffer(new(Kind, ItemSlot: slot), label, empty);
         }).ToArray());
     }
@@ -26,18 +26,46 @@ internal sealed class Sf2ItemAction : IBattleActionRule
     {
         if (action.Kind != Kind || action.Spell is not null || action.ItemSlot is not { } slot)
             throw new BattleRuleException("item-slot", "item.slot");
+        var owner = battle.GetActor(actor);
+        if (owner.Control != BattleControl.Player || !owner.IsAlly || owner.Hp == 0 ||
+            owner.Position is null || (owner.Status & 0xC0) != 0)
+            throw new BattleRuleException("not-player-control", "actor");
+        var items = owner.SourceLoadout?.Items;
+        if (items is null || slot < 0 || slot >= items.Count)
+            throw new BattleRuleException("item-slot", "item.slot");
+        if (battle.Definition.RetreatItems.TryGetValue((byte)(items[slot] & 127), out var wing))
+            return new(0, 0, RetreatItem: wing);
         var item = RequireItem(battle, actor, slot);
         return new(item.MinimumRange, item.MaximumRange, Item: item);
     }
     public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
-        HealingTargetRules.QueryTargets(battle, actor);
+        RequireAction(battle, actor, action).RetreatItem is not null ? [actor] : HealingTargetRules.QueryTargets(battle, actor);
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef target) =>
-        RequireTarget(battle, actor, destination, RequireAction(battle, actor, action).Item!, target);
+        BattleActionRef action, ActorRef target)
+    {
+        var admission = RequireAction(battle, actor, action);
+        if (admission.RetreatItem is null) return RequireTarget(battle, actor, destination, admission.Item!, target);
+        BattleMovement.RequireStop(battle, actor, destination);
+        if (target != actor) throw new BattleRuleException("invalid-retreat-target", "target");
+        return battle.GetActor(actor);
+    }
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
     {
-        _ = RequireAction(battle, actor, action);
+        var admission = RequireAction(battle, actor, action);
+        if (admission.RetreatItem is { } wing)
+        {
+            _ = RequireTarget(battle, actor, destination, action,
+                target ?? throw new BattleRuleException("invalid-retreat-target", "target"));
+            var owner = battle.GetActor(actor);
+            var items = owner.SourceLoadout!.Items.ToList();
+            int slot = action.ItemSlot!.Value;
+            ushort word = items[slot]; items.RemoveAt(slot); items.Add(127);
+            var paid = battle.With(actors: battle.Actors.Select(a => a.Actor == actor
+                ? a.With(position: destination, sourceLoadout: new(items, owner.SourceLoadout.Spells)) : a));
+            return new(paid, actor, destination, [], null, [new("item-consumed", actor, word, slot)], [],
+                Retreat: new ItemRetreatPayment(wing.ItemId, wing.Name, slot, word));
+        }
         return Prepare(battle, actor, destination, action.ItemSlot!.Value,
             target ?? throw new BattleRuleException("invalid-heal-target", "target"), progression);
     }

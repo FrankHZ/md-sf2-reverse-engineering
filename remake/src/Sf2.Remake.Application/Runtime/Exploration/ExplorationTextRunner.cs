@@ -80,27 +80,32 @@ internal static class ExplorationTextRunner
             throw new BattleRuleException("field-text-context", "story.text", true);
     }
 
-    internal static StoryState Begin(ExplorationDefinition definition, SessionSnapshot current, ShowText text, WaitToken token)
+    internal static StoryState Begin(ExplorationDefinition definition, SessionSnapshot current, ShowText text, WaitToken token,
+        ScenarioDefinition? scenario = null)
     {
         ValidateContext(current);
+        if (text.Narration && (text.UseEventSpeaker || text.Speaker is not null))
+            throw new BattleRuleException("narration-speaker", "program.text");
         var speaker = text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker;
         // Raw DisplayText and explicit source FF lookup-skip can have no speaker. A failed event lookup or
         // an explicitly supplied invalid speaker must still fail ordinary validation.
         bool speakerless = !text.UseEventSpeaker && text.Speaker is null &&
-            (!text.WaitForAcknowledgement || text.SpeakerFlags == 255);
+            (text.Narration || !text.WaitForAcknowledgement || text.SpeakerFlags == 255);
         if (!speakerless && (speaker is not { } actor || !current.Exploration!.TryResolveEntity(actor, out var entity) || entity.Sprite is not { } sprite ||
             definition.Visuals is not { } visuals || !visuals.Sprites.TryGetValue(sprite, out var visual) ||
             visual.Portrait is not null && current.Story.PortraitWindow is not OpenPortraitWindow { Work: not null }))
             throw new BattleRuleException("field-text-speaker", "program.text", true);
-        if (definition.TextFont is not { } font || !definition.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens))
+        int textId = text.TextId ?? current.Story.TextCursor;
+        if (definition.TextFont is not { } font || !definition.TextTokens.TryGetValue(textId, out var tokens))
             throw new BattleRuleException("field-text-font", "world.textFont", true);
         var units = new List<FieldTextUnit>();
         var partyLists = current.Story.PartyLists;
         foreach (var part in tokens)
         {
-            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1)
+            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Clear)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "")); continue; }
             int? member = part.Member;
+            if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{NAME}") member = text.NameMember;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{LEADER}" && definition.PartyFlags is { } partyFlags)
             {
                 // symbol_leader calls UpdateForce before choosing the first active member.
@@ -111,6 +116,7 @@ internal static class ExplorationTextRunner
             {
                 ExplorationTextTokenKind.Literal => part.Value,
                 ExplorationTextTokenKind.MemberName when member is >= 0 && member < definition.MemberNames.Count => definition.MemberNames[member.Value],
+                ExplorationTextTokenKind.ClassName => JoinedClass(scenario, current, text.NameMember),
                 _ => throw new BattleRuleException("field-text-token", "program.text", true),
             };
             foreach (char character in value)
@@ -121,12 +127,31 @@ internal static class ExplorationTextRunner
                 units.Add(new(ExplorationTextTokenKind.Literal, character.ToString(), symbol, font.Advances[symbol - 1]));
             }
         }
-        var wait = Span(token, current.Story.TextCursor, units.AsReadOnly(), 0,
+        var wait = Span(token, textId, units.AsReadOnly(), 0,
             current.Story.LogicalText!.Open ? FieldTextPhase.Tokens : FieldTextPhase.ClearFirst);
-        var story = current.Story.Copy(current.Story.Cursor, wait, textCursor: checked(current.Story.TextCursor + 1), partyLists: partyLists,
-            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, speaker, text.SpeakerFlags),
+        var story = current.Story.Copy(current.Story.Cursor, wait,
+            textCursor: text.TextId is null ? checked(current.Story.TextCursor + 1) : current.Story.TextCursor, partyLists: partyLists,
+            textWindow: new OpenTextWindow(textId, text.Mode, speaker, text.SpeakerFlags),
             typewriting: current.Story.LogicalText.Open ? true : null);
         return Normalize(story);
+    }
+
+    private static string JoinedClass(ScenarioDefinition? scenario, SessionSnapshot current, int? member)
+    {
+        if (member is null || scenario?.PrivateDefinitions is not { } source)
+            throw new BattleRuleException("join-text-class", "program.nameMember", true);
+        var bindings = scenario.Encounters.Values.SelectMany(battle => battle.Deployments)
+            .Where(actor => actor.Faction == BattleFaction.Ally && actor.Initialization?.AllyPartyMember == member)
+            .ToArray();
+        if (bindings.Length == 0 || bindings[0].Definition.Growth is not { } growth ||
+            bindings.Any(actor => actor.Actor != bindings[0].Actor || actor.Definition.Growth?.ClassId != growth.ClassId) ||
+            !current.Exploration!.Party.Actors.Any(actor => actor.Actor == bindings[0].Actor) ||
+            !source.Classes.TryGetValue(growth.ClassId, out var role) ||
+            !System.Text.RegularExpressions.Regex.IsMatch(role.NameExpression, "^\"[A-Z0-9 ]+\"$"))
+            throw new BattleRuleException("join-text-class", "program.nameMember", true);
+        // The admitted engine has no class-changing command. Growth.ClassId is the same
+        // class authority used for this live ally's stat refresh, not a speaker sprite.
+        return role.NameExpression[1..^1];
     }
 
     private static FieldTextWait Span(WaitToken token, int text, IReadOnlyList<FieldTextUnit> units, int start,
@@ -151,6 +176,16 @@ internal static class ExplorationTextRunner
                 break;
             }
             var unit = wait.Units[wait.Index];
+            if (unit.Kind == ExplorationTextTokenKind.Clear)
+            {
+                // symbol_clear rebuilds the existing window/cursor and owns one VInt.
+                // It does not close/reopen the window or consume the following input.
+                window = window with { X = 2, Y = 0, Row = 0 };
+                int following = wait.Index + 1;
+                wait = wait with { Index = following, Phase = FieldTextPhase.ClearToken, Revealed = false,
+                    Projection = string.Concat(wait.Units.Skip(following).Take(wait.End - following).Select(part => part.Text)) };
+                break;
+            }
             if (unit.Kind == ExplorationTextTokenKind.Delay1)
             {
                 wait = wait with { Index = wait.Index + 1 };
@@ -207,6 +242,7 @@ internal static class ExplorationTextRunner
         var window = story.LogicalText!;
         switch (wait.Phase)
         {
+            case FieldTextPhase.ClearToken: wait = wait with { Phase = FieldTextPhase.Tokens }; break;
             case FieldTextPhase.ClearFirst: wait = wait with { Phase = FieldTextPhase.ClearSecond }; break;
             case FieldTextPhase.ClearSecond:
                 window = new(Open: true, AnimationLength: 8, OriginY: 29, DestinationY: 19);

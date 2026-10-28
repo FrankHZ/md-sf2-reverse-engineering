@@ -1,8 +1,9 @@
 # Gameplay Overview and System Boundaries
 
-- Status: **user-accepted design synthesis over accepted evidence** under
+- Status: Layer B design synthesis over accepted evidence; the foundation was user-accepted under
   [Issue #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669).
-- Review baseline: accepted `main` at `3d550cd9db7a7508bd7f95d0307302ed05dddb7a`.
+- This reading structure consumes accepted `main` evidence under the
+  [current scope agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
 - Audience: readers choosing which gameplay directions to understand more deeply, and researchers,
   design authors and implementers following those directions to their evidence owners.
 - Scope: explain the connected gameplay systems, the demonstrated private Map 3 → Battle 01 →
@@ -29,6 +30,45 @@ states which. **Inferred** identifies a supported connection that has not been e
 wider boundary. **Unknown** identifies a question the accepted material cannot yet answer. Remake
 decisions are stated separately: working remake behavior cannot establish an original-game fact.
 Exact parameters and expectations remain in the linked contracts and fixtures.
+
+## Follow the loop and choose a reading depth
+
+The recurring relationship is **exploration → encounter → tactical action → reward or recovery →
+world return**. **Inferred design connection:** each activity leaves conditions for another. An item
+found during exploration can matter to a later encounter, battle actions spend or change resources,
+and an outcome can change which world content is selected next. This is a useful reading loop, not
+one universal sequence: interaction can return locally without battle, defeat and retreat have
+other returns, and acquiring something need not activate its later use.
+
+Start with the systems below, then choose a theme:
+
+| Reader question | Next reading |
+| --- | --- |
+| What can a combatant attempt, and how do turns become effects and outcomes? | [Tactical Battle Loop](tactical-battle-loop.md). |
+| How do membership, growth, equipment, items, magic and services constrain later choices? | [Progression and Economy](progression-and-economy.md) and the [force section](#the-force-membership-active-roles-and-character-growth). |
+| What changes between parts of the world, and which branches have their own gates? | [Story Progression's six chapter groups](story-progression.md#read-story-content-in-segments). |
+| How do location, facing, layout, interaction and transition state compose? | [Map Design Principles](map-design-principles.md). |
+| Which state survives a return, and what is actually saved? | [World return and persistence](#world-return-and-persistence-continuing-play-is-distinct-from-saving-it) and the [save contract](../contracts/save-system.md). |
+
+For one cross-system example, follow the [southern travel chapter](story-progression.md#southern-travel-caravan-and-creed)
+to [Taros and the Caravan](story-progression.md#worked-example-taros-and-the-caravan).
+It connects a conditional Sword pickup, Rohde's proposal, encounter admission, Bowie's equipped-weapon
+rule, outcomes and a separately initiated traversal option. Missing custody, refusal, ineffective
+attacks and non-victory returns explain why the connections cannot be read as guaranteed progress.
+Detailed guides retain the exact parameters and evidence; the chapter page explains their relationship.
+
+Keep four frontiers separate. **Confirmed static original knowledge** now has accepted chapter
+connections through the ending, credits and hidden-battle reset, with selected optional branches and
+explicit omissions. **Confirmed bounded original observations** retain their selected Map3–Battle01
+lineage. English explanation is organized here from accepted owners; later chapter research is not
+a completed detailed English series. **Confirmed accepted remake support** includes the private
+Map3–Battle01 composition and bounded early Battle02/Yeel–Battle03 behavior, with actual support and
+Unsupported capabilities owned by the [capability ledger](../../../remake/docs/capability-status.md).
+Taros and Caravan operation are not admitted production content. The
+[coverage owner](../../research/story-content-coverage.md#four-different-frontiers) separates these
+frontiers; reorganizing prose advances none of them. Interpretations remain **Inferred**, gaps remain
+**Unknown**, and [accepted remake choices](#made-remake-choices-and-remaining-product-choices) retain
+their own decision owners.
 
 ## Exploration: moving, facing and discovering a result
 
@@ -211,9 +251,15 @@ menus outside that slice keep their separate evidence and implementation limits.
 ## World return and persistence: continuing play is distinct from saving it
 
 **Confirmed original routing:** the outer loop applies flag-driven map switching before checking
-for battle. A battle return passes through map switching again; a warp-style exploration transition
-also returns to that loop. Returning from a controller is one boundary. A settled map with usable
-input is a later boundary, established separately in the demonstrated slice below.
+for battle. An ordinary `BattleLoop` return instead passes through map switching directly into
+exploration, without another immediate battle check. A warp-style exploration return re-enters the
+outer admission route; scrolling stays within exploration and does not perform that scan. The
+[gameflow owner](../../research/gameflow-core.md#main-and-exploration-contract) and
+[map lifecycle explanation](map-design-principles.md#return-and-persistence) retain these caller
+distinctions. Hidden Battle0 returns to EndGame's software-reset path, as the
+[tactical return account](tactical-battle-loop.md#returning-from-battle-is-not-yet-usable-exploration)
+explains. Returning from a controller is one boundary. A settled map with usable input is a later
+boundary, established separately in the demonstrated slice below.
 
 The following diagram shows the source-confirmed routing skeleton. Solid arrows express recorded
 control handoffs; dashed arrows summarize **Inferred** cross-system relationships. They do not
@@ -225,6 +271,7 @@ flowchart TD
     Route -->|"battle selected"| Battle["Battle entry and turns"]
     Explore --> Event["Map event / player action"]
     Event -->|"warp-style return"| Route
+    Explore -->|"scroll within exploration"| Explore
     Event -.-> Local["Dialogue, flags, roster and item effects"]
     Local -.-> Explore
     Explore -.-> Services["Menus and resource services"]
@@ -232,7 +279,11 @@ flowchart TD
     Battle --> Action["Player / AI choice and action resolution"]
     Action --> Checks["Deaths, after-turn effects and outcome checks"]
     Checks -->|"continue"| Action
-    Checks -->|"outcome and return"| Route
+    Checks -->|"outcome"| Caller["Battle caller consumes return"]
+    Battle -->|"admitted retreat"| Caller
+    Caller -->|"ordinary MainLoop caller"| ReturnMap["Map switching after battle"]
+    ReturnMap --> Explore
+    Caller -->|"Battle0 / EndGame caller"| Reset["Software reset transfer"]
     Action -.-> Growth["Rewards, growth and later character state"]
     Growth -.-> Action
     Services -.-> Save["Original save service"]
@@ -347,8 +398,10 @@ means choosing a remake behavior. A direction can need more than one kind of wor
 | Persistence and re-entry | Original slots and in-process save/suspend boundaries in [save-system](../contracts/save-system.md); current milestone excludes user persistence. | What original state survives the complete lifecycle, and what modern save/recovery behavior should be offered? | Original survival/failure behavior needs research if required by a fidelity claim. Modern storage and recovery require a product decision before implementation; usable field return already has its separate accepted boundary. |
 | Interface, feedback and accessibility | Reached consumer semantics and accepted input/text/music choices in the [current milestone](map3-battle01-readiness.md#accepted-current-milestone) and [presentation owner](../../../remake/docs/godot/presentation.md). | Which wider information, accessibility, asset and input experience is wanted beyond this private keyboard slice? | Synthesis can explain accepted feedback and deviations. Wider UX/art/input coverage requires product choices; original presentation research is justified only by a concrete required semantic gap, not every hardware Unknown. |
 
-The user accepts this overview before main-gate plans later research/documentation tickets by
-direction. Chinese synchronization remains deferred until the selected English sources are stable.
-Detailed tactical, resource, story and map syntheses remain useful reading owners; their revisions
-are separately scoped. This document must stop at the linked evidence boundary when a wider answer
+The [roadmap's selected English source set](../documentation-roadmap.md#selected-english-source-set-and-reconciliation)
+now connects the five themes and six chapter groups. No substantive rewrite of these selected themes
+remains planned in this round; independent integrated acceptance and merge establish their stability.
+The directions above concern questions beyond the delivered explanations and dispatch no new
+research. Chinese synchronization still requires that recorded stability and a separately scoped
+translation batch. This document must stop at the linked evidence boundary when a wider answer
 would require a new fact, decision, acquisition or owner change.

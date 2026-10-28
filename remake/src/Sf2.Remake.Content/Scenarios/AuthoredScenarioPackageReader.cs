@@ -38,15 +38,20 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         catch (UnauthorizedAccessException) { return Rejected("content-read", "document"); }
     }
 
-    internal static ScenarioReadAccepted DecodeBattle(JsonElement root)
+    internal static ScenarioReadAccepted DecodeBattle(JsonElement root, bool allowLeaderCleanup = false)
     {
-        ObjectOptional(root, "document", "items", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
+        ObjectOptional(root, "document", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters"],
+            "items", "battlePoison", "battleStory", "dropItems", "battleDiscard", "battleGive", "weapons", "growth");
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
+        bool poison = root.TryGetProperty("battlePoison", out _);
+        if (poison) Require(!allowLeaderCleanup && Text(root, "battlePoison") == "fixed-two-after-turn",
+            "poison-standalone-only", "battlePoison", true);
         string package = Id(root, "package");
         var start = root.GetProperty("start");
-        Object(start, "start", "encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors");
+        ObjectOptional(start, "start", ["encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors",
+            .. poison ? new[] { "firstAlly" } : []], "itemCustody", "story");
         Require(Text(start, "initialVitals") == "authored-controlled", "initial-vitals-policy", "start.initialVitals");
         string selectedEncounter = Id(start, "encounter");
         uint mainSeed = WordImage(start, "mainSeed"), thinkingSeed = WordImage(start, "thinkingSeed");
@@ -101,11 +106,33 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Require(maps.TryAdd(id, terrain), "duplicate-map", "maps.id");
         }
         var spells = new Dictionary<SpellRef, HealingSpellDefinition>();
+        var retreats = new Dictionary<SpellRef, RetreatSpellDefinition>();
         foreach (var spell in Array(root, "spells"))
         {
             Object(spell, "spell", "id", "level", "mpCost", "minimumRange", "maximumRange", "effect");
             var key = new SpellRef(Id(spell, "id"), (byte)Number(spell, "level", 1, 4));
             var effect = spell.GetProperty("effect");
+            if (Text(effect, "kind") == "retreat")
+            {
+                Object(effect, "spell.effect", "kind");
+                Require(Number(spell, "minimumRange", 0, 0) == 0 && Number(spell, "maximumRange", 0, 0) == 0,
+                    "retreat-range", "spell.range");
+                Require(!spells.ContainsKey(key) && retreats.TryAdd(key, new(key, (byte)Number(spell, "mpCost", 0, 255))),
+                    "duplicate-spell", "spells.id/level");
+                continue;
+            }
+            if (Text(effect, "kind") == "aura")
+            {
+                Object(effect, "spell.effect", "kind", "adjustedPower", "fullRecovery", "radius");
+                bool all = key.Level == 4;
+                Require(Boolean(effect, "fullRecovery") == all, "aura-full-recovery", "spell.effect.fullRecovery", true);
+                var aura = new HealingSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
+                    (ushort)Number(effect, "adjustedPower", 0, 65535), (byte)Number(spell, "minimumRange", 0, 255),
+                    (byte)Number(spell, "maximumRange", 0, 255), all ? HealingTargets.AuraAllAllies : HealingTargets.AuraRadius,
+                    (byte)Number(effect, "radius", 0, 255));
+                Require(!retreats.ContainsKey(key) && spells.TryAdd(key, aura), "duplicate-spell", "spells.id/level");
+                continue;
+            }
             Object(effect, "spell.effect", "kind", "adjustedPower", "fullRecovery");
             Require(Text(effect, "kind") == "heal", "spell-effect", "spell.effect.kind", true);
             Require(effect.GetProperty("fullRecovery").ValueKind is JsonValueKind.False or JsonValueKind.True,
@@ -115,25 +142,46 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             byte maximum = (byte)Number(spell, "maximumRange", minimum, 255);
             var definition = new HealingSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
                 (ushort)Number(effect, "adjustedPower", 0, 65535), minimum, maximum);
-            Require(spells.TryAdd(key, definition), "duplicate-spell", "spells.id/level");
+            Require(!retreats.ContainsKey(key) && spells.TryAdd(key, definition), "duplicate-spell", "spells.id/level");
         }
         var healingItems = new Dictionary<byte, HealingItemDefinition>();
+        var retreatItems = new Dictionary<byte, RetreatItemDefinition>();
         if (root.TryGetProperty("items", out _))
             foreach (var item in Array(root, "items"))
             {
                 Object(item, "item", "id", "name", "effect", "power", "minimumRange", "maximumRange");
-                Require(Text(item, "effect") == "consumable-healing", "item-effect", "items.effect", true);
                 byte id = (byte)Number(item, "id", 0, 126);
                 byte minimum = (byte)Number(item, "minimumRange", 0, 3);
+                if (Text(item, "effect") == "consumable-retreat")
+                {
+                    Require(minimum == 0 && Number(item, "maximumRange", 0, 3) == 0 && Number(item, "power", 0, 254) == 0,
+                        "retreat-item-range", "items", true);
+                    Require(!healingItems.ContainsKey(id) && retreatItems.TryAdd(id, new(id, Text(item, "name"))), "duplicate-item", "items.id");
+                    continue;
+                }
+                Require(Text(item, "effect") == "consumable-healing", "item-effect", "items.effect", true);
                 var definition = new HealingItemDefinition(id, Text(item, "name"), (ushort)Number(item, "power", 1, 254),
                     minimum, (byte)Number(item, "maximumRange", minimum, 3));
-                Require(healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
+                Require(!retreatItems.ContainsKey(id) && healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
             }
+        var weapons = BattleEquipmentReader.Weapons(root, allowLeaderCleanup);
+        var weaponItems = Array(root, "encounters").SelectMany(encounter =>
+        {
+            Require(encounter.ValueKind == JsonValueKind.Object, "object-required", "encounter");
+            return TarosEffectivenessReader.Weapons(encounter);
+        })
+            .Concat(weapons.Select(w => w.ItemId)).Distinct().ToArray();
+        var dropItems = EnemyItemDropReader.Items(root);
+        var discard = BattleDiscardReader.Read(root, allowLeaderCleanup, dropItems, weapons, healingItems.Values, retreatItems.Values);
+        Require(dropItems.Keys.All(id => id == 0 ? !weaponItems.Contains(id) && !retreatItems.ContainsKey(id) :
+            !healingItems.ContainsKey(id) && !retreatItems.ContainsKey(id)), "conflicting-item-type", "dropItems");
+        Require(!weaponItems.Any(id => healingItems.ContainsKey(id) || retreatItems.ContainsKey(id)),
+            "conflicting-item-type", "tarosEffectiveness.weaponItems");
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
-            ObjectOptional(actor, "actor", "physical", "id", "classRule", "level", "maxHp", "maxMp",
-                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells");
+            ObjectOptional(actor, "actor", ["id", "classRule", "level", "maxHp", "maxMp",
+                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells"], "physical", "equipment");
             var id = new ActorRef(Id(actor, "id"));
             string className = Text(actor, "classRule");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
@@ -142,7 +190,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Require(value.ValueKind == JsonValueKind.Number && value.TryGetUInt16(out _), "item-word", "actors.items");
                 ushort word = value.GetUInt16();
-                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127))),
+                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127)) || retreatItems.ContainsKey((byte)(word & 127)) || weaponItems.Contains((byte)(word & 127)) || dropItems.ContainsKey((byte)(word & 127)) || discard?.Items.ContainsKey((byte)(word & 127)) == true),
                     "missing-item", "actors.items", true);
                 return word;
             }).ToArray();
@@ -173,7 +221,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Object(reference, "spell-reference", "id", "level");
                 var key = new SpellRef(Id(reference, "id"), (byte)Number(reference, "level", 1, 4));
-                Require(spells.ContainsKey(key), "missing-spell", "actors.spells");
+                Require(spells.ContainsKey(key) || retreats.ContainsKey(key), "missing-spell", "actors.spells");
                 Require(!learned.Contains(key), "duplicate-learned-spell", "actors.spells");
                 learned.Add(key);
             }
@@ -185,13 +233,17 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 127), Boolean(actor, "extraRoundAction"),
-                (byte)Number(actor, "move", 1, 255), learned, physical, sourceLoadout: loadout);
+                (byte)Number(actor, "move", 1, 255), learned, physical, sourceLoadout: loadout,
+                equipment: BattleEquipmentReader.Actor(actor, weapons, weaponItems));
+            BattleEquipmentReader.Validate(definition);
+            BattleDiscardReader.Validate(definition, discard);
             Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
         }
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
         foreach (var encounter in Array(root, "encounters"))
         {
-            ObjectOptional(encounter, "encounter", "rewards", "id", "map", "placements");
+            ObjectOptional(encounter, "encounter", ["id", "map", "placements",
+                .. poison ? new[] { "outcome" } : []], "initialization", "rewards", "tarosEffectiveness", "prismLaser", "itemDrops", "leaderCleanup");
             BattleRewardDefinition? rewards = null;
             if (encounter.TryGetProperty("rewards", out var rewardInput))
             {
@@ -204,7 +256,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var placements = new List<BattleDeploymentDefinition>();
             foreach (var placement in Array(encounter, "placements"))
             {
-                Object(placement, "placement", "actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y");
+                ObjectOptional(placement, "placement", ["actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y"],
+                    "initialization", "controlPolicy");
                 var actorRef = new ActorRef(Id(placement, "actor"));
                 Require(actors.ContainsKey(actorRef), "missing-actor", "placements.actor");
                 var actor = actors[actorRef];
@@ -227,20 +280,38 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(BattleTerrainRules.MovementCost(tile) > 0, "blocked-placement", "placements");
                 Require(!placements.Any(a => a.Actor == actorRef), "duplicate-placement", "placements.actor");
                 Require(!placements.Any(a => a.ProcessingOrder == order), "duplicate-processing-order", "placements.processingOrder");
-                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position);
+                bool sourceControl = placement.TryGetProperty("controlPolicy", out _);
+                if (sourceControl) Require(Text(placement, "controlPolicy") == "source-ally-activation", "control-policy", "placements.controlPolicy", true);
+                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position, AuthoredBattleInitializationReader.Placement(placement), sourceControl);
                 BattleTurnFlow.ValidateDeployment(deployment);
                 placements.Add(deployment);
             }
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
-            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values)),
+            BattleOutcomeDefinition? outcome = null;
+            if (poison)
+            {
+                var terminal = encounter.GetProperty("outcome");
+                Object(terminal, "encounter.outcome", "leader", "defeatedGateEnemy");
+                outcome = new(new(Id(terminal, "leader")), new(Id(terminal, "defeatedGateEnemy")));
+                Require(placements.Any(p => p.Actor == outcome.Leader && p.Faction == BattleFaction.Ally) &&
+                    placements.Any(p => p.Actor == outcome.DefeatedGateEnemy && p.Faction == BattleFaction.Enemy),
+                    "poison-outcome-actors", "encounter.outcome");
+            }
+            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, outcome: outcome, initialization: AuthoredBattleInitializationReader.Read(encounter, placements), healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
+                tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems),
+                leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
+                itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
+                prismLaser: PrismLaserReader.Read(encounter, placements),
+                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: discard, poison: poison)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
         var startActors = new List<BattleActorStartInput>();
         foreach (var input in Array(start, "actors"))
         {
-            Object(input, "start.actor", "actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride");
+            ObjectOptional(input, "start.actor", ["actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride"],
+                "initialization", "absent", "retainDeadPosition");
             MapPosition? position = null;
             var overrideInput = input.GetProperty("positionOverride");
             if (overrideInput.ValueKind != JsonValueKind.Null)
@@ -248,17 +319,44 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Object(overrideInput, "start.actor.positionOverride", "x", "y");
                 position = new(Number(overrideInput, "x", 0, 47), Number(overrideInput, "y", 0, 47));
             }
+            var initialized = AuthoredBattleInitializationReader.Start(input);
             startActors.Add(new(new ActorRef(Id(input, "actor")), (ushort)Number(input, "hp", 0, 65535),
                 (byte)Number(input, "mp", 0, 255), (byte)Number(input, "exp", 0, 99),
-                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position));
+                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input, poison), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized,
+                Absent: input.TryGetProperty("absent", out _) && Boolean(input, "absent"),
+                RetainDeadPosition: input.TryGetProperty("retainDeadPosition", out _) && Boolean(input, "retainDeadPosition")));
         }
+        if (root.TryGetProperty("growth", out var growthRows))
+        {
+            Require(!allowLeaderCleanup, "growth-standalone-only", "growth", true);
+            encounters = BattleGrowthReader.BindAuthored(growthRows, new ScenarioDefinition(package, encounters.Values))
+                .ToDictionary(encounter => encounter.Encounter, StringComparer.Ordinal);
+        }
+        var battleStory = BattleStoryReader.Read(root, encounters.Values);
+        var storyStart = BattleStoryReader.Start(start, encounters[selectedEncounter]);
         var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
-            (uint)Number(start, "gold", 0, 9999999));
+            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, BattleDiscardReader.CustodyItems(dropItems, discard)), storyFlags: storyStart.Flags, visuals: storyStart.Visuals, retainedSourceSlots: storyStart.Retained, deathCredit: poison ? new(start.GetProperty("firstAlly").ValueKind == JsonValueKind.Null ? null : new ActorRef(Id(start, "firstAlly"))) : null);
         BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
-        return new(new ScenarioDefinition(package, encounters.Values), startInput);
+        // Drop/initialization-enabled encounters need fresh enemies on each entry. Their
+        // controlled start is a definition input, never a replacement for live allies.
+        IEnumerable<BattleDefinition> freshEncounters = encounters.Values.Any(encounter => encounter.ItemDrops is not null || encounter.Initialization is not null)
+            ? encounters.Values : [];
+        var defaults = freshEncounters.Select(encounter =>
+        {
+            var input = new BattleStartInput(encounter.Encounter,
+                startActors.Where(actor => encounter.Deployments.Any(row => row.Actor == actor.Actor)),
+                mainSeed, thinkingSeed, startInput.Gold, itemCustody: startInput.ItemCustody, storyFlags: startInput.StoryFlags, visuals: startInput.Visuals, retainedSourceSlots: startInput.RetainedSourceSlots, deathCredit: startInput.DeathCredit);
+            BattleTurnFlow.ValidateStart(encounter, input);
+            return input;
+        }).ToArray();
+        return new(new ScenarioDefinition(package, encounters.Values, encounterStarts: defaults, battleStory: battleStory), startInput);
     }
 
-    private static ushort StartStatus(JsonElement input)
-    { Require(Text(input, "status") == "none", "actor-status", "start.actors.status", true); return 0; }
+    private static ushort StartStatus(JsonElement input, bool poison)
+    {
+        string status = Text(input, "status");
+        Require(status == "none" || poison && status == "poison", "actor-status", "start.actors.status", true);
+        return status == "poison" ? (ushort)2 : (ushort)0;
+    }
 
 }

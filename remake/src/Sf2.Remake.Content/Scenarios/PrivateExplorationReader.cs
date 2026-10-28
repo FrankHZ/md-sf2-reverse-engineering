@@ -18,13 +18,16 @@ public sealed class PrivateExplorationReader(string path, string startPath, ISce
             if (party is ScenarioReadRejected rejected) return rejected;
             Require(party is ScenarioReadAccepted { Definition.PrivateDefinitions: not null }, "private-party-required", "party");
             var admitted = (ScenarioReadAccepted)party;
+            // The measured seven-map/expanded-audio input is about 127.44 million bytes.
+            // Reject oversized files before allocating their full contents, and recheck after read.
+            Require(new FileInfo(path).Length <= 128 * 1024 * 1024, "document-size", "world");
             byte[] bytes = File.ReadAllBytes(path);
-            // The reached six music / 25 SFX variants occupy 104,374,046 bytes in the private world.
-            // Keep the private resident document bounded; other package limits are unchanged.
-            Require(bytes.Length <= 100 * 1024 * 1024, "document-size", "world");
+            Require(bytes.Length <= 128 * 1024 * 1024, "document-size", "world");
             using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 32 });
             var root = document.RootElement;
-            Object(root, "private-world", "formatVersion", "profile", "package", "provenance", "world");
+            ObjectOptional(root, "private-world", "encounters", ["formatVersion", "profile", "package", "provenance", "world"]);
+            if (root.TryGetProperty("encounters", out var encounters))
+                admitted = PrivateWorldEncounterReader.Read(encounters, path, admitted);
             _ = Number(root, "formatVersion", 1, 1);
             Require(Text(root, "profile") == "private-local-controlled-start", "profile", "profile");
             var provenance = root.GetProperty("provenance");
@@ -56,8 +59,14 @@ public sealed class PrivateExplorationReader(string path, string startPath, ISce
             Object(start, "controlled-exploration-start", "formatVersion", "controlledBoundary", "start");
             _ = Number(start, "formatVersion", 1, 1);
             Require(!string.IsNullOrWhiteSpace(Text(start, "controlledBoundary")), "controlled-provenance", "start");
-            return ExplorationContentReader.Read(Id(root, "package"), root.GetProperty("world"), start.GetProperty("start"), admitted,
+            var result = ExplorationContentReader.Read(Id(root, "package"), root.GetProperty("world"), start.GetProperty("start"), admitted,
                 new(expected.Repository, expected.Commit, Text(provenance, "romSha256"), sources, Text(provenance, "controlledBoundary") + " Start: " + Text(start, "controlledBoundary")));
+            if (result.Definition.Exploration!.Visuals is { } visuals)
+                foreach (var scene in result.Definition.EncounterScenes.Values)
+                    if (scene.FieldDeath is { } field)
+                        Require(field.AllySprites.Values.Concat(field.EnemySprites.Values).All(visuals.Sprites.ContainsKey),
+                            "field-actor-resource-unavailable", "world.presentation.sprites");
+            return result;
         }
         catch (AdmissionIssue error) { return new ScenarioReadRejected(error.Failure); }
         catch (BattleRuleException error)

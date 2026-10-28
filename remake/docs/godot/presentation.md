@@ -1,5 +1,91 @@
 # Godot Host and Presentation
 
+## Authored battle discard presentation
+
+R / right stick down starts Drop from the ordinary battle ActionChoice; directions cycle exact
+slot labels, including duplicates. Protected items show a readable refusal reason. Enter selects
+and confirms; Escape keeps the item and returns to actions. The confirmation explicitly states
+that the action and movement preview remain available. Bind `discard` through ordinary input
+settings to change its keyboard/gamepad control.
+
+`BattleDiscardView` displays authored result text and reports CompleteTextReveal only after actual
+delivery; Confirm then acknowledges it. Parent focus/hide suspension blocks input and delivery,
+preserving the accepted loadout/Deals prefix. It resumes without timing debt. The view chooses no
+inventory/turn policy and acknowledgement returns to the same actor/action; later outer Cancel
+returns movement. No new media or original dialogue/hardware timing is claimed. The
+[native recipe](../development-and-verification.md#battle-discard-authored-observation) exercises
+ordinary keys and reads live state, labels and errors without screenshots or gameplay injection.
+
+## Authored battle Give presentation
+
+In the ordinary battle action menu, G / left-stick press starts Give. Directions cycle the held
+slots; Confirm selects the item. Directions or Target cycle eligible adjacent recipients; Confirm
+selects the recipient. A full pack displays its return slots. A final confirmation states that the
+transfer ends the action; Cancel backs up one stage. Slot numbers distinguish duplicate identities.
+The query/selection state remains authoritative; the adapter does not calculate transfer legality.
+
+`BattleGiveView` displays project-authored result text and completes the existing reveal token only
+after delivery. Confirm then acknowledges it. The parent battle view suspends Give input and
+reveal while unfocused/hidden; resumption advances only the pending stage. The existing instant or
+adjustable text setting applies. This result text is a modern authored addition, not an original
+Give scene, sound or timing claim. No new media assets are introduced.
+
+The [compact native witness](../development-and-verification.md#battle-give-authored-observation)
+uses ordinary host keys, visible labels and read-only session facts. It covers both custody routes,
+selection cancellation, suspension and later usable control; it emits no screenshots.
+
+## Authored Caravan projection
+
+The ordinary exploration host draws the Caravan package with public geometric markers. Vehicle
+sprite 62 uses a brown rectangle; player/followers use circles and facing marks. Blue tiles admit
+vehicle travel; the green marker is a later ordinary walking zone. The presenter reads live raw
+coordinates, appearance and per-refresh RenderSize, so off-map actors are clipped rather than removed
+from gameplay. Ordinary Confirm finds adjacent targets using raw motion coordinates, so parked
+physical actors never require an invalid layout position. `authoredDraws` readback carries the actual draw frame, position, size, visibility,
+sprite and sprite-request identity. Sprite-ready completion follows a matching real draw, including
+an intentionally clipped off-map marker. No arbitrary acknowledgement skips the typed program.
+
+The same session supplies travel mode, current physical list, motion and waits. The host owns no
+vehicle position/controller authority. Hidden/unfocused views suspend automatic ticks and sprite
+completions; resume discards timing debt. Existing input envelopes and request IDs reject duplicate
+or stale completion. The authored package has no audio assets: source warp-sound observations are
+retained, but no original audible SFX parity is claimed. The finite witness reads actual state/input/
+draw/errors without screenshots, session injection or synthetic presentation completion.
+
+## Authored battle-region scene
+
+`BattleStoryView` consumes shared StoryState dialogue/camera/tick waits while the mode remains Battle.
+The authored scene shows project-written paraphrased text, focuses the existing map transform on the
+retained visual slot, and accepts ordinary Confirm. A mounted presentation must survive a process
+opportunity before completion or acknowledgement; hidden/suspended views do not deliver. CameraWait
+completes after applying the actual map transform. This is modern semantic delivery, not original
+camera speed, portrait, audio or frame timing. No menu/layout/input redesign is part of this slice.
+
+`BattleMapViewport` maps logical actors to retained physical appearances. Conversion reuses the
+existing marker/sprite node rather than allocating an actor or visual at the conversion boundary.
+Initial placement resolves live coordinates once; acknowledged movement alone updates that physical
+slot's position/facing. Logical conversion writes do not move the old ally slot before alias copy,
+and departed subjects retain their last physical position. Normal movement animates that binding; dead-ally camera/text can retain the physical scene subject
+without reviving gameplay HP. Effective control/activation, aliases, story cursor/callers/wait,
+actual text visibility, camera slot/focus, marker direction indicator and geometry and failures are exposed by the existing
+semantic observation API. Unsupported source physical services/private Battle32 media remain explicit.
+See the [ordinary-key witness](../development-and-verification.md#jaro-conversion-authored-observation).
+
+## Authored enemy appearance
+
+`BattleAppearanceView` consumes the pending round's actor/list/token through the ordinary battle
+view. The map focuses the current actor, hides later pending list members, and delivers an authored
+0.6-second spin/fade,0.2-second settle and0.7-second paraphrased appearance notice. Reduced-flash mode
+omits rotation. Focus loss suspends delivery. Only the actual view's completion submits the matching
+`EntityEffect` token; the view never resets actors or generates a queue. Ordinary commands are blocked
+during this finite wait and resume after appearances and automatic work.
+
+The semantic observation includes current stage/token and actual marker rotation/alpha/visibility,
+plus future-member hiding and final control. The [native recipe](../development-and-verification.md#hidden-spawn-authored-observation)
+uses ordinary keys and verifies intermediate/final node values. This is a project-authored visual
+with no original sprites, SFX, frame timing or natural-source reach claim. It adds no menu/layout or
+input redesign to the separately owned UI work.
+
 Godot is the outer composition, semantic input and presentation adapter. Its nodes/textures/audio
 are projections; Application owns gameplay state, program/scene continuation and completion tokens.
 See [audio](audio.md), [battle scenes](battle-scenes.md), [Content assets](../content/presentation-assets.md)
@@ -14,6 +100,22 @@ plus optional `--input-settings <path>`. When no session-entry option is supplie
 including when only input settings are supplied. Unknown/positional, duplicate, conflicting and
 missing-path options fail explicitly before creating a session. Diagnostic observer settings belong
 to external probes, not game argument routing.
+
+`SessionPresentationOwner` chooses the presenter from the current mode and retained entry
+continuation. Field owns exploration and the unfinished before/load/start programs, including load
+and start waits that already carry `ActiveBattle`. Once entry finishes, battle owns every battle
+snapshot: initial round programs, appearances, ordinary/automatic control, terminal outcomes and
+failures. This decision is shared by initial attachment, field handoff and field input dispatch;
+`GameSession` supplies all lifecycle state.
+
+The root installs entry and return callbacks before choosing the initial presenter. An admitted
+connected package may start directly in battle, win through ordinary input and return to one usable
+field view in the same session. Pending round delivery still uses the existing consumers and matching
+tokens; routing does not complete waits or generate queues. The
+[bounded native recipe](../development-and-verification.md#ordinary-host-lifecycle-observation) owns
+startup, pre-battle and return controls. Frozen [PR #692](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/692)
+must semantically rebase its later presentation/view changes onto this accepted host boundary; no
+unmerged UI implementation is consumed here.
 
 Both source-start paths use `RuleCompositions.ForGame()` and the same `GameSession`. The root routes
 each input event once to the active view. Battle view pumps `AdvanceSimulation` only at the
@@ -83,8 +185,9 @@ maps up/left/right/down to choices 0/1/2/3; the
 orders attack, magic, item and search-or-stay. Search admission remains a gameplay/content decision;
 an interface experiment showing Stay does not remove the source-specific Search route.
 
-Modernization separates world framing, UI dimensions and drawing resolution. Redraw command icons,
-render labels with the engine font system, and retain the blue fill and layered gold/light frame.
+Modernization separates world framing, UI dimensions and drawing resolution. The current experiment
+uses original command icons inside axis-aligned square buttons arranged up/left/right/down. It renders
+labels with the engine font system and retains the blue fill and layered gold/light frame.
 Do not uniformly enlarge the original pixel menu or preserve its tiny physical size. Commands keep
 visible names and a distinct selected state; contextual descriptions, costs and unavailable reasons
 sit against the right safe edge, leaving the middle open. Magic and inventory use list submenus, with explicit confirmation and a
@@ -97,14 +200,18 @@ reference. Its Yes/No sample is not a complete UI kit: placeholder text and the 
 image must be separated from reusable frame geometry. Private art is not licensed by this selection.
 
 The ordinary host now implements a first playable iteration through `BattleCommandMenu` and
-`BattleMenuLayout`, using native text, project-authored vector command glyphs and blue/gold chrome.
+`BattleMenuLayout`, using native text, blue/gold square buttons and the original 24×24 normal/selected
+command rasters from a local private scene input. Icons use nearest sampling at integral scale;
+button geometry and labels scale independently. No authored replacement glyph is used. Public scenes
+without these rasters show text-only squares. The [asset owner](../content/presentation-assets.md#private-command-menu-icons)
+defines preparation and admission through the existing scene raster collection.
 Standard rigor applies: one bounded interaction slice, with the existing semantic interface as its
 dependency. Acceptance covers cardinal focus, spell/item lists, costs and unavailable reasons,
 target selection, explicit commit, layered cancellation and actual resized node geometry. Engine
 behavior tests cover back navigation; the [host recipe](../verification/host.md#diamond-menu-observation)
 checks real keyboard input and projection. Final visual/user acceptance and wider Epic completion
-remain separate from these engineering checks. The graphics sample remains a chrome reference;
-no private image was copied into the new UI.
+remain separate from these engineering checks. Original pixels are private local inputs; neither the
+tracked UI implementation nor public builds include them. The graphics sample remains a chrome reference.
 
 Confirm at movement opens the diamond. Up/left/right/down focus Attack/Magic/Item/Stay; Confirm
 enters the focused choice. F/H/I/Space are shortcuts from the main diamond; H/I now open lists,
@@ -112,6 +219,8 @@ not immediate selections. Up/down inspect list rows, including disabled rows. Co
 enabled offer and its first enabled target (self when offered). Arrows or Tab cycle all offered
 targets; a disabled candidate shows its reason and cannot commit the previously accepted target.
 Target confirmation commits through the session. Stay has its own confirmation step.
+Equipment/Give/Discard retain their existing shortcuts and presenters from the main menu. Spell and
+item lists group by the semantic offer's spell/item metadata, including admitted retreat offers.
 
 Cancel returns target selection to its list or main diamond through `ReturnToBattleActions`, which
 clears provisional action/target while preserving movement preview, resources and RNG. List cancel

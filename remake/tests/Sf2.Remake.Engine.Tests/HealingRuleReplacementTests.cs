@@ -138,7 +138,7 @@ public sealed class HealingRuleReplacementTests
         Assert.Equal("target-range", Assert.Single(moved.Spells).Targets[1].Reason!.Code);
         Assert.True(Assert.Single(moved.Spells).Targets[0].Enabled); // Self is at provisional destination.
         FinishMovement(session, Accept(session, new Cancel()));
-        Assert.Same(initial.Battle, session.Current.Battle);
+        Battle02OutcomeTests.UnchangedExceptFacing(initial.Battle, session.Current.Battle, initial.Selection!.Actor, 2);
         Select(session, new("guard-a")); var ready = session.Current;
         foreach (var target in new[] { "dummy-a", "absent" })
         {
@@ -174,6 +174,7 @@ public sealed class HealingRuleReplacementTests
     }
 
     [Theory]
+    [InlineData("visuals")]
     [InlineData("throw")]
     [InlineData("hp")]
     [InlineData("target")]
@@ -189,7 +190,12 @@ public sealed class HealingRuleReplacementTests
     [InlineData("rng-final")]
     public void BrokenRulePreparationPublishesNoMovementResourcesRngOrObservations(string fault)
     {
-        var rule = new BrokenRule(fault); var session = Open(new("broken-test-rule", rule));
+        var rule = new BrokenRule(fault); var session = Open(new("broken-test-rule", rule), document => {
+            if (fault == "visuals") document["start"]!["story"] = JsonNode.Parse("""
+                {"flags":[],"retainedSourceSlots":[],"aliases":[{"actor":"medic-a","slot":5}],
+                 "visuals":[{"slot":5,"appearance":"medic-a","x":0,"y":0,"facing":3}]}
+                """);
+        });
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         Select(session); var before = session.Current;
         var result = Send(session, new Confirm());
@@ -343,6 +349,7 @@ public sealed class HealingRuleReplacementTests
             var action = _source.Prepare(battle, actor, destination, spell, target, progression); // Local random work already happened.
             return fault switch
             {
+                "visuals" => action with { Prepared = action.Prepared.With(visuals: new(new Dictionary<ActorRef, int>(), [])) },
                 "throw" => throw new InvalidOperationException("private detail must not leak"),
                 "hp" => action with { Reactions = [action.Reactions[0] with { HpAfter = ushort.MaxValue }] },
                 "target" => action with { Reactions = [action.Reactions[0] with { Target = new("guard-a") }] },

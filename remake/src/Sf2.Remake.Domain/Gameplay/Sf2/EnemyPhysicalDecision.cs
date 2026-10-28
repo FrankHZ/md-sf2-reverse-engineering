@@ -5,15 +5,16 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal static class EnemyPhysicalDecision
 {
-    // Already-active ATTACK1 / script3, physical-only. This is
-    // a successful first command of source commandset06, not a replacement fallback policy.
+    // Admitted physical-only / script3 decision, using the caller's temporary grid when supplied.
+    // CalculateTargetPriorityForAttack clears ATTACK1/2/3's extra parameter; the priority
+    // script is selected from activation/difficulty, not that command parameter.
     internal static BattleAutomaticAction? TryResolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, WeightedMovementGrid? selectedGrid = null)
     {
         var actor = current.GetActor(actorRef);
-        var grid = BattleMovement.Grid(current, actorRef);
+        var grid = selectedGrid ?? BattleMovement.Grid(current, actorRef);
         var candidates = new List<(BattleActorState Target, MapPosition Position, int Cost)>();
-        foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.IsAlly).OrderBy(a => a.ProcessingOrder))
+        foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.Position is not null && a.IsAlly).OrderBy(a => a.ProcessingOrder))
         {
             if (AiMovementRules.AttackPosition(grid, target.Position!, 1,
                 position => current.Actors.Any(a => a.Hp > 0 && a.Position == position)) is { } position)
@@ -45,7 +46,7 @@ internal static class EnemyPhysicalDecision
             thinking = after;
         }
         // Source airborne movement selects the Flying table; the other admitted movers use Regular.
-        var selection = PhysicalTargetRules.Select(priorities, actor.Definition.Mover == BattleMover.Hovering
+        var selection = PhysicalTargetRules.Select(priorities, actor.Definition.Mover is BattleMover.Hovering or BattleMover.Flying
             ? PhysicalPriorityTable.Flying : PhysicalPriorityTable.Regular)
             ?? throw new BattleRuleException("ai-target-selection", "ai.targets", true);
         var selected = candidates[selection.Index];

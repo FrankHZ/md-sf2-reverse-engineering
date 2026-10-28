@@ -1,0 +1,255 @@
+{
+  "formatVersion": 7,
+  "package": "taros-effectiveness",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "guardian-practice",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3203334210,
+    "gold": 100,
+    "actors": [
+      {
+        "actor": "apprentice",
+        "hp": 500,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "champion",
+        "hp": 500,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "guardian",
+        "hp": 500,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "reserve",
+        "hp": 500,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      }
+    ]
+  },
+  "terrains": [
+    {
+      "id": "stone-court-terrain",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "p": {
+          "surface": "open",
+          "protection": "none"
+        }
+      },
+      "rows": [
+        "#########",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#########"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "stone-court-map",
+      "terrain": "stone-court-terrain"
+    }
+  ],
+  "spells": [],
+  "actors": [
+    {
+      "id": "apprentice",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 500,
+      "maxMp": 0,
+      "attack": 30,
+      "defense": 4,
+      "agility": 40,
+      "extraRoundAction": false,
+      "move": 6,
+      "items": [
+        189
+      ],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "champion",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 500,
+      "maxMp": 0,
+      "attack": 30,
+      "defense": 4,
+      "agility": 30,
+      "extraRoundAction": false,
+      "move": 6,
+      "items": [
+        189
+      ],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "guardian",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 500,
+      "maxMp": 0,
+      "attack": 12,
+      "defense": 4,
+      "agility": 8,
+      "extraRoundAction": false,
+      "move": 6,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "reserve",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 500,
+      "maxMp": 0,
+      "attack": 12,
+      "defense": 4,
+      "agility": 4,
+      "extraRoundAction": false,
+      "move": 6,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 0,
+        "special": "none"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "guardian-practice",
+      "map": "stone-court-map",
+      "placements": [
+        {
+          "actor": "apprentice",
+          "x": 3,
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 19,
+          "control": "player",
+          "aiStrategy": null
+        },
+        {
+          "actor": "champion",
+          "x": 1,
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 4,
+          "control": "player",
+          "aiStrategy": null
+        },
+        {
+          "actor": "guardian",
+          "x": 2,
+          "y": 2,
+          "faction": "enemy",
+          "processingOrder": 142,
+          "control": "automatic",
+          "aiStrategy": "stay"
+        },
+        {
+          "actor": "reserve",
+          "x": 7,
+          "y": 5,
+          "faction": "enemy",
+          "processingOrder": 154,
+          "control": "automatic",
+          "aiStrategy": "stay"
+        }
+      ],
+      "rewards": {
+        "halvedExperience": true
+      },
+      "tarosEffectiveness": {
+        "bowie": "champion",
+        "enemyDefinitions": [
+          {
+            "actor": "guardian",
+            "definition": 88
+          },
+          {
+            "actor": "reserve",
+            "definition": 9
+          }
+        ],
+        "weaponItems": [
+          61
+        ]
+      }
+    }
+  ]
+}

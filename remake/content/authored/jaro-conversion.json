@@ -1,0 +1,495 @@
+{
+  "formatVersion": 7,
+  "package": "jaro-conversion",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "border-court",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305397760,
+    "thinkingSeed": 3203334210,
+    "gold": 73,
+    "actors": [
+      {
+        "actor": "leader",
+        "hp": 60,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "ally-jaro",
+        "hp": 24,
+        "mp": 3,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        },
+        "absent": true
+      },
+      {
+        "actor": "enemy-jaro",
+        "hp": 59,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": {
+          "x": 3,
+          "y": 2
+        },
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "sentry",
+        "hp": 100,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      }
+    ],
+    "story": {
+      "flags": [
+        0,
+        32
+      ],
+      "retainedSourceSlots": [],
+      "aliases": [
+        {
+          "actor": "leader",
+          "slot": 0
+        },
+        {
+          "actor": "enemy-jaro",
+          "slot": 1
+        },
+        {
+          "actor": "sentry",
+          "slot": 2
+        }
+      ],
+      "visuals": [
+        {
+          "slot": 0,
+          "appearance": "leader",
+          "x": 0,
+          "y": 7,
+          "facing": 3
+        },
+        {
+          "slot": 1,
+          "appearance": "enemy-jaro",
+          "x": 4,
+          "y": 2,
+          "facing": 3
+        },
+        {
+          "slot": 2,
+          "appearance": "sentry",
+          "x": 6,
+          "y": 2,
+          "facing": 3
+        }
+      ]
+    }
+  },
+  "terrains": [
+    {
+      "id": "court-ground",
+      "legend": {
+        ".": {
+          "surface": "open",
+          "protection": "none"
+        }
+      },
+      "rows": [
+        "........",
+        "........",
+        "........",
+        "........",
+        "........",
+        "........",
+        "........",
+        "........"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "court",
+      "terrain": "court-ground"
+    }
+  ],
+  "spells": [],
+  "actors": [
+    {
+      "id": "leader",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 60,
+      "maxMp": 0,
+      "attack": 12,
+      "defense": 8,
+      "agility": 100,
+      "extraRoundAction": false,
+      "move": 4,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    },
+    {
+      "id": "ally-jaro",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 24,
+      "maxMp": 3,
+      "attack": 12,
+      "defense": 8,
+      "agility": 80,
+      "extraRoundAction": false,
+      "move": 3,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    },
+    {
+      "id": "enemy-jaro",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 59,
+      "maxMp": 0,
+      "attack": 12,
+      "defense": 8,
+      "agility": 2,
+      "extraRoundAction": false,
+      "move": 1,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    },
+    {
+      "id": "sentry",
+      "classRule": "ordinary",
+      "level": 1,
+      "maxHp": 100,
+      "maxMp": 0,
+      "attack": 12,
+      "defense": 8,
+      "agility": 10,
+      "extraRoundAction": false,
+      "move": 1,
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 11,
+        "special": "none"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "border-court",
+      "map": "court",
+      "placements": [
+        {
+          "actor": "leader",
+          "faction": "ally",
+          "processingOrder": 0,
+          "control": "player",
+          "aiStrategy": null,
+          "x": 0,
+          "y": 7,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "ally-jaro",
+          "faction": "ally",
+          "processingOrder": 23,
+          "control": "player",
+          "aiStrategy": "source-ally-physical",
+          "x": 1,
+          "y": 7,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          },
+          "controlPolicy": "source-ally-activation"
+        },
+        {
+          "actor": "enemy-jaro",
+          "faction": "enemy",
+          "processingOrder": 143,
+          "control": "automatic",
+          "aiStrategy": "stay",
+          "x": 4,
+          "y": 2,
+          "initialization": {
+            "baseAiWord": 0,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "sentry",
+          "faction": "enemy",
+          "processingOrder": 128,
+          "control": "automatic",
+          "aiStrategy": "source-orders",
+          "x": 6,
+          "y": 2,
+          "initialization": {
+            "baseAiWord": 0,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 6,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        }
+      ],
+      "initialization": {
+        "regions": [
+          {
+            "id": 0,
+            "vertices": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 0,
+                "y": 5
+              },
+              {
+                "x": 7,
+                "y": 5
+              },
+              {
+                "x": 7,
+                "y": 0
+              }
+            ]
+          },
+          {
+            "id": 1,
+            "vertices": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 0,
+                "y": 5
+              },
+              {
+                "x": 7,
+                "y": 5
+              },
+              {
+                "x": 7,
+                "y": 0
+              }
+            ]
+          }
+        ],
+        "regionProgram": "authored",
+        "enemyCount": 16,
+        "sourceCombatants": [
+          {
+            "actor": "leader",
+            "slot": 0
+          },
+          {
+            "actor": "ally-jaro",
+            "slot": 23
+          },
+          {
+            "actor": "enemy-jaro",
+            "slot": 143
+          },
+          {
+            "actor": "sentry",
+            "slot": 128
+          }
+        ],
+        "regionPrograms": [
+          {
+            "region": 0,
+            "playedFlag": 386,
+            "program": "conversion"
+          },
+          {
+            "region": 1,
+            "playedFlag": 386,
+            "program": "conversion"
+          }
+        ]
+      },
+      "rewards": {
+        "halvedExperience": false
+      }
+    }
+  ],
+  "battleStory": {
+    "texts": [
+      {
+        "id": 1,
+        "text": "I have seen enough. I will stand with you."
+      },
+      {
+        "id": 2,
+        "text": "I will hold them back. Keep moving!"
+      }
+    ],
+    "programs": [
+      {
+        "id": "conversion",
+        "instructions": [
+          {
+            "op": "convert-battle-actor",
+            "enemySlot": 143,
+            "allySlot": 23
+          },
+          {
+            "op": "camera-entity",
+            "entity": "ally-jaro"
+          },
+          {
+            "op": "present",
+            "kind": "CameraWait",
+            "resource": null,
+            "entity": null,
+            "position": null
+          },
+          {
+            "op": "call",
+            "target": {
+              "program": "pledge",
+              "instruction": 0
+            }
+          },
+          {
+            "op": "join-force-ai",
+            "allySlot": 23,
+            "value": 65535
+          },
+          {
+            "op": "set-flag",
+            "flag": 386,
+            "value": true
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "pledge",
+        "instructions": [
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": "ally-jaro",
+            "text": 1
+          },
+          {
+            "op": "face",
+            "entity": "ally-jaro",
+            "facing": 2
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": "ally-jaro",
+            "text": 2
+          },
+          {
+            "op": "return"
+          }
+        ]
+      }
+    ]
+  }
+}

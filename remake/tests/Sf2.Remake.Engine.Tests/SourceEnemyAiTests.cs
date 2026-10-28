@@ -180,15 +180,23 @@ public sealed class SourceEnemyAiTests
     [Theory]
     [InlineData("attack", "physical-definition")]
     [InlineData("memory", "standby-memory")]
-    [InlineData("order", "source-move-order")]
+    [InlineData("order", "source-follow-binding")]
     [InlineData("unknown", "source-occupancy-word")]
     public void ReachedUnsupportedInputsCannotPublishPartialMemoryRegionsOrRng(string shape, string code)
     {
-        var before = State(active: shape == "attack", memory: shape == "memory" ? (byte)2 : (byte)0,
+        var before = State(active: shape is "attack" or "order", memory: shape == "memory" ? (byte)2 : (byte)0,
             blockSouth: false, peer: false, allyPosition: shape == "attack" ? new(5, 8) : shape == "unknown" ? new(5, 7) : null);
-        if (shape == "order") before = before.With(actors: before.Actors.Select(actor => actor.Actor == Enemy ?
-            new BattleActorState(actor.Deployment with { Initialization = actor.Deployment.Initialization! with { PrimaryOrder = 22 } },
-                actor.Hp, actor.Mp, actor.Exp, actor.Position, actor.Kills, actor.Defeats, activationWord: actor.ActivationWord) : actor));
+        if (shape == "order")
+        {
+            var actors = before.Actors.Select(actor => actor.Actor == Enemy ?
+                actor.With(primaryOrder: 22) : actor).ToArray();
+            var source = before.Definition;
+            var definition = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height,
+                source.Terrain, source.Deployments, source.Spells.Values,
+                initialization: new([], BattleRegionProgram.None)); // No source slot22 binding.
+            before = new(definition, actors, before.MainSeed, before.ThinkingSeed, before.Round,
+                before.Queue, before.Cursor, before.Gold, regions: before.Regions);
+        }
         if (shape == "unknown") before = before.With(actors: before.Actors.Select(actor => actor.IsAlly ?
             new BattleActorState(actor.Deployment, actor.Hp, actor.Mp, actor.Exp, actor.Position, actor.Kills, actor.Defeats) : actor));
         string frozen = JsonSerializer.Serialize(before);
@@ -197,12 +205,14 @@ public sealed class SourceEnemyAiTests
     }
 
     [Fact]
-    public void NoTriggerRegionsActivatesTheActualActorAndUsesItsOwnCommandset()
+    public void UnconditionalRegionsDispatchTheOwnCommandsetWithoutMutatingActivation()
     {
         var before = State(commandset: 7, primaryRegion: 15, blockSouth: false, peer: false, allyPosition: new(5, 15));
         var after = SourceEnemyAi.Resolve(before, Enemy);
-        Assert.Equal((ushort)0x2071, after.Battle.GetActor(Enemy).ActivationWord);
-        Assert.Contains(after.Effects, effect => effect.Kind == "activation-word");
+        Assert.Equal((ushort)0x2070, after.Battle.GetActor(Enemy).ActivationWord);
+        Assert.DoesNotContain(after.Effects, effect => effect.Kind == "activation-word");
+        Assert.Contains(after.Effects, effect => effect.Kind == "ai-command-move-order1" && effect.After == -1);
+        Assert.Contains(after.Effects, effect => effect.Kind == "ai-command-move1" && effect.After == 0);
         Assert.DoesNotContain(after.Effects, effect => effect.Kind == "source-standby");
         Assert.Equal(before.ThinkingSeed, after.Battle.ThinkingSeed);
     }

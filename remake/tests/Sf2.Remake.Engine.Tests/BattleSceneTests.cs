@@ -22,7 +22,7 @@ public sealed class BattleSceneTests
         var victim = new ActorRef("raider");
         SelectAttack(session, victim); Accept(session, new Confirm());
         while (session.Current.BattleScene!.Phase != BattleScenePhase.FieldSpin) Step(session);
-        var actor = session.Current.BattleScene!.Action.Actor;
+        var actor = session.Current.BattleScene!.FieldDeath!.Actor;
         var position = session.Current.Battle.GetActor(victim).Position;
         int cursor = session.Current.Battle.Cursor;
         uint seed = session.Current.Battle.MainSeed, thinking = session.Current.Battle.ThinkingSeed;

@@ -2,13 +2,20 @@ extends SceneTree
 
 # Bounded real-keyboard check of the ordinary host. No state injection or screenshots.
 var view: Node
+var host: Node
 var failures: Array = []
 var samples: Array = []
 
 func _initialize() -> void:
+    create_timer(150).timeout.connect(func():
+        _check(false, "Observation exceeded 150 seconds")
+        _finish())
     call_deferred("_run")
 
 func _state(label: String = "") -> Dictionary:
+    view = host.get_node_or_null("ExplorationSessionView")
+    if view == null:
+        view = host.get_node("BattleSessionView")
     var result: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
     if not label.is_empty():
         samples.append({"label": label, "state": result})
@@ -67,6 +74,9 @@ func _layout() -> void:
         _check(_inside(state.mapViewport, size) and state.previewInsideMap, "Projected focus fits map " + str(size))
         for command in layout.commands:
             _check(_inside(command.rect, size), "Command fits " + str(size))
+            _check(command.art.shape == "square" and abs(command.rect.width - command.rect.height) < 1, "Cardinal command is square")
+            if OS.get_environment("SF2_DIAMOND_ORIGINAL_ICONS") == "1" and layout.diamondVisible:
+                _check(command.art.mounted and command.art.width == 24 and command.art.height == 24 and command.art.filter == "Nearest", "Original texture is mounted at native size with nearest sampling")
         if size.x >= 700:
             _check(abs(layout.description.x + layout.description.width - size.x + 16) <= 1, "Description hugs right safe edge")
         else:
@@ -76,19 +86,36 @@ func _layout() -> void:
         await process_frame
 
 func _run() -> void:
-    var host = load("res://Main.tscn").instantiate()
+    host = load("res://Main.tscn").instantiate()
     root.add_child(host)
     await process_frame
     await process_frame
-    view = host.get_node("BattleSessionView")
+    # The private tower entry runs its ordinary before-battle program and text.
+    # No session checkpoint, frame count or battle setter skips that admission.
+    while not _state().has("stage"):
+        var field := _state()
+        if field.get("failure") != null:
+            var expected := OS.get_environment("SF2_DIAMOND_EXPECT_FAILURE")
+            _check(not expected.is_empty() and str(field.failure) == expected, "Field consumer failure matches the selected negative case")
+            _state("field-admission-failure")
+            _finish()
+            return
+        if field.get("canWaitForText", false) or field.get("wait") == "ChoiceWait":
+            await _press(KEY_ENTER)
+        else:
+            await process_frame
+    await _settle()
     var initial := _state("initial")
+    _check(OS.get_environment("SF2_DIAMOND_EXPECT_FAILURE").is_empty(), "Negative case must not admit battle control")
     _check(initial.failure == null and initial.stage == "Movement", "Ordinary host starts at movement")
     if initial.failure != null:
         _finish()
         return
     await _press(KEY_ENTER)
     await _layout()
-    if OS.get_environment("SF2_DIAMOND_CASE") == "private":
+    if OS.get_environment("SF2_DIAMOND_CASE") in ["equipment", "give", "discard"]:
+        await _supplementary(initial)
+    elif OS.get_environment("SF2_DIAMOND_CASE") == "private":
         await _private_menus(initial)
     elif OS.get_environment("SF2_DIAMOND_CASE") == "physical":
         await _physical(initial)
@@ -96,9 +123,26 @@ func _run() -> void:
         await _menus(initial)
     _finish()
 
+func _supplementary(initial: Dictionary) -> void:
+    var extra: Array = {"equipment": [KEY_E, "EquipmentChoice"], "give": [KEY_G, "GiveItemChoice"],
+        "discard": [KEY_R, "DiscardItemChoice"]}[OS.get_environment("SF2_DIAMOND_CASE")]
+    await _press(extra[0])
+    var opened_extra := _state("supplementary-" + extra[1])
+    _check(opened_extra.stage == extra[1] and not opened_extra.menu.visible and opened_extra.failure == null,
+        "Existing supplementary command remains reachable")
+    await _press(KEY_ESCAPE)
+    var back := _state("supplementary-cancelled")
+    _check(back.stage == "ActionChoice" and back.menu.visible and back.mainSeed == initial.mainSeed and back.inventories == initial.inventories,
+        "Supplementary cancel returns to diamond without spending resources")
+
 func _private_menus(initial: Dictionary) -> void:
     for key in [KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN]:
         await _press(key)
+        if OS.get_environment("SF2_DIAMOND_ORIGINAL_ICONS") == "1":
+            var commands: Array = _state().menu.layout.commands
+            for command in commands:
+                var suffix := ".selected" if command.selected else ".normal"
+                _check(command.art.resource == "command-menu." + command.label.to_lower() + suffix, "Actual draw consumes the original normal/selected icon")
         await _press(KEY_ENTER)
         var opened := _state("private-choice-" + str(key))
         _check(opened.failure == null, "Private menu consumes actual admitted choices")

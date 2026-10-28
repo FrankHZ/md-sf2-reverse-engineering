@@ -13,6 +13,10 @@ functions, one H3 fixture can exercise several branches, and a parsed data table
 runtime semantics of every consumer. Report the evidence surface with explicit denominators instead
 of treating fixture or address counts as line coverage.
 
+Story-content coverage has a separate [chapter and connection owner](./story-content-coverage.md).
+It organizes accepted static research through the ending and Battle0, with explicit encounter and
+optional-content gaps; those prose owners do not change this ledger's fixture or index denominators.
+
 The strictest current executable-code proxy is **indexed file reach**: a source file counts once when
 at least one named symbol in it is connected through the research index to executable H2/H3 evidence.
 It says that the file has been reached, not that every instruction in the file is understood.
@@ -571,11 +575,14 @@ The current evidence is deep but narrow:
   reach the tail; the unchecked lookup leaves only raw/debug/corrupt state as an explicit boundary.
   Battle cutscene data now has a complete 61-file inventory: 59 labeled cutscenes enter through one
   unlabeled storage include container and have H1 bindings; one Battle 01 region script is an orphan
-  absent from the original build. Type/command shape is indexed, but story content and side effects
-  are explicitly not counted as reconstructed.
-- **Minimal or unindexed:** individual event-script content, conversations,
-  detailed shops/church flows, save payload semantics, maps beyond the Battle 01 slice,
-  graphics/audio runtime output, and most content tables.
+  absent from the original build. This inventory rail indexes type/command shape, not the story
+  content and side effects separately described by later content owners.
+- **Not implied by registered inventory/index reach:** comprehensive event/dialogue semantics,
+  every location-specific service journey, natural story routes beyond the bounded opening,
+  graphics/audio runtime output, and complete content behavior. This is an executable-evidence
+  boundary, not a claim that maps beyond Battle01 have no organized research. The
+  [story-content coverage owner](./story-content-coverage.md) distinguishes accepted static chapters,
+  conditional connections, encounter omissions, optional branches and actual consumer limits.
 
 Therefore 98.45% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
@@ -642,6 +649,363 @@ remaining files are explicitly owned H2 exceptions. Data-file discovery is also 
 deterministic H2 inventory; its 1,017/1,690 domain-aware reach includes 37 Z80 song files while the
 remaining gap reflects include-site-only map bodies, alternates, and unlabeled storage rather than
 unknown files.
+
+Accepted static story research already reaches Zeon, epilogue, credits and Battle0's reset caller.
+The [Battle28 bridge owner](./battle28-bridge-and-outcomes.md) covers its conditional entrances,
+complete scenes/formation/control boundary and outcomes/returns. The
+[Battle15 shrine owner](./battle15-shrine-approach-and-outcomes.md) connects exterior61,
+both50 admissions, complete scenes/formation/control boundary, hidden chest and outcomes/exits.
+The [Battle14 desert owner](./battle14-desert-encounter-and-outcomes.md) connects Map70 requests,
+base formation/conditional repeat upgrades, empty hooks, control, held-item drop and outcomes/exits.
+The [Fairy Woods44 owner](./battle44-fairy-woods-trial-and-records.md) connects Map23/24 invitation,
+hidden/respawning formation, leader terminal, timer/record and conditional returns.
+The [Village29/smith owner](./dwarven-village-and-mithril-smithing.md) connects the77 entrance,
+all local interactions/search/stairs and static order/readiness/collection/return lifecycle;
+earlier mine30 remains separate. Natural service visits and production consumption remain unproved.
+The [Hub63/Pipe64 and Claude owner](./magic-tunnel-hub-and-claude-recruitment.md) connects both
+entrances, bridge/pipe lifetimes, talk/item-use Arm removal, complete awakening/join/follow and
+exits/revisit. This is static content coverage, not natural travel, production or save acceptance.
+The [late Yeel05/Chaz/Lemon owner](./late-yeel-chaz-and-lemon-recruitment.md) connects both66 entrances,
+late populations/interactions/search, piano/stairs, both930 underground branches, distinct joins/follows
+and returns/revisits. It adds no natural-route, service/save, runtime/design or production acceptance.
+The [Battle02 account](./battle02-initialization-and-first-control.md) now joins its complete selected
+formation/orders to fresh/suspended initialization, changed party/death/capacity state, enemy refresh,
+activation/spawn/round and first-control routing. Existing entrance/outcome owners retain their
+conditional connections; controlled production admission/support limits remain separate.
+The [Battle03 account](./battle03-initialization-and-first-control.md) reuses the common lifecycle
+and joins its12/6/1/0 declaration to conditional Yeel egress assignment, region0/15 activation,
+the bat's masked placement item, completed503 upgrades and conditional first-control dispatch.
+The original airborne exclusion defect and production conversion/support limits remain explicit;
+this static account adds no natural arrival, runtime observation or all-action acceptance.
+The [Battle04 account](./battle04-initialization-and-first-control.md) connects its complete5/8/3/1
+selection and before scene/text keys to actual party initialization, equipment refresh,
+three initially untriggered regions, point/follow orders, standby and first-control dispatch.
+Battle04 is not a random-upgrade encounter and is not admitted by the current production
+producer/reader; class/movement/AI-word, ranged/equipped and suspended-entry limits remain explicit.
+Capture dialogue does not prove forced defeat. Existing admission/outcome owners remain separate;
+no runtime observation, all-action claim, fixture count or consumer frontier changes.
+The [Battle05 account](./battle05-initialization-and-first-control.md) connects its complete6/8/1/1
+selection and empty hooks to Map16/CASTLE metadata, actual party versus templates, equipped
+knight/archer/mage/soldier refresh, BLAZE1 operands, initially untriggered region0, SENTRY versus
+standby and first-control dispatch. It is not a random-upgrade encounter; six templates do not
+recruit Slade and stored FOLLOW_ENEMY0 is not a SENTRY movement command. Current production
+admission excludes5, with SENTRY/movement/AI-word, ranged/equipment/BLAZE and suspended-state
+limits explicit. Existing entrance/outcome owners remain separate; no new fixture, runtime,
+all-action or consumer frontier is claimed.
+The [Battle06 account](./battle06-opening-and-first-control.md) connects its complete6/9/1/0
+selection and before scene/text to Map66/OVERWORLD metadata, actual party versus scene actors,
+Dark Cleric HEAL1/HEALER3/live-follow129, equipped Galam enemies, initially untriggered region0
+and distinct NONE/special-order standby through conditional first-control dispatch. Before writes407;
+victory supplies506 separately. The random-upgrade selector omits6. Current production excludes6,
+with HEALER3/SENTRY, cleric prowess, movement/AI-word, ranged/equipment/spell and suspended-state
+limits explicit. Existing entrance/outcome owners retain their endpoints; this adds no fixture,
+runtime observation, all-action acceptance or consumer frontier.
+The [Battle07 account](./battle07-opening-and-first-control.md) connects its complete7/10/4/1
+selection and28-key before confrontation to Map58/TOWER_INTERIOR metadata, actual party,
+ten enemies and five F507-gated HP0 neutral actors. Seven templates do not recruit Kiwi;
+F83 clears only with the executed before. Four initially untriggered regions, distinct standby
+and live-follow129/133/136, unused point0, Smoke extra turns/DISPEL and equipped Galam refresh
+reach conditional first dispatch. The actual random-upgrade selector omits7. Production excludes7;
+hovering/extra-round-action data are expressible, while Smoke prowess/DISPEL, HEALER3/cleric
+prowess, ranged/equipment/spell and suspended-state limits remain explicit. Existing admission/
+outcome owners retain their endpoints; no fixture, runtime, all-action or consumer frontier changes.
+The [Battle08 account](./battle08-initialization-and-first-control.md) connects its complete13/11/4/1
+selection to Map72 area`(1,32,32,30)`, actual party/capacity and one F508-gated HP0 worker.
+It reuses the complete before owner and preserves F6/HP-aware Kiwi relocation and actual speaker130.
+Thirteen templates do not recruit thirteen allies. NORTH_CLIFF8 is in the actual random-upgrade
+list:508/effective-level/category/bounds/exclusions/retry/RNG selection precedes definition copy.
+All fresh positions miss four sloping regions under integer projection/CCR; six special-order
+region enemies stop on inactive standby, while five15/15 enemies bypass it. Distinct point0,
+enemy128 and ally0 orders reach conditional first dispatch. Production excludes8; repeat-upgrade,
+STEALTH_ARCHER/ranged/Hunter prowess, MAGE/FREEZE, equipment/refresh/capacity and suspend limits
+remain explicit. Existing before/outcome/New Granseal owners retain their scope; no fixture count,
+runtime observation, all-action acceptance or consumer frontier changes.
+The [Battle09 account](./battle09-initialization-and-first-control.md) connects its complete12/11/2/0
+selection to Map69 area`(0,0,48,32)`, actual party/refresh, empty hooks and no neutral entry.
+Peter's joined7/active39/AI bit2/follower67 states remain independent; templates/following prove
+no fixed party or first actor. F509/effective-level/category/bounds/exclusions/shared retry/RNG
+selection precedes definition copy, including the actual airborne count0 defect for both Bats.
+All twelve fresh positions miss two ordered regions under integer projection/CCR. Region-assigned
+NONE permits conditional standby movement, follow stops inactive standby and three15/15 enemies
+bypass it. Live enemy128/ally0 and no point destination reach conditional first dispatch.
+Production excludes9; Flying/Hovering and shared standby/follow/round mechanisms are reusable,
+while Bat poison prowess/BLAZE2, Hunter movement/range/prowess, Witch MAGE/FREEZE, equipped
+loadouts/general refresh/capacity, Peter AI/class/party and saved-state limits remain explicit.
+Existing admission/outcome/Ribble owners retain their scope; no fixture count, runtime observation,
+all-action acceptance or consumer frontier changes.
+The [Battle10 account](./battle10-initialization-and-first-control.md) connects its complete12/12/3/1
+selection to Map70 area`(0,0,32,32)`, actual May/Peter membership/AI/follower distinctions,
+empty hooks, no neutral and independent410/460/510/88. F510 effective-level/category/RNG
+upgrades begin at ordinaryE20 before definition copy; three Bats retain the airborne count0 defect.
+All twelve fresh positions miss three ordered regions under integer projection/CCR. Assigned
+point/follow orders stop inactive standby, NONE permits conditional local movement and five15/15
+enemies bypass it. Distinct point0/live137/134/ally0 and sets6/7/9 reach conditional first control.
+Witch129's successful AddItem returns unequipped19 after masking declared EQUIPPED/drop bits;
+ATT+5 or automatic support use does not follow. Actual held19/action targetDies/ally actor/enemy129,
+once-bit4 and recipient capacity govern the selected drop; dead/full recipient uses RARE deals
+with saturation. Generic cleanup/victory is not that award. Production excludes10; reusable shared
+mechanisms do not supply upgrades, general gear/spells/movement/prowess/party/suspend or Ring/
+action-drop/rare-deals consumers. Adjacent route/outcome/shrine owners retain their scope; no
+natural state/action/custody, fixture count, runtime observation or consumer frontier changes.
+The [Battle11 account](./battle11-initialization-and-first-control.md) connects complete12/10/4/1
+to exact Map48 trigger15,26/crop27×32, row11-before25 and independent411/461/511/88.
+Actual party/refresh and rebuilt battle entities differ from the retained admission owner's
+complete34-record/seven-text/Plane-B opening population. The real random list omits11: upgrade
+returns original definitions before level/category/exclusion/RNG even with511 set; no airborne
+upgrade defect follows here. All placement items are NOTHING and the separate drop table has
+no11 entry; Hobgoblin's Middle Axe/LEADER14 grants no special loot or leader-only victory.
+All12 fresh positions miss four ordered regions by integer projection/CCR. Assigned follow stops
+inactive standby, NONE permits conditional local movement, and three15/15 enemies bypass it.
+Fixed point0(15,4), live enemy128 and ally0 differ; set6 lacks MOVE_ORDER and set7 NONE fails its
+first ordered command before trying the remaining stream. Sets6/7/9/14 reach conditional first
+control, without a fixed actor. Production excludes11; existing descriptive Hobgoblin/Middle Axe,
+formation/order/Flying/round mechanisms are not missing. Coordinate-trigger admission, general
+refresh/equipped AI, Hunter/Witch/Bat movement/prowess/spells, arbitrary party/Peter and suspend
+remain explicit limits. Adjacent admission/outcome/Polca owners retain their scope; no natural
+state/actions/darkness/timing/persistence, fixture count, runtime observation or consumer frontier changes.
+The [Battle12 account](./battle12-initialization-and-first-control.md) connects complete12/12/4/1
+and sole Map52 wildcard/crop32×32 to independent412/462/512/88, empty dispatch hooks, actual
+party/refresh and scene-to-battle replacement. The random list and independent drop table omit12;
+no512 substitution or Battle10 airborne upgrade processing follows. All12 fresh positions miss
+four ordered regions under integer projection/CCR. Cloud129 uses1/3, Witch131/Hobgoblin137 use0/1,
+three others2/15 and six15/15; primary-first/sticky-secondary activation differs from NONE standby
+movement. Fixed point0(22,8), live128 and sets0/2/6/7/14 reach conditional control. Complete Archer/
+Cloud/Monk/Witch/Hobgoblin definitions retain gear, resistance/prowess and HEAL2/BLAST1/FREEZE1;
+HEALER3 is commandset2, not HEAL3; selected healing AI returns HEAL1 but its unmasked operand
+tests HEAL2's5 MP cost. Production excludes12. Trusted definition conversion, ARCHER/
+MAGE/range2–2, Monk prowess/sets0/2 AI, general gear/CURSE refresh, attack/healing spell AI,
+Peter/arbitrary party and suspend remain limits; Hovering/formation/orders/dual-region/round
+mechanisms exist. Descriptive resistance grants no executable attack/spell support. Existing
+admission/leader-outcome/Bedoe owners, retained failures, fixture counts and runtime/design/
+production frontiers remain unchanged; no natural party/first actor/action claim is added.
+The [Battle13 account](./battle13-initialization-and-first-control.md) connects complete12/16/3/1
+and sole Map13 wildcard/crop32×32 to independent413/463/513/88 and empty hooks.
+Actual Gerhalt F9/conditional41/capacity/HP and Peter's prior Volcanon join/AI-bit2 clear differ
+from templates/scene actors; F513-gated Luke neutral159 at16,13 has HP0/neutral bit3 and differs
+from ally10 membership/later F75 following/join; its physical mapping write is offset31, not63.
+Six base definitions retain gear, resistance/
+prowess and BLAZE2/HEAL2/BLAST1; the selected healing helper returns HEAL1 while checking the
+unmasked HEAL2 operand's5 MP cost. Random/substitution and special-drop tables omit13.
+All12 fresh positions miss three ordered regions by72 integer projection/CCR triangle tests.
+Primary-first2/2 belongs to134/136 following live135, while138 is1/15/NONE; no alternate-order
+selection follows. NONE versus assigned-follow standby and five15/15 enemies remain separate.
+Point0(9,24), live128/live135 and sets2/6/7/9/14 reach conditional control, not a fixed actor.
+Production excludes13. Existing definition lookup/formation/orders/standby/Hovering/activation/
+round mechanisms differ from trusted conversion, MAGE/ARCHER/range2–2, Monk/Zombie prowess,
+gear/CURSE refresh, attack/healing-spell AI, actual Gerhalt/Peter/Luke classes/join/control,
+neutral159/F513 and suspend requirements. Descriptive resistance grants no executable damage/
+status support. Existing admission/outcome/later-recruitment owners, retained failures, fixture
+counts and runtime/design/production frontiers remain unchanged; no natural state/action claim.
+The [Battle16 account](./battle16-initialization-and-first-control.md) connects complete12/11/0/0
+and sole Map49 wildcard/crop30×30 to independent416/466/516/88, actual party/refresh and scene
+replacement. The full intro/raft/Luke and leader/outcome/Hassan owners retain their boundaries.
+Complete Kraken Leg10/Arm59/Head87 definitions include resistance/prowess, no gear, AQUA1 and
+Head AGI153/double turns; unknownByte0 does not change Head87 identity. Random/substitution and
+independent drop tables omit16. Zero regions/points causes no polygon tests or assigned activation;
+15/15 normal AI bypasses standby. Eight SWARM actors and three ordinary legs133/134/138 differ.
+Threshold table5/4/2/2/3/0/0/4/1/3/0 uses ALLIES12−2/DBF10..0: exactly eleven HP-only checks over
+128–138, fresh0, without counting undeclared dead slots. Damage bypasses waiting; full healing
+can restore it. SWARM STAY/empty movement precedes normal-path tested-cache clearing. Complete
+15/6 streams, live135/131 orders and distinct ordinary AQUATIC/special Kraken costs reach
+conditional control, not a fixed actor/action. Production excludes16. Existing descriptive lookup,
+formation/NONE/live orders/zero-region/extra-turn support differs from trusted conversion,
+SWARM count/threshold/re-wait/stream15, AQUATIC/Kraken costs, Arm/Head ranges, all three prowess
+expressions, AQUA execution, actual party/control/refresh/suspend and Head special mapping/services.
+Descriptive resistance/spells are not executable support. No new natural observation, fixture
+counter, runtime/design/production frontier or retained failure status follows.
+The [Battle17 account](./battle17-initialization-and-first-control.md) connects complete12/14/2/0
+and ordered Map69 row9-before17/crop0,31/30×32 to independent417/467/517/88, actual party,
+healing/gear refresh and first conditional control. Hassan/zone/raft/Rohde/outcome owners retain
+scope. All fourteen rows and six complete definitions retain gear/spells/resistance/prowess.
+F517 selection precedes definition copy: REGULAR/MAGE/HEALER/FLYING and explicit BRASS_GUNNER
+classification differ. Launcher60 uses melee0..35; ordinary eligible candidates60..185 fail signed
+bounds, consume two RNG draws and fall back to60. Gargoyle's count0 exclusion scan can overread
+65,536 bytes, with no guaranteed successful substitution or safe base return. Special-drop table
+omits17; placement NOTHING retains definition gear. All48 triangle substitutions miss both regions;
+only135/136 assign0, but unassigned1 is still tested/cached. Assigned ally0 standby stops; twelve
+15/15 enemies bypass it. Live ally1/0/enemy141 differ from templates/points. Exact0/2/6/7 streams
+have MOVE_ORDER only in2/7; Monk HEAL2 input's returned HEAL1/check5MP remains explicit. Base
+round/control and repeated outcomes are conditional, not a fixed actor/action. Production excludes17.
+Generic definitions/formation/Flying/standby/live-follow/dead-target/round support differs from
+trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped refresh, stun/Golem/
+Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
+No new natural observation, fixture count, runtime/design/production frontier or retained failure
+status follows; all-action/natural-state and special-battle limits remain qualified.
+The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
+Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
+seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
+sword/Rohde producers and outcomes/Caravan owners retain scope. Fresh HP0 neutral159 writes
+lookup31 while the159 reader uses63; its sprite is not a working mapping. All96 triangle
+substitutions miss five regions, including two type3 triangles and negative projection. Primary-first
+activation/cache, NONE/live-follow standby and seven15/15 actors differ. Exact2/6/7/9/14 streams
+use live128/137/ally0; Taros's LEADER prepass reads absent point0 through the following12/15
+header before MOV0. Equipped110 supports conditional BOLT2 item use, not a performed cast;
+Monk's HEAL2 input retains HEAL1/check5MP. Bowie0's equipped61 initial gate, F112/toggle lifetime,
+double retention and counter reset/exclusion are separate. Sword drop requires target death,
+actual110, zero range32 draw and clear once-bit24 before removal/inventory/rare-deals. Two Taros
+round entries do not fix first actor/action/loot. Production excludes18. Generic definitions,
+formation, dual activation, Flying, LEADER and extra-turn support differ from trusted admission,
+type3 region rejection/signed geometry/cache, out-of-table point access, selected prowess/gear/
+ranges, MAGE/BRASS_GUNNER, HEALER3/spell/item AI, Bowie gate/counter/drop/deals, neutral mapping/
+services and actual party/refresh/control/suspend requirements. No new natural observation,
+fixture count, runtime/design/production frontier or completed failure status follows.
+The [Battle19 account](./battle19-initialization-and-first-control.md) joins12/15/3/1,
+Map68's sole wildcard19/crop5,19/48×32 and independent419/469/519/88 to actual
+party/final-CURSE refresh, six full bases and first conditional control. Caravan/request,
+outcome and village owners retain scope. F519 repeat selection uses E29+, actual categories,
+bounds/exclusions/retry/RNG, Launcher melee fallback and unsafe Gargoyle count0. Base stats/turns
+are not a repeated roster. All72 signed-projection/CCR triangle substitutions miss three type4
+regions; tested cache/persistent flags, primary1/0/2, eight15/15 actors and NONE/live-follow standby
+are distinct. Declared point0(14,19), live128/133/135/139/140 and exact2/6/7/9/14 streams
+retain short-circuit/dead-target conditions. Priest HEAL3/BLAST2 and Madam FREEZE2 use actual
+consumers; for current local input`$80`, healing's C0/A0/80 keys,20/3/10 costs and
+nonself≥11MP promotion differ from HEAL2. The caller writes the selected local entry before
+station selection; a failed candidate carries downgraded`$40/$00` into later candidates, limiting
+them to HEAL1/check5 or3MP without that promotion. Learned slots stay unchanged; a new HEAL
+command rereads them. PR1245's original16f4233a mechanical PASS missed this local lifetime;
+its independent P2 and original receipts remain preserved in the primary account.
+Successful AddItem masks Ball6010→0010; earlier equipped Power Stick also stops attack-item
+selection before Ball. Conditional use consumes the actual slot. Independent battle19/row1/16/
+bit6 drop requires targetDies/held16, no drop RNG, once-bit/removal and living-actor capacity or
+RARE-deals. Leader sweep grants no automatic action loot. Production excludes19. Generic
+formation/type4 regions/Flying/LEADER/valid-point/live orders/round support differs from trusted
+admission/conversion,519 selection, gear/ranges/prowess, MAGE/BRASS_GUNNER, HEALER3/healing/
+spell/item AI,16 consumption/drop/deals and actual party/refresh/control/suspend requirements.
+No fixture count, natural observation, runtime/design/production frontier or completed failure
+status changes; all-action/natural-state and special-battle limits stay qualified.
+The [Battle20 account](./battle20-initialization-and-first-control.md) joins12/12/0/0,
+Map51's sole wildcard20/crop18×26 and independent420/470/520/88 to actual party/final-CURSE
+refresh and first conditional control. Approach/request, outcome/Elric and passage owners
+retain their boundaries. All24 records and five full Harpy44/Madam70/Priest79/Orc12/Launcher60
+definitions retain gear/spells/resistance/prowess/movement; random-upgrade and special-drop
+tables omit20. Zero regions return before geometry/cache/assignment work; all15/15/STARTING
+rows bypass normal standby without a wave. SWARM128/134/139 use3/2/1; ordinary137/138 use6.
+ALLIES12−2/DBF10..0 checks HP128–138 only, omitting actual139 and neutral159, fresh count0.
+Damage bypasses waiting; full healing may restore it. STAY/empty movement precedes normal
+cache clearing/orders, while all exits clear temporary obstructions. Exact2/6/9/15 streams,
+live131/129/133/136, dead-target promotion and earlier-success short-circuits remain conditional.
+Harpy DISPEL has actual SUPPORT/5MP/area-score≥2/station consumers; HEAL3 retains the corrected
+candidate-local downgrade and fresh-command reset. F520-clear neutral159 hasHP0/6,6/physical
+ENTNUM but writes31/read63/FF, distinct from Elric13/active45 and later recruitment. Its complete
+immersion/double-speed four-facing loop is not observed presentation. Production excludes20.
+Existing Flying/live-order/dead-target/zero-region/round mechanisms differ from trusted conversion,
+SWARM count/threshold/re-wait/stream15, HEALER3/healing/DISPEL/offensive spell decisions, selected
+poison/Orc prowess/gear/ranges/MAGE/BRASS_GUNNER, neutral mapping/services and actual party/status/
+control/suspend requirements. No fixture metric, natural observation, four-frontier or completed
+failure status changes; all-action/natural-state and special-battle limits stay qualified.
+The [Battle21 account](./battle21-initialization-and-first-control.md) joins12/12/4/0,
+sole Map67 wildcard21/crop21,0/32×42 and independent421/471/521/88 to actual party/
+final-CURSE refresh and conditional first control. All24 records, four exact regions and
+six full Skeleton17/Orc12/Harpy44/Launcher60/Madam70/Priest79 bases retain gear/spells/
+resistance/prowess/movement and Skeleton ENHANCED. All96 fresh signed-projection triangles
+miss; tested-cache/persistent flags, primary0/1/2/3 versus15/15, NONE/live128/131/135
+standby and exact0/2/6/9 streams remain conditional. Harpy names imply no SWARM. F521
+admits E31/category/bounds/exclusions/two-attempt repeat selection; BRASS_GUNNER melee
+falls back and FLYING count0 is unsafe, without asserting an installed repeated roster. AddItem807F
+strips Herb2000 AI-use/Ring4094 equipped/drop metadata, retaining copied weapons and no
+Ring DEF+5. Actual item/HEAL/SUPPORT/attack filters, earlier-slot termination, DISPEL
+area scoring and candidate-local HEAL3 differ from declarations. Independent135 held62/
+once7 and129 held20/once8 drops need ally actor/action death, take no selected drop RNG,
+and retain removal/capacity/actorHP/RARE-deals/once and conditional item-use boundaries.
+Production excludes21; formation/live-order/Flying/region/round mechanisms are reusable,
+separately from trusted conversion, signed geometry/cache, ENHANCED/gear/movers/prowess,
+exact0/2/healing/DISPEL/offensive spells/items/drop/repeat and party/refresh/control/suspend.
+Opening/outcome owners retain scenes/leader sweep/return. No fixture metric, natural/runtime/
+design/production frontier or completed failure changes; all-action/natural-state and
+special-battle limits stay qualified.
+The [Battle22 account](./battle22-initialization-and-first-control.md) joins12/16/0/1,
+all28 records, Map22 row22/crop9,0/30×30 and422/472/522/88 to actual party/final-CURSE
+refresh and conditional control. Six full chess definitions preserve King89 raw0,
+Bishop80's actual enum, enhanced versus declared power, copied gear/ranges/prowess,
+spells/movers/AI and refresh. All15/15/STARTING and zero regions require no geometry
+helper or hidden wave. Nine SWARM actors use1/3/6 thresholds; Bishop131's table6 does
+not gate HEALER4. HP-only128–138 omits139–143; full-HP count0 waiting, damage bypass
+and re-healed wait precede normal cache/order work. Exact2/3/7/9/14/15 streams,
+HEALER3 MOVE2 versus HEALER4 MOVE1, valid King point0/live128/137/136/132/134,
+candidate-local HEAL3 and actual BLAZE/FREEZE/BLAST/item filters retain conditions.
+KingAGI161 supplies ordinary33 plus extra, not a fixed first actor. F522-clear159/158
+neutralHP0/physical ENTNUM and writes31/30 versus readers63/62 remain distinct from
+King128 and actual party. Production excludes22; LEADER/valid point/live-order/
+zero-region/round primitives are reusable, separately from trusted conversion,
+SWARM count/threshold/re-wait/exact15, exact2/3 AI, enhanced/gear/prowess/spells/movers,
+neutral and actual party/status/control/suspend gaps. Entry/outcome/reward owners
+retain their scope. No fixture metric, four-frontier or completed failure changes;
+natural state/actions remain Unknown; all-action and special-battle limits stay qualified.
+The [Battle23 account](./battle23-initialization-and-first-control.md) joins12/12/1/1,
+all24 records/306bytes, sole Map27 row23/crop23,14/27×16 and423/473/523/88 to
+actual party/final-CURSE and conditional control. Full ordinal Willard90(raw0)/Rat15/
+Ooze16 definitions preserve stats/resistance/prowess/spellPower/AI, empty gear and
+AQUA2. No repeat substitution/drop/neutral/SWARM is selected; halfEXP1, after-leader
+positioning5 and timer44 are independent. All24 source projection/CCR cases miss
+region0; tested misses/cache reset/persistentF90 and extra160's conditional deals
+alias differ. Six0/15 versus six15/15 actors, NONE standby, live ally0 versus valid
+point0(22,3), live128/137, exact6/7/9/14/prepasses and dead-target promotion retain
+conditions. AQUA2/`$68` costs0 and passes ordinary enemy usability atMP0, but the
+confused/ally whitelist excludes it. Full`$68` misses exact`$28` AQUA1 category shortcut;
+RNG6 remains before spell/physical selection, then actual priorities/stations/paths.
+Willard enhanced/no learned spells and AGI165 ordinary37/extra30 do not establish an
+action or first actor. Production excludes23. Existing STEALTH/LEADER/point/live-order/
+standby/round mechanisms differ from trusted selection, signed geometry/cache,
+ENHANCED/prowess/AQUA/party/refresh/status/control/suspend and actor/services gaps.
+Admission/outcome owners retain scenes and return. No fixture metric, natural
+observation, four-frontier or completed failure status changes; all-action/natural-state
+and special-battle limits stay qualified.
+The [Battle24 account](./battle24-initialization-and-first-control.md) joins
+12/16/3/1, all28 records/378bytes, Map72 admission/crop1,32/32×30 and independent
+424/474/524/88 through actual party/final-CURSE, empty hooks and conditional first
+control. Four full ordinal81/62/17/45 definitions retain raw/spellPower/level,
+stats/resistance/prowess/gear/spells/movers/AI and difficulty/equipment refresh.
+All72 signed-projection/CCR substitutions miss three exact type4 regions;
+tested-cache/persistentF90–92, primary-first/sticky-secondary/NONE, ten assigned
+versus six15/15 actors and conditional160 alias remain distinct. Point0(25,7),
+live128/134/140/ally0 and full2/6/7/9/14 streams retain standby/prepass/promotion/
+earlier-success conditions. No SWARM/neutral/leader-cleanup applies; halfEXP1,
+after-position5 and timer44 stay separate. F524 E34/category/range/exclusion/
+retry/airborne overread cannot promise a repeat roster. AURA1's7MP/area priority/
+local01/station differs from HEAL3; full BLAST3/BLAZE3 keys retain rank/category
+and later enhanced-effect seams. BOOST2 fails SUPPORT's early exact gate.
+AddItem807F strips Herb/Blizzard AI/drop bits; copied weapon/getter termination,
+conditional use/consumption and independent slot135/133/140 held17/0 once9/20/21
+remove/receipt/deals remain conditional. Production excludes24: generic formation,
+point/live/Flying/round support differs from actual trusted selection, signed
+geometry/cache,524 substitution, ENHANCED/prowess/gear/STEALTH_ARCHER/ranges,
+exact2 AI/spells/items and party/status/control/suspend/service gaps. Existing
+travel/cave/outcome owners retain their scope. No fixture metric, four-frontier,
+natural observation or completed failure changes; all-action/natural-state and
+special-battle limits stay qualified.
+The [Battle25 account](./battle25-initialization-and-first-control.md) joins
+Map48 exact11/25 triggers, crop28,0/32×32, independent425/475/525/88 and empty
+hooks to actual party/final-CURSE, CAVE background and12/15/3/0. All27 records/
+364bytes and full ordinal18/81/45/62/17 definitions retain raw/spellPower/level,
+stats/resistance/prowess, gear/four spells/movers/AI and difficulty refresh.
+All72 signed-projection/CCR triangle substitutions miss; tested-cache versus
+persistentF90–92, equal1/1 primary priority/sticky-secondary, ten assigned versus
+five15/15 and conditional160 alias stay distinct. Actual live129/130→128,
+131→132→133,138→139,141→142 and exact2/6/9 streams retain standby/prepasses/
+promotion/earlier-success conditions. No point/LEADER/SWARM/neutral/region
+program or repeat substitution is selected;525 cannot enable the latter.
+HalfEXP1/after-position5/timer44 remain separate. ATTACK1 passes TYPE_SUPPORT
+getter but fails SUPPORT's early full-word MUDDLE2/DISPEL gate before MP,
+targets/station, as does BOOST2. AURA1 area/local01/7MP/station and full-key
+BLAST3/BLAZE3 affordable-rank/category/effect boundaries remain conditional.
+Large Axe ATT+25/adjacent metadata, copied gear, masked Herb2000/6000,
+weapon-NOTHING getter termination and conditional use/consumption differ from
+independent133/142 held0 once22/23 no-RNG action drops/remove/receipt/deals.
+Production excludes25 including exact-trigger producer/trust selection;
+formation/live orders/Flying/round/control are reusable, while signed geometry/
+cache, ENHANCED/prowess/gear/STEALTH_ARCHER, exact2/spell/item/party/status/
+suspend/services need actual conversion. Admission/opening/outcome/return
+owners retain their scope. No fixture metric, four-frontier, natural
+observation or completed failure changes. All-action, natural-state,
+special-battle/production limits and unassessed town/state census remain;
+this selected set is not full-game completion or an automatic next queue.
+The [bounded remaining-gap assessment](./story-content-coverage.md#remaining-labels-and-next-content-task)
+retains the already-explained Creed late offers and generic services, other qualified encounter
+limits and the unassessed town/state census; it selects no automatic replacement task.
+The [story frontier](./story-content-coverage.md#encounter-omission-check) retains qualified encounter
+and optional-content limits; the [consumer distinction](./story-content-coverage.md#four-different-frontiers)
+separates that research from original runtime, English design and current remake capability.
+It does not extend H2/H3 fixture counts or establish full-game/natural-path completion.
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage. The
 current frontier is the highest-priority honest independent static H2 gaps: event semantics/state

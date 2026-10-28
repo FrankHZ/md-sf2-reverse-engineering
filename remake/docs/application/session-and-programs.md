@@ -1,5 +1,507 @@
 # Session and Resumable Programs
 
+## Jaro victory program continuation
+
+The [High-rigor agreement](../domain/gameplay-rules.md#authored-jaro-victory-recruitment) uses the
+existing `GameSession`, `BattleOutcome` and `ProgramRunner`. Ordinary victory selects the return
+anchor and heals eligible living actors before scene dispatch. The first-completion authored program
+runs join23, visible acknowledgement and ten ticks, AI-bit clear, visible reply, leave23, then its
+return. These are authored delivery waits, not an original music/jump/presentation timing claim.
+
+`OutcomePartyOperations` admits only exploration with `VictoryProgramFinished`, an outcome route,
+the source30/0/32/12 flag layout and a retained allied member in that encounter. Clear requires a
+known activation word. Operations publish through the ordinary per-instruction commit and advance
+the existing cursor; no second roster or broad workflow service is introduced. `JoinResources`
+continues to preserve existing actor objects. Leave preserves the cached lists until common join0.
+The tail clears432 then sets532 and executes the existing return program before field control.
+
+Completed532 bypasses all recruitment instructions but retains that common tail. Retried selected
+policy failures resume the failing cursor/continuation with prior joins, activation, leave and waits
+committed. Stale revisions/tokens reject; unknown required state fails explicitly. No post-start
+state injection is needed to run the package. Runtime raw combatant coordinates and physical aliases
+are not retained by this outcome representation; source X-only removal is bounded by the rule owner.
+
+## Poison after-turn continuation
+
+The [finite High-rigor agreement and source provenance](../domain/gameplay-rules.md#authored-poison-after-turn)
+cover standalone poison only. Normal action/scene publication and costs precede poison. The first
+outcome pass skips poison for resolved victory/defeat or a dead/unplaced acting actor. Eligible
+QueueOnly automatic standby also enters the existing publisher, retaining prior first-ally custody.
+
+`BattlePoisonContinuation` waits on typed `PoisonDamageMessage` delivery before publishing clamped
+HP. Survivors retain status2, complete after-turn once, then check outcome/consume one queue slot.
+Lethal HP remains placed with status2 during `PoisonExhaustedMessage`; its completion starts the
+existing field-death batch. Spin/exit/cleanup/settle preserve their order. The retained `AfterTurn`
+return operand sends field-settle directly to the second outcome/count pass, never to action
+publication, the defeated hook, rewards or another poison tick.
+
+A later failure retains the accepted prefix. Missing death credit keeps HP0 and the exhaustion token;
+accounting failure keeps the field-exit token; second outcome failure keeps `PoisonFinalize` after
+nonlethal HP publication or the existing field-settle stage after cleanup. A matching completion
+retries only that stage. Stale/wrong/duplicate completions reject without mutation. Sleep keeps its
+existing continuation and RNG behavior.
+
+A poison-enabled standalone encounter supplies the existing leader/enemy outcome binding. With no
+exploration world, `BattleOutcome.Begin` records `ActiveBattle.Outcome` and `BattleEnded`; terminal
+commands reject and the host displays Victory/Defeat. The same boundary handles an already-dead
+leader at controlled start. This is a modern standalone terminal result, not an original return,
+chapter progression or save/load implementation. Connected/private return programs are unchanged.
+
+## Battle discard selection and completion
+
+`BeginDiscard` is valid at ActionChoice and enters DiscardItemChoice. `SelectDiscardItem(slot)`
+selects an exact live packed word, including duplicate identities in separate slots. Protected items
+remain visible and Confirm returns typed `discard-unsellable` without changing the snapshot.
+Confirm on a permitted item enters DiscardCommitReady; final Confirm revalidates actor, word,
+metadata and required custody before publishing. Wrong-stage, empty, stale and wrong-actor inputs
+return typed failures. Cancel from either Drop selection stage returns ActionChoice for free.
+Selection and cancellation retain provisional movement and authoritative resources/turn/RNG.
+
+`BattleDiscardContinuation` publishes the finite loadout/equipment/Deals change once and retains
+ActionChoice plus its existing movement preview behind `BattleDiscardState`. Its authored text and
+WaitToken require actual CompleteTextReveal followed by Acknowledge. Pending input, duplicate/stale
+delivery and acknowledgement cannot repeat mutation or select the next compacted item. The wait
+blocks battle control; acknowledgement releases the same actor's same action. GameSession bypasses
+outcome/defeated hooks for this free interaction. There is no battle scene, STAY, movement commit,
+after-turn or next-turn dispatch. Outer Cancel later returns to movement while retaining accepted
+inventory/equipment/Deals, and an ordinary subsequent action uses the usual commit/turn lifecycle.
+The [domain owner](../domain/gameplay-rules.md#authored-battle-discard) records source order and limits.
+
+## Battle Give selection and completion
+
+`BeginGive` enters `GiveItemChoice` from `ActionChoice`; `SelectGiveItem(slot)` changes only
+selection. Confirm enters `GiveTargetChoice`, where `SelectTarget(actor)` chooses an adjacent
+admitted teammate. Confirm selects normal `GiveCommitReady` or, for a full recipient,
+`GiveExchangeChoice`. `SelectGiveReturn(slot)` selects the exact return word; Confirm reaches
+`GiveCommitReady`. Final Confirm revalidates live actor/destination, both selected words and capacity.
+Unknown targets return a typed rejection before lookup. Session/revision/actor envelope checks apply.
+
+Cancel backs up one selection stage: confirmation to recipient/return item, return item to
+recipient, recipient to donor item, donor item to actions. It preserves authoritative positions,
+loadouts, resources, turn and RNG. Existing movement delivery may change facing/visuals; the move
+remains provisional until the accepted action. Use/equip/transfer offers are separate.
+
+`BattleGiveContinuation.Begin` publishes both loadouts, refreshed ATT and committed movement once.
+Its `BattleGiveState` carries an authored result and `WaitToken`; no battle scene or rewards are
+created. Actual `CompleteTextReveal` precedes `Acknowledge`. Acknowledgement resumes the existing
+no-scene STAY suffix (`BattleActionCommitter` and `BattleAdvancer`), consuming the giver's queue
+entry once. Stale/duplicate waits reject; a later suffix failure preserves the published transfer
+and stops that continuation. Ordinary subsequent rounds retain their own RNG behavior.
+
+The [Give owner](../domain/gameplay-rules.md#authored-battle-give-and-exchange) owns source order,
+admission and limits. This is an authored standalone interaction; no original result dialogue,
+hardware timing, field/service inventory or private persistence claim is made.
+
+## Battle equipment selection
+
+`BeginEquipment` is admitted at `ActionChoice`; `SelectEquipment(slot)` is admitted only within
+`EquipmentChoice`. Both publish selection only. The query exposes eligible slot labels, current
+equipped markers and prospective ATT/range without constructing an action or mutating battle state.
+Initial focus is the currently equipped slot, Unarmed where offered, or the first weapon when four
+eligible slots exclude Unarmed. A zero-weapon list refuses entry.
+
+Cancel returns to the same action menu and movement preview with authoritative equipment/stats
+unchanged. Confirm revalidates the current actor, status, class/slot eligibility, selected packed
+word and live stats, then publishes equipment and derived ATT together exactly once. The existing
+session envelope rejects wrong session, stale revision, duplicate submission and wrong actor.
+Confirmation returns to `ActionChoice`, not the action committer/scene/turn advancer. A later
+movement/action Cancel preserves confirmed equipment; it never restores a starting loadout.
+
+This is a standalone authored weapon interaction. It introduces no item custody transfer, payment,
+RNG, turn consumption or connected/private persistence. See the
+[domain owner](../domain/gameplay-rules.md#authored-battle-weapon-equipment) and
+[content boundary](../content/profiles-and-trust.md#authored-weapon-admission).
+
+## Ordered AURA recovery
+
+AURA uses ordinary spell/target/confirm commands and existing healing preparation and scene owners.
+`ValidateHealing` requires the exact ordered eligible recipient list, valid deferred recoveries,
+unchanged unrelated state and a valid construction RNG chain. Selection/cancellation, unavailable
+options and stale commands do not publish resources or RNG.
+
+Construction publishes movement and one award RNG computation with ordered contribution facts;
+persistent HP/MP/EXP remain unchanged. One ActionMessage completion pays MP. SpellCost and one
+ActionAnimation precede the first recovery. Each TargetEnter completion applies its recovery and
+emits `healing-recovery`, including zero amounts. ResultMessage advances to the next exit/entry
+without repeating cast/payment. The last result proceeds through idle/stop/restoration to one credit,
+reward text and live-seed growth. End releases the existing after-turn/next-control path. Self
+recovery preserves paid MP. Later credit/growth refusal retains the committed prefix, token and
+queue; retry cannot replay earlier recipients/payment.
+
+Authored AURA has no `HealingSceneCursor` fairy work. Finite actual delivery owns its waits;
+the [view](../godot/battle-scenes.md#authored-aura-recovery) makes no original opportunity/RNG parity
+claim. HEAL keeps its existing fairy continuation; physical/Herb/Prism retain their existing paths.
+The [rule owner](../domain/gameplay-rules.md#authored-aura-group-healing) owns source provenance.
+
+## Caravan boarding, travel and landing
+
+`CaravanDefinition` supplies explicit authored bindings; `ExplorationState.TravelMode` and
+`CurrentEntities` belong to the same live world as its physical actors and logical aliases.
+`CaravanPrograms` constructs finite typed story/entity programs for numeric events 2/4.
+`MapEventDispatcher` selects the walking producer or mode1 controller; no presenter toggles mode.
+Walking reaches a 0x3800 marker only after source obstruction and shrunk-bound checks, requires F65
+in exploration, and requests event 2 before raw blocking without moving or decrementing StepCounter.
+The vehicle uses unshrunk bounds, current physical positions only, and no walking slope/zone/step tail.
+It travels on 0x3800 even with raw blocking bits, requests event 4 on other admitted words below 0xC000,
+and otherwise blocks. Both controllers compare the single admitted, loaded area without reselecting
+it after scripted movement or raw physical 1 cloning outside its bounds; only the attempted direction
+is bounded. Unsupported door/warp/copy markers and map replacement fail explicitly.
+
+**Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/map/vehiclefunctions.asm:MapEventType2/cs_45284/eas_452BA/byte_45316/MapEventType4/cs_45348/eas_4536C`,
+`code/common/scripting/entity/entityscriptengine_2.asm:esc02/esc07/esc09/esc0D/esc0E/loc_55C8/esc03`,
+`entityfunctions_3.asm:ApplyActscriptToFollowers/WaitForPartyEntitiesIdle`,
+`code/common/scripting/map/followersfunctions_2.asm:InitializeFollowerActscripts`,
+`data/scripting/entity/followers.asm` and `eas_main.asm`; see the
+[accepted Caravan research](../../../docs/research/caravan-boarding-and-southwest-parmecia-travel.md).
+These static sources do not establish natural original reach, timing or persistence.
+
+Logical FOLLOWER_A, raw physical 0/1 and the current list suffix are separate operands. Facing-relative
+motion reads current coordinates, bypasses collision and supports the source table's diagonal entries
+created by scripted motion. Clone copies position/destination/travel/facing, not velocity, sprite,
+resources or membership. Raw 0x6000 parking does not enlarge MapPosition's legal layout domain.
+Resize uses per-actor flags and shared SpriteSize; each refresh retains its sampled RenderSize for
+actual presentation. Warp-sound requests retain order; the authored package supplies no original audio.
+
+Both transitions reuse script-idle, physical destination, sprite-ready and view waits. The final
+`PhysicalEntityWait` waits only the last current-list suffix actor, with no invented join-all.
+Empty suffixes return immediately. Missing logical bindings, zero speeds and undelivered sprites
+retain earlier writes and current mode. External admission validates every current-list slot and
+forbids population replacement; reached slot checks do not silently remove or repair entries.
+
+Event 4 first clones raw 0 into the mapped vehicle, restores the admitted live player's appearance
+using its current HP and fixed class binding, then grows/moves the player and current suffix from
+current facing. Mode1 remains authoritative through those waits. Reinstall scans current source
+flag rows, chooses normal versus F65/overworld pointer table and assigns scripts to consecutive slots
+by selected-row ordinal. It does not consult or rebuild the current list. Pointer assignment preserves
+motion; settings execute at the next entity service. Overworld scripts 2/3 retarget while moving;
+ordinary scripts wait for destination. More than five selected rows or missing required slots are
+explicitly Unsupported before reinstall; the already grown scene and mode1 remain committed.
+Only successful reinstall commits mode0. Landing does not itself run a zone or decrement steps.
+
+The source timer operands and modern sprite/camera completion are deterministic delivery boundaries,
+not original frame durations. The public host pauses ticks and completions while hidden/unfocused.
+`CaravanTests` exercises changed state/content, pending/stale completion, source list/lookup
+counterexamples, current/destination obstruction and later ordinary walking through one session.
+No saved vehicle placement, acquisition flow, generic vehicle platform or second publisher exists.
+
+## Battle-context region programs
+
+Physical position is updated at initial placement and acknowledged movement delivery, never by
+blanket snapshot synchronization. Conversion's intermediate logical placement preserves the old
+ally physical slot even when the later alias copy fails. Decision/action transaction invariants
+preserve the visual state; selected rules cannot replace or drop its mappings.
+
+The finite round order is activation → first eligible ordered region row → played flag → shared
+ProgramRunner → spawn/reset/appearance → queue. Wrapper admission tests only region and played flag;
+it adds no HP, joined-membership or conversion-completion guard. Both matching rows choose the first.
+`BattleRoundState.Program` retains the round stage while `ActiveBattle` and the existing `StoryState`
+cursor, callers and typed wait remain authoritative. It never creates an exploration world.
+
+Standalone authored battle programs/texts live in `BattleStoryDefinition`; they use the same typed
+instruction decoder, ProgramRunner and completion dispatcher as field programs. Battle-safe operations
+are ordinary flag/branch/jump/call/return/end, text cursor/simple dialogue/close, ticks, semantic camera
+target/CameraWait, facing, `ConvertBattleActor` and `JoinBattleForceAi`. Field-only operations reject
+at the reached PC. Source map-script epilogues, entity-service calls, rich field text/media and other
+presentation cues are not silently admitted. Story updates survive BattleAdvancer, selection commands
+and GameSession publication; no outer incoming-story restore can erase the program's writes.
+
+`BattleStoryOperations` commits conversion and JoinForce steps in source order. A late invalid alias
+returns the last committed snapshot with unchanged conversion PC and the played flag held. Such an
+Unsupported session remains stopped; it is not reset/retried from the wrapper. Wrong/stale completions
+at a valid wait reject without advancing PC, RNG, conversion or queue. Actual matching acknowledgement
+or presentation completion resumes once, including nested calls. The existing spawn phase runs only
+after the program returns; queue generation sees the resulting live actors. A later battle-action
+failure retains the ordinary committed movement/scene prefix.
+
+`BattleVisualState` holds explicit logical-to-physical aliases and retained physical appearance,
+coordinates/facing for the finite authored scene. Camera/text resolves that alias even for a dead
+ally; facing skips the lookup for HP0 allies. Logical combat identity and resources stay with the two
+actors. Godot projects the bound appearance and ordinary movement from the session, never deciding
+faction/control from a sprite. The separate [authored victory suffix](#jaro-victory-program-continuation) is implemented. Full original physical entity services and private Battle32 victory recruitment
+are separate unsupported consumers. See the [rule owner](../domain/gameplay-rules.md#jaro-conversion-and-source-ally-commandset6).
+
+## Round prefix and appearance continuation
+
+`BattleRoundContinuation` uses the existing `GameSession` publisher. Activation and the optional battle-context
+program stage precede the ordered whole-list reset. One immutable `BattleRoundState` then holds
+successful actor IDs, appearance cursor and completion token; live actors remain solely in
+`EngineBattleState`. Both successful and refused reset facts are observable. No future battle or
+parallel region store is retained.
+
+Each actual `EntityEffect` completion advances one appearance. Wrong/stale/duplicate completions
+reject without resetting actors, consuming RNG or generating turns. The complete list is loaded before
+the first appearance, but Godot hides later pending actors. Only after the last appearance does
+`GenerateQueue` consume live placement/HP/agility and main RNG. A later decision failure keeps the
+already delivered appearance prefix and generated queue; it cannot replay reset. Story and item/death
+custody survive the continuation. Outcome selection waits for appearance delivery and otherwise keeps
+its existing precedence, including termination before a new round.
+
+Authored encounters with initialization retain validated immutable encounter starts. The existing
+`BattleEntry` overlays live party allies and custody on fresh enemy defaults; `BattleOutcome` carries
+initialized state with ally vitals/loadout. Fresh mode2 may therefore appear again after an encounter
+return/retry, without being eligible for same-encounter reappearance after an ordinary death. The
+[capability agreement](../capability-status.md#hidden-enemy-lifecycle-agreement) owns acceptance and exclusions.
+
+## Prism laser continuation
+
+`BattleAutomaticAction.ChosenAction` carries the selected finite laser through the existing automatic
+movement consumer. Ordinary target decisions retain their physical default; a laser focus is not
+substituted for its live hit list. The laser rule rebuilds both factions at construction and retains
+an immutable `PrismLaserShot` with origin, direction, old focus and source-ordered targets.
+
+The existing `BattleSceneState` owns the candidate and token. Empty laser scenes expose no reaction
+target or displayed ally, still pass Initialize → ActionMessage → ActionAnimation → End, then
+resume the ordinary action continuation. Nonempty scenes announce/animate once and enter each
+ordered target/reaction/result/death sequence without announcing another shot. HP/status and reaction
+RNG publish only at the later reaction boundary. Godot completes the finite visual; no observation
+or probe can advance it by claiming success.
+
+`BattleDeathCredit` is one immutable accounting context in the live battle, retained through
+no-scene turns. Scene initialization installs a known-none laser context or ordinary first ally.
+The field continuation captures that context for its ordered death batch. Unknown context remains
+an error; known-none permits enemy removal without kill credit, including a leader sweep. Ally
+defeats remain required. Cleanup finishes before defeat-before-victory/outcome selection. A later
+failure preserves already accepted HP/RNG, removals and token boundaries; retries do not reconstruct
+the shot. Tests cover real automatic input/control, empty scenes, ordered friendly fire, sweep and
+failure recovery. See the [rule/source accounting join](../domain/gameplay-rules.md#finite-prism-laser).
+
+
+## Battle item custody and receipt playback
+
+`BattleItemCustody` is one immutable value containing separate drop-once bits and per-item Deals
+counts. The active `EngineBattleState` owns it in battle; the active exploration `Party` owns it in
+field mode. `BattleOutcome` transfers it alongside live ally loadouts, progress, accounting and RNG;
+`BattleEntry` consumes that party value when constructing a new battle. No StoryState flags, presenter
+store, pending scene or encounter default becomes a competing live authority. Null means unknown,
+not an empty store, and drop-enabled battle admission rejects it.
+
+All existing party reconstruction paths retain the value: recovery/defeat/retreat, field RNG,
+portrait/text polling, resource restoration, join and encounter entry. The return-policy boundary
+rejects a policy that replaces it. Drop-enabled authored encounters retain immutable controlled
+enemy starts. Reentry reconstructs those enemies but overlays the party's live ally inventory; a
+fresh enemy may hold its initial item again while the retained once bit prevents another receipt.
+
+Physical construction commits inventory/once/Deals exactly once with the accepted action. Each
+reaction may retain a successful `BattleItemReceipt` for later display. After its death message,
+`ItemDroppedMessage` then `ItemReceivedMessage` use the ordinary scene token/acknowledgement path,
+before EXP/growth/gold playback. They do not mutate inventory. A rejected or stale completion cannot
+replay construction; later growth/outcome failure preserves already committed inventory and stock.
+Deals/discard fallback has no new player-facing message or wait. `item-to-deals`/`item-discarded`
+observations and the active-mode `itemCustody` projection expose committed facts to inspection.
+
+The [native recipe](../development-and-verification.md#battle-item-drop-authored-observations)
+observes both variants through real waits and a second ordinary kill. Its authored retry trigger is
+controlled content, not a claim about the original Battle18 encounter-entry/after-program route.
+
+## Ordered leader cleanup and retained accounting
+
+`BattleActionCommitter` owns the first post-action checkpoint for completed scenes and no-scene
+Stay, sleeping, dead and automatic-standby turns in cleanup-enabled encounters. It evaluates the
+existing defeated hook, combines ordinary deaths with the finite source-ordered survivor sweep,
+and starts `BattleFieldDeathContinuation` before asking the outcome policy. A held completion
+flag records the skipped empty program while still admitting the sweep.
+
+`EngineBattleState.DeathCredit` starts unknown and is assigned by each real admitted physical,
+HEAL or item scene; `FirstAlly` projects its optional ally. Laser assigns known-none as described above.
+No-scene turns preserve the context; they do not substitute the current actor.
+A reached nonempty cleanup without a known context fails `death-first-ally-context` before cleanup
+or outcome publication. Controlled starts cannot invent prior source scene state. Unsupported
+ranged enemy/spell callers remain outside this extension; the finite laser has its own admitted path.
+
+The extracted continuation retains only caller/destination/first-ally operands and the immutable
+ordered worklist. It has no synthetic `BattleActionResolution` and no second actor snapshot.
+All listed actors pass through twelve spin deliveries, three exit deliveries and one settle
+wait. Accounting/removal is one finite publication at the last exit. Stale/duplicate commands
+reject against the live token. If accounting fails, the accepted earlier presentation remains;
+if outcome selection fails after accounting, the settle token and cleaned state remain, so retry
+cannot repeat kills or rewards. `GameSession` remains the sole snapshot publisher.
+
+After settle the ordinary publisher performs defeat-first outcome selection, otherwise after-turn
+work and queue consumption. Sleep completion does not repeat the defeated hook at its second
+checkpoint; a later individual turn has its own first checkpoint. The existing outcome/after/
+defeat/return programs carry party accounting back to usable exploration. See the
+[rule/source owner](../domain/gameplay-rules.md#finite-enemy-leader-cleanup) and
+[native recipe](../development-and-verification.md#leader-cleanup-authored-observation).
+
+## Ineffective physical scene continuation
+
+Taros physical construction uses the existing `BattleActionResolution` transaction and single
+`GameSession` publisher. `Ineffective` is a finite reaction kind with amount0 and unchanged HP/MP;
+validation rejects damage for a blocked initial strike, an unbound ineffective result, an
+ineffective counter, inappropriate status writes or a Taros-origin counter. It does not execute
+observation strings or accept arbitrary actor patches.
+
+Construction publishes its carried RNG/movement and prepared reactions. `ineffective` is withheld
+from construction observations and emitted once at actual reaction entry. `BattleSceneRules` adds
+no damage recoil/RNG for this kind. The current result message/acknowledgement and subsequent
+sleep, reward and end continuations retain their normal tokens; the supported sleep operand is
+applied only at its later message completion. End EXP credit remains a distinct commit.
+
+Queries/cancel do not prepare or spend. Stale/duplicate delivery cannot repeat the reaction or
+release another wait. A later credit failure retains committed construction/movement, prior
+feedback and the pending cursor/token; retry does not reroll or repeat feedback. The
+[rule owner](../domain/gameplay-rules.md#finite-taros-physical-effectiveness) explains source ordering;
+[TarosEffectivenessTests](../../tests/Sf2.Remake.Engine.Tests/TarosEffectivenessTests.cs) exercises
+these real command and failure boundaries.
+
+## Paid retreat and field return
+
+`BattleActionKind.Retreat` and `SessionAction.Retreat` keep a learned retreat spell in the ordinary
+semantic spell/target query. `GameSession.Submit` preserves envelope rejection and selects one finite
+`BattleRetreatContinuation` while `ActiveBattle.Retreat` is present. No field program or ordinary
+attack scene impersonates that pending action. `HasBattleControl` is false throughout delivery.
+
+Confirmation revalidates the live action/self target/MP and publishes movement plus payment once.
+`retreat-mp-paid` records the actual before/after MP before `retreat-text-requested`. The continuation
+requires `CompleteTextReveal`, then acknowledgement, then matching effect and close completions.
+Each service after text has its own token. Wrong/stale/duplicate commands and tokenless simulation
+cannot pay or release a later wait. Return failure preserves the paid battle, Return phase/token and
+any already-applied repeat unlock update. Ordinary outcome rules cannot manufacture a retreat exit.
+
+Angel Wing stays `BattleActionKind.Item` / `SessionAction.Item` through the normal carried-slot query
+and self-target selection. Selection retains the packed word; confirmation rejects a changed live
+word, invalid actor/control or target before preparation. `ItemRetreatPayment` carries the selected
+slot/word and admitted item identity/name; `SpellRetreatPayment` carries the learned spell/cost.
+The validated Wing preparation removes only that slot, shifts whole surviving words and appends127.
+Publishing that prepared state and `retreat-item-paid` precedes `retreat-text-requested` in the same
+immutable transition. It does not charge MP, require EGRESS, construct a healing scene, award EXP or
+consume RNG. The common continuation owns all later waits/return; failure retains the paid inventory.
+Field healing and fresh battle entry carry the compacted loadout rather than recreating initial items.
+
+After closure, held completion clears its corresponding unlock; clear completion preserves unlock.
+Neither path newly sets completion, runs the defeated/after-turn suffix, performs a victory join,
+revives the defeated leader or halves gold. `Sf2OutcomeReturnPolicy.Start(Retreat)` reads live
+`StoryState.EgressMap`, or the explicit controlled initial route selection if no writer has run.
+It resolves only admitted outcome savepoint bindings. Unknown maps and F399-clear or F64/F640-held
+source branches fail explicitly. The selected private binding is Map3 `(32,13)`, Up; this is not a
+universal fixed-map rule. Authored tests select two different live admitted anchors.
+
+The caller then heals eligible living/immortal allies through the existing outcome recovery rule,
+builds the field projection, and runs the admitted `ReturnProgram` under `OutcomeMapLoaded`.
+The ordinary map load/setup/fade must finish before usable field control. Dead ordinary allies stay
+dead; members 7/28 retain the existing immortal exception. No-status selected input is supported;
+unimplemented status refresh remains an explicit failure. Later HP/MP recovery does not refund or
+remove the earlier paid observation. Walking reentry uses `BattleEntry` and its fresh enemy/queue
+initialization, living-member recovery and carried party/loadout/growth/accounting/RNG.
+
+**Confirmed static join:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`battlefunctions_1.asm:ExecuteBattleaction_Egress/UpdateBattleUnlockedFlag`,
+`executeindividualturn.asm`, `battleloop/getegresspositionforbattle.asm`,
+`common/maps/egressinit.asm`, `data/maps/global/savepointmapcoords.asm` and
+`exploration/explorationfunctions_2.asm:ExplorationLoop` establish payment, bypass, return selection
+and caller healing-before-fade. `battleloop/heallivingandimmortalallies.asm` separates ordinary dead
+members from 7/28 and refreshes after resource recovery. The accepted
+[admission/payment owner](../../../docs/research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
+and [supplied-map caller owner](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#victory-map12-control-or-warningretreat)
+retain original evidence and Unknowns. Reproduce the bounded source inspection with `rg -n` on those
+symbols in the pinned local checkout, and the modern behavior with the
+[EGRESS recipe](../verification/field-programs.md#battle02-egress-and-walking-retry).
+
+**Confirmed static Wing join:** at the same pin, `battlefunctions_2.asm` stores the selected item and
+slot, calls `IsItemUsableByCombatant`, builds the item range and confirms a target before dispatch.
+`common/stats/itemstats.asm:IsItemUsableByCombatant` admits non-equipment consumables without an
+equippable-class restriction. `RemoveItemBySlot` reads that slot; `RemoveAndArrangeItems` shifts
+subsequent complete words and writes `ITEM_NOTHING` at the tail. The wrapper also requests stats
+refresh; the admitted consumable has no equip effects and this slice preserves existing gear/stat
+authority. `data/stats/items/itemdefs.asm` item4 is Angel Wing, CONSUMABLE, EGRESS, range0 and no equip
+effects. `ExecuteBattleaction_AngelWing` removes the slot before text275 (`{NAME}` / `{ITEM}`) and
+branches to the shared exit tail. This proves static order, not natural acquisition or original
+runtime delivery. The ordinary Battle02 caller remains distinct from the linked Battle0 caller.
+Reproduce with `rg -n -A 48 'ExecuteBattleaction_AngelWing:'` in the pinned battlefunctions source,
+and `rg -n -A 60 'RemoveAndArrangeItems:|IsItemUsableByCombatant:'` in itemstats. The
+[Wing native recipe](../verification/field-programs.md#battle02-angel-wing-and-walking-retry) proves
+the modern selected-item path only; all-map/status and original media/timing remain Unsupported/Unknown.
+
+## Yeel guide, zone request and sleep continuation
+
+The selected early Yeel program preserves texts784–787, source portraits and synchronous caller
+return. `ShowText.Narration` defaults false and permits only a null explicit speaker without
+`UseEventSpeaker`; reader and runtime reject conflicting selectors. The producer lowers only the
+explicit close-text/close-portrait/copy-and-clear-speech sequence. Narration keeps normal W1/W2 and
+caller ownership; it does not bypass missing portrait checks for ordinary speakers. `{CLEAR}` resets
+the current window cursor/layout with one logical VInt, keeping the window and following real input.
+The next portrait instruction restores Kazin. F72 is written after the offer returns; the existing
+source population/follower path supplies one follower on reentry without adding F4 or battle members.
+
+A map has an ordered `Battles` collection. The old optional `battle` document is the singleton form;
+`battles` is the multiple-route form, with both simultaneously rejected. Entry scans eligible routes
+in source order, preserving completed-repeat policy and one-time unlock consumption. Map66's ordered
+zone dispatch remains a separate service: matching rows can suppress its default without an encounter.
+`SourceRandomBattle` requests an incomplete encounter without RNG or step tests; a completed encounter
+uses the nullable signed `StoryState.StepCounter`. Unknown repeat state rejects; nonzero defers; zero
+uses range8, then range4+2 only on failure. Positive counters decrement once at successful field-move
+launch, never during preview, blocked moves or observation.
+
+A request sets its unlock and30000 counter, then runs the existing typed WaitView/Sound/FlashWhite
+program and returns through the actual caller. Only return to the zone boundary consumes the pending
+request and performs the ordered encounter scan. This in-place selection invents no position/facing
+and imposes no battle-rectangle proximity predicate. The reached `SetEgressMap` instruction writes the
+shared story owner; mode/automatic/scene continuations preserve it. The selected Battle03 intro gate
+controls the Yeel assignment and F453; its empty start remains a real program boundary.
+
+Physical sleep has two separate publication stages. Constructed damage/status operands remain in
+`BattleActionResolution`; damage playback publishes its original status, and the following real
+SleepMessage completion publishes the infliction. Construction and counter eligibility never read an
+unplayed reaction as live status. Lethal damage omits infliction; sleeping targets omit dodge/counter.
+At a sleeping queued entry, `BattleAdvancer` skips command selection and starts a typed after-turn
+notice without fabricating an attack, reward or selection. `BattleAfterTurnContinuation` commits the
+single main draw before text306/354, retains actor.Status while pending, then applies its operand and
+consumes the queue entry on the matching actual completion. Dead entries bypass this work. Wrong or
+stale commands cannot consume it twice. Other status families remain Unsupported. The Godot consumer
+uses finite modern no-input notices over the field and the same completion protocol; it does not
+freeze an attack/hurt animation or own logical status.
+
+See [capability agreement](../capability-status.md#yeel-guide-through-battle03-implementation-agreement)
+and [direct observation](../verification/field-programs.md#yeel-guide-through-battle03).
+
+## Battle02 outcomes and live facing
+
+The selected private world admits Battle02's empty after-program and the shared `JoinForce(0)` tail.
+Victory saves the first active member by membership index, adds the battle-area origin to its final
+combatant coordinates, and retains its current logical facing. The producer supplies `battleOrigin`
+from the pinned battle-map table (Battle02 `(16,19)`). This explicit binding selects live source
+coordinates/facing; existing authored and retained inputs without it keep their declared map-space
+position/fixed-facing policy. The projection uses the same coordinate conversion before scripts run.
+Victory clears F402 and sets F502, returns directly to field control and does not request Battle03.
+An already completed battle skips only its after-program, retaining the join/flag tail.
+
+Ordinary defeat restores the leader, halves current gold by integer division and refreshes living
+members; dead ordinary allies remain dead. It clears the unlock only when completion already exists.
+The selected controlled Egress map is Map3, yielding savepoint `(32,13)`, Up. This is an explicit
+caller input, consistent with the initial witch-start assignment; neither Battle02's empty hooks nor
+the selected intervening route writes Yeel. Church/Egress changes outside this selection remain
+unsupported. Walking through the church door `(32,15)` and Granseal west exit invokes ordinary entry:
+party inventory, growth, EXP, kills/defeats, money and RNG are carried, while enemies come from the
+encounter defaults. Retry reuses the same `GameSession` and source living-member initialization.
+
+Actor facing belongs to immutable battle state. Completed movement segments, including cancel-return
+segments, update only the moving actor. Stationary selection preserves it. No-action completion sets
+only the actor Down; actual scene completion reloads ordinary placed entities facing Down before
+field-death/outcome processing. Transient movement/death drawing overrides remain presentation data.
+The host projects facing and never supplies it back from sprite metadata. Action/automatic/progression
+guards preserve facing unless the owning lifecycle boundary changes it. Herb consumption also keeps
+`Progress.SourceLoadout` synchronized with the verified consumed inventory while preserving all other
+growth fields; it does not relax non-item or other-actor invariants.
+
+These rules consume pinned `c834c652b6862bc5679fd7f69a38a7093206efc6` source:
+`battleloop_2.asm:BattleLoop_Victory/BattleLoop_Defeat`,
+`battlefunctions_1.asm:UpdateBattleUnlockedFlag`,
+`textfunctions_1.asm:UpdateForceAndGetFirstBattlePartyMemberIndex`,
+`executeindividualturn.asm:@NoAction/@InitBattlescene`,
+`loadBattle.asm:LoadBattle`, and `entityfunctions_1.asm:PositionBattleEntities`.
+`witchstart.asm` assigns `GAMESTART_MAP` to `EGRESS_MAP`; `getegresspositionforbattle.asm` and
+`egressinit.asm:GetSavepointForMap` consume the selected map. The accepted
+[Battle02 outcome owner](../../../docs/research/battle02-to-battle03-content-route.md) retains the
+original evidence and Unknowns; remake observations establish implementation behavior only.
+
+Map66's source `data/maps/entries/map66/2-areas.asm` uses layer 254 with unit parallax and zero origins/
+autoscroll. `mapload.asm` loads this byte unchanged; `camerafunctions.asm` selects Plane A for nonzero
+values. The field view now admits 254 under the same main-plane constraints as 255. Other unknown layer
+values and unsupported parallax/autoscroll remain rejected. Native acceptance reads the actual bound
+camera/player projection after victory and field movement; no screenshot or hardware-timing claim
+is made. See the [focused recipe](../verification/field-programs.md#battle02-outcomes-and-retry).
+
 Application owns command admission, continuation and snapshot publication across exploration,
 battle, scene work and return. [Domain rules](../domain/gameplay-rules.md) supply selected algorithms;
 [Content](../content/profiles-and-trust.md) supplies admitted immutable definitions and explicit starts.
@@ -963,6 +1465,14 @@ request can use that known cue as previous and admit finite progress. This avoid
 SessionAudio consumed every intermediate map selection within one application result. No host
 history or timing is copied back into gameplay; context changes add no extra service.
 
+A subsequent external ordinary field input may establish only the current map cue when the
+invalidated music context differs from the published map/area/battle context. The host consumes
+that final result through `SessionAudio.Observe` before dispatching the input, and that changed
+context selects typed map music. This clears the obsolete stack without reviving it. Valid explicit
+script music remains untouched. A transfer and return to the old context in one result cannot
+establish map music this way: the host may retain its explicit cue, so history stays unbound until
+an explicit request establishes it. Binding advances neither service time nor RNG.
+
 Plain input after the helper keeps the raw window without revealing it anew. A genuine Wait uses
 the existing one-service input-first rule without a W1/W2 copy. Bound plain Ack is silent; only
 accepted W2 requests validation67. Ack, close/Sleep10, follower/position
@@ -1056,3 +1566,32 @@ PC and stack remain. A rejected or duplicate completion cannot apply a later eff
 [short actual observations](../verification/field-programs.md#replaceable-story-observation)
 cover content replacement, failure retention and usable control; source-context tests do not claim
 private natural reach, original timing or measured performance.
+
+## Continuous second-encounter boundary
+
+The selected private route keeps one `GameSession` from the controlled tower start through actual
+Battle01 outcome, castle return, Jaha and Battle02. `ScenarioDefinition` owns immutable encounter
+definitions, initial inputs and scene resources. `BattleEntry` selects the next definition and carries
+the live ally records, gold and both RNG images; only new members/enemies use the selected baseline.
+The source new-battle refresh still heals living allies and applies the admitted refresh rules.
+Continuity does not mean bypassing that refresh or preserving provisional battle positions.
+
+SF2 story policy preserves the source completed-and-unlocked warp behavior, including consuming the
+unlock once and entering the selected encounter. The authored policy retains its one-shot completed
+route behavior. Map setup selection uses the last satisfied source flag variant without replacing
+the immutable layout. Motion waits can finish at the destination while retaining the installed
+follower script; script-completion waits retain their separate meaning.
+
+The source `csc08` join body compiles into existing program instructions and returns to its caller.
+Member/class text captures the reached join member, while an explicit text ID leaves the shared text
+cursor unchanged. Missing class content is a typed reached failure after any earlier committed join;
+it does not run the caller's later unlock. The exact-position/no-op and already-joined source branches
+remain in the selected program, rather than being replaced by a general join shortcut.
+
+The host rebuilds the board only when its actual battle definition or scene resources change, before
+publishing observations. Repeated attachment of the same state keeps the board. Scene cache keys
+include the encounter, and field-death selection uses the active scene package. Field music chooses
+the published map context after an outcome; a retained `EnteringBattle` anchor does not select battle
+music during victory/defeat return. This also preserves valid explicit cues and rejects unbound
+same-context music waits. [Direct acceptance](../verification/field-programs.md#battle01-through-battle02)
+covers the actual cross-encounter consumer; Battle02 resolution remains outside this selection.

@@ -40,6 +40,8 @@ public sealed class PrivateBattleScenarioTests
         Assert.Equal((byte)3, source.Spells[new("heal", 1)].MpCost);
         var started = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, admitted.Start));
         var session = started.Session; var battle = session.Current.Battle;
+        Assert.Equal(new BattleMapRegion(new("map-" + source.Encounter.Area.MapId),
+            new(source.Encounter.Area.X, source.Encounter.Area.Y)), battle.Definition.SourceMapRegion);
         Assert.Same(admitted.Definition, session.Definition);
         Assert.Equal(new[] { "new-battle-initialized", "regions-tested", "region-program-none", "spawn-modes-admitted", "round-started", "round-rng", "player-control" },
             started.Result.Observations.Select(row => row.Kind));

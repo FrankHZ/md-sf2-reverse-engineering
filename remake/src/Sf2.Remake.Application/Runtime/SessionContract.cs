@@ -8,10 +8,10 @@ namespace Sf2.Remake.Application.Runtime;
 
 public enum SessionFailureKind { IllegalCommand, UnsupportedCapability, ContentError, InvariantFailure, AdapterError }
 public sealed record SessionFailure(SessionFailureKind Kind, string Code, string Field, string Message);
-public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, Rejected, Unsupported, Faulted }
+public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, BattleEnded, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
-public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady }
-public enum SessionAction { Stay, Heal, PhysicalAttack, Item }
+public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice, GiveItemChoice, GiveTargetChoice, GiveExchangeChoice, GiveCommitReady, DiscardItemChoice, DiscardCommitReady }
+public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat }
 
 public abstract record SessionCommand;
 public sealed record Move(ExplorationDirection Direction) : SessionCommand;
@@ -19,6 +19,13 @@ public sealed record ChooseAction(SessionAction Action) : SessionCommand;
 public sealed record SelectBattleAction(BattleActionRef Action) : SessionCommand;
 public sealed record SelectSpell(SpellRef Spell) : SessionCommand;
 public sealed record SelectItem(int Slot) : SessionCommand;
+public sealed record BeginDiscard : SessionCommand;
+public sealed record SelectDiscardItem(int Slot) : SessionCommand;
+public sealed record BeginGive : SessionCommand;
+public sealed record SelectGiveItem(int Slot) : SessionCommand;
+public sealed record SelectGiveReturn(int Slot) : SessionCommand;
+public sealed record BeginEquipment : SessionCommand;
+public sealed record SelectEquipment(int Slot) : SessionCommand;
 public sealed record SelectTarget(ActorRef Target) : SessionCommand;
 public sealed record Confirm : SessionCommand;
 public sealed record Cancel : SessionCommand;
@@ -50,18 +57,23 @@ public sealed record CommandEnvelope(Guid SessionId, long ExpectedRevision, Acto
 public sealed class BattleSelection
 {
     internal BattleSelection(ActorRef actor, BattleMovementPreview preview, BattleSelectionStage stage,
-        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null)
-    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; }
+        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null, ushort? itemWord = null, int? equipmentSlot = null, int? returnSlot = null, ushort? returnWord = null)
+    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; ItemWord = itemWord; EquipmentSlot = equipmentSlot; ReturnSlot = returnSlot; ReturnWord = returnWord; }
     public ActorRef Actor { get; }
     public BattleMovementPreview Preview { get; }
     public BattleSelectionStage Stage { get; }
     public SessionAction? Action { get; }
     public int? ItemSlot { get; }
+    public ushort? ItemWord { get; }
+    public int? EquipmentSlot { get; }
+    public int? ReturnSlot { get; }
+    public ushort? ReturnWord { get; }
     public SpellRef? Spell { get; }
     public ActorRef? Target { get; }
     public BattleActionRef? ActionReference => Action switch
     {
         SessionAction.Heal when Spell is { } spell => new(BattleActionKind.Healing, spell),
+        SessionAction.Retreat when Spell is { } retreat => new(BattleActionKind.Retreat, retreat),
         SessionAction.Item when ItemSlot is { } slot => new(BattleActionKind.Item, ItemSlot: slot),
         SessionAction.PhysicalAttack => new(BattleActionKind.Physical),
         SessionAction.Stay => new(BattleActionKind.Stay),
@@ -71,7 +83,7 @@ public sealed class BattleSelection
 
 public abstract record ActiveSessionState;
 public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null,
-    BattleMovementState? Movement = null) : ActiveSessionState;
+    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null, BattleGiveState? Give = null, BattleDiscardState? Discard = null, BattleOutcomeKind? Outcome = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -91,7 +103,12 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
-    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null;
+    public BattleOutcomeKind? BattleResult => (Active as ActiveBattle)?.Outcome;
+    public bool HasBattleControl => BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null;
+    public BattleDiscardState? BattleDiscard => (Active as ActiveBattle)?.Discard;
+    public BattleGiveState? BattleGive => (Active as ActiveBattle)?.Give;
+    public BattleRoundState? BattleRound => (Active as ActiveBattle)?.Round;
+    public BattleRetreatState? BattleRetreat => (Active as ActiveBattle)?.Retreat;
     public BattleSceneState? BattleScene => (Active as ActiveBattle)?.Scene;
     public BattleMovementState? BattleMovement => (Active as ActiveBattle)?.Movement;
     public EngineBattleState Battle => Active is ActiveBattle battle ? battle.Battle :

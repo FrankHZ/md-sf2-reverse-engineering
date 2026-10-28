@@ -5,7 +5,20 @@ internal static class BattleInitializationRules
     internal static void Validate(BattleDefinition definition, BattleStartInput start)
     {
         var policy = start.NewBattle;
-        Require((definition.Initialization is null) == (policy is null), "initialization-policy", "start.newBattle");
+        Require(policy is null || definition.Initialization is not null, "initialization-policy", "start.newBattle");
+        if (definition.Initialization is not null)
+        {
+            BattleActivationRules.Validate(definition);
+            BattleSpawnRules.Validate(definition, start);
+            if (policy is null)
+                foreach (var deployment in definition.Deployments)
+                {
+                    var input = start.Actors.Single(a => a.Actor == deployment.Actor);
+                    Require(input.Initialized is not null && input.ActivationWord is not null &&
+                        ((input.ActivationWord.Value >> 8) & 15) == deployment.Initialization!.SpawnMode,
+                        "controlled-initialization", "start.actors.initialization");
+                }
+        }
         if (policy is null) return;
         Require(!string.IsNullOrWhiteSpace(policy.Declaration) && !string.IsNullOrWhiteSpace(policy.EvidenceOwner) &&
             !string.IsNullOrWhiteSpace(policy.BridgeBoundary), "controlled-provenance", "start.newBattle");
@@ -28,7 +41,9 @@ internal static class BattleInitializationRules
             {
                 _ = EnemyAttack(deployment.Definition.Attack, policy.Difficulty);
                 // General equipped/status refresh is not admitted by a loaded baseline.
-                Require(deployment.Definition.SourceLoadout!.Items.All(word => word == 127),
+                // The admitted unequipped Herb has no stat refresh effects. Placement AddItem
+                // already masked its AI/drop bits; equipped/unknown words still reject.
+                Require(deployment.Definition.SourceLoadout!.Items.All(word => word is 0 or 127),
                     "enemy-equipment-refresh", "actors.loadout", true);
             }
         }
@@ -62,13 +77,16 @@ internal static class BattleInitializationRules
         var policy = before.StartPolicy!;
         var actors = before.Actors.Select(actor =>
         {
+            if (!actor.IsAlly && actor.Deployment.Initialization!.SpawnMode >= 2)
+                return actor.With(hp: 0, initialized: false, clearPosition: true,
+                    activationWord: (ushort)(actor.Deployment.Initialization.SpawnMode << 8));
             bool heal = !actor.IsAlly || actor.Hp > 0 || actor.Deployment.Initialization?.AllyPartyMember is 7 or 28;
             bool placed = !actor.IsAlly || (heal && (start.ActiveAllies is null || start.ActiveAllies.Contains(actor.Actor)));
             return new BattleActorState(actor.Deployment,
                 heal ? actor.MaxHp : actor.Hp, heal ? actor.MaxMp : actor.Mp, actor.Exp, placed ? actor.Deployment.Position : null,
                 actor.Kills, actor.Defeats, attack: actor.IsAlly ? actor.Attack : EnemyAttack(actor.Definition.Attack, policy.Difficulty),
                 status: actor.IsAlly && heal ? (ushort)(actor.Status & 7) : actor.Status,
-                activationWord: actor.IsAlly ? null : InitialActivationWord(actor.Deployment.Initialization!), progress: actor.Progress, sourceLoadout: actor.SourceLoadout);
+                activationWord: actor.IsAlly ? actor.ActivationWord : InitialActivationWord(actor.Deployment.Initialization!), progress: actor.Progress, sourceLoadout: actor.SourceLoadout);
         });
         return before.With(actors: actors, regions: new(new bool[16], 0));
     }

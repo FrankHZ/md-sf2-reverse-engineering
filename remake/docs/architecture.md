@@ -18,6 +18,7 @@ Use the owner that matches the responsibility being changed:
 | Responsibility | Current owner |
 | --- | --- |
 | Domain rules, selected algorithms, deterministic state transitions and author workflow | [Gameplay rules](domain/gameplay-rules.md) |
+| Proposed special-mechanic gaps, finite extensions and staged implementation recommendation | [Special mechanics design](domain/special-mechanics-design.md) |
 | Application session authority, program execution, waits, map and outcome continuation | [Session and programs](application/session-and-programs.md) |
 | Content profiles, admission, explicit starts and private provenance | [Profiles and trust](content/profiles-and-trust.md) |
 | Local source/master/runtime assets and offline preparation | [Presentation assets](content/presentation-assets.md) |
@@ -25,6 +26,7 @@ Use the owner that matches the responsibility being changed:
 | Audio cue delivery and source limits | [Audio](godot/audio.md) |
 | Battle scene, movement and death presentation | [Battle scenes](godot/battle-scenes.md) |
 | Environment, checks and observation selection | [Development and verification](development-and-verification.md) |
+| Structural review, concrete defects and bounded engineering follow-ups | [Structure and quality review](evidence/structure-and-quality-review.md) |
 | Accepted compositions, failed comparisons and retired implementation records | [Retained evidence](evidence/retained-comparisons.md) |
 
 ## State and Content Direction

@@ -23,7 +23,7 @@ internal static class BattleGrowthRules
         int total = actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true);
         if (total < 100) return actor.With(exp: (byte)total);
         var growth = actor.Definition.Growth ?? throw new BattleRuleException("level-up", "actor.growth", true);
-        if (actor.Status != 0) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
+        if (!PoisonTurnRules.SupportedPhysicalStatus(actor.Status)) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
         total -= 100; // Source bsc0F processes one threshold even when another 100 remains.
         effects.Add(new("exp-threshold", actor.Actor, total + 100, total));
         if (actor.Level >= (growth.ClassId < 12 ? 40 : 99))
@@ -73,7 +73,7 @@ internal static class BattleGrowthRules
         effects.Add(new("level", actor.Actor, actor.Level, level));
         // Maxima grow; current HP/MP do not heal. Reapply the admitted ATT-only equipment once.
         return actor.With(exp: (byte)total, progress: progress,
-            attack: (byte)Math.Min(200, progress.BaseAttack + growth.AttackBonus));
+            attack: (byte)Math.Min(200, progress.BaseAttack + BattleEquipment.Contribution(actor.Definition, loadout)));
     }
 
     internal static int Gain(StatGrowth growth, byte level, int current, ActorRef actor,

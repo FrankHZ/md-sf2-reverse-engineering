@@ -7,22 +7,34 @@ internal static class BattleTurnFlow
     internal static EngineBattleState Start(BattleDefinition definition, BattleStartInput start)
     {
         ValidateStart(definition, start);
+        definition.PrismLaser?.RequireDefinition(definition);
         var inputs = start.Actors.ToDictionary(actor => actor.Actor);
         // Deployment order owns turn/candidate order; the external input array is only keyed data.
         var actors = BattleInitializationRules.Deployments(definition, start).Select(deployment =>
         {
             var input = inputs[deployment.Actor];
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
-                deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
-                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status, progress: input.Progress, sourceLoadout: input.SourceLoadout);
+                input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
+                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
+                progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0),
+                initialized: input.Initialized ?? true, retainDeadPosition: input.RetainDeadPosition);
         });
-        var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle);
-        return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);
+        var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
+            regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals, deathCredit: start.DeathCredit);
+        if (start.NewBattle is not null) initial = BattleInitializationRules.Initialize(initial, start);
+        return initial.Visuals is { } visuals ? initial.With(visuals: visuals.ProjectStart(initial.Actors)) : initial;
     }
 
     // Encounter policy is validated at Content admission and reusable session start, even for dead actors.
     internal static void ValidateDeployment(BattleDeploymentDefinition deployment)
     {
+        if (deployment.SourceAllyControl)
+        {
+            Require(deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
+                deployment.AiStrategy is { Value: "source-ally-physical" } && deployment.Initialization is not null,
+                "source-ally-control", "placements.controlPolicy", true);
+            return;
+        }
         Require((deployment.Control == BattleControl.Player && deployment.AiStrategy is null) ||
             (deployment.Control == BattleControl.Automatic && deployment.AiStrategy is { } strategy &&
                 !string.IsNullOrWhiteSpace(strategy.Value)), "control-ai", "placements.control/aiStrategy", true);
@@ -33,7 +45,10 @@ internal static class BattleTurnFlow
     // Used by the real Content admission and again by the reusable public session start boundary.
     internal static void ValidateStart(BattleDefinition definition, BattleStartInput start)
     {
+        Require(start.StoryFlags.All(flag => flag is >= 0 and <= 65535), "story-flag", "start.storyFlags");
         Require(start.Encounter == definition.Encounter, "missing-encounter", "start.encounter");
+        Require(definition.ItemDrops is null || start.ItemCustody is not null,
+            "drop-custody-unknown", "start.itemCustody", true);
         Require(start.Gold is null or <= 9999999, "numeric-range", "start.gold");
         if (start.NewBattle is null) Require(start.Gold is not null, "missing-accounting", "start.gold");
         var inputs = new Dictionary<ActorRef, BattleActorStartInput>();
@@ -50,6 +65,14 @@ internal static class BattleTurnFlow
             Require(activeAllies.Distinct().Count() == activeAllies.Count && activeAllies.All(actor =>
                 definition.Deployments.Any(row => row.Actor == actor && row.Faction == BattleFaction.Ally)), "active-party", "start.activeAllies");
         }
+        if (definition.Poison)
+        {
+            Require(start.NewBattle is null && start.DeathCredit is not null, "poison-death-context", "start.firstAlly", true);
+            Require(start.DeathCredit!.Ally is not { } first || definition.Deployments.Any(d => d.Actor == first && d.Faction == BattleFaction.Ally),
+                "death-first-ally-context", "start.firstAlly", true);
+            Require(start.Actors.All(a => a.Status is 0 or 2), "poison-status", "start.actors.status", true);
+        }
+        Sf2.Remake.Domain.Gameplay.Sf2.HealingTargetRules.ValidateAura(definition);
         BattleInitializationRules.Validate(definition, start);
         var occupied = new HashSet<MapPosition>();
         int allies = 0, enemies = 0, turns = 0;
@@ -57,7 +80,19 @@ internal static class BattleTurnFlow
         {
             ValidateDeployment(deployment);
             var input = inputs[deployment.Actor]; var actor = deployment.Definition;
+            Require(input.Initialized != false || deployment.Faction == BattleFaction.Enemy &&
+                deployment.Initialization?.SpawnMode is 2 or 3 && input.Hp == 0 && input.PositionOverride is null,
+                "dormant-start-state", "start.actors.initialization");
             var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? actor.SourceLoadout;
+            if (actor.Equipment is not null)
+            {
+                BattleEquipment.ValidateLoadout(actor, loadout);
+                Require(deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
+                    !deployment.SourceAllyControl && (input.Status == 0 || definition.Poison && input.Status == 2) && actor.Physical is not null,
+                    "equipment-actor", "start.actors", true);
+            }
+            Require(definition.ItemDrops is null || loadout is not null,
+                "drop-inventory-unknown", "start.actors.sourceLoadout", true);
             if (loadout is not null)
                 Require(loadout.Items.Count == 4 && loadout.Spells.Count == 4 && loadout.Items.All(word => word <= 511),
                     "source-loadout", "start.actors.sourceLoadout");
@@ -67,14 +102,19 @@ internal static class BattleTurnFlow
                     "actor-progress", "start.actors.progress");
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
-            Require(input.Status == 0 || start.NewBattle is not null, "actor-status", "start.actors.status", true);
+            Require(input.Status == 0 || definition.Poison && input.Status == 2 || start.NewBattle is not null || definition.Initialization?.RegionProgram == BattleRegionProgram.Authored, "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
                 "missing-accounting", "start.actors");
-            if (deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;
+            if (input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;
+            if (deployment.SourceAllyControl)
+                Require(input.ActivationWord is not null, "missing-activation-word", "start.actors.activationWord", true);
+            if (input.Absent) continue;
             var position = input.PositionOverride ?? deployment.Position;
             Require(definition.Contains(position), "start-placement-bounds", "start.actors.positionOverride");
             var tile = definition.Terrain[position.Y * 48 + position.X];
             Require(BattleTerrainRules.MovementCost(tile, actor.Mover) > 0, "blocked-placement", "start.actors.positionOverride");
+            if (deployment.Initialization?.SpawnMode is 2 or 3 &&
+                (start.NewBattle is not null || input.Initialized == false)) continue;
             if (input.Hp == 0 && !(start.NewBattle is not null && (deployment.Faction == BattleFaction.Enemy ||
                 deployment.Initialization?.AllyPartyMember is 7 or 28)))
             {
@@ -97,6 +137,11 @@ internal static class BattleTurnFlow
     internal static EngineBattleState GenerateRound(EngineBattleState battle, out TurnOrderResult<ActorRef> generated)
     {
         if (battle.Definition.Initialization is not null) battle = BattleActivationRules.BeforeRound(battle);
+        return GenerateQueue(battle, out generated);
+    }
+
+    internal static EngineBattleState GenerateQueue(EngineBattleState battle, out TurnOrderResult<ActorRef> generated)
+    {
         generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
             new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Agility, a.Definition.ExtraRoundAction)),
             (ushort)(battle.MainSeed >> 16));

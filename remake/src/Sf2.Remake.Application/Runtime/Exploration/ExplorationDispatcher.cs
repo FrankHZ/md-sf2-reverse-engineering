@@ -41,7 +41,7 @@ internal static class ExplorationDispatcher
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
-            display: start.Display, textSettings: start.TextSettings);
+            display: start.Display, textSettings: start.TextSettings, stepCounter: map.Caravan?.InitialStepCounter);
         story = ExplorationTextRunner.Initialize(world, story);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
             SessionStopReason.SimulationWait), [], rules);
@@ -57,6 +57,8 @@ internal static class ExplorationDispatcher
         List<SessionObservation> observations = [];
         try
         {
+            if (current.CanWaitAtInput && command is (Sf2.Remake.Application.Runtime.Move or Sf2.Remake.Application.Runtime.Interact or WaitAtInput))
+                current = ExplorationMusicRunner.AtFieldInput(definition.Exploration!, current, observations);
             bool playerWait = command is WaitAtInput or WaitForText;
             if (command is WaitAtInput)
             {
@@ -150,7 +152,7 @@ internal static class ExplorationDispatcher
                     if (current.Story.Wait is not PresentationWait presenting || presenting.Token != completion.Wait || presenting.Cue.Kind != completion.Kind)
                         return Reject(current, "stale-or-wrong-presentation", "presentation");
                     var completedActive = current.Active;
-                    if (presenting.Cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodded })
+                    if (presenting.Cue is { Kind: PresentationCueKind.Gesture, Resource: "nod" or "shake-head", Entity: { } nodded })
                     {
                         var entity = ProgramRunner.Entity(current, nodded);
                         completedActive = new ActiveExploration(current.Exploration!.WithEntity(entity with { Motion = entity.Motion with { AnimationCounter = 0 } }));
@@ -285,7 +287,7 @@ internal static class ExplorationDispatcher
                             current = ExplorationMusicRunner.BeforeService(current, observations);
                             current = current.Story.Wait is FullFadeWait
                                 ? MapTransfer.FadeTick(definition, current, observations)
-                                : MapTransfer.LoadTick(definition, current, observations);
+                                : MapTransfer.LoadTick(definition, current, observations, rules);
                             if (current.Story.Wait?.Token != token)
                                 return ProgramRunner.Run(definition, current, observations, rules);
                             if (current.Story.Wait is FullFadeWait { LogicalDone: true })
@@ -295,13 +297,15 @@ internal static class ExplorationDispatcher
                         current = ExplorationMusicRunner.BeforeService(current, observations);
                         bool entityUpdates = current.Story.EntityServices ?? (current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
-                                definition.Exploration!.Programs[location.Program].EntitiesRunning);
+                                definition.Programs[location.Program].EntitiesRunning);
                         var pendingMove = (current.Story.Wait as EntityWait)?.PendingMove;
                         EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world
                             ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,
                                 fieldControl: existingFieldInput || pendingMove is not null) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
                         var story = active is ActiveExploration serviced ? ExplorationTextRunner.AfterEntities(serviced.World, current.Story) : current.Story;
+                        foreach (int sound in tickResult?.Sounds ?? [])
+                            current = ProgramRunner.Commit(current, active, story, observations, "entity-sound", sound.ToString(System.Globalization.CultureInfo.InvariantCulture));
                         if (tickResult?.Failure is { } failure)
                         {
                             story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
@@ -310,10 +314,19 @@ internal static class ExplorationDispatcher
                         }
                         if (story.Wait is EntityWait { PendingMove: not null } fieldMove && tickResult?.FieldMove is { } field)
                         {
+                            if (field.Moved && tickResult.World.TravelMode == FieldTravelMode.Walking && story.StepCounter is > 0)
+                                story = story.Copy(story.Cursor, story.Wait, stepCounter: (short)(story.StepCounter.Value - 1));
                             story = story.Copy(null, field.Moved && field.Event?.Kind != ExplorationEventKind.Warp
                                 ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
                                 simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
+                            if (field.VehicleEvent is 2 or 4)
+                            {
+                                current = ProgramRunner.Commit(current, active,
+                                    story.Copy(new(field.VehicleEvent == 2 ? CaravanPrograms.Boarding : CaravanPrograms.Landing, 0)),
+                                    observations, field.VehicleEvent == 2 ? "caravan-boarding-requested" : "caravan-landing-requested");
+                                return ProgramRunner.Run(definition, current, observations, rules);
+                            }
                             if (field.DoorOpened)
                                 current = ProgramRunner.Commit(current, active, story, observations, "door-opened");
                             if (field.Event is { Kind: ExplorationEventKind.Warp } warp)
@@ -323,7 +336,7 @@ internal static class ExplorationDispatcher
                                 else
                                 {
                                     current = ProgramRunner.Commit(current, active, story, observations, "warp-started");
-                                    current = MapTransfer.BeginWarp(definition, current, warp, observations);
+                                    current = MapTransfer.BeginWarp(definition, current, warp, observations, rules);
                                 }
                                 return ProgramRunner.Run(definition, current, observations, rules);
                             }
@@ -343,10 +356,18 @@ internal static class ExplorationDispatcher
                             entityServices: story.TextSettings is not null ? false : null); }
                         else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
+                        else if (story.Wait is PhysicalEntityWait physical && active is ActiveExploration physicalWorld &&
+                            CaravanRuntime.Physical(physicalWorld.World, physical.Slot).IsScriptIdle)
+                            story = FinishWait(story);
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
                             explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) &&
-                            (entityWait.Completion == EntityWaitCompletion.ScriptIdle
-                                ? awaitedEntity.IsScriptIdle : !awaitedEntity.Busy))
+                            (entityWait.Completion switch
+                            {
+                                EntityWaitCompletion.ScriptIdle => awaitedEntity.IsScriptIdle,
+                                // WaitForEntityToStopMoving compares X/Y with XDEST/YDEST.
+                                EntityWaitCompletion.MotionStopped => !awaitedEntity.Motion.IsMoving,
+                                _ => !awaitedEntity.Busy,
+                            }))
                         {
                             releasedEntityWait = new(entityWait.Token, entityWait.Entity, entityWait.Completion,
                                 awaitedEntity.IsScriptIdle, awaitedEntity.Busy, awaitedEntity.Motion.IsMoving,
@@ -373,7 +394,7 @@ internal static class ExplorationDispatcher
                         current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(inputProgram), observations, "map-input-program");
                         return ProgramRunner.Run(definition, current, observations, rules);
                     }
-                    if (command is Move move) return Move(definition, current, move, observations);
+                    if (command is Move move) return Move(definition, current, move, observations, rules);
                     if (command is Interact interact) return Interact(definition, current, interact, observations, rules);
                     return Reject(current, "exploration-command", "command");
             }
@@ -383,7 +404,7 @@ internal static class ExplorationDispatcher
         catch (BattleRuleException error) { return ProgramRunner.Failure(current, observations, error); }
     }
 
-    private static SessionResult Move(ScenarioDefinition definition, SessionSnapshot current, Move move, List<SessionObservation> observations)
+    private static SessionResult Move(ScenarioDefinition definition, SessionSnapshot current, Move move, List<SessionObservation> observations, SessionRules rules)
     {
         if (!Enum.IsDefined(move.Direction)) return Reject(current, "invalid-direction", "direction");
         var world = current.Exploration!;
@@ -391,14 +412,14 @@ internal static class ExplorationDispatcher
         if (player.Busy) return Reject(current, "entity-busy", "player");
         // Admission sees the same control policy as the later player service, without
         // publishing setup or advancing motion/entities before that service.
-        var controlled = world.Population is null ? world : world.WithEntity(player with
+        var controlled = world.Population is null && world.Definition.Caravan is null ? world : world.WithEntity(player with
             { Motion = EntityActionRunner.ControlledMotion(player.Motion) });
         var preview = MapEventDispatcher.Move(controlled, move.Direction, current.Story.Flags);
         if (preview.Outcome.Event is { Kind: ExplorationEventKind.Warp } warp)
         {
-            if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp);
+            if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp, rules);
         }
-        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
+        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.VehicleEvent is null && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
                 new ActiveExploration(world.WithEntity(player with { Motion = player.Motion with
                     { Facing = preview.World.PlayerEntity.Motion.Facing } })), current.Story, observations, "movement-blocked"),
@@ -460,7 +481,7 @@ internal static class ExplorationDispatcher
         var draw = BattleRandom.NextMain(party.MainSeed, 256);
         string kind = wait.Wait2 ? "w2" : "w1";
         current = ProgramRunner.Commit(current, new ActiveExploration(current.Exploration.WithParty(
-            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle))), current.Story,
+            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))), current.Story,
             observations, "rng-text-" + kind);
         observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = draw.Range, RandomValue = draw.Value };
         var window = current.Story.LogicalText!;
@@ -482,7 +503,7 @@ internal static class ExplorationDispatcher
         var party = world.Party;
         uint thinking = ((uint)value << 24) | (party.ThinkingSeed & 0x00FFFFFFu);
         current = ProgramRunner.Commit(current, new ActiveExploration(world.WithParty(
-            new(party.Encounter, party.Actors, party.MainSeed, thinking, party.Gold, party.NewBattle, party.ActiveAllies))),
+            new(party.Encounter, party.Actors, party.MainSeed, thinking, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))),
             story.Copy(story.Cursor, story.Wait, randomSeedCopy: value), observations, "text-seed-copy");
         observations[^1] = observations[^1] with { After = value };
         return current;
@@ -494,7 +515,7 @@ internal static class ExplorationDispatcher
         var party = world.Party;
         var draw = BattleRandom.NextMain(party.MainSeed, 256);
         current = ProgramRunner.Commit(current, new ActiveExploration(world.WithParty(
-            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle))),
+            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))),
             current.Story, observations, "rng-text-w1");
         observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = draw.Range, RandomValue = draw.Value };
         current = CopyTextSeed(current, current.Story, (byte)draw.Value, observations);

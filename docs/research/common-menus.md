@@ -44,9 +44,14 @@ canonical container's address.
 the optional callback runs after opening and selection changes. An idle iteration advances RNG with a
 range of 256 and then waits for VInt.
 
-The yes/no prompt starts on Yes. Left returns 0 (Yes), right returns `-1` (No), A/C confirms, and B
-also returns `-1`; callers therefore cannot distinguish No from cancellation through this return
-value alone. Existing dialogue and gold windows are moved while the prompt is displayed.
+The yes/no prompt starts with Yes selected. Left selects Yes and Right selects No; neither direction
+returns a result. A/C confirms the current selection, returning 0 for Yes or `-1` for No; B returns
+`-1`, so callers cannot distinguish No from cancellation through this return value alone. No input
+leaves the prompt pending, without automatic acceptance. Existing dialogue and gold windows are
+moved while the prompt is displayed. The accepted
+[prompt input/return evidence](volcanon-return-through-bedoe-king-choice.md#caller-prompt-result-and-response-texts)
+retains the actual `YesNoPrompt` entry, release check and directional priority; input sampling and
+window/presentation timing remain **Unknown**.
 
 The nine-entry diamond-menu tile table contains two distinct formats. Its first three entries have
 bit 31 set and pack four indices selecting uncompressed main-menu icons. The other six entries point

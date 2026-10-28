@@ -9,6 +9,28 @@ internal static class ExplorationMusicRunner
     private static int Area(SessionSnapshot current) => current.Exploration!.Definition.Traversal
         .SelectActiveArea(current.Exploration.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1;
 
+    // An external field input follows publication of the prior result: SessionAudio
+    // has observed its final context before the input can start another program.
+    // A changed context selects typed map music; a round trip to the old context may
+    // leave explicit host music intact, so it cannot establish a default here.
+    internal static SessionSnapshot AtFieldInput(ExplorationDefinition definition, SessionSnapshot current,
+        List<SessionObservation> observations)
+    {
+        if (!current.CanWaitAtInput || current.Story.Music is not { HistoryBound: false } old) return current;
+        int area = Area(current);
+        var map = current.Exploration!.Map;
+        if (old.Map == map && old.Area == area && !old.Battle) return current;
+        if (definition.Visuals is not { } visuals || !visuals.Maps.TryGetValue(map, out var visual) ||
+            area >= visual.Music.Count) throw new BattleRuleException("map-music-unavailable", "story.music", true);
+        int command = visual.Music[area].Field;
+        var selected = visuals.Audio.Where(pair => pair.Value.Command == command).ToArray();
+        if (selected.Length != 1) throw new BattleRuleException("map-music-binding", "story.music", true);
+        var music = new MusicProgress(current.ObservationSequence + 1, selected[0].Key, [], map, area, null);
+        return ProgramRunner.Stop(ProgramRunner.Commit(current, current.Active,
+            current.Story.Copy(current.Story.Cursor, current.Story.Wait, music: music), observations, "map-music-bound", music.Cue),
+            current.StopReason);
+    }
+
     internal static MusicProgress? Request(ExplorationDefinition definition, SessionSnapshot current, string? cue, WaitToken token)
     {
         if (current.Story.Wait is MusicWait)
@@ -17,7 +39,7 @@ internal static class ExplorationMusicRunner
             return current.Story.Music;
         int area = Area(current);
         var old = current.Story.Music;
-        bool battle = current.Story.EnteringBattle is not null;
+        bool battle = current.Story.SelectsBattleMusic;
         if (old is { HistoryBound: true } && old.Map == current.Exploration!.Map && old.Area == area && old.Battle == battle)
         {
             if (old.Cue == cue) return old;
@@ -35,7 +57,7 @@ internal static class ExplorationMusicRunner
         string? previous = null;
         if (definition.Visuals!.Maps.TryGetValue(current.Exploration!.Map, out var map) && area < map.Music.Count)
         {
-            int command = current.Story.EnteringBattle is null ? map.Music[area].Field : map.Music[area].Battle;
+            int command = current.Story.SelectsBattleMusic ? map.Music[area].Battle : map.Music[area].Field;
             previous = definition.Visuals.Audio.FirstOrDefault(pair => pair.Value.Command == command).Key;
         }
         return new(token.Value, cue, Array.AsReadOnly(previous is null || previous == cue ? [] : new[] { previous }),
@@ -49,7 +71,7 @@ internal static class ExplorationMusicRunner
         if (story.Music is not { HistoryBound: true } music) return story;
         if (active is ActiveExploration exploration && music.Map == exploration.World.Map &&
             music.Area == exploration.World.Definition.Traversal.SelectActiveArea(exploration.World.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1 &&
-            music.Battle == (story.EnteringBattle is not null)) return story;
+            music.Battle == (story.SelectsBattleMusic)) return story;
         if (story.Wait is MusicWait)
             throw new BattleRuleException("music-context-replaced", "story.music", true);
         return story.Copy(story.Cursor, story.Wait,
@@ -69,7 +91,7 @@ internal static class ExplorationMusicRunner
     private static void ValidateContext(SessionSnapshot current, MusicProgress music)
     {
         if (!music.HistoryBound || music.Map != current.Exploration!.Map || music.Area != Area(current) ||
-            music.Battle != (current.Story.EnteringBattle is not null))
+            music.Battle != (current.Story.SelectsBattleMusic))
             throw new BattleRuleException("music-context-replaced", "story.music", true);
     }
 

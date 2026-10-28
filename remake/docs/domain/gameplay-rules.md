@@ -1,5 +1,521 @@
 # Gameplay Rules and Composition
 
+## Authored Jaro victory recruitment
+
+**High rigor:** [Issue #1371](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1371)
+joins retained party resources, activation, membership caches and resumable outcomes. The bounded
+outcome is an ordinary authored win, visible recruitment, reserve membership and usable field return.
+The source-backed priority is ordered state preservation, including failure/retry prefixes; private
+Battle32/Moun, original media/timing, physical alias reconstruction and wider party services are
+non-goals. This is a child of the [six-family closure scope](special-mechanics-design.md#current-closure-scope).
+
+**Confirmed static:** the accepted [Battle32 outcome owner](../../../docs/research/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)
+and its [victory tail](../../../docs/research/battle32-outcomes-and-moun-entry.md#victory-seed-after-loading-and-completion-tail)
+use SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. Direct joins are
+`data/battles/entries/battle32/cs_afterbattle.asm` commands38/39/45,
+`code/common/scripting/map/mapscriptengine_2.asm:csc08_joinForce`,
+`mapscriptengine_1.asm:csc54_joinForceAi`, `code/common/stats/battleparty.asm:JoinForce/LeaveBattleParty`,
+and `code/gameflow/battle/cutscenes/afterbattlecutscenesend.asm:EndAfterBattleCutscene`.
+The zero AI operand clears only bit2 and never calls JoinForce. JoinForce sets joined, rebuilds lists,
+then conditionally activates below12; it leaves preheld over-capacity membership intact. Leave clears
+active55 and writes only combatant X=-1, without rebuilding lists or changing joined23/resources.
+The common JoinForce0 rebuild precedes clear432/set532. Static order does not prove natural timing.
+
+**Implemented authored boundary:** `jaro-victory.json` uses the existing ordinary outcome selection,
+healing and saved return anchor. `JoinPartyMember` preserves an already retained actor, including a
+dead actor, inventory and progress. Typed `ClearOutcomePartyAi` changes only activation bit2;
+`LeaveOutcomeBattleParty` clears only active membership. Neither rebuilds lists. The unchanged
+outcome tail joins0 and rebuilds before completing the battle. Held532 skips the entire recruitment
+suffix, with no membership repair. Already joined does not suppress first-completion ceremony.
+
+The party returned by `BattleOutcome` already discards battle coordinates. Reserve membership and
+absence from the returned authored map are the observable removal here. There is no raw X/Y state,
+transient X-only emulation, permanent Jaro follower or promised next active turn. Original physical
+following and full Battle32/Moun composition remain unbound.
+
+Acceptance uses actual `JaroVictoryTests` and `JaroVictoryProgramTests`: converted/unconverted,
+joined/unjoined, dead/live, capacity below/at/above12, other activation bits, resource preservation,
+stale/wrong input, incomplete waits and failures/retries after join, AI clear and leave. The
+[session owner](../application/session-and-programs.md#jaro-victory-program-continuation),
+[content admission](../content/profiles-and-trust.md#authored-jaro-victory-admission) and
+[verification recipe](../development-and-verification.md#jaro-victory-authored-observation) own
+interfaces and execution. Preserve prior failures, #1047 Unknowns and the #638 pause. Rollback is
+this finite admission/package if acceptance fails; do not change shared source rules or weaken evidence.
+
+## Authored poison after-turn
+
+**High rigor:** the finite poison slice joins action publication, timed notices, death accounting,
+outcome and queue ownership. Its acceptance boundary is standalone authored status0/POISON2 with
+fixed2-HP damage, existing sleep unchanged, exactly-once ordered completion and preserved failure
+prefixes. It reuses the existing action, field-death and outcome owners; no general status scheduler.
+
+**Confirmed, static:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/gameflow/battle/battleloop/processafterturneffects.asm` (`0x24242..0x2448A`)
+skips an initially dead actor, emits307, calls `DecreaseCurrentHp` with `POISON_DAMAGE=2`, emits308
+on zero HP, records the dead actor and calls `UpdateCombatantStats`. `sf2enums.asm` defines
+`STATUSEFFECT_POISON=2` and damage2. Common `stats/combatantstats_2.asm` clamps HP at zero.
+Poison alone has no derived-stat modifier, so ordinary ATT-only equipment and admitted growth retain
+current HP and recompute their existing values without a new status refresh implementation.
+
+`battleloop_1.asm @IsBattleEnd` runs the defeated hook/action death/count pass first; an action outcome
+skips after-turn. It then runs after-turn, death/count and queue advance, with no second defeated hook.
+`battleloop/processkilledcombatants.asm` increments the dead ally's defeats or the retained
+`BATTLESCENE_FIRST_ALLY` kills for a dead enemy, then clears position/status and refreshes stats.
+`battleactions/battleactionsengine_1.asm` initializes that context when a scene is built; no-scene STAY
+retains it. `IncreaseKills` returns for a negative source index (explicit FF sentinel). Poison neither
+invents an attacker nor grants EXP/gold/drop rewards. `countremainingcombatants.asm` counts placed
+living units and forces zero allies for zero-HP leader; defeat precedes victory.
+
+`PoisonTurnRules` supplies fixed clamping and eligibility. In an opted-in encounter, pure poison allows movement, physical,
+admitted healing/items, Give, free Equip/Drop and growth. An attack whose sleep-critical participant
+could create poison+sleep rejects as Unsupported; mixed statuses, poison infliction, DETOX/cure,
+regeneration/buffs and PrismLaser's separate status-free profile remain outside scope. Content uses
+an explicit standalone opt-in and initial retained credit; [admission](../content/profiles-and-trust.md#authored-poison-admission)
+and [execution](../application/session-and-programs.md#poison-after-turn-continuation) own those boundaries.
+Private initialized low status bits do not enable this capability: the physical, source-AI and
+reached-growth boundaries keep their existing Unsupported failures. `PoisonTurnTests` reproduces
+that path through the actual `NewBattle` initializer using project-authored counterexamples.
+
+**Unknown:** natural original reach, hardware/message timing and general mixed-status lifecycle.
+The static rules and authored engine tests do not close these gaps or #1047's retained Unknowns.
+Reproduce the bounded engine behavior with `PoisonTurnTests` and `PoisonSessionTests`; the
+[native recipe](../development-and-verification.md#poison-authored-observation) owns actual delivery.
+
+## Authored battle discard
+
+**Standard rigor agreement:** standalone authored Drop is a bounded extension of existing packed
+loadout, live equipment, custody and typed delivery owners. Select an exact held slot, refuse
+protected items or confirm/cancel, then publish removal/compaction and any rare Deals addition once.
+Result reveal/ack returns the same actor to the same ActionChoice and movement preview. Drop commits
+no movement, action cost, STAY, after-turn, outcome/defeated hook, reward or RNG. Acceptance is varied
+actual rule/session behavior, adapter builds, one ordinary-input native witness and exact-head CI.
+No generic inventory framework, second authority or field/service/persistence expansion is admitted.
+
+**Confirmed (static):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
+`disasm/`, `code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+`@ItemMenuChoice_Drop` through `byte_25066`: slot cancel returns to the item submenu; equipped-curse
+refusal precedes unsellable refusal. The selected packed word and selected slot are distinct operands.
+Confirmation-no returns `@StartBattleMenu`. Yes calls `RemoveItemBySlot`, tests the saved item's RARE
+bit, conditionally calls `AddItemToDeals`, displays the result and returns `@StartBattleMenu`.
+`code/common/stats/itemstats.asm` `RemoveItemBySlot/RemoveAndArrangeItems` shifts later words,
+appends Nothing and invokes `UpdateCombatantStats`. The battle caller does not use `DropItemBySlot`
+to supply its guards. `code/common/stats/dealsinventory.asm` `AddItemToDeals/GetDealsItemInfo` masks
+identity and increments the selected independent nibble up to15; reaching15 still permits removal.
+`data/stats/items/itemdefs.asm` identifies0 as CONSUMABLE,61 as WEAPON|RARE and113 as RARE|UNSELLABLE.
+Reproduce with `git -C <pinned-upstream> show c834c652:disasm/<named-file>` and the named symbols.
+The [battle caller](../../../docs/design/contracts/battle-functions-control-flow.md),
+[Deals contract](../../../docs/design/contracts/caravan-and-deals-state.md) and
+[economy synthesis](../../../docs/design/synthesis/progression-and-economy.md)
+remain the consumed contract routes; these are static claims, not natural-route/timing observations.
+
+`BattleDiscard` validates the live actor, supported words, exact slot/word and selected metadata.
+Unsellable113 is carryable but refuses removal. Rare61 needs observed custody; null stays Unknown,
+never known-empty. `BattleItemCustody.AddDeal` preserves other entries and enemy onceFlags. Shared
+`BattleEquipment.RemoveItem` compacts exact words and refreshes ATT from the actor's current base
+plus remaining equipped contribution once. Spells, immutable definitions, resources, positions,
+queue and seeds remain unchanged; range, subsequent equip/use and growth read the current loadout.
+An overlapping enemy-drop catalog must agree about rarity. Four held slots bound selection to O(4);
+publication copies the existing actor list O(N), with no new acquisition or unbounded work.
+
+The [admission owner](../content/profiles-and-trust.md#authored-battle-discard-admission),
+[session owner](../application/session-and-programs.md#battle-discard-selection-and-completion) and
+[native recipe](../development-and-verification.md#battle-discard-authored-observation) own execution.
+Modern feedback and menu cancellation are authored interactions. Names/arena/weapon bonus/range
+operands are example content. Curses, rings, broken/status effects, wider item use, field/Caravan/shop
+services, private/connected imports and save/load remain Unsupported. **Unknown:** natural original
+reach and original presentation/timing; the twelve #1047 Unknowns and #638 pause remain unchanged.
+
+## Authored battle weapon equipment
+
+`BattleEquipment` operates on existing `SourceLoadout` slot words. An explicitly opted-in actor has
+one immutable starting base ATT; `BattleActorProgress.BaseAttack` takes over after growth. The live
+first equipped admitted weapon contributes ATT, clamped to 200. Unarmed contributes zero and uses
+range 1. `BattleGrowthRules`, actor reconstruction, physical query/target/resolution and
+`BattleActionResolution` validation consume this live contribution/range. Counter range belongs to
+the actual counterattacker. Profiles without mutable equipment retain their frozen definition/growth
+behavior. Neither repeated confirmation nor growth stacks the old bonus.
+
+Eligibility uses weapon type and the source class bit (`1 << classId`). Offers preserve carried slot
+order and duplicate identities. Zero eligible weapons yields no interaction; one to three eligible
+slots include Unarmed sentinel4; four eligible slots overwrite the source menu's Unarmed cell.
+Selecting a slot clears only admitted weapon equipped bits and sets the chosen slot's bit128. No
+inventory removal, compaction, item transfer, other flags, resource payment, movement commit or turn
+consumption occurs. Broken weapons, equipped nonweapons, multiple equipped weapons, wrong-class
+initial equipment, unsupported classes/status/control and inconsistent live ATT reject explicitly.
+
+**Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
+`disasm/`: `code/common/stats/itemstats.asm:GetEquippableWeapons/GetEquippableItemsByType`,
+`IsItemEquippable/IsWeaponOrRingEquippable`, `GetEquippedWeapon`, `EquipItemBySlot` and
+`UnequipItemBySlotIfNotCursed`; `code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+`@CheckItemMenuChoice_Equip`, `sub_24C4E`, `CreatePulsatingAttackRangeGrid`, `EquipNewItemInBattle`
+and `loc_24C44`. The source pre-fills the fourth menu cell with Unarmed/slot4, then overwrites entries
+sequentially. It restores old preview equipment before the final equip helper, and returns to
+`@StartBattleMenu`. The source's cursed refusal exists but is outside this admitted subset.
+
+The [item-definition contract](../../../docs/design/contracts/item-definition-data.md),
+[level refresh](../../../docs/design/contracts/level-up.md#confirmed-current-and-derived-stat-refresh)
+and [equipment synthesis](../../../docs/design/synthesis/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution)
+own original metadata/refresh evidence. Pure immutable candidate calculation is the remake's preview
+implementation, not an observation of original UI timing. `BattleEquipmentTests` and
+`BattleEquipmentSessionTests` reproduce engine behavior with varied base stats, masks, names, ranges,
+slots, nonzero growth, invalid state and current counter equipment. The original natural route and
+full equipment/status fidelity remain **Unknown**.
+
+## Authored AURA group healing
+
+`HealingSpellDefinition.Targets` distinguishes Single, AuraRadius and AuraAllAllies. Ordinary
+HEAL/Herb keep their existing scalar behavior. AURA is a finite family; authored IDs are references,
+not legality predicates. Source order comes from existing `Initialization.SourceCombatants`,
+independently of Prism, processing order or actor names.
+
+| Level | MP | Center range | Radius | Power |
+| --- | --- | --- | --- | --- |
+| 1 | 7 | 0–3 | 1 | 15 |
+| 2 | 11 | 0–3 | 2 | 15 |
+| 3 | 15 | 0–3 | 2 | 30 |
+| 4 | 20 | 0 | dedicated all-ally scan | full missing HP per target |
+
+AURA1–3 select a living placed non-neutral teammate center using the provisional caster position.
+Inclusive Manhattan radius selects living placed non-neutral allies, sorted by source index.
+AURA4's range-zero center is self, still selected through the non-neutral grid. Its later slot 0–29
+scan includes every living placed ally, including neutral/distant allies. Dead/unplaced actors never
+recover. Source grid writes in increasing index order; production admission already forbids living
+cell overlap and out-of-map placement, so invalid-memory overwrite behavior is not emulated.
+
+Recovery is min(power, missing HP); AURA4's power 255 sentinel resolves each target's missing HP.
+An AURA encounter admits maximum HP 1–32767: bsc0B interprets its delta as signed, and IncreaseAndClampWord
+also checks the sign of currentHP+delta. Higher domains are Unsupported rather than emulated.
+The ally priest contributes max(10, floor(25*recovery/maxHP)) per target to one accumulator capped at 25.
+Full HP still contributes 10. The progression owner emits ordered `healing-exp-contribution` facts
+(target, accumulator before/after), then one range 16 plus/minus pair and one award, without teammate
+halving. Credit/growth retain their later boundaries.
+
+**Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`data/stats/spells/spelldefs.asm` AURA rows and these paths under `code/gameflow/battle/`:
+
+- `battlefunctions/battlefunctions_2.asm:ProcessBattleEntityControlPlayerInput` spell MP/range/choice branch;
+  `battlefield/buildactionrangegrids.asm:BuildSpellRangeGrid/ApplyRelativeCoordinatesListToGrid`;
+  `battlefield/buildtargetsarray.asm:BuildTargetsArray`;
+  `battlefield/populatetargetslist.asm:PopulateTargetsList/PopulateTargetsListWithAllAllies`.
+- `battleactions/sorttargets.asm:battlesceneScript_SortTargets`;
+  `battleactions/battleactionsengine_1.asm:WriteBattlesceneScript`;
+  `battleactions/createbattlesceneanimation.asm:battlesceneScript_PerformAnimation`;
+  `battleactions/castspell.asm:spellEffect_Heal`.
+- `battleactions/earnexp.asm:battlesceneScript_CalculateHealingExp/battlesceneScript_AddExpAndApplyHealingCap`;
+  `battleactions/giveexpandgold.asm:battlesceneScript_GiveExpAndGold`;
+  `battlescenes/battlesceneengine_0.asm:bsc0B_executeAllyReaction/bsc0F_giveExp`.
+
+The signed addition owner is `code/common/stats/combatantstats_3.asm:IncreaseAndClampWord`.
+Reproduce inspection with `git -C <registered-upstream-checkout> show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>`.
+The accepted [AURA contract](../../../docs/design/contracts/spell-resolution.md#confirmed-aura-target-and-accumulation-subset)
+retains bounded H3 geometry/accumulation evidence. These joins establish structure, not natural
+original casting or presentation timing; engine tests are not original-game evidence.
+
+## Jaro conversion and source ally commandset6
+
+The [scope agreement](../capability-status.md#authored-jaro-conversion-agreement) admits one authored
+composition. `ConvertBattleActor(enemySlot, allySlot)` binds two existing logical actors through
+`SourceCombatants`. It reads retained enemy placement, writes enemy currentHP0/absent placement,
+copies only coordinates to the ally, and leaves each actor's definition, maximums, MP, stats,
+loadout, status and activation intact. Dead allies remain dead. A null retained coordinate stays
+absent; it is never replaced with the enemy definition's fresh starting coordinate.
+
+`MapPartyMembership.Rebuild` uses the shared story flags. Conversion sets joined, rebuilds the list
+snapshot, conditionally writes active below12, then explicitly writes active regardless of capacity.
+The list can therefore lag the active flag. This named source operation permits thirteen active
+flags without changing general party capacity. The alias copy runs last and can fail after those
+committed writes. `JoinBattleForceAi(nonzero)` preserves the activation word OR4 across JoinForce's
+joined/list/conditional-active writes, then publishes it. Zero clears only bit2 and does not join or
+rebuild. These are the source subroutine/opcode orders, not an atomic roster transaction.
+
+`BattleDeploymentDefinition.SourceAllyControl` explicitly selects live activation bit2 as the
+player/automatic authority. The immutable strategy is `source-ally-physical`; ordinary authored
+control retains its earlier meaning. Queue generation still uses live placement/HP/agility, and
+sleep/dead-entry handling remains in ordinary turn flow. No enemy slot is substituted into the queue.
+
+**Confirmed static clarification:** at pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:
+
+- `code/gameflow/battle/ai/startaicontrol.asm:StartAiControl` sends allies directly to
+  `@HandleAiCommandset` with6, skipping enemy checked-word clear, activation/standby, special-attacker,
+  dead-follow promotion and path-mode preprocessing.
+- `data/battles/global/aicommandsets.asm:AiCommandset06` orders ATTACK1, HEAL1, SUPPORT, MOVE1, STAY.
+  `ai/command/support.asm:aiCommand_Support` immediately fails for an ally. The admitted loadout has
+  four empty item127 slots and four source spell63 slots, no learned spells, ordinary range1 physical
+  attack and difficulty0. Item/spell/neutral/MUDDLE/auto-battle and other difficulty paths remain Unsupported.
+- `ai/command/attack/prioritizetargets.asm:AdjustTargetPriorityForAttackByDifficulty` selects Script3
+  for an ally at difficulty0. Opponent targets follow ascending source slots; reachable priorities
+  draw thinking RNG in reverse order. `PhysicalTargetRules.ScriptThree` is reused only for that raw
+  score. `ai/command/attack/determinebattleaction.asm:@MultipleTargets` bypasses enemy >=15 class
+  preference for allies. The raw-max cohort is collected backwards; the final signed movement
+  comparison selects greatest movement, replacing equal values. Output priority caps at15. Selection
+  draws no additional RNG. `ai/command/attack.asm:@ValidTarget_Attack` skips the enemy-only LastTarget write.
+- `ai/command/move.asm:aiCommand_Move` targets living placed opponents. Its post-sort enemy-bit test
+  reads the final cost in d0, not the mover ID. The shared `AiMovementRules.Pursue` is reused only for
+  complete0..127 raw target costs, stable nearest-target order, approach and legal occupancy. No
+  attack runs HEAL1/SUPPORT failure then MOVE1 without RNG. Unreachable/128 costs remain Unsupported.
+
+The abbreviated AI paths above share `code/gameflow/battle/`. The accepted
+[conversion research](../../../docs/research/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases)
+and [AI contract](../../../docs/design/contracts/battle-ai-decision.md) retain original evidence.
+`JaroConversionTests`, `BattleRegionProgramTests` and `SourceAllyAiTests` exercise actual remake
+behavior, including changed IDs/slots/state, prefix failures and automatic-to-manual transition.
+Natural original scene reach, original alias timing and original presentation remain **Unknown**.
+
+## Hidden-enemy reset and source regions
+
+**Confirmed static source:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
+`disasm/`: `code/gameflow/battle/battleloop_1.asm`, `battleloop/initializecombatants.asm`,
+`battleloop/populateenemyspawns.asm`, `battleloop/triggerregions.asm`, `battleloop/spawnenemy.asm`,
+`battleloop/clearaimemory.asm` and `ai/startaicontrol.asm` (the latter paths share
+`code/gameflow/battle/`). The [research owner](../../../docs/research/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)
+retains original provenance and natural-reach limits. Engine tests prove the remake implementation.
+
+`BattleActorState.Initialized` selects zero effective maximum HP when dormant; initialized maximum HP
+still comes from definition/progress. It is not a second numerical maximum. Fresh source initialization
+parks modes2/3 with mode bits alone; controlled input explicitly declares its state/activation.
+`BattleSpawnRules.Populate` scans explicit enemy source slots, independently of processing/display
+order. Dead actors require a held non15 primary or secondary region; primary wins. Activation bits
+are set before mode2's maxHP0 test. Mode3 has no maxHP test. Ordinary death preserves initialized
+maximum HP; it never invokes spawn reset.
+
+Reset tests the declared enemy bound and every retained coordinate, including self/dead occupants.
+Success reloads HP/MP, source attack plus difficulty0 quarter, status, loadout, placement and original
+orders, preserving the passed activation word and external `AiMemory`/`LastTarget` arrays. Refusal
+sets dormant/HP0 and absent placement without clearing activation or region history, so a later
+eligible reset may succeed. The complete reset list is committed before any appearance; subsequent
+candidates see earlier successful placements. Definition loadouts are restricted to unequipped Herb0
+or empty127 and source spell63; equipment/general difficulty refresh remains closed.
+
+`SourceRegionGeometry` implements the source dominant-axis signed integer projection for coordinates
+0..47, where products fit the sign-extended low word. Division truncates toward zero. Triangles use
+1/2/3; quads use 1/2/4 then3/2/4. Edge1→2,3→1,3→2 preserve immediate in-bounds returns, exception
+branches and comparisons with the opposite vertex. The instruction sequence, rather than its comment,
+is authoritative: negative projection uses `move #1,ccr` and returns2; zero denominator uses
+`ori #1,ccr`, retains Z and returns3. This deliberately differs from ideal polygon geometry and
+retains degenerate/reversed/integer-edge behavior in the admitted finite domain.
+
+`BattleRegionState.Tested` persists across rounds. Living placed enemies supply activation calls;
+without one, geometry is not evaluated. Positive signed-HP allies supply candidate points. Held
+flags never clear on a false result. Existing ordinary source AI clears the checked word before its
+activation/standby work; an authored Stay policy does not imitate that source call. Fresh encounters
+start with explicitly empty region state. `HiddenSpawnTests` and `HiddenSpawnSessionTests` exercise
+these rules and their ordinary scene/return consumers, including state retained after later failure.
+
+## Finite Prism laser
+
+`PrismLaserDefinition` binds each actor to an explicit source combatant slot (allies0–29,
+enemies128–159) and each Flower to a cardinal direction0right/1up/2left/3down. Processing order,
+actor name and display facing do not select the ray. `PrismLaserDecision` implements the admitted
+kind93 branch under ordinary enemy automatic control and unconditional15/15 activation. Existing
+sleep turn handling prevents a sleeping actor from executing; other actor status/control and
+non15/standby configurations remain Unsupported.
+
+**Confirmed static source:** SF2DISASM pin `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/gameflow/battle/ai/startaicontrol.asm` (`StartAiControl`, `ProcessLineAttackerAi`),
+`getlaserfacing.asm` (`GetLaserFacing`), `battleactions/battleactionsengine_1.asm`
+(`battlesceneScript_DetermineTargetsByAction`, `battlesceneScript_InitializeActors`),
+`battleactions/battleactionsengine_2.asm` (`battlesceneScript_ApplyActionEffect`),
+`battleactions/inflictdamage.asm` (`battlesceneScript_InflictDamage`), `battleloop/processkilledcombatants.asm` (`ProcessKilledCombatants`) and `code/common/stats/combatantstats_2.asm`
+(`IncreaseKills`). The [laser research owner](../../../docs/research/battle36-prism-flower-laser.md)
+retains the source ray/occupancy/RNG/message boundary; its historical consumer-gap audit describes
+its inspected baseline, not this authored implementation. No new original runtime finding is claimed.
+
+Decision scans one cardinal ray over48×48 tactical coordinates, omitting HP0, absent/off-grid and
+neutral-bit3 actors, and chooses the nearest eligible ally or Stay without movement or RNG.
+Preparation uses current occupancy from both factions, sorts by explicit source slot, and ignores
+whether the old focus remains eligible. Walls, terrain, ordinary range and rendered crop do not stop
+the ray. Eligible overlap is explicitly rejected instead of approximating source overwrite semantics.
+All edge origins, signed-high/malformed HP, unknown activation words, target statuses and special
+kinds remain closed. The authored binding declares ordinary initial activation word0; a missing
+binding is not an inferred original state.
+
+Each ordinary target receives base16 minus two main-stream `RNG(3)` results, with minimum1 before
+HP clamp. The same range is used twice and the stream continues in sorted order; thinking RNG is
+unchanged. Construction writes only its RNG, preserving HP/MP/status for reaction playback. The
+calculated amount remains distinct from actual HP loss. It never enters ATT/DEF, land, resistance,
+MP, dodge/critical, counter/double, reward or item-drop algorithms. Existing reaction-motion RNG
+runs later at its own boundary; this is not a claim about total original animation RNG.
+
+The accounting source join is explicit: action6 writes FIRST_ALLY=FF in InitializeActors;
+ProcessKilledCombatants calls IncreaseKills for an enemy death, but IncreaseKills tests the signed
+byte and returns for FF. `BattleDeathCredit(null)` therefore means **known no ally**; a null context
+means **unknown**, while a context containing an ally retains ordinary scene credit. Laser entry
+replaces prior credit even with zero targets. Ally deaths increment their own defeats; enemy deaths
+and leader sweeps remove without kills, EXP, gold or invented drops. Unknown credit still rejects
+before death publication. Ordinary physical and healing validators keep their own target rules.
+
+`PrismLaserTests` and `PrismLaserSessionTests` exercise the rule and actual automatic/scene/field
+consumers, including empty reconstruction, changed IDs/order, stale completion and retry after a
+later accounting failure. The authored [host observation](../development-and-verification.md#prism-laser-authored-observation)
+establishes usable modern delivery; natural original reach and hardware fidelity remain **Unknown**.
+
+
+## Finite physical-action item drops
+
+`EnemyItemDropRules` is a fixed SF2 physical-construction service. Its evidence owners are the
+[combat contract](../../../docs/design/contracts/combat-resolution.md) and
+[Taros action-drop custody](../../../docs/research/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody),
+including `sf2-enemy-item-drops-v1` and `sf2-enemy-item-drop-behavior-v1`. **Confirmed static source:**
+pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/gameflow/battle/battleactions/{battleactionsengine_1,dropenemyitem}.asm`,
+`code/common/stats/itemstats.asm` (`GetItemSlotContainingIndex`, `RemoveItemBySlot`, `AddItem`),
+and `data/stats/items/itemdefs.asm`. Source inspection distinguishes the helper's mutation from
+the generated `displayMessage` commands; authored observations do not prove natural original reach.
+
+After each first/second/counter effect, the helper requires ally actor, enemy target, local target
+death, matching source battle/combatant slot and an actually held mapped item. Rows retain their
+order, including continuing past a matching battle/slot row whose item is absent. The first matching
+inventory slot wins. Actor names, processing order, `Physical.Leader` and enemy-definition identities
+do not select a drop. Taros Sword110, Iron Ball102 and Counter Sword68 alone draw `RNG(32)` and require
+zero; this occurs before testing the once bit. Other admitted items, including rare Achilles61,
+do not draw. The RARE attribute controls only fallback.
+
+A clear once bit is set, the enemy's slot is removed/compacted, then a living actor receives the
+masked identity in its first empty slot. Enemy equipped/AI/broken status is not received; there is
+no automatic equip or other-ally search. Dead/full recipients route rare items to independent
+per-item Deals counts capped at15, while non-rare items are discarded. The source emits dropped
+message396 and received message395 only after successful direct receipt. Fallback creates no
+message/acknowledgement. Leader sweep never invokes this action helper.
+
+Construction retains immutable inventory/custody and the ordered RNG/removal/receipt facts before
+end EXP/gold construction and later HP/status/reward playback. `BattleActionResolution` validates
+the helper's exact finite effect suffix after each reaction and its resulting state; it does not
+accept arbitrary inventory writes from a replacement physical rule. Re-evaluation is pure candidate
+validation, not a second publication or RNG stream. Queries do not construct actions. A later wait,
+credit, growth or outcome failure retains the accepted prefix and cannot repeat these writes.
+
+`EnemyItemDropTests` and `EnemyItemDropSessionTests` reproduce the actual rule/session behavior.
+The [Content owner](../content/profiles-and-trust.md#authored-item-drop-binding) closes admission to
+the supported metadata; [Application](../application/session-and-programs.md#battle-item-custody-and-receipt-playback)
+owns cross-mode custody. This is physical-only authored receipt support, not private Battle18,
+general item acquisition/equip, shops or cross-session persistence.
+
+## Finite enemy-leader cleanup
+
+An authored v8 encounter can bind `LeaderCleanupDefinition` through the
+[closed Content binding](../content/profiles-and-trust.md#authored-leader-cleanup-binding).
+It maps Bowie and each enemy source slot explicitly. Enemy128 is the defeated-hook gate;
+`Physical.Leader`, processing order and Taros enemy-definition88 are separate identities.
+`BattleOutcomeRules.DefeatedHook` requires living Bowie and zero-HP gate. Held completion skips
+only the empty defeated program, not the leader tail. Nonempty programs and private leader
+encounters remain Unsupported.
+
+`BattleDeathBatch` retains action positive-to-zero deaths in reaction order, then appends every
+positive-HP enemy in source-slot order, including already-unplaced actors. Forced entries are
+explicitly distinguished from action deaths. The sweep never changes HP or constructs attacks.
+At accepted field exit, each enemy entry credits a kill when the retained context contains an ally;
+known-none laser custody suppresses that increment. Allied action deaths credit their own defeats. The existing capped counter policy clears placement/status.
+Admitted sleep and pure poison have no stat modifier to recompute; wider stat/status refresh remains unsupported.
+Only the original action earns damage/end EXP and death gold; the sweep adds no EXP, gold or drops.
+Outcome counts placed living combatants after cleanup and checks allied defeat first.
+
+**Confirmed static support:** the [Battle18 outcome owner](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#outcome-selection-and-shared-battle-boundary)
+anchors pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. Under
+`disasm/code/gameflow/battle/`, `cutscenes/battleendcutscenesstart.asm:ExecuteBattleCutscene_Defeated`
+and `battleendcutscenesend.asm:loc_47C48` own eligibility and the source-slot append;
+`battleloop/processkilledcombatants.asm:ProcessKilledCombatants` owns spin/exit, kill-or-defeat
+bookkeeping and removal. `battleloop_1.asm` performs defeat-before-victory after each killed-list
+pass and calls the defeated hook only at the first checkpoint. `battlefunctions/executeindividualturn.asm`
+clears the death list each turn; its no-action/dead branches do not initialize first-ally custody.
+`battleactions/battleactionsengine_1.asm:battlesceneScript_InitializeActors` assigns that custody
+from the admitted scene's initial ally (including the ally target of an enemy physical attack).
+These static facts do not establish original natural reach or hardware timing.
+
+## Finite Taros physical effectiveness
+
+The optional `BattleDefinition.TarosEffectiveness` binds one admitted encounter to explicit source
+identities. `Gameplay/Sf2/TarosEffectiveness` owns the source-specific definition88/weapon61 tests;
+logical `ActorRef` identity and enemy-definition identity are separate from deployment order, name,
+map, package and presentation. Content binds Bowie to an ally, enemy definitions to enemy actors,
+and weapon item types. Absence of the binding leaves the ordinary physical rule unchanged.
+The [authored package](../../content/authored/taros-effectiveness.json) is a controlled semantic
+example, not a private Battle18 import. Its numerical ATT is already supplied; this does not add
+an equipment/stat-refresh or equip-menu service by itself. The separate
+[mutable authored equipment binding](#authored-battle-weapon-equipment) now supplies that bounded interaction.
+
+At `Sf2PhysicalAction.Prepare`, compute one initial ineffective operand from actor, initial target
+and live `BattleActorState.SourceLoadout`. Scan slots in order for equipped bit128, non-NOTHING
+masked identity and the admitted weapon type. Only the bound Bowie with first equipped weapon61
+satisfies the initial conjunction against definition88. Carrying61, another equipped actor,
+an earlier equipped different weapon or a changed live loadout matters. Broken bit256 does not
+change the masked identity; this getter does not recheck equip classes. Doubles reuse the operand.
+Counter construction passes a cleared operand; separately, a mapped Taros original attacker
+cannot be countered. Taros as original target can counter when the existing survival/status/range
+and rolled-toggle checks allow it. The policy is physical only; it adds no spell/item immunity.
+
+**Confirmed static source ordering:** at SF2DISASM
+[`c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions),
+`battleactionsengine_1.asm:WriteBattlesceneScript` initializes and calls
+`determineineffectiveattack.asm` once. Its second-attack block retains the toggle; the counter
+block clears it. `isabletocounterattack.asm` reads the original actor through a5 for the Taros
+prohibition. `code/common/stats/itemstats.asm:GetEquippedWeapon/GetEquippedItemByType` owns the
+live slot/type scan. The [original research owner](../../../docs/research/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)
+retains provenance, Battle18/F112 context and original natural-reach limits.
+
+| Reached physical step | Ineffective consequence |
+| --- | --- |
+| `attack.asm` / `determinedodge.asm` | Dodge comes first and wins; its existing status skip remains. A dodge does not emit ineffective. |
+| `calculatedamage.asm` / `determinecriticalhit.asm` | Calculate and draw critical before the damage helper. Retain the draw; do not display a critical-damage result for an ineffective return. |
+| `inflictdamage.asm` | Definition88 plus the initial toggle emits message289 and returns before counter halving, two spread draws, damage EXP, HP/death and kill/gold. Emit `Ineffective` with unchanged HP/MP, amount0, no damage status write or recoil. |
+| `attack.asm` / `inflictailment.asm` | The target survives, so supported sleep-critical ailment can still be scheduled after the ineffective message. No new resistance/immunity predicate is inferred. |
+| `determinedoubleandcounter.asm` | Surrounding double/counter draws still occur. Retain the current sticky counter flag and finite first/second/counter dispatch. |
+| `battleactionsengine_2.asm:End` / `giveexpandgold.asm` | A surviving eligible ally still receives the normal two end-EXP draws and minimum1, even with zero accumulated damage EXP. An ineffective result does not fabricate kill/gold or suppress this source award. |
+
+Sleep is a later script operand, not a construction-time live status mutation:
+`sf2battlescenemacros.asm:executeEnemyReaction/executeAllyReaction` write to a6; the later
+`battlescenes/battlesceneengine_0.asm:bsc0A/bsc0B` calls `SetStatusEffects`. Therefore newly scheduled
+sleep cannot remove an already constructed second dodge draw or legal counter. Ineffective has no
+damage status write, so subsequent ineffective playback does not clear earlier sleep. Existing
+ordinary damaging reactions retain their independently constructed status operands.
+
+`TarosEffectivenessTests` covers source-identity and live-slot variations, exact construction RNG,
+double/counter lifetime, source-supported sleep, real command/scene waits, duplicate delivery and
+reward-failure prefix retention. Existing `SleepAndFlyingTests` preserves the construction/playback
+split. The [native recipe](../development-and-verification.md#taros-authored-observation) checks the
+actual Godot message, HP delivery and resumed input. Full Battle18, all-action immunity, drops/Deals,
+private leader cleanup and Caravan remain outside this physical implementation; original natural/hardware behavior
+remains **Unknown** at its existing evidence boundary.
+
+## Finite EGRESS action
+
+The same finite retreat continuation also accepts Angel Wing through `Sf2ItemAction`, the ordinary
+item-slot action. `BattleDefinition.RetreatItems` holds admitted item definitions separately from
+healing items. Content keeps source ID4 in the SF2 binding: CONSUMABLE / EGRESS1 / range0, no equip
+flags/effects; absent Wing definitions do not affect existing Herb/EGRESS packages. No MP or learned
+spell is required for item use, and any living actionable player ally may confirm self. Query/cancel
+is provisional. Confirmation revalidates control, selected packed word and target; preparation
+compacts exactly the selected slot, preserving all survivor bits/order and appending127. Validation
+allows only that loadout delta and selected movement: no MP/HP, reward, reaction or RNG writes.
+`ItemRetreatPayment` and `SpellRetreatPayment` explicitly distinguish the two costs; Wing never uses
+a dummy spell or an ordinary recovery scene. Existing Herb preparation/reaction/reward is retained.
+
+Authored v7 items admit `"effect":"consumable-retreat"` with power0 and minimum/maximum range0.
+The [source/payment join](../application/session-and-programs.md#paid-retreat-and-field-return) and
+[Wing reproduction](../verification/field-programs.md#battle02-angel-wing-and-walking-retry) own the
+staged return, controlled initial input and limits. Acquisition, equip/break/curse transactions and
+wider item effects remain Unsupported.
+
+`Sf2RetreatAction` implements the existing `IBattleActionRule` boundary for admitted retreat spells.
+`BattleDefinition.RetreatSpells` is separate from healing definitions. Private Battle02 admission
+checks source EGRESS1/base 10, cost 8, range 0/radius 0, power 0 and
+`TYPE_SPECIAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE`; other effects remain explicit Unsupported offers.
+The source special action bypasses ordinary CastSpell, so its metadata does not introduce a Silence
+gate. Sleeping/dead/unplaced/non-player actors cannot acquire control through this action.
+
+The action requires an actually learned spell and self target. Query does not prepare or draw RNG;
+confirmation repeats admission against live MP and target. Finite validation permits only selected
+movement in prepared state, with no reaction, reward, inventory, resource or RNG mutation. Application
+then owns exactly one payment and the separate retreat continuation. Malformed candidate resources
+or RNG reject before payment. Mixed healing/retreat offers preserve learned spell order.
+
+Authored v7 spell input can use `"effect":{"kind":"retreat"}` with explicit `mpCost` and zero minimum/
+maximum range; it needs an admitted field outcome route to return. Private bindings retain their
+source checks and only admit Battle02. The two finite payment cases share the existing continuation.
+[Payment/return](../application/session-and-programs.md#paid-retreat-and-field-return)
+and the [capability agreement](../capability-status.md#battle02-egress-implementation-agreement) own
+staged delivery, recovery and exclusions.
+
 Domain owns deterministic calculations and immutable state transitions. Application selects one
 immutable composition and owns when each prepared effect is published. Content admits data;
 Godot presents semantic choices and effects. Start with [architecture](../architecture.md) for
@@ -464,7 +980,40 @@ It does not relabel authored tests as an original trace replay.
 Private Content admits only the selected Medical Herb definition into this item family.
 Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
 not herbs. The current class model admits PRST healing EXP and the existing non-healer
-classes. VICR/MMNK class admission, broader item families, Equip/Give/Drop, field inventory,
+classes. VICR/MMNK class admission, broader item families, equipment beyond the authored weapon subset, Give/Drop beyond the standalone subsets, field inventory,
 AI healing-item choice and save/load remain unsupported. Exact original presentation timing remains Unknown. The existing
 physical-only AI policy rejects a nonempty item loadout at start. This does not close the
 continuous H4 milestone or establish successful native-original cancellation.
+
+## Authored battle Give and exchange
+
+**High rigor agreement (#1363):** two live loadouts, current equipment contributions, movement
+and resumable action completion share existing authorities. Implement standalone opted-in Give
+with donor-slot, adjacent-recipient and full-pack return-slot selection. Confirm publishes the
+finite mutation; authored feedback resumes into ordinary STAY completion exactly once. Cancel
+before confirmation is free. Reuse SourceLoadout, BattleEquipment and GameSession, without a
+second inventory authority. Acceptance is changed-state rule/session tests, actual adapter build,
+one ordinary-input transfer/exchange witness with later equip/use/control, and exact-head CI.
+
+**Confirmed (static):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+`@CheckItemMenuChoice_Give` through `@EndGiveAction`: ordinary battle Give removes the donor
+before adding to the recipient. Exchange saves the selected words, removes donor then recipient,
+adds the recipient's saved item to the donor, then the donor's saved item to the recipient.
+`disasm/code/common/stats/itemstats.asm` `RemoveItemBySlot/RemoveAndArrangeItems` compacts
+following slots and calls `UpdateCombatantStats`; `AddItem` fills the first empty identity slot
+and masks to identity/broken bits, so receipt never auto-equips. This is the battle caller's
+order; the field caller differs.
+
+`disasm/code/gameflow/battle/battlefield/buildactionrangegrids.asm`
+`BuildSpellRangeGridForItemGive` uses the teammate grid and `SpellRange1`;
+`disasm/data/stats/spells/spellranges.asm` defines offsets (0,1), (1,0), (0,-1), (-1,0),
+excluding self/diagonals. `buildtargetsarray.asm` filters zero HP, neutral activation bit and
+unplaced coordinates. The completed Give writes STAY and exits player control. Modern selection
+retains provisional movement until commit; modern result text is authored, not source dialogue
+or original timing evidence.
+
+Scope excludes curses, rings, broken items, general status effects, field/service inventory,
+private imports, save/load and changed frozen profiles. Carryability is separate from use or class
+equip eligibility. **Unknown:** natural original reach, original presentation/timing and wider
+status behavior. #1047's twelve Unknowns remain unchanged; #638 remains paused.

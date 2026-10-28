@@ -7,14 +7,18 @@ internal static class BattleTerrainRules
     {
         if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
         if (terrain.Surface == TerrainSurface.Barrier) return -1;
+        if (mover == BattleMover.Flying && Enum.IsDefined(terrain.Surface)) return 2;
+        if (terrain.Surface == TerrainSurface.HighSky) return -1;
         if (mover == BattleMover.Hovering && Enum.IsDefined(terrain.Surface)) return 2;
         return terrain.Surface switch
         {
             TerrainSurface.Open => 2,
-            TerrainSurface.Brush => 3,
-            TerrainSurface.Rough => mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)3,
-            TerrainSurface.Deep => mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)4,
+            TerrainSurface.Brush => mover == BattleMover.Stealth ? (sbyte)2 : (sbyte)3,
+            TerrainSurface.Rough => mover == BattleMover.Stealth ? (sbyte)2 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)3,
+            TerrainSurface.Deep => mover == BattleMover.Stealth ? (sbyte)2 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)4,
+            TerrainSurface.Desert => mover == BattleMover.Stealth ? (sbyte)4 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)3,
             TerrainSurface.Impassable => -1,
+            TerrainSurface.HighSky => -1,
             _ => throw new BattleRuleException("terrain-surface", "terrain.surface", true),
         };
     }

@@ -38,7 +38,20 @@ internal static class BattleProgressionRules
         List<BattleEffect> effects = [];
         int amount = rule.Award(battle, actor, kind, reactions, ref seed, effects);
         Require(amount > 0);
-        ValidateDraws(actor.Actor, battle.MainSeed, seed, effects, randomOnly: true);
+        var contributions = effects.Where(e => e.Kind == "healing-exp-contribution").ToArray();
+        if (contributions.Length > 0)
+        {
+            Require(kind == BattleActionKind.Healing && contributions.Length == reactions.Count);
+            int accumulated = 0;
+            for (int i = 0; i < contributions.Length; i++)
+            {
+                var e = contributions[i];
+                Require(e.Actor == actor.Actor && e.Target == reactions[i].Target && e.Before == accumulated &&
+                    e.After >= accumulated && e.After <= 25 && e.RandomRange is null && e.RandomValue is null);
+                accumulated = checked((int)e.After!.Value);
+            }
+        }
+        ValidateDraws(actor.Actor, battle.MainSeed, seed, effects.Except(contributions), randomOnly: true);
         return (amount, seed, effects.AsReadOnly());
     });
 
@@ -55,9 +68,13 @@ internal static class BattleProgressionRules
     });
 
     internal static (BattleActorState Actor, uint Seed, IReadOnlyList<BattleEffect> Effects) Grow(
-        IBattleProgressionRule rule, BattleActorState before, uint initial) => Invoke(rule.Identity, "growth", () =>
+        IBattleProgressionRule rule, BattleActorState before, uint initial, bool poison = false) => Invoke(rule.Identity, "growth", () =>
     {
         if (before.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
+        // Private initialization can retain poison without opting into after-turn damage.
+        // Preserve its existing reached level-up failure, including the subthreshold no-op.
+        if (!poison && before.Status == 2 && before.Exp >= 100 && before.Definition.Growth is not null)
+            throw new BattleRuleException("growth-status-refresh", "actor.status", true);
         List<BattleEffect> effects = [];
         uint seed = initial;
         var after = rule.Grow(before, ref seed, effects);
@@ -99,15 +116,15 @@ internal static class BattleProgressionRules
         return (after, seed, effects.AsReadOnly());
     });
 
-    internal static void Preflight(IBattleProgressionRule rule, BattleActorState actor, int amount, uint seed)
+    internal static void Preflight(IBattleProgressionRule rule, BattleActorState actor, int amount, uint seed, bool poison = false)
     {
         var credit = Credit(rule, actor, amount);
-        _ = Grow(rule, credit.Actor, seed); // Discard; actual growth uses the later live scene seed.
+        _ = Grow(rule, credit.Actor, seed, poison); // Discard; actual growth uses the later live scene seed.
     }
 
     private static void Unchanged(BattleActorState before, BattleActorState after) => Require(
         ReferenceEquals(before.Deployment, after.Deployment) && after.Hp == before.Hp && after.Mp == before.Mp &&
-        after.Position == before.Position && after.Kills == before.Kills && after.Defeats == before.Defeats &&
+        after.Position == before.Position && after.Facing == before.Facing && after.Kills == before.Kills && after.Defeats == before.Defeats &&
         after.Status == before.Status && after.LastTarget == before.LastTarget && after.ActivationWord == before.ActivationWord &&
         after.AiMemory == before.AiMemory);
 

@@ -8,6 +8,15 @@ namespace Sf2.Remake.Content.Scenarios;
 // start policy; checking the source equipment must never apply its bonus a second time.
 internal static class PrivateBattleActionBindings
 {
+    internal static IEnumerable<RetreatSpellDefinition> RetreatSpells(PrivateBattleDefinitions definitions)
+    {
+        Require(definitions.Spells.TryGetValue(new("egress", 1), out var spell) &&
+            spell is { BaseId: 10, Code: "EGRESS", MpCost: 8, Radius: 0, Power: 0, MinimumRange: 0, MaximumRange: 0 } &&
+            spell.PropertiesExpression == "TYPE_SPECIAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE",
+            "source-egress-definition", "spells.egress", true);
+        yield return new(spell!.Spell, spell.MpCost);
+    }
+
     internal static IEnumerable<HealingItemDefinition> HealingItems(PrivateBattleDefinitions definitions)
     {
         // Accepted item 0 delegates to HEALIN-1. Other carried families remain explicit unsupported commands.
@@ -24,6 +33,18 @@ internal static class PrivateBattleActionBindings
         yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange);
     }
 
+    internal static IEnumerable<RetreatItemDefinition> RetreatItems(PrivateBattleDefinitions definitions)
+    {
+        if (!definitions.Items.TryGetValue(4, out var item)) yield break;
+        Require(item.Code == "ANGEL_WING" &&
+            item.ItemTypeExpression == "CONSUMABLE" && item.UseSpell == "EGRESS" && item.UseSpellLevel == 1 &&
+            item.EquipFlagsExpression == "NONE" && item.MinimumRange == 0 && item.MaximumRange == 0 &&
+            item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
+            "source-wing-definition", "items", true);
+        _ = RetreatSpells(definitions).Single();
+        yield return new(item!.Id, item.DisplayName);
+    }
+
     internal static PhysicalActorDefinition Physical(PrivateBattleDefinitions definitions, string prowess,
         IEnumerable<ushort> items, bool leader, ushort gold)
     {
@@ -31,6 +52,7 @@ internal static class PrivateBattleActionBindings
         {
             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn16WithQuarterBonus,
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn32WithHalfBonus,
+            "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Sleep,
             _ => throw new BattleRuleException("source-prowess", "actor.prowess", true),
         };
         var equipped = items.Where(word => (word & 128) != 0).Select(word => definitions.Items[(byte)(word & 127)]).ToArray();

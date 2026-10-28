@@ -1,0 +1,107 @@
+{
+  "package": "private-battle01-to-battle02",
+  "maps": [
+    3,
+    19,
+    20,
+    21,
+    40,
+    57,
+    66
+  ],
+  "battles": [
+    1,
+    2
+  ],
+  "growthClasses": [
+    {
+      "member": 0,
+      "class": "SDMN"
+    },
+    {
+      "member": 1,
+      "class": "PRST"
+    },
+    {
+      "member": 2,
+      "class": "KNTE"
+    },
+    {
+      "member": 3,
+      "class": "WARR"
+    }
+  ],
+  "outcomeEgressMap": 3,
+  "controlledEntitySpeed": 32,
+  "controlledBoundary": "Explicit controlled opening; actual Battle01 victory and persistent party/story continue through castle return and Jaha to Battle02. No original natural-route or fidelity claim. Battle02 resolution and later story are outside this selection.",
+  "additionalProgramSources": [
+    {
+      "symbol": "cs_53EF4",
+      "path": "data/maps/entries/map21/mapsetups/s2_entityevents_506.asm"
+    },
+    {
+      "symbol": "bbcs_01",
+      "path": "data/battles/entries/battle01/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "abcs_battle01",
+      "path": "data/battles/entries/battle01/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "ms_Empty",
+      "path": "code/common/scripting/map/ms_empty.asm"
+    }
+  ],
+  "programs": [
+    "cs_513D6",
+    "cs_5145C",
+    "cs_5148C",
+    "cs_513A0",
+    "cs_5149A",
+    "cs_53EF4",
+    "bbcs_01",
+    "ms_Empty",
+    "cs_51652",
+    "cs_53104",
+    "cs_53996",
+    "cs_52F0C",
+    "cs_52F40"
+  ],
+  "eventMaps": [
+    3,
+    19,
+    20,
+    21,
+    40,
+    66
+  ],
+  "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
+  "presentationAtlases": {
+    "map-3": "world.map3.base-tileset-atlas",
+    "map-19": "world.map19-20.base-tileset-atlas",
+    "map-20": "world.map19-20.base-tileset-atlas",
+    "map-21": "world.map21.base-tileset-atlas",
+    "map-40": "world.map40.base-tileset-atlas",
+    "map-57": "world.map57.base-tileset-atlas"
+  },
+  "setups": {
+    "3": [
+      609
+    ],
+    "19": [
+      501,
+      609
+    ],
+    "20": [
+      501,
+      609
+    ],
+    "21": [
+      501,
+      609
+    ]
+  },
+  "outcomeBattles": [
+    1
+  ]
+}

@@ -5,7 +5,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 
 namespace Sf2.Remake.Content.Scenarios;
 
-// The current private selection is Battle01. Decode owns format semantics independently of that pin.
+// Selected private identities are separate from the shared encounter format and gameplay rules.
 public sealed class PrivateBattleEncounterReader
 {
     public const string Repository = "https://github.com/ShiningForceCentral/SF2DISASM.git";
@@ -14,6 +14,10 @@ public sealed class PrivateBattleEncounterReader
     public const string SceneExportDigest = "DB9CCC8A40EBC1E0DB23C3EE5BDD67CAF026EF3EBD280B819FAB40E739BAD567";
     public const string CompressedTerrainDigest = "A0E6B0D4F656C7BD893923330148B3F9366CA7D839F5A0676272A2C95DAABC4A";
     private const string PlacementSourceDigest = "DBE89C24807B4577F741FC0EB6EDAE3386F1C47F8712CA2586AE945EDFEDD94B";
+    private const string Placement02Digest = "4769B0E79B6516F6AE0EA1F4BE4B3C6D7FC06A18E1AE491090676F3A2C9AA524";
+    private const string Scene02Digest = "76BEAFD66090CC8719BC0125EE82E356401FE070D2E161736DD7EFA2D24C39E7";
+    private const string Terrain02Digest = "9577ADEF7B0222733F2D6F26C879CDE4076BBDE0906193A6E3F48FD9F1045789";
+    private const string Source02Digest = "0FCEEB266BA2B6D1A1529D5B3A2539EEA65C3A1D33E01B09C036A0967FCD612C";
     private readonly string _placementPath, _scenePath, _terrainPath;
 
     public PrivateBattleEncounterReader(string placementPath, string scenePath, string terrainPath)
@@ -28,9 +32,13 @@ public sealed class PrivateBattleEncounterReader
     {
         try
         {
-            byte[] placement = ReadInput(_placementPath, PlacementExportDigest, "placement");
-            byte[] scene = ReadInput(_scenePath, SceneExportDigest, "scene");
-            byte[] stored = ReadInput(_terrainPath, CompressedTerrainDigest, "terrain", 284);
+            byte[] placement = ReadInput(_placementPath, PlacementExportDigest, "placement", alternativeDigest: Placement02Digest,
+                secondAlternativeDigest: "67E6BE08EA40B2AEFDD78BAC46666AE9845AC16415365B039A9308593DBB35A2");
+            using var selection = JsonDocument.Parse(placement);
+            int id = selection.RootElement.GetProperty("battle").GetProperty("id").GetInt32();
+            var pin = Pin(id);
+            byte[] scene = ReadInput(_scenePath, pin.Scene, "scene");
+            byte[] stored = ReadInput(_terrainPath, pin.Terrain, "terrain", pin.TerrainRange.LengthBytes);
             byte[] terrain;
             try { terrain = StackCompressedGraphicsDecoder.Decode(stored, 2304).Output; }
             catch (InvalidDataException) { throw Invalid("terrain", "The selected terrain failed bounded Stack decoding."); }
@@ -113,7 +121,10 @@ public sealed class PrivateBattleEncounterReader
             return new EncounterRegion((byte)Number(region, "id", 0, 15, "aiRegions.id"), Byte(region, "unknown"), vertices, trailing[0], trailing[1]);
         }).ToArray();
         Require(regions.Select(region => region.Id).Distinct().Count() == regions.Length, "regions", "Region IDs must be unique.");
-        Require(entities.All(entity => ValidRegion(entity.Behavior.PrimaryRegion) && ValidRegion(entity.Behavior.SecondaryRegion)),
+        // Ally records carry unused zeroed AI operands even in spritesets with no regions.
+        // Region assignment belongs to the enemy AI initialization path.
+        Require(entities.Where(entity => entity.Kind == EncounterEntityKind.Enemy)
+            .All(entity => ValidRegion(entity.Behavior.PrimaryRegion) && ValidRegion(entity.Behavior.SecondaryRegion)),
             "entities", "An assigned region must exist or be the absent-region value15.");
         bool ValidRegion(byte id) => id == 15 || regions.Any(region => region.Id == id);
         var points = Array(placement, "aiPoints", pointCount).EnumerateArray().Select(point =>
@@ -145,22 +156,41 @@ public sealed class PrivateBattleEncounterReader
             Require(source.Repository == Repository, "provenance.repository", "The selected repository drifted.");
             Require(source.Commit == UpstreamCommit, "provenance.commit", "The selected commit drifted.");
         }
-        Require(definition.PlacementSource.SourcePath == "data/battles/spritesets/spriteset01.asm", "provenance.sourcePath", "The selected placement source drifted.");
-        Require(definition.PlacementSource.SourceSha256 == PlacementSourceDigest, "provenance.sourceSha256", "The selected placement identity drifted.");
-        Require(definition.TerrainSource.SourcePath == "data/battles/entries/battle01/terrain.bin", "provenance.terrainSourcePath", "The selected terrain source drifted.");
-        Require(definition.TerrainSource.SourceSha256 == CompressedTerrainDigest, "provenance.terrainSourceSha256", "The selected terrain identity drifted.");
-        Require(definition.PlacementRange == new EncounterRange(1782498, 1782646, 148), "romRange", "The selected placement range drifted.");
-        Require(definition.CompressedRange == new EncounterRange(1758020, 1758304, 284), "terrain.compressedRange", "The selected terrain range drifted.");
+        int id = definition.Battle.Id;
+        var pin = Pin(id);
+        Require(definition.Battle == new EncounterIdentity((byte)id, pin.Code), "battle", "The selected battle identity drifted.");
+        string suffix = id.ToString("D2", CultureInfo.InvariantCulture);
+        Require(definition.PlacementSource.SourcePath == $"data/battles/spritesets/spriteset{suffix}.asm", "provenance.sourcePath", "The selected placement source drifted.");
+        Require(definition.PlacementSource.SourceSha256 == pin.Source, "provenance.sourceSha256", "The selected placement identity drifted.");
+        Require(definition.TerrainSource.SourcePath == $"data/battles/entries/battle{suffix}/terrain.bin", "provenance.terrainSourcePath", "The selected terrain source drifted.");
+        Require(definition.TerrainSource.SourceSha256 == pin.Terrain, "provenance.terrainSourceSha256", "The selected terrain identity drifted.");
+        Require(definition.PlacementRange == pin.PlacementRange, "romRange", "The selected placement range drifted.");
+        Require(definition.CompressedRange == pin.TerrainRange, "terrain.compressedRange", "The selected terrain range drifted.");
     }
 
-    internal static byte[] ReadInput(string path, string digest, string field, int? expectedLength = null, int maximumLength = 65536)
+    private static (string Code, string Scene, string Terrain, string Source, EncounterRange PlacementRange, EncounterRange TerrainRange) Pin(int id) => id switch
+    {
+        1 => ("INSIDE_ANCIENT_TOWER", SceneExportDigest, CompressedTerrainDigest, PlacementSourceDigest,
+            new(1782498, 1782646, 148), new(1758020, 1758304, 284)),
+        2 => ("TO_YEEL", Scene02Digest, Terrain02Digest, Source02Digest,
+            new(1782646, 1782772, 126), new(1758304, 1758636, 332)),
+        3 => ("TO_HAWEL_HOUSE", "8E9F759345D0EC1596C9921E85020A6F3DCFD5E972B7D4D75B7427E7866457B3",
+            "56B788E61D745755DCE3D331A179A33938BC5E1CBB116C505B0DF3DAA4F577AA",
+            "0616BB9F25BB37A92D97C40C05A18DC0E71D109D7E9564428F8BB9E509C67402",
+            new(1782772, 1783004, 232), new(1758636, 1758970, 334)),
+        _ => throw Invalid("battle", "The selected encounter is not admitted."),
+    };
+
+    internal static byte[] ReadInput(string path, string digest, string field, int? expectedLength = null, int maximumLength = 65536,
+        string? alternativeDigest = null, string? secondAlternativeDigest = null)
     {
         try
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             Require(stream.Length > 0 && stream.Length <= maximumLength && (expectedLength is null || stream.Length == expectedLength), field, "The selected input length is invalid.");
             byte[] bytes = new byte[(int)stream.Length]; stream.ReadExactly(bytes);
-            Require(Convert.ToHexString(SHA256.HashData(bytes)) == digest, field, "The fixed selected input identity drifted.");
+            string actual = Convert.ToHexString(SHA256.HashData(bytes));
+            Require(actual == digest || actual == alternativeDigest || actual == secondAlternativeDigest, field, "The fixed selected input identity drifted.");
             return bytes;
         }
         catch (IOException) { throw Invalid(field, "The required private encounter input is unavailable."); }

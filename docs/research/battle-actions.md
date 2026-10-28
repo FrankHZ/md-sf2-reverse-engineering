@@ -7,6 +7,7 @@
 - Status: **Unknown** for animation/message timing, item-break probability semantics beyond the RNG
   call contract, ailment sub-routes not already covered by H3, and reachability of unused helpers
 - Evidence date: 2026-08-02
+- Taros gate/pointer recheck: 2026-10-23, scoped to the correction below.
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -40,9 +41,17 @@ route. Non-equipment is consumed after use. Equipment must be breakable and ally
 break path; already-broken equipment is destroyed, while fresh breakable equipment calls the shared
 random/debug generator and breaks only on result zero.
 
-Taros immunity is battle-specific. Only an ally physical attack against Taros with the Achilles Sword
-sets transient flag 112 and avoids the ineffective toggle; other Taros attacks in that battle are
-marked ineffective. The flag is cleared before reevaluation.
+The initial Battle18 ineffective-attack gate requires actor **Bowie0**, ATTACK,
+target enemy type TAROS88 and Bowie's actually equipped ACHILLES_SWORD61 to set
+transient F112. Possession or another ally is insufficient. The helper first
+clears F112 and marks a Taros target ineffective when that flag remains clear;
+InflictDamage consumes the toggle, not F112. This is one initial-script check,
+not a per-target immunity test. A double retains the toggle; a counter resets it
+without reevaluating the helper, but counter validation excludes ordinary
+Taros-origin attacks by inspecting the original attacker through the swapped
+target pointer. That reset does not establish a normal bypass. Bowie's turn
+start separately clears F112. The [Battle18 gate and pointer account](./battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)
+owns the exact lifetime and counter direction.
 
 Target sorting first orders unsigned combatant bytes. Burst Rocks receive a temporary sort bit so
 they follow ordinary targets; the secondary pass orders marked Burst Rocks with higher HP before

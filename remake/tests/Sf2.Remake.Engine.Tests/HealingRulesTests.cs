@@ -24,9 +24,12 @@ public sealed class HealingRulesTests
         Assert.Equal(before.Mp, action.Prepared.GetActor(actor).Mp);
         Assert.Equal(patient.Hp, action.Prepared.GetActor(target).Hp);
         Assert.Equal(before.Exp, action.Prepared.GetActor(actor).Exp);
-        Assert.Equal(2, action.ConstructionEffects.Count);
-        Assert.Equal(new[] { "rng-exp-plus", "rng-exp-minus" }, action.ConstructionEffects.Select(effect => effect.Kind));
-        Assert.All(action.ConstructionEffects, effect => Assert.Equal((ushort)16, effect.RandomRange));
+        var contribution = Assert.Single(action.ConstructionEffects, effect => effect.Kind == "healing-exp-contribution");
+        Assert.Equal(new BattleEffect("healing-exp-contribution", actor, 0,
+            HealingRules.Experience(action.Reactions[0].Amount, patient.MaxHp), Target: target), contribution);
+        var draws = action.ConstructionEffects.Where(effect => effect.RandomRange is not null).ToArray();
+        Assert.Equal(new[] { "rng-exp-plus", "rng-exp-minus" }, draws.Select(effect => effect.Kind));
+        Assert.All(draws, effect => Assert.Equal((ushort)16, effect.RandomRange));
         var cast = action.ApplySpellCost(action.Prepared);
         Assert.Equal(before.Mp - 3, cast.GetActor(actor).Mp);
         Assert.Equal(patient.Hp, cast.GetActor(target).Hp);

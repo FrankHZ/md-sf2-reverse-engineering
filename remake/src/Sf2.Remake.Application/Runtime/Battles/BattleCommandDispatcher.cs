@@ -26,10 +26,29 @@ internal static class BattleCommandDispatcher
         var actor = battle.GetActor(selection.Actor);
         try
         {
+            if (command is BeginDiscard or SelectDiscardItem || BattleDiscardSelection.Active(selection.Stage))
+                return BattleDiscardSelection.Submit(current, command);
+            if (command is BeginGive || BattleGiveSelection.Active(selection.Stage))
+                return BattleGiveSelection.Submit(current, command);
             switch (command)
             {
                 case ReturnToBattleActions when selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "action-choice");
+                case BeginEquipment when selection.Stage == BattleSelectionStage.ActionChoice:
+                    var offers = BattleEquipment.Choices(actor);
+                    if (offers.Count == 0) return Reject(current, "no-equippable-weapons", "equipment");
+                    return Equipment(offers.FirstOrDefault(option => option.Equipped)?.Slot ?? offers[0].Slot);
+                case SelectEquipment equipment when selection.Stage == BattleSelectionStage.EquipmentChoice:
+                    return Equipment(equipment.Slot);
+                case Cancel when selection.Stage == BattleSelectionStage.EquipmentChoice:
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "equipment-cancelled");
+                case Confirm when selection.Stage == BattleSelectionStage.EquipmentChoice:
+                    if (selection.EquipmentSlot is not { } equipmentSlot ||
+                        equipmentSlot < 4 && actor.SourceLoadout?.Items.ElementAtOrDefault(equipmentSlot) != selection.ItemWord)
+                        return Reject(current, "stale-equipment-selection", "equipment.slot");
+                    var equipped = BattleEquipment.Equip(actor, equipmentSlot);
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice),
+                        "equipment-confirmed", battle.With(actors: battle.Actors.Select(a => a.Actor == actor.Actor ? equipped : a)));
                 case Cancel:
                     return BattleMovementContinuation.BeginPlayer(current,
                         new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!), BattleSelectionStage.Movement),
@@ -59,8 +78,9 @@ internal static class BattleCommandDispatcher
                             choice.Action == SessionAction.Item ? "select-item" : "unknown-action", "action",
                             choice.Action is not (SessionAction.Heal or SessionAction.Item)),
                     };
-                case SelectSpell spell when CanSelect(BattleActionKind.Healing):
-                    return Select(new(BattleActionKind.Healing, spell.Spell));
+                case SelectSpell spell when CanSelect(BattleActionKind.Healing) || CanSelect(BattleActionKind.Retreat):
+                    return Select(new(battle.Definition.RetreatSpells.ContainsKey(spell.Spell)
+                        ? BattleActionKind.Retreat : BattleActionKind.Healing, spell.Spell));
                 case SelectItem item when CanSelect(BattleActionKind.Item):
                     return Select(new(BattleActionKind.Item, ItemSlot: item.Slot));
                 case SelectBattleAction choice when CanSelect(choice.Action.Kind):
@@ -70,7 +90,7 @@ internal static class BattleCommandDispatcher
                     _ = BattleChoices.RequireTarget(rules, battle, selection.Actor, selection.Preview.Destination,
                         action, target.Target, sceneContent, requireSceneContent);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady,
-                        selection.Action, selection.Spell, target.Target, selection.ItemSlot), "target-selected");
+                        selection.Action, selection.Spell, target.Target, selection.ItemSlot, selection.ItemWord), "target-selected");
                 case Confirm when selection.Stage == BattleSelectionStage.CommitReady:
                     return Commit(current, selection, sceneContent, requireSceneContent, rules);
                 default:
@@ -82,6 +102,14 @@ internal static class BattleCommandDispatcher
         { return new(current, [], current.StopReason, BattleChoices.Failure(error)); }
         catch (BattleActionRuleFault error) { return new(current, [], SessionStopReason.Faulted, BattleChoices.Failure(error)); }
 
+        SessionResult Equipment(int slot)
+        {
+            if (!BattleEquipment.Choices(actor).Any(option => option.Slot == slot))
+                throw new BattleRuleException("equipment-slot", "equipment.slot");
+            return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.EquipmentChoice,
+                itemWord: slot < 4 ? actor.SourceLoadout!.Items[slot] : null, equipmentSlot: slot), "equipment-preview");
+        }
+
         bool CanSelect(BattleActionKind kind) => selection.Stage == BattleSelectionStage.ActionChoice ||
             selection.ActionReference?.Kind == kind && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady;
         SessionResult Select(BattleActionRef action)
@@ -89,26 +117,28 @@ internal static class BattleCommandDispatcher
             _ = BattleChoices.RequireAction(rules, battle, selection.Actor, action);
             var kind = action.Kind switch
             {
+                BattleActionKind.Retreat => SessionAction.Retreat,
                 BattleActionKind.Healing => SessionAction.Heal, BattleActionKind.Physical => SessionAction.PhysicalAttack,
                 BattleActionKind.Item => SessionAction.Item, _ => SessionAction.Stay,
             };
             string observation = action.Kind switch
             {
-                BattleActionKind.Healing => "spell-selected", BattleActionKind.Physical => "physical-selected",
+                BattleActionKind.Healing or BattleActionKind.Retreat => "spell-selected", BattleActionKind.Physical => "physical-selected",
                 BattleActionKind.Item => "item-selected", _ => "stay-selected",
             };
             return Selected(current, new(selection.Actor, selection.Preview,
                 action.Kind == BattleActionKind.Stay ? BattleSelectionStage.CommitReady : BattleSelectionStage.TargetChoice,
-                kind, action.Spell, itemSlot: action.ItemSlot), observation);
+                kind, action.Spell, itemSlot: action.ItemSlot,
+                itemWord: action.ItemSlot is { } slot ? actor.SourceLoadout!.Items[slot] : null), observation);
         }
 
     }
 
-    private static SessionResult Selected(SessionSnapshot current, BattleSelection selection, string kind)
+    internal static SessionResult Selected(SessionSnapshot current, BattleSelection selection, string kind, EngineBattleState? battle = null)
     {
         var observation = new SessionObservation(current.ObservationSequence + 1, current.Revision + 1, kind, selection.Actor);
         var snapshot = new SessionSnapshot(current.SessionId, current.Revision + 1, observation.Sequence,
-            current.Battle, selection, SessionStopReason.PlayerInput);
+            new ActiveBattle(battle ?? current.Battle, selection), current.Story, SessionStopReason.PlayerInput);
         return new(snapshot, Array.AsReadOnly([observation]), SessionStopReason.PlayerInput);
     }
 
@@ -117,8 +147,12 @@ internal static class BattleCommandDispatcher
     {
         if (selection.ActionReference is not { } selected)
             return Reject(current, "incomplete-action", "selection");
+        if (selected.ItemSlot is { } slot && (selection.ItemWord is null ||
+            current.Battle.GetActor(selection.Actor).SourceLoadout?.Items.ElementAtOrDefault(slot) != selection.ItemWord))
+            return Reject(current, "stale-item-selection", "item.slot");
         var action = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
             selected, selection.Target, sceneContent, requireSceneContent);
+        if (action.Retreat is not null) return BattleRetreatContinuation.Begin(current, action);
         if (action.Reactions.Count > 0)
             return BattleSceneContinuation.Begin(current, action, [], sceneContent: sceneContent);
         var observations = new List<SessionObservation>();

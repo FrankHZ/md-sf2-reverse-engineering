@@ -14,7 +14,10 @@ public sealed class GameSession
     public SessionSnapshot Current => _current;
     public SessionRules Rules { get; }
     public BattleChoicesSnapshot QueryBattleChoices() =>
-        BattleChoices.Query(Current, Rules, Definition.BattleScenes, Definition.PrivateDefinitions is not null);
+        BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
+
+    public BattleSceneDefinition? ActiveBattleScenes => Current.Mode == SessionMode.Battle
+        ? Definition.ScenesFor(Current.Battle.Definition.Encounter) : null;
 
     public static SessionStartOutcome Start(IScenarioSource source) => Start(source, RuleCompositions.Sf2());
 
@@ -41,8 +44,10 @@ public sealed class GameSession
             return new SessionStartFailed(new(SessionFailureKind.ContentError, "missing-encounter", "start.encounter", "missing encounter"));
         try
         {
+            definition.BattleStory?.RequireStart(encounter, start);
             rules = rules.Bind(definition.Encounters.Values, start.Actors);
-            var result = BattleAdvancer.Start(encounter, start, rules);
+            var result = ContinueStory(definition, BattleAdvancer.Start(encounter, start, rules), rules);
+            if (encounter.Poison && result.Failure is null) result = BattleOutcome.Begin(definition, result, rules);
             return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
         }
         catch (BattleDecisionRuleFault error)
@@ -81,33 +86,50 @@ public sealed class GameSession
         }
     }
 
+    private static SessionResult ContinueStory(ScenarioDefinition definition, SessionResult result, SessionRules rules)
+    {
+        if (result.Failure is not null || result.Snapshot.BattleRound is not { Program: true } || result.Snapshot.Story.Wait is not null)
+            return result;
+        return ProgramRunner.Run(definition, result.Snapshot, result.Observations.ToList(), rules);
+    }
+
     public SessionResult Submit(CommandEnvelope envelope)
     {
         ArgumentNullException.ThrowIfNull(envelope);
         var current = Current;
         if (envelope.SessionId != current.SessionId || envelope.ExpectedRevision != current.Revision)
             return BattleCommandDispatcher.Reject(current, "stale-input", "envelope");
+        if (current.BattleResult is not null) return BattleCommandDispatcher.Reject(current, "battle-ended", "command");
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
+        bool discardActive = current.BattleDiscard is not null;
+        bool discardInput = discardActive || envelope.Command is BeginDiscard or SelectDiscardItem ||
+            current.Selection is { } selected && BattleDiscardSelection.Active(selected.Stage);
+        bool giveActive = current.BattleGive is not null;
+        bool roundActive = current.BattleRound is { Program: false };
+        bool retreatActive = current.BattleRetreat is not null;
         bool sceneActive = current.BattleScene is not null;
         bool movementActive = current.BattleMovement is not null;
-        bool programActive = !sceneActive && !movementActive && !current.HasBattleControl;
+        bool programActive = !discardActive && !giveActive && !roundActive && !retreatActive && !sceneActive && !movementActive && !current.HasBattleControl;
         if (envelope.Command is WaitAtInput && (!programActive || current.Exploration is null))
             return BattleCommandDispatcher.Reject(current, "field-input-unavailable", "command");
         if (envelope.Command is WaitForText && (!programActive || current.Exploration is null))
             return BattleCommandDispatcher.Reject(current, "text-input-unavailable", "command");
-        if (!programActive && envelope.Command is AdvanceSimulation tick &&
+        if (!programActive && !retreatActive && envelope.Command is AdvanceSimulation tick &&
             (tick.Ticks != 1 || (current.BattleScene is { Healing: not null } healingScene
                 ? tick.Wait != healingScene.Token : tick.Wait is not null)))
             return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
-        var result = movementActive ? BattleMovementContinuation.Submit(current, envelope.Command, Rules)
+        var result = discardActive ? BattleDiscardContinuation.Submit(current, envelope.Command)
+            : giveActive ? BattleGiveContinuation.Submit(current, envelope.Command, Rules)
+            : roundActive ? BattleRoundContinuation.Submit(current, envelope.Command, Rules)
+            : retreatActive ? BattleRetreatContinuation.Submit(Definition, current, envelope.Command, Rules)
+            : movementActive ? BattleMovementContinuation.Submit(current, envelope.Command, Rules)
             : sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command, Rules)
             : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command, Rules)
-            : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, Definition.BattleScenes, Definition.PrivateDefinitions is not null);
-        if (!programActive && !ReferenceEquals(result.Snapshot, current))
-            result = result with { Snapshot = result.Snapshot.WithStory(current.Story) };
-        if (result.Failure is null && !programActive) result = BattleOutcome.Begin(Definition, result, Rules);
+            : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
+        result = ContinueStory(Definition, result, Rules);
+        if (result.Failure is null && !discardInput && !programActive && !retreatActive && result.Snapshot.BattleGive is null) result = BattleOutcome.Begin(Definition, result, Rules);
         _current = result.Snapshot;
         return result;
     }

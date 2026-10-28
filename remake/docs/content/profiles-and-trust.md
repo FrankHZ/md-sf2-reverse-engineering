@@ -1,9 +1,341 @@
 # Runtime Profiles and Trust
 
+## Authored Jaro victory admission
+
+[jaro-victory.json](../../content/authored/jaro-victory.json) is a public format8 exploration package
+with a format7 controlled encounter. Its explicit converted logical start has joined23/active55,
+Jaro's own HP/MP/accounting/inventory and activation `0x8005`. It does not assert that the earlier
+private conversion or visual alias was reached. Changed authored tests also admit unconverted,
+absent or dead retained Jaro. The current source policy still owns ordinary victory recovery.
+
+Authored placement initialization optionally declares `allyPartyMember`0..29. It must belong to an
+ally and match that encounter's existing source-combatant slot; duplicate member bindings reject.
+This supplies the existing resource/member interface, not another party registry. The world retains
+its existing party flag layout and starts. New `clear-outcome-party-ai` and
+`leave-outcome-battle-party` instructions take `member`, admit only authored source30/0/32/12 party
+layout, one unique ally binding and an explicitly known starting activation word. Runtime additionally
+requires the victory continuation and live actor in the selected encounter. Wider nonzero AI joins,
+arbitrary activation edits and field-party services are not admitted by these operations.
+
+The existing `join-party`, text/ack/tick operations and completion/return route compose the scene.
+No private importer, source asset, fixed Battle32 ID predicate, research fixture or reference-runtime
+dependency was added. The [behavior agreement](../domain/gameplay-rules.md#authored-jaro-victory-recruitment)
+distinguishes authored support from the unbound actual Battle32/Moun chapter.
+
+## Authored poison admission
+
+Standalone format7 opts in with `"battlePoison":"fixed-two-after-turn"`. Its start actors admit only
+`"status":"none"` or `"status":"poison"` (source2), and `start.firstAlly` is required: an allied
+ActorRef or explicit null for the source FF no-credit sentinel. Omission is Unknown, not null.
+Each encounter also requires `outcome:{leader,defeatedGateEnemy}` referring to an ally and enemy;
+the existing defeat-first/count rule supplies a standalone terminal result. Names are bindings, not
+hardcoded gameplay identities. The reusable definition and controlled start retain separate ownership;
+growth definition copies preserve the poison capability and outcome binding.
+
+[poison-turn.json](../../content/authored/poison-turn.json) supplies one survivor and one lethal ally
+with ordinary equipment/items and a standby opponent. Initial HP, credit and poison are controlled
+inputs, not natural original acquisition. Embedded exploration/old private profiles reject this opt-in;
+without it, the old status admission is unchanged. Numeric statuses, poison+sleep, other mixtures,
+infliction/cure, persistence and private presentation remain Unsupported. Existing sleep in its
+accepted private boundary is unaffected. The newly admitted pure-poison action, AI, AURA, Give/Drop
+and growth paths require `BattleDefinition.Poison`. Existing private `NewBattle` initialization still
+accepts and preserves low status bits, including2; without this capability, physical/AI and reached
+level-up retain their existing Unsupported failures. Growth checks the capability at both action
+preflight and acknowledged publication; subthreshold growth keeps its previous no-op behavior.
+Equipment start admission likewise requires the capability for status2. Source-specific unrelated
+guards remain in force; this opt-in does not broaden old private/frozen behavior.
+
+## Authored battle discard admission
+
+Standalone format7 opts in with top-level `battleDiscard: {"items": [...]}`. Each row declares
+`id`, `name`, `rare` and `unsellable`. The finite admitted identities/properties are Medical Herb0
+(nonrare, sellable), Achilles Sword61 (rare, sellable) and Sky Orb113 (rare, unsellable). Names and
+weapon numeric/range operands are authored. Source properties are checked independently of the
+packed equipped bit. Unknown identities, conflicting use/weapon types, duplicate metadata, broken
+words, equipped nonweapons, curses and rings fail closed. All declared actor loadouts must fit this
+finite subset when opted in; existing live equipment admission still applies.
+
+An overlapping `dropItems` entry must agree about rarity. The existing start `itemCustody` reader
+also admits this finite catalog's rare counts; it retains independent counts and onceFlags. Missing
+custody remains null, and a rare discard fails before removal. No empty store is fabricated.
+The growth binder preserves Discard when reconstructing definitions. Omission preserves old
+profiles; connected format8 rejects this opt-in and private imports do not enable it.
+[battle-discard.json](../../content/authored/battle-discard.json) is a standalone authored example,
+not an original starting-state or private fidelity claim. See the
+[domain/source owner](../domain/gameplay-rules.md#authored-battle-discard).
+
+## Authored battle Give admission
+
+Standalone format7 opts in with top-level `battleGive: true`; omission preserves the previous
+profile. False, connected format8 and private import do not enable Give. The finite transfer
+catalog comes from existing validated `weapons`, healing `items` and retreat `items`, independently
+of use/equip eligibility. Unknown/drop-only identities, broken words and equipped nonweapons fail
+closed. Weapon metadata remains uncursed and ATT-only; names/arena values are authored.
+
+If weapons are declared, every allied recipient needs the existing `equipment` metadata so removing
+an equipped return item can refresh its current base contribution. Existing equipment startup
+admission still applies (player allies, status0 or admitted pure poison, supported source classes and physical metadata).
+Class-ineligible weapons remain carryable; their class mask only governs Equip. Live Give checks
+living placed allied actors, non-neutral activation and status0 or admitted pure poison; an ordinary standalone absent
+activation word carries no neutral flag. This is not private source-state inference.
+
+The growth reader preserves Give when reconstructing definitions. Immutable initial loadouts and
+attack definitions remain unchanged. [battle-give.json](../../content/authored/battle-give.json)
+contains two adjacent authored allies and an idle opponent; its ordinary command route demonstrates
+normal receipt, full exchange, later equip/use and continued control. Rings, curses, broken items,
+general status effects, field/service menus and save/load are Unsupported.
+
+## Authored weapon admission
+
+Standalone format7 may declare `weapons` rows with `id`, `name`, `type: "weapon"`, a nonzero unsigned
+32-bit `classMask`, `cursed: false`, `attackBonus` (0–200), and inclusive `minimumRange`/`maximumRange`
+(1–3). Exact-key validation rejects other effects. IDs are unique and cannot also be healing or
+retreat items. Existing Taros type bindings must include all declared weapon identities.
+
+An actor opts in with `equipment: { "baseAttack": N }` (0–200). Its existing initial `attack` must
+match clamped base plus the actual equipped contribution. All declared weapon identities need full
+metadata; physical metadata is required, unpromoted and mapped to an already admitted source class
+(SDMN/WARR/PRST). Player ally control and status0 or admitted pure poison are required; automatic/source-controlled switching
+is excluded. Initial multiple equipped weapons, wrong-class equipped items, equipped nonweapons and
+broken weapons reject. Class-ineligible weapons can be carried without becoming offers. Other carried
+items retain their slot words, flags and order. Existing profiles without this opt-in are unchanged.
+
+Optional standalone `growth` reuses the authored growth reader's class, five-stat and no-new-spell
+rules. Opted-in equipment removes only its former blanket no-equipped restriction; the growth
+refresh reads current equipment instead of a fixed `AttackBonus`. Connected format8 and private
+imports cannot acquire this equipment feature through the standalone reader.
+
+[battle-equipment.json](../../content/authored/battle-equipment.json) is an authored practice arena:
+a bound Bowie identity (`champion`) carries Achilles while a practice blade is equipped. The weapon
+names, ATT bonuses and arena are authored demonstration values. The existing source-specific Taros
+predicate still checks bound Bowie + physical + mapped Taros + actually equipped Achilles61.
+Rings, cursed/status/break effects, services and later-chapter/save persistence remain Unsupported.
+
+## Authored AURA admission
+
+Format 7 spell `effect.kind: "aura"` supplies `adjustedPower`, `fullRecovery` and `radius` with
+the existing ID, level, cost and ranges. Operands must match the finite
+[level table](../domain/gameplay-rules.md#authored-aura-group-healing); level 4 requires power 255,
+fullRecovery true and radius 0. Ordinary `heal` admission is unchanged. IDs can vary without
+changing semantics; unsupported variants do not become generic AoE.
+
+AURA requires the complete existing `initialization.sourceCombatants` mapping: each deployment
+exactly once, allies 0–29/enemies 128–159, unique slots and actors. Controlled initialization/activation
+inputs remain explicit. All actors in the encounter require maximum HP 1–32767, preserving source signed
+delta and addition behavior without overflow emulation. The caster must be a player ally unpromoted
+priest; automatic/source-ally switching and enemy/promoted admission are excluded. Reached status 0,
+MP, center and recipient checks run before payment. Full-HP zero recovery remains legal.
+
+The [authored package](../../content/authored/aura-healing.json) includes independent source and
+processing orders, full/dead/unplaced/neutral/distant actors and all learned levels. Valid states
+retain unique in-map living occupancy. Private scene content is explicitly Unsupported for AURA;
+no importer, media binding or additional class/status family is admitted.
+
+## Authored Caravan world
+
+Format8 optionally supplies `map.caravan` with `followerA`, `currentEntities`, `overworld`,
+`playerAppearance` and `stepCounter`. The player occupies physical0; nonplayer entity array order
+supplies physical1 onward, independently of logical IDs. `currentEntities` is an explicit unique
+list of existing nonplayer physical slots (empty is legal); its first entry is skipped by the source
+suffix helpers. It is not reconstructed from F65, sprites or current follower flags.
+`playerAppearance` names the controlled party actor, admitted `BattleClassRule` enum name, normal
+sprite and defeated sprite. Landing rechecks the class binding and reads current HP; no healing or
+party/class mutation is implied. Source player/Caravan mappings that this admitted content cannot
+resolve are rejected rather than defaulted to physical0.
+
+Admission permits one authored map/area with at most 32 physical actors and 64x64 layout words.
+Source population/setup/battle routes, layout copy/door/warp markers, replacement programs and
+external jumps into reserved `caravan-boarding`/`caravan-landing` programs are Unsupported.
+The reader constructs those typed programs from fixed source operations. No new script parser,
+private importer or persistent vehicle placement is added. Current flag-selected normal/overworld
+follower actions are bounded to the source's five pointers and existing slots; unsupported reached
+selection retains the transition prefix and fails before mode0. Content may intentionally start with
+F65 clear or changed current lists; a visible prop does not imply boarding permission.
+
+`caravan-travel.json` supplies public authored terrain, semantic marker sprites, flags and vitals.
+Its initial actor positions are controlled inputs, not proof of original fresh allocation or natural
+Caravan acquisition. It declares no private assets/audio, save/load, services or travelling transfer.
+
+## Authored battle-story admission
+
+The standalone v7 `jaro-conversion.json` is project-authored controlled content. Optional root
+`battleStory` contains typed `programs` and plain `texts`; it reuses the existing instruction decoder.
+The encounter declares `regionProgram: "authored"` and ordered `regionPrograms` rows with `region`,
+`playedFlag`, and `program`. Rows reference declared source-integer regions and valid program entries.
+Programs/call/branch targets are validated; supported operations are checked again at their reached
+battle context, so an unsupported field instruction preserves the already executed story prefix.
+
+Each actor has one explicit unique source slot. The ally deployment opts into
+`controlPolicy: "source-ally-activation"`, retains `control: "player"`, and binds
+`aiStrategy: "source-ally-physical"`. Its activation word selects live control; no mutable faction
+field is introduced. Controlled `start.actors` can explicitly supply `absent` and `retainDeadPosition`.
+Optional `start.story` contains flags, logical `aliases` (actor/slot), physical `visuals`
+(slot/appearance/x/y/facing), and `retainedSourceSlots`. Physical slots0–48 are finite, and retained
+alias bytes0–255 are preserved: a missing/invalid lookup rejects when used, after preceding writes.
+No sprite or resource is fabricated for an invalid retained alias. Each physical slot requires a
+unique appearance actor in this finite renderer; duplicate appearances are Unsupported. Placed
+logical actors sharing one alias must agree on initial coordinates. World v8 plus nested battleStory
+is explicitly Unsupported; the validated standalone catalog cannot be silently dropped.
+
+An already-joined conversion source requires an explicit retained enemy slot declaration plus actual
+placement override or explicit absence. Fresh initialization is not a substitute for that retained
+slot. HP/MP/status/activation are controlled inputs; immutable stats/loadout belong to the explicitly
+authored actor definition. The engine never imports Battle32's fresh JAR definition to reconstruct
+missing retained data. Source/target ActorRefs and numeric source slots may change together without
+changing conversion legality. This admission adds no private Battle32 importer or natural-start claim.
+The bounded [source ally rule](../domain/gameplay-rules.md#jaro-conversion-and-source-ally-commandset6)
+currently consumes empty items/spells and ordinary unarmed range1 only; broader loadouts remain Unsupported.
+
+## Authored hidden-spawn initialization
+
+The optional v7 encounter `initialization` reuses `BattleInitializationDefinition`: explicit
+`enemyCount`1–32, `regionProgram: "none"`, `regions` with unique IDs0–15 and three or four ordered
+`vertices` in0–47, plus `sourceCombatants` actor/slot bindings (allies0–29, enemies128–159). Spawn-enabled
+encounters require exactly one unique slot per deployment. Slots need not equal processing order;
+a slot beyond the declared enemy count produces the source reset refusal. Region15 remains the
+no-trigger sentinel. Type3 uses three vertices; no unused fourth point is inferred.
+
+Each deployment declares `initialization` with `baseAiWord` (null for allies), `spawnMode`0/2/3,
+primary/secondary regions, filler, commandset and primary/secondary orders. Source resettable enemies
+have no growth, unequipped Herb/empty inventory and empty source spells. Difficulty0 is fixed for
+controlled authored reset. Other equipment and modes reject instead of approximating. The separately admitted authored
+region-program composition is described above.
+
+Controlled actor input declares `initialization: { "initialized": false, "activationWord": 768 }`
+for a dormant mode3 example. Every actor in an initialized controlled encounter supplies both fields;
+the mode bits must match deployment. False is allowed only for a dormant mode2/3 enemy with HP0 and
+no placement override. Allies and starting actors cannot use false, including an all-mode0 encounter.
+Initialized dead mode2 is distinct from dormant mode2. Fresh source-policy starts derive dormant state
+from deployment instead. Maximum-HP definitions remain immutable and positive.
+
+`hidden-spawns.json` is a small authored ordinary-host scenario, with source-order binding, one
+live source-AI enemy, one mode2 enemy and one mode3 enemy. It imports no Battle44 data/assets. Existing
+encounter-default storage enables fresh walking retry and keeps live party inventory/custody; no
+new restart manifest or save state is introduced. [Rules](../domain/gameplay-rules.md#hidden-enemy-reset-and-source-regions)
+and the [scope agreement](../capability-status.md#hidden-enemy-lifecycle-agreement) own the semantic limits.
+
+## Authored Prism binding
+
+The public `prism-laser.json` package uses the ordinary authored host and48×48 tactical domain.
+Its encounter's `prismLaser` contains explicit primary/secondary region15 and one `combatants` row
+per deployment: actor, source slot, `ordinary` or `prism-flower` kind, and null or cardinal direction.
+The Flower requires the `prism-laser` automatic strategy; source slot is independent of processing
+order and direction is independent of display facing. This declares ordinary initial activation
+word0, no neutral actors and no special target/debug behavior; it does not import Battle36.
+
+Admission rejects missing/duplicate or wrong-faction slots, unknown kinds/directions, non15 regions,
+edge Flower origins, signed-high maximum HP and mixed Taros effectiveness. Live rules reject unsafe
+changed states/eligible overlap. Definition copies through growth and world-outcome binding retain
+the finite Prism binding. Ordinary source enemies, private chapter admission and general spell
+content remain unchanged. The [implementation agreement](../capability-status.md#prism-laser-implementation-agreement)
+sets the limited authored and presentation claim.
+
+
 Content owns external bytes, paths, source identity, closed formats and validated immutable
 definitions. Profiles select admission and permitted claims; they do not fork gameplay authority.
 See [architecture](../architecture.md), [rule composition](../domain/gameplay-rules.md) and
 [asset preparation](presentation-assets.md).
+
+## Authored item-drop binding
+
+A v7 authored battle, standalone or inside a v8 world, may declare `dropItems` with explicit `id`,
+`name` and `rare` metadata. Admission is finite: Medical Herb0 and Short Rod86 are non-rare;
+Achilles Sword61, Counter Sword68, Iron Ball102 and Taros Sword110 are rare. These attributes come
+from the pinned item definitions; other identities, contradictory rarity and incompatible item-use metadata reject. The separate
+chance predicate is fixed in the [rule owner](../domain/gameplay-rules.md#finite-physical-action-item-drops).
+Names are authored display labels, never rule selectors. No new use/equip effect is admitted by
+declaring a drop item.
+
+The encounter's optional `itemDrops` contains explicit source `battle`0–44, an `enemySlots` mapping
+of deployed enemy actors to unique combatant slots128–159, and ordered `rows` with `battle`,
+`enemySlot`, `item` and `onceFlag`0–29. Rows may have different battles/slots; the helper matches at
+runtime and requires actual possession. Duplicate once flags and duplicate battle/slot/item rows
+reject. These bindings remain independent of physical leaders and Taros enemy definitions.
+
+The controlled `start` must supply `itemCustody: {"onceFlags": [], "deals": []}` (or explicit held
+flags and `{ "item": 110, "count": 14 }` stock rows). Counts are0–15, flags/items are unique, and
+initial Deals rows require admitted rare items. Omitted counts mean zero only inside an explicitly
+admitted custody value; missing custody is Unsupported. Every participating loadout must be known.
+Definition copies through growth/outcomes preserve drop bindings. Authored worlds containing drops
+retain validated initial actor inputs for every encounter for fresh enemy construction; entry carries live allies and
+custody from the active party instead of resetting them from those inputs. Private admission is
+unchanged and does not acquire drop support.
+
+[battle-drops.json](../../content/authored/battle-drops.json) and
+[battle-drops-full.json](../../content/authored/battle-drops-full.json) use the same ordinary authored
+world/leader-cleanup route with capacity/full-pack variants. Both explicitly start Deals110 at14,
+neighbor61 at3, story flag24 set but drop-once24 clear, and a controlled main seed that reaches zero
+drop draws on both kills. Left after return triggers the authored retry. This is a reproducible
+receipt/custody witness with redistributable structural facts, not natural original acquisition,
+full Battle18, inventory UI, shop stock purchasing, persistence or an asset distribution claim.
+
+## Authored leader cleanup binding
+
+Only a v8 authored world with a nested v7 encounter and a valid outcome route admits:
+
+```json
+"leaderCleanup": {
+  "bowie": "leader",
+  "enemySlots": [
+    {"actor": "enemy", "slot": 128},
+    {"actor": "survivor", "slot": 129}
+  ]
+}
+```
+
+`LeaderCleanupReader` requires the sole allied physical leader as Bowie, every deployed enemy
+mapped exactly once, unique source slots128–159 and a slot128 gate. It copies these identities
+into immutable `LeaderCleanupDefinition`; input order, processing order, physical leader flags
+on enemies and Taros enemy-definition mappings do not select the gate or sweep ordering.
+Growth/outcome definition copies retain the binding. A standalone v7 cleanup, missing outcome
+route or nonempty defeated program rejects. The explicit binding is the only relaxation of the
+authored enemy-leader guard; private leader encounters remain guarded by source admission.
+
+[leader-cleanup.json](../../content/authored/leader-cleanup.json) uses existing authored map/text/
+return machinery, an ordinary one-HP gate and a living survivor. It supplies no original assets,
+full Battle18, loot/Deals, Caravan aftermath or original natural-start claim. Controlled inputs
+begin without a previous scene's first ally; a no-scene cleanup requiring that absent custody is
+Unsupported rather than defaulted. The [rule owner](../domain/gameplay-rules.md#finite-enemy-leader-cleanup)
+and [continuation owner](../application/session-and-programs.md#ordered-leader-cleanup-and-retained-accounting)
+define supported runtime semantics.
+
+## Authored Taros identity binding
+
+A format7 encounter may include the closed optional binding:
+
+```json
+"tarosEffectiveness": {
+  "bowie": "champion",
+  "enemyDefinitions": [
+    {"actor": "guardian", "definition": 88},
+    {"actor": "reserve", "definition": 9}
+  ],
+  "weaponItems": [61]
+}
+```
+
+`TarosEffectivenessReader` resolves the bound ally and enemy `ActorRef`s in that encounter, rejects
+duplicate enemy mappings/weapon identities, requires a Taros88 definition and weapon61, and copies
+the mapping into immutable `BattleDefinition.TarosEffectiveness`. Unmapped actors do not acquire a
+Taros definition. Numeric definitions are explicit source-policy identities; no slot/name/fixture
+string implies them. This opt-in binding represents the selected Battle18 gate in authored content;
+it does not widen private Battle18 admission. Region/spawn/nonempty defeated-program guards
+remain in force; authored leader cleanup requires its separate explicit binding above.
+
+`weaponItems` explicitly classifies packed loadout identities as weapons for the source getter.
+The union admits those carried identities during actor decoding; each bound encounter must include
+the package's admitted weapon identities so the first-equipped scan has complete weapon types.
+A weapon cannot also be a healing/retreat item. No automatic equip-class or ATT modifier is inferred:
+authored statistics are controlled inputs, and normal stat refresh/equipment services remain out of
+scope. Live `SourceLoadout` at action construction overrides the immutable starting items.
+Encounter copies made by growth/outcome binding retain the same immutable effectiveness definition;
+existing authored equipped-growth limitations remain explicit.
+
+[taros-effectiveness.json](../../content/authored/taros-effectiveness.json) supplies a small authored
+practice encounter. Both allies carry equipped61 but only `champion` binds Bowie; `guardian` binds88
+independently of processing order. Enemy AI is Stay and no source Battle18 leader/drop/aftermath is
+claimed. The [rule owner](../domain/gameplay-rules.md#finite-taros-physical-effectiveness) and
+[native recipe](../development-and-verification.md#taros-authored-observation) own behavior and delivery.
 
 ## Purpose
 
@@ -52,10 +384,11 @@ and admitted source equipment/spell mappings.
 
 An authored `world.maps[].battle.outcome` uses the existing `after`, `defeated`, `defeat`, `return`,
 `joinMember`, `victoryFacing` and `egress` fields. It requires exactly one allied physical leader,
-an enemy roster without enemy leaders, the existing no-op defeated program, valid program references,
+an enemy roster without enemy leaders unless explicitly bound above, the existing no-op defeated
+program, valid program references,
 join membership within `partyFlags`, and traversable in-bounds egress. Private source/provenance
 checks remain on the private entry; this authored entry cannot relabel a private package.
-Nonempty defeated programs, enemy-leader outcomes and wider egress/status behavior are not admitted.
+Nonempty defeated programs, unbound enemy-leader outcomes and wider egress/status behavior are not admitted.
 
 [`progression-outcome-victory`](../../content/authored/progression-outcome-victory.json) and
 [`progression-outcome-defeat`](../../content/authored/progression-outcome-defeat.json) are small authored
@@ -154,7 +487,7 @@ double/counter rules. Broader speed formulas, arbitrary action counts and new st
 The ordinary source entry delegates to `GameSession.Start(definition, start)`, so a previously admitted
 definition can serve another explicit start with the same boundary checks and fresh runtime actors.
 Definitions never supply hidden session resources. Ordinary spell power remains already adjusted;
-full-recovery remains unsupported; level-up requires the admitted v8 growth described below. The session reads no files/ROM after admission and
+full-recovery outside admitted AURA remains unsupported; level-up requires admitted standalone or v8 growth. The session reads no files/ROM after admission and
 carries its seeds forward. The default loads the tracked yard; `--authored-package <path>` selects
 another bounded package, without an authored-export or original-fidelity claim. Further private AI/action migration follows the
 [ordered boundary](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
@@ -164,8 +497,8 @@ Physical capability is optional per actor: `physical` is a closed object with `m
 (0–65535), and `special` (currently `none`). Current kills/defeats are required start inputs, including
 for nonphysical actors. Other movetypes, critical combinations or special rules return
 Unsupported; a named unpromoted class cannot declare promoted EXP rules. Current ATT/DEF are explicit
-authored effective stats; nonempty equipment and nonzero status remain Unsupported. Ordinary
-weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
+authored effective stats unless the [mutable weapon opt-in](#authored-weapon-admission) supplies its validated base/contribution.
+Unadmitted equipment and nonzero status remain Unsupported. Ordinary weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
 
 `physical.critical` is a closed `{chance, damageBonus}` object. Only these paired values are supported:
 
@@ -338,3 +671,69 @@ PlayerReady input retains Unknown values and rejects only operations that need t
 is applied twice, no live accounting is filled, and unsupported spell references stay visible. The
 connected world adds Battle01 growth and outcome programs; broader spawn/region programs and other
 outcome families remain future work.
+
+
+## Selected second encounter
+
+The private world may declare at most one additional `encounters` row. Its `placement`, `scene`,
+`terrain`, `static`, `enemies`, `gold`, `start` and optional `battleScenes` paths resolve beneath the
+world file's directory. Admission reads these once through the existing pinned readers, rejects
+repeated encounter IDs or incompatible shared ally baselines, and retains immutable per-encounter
+starts/scenes. The core/enemy/gold exports retain their exact accepted identities; selected records
+are merged from those authenticated inputs. Production never reads comparison fixtures.
+
+The Battle01-to-Battle02 selection imports seven maps and the source setup variants needed for
+501/609. The maintained visual producer gathers enemy map sprites from the selected encounter
+spritesets and enemy sprite table; the runtime rejects missing battlefield sprite references at
+startup. It selects the active encounter's scene resources and map music, while live party resources,
+progress, inventory, gold and RNG cross the transition. A newly joined member obtains its admitted
+initial resources once; an already present member keeps its current values. The separately declared
+Battle02 party input is an admission baseline, not a second session or a runtime reseed.
+
+The world file is limited to 128 MiB (134,217,728 bytes), checked before full allocation and after
+reading. Decoded PCM/rasters, JSON buffers, renderer objects and imports require additional memory;
+this bound is not a total-memory promise. The measured selection and native load are recorded in the
+[implementation agreement](../capability-status.md#battle01-return-through-battle02-implementation-agreement).
+
+Explicit `--audio-candidate` inputs use the existing WAV/PCM admission format and byte/format checks.
+They do not promote assets into the shared library. Captured finite cues retain exact recording,
+sample interval and timer provenance. MainTheme1 uses unchanged existing PCM with an inferred modern
+loop. `sf2tool.remake_authored_audio` prepares the prior project-authored defeat chord as a distinctly
+labeled local candidate; command12/C4 selects the source command context, not original audio fidelity.
+No private waveforms or generated content are checked in.
+
+`battle01-to-battle02-programs.json` declares `outcomeBattles: [1]`. Battle02 resolution is deliberately
+unbound and reports the existing typed `outcome-route` boundary; it cannot silently enter later story.
+
+## Selected third encounter
+
+The [Yeel selection](../../reference/inputs/yeel-to-battle03-programs.json) imports only Map5/66 and
+Battle02/03. The paired [start](../../reference/inputs/yeel-to-battle03-start.json) and
+[party](../../reference/inputs/yeel-to-battle03-party.json) are explicit INITIAL remake inputs derived
+from the accepted Battle02 return, not proof of natural original reach. Growth is represented by the
+matching grown baseline at admission. Later transitions carry actual party resources/accounting and
+both seeds; no reference terminal state is injected. Source new-battle healing remains intentional.
+
+Battle03 placement admits only actual controlled allies, retaining twelve formation rows as capacity.
+Its six enemies use pinned source definitions. Huge Bat's Flying/sleep prowess is bound to real common
+rules; its placement item `$6000` passes through source AddItem's `$807F` mask to ordinary Herb0.
+The source action metadata remains distinct from runtime inventory. Private encounter pins retain
+placement span1782772–1783004 and compressed terrain span1758636–1758970 (end exclusive), the
+selected export/source/ROM identities, and the same closed private path boundary. Field-death visual
+capacity does not create combatants. The selected bat scene admits sprite23/palette0, unarmed frames
+and text306/338/354; missing required scene content rejects before play.
+
+Optional selection `audioCues` is a unique nonempty list of exact cue identities. Omission retains
+existing all-cue preparation; unknown/missing/duplicate selections reject. Selected assets keep their
+existing root, length, format, PCM and provenance checks. This is finite content selection, not a
+cache or a weaker reader. The selected 94,006,868-byte world fits the unchanged128MiB ceiling.
+Boost109/C2 is a separately labeled project-authored 240ms notification, generated before startup
+by `sf2tool.remake_authored_audio --cue encounter`. Its three tones and soft edges are not an original
+audio reconstruction. Source109 replaces the admitted YM5 whole-clip group; unknown commands remain
+rejected and real playback/Finished receipts retain both recording and requested timer contexts.
+
+Map5 source warp rows containing coordinate64 are retained as frontier events with raw byte operands;
+they are not clamped into traversable space. Source comments call these two rows unusable; admission
+of a frontier does not establish their universal natural unreachability. Other reached unsupported
+warps still fail explicitly. Full village services, later setups, other ailments, Battle03 outcomes,
+EGRESS gameplay and original timing remain outside this selected capability.

@@ -82,7 +82,9 @@ def sprite_layout(columns: int, rows: int) -> list[int]:
     ]
 
 
-def build(rom_path: Path, upstream: Path, output: Path) -> dict:
+def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
+    if battle not in (1, 2, 3):
+        raise ValueError("selected encounter must be 1, 2 or 3")
     root = repo_path("")
     output = output.resolve()
     if not output.is_relative_to(root / "local") or output.exists():
@@ -205,12 +207,19 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
     animations = table("battle-sprite-animation-static")
     weapons = table("battle-weapon-ground-decode")
     actor_rows = []
-    for side, index, pal_index, weapon_item in (
+    actor_selections = [
         ("ally", 0, 0, 71),
         ("ally", 1, 0, 85),
         ("ally", 2, 0, 56),
-        ("enemy", 22, 2, None),
-    ):
+    ] + (
+        [("enemy", 22, 2, None)]
+        if battle == 1
+        else [("ally", 3, 0, 33), ("enemy", 0, 1, None), ("enemy", 1, 0, None)]
+    )
+    if battle == 3:
+        # Pinned enemybattlesprites.asm: HUGE_BAT uses BAT23/palette0, unarmed.
+        actor_selections.append(("enemy", 23, 0, None))
+    for side, index, pal_index, weapon_item in actor_selections:
         base = pointer(sprites[side + "BattlespriteTableAddress"] + index * 4)
         pal_offset = base + 4 + word(base + 4)
         pal = palette(pal_offset + pal_index * 32)
@@ -308,26 +317,39 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
         )
 
     base_palette = palette(0x198A8)  # palette_BattlesceneBase, battlesceneengine_1.asm.
-    ground = pointer(weapons["groundTableAddress"] + 9 * 4)
-    for offset, color in enumerate((3, 4, 8)):
-        base_palette[color] = md_palette_color(word(ground + offset * 2))
-    ground_asset = raster(
-        "ground9",
-        decode(ground + 6 + word(ground + 6), 1536),
-        base_palette,
-        96,
-        32,
-        sprite_layout(12, 4),
-    )
     backgrounds = table("battle-background-decode")
-    background = pointer(backgrounds["backgroundTableAddress"] + 9 * 4)
-    bgdata = decode(background + word(background), 6144) + decode(
-        background + 2 + word(background + 2), 6144
-    )
-    bgpal = palette(background + 4 + word(background + 4))
     layout = [int.from_bytes(read(0x1FAEA + i * 2, 2), "big") for i in range(384)]
     layout = [(value & 0x1800) | ((value & 2047) - 928) for value in layout]
-    background_asset = raster("background9", bgdata, bgpal, 256, 96, layout, opaque=True)
+    terrain_scenes = []
+    backdrop = {}
+    indices = [9] if battle == 1 else sorted(set(read(0x19E5E, 16)))
+    for index in indices:
+        ground = pointer(weapons["groundTableAddress"] + index * 4)
+        ground_palette = list(base_palette)
+        for offset, color in enumerate((3, 4, 8)):
+            ground_palette[color] = md_palette_color(word(ground + offset * 2))
+        ground_asset = raster(
+            "ground" + str(index),
+            decode(ground + 6 + word(ground + 6), 1536),
+            ground_palette,
+            96,
+            32,
+            sprite_layout(12, 4),
+        )
+        background = pointer(backgrounds["backgroundTableAddress"] + index * 4)
+        bgdata = decode(background + word(background), 6144) + decode(
+            background + 2 + word(background + 2), 6144
+        )
+        bgpal = palette(background + 4 + word(background + 4))
+        background_asset = raster(
+            "background" + str(index), bgdata, bgpal, 256, 96, layout, opaque=True
+        )
+        backdrop[index] = dict(background=background_asset, ground=ground_asset)
+    if battle in (2, 3):
+        terrain_scenes = [
+            dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
+        ]
+    background_asset, ground_asset = backdrop[9 if battle == 1 else 0].values()
 
     # LoadSpellTileset: section-14 pointer, HEALING=6, length and three CRAM
     # replacements precede compressed tiles. Preserve all operands as ROM spans.
@@ -385,6 +407,8 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
         293,
         393,
     }
+    if battle == 3:
+        text_ids.update((306, 338, 354))
     texts = {
         str(int(line[:4], 16)): line[5:]
         for line in script.splitlines()
@@ -422,7 +446,7 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
         output / "battle-scenes.json",
         dict(
             version=1,
-            encounter="battle-1",
+            encounter="battle-" + str(battle),
             background=background_asset,
             ground=ground_asset,
             actors=actor_rows,
@@ -430,6 +454,7 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
             texts=texts,
             memberNames=names,
             healing=healing,
+            **({"terrainScenes": terrain_scenes} if battle in (2, 3) else {}),
         ),
     )
     report = dict(
@@ -479,22 +504,31 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     if previous["upstreamCommit"] != commit or previous["romSha256"] != ACCEPTED_ROM_SHA256:
         raise ValueError("selected scene provenance drift")
     scene = json.loads(scene_path.read_text(encoding="utf-8"))
-    if scene["version"] != 1 or scene["encounter"] != "battle-1" or "fieldDeath" in scene:
+    if (
+        scene["version"] != 1
+        or scene["encounter"] not in ("battle-1", "battle-2", "battle-3")
+        or "fieldDeath" in scene
+    ):
         raise ValueError("selected scene field boundary")
     compiler = OriginalPrograms(
         {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream
     )
     allies = [
         {"character": r["character"], "sprite": r["sprite"]}
-        for r in compiler.initial_ally_sprites()[:3]
+        for r in compiler.initial_ally_sprites()[
+            : {"battle-1": 3, "battle-2": 4, "battle-3": 12}[scene["encounter"]]
+        ]
     ]
     enemy_table = json.loads(
         repo_path("tests/fixtures/h2/enemy-map-sprites-static-v1.json").read_text(encoding="utf-8")
     )["table"]["table_EnemyMapsprites"]
-    enemy_id = compiler.equates["ENEMY_GIZMO"]
-    enemy_sprite = rom[enemy_table + enemy_id]
-    if enemy_sprite != compiler.equates["MAPSPRITE_GIZMO"]:
-        raise ValueError("Gizmo field assignment drift")
+    species = ["GIZMO"] if scene["encounter"] == "battle-1" else ["HUGE_RAT", "OOZE"]
+    if scene["encounter"] == "battle-3":
+        species.append("HUGE_BAT")
+    enemy_sprites = [
+        dict(code=code, sprite=rom[enemy_table + compiler.equates["ENEMY_" + code]])
+        for code in species
+    ]
     palette = [
         md_palette_color(int.from_bytes(rom[i : i + 2], "big"))
         for i in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
@@ -523,9 +557,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
         spans.append(
             dict(pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed)
         )
-    scene["fieldDeath"] = dict(
-        allies=allies, enemies=[dict(code="GIZMO", sprite=enemy_sprite)], exitFrames=frames
-    )
+    scene["fieldDeath"] = dict(allies=allies, enemies=enemy_sprites, exitFrames=frames)
     output.mkdir(parents=True)
     write_json(output / "battle-scenes.json", scene)
     report = dict(
@@ -536,8 +568,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
         spans=spans,
         allyAssignments=allies,
         enemyTableAddress=enemy_table,
-        enemyId=enemy_id,
-        enemySprite=enemy_sprite,
+        enemyAssignments=enemy_sprites,
         paletteAddress=PLAYER_PALETTE_ADDRESS,
         sceneContentBytes=(output / "battle-scenes.json").stat().st_size,
         sources=sorted(
@@ -558,6 +589,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--battle", type=int, choices=(1, 2, 3), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,
@@ -567,6 +599,6 @@ if __name__ == "__main__":
     result = (
         add_field_death(args.rom, args.upstream, args.output, args.field_death_base)
         if args.field_death_base
-        else build(args.rom, args.upstream, args.output)
+        else build(args.rom, args.upstream, args.output, args.battle)
     )
     print(json.dumps(result))

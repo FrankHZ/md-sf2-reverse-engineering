@@ -26,6 +26,8 @@ internal static class OutcomeReturnRules
         {
             var result = rule.Start(definition, battle, story, kind, party);
             Party(definition, party, result.Party, gold: false);
+            if (kind == BattleOutcomeKind.Retreat)
+                Require(result.Program is not null && result.Party.Actors.SequenceEqual(party.Actors));
             Program(definition, result.Program);
             Position(definition, result.Return.Map, result.Return.Position);
             Require(result.Return.Facing <= 3);
@@ -65,6 +67,7 @@ internal static class OutcomeReturnRules
     private static void Party(ScenarioDefinition definition, BattleStartInput before, BattleStartInput after, bool gold)
     {
         Require(after.Encounter == before.Encounter && after.MainSeed == before.MainSeed && after.ThinkingSeed == before.ThinkingSeed &&
+            ReferenceEquals(after.ItemCustody, before.ItemCustody) &&
             after.NewBattle == before.NewBattle && (after.ActiveAllies is null ? before.ActiveAllies is null : before.ActiveAllies is not null && after.ActiveAllies.SequenceEqual(before.ActiveAllies)) && after.Actors.Count == before.Actors.Count &&
             (gold ? before.Gold.HasValue == after.Gold.HasValue : before.Gold == after.Gold));
         var encounter = definition.Encounters[before.Encounter];
@@ -72,7 +75,9 @@ internal static class OutcomeReturnRules
         {
             var a = before.Actors[index]; var b = after.Actors[index];
             Require(b with { Hp = a.Hp, Mp = a.Mp } == a);
-            var deployment = encounter.Deployments.Single(row => row.Actor == a.Actor);
+            var deployment = encounter.Deployments.FirstOrDefault(row => row.Actor == a.Actor) ??
+                definition.Encounters.Values.SelectMany(value => value.Deployments)
+                    .First(row => row.Faction == BattleFaction.Ally && row.Actor == a.Actor);
             Require(deployment.Faction == BattleFaction.Ally || b == a);
             Require(b.Hp <= (a.Progress?.MaxHp ?? deployment.Definition.MaxHp) &&
                 b.Mp <= (a.Progress?.MaxMp ?? deployment.Definition.MaxMp));

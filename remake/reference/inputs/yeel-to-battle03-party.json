@@ -1,0 +1,142 @@
+{
+  "formatVersion": 1,
+  "id": "private-yeel-battle03-return-v1",
+  "evidenceOwner": "Accepted Battle02 outcome implementation (#1047/#1048), battle02-outcome inputs; pinned c834c652 stats/growth/item definitions. Initial controlled bridge to the accepted victory-return party, not original natural reach.",
+  "bridgeBoundary": "Controlled INITIAL post-Battle02 return with four members, live grown stats/resources/items/accounting and RNG from the accepted win-final victory-return observation. Thinking image is the terminal command image: no subsequent thinking draw in the empty victory/join0/Map66 return. Progress is represented by the matching grown baseline at initial admission. All later states must come from real commands, no injection/reseed/restart. This field input is not Battle03 initialization.",
+  "profile": "private-local-controlled-start",
+  "battle": 2,
+  "policy": {
+    "beforeBattle": "controlled-skip",
+    "allyStats": "already-refreshed-and-equipped",
+    "actorStorage": "roster-only",
+    "difficulty": 0,
+    "allyAutoBattle": false,
+    "opponentControl": false,
+    "missingCandidateAllyWord": 0
+  },
+  "mainSeed": 937230336,
+  "thinkingSeed": 20185088,
+  "gold": 500,
+  "allies": [
+    {
+      "id": 0,
+      "classId": 0,
+      "level": 3,
+      "maxHp": 16,
+      "hp": 16,
+      "maxMp": 9,
+      "mp": 9,
+      "attack": 11,
+      "defense": 6,
+      "agility": 7,
+      "move": 6,
+      "status": 0,
+      "items": [
+        199,
+        127,
+        127,
+        127
+      ],
+      "spells": [
+        10,
+        63,
+        63,
+        63
+      ],
+      "exp": 48,
+      "kills": 5,
+      "defeats": 0,
+      "activationWord": 0
+    },
+    {
+      "id": 1,
+      "classId": 4,
+      "level": 2,
+      "maxHp": 12,
+      "hp": 12,
+      "maxMp": 11,
+      "mp": 11,
+      "attack": 10,
+      "defense": 6,
+      "agility": 6,
+      "move": 5,
+      "status": 0,
+      "items": [
+        213,
+        127,
+        127,
+        127
+      ],
+      "spells": [
+        0,
+        63,
+        63,
+        63
+      ],
+      "exp": 96,
+      "kills": 0,
+      "defeats": 0,
+      "activationWord": 0
+    },
+    {
+      "id": 2,
+      "classId": 1,
+      "level": 2,
+      "maxHp": 12,
+      "hp": 0,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 9,
+      "defense": 7,
+      "agility": 8,
+      "move": 7,
+      "status": 0,
+      "items": [
+        184,
+        127,
+        127,
+        127
+      ],
+      "spells": [
+        63,
+        63,
+        63,
+        63
+      ],
+      "exp": 74,
+      "kills": 3,
+      "defeats": 1,
+      "activationWord": 0
+    },
+    {
+      "id": 3,
+      "classId": 2,
+      "level": 3,
+      "maxHp": 12,
+      "hp": 12,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 16,
+      "defense": 10,
+      "agility": 6,
+      "move": 5,
+      "status": 0,
+      "items": [
+        161,
+        127,
+        127,
+        127
+      ],
+      "spells": [
+        63,
+        63,
+        63,
+        63
+      ],
+      "exp": 52,
+      "kills": 4,
+      "defeats": 0,
+      "activationWord": 0
+    }
+  ]
+}

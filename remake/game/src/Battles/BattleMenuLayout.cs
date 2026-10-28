@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Content.Scenarios;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -11,7 +12,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly Label Detail = Text("Detail", 17);
     internal readonly Label Help = Text("Help", 15);
     internal readonly Control Diamond = new() { Name = "Diamond", MouseFilter = MouseFilterEnum.Ignore };
-    internal readonly BattleDiamondButton[] Commands = [new("Attack", 0), new("Magic", 1), new("Item", 2), new("Stay", 3)];
+    internal readonly BattleDiamondButton[] Commands = [new("Attack"), new("Magic"), new("Item"), new("Stay")];
     private readonly PanelContainer _actor = Frame("ActorPanel");
     private readonly PanelContainer _context = Frame("ContextPanel");
     private readonly PanelContainer _detail = Frame("DescriptionPanel");
@@ -26,6 +27,34 @@ internal sealed partial class BattleMenuLayout : Control
     private bool _commandsVisible;
     internal Action? LayoutChanged { get; set; }
     internal Rect2 MapRect { get; private set; }
+
+    internal void ConfigureAssets(BattleSceneDefinition? content)
+    {
+        if (content is null || !content.Rasters.Keys.Any(key => key.StartsWith("command-menu.", StringComparison.Ordinal)))
+        {
+            foreach (var command in Commands) command.SetArt(null, null);
+            return;
+        }
+        var textures = new List<ImageTexture>();
+        try
+        {
+            foreach (var command in Commands)
+                foreach (string state in new[] { "normal", "selected" })
+                {
+                    string key = $"command-menu.{command.Caption.ToLowerInvariant()}.{state}";
+                    if (!content.Rasters.TryGetValue(key, out var raster) || raster.Width != 24 || raster.Height != 24)
+                        throw new InvalidOperationException("command-menu-resource-required");
+                    using var image = raster.Format == "rgba8"
+                        ? Image.CreateFromData(24, 24, false, Image.Format.Rgba8, raster.CopyBytes()) : new Image();
+                    if (raster.Format != "rgba8" && (image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok ||
+                        image.GetWidth() != 24 || image.GetHeight() != 24))
+                        throw new InvalidOperationException("command-menu-resource-invalid");
+                    textures.Add(ImageTexture.CreateFromImage(image));
+                }
+        }
+        catch { foreach (var texture in textures) texture.Dispose(); throw; }
+        for (int i = 0; i < Commands.Length; i++) Commands[i].SetArt(textures[i * 2], textures[i * 2 + 1]);
+    }
 
     public override void _Ready()
     {
@@ -65,7 +94,7 @@ internal sealed partial class BattleMenuLayout : Control
         _actor.Position = new(margin, margin);
         _context.Position = new(size.X * 0.55f + 8, margin);
         Diamond.Position = new(margin, menuY); Diamond.Size = new(menu, menu);
-        float cell = menu * 0.47f, offset = menu * 0.265f;
+        float cell = Mathf.Floor(menu / 3), offset = (menu - cell) / 2;
         Vector2[] locations = [new(offset, 0), new(0, offset), new(menu - cell, offset), new(offset, menu - cell)];
         for (int i = 0; i < Commands.Length; i++)
         {
@@ -147,7 +176,7 @@ internal sealed partial class BattleMenuLayout : Control
         listVisible = _list.Visible, list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),
         rows = _rowLabels.Select(label => label.Text).ToArray(), selectedRow = _selected,
         commands = Commands.Select(button => new { label = button.Caption, selected = button.Selected, enabled = button.Available,
-            rect = BattleMapViewport.Rectangle(button.GetGlobalRect()) }).ToArray(),
+            rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }).ToArray(),
     };
 
     private static Label Text(string name, int size)
@@ -170,54 +199,59 @@ internal sealed partial class BattleMenuLayout : Control
     }
 }
 
-// Project-authored vector glyphs stay sharp at UI scale; no original image is embedded.
+// Source pixels are supplied through the existing admitted scene raster collection.
+// An unmounted public scene shows text-only squares; it never substitutes authored glyphs.
 internal sealed partial class BattleDiamondButton : Control
 {
     internal string Caption { get; }
     internal bool Selected { get; set; }
     internal bool Available { get; set; }
-    private readonly int _kind;
     private readonly Label _label;
-    internal BattleDiamondButton(string caption, int kind)
+    private ImageTexture? _normal, _selected;
+    private int _pixelScale = 1;
+    private string? _drawnResource;
+    internal BattleDiamondButton(string caption)
     {
-        Caption = caption; _kind = kind; Name = caption;
+        Caption = caption; Name = caption;
         MouseFilter = MouseFilterEnum.Ignore;
+        TextureFilter = TextureFilterEnum.Nearest;
         _label = new Label { Text = caption, HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        _label.AddThemeFontSizeOverride("font_size", 17);
+        _label.AddThemeFontSizeOverride("font_size", 14);
     }
     public override void _Ready() => AddChild(_label);
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) { _normal?.Dispose(); _selected?.Dispose(); }
+        base.Dispose(disposing);
+    }
+    internal void SetArt(ImageTexture? normal, ImageTexture? selected)
+    {
+        _normal?.Dispose(); _selected?.Dispose();
+        _normal = normal; _selected = selected; _drawnResource = null; QueueRedraw();
+    }
     internal void Arrange()
     {
-        _label.Position = new(0, Size.Y * 0.52f); _label.Size = new(Size.X, 26); QueueRedraw();
+        _pixelScale = Math.Max(1, (int)Mathf.Floor(Mathf.Min(Size.X - 8, Size.Y - 24) / 24));
+        _label.Position = new(0, Size.Y - 23); _label.Size = new(Size.X, 20); QueueRedraw();
     }
+    internal object ObserveArt() => new { shape = "square", mounted = _normal is not null,
+        resource = _drawnResource,
+        width = _normal?.GetWidth(), height = _normal?.GetHeight(), scale = _pixelScale,
+        filter = TextureFilter.ToString() };
     public override void _Draw()
     {
-        var c = Size / 2; float r = Size.X / 2 - 3;
-        Vector2[] polygon = [c + new Vector2(0, -r), c + new Vector2(r, 0), c + new Vector2(0, r), c + new Vector2(-r, 0)];
-        DrawColoredPolygon(polygon, Selected ? new("234d89") : new Color("08275b"));
-        DrawPolyline([.. polygon, polygon[0]], Selected ? new("fff1bb") : new Color("bd944d"), Selected ? 3 : 1.5f, true);
-        Color ink = Available ? new("fff0c0") : new("869bb5");
-        _label.Modulate = Selected ? Colors.White : ink;
-        Vector2 p = new(c.X, c.Y - 9);
-        void Line(float x1, float y1, float x2, float y2) => DrawLine(p + new Vector2(x1, y1), p + new Vector2(x2, y2), ink, 2, true);
-        switch (_kind)
+        var rect = new Rect2(Vector2.One, Size - Vector2.One * 2);
+        DrawRect(rect, new Color("002492"));
+        DrawRect(rect, new Color("924900"), false, 2);
+        DrawRect(rect.Grow(-2), Selected ? new Color("ffffff") : new Color("ffdb49"), false, 2);
+        var texture = Selected ? _selected : _normal;
+        if (texture is not null)
         {
-            case 0:
-                Line(-10, 10, 11, -11); Line(11, -11, 9, -3); Line(11, -11, 3, -9);
-                Line(-11, 0, -1, 10); Line(-13, 13, -8, 8); break;
-            case 1:
-                Line(0, -14, 0, 14); Line(-14, 0, 14, 0); Line(-8, -8, 8, 8); Line(-8, 8, 8, -8);
-                DrawCircle(p, 4, new("8ee4ff")); break;
-            case 2:
-                DrawRect(new Rect2(p + new Vector2(-11, -8), new(22, 23)), ink, false, 2);
-                Line(-5, -8, -5, -14); Line(-5, -14, 5, -14); Line(5, -14, 5, -8);
-                Line(-11, 1, 11, 1); Line(0, -1, 0, 5); break;
-            default:
-                Line(-11, -13, 11, -13); Line(-11, 13, 11, 13);
-                Line(-8, -13, -8, -7); Line(8, -13, 8, -7);
-                Line(-8, -7, 8, 7); Line(8, -7, -8, 7);
-                Line(-8, 7, -8, 13); Line(8, 7, 8, 13); break;
+            float side = 24 * _pixelScale;
+            DrawTextureRect(texture, new Rect2(new((Size.X - side) / 2, 4), new(side, side)), false);
+            _drawnResource = $"command-menu.{Caption.ToLowerInvariant()}.{(Selected ? "selected" : "normal")}";
         }
+        _label.Modulate = Selected ? Colors.White : Available ? new Color("ffdb49") : new Color("a0a0a0");
     }
 }

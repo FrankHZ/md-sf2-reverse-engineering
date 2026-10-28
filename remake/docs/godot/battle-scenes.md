@@ -1,5 +1,137 @@
 # Battle Presentation
 
+## Authored poison notices
+
+The ordinary scene view projects the typed poison notices over the battlefield with readable authored
+text: fixed2 damage, then exhaustion for lethal HP. The finite no-input notice delivery uses the same
+modern0.5-second presentation service as sleep; focus loss or a hidden host pauses completion.
+Actual matching `CompletePresentation` releases each step. The existing battlefield spin/exit/settle
+consumer displays lethal removal. No second battle scene, artificial attack, reward or original text
+asset is synthesized. `BattlePresentation` displays the standalone terminal Victory/Defeat result.
+
+The [native poison witness](../development-and-verification.md#poison-authored-observation) reads
+actual state, label text, focus/hide behavior and continued usable control. This is authored semantic
+presentation, with no original hardware/frame/audio fidelity or screenshot claim. Private field-death
+content and sleep continue through their existing boundaries.
+
+## Authored equipment feedback
+
+The existing semantic battle HUD displays current equipment, ATT and physical range. At battle
+`ActionChoice`, E / Pad Start opens the finite weapon selection. Directions (or E) cycle eligible
+slots; Enter confirms and Escape cancels back to battle actions. Each candidate displays its slot,
+name, prospective ATT and range; Unarmed appears only under the source slot-count policy.
+
+The view submits `BeginEquipment`/`SelectEquipment`/ordinary Confirm/Cancel to the session. Its
+preview does not replace authoritative actor state. Focus loss and hiding block equipment input;
+resuming retains the pending choice. Confirmed equipment remains through later movement/action
+cancellation. This is authored text feedback through the existing HUD, not the frozen PR692 diamond
+redesign, original equipment-window graphics, pulsating original range grid or source timing parity.
+The [native observation](../development-and-verification.md#battle-equipment-authored-observation)
+reads actual choices, label visibility/text, state, input results and subsequent scene feedback.
+
+## Authored AURA recovery
+
+`AuraRecoveryView` draws a small authored pulse, recipient identity and live HP/MP through
+`BattleSceneView`. One cast is followed by each source-ordered recipient, including zero recovery.
+Target-specific recovery text and one EXP message require ordinary confirmation. Cast/reaction and
+switch stages complete after actual elapsed delivery; the same session then accepts next-turn
+movement. AURA does not use the HEAL1–3 fairy cursor, private rasters or original animation-selector
+claims. This is an intentional modern presentation boundary.
+
+The scene clock and acknowledgement stop while hidden or focus-suspended, preserving paid resources
+and the wait token. Focus re-entry resumes without catch-up or duplicate completion. Presenter errors
+retain their wait. Observation reports target list, displayed recipient, HP/amount, elapsed time and
+actual draw count. No screenshot or synthetic completion is used. See the
+[source rules](../domain/gameplay-rules.md#authored-aura-group-healing) and
+[native recipe](../development-and-verification.md#aura-authored-observation).
+
+## Authored Prism laser
+
+`PrismLaserView` draws a small deterministic tactical-ray diagram using Godot primitives. A purple
+origin charges for0.35s, a visible beam fires for0.30s, and settles for0.25s. These are authored modern
+presentation durations, not original animation timing. The actual view clock releases the scene's
+ActionAnimation token; ordinary Enter input acknowledges the laser-specific announcement and results.
+Empty shots use the same charge/fire/settle and complete without a fabricated target. Each subsequent
+reaction highlights its real target and faction with current HP; existing field death delivery removes
+the ordered list and returns control.
+
+The semantic source selection is message319 (authored paraphrase), animation21/enemy selector95(hex),
+loading sound103, firing sound108 and enemy music5. This slice supplies its own visual only: it does
+not deliver or claim the original animation, those sounds/music, original assets or hardware timing.
+Diagnostic `laser` fields expose actual stage/beam visibility, origin/direction, focus and targets,
+plus current target side. `BattleSessionView.deathCredit` is read-only and preserves its existing
+`itemCustody` field. No menu/input/layout redesign is included.
+
+The [native recipe](../development-and-verification.md#prism-laser-authored-observation) observes
+actual ordinary-input on/off-ray play, announcement, charge/fire/settle, both target factions,
+ordered deaths, accounting and subsequent movement without screenshots or injected completion.
+
+
+## Leader survivor field removal
+
+The existing battlefield projection consumes `DeadActors` from the finite field continuation for
+ordinary deaths and positive-HP swept enemies alike. It applies the same spin/exit phases and keeps
+placed actors visible until removal commits, then hides their markers. Unplaced listed enemies
+still receive bookkeeping without inventing a map position. `BattleSceneState` exposes field-only
+metadata safely without a physical action, reward or displayed combat-scene sides. The presenter
+chooses no source identities or kill policy.
+
+The [authored leader-cleanup observation](../development-and-verification.md#leader-cleanup-authored-observation)
+uses ordinary interaction and ATTACK input, actual spin/exit/settle state and marker visibility,
+then the ordinary victory program and field movement. No Godot menu/layout or presentation code
+change was required; the existing field consumer accepts the extended worklist. Original timing,
+pixels and full Battle18 remain outside this modern authored observation.
+
+## Ineffective physical feedback
+
+`BattleSceneView` consumes the semantic `Ineffective` reaction through the existing physical scene.
+It selects source message289 when admitted text exists and otherwise the authored message
+"The attack is ineffective against {NAME}." The actual result label is visible and uses the
+ordinary reveal/acknowledgement input. It has amount0 without presenting a zero-damage, dodge or
+critical-damage result. No damaging recoil, hit sound or damage-reaction RNG is requested for it.
+Supported later sleep and ordinary end EXP feedback keep their own continuation boundaries.
+
+The [authored Taros observation](../development-and-verification.md#taros-authored-observation)
+drives ordinary movement/ATTACK/target/confirm for both the wrong actor and bound equipped actor,
+reads actual label/projection/HP/events/errors, and proves usable movement/cancel after both scenes.
+It uses existing authored presentation with no imported Taros assets, screenshots or UI redesign.
+This proves modern delivery, not original Battle18 reach, hardware timing or full encounter parity.
+
+## Authored EGRESS delivery
+
+The selected retreat does not construct a `BattleSceneState` or play an ordinary attack scene.
+`BattleRetreatView` projects `ActiveBattle.Retreat` through the existing battle host: actual text
+reveal, fresh Confirm acknowledgement, a soft blue effect and authored tone, then a close fade.
+The scene remains in battle until the matching close completion; field return uses the ordinary
+exploration presenter. Existing menu/input layout is unchanged.
+
+Angel Wing uses the same consumer with a distinct item payment and `CHESTER used Angel Wing!` text
+for the controlled native party. Retreat resolves the existing active scene's admitted member name,
+using the actor's processing order just like the ordinary scene presenter; authored packages without
+that content retain the actor ID fallback. Shared EGRESS formatting uses the same name (Bowie in the
+private start). There is no separate naming registry.
+Normal Item input cycles held slots and selects the eligible self target. The projection exposes the
+actual selected item payment; `paidMp` is absent for Wing. Inventory is already compacted before the
+text request. It never claims a spell cast or starts the Herb recovery scene. The same authored tone,
+pulse and fade are a deliberate modern approximation for both exits. The
+[Wing observer](../verification/field-programs.md#battle02-angel-wing-and-walking-retry) checks actual
+item input/cancel, duplicate delivery, focus/process suspension and retained inventory through walking
+retry. It does not inject successful completions or acquire original media.
+
+`authored-egress-tone-v1` is project-authored PCM16 mono at 22,050 Hz, 7,718 samples, with a sine envelope
+and rising phase `2π(440t+220t²)`, amplitude 12,000 and playback −18 dB. The pulse lasts 450 ms and closure
+200 ms in this modern presenter; these are not original timing or recorded audio. Reduced-flash mode
+uses a low constant tint. Instant/adjustable text settings govern delivery only. Original EGRESS
+sound/flash/pixel parity remains **Unknown**; no new capture/import platform or unrelated source cue
+is substituted.
+
+Focus loss pauses retreat input, elapsed delivery and its tone. Process suspension cannot complete
+a wait. The presenter emits one completion per token; the session independently rejects duplicates.
+`RepeatRetreatDeliveryObservation` can replay only a completion already emitted by the real consumer
+for the bounded rejection observation; the successful acceptance route uses actual delivery.
+The [native recipe](../verification/field-programs.md#battle02-egress-and-walking-retry) reads real text,
+effect/tone, tokens, paid resources and field/next-battle control without screenshots.
+
 Application owns staged gameplay publication and wait tokens. Godot consumes the current scene,
 movement and death state, displays admitted resources and submits actual completion. Rule selection
 and legality remain in the [engine](../domain/gameplay-rules.md); runnable observations belong to
@@ -10,6 +142,36 @@ matches source class/actor visuals and checks the equipped source item against t
 visual; it also chooses source ground/animation presentation. This resource compatibility is not
 general mod/schema support and does not grant Godot gameplay mutation or provenance authority.
 Missing private resources fail visibly; they do not silently use authored gestures.
+
+## Battlefield Maps
+
+The ordinary private Battle01–03 board consumes the admitted exploration atlas, nine-tile blocks
+and layout through the same `MapBlockTextures` decoder as exploration. Content retains an optional
+`BattleMapRegion` on each battle definition, including its visual-map identity and source-cell origin;
+growth and outcome definition copies preserve it. This is presentation metadata: gameplay positions,
+terrain costs and ranges remain local battle coordinates. The existing `BattleDefinition.Map` identity
+is unchanged. A missing region is distinct from the valid origin(0,0).
+
+Battle01 uses map57(0,0),16×20; Battle02 uses map66(16,19),22×18; Battle03 uses
+map66(0,0),22×30. Each source24-pixel block maps to the existing40-pixel board cell. Board framing
+applies one translation/scale to tiles, sprites, movement and selection. Ground/foreground tile
+passes retain the source priority bit: low tiles at z0, actor sprites at z1, high tiles at z2,
+movement indicators and the cyan accepted-target outline at z3. A rejected target candidate never
+changes that outline; cancellation removes it. The connected regions have no separate packed
+foreground offset and no high-priority tiles; the affected exploration paths retain their existing
+foreground behavior. Fixed plane offsets are supported; unconsumed plane motion fails explicitly.
+
+Private missing map/region/block resources fail through the existing adapter error UI. A failed
+hidden BattleLoad retains its wait and cannot report completion. Private startup requires a
+prepared world with map resources; standalone private inputs without those resources no longer
+draw placeholder terrain. Public authored practice retains its intentional colored terrain.
+
+The battle view is retained and reparented during outcome/field handoff. Cached textures survive
+transient tree exits; rebuilding for a different definition releases the old board nodes/textures,
+and final owner destruction releases current resources. See the
+[bounded native recipe](../verification/battles.md#battlefield-map-observation) for actual input,
+draw/resource geometry, return/reentry and negative-case observations. This establishes bounded
+rendering and lifecycle behavior, with no original pixel/timing parity or human aesthetic approval.
 
 ## Physical Battle Scenes
 
@@ -167,7 +329,8 @@ cleanup, actor restoration, EXP/growth and input release. Full HP still casts an
 minimum; self-healing preserves the already charged caster MP. Growth consumes the seed carried
 through the scene, not the construction seed. Private scenes require admitted PRST cast content,
 idle parameters and healing rasters; authored packages use an explicitly authored small gesture.
-Other spell effects and HEAL4 remain unsupported. The historical #523/#437 records do not establish full scene or hardware parity; the
+Private AURA, other spell effects and HEAL4 remain unsupported; public authored AURA uses the separate
+consumer above. The historical #523/#437 records do not establish full scene or hardware parity; the
 [current composed milestone](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
 has its separately bounded acceptance.
 
@@ -281,8 +444,9 @@ The reproduction and completed failure records belong to the
 
 ## Battlefield death batches
 
-The common action continuation retains newly defeated combatants on their battlefield cells until
-its field exit completes. The close-up panel hides after `scene-ended`; the same action still blocks
+The finite field continuation retains ordinary action deaths on their battlefield cells until
+its field exit completes. The explicit authored leader binding also appends positive-HP enemies,
+including unplaced entries; see [leader survivor removal](#leader-survivor-field-removal). The close-up panel hides after `scene-ended`; the same action still blocks
 input, automatic advancement and outcome programs. The defeated hook runs before the batch, then
 all members turn twelve times, one sound116 request starts the three effect63 directions, and only
 then are positions/status and kills/defeats cleaned. A final settle releases the action. Empty batches
@@ -319,8 +483,8 @@ random-branch scripts. No gameplay RNG call is added at a field delivery complet
 interleavings and hardware timing. The source can add waits when queued sprite loads reach seven;
 those are not an unconditional frame allowance. Source timing, natural multi-death, special entity32,
 random scripted battlefield entities and after-turn status deaths are not established by this
-bounded consumer. Current physical actions produce at most one casualty; multi-member domain cleanup
-is separately exercised without pretending those producers exist. Option A, 8D/H4 and the retained
+bounded consumer. Current physical actions produce at most one casualty; the explicit authored
+leader sweep supplies a real multi-member field worklist without inventing multi-kill attacks. Option A, 8D/H4 and the retained
 HEAL recovery opportunity mismatch remain open; no padding, trace-count fitting or reseeding is used.
 
 Actual enemy-death and ally-counter-death normal/reduced consumers exercise sprite63,116BD and

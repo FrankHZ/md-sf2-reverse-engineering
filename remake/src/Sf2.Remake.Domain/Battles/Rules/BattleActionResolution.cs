@@ -1,23 +1,34 @@
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Domain.Battles;
 
-internal enum BattleReactionKind { Damage, Dodge, Recovery, Resource }
+internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resource }
 internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Action,
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
-    bool Critical = false, int Amount = 0);
+    bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null,
+    BattleItemReceipt? Receipt = null);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
-    MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false)
+    MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false, BattleActionRef? ChosenAction = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actorRef)
     {
         static void Require(bool valid)
         { if (!valid) throw new InvalidOperationException("Invalid automatic decision."); }
         var actor = before.GetActor(actorRef);
+        Require(ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser));
+        if (ChosenAction is not null)
+        {
+            PrismLaser.RequireActor(before, actorRef);
+            Require(Target is not null && Path.Count == 1 && Destination == actor.Position && !QueueOnly &&
+                ReferenceEquals(Battle, before) && Effects.Count == 0 &&
+                PrismLaser.Targets(before, actorRef, alliesOnly: true).FirstOrDefault()?.Actor == Target);
+        }
         Require(ReferenceEquals(Battle.Definition, before.Definition) && Battle.MainSeed == before.MainSeed &&
             Battle.Round == before.Round && Battle.Cursor == before.Cursor && Battle.Gold == before.Gold &&
-            ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && Battle.Queue.SequenceEqual(before.Queue) &&
+            ReferenceEquals(Battle.ItemCustody, before.ItemCustody) && Equals(Battle.DeathCredit, before.DeathCredit) &&
+            ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && ReferenceEquals(Battle.Visuals, before.Visuals) && Battle.Queue.SequenceEqual(before.Queue) &&
             Battle.Actors.Count == before.Actors.Count && actor.Control == BattleControl.Automatic &&
             actor.Hp > 0 && actor.Position is not null);
         Require(before.Regions is null ? Battle.Regions is null : Battle.Regions is { } regions &&
@@ -25,16 +36,24 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         for (int index = 0; index < before.Actors.Count; index++)
         {
             var old = before.Actors[index]; var candidate = Battle.Actors[index];
-            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp &&
-                candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position &&
+            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
+                candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position && candidate.Facing == old.Facing &&
                 candidate.Kills == old.Kills && candidate.Defeats == old.Defeats && candidate.Attack == old.Attack &&
                 candidate.Status == old.Status && Equals(candidate.Progress, old.Progress) &&
                 ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
             if (old.Actor != actorRef)
                 Require(candidate.LastTarget == old.LastTarget && candidate.AiMemory == old.AiMemory &&
-                    candidate.ActivationWord == old.ActivationWord);
+                    candidate.ActivationWord == old.ActivationWord && candidate.PrimaryOrder == old.PrimaryOrder &&
+                    candidate.SecondaryOrder == old.SecondaryOrder);
             else if (candidate.LastTarget != old.LastTarget)
                 Require(Target is not null && candidate.LastTarget == Target);
+            if (old.Actor == actorRef && (candidate.PrimaryOrder != old.PrimaryOrder || candidate.SecondaryOrder != old.SecondaryOrder))
+            {
+                Require(old.PrimaryOrder is not null and not 255 && (old.PrimaryOrder.Value & 64) == 0 &&
+                    before.Definition.Initialization is { } initialization &&
+                    initialization.SourceCombatants.TryGetValue(old.PrimaryOrder.Value, out var followed) &&
+                    before.GetActor(followed).Hp == 0 && candidate.PrimaryOrder == old.SecondaryOrder && candidate.SecondaryOrder == 255);
+            }
         }
         Require(Path.Count > 0 && Path[0] == actor.Position && Path[^1] == Destination &&
             before.Definition.Contains(Destination));
@@ -78,19 +97,38 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
+        Require((action.Kind == BattleActionKind.PrismLaser) == (Laser is not null));
+        Require(action.Kind is BattleActionKind.Retreat or BattleActionKind.Item || Retreat is null);
+        Require(action.Kind == BattleActionKind.Physical || Reactions.All(reaction => reaction.Receipt is null));
         switch (action.Kind)
         {
+            case BattleActionKind.PrismLaser when action == new BattleActionRef(BattleActionKind.PrismLaser):
+                ValidateState(before, actor, destination);
+                PrismLaser.Validate(this, before, actor, destination, target);
+                break;
+            case BattleActionKind.Retreat when action.Spell is { } retreatSpell && action.ItemSlot is null && target == actor:
+                ValidateState(before, actor, destination);
+                Require(admission.Retreat is { } retreat && Retreat == new SpellRetreatPayment(retreat.Spell, retreat.MpCost) && retreat.Spell == retreatSpell &&
+                    before.Definition.RetreatSpells.TryGetValue(retreatSpell, out var known) && known == retreat &&
+                    before.GetActor(actor).Mp >= retreat.MpCost && Spell is null && Item is null &&
+                    Reactions.Count == 0 && Reward is null && ConstructionEffects.Count == 0 &&
+                    CompletionEffects.Count == 0 && Prepared.MainSeed == before.MainSeed);
+                break;
             case BattleActionKind.Healing when action.Spell is { } spell && target is { } patient &&
                 admission.Spell is { } definition && spell == definition.Spell && action.ItemSlot is null:
                 ValidateHealing(before, actor, destination, definition, patient);
                 break;
             case BattleActionKind.Physical when action.Spell is null && action.ItemSlot is null && target is { } victim:
                 ValidatePhysical(before, actor, destination, victim);
+                break;
+            case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } retreatSlot &&
+                target == actor && admission.RetreatItem is { } wing:
+                ValidateRetreatItem(before, actor, destination, retreatSlot, wing);
                 break;
             case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } slot &&
                 target is { } recipient && admission.Item is { } item:
@@ -108,27 +146,55 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     private static void Require(bool valid)
     { if (!valid) throw new InvalidOperationException("Invalid prepared action transition."); }
 
-    private void ValidateState(EngineBattleState before, ActorRef actor, MapPosition destination,
-        BattleSourceLoadout? consumedLoadout = null, bool allowGold = false)
+    private void ValidateRetreatItem(EngineBattleState before, ActorRef actorRef, MapPosition destination,
+        int slot, RetreatItemDefinition item)
     {
-        BattleMovement.RequireStop(before, actor, destination);
+        var actor = before.GetActor(actorRef);
+        var loadout = actor.SourceLoadout!;
+        Require(slot >= 0 && slot < loadout.Items.Count && (loadout.Items[slot] & 127) == item.ItemId &&
+            before.Definition.RetreatItems.TryGetValue(item.ItemId, out var known) && known == item &&
+            Retreat == new ItemRetreatPayment(item.ItemId, item.Name, slot, loadout.Items[slot]) &&
+            Spell is null && Item is null && Reactions.Count == 0 && Reward is null &&
+            CompletionEffects.Count == 0 && Prepared.MainSeed == before.MainSeed &&
+            ConstructionEffects.SequenceEqual([new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)]));
+        var items = loadout.Items.ToList(); items.RemoveAt(slot); items.Add(127);
+        ValidateState(before, actorRef, destination, new(items, loadout.Spells));
+    }
+
+    private void ValidateState(EngineBattleState before, ActorRef actor, MapPosition destination,
+        BattleSourceLoadout? consumedLoadout = null, bool allowGold = false, EngineBattleState? inventory = null)
+    {
+        // A stationary laser has no movement-range/occupancy-grid operation. Its
+        // own ray admission also permits departed/off-crop targets.
+        if (Laser is null) BattleMovement.RequireStop(before, actor, destination);
+        else Require(destination == before.GetActor(actor).Position);
         Require(Actor == actor && Destination == destination &&
-            ReferenceEquals(Prepared.Definition, before.Definition) && Prepared.ThinkingSeed == before.ThinkingSeed &&
+            Equals(Prepared.DeathCredit, before.DeathCredit) && ReferenceEquals(Prepared.Definition, before.Definition) && Prepared.ThinkingSeed == before.ThinkingSeed &&
             Prepared.Round == before.Round && Prepared.Cursor == before.Cursor &&
             (allowGold || Prepared.Gold == before.Gold) && ReferenceEquals(Prepared.StartPolicy, before.StartPolicy) &&
-            ReferenceEquals(Prepared.Regions, before.Regions) && Prepared.Queue.SequenceEqual(before.Queue) &&
+            ReferenceEquals(Prepared.Regions, before.Regions) && ReferenceEquals(Prepared.Visuals, before.Visuals) && Prepared.Queue.SequenceEqual(before.Queue) &&
             Prepared.Actors.Count == before.Actors.Count);
+        var expectedCustody = (inventory ?? before).ItemCustody;
+        Require(ReferenceEquals(Prepared.ItemCustody, expectedCustody) || Prepared.ItemCustody is { } actual &&
+            expectedCustody is { } expected && actual.OnceFlags.SequenceEqual(expected.OnceFlags) &&
+            actual.Deals.OrderBy(pair => pair.Key).SequenceEqual(expected.Deals.OrderBy(pair => pair.Key)));
         for (int index = 0; index < before.Actors.Count; index++)
         {
             var old = before.Actors[index]; var candidate = Prepared.Actors[index];
-            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp &&
+            var expectedLoadout = old.Actor == actor && consumedLoadout is not null ? consumedLoadout :
+                inventory?.GetActor(old.Actor).SourceLoadout ?? old.SourceLoadout;
+            bool changedLoadout = !ReferenceEquals(expectedLoadout, old.SourceLoadout);
+            Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
-                candidate.LastTarget == old.LastTarget && candidate.Attack == old.Attack && candidate.Status == old.Status &&
+                candidate.LastTarget == old.LastTarget && candidate.Attack == old.Attack && candidate.Status == old.Status && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
-                Equals(candidate.Progress, old.Progress) && candidate.Position == (old.Actor == actor ? destination : old.Position));
-            if (old.Actor == actor && consumedLoadout is not null)
-                Require(candidate.SourceLoadout is { } loadout && loadout.Items.SequenceEqual(consumedLoadout.Items) &&
-                    loadout.Spells.SequenceEqual(consumedLoadout.Spells));
+                Equals(changedLoadout && candidate.Progress is { } progress
+                    ? progress with { SourceLoadout = old.Progress?.SourceLoadout } : candidate.Progress, old.Progress) &&
+                candidate.Position == (old.Actor == actor ? destination : old.Position));
+            if (changedLoadout)
+                Require(candidate.SourceLoadout is { } loadout && loadout.Items.SequenceEqual(expectedLoadout!.Items) &&
+                    loadout.Spells.SequenceEqual(expectedLoadout.Spells) &&
+                    (candidate.Progress is null || ReferenceEquals(candidate.Progress.SourceLoadout, loadout)));
             else Require(ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
         }
     }
@@ -162,6 +228,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(actorRef != targetRef && actor.Faction != target.Faction && actor.Hp > 0 && target.Hp > 0 &&
             target.Position is not null && Spell is null && Item is null && Reactions.Count is > 0 and <= 3 && CompletionEffects.Count == 0);
         ushort actorHp = actor.Hp, targetHp = target.Hp;
+        bool ineffective = before.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         bool counter = false;
         for (int index = 0; index < Reactions.Count; index++)
         {
@@ -170,15 +237,25 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Require(!counter && (reversed ? index > 0 : index < 2 && reaction.Actor == actorRef && reaction.Target == targetRef));
             counter = reversed;
             var attacker = reversed ? target : actor; var defender = reversed ? actor : target;
-            var profile = attacker.Definition.Physical ?? throw new BattleRuleException("physical-definition", "actor.physical", true);
+            var profile = BattleEquipment.Physical(attacker) ?? throw new BattleRuleException("physical-definition", "actor.physical", true);
             var from = reversed ? target.Position! : destination; var to = reversed ? destination : target.Position!;
             ushort hp = reversed ? actorHp : targetHp;
+            ushort status = defender.Status;
             Require(actorHp > 0 && targetHp > 0 && BattleRange.Contains(from, to, profile.MinimumRange, profile.MaximumRange) &&
                 reaction.Action == (reversed ? "physical-counter" : index == 0 ? "physical-first" : "physical-second") &&
-                reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Dodge && reaction.HpBefore == hp &&
+                reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Dodge or BattleReactionKind.Ineffective && reaction.HpBefore == hp &&
                 reaction.Amount >= 0 && reaction.HpAfter == Math.Max(0, hp - reaction.Amount) &&
                 reaction.MpBefore == defender.Mp && reaction.MpAfter == defender.Mp &&
-                (reaction.Kind != BattleReactionKind.Dodge || reaction.Amount == 0 && !reaction.Critical));
+                (reaction.Kind == BattleReactionKind.Damage || reaction.Amount == 0 && !reaction.Critical));
+            Require(reaction.Kind != BattleReactionKind.Ineffective || !reversed && ineffective);
+            Require(reversed || !ineffective || reaction.Kind != BattleReactionKind.Damage);
+            Require(!reversed || (target.Status & 0xC0) == 0 &&
+                !(before.Definition.TarosEffectiveness?.IsTaros(actor) ?? false));
+            Require(reaction.StatusWrite is null || reaction.Kind == BattleReactionKind.Damage && reaction.StatusWrite == status);
+            Require(reaction.InflictedSleep is null || profile.Critical.InflictsSleep && reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Ineffective &&
+                reaction.HpAfter > 0 && !reaction.Critical &&
+                (reaction.Kind == BattleReactionKind.Ineffective ? reaction.StatusWrite is null : reaction.StatusWrite == status) &&
+                reaction.InflictedSleep == (ushort)(status | 0xC0));
             if (reversed) actorHp = reaction.HpAfter; else targetHp = reaction.HpAfter;
         }
         var ally = actor.IsAlly ? actor : target; var enemy = actor.IsAlly ? target : actor;
@@ -188,20 +265,40 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         if (enemyDead && ally.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
         if (allyDead && ally.Defeats is null) throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
         Require(enemyDead ? Prepared.Gold is not null : Prepared.Gold == before.Gold);
-        ValidateState(before, actorRef, destination, allowGold: enemyDead);
         ValidateReward(before, !allyDead && Reactions.Any(reaction => reaction.Actor == ally.Actor) ? ally.Actor : null);
         List<BattleEffect> facts = [];
+        var inventory = before;
+        int cursor = 0, dropDraws = 0;
         foreach (var reaction in Reactions)
         {
             facts.Add(new(reaction.Action, reaction.Actor, Target: reaction.Target));
             if (reaction.Kind == BattleReactionKind.Dodge)
                 facts.Add(new("dodge", reaction.Target, reaction.HpBefore, reaction.HpAfter));
+            else if (reaction.Kind == BattleReactionKind.Ineffective)
+                facts.Add(new("ineffective", reaction.Target, reaction.HpBefore, reaction.HpAfter));
             else
             {
                 if (reaction.Critical) facts.Add(new("critical", reaction.Actor, Target: reaction.Target));
                 facts.Add(new("hp", reaction.Target, reaction.HpBefore, reaction.HpAfter));
             }
+            // The selected rule may choose strike algorithms, but it cannot invent
+            // inventory writes or move the source drop helper past another strike/reward.
+            var lastStrikeFact = facts[^1];
+            while (cursor < ConstructionEffects.Count && ConstructionEffects[cursor] != lastStrikeFact) cursor++;
+            Require(cursor < ConstructionEffects.Count);
+            uint seed = before.MainSeed;
+            foreach (var effect in ConstructionEffects.Take(++cursor))
+                if (effect.Kind.StartsWith("rng-", StringComparison.Ordinal)) seed = checked((uint)effect.After!.Value);
+            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), reaction.Actor,
+                reaction.Target, reaction.HpAfter == 0);
+            Require(reaction.Receipt == dropped.Receipt && ConstructionEffects.Skip(cursor).Take(dropped.Effects.Count).SequenceEqual(dropped.Effects));
+            cursor += dropped.Effects.Count;
+            inventory = dropped.Battle;
+            facts.AddRange(dropped.Effects.Where(effect => !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)));
+            dropDraws += dropped.Effects.Count(effect => effect.Kind == "rng-item-drop");
         }
+        Require(ConstructionEffects.Count(effect => effect.Kind == "rng-item-drop") == dropDraws);
+        ValidateState(before, actorRef, destination, allowGold: enemyDead, inventory: inventory);
         if (enemyDead) facts.Add(new("gold", ally.Actor, before.Gold, Prepared.Gold));
         Require(ConstructionEffects.Where(effect => !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)).SequenceEqual(facts));
         ValidateRandom(before, effect => !effect.Kind.StartsWith("rng-", StringComparison.Ordinal) ||
@@ -216,7 +313,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         var loadout = actor.SourceLoadout ?? throw new BattleRuleException("item-slot", "item.slot");
         Require(slot >= 0 && slot < loadout.Items.Count && (loadout.Items[slot] & 127) != 127 &&
             before.Definition.HealingItems.TryGetValue((byte)(loadout.Items[slot] & 127), out var admitted) && item == admitted &&
-            Item == item && Spell is null && Reactions.Count == 1 && CompletionEffects.Count == 0);
+            Item == item && Spell is null && Retreat is null && Reactions.Count == 1 && CompletionEffects.Count == 0);
         var items = loadout.Items.ToList(); items.RemoveAt(slot); items.Add(127);
         ValidateState(before, actorRef, destination, new(items, loadout.Spells));
         var reaction = Reactions[0];
@@ -225,7 +322,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             reaction.Actor == actorRef && reaction.Target == targetRef && reaction.Action == "item-use" &&
             reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
             reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp && reaction.Amount == reaction.HpAfter - target.Hp &&
-            reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp);
+            reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
+            reaction.StatusWrite is null && reaction.InflictedSleep is null);
         ValidateReward(before, actorRef);
         ValidateRandom(before, effect => effect.Kind == "item-consumed"
             ? effect == new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)
@@ -233,7 +331,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(ConstructionEffects.Count(effect => effect.Kind == "item-consumed") == 1);
     }
 
-    // The finite HEAL authority boundary: construction may move only the selected
+    // The finite healing authority boundary: construction may move only the selected
     // actor and advance main RNG. HP, MP and progress are later scene publications.
     internal void ValidateHealing(EngineBattleState before, ActorRef actorRef, MapPosition destination,
         HealingSpellDefinition spell, ActorRef targetRef)
@@ -241,24 +339,34 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         void Require(bool valid) { if (!valid) throw new InvalidOperationException("Invalid prepared HEAL transition."); }
         BattleMovement.RequireStop(before, actorRef, destination);
         var actor = before.GetActor(actorRef);
-        var target = before.GetActor(targetRef);
+        var targets = HealingTargetRules.Resolve(before, actorRef, destination, spell, targetRef);
         Require(Actor == actorRef && Destination == destination && Spell == spell && Item is null);
         ValidateState(before, actorRef, destination);
-        Require(Reactions.Count == 1 && CompletionEffects.Count == 0);
-        var reaction = Reactions[0];
-        Require(target.Hp > 0 && target.Faction == actor.Faction && target.Position is not null &&
-            BattleRange.Contains(destination, targetRef == actorRef ? destination : target.Position, spell.MinimumRange, spell.MaximumRange));
-        Require(reaction.Actor == actorRef && reaction.Target == targetRef && reaction.Action == "heal" &&
-            reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
-            reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
-            reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp);
+        Require(Reactions.Count == targets.Count && Reactions.Count > 0 && CompletionEffects.Count == 0);
+        for (int i = 0; i < targets.Count; i++)
+        {
+            var target = targets[i]; var reaction = Reactions[i];
+            Require(reaction.Actor == actorRef && reaction.Target == target.Actor && reaction.Action == "heal" &&
+                reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
+                reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
+                reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
+                reaction.StatusWrite is null && reaction.InflictedSleep is null);
+        }
         Require(actor.Mp >= spell.MpCost);
         Require(Reward is null || Reward.Actor == actorRef && Reward.Amount > 0);
         uint seed = before.MainSeed;
         // The rule owns draw count, purpose and range. This boundary checks that
-        // construction contains only random facts and carries the actual chain.
+        // construction carries only ordered contribution facts and the actual random chain.
+        int contributionIndex = 0, accumulated = 0;
         foreach (var effect in ConstructionEffects)
         {
+            if (effect.Kind == "healing-exp-contribution")
+            {
+                Require(contributionIndex < Reactions.Count && effect.Actor == actorRef &&
+                    effect.Target == Reactions[contributionIndex].Target && effect.Before == accumulated &&
+                    effect.After >= accumulated && effect.After <= 25 && effect.RandomRange is null && effect.RandomValue is null);
+                accumulated = checked((int)effect.After!.Value); contributionIndex++; continue;
+            }
             Require(effect.Kind.StartsWith("rng-", StringComparison.Ordinal) && effect.Kind.Length > 4 &&
                 effect.Actor == actorRef && effect.Target is null && effect.RandomRange is not null);
             var draw = BattleRandom.NextMain(seed, effect.RandomRange!.Value);
@@ -266,12 +374,18 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 effect.RandomValue == draw.Value);
             seed = draw.After;
         }
+        Require(contributionIndex == 0 || contributionIndex == Reactions.Count);
         Require(Prepared.MainSeed == seed);
     }
 
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target
-            ? actor.With(hp: reaction.HpAfter, mp: Spell is null ? reaction.MpAfter : actor.Mp) : actor));
+            ? actor.With(hp: reaction.HpAfter, mp: Spell is null ? reaction.MpAfter : actor.Mp,
+                status: reaction.StatusWrite) : actor));
+
+    internal EngineBattleState ApplySleep(EngineBattleState current, BattleReaction reaction) =>
+        reaction.InflictedSleep is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
+            actor.Actor == reaction.Target ? actor.With(status: status) : actor));
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
@@ -294,7 +408,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyGrowth(EngineBattleState current, IBattleProgressionRule rule)
     {
         if (Reward is not { } reward) return (current, Array.Empty<BattleEffect>());
-        var result = BattleProgressionRules.Grow(rule, current.GetActor(reward.Actor), current.MainSeed);
+        var result = BattleProgressionRules.Grow(rule, current.GetActor(reward.Actor), current.MainSeed, current.Definition.Poison);
         return (current.With(mainSeed: result.Seed, actors: current.Actors.Select(row => row.Actor == reward.Actor ? result.Actor : row)), result.Effects);
     }
 

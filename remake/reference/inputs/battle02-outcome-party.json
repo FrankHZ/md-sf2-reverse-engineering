@@ -1,0 +1,112 @@
+{
+  "formatVersion": 1,
+  "id": "private-battle02-outcome-party-v1",
+  "evidenceOwner": "Controlled remake-native entry facts from accepted Issue1045 route-native-21 west-exit; class/item/growth definitions from pinned SF2DISASM c834c652. No original natural-route assertion.",
+  "bridgeBoundary": "Explicit INITIAL Battle02 party scalars selected from the accepted remake Battle01-to-Battle02 native route (Issue1045 route-native-21, west-exit). These are controlled remake input facts, not original-game evidence or a terminal checkpoint: Bowie/Sarah level1 EXP94, Chester level2 EXP3, Jaha level1 EXP0, four living members. The world merges Jaha from the second encounter input with matching first-three definitions. ActivationWord0 is explicit initial padding. Actual battle commands must reach the outcome; no subsequent state injection, restart or reseed establishes retry.",
+  "profile": "private-local-controlled-start",
+  "battle": 1,
+  "policy": {
+    "beforeBattle": "controlled-skip",
+    "allyStats": "already-refreshed-and-equipped",
+    "actorStorage": "roster-only",
+    "difficulty": 0,
+    "allyAutoBattle": false,
+    "opponentControl": false,
+    "missingCandidateAllyWord": 0
+  },
+  "mainSeed": 2420310016,
+  "thinkingSeed": 2352218112,
+  "gold": 420,
+  "allies": [
+    {
+      "id": 0,
+      "classId": 0,
+      "level": 1,
+      "maxHp": 12,
+      "hp": 12,
+      "maxMp": 8,
+      "mp": 8,
+      "attack": 9,
+      "defense": 4,
+      "agility": 4,
+      "move": 6,
+      "status": 0,
+      "items": [
+        199,
+        127,
+        127,
+        127
+      ],
+      "spells": [
+        10,
+        63,
+        63,
+        63
+      ],
+      "exp": 94,
+      "kills": 3,
+      "defeats": 0,
+      "activationWord": 0
+    },
+    {
+      "id": 1,
+      "classId": 4,
+      "level": 1,
+      "maxHp": 11,
+      "hp": 11,
+      "maxMp": 10,
+      "mp": 10,
+      "attack": 9,
+      "defense": 5,
+      "agility": 5,
+      "move": 5,
+      "status": 0,
+      "items": [
+        213,
+        0,
+        0,
+        127
+      ],
+      "spells": [
+        0,
+        63,
+        63,
+        63
+      ],
+      "exp": 94,
+      "kills": 0,
+      "defeats": 0,
+      "activationWord": 0
+    },
+    {
+      "id": 2,
+      "classId": 1,
+      "level": 2,
+      "maxHp": 12,
+      "hp": 12,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 9,
+      "defense": 7,
+      "agility": 8,
+      "move": 7,
+      "status": 0,
+      "items": [
+        184,
+        127,
+        127,
+        127
+      ],
+      "spells": [
+        63,
+        63,
+        63,
+        63
+      ],
+      "exp": 3,
+      "kills": 3,
+      "defeats": 0,
+      "activationWord": 0
+    }
+  ]
+}

@@ -11,6 +11,7 @@ internal sealed class SessionAudio : IDisposable
 {
     private readonly IReadOnlyDictionary<string, ExplorationAudio> _assets;
     private readonly IReadOnlyDictionary<MapId, ExplorationMapVisual> _maps;
+    private readonly ExplorationDefinition _definition;
     private (MapId Map, int Area, bool Battle)? _context;
     private readonly AudioStreamPlayer _music;
     private readonly Node _owner;
@@ -32,6 +33,7 @@ internal sealed class SessionAudio : IDisposable
     internal long? MusicGeneration { get; private set; }
     internal SessionAudio(Node owner, ExplorationDefinition definition)
     {
+        _definition = definition;
         _assets = definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>();
         _maps = definition.Visuals?.Maps ?? new Dictionary<MapId, ExplorationMapVisual>();
         _music = new AudioStreamPlayer { Name = "SessionMusic" };
@@ -114,7 +116,7 @@ internal sealed class SessionAudio : IDisposable
             if (current.Exploration is { } world)
             {
                 int area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1;
-                var context = (world.Map, area, current.Story.EnteringBattle is not null);
+                var context = (world.Map, area, current.Story.SelectsBattleMusic);
                 if (_context == context) return;
                 if (!_maps.TryGetValue(world.Map, out var visual) || area >= visual.Music.Count)
                     throw new InvalidOperationException("map-music-unavailable");
@@ -122,10 +124,22 @@ internal sealed class SessionAudio : IDisposable
                 Play(context.Item3 ? selection.Battle : selection.Field);
                 _context = context;
             }
-            else if (_context is { Battle: false } field)
+            else if (current.Active is ActiveBattle battle)
             {
-                Play(_maps[field.Map].Music[field.Area].Battle);
-                _context = (field.Map, field.Area, true);
+                var bindings = _definition.Maps.Values.Where(map =>
+                    map.Battles.Any(route => route.Encounter == battle.Battle.Definition.Encounter)).ToArray();
+                if (bindings.Length != 1 || !_maps.TryGetValue(bindings[0].Map, out var visual))
+                    throw new InvalidOperationException("battle-music-map-binding");
+                var map = bindings[0].Map;
+                // A before-script may retain another field map. Its audio context is not
+                // the next encounter's map/area. A new multi-area binding needs an explicit
+                // area owner; the admitted second encounter has one source area.
+                int area = _context is { } previous && previous.Map == map ? previous.Area :
+                    visual.Music.Count == 1 ? 0 : throw new InvalidOperationException("battle-music-area-binding");
+                var context = (map, area, true);
+                if (_context == context) return;
+                Play(visual.Music[area].Battle);
+                _context = context;
             }
         }
         catch (InvalidOperationException error) { Error = error.Message; }
@@ -337,11 +351,11 @@ internal sealed class SessionAudio : IDisposable
     // not hardware output masks or a claim of acoustic independence.
     private static Slots SoundSlots(int command) => command switch
     {
-        65 => Slots.Ym5,
+        65 or 109 or 111 => Slots.Ym5,
         66 or 67 or 70 or 72 or 73 or 74 or 79 or 102 => Slots.PsgTone3,
         77 => Slots.Ym4,
         81 or 83 or 116 => Slots.Ym6,
-        89 => Slots.PsgNoise,
+        89 or 110 => Slots.PsgNoise,
         92 or 113 => Slots.Ym4 | Slots.Ym5,
         _ => throw new InvalidOperationException("sfx-slots-unavailable"),
     };

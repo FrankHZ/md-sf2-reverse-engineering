@@ -24,7 +24,7 @@ internal static class BattleSceneContentReader
             "scene-content-unavailable", "battleScenes", "Battle scene content cannot be read.")); }
         using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 16 });
         var root = document.RootElement;
-        Object(root, "battleScenes", "version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames", "healing", "fieldDeath");
+        ObjectOptional(root, "battleScenes", "terrainScenes", "version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames", "healing", "fieldDeath");
         _ = Number(root, "version", 1, 1);
         Require(Text(root, "encounter") == "battle-" + definitions.Encounter.Battle.Id, "scene-encounter", "battleScenes.encounter");
         var rasters = new Dictionary<string, ExplorationRaster>(StringComparer.Ordinal);
@@ -72,22 +72,29 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is 0 or 1 or 2, "scene-class", "battleScenes.actors", true);
+                Require(sprite is 0 or 1 or 2 or 3, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
-                    _ => BattleClassRule.UnpromotedKnight };
+                    2 => BattleClassRule.UnpromotedKnight, _ => BattleClassRule.UnpromotedWarrior };
                 Require(palette == 0 && allies.TryAdd(kind, visual), "scene-ally-binding", "battleScenes.actors");
             }
             else
             {
-                Require(side == "enemy" && sprite == 22 && palette == 2, "scene-enemy-binding", "battleScenes.actors", true);
+                Require(side == "enemy", "scene-enemy-binding", "battleScenes.actors", true);
                 int index = 0;
                 foreach (var placement in definitions.Encounter.Placements.Where(value => value.Kind == EncounterEntityKind.Enemy))
                 {
-                    Require(placement.IdentityExpression == "GIZMO", "scene-enemy-species", "battleScenes.actors", true);
-                    Require(enemies.TryAdd(new("enemy-" + index++), visual), "scene-enemy-binding", "battleScenes.actors");
+                    // Pinned EnemyBattlesprites rows for the admitted species.
+                    var selected = placement.IdentityExpression switch
+                    { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
+                        _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,
+                            "scene-enemy-species", "battleScenes.actors", "unadmitted species")) };
+                    if ((sprite, palette) == selected)
+                        Require(enemies.TryAdd(new("enemy-" + index), visual), "scene-enemy-binding", "battleScenes.actors");
+                    index++;
                 }
             }
         }
+        Require(enemies.Count == definitions.Encounter.EnemyCount, "scene-enemy-binding", "battleScenes.actors");
         var texts = new Dictionary<int, string>();
         foreach (var value in root.GetProperty("texts").EnumerateObject())
         {
@@ -98,6 +105,8 @@ internal static class BattleSceneContentReader
         Require(new[] {244, 263, 266, 267, 268, 269, 270, 271, 273, 275, 298, 284, 285, 286, 287, 288, 290, 291, 292, 293, 393}
             .All(texts.ContainsKey), "scene-required-text", "battleScenes.texts");
         var names = Strings(root, "memberNames");
+        if (definitions.Enemies.Values.Any(enemy => enemy.ProwessExpression == "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32"))
+            Require(new[] { 306, 338, 354 }.All(texts.ContainsKey), "scene-sleep-text", "battleScenes.texts");
         Require(names.Length >= 3, "scene-member-names", "battleScenes.memberNames");
         HealingSceneVisual? healing = null;
         if (root.TryGetProperty("healing", out var heal))
@@ -121,10 +130,11 @@ internal static class BattleSceneContentReader
             foreach (var row in Array(field, "allies"))
             {
                 Object(row, "fieldAlly", "character", "sprite");
-                Require(allySprites.TryAdd(Number(row, "character", 0, 2), Number(row, "sprite", 0, 236)),
+                Require(allySprites.TryAdd(Number(row, "character", 0, 29), Number(row, "sprite", 0, 236)),
                     "field-ally-binding", "fieldDeath.allies");
             }
-            Require(allySprites.Count == 3, "field-ally-binding", "fieldDeath.allies");
+            Require(definitions.Encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally)
+                .All(row => int.TryParse(row.IdentityExpression, out int member) && allySprites.ContainsKey(member)), "field-ally-binding", "fieldDeath.allies");
             var species = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var row in Array(field, "enemies"))
             {
@@ -144,10 +154,29 @@ internal static class BattleSceneContentReader
             fieldDeath = new(new ReadOnlyDictionary<int, int>(allySprites), new ReadOnlyDictionary<ActorRef, int>(enemySprites),
                 System.Array.AsReadOnly(frames));
         }
+        BattleSceneTerrainVisual[]? terrainScenes = null;
+        if (root.TryGetProperty("terrainScenes", out _))
+        {
+            var bindings = new Dictionary<byte, BattleSceneTerrainVisual>();
+            foreach (var row in Array(root, "terrainScenes"))
+            {
+                Object(row, "terrainScene", "terrain", "background", "ground");
+                var value = new BattleSceneTerrainVisual(Text(row, "background"), Text(row, "ground"));
+                Require(rasters.ContainsKey(value.Background) && rasters.ContainsKey(value.Ground) &&
+                    bindings.TryAdd((byte)Number(row, "terrain", 0, 15), value), "terrain-scene-binding", "battleScenes.terrainScenes");
+            }
+            Require(definitions.Encounter.Terrain.All(value => bindings.ContainsKey((byte)(value & 15))),
+                "terrain-scene-binding", "battleScenes.terrainScenes");
+            terrainScenes = definitions.Encounter.Terrain.Select(value => bindings[(byte)(value & 15)]).ToArray();
+        }
         return new(Text(root, "encounter"), background, ground, new ReadOnlyDictionary<string, ExplorationRaster>(rasters),
             new ReadOnlyDictionary<BattleClassRule, BattleSceneActorVisual>(allies), new ReadOnlyDictionary<ActorRef, BattleSceneActorVisual>(enemies),
             new ReadOnlyDictionary<int, string>(texts),
-            System.Array.AsReadOnly(names), healing, fieldDeath);
+            System.Array.AsReadOnly(names), healing, fieldDeath, terrainScenes is null ? null : System.Array.AsReadOnly(terrainScenes),
+            new ReadOnlyDictionary<ActorRef, string>(definitions.Encounter.Placements
+                .Where(row => row.Kind == EncounterEntityKind.Enemy).Select((row, index) =>
+                    (Actor: new ActorRef("enemy-" + index), Name: definitions.Enemies[row.IdentityExpression].DisplayName))
+                .ToDictionary(row => row.Actor, row => row.Name)));
     }
 
     private static string[] Strings(JsonElement row, string key) => Array(row, key).Select(value =>

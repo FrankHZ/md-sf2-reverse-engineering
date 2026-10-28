@@ -18,8 +18,13 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
                 accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(reaction.Amount, target.MaxHp, kill));
                 if (reaction.HpAfter == 0) accumulated = Math.Min(49, accumulated + kill);
             }
-            else if (kind == BattleActionKind.Healing || recipient.Definition.ClassRule == BattleClassRule.UnpromotedPriest)
-                accumulated = HealingRules.Experience(reaction.Amount, target.MaxHp);
+            else if (recipient.IsAlly && recipient.Definition.ClassRule == BattleClassRule.UnpromotedPriest)
+            {
+                int before = accumulated;
+                accumulated = Math.Min(25, accumulated + HealingRules.Experience(reaction.Amount, target.MaxHp));
+                if (kind == BattleActionKind.Healing)
+                    effects.Add(new("healing-exp-contribution", recipient.Actor, before, accumulated, Target: reaction.Target));
+            }
         }
         List<PhysicalRoll> rolls = [];
         int award = BattleRewards.Award(accumulated, kind == BattleActionKind.Physical && battle.Definition.Rewards!.HalvedExperience, ref seed, rolls);

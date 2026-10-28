@@ -7,25 +7,27 @@ internal static class BattleActivationRules
     internal static void Validate(BattleDefinition definition)
     {
         var initialization = definition.Initialization!;
-        if (initialization.RegionProgram != BattleRegionProgram.None)
+        if (initialization.RegionProgram == BattleRegionProgram.Required)
             throw new BattleRuleException("region-program", "encounter.regionProgram", true);
         var ids = new HashSet<byte>();
         foreach (var region in initialization.Regions)
         {
-            if (region.Id >= 16 || !ids.Add(region.Id) || region.Vertices.Count != 4 ||
-                region.Vertices.Any(point => point is null || !definition.Contains(point)) ||
-                Cross(region.Vertices[0], region.Vertices[1], region.Vertices[3]) == 0 ||
-                Cross(region.Vertices[2], region.Vertices[1], region.Vertices[3]) == 0)
+            if (region.Id >= 16 || !ids.Add(region.Id) || region.Vertices.Count is not (3 or 4) ||
+                region.Vertices.Any(point => point is null || point.X >= 48 || point.Y >= 48))
                 throw new BattleRuleException("activation-region", "encounter.regions");
         }
+        if (initialization.RegionPrograms.Any(row => !ids.Contains(row.Region) || row.PlayedFlag is < 0 or > 65535 || string.IsNullOrWhiteSpace(row.Program)) ||
+            initialization.RegionProgram != BattleRegionProgram.Authored && initialization.RegionPrograms.Count != 0)
+            throw new BattleRuleException("region-program-rows", "encounter.regionPrograms");
         foreach (var deployment in definition.Deployments)
         {
             if (deployment.Initialization is not { } source)
                 throw new BattleRuleException("missing-deployment-initialization", "placements.initialization");
-            if (source.SpawnMode != 0)
+            if (source.SpawnMode is not (0 or 2 or 3) || deployment.Faction == BattleFaction.Ally && source.SpawnMode != 0)
                 throw new BattleRuleException("spawn-mode", "placements.spawn", true);
-            if (source.PrimaryRegion != 15 && !ids.Contains(source.PrimaryRegion) ||
-                source.SecondaryRegion != 15 && !ids.Contains(source.SecondaryRegion))
+            if (deployment.Faction == BattleFaction.Enemy &&
+                (source.PrimaryRegion != 15 && !ids.Contains(source.PrimaryRegion) ||
+                source.SecondaryRegion != 15 && !ids.Contains(source.SecondaryRegion)))
                 throw new BattleRuleException("missing-activation-region", "placements.region");
         }
     }
@@ -34,8 +36,10 @@ internal static class BattleActivationRules
     {
         // Validate every reached region/program/spawn prerequisite before any RNG or publication.
         Validate(before.Definition);
-        var flags = before.Regions!.Flags.ToArray(); ushort tested = 0;
-        var allies = before.Actors.Where(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null).ToArray();
+        // TriggerRegionsAndActivateEnemies returns before testing/activation when count is zero.
+        if (before.Definition.Initialization!.Regions.Count == 0) return before;
+        var flags = before.Regions!.Flags.ToArray(); ushort tested = before.Regions.Tested;
+        var allies = before.Actors.Where(actor => actor.IsAlly && actor.Hp is > 0 and < 32768 && actor.Position is { X: < 128, Y: < 128 }).ToArray();
         var actors = before.Actors.ToArray();
         for (int index = 0; index < actors.Length; index++)
         {
@@ -45,7 +49,7 @@ internal static class BattleActivationRules
             {
                 ushort bit = (ushort)(1 << region.Id);
                 if ((tested & bit) != 0) continue;
-                if (allies.Any(ally => Includes(region.Vertices, ally.Position!))) flags[region.Id] = true;
+                if (allies.Any(ally => SourceRegionGeometry.Includes(region.Vertices, ally.Position!))) flags[region.Id] = true;
                 tested |= bit;
             }
             var source = enemy.Deployment.Initialization!;
@@ -53,8 +57,6 @@ internal static class BattleActivationRules
                 throw new BattleRuleException("missing-activation-word", "actor.activation");
             actors[index] = enemy.With(activationWord: ActivateAssignedRegions(word, source.PrimaryRegion, source.SecondaryRegion, flags));
         }
-        // The admitted source table has no region program; all roster entries are STARTING.
-        // There is no hidden/respawn candidate, animation or spawn RNG call at this boundary.
         return before.With(actors: actors, regions: new(flags, tested));
     }
 
@@ -65,13 +67,5 @@ internal static class BattleActivationRules
         return bits;
     }
     internal static bool Includes(IReadOnlyList<MapPosition> vertices, MapPosition point) =>
-        InsideTriangle(vertices[0], vertices[1], vertices[3], point) || InsideTriangle(vertices[2], vertices[1], vertices[3], point);
-    private static bool InsideTriangle(MapPosition a, MapPosition b, MapPosition c, MapPosition point)
-    {
-        if (Cross(a, b, c) == 0) throw new ArgumentException("A trigger triangle must have nonzero area.", "regions");
-        int ab = Cross(a, b, point), bc = Cross(b, c, point), ca = Cross(c, a, point);
-        return (ab >= 0 && bc >= 0 && ca >= 0) || (ab <= 0 && bc <= 0 && ca <= 0);
-    }
-    private static int Cross(MapPosition a, MapPosition b, MapPosition point) =>
-        (b.X - a.X) * (point.Y - a.Y) - (b.Y - a.Y) * (point.X - a.X);
+        SourceRegionGeometry.Includes(vertices, point);
 }

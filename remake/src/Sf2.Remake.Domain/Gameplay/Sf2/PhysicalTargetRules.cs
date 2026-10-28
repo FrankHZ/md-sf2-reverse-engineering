@@ -47,7 +47,7 @@ internal static class PhysicalTargetRules
 
     // aipriority.asm: only classes needed by admitted gameplay and the existing reference
     // consumer. Flying is a reference scalar input, not a new authored movement capability.
-    private static int ClassRank(byte? classId, PhysicalPriorityTable table) => classId switch
+    internal static int ClassRank(byte? classId, PhysicalPriorityTable table) => classId switch
     {
         0 => 0, 4 => 5,
         1 => table == PhysicalPriorityTable.Regular ? 22 : 15,
