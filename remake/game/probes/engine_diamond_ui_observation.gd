@@ -5,6 +5,7 @@ var view: Node
 var host: Node
 var failures: Array = []
 var samples: Array = []
+var began := Time.get_ticks_msec()
 
 func _initialize() -> void:
     create_timer(150).timeout.connect(func():
@@ -98,8 +99,10 @@ func _run() -> void:
     root.add_child(host)
     await process_frame
     await process_frame
-    # The private tower entry runs its ordinary before-battle program and text.
-    # No session checkpoint, frame count or battle setter skips that admission.
+    # Use the accepted mapped Cancel skip at the ordinary tower entry.
+    # The session still owns initialization and the release barrier into battle.
+    var entry_deadline := Time.get_ticks_msec() + 10000
+    var skip_requested := false
     while not _state().has("stage"):
         var field := _state()
         if field.get("failure") != null:
@@ -110,12 +113,25 @@ func _run() -> void:
             _state("field-admission-failure")
             _finish()
             return
-        if field.get("canWaitForText", false) or field.get("wait") == "ChoiceWait":
+        if Time.get_ticks_msec() > entry_deadline:
+            _state("entry-deadline")
+            _check(false, "Ordinary skipped entry did not reach battle within ten seconds")
+            _finish()
+            return
+        if not skip_requested and field.get("helpVisible", false) and "Skip battle intro" in str(field.get("help", "")):
+            samples.append({"label": "skip-eligible", "sessionId": field.sessionId, "wait": field.get("wait"), "help": field.help})
+            await _press(KEY_ESCAPE)
+            skip_requested = true
+        elif field.get("entrySkip") != null or field.get("battleHandoffPending", false):
+            await process_frame
+        elif field.get("canWaitForText", false) or field.get("wait") == "ChoiceWait":
             await _press(KEY_ENTER)
         else:
             await process_frame
     await _settle()
     var initial := _state("initial")
+    if OS.get_environment("SF2_DIAMOND_CASE") == "private":
+        _check(skip_requested, "Private entry exercised the ordinary Cancel skip")
     _check(OS.get_environment("SF2_DIAMOND_EXPECT_FAILURE").is_empty(), "Negative case must not admit battle control")
     _check(initial.failure == null and initial.stage == "Movement", "Ordinary host starts at movement")
     if initial.failure != null:
@@ -137,12 +153,15 @@ func _run() -> void:
     _finish()
 
 func _supplementary(initial: Dictionary) -> void:
+    var before := _state()
     var extra: Array = {"equipment": [KEY_E, "EquipmentChoice"], "give": [KEY_G, "GiveItemChoice"],
         "discard": [KEY_R, "DiscardItemChoice"]}[OS.get_environment("SF2_DIAMOND_CASE")]
     await _press(extra[0])
     var opened_extra := _state("supplementary-" + extra[1])
     _check(opened_extra.stage == extra[1] and not opened_extra.menu.visible and opened_extra.failure == null,
         "Existing supplementary command remains reachable")
+    _check(opened_extra.mapViewport == before.mapViewport and opened_extra.zoom == before.zoom and opened_extra.previewRect == before.previewRect,
+        "Supplementary HUD overlays the unchanged map")
     await _press(KEY_ESCAPE)
     var back := _state("supplementary-cancelled")
     _check(back.stage == "ActionChoice" and back.menu.visible and back.mainSeed == initial.mainSeed and back.inventories == initial.inventories,
@@ -161,6 +180,7 @@ func _private_menus(initial: Dictionary) -> void:
         await _press(KEY_ENTER)
         var opened := _state("private-choice-" + str(key))
         _check(opened.failure == null, "Private menu consumes actual admitted choices")
+        _check(opened.mapViewport == initial.mapViewport, "Private submenus keep the full map viewport")
         if opened.menu.page != "Main":
             await _press(KEY_ESCAPE)
         if _state().menu.page != "Main":
@@ -258,7 +278,8 @@ func _finish() -> void:
         push_error("Observation output unavailable")
         quit(2)
         return
-    file.store_string(JSON.stringify({"passed": failures.is_empty(), "failures": failures, "samples": samples}, "  "))
+    file.store_string(JSON.stringify({"passed": failures.is_empty(), "failures": failures, "samples": samples,
+        "elapsedMs": Time.get_ticks_msec() - began, "windowVisible": root.visible, "windowSize": [root.size.x, root.size.y]}, "  "))
     file.close()
     print("Diamond UI observation passed: ", failures.is_empty())
     quit(0 if failures.is_empty() else 1)

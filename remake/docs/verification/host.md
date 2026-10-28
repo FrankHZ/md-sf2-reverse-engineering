@@ -117,8 +117,11 @@ For physical attack, set `SF2_DIAMOND_CASE=physical`, a fresh output, and use th
 `remake/content/authored/stone-court.json` package. For a bounded private menu observation, load
 registered complete private selections, set CASE=`private`, a fresh output, and use
 `--private-exploration-start remake/reference/inputs/battle01-to-battle02-start.json` with its
-accepted connected world and party. The probe acknowledges the ordinary tower before-battle program
-until player battle control. A legacy standalone battle input lacking map-region/field resources is
+accepted connected world and party. The probe waits for the ordinary tower entry's skip hint, sends
+default-keyboard Cancel (Esc), releases it and waits for ordinary battle control through the accepted
+[battle-entry skip](../godot/battle-entry-skip.md). Its entry deadline is ten seconds; a missing or
+failed skip does not silently fall back to waiting through the entire intro. A legacy standalone
+battle input lacking map-region/field resources is
 not a substitute. That case checks menu navigation and cancel without committing an action; it is
 not another continuous opening/outcome comparison.
 For original-art acceptance, prepare/select the [private command rasters](../content/presentation-assets.md#private-command-menu-icons)
