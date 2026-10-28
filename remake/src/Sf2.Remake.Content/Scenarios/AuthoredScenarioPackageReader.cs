@@ -40,14 +40,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
 
     internal static ScenarioReadAccepted DecodeBattle(JsonElement root, bool allowLeaderCleanup = false)
     {
-        ObjectOptional(root, "document", "items", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters",
-            .. root.TryGetProperty("battlePoison", out _) ? new[] { "battlePoison" } : [],
-            .. root.TryGetProperty("battleStory", out _) ? new[] { "battleStory" } : [],
-            .. root.TryGetProperty("dropItems", out _) ? new[] { "dropItems" } : [],
-            .. root.TryGetProperty("battleDiscard", out _) ? new[] { "battleDiscard" } : [],
-            .. root.TryGetProperty("battleGive", out _) ? new[] { "battleGive" } : [],
-            .. root.TryGetProperty("weapons", out _) ? new[] { "weapons" } : [],
-            .. root.TryGetProperty("growth", out _) ? new[] { "growth" } : []]);
+        ObjectOptional(root, "document", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters"],
+            "items", "battlePoison", "battleStory", "dropItems", "battleDiscard", "battleGive", "weapons", "growth");
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
@@ -56,9 +50,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             "poison-standalone-only", "battlePoison", true);
         string package = Id(root, "package");
         var start = root.GetProperty("start");
-        ObjectOptional(start, "start", "itemCustody", ["encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors",
-            .. poison ? new[] { "firstAlly" } : [],
-            .. start.TryGetProperty("story", out _) ? new[] { "story" } : []]);
+        ObjectOptional(start, "start", ["encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors",
+            .. poison ? new[] { "firstAlly" } : []], "itemCustody", "story");
         Require(Text(start, "initialVitals") == "authored-controlled", "initial-vitals-policy", "start.initialVitals");
         string selectedEncounter = Id(start, "encounter");
         uint mainSeed = WordImage(start, "mainSeed"), thinkingSeed = WordImage(start, "thinkingSeed");
@@ -172,7 +165,11 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(!retreatItems.ContainsKey(id) && healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
             }
         var weapons = BattleEquipmentReader.Weapons(root, allowLeaderCleanup);
-        var weaponItems = Array(root, "encounters").SelectMany(TarosEffectivenessReader.Weapons)
+        var weaponItems = Array(root, "encounters").SelectMany(encounter =>
+        {
+            Require(encounter.ValueKind == JsonValueKind.Object, "object-required", "encounter");
+            return TarosEffectivenessReader.Weapons(encounter);
+        })
             .Concat(weapons.Select(w => w.ItemId)).Distinct().ToArray();
         var dropItems = EnemyItemDropReader.Items(root);
         var discard = BattleDiscardReader.Read(root, allowLeaderCleanup, dropItems, weapons, healingItems.Values, retreatItems.Values);
@@ -183,9 +180,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
-            ObjectOptional(actor, "actor", "physical", ["id", "classRule", "level", "maxHp", "maxMp",
-                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells",
-                .. actor.TryGetProperty("equipment", out _) ? new[] { "equipment" } : []]);
+            ObjectOptional(actor, "actor", ["id", "classRule", "level", "maxHp", "maxMp",
+                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells"], "physical", "equipment");
             var id = new ActorRef(Id(actor, "id"));
             string className = Text(actor, "classRule");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
@@ -246,14 +242,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
         foreach (var encounter in Array(root, "encounters"))
         {
-            Object(encounter, "encounter", ["id", "map", "placements",
-                .. poison ? new[] { "outcome" } : [],
-                .. (encounter.TryGetProperty("initialization", out _) ? new[] { "initialization" } : []),
-                .. (encounter.TryGetProperty("rewards", out _) ? new[] { "rewards" } : []),
-                .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : []),
-                .. (encounter.TryGetProperty("prismLaser", out _) ? new[] { "prismLaser" } : []),
-                .. (encounter.TryGetProperty("itemDrops", out _) ? new[] { "itemDrops" } : []),
-                .. (encounter.TryGetProperty("leaderCleanup", out _) ? new[] { "leaderCleanup" } : [])]);
+            ObjectOptional(encounter, "encounter", ["id", "map", "placements",
+                .. poison ? new[] { "outcome" } : []], "initialization", "rewards", "tarosEffectiveness", "prismLaser", "itemDrops", "leaderCleanup");
             BattleRewardDefinition? rewards = null;
             if (encounter.TryGetProperty("rewards", out var rewardInput))
             {
@@ -266,8 +256,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var placements = new List<BattleDeploymentDefinition>();
             foreach (var placement in Array(encounter, "placements"))
             {
-                ObjectOptional(placement, "placement", "initialization", ["actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y",
-                    .. placement.TryGetProperty("controlPolicy", out _) ? new[] { "controlPolicy" } : []]);
+                ObjectOptional(placement, "placement", ["actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y"],
+                    "initialization", "controlPolicy");
                 var actorRef = new ActorRef(Id(placement, "actor"));
                 Require(actors.ContainsKey(actorRef), "missing-actor", "placements.actor");
                 var actor = actors[actorRef];
@@ -320,9 +310,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var startActors = new List<BattleActorStartInput>();
         foreach (var input in Array(start, "actors"))
         {
-            ObjectOptional(input, "start.actor", "initialization", ["actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride",
-                .. input.TryGetProperty("absent", out _) ? new[] { "absent" } : [],
-                .. input.TryGetProperty("retainDeadPosition", out _) ? new[] { "retainDeadPosition" } : []]);
+            ObjectOptional(input, "start.actor", ["actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride"],
+                "initialization", "absent", "retainDeadPosition");
             MapPosition? position = null;
             var overrideInput = input.GetProperty("positionOverride");
             if (overrideInput.ValueKind != JsonValueKind.Null)

@@ -18,7 +18,9 @@ state/input/projection/errors are the acceptance surface; no helper/probe unit t
 engine/research suite is selected. Independent integration remains main-gate's responsibility.
 
 This closes audit [F1's bounded implementation](evidence/structure-and-quality-review.md#f1--p1-make-host-ownership-and-return-wiring-cover-every-admitted-entry).
-Audit F2/F3 remain unresolved; private content, original natural reach/timing, #1047 Unknowns and
+Audit [F2](evidence/structure-and-quality-review.md#f2--p2-validate-json-object-shape-before-optional-field-discovery)
+has a bounded Content correction with direct typed-admission observations, pending independent integration;
+F3 remains unresolved. Private content, original natural reach/timing, #1047 Unknowns and
 #638's pause are unchanged. Later UI work in frozen PR #692 must semantically rebase this host boundary.
 
 ## Authored Jaro victory agreement

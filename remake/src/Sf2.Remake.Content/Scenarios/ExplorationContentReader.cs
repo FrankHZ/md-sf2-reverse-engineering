@@ -44,11 +44,7 @@ internal static class ExplorationContentReader
 
     internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null, bool authored = false)
     {
-        ObjectOptional(world, "world", "partyFlags", ["maps", "programs", "texts",
-            .. world.TryGetProperty("textFont", out _) ? new[] { "textFont" } : System.Array.Empty<string>(),
-            .. world.TryGetProperty("growth", out _) ? new[] { "growth" } : System.Array.Empty<string>(),
-            .. world.TryGetProperty("memberNames", out _) ? new[] { "memberNames" } : System.Array.Empty<string>(),
-            .. world.TryGetProperty("presentation", out _) ? new[] { "presentation" } : System.Array.Empty<string>()]);
+        ObjectOptional(world, "world", ["maps", "programs", "texts"], "partyFlags", "textFont", "growth", "memberNames", "presentation");
         MapPartyFlagLayout? partyFlags = null;
         if (world.TryGetProperty("partyFlags", out var membership))
         {
@@ -69,8 +65,7 @@ internal static class ExplorationContentReader
         var programIds = new HashSet<string>();
         foreach (var row in Array(world, "programs"))
         {
-            ObjectOptional(row, "program", "source", ["id", "instructions",
-                .. row.TryGetProperty("entitiesRunning", out _) ? new[] { "entitiesRunning" } : System.Array.Empty<string>()]);
+            ObjectOptional(row, "program", ["id", "instructions"], "source", "entitiesRunning");
             string id = Id(row, "id");
             Require(programIds.Add(id), "duplicate-program", "program.id");
             var instructions = Array(row, "instructions").Select(ReadInstruction).ToArray();
@@ -80,6 +75,7 @@ internal static class ExplorationContentReader
             programs.Add(new(id, instructions, row.TryGetProperty("source", out _) ? Text(row, "source") : null,
                 !row.TryGetProperty("entitiesRunning", out _) || Boolean(row, "entitiesRunning")));
         }
+        Require(start.ValueKind == JsonValueKind.Object, "object-required", "exploration-start");
         var paletteBindings = new Dictionary<MapId, PalettePair>();
         if (start.TryGetProperty("mapPalettes", out _))
             foreach (var binding in Array(start, "mapPalettes"))
@@ -92,14 +88,8 @@ internal static class ExplorationContentReader
         var mapIds = new HashSet<MapId>();
         foreach (var row in Array(world, "maps"))
         {
-            ObjectOptional(row, "map", "input", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup",
-                .. row.TryGetProperty("setups", out _) ? new[] { "setups" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("caravan", out _) ? new[] { "caravan" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("battles", out _) ? new[] { "battles" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("basePalette", out _) ? new[] { "basePalette" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("population", out _) ? new[] { "population" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("entryFlags", out _) ? new[] { "entryFlags" } : System.Array.Empty<string>(),
-                .. row.TryGetProperty("layoutEvents", out _) ? new[] { "layoutEvents" } : System.Array.Empty<string>()]);
+            ObjectOptional(row, "map", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup"],
+                "input", "setups", "caravan", "battles", "basePalette", "population", "entryFlags", "layoutEvents");
             var id = new MapId(Id(row, "id"));
             Require(mapIds.Add(id), "duplicate-map", "world.maps");
             PalettePair? palette = null;
@@ -124,8 +114,7 @@ internal static class ExplorationContentReader
                 }
             var areas = Array(row, "areas").Select(area =>
             {
-                ObjectOptional(area, "area", "overlay", ["minX", "minY", "maxX", "maxY",
-                    .. area.TryGetProperty("view", out _) ? new[] { "view" } : System.Array.Empty<string>()]);
+                ObjectOptional(area, "area", ["minX", "minY", "maxX", "maxY"], "overlay", "view");
                 int minX = Number(area, "minX", 0, width - 1), minY = Number(area, "minY", 0, rows.Length - 1);
                 return new OriginalMapTraversalArea(minX, minY, Number(area, "maxX", minX, width - 1), Number(area, "maxY", minY, rows.Length - 1));
             }).ToArray();
@@ -194,12 +183,8 @@ internal static class ExplorationContentReader
             }) : null, texts.Select(pair => new KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>(pair.Key, ReadTextTokens(pair.Value))),
             world.TryGetProperty("textFont", out var font) ? ReadFont(font) : null);
         Link(definition);
-        Object(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags",
-            .. start.TryGetProperty("textSettings", out _) ? new[] { "textSettings" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("display", out _) ? new[] { "display" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("mapPalettes", out _) ? new[] { "mapPalettes" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("program", out _) ? new[] { "program" } : System.Array.Empty<string>(),
-            .. start.TryGetProperty("entityPhases", out _) ? new[] { "entityPhases" } : System.Array.Empty<string>()]);
+        ObjectOptional(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags"],
+            "textSettings", "display", "mapPalettes", "program", "entityPhases");
         var selectedMap = new MapId(Id(start, "map"));
         Require(definition.Maps.ContainsKey(selectedMap), "missing-map", "start.map");
         var entityPhases = start.TryGetProperty("entityPhases", out _) ? Array(start, "entityPhases").Select(phase =>
@@ -352,8 +337,7 @@ internal static class ExplorationContentReader
 
     private static ExplorationBattleRoute ReadBattleRoute(JsonElement route, ScenarioReadAccepted battle, MapId map)
     {
-        ObjectOptional(route, "battle-route", "load", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start",
-            .. route.TryGetProperty("outcome", out _) ? new[] { "outcome" } : System.Array.Empty<string>()]);
+        ObjectOptional(route, "battle-route", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start"], "load", "outcome");
         string encounter = Id(route, "encounter");
         Require(battle.Definition.Encounters.ContainsKey(encounter), "missing-encounter", "map.battle");
         return new(encounter, NullableNumber(route, "unlockedFlag", 65535), NullableNumber(route, "completedFlag", 65535),
@@ -384,8 +368,7 @@ internal static class ExplorationContentReader
     {
         var entities = Array(row, "entities").Select(entity =>
         {
-            ObjectOptional(entity, "entity", "sprite", ["id", "position", "facing", "speed", "visible", "obstruction",
-                .. entity.TryGetProperty("actions", out _) ? new[] { "actions" } : System.Array.Empty<string>()]);
+            ObjectOptional(entity, "entity", ["id", "position", "facing", "speed", "visible", "obstruction"], "sprite", "actions");
             return new ExplorationEntityDefinition(new(Id(entity, "id")), Position(entity.GetProperty("position")),
                 (byte)Number(entity, "facing", 0, 7), (ushort)Number(entity, "speed", 1, 384),
                 Boolean(entity, "visible"), Boolean(entity, "obstruction"), entity.TryGetProperty("sprite", out _) ? Number(entity, "sprite", 0, 255) : null,
@@ -515,13 +498,8 @@ internal static class ExplorationContentReader
                     (short)Number(row, "y", short.MinValue, short.MaxValue), Boolean(row, "whenEqual"), RequiredLocation(row.GetProperty("target")));
             case "text-cursor": Object(row, opcode, "op", "text"); return new SetTextCursor(Number(row, "text", 0, 65534));
             case "show-text":
-                ObjectOptional(row, opcode, "speakerFlags", ["op", "mode", "speaker",
-                    .. row.TryGetProperty("nameMember", out _) ? new[] { "nameMember" } : System.Array.Empty<string>(),
-                    .. row.TryGetProperty("text", out _) ? new[] { "text" } : System.Array.Empty<string>(),
-                    .. row.TryGetProperty("explicitWindows", out _) ? new[] { "explicitWindows" } : System.Array.Empty<string>(),
-                    .. row.TryGetProperty("waitForAcknowledgement", out _) ? new[] { "waitForAcknowledgement" } : System.Array.Empty<string>(),
-                    .. row.TryGetProperty("narration", out _) ? new[] { "narration" } : System.Array.Empty<string>(),
-                    .. row.TryGetProperty("useEventSpeaker", out _) ? new[] { "useEventSpeaker" } : System.Array.Empty<string>()]);
+                ObjectOptional(row, opcode, ["op", "mode", "speaker"],
+                    "speakerFlags", "nameMember", "text", "explicitWindows", "waitForAcknowledgement", "narration", "useEventSpeaker");
                 string mode = Text(row, "mode"); Require(mode is "single" or "continued", "text-mode", "program.mode");
                 bool narration = row.TryGetProperty("narration", out _) && Boolean(row, "narration");
                 Require(!narration || row.GetProperty("speaker").ValueKind == JsonValueKind.Null &&
@@ -603,8 +581,7 @@ internal static class ExplorationContentReader
             case "wait-entity": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Id(row, "entity")));
             case "wait-ticks": Object(row, opcode, "op", "ticks"); return new WaitProgramTicks(Number(row, "ticks", 0, 65535));
             case "present":
-                ObjectOptional(row, opcode, "fullBlack", ["op", "kind", "resource", "entity", "position",
-                    .. row.TryGetProperty("durationTicks", out _) ? new[] { "durationTicks" } : System.Array.Empty<string>()]);
+                ObjectOptional(row, opcode, ["op", "kind", "resource", "entity", "position"], "fullBlack", "durationTicks");
                 Require(Enum.GetNames<PresentationCueKind>().Contains(Text(row, "kind")), "presentation-cue", "program.kind", true);
                 FullBlackFade? fullBlack = null;
                 if (row.TryGetProperty("fullBlack", out var full))
