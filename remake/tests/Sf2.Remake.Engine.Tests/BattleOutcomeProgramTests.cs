@@ -217,6 +217,7 @@ public sealed class BattleOutcomeProgramTests
         var route = new ExplorationBattleRoute(d.Encounter, 401, 501, 451, null, null, Outcome:
             new(new("after", 0), 0, new("empty", 0), new("empty", 0), new("return-field", 0), map.Map, 3, map.Map, new(1, 1), 1));
         var story = field.Current.Story.Copy(null, flags: [0, 32, 399, 401, 451], enteringBattle: route,
+            fieldPlayer: new(new("entity-0"), 32),
             entityServices: false, display: new(3, map.BasePalette!, map.BasePalette!, FullFadeVisibility.BaseRestored),
             logicalView: field.Current.Story.LogicalView! with { TargetSlot = 9, FollowCounter = 11 },
             logicalText: field.Current.Story.LogicalText! with { Open = true }, randomSeedCopy: 0xA9);

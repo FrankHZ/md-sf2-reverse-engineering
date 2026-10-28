@@ -80,7 +80,8 @@ public sealed class PrivateBattleOutcomeProgramTests
         var before = BattleTurnFlow.Start(encounter, read.Start.Party);
         var terminal = before.With(actors: before.Actors.Select(actor => actor.IsAlly ? actor : actor.With(hp: 0)));
         var route = read.Definition.Exploration!.Maps.Values.Single(map => map.Battle is not null).Battle!;
-        var story = new StoryState([0, 1, 2, 32, 33, 34, 401, 501], enteringBattle: route);
+        var story = new StoryState([0, 1, 2, 32, 33, 34, 401, 501], enteringBattle: route,
+            fieldPlayer: new(new("entity-0"), 32));
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 1, 1, new ActiveBattle(terminal, null), story, SessionStopReason.SimulationWait);
         var result = BattleOutcome.Begin(read.Definition, new(snapshot, [], snapshot.StopReason));
         Assert.Null(result.Failure);

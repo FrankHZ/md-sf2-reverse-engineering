@@ -124,7 +124,7 @@ public sealed class Battle02OutcomeTests
         var retry = new SessionSnapshot(field.SessionId, field.Revision, field.ObservationSequence,
             new ActiveExploration(field.Exploration!.WithParty(finish.Returned)),
             story.Copy(null, continuation: ProgramContinuation.BeforeBattleFinished), SessionStopReason.SimulationWait);
-        var entered = BattleEntry.Continue(definition, retry, []);
+        var entered = BattleEntry.Continue(definition, retry, [], RuleCompositions.Sf2());
         Assert.Equal(retry.SessionId, entered.SessionId);
         Assert.Equal(50u, entered.Battle.Gold);
         Assert.Equal((ushort)6, entered.Battle.GetActor(new("medic-a")).Defeats);

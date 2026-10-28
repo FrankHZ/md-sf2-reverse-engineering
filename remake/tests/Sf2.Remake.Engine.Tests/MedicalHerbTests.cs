@@ -273,7 +273,8 @@ public sealed class MedicalHerbTests
             battle.MainSeed, battle.ThinkingSeed, battle.Round, [], 0, battle.Gold);
         var scenario = new ScenarioDefinition("return", [definition], exploration: new([basis],
             [new("after", [new WaitProgramTicks(1), new EndProgram()])]));
-        var story = new StoryState([399], enteringBattle: new(definition.Encounter, null, null, null, null, null, Outcome: route));
+        var story = new StoryState([399], enteringBattle: new(definition.Encounter, null, null, null, null, null, Outcome: route),
+            fieldPlayer: new(new("entity-0"), 32));
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveBattle(terminal, null), story, SessionStopReason.SimulationWait);
         var result = BattleOutcome.Begin(scenario, new(snapshot, [], snapshot.StopReason));
         Assert.Null(result.Failure); Assert.Equal(SessionMode.Exploration, result.Snapshot.Mode);

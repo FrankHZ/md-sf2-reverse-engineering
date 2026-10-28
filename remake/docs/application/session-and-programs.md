@@ -1567,6 +1567,43 @@ PC and stack remain. A rejected or duplicate completion cannot apply a later eff
 cover content replacement, failure retention and usable control; source-context tests do not claim
 private natural reach, original timing or measured performance.
 
+### Selected rules during map transfer
+
+Standard rigor applies to this bounded policy-propagation correction: preserve the session's bound
+composition at initialized battle admission, with observable program ordering and retained failure
+prefixes. It does not change source policy, Content admission, finite source guards or the available
+instruction set. Terminal/poison and broader field-state continuity remain separate work.
+
+`TransferToMap`, queued warp, delayed map load and battle return carry the selected `SessionRules`
+through `MapTransfer` and `BattleEntry`. Policy-sensitive internal parameters are required; these
+helpers no longer substitute SF2 when an argument is omitted. Explicit source-default session and
+standalone comparison entries still select SF2.
+
+With `NewBattle != null`, a completed/unlocked destination consults the selected
+`EnterCompletedBattle` before map rebuild or destination on-load. Admission retains the current field
+scene for the before-program, then initializes battle, runs load and runs the unseen intro/start
+program in order. Refusal allows destination on-load, then ordinary map admission consumes the
+completed route's unlock without entering battle. An uncompleted route does not ask replay policy.
+Public JSON controlled starts have no `NewBattle`; they are not a reproduction of early initialized
+selection, even if later map admission consults the same policy.
+
+An unexpected policy exception reports `InvariantFailure`, `battle-policy-failure`, field `rules`,
+and the selected identity/`completed-battle-admission` operation. It publishes no speculative map,
+entry or battle. Earlier flags and the reached transfer PC remain committed. A typed simulation
+retry performs its ordinary service and retries that PC without replaying earlier instructions.
+
+[`MapTransferPolicyTests`](../../tests/Sf2.Remake.Engine.Tests/MapTransferPolicyTests.cs) uses
+project-authored initialized definitions and actual `GameSession` commands to cover opposite replay
+answers relative to each SF2 fallback, destination on-load, before/load/start waits and flags,
+throw/retry, ordinary uncompleted admission, explicit source defaults, queued warp and a public JSON
+controlled-start counterexample boundary. Its synthetic source
+metadata only exercises the fallback discriminator; it proves no private provenance or original
+route. After loading the existing ignored environment and forcing
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, run the locked engine project with
+`--filter FullyQualifiedName~MapTransferPolicyTests`; use the
+[locked workflow](../development-and-verification.md#locked-net-workflow) for scoped engine/adapter
+gates and the committed planner. No native/emulator observation is required for this logical edge.
+
 ## Continuous second-encounter boundary
 
 The selected private route keeps one `GameSession` from the controlled tower start through actual
@@ -1595,3 +1632,37 @@ the published map context after an outcome; a retained `EnteringBattle` anchor d
 music during victory/defeat return. This also preserves valid explicit cues and rejects unbound
 same-context music waits. [Direct acceptance](../verification/field-programs.md#battle01-through-battle02)
 covers the actual cross-encounter consumer; Battle02 resolution remains outside this selection.
+## Field-player binding across connected battles
+
+**Standard scope:** retain the admitted field player's identity and applicable movement speed across
+connected victory, defeat and retreat, including a connected map that enters battle during startup.
+This is a bounded cross-continuation correction: one `GameSession`, existing outcome rules and
+program waits remain authoritative. Battle legality, terminal
+poison behavior, UI and new content capabilities are outside this agreement.
+
+`BattleEntry` captures a `FieldPlayerBinding` containing only the live player ID and speed after the
+before-program completes, in the same commit that publishes successfully validated battle
+initialization. Legitimate pre-battle entity speed changes therefore apply. Failed initialization
+keeps its accepted field/program prefix and publishes no speculative binding. Load/start programs
+then run in battle mode; the binding survives those programs, battle turns and paid retreat delivery.
+No old field snapshot, battle-leader inference or player registry participates in return.
+
+For authored fields without source population, the binding retains the live player's `XSpeed`, the
+same scalar used by ordinary map rebuilding, and rebuilds both movement axes from it. Source-population
+fields retain the required logical `entity-0` / physical player slot and the established outcome
+projection speed reset to32, even if the before-program used another speed. This is an explicit
+source-population rule, independent of authored ID spelling: an authored `entity-0` also retains its
+live speed. `SceneEntities.Build` continues to own source allocation, aliases and source record data.
+
+Both outcome projection paths consume the binding. After/return programs resolve the same named
+player, and ordinary subsequent transfers use the current returned field speed, including any later
+legitimate program changes. The binding is cleared with `EnteringBattle` only after the complete
+return program/map continuation finishes. A later failure retains the binding, reached cursor,
+committed flags/resources and exact pending wait. Missing binding in an internally constructed
+connected outcome is an explicit `field-player-binding` failure.
+
+Acceptance is actual engine behavior with varied IDs/speeds, all three outcomes, pre-battle speed
+changes, direct/transfer entry, named motion/text/presentation, source population, initialization and
+later failure boundaries, plus one compact ordinary-host authored return/movement witness. The
+[bounded reproduction](../development-and-verification.md#authored-field-player-return) owns commands
+and the native observation's limits. Broader original-route and hardware parity remain Unknown.

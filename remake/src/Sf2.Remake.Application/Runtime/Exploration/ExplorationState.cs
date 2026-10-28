@@ -95,6 +95,7 @@ public sealed record PortraitWork(short Blink = 20, short Mouth = 6, bool EyesCl
 }
 public sealed record OpenPortraitWindow(int Portrait, byte Flags, PortraitWork? Work = null) : PortraitWindow;
 public sealed record FieldReturnAnchor(MapId Map, MapPosition Position, byte Facing);
+internal sealed record FieldPlayerBinding(EntityRef Player, ushort Speed);
 public enum ProgramContinuation { FieldInput, MapLoaded, BeforeBattleFinished, BattleLoadFinished, BattleStartFinished, VictoryProgramFinished, DefeatProgramFinished, OutcomeMapLoaded }
 
 public sealed class StoryState
@@ -108,7 +109,7 @@ public sealed class StoryState
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
-        bool battleRequest = false, MapId? egressMap = null)
+        bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -122,6 +123,7 @@ public sealed class StoryState
         Music = music;
         ScriptWarp = scriptWarp;
         StepCounter = stepCounter; BattleRequest = battleRequest; EgressMap = egressMap;
+        FieldPlayer = fieldPlayer;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -130,6 +132,7 @@ public sealed class StoryState
     public int TextCursor { get; }
     public ProgramContinuation Continuation { get; }
     public ExplorationBattleRoute? EnteringBattle { get; }
+    internal FieldPlayerBinding? FieldPlayer { get; }
     // The retained outcome route still owns return bookkeeping, not battlefield music.
     public bool SelectsBattleMusic => EnteringBattle is not null && Continuation is not
         (ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded);
@@ -175,7 +178,7 @@ public sealed class StoryState
         bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
-        short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null) =>
+        short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -185,7 +188,8 @@ public sealed class StoryState
             clearEntityServices ? null : entityServices ?? EntityServices, typewriting ?? Typewriting,
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
-            battleRequest ?? BattleRequest, egressMap ?? EgressMap);
+            battleRequest ?? BattleRequest, egressMap ?? EgressMap,
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
