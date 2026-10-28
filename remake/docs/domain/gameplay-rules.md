@@ -24,12 +24,15 @@ retains it. `IncreaseKills` returns for a negative source index (explicit FF sen
 invents an attacker nor grants EXP/gold/drop rewards. `countremainingcombatants.asm` counts placed
 living units and forces zero allies for zero-HP leader; defeat precedes victory.
 
-`PoisonTurnRules` supplies fixed clamping and eligibility. Pure poison allows movement, physical,
+`PoisonTurnRules` supplies fixed clamping and eligibility. In an opted-in encounter, pure poison allows movement, physical,
 admitted healing/items, Give, free Equip/Drop and growth. An attack whose sleep-critical participant
 could create poison+sleep rejects as Unsupported; mixed statuses, poison infliction, DETOX/cure,
 regeneration/buffs and PrismLaser's separate status-free profile remain outside scope. Content uses
 an explicit standalone opt-in and initial retained credit; [admission](../content/profiles-and-trust.md#authored-poison-admission)
 and [execution](../application/session-and-programs.md#poison-after-turn-continuation) own those boundaries.
+Private initialized low status bits do not enable this capability: the physical, source-AI and
+reached-growth boundaries keep their existing Unsupported failures. `PoisonTurnTests` reproduces
+that path through the actual `NewBattle` initializer using project-authored counterexamples.
 
 **Unknown:** natural original reach, hardware/message timing and general mixed-status lifecycle.
 The static rules and authored engine tests do not close these gaps or #1047's retained Unknowns.

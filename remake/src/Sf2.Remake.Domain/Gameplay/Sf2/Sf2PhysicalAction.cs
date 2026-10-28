@@ -82,6 +82,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         var actor = current.GetActor(actorRef);
         var target = RequireTarget(current, actorRef, destination, targetRef);
         if (!PoisonTurnRules.SupportedPhysicalStatus(actor.Status) || !PoisonTurnRules.SupportedPhysicalStatus(target.Status) ||
+            !current.Definition.Poison && (actor.Status == 2 || target.Status == 2) ||
             target.Status == 2 && actor.Definition.Physical!.Critical.InflictsSleep ||
             actor.Status == 2 && target.Definition.Physical!.Critical.InflictsSleep)
             throw new BattleRuleException("physical-status", "actors.status", true);

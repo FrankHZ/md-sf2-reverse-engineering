@@ -408,7 +408,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyGrowth(EngineBattleState current, IBattleProgressionRule rule)
     {
         if (Reward is not { } reward) return (current, Array.Empty<BattleEffect>());
-        var result = BattleProgressionRules.Grow(rule, current.GetActor(reward.Actor), current.MainSeed);
+        var result = BattleProgressionRules.Grow(rule, current.GetActor(reward.Actor), current.MainSeed, current.Definition.Poison);
         return (current.With(mainSeed: result.Seed, actors: current.Actors.Select(row => row.Actor == reward.Actor ? result.Actor : row)), result.Effects);
     }
 

@@ -15,8 +15,13 @@ with ordinary equipment/items and a standby opponent. Initial HP, credit and poi
 inputs, not natural original acquisition. Embedded exploration/old private profiles reject this opt-in;
 without it, the old status admission is unchanged. Numeric statuses, poison+sleep, other mixtures,
 infliction/cure, persistence and private presentation remain Unsupported. Existing sleep in its
-accepted private boundary is unaffected. Pure poison is accepted by the affected ordinary action,
-equipment, Give/Drop and growth guards; source-specific unrelated guards remain in force.
+accepted private boundary is unaffected. The newly admitted pure-poison action, AI, AURA, Give/Drop
+and growth paths require `BattleDefinition.Poison`. Existing private `NewBattle` initialization still
+accepts and preserves low status bits, including2; without this capability, physical/AI and reached
+level-up retain their existing Unsupported failures. Growth checks the capability at both action
+preflight and acknowledged publication; subthreshold growth keeps its previous no-op behavior.
+Equipment start admission likewise requires the capability for status2. Source-specific unrelated
+guards remain in force; this opt-in does not broaden old private/frozen behavior.
 
 ## Authored battle discard admission
 

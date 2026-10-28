@@ -5,6 +5,7 @@ using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
+using Sf2.Remake.Domain.Maps;
 using Xunit;
 using static Sf2.Remake.Engine.Tests.EngineTestContent;
 
@@ -13,6 +14,83 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class PoisonTurnTests
 {
     private static readonly ActorRef Hero = new("champion"), Friend = new("receiver"), Enemy = new("reserve");
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void PrivateInitializedPoisonStillRejectsPhysicalAtItsExistingBoundary(bool poisonedTarget)
+    {
+        var battle = PrivateInitialized(poisonedTarget);
+        Assert.False(battle.Definition.Poison);
+        Assert.Equal((ushort)2, battle.GetActor(poisonedTarget ? Enemy : Hero).Status);
+        var failure = Assert.Throws<BattleRuleException>(() => Sf2PhysicalAction.Prepare(battle, Hero,
+            battle.GetActor(Hero).Position!, Enemy, new Sf2BattleProgressionRule()));
+        Assert.Equal("physical-status", failure.Code); Assert.True(failure.Unsupported);
+    }
+
+    [Fact]
+    public void PrivateInitializedPoisonStillRejectsSourceEnemyDecision()
+    {
+        var battle = PrivateInitialized(true);
+        Assert.Equal((ushort)2, battle.GetActor(Enemy).Status);
+        var failure = Assert.Throws<BattleRuleException>(() => SourceEnemyAi.Resolve(battle, Enemy));
+        Assert.Equal("source-ai-state", failure.Code); Assert.True(failure.Unsupported);
+    }
+
+    [Fact]
+    public void ExistingAuthoredInitializationDoesNotOptSourceAllyIntoPoison()
+    {
+        var input = Admitted("jaro-conversion"); var ally = JaroConversionTests.Ally;
+        var start = new BattleStartInput(input.Start.Encounter, input.Start.Actors.Select(a =>
+            a.Actor == ally ? a with { Status = 2, ActivationWord = 4, Absent = false, PositionOverride = new(4, 2) } : a),
+            input.Start.MainSeed, input.Start.ThinkingSeed, input.Start.Gold);
+        var battle = BattleTurnFlow.Start(input.Definition.Encounters[start.Encounter], start);
+        Assert.Equal((ushort)2, battle.GetActor(ally).Status);
+        var failure = Assert.Throws<BattleRuleException>(() => new SourceAllyAi().Decide(battle, ally, new Sf2PhysicalAction()));
+        Assert.Equal("source-ally-ai-state", failure.Code); Assert.True(failure.Unsupported);
+    }
+
+    [Fact]
+    public void PrivatePoisonGrowthRejectsBeforeItemCommitAndKeepsSubthresholdBehavior()
+    {
+        var battle = PrivateInitialized(false, 99); var rule = new Sf2ItemAction();
+        var failure = Assert.Throws<BattleRuleException>(() => BattleActionRules.Prepare(rule, battle, Hero,
+            battle.GetActor(Hero).Position!, new(BattleActionKind.Item, ItemSlot: 0), Hero, new Sf2BattleProgressionRule()));
+        Assert.Equal("growth-status-refresh", failure.Code); Assert.True(failure.Unsupported);
+        Assert.Equal((byte)99, battle.GetActor(Hero).Exp);
+        Assert.Equal((ushort)0, battle.GetActor(Hero).SourceLoadout!.Items[0]);
+        var low = battle.With(actors: battle.Actors.Select(a => a.Actor == Hero ? a.With(exp: 0) : a));
+        var action = BattleActionRules.Prepare(rule, low, Hero, low.GetActor(Hero).Position!,
+            new(BattleActionKind.Item, ItemSlot: 0), Hero, new Sf2BattleProgressionRule());
+        Assert.NotNull(action.Reward);
+        var threshold = low.With(actors: low.Actors.Select(a => a.Actor == Hero ? a.With(exp: 100) : a));
+        var publication = Assert.Throws<BattleRuleException>(() => action.ApplyGrowth(threshold, new Sf2BattleProgressionRule()));
+        Assert.Equal("growth-status-refresh", publication.Code); Assert.True(publication.Unsupported);
+    }
+
+    // Same NewBattle policy/low-bit initialization route used by private controlled starts;
+    // all definitions and values here are project-authored, with no private fixture dependency.
+    private static EngineBattleState PrivateInitialized(bool poisonedEnemy, byte exp = 0)
+    {
+        var growth = Admitted("battle-equipment").Definition.Encounters.Values.Single().Deployments
+            .Single(a => a.Actor == Hero).Definition.Growth;
+        var hero = new BattleActorDefinition(Hero, BattleClassRule.Ordinary, 1, 100, 0, 15, 5, 60, false, 4, [],
+            physical: new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, false, 0),
+            sourceLoadout: new([0, 127, 127, 127], [63, 63, 63, 63]), growth: growth);
+        var enemy = new BattleActorDefinition(Enemy, BattleClassRule.Ordinary, 1, 100, 0, 10, 5, 4, false, 4, [],
+            physical: new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, false, 0),
+            sourceLoadout: new([127, 127, 127, 127], [63, 63, 63, 63]));
+        var definition = new BattleDefinition("private-boundary", new("authored-map"), 8, 8,
+            Enumerable.Repeat(new BattleTerrain(TerrainSurface.Open, TerrainProtection.None), 2304),
+            [new(hero, BattleFaction.Ally, 0, BattleControl.Player, null, new(2, 2), new(null, 0, 15, 15, 0)),
+             new(enemy, BattleFaction.Enemy, 128, BattleControl.Automatic, new("source-orders"), new(3, 2), new(0x3000, 0, 15, 15, 0x60, 6, 255, 255))],
+            [], rewards: new(false), initialization: new([], BattleRegionProgram.None), healingItems: [new(0, "Herb", 10, 0, 1)]);
+        var policy = new NewBattleStartPolicy("controlled", "project-authored-counterexample", "No natural reach claim",
+            0, true, true, true, false, false, 0);
+        var start = new BattleStartInput(definition.Encounter,
+            [new(Hero, 50, 0, exp, 0, 0, poisonedEnemy ? (ushort)0 : (ushort)2, null, ActivationWord: 0),
+             new(Enemy, 50, 0, 0, 0, 0, poisonedEnemy ? (ushort)2 : (ushort)0, null)], 0x1234, 0x4321, 0, policy);
+        return BattleTurnFlow.Start(definition, start);
+    }
 
     [Theory]
     [InlineData(1, 0)] [InlineData(2, 0)] [InlineData(3, 1)] [InlineData(200, 198)]

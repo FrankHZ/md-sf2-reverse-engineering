@@ -21,7 +21,8 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
     {
         var actor = battle.GetActor(actorRef);
         if (!actor.IsAlly || !actor.Deployment.SourceAllyControl || actor.Hp == 0 || actor.Position is null ||
-            actor.Control != BattleControl.Automatic || actor.Status is not (0 or 2) || battle.StartPolicy?.Difficulty is > 0)
+            actor.Control != BattleControl.Automatic || !(actor.Status == 0 || battle.Definition.Poison && actor.Status == 2) ||
+            battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
         // Finite unarmed, no-item, no-spell commandset. Unsupported categories cannot
         // silently fall through as failed HEAL/item/attack commands.
