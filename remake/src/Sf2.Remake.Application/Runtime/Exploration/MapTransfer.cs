@@ -9,7 +9,7 @@ internal static class MapTransfer
     // Apply is a pure snapshot construction. Reuse its full admission before consuming a
     // field action; publish again after the old-world pass with its resulting party seed.
     internal static void Validate(ScenarioDefinition definition, SessionSnapshot current, ExplorationState candidate,
-        ExplorationEvent warp, SessionRules? rules = null)
+        ExplorationEvent warp, SessionRules rules)
     {
         var preview = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(MapEventDispatcher.Roof(candidate)), current.Story, current.StopReason);
@@ -73,7 +73,7 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot BeginWarp(ScenarioDefinition definition, SessionSnapshot current,
-        ExplorationEvent warp, List<SessionObservation> observations, SessionRules? rules = null)
+        ExplorationEvent warp, List<SessionObservation> observations, SessionRules rules)
     {
         if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null)
             return Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
@@ -160,7 +160,7 @@ internal static class MapTransfer
         return ProgramRunner.Commit(current, current.Active, story, observations, "full-fade-completed", wait.Kind.ToString());
     }
 
-    internal static SessionSnapshot LoadTick(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, SessionRules? rules = null)
+    internal static SessionSnapshot LoadTick(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
     {
         var wait = (WarpLoadWait)current.Story.Wait!;
         var story = current.Story.Copy(null, wait with { Remaining = wait.Remaining - 1 },
@@ -258,7 +258,7 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,
-        MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules? rules = null)
+        MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules rules)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
         CaravanRuntime.RequireOrdinaryMapOperation(world);
@@ -309,7 +309,7 @@ internal static class MapTransfer
         return ProgramRunner.Commit(current, new ActiveExploration(next), story, observations, "map-transferred", map.Value);
     }
 
-    internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, SessionRules? rules = null)
+    internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
         => BattleEntry.Continue(definition, current, observations, rules);
 
     private static void ValidateSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags)

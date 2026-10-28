@@ -464,7 +464,7 @@ internal static class ProgramRunner
                     case TransferToMap transfer:
                         story = story.Copy(story.Cursor, clearWarp: true);
                         current = MapTransfer.Apply(definition, current, transfer.Map, transfer.Position, transfer.Facing,
-                            transfer.Mode, story, observations);
+                            transfer.Mode, story, observations, rules);
                         continue;
                     case QueueMapWarp queued:
                         story = story.Copy(story.Cursor, scriptWarp: new(queued.Map, queued.Position, queued.Facing, MapLoadMode.Rebuild));

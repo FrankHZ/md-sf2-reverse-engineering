@@ -31,7 +31,7 @@ public sealed class Battle01ToBattle02Tests
             new ActiveExploration(field.Exploration!.WithParty(party)),
             field.Story.Copy(null, enteringBattle: route, continuation: ProgramContinuation.BeforeBattleFinished),
             SessionStopReason.SimulationWait);
-        var entered = BattleEntry.Continue(definition, current, []);
+        var entered = BattleEntry.Continue(definition, current, [], Sf2.Remake.Application.Gameplay.RuleCompositions.Sf2());
         var hero = entered.Battle.GetActor(new("hero"));
         Assert.Equal((ushort)20, hero.Hp); // Source new-battle setup heals living members.
         Assert.Equal(hp, carried.Single(actor => actor.Actor.Value == "hero").Hp);

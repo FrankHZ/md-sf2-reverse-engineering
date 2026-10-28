@@ -7,21 +7,21 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 internal static class BattleEntry
 {
     internal static ExplorationBattleRoute? First(ScenarioDefinition definition, StoryState story,
-        ExplorationMapDefinition map, SessionRules? rules) => map.Battles.FirstOrDefault(route => Selects(definition, story, route, rules));
+        ExplorationMapDefinition map, SessionRules rules) => map.Battles.FirstOrDefault(route => Selects(definition, story, route, rules));
     internal static bool Selects(ScenarioDefinition definition, StoryState story, ExplorationBattleRoute? route,
-        SessionRules? rules) => route is not null &&
+        SessionRules rules) => route is not null &&
         (route.UnlockedFlag is null || story.Flags.Contains(route.UnlockedFlag.Value)) &&
         (route.CompletedFlag is null || !story.Flags.Contains(route.CompletedFlag.Value) || EnterCompleted(definition, rules));
 
-    private static bool EnterCompleted(ScenarioDefinition definition, SessionRules? rules)
+    private static bool EnterCompleted(ScenarioDefinition definition, SessionRules rules)
     {
-        var policy = (rules ?? Gameplay.RuleCompositions.Sf2()).SourceStory;
+        var policy = rules.SourceStory;
         return BattleProgressionRules.Invoke(policy.Identity, "completed-battle-admission",
             () => policy.EnterCompletedBattle(definition));
     }
 
     internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations,
-        SessionRules? rules = null)
+        SessionRules rules)
     {
         var story = current.Story;
         if (story.Continuation == ProgramContinuation.MapLoaded)
