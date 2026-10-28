@@ -1595,3 +1595,37 @@ the published map context after an outcome; a retained `EnteringBattle` anchor d
 music during victory/defeat return. This also preserves valid explicit cues and rejects unbound
 same-context music waits. [Direct acceptance](../verification/field-programs.md#battle01-through-battle02)
 covers the actual cross-encounter consumer; Battle02 resolution remains outside this selection.
+## Field-player binding across connected battles
+
+**Standard scope:** retain the admitted field player's identity and applicable movement speed across
+connected victory, defeat and retreat, including a connected map that enters battle during startup.
+This is a bounded cross-continuation correction: one `GameSession`, existing outcome rules and
+program waits remain authoritative. Battle legality, B2's selected-rule transfer correction, terminal
+poison behavior, UI and new content capabilities are outside this agreement.
+
+`BattleEntry` captures a `FieldPlayerBinding` containing only the live player ID and speed after the
+before-program completes, in the same commit that publishes successfully validated battle
+initialization. Legitimate pre-battle entity speed changes therefore apply. Failed initialization
+keeps its accepted field/program prefix and publishes no speculative binding. Load/start programs
+then run in battle mode; the binding survives those programs, battle turns and paid retreat delivery.
+No old field snapshot, battle-leader inference or player registry participates in return.
+
+For authored fields without source population, the binding retains the live player's `XSpeed`, the
+same scalar used by ordinary map rebuilding, and rebuilds both movement axes from it. Source-population
+fields retain the required logical `entity-0` / physical player slot and the established outcome
+projection speed reset to32, even if the before-program used another speed. This is an explicit
+source-population rule, independent of authored ID spelling: an authored `entity-0` also retains its
+live speed. `SceneEntities.Build` continues to own source allocation, aliases and source record data.
+
+Both outcome projection paths consume the binding. After/return programs resolve the same named
+player, and ordinary subsequent transfers use the current returned field speed, including any later
+legitimate program changes. The binding is cleared with `EnteringBattle` only after the complete
+return program/map continuation finishes. A later failure retains the binding, reached cursor,
+committed flags/resources and exact pending wait. Missing binding in an internally constructed
+connected outcome is an explicit `field-player-binding` failure.
+
+Acceptance is actual engine behavior with varied IDs/speeds, all three outcomes, pre-battle speed
+changes, direct/transfer entry, named motion/text/presentation, source population, initialization and
+later failure boundaries, plus one compact ordinary-host authored return/movement witness. The
+[bounded reproduction](../development-and-verification.md#authored-field-player-return) owns commands
+and the native observation's limits. Broader original-route and hardware parity remain Unknown.

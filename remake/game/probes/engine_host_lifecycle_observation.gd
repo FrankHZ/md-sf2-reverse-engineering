@@ -197,6 +197,12 @@ func _run() -> void:
             var returned := await return_to_field()
             if not returned.is_empty():
                 sample("usable-return", returned)
+                var expected_player := OS.get_environment("SF2_EXPECT_FIELD_PLAYER")
+                if not expected_player.is_empty():
+                    var players: Array = returned.entities.filter(func(e): return e.id == expected_player)
+                    _check(players.size() == 1, "declared authored player retained once")
+                    if players.size() == 1:
+                        _check(int(players[0].speedX) == int(OS.get_environment("SF2_EXPECT_FIELD_SPEED")) and int(players[0].speedY) == int(OS.get_environment("SF2_EXPECT_FIELD_SPEED")), "declared authored movement speed retained")
                 var position: Array = returned.entities.map(func(e): return [e.id, e.x, e.y])
                 await _press(KEY_RIGHT)
                 var moved := active()

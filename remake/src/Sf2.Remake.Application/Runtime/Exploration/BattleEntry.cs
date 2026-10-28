@@ -84,8 +84,13 @@ internal static class BattleEntry
         // Validate and compute the whole initialization before publishing its flags or actor state.
         var battle = BattleTurnFlow.Start(encounter, input);
         var flags = input.NewBattle is null ? story.Flags : story.Flags.Where(flag => flag is < 90 or > 105);
+        // Capture after the before-program's entity work, at the validated mode switch.
+        // Source population returns through InitExploration's established speed reset.
+        var player = new FieldPlayerBinding(world.Player,
+            world.Population is null ? world.PlayerEntity.Motion.XSpeed : (ushort)32);
         return ProgramRunner.Commit(current, new ActiveBattle(battle, null),
-            story.Copy(selected.LoadProgram, flags: flags, partyLists: partyLists, continuation: ProgramContinuation.BattleLoadFinished),
+            story.Copy(selected.LoadProgram, flags: flags, partyLists: partyLists, continuation: ProgramContinuation.BattleLoadFinished,
+                fieldPlayer: player),
             observations, "battle-initialized");
     }
 

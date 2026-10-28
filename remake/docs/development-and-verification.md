@@ -73,6 +73,69 @@ unit tests were added. Private provenance order is confirmed by unchanged reader
 not a new private runtime observation. Other malformed fields/opcode discriminators remain outside
 this bounded claim. Exact candidate plan, actual CI and independent acceptance belong in the PR.
 
+## Authored field-player return
+
+The [Standard scope and binding lifetime](application/session-and-programs.md#field-player-binding-across-connected-battles)
+and [B1 disposition](evidence/engine-script-boundary-review.md#b1--implemented-retain-field-player-binding-across-battle)
+own this bounded correction. `FieldPlayerReturnTests` exercises actual entry, outcome/program and
+retreat behavior with varied field IDs/speeds. Terminal projection tests construct valid terminal
+battle states to isolate return from damage calculation; paid retreat uses ordinary session commands.
+The native witness below covers an actual attack/victory through the ordinary host.
+
+Load `local/private-inputs.ps1` and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` before SDK launches.
+The focused command, after locked restore, is:
+
+```powershell
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --configuration Release --no-restore --filter FullyQualifiedName~FieldPlayerReturnTests
+```
+
+Before the correction, the two named-player outcome cases failed with `program-entity` at the reached
+after-program. Preserve that red result separately from fixture authoring errors. Corrected tests
+cover named player motion/text/presentation waits, source population's speed32 reset, authored
+`entity-0` retaining its live speed, direct startup, later transfer, legitimate pre-battle speed
+changes, failed initialization and retained later-failure cursor/prefix. Select `uv run sf2 verify engine`
+and `uv run sf2 verify adapter`, and inspect the committed planner and actual CI.
+
+For the one native witness, use the existing installation/project and Debug host build. From the
+repository root, choose a fresh ignored output folder in `$freshIgnoredOutput`, load the existing
+private/tool selections, and create the variant **before** startup:
+
+```powershell
+$repoRoot = (Get-Location).Path
+New-Item -ItemType Directory -Path $freshIgnoredOutput -ErrorAction Stop | Out-Null
+$d = Get-Content -LiteralPath 'remake/content/authored/battle-drops.json' -Raw | ConvertFrom-Json -AsHashtable
+$d.start.map = 'arena'
+$d.start.flags += 401
+$d.start.player = 'traveler'
+$d.start.speed = 96
+($d.world.programs | Where-Object id -eq 'before').instructions = @(@{op='end'})
+$package = Join-Path $freshIgnoredOutput 'package.json'
+$d | ConvertTo-Json -Depth 80 | Set-Content -LiteralPath $package -Encoding utf8
+$inputSettings = Join-Path $freshIgnoredOutput 'input.json'
+'{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120}' |
+  Set-Content -LiteralPath $inputSettings -Encoding utf8
+$env:SF2_HOST_LIFECYCLE_CASE = 'direct-return'
+$env:SF2_EXPECT_FIELD_PLAYER = 'traveler'
+$env:SF2_EXPECT_FIELD_SPEED = '96'
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+```
+
+Select worktree-local APPDATA/LOCALAPPDATA/TEMP/TMP beneath that fresh output as in the
+[ordinary host recipe](#ordinary-host-lifecycle-observation), then launch the existing `$env:GODOT_BIN`
+hidden with separate arguments: `--headless --fixed-fps 60 --path <repo>/remake/game
+--script res://probes/engine_host_lifecycle_observation.gd -- --authored-package <package>
+--input-settings <inputSettings>`. Retain stdout/stderr and stop the owned child on its bounded
+deadline. The probe sends ordinary keys and reads existing state; it adds no completion injection,
+screenshots, asset acquisition or new capture interface. Bound the report/logs to512KiB and one
+short run; other lifecycle combinations belong to the unit tests.
+
+The witness passed with one real victory/return and the same session's `traveler` moving x768→864
+at y768 with both speeds96. It exited0 without runtime errors in about1.5s; report/logs total38KiB.
+This confirms usable authored return/movement, not original-route or hardware parity. Optional
+private tests remain explicitly skipped by the public engine entry. Exact head/tree, retained red
+results, selected gates, CI and independent acceptance belong in the PR handoff.
+
 ## Ordinary host lifecycle observation
 
 [Issue #1375](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1375) repairs

@@ -6,7 +6,7 @@ every gameplay rule supplied by scripts. Several source services deliberately re
 rules. That distinction is useful: moving Taros's weapon rule or physical-slot semantics into every
 chapter script would duplicate rules, not improve authoring.
 
-Two inspected seams do need focused correction before dependent work: battle outcomes replace an
+At the audit base, two inspected seams needed focused correction before dependent work: battle outcomes replace an
 authored field player's identity/speed with source defaults (**B1**), and a scripted transfer omits
 the selected story policy during early battle selection (**B2**). Neither requires a new scripting
 system. The Map3 scratch exception is deliberately isolated compatibility policy; Jaro's ceremony
@@ -14,13 +14,21 @@ is already content; Caravan's fixed choreography is an intentional finite source
 poison-only standalone terminal boundary and definition-copy risk F3 are conditional follow-up
 concerns, not newly authorized implementation.
 
+B1 is implemented under [#1381](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1381);
+its current binding lifetime and source rule belong to the
+[session owner](../application/session-and-programs.md#field-player-binding-across-connected-battles).
+B2 and the conditional concerns retain their separate scope. Audit source links below remain pinned
+to the inspected base; the B1 disposition adds actual engine/native evidence without changing those
+historical findings.
+
 ## Scope and evidence
 
 **Standard rigor:** bounded investigation and design for [#1379](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1379).
 The deliverable supports the decision about what to fix before further chapter/content work.
-Only this report and an architecture navigation link are writable. Production, tests, content,
-research and prior audit history are read-only. Proposed corrections below are not adopted behavior,
-new tickets, permission to refactor, or a replacement for the current architecture owners.
+The original audit changed only this report and an architecture navigation link; production, tests,
+content, research and prior audit history were read-only for that investigation. The separately
+authorized B1 implementation is recorded in its disposition and owning session agreement. Remaining
+proposals do not authorize refactoring or replace the current architecture owners.
 
 Inspected accepted source: **`b4882a0dddd045b44c9110e43b097efd9358d652`**, tree
 **`77df88ad880b0365103d9f3b91e5457cf91d16cc`**. Source links below pin that commit. Symbol names
@@ -63,9 +71,10 @@ exclusions do not make every source constant a bug, nor certify every constant a
 
 ## Findings and smallest corrections
 
-### B1 — P1 before authored outcome expansion: retain field-player binding across battle
+### B1 — implemented: retain field-player binding across battle
 
-**Confirmed source mismatch; Inferred player-reference and movement consequences.**
+**Confirmed at audit base: source mismatch. Confirmed by #1381 reproduction: named-player failure
+and corrected authored return/movement.** The following pinned analysis describes the audit base.
 [BattleOutcome.Begin:36][outcome] and `ReturnFromRetreat:72` call `MapTransfer.Build` with
 `new("entity-0")` and speed `32`. These are shared execution paths, not private-only branches.
 [ExplorationContentReader.Read:259][reader] accepts `start.player` and speed1–384;
@@ -92,23 +101,26 @@ The legitimate counterexample is source population: [SceneEntities.Build:45][ent
 requires logical `entity-0`, and source physical player slot0 is meaningful. Preserve that source
 contract. Applying its identity to a strict named authored world is the leak.
 
-**Proposed owner/correction:** retain only the field player ID and applicable movement speed in
-the existing battle-entry/return continuation when leaving exploration; use them in both outcome
-projection paths. Source policy may explicitly select its source speed where that reset is required.
-Do not keep an entire stale exploration snapshot, infer the field ID from the battle leader, or
-introduce a new player registry. Direct connected battle startup must capture the same binding
-before switching modes. Content can validate any explicit binding at admission.
+**Implemented disposition:** the existing `StoryState` entry/return continuation holds only a
+`FieldPlayerBinding` (player ID and applicable speed). `BattleEntry` captures the live values after
+the before-program and successful battle validation, including connected startup. Both outcome
+projection paths consume it; clearing the completed return route clears the binding. Source
+population explicitly retains `entity-0` and its established return speed32; authored fields retain
+live speed, including an authored player named `entity-0`. No public Content start change, stale
+world snapshot, battle-leader inference or registry is needed.
 
 This is a small cross-continuation correction, with moderate review risk because entry, retreat
 and both outcomes share the lifetime. Authoring benefit: a chapter can refer to its declared player
 before and after combat without knowing `entity-0` or compensating with script renames.
 
-**Future acceptance:** run actual engine behavior with two distinct field IDs and speeds; exercise
-victory, defeat and retreat, direct connected battle entry and an ordinary map transfer afterward.
-An after-program must face/move the retained player and resume matching text/presentation waits.
-Assert carried resources, RNG, flags and retained failure cursor, not constructor argument counts.
-Keep a source-population control at `entity-0` with its accepted speed semantics. Any needed host
-check observes the same session's state/input; no screenshots or broad original replay.
+**Validation:** `FieldPlayerReturnTests` reproduces the pre-fix `program-entity` failure for
+`traveler/96` and `scout/192`. Corrected behavior covers victory/defeat/retreat projection,
+direct/transfer entry, pre-battle speed changes, named motion/text/presentation waits, subsequent
+map transfer, carried resources/RNG/flags, paid retreat, source population, failed initialization,
+and a later failure's committed prefix/cursor. The ordinary host witness returns `traveler/96`
+after a real victory, then moves x768→864 at y768 in the same session, with one return and no
+runtime errors. The [bounded reproduction](../development-and-verification.md#authored-field-player-return)
+records commands and limits; no screenshots or original replay establish additional fidelity.
 
 ### B2 — P2 before source-policy replacement work: transfer must carry selected rules
 
@@ -265,8 +277,8 @@ vehicle customization. Preserve the [Caravan boundary](../application/session-an
 
 ## Decision order and acceptance boundaries
 
-1. **Before authored connected-outcome expansion, address B1.** It already conflicts with admitted
-   player data. Scope entry/return binding and its behavior; preserve source population semantics.
+1. **B1's entry/return binding correction is implemented.** Preserve its named-player behavior,
+   source-population rule and [bounded acceptance](#b1--implemented-retain-field-player-binding-across-battle).
 2. **Before relying on alternate source-story replay policies, address B2.** Thread the selected
    composition through the existing call. It need not block unrelated content-only conversations.
 3. **At the affected capability expansion, address conditional debt.** Separate terminal outcome
