@@ -1,5 +1,24 @@
 # Runtime Profiles and Trust
 
+## Authored battle discard admission
+
+Standalone format7 opts in with top-level `battleDiscard: {"items": [...]}`. Each row declares
+`id`, `name`, `rare` and `unsellable`. The finite admitted identities/properties are Medical Herb0
+(nonrare, sellable), Achilles Sword61 (rare, sellable) and Sky Orb113 (rare, unsellable). Names and
+weapon numeric/range operands are authored. Source properties are checked independently of the
+packed equipped bit. Unknown identities, conflicting use/weapon types, duplicate metadata, broken
+words, equipped nonweapons, curses and rings fail closed. All declared actor loadouts must fit this
+finite subset when opted in; existing live equipment admission still applies.
+
+An overlapping `dropItems` entry must agree about rarity. The existing start `itemCustody` reader
+also admits this finite catalog's rare counts; it retains independent counts and onceFlags. Missing
+custody remains null, and a rare discard fails before removal. No empty store is fabricated.
+The growth binder preserves Discard when reconstructing definitions. Omission preserves old
+profiles; connected format8 rejects this opt-in and private imports do not enable it.
+[battle-discard.json](../../content/authored/battle-discard.json) is a standalone authored example,
+not an original starting-state or private fidelity claim. See the
+[domain/source owner](../domain/gameplay-rules.md#authored-battle-discard).
+
 ## Authored battle Give admission
 
 Standalone format7 opts in with top-level `battleGive: true`; omission preserves the previous

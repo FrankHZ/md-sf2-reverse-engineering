@@ -55,6 +55,8 @@ public sealed partial class BattleSessionView : Control
     private Label _equipment = null!;
     private Label _giveMenu = null!;
     private BattleGiveView _give = null!;
+    private Label _discardMenu = null!;
+    private BattleDiscardView _discard = null!;
     private BattleMapViewport _map = null!;
     private BattleDefinition? _mapDefinition;
     private BattleSceneDefinition? _mapScenes;
@@ -90,6 +92,7 @@ public sealed partial class BattleSessionView : Control
         _title = AddLabel("Title");
         _status = AddLabel("Status");
         _giveMenu = AddLabel("Give");
+        _discardMenu = AddLabel("Discard");
         _equipment = AddLabel("Equipment");
         _spells = AddLabel("Spells");
         _items = AddLabel("Items");
@@ -97,6 +100,7 @@ public sealed partial class BattleSessionView : Control
         _help = AddLabel("Help");
         _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
         _give = new BattleGiveView { Name = "BattleGive" }; AddChild(_give);
+        _discard = new BattleDiscardView { Name = "BattleDiscard" }; AddChild(_discard);
         _retreat = new BattleRetreatView { Name = "BattleRetreat" }; AddChild(_retreat);
         _story = new BattleStoryView { Name = "BattleStory" }; AddChild(_story);
         _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; AddChild(_appearance);
@@ -109,6 +113,7 @@ public sealed partial class BattleSessionView : Control
         _help.Text = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
             $"{input.Hint(GameAction.Spell)}: select / cycle learned spells and levels; target self\n" +
             $"{input.Hint(GameAction.Item)}: select / cycle carried items; target self\n" +
+            $"{input.Hint(GameAction.Discard)}: Drop; select slot, confirm, cancel returns\n" +
             $"{input.Hint(GameAction.Give)}: Give; directions select item/recipient, confirm, cancel returns\n" +
             $"{input.Hint(GameAction.Equipment)}: equipment; directions cycle, confirm equips, cancel returns\n" +
             $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
@@ -177,7 +182,7 @@ public sealed partial class BattleSessionView : Control
         if (first)
         {
             _scene.Configure(session, _input.Settings, Audio); _retreat.Configure(session, _input.Settings);
-            _give.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings);
+            _give.Configure(session, _input.Settings); _discard.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings);
             _story.Configure(session, _map);
         }
         if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
@@ -215,6 +220,11 @@ public sealed partial class BattleSessionView : Control
     public override void _Process(double delta)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleDiscard is not null)
+        {
+            if (!_inputSuspended && _discard.Consume(delta) is { } completion) Send(completion);
+            return;
+        }
         if (_session?.Current.BattleGive is not null)
         {
             if (!_inputSuspended && _give.Consume(delta) is { } completion) Send(completion);
@@ -252,6 +262,8 @@ public sealed partial class BattleSessionView : Control
     internal void HandleAction(GameAction action)
     {
         if (_startupFailure is not null || _inputSuspended || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleDiscard is not null)
+        { if (_discard.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.BattleGive is not null)
         { if (_give.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.BattleRound is { Program: true })
@@ -263,6 +275,8 @@ public sealed partial class BattleSessionView : Control
         if (_session?.Current.BattleScene is not null)
         { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.HasBattleControl != true) return;
+        if (BattleDiscardView.Selecting(_session.Current.Selection?.Stage))
+        { if (BattleDiscardView.Select(_session, action) is { } discardCommand) Send(discardCommand); return; }
         if (BattleGiveView.Selecting(_session.Current.Selection?.Stage))
         { if (BattleGiveView.Select(_session, action) is { } giveCommand) Send(giveCommand); return; }
         if (_session.Current.Selection is { Stage: BattleSelectionStage.EquipmentChoice } equipmentSelection &&
@@ -287,6 +301,7 @@ public sealed partial class BattleSessionView : Control
             GameAction.Attack => new ChooseAction(SessionAction.PhysicalAttack),
             GameAction.Equipment => new BeginEquipment(),
             GameAction.Give => new BeginGive(),
+            GameAction.Discard => new BeginDiscard(),
             _ => null,
         };
         if (command is not null) Send(command);
@@ -388,6 +403,8 @@ public sealed partial class BattleSessionView : Control
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
         _giveMenu.Text = BattleGiveView.Menu(_session);
         _give.Present();
+        _discardMenu.Text = BattleDiscardView.Menu(_session);
+        _discard.Present();
         _map.Present(projection, _session.Current);
         _story.Present();
         _scene.Present();
@@ -484,6 +501,7 @@ public sealed partial class BattleSessionView : Control
             target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
             itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items.Text,
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
+            discard = _discard.Observe(), discardMenu = _discardMenu.Text, custody = current?.Battle.ItemCustody,
             give = _give.Observe(), giveMenu = _giveMenu.Text, returnSlot = current?.Selection?.ReturnSlot,
             equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment.Text, equipmentVisible = _equipment.IsVisibleInTree(),
             equipmentActors = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, baseAttack = a.BaseAttack,

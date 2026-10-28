@@ -1,5 +1,49 @@
 # Development and Verification
 
+## Battle discard authored observation
+
+Use [battle-discard.json](../content/authored/battle-discard.json) in the ordinary host. Enter then R
+opens Drop; directions select exact slots, Enter selects/confirms and Escape cancels back to actions.
+Sky Orb refuses visibly. Herb and equipped Achilles discard show authored result text; actual reveal
+and acknowledgement return the same actor's action and preview. A later outer Escape returns movement
+while retaining inventory/equipment/Deals. E and I remain ordinary independent equip/use commands.
+
+`BattleDiscardTests` and `BattleDiscardSessionTests` cover actual behavior with duplicate/empty/last
+slots, ordinary/rare/protected metadata, Deals0/14/15 and absent custody/entry, current base/growth,
+live range/use, stale state/envelopes, cancellation and repeated delivery. Run configured
+`uv run sf2 verify engine`, `uv run sf2 verify adapter` and Debug adapter build. Preserve completed
+failures and rerun affected cases after corrections. On a clean committed head inspect
+`uv run sf2 verify plan --base origin/main --head HEAD`, exact-head CI, source sizes and direct
+ownership/document/link/private-boundary checks. Optional private skips make no private claim.
+
+Load `local/private-inputs.ps1` in the launch process and force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`; reuse the selected SDK/Godot/project. A changed binary or no
+retained instance requires startup. Build Debug from `remake/` using the configured SDK, then resolve
+absolute project/package/output paths before launch:
+
+```powershell
+$repoRoot = (Get-Location).Path
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_discard_observation.gd -- `
+  --authored-package (Join-Path $repoRoot 'remake/content/authored/battle-discard.json') `
+  --input-settings (Join-Path $freshIgnoredOutput 'input.json')
+```
+
+Use `{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120}` for `input.json`.
+Keep APPDATA, LOCALAPPDATA, TEMP/TMP, stdout/stderr and report in a fresh `local/issue1365` run
+subdirectory. Await actual process completion if the GUI launcher detaches. The compact probe uses
+ordinary keys at1280×720 and reads actual state/text/errors: protected refusal, both cancellations,
+normal and equipped rare removal, focus/hide suspension, unchanged actor/preview/turn/RNG, later
+STAY, Herb use and usable movement. No post-start gameplay injection, synthetic completion,
+screenshots, frame capture or new assets. JSON numeric arrays use float expected entries.
+
+Resource plan: one serial native instance, one small authored package and fixed semantic samples;
+target <180 seconds and <2MiB. Drop is O(4) plus existing O(N) state publication/offer traversal.
+No research/full/H3/H4 or original acquisition is selected. Modern authored delivery makes no original
+natural-route/timing claim; retain the twelve #1047 Unknowns, #638 pause and
+[predecessor failure records](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1363#issuecomment-6458523190).
+
 ## Battle Give authored observation
 
 [battle-give.json](../content/authored/battle-give.json) uses the ordinary host. Enter then G opens

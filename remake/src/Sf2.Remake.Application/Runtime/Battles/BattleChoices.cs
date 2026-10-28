@@ -20,6 +20,7 @@ public sealed record BattleChoicesSnapshot(Guid SessionId, long Revision, ActorR
 {
     public IReadOnlyList<BattleEquipmentChoice> Equipment { get; init; } = [];
     public SessionFailure? EquipmentFailure { get; init; }
+    public BattleDiscardChoices Discard { get; init; } = new([]);
     public BattleGiveChoices Give { get; init; } = new([], [], []);
     public IReadOnlyList<BattleSpellChoice> Spells => Array.AsReadOnly(Actions.Where(option => option.Action.Spell is not null)
         .Select(option => new BattleSpellChoice(option.Action.Spell!.Value, option.Label, option.Presentation,
@@ -208,7 +209,7 @@ internal static class BattleChoices
         try { equipment = BattleEquipment.Choices(battle.GetActor(selection.Actor)); }
         catch (BattleRuleException error) { equipmentFailure = Failure(error); }
         return new(current.SessionId, current.Revision, selection.Actor, selection.Stage,
-            selection.Preview.Destination, Array.AsReadOnly(ordered)) { Equipment = equipment, EquipmentFailure = equipmentFailure, Give = BattleGiveSelection.Query(current) };
+            selection.Preview.Destination, Array.AsReadOnly(ordered)) { Equipment = equipment, EquipmentFailure = equipmentFailure, Give = BattleGiveSelection.Query(current), Discard = BattleDiscardSelection.Query(current) };
 
         BattleChoicesSnapshot Failed(SessionFailure failure) => new(current.SessionId, current.Revision,
             selection.Actor, selection.Stage, selection.Preview.Destination, options.AsReadOnly(), failure);

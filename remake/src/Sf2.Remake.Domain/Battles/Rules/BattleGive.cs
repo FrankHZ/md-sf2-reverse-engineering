@@ -80,24 +80,16 @@ public static class BattleGive
         if (full != returnSlot.HasValue) throw new BattleRuleException("give-capacity-changed", "target.items");
         var returned = returnSlot is { } selected ? RequireSlot(battle, recipient, selected, false) : null;
         if (returned?.Word != expectedReturnWord) throw new BattleRuleException("stale-give-return", "return.slot");
-        var donor = Remove(battle.GetActor(giver), slot);
+        var donor = BattleEquipment.RemoveItem(battle.GetActor(giver), slot);
         if (returned is not null)
         {
-            target = Remove(target, returned.Slot);
+            target = BattleEquipment.RemoveItem(target, returned.Slot);
             donor = Add(donor, returned.Word);
         }
         target = Add(target, given.Word);
         donor = donor.With(position: destination);
         return new(battle.With(actors: battle.Actors.Select(actor => actor.Actor == giver ? donor :
             actor.Actor == recipient ? target : actor)), giver, recipient, given, returned);
-    }
-
-    private static BattleActorState Remove(BattleActorState actor, int slot)
-    {
-        var words = actor.SourceLoadout!.Items.ToList(); words.RemoveAt(slot); words.Add(127);
-        var loadout = new BattleSourceLoadout(words, actor.SourceLoadout.Spells);
-        return actor.With(sourceLoadout: loadout, attack: actor.Definition.Equipment is null ? actor.Attack :
-            (byte)Math.Min(200, actor.BaseAttack + BattleEquipment.Contribution(actor.Definition, loadout)));
     }
 
     private static BattleActorState Add(BattleActorState actor, ushort word)
