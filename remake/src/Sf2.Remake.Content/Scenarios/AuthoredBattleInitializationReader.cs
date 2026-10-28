@@ -11,11 +11,12 @@ internal static class AuthoredBattleInitializationReader
     internal static BattleDeploymentInitialization? Placement(JsonElement row)
     {
         if (!row.TryGetProperty("initialization", out var input)) return null;
-        Object(input, "placement.initialization", "baseAiWord", "spawnMode", "primaryRegion", "secondaryRegion", "filler", "commandset", "primaryOrder", "secondaryOrder");
+        ObjectOptional(input, "placement.initialization", "allyPartyMember", "baseAiWord", "spawnMode", "primaryRegion", "secondaryRegion", "filler", "commandset", "primaryOrder", "secondaryOrder");
         ushort? word = input.GetProperty("baseAiWord").ValueKind == JsonValueKind.Null ? null : (ushort)Number(input, "baseAiWord", 0, 65535);
         return new(word, (byte)Number(input, "spawnMode", 0, 3), (byte)Number(input, "primaryRegion", 0, 15),
             (byte)Number(input, "secondaryRegion", 0, 15), (byte)Number(input, "filler", 0, 255),
-            (byte)Number(input, "commandset", 0, 15), (byte)Number(input, "primaryOrder", 0, 255), (byte)Number(input, "secondaryOrder", 0, 255));
+            (byte)Number(input, "commandset", 0, 15), (byte)Number(input, "primaryOrder", 0, 255), (byte)Number(input, "secondaryOrder", 0, 255),
+            AllyPartyMember: input.TryGetProperty("allyPartyMember", out _) ? Number(input, "allyPartyMember", 0, 29) : null);
     }
 
     internal static BattleInitializationDefinition? Read(JsonElement encounter, IReadOnlyList<BattleDeploymentDefinition> deployments)
@@ -52,6 +53,12 @@ internal static class AuthoredBattleInitializationReader
             Object(row, "combatant", "slot", "actor");
             Require(slots.TryAdd(Number(row, "slot", 0, 159), new(Id(row, "actor"))), "duplicate-source-slot", "initialization.sourceCombatants");
         }
+        var members = deployments.Where(d => d.Initialization?.AllyPartyMember is not null).ToArray();
+        Require(members.All(d => d.Faction == BattleFaction.Ally &&
+            slots.TryGetValue(d.Initialization!.AllyPartyMember!.Value, out var actor) && actor == d.Actor),
+            "party-member-binding", "placements.initialization.allyPartyMember");
+        Require(members.Select(d => d.Initialization!.AllyPartyMember).Distinct().Count() == members.Length,
+            "duplicate-party-member", "placements.initialization.allyPartyMember");
         Require(programs.All(p => regions.Any(r => r.Id == p.Region)), "missing-activation-region", "initialization.regionPrograms");
         return new(regions, programMode == "authored" ? BattleRegionProgram.Authored : BattleRegionProgram.None,
             sourceCombatants: slots, enemyCount: Number(input, "enemyCount", 1, 32), regionPrograms: programs);

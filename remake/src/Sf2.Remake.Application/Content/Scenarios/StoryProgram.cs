@@ -59,6 +59,9 @@ public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Act
     Runtime.Exploration.EntityWaitCompletion? Completion = null) : StoryInstruction;
 public sealed record WaitForEntity(EntityRef Entity) : StoryInstruction;
 public sealed record JoinPartyMember(int Member) : StoryInstruction;
+public abstract record OutcomePartyInstruction(int Member) : StoryInstruction;
+public sealed record ClearOutcomePartyAi(int Member) : OutcomePartyInstruction(Member);
+public sealed record LeaveOutcomeBattleParty(int Member) : OutcomePartyInstruction(Member);
 public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
 public sealed record WaitProgramTicks(int Ticks) : StoryInstruction;
 public sealed record PresentCue(PresentationCueKind Kind, string? Resource = null,

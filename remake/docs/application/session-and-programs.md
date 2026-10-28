@@ -1,5 +1,26 @@
 # Session and Resumable Programs
 
+## Jaro victory program continuation
+
+The [High-rigor agreement](../domain/gameplay-rules.md#authored-jaro-victory-recruitment) uses the
+existing `GameSession`, `BattleOutcome` and `ProgramRunner`. Ordinary victory selects the return
+anchor and heals eligible living actors before scene dispatch. The first-completion authored program
+runs join23, visible acknowledgement and ten ticks, AI-bit clear, visible reply, leave23, then its
+return. These are authored delivery waits, not an original music/jump/presentation timing claim.
+
+`OutcomePartyOperations` admits only exploration with `VictoryProgramFinished`, an outcome route,
+the source30/0/32/12 flag layout and a retained allied member in that encounter. Clear requires a
+known activation word. Operations publish through the ordinary per-instruction commit and advance
+the existing cursor; no second roster or broad workflow service is introduced. `JoinResources`
+continues to preserve existing actor objects. Leave preserves the cached lists until common join0.
+The tail clears432 then sets532 and executes the existing return program before field control.
+
+Completed532 bypasses all recruitment instructions but retains that common tail. Retried selected
+policy failures resume the failing cursor/continuation with prior joins, activation, leave and waits
+committed. Stale revisions/tokens reject; unknown required state fails explicitly. No post-start
+state injection is needed to run the package. Runtime raw combatant coordinates and physical aliases
+are not retained by this outcome representation; source X-only removal is bounded by the rule owner.
+
 ## Poison after-turn continuation
 
 The [finite High-rigor agreement and source provenance](../domain/gameplay-rules.md#authored-poison-after-turn)
@@ -197,7 +218,7 @@ failure retains the ordinary committed movement/scene prefix.
 coordinates/facing for the finite authored scene. Camera/text resolves that alias even for a dead
 ally; facing skips the lookup for HP0 allies. Logical combat identity and resources stay with the two
 actors. Godot projects the bound appearance and ordinary movement from the session, never deciding
-faction/control from a sprite. Full original physical entity services and Battle32 victory recruitment
+faction/control from a sprite. The separate [authored victory suffix](#jaro-victory-program-continuation) is implemented. Full original physical entity services and private Battle32 victory recruitment
 are separate unsupported consumers. See the [rule owner](../domain/gameplay-rules.md#jaro-conversion-and-source-ally-commandset6).
 
 ## Round prefix and appearance continuation

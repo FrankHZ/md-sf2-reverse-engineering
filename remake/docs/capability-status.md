@@ -1,5 +1,20 @@
 # Remake Capability Status
 
+## Authored Jaro victory agreement
+
+**Implemented bounded authored suffix:** ordinary win → join23 and visible ceremony → clear only
+AI bit2 → leave active membership → common join0/list rebuild → clear432/set532 → usable field
+control. First/repeat, converted/unconverted, joined/unjoined, dead/live, capacity and interrupted
+prefixes consume the existing immutable party. Joining never initializes or revives a retained actor.
+
+The [High-rigor agreement/source boundary](domain/gameplay-rules.md#authored-jaro-victory-recruitment),
+[program continuation](application/session-and-programs.md#jaro-victory-program-continuation),
+[content admission](content/profiles-and-trust.md#authored-jaro-victory-admission) and
+[native recipe](development-and-verification.md#jaro-victory-authored-observation) own acceptance.
+This closes the authored victory suffix within [#1370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1370),
+not the whole Jaro family: private Battle32/Moun content, natural reach/timing, original ceremony/media,
+physical following/aliases and chapter return binding remain gaps. #1047 Unknowns and #638 pause remain.
+
 ## Authored poison lifecycle
 
 **Implemented finite subset:** standalone controlled status2 takes fixed2 clamped HP after an eligible
@@ -149,7 +164,7 @@ automatic ally physical action → usable player movement, with changed valid st
 Use one finite round continuation and the existing ProgramRunner/StoryState. Region rows commit the
 first matching played flag before execution. Conversion preserves enemy and ally resource ownership,
 source operation order, the named thirteen-member exception and explicit retained visual input.
-Only source commandset6 physical ally decisions are in scope; no private Battle32, victory recruitment,
+Only source commandset6 physical ally decisions are in scope; no private Battle32 (the separate [authored victory suffix](#authored-jaro-victory-agreement) is implemented),
 generic faction/roster/AI system, original media/timing, save/load or UI redesign is implied.
 
 Acceptance is staged: prove typed battle wait/resume and retained failure prefix before adding the

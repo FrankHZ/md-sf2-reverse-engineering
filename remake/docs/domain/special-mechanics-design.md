@@ -3,9 +3,25 @@
 Status: **Proposed engineering design** for the remaining families; selected Battle02 EGRESS/Angel Wing,
 Taros physical-effectiveness and authored physical item-drop implementations are tracked by the
 [current agreements](../capability-status.md#taros-physical-effectiveness-implementation-agreement).
-This document is not blanket implementation authorization or an accepted fidelity profile. [Issue #1339](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1339) owns scheduling;
+This document is not blanket implementation authorization or an accepted fidelity profile. [Issue #1339](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1339) retains the completed design intake;
 this document owns the proposed boundaries and decisions. Original facts remain with the linked
 English research/contracts/synthesis owners. No original-game evidence is derived from remake code.
+
+## Current closure scope
+
+[#1370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1370) owns bounded closure of the
+original six families: Taros, Jaro, Prism Flowers, Fairy Woods, special exits/Battle0 and raft/Caravan.
+Each family needs trigger/admission, actual rules, visible completion, necessary outcome/return and
+usable subsequent control, including failure/retry boundaries. An authored capability does not close
+formal chapter integration. Record supported consumers and concrete gaps separately; do not turn
+adjacent-system dependencies into an unrestricted implementation queue.
+
+[#1369](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369) separately owns horizontal
+spell/equipment/status/service/persistence extensions. No DETOX or other horizontal work is included
+in current six-family closure without a concrete dependency assessment and separate scope decision.
+The current Jaro authored victory suffix is bounded by its [High-rigor agreement](gameplay-rules.md#authored-jaro-victory-recruitment).
+Actual Battle32/Moun, media/natural reach/timing and the remaining family compositions stay explicit;
+#638 remains paused and #1047 Unknowns are unchanged.
 
 ## Agreement and reading boundary
 
@@ -18,14 +34,14 @@ Scope is Taros, Jaro, Prism Flowers, Fairy Woods, special exits/callers, and raf
 a dependency table for adjacent spells, equipment, economy, services and persistence. Each proposal
 must identify Content admission, Domain rules/state, Application publication/waits/failure prefixes,
 Godot projection and changed-state counterexamples. Existing finite seams take priority over a new
-abstraction. Production, tests, research/contracts, translation indexes and UI/UX are read-only in
-this task. Only this document, architecture navigation and relevant capability corrections change.
+abstraction. This owner describes design and scope navigation. Each implementation has its own bounded agreement
+and declared paths; this dependency map does not authorize research, translations or unrelated UI/UX.
 
 Acceptance is a complete source/consumer gap map, concrete extension sketches, smaller alternatives,
-explicit product decisions and one end-to-end recommendation. This design neither imports later
-chapters nor runs acquisition, runtime/full suites, builds, saves, new comparators or implementation
-tasks. Direct document/scope checks, the clean-head dependency plan and actual scoped CI validate
-this diff. Independent main-gate review precedes any implementation dispatch.
+explicit product decisions and one end-to-end recommendation. This design does not authorize later chapter imports, acquisition, saves or new comparators.
+Implementation agreements own their selected checks and direct observations; documentation changes
+use direct document/scope checks, the clean-head dependency plan and scoped CI. Main-gate retains
+independent review and integration authority.
 
 The inspected accepted baseline is `e97bde217537885663e795511688186a642afb3b`. Paths below refer to
 that baseline unless this document is deliberately revised with a later accepted implementation.
@@ -48,7 +64,7 @@ The following static code reads and accepted implementation owners control over 
 | Flags, conditional/call programs, followers, region activation and typed waits | **Supported primitives**, not missing infrastructure. [Program runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs), [party flags](../../src/Sf2.Remake.Domain/Maps/MapPartyMembership.cs), [activation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs). The [authored Jaro composition](../capability-status.md#authored-jaro-conversion-agreement) consumes a finite battle-region scene and two-actor conversion; the [authored hidden-enemy lifecycle](../capability-status.md#hidden-enemy-lifecycle-agreement) consumes modes2/3. |
 | Later ordinary map/dialogue bindings using only admitted operations | **Content/delivery gap only for those operations.** Reuse typed programs, selected maps and private preparation; do not infer an entire later encounter is content-only. Private encounter pins still admit the selected 1/2/3 boundary. |
 | Taros | **Authored physical-effectiveness rule/content/feedback implemented** at the [bounded owner](gameplay-rules.md#finite-taros-physical-effectiveness). Authored [leader cleanup](gameplay-rules.md#finite-enemy-leader-cleanup) is implemented through explicit source-slot binding and the existing outcome return. Authored physical drops, direct receipt/rare Deals fallback and session custody are implemented at the [finite drop owner](gameplay-rules.md#finite-physical-action-item-drops). Wider private encounter/aftermath remains a gap. The outcome reader still rejects unbound enemy leaders, private leader encounters and nonempty defeated programs. |
-| Jaro | **Authored finite composition implemented.** Region programs share StoryState and ProgramRunner; two logical actors retain resources while a visual alias is copied. Explicit source control consumes live bit2 and physical-only ally commandset6. Private Battle32 and victory recruitment remain unbound. |
+| Jaro | **Authored finite composition implemented.** Region programs share StoryState and ProgramRunner; two logical actors retain resources while a visual alias is copied. Explicit source control consumes live bit2 and physical-only ally commandset6. The [authored victory suffix](gameplay-rules.md#authored-jaro-victory-recruitment) now joins, clears AI, leaves active membership and returns usable field control. Private Battle32/Moun remains unbound. |
 | Prism Flowers | **Bounded authored implementation.** The [finite laser owner](gameplay-rules.md#finite-prism-laser) implements chosen automatic action, live source-ordered hits, known-no-ally accounting and real authored delivery. Private Battle36, non15 activation, special/edge/debug inputs and original audio/visual timing remain gaps. |
 | Fairy Woods | **Authored spawn lifecycle implemented; private trial state/content gap.** Modes2/3 use finite dormant state, source integer regions and staged round appearances. Private Battle44, trial counter/snapshot/record lifecycle remain unbound. |
 | EGRESS / Angel Wing / Battle0 caller | **Selected Battle02 retreat implemented; wider caller gap**, not missing ordinary defeat. [State types](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) now admit the finite Retreat action/result alongside ordinary actions and Victory/Defeat; [return policy](../../src/Sf2.Remake.Application/Runtime/Exploration/IOutcomeReturnPolicy.cs) requires a field anchor. No session-end destination or suspend gameplay exists. |
@@ -194,8 +210,10 @@ An interrupted scene after F386 does not rerun from its start; same-session cont
 its PC, while a new wrapper invocation sees the held flag and skips. Death, full active party,
 both regions true, absent region, already joined and each interruption prefix are required cases.
 
-First victory recruitment and AI-bit clear/active removal are separate story operations; a region
-conversion is not required for that scene, and repeat victory may skip it. The smaller alternative
+The [authored victory suffix](gameplay-rules.md#authored-jaro-victory-recruitment) now implements ordinary join23,
+AI-bit clear and active removal as separate story operations, followed by the shared join0/completion
+tail and usable field control. A region conversion is not required for that scene, and repeat victory
+skips the whole suffix. This does not bind actual Battle32/Moun or reproduce physical following. The smaller alternative
 is ordinary joined/follower content with no battle conversion. That is useful later chapter content
 but fails this mechanism's result. Two actors plus a finite round continuation avoids a general
 faction-changing entity system and reduces alias/debug/recovery complexity. Preserve the source
@@ -411,7 +429,7 @@ proposal an architectural prerequisite for any rule.
 | Leader cleanup / Taros | Authored effectiveness, cleanup and physical drops are implemented; private encounter/aftermath gaps remain. [Taros design](#taros-effectiveness-cleanup-loot-and-acquisition). | Complete Taros chapter still waits for private encounter and actual aftermath bindings. Cleanup is reusable by Prism/Fairy objectives, not by Battle0. |
 | Attack/area spells, AURA, DETOX, BOOST/SLOW, MUDDLE and wider statuses | HEAL/physical sleep and [authored UnpromotedPriest AURA1–4](gameplay-rules.md#authored-aura-group-healing) are supported within their admitted scope, including ordered AURA recovery and shared healing EXP. Wider AURA classes/statuses/private presentation and other effects remain deferred. [Spell contract](../../../docs/design/contracts/spell-resolution.md). | Add one concrete action family through existing preparation/reaction/after-turn owners. The finite [authored poison lifecycle](gameplay-rules.md#authored-poison-after-turn) now supplies fixed2 damage, ordered death/accounting and terminal/queue continuation for standalone status2; DETOX still needs status clearing and mixed-status/cure admission. Buffs require refresh/counter expiry; MUDDLE needs control/target semantics. Existing finite multi-target owners can inform these but are not a mandatory universal spell foundation. |
 | Prism laser | Finite authored decision/action, source-slot binding and visual delivery are implemented; private chapter/special-input gaps remain. [Laser design](#prism-flowers-decision-ray-versus-construction-hit-list). | Independent of broad spell/status completion. Complete Battle36 also requires its ordinary enemy capabilities, leader cleanup and story/resources; laser support alone is not chapter acceptance. |
-| Region programs / Jaro / ally AI | Implemented authored resumable round prefix, live control and visual aliases; [Jaro design](#jaro-region-programs-and-two-logical-actors-sharing-a-visual). | Private Battle32 and full victory recruitment remain separate consumers. Reuse party flags; no requirement to first build Caravan services. Ally AI is a new rule, not a faction toggle on physical enemy AI. |
+| Region programs / Jaro / ally AI | Implemented authored resumable round prefix, live control and visual aliases; [Jaro design](#jaro-region-programs-and-two-logical-actors-sharing-a-visual). | The authored victory suffix is implemented; actual Battle32/Moun remains a separate content/return consumer. Reuse party flags; no requirement to first build Caravan services. Ally AI is a new rule, not a faction toggle on physical enemy AI. |
 | Hidden spawn and trial record | Shared round continuation plus finite reset lifecycle; trial clock/result choice separate. [Fairy design](#fairy-woods-spawning-and-result-state-have-different-lifetimes). | Reuse accepted round-prefix work when available; otherwise introduce only its spawn consumer. Source geometry differences must be resolved before claiming Battle44 activation. Record persistence waits for saving; spawn work need not wait for scoring choice. |
 | Caravan travel / raft | Standalone authored Caravan state/controller and programs implemented; raft and full-map consumers deferred; [transport design](#transport-possession-mode-position-and-service-access). | Independent of full battle import when given explicit initial acquisition. Caravan's complete source consumer is the better first travel slice; raft landing awaits its named gap decision, not a guessed clone. |
 | Caravan party/depot/item/purge | Joined/active flags and slots exist; member selection/relief, 64-slot depot, exchange and service continuation absent. [Service contract](../../../docs/design/contracts/service-interactions.md#caravan-source-boundary), [custody](../../../docs/design/synthesis/progression-and-economy.md#custody-storage-and-active-membership). | After one inventory receipt/store rule, implement one service result. Boarding is not required to design the transaction, but natural C-menu availability needs separate field binding. Preserve twelve-member ordinary guard and leader/curse refusals. |

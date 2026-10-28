@@ -1,5 +1,47 @@
 # Gameplay Rules and Composition
 
+## Authored Jaro victory recruitment
+
+**High rigor:** [Issue #1371](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1371)
+joins retained party resources, activation, membership caches and resumable outcomes. The bounded
+outcome is an ordinary authored win, visible recruitment, reserve membership and usable field return.
+The source-backed priority is ordered state preservation, including failure/retry prefixes; private
+Battle32/Moun, original media/timing, physical alias reconstruction and wider party services are
+non-goals. This is a child of the [six-family closure scope](special-mechanics-design.md#current-closure-scope).
+
+**Confirmed static:** the accepted [Battle32 outcome owner](../../../docs/research/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)
+and its [victory tail](../../../docs/research/battle32-outcomes-and-moun-entry.md#victory-seed-after-loading-and-completion-tail)
+use SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. Direct joins are
+`data/battles/entries/battle32/cs_afterbattle.asm` commands38/39/45,
+`code/common/scripting/map/mapscriptengine_2.asm:csc08_joinForce`,
+`mapscriptengine_1.asm:csc54_joinForceAi`, `code/common/stats/battleparty.asm:JoinForce/LeaveBattleParty`,
+and `code/gameflow/battle/cutscenes/afterbattlecutscenesend.asm:EndAfterBattleCutscene`.
+The zero AI operand clears only bit2 and never calls JoinForce. JoinForce sets joined, rebuilds lists,
+then conditionally activates below12; it leaves preheld over-capacity membership intact. Leave clears
+active55 and writes only combatant X=-1, without rebuilding lists or changing joined23/resources.
+The common JoinForce0 rebuild precedes clear432/set532. Static order does not prove natural timing.
+
+**Implemented authored boundary:** `jaro-victory.json` uses the existing ordinary outcome selection,
+healing and saved return anchor. `JoinPartyMember` preserves an already retained actor, including a
+dead actor, inventory and progress. Typed `ClearOutcomePartyAi` changes only activation bit2;
+`LeaveOutcomeBattleParty` clears only active membership. Neither rebuilds lists. The unchanged
+outcome tail joins0 and rebuilds before completing the battle. Held532 skips the entire recruitment
+suffix, with no membership repair. Already joined does not suppress first-completion ceremony.
+
+The party returned by `BattleOutcome` already discards battle coordinates. Reserve membership and
+absence from the returned authored map are the observable removal here. There is no raw X/Y state,
+transient X-only emulation, permanent Jaro follower or promised next active turn. Original physical
+following and full Battle32/Moun composition remain unbound.
+
+Acceptance uses actual `JaroVictoryTests` and `JaroVictoryProgramTests`: converted/unconverted,
+joined/unjoined, dead/live, capacity below/at/above12, other activation bits, resource preservation,
+stale/wrong input, incomplete waits and failures/retries after join, AI clear and leave. The
+[session owner](../application/session-and-programs.md#jaro-victory-program-continuation),
+[content admission](../content/profiles-and-trust.md#authored-jaro-victory-admission) and
+[verification recipe](../development-and-verification.md#jaro-victory-authored-observation) own
+interfaces and execution. Preserve prior failures, #1047 Unknowns and the #638 pause. Rollback is
+this finite admission/package if acceptance fails; do not change shared source rules or weaken evidence.
+
 ## Authored poison after-turn
 
 **High rigor:** the finite poison slice joins action publication, timed notices, death accounting,
