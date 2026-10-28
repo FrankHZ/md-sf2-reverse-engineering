@@ -162,9 +162,9 @@ public sealed class BattleDefinition
         IEnumerable<HealingItemDefinition>? healingItems = null, BattleMapRegion? sourceMapRegion = null,
         IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
         TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
-        EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null)
+        EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null, BattleGiveDefinition? give = null)
     {
-        PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
+        Give = give; PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
@@ -192,6 +192,7 @@ public sealed class BattleDefinition
     public LeaderCleanupDefinition? LeaderCleanup { get; }
     public EnemyItemDropDefinition? ItemDrops { get; }
     public PrismLaserDefinition? PrismLaser { get; }
+    public BattleGiveDefinition? Give { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
 }
 

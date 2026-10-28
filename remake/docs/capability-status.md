@@ -1,5 +1,22 @@
 # Remake Capability Status
 
+## Authored battle Give and exchange
+
+**Implemented standalone authored subset:** explicit `battleGive: true` supports held-slot,
+cardinal adjacent teammate and full-recipient return-slot selection, cancellation, transfer and
+exchange. Confirmation preserves source compaction/add order, clears transferred equipped flags,
+refreshes both current ATT contributions as needed, commits provisional movement and then delivers
+an authored result before the ordinary STAY/next-turn suffix. Repeated/stale input cannot repeat
+custody or rewind the accepted prefix. Received items remain available to later use/equip rules.
+
+The [High-rigor agreement and static provenance](domain/gameplay-rules.md#authored-battle-give-and-exchange),
+[session owner](application/session-and-programs.md#battle-give-selection-and-completion),
+[admission](content/profiles-and-trust.md#authored-battle-give-admission) and
+[native recipe](development-and-verification.md#battle-give-authored-observation) bound this claim.
+**Unsupported:** rings, curses/break effects, general statuses, Drop/field/Caravan/shop services,
+private chapter imports and save/load. Original natural reach and presentation/timing remain
+**Unknown**. This does not resolve the twelve #1047 Unknowns or resume #638.
+
 ## Authored battle equipment agreement
 
 **High rigor; implemented bounded subset:** one standalone authored player can inspect eligible
@@ -18,7 +35,7 @@ counter validation, growth and continued ordinary control. The
 
 Four held slots bound selection to O(4); one commit copies existing battle actor state, O(N), with no
 RNG or acquisition. One authored package, small engine tests and one semantic witness (<180 seconds,
-<2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give/Drop, field/services,
+<2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give beyond the standalone subset above, Drop, field/services,
 connected/private chapter preparation and persistence remain Unsupported. Original natural reach,
 presentation/timing and the twelve #1047 Unknowns remain unchanged. Authored weapon names, numerical
 bonuses and presentation are example inputs, not newly confirmed original definitions.

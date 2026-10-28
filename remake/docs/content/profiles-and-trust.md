@@ -1,5 +1,26 @@
 # Runtime Profiles and Trust
 
+## Authored battle Give admission
+
+Standalone format7 opts in with top-level `battleGive: true`; omission preserves the previous
+profile. False, connected format8 and private import do not enable Give. The finite transfer
+catalog comes from existing validated `weapons`, healing `items` and retreat `items`, independently
+of use/equip eligibility. Unknown/drop-only identities, broken words and equipped nonweapons fail
+closed. Weapon metadata remains uncursed and ATT-only; names/arena values are authored.
+
+If weapons are declared, every allied recipient needs the existing `equipment` metadata so removing
+an equipped return item can refresh its current base contribution. Existing equipment startup
+admission still applies (player allies, status-free, supported source classes and physical metadata).
+Class-ineligible weapons remain carryable; their class mask only governs Equip. Live Give checks
+living placed allied actors, non-neutral activation and status0; an ordinary standalone absent
+activation word carries no neutral flag. This is not private source-state inference.
+
+The growth reader preserves Give when reconstructing definitions. Immutable initial loadouts and
+attack definitions remain unchanged. [battle-give.json](../../content/authored/battle-give.json)
+contains two adjacent authored allies and an idle opponent; its ordinary command route demonstrates
+normal receipt, full exchange, later equip/use and continued control. Rings, curses, broken items,
+general status effects, field/service menus and save/load are Unsupported.
+
 ## Authored weapon admission
 
 Standalone format7 may declare `weapons` rows with `id`, `name`, `type: "weapon"`, a nonzero unsigned
