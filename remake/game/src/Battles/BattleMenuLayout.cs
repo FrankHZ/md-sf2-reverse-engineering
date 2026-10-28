@@ -24,10 +24,7 @@ internal sealed partial class BattleMenuLayout : Control
     private int _selected;
     private Vector2 _descriptionSize;
     private Vector2 _actorSize, _contextSize;
-    private bool _commandsVisible;
     private bool _commandHint;
-    internal Action? LayoutChanged { get; set; }
-    internal Rect2 MapRect { get; private set; }
 
     internal void ConfigureAssets(BattleSceneDefinition? content)
     {
@@ -82,46 +79,37 @@ internal sealed partial class BattleMenuLayout : Control
         Size = size;
         const float margin = 16;
         bool narrow = size.X < 700;
-        float menu = Mathf.Clamp(size.Y * 0.38f, narrow ? 200 : 220, 300);
-        menu = Mathf.Min(menu, size.X - 2 * margin);
+        // Three display pixels per source pixel: keep the original icon crisp,
+        // and bring the cardinal centers closer without overlapping the square rasters.
+        const float cell = 24 * 3, step = 48;
+        const float menuWidth = cell * 3, menuHeight = cell + step * 2;
+        float listHeight = Mathf.Clamp(size.Y * 0.38f, 220, 300);
         float detailWidth = _commandHint ? Mathf.Min(240, size.X - 2 * margin) :
             narrow ? size.X - 2 * margin : Mathf.Clamp(size.X * 0.25f, 260, 340);
-        float detailHeight = _commandHint ? 56 : narrow ? 180 : menu;
+        float detailHeight = _commandHint ? 56 : narrow ? 180 : listHeight;
         _descriptionSize = new(detailWidth, detailHeight);
         SetTextWidths();
         detailHeight = Mathf.Max(detailHeight, _detail.GetCombinedMinimumSize().Y);
-        float menuY = size.Y - margin - menu - (narrow ? detailHeight + 12 : 0);
+        float bottom = size.Y - margin - (narrow ? detailHeight + 12 : 0);
         _actorSize = new(Mathf.Min(300, size.X * 0.55f - margin), 76);
         _contextSize = new(size.X * 0.45f - margin - 8, 62);
         _actor.Position = new(margin, margin);
         _context.Position = new(size.X * 0.55f + 8, margin);
-        Diamond.Position = new(margin, menuY); Diamond.Size = new(menu, menu);
-        float cell = Mathf.Floor(menu / 3), offset = (menu - cell) / 2;
-        Vector2[] locations = [new(offset, 0), new(0, offset), new(menu - cell, offset), new(offset, menu - cell)];
+        Diamond.Position = new(margin, bottom - menuHeight); Diamond.Size = new(menuWidth, menuHeight);
+        Vector2[] locations = [new(cell, 0), new(0, step), new(cell * 2, step), new(cell, step * 2)];
         for (int i = 0; i < Commands.Length; i++)
         {
             Commands[i].Position = locations[i]; Commands[i].Size = new(cell, cell);
             Commands[i].Arrange();
         }
-        _list.Position = Diamond.Position; _list.Size = new(Mathf.Min(360, size.X - 2 * margin - (narrow ? 0 : detailWidth + 24)), menu);
+        _list.Position = new(margin, bottom - listHeight);
+        _list.Size = new(Mathf.Min(360, size.X - 2 * margin - (narrow ? 0 : detailWidth + 24)), listHeight);
         _detail.Position = new(narrow ? margin : size.X - margin - detailWidth, size.Y - margin - detailHeight);
         _descriptionSize = new(detailWidth, detailHeight);
         SetTextWidths();
         _actor.Size = _actorSize; _context.Size = _contextSize;
         _detail.Size = _descriptionSize;
-        // Keep the map's focus region above the menu band so projected actors cannot hide behind it.
-        float mapTop = narrow ? 124 : 104;
-        float mapBottom = _commandsVisible ? menuY - 12 : narrow ? _detail.Position.Y - 12 : size.Y - margin;
-        float mapWidth = size.X - 2 * margin - (!_commandsVisible && !narrow ? detailWidth + margin : 0);
-        MapRect = new(new(margin, mapTop), new(Mathf.Max(1, mapWidth), Mathf.Max(1, mapBottom - mapTop)));
         SetTextWidths();
-        LayoutChanged?.Invoke();
-    }
-
-    internal void ShowCommands(bool visible)
-    {
-        if (_commandsVisible == visible) return;
-        _commandsVisible = visible; Arrange(Size);
     }
 
     internal void ShowCommandHint(bool compact)

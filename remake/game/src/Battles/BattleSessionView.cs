@@ -101,11 +101,6 @@ public sealed partial class BattleSessionView : Control
         _help = AddLabel("Help");
         _menu = new BattleCommandMenu { Name = "CommandMenu", Submit = Send };
         AddChild(_menu);
-        _menu.LayoutChanged = () =>
-        {
-            if (!_menu.Visible) return;
-            _map.Position = _menu.MapRect.Position; _map.Size = _menu.MapRect.Size;
-        };
         _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
         _give = new BattleGiveView { Name = "BattleGive" }; AddChild(_give);
         _discard = new BattleDiscardView { Name = "BattleDiscard" }; AddChild(_discard);
@@ -147,27 +142,23 @@ public sealed partial class BattleSessionView : Control
     {
         if (_map is null || _hud is null) return;
         var size = GetViewportRect().Size;
-        if (_menu is not null && _menu.Visible)
-        {
-            _menu.Arrange(size);
-            return;
-        }
+        // Map framing is independent of which overlay is open. Map is the first child;
+        // command menus, the supplementary HUD and scene presenters draw above it.
+        _map.Position = Vector2.Zero;
+        _map.Size = size;
+        _menu?.Arrange(size);
         const int margin = 16;
         if (size.X >= 800)
         {
             float hudWidth = Mathf.Clamp(size.X * 0.32f, 260, 380);
-            _map.Position = new(margin, margin);
-            _map.Size = new(Mathf.Max(1, size.X - 3 * margin - hudWidth), Mathf.Max(1, size.Y - 2 * margin));
-            _hud.Position = new(_map.Position.X + _map.Size.X + margin, margin);
-            _hud.Size = new(hudWidth, _map.Size.Y);
+            _hud.Position = new(size.X - margin - hudWidth, margin);
+            _hud.Size = new(hudWidth, Mathf.Max(1, size.Y - 2 * margin));
         }
         else
         {
             float height = Mathf.Max(2, size.Y - 3 * margin);
-            _map.Position = new(margin, margin);
-            _map.Size = new(Mathf.Max(1, size.X - 2 * margin), height * 0.6f);
-            _hud.Position = new(margin, _map.Position.Y + _map.Size.Y + margin);
-            _hud.Size = new(_map.Size.X, height * 0.4f);
+            _hud.Position = new(margin, margin * 2 + height * 0.6f);
+            _hud.Size = new(Mathf.Max(1, size.X - 2 * margin), height * 0.4f);
         }
         float textWidth = Mathf.Max(1, _hud.Size.X - _hud.GetVScrollBar().GetCombinedMinimumSize().X - 4);
         foreach (var label in _hudLabels) label.CustomMaximumSize = new(textWidth, -1);

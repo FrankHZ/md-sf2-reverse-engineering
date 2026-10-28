@@ -195,6 +195,14 @@ sit against the right safe edge, leaving the middle open. Magic and inventory us
 cancel path back to the preceding selection. A vertical list replacing the main diamond is not the
 selected direction.
 
+The current 1280×720 review layout uses 72×72 icons (3× source pixels) in a compact 216×168 cardinal
+cluster, with 48-pixel vertical steps between the top, side and bottom positions. This is a modern
+spacing choice inspired by the source arrangement, not a pixel-exact original layout claim.
+The battle map occupies the full game viewport; command menus, lists, hints and supplementary HUD
+draw above it. Opening or closing UI must not resize the map, alter its zoom or reframe its current
+focus. Gameplay movement/target changes retain their existing camera behavior. This overlay change
+does not choose the deferred modern world viewport/camera design.
+
 The existing graphics-remake experiment at commit `172662709b31cb296b55f51894754ce810c30f6c`,
 owned by its `docs/ui-treatment-01.md` and `src/remaster/vector_ui.py`, supplies the window-chrome
 reference. Its Yes/No sample is not a complete UI kit: placeholder text and the embedded private item

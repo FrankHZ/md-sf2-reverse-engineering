@@ -106,10 +106,12 @@ $env:SF2_DIAMOND_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'diamond-menu.json'
 ```
 
 The probe checks cardinal focus, disabled spell/item/target feedback, nested cancel without resource
-use, real healing and another actor's item consumption. Actual menu/text rectangles are checked at
-960×540, 1280×720, 1920×1080, 640×540 and 360×640, including disabled-list and target descriptions.
-The map focus area expands during movement/target selection; very short narrow menu views prioritize
-readable commands. No claim of final visual quality follows from geometry alone.
+use, real healing and another actor's item consumption. Current acceptance uses the existing
+1280×720 review window, including disabled-list and target descriptions; older multi-size receipts
+are not a requirement to expand multi-resolution support. Check the 216×168 command cluster and
+72×72 icons, full-window map rectangle, and unchanged map rectangle/zoom/preview framing when opening
+the main menu or a list. Gameplay target/movement changes can still move the camera. No claim of
+final visual quality follows from geometry alone.
 
 For physical attack, set `SF2_DIAMOND_CASE=physical`, a fresh output, and use the existing
 `remake/content/authored/stone-court.json` package. For a bounded private menu observation, load
@@ -120,7 +122,7 @@ until player battle control. A legacy standalone battle input lacking map-region
 not a substitute. That case checks menu navigation and cancel without committing an action; it is
 not another continuous opening/outcome comparison.
 For original-art acceptance, prepare/select the [private command rasters](../content/presentation-assets.md#private-command-menu-icons)
-and set `SF2_DIAMOND_ORIGINAL_ICONS=1`. Require square command rectangles at all five sizes, mounted
+and set `SF2_DIAMOND_ORIGINAL_ICONS=1`. Require square command rectangles at the review size, mounted
 24×24 textures with nearest sampling, and actual draw readback selecting each normal/selected raster
 as focus moves. The observation has a 150-second deadline. These checks establish resource use and
 geometry, not human visual approval.

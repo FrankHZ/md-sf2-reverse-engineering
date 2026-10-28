@@ -22,8 +22,6 @@ internal sealed partial class BattleCommandMenu : Control
     private SessionFailure? _failure;
     internal Action<SessionCommand> Submit { get; set; } = null!;
     internal ActorRef? TargetCandidate { get; private set; }
-    internal Rect2 MapRect => _layout.MapRect;
-    internal Action? LayoutChanged { get => _layout.LayoutChanged; set => _layout.LayoutChanged = value; }
 
     public override void _Ready()
     {
@@ -160,7 +158,6 @@ internal sealed partial class BattleCommandMenu : Control
         _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
         _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list);
         _layout.Diamond.Visible &= selection is not null && !moving && _page == Page.Main;
-        _layout.ShowCommands(list || _layout.Diamond.Visible);
         _layout.Heading.Text = moving ? "Choose a position" : _page switch
         {
             Page.Magic => "Magic", Page.Items => "Items", Page.Target => "Choose a target",

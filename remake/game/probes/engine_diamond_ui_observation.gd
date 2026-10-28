@@ -61,12 +61,14 @@ func _inside(rect: Dictionary, size: Vector2i) -> bool:
     return rect.x >= 0 and rect.y >= 0 and rect.x + rect.width <= size.x + 1 and rect.y + rect.height <= size.y + 1
 
 func _layout() -> void:
-    for size in [Vector2i(960, 540), Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(640, 540), Vector2i(360, 640)]:
+    for size in [Vector2i(1280, 720)]:
         root.size = size
         for frame in range(4):
             await process_frame
         var state := _state("layout-" + str(size))
         var layout: Dictionary = state.menu.layout
+        _check(state.mapViewport == state.viewport, "Menu overlays the full map viewport")
+        _check(layout.diamond.width == 216 and layout.diamond.height == 168, "Cardinal cluster stays compact")
         if layout.diamondVisible:
             _check(layout.commandHint and not layout.helpVisible, "Main menu has one compact selection hint without control prose")
             _check(layout.heading == layout.commands[state.menu.command].label, "Hint names only the focused command")
@@ -78,6 +80,7 @@ func _layout() -> void:
         for command in layout.commands:
             _check(_inside(command.rect, size), "Command fits " + str(size))
             _check(command.art.shape == "square" and abs(command.rect.width - command.rect.height) < 1, "Cardinal command is square")
+            _check(command.rect.width == 72 and command.art.scale == 3, "Source icons keep an integer three-times size")
             if OS.get_environment("SF2_DIAMOND_ORIGINAL_ICONS") == "1" and layout.diamondVisible:
                 _check(command.art.mounted and command.art.width == 24 and command.art.height == 24 and command.art.filter == "Nearest", "Original texture is mounted at native size with nearest sampling")
                 _check(not command.art.extraFrame and not command.art.labelVisible, "Original square icon has no extra frame or per-icon caption")
@@ -90,6 +93,7 @@ func _layout() -> void:
         await process_frame
 
 func _run() -> void:
+    root.size = Vector2i(1280, 720)
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
     await process_frame
@@ -118,6 +122,9 @@ func _run() -> void:
         _finish()
         return
     await _press(KEY_ENTER)
+    var opened := _state("overlay-opened")
+    _check(opened.mapViewport == initial.mapViewport and opened.zoom == initial.zoom and opened.previewRect == initial.previewRect,
+        "Opening the menu does not resize, zoom or reframe the map")
     await _layout()
     if OS.get_environment("SF2_DIAMOND_CASE") in ["equipment", "give", "discard"]:
         await _supplementary(initial)
@@ -184,6 +191,8 @@ func _menus(initial: Dictionary) -> void:
     await _press(KEY_LEFT)
     await _press(KEY_ENTER)
     var magic := _state("magic-list")
+    _check(magic.mapViewport == open.mapViewport and magic.zoom == open.zoom and magic.previewRect == open.previewRect,
+        "Opening a list keeps the underlying map framing")
     _check(magic.menu.page == "Magic" and magic.menu.layout.rows.size() == 2, "Magic lists learned ranks")
     await _press(KEY_DOWN)
     await _press(KEY_ENTER)
