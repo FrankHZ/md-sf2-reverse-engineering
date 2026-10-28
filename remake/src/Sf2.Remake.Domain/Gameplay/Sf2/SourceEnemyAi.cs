@@ -27,7 +27,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
     {
         var actor = current.GetActor(actorRef);
-        if (actor.IsAlly || actor.Position is null || actor.Hp == 0 || actor.Status != 0 ||
+        if (actor.IsAlly || actor.Position is null || actor.Hp == 0 || actor.Status is not (0 or 2) ||
             actor.Deployment.Initialization is not { } source || current.Regions is null)
             throw new BattleRuleException("source-ai-state", "actor.ai", true);
         if (actor.ActivationWord is not { } word)

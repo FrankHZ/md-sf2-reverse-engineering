@@ -25,7 +25,7 @@ public static class BattleGive
             !battle.Definition.Contains(actor.Position) || ((actor.ActivationWord ?? 0) & 8) != 0 ||
             giver && actor.Control != BattleControl.Player)
             throw new BattleRuleException("give-actor", "actor");
-        if (actor.Status != 0) throw new BattleRuleException("give-status", "actor.status", true);
+        if (actor.Status is not (0 or 2)) throw new BattleRuleException("give-status", "actor.status", true);
         if (actor.SourceLoadout is not { Items.Count: 4 } loadout)
             throw new BattleRuleException("give-loadout", "actor.sourceLoadout", true);
         foreach (ushort word in loadout.Items)

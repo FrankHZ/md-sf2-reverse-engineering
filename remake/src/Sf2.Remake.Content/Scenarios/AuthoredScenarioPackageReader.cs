@@ -41,6 +41,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     internal static ScenarioReadAccepted DecodeBattle(JsonElement root, bool allowLeaderCleanup = false)
     {
         ObjectOptional(root, "document", "items", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters",
+            .. root.TryGetProperty("battlePoison", out _) ? new[] { "battlePoison" } : [],
             .. root.TryGetProperty("battleStory", out _) ? new[] { "battleStory" } : [],
             .. root.TryGetProperty("dropItems", out _) ? new[] { "dropItems" } : [],
             .. root.TryGetProperty("battleDiscard", out _) ? new[] { "battleDiscard" } : [],
@@ -50,9 +51,13 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
+        bool poison = root.TryGetProperty("battlePoison", out _);
+        if (poison) Require(!allowLeaderCleanup && Text(root, "battlePoison") == "fixed-two-after-turn",
+            "poison-standalone-only", "battlePoison", true);
         string package = Id(root, "package");
         var start = root.GetProperty("start");
         ObjectOptional(start, "start", "itemCustody", ["encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors",
+            .. poison ? new[] { "firstAlly" } : [],
             .. start.TryGetProperty("story", out _) ? new[] { "story" } : []]);
         Require(Text(start, "initialVitals") == "authored-controlled", "initial-vitals-policy", "start.initialVitals");
         string selectedEncounter = Id(start, "encounter");
@@ -242,6 +247,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         foreach (var encounter in Array(root, "encounters"))
         {
             Object(encounter, "encounter", ["id", "map", "placements",
+                .. poison ? new[] { "outcome" } : [],
                 .. (encounter.TryGetProperty("initialization", out _) ? new[] { "initialization" } : []),
                 .. (encounter.TryGetProperty("rewards", out _) ? new[] { "rewards" } : []),
                 .. (encounter.TryGetProperty("tarosEffectiveness", out _) ? new[] { "tarosEffectiveness" } : []),
@@ -292,12 +298,22 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             }
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
-            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, initialization: AuthoredBattleInitializationReader.Read(encounter, placements), healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
+            BattleOutcomeDefinition? outcome = null;
+            if (poison)
+            {
+                var terminal = encounter.GetProperty("outcome");
+                Object(terminal, "encounter.outcome", "leader", "defeatedGateEnemy");
+                outcome = new(new(Id(terminal, "leader")), new(Id(terminal, "defeatedGateEnemy")));
+                Require(placements.Any(p => p.Actor == outcome.Leader && p.Faction == BattleFaction.Ally) &&
+                    placements.Any(p => p.Actor == outcome.DefeatedGateEnemy && p.Faction == BattleFaction.Enemy),
+                    "poison-outcome-actors", "encounter.outcome");
+            }
+            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, outcome: outcome, initialization: AuthoredBattleInitializationReader.Read(encounter, placements), healingItems: healingItems.Values, retreatSpells: retreats.Values, retreatItems: retreatItems.Values,
                 tarosEffectiveness: TarosEffectivenessReader.Read(encounter, placements, weaponItems),
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
                 itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
                 prismLaser: PrismLaserReader.Read(encounter, placements),
-                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: discard)),
+                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: discard, poison: poison)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
@@ -317,7 +333,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var initialized = AuthoredBattleInitializationReader.Start(input);
             startActors.Add(new(new ActorRef(Id(input, "actor")), (ushort)Number(input, "hp", 0, 65535),
                 (byte)Number(input, "mp", 0, 255), (byte)Number(input, "exp", 0, 99),
-                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized,
+                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input, poison), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized,
                 Absent: input.TryGetProperty("absent", out _) && Boolean(input, "absent"),
                 RetainDeadPosition: input.TryGetProperty("retainDeadPosition", out _) && Boolean(input, "retainDeadPosition")));
         }
@@ -330,7 +346,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var battleStory = BattleStoryReader.Read(root, encounters.Values);
         var storyStart = BattleStoryReader.Start(start, encounters[selectedEncounter]);
         var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
-            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, BattleDiscardReader.CustodyItems(dropItems, discard)), storyFlags: storyStart.Flags, visuals: storyStart.Visuals, retainedSourceSlots: storyStart.Retained);
+            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, BattleDiscardReader.CustodyItems(dropItems, discard)), storyFlags: storyStart.Flags, visuals: storyStart.Visuals, retainedSourceSlots: storyStart.Retained, deathCredit: poison ? new(start.GetProperty("firstAlly").ValueKind == JsonValueKind.Null ? null : new ActorRef(Id(start, "firstAlly"))) : null);
         BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
         // Drop/initialization-enabled encounters need fresh enemies on each entry. Their
         // controlled start is a definition input, never a replacement for live allies.
@@ -340,14 +356,18 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         {
             var input = new BattleStartInput(encounter.Encounter,
                 startActors.Where(actor => encounter.Deployments.Any(row => row.Actor == actor.Actor)),
-                mainSeed, thinkingSeed, startInput.Gold, itemCustody: startInput.ItemCustody, storyFlags: startInput.StoryFlags, visuals: startInput.Visuals, retainedSourceSlots: startInput.RetainedSourceSlots);
+                mainSeed, thinkingSeed, startInput.Gold, itemCustody: startInput.ItemCustody, storyFlags: startInput.StoryFlags, visuals: startInput.Visuals, retainedSourceSlots: startInput.RetainedSourceSlots, deathCredit: startInput.DeathCredit);
             BattleTurnFlow.ValidateStart(encounter, input);
             return input;
         }).ToArray();
         return new(new ScenarioDefinition(package, encounters.Values, encounterStarts: defaults, battleStory: battleStory), startInput);
     }
 
-    private static ushort StartStatus(JsonElement input)
-    { Require(Text(input, "status") == "none", "actor-status", "start.actors.status", true); return 0; }
+    private static ushort StartStatus(JsonElement input, bool poison)
+    {
+        string status = Text(input, "status");
+        Require(status == "none" || poison && status == "poison", "actor-status", "start.actors.status", true);
+        return status == "poison" ? (ushort)2 : (ushort)0;
+    }
 
 }

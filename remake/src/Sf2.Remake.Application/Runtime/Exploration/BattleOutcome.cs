@@ -19,6 +19,12 @@ internal static class BattleOutcome
             if (BattleOutcomeSelection.Check(rules.Outcome, current.Battle) is not { } kind) return result;
             if (kind == BattleOutcomeKind.Retreat)
                 throw new BattleRuleException("retreat-requires-action", "battle.outcome", true);
+            if (definition.Exploration is null && current.Battle.Definition.Poison)
+            {
+                var ended = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
+                    new ActiveBattle(current.Battle, null, Outcome: kind), current.Story, SessionStopReason.BattleEnded);
+                return new(ended, result.Observations, ended.StopReason);
+            }
             var route = current.Story.EnteringBattle?.Outcome ?? throw new BattleRuleException("outcome-route", "battle.outcome", true);
             var battle = current.Battle;
             var party = new BattleStartInput(battle.Definition.Encounter,

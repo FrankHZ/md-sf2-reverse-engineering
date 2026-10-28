@@ -18,7 +18,7 @@ internal sealed class Sf2HealingRule : IHealingRule
         if (spell.IsAura)
         {
             HealingTargetRules.ValidateAura(battle.Definition);
-            if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Status != 0)
+            if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Status is not (0 or 2))
                 throw new BattleRuleException("aura-caster", "actor", true);
         }
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");

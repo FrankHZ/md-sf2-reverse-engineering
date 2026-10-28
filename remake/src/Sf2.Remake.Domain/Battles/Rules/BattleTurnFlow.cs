@@ -20,7 +20,7 @@ internal static class BattleTurnFlow
                 initialized: input.Initialized ?? true, retainDeadPosition: input.RetainDeadPosition);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
-            regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals);
+            regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals, deathCredit: start.DeathCredit);
         if (start.NewBattle is not null) initial = BattleInitializationRules.Initialize(initial, start);
         return initial.Visuals is { } visuals ? initial.With(visuals: visuals.ProjectStart(initial.Actors)) : initial;
     }
@@ -65,6 +65,13 @@ internal static class BattleTurnFlow
             Require(activeAllies.Distinct().Count() == activeAllies.Count && activeAllies.All(actor =>
                 definition.Deployments.Any(row => row.Actor == actor && row.Faction == BattleFaction.Ally)), "active-party", "start.activeAllies");
         }
+        if (definition.Poison)
+        {
+            Require(start.NewBattle is null && start.DeathCredit is not null, "poison-death-context", "start.firstAlly", true);
+            Require(start.DeathCredit!.Ally is not { } first || definition.Deployments.Any(d => d.Actor == first && d.Faction == BattleFaction.Ally),
+                "death-first-ally-context", "start.firstAlly", true);
+            Require(start.Actors.All(a => a.Status is 0 or 2), "poison-status", "start.actors.status", true);
+        }
         Sf2.Remake.Domain.Gameplay.Sf2.HealingTargetRules.ValidateAura(definition);
         BattleInitializationRules.Validate(definition, start);
         var occupied = new HashSet<MapPosition>();
@@ -81,7 +88,7 @@ internal static class BattleTurnFlow
             {
                 BattleEquipment.ValidateLoadout(actor, loadout);
                 Require(deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
-                    !deployment.SourceAllyControl && input.Status == 0 && actor.Physical is not null,
+                    !deployment.SourceAllyControl && (input.Status == 0 || definition.Poison && input.Status == 2) && actor.Physical is not null,
                     "equipment-actor", "start.actors", true);
             }
             Require(definition.ItemDrops is null || loadout is not null,
@@ -95,7 +102,7 @@ internal static class BattleTurnFlow
                     "actor-progress", "start.actors.progress");
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
-            Require(input.Status == 0 || start.NewBattle is not null || definition.Initialization?.RegionProgram == BattleRegionProgram.Authored, "actor-status", "start.actors.status", true);
+            Require(input.Status == 0 || definition.Poison && input.Status == 2 || start.NewBattle is not null || definition.Initialization?.RegionProgram == BattleRegionProgram.Authored, "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
                 "missing-accounting", "start.actors");
             if (input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;

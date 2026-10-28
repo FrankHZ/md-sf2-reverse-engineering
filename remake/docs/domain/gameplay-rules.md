@@ -1,5 +1,41 @@
 # Gameplay Rules and Composition
 
+## Authored poison after-turn
+
+**High rigor:** the finite poison slice joins action publication, timed notices, death accounting,
+outcome and queue ownership. Its acceptance boundary is standalone authored status0/POISON2 with
+fixed2-HP damage, existing sleep unchanged, exactly-once ordered completion and preserved failure
+prefixes. It reuses the existing action, field-death and outcome owners; no general status scheduler.
+
+**Confirmed, static:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/gameflow/battle/battleloop/processafterturneffects.asm` (`0x24242..0x2448A`)
+skips an initially dead actor, emits307, calls `DecreaseCurrentHp` with `POISON_DAMAGE=2`, emits308
+on zero HP, records the dead actor and calls `UpdateCombatantStats`. `sf2enums.asm` defines
+`STATUSEFFECT_POISON=2` and damage2. Common `stats/combatantstats_2.asm` clamps HP at zero.
+Poison alone has no derived-stat modifier, so ordinary ATT-only equipment and admitted growth retain
+current HP and recompute their existing values without a new status refresh implementation.
+
+`battleloop_1.asm @IsBattleEnd` runs the defeated hook/action death/count pass first; an action outcome
+skips after-turn. It then runs after-turn, death/count and queue advance, with no second defeated hook.
+`battleloop/processkilledcombatants.asm` increments the dead ally's defeats or the retained
+`BATTLESCENE_FIRST_ALLY` kills for a dead enemy, then clears position/status and refreshes stats.
+`battleactions/battleactionsengine_1.asm` initializes that context when a scene is built; no-scene STAY
+retains it. `IncreaseKills` returns for a negative source index (explicit FF sentinel). Poison neither
+invents an attacker nor grants EXP/gold/drop rewards. `countremainingcombatants.asm` counts placed
+living units and forces zero allies for zero-HP leader; defeat precedes victory.
+
+`PoisonTurnRules` supplies fixed clamping and eligibility. Pure poison allows movement, physical,
+admitted healing/items, Give, free Equip/Drop and growth. An attack whose sleep-critical participant
+could create poison+sleep rejects as Unsupported; mixed statuses, poison infliction, DETOX/cure,
+regeneration/buffs and PrismLaser's separate status-free profile remain outside scope. Content uses
+an explicit standalone opt-in and initial retained credit; [admission](../content/profiles-and-trust.md#authored-poison-admission)
+and [execution](../application/session-and-programs.md#poison-after-turn-continuation) own those boundaries.
+
+**Unknown:** natural original reach, hardware/message timing and general mixed-status lifecycle.
+The static rules and authored engine tests do not close these gaps or #1047's retained Unknowns.
+Reproduce the bounded engine behavior with `PoisonTurnTests` and `PoisonSessionTests`; the
+[native recipe](../development-and-verification.md#poison-authored-observation) owns actual delivery.
+
 ## Authored battle discard
 
 **Standard rigor agreement:** standalone authored Drop is a bounded extension of existing packed
@@ -325,7 +361,7 @@ positive-HP enemy in source-slot order, including already-unplaced actors. Force
 explicitly distinguished from action deaths. The sweep never changes HP or constructs attacks.
 At accepted field exit, each enemy entry credits a kill when the retained context contains an ally;
 known-none laser custody suppresses that increment. Allied action deaths credit their own defeats. The existing capped counter policy clears placement/status.
-Admitted sleep has no stat modifier to recompute; wider stat/status refresh remains unsupported.
+Admitted sleep and pure poison have no stat modifier to recompute; wider stat/status refresh remains unsupported.
 Only the original action earns damage/end EXP and death gold; the sweep adds no EXP, gold or drops.
 Outcome counts placed living combatants after cleanup and checks allied defeat first.
 

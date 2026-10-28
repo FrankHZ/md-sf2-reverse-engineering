@@ -1,5 +1,40 @@
 # Development and Verification
 
+## Poison authored observation
+
+Use [poison-turn.json](../content/authored/poison-turn.json) in the ordinary host. Enter, Space, Enter
+commits STAY: champion3→1 receives nonlethal feedback; receiver2→0 then shows exhaustion, ordered
+field removal and one defeat before next-round champion movement/cancel remains usable. No post-start
+state injection. `engine_poison_observation.gd` drives ordinary keys and reads actual state/text,
+checks focus/hide suspension and exactly-once damage/action/death counts. The terminal outcome and
+automatic standby variants are small engine tests, not extra native trajectories.
+
+Load `local/private-inputs.ps1` in the launch process, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`,
+and reuse the selected SDK/Godot and existing project. Run `uv run sf2 verify engine`,
+`uv run sf2 verify adapter` and the adapter Debug build. No retained instance exists at slice start,
+so a startup of the newly built adapter is necessary. Resolve paths from the owning repository root:
+
+```powershell
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_poison_observation.gd -- `
+  --authored-package (Join-Path $repoRoot 'remake/content/authored/poison-turn.json') `
+  --input-settings (Join-Path $freshIgnoredOutput 'input.json')
+```
+
+Use `{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120}` for input.json. Keep
+APPDATA, LOCALAPPDATA, TEMP/TMP, stdout/stderr and JSON in fresh ignored `local/issue1367` run folders;
+await actual native process exit. One serial instance, <180s and <2MiB semantic output are the bounded
+target; no assets, screenshots, emulator/H3/H4 or normal/full research run. No general observer platform.
+
+`PoisonTurnTests`/`PoisonSessionTests` cover HP1/2/3/high, dead/unplaced/status0, player and automatic
+standby, action-ending outcomes, retained credit/sentinel, growth and healing/item/physical ordering,
+free inventory operations, typed/stale completion, missing context and outcome-failure retry after
+HP/cleanup. Existing sleep/field-death/action tests are affected regressions. Preserve completed
+failures and rerun failed/affected cases. On a clean committed head inspect `uv run sf2 verify plan
+--base origin/main --head HEAD`, direct docs/ownership/private-boundary/source-size checks and exact-head
+CI. Optional private skips do not make a private poison claim.
+
 ## Battle discard authored observation
 
 Use [battle-discard.json](../content/authored/battle-discard.json) in the ordinary host. Enter then R

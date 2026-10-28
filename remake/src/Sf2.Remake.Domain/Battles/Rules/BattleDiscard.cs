@@ -21,7 +21,7 @@ public static class BattleDiscard
         if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Hp == 0 || actor.Position is null ||
             !actor.Initialized || !battle.Definition.Contains(actor.Position) || ((actor.ActivationWord ?? 0) & 8) != 0)
             throw new BattleRuleException("discard-actor", "actor");
-        if (actor.Status != 0) throw new BattleRuleException("discard-status", "actor.status", true);
+        if (actor.Status is not (0 or 2)) throw new BattleRuleException("discard-status", "actor.status", true);
         if (actor.SourceLoadout is not { Items.Count: 4 } loadout)
             throw new BattleRuleException("discard-loadout", "actor.sourceLoadout", true);
         List<BattleDiscardChoice> choices = [];

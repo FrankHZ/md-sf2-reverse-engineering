@@ -75,7 +75,7 @@ public static class BattleEquipment
     {
         ValidateLoadout(actor.Definition, actor.SourceLoadout);
         if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Hp == 0 || actor.Position is null ||
-            actor.Status != 0 || actor.Definition.Physical is null)
+            actor.Status is not (0 or 2) || actor.Definition.Physical is null)
             throw new BattleRuleException("equipment-actor", "actor", true);
         if (actor.Attack != Math.Min(200, actor.BaseAttack + Contribution(actor.Definition, actor.SourceLoadout)))
             throw new BattleRuleException("equipment-stats", "actor.attack");

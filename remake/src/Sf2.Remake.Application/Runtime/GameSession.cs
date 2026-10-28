@@ -47,6 +47,7 @@ public sealed class GameSession
             definition.BattleStory?.RequireStart(encounter, start);
             rules = rules.Bind(definition.Encounters.Values, start.Actors);
             var result = ContinueStory(definition, BattleAdvancer.Start(encounter, start, rules), rules);
+            if (encounter.Poison && result.Failure is null) result = BattleOutcome.Begin(definition, result, rules);
             return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
         }
         catch (BattleDecisionRuleFault error)
@@ -98,6 +99,7 @@ public sealed class GameSession
         var current = Current;
         if (envelope.SessionId != current.SessionId || envelope.ExpectedRevision != current.Revision)
             return BattleCommandDispatcher.Reject(current, "stale-input", "envelope");
+        if (current.BattleResult is not null) return BattleCommandDispatcher.Reject(current, "battle-ended", "command");
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
