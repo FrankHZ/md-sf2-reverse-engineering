@@ -2,7 +2,7 @@
 
 The connected private opening is playable from a controlled Map3 start through story/exploration,
 tower entry, Battle01 and usable return. That acceptance does not establish a complete product
-opening or a finished UI. The largest remaining gaps are entry/persistence UX, continuous movement,
+opening or a finished UI. The largest remaining gaps are entry/persistence UX,
 a chosen world viewport, consistent field/story information, and basic menu mouse input. Existing
 battle messages and return delivery need experience review rather than being classified as absent.
 
@@ -59,8 +59,8 @@ there is no separately dispatched implementation Issue yet.
 | E2 · Change settings before or during play | Versioned startup input/text/reduced-flash settings are **accepted, bounded**; settings screen and automatic save are **not implemented**. | Existing configuration is not a discoverable in-game menu. **Unknown:** which settings must be exposed and persisted. Do not conflate supported remapping with a delivered settings UI. | **Confirmed structure and retained input boundary:** [InputSettings](../../game/src/Input/InputSettings.cs), [logical input/settings owner](../verification/host.md#logical-input-and-accessibility-adr-0010-9a). | **P2, decision first.** Same entry/settings product boundary as E1; [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438), persistence dependency [#1369](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369). |
 | E3 · Invalid launch option, missing content or invalid settings | Typed startup failure reaches the common battle view: **accepted, bounded** diagnostics. | **Integrated, experience pending:** technical kind/code/field is shown; no product recovery/retry screen is connected. **Inferred:** a player may know startup failed without knowing an actionable remedy. | **Confirmed structure:** [GameRoot.Fail](../../game/src/GameRoot.cs), [BattleSessionView.FailStartup](../../game/src/Battles/BattleSessionView.cs). [Startup observations](../verification/host.md#ordinary-host-startup) establish rejection, not a complete recovery experience. | **P2.** Entry choice E1 precedes recovery design; error wording also belongs in [C](#c--read-and-answer-a-story-sequence). [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438). |
 | E4 · See Map3, move between scenes, follow camera | Field maps, actors, logical camera and scene transitions are **accepted, bounded**. Private field drawing still uses a 320×192 source view scaled into the window. | Modern visible world extent, actor size, UI occupancy and camera relationship are **not implemented as an agreed product treatment**. **Unknown:** target composition. More window pixels alone do not expand the visible world. | **Confirmed structure:** [ExplorationPresentation.Draw](../../game/src/Exploration/ExplorationPresentation.cs), constants `ViewWidth/ViewHeight`; [field projection](../godot/presentation.md#field-projection). Existing camera/plane observations prove their named transforms, not a modern viewport choice. | **P1.** [A](#a--see-the-connected-world-at-the-chosen-baseline), after user viewport/baseline decision; [#438 feedback](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438#issuecomment-6461577919). |
-| E5 · Hold direction, release, lose focus; then use a menu | A fresh key event moves; keyboard echo is rejected: **integrated, experience pending**. Hold-to-wait is a separate existing action. Continuous directional walking is **not implemented**. | **Inferred:** repeated tapping interrupts walking. Movement repeat and menu navigation need separate cadence; release/focus/transition must stop a future movement hold. Existing wait-hold must not be mistaken for directional repeat. | **Confirmed structure:** [GameInput.Resolve](../../game/src/Input/GameInput.cs), [ExplorationSessionView.HandleAction](../../game/src/Exploration/ExplorationSessionView.cs), [input boundary](../verification/host.md#logical-input-and-accessibility-adr-0010-9a). User requested continuous movement; this assessment runs no hold/focus observation. | **P1.** [B](#b--walk-to-a-character-talk-and-regain-control), reusable input/session interface; independent of #689 and of viewport selection. [#438 feedback](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438#issuecomment-6461577919). |
-| E6 · Face an NPC and try to interact | Confirm locates an adjacent visible entity and submits Interact; binding-derived Talk/movement help is **integrated, experience pending**. | No contextual target/action prompt is connected. **Inferred:** generic Talk help gives limited feedback about who can respond or why nothing happens. A cue must reflect existing session legality, not invent interactions. | **Confirmed structure:** [ExplorationSessionView.HandleAction/Present](../../game/src/Exploration/ExplorationSessionView.cs). Existing [field observations](../verification/field-programs.md#reproduction) cover bounded interaction; prompt discoverability is **Unknown**. | **P1.** [B](#b--walk-to-a-character-talk-and-regain-control); consume current entities and interaction failures, without adding Search/acquisition. [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438). |
+| E5 · Hold direction, release, lose focus; then use a menu | Continuous mapped field walking is **implemented, bounded observation passed** under #1389: fresh step, 220 ms initial delay, 120 ms repeat without catch-up. Ordinary motion waits retain the hold; release/lifecycle/story handoffs stop future steps. | **Unknown:** physical device release outside the focused window and full opening experience. Choices/menu retain edge input; no original timing claim. Independent main-gate acceptance is required. | **Confirmed:** [control implementation and finite native witness](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk), including real native focus transfer, hidden/pause recovery, mapped keys/stick, dialogue and map/battle handoffs. Input events are injected. | **P1.** [B](#b--walk-to-a-character-talk-and-regain-control), [#1389](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1389); independent of #689 and viewport choice. |
+| E6 · Face an NPC and try to interact | Binding-derived Confirm + Talk appears only for a current legal interaction offer: **implemented, bounded observation passed**. Confirm requeries; Interact rechecks the same target/event predicate. | No fabricated names or new interactions. **Unknown:** broader prompt discoverability and opening-route experience; cue placement follows A once chosen. | **Confirmed:** [shared Application query and host observation](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk); tests cover visibility/range/facing/flag/busy changes; host checks facing/leaving/busy hints and dialogue. | **P1.** [B](#b--walk-to-a-character-talk-and-regain-control), [#1389](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1389); no Search/acquisition. |
 | E7 · Inspect party/status or open a field menu | An exploration party/status/inventory menu is **not implemented**. Existing party/session data is **available, not integrated** into that UI. The field view exposes title, dialogue, choice and help. | **Inferred:** users cannot inspect carried health/resources/party through a field menu. **Unknown:** desired information/actions; battle-only equipment/Give/Drop cannot be advertised as field services. | **Confirmed structure:** [field view](../../game/src/Exploration/ExplorationSessionView.cs), [session authority](../application/session-and-programs.md#session-authority); [capability exclusions](../capability-status.md#milestone-and-deferred-surfaces). A menu is not proof that missing services exist. | **P2.** Define a read-only information subset in [E](#e--understand-a-battle-result-and-continue-in-the-field); any new field action needs separate scope. [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438), wider engine work [#1369](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369). |
 
 ## Dialogue and cutscene matrix
@@ -104,7 +104,7 @@ is remake product intent, not evidence about original SF2:
 
 | Request | Matrix / disposition |
 | --- | --- |
-| Continuous directions, release/focus stop; distinct menu cadence | E5/E6 → B; missing continuous walking is not hidden by existing hold-to-wait. |
+| Continuous directions, release/focus stop; distinct menu cadence | E5/E6 → B; #1389 implements and observes the bounded control/hint behavior. Physical-device and whole-opening experience limits remain explicit. |
 | Choose one resolution, then modern world viewport/camera | E4/X1 → A; 1280×720 remains #689's review condition. No baseline selected here; multi-resolution support is deferred. |
 | Systematic UI used in exploration and cutscenes | E7/D1–D4/X2/X4 → C, then E; existing assets/interfaces are inputs, not a finished kit. |
 | Basic mouse for existing menus | D3/X3 → D; menu scope and commit/back convention first; no world-click movement promise. |
@@ -143,13 +143,20 @@ is consumed if battle layout is touched, without reopening its original acceptan
 
 ### B · Walk to a character, talk and regain control
 
-**P1; E5/E6.** Continuous field directions, release/focus/transition stop, and a minimal interaction
-cue form one complete behavior. Use existing input/session ownership, with menu/choice navigation
-retaining its own cadence. Acceptance: hold across several legal steps and an obstruction, release
-and lose focus without extra movement, face/talk to an admitted NPC, reveal/answer normally, then
-move again; no held direction selects a choice or leaks into battle. Include mapped keys and a scene
-handoff. No new interactions or general input framework. This can proceed independently of A's visual
-choice and #689; cue placement must follow A when it becomes accepted.
+**P1; E5/E6; implemented with bounded candidate observation under
+[#1389](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1389).** Continuous mapped walking
+and contextual Talk use the existing Move/Interact/session authority. Release, focus/hide/pause,
+interaction, program and map/battle handoffs cancel future repeat; a normal Move wait retains it.
+The [control owner](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk)
+records cadence, deterministic direction priority, actual session tests, native reproduction and
+preserved failures. The finite authored host witness passed multiple steps/obstruction, remapped
+keys/stick, real native focus transfer, hidden/pause recovery, reveal/Yes-No, map transfer and fresh
+battle menu control. No screenshots or full private route were used.
+
+Independent main-gate acceptance remains required. Physical device release while unfocused and
+broader opening experience are Unknown; injected events do not close those claims. No new
+interactions, input framework, original timing or visual baseline was selected. Cue placement follows
+A when accepted, and this implementation preserves #689's separate follow-ups and historical results.
 
 ### C · Read and answer a story sequence
 

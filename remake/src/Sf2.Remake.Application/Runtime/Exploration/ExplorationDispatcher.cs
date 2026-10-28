@@ -435,14 +435,9 @@ internal static class ExplorationDispatcher
         var world = current.Exploration!;
         if (!world.Entities.TryGetValue(command.Entity, out var entity) || !entity.Visible)
             return Reject(current, "missing-interaction-entity", "entity");
-        var player = world.PlayerEntity;
-        int dx = entity.Position.X - player.Position.X, dy = entity.Position.Y - player.Position.Y;
-        if (Math.Abs(dx) + Math.Abs(dy) != 1 || player.Motion.Facing !=
-            (dx > 0 ? 0 : dx < 0 ? 2 : dy < 0 ? 1 : 3))
+        if (!ExplorationInteractionQuery.InReach(current, command.Entity))
             return Reject(current, "interaction-range-or-facing", "entity");
-        var entry = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Interact &&
-            (entry.Entity is null || entry.Entity == command.Entity) && (entry.RequiredFlag is null ||
-                current.Story.Flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue));
+        var entry = ExplorationInteractionQuery.Event(current, command.Entity);
         if (entry?.Program is not { } program) return Reject(current, "no-interaction", "entity");
         current = MapEventDispatcher.Interact(definition, current, entry, command.Entity, observations);
         return ProgramRunner.Run(definition, current, observations, rules);

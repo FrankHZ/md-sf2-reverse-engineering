@@ -62,6 +62,7 @@ public sealed partial class ExplorationSessionView : Control
     private bool _choiceRequiresRelease;
     private Label _failureLabel = null!;
     private GameInput _input = null!;
+    private readonly ExplorationMovementHold _movementHold = new();
     private TextWindow? _textWindow;
     private bool _fieldTextProjection;
     private double _revealed;
@@ -108,6 +109,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _ExitTree()
     {
         ObservationCapture.Find(this)?.ViewDetached("exploration");
+        _movementHold.Clear(_input);
         CancelFieldWait();
         GetViewport().SizeChanged -= Present;
         GetWindow().FocusExited -= SuspendClock;
@@ -120,7 +122,15 @@ public sealed partial class ExplorationSessionView : Control
         if (what == NotificationPaused || what == NotificationUnpaused) SuspendClock();
     }
 
-    private void SuspendClock() { SuspendEntrySkip(); CancelFieldWait(); _tickTime = 0; _resumeAutomatic = true; _choiceRequiresRelease = true; }
+    private void SuspendClock()
+    {
+        if (_input is not null) _movementHold.Clear(_input);
+        SuspendEntrySkip();
+        CancelFieldWait();
+        _tickTime = 0;
+        _resumeAutomatic = true;
+        _choiceRequiresRelease = true;
+    }
 
     private void CancelFieldWait()
     {
@@ -144,6 +154,7 @@ public sealed partial class ExplorationSessionView : Control
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
         _session = session; _result = result; _input = input; _enterBattle = enterBattle;
+        _movementHold.Clear(input);
         if (session.Current.Story.Display?.Visibility == Sf2.Remake.Application.Content.Scenarios.FullFadeVisibility.Black)
             Modulate = Colors.Black;
         PublishResult("attach");
@@ -164,11 +175,11 @@ public sealed partial class ExplorationSessionView : Control
 
     public override void _Process(double delta)
     {
+        if (_session is null) return;
+        if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
+        { SuspendClock(); return; }
         if (FinishEntryHandoff()) return;
-        if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.EntrySkip is not null || _session.Current.Exploration?.Definition.Caravan is not null || _session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait or MusicWait or ChoiceWait { Work: not null } ||
-            _session.Current.Story.TextSettings is not null && _session.Current.Story.Wait is PresentationWait) &&
-            (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
+        if (_handedOff || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (!_input.GameplayHeld) { _choiceRequiresRelease = false; _skipRequiresRelease = false; }
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
@@ -229,6 +240,8 @@ public sealed partial class ExplorationSessionView : Control
         }
         if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || _session.Current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true })
         {
+            if (_session.Current.CanWaitAtInput && _movementHold.Repeat(_input, _session.Current, Time.GetTicksUsec()) is { } direction)
+            { HandleAction(direction, repeating: true); return; }
             // Idle field time is explicitly paused. Presentation time never becomes field debt.
             _tickTime = 0;
             if (!CanSubmitWait || !GetWindow().HasFocus() || !IsVisibleInTree() || !_input.WaitHeld || PresentationFailure is not null)
@@ -269,11 +282,21 @@ public sealed partial class ExplorationSessionView : Control
             current.StopReason == SessionStopReason.SimulationWait ||
             current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true;
 
-    internal void HandleAction(GameAction action)
+    internal void HandleAction(GameAction action, bool repeating = false)
     {
+        if (!GetWindow().HasFocus() || !CanProcess()) { SuspendClock(); return; }
+        bool direction = action is GameAction.Up or GameAction.Right or GameAction.Down or GameAction.Left;
+        if (!direction) _movementHold.Clear(_input);
         if (action != GameAction.Wait) CancelFieldWait();
         if (_handedOff || !IsVisibleInTree() || _session is null || SessionPresentationOwner.IsBattle(_session.Current) || PresentationFailure is not null) return;
         var current = _session.Current;
+        if (direction)
+        {
+            if (!_movementHold.CanContinue(current)) _movementHold.Clear(_input);
+            else if (!repeating) _movementHold.Pressed(Time.GetTicksUsec());
+            // Direction changes during our own step take effect at its next input boundary.
+            if (!current.CanWaitAtInput && _movementHold.CanContinue(current)) return;
+        }
         if (_skipRequiresRelease || _battleHandoffPending || current.Story.EntrySkip is not null) return;
         if (action == GameAction.Cancel && BattleEntrySkip.Eligible(current) && GetWindow().HasFocus())
         {
@@ -322,7 +345,7 @@ public sealed partial class ExplorationSessionView : Control
         {
             if (action == GameAction.Confirm && !RevealText()) command = new Acknowledge(current.Story.Wait.Token);
         }
-        else if (current.StopReason == SessionStopReason.PlayerInput && current.Exploration is { } world)
+        else if (current.CanWaitAtInput)
         {
             command = action switch
             {
@@ -332,12 +355,7 @@ public sealed partial class ExplorationSessionView : Control
             };
             if (action == GameAction.Confirm)
             {
-                var player = world.PlayerEntity;
-                (int x, int y) = player.Motion.Facing switch { 0 => (1, 0), 1 => (0, -1), 2 => (-1, 0), _ => (0, 1) };
-                var target = world.AllEntities.FirstOrDefault(entity => entity.Entity != world.Player && entity.Visible &&
-                    entity.Motion.X / 384 == player.Motion.X / 384 + x &&
-                    entity.Motion.Y / 384 == player.Motion.Y / 384 + y);
-                if (target is not null) command = new Interact(target.Entity);
+                if (_session.QueryExplorationInteraction() is { } target) command = new Interact(target);
             }
         }
         if (command is null) return;
@@ -376,6 +394,7 @@ public sealed partial class ExplorationSessionView : Control
         // The last draw keeps its own identity; this signal neither draws nor completes anything.
         if (command is CompletePresentation completion) PublishResult("presentation-completion-before-submit", completion);
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
+        _movementHold.Observe(_input, current, _result, command);
         if (current.Story.Wait?.Token != _session.Current.Story.Wait?.Token) _tickTime = 0;
         if (!CanSubmitWait || current.Story.Wait?.Token != _session.Current.Story.Wait?.Token || _result.Failure is not null) CancelFieldWait();
         else _tickTime = 0;
@@ -479,7 +498,8 @@ public sealed partial class ExplorationSessionView : Control
             DialogueWait or W1TextWait { AtInput: true } or FieldTextWait { Phase: FieldTextPhase.Input } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
             W1TextWait or FieldTextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
             EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait => "",
-            _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
+            _ => current.CanWaitAtInput ? _input.MovementHint +
+                (_session.QueryExplorationInteraction() is not null ? $"\n{_input.Hint(GameAction.Confirm)}: Talk" : "") : "",
         };
         _help.Visible = !_battleMounted || BattleEntrySkip.Eligible(current);
         if (BattleEntrySkip.Eligible(current))
@@ -730,6 +750,7 @@ public sealed partial class ExplorationSessionView : Control
             sessionId = current?.SessionId, revision = current?.Revision, observationSequence = current?.ObservationSequence, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
             canWaitForChoice = current?.CanWaitForChoice, choice = current?.Story.Wait as ChoiceWait,
+            movementDirection = _input.MovementDirection?.ToString(),
             gameplayHeld = _input.GameplayHeld, choiceRequiresRelease = _choiceRequiresRelease,
             entrySkip = current?.Story.EntrySkip, skipRequiresRelease = _skipRequiresRelease, battleHandoffPending = _battleHandoffPending,
             choiceProjection = new { tick = current?.Story.SimulationTick, token = (current?.Story.Wait as ChoiceWait)?.Token.Value,
