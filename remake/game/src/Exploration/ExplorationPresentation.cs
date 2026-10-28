@@ -9,7 +9,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter.Exploration;
 
-internal sealed class ExplorationPresentation : IDisposable
+internal sealed partial class ExplorationPresentation : IDisposable
 {
     private readonly Control _owner;
     private readonly ExplorationVisuals? _visuals;
@@ -134,10 +134,13 @@ internal sealed class ExplorationPresentation : IDisposable
         if (Error is not null) return completions;
         try
         {
-            if (current.Story.Wait is MusicWait helper &&
+            bool skipping = current.Story.EntrySkip is not null;
+            if (!skipping && current.Story.Wait is MusicWait helper &&
                 (_audio.MusicGeneration != helper.Generation || _audio.MusicCue != current.Story.Music?.Cue))
                 throw new InvalidOperationException("music-helper-playback-replaced");
-            if (current.Story.Music is { EndStep: not null, ActualDone: false } music && _audio.MusicGeneration == music.Generation &&
+            if (skipping && current.Story.Music is { EndStep: not null, ActualDone: false, DeliverySkipped: false } omitted)
+                completions.Add(new CompleteSkippedEntryMusic(omitted.Generation, omitted.Cue));
+            if (!skipping && current.Story.Music is { EndStep: not null, ActualDone: false, DeliverySkipped: false } music && _audio.MusicGeneration == music.Generation &&
                 _audio.FiniteMusicFinished(music.Generation, music.Cue))
                 completions.Add(new CompleteMusic(music.Generation, music.Cue));
             var target = _camera;
@@ -159,7 +162,7 @@ internal sealed class ExplorationPresentation : IDisposable
                     target.X = Mathf.Clamp(target.X, area.MinimumX * 24, Math.Max(area.MinimumX * 24, (area.MaximumX + 1) * 24 - ViewWidth));
                     target.Y = Mathf.Clamp(target.Y, area.MinimumY * 24, Math.Max(area.MinimumY * 24, (area.MaximumY + 1) * 24 - ViewHeight));
                     if (_map != world.Map) { _map = world.Map; _camera = target; }
-                    else _camera = _camera.MoveToward(target, (float)(delta * 180));
+                    else _camera = skipping ? target : _camera.MoveToward(target, (float)(delta * 180));
                 }
                 foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest &&
                     (_visuals is not null || world.Definition.Caravan is null)))
@@ -178,9 +181,10 @@ internal sealed class ExplorationPresentation : IDisposable
                 // Mount the existing transformed/normal resources. Rendering never decides
                 // source service progress, and no per-frame acknowledgement is needed.
                 _ = Sprite(actor, true); _ = Sprite(actor, false);
-                if (nod.LogicalDone && !nod.ActualDone && CompletedCueToken != nod.Token.Value)
+                if ((nod.LogicalDone || skipping) && !nod.ActualDone && !nod.DeliverySkipped && CompletedCueToken != nod.Token.Value)
                 {
-                    completions.Add(new CompletePresentation(nod.Token, PresentationCueKind.Gesture));
+                    completions.Add(skipping ? new CompleteSkippedEntryPresentation(nod.Token, PresentationCueKind.Gesture) :
+                        new CompletePresentation(nod.Token, PresentationCueKind.Gesture));
                     CompletedCueToken = nod.Token.Value; CompletedCueKind = "Gesture";
                 }
                 return completions;
@@ -194,6 +198,12 @@ internal sealed class ExplorationPresentation : IDisposable
             if (wait is null)
             { _cue = null; _cueResource = null; _gesture = null; _mosaic = null; _storyEffect = null; _shivering = _nodding = false; ActiveCue = null; return completions; }
             if (CompletedCueToken == wait.Token.Value) return completions;
+            if (skipping && wait.Cue.Kind != PresentationCueKind.BattleLoad)
+            {
+                SkipDelivery(current, wait, target);
+                completions.Add(new CompleteSkippedEntryPresentation(wait.Token, wait.Cue.Kind));
+                return completions;
+            }
             if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture or PresentationCueKind.EntityEffect)
                 throw new InvalidOperationException("presentation-map-unavailable");
             if (_cue != wait.Token)
@@ -309,7 +319,7 @@ internal sealed class ExplorationPresentation : IDisposable
                     // The existing battle board and roster have been mounted for a frame; input is still program-owned.
                     complete = _cueAge > 0; break;
                 case PresentationCueKind.Sound: complete = true; break;
-                case PresentationCueKind.SoundWait: complete = _audio.FiniteMusicFinished(); break;
+                case PresentationCueKind.SoundWait: complete = _audio.FiniteMusicReady(); break;
                 case PresentationCueKind.PreviousMusic: complete = true; break;
                 case PresentationCueKind.SoundFade:
                     _audio.FadeOut(_cueAge / 0.5);

@@ -50,7 +50,7 @@ internal static class ExplorationDispatcher
     internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, SessionCommand command) =>
         Submit(definition, current, command, Gameplay.RuleCompositions.Sf2());
 
-    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, SessionCommand command, SessionRules rules)
+    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, SessionCommand command, SessionRules rules, bool skippedDelivery = false)
     {
         if (current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted)
             return Reject(current, "session-stopped", "command");
@@ -104,7 +104,7 @@ internal static class ExplorationDispatcher
                     }
                     if (current.Story.Wait is not DialogueWait || current.Story.Wait.Token != ack.Wait)
                         return Reject(current, "stale-or-wrong-wait", "wait");
-                    current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, "presentation-acknowledged");
+                    current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, skippedDelivery ? "text-acknowledgement-skipped" : "presentation-acknowledged");
                     break;
                 case CompleteTextReveal reveal:
                     if (current.Story.Wait is FieldTextWait fieldDelivery)
@@ -112,40 +112,40 @@ internal static class ExplorationDispatcher
                         if (fieldDelivery.Token != reveal.Wait || fieldDelivery.Revealed)
                             return Reject(current, "stale-or-wrong-text-delivery", "wait");
                         current = ProgramRunner.Commit(current, current.Active, ExplorationTextRunner.FinishDelivery(
-                            current.Story.Copy(current.Story.Cursor, fieldDelivery with { Revealed = true })), observations, "text-revealed");
+                            current.Story.Copy(current.Story.Cursor, fieldDelivery with { Revealed = true, DeliverySkipped = skippedDelivery })), observations, skippedDelivery ? "text-delivery-skipped" : "text-revealed");
                         break;
                     }
                     if (current.Story.Wait is not W1TextWait delivering || delivering.Token != reveal.Wait || delivering.Revealed)
                         return Reject(current, "stale-or-wrong-text-delivery", "wait");
                     current = ProgramRunner.Commit(current, current.Active, delivering.AtInput ?
-                        current.Story.Copy(current.Story.Cursor, delivering with { Revealed = true }) : FinishWait(current.Story),
-                        observations, "text-revealed");
+                        current.Story.Copy(current.Story.Cursor, delivering with { Revealed = true, DeliverySkipped = skippedDelivery }) : FinishWait(current.Story),
+                        observations, skippedDelivery ? "text-delivery-skipped" : "text-revealed");
                     break;
                 case CompleteMusic completedMusic:
                     if (current.Story.Music is not { EndStep: not null, ActualDone: false } playing ||
-                        playing.Generation != completedMusic.Generation || playing.Cue != completedMusic.Cue)
+                        playing.DeliverySkipped || playing.Generation != completedMusic.Generation || playing.Cue != completedMusic.Cue)
                         return Reject(current, "stale-or-wrong-music", "music");
                     current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
-                        music: playing with { ActualDone = true }), observations, "music-actual-completed", playing.Cue);
+                        music: playing with { ActualDone = !skippedDelivery, DeliverySkipped = skippedDelivery }), observations, skippedDelivery ? "music-delivery-skipped" : "music-actual-completed", playing.Cue);
                     current = ExplorationMusicRunner.Finish(current, observations);
                     break;
                 case CompletePresentation completion:
                     if (current.Story.Wait is NodWait nodCompletion)
                     {
-                        if (nodCompletion.Token != completion.Wait || completion.Kind != PresentationCueKind.Gesture || nodCompletion.ActualDone)
+                        if (nodCompletion.Token != completion.Wait || completion.Kind != PresentationCueKind.Gesture || (nodCompletion.ActualDone || nodCompletion.DeliverySkipped))
                             return Reject(current, "stale-or-wrong-presentation", "presentation");
                         current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor,
-                            nodCompletion with { ActualDone = true }), observations, "nod-presentation-completed");
+                            nodCompletion with { ActualDone = !skippedDelivery, DeliverySkipped = skippedDelivery }), observations, skippedDelivery ? "nod-delivery-skipped" : "nod-presentation-completed");
                         current = FinishNod(current, observations);
                         break;
                     }
                     if (current.Story.Wait is FullFadeWait fade)
                     {
-                        if (fade.Token != completion.Wait || fade.Kind != completion.Kind || fade.ActualDone)
+                        if (fade.Token != completion.Wait || fade.Kind != completion.Kind || (fade.ActualDone || fade.DeliverySkipped))
                             return Reject(current, "stale-or-wrong-presentation", "presentation");
                         current = ProgramRunner.Commit(current, current.Active,
-                            current.Story.Copy(current.Story.Cursor, fade with { ActualDone = true }), observations,
-                            "presentation-completed", completion.Kind.ToString());
+                            current.Story.Copy(current.Story.Cursor, fade with { ActualDone = !skippedDelivery, DeliverySkipped = skippedDelivery }), observations,
+                            skippedDelivery ? "presentation-delivery-skipped" : "presentation-completed", completion.Kind.ToString());
                         current = MapTransfer.FinishFade(current, observations);
                         break;
                     }
@@ -163,7 +163,7 @@ internal static class ExplorationDispatcher
                         completedActive = new ActiveExploration(current.Exploration!.WithEntities(current.Exploration.AllEntities.Select(row => row.Slot == entity.Slot
                             ? row with { Motion = row.Motion with { AnimationCounter = restore.AnimationCounter, FlagsB = (byte)(row.Motion.FlagsB & ~8) } } : row), restore.SpriteSize));
                     }
-                    current = ProgramRunner.Commit(current, completedActive, FinishWait(current.Story), observations, "presentation-completed", completion.Kind.ToString());
+                    current = ProgramRunner.Commit(current, completedActive, FinishWait(current.Story), observations, skippedDelivery ? "presentation-delivery-skipped" : "presentation-completed", completion.Kind.ToString());
                     break;
                 case EntitySpriteReady sprite:
                     var spriteWorld = current.Exploration;
@@ -450,7 +450,7 @@ internal static class ExplorationDispatcher
 
     private static SessionSnapshot FinishNod(SessionSnapshot current, List<SessionObservation> observations)
     {
-        if (current.Story.Wait is not NodWait { LogicalDone: true, ActualDone: true } nod) return current;
+        if (current.Story.Wait is not NodWait { LogicalDone: true } nod || !(nod.ActualDone || nod.DeliverySkipped)) return current;
         var entity = ProgramRunner.Entity(current, nod.Entity);
         var world = current.Exploration!.WithEntity(entity with { Motion = entity.Motion with { AnimationCounter = 0 } });
         current = ProgramRunner.Commit(current, new ActiveExploration(world), FinishWait(current.Story), observations, "nod-returned", nod.Entity.Value);
