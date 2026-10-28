@@ -19,6 +19,7 @@ internal static class BattleSnapshotProjection
         var selection = snapshot.Selection;
         string status = result.Failure is { } failure
             ? $"{failure.Kind}: {failure.Code} ({failure.Field})"
+            : snapshot.BattleResult is { } outcome ? $"Battle ended: {outcome}"
             : selection is null ? result.StopReason.ToString()
             : $"{selection.Actor.Value} · {selection.Stage}" +
                 (selection.Target is { } target ? $" · target {target.Value}" : "");

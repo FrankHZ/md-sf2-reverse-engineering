@@ -1,5 +1,28 @@
 # Runtime Profiles and Trust
 
+## Authored poison admission
+
+Standalone format7 opts in with `"battlePoison":"fixed-two-after-turn"`. Its start actors admit only
+`"status":"none"` or `"status":"poison"` (source2), and `start.firstAlly` is required: an allied
+ActorRef or explicit null for the source FF no-credit sentinel. Omission is Unknown, not null.
+Each encounter also requires `outcome:{leader,defeatedGateEnemy}` referring to an ally and enemy;
+the existing defeat-first/count rule supplies a standalone terminal result. Names are bindings, not
+hardcoded gameplay identities. The reusable definition and controlled start retain separate ownership;
+growth definition copies preserve the poison capability and outcome binding.
+
+[poison-turn.json](../../content/authored/poison-turn.json) supplies one survivor and one lethal ally
+with ordinary equipment/items and a standby opponent. Initial HP, credit and poison are controlled
+inputs, not natural original acquisition. Embedded exploration/old private profiles reject this opt-in;
+without it, the old status admission is unchanged. Numeric statuses, poison+sleep, other mixtures,
+infliction/cure, persistence and private presentation remain Unsupported. Existing sleep in its
+accepted private boundary is unaffected. The newly admitted pure-poison action, AI, AURA, Give/Drop
+and growth paths require `BattleDefinition.Poison`. Existing private `NewBattle` initialization still
+accepts and preserves low status bits, including2; without this capability, physical/AI and reached
+level-up retain their existing Unsupported failures. Growth checks the capability at both action
+preflight and acknowledged publication; subthreshold growth keeps its previous no-op behavior.
+Equipment start admission likewise requires the capability for status2. Source-specific unrelated
+guards remain in force; this opt-in does not broaden old private/frozen behavior.
+
 ## Authored battle discard admission
 
 Standalone format7 opts in with top-level `battleDiscard: {"items": [...]}`. Each row declares
@@ -29,9 +52,9 @@ closed. Weapon metadata remains uncursed and ATT-only; names/arena values are au
 
 If weapons are declared, every allied recipient needs the existing `equipment` metadata so removing
 an equipped return item can refresh its current base contribution. Existing equipment startup
-admission still applies (player allies, status-free, supported source classes and physical metadata).
+admission still applies (player allies, status0 or admitted pure poison, supported source classes and physical metadata).
 Class-ineligible weapons remain carryable; their class mask only governs Equip. Live Give checks
-living placed allied actors, non-neutral activation and status0; an ordinary standalone absent
+living placed allied actors, non-neutral activation and status0 or admitted pure poison; an ordinary standalone absent
 activation word carries no neutral flag. This is not private source-state inference.
 
 The growth reader preserves Give when reconstructing definitions. Immutable initial loadouts and
@@ -50,7 +73,7 @@ retreat items. Existing Taros type bindings must include all declared weapon ide
 An actor opts in with `equipment: { "baseAttack": N }` (0–200). Its existing initial `attack` must
 match clamped base plus the actual equipped contribution. All declared weapon identities need full
 metadata; physical metadata is required, unpromoted and mapped to an already admitted source class
-(SDMN/WARR/PRST). Player ally control and status0 are required; automatic/source-controlled switching
+(SDMN/WARR/PRST). Player ally control and status0 or admitted pure poison are required; automatic/source-controlled switching
 is excluded. Initial multiple equipped weapons, wrong-class equipped items, equipped nonweapons and
 broken weapons reject. Class-ineligible weapons can be carried without becoming offers. Other carried
 items retain their slot words, flags and order. Existing profiles without this opt-in are unchanged.

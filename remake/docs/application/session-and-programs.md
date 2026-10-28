@@ -1,5 +1,31 @@
 # Session and Resumable Programs
 
+## Poison after-turn continuation
+
+The [finite High-rigor agreement and source provenance](../domain/gameplay-rules.md#authored-poison-after-turn)
+cover standalone poison only. Normal action/scene publication and costs precede poison. The first
+outcome pass skips poison for resolved victory/defeat or a dead/unplaced acting actor. Eligible
+QueueOnly automatic standby also enters the existing publisher, retaining prior first-ally custody.
+
+`BattlePoisonContinuation` waits on typed `PoisonDamageMessage` delivery before publishing clamped
+HP. Survivors retain status2, complete after-turn once, then check outcome/consume one queue slot.
+Lethal HP remains placed with status2 during `PoisonExhaustedMessage`; its completion starts the
+existing field-death batch. Spin/exit/cleanup/settle preserve their order. The retained `AfterTurn`
+return operand sends field-settle directly to the second outcome/count pass, never to action
+publication, the defeated hook, rewards or another poison tick.
+
+A later failure retains the accepted prefix. Missing death credit keeps HP0 and the exhaustion token;
+accounting failure keeps the field-exit token; second outcome failure keeps `PoisonFinalize` after
+nonlethal HP publication or the existing field-settle stage after cleanup. A matching completion
+retries only that stage. Stale/wrong/duplicate completions reject without mutation. Sleep keeps its
+existing continuation and RNG behavior.
+
+A poison-enabled standalone encounter supplies the existing leader/enemy outcome binding. With no
+exploration world, `BattleOutcome.Begin` records `ActiveBattle.Outcome` and `BattleEnded`; terminal
+commands reject and the host displays Victory/Defeat. The same boundary handles an already-dead
+leader at controlled start. This is a modern standalone terminal result, not an original return,
+chapter progression or save/load implementation. Connected/private return programs are unchanged.
+
 ## Battle discard selection and completion
 
 `BeginDiscard` is valid at ActionChoice and enters DiscardItemChoice. `SelectDiscardItem(slot)`

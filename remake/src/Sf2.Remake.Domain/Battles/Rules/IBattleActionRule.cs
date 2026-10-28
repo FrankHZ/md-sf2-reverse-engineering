@@ -46,7 +46,8 @@ internal static class BattleActionRules
             var prepared = rule.Prepare(battle, actor, destination, action, target, progression);
             prepared.Validate(battle, actor, destination, action, target, admission);
             if (prepared.Reward is { } reward)
-                BattleProgressionRules.Preflight(progression, prepared.Prepared.GetActor(reward.Actor), reward.Amount, prepared.Prepared.MainSeed);
+                BattleProgressionRules.Preflight(progression, prepared.Prepared.GetActor(reward.Actor), reward.Amount,
+                    prepared.Prepared.MainSeed, battle.Definition.Poison);
             return prepared;
         });
 }

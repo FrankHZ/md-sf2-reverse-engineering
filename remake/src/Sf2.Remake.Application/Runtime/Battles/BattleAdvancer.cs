@@ -56,7 +56,7 @@ internal static class BattleAdvancer
                     continue;
                 }
                 var actor = BattleTurnFlow.QueuedActor(battle);
-                if (actor.Hp == 0)
+                if (actor.Hp == 0 || actor.Position is null)
                 {
                     if (battle.Definition.LeaderCleanup is not null)
                     {
@@ -95,7 +95,7 @@ internal static class BattleAdvancer
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
                 var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression);
                 SessionResult delivery;
-                if (action.QueueOnly && battle.Definition.LeaderCleanup is not null)
+                if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || battle.Definition.Poison && actor.Status == 2))
                 {
                     // Source standby still returns to the post-action hook. It never
                     // initializes BATTLESCENE_FIRST_ALLY or fabricates a battle scene.

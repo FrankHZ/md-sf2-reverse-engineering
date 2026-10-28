@@ -116,8 +116,8 @@ internal sealed partial class BattleSceneView : Control
             }
             if (_session.Definition.PrivateDefinitions is not null && Content is null)
                 throw new InvalidOperationException("battle-scene-content-required");
-            _sceneBlack.Visible = !state.IsSleepTurn;
-            if (state.IsSleepTurn)
+            _sceneBlack.Visible = !state.IsAfterTurnNotice;
+            if (state.IsAfterTurnNotice)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon, _allyStatus, _enemyStatus }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
@@ -194,9 +194,9 @@ internal sealed partial class BattleSceneView : Control
         float scale = MathF.Min(viewport.X / 256, viewport.Y / 224);
         _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
         _elapsed += delta;
-        if (state.IsSleepTurn || state.Phase == BattleScenePhase.SleepMessage)
+        if (state.IsAfterTurnNotice || state.Phase == BattleScenePhase.SleepMessage)
         {
-            // Modern finite delivery of the source's no-input sleep notices. Actual
+            // Modern finite delivery of the source's no-input status notices. Actual
             // completion releases the status command; reveal/input speed adds no RNG.
             if (_elapsed < 0.5) return null;
             _completed = true;
@@ -385,6 +385,7 @@ internal sealed partial class BattleSceneView : Control
         {
             BattleScenePhase.SleepMessage => 338,
             BattleScenePhase.SleepTurnMessage => state.SleepTurnText!.Value,
+            BattleScenePhase.PoisonDamageMessage => 307, BattleScenePhase.PoisonExhaustedMessage => 308,
             BattleScenePhase.ActionMessage => state.ActionKind switch { "prism-laser" => 319, "item-use" => 275, "physical-second" => 293, "physical-counter" => 292, _ => 273 },
             BattleScenePhase.ResultMessage => state.ReactionKind == "Ineffective" ? 289 : state.ReactionKind == "Recovery" ? 298 : state.ReactionKind == "Dodge" ? 286 : state.Critical ? (ally ? 287 : 288) : (ally ? 284 : 285),
             BattleScenePhase.DeathMessage => _session.Current.Battle.GetActor(state.Target!.Value).IsAlly ? 291 : 290,
@@ -399,7 +400,7 @@ internal sealed partial class BattleSceneView : Control
         string name = ActorName(state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ItemReceivedMessage ? state.Actor :
             state.Phase is BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage ? state.RewardActor!.Value : state.Target!.Value);
         int amount = state.GrowthNotice?.Amount ?? (state.Phase == BattleScenePhase.RewardMessage ? state.RewardAmount : state.Phase == BattleScenePhase.GoldMessage ? state.GoldAmount : state.Amount);
-        string text = Content?.Texts.GetValueOrDefault(id) ?? (id == 319 ? "{NAME} fires a prism laser!" : id == 396 ? "{NAME} dropped {ITEM}." : id == 395 ? "{NAME} received {ITEM}." : id == 289 ? "The attack is ineffective against {NAME}." : id == 338 ? "{NAME} fell asleep." : id == 306 ? "{NAME} is sleeping." : id == 354 ? "{NAME} has awakened." : state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
+        string text = Content?.Texts.GetValueOrDefault(id) ?? (id == 307 ? "{NAME} takes {#} poison damage." : id == 308 ? "{NAME} is exhausted." : id == 319 ? "{NAME} fires a prism laser!" : id == 396 ? "{NAME} dropped {ITEM}." : id == 395 ? "{NAME} received {ITEM}." : id == 289 ? "The attack is ineffective against {NAME}." : id == 338 ? "{NAME} fell asleep." : id == 306 ? "{NAME} is sleeping." : id == 354 ? "{NAME} has awakened." : state.Phase == BattleScenePhase.ActionMessage ? "{NAME}'s attack!" :
             state.Phase == BattleScenePhase.RewardMessage ? "{NAME} earned {#} EXP." : state.Phase == BattleScenePhase.GoldMessage ? "Found {#} gold." : "{NAME}: {#}");
         // Text timing remains the existing product setting. No battle speech bleeps:
         // source bsc10/bsc11 clear CURRENT_SPEECH_SFX.

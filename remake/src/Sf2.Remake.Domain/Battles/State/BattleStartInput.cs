@@ -12,10 +12,10 @@ public sealed class BattleStartInput
     public BattleStartInput(string encounter, IEnumerable<BattleActorStartInput> actors,
         uint mainSeed, uint thinkingSeed, uint? gold, NewBattleStartPolicy? newBattle = null,
         IEnumerable<ActorRef>? activeAllies = null, BattleItemCustody? itemCustody = null,
-        IEnumerable<int>? storyFlags = null, BattleVisualState? visuals = null, IEnumerable<int>? retainedSourceSlots = null)
+        IEnumerable<int>? storyFlags = null, BattleVisualState? visuals = null, IEnumerable<int>? retainedSourceSlots = null, BattleDeathCredit? deathCredit = null)
     {
         ArgumentNullException.ThrowIfNull(actors);
-        Visuals = visuals; RetainedSourceSlots = Array.AsReadOnly((retainedSourceSlots ?? []).ToArray());
+        DeathCredit = deathCredit; Visuals = visuals; RetainedSourceSlots = Array.AsReadOnly((retainedSourceSlots ?? []).ToArray());
         Encounter = encounter; Actors = Array.AsReadOnly(actors.ToArray());
         MainSeed = mainSeed; ThinkingSeed = thinkingSeed; Gold = gold; NewBattle = newBattle; ItemCustody = itemCustody;
         ActiveAllies = activeAllies is null ? null : Array.AsReadOnly(activeAllies.ToArray());
@@ -31,5 +31,6 @@ public sealed class BattleStartInput
     public BattleItemCustody? ItemCustody { get; }
     public IReadOnlyList<int> StoryFlags { get; }
     public BattleVisualState? Visuals { get; }
+    public BattleDeathCredit? DeathCredit { get; }
     public IReadOnlyList<int> RetainedSourceSlots { get; }
 }

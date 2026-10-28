@@ -1,5 +1,19 @@
 # Battle Presentation
 
+## Authored poison notices
+
+The ordinary scene view projects the typed poison notices over the battlefield with readable authored
+text: fixed2 damage, then exhaustion for lethal HP. The finite no-input notice delivery uses the same
+modern0.5-second presentation service as sleep; focus loss or a hidden host pauses completion.
+Actual matching `CompletePresentation` releases each step. The existing battlefield spin/exit/settle
+consumer displays lethal removal. No second battle scene, artificial attack, reward or original text
+asset is synthesized. `BattlePresentation` displays the standalone terminal Victory/Defeat result.
+
+The [native poison witness](../development-and-verification.md#poison-authored-observation) reads
+actual state, label text, focus/hide behavior and continued usable control. This is authored semantic
+presentation, with no original hardware/frame/audio fidelity or screenshot claim. Private field-death
+content and sleep continue through their existing boundaries.
+
 ## Authored equipment feedback
 
 The existing semantic battle HUD displays current equipment, ATT and physical range. At battle

@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Runtime.Battles;
 
 // Retained source caller/accounting operands, not a synthetic physical action.
-internal sealed record FieldDeathTurn(ActorRef Actor, MapPosition? Destination, BattleDeathCredit Credit);
+internal sealed record FieldDeathTurn(ActorRef Actor, MapPosition? Destination, BattleDeathCredit Credit, bool AfterTurn = false);
 
 internal static class BattleFieldDeathContinuation
 {
@@ -53,6 +53,7 @@ internal static class BattleFieldDeathContinuation
                     }
                     break;
                 case BattleScenePhase.FieldSettle:
+                    if (turn.AfterTurn) return BattlePoisonContinuation.Finish(current, [], rules);
                     observations.Add(new(++sequence, revision, "field-death-ended", turn.Actor));
                     var ended = new SessionSnapshot(current.SessionId, revision, sequence,
                         new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);

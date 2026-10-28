@@ -92,6 +92,6 @@ internal static class BattleGrowthReader
                 growth.TryGetValue(deployment.Actor, out var value)
                     ? deployment with { Definition = deployment.Definition.WithGrowth(value) } : deployment),
             encounter.Spells.Values, encounter.Rewards, encounter.Initialization, encounter.Outcome, encounter.HealingItems.Values,
-            encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness, encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser, encounter.Give, encounter.Discard));
+            encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness, encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser, encounter.Give, encounter.Discard, encounter.Poison));
     }
 }

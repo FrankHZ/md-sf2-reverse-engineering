@@ -68,9 +68,13 @@ internal static class BattleProgressionRules
     });
 
     internal static (BattleActorState Actor, uint Seed, IReadOnlyList<BattleEffect> Effects) Grow(
-        IBattleProgressionRule rule, BattleActorState before, uint initial) => Invoke(rule.Identity, "growth", () =>
+        IBattleProgressionRule rule, BattleActorState before, uint initial, bool poison = false) => Invoke(rule.Identity, "growth", () =>
     {
         if (before.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
+        // Private initialization can retain poison without opting into after-turn damage.
+        // Preserve its existing reached level-up failure, including the subthreshold no-op.
+        if (!poison && before.Status == 2 && before.Exp >= 100 && before.Definition.Growth is not null)
+            throw new BattleRuleException("growth-status-refresh", "actor.status", true);
         List<BattleEffect> effects = [];
         uint seed = initial;
         var after = rule.Grow(before, ref seed, effects);
@@ -112,10 +116,10 @@ internal static class BattleProgressionRules
         return (after, seed, effects.AsReadOnly());
     });
 
-    internal static void Preflight(IBattleProgressionRule rule, BattleActorState actor, int amount, uint seed)
+    internal static void Preflight(IBattleProgressionRule rule, BattleActorState actor, int amount, uint seed, bool poison = false)
     {
         var credit = Credit(rule, actor, amount);
-        _ = Grow(rule, credit.Actor, seed); // Discard; actual growth uses the later live scene seed.
+        _ = Grow(rule, credit.Actor, seed, poison); // Discard; actual growth uses the later live scene seed.
     }
 
     private static void Unchanged(BattleActorState before, BattleActorState after) => Require(

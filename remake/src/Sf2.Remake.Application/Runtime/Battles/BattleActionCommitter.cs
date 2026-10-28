@@ -1,5 +1,6 @@
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
@@ -40,14 +41,16 @@ internal static class BattleActionCommitter
                 new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
             return BattleFieldDeathContinuation.Begin(pending, new(actor, destination, battle.DeathCredit!), deaths, observations);
         }
-        bool sleep = outcome is null && battle.GetActor(actor).Hp > 0 && (battle.GetActor(actor).Status & 0xC0) != 0;
-        if (outcome is null && !sleep) observations.Add(new(++sequence, revision, "after-turn", actor));
+        bool poison = outcome is null && battle.Definition.Poison && PoisonTurnRules.Eligible(battle.GetActor(actor));
+        bool sleep = outcome is null && battle.GetActor(actor).Hp > 0 && battle.GetActor(actor).Position is not null && (battle.GetActor(actor).Status & 0xC0) != 0;
+        if (outcome is null && !sleep && !poison) observations.Add(new(++sequence, revision, "after-turn", actor));
         else if (outcome is not null) observations.Add(new(++sequence, revision, "battle-outcome", Detail: outcome.Value.ToString()));
         if (battle.MainSeed != current.Battle.MainSeed)
             observations.Add(new(++sequence, revision, "action-rng", actor, current.Battle.MainSeed, battle.MainSeed));
         observations.Add(new(++sequence, revision, "action-committed", actor));
         var published = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
+        if (poison) return BattlePoisonContinuation.Begin(published, actor, observations);
         if (sleep) return BattleAfterTurnContinuation.Begin(published, actor, observations);
         return new(current.SessionId, revision, sequence,
             new ActiveBattle(outcome is null ? BattleTurnFlow.ConsumeEntry(battle) : battle, null), current.Story, SessionStopReason.SimulationWait);
