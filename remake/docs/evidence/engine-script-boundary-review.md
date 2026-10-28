@@ -29,7 +29,7 @@ those historical findings.
 The deliverable supports the decision about what to fix before further chapter/content work.
 The original audit changed only this report and an architecture navigation link; production, tests,
 content, research and prior audit history were read-only for that investigation. The separately
-authorized B1 implementation is recorded in its disposition and owning session agreement. Remaining
+authorized B1 and B2 implementations are recorded in their dispositions and owning session agreements. Remaining
 proposals do not authorize refactoring or replace the current architecture owners.
 
 Inspected accepted source: **`b4882a0dddd045b44c9110e43b097efd9358d652`**, tree
