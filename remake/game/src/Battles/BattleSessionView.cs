@@ -58,6 +58,7 @@ public sealed partial class BattleSessionView : Control
     private Label _discardMenu = null!;
     private BattleDiscardView _discard = null!;
     private BattleMapViewport _map = null!;
+    private BattleCommandMenu _menu = null!;
     private BattleDefinition? _mapDefinition;
     private BattleSceneDefinition? _mapScenes;
     private ScrollContainer _hud = null!;
@@ -98,6 +99,8 @@ public sealed partial class BattleSessionView : Control
         _items = AddLabel("Items");
         _roster = AddLabel("Roster");
         _help = AddLabel("Help");
+        _menu = new BattleCommandMenu { Name = "CommandMenu", Submit = Send };
+        AddChild(_menu);
         _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
         _give = new BattleGiveView { Name = "BattleGive" }; AddChild(_give);
         _discard = new BattleDiscardView { Name = "BattleDiscard" }; AddChild(_discard);
@@ -111,8 +114,8 @@ public sealed partial class BattleSessionView : Control
     {
         _input = input;
         _help.Text = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
-            $"{input.Hint(GameAction.Spell)}: select / cycle learned spells and levels; target self\n" +
-            $"{input.Hint(GameAction.Item)}: select / cycle carried items; target self\n" +
+            $"{input.Hint(GameAction.Spell)}: open magic list from diamond\n" +
+            $"{input.Hint(GameAction.Item)}: open item list from diamond\n" +
             $"{input.Hint(GameAction.Discard)}: Drop; select slot, confirm, cancel returns\n" +
             $"{input.Hint(GameAction.Give)}: Give; directions select item/recipient, confirm, cancel returns\n" +
             $"{input.Hint(GameAction.Equipment)}: equipment; directions cycle, confirm equips, cancel returns\n" +
@@ -139,22 +142,23 @@ public sealed partial class BattleSessionView : Control
     {
         if (_map is null || _hud is null) return;
         var size = GetViewportRect().Size;
+        // Map framing is independent of which overlay is open. Map is the first child;
+        // command menus, the supplementary HUD and scene presenters draw above it.
+        _map.Position = Vector2.Zero;
+        _map.Size = size;
+        _menu?.Arrange(size);
         const int margin = 16;
         if (size.X >= 800)
         {
             float hudWidth = Mathf.Clamp(size.X * 0.32f, 260, 380);
-            _map.Position = new(margin, margin);
-            _map.Size = new(Mathf.Max(1, size.X - 3 * margin - hudWidth), Mathf.Max(1, size.Y - 2 * margin));
-            _hud.Position = new(_map.Position.X + _map.Size.X + margin, margin);
-            _hud.Size = new(hudWidth, _map.Size.Y);
+            _hud.Position = new(size.X - margin - hudWidth, margin);
+            _hud.Size = new(hudWidth, Mathf.Max(1, size.Y - 2 * margin));
         }
         else
         {
             float height = Mathf.Max(2, size.Y - 3 * margin);
-            _map.Position = new(margin, margin);
-            _map.Size = new(Mathf.Max(1, size.X - 2 * margin), height * 0.6f);
-            _hud.Position = new(margin, _map.Position.Y + _map.Size.Y + margin);
-            _hud.Size = new(_map.Size.X, height * 0.4f);
+            _hud.Position = new(margin, margin * 2 + height * 0.6f);
+            _hud.Size = new(Mathf.Max(1, size.X - 2 * margin), height * 0.4f);
         }
         float textWidth = Mathf.Max(1, _hud.Size.X - _hud.GetVScrollBar().GetCombinedMinimumSize().X - 4);
         foreach (var label in _hudLabels) label.CustomMaximumSize = new(textWidth, -1);
@@ -188,7 +192,12 @@ public sealed partial class BattleSessionView : Control
         if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
             !ReferenceEquals(_mapScenes, session.ActiveBattleScenes))
         {
-            try { _map.Build(result.Snapshot.Battle.Definition, session.Definition); }
+            try
+            {
+                _map.Build(result.Snapshot.Battle.Definition, session.Definition);
+                _menu.ConfigureAssets(session.ActiveBattleScenes);
+                _menu.Reset();
+            }
             catch (InvalidOperationException error)
             {
                 FailStartup(new(SessionFailureKind.AdapterError, error.Message, "battlefield", "Selected battlefield resources are unavailable."));
@@ -213,6 +222,7 @@ public sealed partial class BattleSessionView : Control
     internal void FailStartup(SessionFailure failure)
     {
         _startupFailure = failure;
+        _menu.Hide(); _hud.Show(); Arrange();
         _title.Text = "BATTLE UNAVAILABLE";
         _status.Text = $"{failure.Kind}: {failure.Code} ({failure.Field})\n{failure.Message}";
     }
@@ -287,6 +297,11 @@ public sealed partial class BattleSessionView : Control
             int index = options.ToList().FindIndex(option => option.Slot == equipmentSelection.EquipmentSlot);
             int step = action is GameAction.Up or GameAction.Left ? -1 : 1;
             Send(new SelectEquipment(options[(index + step + options.Count) % options.Count].Slot));
+            return;
+        }
+        if (_menu.Handle(action))
+        {
+            if (_session.Current.HasBattleControl || _session.Current.BattleScene is not null) Present();
             return;
         }
         SessionCommand? command = action switch
@@ -381,7 +396,10 @@ public sealed partial class BattleSessionView : Control
             if (_movementSoundToken != movement.Token)
             { _movementSoundToken = movement.Token; Audio?.PlayEffect(79); }
         }
-        var projection = BattleSnapshotProjection.Project(_result!, _targetCandidate, _session!.Definition.Origin);
+        _menu.Present(_session.Current, _session.QueryBattleChoices(), _result!.Failure, _input);
+        _hud.Visible = !_menu.Visible && _session.Current.Selection is not null;
+        Arrange();
+        var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin);
         _title.Text = projection.Title;
         _status.Text = projection.Status;
         _roster.Text = projection.Roster;
@@ -450,7 +468,7 @@ public sealed partial class BattleSessionView : Control
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
             cursor = current?.Battle.Cursor, actor = current?.Selection?.Actor.Value, round = current?.Battle.Round,
             failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(),
-            hasBattleControl = current?.HasBattleControl, movement = _map.ObserveMovement(), fieldActors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
+            hasBattleControl = current?.HasBattleControl, movement = _map.ObserveMovement(), fieldActors = current is null || _startupFailure is not null ? null : _map.ObserveActors(current.Battle.Actors),
             actors = current?.Battle.Actors.Select(actor => new { actor = actor.Actor.Value, hp = actor.Hp,
                 mp = actor.Mp, exp = actor.Exp, kills = actor.Kills, defeats = actor.Defeats }),
         });
@@ -481,6 +499,7 @@ public sealed partial class BattleSessionView : Control
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
             rules = _session?.Rules.Identity, battleChoices = choices, healingChoices = choices,
             scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(), observationSequence = current?.ObservationSequence,
+            menu = _menu.Observe(), movement = _map.ObserveMovement(),
             visualAliases = current?.Battle.Visuals?.Aliases.Select(p => new { actor = p.Key.Value, slot = p.Value }),
             physicalVisuals = current?.Battle.Visuals?.Visuals.Values, cameraFocus = _map.CameraFocus,
             initializationPolicy = current?.Battle.StartPolicy,
@@ -498,7 +517,7 @@ public sealed partial class BattleSessionView : Control
             map = current?.Battle.Definition.Map.Value, mapWidth = current?.Battle.Definition.Width,
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
             terrain = full ? current?.Battle.Definition.Terrain.Select(tile => tile.Surface.ToString()) : null,
-            target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
+            target = current?.Selection?.Target?.Value, candidate = (_menu.Visible ? _menu.TargetCandidate : _targetCandidate)?.Value,
             itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items.Text,
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
             discard = _discard.Observe(), discardMenu = _discardMenu.Text, custody = current?.Battle.ItemCustody,
@@ -510,7 +529,7 @@ public sealed partial class BattleSessionView : Control
             spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells.Text,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,
-            actors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
+            actors = current is null || _startupFailure is not null ? null : _map.ObserveActors(current.Battle.Actors),
             observations = _result?.Observations,
             title = _title.Text, status = _status.Text, roster = _roster.Text, help = _help.Text,
             boardChildren = _map.BoardChildren, previewNodes = _map.PreviewCount,

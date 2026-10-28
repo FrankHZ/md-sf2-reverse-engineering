@@ -158,8 +158,8 @@ discussion with the user; Git integration and Epic closure remain main-gate resp
 
 ## Presentation Policy and Current Layout
 
-The current battle view responds to actual viewport size, with a scrollable HUD beside the map in
-wide windows and below it in narrow windows. Map framing follows current origin/path/target; HUD
+The current battle view responds to actual viewport size, with a diamond command menu, list submenus
+and a contextual panel against the right safe edge (below the menu in narrow windows). Map framing follows current origin/path/target; UI
 coordinates do not restrict legal maps or actor positions. Field presentation uses a 320-by-192
 source view and current logical camera/layout state. Texture/node caches are disposable projections.
 
@@ -185,27 +185,61 @@ maps up/left/right/down to choices 0/1/2/3; the
 orders attack, magic, item and search-or-stay. Search admission remains a gameplay/content decision;
 an interface experiment showing Stay does not remove the source-specific Search route.
 
-Modernization separates world framing, UI dimensions and drawing resolution. Redraw command icons,
-render labels with the engine font system, and retain the blue fill and layered gold/light frame.
-Do not uniformly enlarge the original pixel menu or preserve its tiny physical size. Commands keep
-visible names and a distinct selected state; contextual descriptions, costs and unavailable reasons
-sit beside the diamond. Magic and inventory use list submenus, with explicit confirmation and a
+Modernization separates world framing, UI dimensions and drawing resolution. The current experiment
+uses the original square command rasters directly, arranged up/left/right/down. No additional button
+frame or per-icon caption surrounds those rasters. One compact native-text window identifies the
+focused command, with an unavailable reason when needed; main-menu keyboard instructions and generic
+description paragraphs are hidden. Do not uniformly enlarge the entire original menu or preserve its
+tiny physical size. Icons keep their original selected state; selected-item costs and unavailable reasons
+sit against the right safe edge, leaving the middle open. Magic and inventory use list submenus, with explicit confirmation and a
 cancel path back to the preceding selection. A vertical list replacing the main diamond is not the
 selected direction.
+
+The current 1280×720 review layout uses 72×72 icons (3× source pixels) in a compact 216×168 cardinal
+cluster, with 48-pixel vertical steps between the top, side and bottom positions. This is a modern
+spacing choice inspired by the source arrangement, not a pixel-exact original layout claim.
+The battle map occupies the full game viewport; command menus, lists, hints and supplementary HUD
+draw above it. Opening or closing UI must not resize the map, alter its zoom or reframe its current
+focus. Gameplay movement/target changes retain their existing camera behavior. This overlay change
+does not choose the deferred modern world viewport/camera design.
 
 The existing graphics-remake experiment at commit `172662709b31cb296b55f51894754ce810c30f6c`,
 owned by its `docs/ui-treatment-01.md` and `src/remaster/vector_ui.py`, supplies the window-chrome
 reference. Its Yes/No sample is not a complete UI kit: placeholder text and the embedded private item
 image must be separated from reusable frame geometry. Private art is not licensed by this selection.
 
-This is an interface-prototype experiment, not implemented ordinary-host behavior or final visual
-acceptance. The initial scope is the diamond's size, icon/label hierarchy, selection feedback and
-magic/item submenu navigation. The local prototype uses illustrative data and placeholder icons;
-production must consume the existing [semantic interface](#semantic-interface), including enabled
-states and reasons, rather than deriving action legality in the view. Review keyboard direction,
-confirm/cancel, disabled choices and narrow-window readability directly. No game/evidence suite is
-required for this document/prototype scope. Exact size, final icons, typography and deployment await
-user review. Held exploration movement and a wider world viewport are separate requested improvements;
+The ordinary host now implements a first playable iteration through `BattleCommandMenu` and
+`BattleMenuLayout`, using a shared selection-name window and the original 24×24 normal/selected
+command rasters from a local private scene input. Icons use nearest sampling at integral scale;
+icon positions and the shared text window scale independently. No authored replacement glyph is used. Public scenes
+without these rasters show text-only squares. The [asset owner](../content/presentation-assets.md#private-command-menu-icons)
+defines preparation and admission through the existing scene raster collection.
+Standard rigor applies: one bounded interaction slice, with the existing semantic interface as its
+dependency. Acceptance covers cardinal focus, spell/item lists, costs and unavailable reasons,
+target selection, explicit commit, layered cancellation and actual resized node geometry. Engine
+behavior tests cover back navigation; the [host recipe](../verification/host.md#diamond-menu-observation)
+checks real keyboard input and projection. Final visual/user acceptance and wider Epic completion
+remain separate from these engineering checks. Original pixels are private local inputs; neither the
+tracked UI implementation nor public builds include them. The graphics sample remains a chrome reference.
+
+Confirm at movement opens the diamond. Up/left/right/down focus Attack/Magic/Item/Stay; Confirm
+enters the focused choice. F/H/I/Space are shortcuts from the main diamond; H/I now open lists,
+not immediate selections. Up/down inspect list rows, including disabled rows. Confirm selects an
+enabled offer and its first enabled target (self when offered). Arrows or Tab cycle all offered
+targets; a disabled candidate shows its reason and cannot commit the previously accepted target.
+Target confirmation commits through the session. Stay has its own confirmation step.
+Equipment/Give/Discard retain their existing shortcuts and presenters from the main menu. Spell and
+item lists group by the semantic offer's spell/item metadata, including admitted retreat offers.
+
+Cancel returns target selection to its list or main diamond through `ReturnToBattleActions`, which
+clears provisional action/target while preserving movement preview, resources and RNG. List cancel
+returns to the same cardinal focus; main cancel uses the existing `Cancel` to return to movement and
+undo the preview. Menu focus is disposable adapter state; actions and targets remain session-owned.
+The UI never calculates range, faction or effect legality. Unsupported Search is not added by the
+Stay slot. Actor labels retain current content identities; a complete naming/portrait treatment is
+outside this iteration. Pointer activation and new controller acceptance are also outside scope.
+
+Held exploration movement and a wider world viewport are separate requested improvements;
 the earlier 640-by-360 world-view candidate remains a proposal, not an accepted constant.
 
 ## Field Projection

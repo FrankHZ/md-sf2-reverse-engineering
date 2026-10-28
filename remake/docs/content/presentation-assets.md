@@ -94,6 +94,36 @@ not establish natural route, palette fidelity or general map loading. The comple
 preserve the source joins and retained results. Current before-battle projection has its
 [Godot owner](../godot/presentation.md#bound-before-battle-scene-presentation).
 
+## Private Command Menu Icons
+
+The current diamond-menu experiment uses the original square attack/magic/item/stay rasters directly
+at the four cardinal positions, without another drawn frame or per-icon caption. One shared window
+shows the focused command. This is a private presentation choice, separate from the
+future SVG pipeline below. No authored icon substitutes for a missing original raster.
+
+Prepare a copy of an admitted battle scene with `uv run python -m sf2tool.remake_command_menu
+--rom <registered-rom> --upstream <pinned-upstream-with-H1-listing> --scene <admitted-scene.json>
+--out-dir <fresh-ignored-directory>`. The helper reuses `texture_extract` source/ROM verification,
+base-palette decoding and tile rendering. `tiles_MainMenu` in
+`data/graphics/tech/menus/mainmenutiles.bin` contains seven 576-byte icons; the first four supply the
+four commands. Each 288-byte half is nine tiles in the row-major 3×3 arrangement of
+`diamondmenulayout.asm`: normal first, selected second. These are source-backed pixel/layout facts,
+not a claim about original animation timing or modern visual parity.
+
+The output scene adds eight 24×24 RGBA8 rasters named
+`command-menu.{attack|magic|item|stay}.{normal|selected}`, with the existing raster digest fields.
+`provenance.json` records pinned upstream/ROM identity, source offsets and raster digests. Select the
+new scene through the existing `SF2_PRIVATE_BATTLE_SCENE_CONTENT` input; no new startup switch or
+resource loader is involved. Preparation reads source inputs only and refuses to replace an output
+directory or an already-populated command-menu namespace. The eight raw rasters total 18KiB, in
+addition to the copied scene and JSON encoding.
+
+The ordinary Content reader admits the rasters. The adapter requires all eight when any is present,
+requires 24×24 dimensions, and owns/replaces textures with the active scene. A malformed or partial
+set fails through the existing adapter-error boundary. Nearest sampling, no mipmaps and integral
+icon scale preserve pixel edges. Scenes with no command-menu namespace display text-only squares.
+Extracted pixels and prepared scenes stay ignored and must not enter public packages or PR attachments.
+
 ## SVG HUD Source
 
 HUD SVG tracked in the local asset repository's `masters/` is restricted to a deterministic,

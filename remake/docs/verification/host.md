@@ -70,12 +70,78 @@ Exploration, dialogue/choice, battle and return use the same semantic actions. D
 | `stay` | Space | LeftShoulder |
 
 Confirm talks, acknowledges dialogue, answers Yes, or selects/commits in battle. Cancel answers No
-or cancels battle provisional choices; it does not acknowledge dialogue. Spell cycles learned spells
-and levels with self as the initial target. Item selects and cycles carried item slots, initially
-targeting self; Target cycles living candidates for the selected action.
+or backs out one menu level in battle; it does not acknowledge dialogue. Spell and Item open their
+lists from the diamond; Confirm selects a row, initially targeting self when the offer permits it.
+Target cycles the selected action's offered candidates. The [diamond recipe](#diamond-menu-observation)
+owns the current battle interaction; older immediate-selection shortcuts in probes are retained
+historical recipes, not acceptance of this revised UI.
 All accepted commands still use Application's existing legality and state. F replaces the former X
 attack binding; former C/Y/N exploration shortcuts are replaced by Confirm/Cancel. View help and
 spell/item hints read effective bindings, including after a convention swap.
+
+### Diamond menu observation
+
+The first #438 production iteration uses default keyboard A and live semantic offers. After the
+locked environment and Debug adapter build, prepare a small variation of the existing authored
+practice yard in a fresh ignored output directory. This is controlled content, not a session setter:
+
+```powershell
+$package = Join-Path $env:SF2_RUN_OUTPUT 'menu-package.json'
+$data = Get-Content remake/content/authored/practice-yard.json -Raw | ConvertFrom-Json
+$data | Add-Member -NotePropertyName items -NotePropertyValue @(
+    [pscustomobject]@{id=0;name='Recovery leaf';effect='consumable-healing';power=10;minimumRange=0;maximumRange=1},
+    [pscustomobject]@{id=6;name='Small remedy';effect='consumable-healing';power=4;minimumRange=0;maximumRange=2}) -Force
+$data.actors[0].items = @(256,6,255,383)
+$data.actors[1].items = @(0,127,127,127)
+$data.start.actors[0].hp = 60
+$spell = $data.spells[0] | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+$spell.level = 2; $spell.mpCost = 25
+$data.spells += $spell
+$data.actors[0].spells += [pscustomobject]@{id='mend';level=2}
+$data | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $package -Encoding utf8
+$env:SF2_DIAMOND_CASE = 'menu'
+$env:SF2_DIAMOND_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'diamond-menu.json'
+& $godotBinary --headless --path remake/game --max-fps 120 `
+    --script res://probes/engine_diamond_ui_observation.gd -- --authored-package $package
+```
+
+The probe checks cardinal focus, disabled spell/item/target feedback, nested cancel without resource
+use, real healing and another actor's item consumption. Current acceptance uses the existing
+1280×720 review window, including disabled-list and target descriptions; older multi-size receipts
+are not a requirement to expand multi-resolution support. Check the 216×168 command cluster and
+72×72 icons, full-window map rectangle, and unchanged map rectangle/zoom/preview framing when opening
+the main menu or a list. Gameplay target/movement changes can still move the camera. No claim of
+final visual quality follows from geometry alone.
+
+For physical attack, set `SF2_DIAMOND_CASE=physical`, a fresh output, and use the existing
+`remake/content/authored/stone-court.json` package. For a bounded private menu observation, load
+registered complete private selections, set CASE=`private`, a fresh output, and use
+`--private-exploration-start remake/reference/inputs/battle01-to-battle02-start.json` with its
+accepted connected world and party. The probe waits for the ordinary tower entry's skip hint, sends
+default-keyboard Cancel (Esc), releases it and waits for ordinary battle control through the accepted
+[battle-entry skip](../godot/battle-entry-skip.md). Its entry deadline is ten seconds; a missing or
+failed skip does not silently fall back to waiting through the entire intro. A legacy standalone
+battle input lacking map-region/field resources is
+not a substitute. That case checks menu navigation and cancel without committing an action; it is
+not another continuous opening/outcome comparison.
+For original-art acceptance, prepare/select the [private command rasters](../content/presentation-assets.md#private-command-menu-icons)
+and set `SF2_DIAMOND_ORIGINAL_ICONS=1`. Require square command rectangles at the review size, mounted
+24×24 textures with nearest sampling, and actual draw readback selecting each normal/selected raster
+as focus moves. The observation has a 150-second deadline. These checks establish resource use and
+geometry, not human visual approval.
+Original-icon observations also require no extra drawn frame or visible per-icon label. The compact
+main hint must name the focused command at every cardinal position, hide keyboard prose and retain
+the edge placement; unavailable feedback remains scoped to that selected command.
+Cases `equipment`, `give` and `discard` use the corresponding existing
+`remake/content/authored/battle-<case>.json` packages. They check that each supplementary shortcut
+opens its existing presenter and Cancel returns to the diamond without spending resources. The
+private pilot's older selected content does not supply every supplementary capability.
+For a partial-resource negative check, copy the prepared private scene into another ignored input,
+remove one command-menu raster and select that copy. Set `SF2_DIAMOND_EXPECT_FAILURE` to
+`command-menu-resource-required`; require the field-owned admission failure before battle control.
+Require exit0, `passed:true`, empty failures and clean Godot errors. Preserve failed reports when
+correcting a layout. The public Release adapter build and engine behavior tests are separate gates;
+no tests of this probe or screenshot audit are added.
 
 Keyboard echo is ignored. A stick deflection crossing magnitude0.5 submits one action; it must return
 below that threshold or change sign to submit another. Unrelated axes and releases cannot repeat a

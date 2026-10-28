@@ -32,6 +32,8 @@ internal static class BattleCommandDispatcher
                 return BattleGiveSelection.Submit(current, command);
             switch (command)
             {
+                case ReturnToBattleActions when selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "action-choice");
                 case BeginEquipment when selection.Stage == BattleSelectionStage.ActionChoice:
                     var offers = BattleEquipment.Choices(actor);
                     if (offers.Count == 0) return Reject(current, "no-equippable-weapons", "equipment");
