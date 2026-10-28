@@ -27,6 +27,7 @@ Use the owner that matches the responsibility being changed:
 | Battle scene, movement and death presentation | [Battle scenes](godot/battle-scenes.md) |
 | Environment, checks and observation selection | [Development and verification](development-and-verification.md) |
 | Structural review, concrete defects and bounded engineering follow-ups | [Structure and quality review](evidence/structure-and-quality-review.md) |
+| Runtime, SF2 rule and story-content boundaries; focused correction proposals | [Engine and script boundary review](evidence/engine-script-boundary-review.md) |
 | Accepted compositions, failed comparisons and retired implementation records | [Retained evidence](evidence/retained-comparisons.md) |
 
 ## State and Content Direction
