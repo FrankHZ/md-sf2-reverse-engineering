@@ -178,6 +178,9 @@ internal static class ProgramRunner
                             entityServices: call.ActivateEntities && story.TextSettings is not null ? true : null); break;
                     case WriteFlag flag:
                         story = story.Copy(story.Cursor, flags: Flags(current.Story, flag.Flag, flag.Value)); break;
+                    case OutcomePartyInstruction outcomeParty:
+                        (active, story) = OutcomePartyOperations.Apply(definition, current, outcomeParty, story);
+                        break;
                     case JoinPartyMember join:
                         var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("party-flag-layout", "world.partyFlags", true);
                         var joined = MapPartyMembership.Join(current.Story.Flags, layout, join.Member);

@@ -1,5 +1,27 @@
 # Runtime Profiles and Trust
 
+## Authored Jaro victory admission
+
+[jaro-victory.json](../../content/authored/jaro-victory.json) is a public format8 exploration package
+with a format7 controlled encounter. Its explicit converted logical start has joined23/active55,
+Jaro's own HP/MP/accounting/inventory and activation `0x8005`. It does not assert that the earlier
+private conversion or visual alias was reached. Changed authored tests also admit unconverted,
+absent or dead retained Jaro. The current source policy still owns ordinary victory recovery.
+
+Authored placement initialization optionally declares `allyPartyMember`0..29. It must belong to an
+ally and match that encounter's existing source-combatant slot; duplicate member bindings reject.
+This supplies the existing resource/member interface, not another party registry. The world retains
+its existing party flag layout and starts. New `clear-outcome-party-ai` and
+`leave-outcome-battle-party` instructions take `member`, admit only authored source30/0/32/12 party
+layout, one unique ally binding and an explicitly known starting activation word. Runtime additionally
+requires the victory continuation and live actor in the selected encounter. Wider nonzero AI joins,
+arbitrary activation edits and field-party services are not admitted by these operations.
+
+The existing `join-party`, text/ack/tick operations and completion/return route compose the scene.
+No private importer, source asset, fixed Battle32 ID predicate, research fixture or reference-runtime
+dependency was added. The [behavior agreement](../domain/gameplay-rules.md#authored-jaro-victory-recruitment)
+distinguishes authored support from the unbound actual Battle32/Moun chapter.
+
 ## Authored poison admission
 
 Standalone format7 opts in with `"battlePoison":"fixed-two-after-turn"`. Its start actors admit only

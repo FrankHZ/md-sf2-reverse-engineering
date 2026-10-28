@@ -1,0 +1,661 @@
+{
+  "formatVersion": 8,
+  "package": "jaro-victory",
+  "battle": {
+    "formatVersion": 7,
+    "package": "jaro-victory-battle",
+    "profile": "public-authored",
+    "ruleProfile": "sf2-semantic-subset-v1",
+    "start": {
+      "encounter": "arena-battle",
+      "initialVitals": "authored-controlled",
+      "mainSeed": 3609140,
+      "thinkingSeed": 3203334210,
+      "gold": 73,
+      "actors": [
+        {
+          "actor": "leader",
+          "hp": 10,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null,
+          "initialization": {
+            "initialized": true,
+            "activationWord": 0
+          }
+        },
+        {
+          "actor": "ally-jaro",
+          "hp": 9,
+          "mp": 1,
+          "exp": 17,
+          "kills": 3,
+          "defeats": 2,
+          "status": "none",
+          "positionOverride": null,
+          "initialization": {
+            "initialized": true,
+            "activationWord": 32773
+          }
+        },
+        {
+          "actor": "enemy",
+          "hp": 1,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null,
+          "initialization": {
+            "initialized": true,
+            "activationWord": 0
+          }
+        }
+      ]
+    },
+    "terrains": [
+      {
+        "id": "open",
+        "legend": {
+          ".": {
+            "surface": "open",
+            "protection": "none"
+          }
+        },
+        "rows": [
+          "......",
+          "......",
+          "......",
+          "......",
+          "......",
+          "......"
+        ]
+      }
+    ],
+    "maps": [
+      {
+        "id": "arena",
+        "terrain": "open"
+      }
+    ],
+    "spells": [],
+    "actors": [
+      {
+        "id": "leader",
+        "classRule": "unpromoted-swordsman",
+        "level": 1,
+        "maxHp": 40,
+        "maxMp": 0,
+        "attack": 30,
+        "defense": 4,
+        "agility": 63,
+        "extraRoundAction": false,
+        "move": 3,
+        "items": [],
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-16",
+            "damageBonus": "quarter"
+          },
+          "promoted": false,
+          "leader": true,
+          "gold": 0,
+          "special": "none"
+        }
+      },
+      {
+        "id": "ally-jaro",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 24,
+        "maxMp": 3,
+        "attack": 30,
+        "defense": 4,
+        "agility": 1,
+        "extraRoundAction": false,
+        "move": 3,
+        "items": [
+          0
+        ],
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-16",
+            "damageBonus": "quarter"
+          },
+          "promoted": false,
+          "leader": false,
+          "gold": 0,
+          "special": "none"
+        }
+      },
+      {
+        "id": "enemy",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 20,
+        "maxMp": 0,
+        "attack": 30,
+        "defense": 4,
+        "agility": 40,
+        "extraRoundAction": false,
+        "move": 3,
+        "items": [],
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-16",
+            "damageBonus": "quarter"
+          },
+          "promoted": false,
+          "leader": false,
+          "gold": 11,
+          "special": "none"
+        }
+      }
+    ],
+    "encounters": [
+      {
+        "id": "arena-battle",
+        "map": "arena",
+        "rewards": {
+          "halvedExperience": false
+        },
+        "placements": [
+          {
+            "actor": "leader",
+            "faction": "ally",
+            "processingOrder": 0,
+            "control": "player",
+            "aiStrategy": null,
+            "x": 2,
+            "y": 2,
+            "initialization": {
+              "baseAiWord": null,
+              "spawnMode": 0,
+              "primaryRegion": 15,
+              "secondaryRegion": 15,
+              "filler": 0,
+              "commandset": 6,
+              "primaryOrder": 255,
+              "secondaryOrder": 255,
+              "allyPartyMember": 0
+            }
+          },
+          {
+            "actor": "ally-jaro",
+            "faction": "ally",
+            "processingOrder": 23,
+            "control": "player",
+            "aiStrategy": "source-ally-physical",
+            "x": 4,
+            "y": 4,
+            "initialization": {
+              "baseAiWord": null,
+              "spawnMode": 0,
+              "primaryRegion": 15,
+              "secondaryRegion": 15,
+              "filler": 0,
+              "commandset": 6,
+              "primaryOrder": 255,
+              "secondaryOrder": 255,
+              "allyPartyMember": 23
+            },
+            "controlPolicy": "source-ally-activation"
+          },
+          {
+            "actor": "enemy",
+            "faction": "enemy",
+            "processingOrder": 128,
+            "control": "automatic",
+            "aiStrategy": "stay",
+            "x": 3,
+            "y": 2,
+            "initialization": {
+              "baseAiWord": 0,
+              "spawnMode": 0,
+              "primaryRegion": 15,
+              "secondaryRegion": 15,
+              "filler": 0,
+              "commandset": 6,
+              "primaryOrder": 255,
+              "secondaryOrder": 255
+            }
+          }
+        ],
+        "initialization": {
+          "regions": [],
+          "regionProgram": "none",
+          "enemyCount": 1,
+          "sourceCombatants": [
+            {
+              "slot": 0,
+              "actor": "leader"
+            },
+            {
+              "slot": 23,
+              "actor": "ally-jaro"
+            },
+            {
+              "slot": 128,
+              "actor": "enemy"
+            }
+          ]
+        }
+      }
+    ],
+    "items": [
+      {
+        "id": 0,
+        "name": "Healing Herb",
+        "effect": "consumable-healing",
+        "power": 10,
+        "minimumRange": 0,
+        "maximumRange": 1
+      }
+    ]
+  },
+  "world": {
+    "maps": [
+      {
+        "id": "quay",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [
+          {
+            "id": "ferryman",
+            "position": {
+              "x": 2,
+              "y": 1
+            },
+            "facing": 2,
+            "speed": 96,
+            "visible": true,
+            "obstruction": true
+          }
+        ],
+        "events": [
+          {
+            "kind": "interact",
+            "entity": "ferryman",
+            "program": {
+              "program": "enter",
+              "instruction": 0
+            },
+            "requiredFlag": null,
+            "requiredValue": true
+          }
+        ],
+        "onLoad": null,
+        "battle": null,
+        "setup": null,
+        "basePalette": {
+          "color2": 546,
+          "color3": 1092
+        }
+      },
+      {
+        "id": "arena",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [],
+        "events": [],
+        "onLoad": null,
+        "battle": {
+          "encounter": "arena-battle",
+          "unlockedFlag": 432,
+          "completedFlag": 532,
+          "introFlag": 482,
+          "before": {
+            "program": "before",
+            "instruction": 0
+          },
+          "start": null,
+          "outcome": {
+            "after": {
+              "program": "after",
+              "instruction": 0
+            },
+            "joinMember": 0,
+            "defeated": {
+              "program": "empty",
+              "instruction": 0
+            },
+            "defeat": {
+              "program": "defeat",
+              "instruction": 0
+            },
+            "return": {
+              "program": "return-field",
+              "instruction": 0
+            },
+            "victoryFacing": 3,
+            "egress": {
+              "map": "quay",
+              "position": {
+                "x": 3,
+                "y": 3
+              },
+              "facing": 3
+            },
+            "battleOrigin": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        "setup": null,
+        "basePalette": {
+          "color2": 546,
+          "color3": 1092
+        }
+      }
+    ],
+    "programs": [
+      {
+        "id": "enter",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 432,
+            "value": true
+          },
+          {
+            "op": "transfer",
+            "map": "arena",
+            "position": {
+              "x": 2,
+              "y": 2
+            },
+            "facing": 3,
+            "loadMode": "rebuild"
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "before",
+        "instructions": [
+          {
+            "op": "text-cursor",
+            "text": 100
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "after",
+        "instructions": [
+          {
+            "op": "join-party",
+            "member": 23
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null,
+            "text": 101
+          },
+          {
+            "op": "wait-ticks",
+            "ticks": 10
+          },
+          {
+            "op": "clear-outcome-party-ai",
+            "member": 23
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null,
+            "text": 103
+          },
+          {
+            "op": "leave-outcome-battle-party",
+            "member": 23
+          },
+          {
+            "op": "wait-ticks",
+            "ticks": 1
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "defeat",
+        "instructions": [
+          {
+            "op": "text-cursor",
+            "text": 102
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "empty",
+        "instructions": [
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "return-field",
+        "instructions": [
+          {
+            "op": "present",
+            "kind": "FadeOut",
+            "resource": "black",
+            "entity": null,
+            "position": null
+          },
+          {
+            "op": "battle-return-map"
+          },
+          {
+            "op": "present",
+            "kind": "FadeIn",
+            "resource": "black",
+            "entity": null,
+            "position": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      }
+    ],
+    "texts": [
+      {
+        "id": 100,
+        "text": "Win the encounter, then welcome Jaro into the force."
+      },
+      {
+        "id": 101,
+        "text": "Jaro has joined the force."
+      },
+      {
+        "id": 102,
+        "text": "Defeat. Return to the quay."
+      },
+      {
+        "id": 103,
+        "text": "Thank you. I will stand ready in reserve."
+      }
+    ],
+    "partyFlags": {
+      "memberCount": 30,
+      "joinedStart": 0,
+      "activeStart": 32,
+      "capacity": 12
+    }
+  },
+  "start": {
+    "map": "arena",
+    "player": "traveler",
+    "position": {
+      "x": 2,
+      "y": 2
+    },
+    "facing": 0,
+    "speed": 96,
+    "flags": [
+      0,
+      23,
+      32,
+      55,
+      399,
+      432
+    ],
+    "display": {
+      "period": 1,
+      "base": {
+        "color2": 546,
+        "color3": 1092
+      },
+      "current": {
+        "color2": 546,
+        "color3": 1092
+      },
+      "visibility": "base-restored"
+    }
+  }
+}

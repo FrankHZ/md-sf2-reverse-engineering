@@ -1,5 +1,39 @@
 # Development and Verification
 
+## Jaro victory authored observation
+
+Use [jaro-victory.json](../content/authored/jaro-victory.json) in the ordinary host. Acknowledge the
+before text, Enter/F/Tab/Enter attacks the adjacent enemy, then Enter acknowledges the battle and
+recruitment text. The real host advances typed waits and returns to the saved field anchor; Left
+moves afterward. No post-start state injection or synthetic presentation completions.
+
+`JaroVictoryTests`/`JaroVictoryProgramTests` own actual engine acceptance alongside affected Jaro,
+outcome, party-list and source-story tests. Load `local/private-inputs.ps1` in the launching process,
+force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, then run `uv run sf2 verify engine`,
+`uv run sf2 verify adapter` and the Debug adapter build from `remake/`. Preserve completed failures;
+rerun corrected/affected cases. On a clean committed head inspect `uv run sf2 verify plan --base
+origin/main --head HEAD`, direct document/link/source-size/private checks and actual exact-head CI.
+No normal/full research, emulator, H3/H4, comparator or asset acquisition is selected.
+
+Reuse the owned SDK/Godot/project. No retained instance exists at slice start; starting the built
+adapter is necessary for the one native delivery witness. Resolve paths from the owning repository:
+
+```powershell
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_jaro_victory_observation.gd -- `
+  --authored-package (Join-Path $repoRoot 'remake/content/authored/jaro-victory.json') `
+  --input-settings (Join-Path $freshIgnoredOutput 'input.json')
+```
+
+Use `{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120}` for input.json. Keep
+APPDATA/LOCALAPPDATA/TEMP/TMP, stdout/stderr and report in a fresh ignored `local/issue1371` run
+folder; await actual process exit. One serial witness targets <180s and <2MiB semantic output.
+Membership work is O(30), party publication O(N), and the small package/witness needs no acquisition
+or model/API processing. The probe reads actual text, flags, resources, caches and control, tests
+hidden-view input suspension and counts exactly-once writes; screenshots are prohibited. A failed witness
+retains its output and only the corrected witness reruns. Private skips establish no private claim.
+
 ## Poison authored observation
 
 Use [poison-turn.json](../content/authored/poison-turn.json) in the ordinary host. Enter, Space, Enter

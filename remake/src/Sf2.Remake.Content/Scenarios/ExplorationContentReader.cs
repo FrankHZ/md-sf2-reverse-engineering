@@ -256,6 +256,17 @@ internal static class ExplorationContentReader
                 encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor), encounter.HealingItems.Values,
                 encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness, encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser);
         }
+        foreach (var operation in programs.SelectMany(p => p.Instructions).OfType<OutcomePartyInstruction>())
+        {
+            Require(authored && partyFlags == new MapPartyFlagLayout(30, 0, 32, 12),
+                "outcome-party-layout", "world.partyFlags", true);
+            var bindings = encounters.SelectMany(e => e.Deployments)
+                .Where(d => d.Faction == BattleFaction.Ally && d.Initialization?.AllyPartyMember == operation.Member)
+                .Select(d => d.Actor).Distinct().ToArray();
+            Require(bindings.Length == 1, "outcome-party-member", "program.member");
+            Require(battle.Start.Actors.Any(a => a.Actor == bindings[0] && a.ActivationWord is not null),
+                "outcome-party-start", "battle.start.actors");
+        }
         Require(encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
             "leader-cleanup-outcome", "encounter.leaderCleanup", true);
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
@@ -581,6 +592,10 @@ internal static class ExplorationContentReader
                     installation = Enum.Parse<EntityScriptInstallation>(Text(row, "installation"));
                 }
                 return new StartEntityMotion(new(Id(row, "entity")), Actions(row), Boolean(row, "wait"), installation);
+            case "clear-outcome-party-ai":
+                Object(row, opcode, "op", "member"); return new ClearOutcomePartyAi(Number(row, "member", 0, 29));
+            case "leave-outcome-battle-party":
+                Object(row, opcode, "op", "member"); return new LeaveOutcomeBattleParty(Number(row, "member", 0, 29));
             case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255));
             case "follow":
                 Object(row, opcode, "op", "entity", "leader", "x", "y");
