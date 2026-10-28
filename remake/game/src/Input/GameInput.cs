@@ -10,6 +10,12 @@ internal sealed class GameInput
     private readonly Dictionary<(int Device, JoyAxis Axis), int> _axes = [];
     private readonly HashSet<(int Device, JoyButton Button)> _pressedButtons = [];
     internal InputSettings Settings { get; }
+    private readonly List<GameAction> _movementDirections = [];
+    private static readonly GameAction[] Directions = [GameAction.Up, GameAction.Right, GameAction.Down, GameAction.Left];
+    internal GameAction? MovementDirection => _movementDirections.Count == 0 ? null : _movementDirections[^1];
+    // Resumption needs a fresh non-echo event. Pad buttons/axes retain their ordinary
+    // release/neutral edge guards below; keyboard releases may occur outside the window.
+    internal void DisarmMovement() => _movementDirections.Clear();
     internal bool WaitHeld { get; private set; }
     private bool _waitRequiresRelease;
     internal void DisarmWait() => _waitRequiresRelease |= WaitHeld;
@@ -106,6 +112,11 @@ internal sealed class GameInput
 
     internal GameAction? Resolve(InputEvent input)
     {
+        foreach (var direction in Directions)
+        {
+            if (Godot.Input.IsActionPressed(MapName(direction))) continue;
+            _movementDirections.Remove(direction);
+        }
         bool held = Godot.Input.IsActionPressed(MapName(GameAction.Wait));
         bool freshWait = held && !WaitHeld;
         WaitHeld = held;
@@ -134,7 +145,14 @@ internal sealed class GameInput
             return null;
         foreach (var action in _bindings.Keys)
             if (InputMap.EventIsAction(input, MapName(action), true))
+            {
+                if (Directions.Contains(action))
+                {
+                    if (_movementDirections.Contains(action)) return null;
+                    _movementDirections.Add(action);
+                }
                 return action == GameAction.Wait && (!freshWait || _waitRequiresRelease) ? null : action;
+            }
         return null;
     }
 

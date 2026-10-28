@@ -1,5 +1,88 @@
 # Field and Program Verification
 
+## Continuous exploration control and contextual Talk
+
+**Standard rigor; [#1389](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1389).**
+The bounded outcome is continuous mapped field walking, trustworthy existing-interaction feedback
+and fresh control after lifecycle/story handoffs. Domain movement/events and `GameSession` remain
+authoritative. No new gameplay, menu framework, viewport choice, private route acquisition or
+original timing claim is included. Integration and independent review status belong to
+[PR #1390](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1390).
+
+`GameInput` retains mapped direction edges separately from choices. A fresh direction immediately
+submits the existing Move. The host waits 220 ms before repeating, then attempts at most one Move
+every 120 ms, only at ordinary field input. Motion may delay that attempt; missed deadlines do not
+accumulate. The latest newly pressed direction wins; releasing it falls back to another still-held
+direction. Keyboard aliases, D-pad and mapped stick deflections use the same semantics. OS keyboard
+echo cannot select or repeat a choice. Existing button/axis release/neutral admission remains.
+
+`ExplorationMovementHold` retains only the token of its own ordinary field Move. That movement wait
+must not cancel a continuous walk. A real program, event continuation, map/battle handoff, interaction,
+error, focus loss, hide, pause or detach clears the pending hold. A submitted step may finish after
+release or resume, but cannot cause a later Move. Return needs a fresh non-echo direction event;
+pad buttons/axes need their existing release/neutral edge. Keyboard recovery does not require a
+release that may have happened outside the window. All field automatic delivery now pauses while
+unfocused/hidden/paused, and resume discards timing debt.
+
+`GameSession.QueryExplorationInteraction()` is read-only. It uses the same current entity visibility,
+raw motion tile/facing and ordered flag-eligible interaction event predicate as Interact. It returns
+no target while ordinary field input is unavailable or an input program owns the command. The help
+shows binding-derived Confirm + Talk only for that offer; it invents no name or action. Confirm
+queries again, and the ordinary command envelope/dispatcher rechecks the current target and event.
+
+### Bounded host reproduction
+
+Reuse the configured installation/project, load `local/private-inputs.ps1` in the launching process,
+and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Run `uv run sf2 verify engine` for the actual
+session behavior tests and `uv run sf2 verify adapter` for the adapter. Build the same Godot project
+Debug configuration from `remake/` with the configured absolute SDK and locked existing restore.
+A changed adapter binary or absent running instance justifies this native startup.
+
+Create an ignored `local/issue1389/input.json` with this content (J replaces down):
+
+```json
+{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120,"bindings":{"down":{"keys":["J"],"buttons":["DpadDown"],"axes":["LeftY+"]}}}
+```
+
+Resolve the package, settings, project and report to absolute paths before Godot changes cwd:
+
+```powershell
+$project = (Resolve-Path './remake/game').Path
+$package = (Resolve-Path './remake/content/authored/harbor-arrival.json').Path
+$settings = (Resolve-Path './local/issue1389/input.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path (Resolve-Path './local/issue1389').Path 'control.json'
+& $env:GODOT_BIN --path $project --script res://probes/engine_exploration_control_observation.gd -- --authored-package $package --input-settings $settings
+```
+
+The finite observer mounts ordinary Main and supplies mapped key/stick events. It reads live
+session state, help, text/choice projection and command observations; it never calls HandleAction,
+injects gameplay state, acknowledges a synthetic completion or takes screenshots. It checks multiple
+steps, obstruction/release, direction priority/fallback, mapped stick neutral, hidden/paused return,
+a real native Window focus transfer, reveal/acknowledgement, both Yes/No paths, a real authored map
+transfer and ordinary battle Movement → ActionChoice → Movement after fresh keys. Budget <180s and
+<5 MiB per run; retain failures and stop/reassess if the bounded witness expands into a route/tooling
+project. Only semantic boundaries are serialized, not per-frame snapshots.
+
+Before every mapped input edge, the observer checks actual root-window focus. Outside the
+intentional native-focus witness, it permits one unplanned focus request with a one-second
+recovery deadline. A further loss or an interrupted held-input interval makes the environment
+unavailable; it cannot support a product verdict. The report returns `status: environment-unavailable`,
+`passed: false` and exit 2, preserving the reached prefix and terminal state. A product assertion
+failure exits 1 immediately, without sending later inputs or generating cascading assertions.
+Motion, text reveal and map arrival use live-state predicates with finite deadlines; timed intervals
+are retained only for hold/repeat and absence-of-new-input observations.
+
+**Confirmed:** the shared interaction query has actual session tests, and bounded executor host
+observations have exercised walking, hints, lifecycle, dialogue and handoffs. The independently
+attempted observations also exposed focus loss during walking and unrevealed choices; those completed
+failures remain preserved in the [PR handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1390).
+A passing executor run does not establish independent acceptance or a usable environment on a later
+run. Current integration and review conclusions belong to that PR, not a static acceptance promise.
+**Unknown:** physical keyboard/pad release while another OS window owns focus, full opening-route
+experience, original timing and visual/audio parity. Native focus ownership is observed; injected
+input is not physical device evidence. The original completed #689 visible-entry timeout and #1386
+ObjectDB exit warning remain unchanged historical Unknowns.
+
 ## Battle02 Angel Wing and walking retry
 
 Use the [High agreement](../capability-status.md#battle02-angel-wing-implementation-agreement),

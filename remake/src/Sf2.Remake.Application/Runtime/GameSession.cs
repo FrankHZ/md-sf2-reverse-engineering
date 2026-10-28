@@ -13,6 +13,7 @@ public sealed class GameSession
     public ScenarioDefinition Definition { get; }
     public SessionSnapshot Current => _current;
     public SessionRules Rules { get; }
+    public EntityRef? QueryExplorationInteraction() => ExplorationInteractionQuery.Query(Current);
     public BattleChoicesSnapshot QueryBattleChoices() =>
         BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
 
