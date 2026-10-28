@@ -124,6 +124,9 @@ and set `SF2_DIAMOND_ORIGINAL_ICONS=1`. Require square command rectangles at all
 24×24 textures with nearest sampling, and actual draw readback selecting each normal/selected raster
 as focus moves. The observation has a 150-second deadline. These checks establish resource use and
 geometry, not human visual approval.
+Original-icon observations also require no extra drawn frame or visible per-icon label. The compact
+main hint must name the focused command at every cardinal position, hide keyboard prose and retain
+the edge placement; unavailable feedback remains scoped to that selected command.
 Cases `equipment`, `give` and `discard` use the corresponding existing
 `remake/content/authored/battle-<case>.json` packages. They check that each supplementary shortcut
 opens its existing presenter and Cancel returns to the diamond without spending resources. The

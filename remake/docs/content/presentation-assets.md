@@ -96,8 +96,9 @@ preserve the source joins and retained results. Current before-battle projection
 
 ## Private Command Menu Icons
 
-The current diamond-menu experiment uses the original attack/magic/item/stay rasters, with square
-buttons at the four cardinal positions. This is a private presentation choice, separate from the
+The current diamond-menu experiment uses the original square attack/magic/item/stay rasters directly
+at the four cardinal positions, without another drawn frame or per-icon caption. One shared window
+shows the focused command. This is a private presentation choice, separate from the
 future SVG pipeline below. No authored icon substitutes for a missing original raster.
 
 Prepare a copy of an admitted battle scene with `uv run python -m sf2tool.remake_command_menu

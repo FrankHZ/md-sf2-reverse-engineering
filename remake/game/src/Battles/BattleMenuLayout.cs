@@ -25,6 +25,7 @@ internal sealed partial class BattleMenuLayout : Control
     private Vector2 _descriptionSize;
     private Vector2 _actorSize, _contextSize;
     private bool _commandsVisible;
+    private bool _commandHint;
     internal Action? LayoutChanged { get; set; }
     internal Rect2 MapRect { get; private set; }
 
@@ -83,8 +84,9 @@ internal sealed partial class BattleMenuLayout : Control
         bool narrow = size.X < 700;
         float menu = Mathf.Clamp(size.Y * 0.38f, narrow ? 200 : 220, 300);
         menu = Mathf.Min(menu, size.X - 2 * margin);
-        float detailWidth = narrow ? size.X - 2 * margin : Mathf.Clamp(size.X * 0.25f, 260, 340);
-        float detailHeight = narrow ? 180 : menu;
+        float detailWidth = _commandHint ? Mathf.Min(240, size.X - 2 * margin) :
+            narrow ? size.X - 2 * margin : Mathf.Clamp(size.X * 0.25f, 260, 340);
+        float detailHeight = _commandHint ? 56 : narrow ? 180 : menu;
         _descriptionSize = new(detailWidth, detailHeight);
         SetTextWidths();
         detailHeight = Mathf.Max(detailHeight, _detail.GetCombinedMinimumSize().Y);
@@ -120,6 +122,14 @@ internal sealed partial class BattleMenuLayout : Control
     {
         if (_commandsVisible == visible) return;
         _commandsVisible = visible; Arrange(Size);
+    }
+
+    internal void ShowCommandHint(bool compact)
+    {
+        _commandHint = compact;
+        Detail.Visible = !compact || !string.IsNullOrWhiteSpace(Detail.Text);
+        Help.Visible = !compact;
+        Arrange(Size);
     }
 
     private void SetTextWidths()
@@ -171,7 +181,8 @@ internal sealed partial class BattleMenuLayout : Control
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
         actor = BattleMapViewport.Rectangle(_actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
         heading = Heading.Text, detail = Detail.Text, help = Help.Text,
-        descriptionLabels = new[] { Heading, Detail, Help }.Select(label => new { text = label.Text,
+        commandHint = _commandHint, helpVisible = Help.Visible,
+        descriptionLabels = new[] { Heading, Detail, Help }.Where(label => label.Visible).Select(label => new { text = label.Text,
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),
         listVisible = _list.Visible, list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),
         rows = _rowLabels.Select(label => label.Text).ToArray(), selectedRow = _selected,
@@ -210,6 +221,7 @@ internal sealed partial class BattleDiamondButton : Control
     private ImageTexture? _normal, _selected;
     private int _pixelScale = 1;
     private string? _drawnResource;
+    private bool _drawnExtraFrame;
     internal BattleDiamondButton(string caption)
     {
         Caption = caption; Name = caption;
@@ -228,29 +240,33 @@ internal sealed partial class BattleDiamondButton : Control
     internal void SetArt(ImageTexture? normal, ImageTexture? selected)
     {
         _normal?.Dispose(); _selected?.Dispose();
-        _normal = normal; _selected = selected; _drawnResource = null; QueueRedraw();
+        _normal = normal; _selected = selected; _drawnResource = null;
+        _label.Visible = normal is null; QueueRedraw();
     }
     internal void Arrange()
     {
-        _pixelScale = Math.Max(1, (int)Mathf.Floor(Mathf.Min(Size.X - 8, Size.Y - 24) / 24));
-        _label.Position = new(0, Size.Y - 23); _label.Size = new(Size.X, 20); QueueRedraw();
+        _pixelScale = Math.Max(1, (int)Mathf.Floor(Mathf.Min(Size.X, Size.Y) / 24));
+        _label.Position = Vector2.Zero; _label.Size = Size; QueueRedraw();
     }
     internal object ObserveArt() => new { shape = "square", mounted = _normal is not null,
         resource = _drawnResource,
         width = _normal?.GetWidth(), height = _normal?.GetHeight(), scale = _pixelScale,
-        filter = TextureFilter.ToString() };
+        filter = TextureFilter.ToString(), extraFrame = _drawnExtraFrame, labelVisible = _label.Visible };
     public override void _Draw()
     {
-        var rect = new Rect2(Vector2.One, Size - Vector2.One * 2);
-        DrawRect(rect, new Color("002492"));
-        DrawRect(rect, new Color("924900"), false, 2);
-        DrawRect(rect.Grow(-2), Selected ? new Color("ffffff") : new Color("ffdb49"), false, 2);
         var texture = Selected ? _selected : _normal;
+        _drawnExtraFrame = texture is null;
         if (texture is not null)
         {
             float side = 24 * _pixelScale;
-            DrawTextureRect(texture, new Rect2(new((Size.X - side) / 2, 4), new(side, side)), false);
+            DrawTextureRect(texture, new Rect2((Size - new Vector2(side, side)) / 2, new(side, side)), false);
             _drawnResource = $"command-menu.{Caption.ToLowerInvariant()}.{(Selected ? "selected" : "normal")}";
+        }
+        else
+        {
+            var rect = new Rect2(Vector2.One, Size - Vector2.One * 2);
+            DrawRect(rect, new Color("002492"));
+            DrawRect(rect, Selected ? Colors.White : new Color("ffdb49"), false, 2);
         }
         _label.Modulate = Selected ? Colors.White : Available ? new Color("ffdb49") : new Color("a0a0a0");
     }

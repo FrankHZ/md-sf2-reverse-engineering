@@ -186,13 +186,13 @@ internal sealed partial class BattleCommandMenu : Control
         else
         {
             var offers = Options();
-            description = _command switch { 0 => "Attack a target in reach.", 1 => "Choose a learned spell and level.", 2 => "Choose an item from this unit's inventory.", _ => "End this unit's action." };
-            if (offers.Length == 0) description += _command == 1 ? "\nNo learned magic." : "\nNo carried items.";
-            else if (!offers.Any(option => option.Enabled) && offers[0].Reason is { } reason) description += "\n" + Unavailable(reason);
+            description = offers.Length == 0 ? (_command == 1 ? "No learned magic." : "No carried items.") :
+                !offers.Any(option => option.Enabled) && offers[0].Reason is { } reason ? Unavailable(reason) : "";
         }
         if (_choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
         if (_failure is not null) description += "\n" + Unavailable(_failure);
         _layout.Detail.Text = description;
+        _layout.ShowCommandHint(!moving && _page == Page.Main);
     }
 
     private string ActorText(ActorRef actor)

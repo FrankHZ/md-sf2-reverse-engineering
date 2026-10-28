@@ -67,6 +67,9 @@ func _layout() -> void:
             await process_frame
         var state := _state("layout-" + str(size))
         var layout: Dictionary = state.menu.layout
+        if layout.diamondVisible:
+            _check(layout.commandHint and not layout.helpVisible, "Main menu has one compact selection hint without control prose")
+            _check(layout.heading == layout.commands[state.menu.command].label, "Hint names only the focused command")
         _check(_inside(layout.diamond, size) and _inside(layout.description, size), "Menu and description fit " + str(size))
         _check(_inside(layout.actor, size) and _inside(layout.context, size), "Actor and context panels fit " + str(size))
         for label in layout.descriptionLabels:
@@ -77,6 +80,7 @@ func _layout() -> void:
             _check(command.art.shape == "square" and abs(command.rect.width - command.rect.height) < 1, "Cardinal command is square")
             if OS.get_environment("SF2_DIAMOND_ORIGINAL_ICONS") == "1" and layout.diamondVisible:
                 _check(command.art.mounted and command.art.width == 24 and command.art.height == 24 and command.art.filter == "Nearest", "Original texture is mounted at native size with nearest sampling")
+                _check(not command.art.extraFrame and not command.art.labelVisible, "Original square icon has no extra frame or per-icon caption")
         if size.x >= 700:
             _check(abs(layout.description.x + layout.description.width - size.x + 16) <= 1, "Description hugs right safe edge")
         else:
@@ -141,7 +145,9 @@ func _private_menus(initial: Dictionary) -> void:
     for key in [KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN]:
         await _press(key)
         if OS.get_environment("SF2_DIAMOND_ORIGINAL_ICONS") == "1":
-            var commands: Array = _state().menu.layout.commands
+            var layout: Dictionary = _state().menu.layout
+            var commands: Array = layout.commands
+            _check(layout.heading == commands[_state().menu.command].label and not layout.helpVisible, "Single hint follows cardinal focus")
             for command in commands:
                 var suffix := ".selected" if command.selected else ".normal"
                 _check(command.art.resource == "command-menu." + command.label.to_lower() + suffix, "Actual draw consumes the original normal/selected icon")

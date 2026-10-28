@@ -186,10 +186,11 @@ orders attack, magic, item and search-or-stay. Search admission remains a gamepl
 an interface experiment showing Stay does not remove the source-specific Search route.
 
 Modernization separates world framing, UI dimensions and drawing resolution. The current experiment
-uses original command icons inside axis-aligned square buttons arranged up/left/right/down. It renders
-labels with the engine font system and retains the blue fill and layered gold/light frame.
-Do not uniformly enlarge the original pixel menu or preserve its tiny physical size. Commands keep
-visible names and a distinct selected state; contextual descriptions, costs and unavailable reasons
+uses the original square command rasters directly, arranged up/left/right/down. No additional button
+frame or per-icon caption surrounds those rasters. One compact native-text window identifies the
+focused command, with an unavailable reason when needed; main-menu keyboard instructions and generic
+description paragraphs are hidden. Do not uniformly enlarge the entire original menu or preserve its
+tiny physical size. Icons keep their original selected state; selected-item costs and unavailable reasons
 sit against the right safe edge, leaving the middle open. Magic and inventory use list submenus, with explicit confirmation and a
 cancel path back to the preceding selection. A vertical list replacing the main diamond is not the
 selected direction.
@@ -200,9 +201,9 @@ reference. Its Yes/No sample is not a complete UI kit: placeholder text and the 
 image must be separated from reusable frame geometry. Private art is not licensed by this selection.
 
 The ordinary host now implements a first playable iteration through `BattleCommandMenu` and
-`BattleMenuLayout`, using native text, blue/gold square buttons and the original 24×24 normal/selected
+`BattleMenuLayout`, using a shared selection-name window and the original 24×24 normal/selected
 command rasters from a local private scene input. Icons use nearest sampling at integral scale;
-button geometry and labels scale independently. No authored replacement glyph is used. Public scenes
+icon positions and the shared text window scale independently. No authored replacement glyph is used. Public scenes
 without these rasters show text-only squares. The [asset owner](../content/presentation-assets.md#private-command-menu-icons)
 defines preparation and admission through the existing scene raster collection.
 Standard rigor applies: one bounded interaction slice, with the existing semantic interface as its
