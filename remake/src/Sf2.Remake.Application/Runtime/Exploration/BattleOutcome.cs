@@ -32,9 +32,10 @@ internal static class BattleOutcome
                     actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, kind, party);
+            var player = current.Story.FieldPlayer ?? throw new BattleRuleException("field-player-binding", "battle.outcome", true);
             var map = definition.Exploration!.Maps[route.BattleMap];
-            var world = MapTransfer.Build(map, new("entity-0"), selected.ProjectionPosition,
-                kind == BattleOutcomeKind.Victory ? selected.Return.Facing : route.VictoryFacing, 32,
+            var world = MapTransfer.Build(map, player.Player, selected.ProjectionPosition,
+                kind == BattleOutcomeKind.Victory ? selected.Return.Facing : route.VictoryFacing, player.Speed,
                 selected.Party, current.Story.Flags);
             var story = current.Story.Copy(selected.Program, callers: [],
                 continuation: kind == BattleOutcomeKind.Victory ? ProgramContinuation.VictoryProgramFinished : ProgramContinuation.DefeatProgramFinished,
@@ -68,9 +69,10 @@ internal static class BattleOutcome
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, BattleOutcomeKind.Retreat, party);
             // ExplorationLoop heals before fade/load; this is later than retreat payment and closure.
             var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, selected.Party, all: false);
+            var player = current.Story.FieldPlayer ?? throw new BattleRuleException("field-player-binding", "battle.retreat", true);
             var map = definition.Exploration!.Maps[route.Outcome!.BattleMap];
-            var world = MapTransfer.Build(map, new("entity-0"), selected.ProjectionPosition,
-                route.Outcome.VictoryFacing, 32, recovered, current.Story.Flags);
+            var world = MapTransfer.Build(map, player.Player, selected.ProjectionPosition,
+                route.Outcome.VictoryFacing, player.Speed, recovered, current.Story.Flags);
             var story = current.Story.Copy(selected.Program, callers: [],
                 continuation: ProgramContinuation.OutcomeMapLoaded, outcomeReturn: selected.Return,
                 clearCameraEntity: true, clearCameraTarget: true, textWindow: new ClosedTextWindow());
