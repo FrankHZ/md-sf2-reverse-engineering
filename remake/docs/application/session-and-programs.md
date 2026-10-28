@@ -1,5 +1,30 @@
 # Session and Resumable Programs
 
+## Battle Give selection and completion
+
+`BeginGive` enters `GiveItemChoice` from `ActionChoice`; `SelectGiveItem(slot)` changes only
+selection. Confirm enters `GiveTargetChoice`, where `SelectTarget(actor)` chooses an adjacent
+admitted teammate. Confirm selects normal `GiveCommitReady` or, for a full recipient,
+`GiveExchangeChoice`. `SelectGiveReturn(slot)` selects the exact return word; Confirm reaches
+`GiveCommitReady`. Final Confirm revalidates live actor/destination, both selected words and capacity.
+Unknown targets return a typed rejection before lookup. Session/revision/actor envelope checks apply.
+
+Cancel backs up one selection stage: confirmation to recipient/return item, return item to
+recipient, recipient to donor item, donor item to actions. It preserves authoritative positions,
+loadouts, resources, turn and RNG. Existing movement delivery may change facing/visuals; the move
+remains provisional until the accepted action. Use/equip/transfer offers are separate.
+
+`BattleGiveContinuation.Begin` publishes both loadouts, refreshed ATT and committed movement once.
+Its `BattleGiveState` carries an authored result and `WaitToken`; no battle scene or rewards are
+created. Actual `CompleteTextReveal` precedes `Acknowledge`. Acknowledgement resumes the existing
+no-scene STAY suffix (`BattleActionCommitter` and `BattleAdvancer`), consuming the giver's queue
+entry once. Stale/duplicate waits reject; a later suffix failure preserves the published transfer
+and stops that continuation. Ordinary subsequent rounds retain their own RNG behavior.
+
+The [Give owner](../domain/gameplay-rules.md#authored-battle-give-and-exchange) owns source order,
+admission and limits. This is an authored standalone interaction; no original result dialogue,
+hardware timing, field/service inventory or private persistence claim is made.
+
 ## Battle equipment selection
 
 `BeginEquipment` is admitted at `ActionChoice`; `SelectEquipment(slot)` is admitted only within

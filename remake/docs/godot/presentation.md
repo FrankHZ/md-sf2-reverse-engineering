@@ -1,5 +1,23 @@
 # Godot Host and Presentation
 
+## Authored battle Give presentation
+
+In the ordinary battle action menu, G / left-stick press starts Give. Directions cycle the held
+slots; Confirm selects the item. Directions or Target cycle eligible adjacent recipients; Confirm
+selects the recipient. A full pack displays its return slots. A final confirmation states that the
+transfer ends the action; Cancel backs up one stage. Slot numbers distinguish duplicate identities.
+The query/selection state remains authoritative; the adapter does not calculate transfer legality.
+
+`BattleGiveView` displays project-authored result text and completes the existing reveal token only
+after delivery. Confirm then acknowledges it. The parent battle view suspends Give input and
+reveal while unfocused/hidden; resumption advances only the pending stage. The existing instant or
+adjustable text setting applies. This result text is a modern authored addition, not an original
+Give scene, sound or timing claim. No new media assets are introduced.
+
+The [compact native witness](../development-and-verification.md#battle-give-authored-observation)
+uses ordinary host keys, visible labels and read-only session facts. It covers both custody routes,
+selection cancellation, suspension and later usable control; it emits no screenshots.
+
 ## Authored Caravan projection
 
 The ordinary exploration host draws the Caravan package with public geometric markers. Vehicle

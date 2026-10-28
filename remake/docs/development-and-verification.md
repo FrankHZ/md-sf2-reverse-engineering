@@ -1,5 +1,48 @@
 # Development and Verification
 
+## Battle Give authored observation
+
+[battle-give.json](../content/authored/battle-give.json) uses the ordinary host. Enter then G opens
+Give; directions select slots, Enter selects, Tab/directions choose the recipient, and Enter advances
+to final confirmation or a full-recipient exchange slot. Escape backs up one selection stage. The
+result text must be delivered and acknowledged before the ordinary next turn. E equips later
+received weapons and I uses eligible items independently of transfer eligibility.
+
+`BattleGiveTests` and `BattleGiveSessionTests` vary exact duplicate slots, compaction/first-empty
+order, full capacity, geometry/status, current base/equipment/growth, stale words/envelopes, unknown
+targets, cancellation, typed delivery, suffix failure and later use/equip. Run the configured
+`uv run sf2 verify engine` and `uv run sf2 verify adapter`; after corrections rerun only failed or
+affected cases. A completed public suite with private tests skipped makes no private assertion.
+Inspect the clean-head planner and actual scoped CI. Preserve all prior failure logs/results.
+
+Build the owning adapter Debug configuration after loading `local/private-inputs.ps1` in the same
+process and forcing `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Reuse the existing selected Godot
+installation and project; startup is necessary when no owned instance remains or the adapter binary
+changed. Resolve absolute project/package/output paths before launch:
+
+```powershell
+$repoRoot = (Get-Location).Path
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_give_observation.gd -- `
+  --authored-package (Join-Path $repoRoot 'remake/content/authored/battle-give.json') `
+  --input-settings (Join-Path $freshIgnoredOutput 'input.json')
+```
+
+Use `{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120}` for `input.json`.
+Keep APPDATA, LOCALAPPDATA, TEMP/TMP and stdout/stderr in the fresh ignored output. Await the
+actual process completion if the Windows GUI launcher detaches. The finite observer checks
+normal Give and full exchange, both equipped removals, readable feedback, cancellation at each
+stage, focus/hide suspension, subsequent received-weapon equip, Herb use and movement/cancel.
+It sends only ordinary keys and reads live state/labels/errors: no post-start gameplay injection,
+synthetic completion, screenshots or per-frame capture. JSON numeric slot arrays compare as floats.
+
+Resource plan: one small authored package, one serial native instance, fixed semantic samples and
+command events (target <2 MiB and <180 seconds); no asset acquisition/network/native reference run.
+Transfer work is O(4); target queries visit at most the admitted roster and existing movement grid.
+Retain both failed and corrected observations. Modern authored delivery is not original natural
+reach or hardware timing; #1047 Unknowns and #638 pause remain unchanged.
+
 ## Battle equipment authored observation
 
 Use [battle-equipment.json](../content/authored/battle-equipment.json) in the ordinary host. Enter,

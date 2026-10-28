@@ -2,7 +2,7 @@ using Godot;
 
 namespace Sf2.Remake.GodotAdapter.Input;
 
-internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item, Wait, Equipment }
+internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item, Wait, Equipment, Give }
 
 internal sealed class GameInput
 {
@@ -31,6 +31,7 @@ internal sealed class GameInput
             ["attack"] = new(["F"], ["West"], []),
             ["spell"] = new(["H"], ["North"], []),
             ["item"] = new(["I"], ["Back"], []),
+            ["give"] = new(["G"], ["LeftStick"], []),
             ["equipment"] = new(["E"], ["Start"], []),
             ["target"] = new(["Tab"], ["RightShoulder"], []),
             ["stay"] = new(["Space"], ["LeftShoulder"], []),

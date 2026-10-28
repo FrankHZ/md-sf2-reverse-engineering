@@ -26,6 +26,8 @@ internal static class BattleCommandDispatcher
         var actor = battle.GetActor(selection.Actor);
         try
         {
+            if (command is BeginGive || BattleGiveSelection.Active(selection.Stage))
+                return BattleGiveSelection.Submit(current, command);
             switch (command)
             {
                 case BeginEquipment when selection.Stage == BattleSelectionStage.ActionChoice:
@@ -128,7 +130,7 @@ internal static class BattleCommandDispatcher
 
     }
 
-    private static SessionResult Selected(SessionSnapshot current, BattleSelection selection, string kind, EngineBattleState? battle = null)
+    internal static SessionResult Selected(SessionSnapshot current, BattleSelection selection, string kind, EngineBattleState? battle = null)
     {
         var observation = new SessionObservation(current.ObservationSequence + 1, current.Revision + 1, kind, selection.Actor);
         var snapshot = new SessionSnapshot(current.SessionId, current.Revision + 1, observation.Sequence,

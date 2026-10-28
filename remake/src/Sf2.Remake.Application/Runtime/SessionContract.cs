@@ -10,7 +10,7 @@ public enum SessionFailureKind { IllegalCommand, UnsupportedCapability, ContentE
 public sealed record SessionFailure(SessionFailureKind Kind, string Code, string Field, string Message);
 public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
-public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice }
+public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice, GiveItemChoice, GiveTargetChoice, GiveExchangeChoice, GiveCommitReady }
 public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat }
 
 public abstract record SessionCommand;
@@ -19,6 +19,9 @@ public sealed record ChooseAction(SessionAction Action) : SessionCommand;
 public sealed record SelectBattleAction(BattleActionRef Action) : SessionCommand;
 public sealed record SelectSpell(SpellRef Spell) : SessionCommand;
 public sealed record SelectItem(int Slot) : SessionCommand;
+public sealed record BeginGive : SessionCommand;
+public sealed record SelectGiveItem(int Slot) : SessionCommand;
+public sealed record SelectGiveReturn(int Slot) : SessionCommand;
 public sealed record BeginEquipment : SessionCommand;
 public sealed record SelectEquipment(int Slot) : SessionCommand;
 public sealed record SelectTarget(ActorRef Target) : SessionCommand;
@@ -50,8 +53,8 @@ public sealed record CommandEnvelope(Guid SessionId, long ExpectedRevision, Acto
 public sealed class BattleSelection
 {
     internal BattleSelection(ActorRef actor, BattleMovementPreview preview, BattleSelectionStage stage,
-        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null, ushort? itemWord = null, int? equipmentSlot = null)
-    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; ItemWord = itemWord; EquipmentSlot = equipmentSlot; }
+        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null, ushort? itemWord = null, int? equipmentSlot = null, int? returnSlot = null, ushort? returnWord = null)
+    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; ItemWord = itemWord; EquipmentSlot = equipmentSlot; ReturnSlot = returnSlot; ReturnWord = returnWord; }
     public ActorRef Actor { get; }
     public BattleMovementPreview Preview { get; }
     public BattleSelectionStage Stage { get; }
@@ -59,6 +62,8 @@ public sealed class BattleSelection
     public int? ItemSlot { get; }
     public ushort? ItemWord { get; }
     public int? EquipmentSlot { get; }
+    public int? ReturnSlot { get; }
+    public ushort? ReturnWord { get; }
     public SpellRef? Spell { get; }
     public ActorRef? Target { get; }
     public BattleActionRef? ActionReference => Action switch
@@ -74,7 +79,7 @@ public sealed class BattleSelection
 
 public abstract record ActiveSessionState;
 public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null,
-    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null) : ActiveSessionState;
+    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null, BattleGiveState? Give = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -94,7 +99,8 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
-    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null;
+    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null;
+    public BattleGiveState? BattleGive => (Active as ActiveBattle)?.Give;
     public BattleRoundState? BattleRound => (Active as ActiveBattle)?.Round;
     public BattleRetreatState? BattleRetreat => (Active as ActiveBattle)?.Retreat;
     public BattleSceneState? BattleScene => (Active as ActiveBattle)?.Scene;

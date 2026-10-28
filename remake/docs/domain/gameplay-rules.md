@@ -855,7 +855,40 @@ It does not relabel authored tests as an original trace replay.
 Private Content admits only the selected Medical Herb definition into this item family.
 Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
 not herbs. The current class model admits PRST healing EXP and the existing non-healer
-classes. VICR/MMNK class admission, broader item families, Equip/Give/Drop, field inventory,
+classes. VICR/MMNK class admission, broader item families, equipment beyond the authored weapon subset, Give beyond the standalone subset, Drop, field inventory,
 AI healing-item choice and save/load remain unsupported. Exact original presentation timing remains Unknown. The existing
 physical-only AI policy rejects a nonempty item loadout at start. This does not close the
 continuous H4 milestone or establish successful native-original cancellation.
+
+## Authored battle Give and exchange
+
+**High rigor agreement (#1363):** two live loadouts, current equipment contributions, movement
+and resumable action completion share existing authorities. Implement standalone opted-in Give
+with donor-slot, adjacent-recipient and full-pack return-slot selection. Confirm publishes the
+finite mutation; authored feedback resumes into ordinary STAY completion exactly once. Cancel
+before confirmation is free. Reuse SourceLoadout, BattleEquipment and GameSession, without a
+second inventory authority. Acceptance is changed-state rule/session tests, actual adapter build,
+one ordinary-input transfer/exchange witness with later equip/use/control, and exact-head CI.
+
+**Confirmed (static):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+`@CheckItemMenuChoice_Give` through `@EndGiveAction`: ordinary battle Give removes the donor
+before adding to the recipient. Exchange saves the selected words, removes donor then recipient,
+adds the recipient's saved item to the donor, then the donor's saved item to the recipient.
+`disasm/code/common/stats/itemstats.asm` `RemoveItemBySlot/RemoveAndArrangeItems` compacts
+following slots and calls `UpdateCombatantStats`; `AddItem` fills the first empty identity slot
+and masks to identity/broken bits, so receipt never auto-equips. This is the battle caller's
+order; the field caller differs.
+
+`disasm/code/gameflow/battle/battlefield/buildactionrangegrids.asm`
+`BuildSpellRangeGridForItemGive` uses the teammate grid and `SpellRange1`;
+`disasm/data/stats/spells/spellranges.asm` defines offsets (0,1), (1,0), (0,-1), (-1,0),
+excluding self/diagonals. `buildtargetsarray.asm` filters zero HP, neutral activation bit and
+unplaced coordinates. The completed Give writes STAY and exits player control. Modern selection
+retains provisional movement until commit; modern result text is authored, not source dialogue
+or original timing evidence.
+
+Scope excludes curses, rings, broken items, general status effects, field/service inventory,
+private imports, save/load and changed frozen profiles. Carryability is separate from use or class
+equip eligibility. **Unknown:** natural original reach, original presentation/timing and wider
+status behavior. #1047's twelve Unknowns remain unchanged; #638 remains paused.
