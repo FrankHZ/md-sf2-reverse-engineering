@@ -6,7 +6,8 @@
 The bounded outcome is continuous mapped field walking, trustworthy existing-interaction feedback
 and fresh control after lifecycle/story handoffs. Domain movement/events and `GameSession` remain
 authoritative. No new gameplay, menu framework, viewport choice, private route acquisition or
-original timing claim is included. Independent main-gate acceptance remains required.
+original timing claim is included. Integration and independent review status belong to
+[PR #1390](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1390).
 
 `GameInput` retains mapped direction edges separately from choices. A fresh direction immediately
 submits the existing Move. The host waits 220 ms before repeating, then attempts at most one Move
@@ -62,17 +63,25 @@ transfer and ordinary battle Movement → ActionChoice → Movement after fresh 
 <5 MiB per run; retain failures and stop/reassess if the bounded witness expands into a route/tooling
 project. Only semantic boundaries are serialized, not per-frame snapshots.
 
-**Confirmed:** candidate engine checks and adapter builds pass. The completed `control-03` witness
-passed with no runtime errors or exit warnings, 13 bounded samples and about 447 KB of output. Native
-focus left and returned to the actual root window; the old injected hold submitted no further Move.
+Before every mapped input edge, the observer checks actual root-window focus. Outside the
+intentional native-focus witness, it permits one unplanned focus request with a one-second
+recovery deadline. A further loss or an interrupted held-input interval makes the environment
+unavailable; it cannot support a product verdict. The report returns `status: environment-unavailable`,
+`passed: false` and exit 2, preserving the reached prefix and terminal state. A product assertion
+failure exits 1 immediately, without sending later inputs or generating cascading assertions.
+Motion, text reveal and map arrival use live-state predicates with finite deadlines; timed intervals
+are retained only for hold/repeat and absence-of-new-input observations.
+
+**Confirmed:** the shared interaction query has actual session tests, and bounded executor host
+observations have exercised walking, hints, lifecycle, dialogue and handoffs. The independently
+attempted observations also exposed focus loss during walking and unrevealed choices; those completed
+failures remain preserved in the [PR handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1390).
+A passing executor run does not establish independent acceptance or a usable environment on a later
+run. Current integration and review conclusions belong to that PR, not a static acceptance promise.
 **Unknown:** physical keyboard/pad release while another OS window owns focus, full opening-route
 experience, original timing and visual/audio parity. Native focus ownership is observed; injected
-input is not physical device evidence. Earlier `control-01` and `control-02` failures are retained:
-observer checks initially sampled before motion/reveal completion and used the menu node name as a
-session stage; those checks were corrected to the existing actual boundaries. The second run already
-reached the map/battle handoff, with only the stage assertion failing. The retained authored battle-entry-skip pilot also passed directly on the final
-adapter, with ordinary Confirm/Cancel combat recovery. The original completed #689
-visible-entry timeout and #1386 ObjectDB exit warning remain unchanged historical Unknowns.
+input is not physical device evidence. The original completed #689 visible-entry timeout and #1386
+ObjectDB exit warning remain unchanged historical Unknowns.
 
 ## Battle02 Angel Wing and walking retry
 
