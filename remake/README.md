@@ -38,6 +38,7 @@ source/provenance and the retired reference implementation without turning them 
 | Content and profile admission | [Runtime profiles and trust](docs/content/profiles-and-trust.md) |
 | Build, unit tests, reference or adapter observation | [Development and verification](./docs/development-and-verification.md) |
 | Godot input and rendering | [Host/presentation](./docs/godot/presentation.md), [audio](./docs/godot/audio.md), [battle scenes](./docs/godot/battle-scenes.md) |
+| Opening UI gaps and follow-up acceptance | [Opening UI assessment](./docs/evidence/opening-ui-gaps.md) |
 | Local asset preparation | [Content presentation assets](./docs/content/presentation-assets.md) |
 | Historical comparisons and remaining Unknowns | [Retained evidence](./docs/evidence/retained-comparisons.md); current test policy is in the verification guide |
 
