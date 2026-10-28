@@ -17,9 +17,11 @@ concerns, not newly authorized implementation.
 B1 is implemented under [#1381](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1381);
 its current binding lifetime and source rule belong to the
 [session owner](../application/session-and-programs.md#field-player-binding-across-connected-battles).
-B2 and the conditional concerns retain their separate scope. Audit source links below remain pinned
-to the inspected base; the B1 disposition adds actual engine/native evidence without changing those
-historical findings.
+B2 is implemented under [#1382](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1382);
+its selected-rule guarantee belongs to the [session owner](../application/session-and-programs.md#selected-rules-during-map-transfer).
+The conditional concerns retain their separate scope. Audit source links below remain pinned to the
+inspected base; implementation dispositions add bounded engine/native evidence without changing
+those historical findings.
 
 ## Scope and evidence
 
@@ -27,7 +29,7 @@ historical findings.
 The deliverable supports the decision about what to fix before further chapter/content work.
 The original audit changed only this report and an architecture navigation link; production, tests,
 content, research and prior audit history were read-only for that investigation. The separately
-authorized B1 implementation is recorded in its disposition and owning session agreement. Remaining
+authorized B1 and B2 implementations are recorded in their dispositions and owning session agreements. Remaining
 proposals do not authorize refactoring or replace the current architecture owners.
 
 Inspected accepted source: **`b4882a0dddd045b44c9110e43b097efd9358d652`**, tree
@@ -122,9 +124,10 @@ after a real victory, then moves x768→864 at y768 in the same session, with on
 runtime errors. The [bounded reproduction](../development-and-verification.md#authored-field-player-return)
 records commands and limits; no screenshots or original replay establish additional fidelity.
 
-### B2 — P2 before source-policy replacement work: transfer must carry selected rules
+### B2 — implemented: transfer carries selected rules
 
-**Confirmed missing propagation; Inferred changed-policy effect.**
+**Confirmed at audit base: missing propagation. Confirmed by #1382 reproduction: opposite-policy
+entry ordering and bypassed throwing policy.** The following pinned analysis describes the audit base.
 [ProgramRunner.Run:464][runner-transfer] executes `TransferToMap` by calling `MapTransfer.Apply`
 without its final `rules` argument. In contrast, queued warp and `ReturnBattleMap` in that same
 runner pass the selected rules. [MapTransfer.Apply:260][transfer-apply] accepts null; if
@@ -147,20 +150,24 @@ definition with a selected policy that admits replay while the fallback refuses 
 and on-load effects can run first; a later `BattleEntry.Continue` using the selected rules does not
 undo that prefix. Thus the risk is entry ordering and unintended effects, not just a different
 final battle flag. A destination on-load flag write makes the distinction observable. This audit
-did not execute either constructed composition.
+did not execute either constructed composition; the initialized engine tests below now reproduce both.
 
-**Proposed owner/correction:** pass the runner's existing `SessionRules` into this call. Review
-the narrowly related runtime call sites; require the parameter on policy-sensitive runtime paths
-if that prevents the same omission, while retaining explicitly named source-default comparison
-entries where needed. No registry, new policy abstraction or package-selected class loader is needed.
-Effort is low for wiring, moderate for selecting a faithful initialized-state behavioral control.
+**Implemented disposition:** `ProgramRunner` passes its existing selected rules into typed transfer.
+The policy-sensitive `MapTransfer` validation/warp/load/apply/continuation and `BattleEntry`
+selection/continuation parameters are required and non-nullable. Direct comparison callers select
+their composition explicitly; named source-default session/runner entries remain available. No new
+registry, policy abstraction, source guard or Content trust change is involved.
 
-**Future acceptance:** through the existing engine entry, select a policy opposite to the fallback
-and reach transfer with completed/unlocked flags. Assert whether destination on-load and before-battle
-programs run, their order, flags and exact retained PC on failure. Include a throwing policy to
-check attribution and no speculative entry, plus an ordinary uncompleted route and source-default
-control. Existing story replacement tests cover `Apply` failures and nested waits, not this
-`EnterCompletedBattle` call edge. Add behavior assertions only; no wiring/reflection test.
+**Validation:** `MapTransferPolicyTests` starts project-authored initialized definitions through
+`GameSession` and typed simulation commands. Before repair, selected repeat loaded the destination
+instead of retaining the origin for before-battle; selected refuse retained the origin and entered
+before destination on-load; throwing selections produced no policy failure. The four ordinary/default
+controls passed. Corrected behavior checks on-load versus before/load/start waits, exact PCs, flags,
+unlock/intro handling, selected failure attribution, no speculative publication and committed
+prefix/retry. Synthetic source metadata changes only the fallback discriminator and is not private
+input/provenance evidence. The [session guarantee and reproduction](../application/session-and-programs.md#selected-rules-during-map-transfer)
+own scope and command selection. Existing queued-warp and return behavior remains covered by the
+scoped engine suite. No shipped default-composition regression or new original-game claim follows.
 
 ### Conditional design work, not present chapter-hardcoding defects
 
@@ -279,8 +286,8 @@ vehicle customization. Preserve the [Caravan boundary](../application/session-an
 
 1. **B1's entry/return binding correction is implemented.** Preserve its named-player behavior,
    source-population rule and [bounded acceptance](#b1--implemented-retain-field-player-binding-across-battle).
-2. **Before relying on alternate source-story replay policies, address B2.** Thread the selected
-   composition through the existing call. It need not block unrelated content-only conversations.
+2. **B2's selected-rule transfer correction is implemented.** Preserve the selected composition at
+   early initialized admission and its [bounded guarantee](../application/session-and-programs.md#selected-rules-during-map-transfer).
 3. **At the affected capability expansion, address conditional debt.** Separate terminal outcome
    from poison only when broadening terminal battles; resolve F3 before enabling connected fields
    that the copy currently drops. These concerns have different triggers and should not be bundled
@@ -309,7 +316,8 @@ git show b4882a0dddd045b44c9110e43b097efd9358d652:remake/src/Sf2.Remake.Applicat
 
 Follow the symbols and pinned caller/data links above. B1's variant changes only public authored
 content before admission; B2 requires the explicitly stated initialized state and selected compiled
-policy. Neither is a claimed runtime reproduction in this audit. Original-game facts remain with
+policy. The implementation dispositions above identify the subsequent bounded runtime reproductions.
+Original-game facts remain with
 their existing research/contracts and pinned upstream provenance; this report does not derive them
 from remake behavior.
 

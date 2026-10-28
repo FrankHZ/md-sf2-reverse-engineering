@@ -114,7 +114,7 @@ public sealed class BattleEntryProgramTests
         var field = session.Current;
         var route = session.Definition.Exploration!.Maps[new("yard-map")].Battle!;
         var initialized = BattleEntry.Continue(session.Definition, field.WithStory(
-            field.Story.Copy(null, continuation: ProgramContinuation.BeforeBattleFinished, enteringBattle: route)), []);
+            field.Story.Copy(null, continuation: ProgramContinuation.BeforeBattleFinished, enteringBattle: route)), [], session.Rules);
         var cue = new PresentCue(PresentationCueKind.FadeOut, "black", FullBlack: new(2));
         var programs = session.Definition.Exploration!.Programs.Values.Append(new StoryProgram("field-fade", [cue, new EndProgram()]));
         var world = new ExplorationDefinition(session.Definition.Exploration.Maps.Values, programs);
