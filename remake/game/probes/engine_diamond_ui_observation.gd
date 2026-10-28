@@ -235,6 +235,9 @@ func _menus(initial: Dictionary) -> void:
     _check(used.inventories[1].items == [127.0, 127.0, 127.0, 127.0] and used.actors[1].hp == 12, "Another actor consumes its own item and heals")
 
 func _finish() -> void:
+    host.queue_free()
+    # Let the native mixer release stopped voices before process shutdown.
+    await create_timer(0.15).timeout
     var file := FileAccess.open(OS.get_environment("SF2_DIAMOND_OUTPUT"), FileAccess.WRITE)
     if file == null:
         push_error("Observation output unavailable")
