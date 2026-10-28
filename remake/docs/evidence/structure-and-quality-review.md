@@ -7,6 +7,8 @@ battle appearances, region programs or direct battle-to-world return**. Schedule
 repair** as a bounded Content follow-up. Address **F3's definition-copy risk with the first connected
 capability extension that needs it**, before relaxing existing admission restrictions. None warrants a
 general engine rewrite, generic capability registry or new verification platform.
+F1 now has a [bounded implementation disposition](#f1--p1-make-host-ownership-and-return-wiring-cover-every-admitted-entry);
+the audit-base evidence below remains preserved. F2/F3 are unresolved.
 
 This is the deliverable for [Issue #1373](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1373).
 **Standard rigor:** established architecture with concrete cross-layer composition risks. The outcome is
@@ -76,6 +78,20 @@ a real change needs it; file splitting alone would not fix F1/F3.
 ## Findings
 
 ### F1 — P1: make host ownership and return wiring cover every admitted entry
+
+**Current disposition — Confirmed bounded correction, Issue #1375:** the ordinary host shares one
+mode/entry-continuation ownership decision and installs entry/return callbacks before attachment.
+Eight direct Godot witnesses passed: initial ordered appearances; initial region program with two
+real text acknowledgements; connected first-round appearance; direct battle win and same-session
+field movement; initial field-owned battle load plus start; ordinary player/automatic continuation;
+terminal defeat; and visible stopped-program failure. Load/start waits retain field ownership even
+with `ActiveBattle`. No Domain/Application/Content behavior changed. See the
+[reproducible variants, commands and retained failure history](../development-and-verification.md#ordinary-host-lifecycle-observation).
+Independent review/integration remains required. F2/F3 remain unresolved.
+
+The following **audit-base** observations and Inferred limits describe the inspected commit above;
+they are not relabeled by the new authored observations. The connected/native return boundaries now
+have their separately named bounded witnesses, without establishing private/original-game reach.
 
 **Confirmed startup defect.** [GameRoot.cs:111](../../game/src/GameRoot.cs#L111), `_Ready.BeginSource`,
 attaches the battle view only for `HasBattleControl`, `BattleScene` or `BattleMovement`. The same

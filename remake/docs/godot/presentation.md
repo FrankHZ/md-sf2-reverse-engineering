@@ -101,6 +101,22 @@ including when only input settings are supplied. Unknown/positional, duplicate, 
 missing-path options fail explicitly before creating a session. Diagnostic observer settings belong
 to external probes, not game argument routing.
 
+`SessionPresentationOwner` chooses the presenter from the current mode and retained entry
+continuation. Field owns exploration and the unfinished before/load/start programs, including load
+and start waits that already carry `ActiveBattle`. Once entry finishes, battle owns every battle
+snapshot: initial round programs, appearances, ordinary/automatic control, terminal outcomes and
+failures. This decision is shared by initial attachment, field handoff and field input dispatch;
+`GameSession` supplies all lifecycle state.
+
+The root installs entry and return callbacks before choosing the initial presenter. An admitted
+connected package may start directly in battle, win through ordinary input and return to one usable
+field view in the same session. Pending round delivery still uses the existing consumers and matching
+tokens; routing does not complete waits or generate queues. The
+[bounded native recipe](../development-and-verification.md#ordinary-host-lifecycle-observation) owns
+startup, pre-battle and return controls. Frozen [PR #692](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/692)
+must semantically rebase its later presentation/view changes onto this accepted host boundary; no
+unmerged UI implementation is consumed here.
+
 Both source-start paths use `RuleCompositions.ForGame()` and the same `GameSession`. The root routes
 each input event once to the active view. Battle view pumps `AdvanceSimulation` only at the
 Application's simulation wait; it does not choose rounds, enemy policy or control. Field/scene views

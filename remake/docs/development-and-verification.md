@@ -1,5 +1,127 @@
 # Development and Verification
 
+## Ordinary host lifecycle observation
+
+[Issue #1375](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1375) repairs
+[audit F1](evidence/structure-and-quality-review.md#f1--p1-make-host-ownership-and-return-wiring-cover-every-admitted-entry).
+The [capability agreement](capability-status.md#ordinary-host-lifecycle-agreement) owns its Standard
+rigor and bounded acceptance. `engine_host_lifecycle_observation.gd` drives ordinary keys and reads
+actual presenter, session, wait, queue, text, outcome and field movement facts. No post-start gameplay
+injection, fabricated completions, screenshots, media acquisition or engine/content change is used.
+The field keeps before/load/start delivery; battle consumes initial round programs/appearances and
+terminal/failure snapshots. Direct startup must have complete return wiring.
+
+Author these small variants **before** startup from the repository root. Save the following as an
+ignored `local/issue1375/prepare.py`, after creating that directory, and run
+`python -X utf8 local/issue1375/prepare.py`. The connected initialization follows the existing
+`HiddenSpawnSessionTests.OrdinaryLeaderTerminationAndWalkingRetryResetDormancyButKeepStoryAndItemCustody`
+recipe; its added BattleLoad cue and two text programs witness field-owned mounting/load/start waits.
+
+```python
+import copy,json
+from pathlib import Path
+out=Path('local/issue1375')
+def read(name): return json.loads((Path('remake/content/authored')/(name+'.json')).read_text(encoding='utf-8-sig'))
+def save(name,d): (out/(name+'.json')).write_text(json.dumps(d,indent=2)+'\n',encoding='utf-8')
+h=read('hidden-spawns'); h['start']['actors'][0]['positionOverride']={'x':2,'y':3}; save('initial-appearance',h)
+j=read('jaro-conversion'); j['start']['actors'][0]['positionOverride']={'x':2,'y':3}; save('initial-program',j)
+f=copy.deepcopy(j); f['battleStory']['programs'][0]['instructions']=[{'op':'set-flag','flag':402,'value':True},{'op':'reset-party-battle-stats'},{'op':'end'}]; save('battle-failure',f)
+d=read('battle-drops'); d['start']['map']='arena'; d['start']['flags'].append(401)
+next(p for p in d['world']['programs'] if p['id']=='before')['instructions']=[{'op':'end'}]; save('direct-return',d)
+c=read('battle-drops'); b=c['battle']; e=b['encounters'][0]; t=read('hidden-spawns')['encounters'][0]
+i=copy.deepcopy(t['initialization']); i['enemyCount']=2; i['regions'][0]['vertices']=[{'x':1,'y':1},{'x':3,'y':1},{'x':3,'y':2},{'x':1,'y':2}]
+for n,slot in enumerate([0,1,128,129]):
+ e['placements'][n]['initialization']=copy.deepcopy(t['placements'][2 if n==3 else 3 if n==2 else 0]['initialization'])
+ i['sourceCombatants'][n]['actor']=e['placements'][n]['actor']; i['sourceCombatants'][n]['slot']=slot
+ b['start']['actors'][n]['initialization']={'initialized':n!=3,'activationWord':512 if n==3 else 0}
+e['initialization']=i; b['start']['actors'][3]['hp']=0; b['actors'][3]['items']=[]; b['start']['itemCustody']['onceFlags']=[24]
+r=next(m for m in c['world']['maps'] if m['id']=='arena')['battle']
+for name in ['load','start']:
+ r[name]={'program':'lifecycle-'+name,'instruction':0}
+ c['world']['programs'].append({'id':'lifecycle-'+name,'instructions':[{'op':'show-text','mode':'single','speaker':None,'text':100},{'op':'end'}]})
+next(p for p in c['world']['programs'] if p['id']=='lifecycle-load')['instructions'].insert(0,{'op':'present','kind':'BattleLoad','resource':None,'entity':None,'position':None})
+save('connected-appearance',c)
+p=copy.deepcopy(c); p['start']['map']='arena'; p['start']['flags'].append(401)
+next(row for row in p['world']['programs'] if row['id']=='before')['instructions']=[{'op':'end'}]; save('initial-prebattle',p)
+z=read('poison-turn'); z['start']['actors'][0]['hp']=0; save('terminal',z)
+save('ordinary-control',read('hidden-spawns'))
+(out/'input.json').write_text('{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120}\n',encoding='utf-8')
+```
+
+Load `local/private-inputs.ps1` in each launching process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and reuse the existing absolute SDK/shared CLI-home/Godot
+selections and worktree caches. Run `uv run sf2 verify adapter`; from `remake/` build
+`& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore`.
+No retained instance existed at entry; each serial startup below is necessary for a distinct entry
+condition. On a clean committed head inspect `uv run sf2 verify plan --base origin/main --head HEAD`
+plus direct ownership/docs/source-size/private checks and actual exact-head CI. Adapter changes add
+no engine-behavior tests and select no normal/full research/H3/H4/comparator run.
+
+For each case below select a fresh ignored run directory, then launch the same project. Keep native
+stdout/stderr and JSON, await actual process completion, and require both `passed:true` and no runtime
+errors. Native exit0 with an exception/error is **FAIL**. Example from the repository root:
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$repoRoot = (Get-Location).Path
+$case = 'initial-appearance' # Repeat serially for the named cases, in fresh directories.
+$runRoot = Join-Path $repoRoot "local/issue1375/$case-run"
+New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
+foreach ($dir in @('appdata', 'localappdata', 'temp')) {
+    New-Item -ItemType Directory -Path (Join-Path $runRoot $dir) -Force | Out-Null
+}
+$env:APPDATA = Join-Path $runRoot 'appdata'
+$env:LOCALAPPDATA = Join-Path $runRoot 'localappdata'
+$env:TEMP = Join-Path $runRoot 'temp'; $env:TMP = $env:TEMP
+$env:SF2_HOST_LIFECYCLE_CASE = $case
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $runRoot 'native.json'
+$nativeArgs = @('--headless', '--fixed-fps', '60', '--path', "`"$(Join-Path $repoRoot 'remake/game')`"",
+    '--script', 'res://probes/engine_host_lifecycle_observation.gd', '--',
+    '--authored-package', "`"$(Join-Path $repoRoot "local/issue1375/$case.json")`"",
+    '--input-settings', "`"$(Join-Path $repoRoot 'local/issue1375/input.json')`"")
+$p = Start-Process -FilePath $env:GODOT_BIN -ArgumentList $nativeArgs -WorkingDirectory $repoRoot `
+    -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $runRoot 'stdout.log') `
+    -RedirectStandardError (Join-Path $runRoot 'stderr.log')
+if (-not $p.WaitForExit(130000)) { Stop-Process -Id $p.Id -Force; throw 'Native deadline' }
+$p.Refresh()
+$p.ExitCode # Inspect JSON and both logs as well; the exit code alone is insufficient.
+```
+
+Resource estimate: eight small serial cases, minutes and <2MiB total semantic reports/logs; no
+acquisition or API/model processing. Existing bounded roster/region work is unchanged; the routing
+decision is O(1). Reassess a concrete mismatch instead of adding a general observation platform.
+Actual successful native elapsed times were 0.35–1.28s at fixed-fps60, with 245,982 bytes total reports/
+logs including the failed attempt and two strengthened load-control starts. These are modern authored observations, not original timing.
+
+| Case | Actual result / boundary |
+| --- | --- |
+| `initial-appearance` | PASS: round0, ordered `[returner, hidden]` tokens, blocked input, real spin/notice, exactly-once completion before one queue and usable movement/cancel. |
+| `initial-program` | PASS: round0 region program, camera completion, two mounted text acknowledgements, one region run, then usable battle control. |
+| `connected-appearance` | PASS: field interaction/before text, one real BattleLoad mount beneath field-owned load/start with `ActiveBattle`, one `survivor` appearance, one queue, detached field, usable battle control. |
+| `direct-return` | PASS on corrected witness: direct initial battle control, ordinary physical victory, one return view, one completed return, same-session field movement. |
+| `initial-prebattle` | PASS: root initially selects field for `ActiveBattle` load; real BattleLoad mounts once and load/start text finishes before first-round appearance and battle control. |
+| `ordinary-control` | PASS: unmodified hidden-spawns start, action/cancel, STAY, automatic work and round2 player control. |
+| `terminal` | PASS: initial terminal Defeat label, no field attachment, input cannot restart the ended battle. |
+| `battle-failure` | PASS: initial stopped region program displays `battle-program-instruction`, retains round0 and rejects further input. This expected engine diagnostic is distinct from a native runtime error. |
+
+Retained ignored evidence is under `local/issue1375/<case>-run1`; final direct return, connected
+appearance and initial-prebattle reports are in the corresponding `-run2` directories. The latter two
+strengthen the earlier text-only controls with the actual BattleLoad mount callback; the original
+controls and variants remain retained. All successful processes completed exit0 without native errors. The first
+`direct-return-run1` is **FAIL**: the probe reconnected its signal when a view reparented, then read
+nonexistent top-level position keys. Its logs remain; the errored process was explicitly stopped
+(exit-1), with no completed JSON report. The corrected probe guards connections and reads live entity
+positions; only the affected direct-return witness reran. No product change was needed for those
+probe errors. Adapter Release and Debug builds passed with 0 warnings/errors.
+
+The audit's `local/issue1373` red startup/control and public API results remain untouched. F1's old
+connected/return symptom limits remain labeled Inferred at the audit base; the witnesses above provide
+separate authored evidence after repair. F2/F3, #1047 Unknowns, private media/natural original reach,
+#638 pause and ordinary export/package completeness remain unresolved. Frozen
+[PR #692](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/692) must semantically rebase its
+overlapping presentation/view work onto this lifecycle boundary.
+
 ## Jaro victory authored observation
 
 Use [jaro-victory.json](../content/authored/jaro-victory.json) in the ordinary host. Acknowledge the
