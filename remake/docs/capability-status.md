@@ -1,5 +1,26 @@
 # Remake Capability Status
 
+## Ordinary host lifecycle agreement
+
+**Standard rigor; bounded adapter correction:** coupled startup/field/return ownership has known
+admitted counterexamples. The outcome is correct presentation ownership for initial round programs
+and appearances, connected first-round entry, and direct battle startup through victory and usable
+field return. Existing mode/story entry continuation, views and completion tokens remain authoritative;
+no engine/content rule, UI design, registry or second lifecycle state is introduced.
+
+**Implemented and natively observed:** eight compact authored witnesses cover those entries,
+field-owned before/load/start delivery even with `ActiveBattle`, ordinary player/automatic starts,
+terminal defeat and visible stopped-program failure. The
+[presentation owner](godot/presentation.md#ordinary-godot-host) and
+[verification recipe/results](development-and-verification.md#ordinary-host-lifecycle-observation)
+define the commands, variants and limits. Adapter Release and Debug builds plus actual native
+state/input/projection/errors are the acceptance surface; no helper/probe unit tests or blanket
+engine/research suite is selected. Independent integration remains main-gate's responsibility.
+
+This closes audit [F1's bounded implementation](evidence/structure-and-quality-review.md#f1--p1-make-host-ownership-and-return-wiring-cover-every-admitted-entry).
+Audit F2/F3 remain unresolved; private content, original natural reach/timing, #1047 Unknowns and
+#638's pause are unchanged. Later UI work in frozen PR #692 must semantically rebase this host boundary.
+
 ## Authored Jaro victory agreement
 
 **Implemented bounded authored suffix:** ordinary win → join23 and visible ceremony → clear only

@@ -108,11 +108,24 @@ public sealed partial class GameRoot : Node
                     if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
                 };
             }
-            if (started.Result.Snapshot.HasBattleControl || started.Result.Snapshot.BattleScene is not null ||
-                started.Result.Snapshot.BattleMovement is not null) { view.Attach(started.Session, started.Result); return; }
+            // Install both directions before choosing the initial owner: a connected
+            // package may start in battle and still need its ordinary field return.
+            view.LeaveBattle = result => ShowExploration(result, returning: true);
+            if (SessionPresentationOwner.IsBattle(started.Result.Snapshot))
+            { EnterBattle(started.Result); return; }
             view.Hide();
             ShowExploration(started.Result, returning: false);
-            view.LeaveBattle = result => ShowExploration(result, returning: true);
+
+            void EnterBattle(SessionResult result)
+            {
+                if (_exploration is { } exploration)
+                {
+                    _exploration = null;
+                    if (view.GetParent() == exploration) view.Reparent(this, false);
+                    exploration.QueueFree();
+                }
+                view.Attach(started.Session, result);
+            }
 
             void ShowExploration(SessionResult initial, bool returning)
             {
@@ -124,13 +137,7 @@ public sealed partial class GameRoot : Node
                     view.Reparent(exploration, false);
                     exploration.MoveChild(view, 0);
                 }
-                exploration.Begin(started.Session, initial, _input!, _audio!, result =>
-                {
-                    _exploration = null;
-                    if (view.GetParent() == exploration) view.Reparent(this, false);
-                    exploration.QueueFree();
-                    view.Attach(started.Session, result);
-                }, result =>
+                exploration.Begin(started.Session, initial, _input!, _audio!, EnterBattle, result =>
                 {
                     view.Reparent(exploration, false);
                     view.Attach(started.Session, result);
