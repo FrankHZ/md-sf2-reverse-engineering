@@ -51,8 +51,7 @@ internal static class ExplorationAssetReader
         var portraits = new Dictionary<int, ExplorationPortraitVisual>();
         foreach (var portrait in Array(row, "portraits"))
         {
-            ObjectOptional(portrait, "portraitVisual", "eyes", ["portrait", "raster",
-                .. portrait.TryGetProperty("mouth", out _) ? new[] { "mouth" } : System.Array.Empty<string>()]);
+            ObjectOptional(portrait, "portraitVisual", ["portrait", "raster"], "eyes", "mouth");
             int id = Number(portrait, "portrait", 0, 55);
             var raster = Raster(portrait.GetProperty("raster"));
             Require(raster.Width == 64 && raster.Height == 64, "portrait-shape", "presentation.portraits");

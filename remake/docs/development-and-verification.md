@@ -1,5 +1,78 @@
 # Development and Verification
 
+## Typed JSON object-shape observation
+
+The bounded [F2 admission correction](evidence/structure-and-quality-review.md#f2--p2-validate-json-object-shape-before-optional-field-discovery)
+uses public authored bytes and the ordinary `GameSession.Start(IScenarioSource)` boundary. Run from
+the owning checkout root in a fresh PowerShell process after the affected Release build (assemblies
+already loaded into a process cannot be replaced). No native Godot or private payload is needed.
+The ignored `local/issue1377` records retain the original escapes, corrected portrait witness and
+post-fix results; the public inputs and commands below reproduce the claims independently.
+
+```powershell
+$ErrorActionPreference = 'Stop'
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+uv run sf2 verify engine
+uv run sf2 verify adapter
+foreach ($assembly in @('Domain','Application','Content')) {
+    Add-Type -Path (Join-Path (Get-Location) "remake/src/Sf2.Remake.$assembly/bin/Release/net8.0/Sf2.Remake.$assembly.dll")
+}
+function Show-Admission([string]$name, [string]$json) {
+    foreach ($api in @('Read','Start')) {
+        try {
+            $reader = [Sf2.Remake.Content.Scenarios.AuthoredScenarioPackageReader]::FromDocumentBytes([Text.Encoding]::UTF8.GetBytes($json))
+            $result = if ($api -eq 'Read') { $reader.Read() } else { [Sf2.Remake.Application.Runtime.GameSession]::Start($reader) }
+            [pscustomobject]@{ Case=$name; API=$api; Result=$result.GetType().Name; Failure=$result.Failure }
+        } catch { [pscustomobject]@{ Case=$name; API=$api; Escaped=$_.Exception.GetBaseException().Message } }
+    }
+}
+foreach ($json in @('[]','null','1','true','"scalar"','{}','{')) { Show-Admission "root:$json" $json }
+$battle = Get-Content -LiteralPath remake/content/authored/hidden-spawns.json -Raw
+$world = Get-Content -LiteralPath remake/content/authored/battle-drops.json -Raw
+Show-Admission 'valid:battle' $battle
+Show-Admission 'valid:connected' $world
+$battleEdits = @(
+    { param($d) $d.start = @() },
+    { param($d) $d.actors[0] = @() },
+    { param($d) $d.encounters[0] = @() },
+    { param($d) $d.encounters[0].placements[0] = @() },
+    { param($d) $d.start.actors[0] = @() },
+    { param($d) $d['unexpected'] = 1 },
+    { param($d) $d.start['unexpected'] = 1 },
+    { param($d) $d.Remove('profile') | Out-Null },
+    { param($d) $d.ruleProfile = 'unimplemented' }
+)
+$worldEdits = @(
+    { param($d) $d.battle = @() },
+    { param($d) $d.world = @() },
+    { param($d) $d.start = @() },
+    { param($d) $d.world.programs[0] = @() },
+    { param($d) $d.world.maps[0] = @() },
+    { param($d) $d.world.maps[0].areas[0] = @() },
+    { param($d) $d.world.maps[0].entities[0] = @() },
+    { param($d) $d.world.maps[1].battle = @() },
+    { param($d) $d.world.presentation = @{ maps=@(); sprites=@(); portraits=@($null) } }
+)
+foreach ($inputCase in @(@{ Json=$battle; Edits=$battleEdits }, @{ Json=$world; Edits=$worldEdits })) {
+    foreach ($edit in $inputCase.Edits) {
+        $d = $inputCase.Json | ConvertFrom-Json -AsHashtable
+        & $edit $d
+        Show-Admission $edit.ToString().Trim() ($d | ConvertTo-Json -Depth 80 -Compress)
+    }
+}
+Show-Admission 'duplicate:root' ($battle.Replace('"formatVersion": 7', '"formatVersion": 7, "formatVersion": 7'))
+Show-Admission 'duplicate:start' ($battle.Replace('"initialVitals":', '"encounter":"extra", "initialVitals":'))
+```
+
+The malformed object boundaries return `ContentError/object-required` with the fields recorded in F2;
+`{}`, syntax, unknown/duplicate and unsupported-rule cases retain their distinct existing results.
+Both valid packages admit and start. The selected engine check passed with 1,594 passes and 30
+optional-private skips; adapter Release compiled with zero warnings/errors. No new parser/helper
+unit tests were added. Private provenance order is confirmed by unchanged reader/call-order review,
+not a new private runtime observation. Other malformed fields/opcode discriminators remain outside
+this bounded claim. Exact candidate plan, actual CI and independent acceptance belong in the PR.
+
 ## Ordinary host lifecycle observation
 
 [Issue #1375](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1375) repairs

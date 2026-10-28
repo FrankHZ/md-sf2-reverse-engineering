@@ -3,12 +3,12 @@
 ## Decision and scope
 
 Retain the four-assembly architecture. Fix **F1's host lifecycle defect before work relying on initial
-battle appearances, region programs or direct battle-to-world return**. Schedule **F2's typed admission
-repair** as a bounded Content follow-up. Address **F3's definition-copy risk with the first connected
+battle appearances, region programs or direct battle-to-world return**. F2's bounded typed admission
+repair is implemented; see its disposition below. Address **F3's definition-copy risk with the first connected
 capability extension that needs it**, before relaxing existing admission restrictions. None warrants a
 general engine rewrite, generic capability registry or new verification platform.
 F1 now has a [bounded implementation disposition](#f1--p1-make-host-ownership-and-return-wiring-cover-every-admitted-entry);
-the audit-base evidence below remains preserved. F2/F3 are unresolved.
+the audit-base evidence below remains preserved. F2 is implemented pending independent integration; F3 remains unresolved.
 
 This is the deliverable for [Issue #1373](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1373).
 **Standard rigor:** established architecture with concrete cross-layer composition risks. The outcome is
@@ -87,7 +87,7 @@ field movement; initial field-owned battle load plus start; ordinary player/auto
 terminal defeat; and visible stopped-program failure. Load/start waits retain field ownership even
 with `ActiveBattle`. No Domain/Application/Content behavior changed. See the
 [reproducible variants, commands and retained failure history](../development-and-verification.md#ordinary-host-lifecycle-observation).
-Independent review/integration remains required. F2/F3 remain unresolved.
+Independent review/integration remains required. F2 has the bounded disposition below; F3 remains unresolved.
 
 The following **audit-base** observations and Inferred limits describe the inspected commit above;
 they are not relabeled by the new authored observations. The connected/native return boundaries now
@@ -180,6 +180,59 @@ optional-object case and the valid package. Require typed `ContentError` with us
 unchanged valid admission and unknown/duplicate-field rejection. Preserve private trust ordering. No
 tests of the parser harness or new fuzzing platform. Repair before broadening authored input work;
 unrelated numerical rule work need not wait.
+
+**Current implementation agreement ([#1377](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1377)):**
+Standard rigor for a bounded Content correction: shared optional-field construction has concrete typed
+admission escapes. Preserve accepted definitions, strict unknown/duplicate/missing fields, existing
+failure kinds and private provenance order. Own only `ScenarioJson`, `AuthoredScenarioPackageReader`,
+`ExplorationContentReader` and the concrete `ExplorationAssetReader` portrait sibling, plus this
+review, verification recipe and stale capability status. No Application/Domain/host changes, broad
+exception catch, parser framework, new helper tests or F3 work. Acceptance is direct public `Read`
+and `GameSession.Start`, the committed scope plan and selected existing engine/adapter checks.
+Inputs are two small public packages and in-memory mutations; linear byte processing, compact reports
+below 1 MiB and minutes of execution. A generalized parser or unrelated semantic defect requires
+reassessment; no wider malformed-input campaign or native Godot observation is implied.
+
+**Confirmed implementation and direct API result:** `ScenarioJson.ObjectOptional` now accepts required
+and optional key lists, checks object shape first, then discovers present optional keys and retains
+`Object`'s exact field validation. Existing single-optional callers delegate to that same check.
+The original failures above remain audit evidence. The [direct recipe](../development-and-verification.md#typed-json-object-shape-observation)
+produces the following results through both public APIs (`ScenarioReadRejected` / `SessionStartFailed`):
+
+| Input boundary, replaced by `[]` unless specified | Current code / field (`ContentError`) |
+| --- | --- |
+| Root `[]`, `null`, number, boolean or string; connected `battle=[]` | `object-required` / `document` |
+| Standalone `start` | `object-required` / `start` |
+| Battle actor / encounter / placement / start actor | `object-required` / `actor`, `encounter`, `placement`, `start.actor` respectively |
+| Connected world / start / program / map / area / entity / battle route | `object-required` / `world`, `exploration-start`, `program`, `map`, `area`, `entity`, `battle-route` respectively |
+| Connected `world.presentation={maps:[],sprites:[],portraits:[null]}` | `object-required` / `portraitVisual` |
+| Root `{}` or missing `profile` | `missing-field` / `document` |
+| Root `{` | `json-syntax` / `document` |
+| Unknown or duplicate root/start field | `unknown-or-duplicate-field` / `document` or `start` |
+
+`hidden-spawns.json` and `battle-drops.json` still return battle/exploration acceptance and
+`SessionStarted`. An unknown `ruleProfile` remains `UnsupportedCapability/rule-profile/ruleProfile`.
+No exercised case escapes. The first portrait construction accidentally serialized an empty list;
+that observation did not exercise a portrait. The corrected explicit `[null]` counterexample was
+reproduced before the fix and is the portrait result above; both local records are retained.
+
+**Sibling inspection boundary:** dynamic optional-key lists were corrected for battle root/start,
+actor, encounter, placement and start actor; connected world, program, map, area, start, battle route
+and entity; and portrait rows. Encounter weapon discovery queried each encounter before the later
+field check, so it now requires object shape at that earlier parent call. Connected start similarly
+requires shape before its early `mapPalettes` query; full field validation remains at its existing
+position. `show-text` and `present` argument lists use the checked helper too, although successful
+opcode discovery already establishes an object at those call sites. Fixed-key `Object` and
+single-optional calls already guard before property discovery; terrain legend has an explicit shape
+check. Initialization, equipment, drops, laser, cleanup and story readers receive their parent rows
+after the owning shape checks and guard their own fixed/optional objects. Private party admission,
+root/provenance identity and controlled-start checks still precede shared exploration decoding;
+those readers are unchanged. This is not proof for every malformed field or opcode discriminator.
+
+Selected existing checks: engine **PASS** (1,594 passed, 30 optional-private skips, zero failures),
+adapter Release build **PASS** (zero warnings/errors). No private payload observation, native Godot,
+research/full suite or new parser/probe test was run. Private skips remain unobserved, not PASS.
+Independent acceptance and integration remain main-gate-owned; F3 is unchanged.
 
 ### F3 — P2: avoid silent defaults when reconstructing definitions
 
@@ -332,8 +385,8 @@ unmerged PR #692 were not reassessed. No performance finding or large acquisitio
 
 1. **Fix before dependent work — F1:** correct host ownership/callback setup before relying on initial
    appearance/region waits or direct battle return in further six-family composition.
-2. **Bounded follow-up — F2:** restore typed authored-input rejection through ordered shape checks.
-   Unrelated numerical engine work need not wait.
+2. **Implemented, awaiting independent integration — F2:** ordered shape admission and direct public
+   API controls pass within the declared sibling boundary; no whole-decoder cleanliness claim follows.
 3. **With affected integration — F3:** centralize narrow immutable definition replacement before
    enabling connected capabilities whose fields would otherwise default away. Keep current guards.
 4. **Acceptable as-is within limits:** retain the modular monolith, one state authority, finite rule

@@ -15,8 +15,12 @@ internal static class ScenarioJson
     }
     internal static void ObjectOptional(JsonElement element, string field, string optional, params string[] keys)
     {
+        ObjectOptional(element, field, keys, optional);
+    }
+    internal static void ObjectOptional(JsonElement element, string field, string[] required, params string[] optional)
+    {
         Require(element.ValueKind == JsonValueKind.Object, "object-required", field);
-        Object(element, field, element.TryGetProperty(optional, out _) ? [.. keys, optional] : keys);
+        Object(element, field, [.. required, .. optional.Where(key => element.TryGetProperty(key, out _))]);
     }
     internal static void Object(JsonElement element, string field, params string[] keys)
     {
