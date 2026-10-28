@@ -96,7 +96,9 @@ func _run() -> void:
         var field := _state()
         if field.get("failure") != null:
             var expected := OS.get_environment("SF2_DIAMOND_EXPECT_FAILURE")
-            _check(not expected.is_empty() and str(field.failure) == expected, "Field consumer failure matches the selected negative case")
+            _check(not expected.is_empty() and field.failure == "presentation-unavailable" and
+                field.get("failureKind") == "AdapterError" and field.get("dialogue", "").contains(expected) and
+                field.get("wait") == "PresentationWait", "Field retains the expected resource failure and pending presentation")
             _state("field-admission-failure")
             _finish()
             return
