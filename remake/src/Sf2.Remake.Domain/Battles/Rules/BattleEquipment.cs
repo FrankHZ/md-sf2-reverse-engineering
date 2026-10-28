@@ -20,6 +20,15 @@ public sealed record BattleEquipmentChoice(int Slot, string Label, bool Equipped
 // Slot4 is the source menu's Unarmed sentinel, never an inventory slot.
 public static class BattleEquipment
 {
+    // RemoveItemBySlot shifts following words and refreshes from the live base.
+    internal static BattleActorState RemoveItem(BattleActorState actor, int slot)
+    {
+        var words = actor.SourceLoadout!.Items.ToList(); words.RemoveAt(slot); words.Add(127);
+        var loadout = new BattleSourceLoadout(words, actor.SourceLoadout.Spells);
+        return actor.With(sourceLoadout: loadout, attack: actor.Definition.Equipment is null ? actor.Attack :
+            (byte)Math.Min(200, actor.BaseAttack + Contribution(actor.Definition, loadout)));
+    }
+
     public static int EquippedSlot(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
         loadout is null || definition.Equipment is null ? 4 : Enumerable.Range(0, loadout.Items.Count)
             .FirstOrDefault(slot => (loadout.Items[slot] & 128) != 0 &&

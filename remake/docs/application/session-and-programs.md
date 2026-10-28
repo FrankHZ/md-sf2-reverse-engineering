@@ -1,5 +1,25 @@
 # Session and Resumable Programs
 
+## Battle discard selection and completion
+
+`BeginDiscard` is valid at ActionChoice and enters DiscardItemChoice. `SelectDiscardItem(slot)`
+selects an exact live packed word, including duplicate identities in separate slots. Protected items
+remain visible and Confirm returns typed `discard-unsellable` without changing the snapshot.
+Confirm on a permitted item enters DiscardCommitReady; final Confirm revalidates actor, word,
+metadata and required custody before publishing. Wrong-stage, empty, stale and wrong-actor inputs
+return typed failures. Cancel from either Drop selection stage returns ActionChoice for free.
+Selection and cancellation retain provisional movement and authoritative resources/turn/RNG.
+
+`BattleDiscardContinuation` publishes the finite loadout/equipment/Deals change once and retains
+ActionChoice plus its existing movement preview behind `BattleDiscardState`. Its authored text and
+WaitToken require actual CompleteTextReveal followed by Acknowledge. Pending input, duplicate/stale
+delivery and acknowledgement cannot repeat mutation or select the next compacted item. The wait
+blocks battle control; acknowledgement releases the same actor's same action. GameSession bypasses
+outcome/defeated hooks for this free interaction. There is no battle scene, STAY, movement commit,
+after-turn or next-turn dispatch. Outer Cancel later returns to movement while retaining accepted
+inventory/equipment/Deals, and an ordinary subsequent action uses the usual commit/turn lifecycle.
+The [domain owner](../domain/gameplay-rules.md#authored-battle-discard) records source order and limits.
+
 ## Battle Give selection and completion
 
 `BeginGive` enters `GiveItemChoice` from `ActionChoice`; `SelectGiveItem(slot)` changes only

@@ -10,7 +10,7 @@ public enum SessionFailureKind { IllegalCommand, UnsupportedCapability, ContentE
 public sealed record SessionFailure(SessionFailureKind Kind, string Code, string Field, string Message);
 public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
-public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice, GiveItemChoice, GiveTargetChoice, GiveExchangeChoice, GiveCommitReady }
+public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice, GiveItemChoice, GiveTargetChoice, GiveExchangeChoice, GiveCommitReady, DiscardItemChoice, DiscardCommitReady }
 public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat }
 
 public abstract record SessionCommand;
@@ -19,6 +19,8 @@ public sealed record ChooseAction(SessionAction Action) : SessionCommand;
 public sealed record SelectBattleAction(BattleActionRef Action) : SessionCommand;
 public sealed record SelectSpell(SpellRef Spell) : SessionCommand;
 public sealed record SelectItem(int Slot) : SessionCommand;
+public sealed record BeginDiscard : SessionCommand;
+public sealed record SelectDiscardItem(int Slot) : SessionCommand;
 public sealed record BeginGive : SessionCommand;
 public sealed record SelectGiveItem(int Slot) : SessionCommand;
 public sealed record SelectGiveReturn(int Slot) : SessionCommand;
@@ -79,7 +81,7 @@ public sealed class BattleSelection
 
 public abstract record ActiveSessionState;
 public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null,
-    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null, BattleGiveState? Give = null) : ActiveSessionState;
+    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null, BattleGiveState? Give = null, BattleDiscardState? Discard = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -99,7 +101,8 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
-    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null;
+    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null;
+    public BattleDiscardState? BattleDiscard => (Active as ActiveBattle)?.Discard;
     public BattleGiveState? BattleGive => (Active as ActiveBattle)?.Give;
     public BattleRoundState? BattleRound => (Active as ActiveBattle)?.Round;
     public BattleRetreatState? BattleRetreat => (Active as ActiveBattle)?.Retreat;

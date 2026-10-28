@@ -1,5 +1,49 @@
 # Gameplay Rules and Composition
 
+## Authored battle discard
+
+**Standard rigor agreement:** standalone authored Drop is a bounded extension of existing packed
+loadout, live equipment, custody and typed delivery owners. Select an exact held slot, refuse
+protected items or confirm/cancel, then publish removal/compaction and any rare Deals addition once.
+Result reveal/ack returns the same actor to the same ActionChoice and movement preview. Drop commits
+no movement, action cost, STAY, after-turn, outcome/defeated hook, reward or RNG. Acceptance is varied
+actual rule/session behavior, adapter builds, one ordinary-input native witness and exact-head CI.
+No generic inventory framework, second authority or field/service/persistence expansion is admitted.
+
+**Confirmed (static):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
+`disasm/`, `code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+`@ItemMenuChoice_Drop` through `byte_25066`: slot cancel returns to the item submenu; equipped-curse
+refusal precedes unsellable refusal. The selected packed word and selected slot are distinct operands.
+Confirmation-no returns `@StartBattleMenu`. Yes calls `RemoveItemBySlot`, tests the saved item's RARE
+bit, conditionally calls `AddItemToDeals`, displays the result and returns `@StartBattleMenu`.
+`code/common/stats/itemstats.asm` `RemoveItemBySlot/RemoveAndArrangeItems` shifts later words,
+appends Nothing and invokes `UpdateCombatantStats`. The battle caller does not use `DropItemBySlot`
+to supply its guards. `code/common/stats/dealsinventory.asm` `AddItemToDeals/GetDealsItemInfo` masks
+identity and increments the selected independent nibble up to15; reaching15 still permits removal.
+`data/stats/items/itemdefs.asm` identifies0 as CONSUMABLE,61 as WEAPON|RARE and113 as RARE|UNSELLABLE.
+Reproduce with `git -C <pinned-upstream> show c834c652:disasm/<named-file>` and the named symbols.
+The [battle caller](../../../docs/design/contracts/battle-functions-control-flow.md),
+[Deals contract](../../../docs/design/contracts/caravan-and-deals-state.md) and
+[economy synthesis](../../../docs/design/synthesis/progression-and-economy.md)
+remain the consumed contract routes; these are static claims, not natural-route/timing observations.
+
+`BattleDiscard` validates the live actor, supported words, exact slot/word and selected metadata.
+Unsellable113 is carryable but refuses removal. Rare61 needs observed custody; null stays Unknown,
+never known-empty. `BattleItemCustody.AddDeal` preserves other entries and enemy onceFlags. Shared
+`BattleEquipment.RemoveItem` compacts exact words and refreshes ATT from the actor's current base
+plus remaining equipped contribution once. Spells, immutable definitions, resources, positions,
+queue and seeds remain unchanged; range, subsequent equip/use and growth read the current loadout.
+An overlapping enemy-drop catalog must agree about rarity. Four held slots bound selection to O(4);
+publication copies the existing actor list O(N), with no new acquisition or unbounded work.
+
+The [admission owner](../content/profiles-and-trust.md#authored-battle-discard-admission),
+[session owner](../application/session-and-programs.md#battle-discard-selection-and-completion) and
+[native recipe](../development-and-verification.md#battle-discard-authored-observation) own execution.
+Modern feedback and menu cancellation are authored interactions. Names/arena/weapon bonus/range
+operands are example content. Curses, rings, broken/status effects, wider item use, field/Caravan/shop
+services, private/connected imports and save/load remain Unsupported. **Unknown:** natural original
+reach and original presentation/timing; the twelve #1047 Unknowns and #638 pause remain unchanged.
+
 ## Authored battle weapon equipment
 
 `BattleEquipment` operates on existing `SourceLoadout` slot words. An explicitly opted-in actor has
@@ -855,7 +899,7 @@ It does not relabel authored tests as an original trace replay.
 Private Content admits only the selected Medical Herb definition into this item family.
 Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
 not herbs. The current class model admits PRST healing EXP and the existing non-healer
-classes. VICR/MMNK class admission, broader item families, equipment beyond the authored weapon subset, Give beyond the standalone subset, Drop, field inventory,
+classes. VICR/MMNK class admission, broader item families, equipment beyond the authored weapon subset, Give/Drop beyond the standalone subsets, field inventory,
 AI healing-item choice and save/load remain unsupported. Exact original presentation timing remains Unknown. The existing
 physical-only AI policy rejects a nonempty item loadout at start. This does not close the
 continuous H4 milestone or establish successful native-original cancellation.

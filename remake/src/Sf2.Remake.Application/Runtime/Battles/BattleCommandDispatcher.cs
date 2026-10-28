@@ -26,6 +26,8 @@ internal static class BattleCommandDispatcher
         var actor = battle.GetActor(selection.Actor);
         try
         {
+            if (command is BeginDiscard or SelectDiscardItem || BattleDiscardSelection.Active(selection.Stage))
+                return BattleDiscardSelection.Submit(current, command);
             if (command is BeginGive || BattleGiveSelection.Active(selection.Stage))
                 return BattleGiveSelection.Submit(current, command);
             switch (command)

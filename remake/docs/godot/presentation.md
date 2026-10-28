@@ -1,5 +1,21 @@
 # Godot Host and Presentation
 
+## Authored battle discard presentation
+
+R / right stick down starts Drop from the ordinary battle ActionChoice; directions cycle exact
+slot labels, including duplicates. Protected items show a readable refusal reason. Enter selects
+and confirms; Escape keeps the item and returns to actions. The confirmation explicitly states
+that the action and movement preview remain available. Bind `discard` through ordinary input
+settings to change its keyboard/gamepad control.
+
+`BattleDiscardView` displays authored result text and reports CompleteTextReveal only after actual
+delivery; Confirm then acknowledges it. Parent focus/hide suspension blocks input and delivery,
+preserving the accepted loadout/Deals prefix. It resumes without timing debt. The view chooses no
+inventory/turn policy and acknowledgement returns to the same actor/action; later outer Cancel
+returns movement. No new media or original dialogue/hardware timing is claimed. The
+[native recipe](../development-and-verification.md#battle-discard-authored-observation) exercises
+ordinary keys and reads live state, labels and errors without screenshots or gameplay injection.
+
 ## Authored battle Give presentation
 
 In the ordinary battle action menu, G / left-stick press starts Give. Directions cycle the held

@@ -1,5 +1,22 @@
 # Remake Capability Status
 
+## Authored battle discard
+
+**Implemented standalone authored subset:** explicit finite `battleDiscard.items` admits Herb0,
+Achilles Sword61 and protected Sky Orb113. Exact-slot confirmation removes/compacts once, refreshes
+current uncursed equipment and adds a rare item to existing Deals with cap15. Refusal/cancel is free.
+Actual authored result delivery/ack returns the same actor's same ActionChoice and provisional
+movement, without STAY/action cost, movement commit, after-turn, rewards, hooks or RNG. Later outer
+cancel retains the accepted inventory/equipment/Deals; normal later actions retain their own costs.
+
+The [Standard agreement and provenance](domain/gameplay-rules.md#authored-battle-discard),
+[admission](content/profiles-and-trust.md#authored-battle-discard-admission),
+[session](application/session-and-programs.md#battle-discard-selection-and-completion) and
+[native observation](development-and-verification.md#battle-discard-authored-observation) bound this
+claim. Null custody remains Unknown and blocks required rare mutation. Curses, rings, broken/status
+behavior, wider items, field/Caravan/shop services, connected/private imports and save/load remain
+Unsupported. Original reach/presentation/timing and the twelve #1047 Unknowns remain open; #638 paused.
+
 ## Authored battle Give and exchange
 
 **Implemented standalone authored subset:** explicit `battleGive: true` supports held-slot,
@@ -13,7 +30,7 @@ The [High-rigor agreement and static provenance](domain/gameplay-rules.md#author
 [session owner](application/session-and-programs.md#battle-give-selection-and-completion),
 [admission](content/profiles-and-trust.md#authored-battle-give-admission) and
 [native recipe](development-and-verification.md#battle-give-authored-observation) bound this claim.
-**Unsupported:** rings, curses/break effects, general statuses, Drop/field/Caravan/shop services,
+**Unsupported:** rings, curses/break effects, general statuses, field/Caravan/shop services,
 private chapter imports and save/load. Original natural reach and presentation/timing remain
 **Unknown**. This does not resolve the twelve #1047 Unknowns or resume #638.
 
@@ -35,7 +52,7 @@ counter validation, growth and continued ordinary control. The
 
 Four held slots bound selection to O(4); one commit copies existing battle actor state, O(N), with no
 RNG or acquisition. One authored package, small engine tests and one semantic witness (<180 seconds,
-<2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give beyond the standalone subset above, Drop, field/services,
+<2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give/Drop beyond the standalone subsets above, field/services,
 connected/private chapter preparation and persistence remain Unsupported. Original natural reach,
 presentation/timing and the twelve #1047 Unknowns remain unchanged. Authored weapon names, numerical
 bonuses and presentation are example inputs, not newly confirmed original definitions.

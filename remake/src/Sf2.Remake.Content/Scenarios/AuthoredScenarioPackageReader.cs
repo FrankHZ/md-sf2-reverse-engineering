@@ -43,6 +43,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         ObjectOptional(root, "document", "items", ["formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters",
             .. root.TryGetProperty("battleStory", out _) ? new[] { "battleStory" } : [],
             .. root.TryGetProperty("dropItems", out _) ? new[] { "dropItems" } : [],
+            .. root.TryGetProperty("battleDiscard", out _) ? new[] { "battleDiscard" } : [],
             .. root.TryGetProperty("battleGive", out _) ? new[] { "battleGive" } : [],
             .. root.TryGetProperty("weapons", out _) ? new[] { "weapons" } : [],
             .. root.TryGetProperty("growth", out _) ? new[] { "growth" } : []]);
@@ -169,6 +170,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var weaponItems = Array(root, "encounters").SelectMany(TarosEffectivenessReader.Weapons)
             .Concat(weapons.Select(w => w.ItemId)).Distinct().ToArray();
         var dropItems = EnemyItemDropReader.Items(root);
+        var discard = BattleDiscardReader.Read(root, allowLeaderCleanup, dropItems, weapons, healingItems.Values, retreatItems.Values);
         Require(dropItems.Keys.All(id => id == 0 ? !weaponItems.Contains(id) && !retreatItems.ContainsKey(id) :
             !healingItems.ContainsKey(id) && !retreatItems.ContainsKey(id)), "conflicting-item-type", "dropItems");
         Require(!weaponItems.Any(id => healingItems.ContainsKey(id) || retreatItems.ContainsKey(id)),
@@ -187,7 +189,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Require(value.ValueKind == JsonValueKind.Number && value.TryGetUInt16(out _), "item-word", "actors.items");
                 ushort word = value.GetUInt16();
-                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127)) || retreatItems.ContainsKey((byte)(word & 127)) || weaponItems.Contains((byte)(word & 127)) || dropItems.ContainsKey((byte)(word & 127))),
+                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127)) || retreatItems.ContainsKey((byte)(word & 127)) || weaponItems.Contains((byte)(word & 127)) || dropItems.ContainsKey((byte)(word & 127)) || discard?.Items.ContainsKey((byte)(word & 127)) == true),
                     "missing-item", "actors.items", true);
                 return word;
             }).ToArray();
@@ -233,6 +235,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (byte)Number(actor, "move", 1, 255), learned, physical, sourceLoadout: loadout,
                 equipment: BattleEquipmentReader.Actor(actor, weapons, weaponItems));
             BattleEquipmentReader.Validate(definition);
+            BattleDiscardReader.Validate(definition, discard);
             Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
         }
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
@@ -294,7 +297,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
                 itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
                 prismLaser: PrismLaserReader.Read(encounter, placements),
-                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values))),
+                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: discard)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
@@ -327,7 +330,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var battleStory = BattleStoryReader.Read(root, encounters.Values);
         var storyStart = BattleStoryReader.Start(start, encounters[selectedEncounter]);
         var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
-            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, dropItems), storyFlags: storyStart.Flags, visuals: storyStart.Visuals, retainedSourceSlots: storyStart.Retained);
+            (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, BattleDiscardReader.CustodyItems(dropItems, discard)), storyFlags: storyStart.Flags, visuals: storyStart.Visuals, retainedSourceSlots: storyStart.Retained);
         BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
         // Drop/initialization-enabled encounters need fresh enemies on each entry. Their
         // controlled start is a definition input, never a replacement for live allies.
