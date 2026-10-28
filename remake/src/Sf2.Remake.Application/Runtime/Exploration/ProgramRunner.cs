@@ -29,6 +29,7 @@ internal static class ProgramRunner
         {
             try
             {
+                if (current.Story.Wait is ChoiceWait) current = BattleEntrySkip.Disarm(current, observations, "choice");
                 if (current.Story.Wait is not null) return Finish(Result(current, observations));
                 if (current.Story.Cursor is not { } cursor)
                 {
@@ -68,6 +69,7 @@ internal static class ProgramRunner
                     }
                     if (current.Story.Continuation == ProgramContinuation.BattleStartFinished)
                     {
+                        current = BattleEntrySkip.Disarm(current, observations, "entry-finished");
                         current = current.WithStory(current.Story.Copy(null, continuation: ProgramContinuation.FieldInput));
                         return Finish(BattleAdvancer.Advance(current, observations, rules));
                     }

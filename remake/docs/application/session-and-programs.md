@@ -1666,3 +1666,32 @@ changes, direct/transfer entry, named motion/text/presentation, source populatio
 later failure boundaries, plus one compact ordinary-host authored return/movement witness. The
 [bounded reproduction](../development-and-verification.md#authored-field-player-return) owns commands
 and the native observation's limits. Broader original-route and hardware parity remain Unknown.
+
+## Battle-entry skip agreement
+
+Standard rigor: entry skip crosses logical service, presentation, music history and input ownership.
+The accepted scope is intentional remake UX for the existing before/load/start continuation,
+including connected Battle01 and varied authored programs. It is not original timing parity,
+a global cutscene skip, battle fast-forward or a new interpreter.
+
+Eligibility requires an entering route and BeforeBattleFinished, BattleLoadFinished or
+BattleStartFinished, with no ChoiceWait in any phase and no stopped failure. One semantic
+SkipBattleEntry request arms session-owned state. ProgramRunner remains the instruction owner;
+existing wait reducers perform every mandatory entity, camera, text, fade and music service and
+RNG operation. Skip never sets IntroFlag to bypass work or restores a canned result. It clears at
+entry exit before BattleAdvancer, including enemy-first rounds. Every choice disarms it. Failure
+retains the reached cursor, wait and committed prefix. Stale/out-of-scope requests cannot mutate.
+
+Compare normal and skipped execution from the exact request state, using earliest eligible text
+acknowledgements and no optional neutral polls. Flags, live party/resources, initialization, seeds,
+entity state and residual story/control state must agree. Wall-clock delivery and playback position
+may differ. Suppressed delivery carries an explicit entry-skip disposition; it is never natural
+animation or audio completion. Finite music retains logical progress and history. Real sprite
+readiness and BattleLoad mounts, including their failures, remain required.
+
+Execution uses bounded batches and preserves ProgramRunner's existing instruction budget. A batch
+yield is not completion. A finite acceleration budget disarms at the reached state on excessive
+work, allowing ordinary continuation or an explicit new request without hanging the host. Focus
+loss also disarms; a fresh request is required. Input release barriers span choice and combat
+handoff. The [presentation and acceptance owner](../godot/battle-entry-skip.md) records delivery,
+commands, resource limits and current acceptance. No Domain, Content or research change is planned.
