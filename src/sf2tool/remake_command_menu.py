@@ -59,7 +59,7 @@ def prepare(rom: Path, upstream: Path, scene: Path, out_dir: Path) -> None:
                 "symbol": "tiles_MainMenu",
                 "palette": "base palette via texture_extract",
                 "transparentIndex": 0,
-                "layout": "each nine-tile half as 3x3 row-major tiles; first normal, second selected",
+                "layout": "nine-tile halves in 3x3 row-major order; first normal, second selected",
                 "resources": receipts,
             },
             indent=2,
