@@ -149,7 +149,7 @@ internal static class MapTransfer
 
     internal static SessionSnapshot FinishFade(SessionSnapshot current, List<SessionObservation> observations)
     {
-        if (current.Story.Wait is not FullFadeWait { LogicalDone: true, ActualDone: true } wait) return current;
+        if (current.Story.Wait is not FullFadeWait { LogicalDone: true } wait || !(wait.ActualDone || wait.DeliverySkipped)) return current;
         var story = current.Story;
         story = wait.Purpose switch
         {

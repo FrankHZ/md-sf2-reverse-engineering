@@ -7,7 +7,7 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.GodotAdapter.Audio;
 
 // One owner for the session, independent of exploration/battle view lifetimes.
-internal sealed class SessionAudio : IDisposable
+internal sealed partial class SessionAudio : IDisposable
 {
     private readonly IReadOnlyDictionary<string, ExplorationAudio> _assets;
     private readonly IReadOnlyDictionary<MapId, ExplorationMapVisual> _maps;
@@ -40,7 +40,7 @@ internal sealed class SessionAudio : IDisposable
         _owner = owner;
         _capture = ObservationCapture.Find(owner);
         owner.AddChild(_music);
-        _musicFinished = () => { if (_music.Playing) return; MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
+        _musicFinished = () => { if (_music.Playing || _entrySuppressed || _entryMusicConsumed) return; MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
         _music.Finished += _musicFinished;
         if (definition.Provenance is not null && _assets.Count == 0) Error = "private-audio-required";
     }
@@ -59,7 +59,7 @@ internal sealed class SessionAudio : IDisposable
     {
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
         musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
-        musicPosition = MusicPosition, timerB = TimerB, soundCue = _soundCue,
+        musicDeliverySkipped = _entryMusicConsumed, musicPosition = MusicPosition, timerB = TimerB, soundCue = _soundCue,
         soundPlaying = _sounds.Any(voice => voice.Player.Playing),
     };
 
@@ -67,7 +67,7 @@ internal sealed class SessionAudio : IDisposable
     {
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
         musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
-        musicPosition = MusicPosition, timerB = TimerB,
+        musicDeliverySkipped = _entryMusicConsumed, musicPosition = MusicPosition, timerB = TimerB,
         musicVolumeDb = _music.VolumeDb, fading = _fading, fadeProgress = _fadeProgress,
         soundCue = _soundCue, soundPlaying = _sounds.Any(voice => voice.Player.Playing),
         soundPosition = _sounds.LastOrDefault()?.Player.GetPlaybackPosition() ?? 0,
@@ -98,7 +98,7 @@ internal sealed class SessionAudio : IDisposable
         if (cue is not null) Record("stopped", player, cue);
     }
 
-    internal void Observe(SessionResult result)
+    internal void Observe(SessionResult result, bool entrySkipDelivery = false)
     {
         _capture?.BindSession(result.Snapshot.SessionId);
         _revision = result.Snapshot.Revision;
@@ -107,8 +107,10 @@ internal sealed class SessionAudio : IDisposable
         try
         {
             var current = result.Snapshot;
+            if (entrySkipDelivery || current.Story.EntrySkip is not null) BeginEntrySuppression();
             foreach (var observation in result.Observations.Where(row => row.Sequence > _observedSequence))
             {
+                if (_entrySuppressed) continue;
                 if (observation.Kind == "door-opened") Play(92);
                 else if (observation.Kind == "warp-started") Play(89);
             }
@@ -179,6 +181,7 @@ internal sealed class SessionAudio : IDisposable
     internal void Play(string resource, bool remember = true)
     {
         if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
+        if (_entrySuppressed) { SuppressEntryCue(resource, remember); return; }
         if (!_assets.TryGetValue(resource, out var audio)) throw new InvalidOperationException("audio-content-unavailable");
         bool music = audio.Command < 65;
         // The source suppresses identical music requests even when the finite track already ended.
@@ -228,7 +231,7 @@ internal sealed class SessionAudio : IDisposable
         if (music)
         {
             MusicGeneration = null;
-            MusicCue = resource; MusicFinished = false; TimerB = audio.TimerB;
+            MusicCue = resource; MusicFinished = false; _entryMusicConsumed = false; TimerB = audio.TimerB;
             if (remember)
             {
                 _history.Insert(0, resource);

@@ -120,7 +120,7 @@ internal static class ExplorationMusicRunner
 
     internal static SessionSnapshot Finish(SessionSnapshot current, List<SessionObservation> observations) =>
         current.Story.Wait is MusicWait { LogicalDone: true } wait &&
-            current.Story.Music is { ActualDone: true } music && music.Generation == wait.Generation
+            current.Story.Music is { } music && (music.ActualDone || music.DeliverySkipped) && music.Generation == wait.Generation
         ? ProgramRunner.Commit(current, current.Active,
             current.Story.Copy(current.Story.Cursor is { } cursor ? ProgramRunner.Next(cursor) : null),
             observations, "music-wait-returned", music.Cue) : current;
@@ -129,7 +129,7 @@ internal static class ExplorationMusicRunner
     {
         var music = current.Story.Music;
         if (music is null || music.Previous.Count == 0 ||
-            music.EndStep is not null && !(music.PreviousEligible && music.ActualDone))
+            music.EndStep is not null && !(music.PreviousEligible && (music.ActualDone || music.DeliverySkipped)))
             throw new BattleRuleException("music-previous-unavailable", "program.music", true);
         ValidateContext(current, music);
         string cue = music.Previous[0];

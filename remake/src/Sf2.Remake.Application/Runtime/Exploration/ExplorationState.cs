@@ -6,7 +6,10 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public readonly record struct WaitToken(long Value);
-public abstract record ProgramWait(WaitToken Token);
+public abstract record ProgramWait(WaitToken Token)
+{
+    public bool DeliverySkipped { get; init; }
+}
 public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0,
     bool CloseOnAcknowledgement = true, bool? InputFirstEntityService = null) : ProgramWait(Token);
 // EndToken excludes the next W1, or equals the stream length for trailing delivery.
@@ -59,7 +62,7 @@ public sealed record NodWait(WaitToken Token, EntityRef Entity, int Elapsed = 0,
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
 public sealed record MusicProgress(long Generation, string Cue, IReadOnlyList<string> Previous,
     MapId Map, int Area, int? EndStep, int Step = 0, bool ActualDone = false, bool PreviousEligible = false,
-    bool Battle = false, bool HistoryBound = true);
+    bool Battle = false, bool HistoryBound = true, bool DeliverySkipped = false);
 public sealed record MusicWait(WaitToken Token, long Generation, int Elapsed = 0,
     bool Armed = false, bool Cleared = false, bool LogicalDone = false) : ProgramWait(Token);
 public enum FullFadeColor { Black, White }
@@ -109,7 +112,7 @@ public sealed class StoryState
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
-        bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null)
+        bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -123,8 +126,9 @@ public sealed class StoryState
         Music = music;
         ScriptWarp = scriptWarp;
         StepCounter = stepCounter; BattleRequest = battleRequest; EgressMap = egressMap;
-        FieldPlayer = fieldPlayer;
+        FieldPlayer = fieldPlayer; EntrySkip = entrySkip;
     }
+    public BattleEntrySkipState? EntrySkip { get; }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
     public IReadOnlyList<ProgramLocation> Callers { get; }
@@ -178,7 +182,7 @@ public sealed class StoryState
         bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
-        short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null) =>
+        short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, bool clearEntrySkip = false) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -189,7 +193,7 @@ public sealed class StoryState
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
             battleRequest ?? BattleRequest, egressMap ?? EgressMap,
-            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer);
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

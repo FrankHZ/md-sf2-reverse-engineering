@@ -103,6 +103,12 @@ public sealed class GameSession
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
+        if (envelope.Command is BattleEntrySkipCommand skip)
+        {
+            var skipped = BattleEntrySkip.Submit(Definition, current, skip, Rules);
+            _current = skipped.Snapshot;
+            return skipped;
+        }
         bool discardActive = current.BattleDiscard is not null;
         bool discardInput = discardActive || envelope.Command is BeginDiscard or SelectDiscardItem ||
             current.Selection is { } selected && BattleDiscardSelection.Active(selected.Stage);
@@ -130,6 +136,7 @@ public sealed class GameSession
             : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
         result = ContinueStory(Definition, result, Rules);
         if (result.Failure is null && !discardInput && !programActive && !retreatActive && result.Snapshot.BattleGive is null) result = BattleOutcome.Begin(Definition, result, Rules);
+        result = BattleEntrySkip.Progress(current, result);
         _current = result.Snapshot;
         return result;
     }
