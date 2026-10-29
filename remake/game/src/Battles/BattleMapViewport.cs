@@ -10,7 +10,12 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 internal sealed partial class BattleMapViewport : Control
 {
-    private const int CellSize = 40;
+    private const int CellSize = WorldViewportLayout.CellSize;
+    internal WorldViewportLayout WorldViewport { get; set; } = new();
+    private MapId _map = null!;
+    private bool _storyCamera;
+    internal Action<Rect2>? SubjectChanged { get; set; }
+    internal bool CameraSettled => WorldViewport.Settled;
     private readonly Control _board = new() { Name = "Board", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Dictionary<ActorRef, Label> _markers = [];
     private readonly Dictionary<ActorRef, Sprite2D> _sprites = [];
@@ -52,6 +57,9 @@ internal sealed partial class BattleMapViewport : Control
         _builds++;
         _visuals = content.Exploration?.Visuals;
         _sceneContent = content.ScenesFor(definition.Encounter);
+        _map = definition.SourceMapRegion?.Map ?? definition.Map;
+        _storyCamera = false;
+        _board.ClipContents = true;
         _mapSize = new(definition.Width * CellSize, definition.Height * CellSize);
         _board.Size = _mapSize;
         _region = definition.SourceMapRegion;
@@ -61,9 +69,9 @@ internal sealed partial class BattleMapViewport : Control
         else BuildAuthoredTerrain(definition);
         foreach (var actor in definition.Deployments)
         {
-            var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 4, CellSize - 8),
+            var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 8, CellSize - 16),
                 ClipText = true, MouseFilter = MouseFilterEnum.Ignore, ZIndex = 1 };
-            marker.AddThemeFontSizeOverride("font_size", 10);
+            marker.AddThemeFontSizeOverride("font_size", 24);
             _board.AddChild(marker);
             _markers.Add(actor.Actor, marker);
             if (_sceneContent?.FieldDeath is { } field && _visuals is not null)
@@ -152,7 +160,7 @@ internal sealed partial class BattleMapViewport : Control
         if (what == NotificationPredelete) ReleaseTextures();
     }
 
-    internal void Present(BattlePresentation projection, SessionSnapshot current)
+    internal void Present(BattlePresentation projection, SessionSnapshot current, ActorRef? candidate)
     {
         _battleVisuals = current.Battle.Visuals;
         if (_movement?.Token != projection.Movement?.Token)
@@ -217,7 +225,12 @@ internal sealed partial class BattleMapViewport : Control
             _board.AddChild(node);
             _preview.Add(node);
         }
-        _focus = projection.Focus;
+        _storyCamera = false;
+        var target = candidate ?? current.Selection?.Target;
+        var targetMarker = target is null ? null : projection.Markers.FirstOrDefault(marker => marker.Actor == target);
+        _focus = projection.Movement is { } moving ? [moving.To] :
+            targetMarker is not null && current.Selection?.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady
+                ? [targetMarker.Position] : current.Selection is { } selection ? [selection.Preview.Destination] : projection.Focus;
         Frame();
         ProjectMovement();
     }
@@ -230,7 +243,7 @@ internal sealed partial class BattleMapViewport : Control
         var position = current.Story.CameraEntitySlot is { } slot && current.Battle.Visuals is { } visuals &&
             visuals.Visuals.TryGetValue(slot, out var visual) ? visual.Position : current.Story.CameraTarget;
         if (position is null) return;
-        _focus = [position]; Frame(); QueueRedraw();
+        _storyCamera = true; _focus = [position]; Frame(); QueueRedraw();
     }
 
     internal CompletePresentation? ConsumeMovement(double delta, bool reduced)
@@ -295,24 +308,28 @@ internal sealed partial class BattleMapViewport : Control
     private void Frame()
     {
         if (_mapSize == Vector2.Zero || Size.X <= 0 || Size.Y <= 0) return;
-        var minimum = _focus.Count == 0 ? _mapSize / 2 : new Vector2(_focus[0].X, _focus[0].Y) * CellSize;
-        var maximum = minimum;
-        foreach (var position in _focus)
-        {
-            var point = new Vector2(position.X, position.Y) * CellSize;
-            minimum = minimum.Min(point);
-            maximum = maximum.Max(point);
-        }
-        minimum -= Vector2.One * CellSize;
-        maximum += Vector2.One * (2 * CellSize);
-        var extent = maximum - minimum;
-        float scale = Mathf.Min(1, Mathf.Min(Size.X / extent.X, Size.Y / extent.Y));
-        _board.Scale = Vector2.One * scale;
-        var worldSize = _mapSize * scale;
-        var desired = Size / 2 - (minimum + maximum) / 2 * scale;
-        _board.Position = new(
-            worldSize.X <= Size.X ? (Size.X - worldSize.X) / 2 : Mathf.Clamp(desired.X, Size.X - worldSize.X, 0),
-            worldSize.Y <= Size.Y ? (Size.Y - worldSize.Y) / 2 : Mathf.Clamp(desired.Y, Size.Y - worldSize.Y, 0));
+        Vector2 offset = _region is null ? Vector2.Zero : new Vector2(_region.Origin.X, _region.Origin.Y) * 24;
+        var focus = _focus.Count == 0 ? _mapSize / (2 * WorldViewportLayout.PixelScale)
+            : new Vector2(_focus[^1].X + 0.5f, _focus[^1].Y + 0.5f) * 24;
+        WorldViewport.Focus(_map, new(offset, _mapSize / WorldViewportLayout.PixelScale), offset + focus, Size, _storyCamera);
+        ApplyCamera(offset);
+    }
+
+    private void ApplyCamera(Vector2 offset)
+    {
+        _board.Scale = Vector2.One;
+        _board.Position = (offset - WorldViewport.Origin) * WorldViewportLayout.PixelScale;
+        if (_focus.Count > 0)
+            SubjectChanged?.Invoke(new(_board.Position + new Vector2(_focus[^1].X, _focus[^1].Y) * CellSize,
+                Vector2.One * CellSize));
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!IsVisibleInTree() || !GetWindow().HasFocus() || _mapSize == Vector2.Zero) return;
+        Frame();
+        WorldViewport.Advance(delta);
+        ApplyCamera(_region is null ? Vector2.Zero : new Vector2(_region.Origin.X, _region.Origin.Y) * 24);
     }
 
     internal IReadOnlyList<MapPosition> CameraFocus => _focus;
@@ -320,6 +337,8 @@ internal sealed partial class BattleMapViewport : Control
     public string ReadTerrainJson() => System.Text.Json.JsonSerializer.Serialize(new
     {
         region = _region, builds = _builds, textures = _mapTextures.Count, cellSize = CellSize,
+        cameraX = WorldViewport.Origin.X, cameraY = WorldViewport.Origin.Y, settled = CameraSettled, pixelScale = WorldViewportLayout.PixelScale,
+        legalScreen = Rectangle(WorldViewport.Screen),
         board = Rectangle(new Rect2(_board.Position, _board.Size)), scale = _board.Scale.X,
         viewport = Rectangle(GetGlobalRect()), clip = ClipContents,
         visibleLocal = Rectangle(new Rect2(-_board.Position / _board.Scale, Size / _board.Scale).Intersection(new(Vector2.Zero, _mapSize))),
@@ -328,7 +347,9 @@ internal sealed partial class BattleMapViewport : Control
         actors = _sprites.Select(pair => new { id = pair.Key.Value, x = pair.Value.Position.X, y = pair.Value.Position.Y,
             z = pair.Value.ZIndex, texture = pair.Value.Texture?.GetInstanceId().ToString(),
             validTexture = pair.Value.Texture is not null && GodotObject.IsInstanceValid(pair.Value.Texture),
-            visible = pair.Value.IsVisibleInTree() }),
+            visible = pair.Value.IsVisibleInTree(), scale = pair.Value.Scale.X,
+            outputWidth = (pair.Value.Texture?.GetWidth() ?? 0) * pair.Value.Scale.X,
+            outputHeight = (pair.Value.Texture?.GetHeight() ?? 0) * pair.Value.Scale.Y }),
         previewZ = _preview.Select(node => node.ZIndex).Distinct().ToArray(),
         targets = _target.Select(node => new { name = node.Name.ToString(), z = node.ZIndex, rect = Rectangle(new Rect2(node.Position, node.Size)) }),
     });

@@ -49,6 +49,68 @@ The legacy `remake/reference/game` host, its `--map3-smoke`/profile arguments an
 were retired at M5. Ordinary export configuration excludes `probes/*`; complete ordinary export and
 package contents remain unverified.
 
+## Unified world viewport observation
+
+The [Standard presentation agreement](../godot/presentation.md#unified-world-viewport-agreement)
+owns 1920×1080,96px cells/ordinary frames and 4× nearest sampling. Build the actual Release adapter
+with `uv run sf2 verify adapter` and Debug adapter with the configured absolute SDK after loading
+`local/private-inputs.ps1`; force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Reuse the registered
+Godot installation and owning project. A changed adapter binary requires a new native load; no
+SDK, project or asset copy is needed. Screenshots and full/H4 replay are excluded.
+
+`engine_world_viewport_observation.gd` loads ordinary `Main.tscn`, submits mapped keyboard events,
+waits on actual input/delivery state and reads existing camera/layout/terrain observations. It
+requests native focus before input and permits one bounded recovery, then reports Unavailable.
+Select `SF2_VIEWPORT_CASE`, a fresh `SF2_VIEWPORT_OUTPUT` and the corresponding ordinary startup
+argument. With the selected private inputs or authored package loaded, run from the repository root:
+
+```powershell
+$env:SF2_VIEWPORT_CASE = 'room'
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'viewport-room.json'
+& $env:GODOT_BIN --path remake/game --max-fps 60 --resolution 1920x1080 `
+    --script res://probes/engine_world_viewport_observation.gd -- `
+    --private-exploration-start $selectedStart
+```
+
+Require exit 0, `passed:true`, empty failure/unavailable lists, and no Godot script,
+C# or draw errors. An output file or zero process status alone is insufficient. Reports retain
+only a few semantic checkpoints, never a full scene per frame. A 75-second observer deadline and
+small-MB reports bound each short case; inspect the room/entry pilot before adding other cases.
+
+| Case | Existing input / bounded observation |
+| --- | --- |
+| `room` | Retained private connected Map3 world, initial player `(56,3)`, flags already compatible with ordinary field input. Actual 11×10 legal area gives 1056×960 centered at `(432,60)`. A small requested layout strip crossing the room's left edge contains only legal source draws; ordinary step/turn/release keeps 96px frames. |
+| `warp` | Same room input. Two ordinary Left steps use the existing packed-room warp to town. Require the player visible immediately, new area bounds and full world rectangle; do not pan through unopened packed storage. |
+| `entry` | Existing connected Battle01 start `battle01-to-battle02-start.json`, selected retained world/party. Cancel the eligible intro, release, wait for ordinary battle control. Read real map textures/sprites; open/cancel menus, move the preview and cycle item targets. Older private packages retain their explicit Unsupported Egress instead of changing gameplay to satisfy the observer. |
+| `region` | Accepted Battle02 outcome world/party with `engine-battle02-egress-start.json`, from the [Egress owner](field-programs.md#battle02-egress-and-walking-retry). Actual map-region origin `(16,19)` maps terrain/actors into the shared viewport. Short ordinary Egress reaches usable Map3 and subsequent movement; no full battle is replayed. |
+| `scene` | Same retained Map3 world, controlled initial player `(42,9)` and flags `0,32,256,260,261,601,602`, with the current explicit palette/text start fields. Down then Right naturally enters Zone8 at `(43,10)`. Existing caller runs `cs-5149a`; ordinary reveal/acknowledge reaches text525. Actual teacher ink gets high-priority wall fragments after the 96px sprite draw, with independent plane origins. Stop at that boundary. No direct text/program-state injection or private world duplication. |
+| `far` | Small pre-start variation of authored practice yard: 32×20 open terrain, injured `guard-a` at `(29,17)`, MEND range 48. Move preview, choose self then distant target, cancel. World zoom remains 1 (96px board cells), the target pans inside legal bounds, and a corner description avoids the edge-clamped subject. Repeat with medic at `(1,1)` and require mutually disjoint visible panels around that subject. |
+
+Create the small controlled starts before startup, preserving the tracked input's explicit palette,
+text and display fields; this writes no private world or asset copy:
+
+```powershell
+$startData = Get-Content remake/reference/inputs/battle01-to-battle02-start.json -Raw | ConvertFrom-Json -AsHashtable
+$startData.start.map = 'map-3'
+$startData.start.position = @{ x=56; y=3 }
+$startData.start.facing = 3
+$startData.start.flags = @(0,32,256,260,261,601,602)
+$selectedStart = Join-Path $env:SF2_RUN_OUTPUT 'room-start.json'
+$startData | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $selectedStart -Encoding utf8
+# For scene: change only the initial position to @{ x=42; y=9 } and save another start.
+```
+
+For `far`, use `--authored-package $package`; all other cases use their selected private start.
+Case recipes share the explicit native options `--max-fps 60 --resolution 1920x1080`.
+Private payloads, start variants, reports and logs remain in the owning ignored output directory.
+No new observation establishes original hardware timing, all-map coverage, physical-device release
+while another OS window owns focus, or final aesthetic quality. Preserve #689's entry timeout,
+#1386's exit warning and #1389's focus-release Unknown; source geometry updates do not erase them.
+Static-room runs can retain the existing two-ObjectDB exit warning; successful active cases must
+still be checked for errors. Original icon namespace selection remains with the
+[private icon owner](../content/presentation-assets.md#private-command-menu-icons); these map/sprite
+checks do not claim a new original-icon acquisition or asset redistribution right.
+
 ## Logical Input and Accessibility (ADR 0010 9A)
 
 `GameRoot` loads one `InputSettings`/`GameInput` owner before starting a session, installs its
@@ -139,7 +201,7 @@ private pilot's older selected content does not supply every supplementary capab
 For a partial-resource negative check, copy the prepared private scene into another ignored input,
 remove one command-menu raster and select that copy. Set `SF2_DIAMOND_EXPECT_FAILURE` to
 `command-menu-resource-required`; require the field-owned admission failure before battle control.
-Require exit0, `passed:true`, empty failures and clean Godot errors. Preserve failed reports when
+Require exit 0, `passed:true`, empty failures and clean Godot errors. Preserve failed reports when
 correcting a layout. The public Release adapter build and engine behavior tests are separate gates;
 no tests of this probe or screenshot audit are added.
 

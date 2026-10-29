@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Sf2.Remake.GodotAdapter.Observation;
 using Godot;
+using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
@@ -68,6 +69,7 @@ public sealed partial class BattleSessionView : Control
     private BattleRetreatView _retreat = null!;
     private BattleAppearanceView _appearance = null!;
     private BattleStoryView _story = null!;
+    internal WorldViewportLayout WorldViewport { get; set; } = new();
     internal SessionAudio? Audio { get; set; }
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
@@ -81,7 +83,8 @@ public sealed partial class BattleSessionView : Control
         MouseFilter = MouseFilterEnum.Ignore;
         // This common battle UI responds to the actual window; legacy reference composition keeps its policy.
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
-        _map = new BattleMapViewport { Name = "MapViewport" };
+        _map = new BattleMapViewport { Name = "MapViewport", WorldViewport = WorldViewport };
+        _map.SubjectChanged = rectangle => _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle);
         AddChild(_map);
         _hud = new ScrollContainer { Name = "Hud", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
             FocusMode = FocusModeEnum.None };
@@ -423,7 +426,7 @@ public sealed partial class BattleSessionView : Control
         _give.Present();
         _discardMenu.Text = BattleDiscardView.Menu(_session);
         _discard.Present();
-        _map.Present(projection, _session.Current);
+        _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
         _story.Present();
         _scene.Present();
         _retreat.Present();

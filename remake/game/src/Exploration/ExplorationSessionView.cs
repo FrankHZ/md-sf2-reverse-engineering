@@ -2,6 +2,7 @@ using System.Text.Json;
 using Sf2.Remake.GodotAdapter.Observation;
 using System.Text.RegularExpressions;
 using Godot;
+using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Content.Scenarios;
@@ -19,6 +20,7 @@ public sealed partial class ExplorationSessionView : Control
     // User signal connections identify the external capture itself, without a managed event bridge.
     private static readonly StringName ResourceDrawSignal = "ResourceDrawObserved";
     private static readonly StringName FactsSignal = "SessionFactsObserved";
+    internal WorldViewportLayout WorldViewport { get; set; } = new();
     private bool _legacyCamera;
     public ExplorationSessionView()
     {
@@ -92,11 +94,14 @@ public sealed partial class ExplorationSessionView : Control
         _title = new Label { Name = "Title", Position = new(20, 16) };
         _dialogue = new Label { Name = "Dialogue", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _help = new Label { Name = "Help", AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        foreach (var label in new[] { _title, _dialogue, _help }) label.AddThemeFontSizeOverride("font_size", 30);
+        _title.Position = new(32, 32);
         AddChild(_title); AddChild(_dialogue); AddChild(_help);
         _choice = new PanelContainer { Name = "Choice", Visible = false, MouseFilter = MouseFilterEnum.Ignore };
         var choices = new HBoxContainer();
         _choiceYes = new Label { Name = "Yes", Text = "Yes", SizeFlagsHorizontal = SizeFlags.ExpandFill, HorizontalAlignment = HorizontalAlignment.Center };
         _choiceNo = new Label { Name = "No", Text = "No", SizeFlagsHorizontal = SizeFlags.ExpandFill, HorizontalAlignment = HorizontalAlignment.Center };
+        _choiceYes.AddThemeFontSizeOverride("font_size", 30); _choiceNo.AddThemeFontSizeOverride("font_size", 30);
         choices.AddChild(_choiceYes); choices.AddChild(_choiceNo); _choice.AddChild(choices); AddChild(_choice);
         // Failure text must remain readable when the world is correctly held black.
         var failureLayer = new CanvasLayer { Layer = 101 };
@@ -168,7 +173,7 @@ public sealed partial class ExplorationSessionView : Control
             _lastWorld = null;
             _title.Hide(); _dialogue.Hide(); _help.Hide();
             QueueRedraw();
-        }, audio);
+        }, audio, WorldViewport);
         TextureFilter = TextureFilterEnum.Nearest;
         Present();
     }
@@ -454,10 +459,10 @@ public sealed partial class ExplorationSessionView : Control
         byte portraitFlags = current.Story.PortraitWindow switch
         { OpenPortraitWindow open => open.Flags, UnknownPortraitWindow unknown => unknown.LegacyFlags, _ => 0 };
         bool rightPortrait = (portraitFlags & 0x80) != 0;
-        _dialogue.Position = new(portrait && !rightPortrait ? 110 : 20, Mathf.Max(80, size.Y - 175));
-        _dialogue.Size = new(Mathf.Max(1, size.X - _dialogue.Position.X - (portrait && rightPortrait ? 110 : 20)), 75);
-        _help.Position = new(20, Mathf.Max(130, size.Y - 90));
-        _help.Size = new(Mathf.Max(1, size.X - 40), 80);
+        _dialogue.Position = new(portrait && !rightPortrait ? 256 : 32, Mathf.Max(80, size.Y - 260));
+        _dialogue.Size = new(Mathf.Max(1, size.X - _dialogue.Position.X - (portrait && rightPortrait ? 256 : 32)), 156);
+        _help.Position = new(32, Mathf.Max(130, size.Y - 90));
+        _help.Size = new(Mathf.Max(1, size.X - 64), 64);
         string previousText = _dialogue.Text;
         int previouslyVisible = _dialogue.VisibleCharacters < 0 ? _dialogue.GetTotalCharacterCount() : _dialogue.VisibleCharacters;
         _dialogue.Text = current.Story.Wait switch
@@ -534,16 +539,18 @@ public sealed partial class ExplorationSessionView : Control
             if (HasConnections(ResourceDrawSignal)) EmitSignal(ResourceDrawSignal);
             return;
         }
-        var bounds = world.Definition.Traversal.ActiveAreas;
-        int left = bounds.Min(area => area.MinimumX), top = bounds.Min(area => area.MinimumY);
-        int right = bounds.Max(area => area.MaximumX), bottom = bounds.Max(area => area.MaximumY);
-        var size = GetViewportRect().Size;
-        float cell = Mathf.Max(1, Mathf.Min((size.X - 40) / (right - left + 1), (size.Y - 210) / (bottom - top + 1)));
-        Vector2 origin = new(20, 55);
+        var bounds = WorldViewportLayout.FieldBounds(world);
+        int left = (int)(bounds.Position.X / 24), top = (int)(bounds.Position.Y / 24);
+        int right = (int)(bounds.End.X / 24) - 1, bottom = (int)(bounds.End.Y / 24) - 1;
+        float cell = WorldViewportLayout.CellSize;
+        Vector2 origin = (bounds.Position - WorldViewport.Origin) * WorldViewportLayout.PixelScale;
+        var screen = WorldViewport.Screen;
         for (int y = top; y <= bottom; y++)
             for (int x = left; x <= right; x++)
             {
                 var rectangle = new Rect2(origin + new Vector2((x - left) * cell, (y - top) * cell), new(cell - 1, cell - 1));
+                if (!rectangle.Intersects(screen)) continue;
+                rectangle = rectangle.Intersection(screen);
                 bool blocked = (world.Layout[x, y] & 0xC000) == 0xC000;
                 DrawRect(rectangle, world.Definition.Caravan is not null && (world.Layout[x, y] & 0x3C00) == 0x3800
                     ? new Color(0.12f, 0.34f, 0.55f) : (world.Layout[x, y] & 0x3C00) == 0x1400
@@ -556,7 +563,8 @@ public sealed partial class ExplorationSessionView : Control
                 (entity.Motion.Y / 384f - top + 0.5f) * cell);
             float radius = cell * 0.28f * entity.RenderSize / 24f;
             bool visible = entity.Visible && entity.Motion.X >= left * 384 && entity.Motion.X <= right * 384 &&
-                entity.Motion.Y >= top * 384 && entity.Motion.Y <= bottom * 384;
+                entity.Motion.Y >= top * 384 && entity.Motion.Y <= bottom * 384 &&
+                screen.Encloses(new Rect2(center - Vector2.One * radius, Vector2.One * radius * 2));
             _authoredDraws[entity.Slot] = new(entity.Slot, entity.Sprite, center.X, center.Y, radius,
                 entity.RenderSize, visible, entity.SpriteRequest, Engine.GetProcessFrames());
             if (!visible) continue;
@@ -787,7 +795,11 @@ public sealed partial class ExplorationSessionView : Control
                 }) : null,
             waitHeld = _input.WaitHeld, focused = GetWindow().HasFocus(),
             viewport = Battles.BattleMapViewport.Rectangle(GetViewportRect()),
-            mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,
+            mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(GetViewportRect()) : null,
+            worldGeometry = new { cellSize = WorldViewportLayout.CellSize, pixelScale = WorldViewportLayout.PixelScale,
+                cameraX = WorldViewport.Origin.X, cameraY = WorldViewport.Origin.Y,
+                bounds = Battles.BattleMapViewport.Rectangle(WorldViewport.Bounds),
+                legalScreen = Battles.BattleMapViewport.Rectangle(WorldViewport.Screen) },
             battleMounted = _battleMounted,
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             itemCustody = current?.Exploration?.Party.ItemCustody,

@@ -22,8 +22,9 @@ internal sealed partial class BattleStoryView : Control
             VerticalAlignment = VerticalAlignment.Bottom, AutowrapMode = TextServer.AutowrapMode.WordSmart,
             MouseFilter = MouseFilterEnum.Ignore };
         _text.AddThemeColorOverride("font_color", Colors.Gold);
-        _text.AddThemeFontSizeOverride("font_size", 24);
-        AddChild(_text); _text.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Hide();
+        _text.AddThemeFontSizeOverride("font_size", 30);
+        AddChild(_text); _text.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _text.OffsetLeft = 32; _text.OffsetRight = -32; _text.OffsetBottom = -32; Hide();
     }
     public override void _EnterTree()
     { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }
@@ -48,7 +49,7 @@ internal sealed partial class BattleStoryView : Control
     internal SessionCommand? Consume()
     {
         if (!DeliveryReady) return null;
-        if (_wait is PresentationWait camera)
+        if (_wait is PresentationWait camera && _map.CameraSettled)
         { _delivered = true; return new CompletePresentation(camera.Token, camera.Cue.Kind); }
         if (_wait is TickWait ticks) return new AdvanceSimulation(ticks.Token);
         if (_wait is null && _session.Current.StopReason == SessionStopReason.SimulationWait) return new AdvanceSimulation();
