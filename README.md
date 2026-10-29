@@ -10,36 +10,34 @@ project decisions belong in their owning tracked documents.
 
 ## Current Status
 
-- **Phase 1 — Reproducible Original:** complete. The pinned community disassembly rebuilds the
-  user-provided USA ROM byte-for-byte under the maintained verification workflow.
-- **Phase 2 — Discovery and Contracts:** active. Research proceeds static-first, with grouped runtime
-  observations only where source and ROM evidence cannot close behavior.
-- **Design synthesis:** active alongside Phase 2. Cross-subsystem documents may explain accepted
-  evidence from `main`; they do not promote guesses into original-game facts.
-- **Phase 4 engine/tooling baseline:** accepted in
-  [ADR 0008](./docs/decisions/0008-godot-csharp-cli-first-remake-tooling.md): Godot 4.7.2 .NET with
-  C#, CLI-first gates, a plain-C# domain layer, a thin Godot adapter, and optional removable MCP
-  tooling.
-- **Remake implementation:** active within a bounded Phase 4 start explicitly authorized by the user
-  on 2026-08-28 under
-  [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md). The tracked [`remake/`](./remake/)
-  project now contains plain-C# Domain and Application assemblies, validated public/private Content
-  adapters, and a Godot host. Its current authored and private-local Map 3 through Battle 01 capabilities
-  and retained Unknowns are summarized by the [remake capability owner](./remake/docs/capability-status.md).
-  The private continuous Map 3-through-Battle 01 victory and usable-return milestone is accepted
-  under the current keyboard A, modern-clock and 8D semantic scope. The
-  [readiness owner](./docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
-  records the composed acceptance and retained report limits. Full-game, hardware-exact parity and
-  public distribution remain outside this acceptance. No distributable asset strategy or MCP
-  implementation has been selected.
+Three responsibilities run alongside each other; the historical phase numbers in ADRs are not a
+sequential delivery plan.
 
-The [state/content-driven engine direction](./docs/decisions/0019-state-and-content-driven-remake-engine.md)
-is adopted. The common session now runs two authored battle packages through movement, cancellation,
-HEAL/STAY, automatic AI waiting and natural rounds, and the connected private world runs the Map 3
-opening through Battle 01 outcome and return. The transitional reference implementation was retired at
-[M5](./docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation); only
-[controlled comparison inputs](./remake/reference/README.md) remain. Tests cover actual engine behavior; reference/probe/gate
-programs are used directly without another test layer. Old tests may migrate or retire by behavior.
+| Responsibility | Current accepted boundary | Read next |
+| --- | --- | --- |
+| Original rebuild and research | The pinned disassembly rebuilds the private USA ROM byte-for-byte. Static-first research and bounded original runtime observations retain their own provenance and Unknowns. | [Reproducible original](./docs/research/reproducible-original.md), [research coverage](./docs/research/source-coverage.md) |
+| Design explanation in English and Chinese | The indexed design corpus has complete, independently accepted Chinese mirrors: gameplay themes, detailed chapter guides and evidence-bound contracts. Selected static story connections reach ending/reset; this is neither a naturally played campaign nor game-script localization. | [English reading routes](./docs/README.md#design), [中文阅读入口](./docs/README.zh-CN.md) |
+| State/content-driven remake | Godot 4.7.2 .NET/C# hosts a common session with Domain rules, Application programs and validated Content. Authored packages and bounded private-local content are runnable. | [Play and develop](./remake/README.md), [capabilities and limits](./remake/docs/capability-status.md) |
+
+The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
+[current composed boundary](./docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
+Accepted extensions cover Battle02 victory/defeat, field return and re-entry, plus selected early Yeel guidance,
+Kazin following and Battle03 play/control. **Battle03 outcomes, Hawel recruitment, later campaign,
+full services and save/load are not delivered by those extensions.**
+
+Current presentation includes continuous exploration with contextual Talk, a shared 1920×1080 world
+with 96px cells, blue/gold story dialogue, reachable battle tiles, image-based HP/MP cards, battle
+messages, return feedback and a read-only Party Status page. The
+[presentation owner](./remake/docs/godot/presentation.md) records the accepted presentation scope,
+modern deviations and observation limits. Broader art/UI/UX remains under
+[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438); bounded engineering acceptance
+does not claim final aesthetic or complete product acceptance.
+
+[ADR 0019](./docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the adopted engine
+direction and behavior-test policy. Production is independent of verification; the transitional
+reference implementation is retired and only [controlled comparison inputs](./remake/reference/README.md)
+remain. Full-game play, hardware-exact parity and distribution of original assets are outside current
+acceptance. Public builds require project-authored or properly licensed content.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
 or per-subsystem corpus sizes. Those snapshots became stale as soon as another research slice merged.
@@ -58,30 +56,20 @@ Use the executable sources of truth instead:
 
 ## Start Here
 
-For any new task:
+| Your goal | Start with |
+| --- | --- |
+| Understand gameplay and design | [Gameplay overview](./docs/design/synthesis/gameplay-overview.md) → [themes and chapter guides](./docs/README.md#design) |
+| 用中文阅读玩法、章节和合同 | [中文文档目录](./docs/README.zh-CN.md) → [玩法总览](./docs/design/zh-CN/synthesis/gameplay-overview.md) |
+| Run or develop the current remake | [Remake README](./remake/README.md#run-locally) → [capability status](./remake/docs/capability-status.md) |
+| Verify an original-game claim | [Research routes](./docs/README.md#research) → the named source/fixture and owning command |
+| Resume repository work | Apply [AGENTS](./AGENTS.md) once, inspect live Git/worktree state, then follow [agent resume](./docs/operations/agent-resume.md) to the closest owner |
 
-1. Apply the stable repository rules and owner links in [`AGENTS.md`](./AGENTS.md) once; if the client
-   already injected it, do not reread it or copy its routed details into a task handoff.
-2. Inspect the exact Git identity, status, active worktrees, and recent commits at runtime.
-3. Use [`docs/operations/agent-resume.md`](./docs/operations/agent-resume.md) to find the closest
-   owner, then read only that owner and the decisions or checklists required by the task.
-4. Open the complete [`docs/research/source-coverage.md`](./docs/research/source-coverage.md) or
-   [`docs/README.md`](./docs/README.md) only for global coverage, frontier, routing, or index work.
-5. Reproduce a claim from its named command and fixture rather than copying a progress summary.
-
-The design-synthesis entry point is
-[`docs/design/documentation-roadmap.md`](./docs/design/documentation-roadmap.md). Current synthesis
-documents include:
-
-- [`gameplay-overview.md`](./docs/design/synthesis/gameplay-overview.md);
-- [`tactical-battle-loop.md`](./docs/design/synthesis/tactical-battle-loop.md);
-- [`progression-and-economy.md`](./docs/design/synthesis/progression-and-economy.md);
-- [`story-progression.md`](./docs/design/synthesis/story-progression.md).
-
-English is the canonical authoring and review language for current design synthesis. zh-CN
-localization proceeds as dedicated batches under the accepted glossary at
-[`docs/design/glossary.md`](./docs/design/glossary.md), with mirrors under `docs/design/zh-CN/`
-that preserve each English source's relative hierarchy; English remains the review baseline.
+English is canonical for design review. Chinese design mirrors follow the same relative hierarchy
+under `docs/design/zh-CN/` and the [glossary](./docs/design/glossary.md); research, ADRs and engine
+usage retain their English owners. The [documentation roadmap](./docs/design/documentation-roadmap.md)
+owns design scope and synchronization. Existing rule/flow explanations are delivered; the
+[lightweight battle-design analysis pilot #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
+is separate future work.
 
 ## Project Goals
 
@@ -92,7 +80,7 @@ outputs:
 2. document code, data formats, state machines, and runtime behavior with provenance;
 3. export canonical structured data under explicit schemas;
 4. reconstruct implementation-neutral game-design rules from accepted evidence;
-5. run the same behavioral fixtures against a future remake;
+5. compare admitted remake behavior against controlled original references;
 6. distinguish original fidelity from intentional modernization.
 
 This is not an emulator project, a pre-patched ROM distribution, or a collection of one-off ROM
@@ -116,7 +104,7 @@ The verification layers keep different kinds of evidence separate:
 | H1 | Original rebuild | The pinned upstream source rebuilds byte-for-byte against the private input. |
 | H2 | Static extraction | Source/ROM structure validates against schemas and deterministic canonical output. |
 | H3 | Original runtime behavior | Grouped scenarios execute in the pinned emulator and match small state facts or traces. |
-| H4 | Remake parity | The future implementation consumes the same implementation-neutral fixtures; deviations are explicit decisions. |
+| H4 | Remake comparison | Admitted implementation behavior is compared at named reference boundaries; deviations and unavailable observations remain explicit. |
 | H5 | Distribution boundary | Published outputs contain no ROM, extracted copyrighted assets, or unreviewed third-party code. |
 
 A static reference proves a relationship, not normal-play reachability. A handler-local runtime fixture
@@ -125,7 +113,8 @@ the disagreement visible and design a focused test.
 
 ## Pinned Original Baseline
 
-The canonical private input is the USA retail ROM stored under ignored `local/` state. Its stable
+The canonical private input is the registered USA retail ROM, selected read-only through ignored
+[local configuration](./docs/operations/local-private-inputs.md). Its stable
 identity is:
 
 | Field | Value |
@@ -264,26 +253,25 @@ attach, or redistribute:
 - downloaded executable tools or unreviewed third-party source.
 
 Tracked fixtures should contain only the minimum redistributable state facts needed to reproduce a
-contract. A future remake must use placeholders or properly licensed assets for distributable builds.
+contract. Distributable remake builds must use project-authored placeholders or properly licensed assets.
 
 ## Roadmap
 
-- **Phase 0 — Bootstrap:** repository safety, private-input isolation, and tool discovery — complete.
-- **Phase 1 — Reproducible Original:** pinned input, toolchain, split/build, and byte comparison — complete.
-- **Phase 2 — Discovery and Contracts:** static subsystem inventory, structured extraction, grouped original
-   runtime fixtures, and evidence-bound design contracts — active.
-- **Phase 3 — Game Design Reconstruction:** connected player-facing rules, maps, roster space, numerical curves,
-   battle simulation, and explicit modernization choices — partially prepared by current design
-   synthesis; upper-layer decisions remain future work.
-- **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.2 .NET/C# baseline and private continuous
-  Map 3-through-Battle 01 victory and usable-return milestone are accepted at the
-  [current composed boundary](./docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
-  The current `remake/` contains bounded authored and private-local capabilities across the four
-  accepted layers; broader implementation follows its capability owners.
-- **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,
-   distribution, and release QA — not started.
+Current work is selected through [Issues and the Project](./docs/operations/github-project-governance.md),
+with independent acceptance for each bounded outcome:
 
-Near-term design direction, evidence prerequisites, and stop conditions are owned by
-[`docs/design/documentation-roadmap.md`](./docs/design/documentation-roadmap.md). Current research
-direction is owned by [`docs/research/source-coverage.md`](./docs/research/source-coverage.md), not by
-a copied statistics block in this README.
+- [Research coverage](./docs/research/source-coverage.md) owns evidence gaps and cadence;
+  [story coverage](./docs/research/story-content-coverage.md#four-different-frontiers) separates static,
+  observed, design and playable boundaries.
+- [Design documentation](./docs/design/documentation-roadmap.md) owns the accepted bilingual corpus
+  and continuing synchronization. Wider analysis is separately scoped, including #1402 above.
+- [Remake capabilities](./remake/docs/capability-status.md) own current gameplay and Unsupported
+  behavior. [#1370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1370) tracks the original
+  six special-mechanic families; [#1369](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369)
+  tracks wider engine extensions. Neither epic implies whole-game support.
+- [Presentation](./remake/docs/godot/presentation.md) owns implemented interface choices and the
+  remaining #438 work. The [H4 refactor #638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638)
+  remains paused.
+
+Historical phases, proposals and superseded decisions stay in [ADRs](./docs/README.md#decisions)
+and Git. New content, service, save, localization or release work needs its own accepted scope.

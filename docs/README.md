@@ -1,121 +1,34 @@
 # Documentation Index
 
-The English index is canonical; [中文入口](./README.zh-CN.md) routes to the same current owners.
-Research describes original evidence, contracts express behavior, and decisions choose implementation.
-Open the relevant owner for its facts and Unknowns; this index does not duplicate corpus totals.
+The English index is canonical; [中文入口](./README.zh-CN.md) provides Chinese titles and reading routes.
+Research describes original evidence, contracts express behavior, synthesis explains connected rules,
+and remake documentation describes implemented capability. Each owner retains its facts and Unknowns.
 
-## Continuity Without External Memory
+## Choose a Reading Route
 
-Inspect live Git identity/status/worktrees first, then follow [agent resume](./operations/agent-resume.md)
-to the closest owner. Global inventories are needed only for work on their scope or routing.
-Tracked documents and exact Git objects are durable state; old chat, memory and per-run launch scripts
-are not current instructions. Preserve completed results instead of rerunning work after compaction.
+| Read to… | Follow… |
+| --- | --- |
+| Understand the game | [Gameplay overview](./design/synthesis/gameplay-overview.md) → [themes](#themes-and-design-governance) → a chapter/example → its named contract/evidence |
+| Find a location or encounter | [Chapter guides](#chapter-guides-grans-opening-and-departure) and [later story sections](#later-chapters-use-the-connected-story-sections) |
+| Check an exact rule | [Combat contracts](#contracts-combat-turns-and-encounter-decisions), [party/resources](#contracts-party-definitions-growth-and-services), [exploration](#contracts-exploration-scripts-and-world-state) or [interface services](#contracts-dialogue-input-windows-and-audio) |
+| Run or change the remake | [Local play](../remake/README.md#run-locally) → [capability status](../remake/docs/capability-status.md) → [architecture](../remake/docs/architecture.md) / [verification](../remake/docs/development-and-verification.md#scope) |
+| Reproduce an original claim | [Research](#research), [coverage](./research/source-coverage.md) and the owner's command/fixture |
+| Resume a task | Inspect live Git/worktrees, apply [AGENTS](../AGENTS.md) once, then use [agent resume](./operations/agent-resume.md) and [governance](./operations/github-project-governance.md#task-lifecycle) |
 
-For engine work start at [remake](../remake/README.md) and
-[ADR 0019](./decisions/0019-state-and-content-driven-remake-engine.md). The direction is adopted;
-M1 implements common-session authored battles with engine behavior tests and actual input/state
-observations. The private Map 3-through-Battle 01 victory and usable-return milestone is accepted
-at the [current composed 8D/H4 boundary](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
-Verification selection is owned by the
-[verification owner](../remake/docs/development-and-verification.md), not inferred from old ADR recipes.
-The [current architecture route](../remake/docs/architecture.md) separates Domain rules, Application
-programs, Content trust and Godot presentation; [retained comparisons](../remake/docs/evidence/retained-comparisons.md)
-locate historical failures and exact Git evidence without making old audits current work queues.
+## Folder Map and Authority
 
-## Operations
+| Folder | What belongs here |
+| --- | --- |
+| `research/` | Source/ROM/fixture/runtime evidence; chapter evidence is routed by [story coverage](./research/story-content-coverage.md). |
+| `design/synthesis/` | Player-facing themes and chapter guides consuming accepted evidence. |
+| `design/contracts/` | Implementation-neutral, evidence-bound subsystem contracts. |
+| `design/zh-CN/` | Chinese mirrors of the same design-relative paths; English remains canonical. |
+| `decisions/`, `operations/` | Decisions, setup, ownership and work/verification procedures. |
+| `../remake/docs/` | Current implementation and play/verification instructions, separate from original evidence. |
 
-Current task routing, private-input selection and independent review.
-
-- [`agent-resume.md`](./operations/agent-resume.md)
-- [`bounded-inspection-and-review.md`](./operations/bounded-inspection-and-review.md)
-- [`github-project-governance.md`](./operations/github-project-governance.md) — Issues/Project own
-  coordination state; tracked documents own evidence and accepted behavior
-- [`local-private-inputs.md`](./operations/local-private-inputs.md)
-- [`phase2-lane-runbook.md`](./operations/phase2-lane-runbook.md)
-- [documentation-agent-audit.md](./operations/documentation-agent-audit.md)
-
-## Research
-
-Source, ROM, fixture and runtime provenance live in these owners. The
-[story-content coverage map](./research/story-content-coverage.md) routes by chapter and conditional
-connection through the ending, with encounter/optional gaps and distinct original-runtime, design
-and remake frontiers. The source-coverage owner and research-index commands retain registered
-evidence denominators; story prose does not add fixture or index credit.
-
-- [`reproducible-original.md`](./research/reproducible-original.md)
-- [`static-core-data.md`](./research/static-core-data.md)
-- [`ally-growth.md`](./research/ally-growth.md)
-- [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md)
-- [`enemy-promotions.md`](./research/enemy-promotions.md)
-- [`battle01-placement.md`](./research/battle01-placement.md)
-- [`indexing.md`](./research/indexing.md)
-- [`source-coverage.md`](./research/source-coverage.md)
-- [`story-content-coverage.md`](./research/story-content-coverage.md)
-- [`battle-ai.md`](./research/battle-ai.md)
-- [`battlefield-pathfinding.md`](./research/battlefield-pathfinding.md)
-- [`battle-loop.md`](./research/battle-loop.md)
-- [`battle-actions.md`](./research/battle-actions.md)
-- [`battle-functions.md`](./research/battle-functions.md)
-- [`battle-scene-engine.md`](./research/battle-scene-engine.md)
-- [`battle-cutscenes.md`](./research/battle-cutscenes.md)
-- [`common-scripting.md`](./research/common-scripting.md)
-- [`common-maps.md`](./research/common-maps.md)
-- [`common-stats.md`](./research/common-stats.md)
-- [`common-menus.md`](./research/common-menus.md)
-- [`field-menu-control.md`](./research/field-menu-control.md)
-- [`field-search-control.md`](./research/field-search-control.md)
-- [`field-item-effects.md`](./research/field-item-effects.md)
-- [`technical-interrupts.md`](./research/technical-interrupts.md)
-- [`technical-graphics.md`](./research/technical-graphics.md)
-- [`technical-interfaces.md`](./research/technical-interfaces.md)
-- [`technical-services.md`](./research/technical-services.md)
-- [`gameflow-core.md`](./research/gameflow-core.md)
-- [`special-screens.md`](./research/special-screens.md)
-- [`remaining-core.md`](./research/remaining-core.md)
-- [`battle-global-data.md`](./research/battle-global-data.md)
-- [`ally-data-inventory.md`](./research/ally-data-inventory.md)
-- [`core-stats-data-inventory.md`](./research/core-stats-data-inventory.md)
-- [`battle-cutscene-data.md`](./research/battle-cutscene-data.md)
-- [`battle-spriteset-data.md`](./research/battle-spriteset-data.md)
-- [`battle-routing-data.md`](./research/battle-routing-data.md)
-- [`map3-battle01-audit.md`](./research/map3-battle01-audit.md)
-- [`map3-admitted-start.md`](./research/map3-admitted-start.md)
-- [`map3-controlled-start-egress-transition.md`](./research/map3-controlled-start-egress-transition.md)
-- [`map3-original-player-locomotion-animation.md`](./research/map3-original-player-locomotion-animation.md)
-- [`map3-battle01-natural-route.md`](./research/map3-battle01-natural-route.md)
-- [map3-messenger-acceptance.md](./research/map3-messenger-acceptance.md)
-- [map3-optional-interactions.md](./research/map3-optional-interactions.md)
-- [map3-castle-battle-unlock.md](./research/map3-castle-battle-unlock.md)
-- [map3-battle01-admission.md](./research/map3-battle01-admission.md)
-- [map3-battle01-turn-control.md](./research/map3-battle01-turn-control.md)
-- [map3-battle01-action-effect.md](./research/map3-battle01-action-effect.md)
-- [map3-battle01-action-completion.md](./research/map3-battle01-action-completion.md)
-- [map3-battle01-turn-finalization.md](./research/map3-battle01-turn-finalization.md)
-- [map3-battle01-victory-return.md](./research/map3-battle01-victory-return.md)
-- [map3-original-player-reference-frame.md](./research/map3-original-player-reference-frame.md)
-- [map3-entity142-interactable-reference.md](./research/map3-entity142-interactable-reference.md)
-- [original-reference-replay-capability.md](./research/original-reference-replay-capability.md)
-- [original-reference-replay-scenario-api.md](./research/original-reference-replay-scenario-api.md)
-- [`map-data-inventory.md`](./research/map-data-inventory.md)
-- [`map-event-direct-state.md`](./research/map-event-direct-state.md)
-- [`map-event-flag-lifecycle-state.md`](./research/map-event-flag-lifecycle-state.md)
-- [`map-event-cross-program-flag-state.md`](./research/map-event-cross-program-flag-state.md)
-- [`map-event-flag-route-selection.md`](./research/map-event-flag-route-selection.md)
-- [`map-event-interaction-state.md`](./research/map-event-interaction-state.md)
-- [`map-event-item-transactions.md`](./research/map-event-item-transactions.md)
-- [`map-event-combatant-state.md`](./research/map-event-combatant-state.md)
-- [`map-event-random-battle-state.md`](./research/map-event-random-battle-state.md)
-- [`map-event-tactical-base-quote-state.md`](./research/map-event-tactical-base-quote-state.md)
-- [`map-event-scripted-transition-state.md`](./research/map-event-scripted-transition-state.md)
-- [`map-event-direct-control.md`](./research/map-event-direct-control.md)
-- [`map-event-dialogue-state.md`](./research/map-event-dialogue-state.md)
-- [`map-event-request-state.md`](./research/map-event-request-state.md)
-- [`map-event-request-consumption.md`](./research/map-event-request-consumption.md)
-- [`map-event-direct-handoff.md`](./research/map-event-direct-handoff.md)
-- [`map-event-predicate-results.md`](./research/map-event-predicate-results.md)
-- [`map-content.md`](./research/map-content.md)
-- [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)
-- [`sound-data-inventory.md`](./research/sound-data-inventory.md)
+Keep these existing ownership and mirror boundaries. Themes and chapters below organize reading
+without moving their source files or changing existing link destinations. Tracked documents and exact
+Git objects are durable state; old chat and launch scripts do not supersede current owners.
 
 ## Design
 
@@ -127,8 +40,7 @@ party/resources and exploration/continuity. [Story Progression's six chapter gro
 connect selected accepted static content through ending/reset, with detailed guides and evidence
 at their named boundaries. The [five-theme source disposition](./design/documentation-roadmap.md#selected-english-source-set-and-reconciliation)
 keeps integrated source acceptance separate from the bounded playable remake milestone.
-All 165 indexed design sources have complete, independently accepted Chinese mirrors, with zero
-pending or source/glossary/mirror drift at the reviewed baseline. The [Chinese reader entry](./README.zh-CN.md)
+All indexed design sources have complete, independently accepted Chinese mirrors at their reviewed baselines. The [Chinese reader entry](./README.zh-CN.md)
 connects themes, chapter guides and English evidence owners. Later chapter sections that link directly
 to English research are not pending Chinese design guides. English remains canonical; translation
 does not advance original observations or playable remake support.
@@ -138,284 +50,457 @@ require stable accepted content, full bilingual review and reader-route acceptan
 anchors are updated. Metadata PASS alone is insufficient. Content and navigation changes require
 independent semantic and reader-route acceptance; main-gate owns integration and epic completion decisions.
 
-- [`glossary.md`](./design/glossary.md)
-- [`documentation-roadmap.md`](./design/documentation-roadmap.md)
-- [`gameplay-overview.md`](./design/synthesis/gameplay-overview.md)
-- [`tactical-battle-loop.md`](./design/synthesis/tactical-battle-loop.md)
-- [`progression-and-economy.md`](./design/synthesis/progression-and-economy.md)
-- [`story-progression.md`](./design/synthesis/story-progression.md)
-- [`opening-through-battle01.md`](./design/synthesis/opening-through-battle01.md) — selected locations,
+Existing synthesis explains rules, conditional story flow and selected encounter exceptions.
+[The lightweight battle-design analysis pilot #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
+remains future work; this index does not present tactical-intent or balance analysis as delivered.
+
+### Themes and design governance
+
+- [Design Localization Glossary (EN → 中文)](./design/glossary.md)
+- [Documentation Roadmap and Governance Boundaries](./design/documentation-roadmap.md)
+- [Gameplay Overview and System Boundaries](./design/synthesis/gameplay-overview.md)
+- [Tactical Battle Loop and State Handoffs](./design/synthesis/tactical-battle-loop.md)
+- [Progression and Economy](./design/synthesis/progression-and-economy.md)
+- [Story Progression](./design/synthesis/story-progression.md)
+- [Map Design Principles: Exploration, Interaction and World Continuity](./design/synthesis/map-design-principles.md)
+
+### Chapter guides: Grans opening and departure
+
+- [Opening through Battle 01: Locations, People and Return](./design/synthesis/opening-through-battle01.md) — selected locations,
   dialogue/entities, encounter and usable return; original evidence and remake composition stay distinct
-- [`battle01-return-through-battle02.md`](./design/synthesis/battle01-return-through-battle02.md) — castle
+- [Battle 01 Return through Battle 02 Admission](./design/synthesis/battle01-return-through-battle02.md) — castle
   return, exorcism/commission, Jaha and conditional admission; static content and natural-route Unknowns
-- [`battle02-outcome-through-battle03.md`](./design/synthesis/battle02-outcome-through-battle03.md) — outcome/return,
+- [Battle 02 Outcome through Battle 03 Admission](./design/synthesis/battle02-outcome-through-battle03.md) — outcome/return,
   conditional Yeel/Kazin guidance and source admission; following, request and natural-route boundaries
-- [`battle03-outcome-through-battle04.md`](./design/synthesis/battle03-outcome-through-battle04.md) — conditional return,
+- [Battle 03 Outcome through Battle 04 Admission](./design/synthesis/battle03-outcome-through-battle04.md) — conditional return,
   Hawel-house scene, Kazin recruitment and exit/admission; caller, follower and natural-route limits
-- [`battle04-outcomes-through-battle05.md`](./design/synthesis/battle04-outcomes-through-battle05.md) — victory/loss/escape,
+- [Battle 04 Outcomes through Battle 05 Admission](./design/synthesis/battle04-outcomes-through-battle05.md) — victory/loss/escape,
   Galam captivity, Slade following and guard unlock/admission; conditional content and natural-route limits
-- [`battle05-outcomes-through-battle06.md`](./design/synthesis/battle05-outcomes-through-battle06.md) — position/HP,
+- [Battle 05 Outcomes through Battle 06 Admission](./design/synthesis/battle05-outcomes-through-battle06.md) — position/HP,
   Slade recruitment, Galam exits and conditional entry; outcome, party/follower and natural-route limits
-- [`battle06-outcomes-through-battle07.md`](./design/synthesis/battle06-outcomes-through-battle07.md) — outcomes,
+- [Battle06 Outcomes, Granseal Content and Battle07 Admission](./design/synthesis/battle06-outcomes-through-battle07.md) — outcomes,
   Granseal/Kiwi/royal following and conditional tower entry; content, request and natural-route limits
-- [`battle07-outcomes-and-aftermath.md`](./design/synthesis/battle07-outcomes-and-aftermath.md) — outcomes,
+- [Battle07 Outcomes and the Exploration Handoff](./design/synthesis/battle07-outcomes-and-aftermath.md) — outcomes,
   phased tower scene, jewel/follower flags and conditional restored exploration; caller and natural-route limits
-- [`post-tower-return-through-earthquake-entry.md`](./design/synthesis/post-tower-return-through-earthquake-entry.md) —
+- [Post-tower Return through Earthquake-town Entry](./design/synthesis/post-tower-return-through-earthquake-entry.md) —
   tower/castle requests, earthquake-town first/repeat entry and conditional control; walking and caller limits
-- [`earthquake-town-through-docks-departure.md`](./design/synthesis/earthquake-town-through-docks-departure.md) —
+- [Earthquake-town Exit through Docks Departure](./design/synthesis/earthquake-town-through-docks-departure.md) —
   changed harbor, boarding choice, phased departure and conditional Map73 handoff; walking, zone and service limits
-- [`voyage-through-damaged-ship-control.md`](./design/synthesis/voyage-through-damaged-ship-control.md) —
+- [Voyage and Landing through Damaged-ship Control](./design/synthesis/voyage-through-damaged-ship-control.md) —
   voyage, landing, Jaha/plank staging and conditional Map14 control; actor, init and natural-route limits
-- [`damaged-ship-plank-through-battle08.md`](./design/synthesis/damaged-ship-plank-through-battle08.md) —
+
+### Chapter guides: New Granseal and eastern Parmecia
+
+- [Damaged-ship Plank Choices through Battle08 Admission](./design/synthesis/damaged-ship-plank-through-battle08.md) —
   plank choices, entry alternatives, timber/rescue scene and conditional Battle08 before/start handoff.
-- [`battle08-outcomes-through-new-granseal-handoff.md`](./design/synthesis/battle08-outcomes-through-new-granseal-handoff.md) —
+- [Battle08 Outcomes through the New Granseal Castle Handoff](./design/synthesis/battle08-outcomes-through-new-granseal-handoff.md) —
   first/repeat outcomes, worker recovery, conditional construction and outgoing castle handoff; caller and service limits.
-- [`new-granseal-castle-year-later-control.md`](./design/synthesis/new-granseal-castle-year-later-control.md) —
+- [New Granseal Castle: the Year-Later Address and First Control Handoff](./design/synthesis/new-granseal-castle-year-later-control.md) —
   first/repeat castle init, year-later address, dismissal and conditional control; setup, actor and service limits.
-- [`new-granseal-town-through-peter-introduction.md`](./design/synthesis/new-granseal-town-through-peter-introduction.md) —
+- [New Granseal Town: Peter's First Introduction](./design/synthesis/new-granseal-town-through-peter-introduction.md) —
   conditional castle exit, town setup, independent introductions and Peter reception; hiding and control limits.
-- [`peter-castle-audience-through-town-return.md`](./design/synthesis/peter-castle-audience-through-town-return.md) —
+- [Peter's Castle Audience and the Return to Town](./design/synthesis/peter-castle-audience-through-town-return.md) —
   conditional audience, Peter's join/AI and following, gift discrepancy and town return; caller and control limits.
-- [`new-granseal-departure-through-battle09.md`](./design/synthesis/new-granseal-departure-through-battle09.md) —
+- [New Granseal Departure through Battle09 Admission](./design/synthesis/new-granseal-departure-through-battle09.md) —
   selected overworld connections, scrolling/ordinary entry, partial reload and empty Battle09 opening; request and readiness limits.
-- [`battle09-outcomes-through-ribble-welcome.md`](./design/synthesis/battle09-outcomes-through-ribble-welcome.md) —
+- [Battle09 Outcomes through Ribble's Welcome](./design/synthesis/battle09-outcomes-through-ribble-welcome.md) —
   variable return, separate town entry, suspicion and Peter's reconciliation; reload, roof and conditional-control limits.
-- [`ribble-may-through-battle10-admission.md`](./design/synthesis/ribble-may-through-battle10-admission.md) —
+- [Ribble's Optional May Recruitment through Battle10 Admission](./design/synthesis/ribble-may-through-battle10-admission.md) —
   optional recruitment, membership/current following, advice and conditional Battle10 entry; request and natural-route limits.
-- [`battle10-outcomes-through-east-shrine-visit.md`](./design/synthesis/battle10-outcomes-through-east-shrine-visit.md) —
+- [Battle10 Outcomes through the Optional East Shrine Visit](./design/synthesis/battle10-outcomes-through-east-shrine-visit.md) —
   battle return, optional shrine visit, independent conversations and current/rebuilt following; caller and natural-route limits.
-- [`east-shrine-return-through-battle11-admission.md`](./design/synthesis/east-shrine-return-through-battle11-admission.md) —
+- [East Shrine Return through Battle11 Cave Admission](./design/synthesis/east-shrine-return-through-battle11-admission.md) —
   optional return, selected overworld connections and cave opening; admission, cast and darkness-presentation limits.
-- [`battle11-outcomes-through-polca-arrival.md`](./design/synthesis/battle11-outcomes-through-polca-arrival.md) —
+- [Battle11 Outcomes through Polca's First Oddler Arrival](./design/synthesis/battle11-outcomes-through-polca-arrival.md) —
   cave return, selected Polca entry and the injured-boy scene; rebuilt residents/following and conditional-control limits.
-- [`polca-fairy-through-battle12-admission.md`](./design/synthesis/polca-fairy-through-battle12-admission.md) —
+- [Polca's Fairy Interaction through Battle12 Admission](./design/synthesis/polca-fairy-through-battle12-admission.md) —
   optional turtle test, independent east departure and searching-devils confrontation; ordered battle admission and presentation limits.
-- [`battle12-outcomes-through-bedoe-entry.md`](./design/synthesis/battle12-outcomes-through-bedoe-entry.md) —
+- [Battle12 Outcomes through Bedoe's Initial Guard Encounter](./design/synthesis/battle12-outcomes-through-bedoe-entry.md) —
   first/repeat outcomes, Peter's response and initial Bedoe guard exchange; setup, caller and conditional-control limits.
-- [`bedoe-king-address-through-first-audience.md`](./design/synthesis/bedoe-king-address-through-first-audience.md) —
+- [Bedoe's King Address and First Audience](./design/synthesis/bedoe-king-address-through-first-audience.md) —
   independent king address/audience, guard hiding, introductions and invitation; shared actors, following and conditional-control limits.
-- [`bedoe-to-volcanon-audience.md`](./design/synthesis/bedoe-to-volcanon-audience.md) — selected shrine entry,
+- [Bedoe to the Volcanon Audience](./design/synthesis/bedoe-to-volcanon-audience.md) — selected shrine entry,
   Volcanon conversation and Peter's joining; actor attribution, capacity/AI/following and conditional Map11 control limits.
-- [`volcanon-return-through-bedoe-king-choice.md`](./design/synthesis/volcanon-return-through-bedoe-king-choice.md) —
+- [Volcanon Return through the Bedoe King Choice](./design/synthesis/volcanon-return-through-bedoe-king-choice.md) —
   selected shrine return, optional king choice and Luke's requested departure; prompt, hiding/re-entry and conditional-control limits.
-- [`bedoe-hatchling-flight-and-rescue.md`](./design/synthesis/bedoe-hatchling-flight-and-rescue.md) —
+- [Bedoe's Hatchling Flight and Rescue](./design/synthesis/bedoe-hatchling-flight-and-rescue.md) —
   optional demonstration/repeat and independent fall/rescue; shared actor state, hiding/re-entry and two conditional-control limits.
-- [`bedoe-return-through-battle13-admission.md`](./design/synthesis/bedoe-return-through-battle13-admission.md) —
+- [Bedoe Return through Battle13 Admission](./design/synthesis/bedoe-return-through-battle13-admission.md) —
   selected return, Polca confrontation, Gerhalt joining and empty battle-start handoff; cast, party, request and readiness limits.
-- [`battle13-outcomes-through-polca-raft-grant.md`](./design/synthesis/battle13-outcomes-through-polca-raft-grant.md) —
+- [Battle13 Outcomes through Polca's Raft Grant](./design/synthesis/battle13-outcomes-through-polca-raft-grant.md) —
   battle outcomes, Luke accompanying, fresh Polca return and optional mayor bargain; ordered raft state and conditional-control limits.
-- [`polca-oddler-choice-and-following.md`](./design/synthesis/polca-oddler-choice-and-following.md) —
+- [Polca's Oddler Choices and Following](./design/synthesis/polca-oddler-choice-and-following.md) —
   two independent requests, refusal/convergence and current/future following; prompt, actor and conditional-control limits.
-- [`polca-departure-through-luke-recruitment.md`](./design/synthesis/polca-departure-through-luke-recruitment.md) —
+- [Polca Departure and Luke Recruitment](./design/synthesis/polca-departure-through-luke-recruitment.md) —
   selected departure, independent init and Luke joining; actor, cache, hide/unlock and conditional-control limits.
-- [`polca-raft-boarding-through-south-parmecia-entry.md`](./design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md) —
+
+### Chapter guides: southern travel, Caravan and Creed
+
+- [Polca Raft Boarding and South Parmecia Entry](./design/synthesis/polca-raft-boarding-through-south-parmecia-entry.md) —
   separate boarding request, staged raft mode and selected Map69 exits; actor waits, controller and entry/control limits.
-- [`south-parmecia-through-kraken-battle16-entry.md`](./design/synthesis/south-parmecia-through-kraken-battle16-entry.md) —
+- [South Parmecia, the Kraken Reveal and Battle16 Entry](./design/synthesis/south-parmecia-through-kraken-battle16-entry.md) —
   selected battlefield entry, complete Kraken reveal and fresh Battle16 rebuild; scene identity, start/saved-entry and completion limits.
-- [`battle16-outcomes-through-hassan-entry.md`](./design/synthesis/battle16-outcomes-through-hassan-entry.md) —
+- [Battle16 Outcomes, Disembark and Conditional Hassan Entry](./design/synthesis/battle16-outcomes-through-hassan-entry.md) —
   first/repeat outcomes, separate disembark and conditional Hassan cast/init; tuple, actor-wait, transport and control limits.
-- [`hassan-ancestry-and-rohde-caravan-choice.md`](./design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md) —
+- [Hassan Ancestry Conversation and Rohde's Caravan Choice](./design/synthesis/hassan-ancestry-and-rohde-caravan-choice.md) —
   independent priest/talk/selected-item paths, complete choices and conditional following/control; lore, actor and menu limits.
-- [`ribble-tree-opening-and-achilles-sword.md`](./design/synthesis/ribble-tree-opening-and-achilles-sword.md) —
+- [Ribble's Tree Opening and the Achilles Sword](./design/synthesis/ribble-tree-opening-and-achilles-sword.md) —
   selected Panel/tree/Sword puzzle, capacity and conditional custody/return; item-use, admission and natural-path limits.
-- [`hassan-departure-and-battle17-outcomes.md`](./design/synthesis/hassan-departure-and-battle17-outcomes.md) —
+- [Hassan Departure, Battle17 Entry and Conditional Returns](./design/synthesis/hassan-departure-and-battle17-outcomes.md) —
   ordered Battle9/17 admission, walking/raft and partial reload, fresh/saved entry and conditional returns.
-- [`southwest-parmecia-through-taros-battle18-entry.md`](./design/synthesis/southwest-parmecia-through-taros-battle18-entry.md) —
+- [Southwest Parmecia, Taros's Warning and Conditional Battle18 Entry](./design/synthesis/southwest-parmecia-through-taros-battle18-entry.md) —
   in-place western scroll, conditional warning/retreat and complete before/start; scene/neutral Caravan and control limits.
-- [`battle18-outcomes-and-caravan-acquisition.md`](./design/synthesis/battle18-outcomes-and-caravan-acquisition.md) —
+- [Battle18 Outcomes and Caravan Acquisition](./design/synthesis/battle18-outcomes-and-caravan-acquisition.md) —
   outcomes, complete driver/miniaturization scene and conditional return; actual flags, actor identity, savepoint and service limits.
-- [`hassan-rick-recruitment.md`](./design/synthesis/hassan-rick-recruitment.md) —
+- [Hassan Rick Recruitment and Following](./design/synthesis/hassan-rick-recruitment.md) —
   optional population/talk, complete recruitment and current following; separate membership, reentry and control limits.
-- [`caravan-boarding-and-southwest-parmecia-travel.md`](./design/synthesis/caravan-boarding-and-southwest-parmecia-travel.md) —
+- [Caravan Boarding and Southwest Parmecia Travel](./design/synthesis/caravan-boarding-and-southwest-parmecia-travel.md) —
   boarding, mode1 movement/landing and separate walking Battle19 request/admission; actor, residual-parameter and natural-route limits.
-- [`battle19-outcomes-through-elven-village-entry.md`](./design/synthesis/battle19-outcomes-through-elven-village-entry.md) —
+- [Battle19 Outcomes and Independent Elven Village Entry](./design/synthesis/battle19-outcomes-through-elven-village-entry.md) —
   shared battle outcomes and independent village arrival; supplied population/mode, savepoint and conditional-control limits.
-- [`elven-village-conversations-and-local-exploration.md`](./design/synthesis/elven-village-conversations-and-local-exploration.md) —
+- [Elven Village Conversations and Local Exploration](./design/synthesis/elven-village-conversations-and-local-exploration.md) —
   optional dialogue, local search and current-map stairs; item-kind priority, recipient/rollback and conditional-control limits.
-- [`elven-village-departure-through-harpy-pond-entry.md`](./design/synthesis/elven-village-departure-through-harpy-pond-entry.md) —
+- [Elven Village Departure Through Harpy Pond Entry](./design/synthesis/elven-village-departure-through-harpy-pond-entry.md) —
   selected exits, independent scroll and initial help scenes; separate admission/population/prompt and conditional-control limits.
-- [`harpy-pond-approach-through-battle20-entry.md`](./design/synthesis/harpy-pond-approach-through-battle20-entry.md) —
+- [Harpy Pond Approach Through Battle20 Entry](./design/synthesis/harpy-pond-approach-through-battle20-entry.md) —
   confrontation, separate warning/exit and conditional fresh/saved battle entry; flag/request, cast and service limits.
-- [`battle20-outcomes-and-elric-recruitment.md`](./design/synthesis/battle20-outcomes-and-elric-recruitment.md) —
+- [Battle20 Outcomes and Elric Recruitment](./design/synthesis/battle20-outcomes-and-elric-recruitment.md) —
   first/repeat outcomes, complete recruitment and conditional pond/savepoint return; force membership versus temporary following and service limits.
-- [`harpy-pond-departure-through-fairy-cave-entry.md`](./design/synthesis/harpy-pond-departure-through-fairy-cave-entry.md) —
+- [Harpy Pond Departure through Fairy Cave Entry](./design/synthesis/harpy-pond-departure-through-fairy-cave-entry.md) —
   pond exit, conditional passage and cave entry; actor membership, live blocks/F751, pending request and control limits.
-- [`fairy-cave-exploration-and-devils-tail-return.md`](./design/synthesis/fairy-cave-exploration-and-devils-tail-return.md) —
+- [Fairy Cave Exploration and Devil's Tail Return](./design/synthesis/fairy-cave-exploration-and-devils-tail-return.md) —
   four rewards, both returns and conditional rock inspection; search/rollback, independent admission and service limits.
-- [`battle21-opening-and-initial-roster.md`](./design/synthesis/battle21-opening-and-initial-roster.md) —
+- [Battle21 Opening and Initial Roster](./design/synthesis/battle21-opening-and-initial-roster.md) —
   refusal/threat scene and conditional initial placements; independent flags, cropped coordinates, item masking and service limits.
-- [`battle21-outcomes-and-devils-tail-return.md`](./design/synthesis/battle21-outcomes-and-devils-tail-return.md) —
+- [Battle21 Outcomes and Devil's Tail Return](./design/synthesis/battle21-outcomes-and-devils-tail-return.md) —
   leader cleanup, complete first after scene and conditional full-map return; repeat seed, follower and service limits.
-- [`creed-mansion-entry-and-first-goliath-scene.md`](./design/synthesis/creed-mansion-entry-and-first-goliath-scene.md) —
+- [Creed Mansion Entry and the First Goliath Obstruction](./design/synthesis/creed-mansion-entry-and-first-goliath-scene.md) —
   separate arrival and complete first obstruction; setup/cast limits, live door copies, delayed flag and conditional return/repeat.
-- [`creed-magic-door-and-desktop-transfer.md`](./design/synthesis/creed-magic-door-and-desktop-transfer.md) —
+- [Creed's Magic Door and the Desktop Transfer](./design/synthesis/creed-magic-door-and-desktop-transfer.md) —
   independent door gate, complete shrinking/collection scene and conditional Desktop admission; temporary sprite, live copy and pending/control limits.
-- [`desktop-kingdom-first-arrival.md`](./design/synthesis/desktop-kingdom-first-arrival.md) —
+- [Desktop Kingdom: First Arrival and Conditional Control](./design/synthesis/desktop-kingdom-first-arrival.md) —
   fresh population, complete landing/discussion/farewell and conditional following/control; supplied-state, temporary sprite and service limits.
-- [`desktop-kingdom-interactions-through-battle22-entry.md`](./design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md) —
+- [Desktop Kingdom: Conversations and the Chessboard Challenge](./design/synthesis/desktop-kingdom-interactions-through-battle22-entry.md) —
   conversations/services, King permission and conditional Chessboard admission; actual flags, pending/wrapper and pre-opening limits.
-- [`battle22-initialization-and-roster.md`](./design/synthesis/battle22-initialization-and-roster.md) —
+- [Chessboard: Battle22 Initialization and Initial Roster](./design/synthesis/battle22-initialization-and-roster.md) —
   empty hooks, party placement, sixteen chess enemies and rebuilt board/neutral actors; fresh/current-state and pre-activation limits.
-- [`battle22-outcomes-and-desktop-return.md`](./design/synthesis/battle22-outcomes-and-desktop-return.md) —
+- [Chessboard Outcomes and the Return to Desktop Kingdom](./design/synthesis/battle22-outcomes-and-desktop-return.md) —
   leader/count outcomes, rebuilt Desktop, reward announcement and King/Maid repeats; seed, actor, service and acquisition limits.
-- [`cotton-balloon-through-floor-world-entry.md`](./design/synthesis/cotton-balloon-through-floor-world-entry.md) —
+- [Cotton Balloon Acquisition and the Departure to Floor World](./design/synthesis/cotton-balloon-through-floor-world-entry.md) —
   chest delivery, guard clearance, own-tile use and complete departure through conditional Map26 admission; custody, actor/wait and pre-population limits.
-- [`floor-world-first-arrival.md`](./design/synthesis/floor-world-first-arrival.md) —
+- [Floor World First Arrival and Conditional Exploration](./design/synthesis/floor-world-first-arrival.md) —
   fresh population, complete landing/pop and conditional exploration; independent actions, lookup/park, repeat-EGRESS and service/control limits.
-- [`floor-world-interactions-and-exits.md`](./design/synthesis/floor-world-interactions-and-exits.md) —
+- [Floor World Residents, the Giant Ring and Outbound Exits](./design/synthesis/floor-world-interactions-and-exits.md) —
   all residents/default, giant-ring attempt and three outbound requests; separate waits, hide/parking, coordinate and conditional admission limits.
-- [`willard-burrow-through-battle23-entry.md`](./design/synthesis/willard-burrow-through-battle23-entry.md) —
+- [Willard Burrow Exploration and Battle23 Admission](./design/synthesis/willard-burrow-through-battle23-entry.md) —
   fresh/retained population, eight traversal/exit requests and complete confrontation through conditional Battle23 admission; actor/alias, wait, coordinate and pre-initialization limits.
-- [`battle23-initialization-and-roster.md`](./design/synthesis/battle23-initialization-and-roster.md) —
+- [Battle23 Initial Formation and Suspended Entry](./design/synthesis/battle23-initialization-and-roster.md) —
   fresh healing/party capacity, complete enemy formation and initialized stats, crop/entity mapping versus suspended current-state load; pre-activation/pre-turn and supplied-state limits.
-- [`battle23-outcomes-and-burrow-return.md`](./design/synthesis/battle23-outcomes-and-burrow-return.md) —
+- [Battle23 Outcomes and the Return to Willard Burrow](./design/synthesis/battle23-outcomes-and-burrow-return.md) —
   leader/count outcomes, current-member victory seed, defeat/escape savepoint selector and fresh/retained burrow returns; independent flags, eight exit requests and pre-destination-init limits.
-- [`creed-restoration-and-basement-departure.md`](./design/synthesis/creed-restoration-and-basement-departure.md) —
+- [Creed's Restoration and Main-Room Departure](./design/synthesis/creed-restoration-and-basement-departure.md) —
   conditional return population, complete restoration/Zeon conversation and Creed/Fairy departure through main-room init; sprite/action/alias/HP, follower, Egress-selector and conditional-control limits.
-- [`evil-spirit-shrine-entry-and-scene-admission.md`](./design/synthesis/evil-spirit-shrine-entry-and-scene-admission.md) —
+- [Evil Spirit Shrine Entry and Consultation Admission](./design/synthesis/evil-spirit-shrine-entry-and-scene-admission.md) —
   mansion/shrine route, three warps, fresh/retained residents and the independent consultation request gate; special actor/effect allocation, coordinate/layout and conditional caller-flag limits.
-- [`evil-spirit-consultation-and-zone-return.md`](./design/synthesis/evil-spirit-consultation-and-zone-return.md) —
+- [Evil Spirit Consultation and Conditional Zone Return](./design/synthesis/evil-spirit-consultation-and-zone-return.md) —
   complete consultation, Zeon demand and explosion through conditional zone return; dialogue/transaction, actor/action, dormant hides, presentation requests and non-atomic control limits.
-- [`creed-return-fairy-and-recruitment-choices.md`](./design/synthesis/creed-return-fairy-and-recruitment-choices.md) —
+- [Creed Return, Fairy Following and Recruitment Choices](./design/synthesis/creed-return-fairy-and-recruitment-choices.md) —
   explicit shrine return, selected mansion population, Fairy current following and eight recruit offers; joined/active capacity, shrink parking, repeat/interruption and conditional-return limits.
-- [`oddler-stays-and-fairy-handoff.md`](./design/synthesis/oddler-stays-and-fairy-handoff.md) —
+- [Oddler Stays and the Fairy Handoff](./design/synthesis/oddler-stays-and-fairy-handoff.md) —
   admitted farewell, dormant hides and current following through ordered zone return; separate fresh F786/F22 populations and service/control limits.
-- [`creed-departure-dwarf-recovery-and-cannon-gift.md`](./design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md) —
+- [Creed Departure, Dwarf Recovery and the Cannon Gift](./design/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md) —
   selected departure/mine route, Fairy recovery, capacity-dependent Cannon gift and digging; actual actors, repeated/live/fresh state and ordered caller/service/control limits.
-- [`new-granseal-return-and-astral-following.md`](./design/synthesis/new-granseal-return-and-astral-following.md) —
+
+### Chapter guides: northern travel and Pacalon
+
+- [New Granseal Return and Astral Following](./design/synthesis/new-granseal-return-and-astral-following.md) —
   conditional mine-to-castle return, retrospective audience and adviser announcement; actual cast, current/fresh following, ordered flags and service/control/save limits.
-- [`new-granseal-inventor-and-dynamite-gift.md`](./design/synthesis/new-granseal-inventor-and-dynamite-gift.md) —
+- [New Granseal Inventor and Dynamite Gift](./design/synthesis/new-granseal-inventor-and-dynamite-gift.md) —
   castle-to-town inventor conversation, actual Cannon search and capacity-dependent Dynamite gift; permission, actor/context, receiving/retry and ordered return limits.
-- [`new-granseal-janet-recruitment-and-departure.md`](./design/synthesis/new-granseal-janet-recruitment-and-departure.md) —
+- [New Granseal Janet Recruitment and Departure](./design/synthesis/new-granseal-janet-recruitment-and-departure.md) —
   Janet encounter and scripted acceptance, joined/active membership, temporary following and local/fresh-town return limits.
-- [`new-granseal-departure-through-battle24-admission.md`](./design/synthesis/new-granseal-departure-through-battle24-admission.md) —
+- [New Granseal Departure through Battle24 Admission](./design/synthesis/new-granseal-departure-through-battle24-admission.md) —
   retained overworld travel, separate request/ordered admission and fresh initial encounter; supplied-state and pre-activation limits.
-- [`battle24-outcomes-through-north-cliff-preparation.md`](./design/synthesis/battle24-outcomes-through-north-cliff-preparation.md) —
+- [Battle24 Outcomes through North Cliff Preparation](./design/synthesis/battle24-outcomes-through-north-cliff-preparation.md) —
   actual end counting, distinct outcome returns and current-inventory cave warning; cast, movement, temporary retry and conditional local-control limits.
-- [`north-cliff-opening-and-rohde-recruitment.md`](./design/synthesis/north-cliff-opening-and-rohde-recruitment.md) —
+- [North Cliff Opening and Rohde Recruitment](./design/synthesis/north-cliff-opening-and-rohde-recruitment.md) —
   selected item removals, complete blast/join scene and local/fresh-map consequences; actual cast, partial effects and next-warp-only boundary.
-- [`north-cliff-entry-through-battle25-admission.md`](./design/synthesis/north-cliff-entry-through-battle25-admission.md) —
+- [North Cliff Entry through Battle25 Admission](./design/synthesis/north-cliff-entry-through-battle25-admission.md) —
   separate entrance request and conditional Battle25 admission, complete initial encounter and crop/view limits before enemy activation.
-- [`battle25-outcomes-through-ketto-entry.md`](./design/synthesis/battle25-outcomes-through-ketto-entry.md) —
+- [Battle25 Outcomes through Ketto Entry](./design/synthesis/battle25-outcomes-through-ketto-entry.md) —
   actual outcome returns, conditional cave departure and later admission, and Ketto's initial population through the controller request.
-- [`ketto-interactions-and-merchant-relocation.md`](./design/synthesis/ketto-interactions-and-merchant-relocation.md) —
+- [Ketto: Conversations, Shops and the Merchant's Move](./design/synthesis/ketto-interactions-and-merchant-relocation.md) —
   all resident interactions, merchant movement, service entry and inspections/items through conditional departure; choice, state and completion limits.
-- [`battle26-admission-and-geshp-confrontation.md`](./design/synthesis/battle26-admission-and-geshp-confrontation.md) —
+- [Battle26 Admission and the Geshp Confrontation](./design/synthesis/battle26-admission-and-geshp-confrontation.md) —
   ordered admission, actual field cast and complete Geshp/Higins confrontation through before-wrapper return; narrative, action, alias and fresh-initialization limits.
-- [`battle26-initialization-and-roster.md`](./design/synthesis/battle26-initialization-and-roster.md) —
+- [Battle26 Initial Formation and Neutral Higins](./design/synthesis/battle26-initialization-and-roster.md) —
   actual force/enemy formation, conditional stats/upgrades, neutral Higins and crop/load/start; identity, supplied-state and pre-activation limits.
-- [`battle26-activation-and-first-turn-dispatch.md`](./design/synthesis/battle26-activation-and-first-turn-dispatch.md) —
+- [Battle26: activation and the first turn handoff](./design/synthesis/battle26-activation-and-first-turn-dispatch.md) —
   region/activation, conditional deals alias, fresh no-spawn and randomized turn records through the first individual-turn call; supplied-state, actor and service limits.
-- [`battle26-outcomes-and-higins-recruitment.md`](./design/synthesis/battle26-outcomes-and-higins-recruitment.md) —
+- [Battle26 outcomes and Higins recruitment](./design/synthesis/battle26-outcomes-and-higins-recruitment.md) —
   terminal precedence, independent Black Ring transaction and complete rescue/join/following through the returned handoff; seed, capacity, action, service and later-arrival limits.
-- [`battle26-return-through-pacalon-entry.md`](./design/synthesis/battle26-return-through-pacalon-entry.md) —
+- [Battle26 return through conditional Pacalon entry](./design/synthesis/battle26-return-through-pacalon-entry.md) —
   fresh return rebuild, retained eastern scroll and conditional town/Battle31 admission through the first Map02 event/control read; population, coordinate, route and service limits.
-- [`pacalon-interactions-and-castle-handoff.md`](./design/synthesis/pacalon-interactions-and-castle-handoff.md) —
+- [Pacalon: conversations, supplies and the castle handoff](./design/synthesis/pacalon-interactions-and-castle-handoff.md) —
   both resident alternatives, shops/priest, descriptions and possible pickups through ordered outgoing exits; current selection, partial effects and pre-destination limits.
-- [`pacalon-castle-entry-and-first-visit.md`](./design/synthesis/pacalon-castle-entry-and-first-visit.md) —
+- [Pacalon castle: entry and the first drought-state visit](./design/synthesis/pacalon-castle-entry-and-first-visit.md) —
   conditional castle entry, drought-state cast/conversations, optional centaur scene, descriptions/pickups/priest and retained CURRENT stairs; south stops before town battle selection, later Frayja deferred.
-- [`pacalon-departure-to-battle27-admission.md`](./design/synthesis/pacalon-departure-to-battle27-admission.md) —
+- [Pacalon departure: the north scroll and conditional Battle27 admission](./design/synthesis/pacalon-departure-to-battle27-admission.md) —
   conditional town/overworld rebuilding, retained north scroll, candidate zone and partial reload through ordered27/32 admission; stops before BattleLoop initialization, with natural-route/control/persistence limits.
-- [`battle27-initialization-and-opening.md`](./design/synthesis/battle27-initialization-and-opening.md) —
+- [Battle27: initial formation and the restrictions confrontation](./design/synthesis/battle27-initialization-and-opening.md) —
   actual fresh formation, sixteen enemies, rebuilt crop/view and complete three-speaker opening; supplied F88 state, identity, interrupted-intro and pre-activation/pre-turn limits.
-- [`battle27-activation-and-first-turn-dispatch.md`](./design/synthesis/battle27-activation-and-first-turn-dispatch.md) —
+- [Battle27: activation and the first turn handoff](./design/synthesis/battle27-activation-and-first-turn-dispatch.md) —
   checked regions versus flags/activation, fresh no-spawn and randomized turn records through the first call before its body; supplied-state, deals alias, finite-buffer and presentation limits.
-- [`map-design-principles.md`](./design/synthesis/map-design-principles.md)
-- [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
+
+### Later chapters: use the connected story sections
+
+The detailed-guide series above ends at Battle27. The same accepted Story Progression document
+continues with explanatory sections and English research evidence; these are not missing translations:
+
+- [Tristan, Mitula and restored Pacalon](./design/synthesis/story-progression.md#tristans-people-and-the-cave-route-to-mitula)
+- [Moun, Nazca and the return to Grans](./design/synthesis/story-progression.md#moun-nazca-and-the-return-to-grans)
+- [Final confrontations and ending](./design/synthesis/story-progression.md#final-confrontations-and-ending)
+- [Worked example: Taros and the Caravan](./design/synthesis/story-progression.md#worked-example-taros-and-the-caravan) — Sword custody/equipment, admission, outcome, acquisition and separate boarding
+
+### Milestone acceptance and historical proposals
+
+- [Map 3 to Battle 01 Readiness Ledger](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) —
   accepted current private milestone; original Unknowns and historical report failures retain their owners
-- [`phase4-bootstrap-plan.md`](./design/synthesis/phase4-bootstrap-plan.md) — **Historical** proposal; current implementation guidance is superseded
-- [`ally-definition-data.md`](./design/contracts/ally-definition-data.md)
-- [`enemy-definition-data.md`](./design/contracts/enemy-definition-data.md)
-- [`item-definition-data.md`](./design/contracts/item-definition-data.md)
-- [`spell-definition-data.md`](./design/contracts/spell-definition-data.md)
-- [`spellbook-state.md`](./design/contracts/spellbook-state.md)
-- [`name-table-lookup-service.md`](./design/contracts/name-table-lookup-service.md)
-- [`stats-null-return-service.md`](./design/contracts/stats-null-return-service.md)
-- [`audio-system.md`](./design/contracts/audio-system.md)
-- [`combatant-state-access.md`](./design/contracts/combatant-state-access.md)
-- [`global-flag-state.md`](./design/contracts/global-flag-state.md)
-- [`graphics-service-state.md`](./design/contracts/graphics-service-state.md)
-- [`special-sprite-graphics-data.md`](./design/contracts/special-sprite-graphics-data.md)
-- [`special-screen-asset-data.md`](./design/contracts/special-screen-asset-data.md)
-- [`special-screen-control-flow.md`](./design/contracts/special-screen-control-flow.md)
-- [`portrait-graphics-data.md`](./design/contracts/portrait-graphics-data.md)
-- [`portrait-window-state.md`](./design/contracts/portrait-window-state.md)
-- [`caravan-and-deals-state.md`](./design/contracts/caravan-and-deals-state.md)
-- [`new-game-state-initialization.md`](./design/contracts/new-game-state-initialization.md)
-- [`party-membership-state.md`](./design/contracts/party-membership-state.md)
-- [`combat-resolution.md`](./design/contracts/combat-resolution.md)
-- [`exploration-control-flow.md`](./design/contracts/exploration-control-flow.md)
-- [`map3-controlled-admission.md`](./design/contracts/map3-controlled-admission.md) — **Proposed** bounded R1 admission contract; current acceptance has separate owners
-- [`startup-control-flow.md`](./design/contracts/startup-control-flow.md)
-- [`standalone-map-script-program-data.md`](./design/contracts/standalone-map-script-program-data.md)
-- [`debug-control-flow.md`](./design/contracts/debug-control-flow.md)
-- [`rom-header-data.md`](./design/contracts/rom-header-data.md)
-- [`map-area-description-routing.md`](./design/contracts/map-area-description-routing.md)
-- [`map-camera-update-control-flow.md`](./design/contracts/map-camera-update-control-flow.md)
-- [`map-entity-data.md`](./design/contracts/map-entity-data.md)
-- [`map-entry-routing-state.md`](./design/contracts/map-entry-routing-state.md)
-- [`unused-mapload-control-flow.md`](./design/contracts/unused-mapload-control-flow.md)
-- [`map-exploration.md`](./design/contracts/map-exploration.md)
-- [`map-layout-data.md`](./design/contracts/map-layout-data.md)
-- [`map-palette-data.md`](./design/contracts/map-palette-data.md)
-- [`map-sprite-assignment-surface.md`](./design/contracts/map-sprite-assignment-surface.md)
-- [`map-sprite-graphics-data.md`](./design/contracts/map-sprite-graphics-data.md)
-- [`map-setup-data.md`](./design/contracts/map-setup-data.md)
-- [`map-tileset-data.md`](./design/contracts/map-tileset-data.md)
-- [`battle-ai-decision.md`](./design/contracts/battle-ai-decision.md)
-- [`battle-action-construction.md`](./design/contracts/battle-action-construction.md)
-- [`battle-cutscene-routing.md`](./design/contracts/battle-cutscene-routing.md)
-- [`battle-encounter-definition.md`](./design/contracts/battle-encounter-definition.md)
-- [`battle-functions-control-flow.md`](./design/contracts/battle-functions-control-flow.md)
-- [`battle-background-graphics-data.md`](./design/contracts/battle-background-graphics-data.md)
-- [`battle-effect-graphics-data.md`](./design/contracts/battle-effect-graphics-data.md)
-- [`battle-sprite-graphics-data.md`](./design/contracts/battle-sprite-graphics-data.md)
-- [`battle-weapon-ground-graphics-data.md`](./design/contracts/battle-weapon-ground-graphics-data.md)
-- [`battle-scene-presentation.md`](./design/contracts/battle-scene-presentation.md)
-- [`battle-control-lifecycle.md`](./design/contracts/battle-control-lifecycle.md)
-- [`battlefield-navigation.md`](./design/contracts/battlefield-navigation.md)
-- [`level-up.md`](./design/contracts/level-up.md)
-- [`spell-resolution.md`](./design/contracts/spell-resolution.md)
-- [`byte-copy-service.md`](./design/contracts/byte-copy-service.md)
-- [`music-wait-service.md`](./design/contracts/music-wait-service.md)
-- [`service-interactions.md`](./design/contracts/service-interactions.md)
-- [`save-system.md`](./design/contracts/save-system.md)
-- [`input-system.md`](./design/contracts/input-system.md)
-- [`text-and-font-system.md`](./design/contracts/text-and-font-system.md)
-- [`ui-graphics-asset-data.md`](./design/contracts/ui-graphics-asset-data.md)
-- [`ui-layout-data.md`](./design/contracts/ui-layout-data.md)
-- [`unused-menu-constant-write-control-flow.md`](./design/contracts/unused-menu-constant-write-control-flow.md)
-- [`unused-technical-asset-data.md`](./design/contracts/unused-technical-asset-data.md)
-- [`window-system.md`](./design/contracts/window-system.md)
-- [`dialogue-system.md`](./design/contracts/dialogue-system.md)
-- [`sprite-dialogue-property-data.md`](./design/contracts/sprite-dialogue-property-data.md)
-- [`party-roster-state.md`](./design/contracts/party-roster-state.md)
-- [`randomness.md`](./design/contracts/randomness.md)
-- [`interrupt-dma-and-trap-state.md`](./design/contracts/interrupt-dma-and-trap-state.md)
+- [Phase 4 Bootstrap Plan](./design/synthesis/phase4-bootstrap-plan.md) — **Historical** proposal; current implementation guidance is superseded
+- [Continuous Map3–Battle01 scenario contract](./design/contracts/map3-battle01-continuous-scenario.md) — bounded private milestone composition
+
+### Contracts: combat, turns and encounter decisions
+
+- [Battle Control and Combatant Lifecycle Contract](./design/contracts/battle-control-lifecycle.md)
+- [Battlefield Navigation and Target-Space Contract](./design/contracts/battlefield-navigation.md)
+- [Battle Action Construction Contract](./design/contracts/battle-action-construction.md)
+- [Physical Combat Resolution Contract](./design/contracts/combat-resolution.md)
+- [Spell Damage Resolution Contract](./design/contracts/spell-resolution.md)
+- [Battle AI Decision Contract](./design/contracts/battle-ai-decision.md)
+- [Battle Encounter Definition Contract](./design/contracts/battle-encounter-definition.md)
+- [Battle Functions Control-Flow Contract](./design/contracts/battle-functions-control-flow.md)
+- [Battle Cutscene Routing Contract](./design/contracts/battle-cutscene-routing.md)
+- [Battle Scene Command and Presentation-Data Contract](./design/contracts/battle-scene-presentation.md)
+
+### Contracts: party, definitions, growth and services
+
+- [Party Membership State Contract](./design/contracts/party-membership-state.md)
+- [Party and Roster State Contract](./design/contracts/party-roster-state.md)
+- [Combatant State Access Contract](./design/contracts/combatant-state-access.md)
+- [Ally Definition and Growth-Data Contract](./design/contracts/ally-definition-data.md)
+- [Enemy Definition and Presentation-Index Contract](./design/contracts/enemy-definition-data.md)
+- [Item Definition and Auxiliary-Catalog Contract](./design/contracts/item-definition-data.md)
+- [Spell Definition Data Contract](./design/contracts/spell-definition-data.md)
+- [Spellbook State Contract](./design/contracts/spellbook-state.md)
+- [Level-Up and Stat-Growth Contract](./design/contracts/level-up.md)
+- [Service Interactions](./design/contracts/service-interactions.md)
+- [Caravan and Deals State Contract](./design/contracts/caravan-and-deals-state.md)
+- [Stats Null-Return Service Contract](./design/contracts/stats-null-return-service.md)
+
+### Contracts: exploration, scripts and world state
+
+- [Map and Exploration Contract](./design/contracts/map-exploration.md)
+- [Exploration Control Flow Contract](./design/contracts/exploration-control-flow.md)
+- [Map Entry Routing State Contract](./design/contracts/map-entry-routing-state.md)
+- [Map Entity Data Contract](./design/contracts/map-entity-data.md)
+- [Map Setup Data Contract](./design/contracts/map-setup-data.md)
+- [Map Area-Description Routing Contract](./design/contracts/map-area-description-routing.md)
+- [Map Camera Update Control-Flow Contract](./design/contracts/map-camera-update-control-flow.md)
+- [Standalone Map-Script Program Data Contract](./design/contracts/standalone-map-script-program-data.md)
+- [Global Flag State Contract](./design/contracts/global-flag-state.md)
+- [Map 3 Controlled Admission Contract](./design/contracts/map3-controlled-admission.md) — **Proposed** bounded R1 admission contract; current acceptance has separate owners
+
+### Contracts: dialogue, input, windows and audio
+
+- [Dialogue Commands and Reached Text-Wait Contract](./design/contracts/dialogue-system.md)
+- [Text Storage, Decoding, and Font Contract](./design/contracts/text-and-font-system.md)
+- [Sprite-Dialogue Property Data Contract](./design/contracts/sprite-dialogue-property-data.md)
+- [Portrait Window and State Contract](./design/contracts/portrait-window-state.md)
+- [Input-System Contract](./design/contracts/input-system.md)
+- [Window-System Contract](./design/contracts/window-system.md)
+- [UI Layout Data Contract](./design/contracts/ui-layout-data.md)
+- [Audio Command and Playback-State Contract](./design/contracts/audio-system.md)
+- [Music-Wait Service Contract](./design/contracts/music-wait-service.md)
+- [Name-Table Lookup Service Contract](./design/contracts/name-table-lookup-service.md)
+
+### Contracts: graphics and presentation data
+
+- [Map Layout Data Contract](./design/contracts/map-layout-data.md)
+- [Map Palette Data Contract](./design/contracts/map-palette-data.md)
+- [Map-Sprite Assignment Surface Contract](./design/contracts/map-sprite-assignment-surface.md)
+- [Map Sprite Graphics Data Contract](./design/contracts/map-sprite-graphics-data.md)
+- [Map Tileset Data Contract](./design/contracts/map-tileset-data.md)
+- [Graphics Service and State Contract](./design/contracts/graphics-service-state.md)
+- [Portrait Graphics Data Contract](./design/contracts/portrait-graphics-data.md)
+- [Special-Sprite Graphics Data Contract](./design/contracts/special-sprite-graphics-data.md)
+- [Special-Screen Asset Data Contract](./design/contracts/special-screen-asset-data.md)
+- [UI Graphics Asset Data Contract](./design/contracts/ui-graphics-asset-data.md)
+- [Battle Background Graphics Data Contract](./design/contracts/battle-background-graphics-data.md)
+- [Battle Effect Graphics Data Contract](./design/contracts/battle-effect-graphics-data.md)
+- [Battle Sprite Graphics Data Contract](./design/contracts/battle-sprite-graphics-data.md)
+- [Battle Weapon and Ground Graphics Data Contract](./design/contracts/battle-weapon-ground-graphics-data.md)
+
+### Contracts: startup, save and technical boundaries
+
+- [New-Game State Initialization Contract](./design/contracts/new-game-state-initialization.md)
+- [Startup Control Flow Contract](./design/contracts/startup-control-flow.md)
+- [Special-Screen Control-Flow Contract](./design/contracts/special-screen-control-flow.md)
+- [Save-System Contract](./design/contracts/save-system.md)
+- [Randomness Services](./design/contracts/randomness.md)
+- [ROM Header Data Contract](./design/contracts/rom-header-data.md)
+- [Byte-Copy Service Contract](./design/contracts/byte-copy-service.md)
+- [Interrupt, DMA, and Trap State Contract](./design/contracts/interrupt-dma-and-trap-state.md)
+- [Debug Control Flow Contract](./design/contracts/debug-control-flow.md)
+- [Unused Mapload Control-Flow Contract](./design/contracts/unused-mapload-control-flow.md)
+- [Unused Menu Constant-Write Control-Flow Contract](./design/contracts/unused-menu-constant-write-control-flow.md)
+- [Unused Technical Asset Data Contract](./design/contracts/unused-technical-asset-data.md)
+
+## Research
+
+Source, ROM, fixture and runtime provenance live in these owners. The
+connection through the ending, with encounter/optional gaps and distinct original-runtime, design
+and remake frontiers. The source-coverage owner and research-index commands retain registered
+evidence denominators; story prose does not add fixture or index credit.
+
+### Baseline, coverage and indexing
+
+- [Reproducible Original Baseline](./research/reproducible-original.md)
+[story-content coverage map](./research/story-content-coverage.md) routes by chapter and conditional
+- [Reverse-Engineering Research Index](./research/indexing.md)
+- [Source Coverage and Research Cadence](./research/source-coverage.md)
+- [Story Content Coverage](./research/story-content-coverage.md)
+
+### Stats, growth and original battle rules
+
+- [Static Core Data Contract](./research/static-core-data.md)
+- [Ally Growth and Spell Learning Contract](./research/ally-growth.md)
+- [Runtime RNG and Battle-Math Call Chains](./research/runtime-rng-and-battle-math.md)
+- [Promotions, Enemy Definitions, and Rewards](./research/enemy-promotions.md)
+- [Battle 01 Static Scene Contract](./research/battle01-placement.md)
+
+### Battle decisions, movement, actions and scenes
+
+- [Battle AI Static Inventory and Decision Contracts](./research/battle-ai.md)
+- [Battlefield and Pathfinding](./research/battlefield-pathfinding.md)
+- [Battle Loop and Combatant Lifecycle](./research/battle-loop.md)
+- [Battle Action Script Construction](./research/battle-actions.md)
+- [Shared Battle Functions](./research/battle-functions.md)
+- [Battle Scene Engine](./research/battle-scene-engine.md)
+- [Battle Cutscene Routing](./research/battle-cutscenes.md)
+
+### Shared scripts, exploration, menus and services
+
+- [Common Scripting Engines](./research/common-scripting.md)
+- [Common Map Engine](./research/common-maps.md)
+- [Common Stats and Inventory Services](./research/common-stats.md)
+- [Common Menu Engines and Services](./research/common-menus.md)
+- [Field menu control](./research/field-menu-control.md)
+- [Field Search Control](./research/field-search-control.md)
+- [Field Item Effects](./research/field-item-effects.md)
+- [Technical Interrupt, DMA, and Trap Services](./research/technical-interrupts.md)
+- [Technical Graphics and Decompression Services](./research/technical-graphics.md)
+- [Technical Jump Interfaces and Pointer Tables](./research/technical-interfaces.md)
+- [Remaining Technical Services](./research/technical-services.md)
+- [Startup, Main Loop, and Exploration Core](./research/gameflow-core.md)
+- [Special Screens](./research/special-screens.md)
+- [ROM Header, Window Engine, and Special Debug Flows](./research/remaining-core.md)
+
+### Source data inventories
+
+- [Global Battle Data Tables](./research/battle-global-data.md)
+- [Ally and Class Data Inventory](./research/ally-data-inventory.md)
+- [Item, Spell, and Enemy Data Inventory](./research/core-stats-data-inventory.md)
+- [Battle Cutscene Data Inventory](./research/battle-cutscene-data.md)
+- [Battle Spriteset Data Inventory](./research/battle-spriteset-data.md)
+- [Battle Routing and Terrain Data Inventory](./research/battle-routing-data.md)
+
+### Opening and Battle01: controlled observations and retained limits
+
+- [Map 3 to Battle 01 Research Gap Audit](./research/map3-battle01-audit.md)
+- [Map 3 Admitted-Start Evidence](./research/map3-admitted-start.md)
+- [Map 3 Controlled-Start Egress Transition](./research/map3-controlled-start-egress-transition.md)
+- [Map 3 Original Player Locomotion and Animation](./research/map3-original-player-locomotion-animation.md)
+- [Map 3 Natural Route to Messenger Entry](./research/map3-battle01-natural-route.md)
+- [Map 3 Messenger Acceptance](./research/map3-messenger-acceptance.md)
+- [Map 3 optional interactions: static inventory](./research/map3-optional-interactions.md)
+- [Map 3 Castle to Battle 01 Unlock — Static Fallback](./research/map3-castle-battle-unlock.md)
+- [Map 3 to Battle 01 Admission — Static and Bounded Player-Ready Contracts](./research/map3-battle01-admission.md)
+- [Map 3 to Battle 01 Turn/Control — Static Contract](./research/map3-battle01-turn-control.md)
+- [Map 3 to Battle 01 Action/Effect — Static Contract](./research/map3-battle01-action-effect.md)
+- [Map 3 to Battle 01 Action Completion — Static Contract](./research/map3-battle01-action-completion.md)
+- [Map 3 to Battle 01 Turn Finalization — Static Contract](./research/map3-battle01-turn-finalization.md)
+- [Map 3 Battle 01 victory and return](./research/map3-battle01-victory-return.md)
+- [Map 3 Original Player Reference Frame](./research/map3-original-player-reference-frame.md)
+- [Map 3 Entity 142 Interactable Reference](./research/map3-entity142-interactable-reference.md)
+- [Original-reference replay capability](./research/original-reference-replay-capability.md)
+- [Original-reference replay scenario API](./research/original-reference-replay-scenario-api.md)
+
+### Map data, event state and caller handoffs
+
+- [Complete Map ASM Inventory](./research/map-data-inventory.md)
+- [Map-Event Direct Fixed-RAM State](./research/map-event-direct-state.md)
+- [Map-Event Direct-Flag Lifecycle State](./research/map-event-flag-lifecycle-state.md)
+- [Map-Event Cross-Program Flag State](./research/map-event-cross-program-flag-state.md)
+- [Map-Event Flag Route Selection](./research/map-event-flag-route-selection.md)
+- [Map-Event Interaction State](./research/map-event-interaction-state.md)
+- [Map-Event Item Transactions](./research/map-event-item-transactions.md)
+- [Map-Event Combatant-State Callers](./research/map-event-combatant-state.md)
+- [Map-Event Random-Battle State](./research/map-event-random-battle-state.md)
+- [Map-Event Tactical-Base Quote State](./research/map-event-tactical-base-quote-state.md)
+- [Map-Event Scripted Transition State](./research/map-event-scripted-transition-state.md)
+- [Map-Event Direct Control Topology](./research/map-event-direct-control.md)
+- [Map-Event Dialogue State](./research/map-event-dialogue-state.md)
+- [Map-Event Request State](./research/map-event-request-state.md)
+- [Map-event request consumption](./research/map-event-request-consumption.md)
+- [Map-Event Direct Handoff](./research/map-event-direct-handoff.md)
+- [Map-Event Predicate Results](./research/map-event-predicate-results.md)
+- [Map Content Tables and Binary Payload Parity](./research/map-content.md)
+
+### Auxiliary data and sound
+
+- [Auxiliary Graphics, Scripting, and Technical Data Inventory](./research/auxiliary-data-inventory.md)
+- [Z80 Music-Bank and Runtime-State Inventory](./research/sound-data-inventory.md)
+
+
+## Operations
+
+[Remake entry](../remake/README.md), [development and verification](../remake/docs/development-and-verification.md)
+and [retained comparisons](../remake/docs/evidence/retained-comparisons.md) own current engine usage,
+scoped acceptance and historical failures. Read those owners before applying an old gate recipe.
+
+Current task routing, private-input selection and independent review.
+
+- [Agent Resume Route](./operations/agent-resume.md)
+- [Bounded Data Work, Inspection, and Review Runbook](./operations/bounded-inspection-and-review.md)
+- [GitHub Project Governance](./operations/github-project-governance.md) — Issues/Project own
+  coordination state; tracked documents own evidence and accepted behavior
+- [Local Private Inputs and Shared Tools](./operations/local-private-inputs.md)
+- [Phase 2 Research and Design Lane Runbook](./operations/phase2-lane-runbook.md)
+- [Documentation and Agent Instruction Audit](./operations/documentation-agent-audit.md)
 
 ## Decisions
 
 Read scope and status before applying a decision. ADR 0018 supersedes old model/mandatory-worker wording. ADR 0019 records the adopted engine direction, current M0/M1 boundaries and explicit test policy; older blanket gate/retention requirements do not override it.
 
-- [`0001-bizhawk-for-h3-runtime-observation.md`](./decisions/0001-bizhawk-for-h3-runtime-observation.md)
-- [`0002-python-and-uv-for-project-tooling.md`](./decisions/0002-python-and-uv-for-project-tooling.md)
-- [`0003-static-first-batched-runtime-research.md`](./decisions/0003-static-first-batched-runtime-research.md)
-- [`0004-single-terra-worker-with-root-acceptance.md`](./decisions/0004-single-terra-worker-with-root-acceptance.md)
-- [`0005-remake-value-driven-driver-freeze.md`](./decisions/0005-remake-value-driven-driver-freeze.md)
-- [`0006-parallel-worktrees-and-topic-branch-integration.md`](./decisions/0006-parallel-worktrees-and-topic-branch-integration.md)
-- [`0007-schema-contract-composition-and-migration.md`](./decisions/0007-schema-contract-composition-and-migration.md)
-- [`0008-godot-csharp-cli-first-remake-tooling.md`](./decisions/0008-godot-csharp-cli-first-remake-tooling.md)
-- [`0009-first-phase4-playable-slice.md`](./decisions/0009-first-phase4-playable-slice.md)
-- [`0010-map3-battle01-product-acceptance.md`](./decisions/0010-map3-battle01-product-acceptance.md)
-- [`0011-phase4-remake-runtime-architecture.md`](./decisions/0011-phase4-remake-runtime-architecture.md)
-- [`0012-dependency-aware-partitioned-verification.md`](./decisions/0012-dependency-aware-partitioned-verification.md)
-- [`0013-token-efficient-agent-research-workflow.md`](./decisions/0013-token-efficient-agent-research-workflow.md)
-- [`0014-static-first-runtime-evidence-after-map3-battle01.md`](./decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)
-- [`0015-original-reference-replay-and-h4-boundary.md`](./decisions/0015-original-reference-replay-and-h4-boundary.md)
-- [`0016-remake-start-evidence-deferral.md`](./decisions/0016-remake-start-evidence-deferral.md)
-- [`0017-heavy-boundaries-light-internals.md`](./decisions/0017-heavy-boundaries-light-internals.md)
-- [`0018-astra-role-routing-trial.md`](./decisions/0018-astra-role-routing-trial.md)
-- [`0019-state-and-content-driven-remake-engine.md`](./decisions/0019-state-and-content-driven-remake-engine.md)
+- [ADR 0001: BizHawk for H3 Runtime Observation](./decisions/0001-bizhawk-for-h3-runtime-observation.md)
+- [ADR 0002: Python and uv for Project Tooling](./decisions/0002-python-and-uv-for-project-tooling.md)
+- [ADR 0003: Static-First Research with Batched Runtime Observation](./decisions/0003-static-first-batched-runtime-research.md)
+- [ADR 0004: One Terra Research Worker with Root Acceptance](./decisions/0004-single-terra-worker-with-root-acceptance.md)
+- [ADR 0005: Remake-Value-Driven Driver and Hardware Freeze](./decisions/0005-remake-value-driven-driver-freeze.md)
+- [ADR 0006: Parallel Worktrees with Topic-Branch Integration](./decisions/0006-parallel-worktrees-and-topic-branch-integration.md)
+- [ADR 0007: Separate Schema Shape from Golden Evidence](./decisions/0007-schema-contract-composition-and-migration.md)
+- [ADR 0008: Godot C# with a CLI-First Remake Toolchain](./decisions/0008-godot-csharp-cli-first-remake-tooling.md)
+- [ADR 0009: First Phase 4 Playable Slice](./decisions/0009-first-phase4-playable-slice.md)
+- [ADR 0010: Map 3 to Battle 01 Product Acceptance Profile](./decisions/0010-map3-battle01-product-acceptance.md)
+- [ADR 0011: Phase 4 Remake Runtime Architecture](./decisions/0011-phase4-remake-runtime-architecture.md)
+- [ADR 0012: Dependency-Aware Partitioned Verification](./decisions/0012-dependency-aware-partitioned-verification.md)
+- [ADR 0013: Token-Efficient Agent Research without Weakening Evidence](./decisions/0013-token-efficient-agent-research-workflow.md)
+- [ADR 0014: Static-First Runtime Evidence after Map 3 to Battle 01](./decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)
+- [ADR 0015: Original-Reference Replay and H4 Boundary](./decisions/0015-original-reference-replay-and-h4-boundary.md)
+- [ADR 0016: Remake-Start Evidence Deferral](./decisions/0016-remake-start-evidence-deferral.md)
+- [ADR 0017: Heavy Boundaries, Light Internals](./decisions/0017-heavy-boundaries-light-internals.md)
+- [ADR 0018: Task Model Routing After the Astra Trial](./decisions/0018-astra-role-routing-trial.md)
+- [ADR 0019: State- and Content-Driven Remake Engine](./decisions/0019-state-and-content-driven-remake-engine.md)
 
 ## Evidence Vocabulary
 
