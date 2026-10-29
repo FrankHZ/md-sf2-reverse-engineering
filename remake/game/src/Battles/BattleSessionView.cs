@@ -190,7 +190,7 @@ public sealed partial class BattleSessionView : Control
         {
             _scene.Configure(session, _input.Settings, Audio); _retreat.Configure(session, _input.Settings);
             _give.Configure(session, _input.Settings); _discard.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings);
-            _story.Configure(session, _map);
+            _story.Configure(session, _map, _input);
         }
         if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
             !ReferenceEquals(_mapScenes, session.ActiveBattleScenes))

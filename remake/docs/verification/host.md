@@ -111,6 +111,151 @@ still be checked for errors. Original icon namespace selection remains with the
 [private icon owner](../content/presentation-assets.md#private-command-menu-icons); these map/sprite
 checks do not claim a new original-icon acquisition or asset redistribution right.
 
+## Shared story dialogue observation
+
+The [Standard agreement/current treatment](../godot/presentation.md#shared-story-dialogue-agreement)
+owns this bounded modern UI. Reuse the registered Godot, configured absolute SDK/shared CLI home,
+existing project and prepared private content. Load `local/private-inputs.ps1` in each launching
+process, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, run `uv sync --locked`, Release
+`uv run sf2 verify adapter`, and Debug `dotnet build remake/game/Sf2.Remake.Godot.csproj --no-restore`
+using `$env:DOTNET_BIN`. A changed adapter requires a new native load; no asset/toolchain export or
+copy is involved. No engine unit, full, research, H4 or screenshot suite is selected.
+
+`engine_story_dialogue_observation.gd` reuses the actual-host focus/input/report helpers from the
+viewport observer. It loads ordinary Main and supplies mapped key events only. It reads native
+panel/body/portrait/choice/hint rectangles, full shaped line counts, visible characters, reading
+coverage, real session tokens/choice phases and errors. A portrait must be a live textured child
+after the background, not merely a valid rectangle behind it. Reports are semantic checkpoints;
+they do not retain scene frames. Budget: one process, 75-second outer deadline, private loop at
+most 60 seconds, under 5 MiB per report. Stop and retain any failed/unavailable run; a passed flag
+with runtime/script errors is not accepted. Private source cases retain the observed two-ObjectDB
+shutdown warning; its cause is **Unknown**, not proven harmless.
+
+Create these small **pre-start authored inputs** in ignored `local/issue1393`, using Python from
+the owning checkout. They change no production content. The harbor copy omits its next battle
+so the existing Yes/automatic-transfer consumer returns to field control. The original package
+is still used by `skip`; the existing Jaro package supplies the battle-story consumer.
+
+```python
+import copy, json
+from pathlib import Path
+out = Path("local/issue1393"); out.mkdir(parents=True, exist_ok=True)
+base = json.loads(Path("remake/content/authored/harbor-arrival.json").read_text())
+base["world"]["maps"][1]["battle"] = None
+def write(name, value):
+    (out / (name + ".json")).write_text(json.dumps(value), encoding="utf-8")
+write("control", base)
+for mode in ("adjustable", "instant"):
+    write(mode, dict(formatVersion=1, textMode=mode, charactersPerSecond=40))
+long = copy.deepcopy(base)
+long["world"]["texts"][0]["text"] = "\n".join(
+    f"Passage {n}: The harbor keeper checks every ticket before the ferry leaves. "
+    "Read each account and choose whether to travel." for n in range(1, 36))
+write("overflow", long)
+repeat = copy.deepcopy(long)
+repeat["world"]["programs"][0]["instructions"][2:2] = [
+    dict(op="text-cursor", text=100), dict(op="show-text", mode="single", speaker=None)]
+write("repeat", repeat)
+failed = copy.deepcopy(base)
+failed["world"]["programs"][0]["instructions"][2:] = [dict(op="native-call",
+    symbol="unavailable-dialogue-service", source="authored-failure-boundary")]
+write("failure", failed)
+top = copy.deepcopy(base)
+top["start"]["position"]["y"] = 5
+top["world"]["maps"][0]["entities"][0]["position"]["y"] = 5
+write("top", top)
+```
+
+For `private`, `private-choice` or `private-yes`, use the retained selected Map3 world and controlled
+party from the [viewport recipe](#unified-world-viewport-observation): source player `(42,9)`, same
+explicit palette/text/display fields and flags `0,32,256,260,261,601,602`. Set
+`SF2_PRIVATE_EXPLORATION_CONTENT` and `SF2_PRIVATE_CONTROLLED_START` through the existing prepared
+selection (`local/issue1045/inputs.ps1` and its retained `world-route-13.json`/tracked
+`battle01-player-ready.json`); do not duplicate the private world or assets. Down then Right
+naturally enters Zone8 and runs the existing caller. This is controlled modern-host reach, not
+original natural timing. Missing retained inputs are a prerequisite, not acquisition authority.
+
+Choose a fresh run directory and selected absolute start/package path, then run from the owning
+checkout. Authored cases select `--authored-package`; private cases select
+`--private-exploration-start`. Settings are `instant.json` only for `instant`, otherwise
+`adjustable.json`. Case names and inputs are in the table below.
+
+```powershell
+$repo = (Get-Location).Path
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$case = 'repeat'
+$run = Join-Path $repo 'local/issue1393/reproduce-repeat'
+if (Test-Path -LiteralPath $run) { throw 'Choose a fresh run directory' }
+New-Item -ItemType Directory -Path $run | Out-Null
+foreach ($name in @('appdata','localappdata','temp')) {
+    New-Item -ItemType Directory -Path (Join-Path $run $name) | Out-Null
+}
+$env:APPDATA = Join-Path $run 'appdata'; $env:LOCALAPPDATA = Join-Path $run 'localappdata'
+$env:TEMP = Join-Path $run 'temp'; $env:TMP = $env:TEMP
+$env:SF2_VIEWPORT_CASE = $case
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $run 'native.json'
+$package = Join-Path $repo 'local/issue1393/repeat.json'
+$settings = Join-Path $repo 'local/issue1393/adjustable.json'
+& $env:GODOT_BIN --headless --path (Join-Path $repo 'remake/game') --max-fps 60 `
+    --resolution 1920x1080 --script res://probes/engine_story_dialogue_observation.gd -- `
+    --authored-package $package --input-settings $settings
+# Retain stdout/stderr alongside native.json and inspect both, plus the actual exit code.
+```
+
+| Case / selected input | Bounded observation |
+| --- | --- |
+| `authored`, `instant` / `control.json` | Hidden field dialogue; legal Talk/Wait; no invented name/portrait; incremental/reveal-all or instant; fresh acknowledgement; authored direct Yes/Cancel=No; same-session automatic transfer/close and fresh field movement. |
+| `top` / `top.json` | Same consumer with a bottom-edge subject; top placement stays stable through reveal, parent hide/show and question. |
+| `overflow`, `repeat` / matching JSON | 4,295 characters, 70 full shaped lines at 30px. Panel expands to 1440×1016; overlapping reading pages retain the token. Choice attachment preserves already-read coverage. `repeat` opens identical text in a new window and proves reading resets to the beginning. |
+| `failure` / `failure.json` | Acknowledge real authored text into existing unsupported native-call boundary; readable stopped wording, retained diagnostic/state, no automatic retry or response to later Confirm/Cancel. |
+| `private` / Zone8 start | Real portrait resources, side/mirror/eye/mouth selector, actual child order and safe native bounds; source lines through text525. |
+| `private-choice` / same start | Continues through531, retains default Yes, changes focus, holds Cancel=No without entering skip, releases, closes/deletes choices, naturally returns through532/533 to fresh field control. |
+| `private-yes` / same start | Holds Confirm=Yes through source choice, releases, observes deleted choice and next genuine text535 input; stops before later JOIN work. |
+| `battle` / authored `jaro-conversion.json` | Actual movement/stay trigger; two shared battle-story windows, retained physical camera slot/focus, real acknowledgements, correct close and fresh movement. |
+| `skip` / original authored `harbor-arrival.json` | Choice offers no skip; later eligible intro shows actual binding; held Cancel stops at handoff, release admits battle, fresh Confirm/Cancel operate its ordinary menu. |
+
+All executor cases below ran with `--headless`. They exercise actual Godot controls, layout,
+process/draw callbacks, mounted resources and injected mapped input, but do **not** establish
+windowed compositor delivery, OS window focus or physical-device behavior. Headless root-focus
+flags are only observer preconditions. Independent main-gate owns the bounded windowed checks;
+those results remain separate from these executor records. No executor windowed pass is claimed.
+
+**Confirmed at the candidate boundary:** the private portrait/Zone8 pilot and authored question/return
+pilot passed before expansion. Private No and Yes took about50/46 seconds, with24/22 compact samples
+and about122/115 KiB reports. Reached source question531 uses three shaped lines; its full binding
+hint measures71px and expands the panel to327px high, all within the safe area. The final repeated
+long-text case took about1.9 seconds with eight samples/54 KiB; top, instant, failure, battle-story
+and skip cases took about1–3.3 seconds each. Body/portrait/choice/hint bounds are disjoint and the
+world rectangle/96px scale remain unchanged. Exact head/build/check identities belong to the Issue
+and Draft PR freeze handoff; these are executor observations pending independent acceptance.
+
+**Independent main-gate windowed validation:** on the unchanged `7066720c` adapter
+(`fd037ee1` changed documentation only), main-gate reports authored, private-choice, repeat, battle,
+top, skip, failure and instant all **PASS**: eight processes exited0,64 semantic checkpoints,
+65.734 seconds observer time and289,323 bytes total. Its stdout/stderr checks found no runtime/script
+errors, focus Unavailable or shutdown warnings; its independent Release adapter build also passed
+with zero warnings/errors. Reproduce the same cases/installation/project/prepared inputs above by
+omitting `--headless`; keep the windowed logs/receipts separate. Results are retained in ignored
+`local/issue1393/main-gate-*` and `main-gate-window-results.json`. These supplied independent results
+do not erase executor headless shutdown warnings or establish physical-device/original fidelity.
+
+Retained failed attempts are in ignored `local/issue1393`: observer parse/type, numeric flag check,
+insufficient reveal/movement sequencing and the original harbor case's automatic battle entry
+were observer/input-plan failures. Product discoveries were the already-read authored question
+restarting reveal, lost reading coverage after choice-row resize, and the source choice hint
+exceeding its fixed footer. Their corrections passed focused reruns. The first repeated-window
+fixture accidentally advanced text100 to101; corrected explicit text-cursor selection proves the
+identical-window boundary. Completed failures/logs remain, including a four-ObjectDB warning on
+the failed first source-choice run. No completed failure is relabeled interrupted or erased.
+
+**Unknown/limits:** physical device release outside OS focus, original timing/audio/hardware fidelity,
+all-map or multi-resolution coverage and final aesthetic quality. Temporary source `HideWindows`
+retains identity by direct ownership review; parent hide/show is natively observed. Do not infer a
+new natural full-opening claim. Earlier A unsuitable-start/probe failures and missed-skip timing
+Unknown, B focus-loss Unavailable/physical-release Unknown, #689's entry timeout and #1386 exit
+warnings remain preserved. No broader original comparison or cleanup authority follows.
+
 ## Logical Input and Accessibility (ADR 0010 9A)
 
 `GameRoot` loads one `InputSettings`/`GameInput` owner before starting a session, installs its

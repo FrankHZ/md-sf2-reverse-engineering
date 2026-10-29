@@ -1,5 +1,76 @@
 # Godot Host and Presentation
 
+## Shared story dialogue agreement
+
+**Standard rigor; [#1393](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1393).**
+This bounded multi-consumer presentation change uses the accepted 1920×1080/96px world and
+existing session text, portrait, choice, wait, input and audio authorities. Ordinary field talk,
+source story text and existing battle-story dialogue share a blue/dark-blue panel, thin pale-gold
+border, 30px body and binding-derived hints. Initial dialogue geometry is 1440×280 with a 32px
+safe edge. UI overlays never resize or zoom the world. Extract field UI rather than growing its
+controller; native Godot Theme values serve these actual consumers, with no general UI framework.
+
+Acceptance covers private portrait/real Zone8 text, no-portrait authored text, reveal/all/instant,
+actual input pauses, both choice answers and release gates, automatic/failure feedback, stable
+subject-aware placement, close and fresh movement, and existing battle-story camera/waits. Measure
+native text bounds; expand the panel for reached content and use display-only reading pages for
+screen-sized overflow before acknowledging any script input. A window chooses top/bottom once
+for its lifetime. Portrait side/mirror/eyes/mouth/resources stay with the existing presenter.
+Names require admitted speaker-name metadata; raw entity/sprite identities are not names.
+
+No gameplay, source text/clock/input/audio policy, general skip, mouse, settings/history/autoplay,
+new font/art/export, whole-game migration or original hardware fidelity is included. Release adapter,
+necessary Debug/native load, direct source/doc/private checks and committed-head scoped CI are the
+gates; no new engine or observer tests and no research/full/H4 suite. Reuse the owned installation,
+project and prepared private content. Pilot one private portrait seam and one authored choice/return;
+then several finite semantic cases (minutes, small-MB output) with logs checked for runtime errors.
+Repeated observer repairs without useful evidence or a new cross-system authority require replanning.
+Retain prior focus-loss Unavailable, physical-release Unknown, missed-skip timing Unknown and exit
+warnings. Independent main-gate review owns integration; this agreement is the approved modern
+presentation direction and does not assert final aesthetic or all-map acceptance.
+
+### Current story presentation
+
+`ExplorationDialogueView` owns field text-to-label projection. The existing field controller still
+owns incremental speech, reveal delivery and all commands; `BattleStoryView` retains its camera,
+tick and acknowledgement boundary. `StoryDialoguePanel`, `StoryChoiceRow` and `ContextHint` own
+only native controls/layout/reading position. `StoryTheme` supplies the native Theme also used by
+the existing battle menu frames. There is no gameplay/wait/clock service in these widgets.
+
+At 1080p the panel begins at 1440×280, uses 30px body/24px hints, and measures full shaped text
+before incremental reveal. It expands within the 32px safe area; screen-sized overflow uses
+Confirm-driven reading pages with a line of overlap. Reveal-all omits incremental speech, retains
+the pending input and shows the full current segment. A later fresh Confirm reads remaining pages
+before it can acknowledge. Field `CompleteTextReveal` also waits for that display coverage; it
+remains distinct from script `Acknowledge`. Ordinary Cancel remains unable to skip dialogue.
+Reading resets on an explicitly new window/segment, including identical text; source append spans
+and temporary window hiding retain it. Attached choice rows cannot submit Confirm past unread
+content. Source Yes/default/Cancel=No and release phases remain session-owned; authored choices
+still mean direct Confirm=Yes/Cancel=No, without a fabricated source selection phase.
+
+Placement is selected once when a live window first becomes visible. It uses the projected speaker,
+retained camera subject or player and moves to the top only if the bottom covers that subject and
+the top is clear. Temporary `HideWindows` or parent hiding does not end the window. Opening/closing,
+text changes and reveal never move/resize the world. An expanding long panel may occupy more of
+the screen; it never chases the actor on every tick. Body, portrait, choices and measured hint rows
+have separate reserved space. The portrait TextureRect is a child **after** the background, using
+the existing presenter's cached texture, mirror/eye/mouth selector and source Work.Y movement
+(mapped into its reserved column). The presenter retains resource lifetime and source lifecycle;
+a second portrait service is not introduced.
+
+There is no reliable admitted entity-to-speaker-name mapping in the current field definition.
+Member-name substitutions in dialogue are not speaker attribution. Names are omitted deliberately;
+no raw identity or sprite heuristic is displayed. Ordinary field chrome hides package/debug names
+and shows only legal Talk and Hold Wait bindings. An automatic scene says “Scene in progress…”;
+Continue appears only at a real eligible input. Only the existing eligible entry service offers
+Skip battle intro. A failure replaces that chrome with “The scene has stopped” and the retained
+message/code above world fades, with no invented retry or timeout. Diagnostic observations retain
+package, tokens, raw identities and failure detail.
+
+The [finite host recipe](../verification/host.md#shared-story-dialogue-observation) owns reproduction,
+measured native results and limits. This is bounded modern presentation, not original timing,
+all-map coverage or final aesthetic approval.
+
 ## Authored battle discard presentation
 
 R / right stick down starts Drop from the ordinary battle ActionChoice; directions cycle exact
@@ -160,7 +231,8 @@ discussion with the user; Git integration and Epic closure remain main-gate resp
 The common design baseline is 1920×1080 (16:9). One map cell and ordinary 24×24 sprite
 frame occupy 96×96 output pixels: both consumers use nearest sampling at four output pixels
 per source pixel. The world fills the viewport (480×270 source pixels); UI overlays never resize
-or zoom it. Other resolutions, free zoom, a new theme and broader menu redesign are outside this slice.
+or zoom it. Other resolutions, free zoom and broader menu redesign remain outside the bounded world-layout
+work. The shared story treatment above supplies the current narrow Theme implementation.
 
 ### Unified world viewport agreement
 
