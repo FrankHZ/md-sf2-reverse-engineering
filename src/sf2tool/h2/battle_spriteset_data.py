@@ -149,7 +149,7 @@ def build_battle_spriteset_data_inventory(upstream_path: Path) -> dict[str, Any]
             "rowContentTracked": False,
             "existingBattle01Owner": {
                 "verifier": "src/sf2tool/h2/battle01.py",
-                "document": "docs/research/battle01-placement.md",
+                "document": "docs/research/chapters/grans-opening/battle01-placement.md",
             },
         },
         "runtimeQuestions": [

@@ -20,7 +20,7 @@ sequential delivery plan.
 | State/content-driven remake | Godot 4.7.2 .NET/C# hosts a common session with Domain rules, Application programs and validated Content. Authored packages and bounded private-local content are runnable. | [Play and develop](./remake/README.md), [capabilities and limits](./remake/docs/capability-status.md) |
 
 The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
-[current composed boundary](./docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
+[current composed boundary](./docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone).
 Accepted extensions cover Battle02 victory/defeat, field return and re-entry, plus selected early Yeel guidance,
 Kazin following and Battle03 play/control. **Battle03 outcomes, Hawel recruitment, later campaign,
 full services and save/load are not delivered by those extensions.**
@@ -68,7 +68,7 @@ English is canonical for design review. Chinese design mirrors follow the same r
 under `docs/design/zh-CN/` and the [glossary](./docs/design/glossary.md); research, ADRs and engine
 usage retain their English owners. The [documentation roadmap](./docs/design/documentation-roadmap.md)
 owns design scope and synchronization. The
-[battle-design analysis pilot](./docs/design/synthesis/battle-design-analysis-pilot.md) explains
+[battle-design analysis pilot](./docs/design/synthesis/analyses/battle-design-analysis-pilot.md) explains
 Battle01, Taros and Chessboard through preparation, enemy roles and simple responses with tradeoffs;
 its interpretations are labeled and its Chinese mirror is pending.
 
@@ -163,6 +163,11 @@ remake/                 Bounded Phase 4 implementation under the accepted runtim
 local/                  Ignored ROMs, saves, traces, upstream checkouts, and generated output
 ```
 
+Research folders group subjects and the existing story chapters. Contracts group responsibilities;
+synthesis separates themes, analyses, milestones and detailed chapters around its gameplay overview.
+The [documentation index](./docs/README.md#folder-map-and-authority) provides the reading routes, and
+Chinese design mirrors preserve the same relative folder hierarchy.
+
 The tracked `remake/` path now exists for the explicitly authorized bounded Phase 4 implementation.
 It currently contains concrete Domain, Application, Content, and thin Godot layers. Its architecture,
 runtime profiles and trust boundaries, capability status, and verification workflow are owned under
@@ -198,7 +203,7 @@ uv run sf2 verify plan --base origin/main --head HEAD
 uv run sf2 texture --help
 ```
 
-The texture commands and [technical graphics owner](./docs/research/technical-graphics.md) describe
+The texture commands and [technical graphics owner](./docs/research/presentation/technical-graphics.md) describe
 private extraction, map/UI rendering and their original-fidelity limits. Extracted images are private
 outputs, not evidence of a running Godot scene. Do not repeat extraction because a topic changes.
 

@@ -8,7 +8,7 @@ The adopted boundaries are [ADR 0011](../../docs/decisions/0011-phase4-remake-ru
 [ADR 0017](../../docs/decisions/0017-heavy-boundaries-light-internals.md) and
 [ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md).
 The [capability owner](capability-status.md) distinguishes runnable behavior, Unsupported and Unknown.
-The [accepted private milestone](../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+The [accepted private milestone](../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 does not establish full-game coverage, natural original reach, hardware parity or distribution rights.
 
 ## Purpose

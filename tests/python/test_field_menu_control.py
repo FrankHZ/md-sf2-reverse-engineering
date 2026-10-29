@@ -60,9 +60,11 @@ def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:
         assert len(evidence) == 1
         assert evidence[0]["fixture"] == _REQUEST_CONSUMPTION_FIXTURE
         assert evidence[0]["verifier"] == "src/sf2tool/h2/map_event_request_consumption.py"
-        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        assert record["documents"].count(
+            "docs/research/world/map-event-request-consumption.md"
+        ) == 1
         record["evidence"] = [item for item in record["evidence"] if item not in evidence]
-        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["documents"].remove("docs/research/world/map-event-request-consumption.md")
         retained_addresses = []
         for address in record["addresses"]:
             candidate = (record["id"], address["id"], address["value"])
@@ -401,16 +403,16 @@ def test_field_menu_index_bindings_are_exact_and_reject_alias_roots() -> None:
     assert actual == expected
     assert len(actual) == 24
     assert all(
-        "docs/research/field-menu-control.md" in record["documents"]
+        "docs/research/presentation/field-menu-control.md" in record["documents"]
         for record_id, record in records.items()
         if any(record_id == expected_record for expected_record, _, _ in expected)
     )
     field_main_documents = records["menus.field-main"]["documents"]
     assert field_main_documents[-2:] == [
-        "docs/research/field-search-control.md",
-        "docs/research/field-item-effects.md",
+        "docs/research/world/field-search-control.md",
+        "docs/research/world/field-item-effects.md",
     ]
-    assert field_main_documents.count("docs/research/field-search-control.md") == 1
+    assert field_main_documents.count("docs/research/world/field-search-control.md") == 1
 
     def invalid(field: str) -> None:
         broken = deepcopy(index)

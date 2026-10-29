@@ -484,7 +484,7 @@ def test_research_index_has_only_the_exact_action_completion_registration() -> N
     assert len(index["records"]) == 1625
 
     fixture_id = "sf2-map3-battle01-action-completion-static-v1"
-    document = "docs/research/map3-battle01-action-completion.md"
+    document = "docs/research/chapters/grans-opening/map3-battle01-action-completion.md"
     expected = {
         "battle.actions.engine": {
             "addresses": {
@@ -662,19 +662,27 @@ def test_research_index_has_only_the_exact_action_completion_registration() -> N
         ],
     }
     expected_design_contracts = {
-        "battle.actions.engine": ["docs/design/contracts/battle-action-construction.md"],
-        "battle.actions.break-used-item": ["docs/design/contracts/battle-action-construction.md"],
-        "battle.actions.perform-animation": ["docs/design/contracts/battle-action-construction.md"],
-        "battle.actions.display-message": ["docs/design/contracts/battle-action-construction.md"],
-        "battle.actions.animate": ["docs/design/contracts/battle-action-construction.md"],
-        "battle.followup.validate-double": ["docs/design/contracts/combat-resolution.md"],
-        "battle.followup.validate-counter": ["docs/design/contracts/combat-resolution.md"],
-        "battle.replay.end": ["docs/design/contracts/combat-resolution.md"],
-        "battle.replay.give-exp-and-gold": [
-            "docs/design/contracts/combat-resolution.md",
-            "docs/design/contracts/spell-resolution.md",
+        "battle.actions.engine": ["docs/design/contracts/battle/battle-action-construction.md"],
+        "battle.actions.break-used-item": [
+            "docs/design/contracts/battle/battle-action-construction.md",
         ],
-        "battle.functions.execute-turn": ["docs/design/contracts/battle-functions-control-flow.md"],
+        "battle.actions.perform-animation": [
+            "docs/design/contracts/battle/battle-action-construction.md",
+        ],
+        "battle.actions.display-message": [
+            "docs/design/contracts/battle/battle-action-construction.md",
+        ],
+        "battle.actions.animate": ["docs/design/contracts/battle/battle-action-construction.md"],
+        "battle.followup.validate-double": ["docs/design/contracts/battle/combat-resolution.md"],
+        "battle.followup.validate-counter": ["docs/design/contracts/battle/combat-resolution.md"],
+        "battle.replay.end": ["docs/design/contracts/battle/combat-resolution.md"],
+        "battle.replay.give-exp-and-gold": [
+            "docs/design/contracts/battle/combat-resolution.md",
+            "docs/design/contracts/battle/spell-resolution.md",
+        ],
+        "battle.functions.execute-turn": [
+            "docs/design/contracts/battle/battle-functions-control-flow.md",
+        ],
     }
 
     records = {record["id"]: record for record in index["records"]}

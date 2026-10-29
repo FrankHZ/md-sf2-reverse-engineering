@@ -336,7 +336,7 @@ def test_index_has_exact_existing_owner_delta_and_public_totals() -> None:
     assert sum(len(item["bindings"]) for _, item in evidence) == 12
     assert (
         sum(
-            record["documents"].count("docs/research/map3-original-player-reference-frame.md")
+            record["documents"].count("docs/research/chapters/grans-opening/map3-original-player-reference-frame.md")
             for record, _ in evidence
         )
         == 10

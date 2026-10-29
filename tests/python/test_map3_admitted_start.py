@@ -570,10 +570,10 @@ def test_index_bindings_close_primary_contract_and_keep_map3_aggregate_unassocia
 
     for contracts in (
         None,
-        ["docs/design/contracts/map-exploration.md"],
+        ["docs/design/contracts/world/map-exploration.md"],
         [
-            "docs/design/contracts/map3-controlled-admission.md",
-            "docs/design/contracts/map-exploration.md",
+            "docs/design/contracts/milestones/map3-controlled-admission.md",
+            "docs/design/contracts/world/map-exploration.md",
         ],
     ):
         drift = deepcopy(index)

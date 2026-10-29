@@ -153,7 +153,7 @@ is bounded. Unsupported door/warp/copy markers and map replacement fail explicit
 `entityfunctions_3.asm:ApplyActscriptToFollowers/WaitForPartyEntitiesIdle`,
 `code/common/scripting/map/followersfunctions_2.asm:InitializeFollowerActscripts`,
 `data/scripting/entity/followers.asm` and `eas_main.asm`; see the
-[accepted Caravan research](../../../docs/research/caravan-boarding-and-southwest-parmecia-travel.md).
+[accepted Caravan research](../../../docs/research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md).
 These static sources do not establish natural original reach, timing or persistence.
 
 Logical FOLLOWER_A, raw physical 0/1 and the current list suffix are separate operands. Facing-relative
@@ -392,8 +392,8 @@ initialization, living-member recovery and carried party/loadout/growth/accounti
 `exploration/explorationfunctions_2.asm:ExplorationLoop` establish payment, bypass, return selection
 and caller healing-before-fade. `battleloop/heallivingandimmortalallies.asm` separates ordinary dead
 members from 7/28 and refreshes after resource recovery. The accepted
-[admission/payment owner](../../../docs/research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
-and [supplied-map caller owner](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#victory-map12-control-or-warningretreat)
+[admission/payment owner](../../../docs/research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
+and [supplied-map caller owner](../../../docs/research/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md#victory-map12-control-or-warningretreat)
 retain original evidence and Unknowns. Reproduce the bounded source inspection with `rg -n` on those
 symbols in the pinned local checkout, and the modern behavior with the
 [EGRESS recipe](../verification/field-programs.md#battle02-egress-and-walking-retry).
@@ -492,7 +492,7 @@ These rules consume pinned `c834c652b6862bc5679fd7f69a38a7093206efc6` source:
 `loadBattle.asm:LoadBattle`, and `entityfunctions_1.asm:PositionBattleEntities`.
 `witchstart.asm` assigns `GAMESTART_MAP` to `EGRESS_MAP`; `getegresspositionforbattle.asm` and
 `egressinit.asm:GetSavepointForMap` consume the selected map. The accepted
-[Battle02 outcome owner](../../../docs/research/battle02-to-battle03-content-route.md) retains the
+[Battle02 outcome owner](../../../docs/research/chapters/grans-opening/battle02-to-battle03-content-route.md) retains the
 original evidence and Unknowns; remake observations establish implementation behavior only.
 
 Map66's source `data/maps/entries/map66/2-areas.asm` uses layer 254 with unit parallax and zero origins/
@@ -679,7 +679,7 @@ accepting-poll tick, then executes subsequent explicit operations. Generic `Adva
 is rejected at this admitted consumer. The [host contract and reproduction](../verification/field-programs.md#plain-text-input-gameplay-wait)
 cover reveal, delivery and input rearm.
 
-The [natural JOIN observation](../../../docs/research/map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)
+The [natural JOIN observation](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)
 confirms its named helper entry/return. **Unknown:** joint logical audio/service progress, the complete
 enabled VInt table and portrait counter chronology. The current program's entity setting is
 the admitted engine service state, not a sampled original service table. W2, active/unknown portrait
@@ -723,7 +723,7 @@ Generic elapsed `AdvanceSimulation` is rejected for all W1 delivery/input states
 reveal text without polling; accepting W1 does not play generic SFX67. Plain JOIN and choice
 semantics remain with their separate owners.
 
-**Confirmed (source):** the [reached W1 contract](../../../docs/design/contracts/dialogue-system.md#reached-w1-consumer-binding)
+**Confirmed (source):** the [reached W1 contract](../../../docs/design/contracts/interface/dialogue-system.md#reached-w1-consumer-binding)
 owns `textfunctions_1.asm:symbol_wait1/loc_659C/loc_65B4` and the distinct W2 tail at pinned
 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. The bounded ordinary caller is
 `mapsetupsfunctions_1.asm:RunMapSetupEntityEvent` → `map03/mapsetups/s2_entityevents.asm:Map3_EntityEvent2`,
@@ -767,7 +767,7 @@ Source cutscene motion waits require script idle, so a following caller may run 
 travel remains; ordinary field movement and authored default waits retain their physical/busy
 completion rule. No active infinite idle loop or second state authority is involved.
 
-The [idle/caller source owner](../../../docs/research/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
+The [idle/caller source owner](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
 records the Zone6 leading-wait consumer and the boundaries. Ordinary player control still
 supersedes its old action/follower continuation and establishes controlled motion settings after
 movement at the next existing service. Follower installation clears Actions; source phase
@@ -855,7 +855,7 @@ HandleDialogueTypewriting, HandleBlinkingDialogueCursor, sub_6AD2/sub_6AE0, Clos
 scrolling, sprites, windows, map animations. Only the admitted gameplay effects are modeled;
 no additional interrupt RNG or CPU-time padding is invented.
 
-The [binding evidence](../../../docs/research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding)
+The [binding evidence](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding)
 separates source facts, later saved bytes and inferred opening ancestry. The
 [verification owner](../verification/field-programs.md#bound-opening-field-text-observation)
 records actual settings comparisons and unresolved boundaries. Pending #517 speech policy remains;
@@ -900,7 +900,7 @@ during its close; a Trap6 caller retains activation through its close.
 and `code/common/scripting/map/mapscriptengine_2.asm:loc_47234` support this bounded service order.
 The wrapper binds `mapsetupsfunctions_1.asm:loc_4765E/loc_476A8/loc_476C4`.
 Trap9 appends the portrait after the installed base services; no global interrupt scheduler is
-introduced. The [research binding](../../../docs/research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
+introduced. The [research binding](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
 and [native observation](../verification/field-programs.md#bound-portrait-entity-event-observation)
 retain provenance and the actual caller-return boundary. The source-zone section below admits the first introduction; later camera/JOIN/battle consumers
 and original hardware/DMA timing remain outside this admission.
@@ -924,7 +924,7 @@ with the caller until arrival; script-idle/Busy are not the return condition.
 
 The current actual admission is the first Astral introduction at(58,13), including affected
 opening Zone6 and Sarah from the original bound start. No route, text, speaker, flag value or
-seed selects this runtime mechanism. The [source binding](../../../docs/research/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
+seed selects this runtime mechanism. The [source binding](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
 and [actual observation](../verification/field-programs.md#source-zone-caller-observation)
 record its limits. Later text500/501/F602, the second zone branch, camera, choice, JOIN and battle
 consumers remain separate. This extends no original runtime or distribution claim.
@@ -963,7 +963,7 @@ physical record. Missing source-table keys represent FF tombstones and survive s
 same-map preservation; only rebuilding population initializes fresh zero entries. Out-of-table
 selectors and references outside the 49 normal records stop as Unsupported. Authored maps without
 source population keep strict named-ID resolution. The accepted
-[lookup contract](../../../docs/design/contracts/map-exploration.md) owns the source boundary.
+[lookup contract](../../../docs/design/contracts/world/map-exploration.md) owns the source boundary.
 
 Ordered door copies run before traversal; flag copies run at rebuild; roof activation/restoration
 uses the shared layout reducers and signed area overlays. Source map255 same-map reload preserves
@@ -1028,7 +1028,7 @@ portrait services, with no poll/copy or fake acknowledgement. Held logical-input
 unadmitted; reveal/Ack cannot supply it. Other unbound controls remain Unsupported. Explicit
 sourceFF/null/no-event-speaker narration is admitted without replacing a retained portrait or
 inferring its absence; actual speech uses the null speaker and remains silent. Explicit closes
-still own removal. [Dialogue provenance/limits](../../../docs/design/contracts/dialogue-system.md#bound-neutral-text-delay-and-narration).
+still own removal. [Dialogue provenance/limits](../../../docs/design/contracts/interface/dialogue-system.md#bound-neutral-text-delay-and-narration).
 
 The map-init camera profile includes source layer255 with zero foreground/background offsets,
 unity parallax and zero autoscroll. It follows A rather than B, retaining identical initialized
@@ -1039,7 +1039,7 @@ Initialization quantizes before scaling/offset; destination and speed transforms
 axes. Ordinary actors subtract the area main plane; entity Layer still controls window priority.
 Foreground presence includes parallax differences. Other view profiles, outcome windows and camera-entity retain their explicit limits.
 Before-battle scene/windows use the separate bounded lifecycle below.
-[Source contract](../../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle).
+[Source contract](../../../docs/design/contracts/world/map-exploration.md#bound-field-camera-lifecycle).
 
 Actual engine cases cover nested camera and open/closed text returns, portrait registration/close,
 readiness and unsupported contexts, first/repeat flag branches and a distinct authored foreground
@@ -1086,8 +1086,8 @@ service, scrolls each axis independently and evaluates window hiding before scro
 entity→view/window→portrait service carries the live entity flag, shared RNG and poll-copy byte.
 Dialogue and nested returns retain the held camera. Actual ordinary field-control return restores
 the player's physical slot without clearing pending scrolling, positions or counter. The
-[source contract](../../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
-and [static provenance](../../../docs/research/map3-messenger-acceptance.md#source-bound-camera-lifecycle)
+[source contract](../../../docs/design/contracts/world/map-exploration.md#bound-field-camera-lifecycle)
+and [static provenance](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-camera-lifecycle)
 own these rules and their source limits.
 
 All bound draws use B logical positions/16 for base and layer0 actors, and A positions/16 for
@@ -1120,7 +1120,7 @@ With explicit field text/view settings, a nod validates the admitted field conte
 selects the transformed sprite, elapsed30 restores normal selection, and elapsed40 waits for actual
 completion before animation0 and caller continuation. Services retain the current entity flag and
 entity→view/window→portrait order, shared RNG and prior poll copy. Adjacent nods retain their own
-40 opportunities. This implements the [bounded source contract](../../../docs/design/contracts/map-exploration.md#bound-field-nod-lifecycle),
+40 opportunities. This implements the [bounded source contract](../../../docs/design/contracts/world/map-exploration.md#bound-field-nod-lifecycle),
 not a natural hardware-frame count.
 
 The adapter mounts the existing normal/transformed sprite resources and draws the semantic phase,
@@ -1189,7 +1189,7 @@ Astral135 text2292/W2 confirmation to2293/W1 input. These operands identify obse
 No tick/seed, route endpoint or instruction index controls production legality. Bound white palette
 services follow the rule below; the bound before-body/first-input acceptance is described below.
 The older unbound full Battle01 admission is separate evidence; modern carried-party/RNG admission
-and original natural cadence remain open. [Source/semantic contract](../../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
+and original natural cadence remain open. [Source/semantic contract](../../../docs/design/contracts/world/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
 
 ### Bound physical camera tracking
 
@@ -1213,7 +1213,7 @@ installation/motion. Later portrait/text opening and input retain the real befor
 route. Idle input presentation performs no camera service. Bound white palette uses the finite
 service below; complete before-body,
 later effects and battle admission are separate. [Observation](../verification/field-programs.md#bound-physical-camera-tracking-observation)
-and [contract](../../../docs/design/contracts/map-exploration.md#bound-physical-camera-target) own this boundary.
+and [contract](../../../docs/design/contracts/world/map-exploration.md#bound-physical-camera-target) own this boundary.
 Independent ordinary native readback reaches tracked motion and three later W1s before the white
 Unsupported. Its raw observer FAIL from two expected-stop assertions is preserved separately from
 semantic readback PASS; the corrected observer has not been executed.
@@ -1223,7 +1223,7 @@ semantic readback PASS; the corrected observer has not been executed.
 **Confirmed, bounded:** the same R1 session continues from Map21 `(5,15)` through the accepted
 46-input Map21/40 extension, the marked Map40 exit, complete `bbcs_01`, source new-battle
 initialization, `LoadBattle` presentation, empty start hook and the first actual battle input.
-The [admission evidence owner](../../../docs/research/map3-battle01-admission.md) and its H2/H3 fixtures
+The [admission evidence owner](../../../docs/research/chapters/grans-opening/map3-battle01-admission.md) and its H2/H3 fixtures
 own the original facts. The pinned `mainloop.asm`, `battleloop_1.asm`, `loadBattle.asm`,
 `cs_beforebattle.asm`, map script engine and map entity allocator supply executable content.
 The ordinary program never reads those comparison fixtures.
@@ -1307,7 +1307,7 @@ must be set and F64/F640 clear, selecting (32,13)/UP. This is a controlled egres
 for the original campaign's natural producer.
 
 Normal Map3 reload retains the real `cs_513BA` hide and removed entity142 alias. At exactly
-`byte_513A8:1`, the [accepted source contract](../../../docs/design/contracts/map-exploration.md) permits
+`byte_513A8:1`, the [accepted source contract](../../../docs/design/contracts/world/map-exploration.md) permits
 the four writes into inactive window scratch to have no further map/entity/camera effect: windows
 are empty, old presentation work has drained, and a new window is rebuilt before publication.
 The common renderer has no emulated DMA queue. The selected
@@ -1407,8 +1407,8 @@ admitted EventCaller portrait. **Unknown:** incoming original global24/6 repeat/
 release-spin CPU interrupts, debug turbo, gold-window lifecycle, exact menu raster and hardware
 DMA timing. These exclusions do not prevent both answers in the declared fresh semantic stream.
 JOIN's audio/input/live-service coupling remains separate. See the
-[source contract](../../../docs/design/contracts/map-exploration.md#source-bound-choice-consumer),
-[original provenance](../../../docs/research/map3-messenger-acceptance.md#source-bound-choice-lifecycle)
+[source contract](../../../docs/design/contracts/world/map-exploration.md#source-bound-choice-consumer),
+[original provenance](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-choice-lifecycle)
 and [observation owner](../verification/field-programs.md#source-bound-choice-observation).
 
 ## Raw field display
@@ -1431,15 +1431,15 @@ remains at that instruction. No PresentationWait is created and actual finite-au
 cannot release gameplay through previous-music, plain input or script return. Existing PCM playback
 and unbound presentation observations retain their previous applicability.
 
-The [source contract](../../../docs/design/contracts/map-exploration.md#raw-field-text-and-the-music-boundary)
-and [provenance](../../../docs/research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
+The [source contract](../../../docs/design/contracts/world/map-exploration.md#raw-field-text-and-the-music-boundary)
+and [provenance](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
 separate this supported raw-text rule from the unknown sound-to-service clock. The known505 driver
 updates are not a duration in entity services. See [verification](../verification/field-programs.md#raw-field-text-observation)
 for behavior and native expected-boundary acceptance.
 
 ## Modern Finite Music
 
-The [accepted modern policy](../../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+The [accepted modern policy](../../../docs/design/contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)
 uses optional finite audio metadata `modernEndStep`; the private lowerer emits505 for command19.
 The reader permits a positive endpoint only on non-looping music. Ordinary playback needs no profile.
 `MusicProgress` retains cue, semantic generation, previous stack, map/area, progress, actual completion
@@ -1478,7 +1478,7 @@ the existing one-service input-first rule without a W1/W2 copy. Bound plain Ack 
 accepted W2 requests validation67. Ack, close/Sleep10, follower/position
 instructions and script/Zone return reuse their owners. No production rule names text447, cs-51614
 or a selected seed. [Verification](../verification/field-programs.md#modern-finite-music-observation)
-owns behavior cases and the bounded native JOIN return. The [current composed milestone](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+owns behavior cases and the bounded native JOIN return. The [current composed milestone](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 has separate acceptance; this JOIN observation alone does not prove full-route or hardware parity.
 
 ### Bound white palette
@@ -1504,7 +1504,7 @@ The white-helper observation ends at Chester2297 W1 after all six white helpers 
 intervening source waits. It does not establish the following bound mosaic/shiver, complete before
 body, battle load/input or winning trace. The bound continuation is described below; the next genuine
 Unsupported blocker is **Unknown** until observed. See [verification](../verification/field-programs.md#bound-white-palette-observation)
-and [source/semantic rule](../../../docs/design/contracts/map-exploration.md#bound-map-white-finite-service).
+and [source/semantic rule](../../../docs/design/contracts/world/map-exploration.md#bound-map-white-finite-service).
 
 ### Bound before-body and battle entry
 
@@ -1519,7 +1519,7 @@ ordinary first-queue RNG draws without adding a field opportunity.
 
 Bound generic `PresentationWait`, including mosaic/shiver and retained-profile loader delivery,
 now uses the existing visibility/focus suspension and zero-debt resume. Effect completion/restoration
-and unbound/music policy are unchanged. The [contract](../../../docs/design/contracts/map-exploration.md#bound-before-body-and-battle-loader-ownership)
+and unbound/music policy are unchanged. The [contract](../../../docs/design/contracts/world/map-exploration.md#bound-before-body-and-battle-loader-ownership)
 distinguishes this modern loader policy from original LoadBattle opportunities. **Confirmed (bounded remake):** the ordinary full bound
 before-body and first-input observation passes through the [verification route](../verification/field-programs.md#bound-before-body-and-battle-entry-observation).
 

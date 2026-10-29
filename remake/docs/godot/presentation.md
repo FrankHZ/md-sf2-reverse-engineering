@@ -416,9 +416,9 @@ menu geometry is introduced. Source-original range pixels, animation and hardwar
 ### Modern UI experiment
 
 The user-selected direction for #438 retains the original diamond command arrangement and spatial
-input relationships. The [common-menu input contract](../../../docs/research/common-menus.md#confirmed-input-contracts)
+input relationships. The [common-menu input contract](../../../docs/research/presentation/common-menus.md#confirmed-input-contracts)
 maps up/left/right/down to choices 0/1/2/3; the
-[battle action contract](../../../docs/design/contracts/battle-functions-control-flow.md)
+[battle action contract](../../../docs/design/contracts/battle/battle-functions-control-flow.md)
 orders attack, magic, item and search-or-stay. Search admission remains a gameplay/content decision;
 an interface experiment showing Stay does not remove the source-specific Search route.
 
@@ -491,7 +491,7 @@ Unknown source palette/layer/timing or final pixels remain unproved by modern no
 
 The bound camera admits zero-autoscroll layer0/255, with unity/origin0 on the main plane and
 secondary per-axis parallax128/256 and tile offsets0–63, within nonnegative signed-word positions.
-[Source/behavior contract](../../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
+[Source/behavior contract](../../../docs/design/contracts/world/map-exploration.md#bound-field-camera-lifecycle)
 owns initialization, transforms, independent scroll speeds and main-plane follow. A and B logical
 origins remain source state. Their modern draw origins derive from the shared presentation origin
 with each plane's admitted parallax and offsets; foreground presence compares both offsets and parallax.

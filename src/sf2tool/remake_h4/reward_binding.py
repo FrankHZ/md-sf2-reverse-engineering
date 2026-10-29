@@ -19,10 +19,10 @@ def reward_consumer_binding(actual, context, source_root):
         occurrences=[],
         sourceRules=dict(
             upstream=UPSTREAM,
-            owner="docs/design/contracts/combat-resolution.md",
-            growth="docs/design/contracts/level-up.md",
-            spells="docs/design/contracts/spellbook-state.md",
-            lifecycle="docs/design/contracts/battle-control-lifecycle.md",
+            owner="docs/design/contracts/battle/combat-resolution.md",
+            growth="docs/design/contracts/party/level-up.md",
+            spells="docs/design/contracts/party/spellbook-state.md",
+            lifecycle="docs/design/contracts/battle/battle-control-lifecycle.md",
             binding="source initial profile -> observed reward/growth -> first Party.Progress",
         ),
         unknown=[

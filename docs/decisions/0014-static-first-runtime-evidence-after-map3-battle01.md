@@ -116,4 +116,4 @@ this ADR supplies its immediate runtime admission rule.
 - [ADR 0010: Map 3 to Battle 01 Product Acceptance Profile](./0010-map3-battle01-product-acceptance.md).
 - [ADR 0013: Token-Efficient Agent Research without Weakening Evidence](./0013-token-efficient-agent-research-workflow.md).
 - [ADR 0016: Remake-Start Evidence Deferral](./0016-remake-start-evidence-deferral.md).
-- [Map 3 to Battle 01 Research Audit](../research/map3-battle01-audit.md).
+- [Map 3 to Battle 01 Research Audit](../research/chapters/grans-opening/map3-battle01-audit.md).

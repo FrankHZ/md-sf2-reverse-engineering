@@ -35,7 +35,7 @@ INDEX_SCHEMA = ROOT / "schemas/research-index.schema.json"
 UPSTREAM = ROOT / "local/upstream/SF2DISASM"
 ROM = ROOT / "local/roms/sf2-us.bin"
 BASE = "0fe7e33b96f39761198404de60d3f0fd5456c426"
-DOCUMENT = "docs/research/map-event-request-state.md"
+DOCUMENT = "docs/research/world/map-event-request-state.md"
 VERIFIER = "src/sf2tool/h2/map_event_request_state.py"
 
 
@@ -609,9 +609,11 @@ def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:
         if not evidence:
             continue
         assert len(evidence) == 1
-        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        assert record["documents"].count(
+            "docs/research/world/map-event-request-consumption.md"
+        ) == 1
         record["evidence"] = [item for item in record["evidence"] if item not in evidence]
-        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["documents"].remove("docs/research/world/map-event-request-consumption.md")
         record["addresses"] = [
             address
             for address in record["addresses"]

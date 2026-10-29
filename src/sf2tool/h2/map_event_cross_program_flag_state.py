@@ -42,7 +42,7 @@ RESEARCH_INDEX = repo_path("manifests/research-index.json")
 
 _UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 _ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
-_PREDECESSOR_INDEX_SHA256 = "4D526EB33ED5A76D9D69D54E62FC6AB4B412603A16641928566A68200C7C656A"
+_PREDECESSOR_INDEX_SHA256 = "03BA7D92F94A119A3C26A5C20FD432BAD3A3AFE38568E81937F9A05018A64B7D"
 _CATEGORIES = ("entityEvents", "zoneEvents", "itemEvents")
 _PROGRAM_FIELDS = {
     "entityEvents": "entityTargetPrograms",
@@ -88,7 +88,7 @@ _CURRENT_MAP_EVENTS_VERIFIER_SHA256 = (
     "F07892A4C590E452BCD8CB3683992DBD953EC2AB2E5CCF1A740DCFFBB0CD19CA"
 )
 _CURRENT_FLAG_LIFECYCLE_VERIFIER_SHA256 = (
-    "9E1541E988E9FAB95B7D59B07B8873965E3EA4AB205372092CDA32D2925BEAFE"
+    "AB007034F335D80D61C013D8F896ED6A6CAE468F966ED367E9506F8A3C5D9A8E"
 )
 _UNKNOWN_KEYS = (
     "naturalProgramReachability",
@@ -936,7 +936,7 @@ def _remove_map_event_cross_program_flag_state_later_owner_index_delta(
             ("entry", "crossProgramFlagState.serviceJoin.trapEntryAddress")
         ],
     }
-    document = "docs/research/map-event-cross-program-flag-state.md"
+    document = "docs/research/world/map-event-cross-program-flag-state.md"
     seen: set[str] = set()
     for record in records:
         record_id = record.get("id")

@@ -44,14 +44,14 @@ Start with the systems below, then choose a theme:
 
 | Reader question | Next reading |
 | --- | --- |
-| What can a combatant attempt, and how do turns become effects and outcomes? | [Tactical Battle Loop](tactical-battle-loop.md). |
-| How do membership, growth, equipment, items, magic and services constrain later choices? | [Progression and Economy](progression-and-economy.md) and the [force section](#the-force-membership-active-roles-and-character-growth). |
-| What changes between parts of the world, and which branches have their own gates? | [Story Progression's six chapter groups](story-progression.md#read-story-content-in-segments). |
-| How do location, facing, layout, interaction and transition state compose? | [Map Design Principles](map-design-principles.md). |
-| Which state survives a return, and what is actually saved? | [World return and persistence](#world-return-and-persistence-continuing-play-is-distinct-from-saving-it) and the [save contract](../contracts/save-system.md). |
+| What can a combatant attempt, and how do turns become effects and outcomes? | [Tactical Battle Loop](themes/tactical-battle-loop.md). |
+| How do membership, growth, equipment, items, magic and services constrain later choices? | [Progression and Economy](themes/progression-and-economy.md) and the [force section](#the-force-membership-active-roles-and-character-growth). |
+| What changes between parts of the world, and which branches have their own gates? | [Story Progression's six chapter groups](themes/story-progression.md#read-story-content-in-segments). |
+| How do location, facing, layout, interaction and transition state compose? | [Map Design Principles](themes/map-design-principles.md). |
+| Which state survives a return, and what is actually saved? | [World return and persistence](#world-return-and-persistence-continuing-play-is-distinct-from-saving-it) and the [save contract](../contracts/system/save-system.md). |
 
-For one cross-system example, follow the [southern travel chapter](story-progression.md#southern-travel-caravan-and-creed)
-to [Taros and the Caravan](story-progression.md#worked-example-taros-and-the-caravan).
+For one cross-system example, follow the [southern travel chapter](themes/story-progression.md#southern-travel-caravan-and-creed)
+to [Taros and the Caravan](themes/story-progression.md#worked-example-taros-and-the-caravan).
 It connects a conditional Sword pickup, Rohde's proposal, encounter admission, Bowie's equipped-weapon
 rule, outcomes and a separately initiated traversal option. Missing custody, refusal, ineffective
 attacks and non-victory returns explain why the connections cannot be read as guaranteed progress.
@@ -97,12 +97,12 @@ location of the player: it can supply a resource or alter the conditions for a l
 explains how movement and interaction connect to story and party state without assigning purpose to
 an unobserved route or claiming that every path is useful or reachable.
 
-Read [map exploration](../contracts/map-exploration.md) for geometry, working-layout preservation,
-ordered selectors and movement rules, and [gameflow research](../../research/gameflow-core.md) for
-event/input priority and interaction admission. [Map Design Principles](map-design-principles.md)
+Read [map exploration](../contracts/world/map-exploration.md) for geometry, working-layout preservation,
+ordered selectors and movement rules, and [gameflow research](../../research/system/gameflow-core.md) for
+event/input priority and interaction admission. [Map Design Principles](themes/map-design-principles.md)
 explains the structural content. **Unknown:** campaign-wide route quality, authorial intent and
 original movement feel. Reached map/motion consumers in the accepted private slice have their own
-[composition boundary](../contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding);
+[composition boundary](../contracts/milestones/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding);
 that does not establish hardware frame equality or every map's behavior.
 
 ## Interaction and story: state selects the next local behavior
@@ -120,16 +120,16 @@ map setup or program; a roster change can affect later party state; a transition
 world state back to routing. Dialogue and movement can accompany those changes, but a program return
 alone cannot prove that the player saw or heard them finish.
 
-That presentation distinction is important for input. The [dialogue contract](../contracts/dialogue-system.md)
+That presentation distinction is important for input. The [dialogue contract](../contracts/interface/dialogue-system.md)
 now includes reached text-wait bindings beyond its older handler-local matrix. The accepted private
 composition binds reached displayed text, acknowledgement, continuation and actual input readiness.
 Reached presentation semantics are accepted within that composition. **Unknown original behavior**
 still includes unobserved callers, complete original service timing and hardware output;
 the earlier shims remain handler observations, not retroactive proof of unshimmed display.
 
-Use [Story Progression](story-progression.md) for the wider state-routing explanation and
-[party/roster state](../contracts/party-roster-state.md) for command and runtime boundaries. The
-[continuous scenario](../contracts/map3-battle01-continuous-scenario.md) owns the reached route and
+Use [Story Progression](themes/story-progression.md) for the wider state-routing explanation and
+[party/roster state](../contracts/party/party-roster-state.md) for command and runtime boundaries. The
+[continuous scenario](../contracts/milestones/map3-battle01-continuous-scenario.md) owns the reached route and
 source/consumer connections. Those narrower current owners govern reached behavior where older
 synthesis prose retains broader Unknowns. **Unknown:** complete plot chronology, route exclusivity,
 player-choice consequences and the meaning of unobserved story flags.
@@ -161,9 +161,9 @@ provides the members, stats, equipment and spells consumed by later battles. Tha
 explanation of preparation and growth, but it does not prove an optimal party, promotion time,
 character role or intended difficulty curve.
 
-Follow [party/roster state](../contracts/party-roster-state.md), [common stats](../../research/common-stats.md),
-[level-up](../contracts/level-up.md) and [ally growth](../../research/ally-growth.md) for definitions and
-parameters; [Progression and Economy](progression-and-economy.md) connects reward stages. **Unknown:**
+Follow [party/roster state](../contracts/party/party-roster-state.md), [common stats](../../research/party/common-stats.md),
+[level-up](../contracts/party/level-up.md) and [ally growth](../../research/party/ally-growth.md) for definitions and
+parameters; [Progression and Economy](themes/progression-and-economy.md) connects reward stages. **Unknown:**
 the complete player roster choice space, recruitment lifecycle and campaign-level growth experience.
 The accepted slice's roster and growth results do not close those wider questions.
 
@@ -201,9 +201,9 @@ resources; those effects affect who remains available and whether battle continu
 outcome state connect the local tactical loop back to growth and the world. This explains a tactical
 decision surface without recommending a strategy or inferring fairness, balance or pacing.
 
-Read [Tactical Battle Loop](tactical-battle-loop.md), [battle-loop research](../../research/battle-loop.md),
-[combat resolution](../contracts/combat-resolution.md), [spell resolution](../contracts/spell-resolution.md)
-and [randomness](../contracts/randomness.md). The accepted slice has reached action/AI/turn/scene
+Read [Tactical Battle Loop](themes/tactical-battle-loop.md), [battle-loop research](../../research/battle/battle-loop.md),
+[combat resolution](../contracts/battle/combat-resolution.md), [spell resolution](../contracts/battle/spell-resolution.md)
+and [randomness](../contracts/system/randomness.md). The accepted slice has reached action/AI/turn/scene
 compositions; broader action families and caller states retain their owners' limits. **Unknown:** a
 general full-game simulation's predictive accuracy, complete encounter behavior and intended tactics.
 
@@ -212,7 +212,7 @@ general full-game simulation's predictive accuracy, complete encounter behavior 
 **Confirmed bounded original example:** the observed HEAL 1 action spends the caster's MP and restores
 the target's missing HP up to the permitted recovery amount. It can also produce EXP under the
 applicable healer/reward rules. The [healing fixture](../../../tests/fixtures/h3/spell-healing-v1.json)
-and [spell contract](../contracts/spell-resolution.md) retain that controlled self-cast's cost,
+and [spell contract](../contracts/battle/spell-resolution.md) retain that controlled self-cast's cost,
 recovery and replay; it is not a rule for every spell or caster.
 
 HP, MP, held items, gold, EXP and stored service resources are different state. **Confirmed bounded
@@ -242,8 +242,8 @@ choices. A damaged member, a spell's MP requirement, inventory capacity or a ser
 the next legal action. How often players encounter those constraints, and whether they create
 scarcity or grinding pressure, remain **Unknown** without campaign and balance context.
 
-The [service contract](../contracts/service-interactions.md), [spell contract](../contracts/spell-resolution.md),
-[common stats](../../research/common-stats.md) and [Progression and Economy](progression-and-economy.md)
+The [service contract](../contracts/party/service-interactions.md), [spell contract](../contracts/battle/spell-resolution.md),
+[common stats](../../research/party/common-stats.md) and [Progression and Economy](themes/progression-and-economy.md)
 own these distinctions and parameter tables. A source inventory or one successful battle is not a
 campaign economy. Reached HEAL/item presentation belongs to the continuous composition; service
 menus outside that slice keep their separate evidence and implementation limits.
@@ -254,10 +254,10 @@ menus outside that slice keep their separate evidence and implementation limits.
 for battle. An ordinary `BattleLoop` return instead passes through map switching directly into
 exploration, without another immediate battle check. A warp-style exploration return re-enters the
 outer admission route; scrolling stays within exploration and does not perform that scan. The
-[gameflow owner](../../research/gameflow-core.md#main-and-exploration-contract) and
-[map lifecycle explanation](map-design-principles.md#return-and-persistence) retain these caller
+[gameflow owner](../../research/system/gameflow-core.md#main-and-exploration-contract) and
+[map lifecycle explanation](themes/map-design-principles.md#return-and-persistence) retain these caller
 distinctions. Hidden Battle0 returns to EndGame's software-reset path, as the
-[tactical return account](tactical-battle-loop.md#returning-from-battle-is-not-yet-usable-exploration)
+[tactical return account](themes/tactical-battle-loop.md#returning-from-battle-is-not-yet-usable-exploration)
 explains. Returning from a controller is one boundary. A settled map with usable input is a later
 boundary, established separately in the demonstrated slice below.
 
@@ -301,7 +301,7 @@ combatant-data domain from the defeated list outside it. A mutation being retain
 not automatically mean it is part of a durable save. **Unknown:** complete campaign-state survival
 and physical-medium behavior.
 
-Read [save-system](../contracts/save-system.md) and [party/roster](../contracts/party-roster-state.md)
+Read [save-system](../contracts/system/save-system.md) and [party/roster](../contracts/party/party-roster-state.md)
 for those original boundaries. The current remake milestone explicitly excludes user save/load and
 suspend under [ADR 0010's persistence scope](../../decisions/0010-map3-battle01-product-acceptance.md#6-save-and-resume-scope).
 A playable return therefore does not claim a modern save system. Autosave, atomic writes, recovery
@@ -310,7 +310,7 @@ UX and broader persistence remain future product decisions with their own accept
 ## A demonstrated connected slice
 
 **Confirmed accepted private remake milestone:** the
-[current acceptance owner](map3-battle01-readiness.md#accepted-current-milestone) accepts one continuous
+[current acceptance owner](milestones/map3-battle01-readiness.md#accepted-current-milestone) accepts one continuous
 Map 3 → Battle 01 victory → usable field return composition. Its player-facing connection is:
 
 1. Enter the controlled admitted Map 3 state and use ordinary movement and interaction along the
@@ -326,10 +326,10 @@ Map 3 → Battle 01 victory → usable field return composition. Its player-faci
 4. Win, complete the after-battle program and world return, then reach a settled field that accepts
    ordinary input. Victory result alone is insufficient; usable return is the endpoint.
 
-The [original acquisition owner](../../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
+The [original acquisition owner](../../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
 establishes a bounded savestate-linked winning lineage from controlled R1 to natural victory and
 stable Map 57 readiness. It is not uninterrupted wall time or a natural New/load route. A separate
-[return-input observation](map3-battle01-readiness.md#accepted-original-frontier) confirms an ordinary
+[return-input observation](milestones/map3-battle01-readiness.md#accepted-original-frontier) confirms an ordinary
 Down input and settled displacement. Terminal original pairs remain nonresumable. These observations
 support their named original boundaries; they do not turn the modern clock's trajectory into an
 unchanged original golden or establish full-game presentation.
@@ -353,12 +353,12 @@ schedule new runtime acquisition.
 The following are **Confirmed accepted remake decisions**, not inferred original behavior:
 
 - **Modern logical time:** finite music uses the accepted
-  [deterministic clock policy](../contracts/music-wait-service.md#accepted-modern-finite-music-policy).
+  [deterministic clock policy](../contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy).
   Logical completion and actual matching playback completion are separate gates. Host delivery delay
   adds no logical opportunities or tick debt. This can change shared RNG history, actor order and
   later resources, so acceptance keeps matched-state local rules and mandatory route effects rather
   than requiring the old whole-history trace unchanged. It authorizes no production reseed.
-- **Player waiting:** the [evidenced Wait policy](../contracts/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
+- **Player waiting:** the [evidenced Wait policy](../contracts/milestones/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
   permits player waiting only at admitted consumers with the required caller/service/phase binding.
   Mandatory logical work, a player Wait and display/audio delivery delay are distinct. Different
   interactive choices can diverge from the reproducible acceptance trace.
@@ -390,13 +390,13 @@ means choosing a remake behavior. A direction can need more than one kind of wor
 
 | Direction | Accepted knowledge and owner | Question that remains | Kind of useful next work |
 | --- | --- | --- | --- |
-| Exploration and map content | Ordered setup/events, working layouts, interaction and movement rules in [map exploration](../contracts/map-exploration.md); structural reading in [Map Design Principles](map-design-principles.md); one connected route is demonstrated. | Which additional reachable interactions and routes should readers understand, and which should the remake offer beyond the mandatory slice? | Synthesis can organize existing map/interaction content. A new reach/outcome claim needs original research; broader playable exploration needs a product decision. |
-| Story and world progression | Flag/program/dialogue/transition boundaries in [Story Progression](story-progression.md) and [dialogue](../contracts/dialogue-system.md), with reached chronology in the [continuous scenario](../contracts/map3-battle01-continuous-scenario.md). | What is the supported chronology and consequence of other story paths, rather than the meaning suggested by a source name? | Organize accepted program/state relationships first. New campaign chronology or choice consequences need original research; narrative changes need a product decision. |
-| Party, classes and growth | Distinct membership/active/AI/follower state in [party/roster](../contracts/party-roster-state.md); source-backed growth and refresh in [level-up](../contracts/level-up.md). | What complete player choice and capacity lifecycle is supported, and how do recruitment, promotion, equipment and growth connect over the campaign? | Synthesis can explain accepted character/class content. Wider lifecycle and numerical application gaps need research; roster or balance changes need a product decision. |
-| Tactical rules and encounters | Local control, movement/target, resolution and outcome owners linked by [Tactical Battle Loop](tactical-battle-loop.md), plus accepted reached Battle 01 compositions. | Which unobserved action, AI, terrain or encounter branches matter for the next bounded behavior? Can the accepted contracts support that behavior together? | Organize existing action/encounter content. A concrete missing original rule needs research; broader action scope or rebalance needs a product decision. A general simulator is not implied. |
-| Items, magic, services and economy | Bounded spell/item/reward flows in [Progression and Economy](progression-and-economy.md), [spells](../contracts/spell-resolution.md) and [services](../contracts/service-interactions.md), including Church runtime seams. | Where and when are services admitted, what survives later reload, and what campaign context supports a resource or curve explanation? | Synthesis can join existing definitions and transaction rules. New admission/persistence or campaign claims need research; modern service UX or economy changes need a product decision. |
-| Persistence and re-entry | Original slots and in-process save/suspend boundaries in [save-system](../contracts/save-system.md); current milestone excludes user persistence. | What original state survives the complete lifecycle, and what modern save/recovery behavior should be offered? | Original survival/failure behavior needs research if required by a fidelity claim. Modern storage and recovery require a product decision before implementation; usable field return already has its separate accepted boundary. |
-| Interface, feedback and accessibility | Reached consumer semantics and accepted input/text/music choices in the [current milestone](map3-battle01-readiness.md#accepted-current-milestone) and [presentation owner](../../../remake/docs/godot/presentation.md). | Which wider information, accessibility, asset and input experience is wanted beyond this private keyboard slice? | Synthesis can explain accepted feedback and deviations. Wider UX/art/input coverage requires product choices; original presentation research is justified only by a concrete required semantic gap, not every hardware Unknown. |
+| Exploration and map content | Ordered setup/events, working layouts, interaction and movement rules in [map exploration](../contracts/world/map-exploration.md); structural reading in [Map Design Principles](themes/map-design-principles.md); one connected route is demonstrated. | Which additional reachable interactions and routes should readers understand, and which should the remake offer beyond the mandatory slice? | Synthesis can organize existing map/interaction content. A new reach/outcome claim needs original research; broader playable exploration needs a product decision. |
+| Story and world progression | Flag/program/dialogue/transition boundaries in [Story Progression](themes/story-progression.md) and [dialogue](../contracts/interface/dialogue-system.md), with reached chronology in the [continuous scenario](../contracts/milestones/map3-battle01-continuous-scenario.md). | What is the supported chronology and consequence of other story paths, rather than the meaning suggested by a source name? | Organize accepted program/state relationships first. New campaign chronology or choice consequences need original research; narrative changes need a product decision. |
+| Party, classes and growth | Distinct membership/active/AI/follower state in [party/roster](../contracts/party/party-roster-state.md); source-backed growth and refresh in [level-up](../contracts/party/level-up.md). | What complete player choice and capacity lifecycle is supported, and how do recruitment, promotion, equipment and growth connect over the campaign? | Synthesis can explain accepted character/class content. Wider lifecycle and numerical application gaps need research; roster or balance changes need a product decision. |
+| Tactical rules and encounters | Local control, movement/target, resolution and outcome owners linked by [Tactical Battle Loop](themes/tactical-battle-loop.md), plus accepted reached Battle 01 compositions. | Which unobserved action, AI, terrain or encounter branches matter for the next bounded behavior? Can the accepted contracts support that behavior together? | Organize existing action/encounter content. A concrete missing original rule needs research; broader action scope or rebalance needs a product decision. A general simulator is not implied. |
+| Items, magic, services and economy | Bounded spell/item/reward flows in [Progression and Economy](themes/progression-and-economy.md), [spells](../contracts/battle/spell-resolution.md) and [services](../contracts/party/service-interactions.md), including Church runtime seams. | Where and when are services admitted, what survives later reload, and what campaign context supports a resource or curve explanation? | Synthesis can join existing definitions and transaction rules. New admission/persistence or campaign claims need research; modern service UX or economy changes need a product decision. |
+| Persistence and re-entry | Original slots and in-process save/suspend boundaries in [save-system](../contracts/system/save-system.md); current milestone excludes user persistence. | What original state survives the complete lifecycle, and what modern save/recovery behavior should be offered? | Original survival/failure behavior needs research if required by a fidelity claim. Modern storage and recovery require a product decision before implementation; usable field return already has its separate accepted boundary. |
+| Interface, feedback and accessibility | Reached consumer semantics and accepted input/text/music choices in the [current milestone](milestones/map3-battle01-readiness.md#accepted-current-milestone) and [presentation owner](../../../remake/docs/godot/presentation.md). | Which wider information, accessibility, asset and input experience is wanted beyond this private keyboard slice? | Synthesis can explain accepted feedback and deviations. Wider UX/art/input coverage requires product choices; original presentation research is justified only by a concrete required semantic gap, not every hardware Unknown. |
 
 The [roadmap's selected English source set](../documentation-roadmap.md#selected-english-source-set-and-reconciliation)
 now connects the five themes and six chapter groups. No substantive rewrite of these selected themes

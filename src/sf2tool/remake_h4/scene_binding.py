@@ -22,7 +22,7 @@ def battle_scene_consumer_binding(actual, context, source_root, read_document):
         occurrences=[],
         sourceRules=dict(
             upstream=UPSTREAM,
-            owner="docs/design/contracts/battle-scene-presentation.md",
+            owner="docs/design/contracts/battle/battle-scene-presentation.md",
             commands="ExecuteBattlesceneScript; InitializeBattlescene; "
             "bsc00/01/0A/0B/0D/10; EndBattlescene",
             construction="battlesceneScript_ApplyActionEffect/SwitchTargets/GiveExpAndGold/End",

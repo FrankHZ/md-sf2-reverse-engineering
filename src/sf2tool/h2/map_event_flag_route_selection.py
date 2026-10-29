@@ -94,7 +94,7 @@ _RETAINED_OWNER_EXPECTED = {
     },
 }
 _CURRENT_CROSS_PROGRAM_VERIFIER_SHA256 = (
-    "BC408CE83A95FAF5429703D8FFE47B3F562060D1334A6998301A7E4B9D6BD723"
+    "F066BA76B2D819A502D5076D7F9850F309396262ECECBEDA38BB65F61EAD0066"
 )
 _CURRENT_MAP_EVENTS_VERIFIER_SHA256 = (
     "F07892A4C590E452BCD8CB3683992DBD953EC2AB2E5CCF1A740DCFFBB0CD19CA"
@@ -792,7 +792,7 @@ def _remove_map_event_flag_route_selection_later_owner_index_delta(
             ("entry", "flagRouteSelection.retainedIdentities.mapSetupsEntryAddress")
         ],
     }
-    document = "docs/research/map-event-flag-route-selection.md"
+    document = "docs/research/world/map-event-flag-route-selection.md"
     seen: set[str] = set()
     for record in records:
         expected_bindings = bindings.get(record.get("id"))

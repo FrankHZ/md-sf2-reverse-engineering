@@ -21,7 +21,7 @@ field/scene logical services remain fixed source-specific algorithms. The
 
 The private continuous Map 3 through Battle 01 victory and usable-return milestone is accepted under
 keyboard A, the modern deterministic clock and composed 8D/H4 semantics. The
-[readiness owner](../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+[readiness owner](../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 records independent acceptance and unchanged historical reports. Natural original reach, hardware 8C,
 full-game parity and public distribution remain outside that acceptance. The
 [retained evidence route](./docs/evidence/retained-comparisons.md) preserves failed comparisons,

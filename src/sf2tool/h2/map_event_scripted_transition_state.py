@@ -28,7 +28,7 @@ FIXTURE = repo_path("tests/fixtures/h2/map-event-scripted-transition-state-stati
 SCHEMA = repo_path("schemas/h2/map-event-scripted-transition-state-static-fixture.schema.json")
 _ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
 _UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
-_PREDECESSOR_INDEX_SHA256 = "9A08422491985FF3277A11A1F2BFE2277D3D379FF12681EF835F44AF70CB671D"
+_PREDECESSOR_INDEX_SHA256 = "B2A46C3AFA171B733DBC3DC9570C9895A4F3D2C1D5FB0B6BDC525E1AC286A103"
 _SOURCE_PATHS = (
     "data/maps/entries/map44/mapsetups/scripts.asm",
     "sf2cutscenemacros.asm",
@@ -760,7 +760,7 @@ def _remove_map_event_scripted_transition_state_later_owner_index_delta(
     }
     if len(bindings) != 17 or sum(len(rows) for rows in bindings.values()) != 20:
         raise ValueError("scripted-transition index delta denominator drift")
-    document = "docs/research/map-event-scripted-transition-state.md"
+    document = "docs/research/world/map-event-scripted-transition-state.md"
     expected_address = {
         "id": "map21-default-zone-event",
         "space": "rom",

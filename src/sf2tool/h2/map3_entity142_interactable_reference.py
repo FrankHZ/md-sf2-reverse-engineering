@@ -66,7 +66,7 @@ _DECODED_BYTES = 576
 _HALF_BYTES = 288
 
 _INDEX_FIXTURE = "tests/fixtures/h2/map3-entity142-interactable-reference-static-v1.json"
-_INDEX_DOCUMENT = "docs/research/map3-entity142-interactable-reference.md"
+_INDEX_DOCUMENT = "docs/research/chapters/grans-opening/map3-entity142-interactable-reference.md"
 _INDEX_VERIFIER = "src/sf2tool/h2/map3_entity142_interactable_reference.py"
 _INDEX_BINDINGS = {
     "scripting.map.mapfunctions": (("entry", "static.indexBindings.initializeMapEntities"),),
@@ -82,7 +82,7 @@ _INDEX_BINDINGS = {
     "auxiliary.data.pt-mapsprites": (("entry", "static.indexBindings.mapspritePointerTable"),),
     "tech.graphics.display-init": (("palette-base", "static.indexBindings.paletteBase"),),
 }
-_PREDECESSOR_INDEX_SHA256 = "7F5388A2D8F95C3046D9878E912E7E4508055CCBB6CE6E047091871A851F3B1D"
+_PREDECESSOR_INDEX_SHA256 = "B994DFF00FBAFE776BB7BDF8E7AC4288927F7888CB2BB6255C17CA15BC81B2CB"
 
 
 def canonical_json_bytes(value: dict[str, Any]) -> bytes:

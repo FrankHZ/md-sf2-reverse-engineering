@@ -43,7 +43,7 @@ counter: every such delta is zero in this governance slice.
 ### Post-victory ordinary-input acquisition (Issue #515)
 
 Issue #515 extends the accepted segmented victory rail to observe RA-12's next ordinary input and
-its settled state effect. The [acquisition owner](../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515)
+its settled state effect. The [acquisition owner](../research/chapters/grans-opening/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515)
 owns the concrete source/preparation boundary, missing fields, shortest compatible method and
 retained costs. Prepared-86 remains terminal/nonresumable; old execution sources or raw settings
 cannot be migrated to bypass compatibility. A fresh compatible natural chain retains the full
@@ -57,7 +57,7 @@ later tooling diagnostics and all newly incurred costs; native evidence still ne
 acceptance and a tracked result handoff.
 
 **Confirmed (bounded native observation, 2026-09-22):** after PR519 source/preparation acceptance,
-the [Issue515 result](../research/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)
+the [Issue515 result](../research/chapters/grans-opening/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)
 retains the observed natural victory/after-program spine and pre-input facts, then observes one Down
 read and movement acceptance at frame 61011. Map57 player `(5,12)` becomes `(5,13)`, settled at 61023/61024,
 with original raw displacement, complete state readbacks and no pending consumers. All 19 new
@@ -69,7 +69,7 @@ independent result acceptance; this evidence does not itself close RA-12, remain
 
 ### Bounded instrumented HEAL diagnostic (Issue #546)
 
-The [HEAL diagnostic method](../research/map3-messenger-acceptance.md#instrumented-heal-diagnostic-method-issue-546)
+The [HEAL diagnostic method](../research/chapters/grans-opening/map3-messenger-acceptance.md#instrumented-heal-diagnostic-method-issue-546)
 may reuse the explicitly named, accepted Issue515 nonterminal parent through the existing acquisition
 rail. Its measurement provenance is distinct from the immutable parent's observer/runner identity;
 ordinary exact-identity continuation remains unchanged. Only the reviewed observer/runner addition
@@ -88,13 +88,13 @@ Source implementation and offline preparation do not authorize restore or native
 Main-gate independently reviews frozen source/candidate before dispatch; missing coverage, incompatible
 load or failed cleanup remains Failed/Unknown. This amendment neither reopens the disabled original
 replay nor grants a new replay launch budget. The
-[accepted neutral self-HEAL1 diagnostic](../research/map3-messenger-acceptance.md#accepted-neutral-self-heal1-diagnostic)
+[accepted neutral self-HEAL1 diagnostic](../research/chapters/grans-opening/map3-messenger-acceptance.md#accepted-neutral-self-heal1-diagnostic)
 confirms its named parent restore and live consumer boundary. Compatibility beyond that instance,
 other settings/targets, input shortening and broader native-state equivalence remain **Unknown**.
 
 ### Bounded first-warp field-return diagnostic (Issue #534)
 
-The [named method](../research/map3-messenger-acceptance.md#first-warp-field-return-diagnostic-method-issue-534)
+The [named method](../research/chapters/grans-opening/map3-messenger-acceptance.md#first-warp-field-return-diagnostic-method-issue-534)
 reuses fresh controlled R1 acquisition to distinguish first post-FadeIn field return
 from subsequent neutral player waiting. No accepted pre-warp R1 parent is available.
 The leaf retains the first source poll after warp/init with fade clear before ordinary
@@ -130,7 +130,7 @@ Research evidence and cannot generate original truth inside its comparison.
 
 The specific [Issue 473](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/473)
 authorization permits governance, minimal implementation and offline preparation with **zero emulator
-starts**. Its [Map3 owner](../research/map3-messenger-acceptance.md#bounded-interactive-acquisition)
+starts**. Its [Map3 owner](../research/chapters/grans-opening/map3-messenger-acceptance.md#bounded-interactive-acquisition)
 reuses the existing bridge and controlled R1 start. R1 initialization and final restoration are
 declared interventions. Between R1 service/scratch restoration and final cleanup, ordinary controller
 input is the only advancing mechanism: no RAM/register/ROM writes, forced flags, prompt results,
@@ -155,7 +155,7 @@ supersedes prior per-run approval stops, fixed cumulative ceilings and failure r
 Main-gate retains independent review/integration. Historical failures, consumed starts and resource
 costs remain unchanged; disabled frozen replay is not reopened.
 
-The [Map3 owner](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485) defines
+The [Map3 owner](../research/chapters/grans-opening/map3-messenger-acceptance.md#savestate-linked-segments-issue-485) defines
 early closed-field checkpoints, live entity/consumer readiness and original B cancellation recovery.
 Ordinary not-ready input/save requests remain paused nonterminal zero-frame results. No direct RAM,
 register, actor or RNG repair is allowed. Save/load execute outside callbacks and require coherent
@@ -171,22 +171,22 @@ Standalone bridge limits are unaffected. Initial accounting includes every faile
 inherit sealed and failed-child consumption without fabricating observer/emulator clocks.
 
 Acceptance requires an actual early save → verified native load → forward later save, followed by
-independent review. The [house → native load → Sarah forward-save chain](../research/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
+independent review. The [house → native load → Sarah forward-save chain](../research/chapters/grans-opening/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
 is now **Confirmed** by actual execution and independent acceptance. Its
-[forward continuation](../research/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
+[forward continuation](../research/chapters/grans-opening/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
 includes independently accepted messenger and native Map19 saves.
-Later [royal/guard saves and loads](../research/map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
-are independently accepted. The [fresh compatible chain](../research/map3-messenger-acceptance.md#corrected-chain-and-player-entry-window-count-failure)
+Later [royal/guard saves and loads](../research/chapters/grans-opening/map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
+are independently accepted. The [fresh compatible chain](../research/chapters/grans-opening/map3-messenger-acceptance.md#corrected-chain-and-player-entry-window-count-failure)
 confirms the corrected CheckBattle return and original battle lifecycle. It reaches the first-player
 input PC but fails a mistaken final window-count predicate; this is not passed readiness. Pinned
 source/H1/ROM shows the normal mini status window contributes to that count while movement input is
 available. Removing only that incorrect modal inference retains the actual consumer/input/transfer
 guards and requires another fresh compatible chain with all costs retained. No parent-identity waiver
-is allowed. The [next compatible chain](../research/map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
+is allowed. The [next compatible chain](../research/chapters/grans-opening/map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
 confirms window-count handling but rejects mode 5 of `FADING_SETTING`, which the original enables for
 nonblocking movement-grid pulsation before accepting player input. The final-only correction admits
 idle mode 0 or that selected mode 5 and retains the other input/consumer/transfer guards; field/save
-fade checks are unchanged. The [final compatible chain 33–37](../research/map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition)
+fade checks are unchanged. The [final compatible chain 33–37](../research/chapters/grans-opening/map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition)
 now provides **Confirmed** actual first-player-ready acceptance and an independently reviewed,
 nonresumable final evidence pair. At `0x22E70`, actor 2 has window count 2 and palette mode 5 with
 the other actual blocking guards clear. Observer frame 22368/emulator frame 22367 at the callback
@@ -209,7 +209,7 @@ attempts and cannot override this user-directed stabilization.
 [Issue #496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/496) is the user's next
 authorized #437 outcome after accepted #485. It reuses segmented interactive acquisition for
 ordinary player/AI actions, natural victory, the actual after-program and controllable 5B. The
-[existing acquisition owner](../research/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496)
+[existing acquisition owner](../research/chapters/grans-opening/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496)
 defines the explicit continuation, source bindings, input consumers, reconstructible battle-return
 descriptors, unsupported outcomes and final readiness predicate. No new fixture/transport/framework
 or frozen replay is admitted. The previous terminal pair remains nonresumable; changed execution
@@ -253,13 +253,13 @@ its host cleanup does not prove missing final observer restoration/callback clea
 the same distinct Unknown. Totals through that failed chain were **96 starts / 12405.304031100066 seconds /
 304294 frames / 10553 batches**, including every branch and failure.
 
-The [acquisition owner](../research/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
+The [acquisition owner](../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
 records the bounded native result and minimal offline correction: source-bound map 57 void setup
 selection and the after-cutscene's actual shared function-tail ownership. After independent PR503
 source/preparation acceptance, prepared-68 starts a fresh R1 with all historical costs; strict
 identities prohibit loading old-source pairs. Prepared-68..86 finish at a nonresumable terminal
 pair, with all 19 native exits, entry restoration, callback removal and ROM cleanup confirmed.
-The [final result](../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
+The [final result](../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
 records bounded **Confirmed** original victory/after-program return and settled neutral field frames
 61009/61010 with actual player-control polls at Map57 (5,12), facing DOWN and battle255. Current
 interactive totals are **115 starts / 14197.020479699888 seconds / 365304 frames / 13351 batches**;
@@ -452,4 +452,4 @@ private-boundary, ownership, or stop-loss requirements.
 - [ADR 0012: Dependency-Aware Partitioned Verification](./0012-dependency-aware-partitioned-verification.md).
 - [ADR 0014: Static-First Runtime Evidence after Map 3 to Battle 01](./0014-static-first-runtime-evidence-after-map3-battle01.md).
 - [ADR 0016: Remake-Start Evidence Deferral](./0016-remake-start-evidence-deferral.md).
-- [Map 3 Battle 01 Victory and Return Static Evidence](../research/map3-battle01-victory-return.md).
+- [Map 3 Battle 01 Victory and Return Static Evidence](../research/chapters/grans-opening/map3-battle01-victory-return.md).

@@ -27,7 +27,7 @@ def w1_consumer_binding(actual, context, source_root):
         occurrences=[],
         sourceRules=dict(
             upstream=UPSTREAM,
-            owner="docs/design/contracts/dialogue-system.md",
+            owner="docs/design/contracts/interface/dialogue-system.md",
             section="reached-w1-consumer-binding",
         ),
         unknown=[

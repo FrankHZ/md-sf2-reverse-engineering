@@ -26,7 +26,7 @@ def turn_order_consumer_binding(actual, context, source_root):
         diagnostics=[],
         historicalDiagnostic="Unavailable",
         sourceRules=dict(
-            upstream=UPSTREAM, owner="docs/design/contracts/battle-control-lifecycle.md"
+            upstream=UPSTREAM, owner="docs/design/contracts/battle/battle-control-lifecycle.md"
         ),
     )
     checks = ConsumerChecks()

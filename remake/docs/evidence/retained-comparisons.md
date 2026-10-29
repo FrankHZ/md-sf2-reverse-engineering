@@ -2,7 +2,7 @@
 
 This route preserves the distinction between accepted behavior and the reports that support only
 part of it. The current private continuous Map 3-through-Battle 01 victory and usable return is
-[independently accepted](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+[independently accepted](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 under keyboard A, modern clock and composed 8D/H4 scope. This does not rewrite individual verdicts,
 prove a corrected whole-A trajectory, natural original reach, hardware parity or full-game coverage.
 
@@ -176,7 +176,7 @@ complete results and actual CLI diagnostics, without turning every missing depen
 
 ## Scoped field-service comparison
 
-The [selected field-service contract](../../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding)
+The [selected field-service contract](../../../docs/design/contracts/milestones/map3-battle01-continuous-scenario.md#selected-field-service-rule-and-consumer-binding)
 composes pinned original rules, accepted executed mechanisms and bounded current native
 input/state/Draw observations. Reuse the retained six cases; no raw-A selection or
 continuous route is needed:
@@ -210,7 +210,7 @@ plus contradiction. Complete reports must retain check order, historical failure
 
 ## Scoped W1 consumer comparison
 
-The [selected W1 contract](../../../docs/design/contracts/map3-battle01-continuous-scenario.md#selected-w1-consumer-binding)
+The [selected W1 contract](../../../docs/design/contracts/milestones/map3-battle01-continuous-scenario.md#selected-w1-consumer-binding)
 uses the existing compact retained-A selection, original outcome records69–74, its final copy witness,
 and the bounded map3/NPC-history supplement. No SDK, host, emulator, full H4, matrix or repeated raw
 capture scan is needed.
@@ -220,9 +220,9 @@ capture scan is needed.
 ## Scoped W2 consumer comparison
 
 Use the retained `current-A-w2.jsonl`, `current-A-w2-tail.jsonl`, `w2-occurrences.json` and selected A
-audio receipts described by [the accepted policy](../../../docs/design/contracts/dialogue-system.md#w2-composed-semantic-acceptance).
+audio receipts described by [the accepted policy](../../../docs/design/contracts/interface/dialogue-system.md#w2-composed-semantic-acceptance).
 The `w2` mode evaluates only the
-[composed W2 child](../../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding);
+[composed W2 child](../../../docs/design/contracts/milestones/map3-battle01-continuous-scenario.md#composed-w2-consumer-binding);
 no SDK, native host, original capture, whole-A scan, full H4 or matrix is needed.
 
 [Complete evidence and reproduction](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/development-and-verification.md#scoped-w2-consumer-comparison).
@@ -284,7 +284,7 @@ Historical required-A observations lack actual turn operands, so that child rema
 Use the complete retained default-keyboard A audio channel and only its necessary scene/music/input
 dependencies. `audio` evaluates the existing replacement/fade/stop/resume child and always reports
 `milestonePass=false`; it does not load the reference, outcomes, resources or settings matrix. The
-[contract](../../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
+[contract](../../../docs/design/contracts/milestones/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
 owns the composed proof and remaining Unknowns. No route, emulator, native host or SDK build is needed.
 
 [Complete evidence and reproduction](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/development-and-verification.md#scoped-audio-consumer-comparison).
@@ -337,7 +337,7 @@ No original runtime acquisition or complete H4 acceptance is implied.
 ## Composed mutable-map verification
 
 The current keyboard-A mutable-map boundary is owned by the
-[continuous contract](../../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-mutable-map-delivery).
+[continuous contract](../../../docs/design/contracts/milestones/map3-battle01-continuous-scenario.md#composed-mutable-map-delivery).
 Use the shared `map_consumer_binding` through the bounded standalone command:
 
 [Complete evidence and reproduction](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/development-and-verification.md#composed-mutable-map-verification).

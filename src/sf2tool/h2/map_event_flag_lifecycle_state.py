@@ -60,7 +60,7 @@ RESEARCH_INDEX = repo_path("manifests/research-index.json")
 
 _ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
 _UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
-_PREDECESSOR_INDEX_SHA256 = "4241E190B1C52409862AD53412DCCC1F1E8BA3A9868725EC77631851854C6CB1"
+_PREDECESSOR_INDEX_SHA256 = "89A667FA769D5246C7DDBB39D6EC7BFC1053CDF636AE1115FC26E45741030195"
 _CATEGORIES = ("entityEvents", "zoneEvents", "itemEvents")
 _PROGRAM_FIELDS = {
     "entityEvents": "entityTargetPrograms",
@@ -953,7 +953,7 @@ def _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
             ("entry", "flagLifecycleState.serviceDefinitions.chkFlg.trapEntryAddress")
         ],
     }
-    document = "docs/research/map-event-flag-lifecycle-state.md"
+    document = "docs/research/world/map-event-flag-lifecycle-state.md"
     seen: set[str] = set()
     for record in records:
         record_id = record.get("id")

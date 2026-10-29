@@ -494,7 +494,7 @@ It rechecks current/reserved entity obstruction, opens any reached door, resolve
 the warp marker before passability, and installs allowed travel. Remaining slots
 use that old scene and the player's new reservation. A reached warp is dispatched
 only after the complete pass; it does not add a second entity update.
-The [source owner](../../../docs/research/map3-controlled-start-egress-transition.md#entity-service-before-the-warp-caller)
+The [source owner](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#entity-service-before-the-warp-caller)
 records the original caller order separately from this engine implementation.
 
 Destination admission reuses the pure `MapTransfer.Apply` construction before
@@ -539,7 +539,7 @@ load waits and Preserve/Rebuild transfer. The new scene is mounted black; existi
 onLoad programs run before the BASE/CURRENT colors 2+3 comparison selects FadeIn.
 That helper includes ExecuteFading's extra service. Field control requires both
 logical and actual visible completion. These services implement the
-[source helper contract](../../../docs/research/map3-controlled-start-egress-transition.md#finite-full-black-helpers-and-visible-return),
+[source helper contract](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#finite-full-black-helpers-and-visible-return),
 not a fixed total interrupt quota.
 
 `FullFadeWait` records period/countdown/table entry, the helper's extra service,
@@ -680,7 +680,7 @@ leaves the same ordered gameplay events. Both raw histories remain retained.
 The initial stricter historical-event equality assertion failed and is preserved
 as readback discovery, not a failed native run or permission to repeat it.
 
-The [source/phase owner](../../../docs/research/map3-controlled-start-egress-transition.md#first-warp-entity-phase-readback)
+The [source/phase owner](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#first-warp-entity-phase-readback)
 records all25 first-return field differences and the earlier R1 binding gaps. To
 reproduce directly without the local report script, run the following Python after
 loading that environment; it prints every differing common field from the retained
@@ -726,7 +726,7 @@ Physical travel, velocity, facing, flagsB and animation survive setup. Authored
 configuration and NPC services are unaffected. Program/dialogue/init/load/fade or
 failed returns do not acquire this control. `ExplorationDispatcher` uses the same
 collision policy for preview, without committing setup early; blocked moves retain
-only their normal facing change. See the [source and remaining gaps](../../../docs/research/map3-controlled-start-egress-transition.md#ordinary-source-population-control-handoff).
+only their normal facing change. See the [source and remaining gaps](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#ordinary-source-population-control-handoff).
 
 The affected `ExplorationSessionTests` names start with `ControlledSetup`,
 `ControlledHandoff` and `ControlledPreview`. They exercise actual reducers under
@@ -788,7 +788,7 @@ PR belong to the slice handoff; this result does not grant integration or H4 acc
 
 ### Source idle and caller verification
 
-The [source/caller owner](../../../docs/research/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
+The [source/caller owner](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
 and [content contract](../application/session-and-programs.md#definitions-and-execution) define the current
 installation policies, terminal idle and script-completion boundary. Engine behaviors in
 `ExplorationSessionTests` named `SourceIdle*` and `SourceScriptInstallation*` exercise timer7
@@ -1059,7 +1059,7 @@ broader run. This engine-only boundary does not require adapter, Godot or origin
 ## Bound opening field-text observation
 
 Use the [execution profile](../application/session-and-programs.md#bound-field-text-work) and its
-[source/settings provenance](../../../docs/research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding).
+[source/settings provenance](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding).
 `ExplorationTextWaitTests` exercises actual glyph/window/view reducers and session commands:
 fresh/reused windows, changed widths and names, scroll/wrap, repeated W1/W2 and tails, source
 speed/mouth/input versus reveal, optional/accepting polls with NPC RNG, indicator phases,
@@ -1152,7 +1152,7 @@ original acquisition totals and original-run delta0 are unchanged.
 
 The [portrait consumer](../application/session-and-programs.md#bound-entity-event-portrait) extends the bound
 field-text profile through an actual entity wrapper return. Its
-[source owner](../../../docs/research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
+[source owner](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
 separates static rules from original runtime evidence. Engine behavior tests in
 `ExplorationTextWaitTests` cover legal changed speakers/flags and first/repeat branches, absent,
 fresh, retained and Unknown portraits, register/remove boundaries, source counters, no-W tails,
@@ -1244,7 +1244,7 @@ return and grants no admission to later zone/camera/JOIN/battle consumers.
 
 The [source-zone consumer](../application/session-and-programs.md#source-zone-caller) includes generic opening
 Zone6, Sarah and the first Astral introduction through caller return. Its
-[source owner](../../../docs/research/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
+[source owner](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
 separates static source order from actual remake evidence. Engine cases cover legal slopes,
 map-blocked markers versus entity obstruction, producing-pass completion, preserved motion/timer,
 live service flags, empty/skipped handlers, registered/absent/Unknown portraits, changed speakers,
@@ -1299,8 +1299,8 @@ publicaggregate/h3-witch NONRUN, cleanup21/41/61/67 and speech-policy#517 remain
 
 ## Source-bound camera observation
 
-The [static source/data owner](../../../docs/research/map3-messenger-acceptance.md#source-bound-camera-lifecycle),
-[contract](../../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle) and
+The [static source/data owner](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-camera-lifecycle),
+[contract](../../../docs/design/contracts/world/map-exploration.md#bound-field-camera-lifecycle) and
 [consumer](../application/session-and-programs.md#source-bound-camera) bind destination/scroll/wait/hold and
 ordinary-control restoration. Existing producer target/wait pairs and common services are reused;
 no Content/schema/input reconstruction is required. Logical B/A origins drive the whole bound
@@ -1427,7 +1427,7 @@ and workflow retirement are recorded in the [evidence owner](../evidence/retaine
 
 ## Source-bound nod observation
 
-The [source owner](../../../docs/research/map3-messenger-acceptance.md#source-bound-nod-lifecycle) and
+The [source owner](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-nod-lifecycle) and
 [consumer](../application/session-and-programs.md#source-bound-nod) bind forty explicit services, independently
 of presentation latency. `BoundNodsOwnFortyServicesAndResetBeforeTheNextCommand` covers actor
 selection, changed seeds/speeds, idle and physically moving actors, enabled/suppressed services,
@@ -1859,7 +1859,7 @@ failure; corrected observations do not erase them. All prior failure/Unknown app
 
 ## Modern Finite-Music Observation
 
-The [accepted clock](../../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+The [accepted clock](../../../docs/design/contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)
 changes the affected historical trajectory comparisons under
 [ADR0010](../../../docs/decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock).
 Preserve original expected values and completed failures. The existing H4 projector/comparator has

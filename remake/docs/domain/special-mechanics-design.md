@@ -108,10 +108,10 @@ authored physical gate, followed by the bounded [leader-cleanup agreement](../ca
 chapter binding are still proposed. Source dodge/critical/follow-up/end-EXP ordering and later sleep
 are preserved at the implementation owner; ineffective is not a zero-total-RNG or zero-end-EXP action.
 
-**Confirmed static sources:** [initial gate and its lifetime](../../../docs/research/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime),
-[action-drop custody](../../../docs/research/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody),
-and [outcome/acquisition](../../../docs/design/synthesis/battle18-outcomes-and-caravan-acquisition.md).
-The [tactical explanation](../../../docs/design/synthesis/tactical-battle-loop.md#equipment-can-gate-an-effect-taros)
+**Confirmed static sources:** [initial gate and its lifetime](../../../docs/research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime),
+[action-drop custody](../../../docs/research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody),
+and [outcome/acquisition](../../../docs/design/synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md).
+The [tactical explanation](../../../docs/design/synthesis/themes/tactical-battle-loop.md#equipment-can-gate-an-effect-taros)
 joins them without making a universal immunity claim.
 
 The effectiveness conjunction is initial construction in Battle18, actor Bowie, ATTACK, target
@@ -166,10 +166,10 @@ independent acceptance; no generic damage-hook platform is proposed.
 
 ## Jaro: region programs and two logical actors sharing a visual
 
-**Confirmed static sources:** [region wrapper](../../../docs/research/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene),
-[conversion and aliasing](../../../docs/research/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases),
-[retained enemy slot](../../../docs/research/battle32-initialization-and-opening.md#jaro-joined-list-empty-list-and-skipped-old-slot)
-and [victory membership](../../../docs/research/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state).
+**Confirmed static sources:** [region wrapper](../../../docs/research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene),
+[conversion and aliasing](../../../docs/research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases),
+[retained enemy slot](../../../docs/research/chapters/moun-nazca-grans/battle32-initialization-and-opening.md#jaro-joined-list-empty-list-and-skipped-old-slot)
+and [victory membership](../../../docs/research/chapters/moun-nazca-grans/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state).
 
 | State | Owner and required distinction |
 | --- | --- |
@@ -221,9 +221,9 @@ capacity exception in this named operation; a new universal party-cap policy is 
 
 ## Prism Flowers: decision ray versus construction hit list
 
-**Confirmed static source:** [laser owner](../../../docs/research/battle36-prism-flower-laser.md),
-including its [current-consumer audit](../../../docs/research/battle36-prism-flower-laser.md#actual-current-consumers-and-missing-binding),
-and [dispatch admission](../../../docs/research/battle36-activation-and-first-turn-dispatch.md#first-individual-turn-control-and-the-flower-kind-branch).
+**Confirmed static source:** [laser owner](../../../docs/research/chapters/moun-nazca-grans/battle36-prism-flower-laser.md),
+including its [current-consumer audit](../../../docs/research/chapters/moun-nazca-grans/battle36-prism-flower-laser.md#actual-current-consumers-and-missing-binding),
+and [dispatch admission](../../../docs/research/chapters/moun-nazca-grans/battle36-activation-and-first-turn-dispatch.md#first-individual-turn-control-and-the-flower-kind-branch).
 Natural fired turns and completed original animation remain **Unknown**.
 
 Content supplies a finite line-attacker strategy/action and cardinal laser direction mapped from
@@ -273,10 +273,10 @@ The finite authored spawn/reset/round portion below is implemented under the
 and reset semantics. Trial clock/results, private Battle44 content and original presentation remain
 proposed/unsupported. The lifetime table records the accepted design boundary, not a new work queue.
 
-**Confirmed static source:** [trial owner](../../../docs/research/battle44-fairy-woods-trial-and-records.md),
-especially [spawn rules](../../../docs/research/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance),
-[timer](../../../docs/research/battle44-fairy-woods-trial-and-records.md#timer-lifetime-snapshot-record-and-save-boundary)
-and [result/retry](../../../docs/research/battle44-fairy-woods-trial-and-records.md#victory-result-record-comparison-and-retry).
+**Confirmed static source:** [trial owner](../../../docs/research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md),
+especially [spawn rules](../../../docs/research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance),
+[timer](../../../docs/research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#timer-lifetime-snapshot-record-and-save-boundary)
+and [result/retry](../../../docs/research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#victory-result-record-comparison-and-retry).
 This is Map24/Battle44, not Fairy Cave. Bubbling Ooze's leader cleanup can terminate before every
 hidden enemy appears; the invitation's wording is not an all-fifteen-kills predicate.
 
@@ -332,9 +332,9 @@ and [source/payment owner](../application/session-and-programs.md#paid-retreat-a
 The following extension sketch remains the wider-map/terminal-caller design; it grants no all-map,
 Battle0, save/suspend or acquisition support.
 
-**Confirmed static sources:** [Egress/Angel Wing control contract](../../../docs/design/contracts/battle-functions-control-flow.md#egress-and-angel-wing),
-[actual admission/payment/caller](../../../docs/research/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
-and [ordinary outcome differences](../../../docs/design/synthesis/tactical-battle-loop.md#victory-defeat-and-admitted-retreat-leave-different-state).
+**Confirmed static sources:** [Egress/Angel Wing control contract](../../../docs/design/contracts/battle/battle-functions-control-flow.md#egress-and-angel-wing),
+[actual admission/payment/caller](../../../docs/research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)
+and [ordinary outcome differences](../../../docs/design/synthesis/themes/tactical-battle-loop.md#victory-defeat-and-admitted-retreat-leave-different-state).
 EGRESS1 has cost8, range0/radius0 and teammate targeting. Its selected live actor must actually
 reach actionable control, know the spell, confirm an eligible target and afford the cost. Angel
 Wing requires a usable held slot and confirmed target. The special Egress path bypasses ordinary
@@ -382,9 +382,9 @@ incorrectly; a general outcome workflow framework adds no value over these finit
 
 ## Transport: possession, mode, position and service access
 
-**Confirmed static sources:** [map transport synthesis](../../../docs/design/synthesis/map-design-principles.md#transport-acquisition-boarding-travel-and-landing),
-[raft boarding/selected exits](../../../docs/research/polca-raft-boarding-through-south-parmecia-entry.md),
-and [Caravan boarding/travel/landing](../../../docs/research/caravan-boarding-and-southwest-parmecia-travel.md).
+**Confirmed static sources:** [map transport synthesis](../../../docs/design/synthesis/themes/map-design-principles.md#transport-acquisition-boarding-travel-and-landing),
+[raft boarding/selected exits](../../../docs/research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md),
+and [Caravan boarding/travel/landing](../../../docs/research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md).
 Full raft event5 consumption, naturally traversed routes and durable transport persistence remain
 **Unknown** at these owners. Read the numeric consumers: mode1/opcode7 is Caravan and mode2/opcode8
 is raft despite the misleading source opcode names.
@@ -424,17 +424,17 @@ proposal an architectural prerequisite for any rule.
 | Family / owner | Classification and smallest useful follow-up | Ordering reason |
 | --- | --- | --- |
 | Ordinary retreat | Rule + finite action/return extension; selected Battle02 binding. [Exit design](#special-exits-payment-battle-return-and-session-end). | **Implemented for Battle02 spell/item retreat.** Existing world, costs/returns and semantic action UI bound the work; wider maps/callers remain unsupported. |
-| Item custody/full-pack fallback | Packed live loadout, finite authored physical drop/once/Deals custody and [standalone battle Give/full-pack exchange](gameplay-rules.md#authored-battle-give-and-exchange) plus [free battle discard/rare Deals](gameplay-rules.md#authored-battle-discard) are implemented; wider acquisition and service receipts still need their own policies. [Economy receipt routes](../../../docs/design/synthesis/progression-and-economy.md#sources-receipts-and-the-capacity-decision), [Caravan/Deals contract](../../../docs/design/contracts/caravan-and-deals-state.md). | Before private Taros, shop/depot and mandatory receipts. The implemented battle receipt does not supply field Search restoration or story discard loops; these policies are not interchangeable. |
-| Equipment curse/break/use | [Standalone authored weapon equip](gameplay-rules.md#authored-battle-weapon-equipment), live ATT/range/growth refresh, Herb consumption and selected Wing retreat supported; rings, curse refusal/status, break state, wider use effects and services remain Unsupported. [Equipment](../../../docs/design/synthesis/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution), [field effects](../../../docs/research/field-item-effects.md). | The authored ordinary-input route distinguishes carried/equipped Achilles at the existing Taros gate. Full acquisition, connected/private preparation and service persistence remain separate outcomes. Reuse loadout/refresh; do not invent an equipment framework. |
+| Item custody/full-pack fallback | Packed live loadout, finite authored physical drop/once/Deals custody and [standalone battle Give/full-pack exchange](gameplay-rules.md#authored-battle-give-and-exchange) plus [free battle discard/rare Deals](gameplay-rules.md#authored-battle-discard) are implemented; wider acquisition and service receipts still need their own policies. [Economy receipt routes](../../../docs/design/synthesis/themes/progression-and-economy.md#sources-receipts-and-the-capacity-decision), [Caravan/Deals contract](../../../docs/design/contracts/party/caravan-and-deals-state.md). | Before private Taros, shop/depot and mandatory receipts. The implemented battle receipt does not supply field Search restoration or story discard loops; these policies are not interchangeable. |
+| Equipment curse/break/use | [Standalone authored weapon equip](gameplay-rules.md#authored-battle-weapon-equipment), live ATT/range/growth refresh, Herb consumption and selected Wing retreat supported; rings, curse refusal/status, break state, wider use effects and services remain Unsupported. [Equipment](../../../docs/design/synthesis/themes/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution), [field effects](../../../docs/research/world/field-item-effects.md). | The authored ordinary-input route distinguishes carried/equipped Achilles at the existing Taros gate. Full acquisition, connected/private preparation and service persistence remain separate outcomes. Reuse loadout/refresh; do not invent an equipment framework. |
 | Leader cleanup / Taros | Authored effectiveness, cleanup and physical drops are implemented; private encounter/aftermath gaps remain. [Taros design](#taros-effectiveness-cleanup-loot-and-acquisition). | Complete Taros chapter still waits for private encounter and actual aftermath bindings. Cleanup is reusable by Prism/Fairy objectives, not by Battle0. |
-| Attack/area spells, AURA, DETOX, BOOST/SLOW, MUDDLE and wider statuses | HEAL/physical sleep and [authored UnpromotedPriest AURA1–4](gameplay-rules.md#authored-aura-group-healing) are supported within their admitted scope, including ordered AURA recovery and shared healing EXP. Wider AURA classes/statuses/private presentation and other effects remain deferred. [Spell contract](../../../docs/design/contracts/spell-resolution.md). | Add one concrete action family through existing preparation/reaction/after-turn owners. The finite [authored poison lifecycle](gameplay-rules.md#authored-poison-after-turn) now supplies fixed2 damage, ordered death/accounting and terminal/queue continuation for standalone status2; DETOX still needs status clearing and mixed-status/cure admission. Buffs require refresh/counter expiry; MUDDLE needs control/target semantics. Existing finite multi-target owners can inform these but are not a mandatory universal spell foundation. |
+| Attack/area spells, AURA, DETOX, BOOST/SLOW, MUDDLE and wider statuses | HEAL/physical sleep and [authored UnpromotedPriest AURA1–4](gameplay-rules.md#authored-aura-group-healing) are supported within their admitted scope, including ordered AURA recovery and shared healing EXP. Wider AURA classes/statuses/private presentation and other effects remain deferred. [Spell contract](../../../docs/design/contracts/battle/spell-resolution.md). | Add one concrete action family through existing preparation/reaction/after-turn owners. The finite [authored poison lifecycle](gameplay-rules.md#authored-poison-after-turn) now supplies fixed2 damage, ordered death/accounting and terminal/queue continuation for standalone status2; DETOX still needs status clearing and mixed-status/cure admission. Buffs require refresh/counter expiry; MUDDLE needs control/target semantics. Existing finite multi-target owners can inform these but are not a mandatory universal spell foundation. |
 | Prism laser | Finite authored decision/action, source-slot binding and visual delivery are implemented; private chapter/special-input gaps remain. [Laser design](#prism-flowers-decision-ray-versus-construction-hit-list). | Independent of broad spell/status completion. Complete Battle36 also requires its ordinary enemy capabilities, leader cleanup and story/resources; laser support alone is not chapter acceptance. |
 | Region programs / Jaro / ally AI | Implemented authored resumable round prefix, live control and visual aliases; [Jaro design](#jaro-region-programs-and-two-logical-actors-sharing-a-visual). | The authored victory suffix is implemented; actual Battle32/Moun remains a separate content/return consumer. Reuse party flags; no requirement to first build Caravan services. Ally AI is a new rule, not a faction toggle on physical enemy AI. |
 | Hidden spawn and trial record | Shared round continuation plus finite reset lifecycle; trial clock/result choice separate. [Fairy design](#fairy-woods-spawning-and-result-state-have-different-lifetimes). | Reuse accepted round-prefix work when available; otherwise introduce only its spawn consumer. Source geometry differences must be resolved before claiming Battle44 activation. Record persistence waits for saving; spawn work need not wait for scoring choice. |
 | Caravan travel / raft | Standalone authored Caravan state/controller and programs implemented; raft and full-map consumers deferred; [transport design](#transport-possession-mode-position-and-service-access). | Independent of full battle import when given explicit initial acquisition. Caravan's complete source consumer is the better first travel slice; raft landing awaits its named gap decision, not a guessed clone. |
-| Caravan party/depot/item/purge | Joined/active flags and slots exist; member selection/relief, 64-slot depot, exchange and service continuation absent. [Service contract](../../../docs/design/contracts/service-interactions.md#caravan-source-boundary), [custody](../../../docs/design/synthesis/progression-and-economy.md#custody-storage-and-active-membership). | After one inventory receipt/store rule, implement one service result. Boarding is not required to design the transaction, but natural C-menu availability needs separate field binding. Preserve twelve-member ordinary guard and leader/curse refusals. |
-| Church raise/cure/promote, shop and Mithril | Source contracts exist; production service transactions/UI are not supplied by ordinary outcome healing/growth. [Services](../../../docs/design/contracts/service-interactions.md), [promotion](../../../docs/design/synthesis/progression-and-economy.md#church-recovery-promotion-and-saving), [Mithril orders](../../../docs/design/synthesis/progression-and-economy.md#mithril-orders-placement-readiness-and-collection). | Reuse gold, loadout, class refresh and typed waits; add paid selection/cancel/commit for one service at a time. Promotion needs class/item eligibility and post-change resources; Mithril needs order/readiness/collection state and RNG, not just a shop stock row. |
-| Save/load/suspend | **Unsupported** cross-session persistence; [save contract](../../../docs/design/contracts/save-system.md). No field return, RAM best or egress selection proves storage. | Separate High-rigor acceptance for versioned state, write failure/recovery and real reload. Needed for durable records/resume, not first retreat or in-session transport. Battle0 refusal remains possible without implementing suspend. |
+| Caravan party/depot/item/purge | Joined/active flags and slots exist; member selection/relief, 64-slot depot, exchange and service continuation absent. [Service contract](../../../docs/design/contracts/party/service-interactions.md#caravan-source-boundary), [custody](../../../docs/design/synthesis/themes/progression-and-economy.md#custody-storage-and-active-membership). | After one inventory receipt/store rule, implement one service result. Boarding is not required to design the transaction, but natural C-menu availability needs separate field binding. Preserve twelve-member ordinary guard and leader/curse refusals. |
+| Church raise/cure/promote, shop and Mithril | Source contracts exist; production service transactions/UI are not supplied by ordinary outcome healing/growth. [Services](../../../docs/design/contracts/party/service-interactions.md), [promotion](../../../docs/design/synthesis/themes/progression-and-economy.md#church-recovery-promotion-and-saving), [Mithril orders](../../../docs/design/synthesis/themes/progression-and-economy.md#mithril-orders-placement-readiness-and-collection). | Reuse gold, loadout, class refresh and typed waits; add paid selection/cancel/commit for one service at a time. Promotion needs class/item eligibility and post-change resources; Mithril needs order/readiness/collection state and RNG, not just a shop stock row. |
+| Save/load/suspend | **Unsupported** cross-session persistence; [save contract](../../../docs/design/contracts/system/save-system.md). No field return, RAM best or egress selection proves storage. | Separate High-rigor acceptance for versioned state, write failure/recovery and real reload. Needed for durable records/resume, not first retreat or in-session transport. Battle0 refusal remains possible without implementing suspend. |
 | Battle0 terminal caller | New finite session-end destination and adopted UX decision. [Special exits](#special-exits-payment-battle-return-and-session-end). | After ordinary retreat/return distinction. Full hidden encounter also needs its combat/content families; terminal routing alone cannot admit the full battle or assert new-game-plus. |
 
 ## Recommended first implementation: retreat and playable retry
@@ -446,8 +446,8 @@ then walk back into Battle02 with fresh enemies in the same session. Payment mus
 the subsequent ordinary supplied-map exploration entry heals eligible living/immortal allies;
 that later caller recovery is separate from defeat's leader revival/gold halving and victory's
 new completion. This is a bounded ordinary retreat, not Taros/Battle0, all savepoints or full EGRESS
-coverage. The [common post-battle caller inspection](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#victory-map12-control-or-warningretreat)
-names the exploration-entry healing boundary; its [alternate-return inspection](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#defeategress-supplied-savepoint-not-a-fixed-hassan-return)
+coverage. The [common post-battle caller inspection](../../../docs/research/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md#victory-map12-control-or-warningretreat)
+names the exploration-entry healing boundary; its [alternate-return inspection](../../../docs/research/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md#defeategress-supplied-savepoint-not-a-fixed-hassan-return)
 establishes that direct outcomes take that caller. Map-specific content still needs its own admission.
 
 Use **High rigor for that implementation** because payment, staged waits, live party return and
@@ -462,7 +462,7 @@ versus ordinary dead members; never reach it by routing Retreat through the curr
 | After payment, before retreat delivery | Exactly one8-MP deduction for EGRESS, or removal/compaction of the selected Wing slot for item retreat; no defeat gold/leader revival, damage, reward or new completion. This is the payment assertion, not a final-field MP assertion. |
 | Actual battle return | Paid state and retreat-specific unlock handling have completed; destination parameters alone do not prove usable field control. Do not execute victory/defeat suffixes or consume a new battle turn. |
 | Exploration rebuild and usable field | The supplied-map caller applies its eligible-party healing/refresh and map setup/init. Attribute changed HP/MP/status to that stage, retaining dead-member exceptions and prior gold/inventory/flags as required. No claim that paid MP remains deducted after recovery. |
-| Fresh Battle02 reentry | The [fresh-entry contract](../../../docs/design/contracts/battle-control-lifecycle.md#new-battle) heals eligible allies and initializes enemies again; [current initializer](../../src/Sf2.Remake.Domain/Battles/Rules/BattleInitializationRules.cs) already implements that boundary. Preserve identity, growth/loadout/accounting and proper dead/active placement, not an artificial unchanged HP/MP requirement. |
+| Fresh Battle02 reentry | The [fresh-entry contract](../../../docs/design/contracts/battle/battle-control-lifecycle.md#new-battle) heals eligible allies and initializes enemies again; [current initializer](../../src/Sf2.Remake.Domain/Battles/Rules/BattleInitializationRules.cs) already implements that boundary. Preserve identity, growth/loadout/accounting and proper dead/active placement, not an artificial unchanged HP/MP requirement. |
 
 Before implementing the selected route, join its actual egress map/flags, return program and
 exploration recovery call against these common owners. That is a named static/code integration

@@ -40,8 +40,8 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h3.map3_battle01_player_ready:"
             "_remove_map3_battle01_player_ready_later_owner_index_delta"
         ),
-        state_sha256="F41B7864213E05AE31FCFBEBDE42F171490790773E7C017FD5AC9BABA210942B",
-        predecessor_sha256=("49B80B7692154290D234A270DFB289AD158AFC96F1EDDE57270C981B438E176A"),
+        state_sha256="042C4F7CE793A36E5BE862CD693F265476B0EBB88C88C4AC7FFB0E35932784A1",
+        predecessor_sha256=("1013F74FB32C02C53DC10A623CD1818CA560D4F75E19D92520BAD1E9FF59F8C8"),
     ),
     LaterOwnerStep(
         owner_id="sf2-map3-entity142-interactable-reference-static-v1",
@@ -50,8 +50,8 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map3_entity142_interactable_reference:"
             "_remove_map3_entity142_interactable_reference_later_owner_index_delta"
         ),
-        state_sha256="49B80B7692154290D234A270DFB289AD158AFC96F1EDDE57270C981B438E176A",
-        predecessor_sha256=("7F5992C71A615E9BDC1D3FA58ECA752960B16E61B4FF3057BDD170F77A5FC1CE"),
+        state_sha256="1013F74FB32C02C53DC10A623CD1818CA560D4F75E19D92520BAD1E9FF59F8C8",
+        predecessor_sha256=("066ED1C1AE5F7A06E3B3DBBE4E0A72D2CFE7D99868FCF28E13E90C6F93438FBD"),
     ),
     LaterOwnerStep(
         owner_id="sf2-map3-original-player-locomotion-animation-runtime-v1",
@@ -60,8 +60,8 @@ _LATER_OWNER_STEPS = (
             "sf2tool.research_index_locomotion_owner:"
             "_remove_map3_original_player_locomotion_animation_later_owner_index_delta"
         ),
-        state_sha256="7F5992C71A615E9BDC1D3FA58ECA752960B16E61B4FF3057BDD170F77A5FC1CE",
-        predecessor_sha256=("862D9A6CD7CF860034EF5544D43C68FB4970E295BE590EB69AE99045993295B5"),
+        state_sha256="066ED1C1AE5F7A06E3B3DBBE4E0A72D2CFE7D99868FCF28E13E90C6F93438FBD",
+        predecessor_sha256=("68E21F2A900E87F516CEB7CCF924845D6E09FEBA6FF21A5A46DEA4C596B1EE76"),
     ),
     LaterOwnerStep(
         owner_id="sf2-map3-original-player-reference-frame-static-v1",
@@ -70,9 +70,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map3_original_player_reference_frame:"
             "_remove_map3_original_player_reference_frame_later_owner_index_delta"
         ),
-        state_sha256="862D9A6CD7CF860034EF5544D43C68FB4970E295BE590EB69AE99045993295B5",
+        state_sha256="68E21F2A900E87F516CEB7CCF924845D6E09FEBA6FF21A5A46DEA4C596B1EE76",
         predecessor_sha256=(
-            "70A2A46145FA182EB371D216B54D1F0CF28E24B2555E0194C52B18E88BAD4C0A"
+            "A32BE7C312A50B7FD4867924574808069BB45DF0E7E5C3E184323D77F519E5FE"
         ),
     ),
     LaterOwnerStep(
@@ -82,9 +82,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_flag_route_selection:"
             "_remove_map_event_flag_route_selection_later_owner_index_delta"
         ),
-        state_sha256="70A2A46145FA182EB371D216B54D1F0CF28E24B2555E0194C52B18E88BAD4C0A",
+        state_sha256="A32BE7C312A50B7FD4867924574808069BB45DF0E7E5C3E184323D77F519E5FE",
         predecessor_sha256=(
-            "4F729D50C06D63484565A0DABF15A98F3B092896C7FAF9455DAB884A537DD3FE"
+            "E801FBF306C1083140272D46CA3E08D49723554EA1FD93067097D3604F4AD1CF"
         ),
     ),
     LaterOwnerStep(
@@ -94,9 +94,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_cross_program_flag_state:"
             "_remove_map_event_cross_program_flag_state_later_owner_index_delta"
         ),
-        state_sha256="4F729D50C06D63484565A0DABF15A98F3B092896C7FAF9455DAB884A537DD3FE",
+        state_sha256="E801FBF306C1083140272D46CA3E08D49723554EA1FD93067097D3604F4AD1CF",
         predecessor_sha256=(
-            "4D526EB33ED5A76D9D69D54E62FC6AB4B412603A16641928566A68200C7C656A"
+            "03BA7D92F94A119A3C26A5C20FD432BAD3A3AFE38568E81937F9A05018A64B7D"
         ),
     ),
     LaterOwnerStep(
@@ -106,9 +106,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_flag_lifecycle_state:"
             "_remove_map_event_flag_lifecycle_state_later_owner_index_delta"
         ),
-        state_sha256="4D526EB33ED5A76D9D69D54E62FC6AB4B412603A16641928566A68200C7C656A",
+        state_sha256="03BA7D92F94A119A3C26A5C20FD432BAD3A3AFE38568E81937F9A05018A64B7D",
         predecessor_sha256=(
-            "4241E190B1C52409862AD53412DCCC1F1E8BA3A9868725EC77631851854C6CB1"
+            "89A667FA769D5246C7DDBB39D6EC7BFC1053CDF636AE1115FC26E45741030195"
         ),
     ),
     LaterOwnerStep(
@@ -118,9 +118,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_scripted_transition_state:"
             "_remove_map_event_scripted_transition_state_later_owner_index_delta"
         ),
-        state_sha256="4241E190B1C52409862AD53412DCCC1F1E8BA3A9868725EC77631851854C6CB1",
+        state_sha256="89A667FA769D5246C7DDBB39D6EC7BFC1053CDF636AE1115FC26E45741030195",
         predecessor_sha256=(
-            "9A08422491985FF3277A11A1F2BFE2277D3D379FF12681EF835F44AF70CB671D"
+            "B2A46C3AFA171B733DBC3DC9570C9895A4F3D2C1D5FB0B6BDC525E1AC286A103"
         ),
     ),
     LaterOwnerStep(
@@ -130,9 +130,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_tactical_base_quote_state:"
             "_remove_map_event_tactical_base_quote_state_later_owner_index_delta"
         ),
-        state_sha256="9A08422491985FF3277A11A1F2BFE2277D3D379FF12681EF835F44AF70CB671D",
+        state_sha256="B2A46C3AFA171B733DBC3DC9570C9895A4F3D2C1D5FB0B6BDC525E1AC286A103",
         predecessor_sha256=(
-            "C905CB82A2C310AAAC8A4B40BA7D14BC5750BB4EE9D59AABBF5E68069042630B"
+            "73D5742DCC24BE30F77C98DF4698AA9790EFB60DEBB860FF4AA6FC0670916E75"
         ),
     ),
     LaterOwnerStep(
@@ -142,9 +142,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_random_battle_state:"
             "_remove_map_event_random_battle_state_later_owner_index_delta"
         ),
-        state_sha256="C905CB82A2C310AAAC8A4B40BA7D14BC5750BB4EE9D59AABBF5E68069042630B",
+        state_sha256="73D5742DCC24BE30F77C98DF4698AA9790EFB60DEBB860FF4AA6FC0670916E75",
         predecessor_sha256=(
-            "9848602E14474EFD9C16FD8E846E14937D09B93F6447E806DEDAE9BE0A17E94A"
+            "89A3C91B2C6BAEB39AC29E0F238A57021E4BCBF01A7D7BEC766D224FCAD6E29F"
         ),
     ),
     LaterOwnerStep(
@@ -154,9 +154,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_combatant_state:"
             "_remove_map_event_combatant_state_later_owner_index_delta"
         ),
-        state_sha256="9848602E14474EFD9C16FD8E846E14937D09B93F6447E806DEDAE9BE0A17E94A",
+        state_sha256="89A3C91B2C6BAEB39AC29E0F238A57021E4BCBF01A7D7BEC766D224FCAD6E29F",
         predecessor_sha256=(
-            "E987286D1D27BA96DE1A5CF0F3F3179C38CCF19048095865DA4934E4C956ECA7"
+            "39E718924BEBFBD92D595A0FF29817EDBE1AF8867AA42F01BEBB442CBB4897D5"
         ),
     ),
     LaterOwnerStep(
@@ -166,9 +166,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_item_transactions:"
             "_remove_map_event_item_transactions_index_delta"
         ),
-        state_sha256="E987286D1D27BA96DE1A5CF0F3F3179C38CCF19048095865DA4934E4C956ECA7",
+        state_sha256="39E718924BEBFBD92D595A0FF29817EDBE1AF8867AA42F01BEBB442CBB4897D5",
         predecessor_sha256=(
-            "09E54BB6001CFAB23FE3DD034807B4F76EC961931ACEA97F4177F30F96BDE360"
+            "6A0E3C27AF8807ED2DF85365EFDED478807D9BF4E284A8A6B0ABC8A4A326E1F8"
         ),
     ),
     LaterOwnerStep(
@@ -178,9 +178,9 @@ _LATER_OWNER_STEPS = (
             "sf2tool.h2.map_event_interaction_state:"
             "_remove_map_event_interaction_state_later_owner_index_delta"
         ),
-        state_sha256="09E54BB6001CFAB23FE3DD034807B4F76EC961931ACEA97F4177F30F96BDE360",
+        state_sha256="6A0E3C27AF8807ED2DF85365EFDED478807D9BF4E284A8A6B0ABC8A4A326E1F8",
         predecessor_sha256=(
-            "E8B95158841944757D09EFA4AE63B58E451659475A2C6A0E991E32331ED8B787"
+            "E037CBEEC3022B7E2027DBD08F4784749B0CF9D2A35D945F4D7102A3377E82E5"
         ),
     ),
 )

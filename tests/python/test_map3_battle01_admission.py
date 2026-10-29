@@ -578,4 +578,7 @@ def test_research_index_adds_exactly_the_18_admission_objects() -> None:
             "verifier": "src/sf2tool/h2/map3_battle01_admission.py",
             "bindings": [{"addressId": "entry", "fixtureField": expected[record["id"]]}],
         }
-        assert "docs/research/map3-battle01-admission.md" in record["documents"]
+        assert (
+            "docs/research/chapters/grans-opening/map3-battle01-admission.md"
+            in record["documents"]
+        )

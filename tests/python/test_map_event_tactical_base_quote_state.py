@@ -30,7 +30,7 @@ from sf2tool.research_index import (
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
 INDEX = repo_path("manifests/research-index.json")
-DOCUMENT = "docs/research/map-event-tactical-base-quote-state.md"
+DOCUMENT = "docs/research/world/map-event-tactical-base-quote-state.md"
 _CHANGED_IDS = {
     "map.data.ms-map37-entityevents",
     "map.data.ms-map46-entityevents",

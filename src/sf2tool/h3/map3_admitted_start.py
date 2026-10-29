@@ -993,7 +993,7 @@ def _assert_index_bindings() -> None:
     ):
         raise ValueError("Map 3 admitted-start must not bulk-associate aggregate Map 3 records")
     primary = records["map.data.ms-map3-initfunction"]
-    expected_primary_contracts = ["docs/design/contracts/map3-controlled-admission.md"]
+    expected_primary_contracts = ["docs/design/contracts/milestones/map3-controlled-admission.md"]
     if primary.get("designContracts") != expected_primary_contracts:
         raise ValueError("Map 3 admitted-start primary design contract singleton drift")
 

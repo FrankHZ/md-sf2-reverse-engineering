@@ -30,8 +30,8 @@ natural battle admission, manual player control, the first stable controllable p
 endpoint, no milestone save/load, private-local original assets, exact reached frame/audio/hardware
 parity, modern accessible logical controls, and an explicit deviation ledger.
 
-The [readiness ledger](../design/synthesis/map3-battle01-readiness.md) remains **NOT READY** and the
-accepted [Research gap audit](../research/map3-battle01-audit.md) remains **OPEN**. In particular, the
+The [readiness ledger](../design/synthesis/milestones/map3-battle01-readiness.md) remains **NOT READY** and the
+accepted [Research gap audit](../research/chapters/grans-opening/map3-battle01-audit.md) remains **OPEN**. In particular, the
 exact admitted state, natural route, reached programs and dialogue, natural Battle 01 state and
 winning trace, after-battle effects, endpoint state, presentation timing, private capture inventory,
 and H4 tolerances are Research-owned inputs. A runtime architecture must provide places for those
@@ -135,10 +135,10 @@ The battle boundary preserves the accepted distinction among committed intent, o
 construction, temporary resolution, presentation/reaction commands, persistent replay, after-turn
 processing, and outcome. A deterministic replay reducer, not an animation callback, applies the
 accepted persistent mutations in order. This keeps the owners in
-[Battle Action Construction](../design/contracts/battle-action-construction.md),
-[Combat Resolution](../design/contracts/combat-resolution.md),
-[Spell Resolution](../design/contracts/spell-resolution.md), and
-[Battle Control and Combatant Lifecycle](../design/contracts/battle-control-lifecycle.md) distinct.
+[Battle Action Construction](../design/contracts/battle/battle-action-construction.md),
+[Combat Resolution](../design/contracts/battle/combat-resolution.md),
+[Spell Resolution](../design/contracts/battle/spell-resolution.md), and
+[Battle Control and Combatant Lifecycle](../design/contracts/battle/battle-control-lifecycle.md) distinct.
 
 ### 3. Continuous Scenario Orchestration
 
@@ -166,10 +166,10 @@ The admitted start is built by a validated scenario-start source. It must contai
 scenario identity, content identities, exact Research-owned start snapshot, and capability profile.
 It is not a visible New/load flow and may not be described as one. From that snapshot, logical manual
 input drives the Research-proven natural route. Battle 01 admission must pass through the contracted
-[exploration](../design/contracts/exploration-control-flow.md),
-[map-entry routing](../design/contracts/map-entry-routing-state.md),
-[encounter-definition](../design/contracts/battle-encounter-definition.md), and natural
-[before/start program](../design/contracts/battle-cutscene-routing.md) handoffs; debug teleport or
+[exploration](../design/contracts/world/exploration-control-flow.md),
+[map-entry routing](../design/contracts/world/map-entry-routing-state.md),
+[encounter-definition](../design/contracts/battle/battle-encounter-definition.md), and natural
+[before/start program](../design/contracts/battle/battle-cutscene-routing.md) handoffs; debug teleport or
 direct battle construction is not a milestone path.
 
 Victory must proceed through the ordinary battle controller, victory mutations, after-battle
@@ -196,12 +196,12 @@ original cadence from Godot's `_Process` delta.
 RNG state is part of `GameSessionState`. Domain RNG operations are explicit state transitions that
 return the value, next state, call family, and sequence number. No gameplay code uses Godot's random
 generator, `System.Random`, time-derived seeds, or hidden mutable streams. Copy/retry/directional RNG
-behavior is implemented only where accepted by the [Randomness](../design/contracts/randomness.md)
+behavior is implemented only where accepted by the [Randomness](../design/contracts/system/randomness.md)
 owner. The reference seed and complete reached call order remain Research-owned.
 
 The Godot input adapter maps devices through Godot `InputMap` into semantic actions such as direction,
 confirm, cancel, and menu while preserving the abstract boundary in the accepted
-[Input System](../design/contracts/input-system.md) contract. It publishes action, phase, sequence,
+[Input System](../design/contracts/interface/input-system.md) contract. It publishes action, phase, sequence,
 and admitted simulation step to the application input gate. The application decides whether the
 current flow state accepts the action. Key repeat, buffering, controller specifics, and original
 input cadence belong to adapter/profile configuration and H4 evidence, not domain rules. A
@@ -223,8 +223,8 @@ objects, file paths, source symbols, ROM addresses, or unvalidated numeric IDs.
 
 Map/event/cutscene/dialogue execution uses validated typed programs and explicit command handlers for
 the admitted command families, with the accepted
-[standalone map-script program](../design/contracts/standalone-map-script-program-data.md) and
-[dialogue](../design/contracts/dialogue-system.md) contracts defining bounded input surfaces. It does
+[standalone map-script program](../design/contracts/world/standalone-map-script-program-data.md) and
+[dialogue](../design/contracts/interface/dialogue-system.md) contracts defining bounded input surfaces. It does
 not run source assembly, arbitrary C#, GDScript, reflection, or content-provided executable code. An
 unsupported command fails at admission or at a named runtime boundary; a similar supported command is
 not an authorized fallback.
@@ -262,10 +262,10 @@ presentation; they do not contain Godot node paths or mutate gameplay when an an
 - an exploration scene that projects map, entity, camera, dialogue, transition, and menu view models;
 - a battlefield scene that projects grid, actor, cursor, movement, target, and battle-menu state;
 - a battle-scene presentation adapter for ordered action/reaction cues defined at the accepted
-  [Battle Scene Presentation](../design/contracts/battle-scene-presentation.md) boundary;
+  [Battle Scene Presentation](../design/contracts/battle/battle-scene-presentation.md) boundary;
 - UI/window/text adapters that consume logical layout and text records;
 - an audio adapter that resolves logical music/SFX cues behind the accepted
-  [Audio System](../design/contracts/audio-system.md) boundary and records sample/timing observations;
+  [Audio System](../design/contracts/interface/audio-system.md) boundary and records sample/timing observations;
 - an input adapter that maps devices to semantic commands;
 - a capture/observation adapter used by bounded headless H4 runs.
 
@@ -320,7 +320,7 @@ There are three explicit execution profiles:
 ADR 0010 option 6A is enforced by composition: the first milestone has no player-facing save, load,
 checkpoint, battle suspend, or persistence adapter and no related UI. Restart destroys the current
 session and rebuilds the exact controlled admitted snapshot. The accepted
-[Save System](../design/contracts/save-system.md) remains a future evidence owner, not a service wired
+[Save System](../design/contracts/system/save-system.md) remains a future evidence owner, not a service wired
 into this milestone.
 
 Test snapshots, H4 case setup, and captured state facts are harness machinery. They are not reachable

@@ -201,7 +201,7 @@ reflection command exposed to the controller.
 
 ## Map3 interactive composition (offline only)
 
-The [Map3 acquisition owner](../research/map3-messenger-acceptance.md#bounded-interactive-acquisition)
+The [Map3 acquisition owner](../research/chapters/grans-opening/map3-messenger-acceptance.md#bounded-interactive-acquisition)
 composes `DebugBridge` with the existing candidate observer. `start` accepts the fixed observer,
 prepared observer configuration and session ROM supplied by that owner; it retains the same single
 `Popen` handle, loopback framing/token, serial `command` receipts and contained teardown. The fixed
@@ -216,7 +216,7 @@ Lua clears all exposed inputs, applies the chosen player-one button and records 
 frame before advancing again. Unsupported/malformed commands fail before input application and
 terminate the acquisition. A callback failure or terminal within a batch skips its remaining frames.
 
-For [Issue #485's segmented stabilization](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485),
+For [Issue #485's segmented stabilization](../research/chapters/grans-opening/map3-messenger-acceptance.md#savestate-linked-segments-issue-485),
 the same loop also accepts zero-argument `save`. The observer supplies early closed checkpoints,
 live entity/consumer C readiness and original FieldMenu B recovery. `saveReadiness` and `inputReadiness`
 expose predicates; ordinary rejected saves/steps return typed `ok=true`, nonterminal, zero-frame
@@ -231,24 +231,24 @@ branch in the same source lineage, including siblings/cousins; active or incompl
 resume. Existing pairs/claims are immutable and terminal pairs remain nonresumable.
 Runtime/core/observer/runner/source identity
 checks remain mandatory. Loaded RAM/register/frame equality and offline checks alone do not establish
-complete native continuity. The [actual house save → native load → Sarah save](../research/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
+complete native continuity. The [actual house save → native load → Sarah save](../research/chapters/grans-opening/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
 is now **Confirmed**, including input-before-load exclusion, inherited epochs, forward checkpoint,
-process exit and cleanup. The [forward chain](../research/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
+process exit and cleanup. The [forward chain](../research/chapters/grans-opening/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
 now reaches independently accepted messenger closure and native Map19 save. Later
-[royal/guard saves and loads](../research/map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
-are independently accepted; the [final compatible chain](../research/map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition)
+[royal/guard saves and loads](../research/chapters/grans-opening/map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
+are independently accepted; the [final compatible chain](../research/chapters/grans-opening/map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition)
 now establishes **Confirmed** first Battle01 readiness and its nonresumable evidence pair. Native menu recovery
 remains **Unknown**.
 A missed CheckBattle return exposed asymmetric 24-bit stack masking in the composed observer. Its
 expected return stack now uses the same mask as actual A7. This does not change the shared bridge or
-waive parent identities. The [fresh compatible chain](../research/map3-messenger-acceptance.md#corrected-chain-and-player-entry-window-count-failure)
+waive parent identities. The [fresh compatible chain](../research/chapters/grans-opening/map3-messenger-acceptance.md#corrected-chain-and-player-entry-window-count-failure)
 now confirms that wrapped return and battle lifecycle, but fails a different final predicate at
 the first input PC: `WINDOW_IS_PRESENT=2` includes the normal mini status display, not necessarily
 a blocking menu. The final-battle correction removes that mistaken count test and records the
 actual guard fields before asserting; runner/bridge and field/save/menu checks are unchanged.
 Its changed observer identity again requires fresh compatible parents. That failed attempt does not
 establish passed first-ready; reaching its PC alone does not satisfy the acceptance contract.
-The [following chain](../research/map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
+The [following chain](../research/chapters/grans-opening/map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
 passes the native window-count condition, then records the remaining rejected field exactly:
 `FADING_SETTING=5`, the original movement-grid pulse. The final predicate now admits mode 0 or that
 source-selected mode 5; field/save fade checks and the shared bridge remain unchanged. Fresh compatible
@@ -306,7 +306,7 @@ private under the owning worktree's fresh ignored attempt directory.
 
 ### Natural Battle01 selection
 
-The [natural continuation capability](../research/map3-messenger-acceptance.md#natural-battle01-continuation-capability-offline-only)
+The [natural continuation capability](../research/chapters/grans-opening/map3-messenger-acceptance.md#natural-battle01-continuation-capability-offline-only)
 uses the same serial bridge and controller protocol. Only this exact acquisition composition
 uses the stabilization policy supplied by `_interactive_limits`; ordinary bridge/Map19 calls retain
 their existing wall limits. Cumulative costs and progress remain visible without a historical total
@@ -329,7 +329,7 @@ bridge experiment, native startup, reconnection, replay or new acquisition allow
 
 ### Battle01 victory continuation (Issue #496)
 
-The [acquisition owner](../research/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496)
+The [acquisition owner](../research/chapters/grans-opening/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496)
 adds the explicit `natural-battle01-victory-5b` selection to the existing runner/observer. The shared
 bridge protocol, standalone limits and transport implementation are unchanged. `state` and step
 responses carry private original battlefield/grid/target facts and stage-specific input readiness.
@@ -379,7 +379,7 @@ a local abort-reader correction does not retroactively establish cleanup.
 
 Totals through that failed source chain were **96 / 12405.304031100066 / 304294 / 10553**
 (starts/seconds/frames/batches).
-The [acquisition result](../research/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
+The [acquisition result](../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
 owns exact lineage, chronology, native failures and reproduction. Its offline correction binds
 map 57's original `ms_Void` only after the observed victory return and treats
 `EndAfterBattleCutscene` as a tail of the existing call, eliminating the false independent consumer.
@@ -389,7 +389,7 @@ all prior costs; 68..86 complete with 18 resumable checkpoints and one nonresuma
 All 19 native invocations exit 0 without timeout/forced termination, restore entry state, clear
 callbacks, delete their session ROM and preserve canonical identity; no owned native/operator
 process survives. Final host status is `OBSERVATION-COMPLETE-UNREVIEWED`, not H4 acceptance.
-The [final acquisition result](../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
+The [final acquisition result](../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
 records original victory, actual after-program/shared-tail return, source-correct void setup and
 settled neutral frames 61009/61010 with actual field-control polls. Current totals are **115 /
 14197.020479699888 / 365304 / 13351** (starts/seconds/frames/batches), including every earlier failure.
@@ -487,7 +487,7 @@ was left running and was never attached, configured, sent input, or terminated.
 The single-launch smoke stopped before any full game scenario. The callback address
 comes from accepted `tests/fixtures/h3/controller-input-v1.json` →
 `sourceContext.vIntEntryAddress`, owned by
-[technical interrupts](../research/technical-interrupts.md), with upstream
+[technical interrupts](../research/system/technical-interrupts.md), with upstream
 `ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`.
 No ROM modification, seeded CPU register, savestate, or old #303/#309 route was used.
 This does not promote that callback to evidence about natural game progression.
