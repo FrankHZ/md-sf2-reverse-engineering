@@ -330,9 +330,11 @@ For the focused witness, use `SF2_VIEWPORT_CASE=illegal` with unchanged `stone-c
 same return/status observer and launch above. Ordinary Up reaches a real rejected movement; the
 witness checks the menu reason/help, hidden global feedback, then Cancel/Confirm recovery into
 ActionChoice. Executor `illegal-feedback-01` passes (3186ms,3 samples,338908 bytes,clean stderr), with
-Debug/Release adapter builds passing zero warnings/errors. No victory/defeat/private rerun is needed
-for this predicate-only correction. Final main-gate review of this correction and integration remain
-pending.
+Debug/Release adapter builds passing zero warnings/errors. Main-gate independently reviewed the
+predicate and repeated the actual illegal-move/recovery observation at `8d7f3225`:
+`main-gate-illegal-01` PASS, exit0, 2601ms,3 samples,338904 bytes, clean stdout/stderr.
+No victory/defeat/private rerun is needed for this predicate-only correction. Engineering acceptance
+is complete; [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400) owns integration.
 
 ## Battle status-card observation
 

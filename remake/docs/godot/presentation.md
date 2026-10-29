@@ -37,9 +37,9 @@ Acceptance is adapter compilation and the clean-head scope plan, plus the
 No Domain/Application/Content behavior changes require new unit tests. Native observations use
 headless Godot because external joypad interference remains unresolved in windowed runs; this is
 not a new windowed acceptance claim. Main-gate independently accepted the bounded victory/defeat,
-return, private/physical close-up visibility and startup/program failure observations at `c9410809`;
-the narrow duplicate IllegalCommand feedback correction has executor acceptance and awaits final
-main-gate review. Integration remains main-gate owned.
+return, private/physical close-up visibility, startup/program failure and recoverable illegal-move
+feedback observations. The host owner records the exact evidence and retained limits; integration
+is tracked by [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
 
 ## Battle status-card agreement
 

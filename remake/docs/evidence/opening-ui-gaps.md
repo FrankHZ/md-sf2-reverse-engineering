@@ -200,9 +200,10 @@ readable battle messages, actual return feedback/window retirement and the expli
 read-only Party Status entry. Existing reward/growth messages remain; no extra summary or reward
 accounting is introduced. The [host recipe](../verification/host.md#battle-return-and-party-status-observation)
 records independently accepted headless authored win/ordinary defeat, return, private/physical
-close-up visibility and startup/program failure observations at `c9410809`. The subsequent narrow
-duplicate IllegalCommand feedback correction has an executor illegal-move/recovery pass and awaits
-final main-gate review; integration remains main-gate owned. Wider retreat, saves/retry, item actions and later chapters
+close-up visibility, startup/program failure and recoverable illegal-move feedback observations.
+Main-gate engineering acceptance is complete; integration is tracked by
+[PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
+Wider retreat, saves/retry, item actions and later chapters
 remain outside this slice.
 
 Recommended dependency order is **consume accepted #689; integrate A/#1391; B can proceed in parallel with
