@@ -316,6 +316,21 @@ JSON success does not erase shutdown warnings or prove original pixels/hardware 
 continuously check focus; one bounded recovery is permitted by the existing helper. Explicit fresh
 menu-page waits prevent an observer from treating an unprocessed input as a selected action.
 
+The status observer subscribes before Main startup, records its requested keyboard edges separately
+from received native keyboard/joypad and focus events, and retains startup failures and key session
+boundaries. Neutral axis noise is summarized; input/semantic receipt limits fail explicitly rather
+than dropping required records. An active native joypad edge during this keyboard-controlled witness
+records **Unavailable** and stops, preserving the event instead of filtering its gameplay effects.
+The gamepad itself and ordinary product bindings are unchanged. Keep physical devices neutral for
+an independent keyboard run. The receipt sample includes input-stage/revision and Skip request/stop
+facts. Resource-event assertions still begin at first battle control, separate from startup work.
+
+Entry follows the existing viewport observer's maximum of two eligible fresh Cancel requests within
+the same deadline. Each request records before/after state; only an actual EntrySkip, pending handoff
+or battle presenter counts as acceptance. If a request is unaccepted, or an accepted Skip is later
+stopped before handoff, the observer does not retain a stale “skipped” flag. It can use the remaining
+eligible request. No session setter, input suppression, larger deadline or general retry is added.
+
 | Case | Entry | Finite acceptance boundary |
 | --- | --- | --- |
 | `heal` | Prepared `heal.json`, `--authored-package` | Two-line readable name, quarter-HP warning, full MP, image ratios, Magic/self/other target, layered Cancel with unchanged resources, fresh selection and actual heal/cost phases. HP remains old until Reaction; MP remains old until SpellCost. Next actor has its own card and no stale target. |
@@ -363,6 +378,25 @@ Those window-input anomalies are not declared resolved merely by a later passing
 not interrupted suites or waivers. Prior #689/#1386/#1389/#1393/#1395 focus/release/timing failures
 and ObjectDB shutdown Unknowns remain. Independent main-gate review owns integration and final
 acceptance; broader physical-device, all-map and aesthetic approval are not established here.
+
+Independent `main-gate-damage-01` failed at589ms/revision3 with Movement, unchanged actor positions
+and `movement-range` before any scripted key; the original report contains no startup input receipt.
+Independent `main-gate-overflow-01` timed out at23958ms in field text work, without Skip/input history.
+Their specific causes remain **Unknown**. The later damage diagnostic passed with ordinary input
+receipts; that does not identify the earlier event. Overflow diagnostic-01 confirmed Skip requested
+at revision24 and stopped at363, followed by hundreds of native joypad events, including active
+left-stick axes around±0.7; it ended at the input receipt budget. Diagnostic-02 caught a GDScript type
+inference error before load; corrected diagnostic-03 stopped **Unavailable** at1093ms on actual native
+L1. These later events establish interference in those attempts, not proof of the original causes.
+All reports/logs remain under ignored `local/issue1397`. Independent heal/private/names PASS results
+remain valid; only damage/overflow received the declared follow-up. No engine behavior changed, and
+no passed case group was rerun to hide the failures. On main-gate's direction, the same overflow
+scene was also observed **headless**: correction-headless-02 passed state/draw assertions at3156ms,
+exit0, no failures/Unavailable or script errors, with two retained ObjectDB shutdown warnings. It
+does not establish a windowed pass or resolve physical input. Correction-headless-01's successful
+JSON still had duplicate signal-connection errors during view reparenting; it is not a passed gate.
+The node-added subscriber now checks an existing connection before attaching again. Windowed
+overflow remains pending independent observation without uncontrolled native input.
 
 ## Logical Input and Accessibility (ADR 0010 9A)
 

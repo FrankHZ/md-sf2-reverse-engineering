@@ -4,11 +4,76 @@ extends "res://probes/engine_world_viewport_observation.gd"
 var changes: Array = []
 var phases: Array = []
 var reaction_targets: Array = []
+var input_receipts: Array = []
+var boundary_receipts: Array = []
+var resource_observation_started := false
+var neutral_axes: Dictionary = {}
+
+func observe_node(node: Node) -> void:
+    if node.has_signal("SessionResultObserved") and not node.is_connected("SessionResultObserved",result_events):
+        node.connect("SessionResultObserved",result_events)
+
+func input_state() -> Dictionary:
+    var s := {}
+    if is_instance_valid(host):
+        var current_view := host.find_child("ExplorationSessionView",true,false)
+        if current_view == null: current_view = host.find_child("BattleSessionView",true,false)
+        if current_view != null and current_view.is_node_ready(): s = state()
+    var row := {"ms":Time.get_ticks_msec()-began,"focused":root.has_focus()}
+    for key in ["revision","stage","actor","failure","mode","wait","stop","stopReason","textId","canWaitForText","skipRequiresRelease","entrySkip","battleHandoffPending"]:
+        if s.has(key): row[key] = s[key]
+    return row
+
+func receive_input(event: InputEvent) -> void:
+    if ended: return
+    if event is not InputEventKey and event is not InputEventJoypadButton and event is not InputEventJoypadMotion: return
+    if event is InputEventJoypadMotion and absf(event.axis_value) < 0.5:
+        var axis_key := str(event.device)+":"+str(event.axis)
+        if neutral_axes.has(axis_key):
+            neutral_axes[axis_key].count += 1
+            neutral_axes[axis_key].lastMs = Time.get_ticks_msec()-began
+            return
+        neutral_axes[axis_key] = {"count":1,"lastMs":Time.get_ticks_msec()-began}
+    var row := input_state()
+    row.kind = "window-input"
+    row.event = event.as_text()
+    row.pressed = event.is_pressed()
+    row.echo = event.is_echo()
+    input_receipts.append(row)
+    # This witness injects only keyboard events. Preserve native peripheral activity
+    # instead of attributing its gameplay effects to the scripted key sequence.
+    if (event is InputEventJoypadMotion and absf(event.axis_value) >= 0.5) or (event is InputEventJoypadButton and event.pressed):
+        unavailable.append("Uncontrolled native joypad input during keyboard observation: "+event.as_text())
+        finish(true)
+        return
+    if input_receipts.size() > 256: fail("Bounded input receipt limit exceeded")
+
+func receive_focus(entered: bool) -> void:
+    if ended: return
+    var row := input_state()
+    row.kind = "focus-entered" if entered else "focus-exited"
+    input_receipts.append(row)
+
+func key_event(code: Key, pressed: bool) -> void:
+    var row := input_state()
+    row.kind = "observer-request"
+    row.key = OS.get_keycode_string(code)
+    row.pressed = pressed
+    input_receipts.append(row)
+    if input_receipts.size() > 256:
+        fail("Bounded input receipt limit exceeded")
+        return
+    super.key_event(code,pressed)
+
+func finish(completed := false) -> void:
+    if ended: return
+    samples.append({"label":"input-and-boundary-receipts","inputs":input_receipts,"neutralAxes":neutral_axes,"boundaries":boundary_receipts})
+    super.finish(completed)
 
 func sample(label: String) -> Dictionary:
     var s := state()
     var row := {"label":label}
-    for key in ["revision","stage","actor","target","failure","actors","menu","scene","movement","viewport","mapViewport","zoom","previewRect","observations","stopReason"]:
+    for key in ["revision","stage","actor","target","failure","actors","menu","scene","movement","viewport","mapViewport","zoom","previewRect","observations","stopReason","mode","wait","stop","textId","help","canWaitForText","visibleCharacters","totalCharacters","skipRequiresRelease","entrySkip","battleHandoffPending"]:
         if s.has(key): row[key] = s[key]
     samples.append(row)
     return s
@@ -67,6 +132,14 @@ func menus(label: String) -> Dictionary:
 
 func result_events(json: String) -> void:
     var r: Dictionary = JSON.parse_string(json)
+    var kinds: Array = r.observations.map(func(e): return e.Kind)
+    if r.get("failure") != null or r.get("boundary") == "attach" or kinds.any(func(k): return str(k).begins_with("battle-entry-skip") or k in ["player-control","text-w2-accepted","dialogue-acknowledged"]):
+        var events: Array = r.observations.filter(func(e): return str(e.Kind).begins_with("battle-entry-skip"))
+        boundary_receipts.append({"ms":Time.get_ticks_msec()-began,"boundary":r.get("boundary"),"revision":r.revision,"mode":r.mode,"stopReason":r.stopReason,"failure":r.failure,"kinds":kinds,"skipEvents":events})
+        if boundary_receipts.size() > 128:
+            fail("Bounded semantic receipt limit exceeded")
+            return
+    if not resource_observation_started: return
     for e in r.observations:
         if e.Kind in ["mp","hp"]: changes.append(e)
 
@@ -125,24 +198,40 @@ func scene_until_control(healing: bool) -> bool:
 
 func run() -> void:
     root.size = Vector2i(1920,1080)
+    node_added.connect(observe_node)
+    root.window_input.connect(receive_input)
+    root.focus_entered.connect(func(): receive_focus(true))
+    root.focus_exited.connect(func(): receive_focus(false))
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
     root.grab_focus()
     await frames(8)
+    sample("startup-before-observer-input")
     if case_name in ["private","names","overflow"]:
         var deadline := Time.get_ticks_msec()+15000
-        var skipped := false
+        var attempts := 0
+        var last_entry := ""
         while Time.get_ticks_msec() < deadline and state().get("stage") != "Movement":
             if not await focus(): return
             var s := state()
-            if not skipped and not s.get("skipRequiresRelease",true) and "Skip battle intro" in str(s.get("help","")):
-                skipped = true
+            var entry_key := str([s.get("mode"),s.get("wait"),s.get("textId"),s.get("skipRequiresRelease"),s.get("entrySkip") != null,s.get("battleHandoffPending")])
+            if entry_key != last_entry:
+                sample("entry-boundary")
+                last_entry = entry_key
+            if attempts < 2 and s.get("entrySkip") == null and not s.get("battleHandoffPending",false) and not s.get("skipRequiresRelease",true) and "Skip battle intro" in str(s.get("help","")):
+                attempts += 1
+                sample("before-skip-request-"+str(attempts))
                 await tap(KEY_ESCAPE)
+                var after := sample("after-skip-request-"+str(attempts))
+                var accepted: bool = after.get("entrySkip") != null or after.get("battleHandoffPending",false) or after.has("stage")
+                if not accepted and attempts == 2:
+                    fail("Two eligible mapped Cancel requests did not start entry skip")
+                    return
             elif s.get("entrySkip") != null: await process_frame
             elif s.get("canWaitForText",false) or s.get("wait") == "ChoiceWait" or "Reveal / Continue" in str(s.get("help","")): await tap(KEY_ENTER)
             else: await process_frame
     if not await wait_for(func(s): return s.get("stage") == "Movement", "battle control"): return
-    view.connect("SessionResultObserved",result_events)
+    resource_observation_started = true
     if case_name in ["names","overflow"]:
         await name_boundary()
         return
