@@ -215,6 +215,12 @@ $settings = Join-Path $repo 'local/issue1393/adjustable.json'
 | `battle` / authored `jaro-conversion.json` | Actual movement/stay trigger; two shared battle-story windows, retained physical camera slot/focus, real acknowledgements, correct close and fresh movement. |
 | `skip` / original authored `harbor-arrival.json` | Choice offers no skip; later eligible intro shows actual binding; held Cancel stops at handoff, release admits battle, fresh Confirm/Cancel operate its ordinary menu. |
 
+All executor cases below ran with `--headless`. They exercise actual Godot controls, layout,
+process/draw callbacks, mounted resources and injected mapped input, but do **not** establish
+windowed compositor delivery, OS window focus or physical-device behavior. Headless root-focus
+flags are only observer preconditions. Independent main-gate owns the bounded windowed checks;
+those results remain separate from these executor records. No windowed pass is claimed here.
+
 **Confirmed at the candidate boundary:** the private portrait/Zone8 pilot and authored question/return
 pilot passed before expansion. Private No and Yes took about50/46 seconds, with24/22 compact samples
 and about122/115 KiB reports. Reached source question531 uses three shaped lines; its full binding
