@@ -363,7 +363,36 @@ failure/Unavailable arrays and clean stdout/stderr (about 51 seconds and 4.93MB 
 The later finite-name correction passed the two targeted windowed cases above, about 6.4 seconds
 and 132KB, also with exits0 and clean logs. Debug/Release adapter compilation passed. Prior private
 runs retained two ObjectDB exit warnings; clean final runs do not establish that historical issue
-resolved. No Godot process is retained. Independent acceptance remains pending.
+resolved. No Godot process is retained. Independent acceptance has the separate boundary below.
+
+### Independent E1 acceptance
+
+**Confirmed:** main-gate independently accepted E1 at `03f1e9525effcb69b5b46f443ad618f98116c6e9`
+after code, documentation, asset and private-boundary review and the following actual-host checks.
+`local/issue1397/main-gate-native-summary.json` retains the run identities and results. All five runs
+exited 0 with empty failure/Unavailable arrays and clean stdout/stderr.
+
+| Run | Mode | Elapsed ms | Samples | Report bytes |
+| --- | --- | ---: | ---: | ---: |
+| `main-gate-heal-01` | Windowed | 9500 | 25 | 654961 |
+| `main-gate-private-01` | Windowed | 9680 | 23 | 993569 |
+| `main-gate-names-01` | Windowed | 14524 | 1 | 37077 |
+| `main-gate-damage-headless-02` | Headless state/draw | 4142 | 17 | 483667 |
+| `main-gate-overflow-headless-02` | Headless state/draw | 3180 | 75 | 1353146 |
+
+The three windowed checks cover heal, private-local presentation and normalized names. The two
+headless checks cover damage and exceptional-name state/draw in the actual Godot scene. They do
+not establish independent windowed damage/overflow passes or resolve native input interference.
+Earlier window failures, uncontrolled joypad events and shutdown warnings retain their meanings
+below; these five clean logs do not erase them. Broader physical-device/all-map/aesthetic approval
+remains outside E1's accepted boundary.
+
+Main-gate's direct review confirmed 22 owned paths, 141 local links, source-size limits and diff/private
+boundaries. [CI40830350947](https://github.com/FrankHZ/md-sf2-reverse-engineering/actions/runs/40830350947)
+passed scope/adapter-build at the accepted head; engine-unit/research-public/h4-comparison-build were skipped by scope.
+No acceptance blocker remains within this bounded E1 scope. Integration remains with main-gate in
+[Draft PR1399](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1399); this documentation-only
+closure changes no implementation and requires no repetition of completed build/native checks.
 
 Completed failures remain in ignored `local/issue1397`: an initial JSON float/string expectation;
 first-show wrapped-card height1402 (fixed using native minimum-size notification); a helper-name
@@ -396,7 +425,8 @@ exit0, no failures/Unavailable or script errors, with two retained ObjectDB shut
 does not establish a windowed pass or resolve physical input. Correction-headless-01's successful
 JSON still had duplicate signal-connection errors during view reparenting; it is not a passed gate.
 The node-added subscriber now checks an existing connection before attaching again. Windowed
-overflow remains pending independent observation without uncontrolled native input.
+overflow remains unverified at the retained interference boundary; independent headless acceptance
+above does not resolve that physical-input question.
 
 ## Logical Input and Accessibility (ADR 0010 9A)
 
