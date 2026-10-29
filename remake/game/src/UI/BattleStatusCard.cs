@@ -31,14 +31,20 @@ internal sealed partial class BattleStatusCard : PanelContainer
 
     internal void Present(BattleActorState? actor, string name, string role)
     {
-        _actor = actor?.Actor; Visible = actor is not null;
+        Present(actor?.Actor, name, role, actor?.Hp ?? 0, actor?.MaxHp ?? 0, actor?.Mp ?? 0, actor?.MaxMp ?? 0);
+    }
+
+    // Field callers project scalar carried resources without constructing a battle actor.
+    internal void Present(ActorRef? actor, string name, string role, int hp, int maxHp, int mp, int maxMp)
+    {
+        _actor = actor; Visible = actor is not null;
         PresentName(name);
-        bool low = actor is { Hp: > 0, MaxHp: > 0 } && actor.Hp * 4 <= actor.MaxHp;
-        _role.Text = role + (actor?.Hp == 0 ? " · Defeated" : low ? " · ! Low HP" : "");
+        bool low = hp > 0 && maxHp > 0 && hp * 4 <= maxHp;
+        _role.Text = role + (hp == 0 ? " · Defeated" : low ? " · ! Low HP" : "");
         _role.Modulate = low ? StoryTheme.Selected : Colors.White;
         Size = RequestedSize;
-        _hp.Present(actor?.Hp ?? 0, actor?.MaxHp ?? 0);
-        _mp.Present(actor?.Mp ?? 0, actor?.MaxMp ?? 0);
+        _hp.Present(hp, maxHp);
+        _mp.Present(mp, maxMp);
     }
 
     private void PresentName(string name)

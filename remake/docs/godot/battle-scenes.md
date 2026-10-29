@@ -1,5 +1,13 @@
 # Battle Presentation
 
+## Message and outcome presentation
+
+Action/result/reward/growth text now uses the shared native 30px blue/gold story panel and mapped
+input hints. Existing scene tokens, reveal/acknowledgement semantics and source message operands
+remain authoritative. New message tokens reset reading scroll; reading overflow does not acknowledge
+unread content. The [E2 owner](presentation.md#battle-messages-return-and-party-status) describes
+window retirement, actual field return and the optional read-only party page. No rewards are replayed.
+
 ## Shared action status cards
 
 Command, target and action scenes share the [E1 card](presentation.md#battle-status-card-agreement).

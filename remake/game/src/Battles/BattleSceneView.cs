@@ -22,6 +22,8 @@ internal sealed partial class BattleSceneView : Control
     private ColorRect _sceneBlack = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
     private Label _message = null!;
+    private readonly StoryDialoguePanel _messagePanel = new() { Name = "MessagePanel" };
+    private GameInput _input = null!;
     private readonly BattleStatusCard _actorCard = new() { Name = "ActorCard" }, _targetCard = new() { Name = "TargetCard" };
     private GameSession _session = null!;
     private InputSettings _settings = null!;
@@ -55,7 +57,7 @@ internal sealed partial class BattleSceneView : Control
         _ally = Sprite("Ally", new(136, 64)); _ally.ZIndex = 2;
         _weapon = Sprite("Weapon", new(136, 64));
         AddChild(_actorCard); AddChild(_targetCard);
-        _message = Label("Message", new(8, 174), new(240, 48));
+        AddChild(_messagePanel); _message = _messagePanel.Body; _messagePanel.Choices.Hide();
         for (int i = 0; i < 2; i++)
         {
             _fairyBodies.Add(Sprite("FairyBody" + i, Vector2.Zero));
@@ -73,16 +75,17 @@ internal sealed partial class BattleSceneView : Control
     private void Suspend() => _suspended = true;
     private void Resume() => _suspended = false;
 
-    internal void Configure(GameSession session, InputSettings settings, SessionAudio? audio)
-    { _session = session; _settings = settings; _audio = audio; }
+    internal void Configure(GameSession session, GameInput input, SessionAudio? audio)
+    { _session = session; _input = input; _settings = input.Settings; _audio = audio; }
 
     internal void Present()
     {
         var state = _session.Current.BattleScene;
-        if (state is null) { Hide(); _laser.Hide(); _aura.Hide(); _state = null; return; }
+        if (state is null) { _messagePanel.Present(false, false, false, default, "", false); Hide(); _laser.Hide(); _aura.Hide(); _state = null; return; }
         if (state.IsFieldDeath) Hide(); else Show();
         PresentStatus(state);
-        if (_state?.Token == state.Token) { _state = state; ProjectHealing(state); return; }
+        if (_state?.Token != state.Token) _messagePanel.ResetReading();
+        if (_state?.Token == state.Token) { _state = state; PresentMessage(state); ProjectHealing(state); return; }
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
@@ -93,7 +96,7 @@ internal sealed partial class BattleSceneView : Control
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
                 _sceneBlack.Show(); _aura.Present(state, _session.Current.Battle);
-                _message.Text = Message(state);
+                PresentMessage(state);
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
                 if (state.Phase == BattleScenePhase.Reaction) _audio?.PlayEffect(113);
                 return;
@@ -104,7 +107,7 @@ internal sealed partial class BattleSceneView : Control
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
                 _sceneBlack.Show(); _laser.Present(state, _session.Current.Battle);
-                _message.Text = Message(state);
+                PresentMessage(state);
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
                 return;
             }
@@ -123,7 +126,7 @@ internal sealed partial class BattleSceneView : Control
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
-                _message.Text = Message(state); _message.VisibleCharacters = -1;
+                PresentMessage(state); _message.VisibleCharacters = -1;
                 return;
             }
             _background.Show(); _backgroundWrap.Show(); _ground.Show(); _ally.Show();
@@ -165,7 +168,7 @@ internal sealed partial class BattleSceneView : Control
             _ally.Position = new(136, 64); _enemy.Position = new(16, 48);
             _background.Position = new(0,56); _backgroundWrap.Position = new(256,56); _ground.Position = new(136,140);
             _ally.Modulate = _enemy.Modulate = Colors.White;
-            _message.Text = Message(state);
+            PresentMessage(state);
             _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
             if (state.Phase == BattleScenePhase.Initialize) { _castSoundPlayed = false; _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5); }
             if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Damage") _audio?.PlayEffect(target.IsAlly ? 81 : 83);
@@ -193,6 +196,7 @@ internal sealed partial class BattleSceneView : Control
         var viewport = GetViewportRect().Size;
         float scale = MathF.Min(viewport.X / 256, viewport.Y / 224);
         _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
+        RefreshMessageHint(state);
         _elapsed += delta;
         if (state.IsAfterTurnNotice || state.Phase == BattleScenePhase.SleepMessage)
         {
@@ -211,7 +215,7 @@ internal sealed partial class BattleSceneView : Control
             // delivery among mandatory logical operations or advance timed input.
             if (state.IsHealingMessage && state.Healing is { Delivered: false } message &&
                 (message.AtTimedInput || message.LogicalComplete) &&
-                (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()))
+                (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()) && !_messagePanel.MoreBelow)
                 return new CompletePresentation(state.Token, state.CompletionKind);
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
         }
@@ -317,6 +321,7 @@ internal sealed partial class BattleSceneView : Control
         if (action != GameAction.Confirm || _state is not { RequiresAcknowledgement: true } state || Error is not null) return null;
         if (_message.VisibleCharacters >= 0 && _message.VisibleCharacters < _message.GetTotalCharacterCount())
         { _revealed = _message.GetTotalCharacterCount(); _message.VisibleCharacters = (int)_revealed; return null; }
+        if (_messagePanel.ReadMore()) return null;
         return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? null : new Acknowledge(state.Token);
     }
 
@@ -446,10 +451,21 @@ internal sealed partial class BattleSceneView : Control
     }
     private Sprite2D Sprite(string name, Vector2 position)
     { var node = new Sprite2D { Name = name, Position = position, Centered = false }; _canvas.AddChild(node); return node; }
-    private Label Label(string name, Vector2 position, Vector2 size)
+    private void PresentMessage(BattleSceneState state)
     {
-        var label = new Label { Name = name, Position = position, Size = size, AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        label.AddThemeFontSizeOverride("font_size", 9); _canvas.AddChild(label); return label;
+        _message.Text = Message(state);
+        _messagePanel.Present(!state.IsFieldDeath && _message.Text.Length > 0, false, false, default, "");
+        RefreshMessageHint(state);
+    }
+    private void RefreshMessageHint(BattleSceneState state)
+    {
+        bool revealing = _message.VisibleCharacters >= 0 && _message.VisibleCharacters < _message.GetTotalCharacterCount();
+        string hint = !state.RequiresAcknowledgement ? "Action in progress…" : revealing
+            ? $"{_input.Hint(GameAction.Confirm)}: Reveal" : _messagePanel.MoreBelow
+            ? $"{_input.Hint(GameAction.Confirm)}: Read more" : state.Healing is { LogicalComplete: false, AtTimedInput: false }
+            ? "Action in progress…" : $"{_input.Hint(GameAction.Confirm)}: Continue ▾";
+        if (state.Healing is { AtTimedInput: true }) hint += $"    {_input.Hint(GameAction.Wait)}: Wait";
+        _messagePanel.SetHint(hint);
     }
     internal object Observe() => new
     {
@@ -475,7 +491,7 @@ internal sealed partial class BattleSceneView : Control
         weaponResource = _weaponResource, weaponVisible = _weapon.Visible, weaponFlipH = _weapon.FlipH, weaponFlipV = _weapon.FlipV,
         background = BoundResource(_background), backgroundWrap = BoundResource(_backgroundWrap), ground = BoundResource(_ground),
         textureCount = _textures.Count, reducedFlash = _settings?.ReducedFlash, message = _message.Text,
-        visibleCharacters = _message.VisibleCharacters, messageFont = ObserveMessageFont(),
+        messagePanel = _messagePanel.Observe(), visibleCharacters = _message.VisibleCharacters, messageFont = ObserveMessageFont(),
         actorCard = _actorCard.Observe(), targetCard = _targetCard.Observe(),
         allyX = _ally.Position.X, allyY = _ally.Position.Y, enemyX = _enemy.Position.X, enemyY = _enemy.Position.Y,
         backgroundX = _background.Position.X, groundX = _ground.Position.X, weaponX = _weapon.Position.X,

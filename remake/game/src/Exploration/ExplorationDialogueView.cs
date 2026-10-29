@@ -19,6 +19,7 @@ internal sealed partial class ExplorationDialogueView : Control
     private TextWindow? _textWindow;
     private bool _fieldTextProjection;
     internal double Revealed { get; set; }
+    internal string ReturnNotice { get; set; } = "";
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
@@ -107,13 +108,14 @@ internal sealed partial class ExplorationDialogueView : Control
             ChoiceWait => $"{input.Hint(GameAction.Confirm)}: Yes    {input.Hint(GameAction.Cancel)}: No",
             _ when Panel.Visible && !revealed => $"{input.Hint(GameAction.Confirm)}: Reveal",
             _ when Panel.Visible && atInput => $"{input.Hint(GameAction.Confirm)}: Continue ▾",
-            _ when current.CanWaitAtInput => (session.QueryExplorationInteraction() is not null ? $"{input.Hint(GameAction.Confirm)}: Talk    " : "") + $"Hold {input.Hint(GameAction.Wait)}: Wait",
+            _ when current.CanWaitAtInput => (session.QueryExplorationInteraction() is not null ? $"{input.Hint(GameAction.Confirm)}: Talk    " : "") + $"Hold {input.Hint(GameAction.Wait)}: Wait    {input.Hint(GameAction.Equipment)}: Party Status",
             _ => "Scene in progress…",
         };
         if (Panel.Visible && Panel.MoreBelow && revealed) hint = $"{input.Hint(GameAction.Confirm)}: Read more";
         if (current.Story.Wait is ChoiceWait { Work: null } && !revealed) hint = $"{input.Hint(GameAction.Confirm)}: Reveal";
         if (BattleEntrySkip.Eligible(current)) hint += current.Story.EntrySkip is null
             ? $"    {input.Hint(GameAction.Cancel)}: Skip battle intro" : "    Skipping battle intro…";
+        if (!Panel.Visible && ReturnNotice.Length > 0) hint = ReturnNotice + "\n" + hint;
         _context.Text.Text = hint;
         _context.Arrange(GetViewportRect().Size);
         _context.Visible = !Panel.Visible && (!battleMounted || BattleEntrySkip.Eligible(current));

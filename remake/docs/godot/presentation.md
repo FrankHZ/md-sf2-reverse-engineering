@@ -1,5 +1,41 @@
 # Godot Host and Presentation
 
+## Battle messages, return and Party Status
+
+**Standard rigor; [#1398](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1398).**
+This bounded presentation slice consumes accepted E1 and C. Existing action, damage/heal, status,
+death, EXP/gold/growth message order, tokens, payment and outcome programs remain session-owned.
+`BattleSceneView` uses the shared blue/gold `StoryDialoguePanel` at native 30px, with mapped Reveal,
+Continue and eligible Wait hints. New tokens reset reading position; same-token refresh retains it.
+Display-only reading pages precede acknowledgement. E1 cards retain their live actor resources.
+
+Battle chrome distinguishes ready selection, “Battle in progress…”, rejected commands with their
+reason, and “The battle has stopped” with the retained failure. Startup/adapter errors use the same
+visible feedback panel; `ContextHint.Arrange` explicitly shows nonempty text. Fatal stopped sessions
+cannot continue automatic or ordinary input. Diagnostic IDs/stages remain in observations.
+
+At the actual battle-to-field handoff, battle windows retire while the battlefield may remain beneath
+field-owned after/return effects. Existing reward messages and outcome programs finish normally.
+A transient Victory/Defeat/Returned notice becomes “Back in the field” only at `CanWaitAtInput`;
+it introduces no acknowledgement or reward summary. Ready return also releases any retained battle
+mount. The first fresh field command dismisses the notice and executes normally.
+
+At settled field input, the existing Equipment binding (default E / Pad Start) opens **Party Status**.
+One member card is shown, with left/right (or up/down) paging and Cancel/Equipment/Confirm closing.
+The page directly reads current carried ally records, progress maxima or admitted definition maxima,
+member names and gold. Authored containers may retain enemy records; those are excluded using their
+admitted faction. Zero MP and defeated members reuse E1 cues. There is no synthetic battle, mutable
+resource copy, inventory/equipment/healing action, save/retry, arbitrary retreat or general field menu.
+Opening, paging and closing submit no session commands. Opening/focus suspension require released
+input; modal directions clear movement holds, and closing consumes its own event before fresh input.
+Busy or failed field state cannot open it. A changed field boundary automatically closes the page.
+
+Acceptance is adapter compilation and the clean-head scope plan, plus the
+[bounded host witness](../verification/host.md#battle-return-and-party-status-observation).
+No Domain/Application/Content behavior changes require new unit tests. Native observations use
+headless Godot because external joypad interference remains unresolved in windowed runs; this is
+not a new windowed acceptance claim. Independent main-gate integration remains required.
+
 ## Battle status-card agreement
 
 **Standard rigor; [#1397](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1397).**
