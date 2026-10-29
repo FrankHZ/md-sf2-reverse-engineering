@@ -15,9 +15,9 @@ selects one continuous playable milestone from Map 3 through completion of Battl
 Research and Design gap closure plus a separate user start action. Neither ADR selects the player
 experience, assets, route, acceptance endpoint, or intentional deviations.
 
-The [Map 3 to Battle 01 Readiness Ledger](../design/synthesis/map3-battle01-readiness.md) records those
+The [Map 3 to Battle 01 Readiness Ledger](../design/synthesis/milestones/map3-battle01-readiness.md) records those
 unresolved product-choice slots and remains **NOT READY** for Phase 4. Accepted contracts close many
-local seams, including [Battle Functions Control Flow](../design/contracts/battle-functions-control-flow.md),
+local seams, including [Battle Functions Control Flow](../design/contracts/battle/battle-functions-control-flow.md),
 but accepted `main` still does not establish the exact admitted state, natural route, complete
 natural battle trace, after-battle program effects, or final observable state.
 
@@ -54,10 +54,10 @@ admitted start, but it may not replace the route or battle with helper calls aft
 | --- | --- | --- |
 | [ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) | prospective Godot/.NET/CLI boundary | product experience, assets, MCP adoption, or Phase 4 start |
 | [ADR 0009](./0009-first-phase4-playable-slice.md) | continuous Map 3-through-Battle 01-completion extent | exact start, route, endpoint, save, UI, assets, or parity tier |
-| [Readiness Ledger](../design/synthesis/map3-battle01-readiness.md) | dependency classes, open gaps, H4 layers, and closure order | original evidence, product answers, or readiness approval |
-| [Story Progression](../design/synthesis/story-progression.md) and [Gameplay Overview](../design/synthesis/gameplay-overview.md) | bounded handoffs and cross-system vocabulary | a natural campaign chronology or exact scenario route |
-| [Battle Functions Control Flow](../design/contracts/battle-functions-control-flow.md) and [Tactical Battle Loop](../design/synthesis/tactical-battle-loop.md) | local player/battle routes and composition boundaries | a complete natural Battle 01 playthrough or product UI |
-| [Save System](../design/contracts/save-system.md), [Input System](../design/contracts/input-system.md), and presentation contracts | bounded local service, input, loader, and request seams | milestone save scope, device mapping, accessible UX, or rendered parity tier |
+| [Readiness Ledger](../design/synthesis/milestones/map3-battle01-readiness.md) | dependency classes, open gaps, H4 layers, and closure order | original evidence, product answers, or readiness approval |
+| [Story Progression](../design/synthesis/themes/story-progression.md) and [Gameplay Overview](../design/synthesis/gameplay-overview.md) | bounded handoffs and cross-system vocabulary | a natural campaign chronology or exact scenario route |
+| [Battle Functions Control Flow](../design/contracts/battle/battle-functions-control-flow.md) and [Tactical Battle Loop](../design/synthesis/themes/tactical-battle-loop.md) | local player/battle routes and composition boundaries | a complete natural Battle 01 playthrough or product UI |
+| [Save System](../design/contracts/system/save-system.md), [Input System](../design/contracts/interface/input-system.md), and presentation contracts | bounded local service, input, loader, and request seams | milestone save scope, device mapping, accessible UX, or rendered parity tier |
 
 ## Choice Matrix
 
@@ -149,7 +149,7 @@ Distinguish three kinds of progression:
 
 Service order is established per mode and caller, not by a universal global ordering. Under 9A,
 compare the same semantic Wait/acknowledgement stream when evaluating supplemental settings. A reveal-only Confirm and
-pure delivery delay do not add gameplay opportunities. The [continuous-scenario contract](../design/contracts/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
+pure delivery delay do not add gameplay opportunities. The [continuous-scenario contract](../design/contracts/milestones/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
 owns admission and command-readiness details. Interactive wait rate and concrete scheduling remain
 implementation decisions requiring a bounded contract; this choice does not establish them.
 
@@ -162,7 +162,7 @@ authorized by this policy.
 #### Accepted modern finite-music clock
 
 The user selected a modern deterministic clock for finite music. The binding
-[music-wait policy](../design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+[music-wait policy](../design/contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)
 starts generation progress at the semantic music request and advances one step per existing bound
 common logical service, independent of entity enablement. Sound progress precedes gate/context
 service; the first helper service arms without rescanning, and the helper completes whole groups
@@ -356,7 +356,7 @@ Acknowledgement need not wait for a speech tail to finish.
 Report this omission explicitly even when it conforms to the accepted expected behavior. It does
 not waive same-semantic-Wait/Ack state equivalence, normal-reveal speech, actual completion,
 private-content provenance or unrelated 7C/8D obligations. Product acceptance is not observation
-coverage or full H4 PASS; the [continuous contract](../design/contracts/map3-battle01-continuous-scenario.md)
+coverage or full H4 PASS; the [continuous contract](../design/contracts/milestones/map3-battle01-continuous-scenario.md)
 and [audio owner](../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)
 retain the actual evidence boundaries.
 
@@ -409,7 +409,7 @@ bounded fields are already closed; this list does not reopen them:
 
 Research may split these into coherent evidence owners. This ADR MUST NOT name speculative fixture
 IDs or treat an unmerged observation as accepted. After the required owners merge, Design may propose
-`docs/design/contracts/map3-battle01-continuous-scenario.md` with its exact fixture and association set
+`docs/design/contracts/milestones/map3-battle01-continuous-scenario.md` with its exact fixture and association set
 derived from accepted evidence.
 
 ## Eventual Milestone Acceptance Consequences

@@ -26,7 +26,7 @@ def turn_order_binding(actual, source_root):
         evidenceScope=actual.get("evidenceScope"),
         sourceRules=dict(
             upstream=UPSTREAM,
-            owner="docs/design/contracts/battle-control-lifecycle.md",
+            owner="docs/design/contracts/battle/battle-control-lifecycle.md",
             symbol="GenerateBattleTurnOrder/AddCombatantAndRandomizedAgiToTurnOrder",
             fixtures=[
                 "tests/fixtures/h3/battle01-turn-order-v1.json",

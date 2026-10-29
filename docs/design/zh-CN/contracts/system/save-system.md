@@ -1,0 +1,93 @@
+# 存档系统合同
+
+- **已确认的原版行为：** 静态的两槽位 SRAM 表示、字节交错复制方向、加法校验和/校验顺序、占用标志操作、save/load/copy/delete 辅助序列、女巫菜单选择器/行动路由，以及下文描述的有界进程内 H3 矩阵。
+- **未知的原版行为：** 跨进程物理持久化、断电/部分写入结果、已检查字节校验和之外的损坏行为、玩家驱动的 New-game 命名/菜单呈现或输入节奏，以及调用方可见的像素/音频/挂起时序。
+- 重制状态：实现无关的合同；进程内服务效果已被观察，而耐久介质行为仍未观察。
+- 证据日期：2026-08-13
+- 源码基线：`ShiningForceCentral/SF2DISASM`
+  `c834c652b6862bc5679fd7f69a38a7093206efc6`
+- 可追溯性：`tests/fixtures/h2/tech-services-static-v1.json` 中的 `sf2-tech-services-static-v1`；`src/sf2tool/h2/services.py`；以及
+  `docs/research/system/technical-services.md`。静态女巫菜单合同是
+  `tests/fixtures/h2/special-screens-static-v1.json` 中的 `sf2-special-screens-static-v1`；`src/sf2tool/h2/screens.py`；以及
+  `docs/research/presentation/special-screens.md`。进程内运行时合同是
+  `tests/fixtures/h3/witch-save-actions-v1.json` 中的 `sf2-witch-save-actions-runtime-v1`；`src/sf2tool/h3/witch_save_actions.py`；以及
+  `docs/research/presentation/special-screens.md`。独立的 Witch 行动准入运行时合同是
+  `tests/fixtures/h3/witch-save-menu-actions-v1.json` 中的 `sf2-witch-save-menu-actions-runtime-v1`；
+  `src/sf2tool/h3/witch_save_menu_actions.py`；以及 `docs/research/presentation/special-screens.md`。有界 New-game 运行时合同是
+  `tests/fixtures/h3/witch-new-game-lifecycle-v1.json` 中的 `sf2-witch-new-game-lifecycle-runtime-v1`；
+  `src/sf2tool/h3/witch_new_game_lifecycle.py`；以及 `docs/research/presentation/special-screens.md`。直接服务生命周期合同是
+  `tests/fixtures/h3/sram-lifecycle-v1.json` 中的 `sf2-sram-lifecycle-runtime-v1`；
+  `src/sf2tool/h3/sram_lifecycle.py`；以及 `docs/research/system/technical-services.md`。
+
+> 本文件是 [`save-system.md`](../../../contracts/system/save-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+
+## 已确认的静态合同
+
+有两个逻辑存档槽位。选择器值零寻址槽位 1；任何非零选择器寻址槽位 2。每个槽位把 4,016 个逻辑字节存储为 4,016 个物理存储字节写入。以两字节地址步进，这些写入占据一个保留的 8,032 字节 SRAM 地址区间；该区间不是 8,032 个已存储字节写入。槽位占用标志是 save-flags（存档标志）字段的位 0 与位 1。
+
+`CheckSram` 先验证签名，然后槽位 2，再槽位 1。对于已占用的槽位，它通过交错读取器复制该槽位，把计算出的低字节加法校验和与所选存储校验和比较，并在不匹配时清除占用位。其静态结果是：有效占用槽位为 1，未占用槽位为 0，失败的占用槽位为 -1。签名不匹配会清除全部 8,192 个逻辑 SRAM 字节、写入签名，然后清除存档标志。
+
+存档把战斗员数据复制到所选槽位，存储低校验和字节，然后设置该槽位的占用位。读档把所选槽位复制回战斗员数据，但不本地执行校验和比较。复制加载所选槽位并将其保存到相反槽位；删除只清除所选占用位。该合同刻意区分这些静态辅助操作与耐久介质保证。
+
+## 已确认的进程内运行时矩阵
+
+**已确认：** 一次 BizHawk 2.11.1 / Genesis Plus GX 启动在原版 `CheckSram` 返回后调用原版 `SaveGame`、`LoadGame`、`CopySave` 与 `ClearSaveSlotFlag`。九个直接用例对槽位 1 使用种子 19（存储/计算校验和 71）、对槽位 2 使用种子 20（存储/计算校验和 247）。`LoadGame` 恢复每个选择器的四个投毒并复核的载荷样本。复制选择器 0 以目标选择器 1 与校验和 71 把槽位 1 转移到槽位 2；在恢复第二个来源载荷后，复制选择器 1 以目标选择器 0 与校验和 247 把槽位 2 转移到槽位 1。删除清除占用位 3→2→0 而不改变观察到的载荷样本或存储/计算校验和字节 247。这些是观察值，而非声称 8,032 字节物理地址区间是一个 8,032 字节已存储载荷；每个槽位以两字节地址步进存储 4,016 个物理字节。
+
+**已确认：** 来源标志 88 清除时 Load 到达 `GetSavepointForMap`，作为 30188 处的指令目标与有效目标。标志 88 设置时，它到达 131124 处的指令目标 `j_BattleLoop` 与 146052 处的跳转接口有效目标 `BattleLoop`。来源标签 `flag 88` 被保留；其面向玩家的生命周期含义不被推断。
+
+**未知：** 单进程服务 fixture 不确立跨进程 SRAM 存续、物理断电行为、部分/中断写入恢复、玩家驱动的 New-game 命名/菜单结果、像素、音频、输入节奏或挂起呈现。那些仍是 `docs/research/presentation/special-screens.md` 中命名的分组 H3 问题。
+
+## 已确认的 Witch 存档菜单行动准入矩阵
+
+**已确认：** 一个独立的十案例、单次启动矩阵在原版 `CheckSram` 引导后执行原版
+`witchMenuAction_Load`、`witchMenuAction_Copy` 与 `witchMenuAction_Del` 入口。受控菜单/提示 seam
+只提供源码兼容的返回值。它观察 Load 与 Delete 的 page 2、`SAVE_FLAGS & 3` 后的一位选择器缩放、写入
+`CURRENT_SAVE_SLOT` 前的选择器减一，以及 Copy 的掩码/减一来源选择器。菜单取消和非零提示返回会回到既有
+Witch 循环而不调用原版服务。确认的 Load、Copy 与 Delete 用例分别到达并从原版 `LoadGame`、`CopySave` 与
+`ClearSaveSlotFlag` 入口返回。Load 在源码推导的 `GetSavepointForMap` 或
+`j_BattleLoop`/`BattleLoop` 交接处停止；它不提升下游循环行为。
+
+**已确认的测试台边界：** 回调异常带有状态并非零退出，包括 case、phase、role、expected/actual callback
+state 与 pending role。每个物理 callback PC 由一个分发器拥有；成功运行不留下 Lua Console 错误或已注册
+回调。有限的 bootstrap-to-first-case 与每个活动 case watchdog 通过同一 restore/unlink/clear 状态路径失败，
+而不依赖外部 timeout；成功运行只还原受限的菜单状态、两个逻辑槽载荷/校验和、生成 RAM、stack/frame
+与会话 cart patches。
+本矩阵刻意不在既有直接服务 owner 之外添加载荷、校验和、服务结果、耐久介质或玩家驱动 UI 声明。
+
+## 已确认的直接服务生命周期矩阵
+
+**已确认：** 一个独立、单次启动的十四案例直接服务矩阵从测试台定义的工作 RAM 探针演练
+`CheckSram`、`SaveGame`、`LoadGame`、`CopySave` 与 `ClearSaveSlotFlag`。它只把原版
+`CheckSram` 的返回用作引导，不把标题画面或 Witch UI 当作已观察的服务调用方。fixture 定义的用例
+覆盖签名初始化、空/有效/无效槽位、两个 save 与 load 选择器、两个 copy 方向，以及两个占用标志清除。
+
+fixture 使用紧凑的校验和、不匹配计数、边界与哨兵事实，对每个被追踪槽位的全部 4,016 个逻辑字节
+进行比较。它独立检查签名不匹配时清除全部 8,192 个逻辑字节，随后检查源码定义的 17 字节签名前缀
+与已清除的标志。运行时确认两个嵌套函数入口，而源码守卫确立 `CopySave` 的
+`LoadGame` 后接 `SaveGame` 顺序。这些只是进程内 helper 效果；它们不确立玩家路线、持久物理介质或
+恢复政策。
+
+**已确认的测试台边界：** 回调异常会产生非零观察器状态/退出结果，并给出 case、phase、role 与
+expected/actual PC 诊断。共享 PC 角色以确定方式分发。已接受运行不留下 Lua Console 错误、不留下
+已注册回调，且逻辑 SRAM 残留为零。
+
+**未知：** 跨进程存续、断电或撕裂写入行为、硬件总线/存储区/周期细节、正常剧情/教堂/战斗持久性，
+以及面向玩家的存档 UI 均在该直接矩阵之外，也不会重新打开 ADR 0005 的硬件保真度决策。
+
+## 已确认的 New-game 运行时矩阵
+
+**已确认：** 一次 BizHawk 2.11.1 / Genesis Plus GX 启动在原版 `CheckSram` 返回后保存一个核心状态检查点，并回放四个独立的 New 行动用例。标志前置条件 0、1、2 与 0 进入 page-1 菜单，观察到的选择器/页/可用性为 `1/1/6`、`2/1/4`、`1/1/2` 与 `1/1/6`；注入的 page-1 结果选择槽位 1、槽位 2、槽位 1 与槽位 1。Page-3 注入的难度结果 0/1/2/3 产生标志 78/79 清除/清除、设置/清除、清除/设置与设置/设置。每个用例都调用原版 `SaveGame` 并以 `CURRENT_MAP`/`EGRESS_MAP` 3 与 D0–D4 `3/56/3/3/1` 转移到 `MainLoop`。
+
+**已确认的测试台边界：** 该观察在精确回读证明通过 `M68K BUS` 的相同写入未改变 ROM 指令字节之后使用会话专用 `MD CART` 补丁。它注入两个菜单返回、绕过 `NameAlly` 与 `DisplayText`、为原版配置辅助的 Start 清除分支清除玩家 1 输入，并在文本等待时脉冲 C。因此它不确立玩家在命名或导航菜单时看到或选择什么。fixture 拥有的 4,800 帧截止时间在 120 秒 Python 观察器超时之前记录超时里程碑并以失败退出 BizHawk。
+
+## 重制边界
+
+重制版可以用显式的有效/占用状态、完整性检查与存档复制/删除工作流表示两条独立寻址的存档记录。如果未来运行时工作观察到这些行为，它必须选择自己的原子写入、损坏恢复、平台存储与完成状态政策；本合同不确立其中任何选择。
+
+## 女巫菜单路由边界
+
+**已确认的静态合同：** 女巫行动分发器按此精确顺序有四个 word 表索引：New、Load、Delete、Copy。page-0 行动选择器在 `SAVE_FLAGS & 3` 判定后接收源掩码 1、6 或 15 之一。New 使用由 XOR 该掩码并左移一次形成的 page-1 空闲槽位选择器；Load 与 Delete 使用非反转、左移一次的 page-2 选择器。三者都在写入 `CURRENT_SAVE_SLOT` 之前从返回的选择器减一。Copy 用 3 掩码存档标志、减一，然后在其源码级非零提示结果分支之后调用 `CopySave`。
+
+**已确认的静态合同：** New 执行其命名/配置路径，把 `GAMESTART_MAP` 写入 `CURRENT_MAP`/`EGRESS_MAP`，然后调用 `SaveGame`；随后在分支之前按该顺序设置地图/X/Y/朝向/`d4` 供 `MainLoop` 使用（`GAMESTART_MAP`、`GAMESTART_SAVEPOINT_X`、`GAMESTART_SAVEPOINT_Y`、`GAMESTART_FACING` 与 `1`）。Load 调用 `LoadGame`；来源标志操作数 88 在 `j_BattleLoop` 路径与 `GetSavepointForMap` 路径之间选择，两者都结束于 `alt_MainLoopEntry`。Delete 只在其非零提示结果分支未被采取时到达 `ClearSaveSlotFlag`。这些陈述保留来源分支极性与调用顺序；它们不把面向玩家的含义分配给任一提示结果。
+
+**未知的原版行为：** 此处的静态证据不确立菜单时序、输入去抖、渲染标签、确认 UX、SRAM 耐久性，或这些循环交接的可见后果。

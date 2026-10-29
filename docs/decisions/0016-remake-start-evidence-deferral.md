@@ -18,8 +18,8 @@ labels and ADR 0015 launch limits remain binding; no new observation is authoriz
 
 [ADR 0009](./0009-first-phase4-playable-slice.md) selects the eventual first playable milestone: one
 continuous natural scenario from Map 3 through completion of Battle 01. [ADR 0010](./0010-map3-battle01-product-acceptance.md)
-preserves its accepted private-local 7C/8C product profile. The [Research audit](../research/map3-battle01-audit.md)
-and [readiness ledger](../design/synthesis/map3-battle01-readiness.md) therefore remain **OPEN** and
+preserves its accepted private-local 7C/8C product profile. The [Research audit](../research/chapters/grans-opening/map3-battle01-audit.md)
+and [readiness ledger](../design/synthesis/milestones/map3-battle01-readiness.md) therefore remain **OPEN** and
 **NOT READY** for that eventual milestone acceptance surface: natural route, admission, playthrough,
 victory, endpoint, original-reference replay, complete 8C capture, continuous-scenario contract, and
 H4 work are not accepted facts.
@@ -101,5 +101,5 @@ when their concrete implementation or acceptance ambiguity triggers the gate abo
 - [ADR 0010: Map 3 to Battle 01 Product Acceptance Profile](./0010-map3-battle01-product-acceptance.md)
 - [ADR 0014: Static-First Runtime Evidence after Map 3 to Battle 01](./0014-static-first-runtime-evidence-after-map3-battle01.md)
 - [ADR 0015: Original-Reference Replay and H4 Boundary](./0015-original-reference-replay-and-h4-boundary.md)
-- [Map 3 to Battle 01 Research Gap Audit](../research/map3-battle01-audit.md)
-- [Map 3 to Battle 01 Readiness Ledger](../design/synthesis/map3-battle01-readiness.md)
+- [Map 3 to Battle 01 Research Gap Audit](../research/chapters/grans-opening/map3-battle01-audit.md)
+- [Map 3 to Battle 01 Readiness Ledger](../design/synthesis/milestones/map3-battle01-readiness.md)

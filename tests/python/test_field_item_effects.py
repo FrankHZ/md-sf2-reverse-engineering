@@ -21,17 +21,17 @@ INDEX_SCHEMA = repo_path("schemas/research-index.schema.json")
 _PRE_SLICE_INDEX_SHA256 = "5DB260172DBCA315A46AE1E713785BCE0E97081939500E2C213BB8232D1C5927"
 _DIRECT_STATE_FIXTURE_ID = "sf2-map-event-direct-state-static-v1"
 _DIRECT_STATE_VERIFIER = "src/sf2tool/h2/map_event_direct_state.py"
-_DIRECT_STATE_DOCUMENT = "docs/research/map-event-direct-state.md"
+_DIRECT_STATE_DOCUMENT = "docs/research/world/map-event-direct-state.md"
 _DIRECT_CONTROL_FIXTURE_ID = "sf2-map-event-direct-control-static-v1"
-_DIRECT_CONTROL_DOCUMENT = "docs/research/map-event-direct-control.md"
+_DIRECT_CONTROL_DOCUMENT = "docs/research/world/map-event-direct-control.md"
 _HANDOFF_FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
-_HANDOFF_DOCUMENT = "docs/research/map-event-direct-handoff.md"
+_HANDOFF_DOCUMENT = "docs/research/world/map-event-direct-handoff.md"
 _PREDICATE_FIXTURE_ID = "sf2-map-event-predicate-results-static-v1"
-_PREDICATE_DOCUMENT = "docs/research/map-event-predicate-results.md"
+_PREDICATE_DOCUMENT = "docs/research/world/map-event-predicate-results.md"
 _DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
-_DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
+_DIALOGUE_STATE_DOCUMENT = "docs/research/world/map-event-dialogue-state.md"
 _REQUEST_STATE_FIXTURE_ID = "sf2-map-event-request-state-static-v1"
-_REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
+_REQUEST_STATE_DOCUMENT = "docs/research/world/map-event-request-state.md"
 
 
 def normalize_later_owner_index(index):
@@ -129,9 +129,11 @@ def _without_request_consumption(index):
         if not evidence:
             continue
         assert len(evidence) == 1
-        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        assert record["documents"].count(
+            "docs/research/world/map-event-request-consumption.md"
+        ) == 1
         record["evidence"] = [item for item in record["evidence"] if item not in evidence]
-        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["documents"].remove("docs/research/world/map-event-request-consumption.md")
         record["addresses"] = [
             address
             for address in record["addresses"]
@@ -688,7 +690,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
         ("menus.field-item-effects", "level-up", 142274),
     }
     field_search_id = "sf2-field-search-control-static-v1"
-    field_search_document = "docs/research/field-search-control.md"
+    field_search_document = "docs/research/world/field-search-control.md"
     expected_later_bindings = {
         (
             "tech.interfaces.jump-s02",
@@ -812,7 +814,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     )
     assert records["menus.field-main"]["documents"][-2:] == [
         field_search_document,
-        "docs/research/field-item-effects.md",
+        "docs/research/world/field-item-effects.md",
     ]
     actual_addresses = {
         (record_id, address["id"], address["value"])
@@ -822,7 +824,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     }
     assert actual_addresses == expected_new_addresses
     assert all(
-        records[record_id]["documents"][-1] == "docs/research/field-item-effects.md"
+        records[record_id]["documents"][-1] == "docs/research/world/field-item-effects.md"
         for record_id, _, _ in actual
     )
 
@@ -841,7 +843,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     def remove_later_field_search_document(documents: list[str]) -> None:
         assert documents[-2:] == [
             field_search_document,
-            "docs/research/field-item-effects.md",
+            "docs/research/world/field-item-effects.md",
         ]
         assert documents.count(field_search_document) == 1
         documents.remove(field_search_document)
@@ -1002,10 +1004,10 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
             else:
                 record["documents"].remove(field_search_document)
             removed_later_document_records.add(record_id)
-        if "docs/research/field-item-effects.md" in record["documents"]:
+        if "docs/research/world/field-item-effects.md" in record["documents"]:
             assert record_id in expected_owner_ids
-            assert record["documents"][-1] == "docs/research/field-item-effects.md"
-            record["documents"].remove("docs/research/field-item-effects.md")
+            assert record["documents"][-1] == "docs/research/world/field-item-effects.md"
+            record["documents"].remove("docs/research/world/field-item-effects.md")
             removed_document_records.add(record_id)
 
     assert removed_evidence_records == expected_owner_ids

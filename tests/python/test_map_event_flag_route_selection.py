@@ -213,7 +213,7 @@ def test_retained_owner_receipts_and_index_delta_are_exact(
     current = _normalize_current_index_to_owner_state(raw_index, owner_id=ID)
     predecessor = _remove_map_event_flag_route_selection_later_owner_index_delta(current)
     assert _sha(canonical_json_bytes(predecessor)) == (
-        "4F729D50C06D63484565A0DABF15A98F3B092896C7FAF9455DAB884A537DD3FE"
+        "E801FBF306C1083140272D46CA3E08D49723554EA1FD93067097D3604F4AD1CF"
     )
     current_records = {row["id"]: row for row in current["records"]}
     predecessor_records = {row["id"]: row for row in predecessor["records"]}
@@ -260,7 +260,7 @@ def test_retained_owner_receipts_and_index_delta_are_exact(
     for mutate in (
         lambda value: next(row for row in value["records"] if row["id"] == "map.setup.selector")[
             "documents"
-        ].append("docs/research/map-event-flag-route-selection.md"),
+        ].append("docs/research/world/map-event-flag-route-selection.md"),
         lambda value: next(
             evidence
             for row in value["records"]

@@ -48,7 +48,7 @@ CANONICAL_ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F
 UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 CASE_IDS = ("bridged-r2b-to-first-battle01-player-ready",)
 _INDEX_RECORD_ID = "battle.functions.player-input"
-_INDEX_DOCUMENT = "docs/research/map3-battle01-admission.md"
+_INDEX_DOCUMENT = "docs/research/chapters/grans-opening/map3-battle01-admission.md"
 _INDEX_ADDRESS = {
     "id": "stable-input-seam",
     "space": "rom",
@@ -71,7 +71,7 @@ _INDEX_EVIDENCE = {
         {"addressId": "stable-input-seam", "fixtureField": "static.functions.playerReadyPc"},
     ],
 }
-_PREDECESSOR_INDEX_SHA256 = "49B80B7692154290D234A270DFB289AD158AFC96F1EDDE57270C981B438E176A"
+_PREDECESSOR_INDEX_SHA256 = "1013F74FB32C02C53DC10A623CD1818CA560D4F75E19D92520BAD1E9FF59F8C8"
 EXPECTED_CASES = (
     {
         "caseId": CASE_IDS[0],

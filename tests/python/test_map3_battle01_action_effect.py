@@ -360,7 +360,7 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_2.asm",
             "symbol": "battlesceneScript_ApplyActionEffect",
             "entry": 41972,
-            "documents": ["docs/research/map3-battle01-action-effect.md"],
+            "documents": ["docs/research/chapters/grans-opening/map3-battle01-action-effect.md"],
             "designContracts": None,
         },
         "battle.actions.cast-spell": {
@@ -368,7 +368,7 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
             "symbol": "battlesceneScript_CastSpell",
             "entry": 45224,
-            "documents": ["docs/research/map3-battle01-action-effect.md"],
+            "documents": ["docs/research/chapters/grans-opening/map3-battle01-action-effect.md"],
             "designContracts": None,
         },
         "battle.actions.engine": {
@@ -377,12 +377,12 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "symbol": "WriteBattlesceneScript",
             "entry": 39826,
             "documents": [
-                "docs/research/battle-actions.md",
-                "docs/research/map3-battle01-turn-control.md",
-                "docs/research/map3-battle01-action-effect.md",
-                "docs/research/map3-battle01-action-completion.md",
+                "docs/research/battle/battle-actions.md",
+                "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
+                "docs/research/chapters/grans-opening/map3-battle01-action-effect.md",
+                "docs/research/chapters/grans-opening/map3-battle01-action-completion.md",
             ],
-            "designContracts": ["docs/design/contracts/battle-action-construction.md"],
+            "designContracts": ["docs/design/contracts/battle/battle-action-construction.md"],
         },
         "battle.actions.attack": {
             "field": "actionEffectSpine.functionAddresses.battlesceneScript_Attack",
@@ -390,10 +390,10 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "symbol": "battlesceneScript_Attack",
             "entry": 43702,
             "documents": [
-                "docs/research/battle-actions.md",
-                "docs/research/map3-battle01-action-effect.md",
+                "docs/research/battle/battle-actions.md",
+                "docs/research/chapters/grans-opening/map3-battle01-action-effect.md",
             ],
-            "designContracts": ["docs/design/contracts/battle-action-construction.md"],
+            "designContracts": ["docs/design/contracts/battle/battle-action-construction.md"],
         },
         "battle.actions.use-item": {
             "field": "actionEffectSpine.functionAddresses.battlesceneScript_UseItem",
@@ -401,10 +401,10 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "symbol": "battlesceneScript_UseItem",
             "entry": 48056,
             "documents": [
-                "docs/research/battle-actions.md",
-                "docs/research/map3-battle01-action-effect.md",
+                "docs/research/battle/battle-actions.md",
+                "docs/research/chapters/grans-opening/map3-battle01-action-effect.md",
             ],
-            "designContracts": ["docs/design/contracts/battle-action-construction.md"],
+            "designContracts": ["docs/design/contracts/battle/battle-action-construction.md"],
         },
         "battle.damage.inflict": {
             "field": "actionEffectSpine.functionAddresses.battlesceneScript_InflictDamage",
@@ -412,12 +412,12 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "symbol": "battlesceneScript_InflictDamage",
             "entry": 44266,
             "documents": [
-                "docs/research/runtime-rng-and-battle-math.md",
-                "docs/research/map3-battle01-action-effect.md",
+                "docs/research/battle/runtime-rng-and-battle-math.md",
+                "docs/research/chapters/grans-opening/map3-battle01-action-effect.md",
             ],
             "designContracts": [
-                "docs/design/contracts/combat-resolution.md",
-                "docs/design/contracts/spell-resolution.md",
+                "docs/design/contracts/battle/combat-resolution.md",
+                "docs/design/contracts/battle/spell-resolution.md",
             ],
         },
         "battle.actions.display-death": {
@@ -426,10 +426,10 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "symbol": "battlesceneScript_DisplayDeathMessage",
             "entry": 45184,
             "documents": [
-                "docs/research/battle-actions.md",
-                "docs/research/map3-battle01-action-effect.md",
+                "docs/research/battle/battle-actions.md",
+                "docs/research/chapters/grans-opening/map3-battle01-action-effect.md",
             ],
-            "designContracts": ["docs/design/contracts/battle-action-construction.md"],
+            "designContracts": ["docs/design/contracts/battle/battle-action-construction.md"],
         },
         "battle.reward.drop-enemy-item": {
             "field": "actionEffectSpine.functionAddresses.battlesceneScript_DropEnemyItem",
@@ -437,11 +437,11 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
             "symbol": "battlesceneScript_DropEnemyItem",
             "entry": 48420,
             "documents": [
-                "docs/research/enemy-promotions.md",
-                "docs/research/runtime-rng-and-battle-math.md",
-                "docs/research/map3-battle01-action-effect.md",
+                "docs/research/party/enemy-promotions.md",
+                "docs/research/battle/runtime-rng-and-battle-math.md",
+                "docs/research/chapters/grans-opening/map3-battle01-action-effect.md",
             ],
-            "designContracts": ["docs/design/contracts/combat-resolution.md"],
+            "designContracts": ["docs/design/contracts/battle/combat-resolution.md"],
         },
     }
     found: dict[str, list[str]] = {}
@@ -452,7 +452,10 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
                 binding["fixtureField"] for item in evidence for binding in item["bindings"]
             ]
         if record["id"] not in expected:
-            assert "docs/research/map3-battle01-action-effect.md" not in record["documents"]
+            assert (
+                "docs/research/chapters/grans-opening/map3-battle01-action-effect.md"
+                not in record["documents"]
+            )
     assert found == {record_id: [details["field"]] for record_id, details in expected.items()}
     records = {record["id"]: record for record in index["records"]}
     for record_id, details in expected.items():

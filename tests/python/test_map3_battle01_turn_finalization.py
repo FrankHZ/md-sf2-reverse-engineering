@@ -229,7 +229,7 @@ def test_retained_projection_and_golden_boundary_drifts_are_rejected(
 
 def test_research_index_has_exact_turn_finalization_object_delta() -> None:
     fixture_id = "sf2-map3-battle01-turn-finalization-static-v1"
-    document = "docs/research/map3-battle01-turn-finalization.md"
+    document = "docs/research/chapters/grans-opening/map3-battle01-turn-finalization.md"
     expected = {
         "battle.functions.execute-turn": 7,
         "battle.replay.execute-script": 3,

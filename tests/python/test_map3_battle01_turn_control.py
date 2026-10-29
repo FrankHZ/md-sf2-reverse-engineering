@@ -342,56 +342,64 @@ def test_research_index_has_exactly_the_eight_new_h2_bindings() -> None:
     }
     expected_documents = {
         "battle.control.main-loop": [
-            "docs/research/battle-loop.md",
-            "docs/research/map3-battle01-admission.md",
-            "docs/research/map3-battle01-turn-control.md",
-            "docs/research/map3-battle01-turn-finalization.md",
+            "docs/research/battle/battle-loop.md",
+            "docs/research/chapters/grans-opening/map3-battle01-admission.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-finalization.md",
         ],
         "battle.functions.execute-turn": [
-            "docs/research/battle-functions.md",
-            "docs/research/map3-battle01-admission.md",
-            "docs/research/map3-battle01-turn-control.md",
-            "docs/research/map3-battle01-action-completion.md",
-            "docs/research/map3-battle01-turn-finalization.md",
+            "docs/research/battle/battle-functions.md",
+            "docs/research/chapters/grans-opening/map3-battle01-admission.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
+            "docs/research/chapters/grans-opening/map3-battle01-action-completion.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-finalization.md",
         ],
             "battle.functions.player-input": [
-                "docs/research/battle-functions.md",
-                "docs/research/map3-battle01-turn-control.md",
-                "docs/research/map3-battle01-admission.md",
+                "docs/research/battle/battle-functions.md",
+                "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
+                "docs/research/chapters/grans-opening/map3-battle01-admission.md",
             ],
         "battle.ai.remaining.control-loop": [
-            "docs/research/battle-ai.md",
-            "docs/research/map3-battle01-turn-control.md",
+            "docs/research/battle/battle-ai.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
         ],
         "battle.ai.remaining.dispatcher": [
-            "docs/research/battle-ai.md",
-            "docs/research/map3-battle01-turn-control.md",
+            "docs/research/battle/battle-ai.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
         ],
         "battle.ai.control.commandset-pointers": [
-            "docs/research/battle-ai.md",
-            "docs/research/map3-battle01-turn-control.md",
+            "docs/research/battle/battle-ai.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
         ],
         "battle.actions.engine": [
-            "docs/research/battle-actions.md",
-            "docs/research/map3-battle01-turn-control.md",
-            "docs/research/map3-battle01-action-effect.md",
-            "docs/research/map3-battle01-action-completion.md",
+            "docs/research/battle/battle-actions.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
+            "docs/research/chapters/grans-opening/map3-battle01-action-effect.md",
+            "docs/research/chapters/grans-opening/map3-battle01-action-completion.md",
         ],
         "battle.spriteset.data.slot-01": [
-            "docs/research/battle-spriteset-data.md",
-            "docs/research/map3-battle01-admission.md",
-            "docs/research/map3-battle01-turn-control.md",
+            "docs/research/battle/battle-spriteset-data.md",
+            "docs/research/chapters/grans-opening/map3-battle01-admission.md",
+            "docs/research/chapters/grans-opening/map3-battle01-turn-control.md",
         ],
     }
     expected_design_contracts = {
-        "battle.control.main-loop": ["docs/design/contracts/battle-control-lifecycle.md"],
-        "battle.functions.execute-turn": ["docs/design/contracts/battle-functions-control-flow.md"],
-        "battle.functions.player-input": ["docs/design/contracts/battle-functions-control-flow.md"],
-        "battle.ai.remaining.control-loop": ["docs/design/contracts/battle-ai-decision.md"],
-        "battle.ai.remaining.dispatcher": ["docs/design/contracts/battle-ai-decision.md"],
-        "battle.ai.control.commandset-pointers": ["docs/design/contracts/battle-ai-decision.md"],
-        "battle.actions.engine": ["docs/design/contracts/battle-action-construction.md"],
-        "battle.spriteset.data.slot-01": ["docs/design/contracts/battle-encounter-definition.md"],
+        "battle.control.main-loop": ["docs/design/contracts/battle/battle-control-lifecycle.md"],
+        "battle.functions.execute-turn": [
+            "docs/design/contracts/battle/battle-functions-control-flow.md",
+        ],
+        "battle.functions.player-input": [
+            "docs/design/contracts/battle/battle-functions-control-flow.md",
+        ],
+        "battle.ai.remaining.control-loop": ["docs/design/contracts/battle/battle-ai-decision.md"],
+        "battle.ai.remaining.dispatcher": ["docs/design/contracts/battle/battle-ai-decision.md"],
+        "battle.ai.control.commandset-pointers": [
+            "docs/design/contracts/battle/battle-ai-decision.md",
+        ],
+        "battle.actions.engine": ["docs/design/contracts/battle/battle-action-construction.md"],
+        "battle.spriteset.data.slot-01": [
+            "docs/design/contracts/battle/battle-encounter-definition.md",
+        ],
     }
     found: dict[str, dict[str, list[str]]] = {}
     for record in index["records"]:

@@ -30,7 +30,7 @@ from sf2tool.research_index import normalize_current_index_to_owner_predecessor,
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = "7577d0cb617d5880c7666899b44ed24fa3e58120"
-DOCUMENT = "docs/research/map-event-request-consumption.md"
+DOCUMENT = "docs/research/world/map-event-request-consumption.md"
 INDEX = ROOT / "manifests/research-index.json"
 INDEX_SCHEMA = ROOT / "schemas/research-index.schema.json"
 ROM = ROOT / "local/roms/sf2-us.bin"

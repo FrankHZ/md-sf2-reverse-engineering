@@ -114,8 +114,8 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 ### R6 — zh-CN mirror conventions
 
 - A mirror preserves its canonical English source's relative path beneath `docs/design/zh-CN/`.
-  For example, `docs/design/contracts/save-system.md` maps to
-  `docs/design/zh-CN/contracts/save-system.md`. It is a derivative; the English file remains the
+  For example, `docs/design/contracts/system/save-system.md` maps to
+  `docs/design/zh-CN/contracts/system/save-system.md`. It is a derivative; the English file remains the
   review baseline.
 - Preserve verbatim under R2: identifiers, fixture IDs and paths, source/code labels,
   contract-significant numeric literals, header field values, and evidence-layer/phase/ADR names.

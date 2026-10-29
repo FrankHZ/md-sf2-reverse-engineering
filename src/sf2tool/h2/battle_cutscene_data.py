@@ -168,7 +168,7 @@ def build_battle_cutscene_data_inventory(upstream_path: Path) -> dict[str, Any]:
             "storyContentParsed": False,
             "existingRoutingOwner": {
                 "verifier": "src/sf2tool/h2/battle_cutscenes.py",
-                "document": "docs/research/battle-cutscenes.md",
+                "document": "docs/research/battle/battle-cutscenes.md",
             },
         },
         "runtimeQuestions": [

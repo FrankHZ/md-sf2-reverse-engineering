@@ -96,7 +96,7 @@
       "storyContentParsed": false,
       "existingRoutingOwner": {
         "verifier": "src/sf2tool/h2/battle_cutscenes.py",
-        "document": "docs/research/battle-cutscenes.md"
+        "document": "docs/research/battle/battle-cutscenes.md"
       }
     },
     "runtimeQuestions": [

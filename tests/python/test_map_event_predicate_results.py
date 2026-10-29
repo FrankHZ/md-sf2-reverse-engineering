@@ -31,12 +31,12 @@ UPSTREAM = ROOT / "local/upstream/SF2DISASM"
 INDEX = ROOT / "manifests/research-index.json"
 INDEX_SCHEMA = ROOT / "schemas/research-index.schema.json"
 BASE = "02301229ef25a7f0a366f843c76042aceaf0524f"
-DOCUMENT = "docs/research/map-event-predicate-results.md"
+DOCUMENT = "docs/research/world/map-event-predicate-results.md"
 VERIFIER = "src/sf2tool/h2/map_event_predicate_results.py"
 _DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
-_DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
+_DIALOGUE_STATE_DOCUMENT = "docs/research/world/map-event-dialogue-state.md"
 _REQUEST_STATE_FIXTURE_ID = "sf2-map-event-request-state-static-v1"
-_REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
+_REQUEST_STATE_DOCUMENT = "docs/research/world/map-event-request-state.md"
 
 
 def normalize_later_owner_index(index):
@@ -131,9 +131,11 @@ def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:
         if not evidence:
             continue
         assert len(evidence) == 1
-        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        assert record["documents"].count(
+            "docs/research/world/map-event-request-consumption.md"
+        ) == 1
         record["evidence"] = [item for item in record["evidence"] if item not in evidence]
-        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["documents"].remove("docs/research/world/map-event-request-consumption.md")
         record["addresses"] = [
             address
             for address in record["addresses"]

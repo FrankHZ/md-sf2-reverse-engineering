@@ -20,7 +20,7 @@ from sf2tool.paths import display_path, repo_path
 ID = "sf2-map-event-random-battle-state-static-v1"
 FIXTURE = repo_path("tests/fixtures/h2/map-event-random-battle-state-static-v1.json")
 SCHEMA = repo_path("schemas/h2/map-event-random-battle-state-static-fixture.schema.json")
-_PREDECESSOR_INDEX_SHA256 = "9848602E14474EFD9C16FD8E846E14937D09B93F6447E806DEDAE9BE0A17E94A"
+_PREDECESSOR_INDEX_SHA256 = "89A3C91B2C6BAEB39AC29E0F238A57021E4BCBF01A7D7BEC766D224FCAD6E29F"
 _ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
 _UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 _FUNCTION_PATH = "code/common/scripting/map/mapsetupsfunctions_1.asm"
@@ -714,7 +714,7 @@ def _remove_map_event_random_battle_state_later_owner_index_delta(
                 ],
             }
         ],
-        "documents": ["docs/research/map-event-random-battle-state.md"],
+        "documents": ["docs/research/world/map-event-random-battle-state.md"],
     }
     seen: set[str] = set()
     for record in records[:]:
@@ -747,8 +747,8 @@ def _remove_map_event_random_battle_state_later_owner_index_delta(
         if (
             matches != [expected]
             or not isinstance(documents, list)
-            or documents.count("docs/research/map-event-random-battle-state.md") != 1
-            or documents[-1] != "docs/research/map-event-random-battle-state.md"
+            or documents.count("docs/research/world/map-event-random-battle-state.md") != 1
+            or documents[-1] != "docs/research/world/map-event-random-battle-state.md"
             or not isinstance(addresses, list)
         ):
             raise ValueError("map-event random-battle later-owner record fields drift")
@@ -757,7 +757,7 @@ def _remove_map_event_random_battle_state_later_owner_index_delta(
                 raise ValueError("map-event random-battle index address delta drift")
             addresses.remove(address)
         evidence.remove(expected)
-        documents.remove("docs/research/map-event-random-battle-state.md")
+        documents.remove("docs/research/world/map-event-random-battle-state.md")
         seen.add(record_id)
     if seen != set(binding_map) or any(
         row.get("id") == "map.setup.check-random-battle" for row in records

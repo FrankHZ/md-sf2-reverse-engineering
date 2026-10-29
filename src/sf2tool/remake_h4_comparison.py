@@ -120,7 +120,7 @@ from sf2tool.remake_h4_reference import (
     rows,
 )
 
-OWNER = "docs/design/contracts/map3-battle01-continuous-scenario.md"
+OWNER = "docs/design/contracts/milestones/map3-battle01-continuous-scenario.md"
 DIRECTIONS = {1: "Up", 2: "Down", 4: "Left", 8: "Right"}
 
 
@@ -2138,7 +2138,7 @@ def compare(ref, plan, actual_path, host_log, host_exit):
                 last,
                 {
                     "owner": (
-                        "docs/research/map3-messenger-acceptance.md"
+                        "docs/research/chapters/grans-opening/map3-messenger-acceptance.md"
                         "#native-post-victory-ordinary-input-result-issue-515"
                     ),
                     "commit": EXTENSION_SOURCE,
@@ -3075,7 +3075,7 @@ def compare_modern(
         "samples[0].continuation/cursor/wait/callers/warp/choice",
         dict(
             **admission["source"],
-            owner="docs/design/contracts/map3-controlled-admission.md",
+            owner="docs/design/contracts/milestones/map3-controlled-admission.md",
             binding="zero pending returns/active consumers at the selected logical R1 seam",
         ),
         parent=phase_parent,
@@ -3111,7 +3111,8 @@ def compare_modern(
         if admission_opening is not None
         else (first.get("textSettings") or {}),
         "samples[0].textSettings",
-        dict(owner="docs/design/contracts/dialogue-system.md", binding="opening service gates"),
+        dict(owner="docs/design/contracts/interface/dialogue-system.md",
+             binding="opening service gates"),
         applicability="applicable" if admission_opening is not None else "required-unobserved",
         parent=phase_parent,
         missing_side="selected original/actual admission evidence"
@@ -3240,7 +3241,7 @@ def compare_modern(
         "samples[0].entities[slot=5/6/8]",
         dict(
             **ref["inherited"]["source"],
-            owner="docs/research/map3-messenger-acceptance.md",
+            owner="docs/research/chapters/grans-opening/map3-messenger-acceptance.md",
             admissionBinding=walking["anchors"],
         ),
         parent=phase_parent,
@@ -3679,7 +3680,7 @@ def compare_modern(
         ordered,
         "warpRecords[*].result.observations",
         dict(
-            owner="docs/research/map3-battle01-victory-return.md",
+            owner="docs/research/chapters/grans-opening/map3-battle01-victory-return.md",
             binding="accepted after-program shared tail before flag writes and enclosing return",
         ),
         parent=operation_parent,
@@ -3726,7 +3727,7 @@ def compare_modern(
                 field_motion["operation"],
                 actual_location,
                 dict(
-                    owner="docs/design/contracts/map-exploration.md",
+                    owner="docs/design/contracts/world/map-exploration.md",
                     upstreamCommit=UPSTREAM,
                     binding="complete ordered source producers, wait predicates "
                     "and signed command operands",
@@ -3743,7 +3744,7 @@ def compare_modern(
                 operation_flow["values"][name],
                 actual_location,
                 dict(
-                    owner="docs/design/contracts/map-exploration.md",
+                    owner="docs/design/contracts/world/map-exploration.md",
                     upstreamCommit=UPSTREAM,
                     binding=binding,
                 ),
@@ -3801,7 +3802,7 @@ def compare_modern(
             actual_draw,
             f"warpRecords.observations[Sequence={int(event['Sequence'])}]",
             dict(
-                owner="docs/design/contracts/randomness.md",
+                owner="docs/design/contracts/system/randomness.md",
                 fixture="tests/fixtures/h3/rng-v1.json",
                 upstream=UPSTREAM,
                 binding="GenerateRandomNumber word update and doubled-range upper product",
@@ -3933,7 +3934,8 @@ def compare_modern(
                 True,
                 ai_consumers["value"],
                 actual_location,
-                original=dict(owner="docs/design/contracts/battle-ai-decision.md", source=UPSTREAM),
+                original=dict(owner="docs/design/contracts/battle/battle-ai-decision.md",
+                              source=UPSTREAM),
                 parent=rule_parent,
                 reason="Original rules at matched historical callers and logical consumers; "
                 "accepted current seed mechanism is a separate composition dependency; "

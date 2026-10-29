@@ -16,7 +16,8 @@
 
 目录按职责保留原有层级：`research/` 是英文原版证据，`design/synthesis/` 是玩法与章节解释，
 `design/contracts/` 是规则合同，`design/zh-CN/` 按原相对路径保存中文镜像。
-本页按主题和章节组织阅读，不把文件机械迁入新目录。完整英文文档清单见[英文索引](./README.md)。
+这些边界内的实际文件夹按研究主题、现有六组剧情章节及合同职责分类；综合文档区分主题、分析、里程碑与详细章节，玩法总览保留在综合根目录。
+后期章节继续使用剧情推进的已有小节，不创建空指南目录。中文镜像保持相同相对层级。完整英文文档清单见[英文索引](./README.md)。
 原版事实、设计解释和重制支持有不同边界，不能凭某章已有中文说明就认为该章已经可玩。
 
 执行仓库任务时，先检查实时 Git、工作树和进程，再沿[任务恢复入口（英文）](./operations/agent-resume.md)定位所有者。
@@ -30,24 +31,24 @@
 | 读者问题 | 已接受的中文主题 | 英文规范源 |
 | --- | --- | --- |
 | 探索、遭遇、战斗、奖励与返回怎样连接？原版、观察和重制的边界是什么？ | [玩法总览](./design/zh-CN/synthesis/gameplay-overview.md) | [Gameplay Overview](./design/synthesis/gameplay-overview.md) |
-| 单次行动有哪些选择，如何结算，代表遭遇有什么例外？ | [战术战斗循环](./design/zh-CN/synthesis/tactical-battle-loop.md) | [Tactical Battle Loop](./design/synthesis/tactical-battle-loop.md) |
-| 加入、出战、职业、成长、装备与资源容量/消费如何相互约束？ | [成长与经济](./design/zh-CN/synthesis/progression-and-economy.md) | [Progression and Economy](./design/synthesis/progression-and-economy.md) |
-| 交互、对话、交通、返回与地图重建怎样组合，哪些状态能保留？ | [地图设计原则](./design/zh-CN/synthesis/map-design-principles.md) | [Map Design Principles](./design/synthesis/map-design-principles.md) |
-| 六组章节如何推进，必需条件与可选分支在哪里？ | [剧情推进](./design/zh-CN/synthesis/story-progression.md) | [Story Progression](./design/synthesis/story-progression.md) |
+| 单次行动有哪些选择，如何结算，代表遭遇有什么例外？ | [战术战斗循环](./design/zh-CN/synthesis/themes/tactical-battle-loop.md) | [Tactical Battle Loop](./design/synthesis/themes/tactical-battle-loop.md) |
+| 加入、出战、职业、成长、装备与资源容量/消费如何相互约束？ | [成长与经济](./design/zh-CN/synthesis/themes/progression-and-economy.md) | [Progression and Economy](./design/synthesis/themes/progression-and-economy.md) |
+| 交互、对话、交通、返回与地图重建怎样组合，哪些状态能保留？ | [地图设计原则](./design/zh-CN/synthesis/themes/map-design-principles.md) | [Map Design Principles](./design/synthesis/themes/map-design-principles.md) |
+| 六组章节如何推进，必需条件与可选分支在哪里？ | [剧情推进](./design/zh-CN/synthesis/themes/story-progression.md) | [Story Progression](./design/synthesis/themes/story-progression.md) |
 
 ## 章节与遭遇
 
-按章节选择详细阅读入口；完整指南清单、可选分支与精确条件集中在[剧情推进（中文）](./design/zh-CN/synthesis/story-progression.md#分段阅读故事内容)。
+按章节选择详细阅读入口；完整指南清单、可选分支与精确条件集中在[剧情推进（中文）](./design/zh-CN/synthesis/themes/story-progression.md#分段阅读故事内容)。
 这些是条件连接的阅读分组，不是自然必经攻略，也不扩展各重制切片的可玩范围；当前边界见下方工程入口。
 
 | 章节 | 有用的入口与接续 |
 | --- | --- |
-| [Grans 开篇与离开（中文）](./design/zh-CN/synthesis/story-progression.md#grans-开篇与离开) | 从[开篇至 Battle01（中文）](./design/zh-CN/synthesis/opening-through-battle01.md)，经 Hawel、Galam、塔楼和地震撤离，至[航行登陆与损坏船只控制（中文）](./design/zh-CN/synthesis/voyage-through-damaged-ship-control.md)。 |
-| [New Granseal 与东部 Parmecia（中文）](./design/zh-CN/synthesis/story-progression.md#new-granseal-与东部-parmecia) | 从[木板选择至 Battle08 准入（中文）](./design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md)，经 Peter、Ribble、East Shrine、Polca 与 Bedoe，至[Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/polca-departure-through-luke-recruitment.md)。 |
-| [南方旅行、Caravan 与 Creed（中文）](./design/zh-CN/synthesis/story-progression.md#南方旅行caravan-与-creed) | 从[木筏登乘与 South Parmecia 入场（中文）](./design/zh-CN/synthesis/polca-raft-boarding-through-south-parmecia-entry.md)，经 Kraken、Hassan、Taros/Caravan、Creed Mansion、Desktop 与 Floor World，接续 Evil Spirit 咨询、招募及 Oddler 告别，至 [Creed 离开、矮人恢复与 Cannon 赠礼（中文）](./design/zh-CN/synthesis/creed-departure-dwarf-recovery-and-cannon-gift.md)。完整指南见本章节导读；之后接续返回 New Granseal 的北方章节。 |
-| [北方旅行、Pacalon、Tristan 与 Mitula（中文）](./design/zh-CN/synthesis/story-progression.md#北方旅行pacalontristan-与-mitula) | 从[返回 New Granseal 与 Astral 跟随（中文）](./design/zh-CN/synthesis/new-granseal-return-and-astral-following.md)，经 North Cliff、Ketto、Higins 招募与 Pacalon，至 [Battle27 激活与首次单次行动交接（中文）](./design/zh-CN/synthesis/battle27-activation-and-first-turn-dispatch.md)。之后的 Tristan 与 Mitula 已有同一篇中文章节说明；精确证据链接到英文研究所有者。 |
-| [Moun、Nazca 与返回 Grans（中文）](./design/zh-CN/synthesis/story-progression.md#mounnazca-与返回-grans) | 章节导读连接 Moun 幸存者、Nazca 航行与返回 Grans，并保留可选招募/锻造分支；中文章节已有连贯说明，精确证据沿其链接阅读英文研究所有者。 |
-| [最终对决与结局（中文）](./design/zh-CN/synthesis/story-progression.md#最终对决与结局) | 章节导读连接 Sword、塔路线、尾声、亲吻选择及字幕/隐藏战斗重置；中文章节已有连贯说明，精确证据沿其链接阅读英文研究所有者。 |
+| [Grans 开篇与离开（中文）](./design/zh-CN/synthesis/themes/story-progression.md#grans-开篇与离开) | 从[开篇至 Battle01（中文）](./design/zh-CN/synthesis/chapters/grans-opening/opening-through-battle01.md)，经 Hawel、Galam、塔楼和地震撤离，至[航行登陆与损坏船只控制（中文）](./design/zh-CN/synthesis/chapters/grans-opening/voyage-through-damaged-ship-control.md)。 |
+| [New Granseal 与东部 Parmecia（中文）](./design/zh-CN/synthesis/themes/story-progression.md#new-granseal-与东部-parmecia) | 从[木板选择至 Battle08 准入（中文）](./design/zh-CN/synthesis/chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md)，经 Peter、Ribble、East Shrine、Polca 与 Bedoe，至[Polca 出发与 Luke 招募（中文）](./design/zh-CN/synthesis/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)。 |
+| [南方旅行、Caravan 与 Creed（中文）](./design/zh-CN/synthesis/themes/story-progression.md#南方旅行caravan-与-creed) | 从[木筏登乘与 South Parmecia 入场（中文）](./design/zh-CN/synthesis/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)，经 Kraken、Hassan、Taros/Caravan、Creed Mansion、Desktop 与 Floor World，接续 Evil Spirit 咨询、招募及 Oddler 告别，至 [Creed 离开、矮人恢复与 Cannon 赠礼（中文）](./design/zh-CN/synthesis/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)。完整指南见本章节导读；之后接续返回 New Granseal 的北方章节。 |
+| [北方旅行、Pacalon、Tristan 与 Mitula（中文）](./design/zh-CN/synthesis/themes/story-progression.md#北方旅行pacalontristan-与-mitula) | 从[返回 New Granseal 与 Astral 跟随（中文）](./design/zh-CN/synthesis/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)，经 North Cliff、Ketto、Higins 招募与 Pacalon，至 [Battle27 激活与首次单次行动交接（中文）](./design/zh-CN/synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)。之后的 Tristan 与 Mitula 已有同一篇中文章节说明；精确证据链接到英文研究所有者。 |
+| [Moun、Nazca 与返回 Grans（中文）](./design/zh-CN/synthesis/themes/story-progression.md#mounnazca-与返回-grans) | 章节导读连接 Moun 幸存者、Nazca 航行与返回 Grans，并保留可选招募/锻造分支；中文章节已有连贯说明，精确证据沿其链接阅读英文研究所有者。 |
+| [最终对决与结局（中文）](./design/zh-CN/synthesis/themes/story-progression.md#最终对决与结局) | 章节导读连接 Sword、塔路线、尾声、亲吻选择及字幕/隐藏战斗重置；中文章节已有连贯说明，精确证据沿其链接阅读英文研究所有者。 |
 
 ### 常用详细入口
 
@@ -55,20 +56,20 @@
 
 | 主题 | 中文详细指南 |
 | --- | --- |
-| 开篇、城堡委托与下一场遭遇 | [开篇地点、人物与 Battle01 返回](./design/zh-CN/synthesis/opening-through-battle01.md)；[城堡返回、委托与 Battle02 准入](./design/zh-CN/synthesis/battle01-return-through-battle02.md)；[Battle02 返回、Yeel 与 Battle03 准入](./design/zh-CN/synthesis/battle02-outcome-through-battle03.md) |
-| 地震撤离与新的定居点 | [地震城镇与码头离开](./design/zh-CN/synthesis/earthquake-town-through-docks-departure.md)；[木板选择与 Battle08 准入](./design/zh-CN/synthesis/damaged-ship-plank-through-battle08.md)；[一年后的城堡讲话](./design/zh-CN/synthesis/new-granseal-castle-year-later-control.md) |
-| Peter、Bedoe 与 Polca | [Peter 的城堡觐见与回城](./design/zh-CN/synthesis/peter-castle-audience-through-town-return.md)；[Volcanon 觐见](./design/zh-CN/synthesis/bedoe-to-volcanon-audience.md)；[木筏赠予](./design/zh-CN/synthesis/battle13-outcomes-through-polca-raft-grant.md) |
-| Taros、剑与车队 | [树洞与 Achilles Sword](./design/zh-CN/synthesis/ribble-tree-opening-and-achilles-sword.md)；[Taros 警告与 Battle18 准入](./design/zh-CN/synthesis/southwest-parmecia-through-taros-battle18-entry.md)；[战斗结果与 Caravan 获取](./design/zh-CN/synthesis/battle18-outcomes-and-caravan-acquisition.md)；[另行登乘与旅行](./design/zh-CN/synthesis/caravan-boarding-and-southwest-parmecia-travel.md) |
-| Creed、棋盘与缩小世界 | [魔法门与桌面转移](./design/zh-CN/synthesis/creed-magic-door-and-desktop-transfer.md)；[桌面王国交谈与棋盘挑战](./design/zh-CN/synthesis/desktop-kingdom-interactions-through-battle22-entry.md)；[棋盘初始阵容](./design/zh-CN/synthesis/battle22-initialization-and-roster.md)；[棋盘结果与返回](./design/zh-CN/synthesis/battle22-outcomes-and-desktop-return.md)；[Floor World 居民与出口](./design/zh-CN/synthesis/floor-world-interactions-and-exits.md) |
-| 北方旅行与 Pacalon | [North Cliff 开通与 Rohde 招募](./design/zh-CN/synthesis/north-cliff-opening-and-rohde-recruitment.md)；[Ketto 交谈与商人迁移](./design/zh-CN/synthesis/ketto-interactions-and-merchant-relocation.md)；[Higins 招募](./design/zh-CN/synthesis/battle26-outcomes-and-higins-recruitment.md)；[Pacalon 城堡初访](./design/zh-CN/synthesis/pacalon-castle-entry-and-first-visit.md) |
-| 后期章节与结局 | [Tristan 居民与 Mitula 洞穴路线](./design/zh-CN/synthesis/story-progression.md#tristan-居民与通向-mitula-的洞穴路线)；[Jaro、Frayja 与 Moun 幸存者](./design/zh-CN/synthesis/story-progression.md#jaro-叛离frayja-加入与-moun-幸存者)；[后期 Yeel：钢琴、Chaz 与 Lemon](./design/zh-CN/synthesis/story-progression.md#后期-yeel钢琴chaz-与-lemon)；[亲吻选择](./design/zh-CN/synthesis/story-progression.md#minister-提示与玩家真正的亲吻选择)；[字幕与隐藏战斗](./design/zh-CN/synthesis/story-progression.md#字幕终场完成存储与隐藏战斗) |
+| 开篇、城堡委托与下一场遭遇 | [开篇地点、人物与 Battle01 返回](./design/zh-CN/synthesis/chapters/grans-opening/opening-through-battle01.md)；[城堡返回、委托与 Battle02 准入](./design/zh-CN/synthesis/chapters/grans-opening/battle01-return-through-battle02.md)；[Battle02 返回、Yeel 与 Battle03 准入](./design/zh-CN/synthesis/chapters/grans-opening/battle02-outcome-through-battle03.md) |
+| 地震撤离与新的定居点 | [地震城镇与码头离开](./design/zh-CN/synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md)；[木板选择与 Battle08 准入](./design/zh-CN/synthesis/chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md)；[一年后的城堡讲话](./design/zh-CN/synthesis/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md) |
+| Peter、Bedoe 与 Polca | [Peter 的城堡觐见与回城](./design/zh-CN/synthesis/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)；[Volcanon 觐见](./design/zh-CN/synthesis/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)；[木筏赠予](./design/zh-CN/synthesis/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md) |
+| Taros、剑与车队 | [树洞与 Achilles Sword](./design/zh-CN/synthesis/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)；[Taros 警告与 Battle18 准入](./design/zh-CN/synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)；[战斗结果与 Caravan 获取](./design/zh-CN/synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md)；[另行登乘与旅行](./design/zh-CN/synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md) |
+| Creed、棋盘与缩小世界 | [魔法门与桌面转移](./design/zh-CN/synthesis/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)；[桌面王国交谈与棋盘挑战](./design/zh-CN/synthesis/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md)；[棋盘初始阵容](./design/zh-CN/synthesis/chapters/southern-travel-creed/battle22-initialization-and-roster.md)；[棋盘结果与返回](./design/zh-CN/synthesis/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md)；[Floor World 居民与出口](./design/zh-CN/synthesis/chapters/southern-travel-creed/floor-world-interactions-and-exits.md) |
+| 北方旅行与 Pacalon | [North Cliff 开通与 Rohde 招募](./design/zh-CN/synthesis/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md)；[Ketto 交谈与商人迁移](./design/zh-CN/synthesis/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)；[Higins 招募](./design/zh-CN/synthesis/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md)；[Pacalon 城堡初访](./design/zh-CN/synthesis/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md) |
+| 后期章节与结局 | [Tristan 居民与 Mitula 洞穴路线](./design/zh-CN/synthesis/themes/story-progression.md#tristan-居民与通向-mitula-的洞穴路线)；[Jaro、Frayja 与 Moun 幸存者](./design/zh-CN/synthesis/themes/story-progression.md#jaro-叛离frayja-加入与-moun-幸存者)；[后期 Yeel：钢琴、Chaz 与 Lemon](./design/zh-CN/synthesis/themes/story-progression.md#后期-yeel钢琴chaz-与-lemon)；[亲吻选择](./design/zh-CN/synthesis/themes/story-progression.md#minister-提示与玩家真正的亲吻选择)；[字幕与隐藏战斗](./design/zh-CN/synthesis/themes/story-progression.md#字幕终场完成存储与隐藏战斗) |
 
 这些中文文档解释规则、条件流程和部分遭遇例外。新增的
-[轻量战斗设计分析（英文规范源）](./design/synthesis/battle-design-analysis-pilot.md)覆盖 Battle01、Taros 与 Chessboard：
+[轻量战斗设计分析（英文规范源）](./design/synthesis/analyses/battle-design-analysis-pilot.md)覆盖 Battle01、Taros 与 Chessboard：
 设计重点、总体布置、敌人角色/激活、明确的我方准备假设及简单应对与取舍。设计解读保留 **推断**，不证明作者意图或难度；
 该页中文镜像为 `pending`，待英文源稳定后另行限定翻译范围，不能把现有章节指南当作它的译文。
 
-也可沿总览 → [Taros/Caravan 完整示例（中文）](./design/zh-CN/synthesis/story-progression.md#完整示例taros-与-caravan)
+也可沿总览 → [Taros/Caravan 完整示例（中文）](./design/zh-CN/synthesis/themes/story-progression.md#完整示例taros-与-caravan)
 → 物品容量/拒绝、剑的持有与装备、遭遇准入/结果、获取与登乘的各自证据，查看跨系统依赖。
 四篇详细中文指南及 Ribble、Hassan/Rohde、可选 Rick 的相邻入口均可从该章节找到。
 Sword 持有、装备和伤害规则保持各自边界；静态连接、实际观察、表现/输入与持久性限制仍由各指南保留。
@@ -82,18 +83,18 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 
 | 规则或接口 | 中文合同入口 |
 | --- | --- |
-| 战斗控制、移动与 AI | [战斗控制及生命周期](./design/zh-CN/contracts/battle-control-lifecycle.md)、[战场寻路及目标空间](./design/zh-CN/contracts/battlefield-navigation.md)、[AI 决策](./design/zh-CN/contracts/battle-ai-decision.md)、[遭遇定义](./design/zh-CN/contracts/battle-encounter-definition.md) |
-| 行动构建与效果结算 | [行动构建](./design/zh-CN/contracts/battle-action-construction.md)、[物理交战](./design/zh-CN/contracts/combat-resolution.md)、[法术伤害](./design/zh-CN/contracts/spell-resolution.md)、[战斗演出](./design/zh-CN/contracts/battle-scene-presentation.md) |
-| 成员、职业、成长与资源 | [队伍与名册](./design/zh-CN/contracts/party-roster-state.md)、[伙伴定义与成长数据](./design/zh-CN/contracts/ally-definition-data.md)、[升级](./design/zh-CN/contracts/level-up.md)、[物品定义](./design/zh-CN/contracts/item-definition-data.md)、[法术表状态](./design/zh-CN/contracts/spellbook-state.md) |
-| 地图、交互与程序 | [地图探索](./design/zh-CN/contracts/map-exploration.md)、[探索控制流](./design/zh-CN/contracts/exploration-control-flow.md)、[入图路由](./design/zh-CN/contracts/map-entry-routing-state.md)、[地图实体](./design/zh-CN/contracts/map-entity-data.md)、[全局标志](./design/zh-CN/contracts/global-flag-state.md) |
-| 服务、交易与持久化 | [服务交互](./design/zh-CN/contracts/service-interactions.md)、[车队与特卖](./design/zh-CN/contracts/caravan-and-deals-state.md)、[存档](./design/zh-CN/contracts/save-system.md)；描述原版服务不等于重制已有完整服务 UI 或持久保存 |
-| 输入、对话与声音 | [输入](./design/zh-CN/contracts/input-system.md)、[对话与已达文本等待](./design/zh-CN/contracts/dialogue-system.md)、[窗口](./design/zh-CN/contracts/window-system.md)、[音频命令与播放状态](./design/zh-CN/contracts/audio-system.md)、[音乐等待](./design/zh-CN/contracts/music-wait-service.md) |
-| 图形与界面数据 | [地图布局](./design/zh-CN/contracts/map-layout-data.md)、[地图瓦片集](./design/zh-CN/contracts/map-tileset-data.md)、[UI 布局](./design/zh-CN/contracts/ui-layout-data.md)、[立绘窗口](./design/zh-CN/contracts/portrait-window-state.md) |
+| 战斗控制、移动与 AI | [战斗控制及生命周期](./design/zh-CN/contracts/battle/battle-control-lifecycle.md)、[战场寻路及目标空间](./design/zh-CN/contracts/battle/battlefield-navigation.md)、[AI 决策](./design/zh-CN/contracts/battle/battle-ai-decision.md)、[遭遇定义](./design/zh-CN/contracts/battle/battle-encounter-definition.md) |
+| 行动构建与效果结算 | [行动构建](./design/zh-CN/contracts/battle/battle-action-construction.md)、[物理交战](./design/zh-CN/contracts/battle/combat-resolution.md)、[法术伤害](./design/zh-CN/contracts/battle/spell-resolution.md)、[战斗演出](./design/zh-CN/contracts/battle/battle-scene-presentation.md) |
+| 成员、职业、成长与资源 | [队伍与名册](./design/zh-CN/contracts/party/party-roster-state.md)、[伙伴定义与成长数据](./design/zh-CN/contracts/party/ally-definition-data.md)、[升级](./design/zh-CN/contracts/party/level-up.md)、[物品定义](./design/zh-CN/contracts/party/item-definition-data.md)、[法术表状态](./design/zh-CN/contracts/party/spellbook-state.md) |
+| 地图、交互与程序 | [地图探索](./design/zh-CN/contracts/world/map-exploration.md)、[探索控制流](./design/zh-CN/contracts/world/exploration-control-flow.md)、[入图路由](./design/zh-CN/contracts/world/map-entry-routing-state.md)、[地图实体](./design/zh-CN/contracts/world/map-entity-data.md)、[全局标志](./design/zh-CN/contracts/world/global-flag-state.md) |
+| 服务、交易与持久化 | [服务交互](./design/zh-CN/contracts/party/service-interactions.md)、[车队与特卖](./design/zh-CN/contracts/party/caravan-and-deals-state.md)、[存档](./design/zh-CN/contracts/system/save-system.md)；描述原版服务不等于重制已有完整服务 UI 或持久保存 |
+| 输入、对话与声音 | [输入](./design/zh-CN/contracts/interface/input-system.md)、[对话与已达文本等待](./design/zh-CN/contracts/interface/dialogue-system.md)、[窗口](./design/zh-CN/contracts/interface/window-system.md)、[音频命令与播放状态](./design/zh-CN/contracts/interface/audio-system.md)、[音乐等待](./design/zh-CN/contracts/interface/music-wait-service.md) |
+| 图形与界面数据 | [地图布局](./design/zh-CN/contracts/graphics/map-layout-data.md)、[地图瓦片集](./design/zh-CN/contracts/graphics/map-tileset-data.md)、[UI 布局](./design/zh-CN/contracts/interface/ui-layout-data.md)、[立绘窗口](./design/zh-CN/contracts/interface/portrait-window-state.md) |
 
-私有里程碑另见[连续 Map3–Battle01 场景](./design/zh-CN/contracts/map3-battle01-continuous-scenario.md)与
-[就绪台账](./design/zh-CN/synthesis/map3-battle01-readiness.md#当前已接受里程碑)；下方保留英文规范验收入口。
-[Map3 受控准入合同](./design/zh-CN/contracts/map3-controlled-admission.md)仍为**提议（Proposed）**，
-[Phase4 引导计划](./design/zh-CN/synthesis/phase4-bootstrap-plan.md)仍为**历史（Historical）**且已被现行实现指导取代；译文接受不提升其状态。
+私有里程碑另见[连续 Map3–Battle01 场景](./design/zh-CN/contracts/milestones/map3-battle01-continuous-scenario.md)与
+[就绪台账](./design/zh-CN/synthesis/milestones/map3-battle01-readiness.md#当前已接受里程碑)；下方保留英文规范验收入口。
+[Map3 受控准入合同](./design/zh-CN/contracts/milestones/map3-controlled-admission.md)仍为**提议（Proposed）**，
+[Phase4 引导计划](./design/zh-CN/synthesis/milestones/phase4-bootstrap-plan.md)仍为**历史（Historical）**且已被现行实现指导取代；译文接受不提升其状态。
 
 ## 翻译状态与持续同步
 
@@ -118,7 +119,7 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 | 引擎实现与架构 | [Remake README](../remake/README.md)、[架构](../remake/docs/architecture.md) |
 | 已采用的引擎方向与测试政策 | [ADR 0019](./decisions/0019-state-and-content-driven-remake-engine.md) |
 | 当前可运行能力、Unsupported 与 Unknown | [能力矩阵](../remake/docs/capability-status.md) |
-| 当前私有 Map 3 → Battle01 胜利与可用返回验收 | [就绪性](./design/synthesis/map3-battle01-readiness.md#accepted-current-milestone) |
+| 当前私有 Map 3 → Battle01 胜利与可用返回验收 | [就绪性](./design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) |
 | 历史失败与组合接受证据 | [保留比较](../remake/docs/evidence/retained-comparisons.md#accepted-composition-review) |
 | 验证命令与 Godot 实例复用 | [开发与验证](../remake/docs/development-and-verification.md) |
 | 原版研究与证据前沿 | [Research 索引](./README.md#research)、[源码覆盖率](./research/source-coverage.md) |

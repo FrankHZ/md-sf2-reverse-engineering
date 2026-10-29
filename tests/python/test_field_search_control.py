@@ -24,17 +24,17 @@ INDEX_SCHEMA = repo_path("schemas/research-index.schema.json")
 _PRE_SLICE_INDEX_SHA256 = "841468CA1B4A75120BFEE0A363254839B019E23C0A704DFA2B873574E2033457"
 _DIRECT_STATE_FIXTURE_ID = "sf2-map-event-direct-state-static-v1"
 _DIRECT_STATE_VERIFIER = "src/sf2tool/h2/map_event_direct_state.py"
-_DIRECT_STATE_DOCUMENT = "docs/research/map-event-direct-state.md"
+_DIRECT_STATE_DOCUMENT = "docs/research/world/map-event-direct-state.md"
 _DIRECT_CONTROL_FIXTURE_ID = "sf2-map-event-direct-control-static-v1"
-_DIRECT_CONTROL_DOCUMENT = "docs/research/map-event-direct-control.md"
+_DIRECT_CONTROL_DOCUMENT = "docs/research/world/map-event-direct-control.md"
 _HANDOFF_FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
-_HANDOFF_DOCUMENT = "docs/research/map-event-direct-handoff.md"
+_HANDOFF_DOCUMENT = "docs/research/world/map-event-direct-handoff.md"
 _PREDICATE_FIXTURE_ID = "sf2-map-event-predicate-results-static-v1"
-_PREDICATE_DOCUMENT = "docs/research/map-event-predicate-results.md"
+_PREDICATE_DOCUMENT = "docs/research/world/map-event-predicate-results.md"
 _DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
-_DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
+_DIALOGUE_STATE_DOCUMENT = "docs/research/world/map-event-dialogue-state.md"
 _REQUEST_STATE_FIXTURE_ID = "sf2-map-event-request-state-static-v1"
-_REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
+_REQUEST_STATE_DOCUMENT = "docs/research/world/map-event-request-state.md"
 
 
 def normalize_later_owner_index(index):
@@ -132,9 +132,11 @@ def _without_request_consumption(index: dict[str, Any]) -> dict[str, Any]:
         if not evidence:
             continue
         assert len(evidence) == 1
-        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        assert record["documents"].count(
+            "docs/research/world/map-event-request-consumption.md"
+        ) == 1
         record["evidence"] = [item for item in record["evidence"] if item not in evidence]
-        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["documents"].remove("docs/research/world/map-event-request-consumption.md")
         record["addresses"] = [
             address
             for address in record["addresses"]
@@ -1028,13 +1030,15 @@ def test_field_search_index_delta_is_exact_and_rejects_unknown_roots() -> None:
     assert {
         record_id
         for record_id, record in records.items()
-        if "docs/research/field-search-control.md" in record["documents"]
+        if "docs/research/world/field-search-control.md" in record["documents"]
     } == owner_ids
     assert all(
-        records[record_id]["documents"].count("docs/research/field-search-control.md") == 1
+        records[record_id]["documents"].count("docs/research/world/field-search-control.md") == 1
         for record_id in owner_ids
     )
-    assert records["menus.field-main"]["documents"][-1] == ("docs/research/field-item-effects.md")
+    assert records["menus.field-main"]["documents"][-1] == (
+        "docs/research/world/field-item-effects.md"
+    )
     expected_new_addresses = {
         ("tech.interfaces.jump-s02", "increase-gold", 33116),
         ("tech.interfaces.jump-s02", "get-item-slots", 33140),
@@ -1180,10 +1184,10 @@ def test_field_search_index_delta_is_exact_and_rejects_unknown_roots() -> None:
             assert record["documents"][-1] == _DIRECT_STATE_DOCUMENT
             record["documents"].remove(_DIRECT_STATE_DOCUMENT)
             removed_direct_state_documents.add(record_id)
-        if "docs/research/field-search-control.md" in record["documents"]:
+        if "docs/research/world/field-search-control.md" in record["documents"]:
             assert record_id in owner_ids
-            assert record["documents"].count("docs/research/field-search-control.md") == 1
-            record["documents"].remove("docs/research/field-search-control.md")
+            assert record["documents"].count("docs/research/world/field-search-control.md") == 1
+            record["documents"].remove("docs/research/world/field-search-control.md")
             removed_documents.add(record_id)
     assert removed_evidence == owner_ids
     assert removed_addresses == expected_new_addresses

@@ -9,8 +9,8 @@ The source-backed priority is ordered state preservation, including failure/retr
 Battle32/Moun, original media/timing, physical alias reconstruction and wider party services are
 non-goals. This is a child of the [six-family closure scope](special-mechanics-design.md#current-closure-scope).
 
-**Confirmed static:** the accepted [Battle32 outcome owner](../../../docs/research/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)
-and its [victory tail](../../../docs/research/battle32-outcomes-and-moun-entry.md#victory-seed-after-loading-and-completion-tail)
+**Confirmed static:** the accepted [Battle32 outcome owner](../../../docs/research/chapters/moun-nazca-grans/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)
+and its [victory tail](../../../docs/research/chapters/moun-nazca-grans/battle32-outcomes-and-moun-entry.md#victory-seed-after-loading-and-completion-tail)
 use SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. Direct joins are
 `data/battles/entries/battle32/cs_afterbattle.asm` commands38/39/45,
 `code/common/scripting/map/mapscriptengine_2.asm:csc08_joinForce`,
@@ -103,9 +103,9 @@ to supply its guards. `code/common/stats/dealsinventory.asm` `AddItemToDeals/Get
 identity and increments the selected independent nibble up to15; reaching15 still permits removal.
 `data/stats/items/itemdefs.asm` identifies0 as CONSUMABLE,61 as WEAPON|RARE and113 as RARE|UNSELLABLE.
 Reproduce with `git -C <pinned-upstream> show c834c652:disasm/<named-file>` and the named symbols.
-The [battle caller](../../../docs/design/contracts/battle-functions-control-flow.md),
-[Deals contract](../../../docs/design/contracts/caravan-and-deals-state.md) and
-[economy synthesis](../../../docs/design/synthesis/progression-and-economy.md)
+The [battle caller](../../../docs/design/contracts/battle/battle-functions-control-flow.md),
+[Deals contract](../../../docs/design/contracts/party/caravan-and-deals-state.md) and
+[economy synthesis](../../../docs/design/synthesis/themes/progression-and-economy.md)
 remain the consumed contract routes; these are static claims, not natural-route/timing observations.
 
 `BattleDiscard` validates the live actor, supported words, exact slot/word and selected metadata.
@@ -152,9 +152,9 @@ and `loc_24C44`. The source pre-fills the fourth menu cell with Unarmed/slot4, t
 sequentially. It restores old preview equipment before the final equip helper, and returns to
 `@StartBattleMenu`. The source's cursed refusal exists but is outside this admitted subset.
 
-The [item-definition contract](../../../docs/design/contracts/item-definition-data.md),
-[level refresh](../../../docs/design/contracts/level-up.md#confirmed-current-and-derived-stat-refresh)
-and [equipment synthesis](../../../docs/design/synthesis/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution)
+The [item-definition contract](../../../docs/design/contracts/party/item-definition-data.md),
+[level refresh](../../../docs/design/contracts/party/level-up.md#confirmed-current-and-derived-stat-refresh)
+and [equipment synthesis](../../../docs/design/synthesis/themes/progression-and-economy.md#carried-gear-becomes-an-equipped-contribution)
 own original metadata/refresh evidence. Pure immutable candidate calculation is the remake's preview
 implementation, not an observation of original UI timing. `BattleEquipmentTests` and
 `BattleEquipmentSessionTests` reproduce engine behavior with varied base stats, masks, names, ranges,
@@ -207,7 +207,7 @@ halving. Credit/growth retain their later boundaries.
 
 The signed addition owner is `code/common/stats/combatantstats_3.asm:IncreaseAndClampWord`.
 Reproduce inspection with `git -C <registered-upstream-checkout> show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>`.
-The accepted [AURA contract](../../../docs/design/contracts/spell-resolution.md#confirmed-aura-target-and-accumulation-subset)
+The accepted [AURA contract](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-aura-target-and-accumulation-subset)
 retains bounded H3 geometry/accumulation evidence. These joins establish structure, not natural
 original casting or presentation timing; engine tests are not original-game evidence.
 
@@ -256,8 +256,8 @@ sleep/dead-entry handling remains in ordinary turn flow. No enemy slot is substi
   attack runs HEAL1/SUPPORT failure then MOVE1 without RNG. Unreachable/128 costs remain Unsupported.
 
 The abbreviated AI paths above share `code/gameflow/battle/`. The accepted
-[conversion research](../../../docs/research/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases)
-and [AI contract](../../../docs/design/contracts/battle-ai-decision.md) retain original evidence.
+[conversion research](../../../docs/research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases)
+and [AI contract](../../../docs/design/contracts/battle/battle-ai-decision.md) retain original evidence.
 `JaroConversionTests`, `BattleRegionProgramTests` and `SourceAllyAiTests` exercise actual remake
 behavior, including changed IDs/slots/state, prefix failures and automatic-to-manual transition.
 Natural original scene reach, original alias timing and original presentation remain **Unknown**.
@@ -268,7 +268,7 @@ Natural original scene reach, original alias timing and original presentation re
 `disasm/`: `code/gameflow/battle/battleloop_1.asm`, `battleloop/initializecombatants.asm`,
 `battleloop/populateenemyspawns.asm`, `battleloop/triggerregions.asm`, `battleloop/spawnenemy.asm`,
 `battleloop/clearaimemory.asm` and `ai/startaicontrol.asm` (the latter paths share
-`code/gameflow/battle/`). The [research owner](../../../docs/research/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)
+`code/gameflow/battle/`). The [research owner](../../../docs/research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)
 retains original provenance and natural-reach limits. Engine tests prove the remake implementation.
 
 `BattleActorState.Initialized` selects zero effective maximum HP when dormant; initialized maximum HP
@@ -317,7 +317,7 @@ non15/standby configurations remain Unsupported.
 (`battlesceneScript_DetermineTargetsByAction`, `battlesceneScript_InitializeActors`),
 `battleactions/battleactionsengine_2.asm` (`battlesceneScript_ApplyActionEffect`),
 `battleactions/inflictdamage.asm` (`battlesceneScript_InflictDamage`), `battleloop/processkilledcombatants.asm` (`ProcessKilledCombatants`) and `code/common/stats/combatantstats_2.asm`
-(`IncreaseKills`). The [laser research owner](../../../docs/research/battle36-prism-flower-laser.md)
+(`IncreaseKills`). The [laser research owner](../../../docs/research/chapters/moun-nazca-grans/battle36-prism-flower-laser.md)
 retains the source ray/occupancy/RNG/message boundary; its historical consumer-gap audit describes
 its inspected baseline, not this authored implementation. No new original runtime finding is claimed.
 
@@ -354,8 +354,8 @@ establishes usable modern delivery; natural original reach and hardware fidelity
 ## Finite physical-action item drops
 
 `EnemyItemDropRules` is a fixed SF2 physical-construction service. Its evidence owners are the
-[combat contract](../../../docs/design/contracts/combat-resolution.md) and
-[Taros action-drop custody](../../../docs/research/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody),
+[combat contract](../../../docs/design/contracts/battle/combat-resolution.md) and
+[Taros action-drop custody](../../../docs/research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody),
 including `sf2-enemy-item-drops-v1` and `sf2-enemy-item-drop-behavior-v1`. **Confirmed static source:**
 pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `code/gameflow/battle/battleactions/{battleactionsengine_1,dropenemyitem}.asm`,
@@ -410,7 +410,7 @@ Admitted sleep and pure poison have no stat modifier to recompute; wider stat/st
 Only the original action earns damage/end EXP and death gold; the sweep adds no EXP, gold or drops.
 Outcome counts placed living combatants after cleanup and checks allied defeat first.
 
-**Confirmed static support:** the [Battle18 outcome owner](../../../docs/research/battle18-outcomes-and-caravan-acquisition.md#outcome-selection-and-shared-battle-boundary)
+**Confirmed static support:** the [Battle18 outcome owner](../../../docs/research/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md#outcome-selection-and-shared-battle-boundary)
 anchors pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. Under
 `disasm/code/gameflow/battle/`, `cutscenes/battleendcutscenesstart.asm:ExecuteBattleCutscene_Defeated`
 and `battleendcutscenesend.asm:loc_47C48` own eligibility and the source-slot append;
@@ -450,7 +450,7 @@ and rolled-toggle checks allow it. The policy is physical only; it adds no spell
 `determineineffectiveattack.asm` once. Its second-attack block retains the toggle; the counter
 block clears it. `isabletocounterattack.asm` reads the original actor through a5 for the Taros
 prohibition. `code/common/stats/itemstats.asm:GetEquippedWeapon/GetEquippedItemByType` owns the
-live slot/type scan. The [original research owner](../../../docs/research/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)
+live slot/type scan. The [original research owner](../../../docs/research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)
 retains provenance, Battle18/F112 context and original natural-reach limits.
 
 | Reached physical step | Ineffective consequence |
@@ -966,12 +966,12 @@ not imply fairy or physical recoil draws. There is no separate inventory service
 | `earnexp.asm`, `battlesceneScript_CalculateHealingExp`; `giveexpandgold.asm`, `battlesceneScript_GiveExpAndGold` | Ally healer classes contribute `min(25, max(10, floor(25 * recovered / maxHp)))`; other classes contribute zero. Same-side actions skip battle halving. Two range-16 draws add/subtract one on zero, with final minimum one. |
 | `breakuseditem.asm`, `battlesceneScript_BreakUsedItem` (`0xBBE6`); `code/common/stats/itemstats.asm`, `RemoveItemBySlot` / `RemoveAndArrangeItems` | Non-equipment consumes without a break roll, shifts subsequent full item words down one slot and appends NOTHING (127). Identity lookup masks the low seven bits; retained words preserve flags. |
 
-The [item-definition](../../../docs/design/contracts/item-definition-data.md),
-[spell-definition](../../../docs/design/contracts/spell-definition-data.md),
-[spell-resolution](../../../docs/design/contracts/spell-resolution.md) and
-[action-construction](../../../docs/design/contracts/battle-action-construction.md) contracts
+The [item-definition](../../../docs/design/contracts/party/item-definition-data.md),
+[spell-definition](../../../docs/design/contracts/party/spell-definition-data.md),
+[spell-resolution](../../../docs/design/contracts/battle/spell-resolution.md) and
+[action-construction](../../../docs/design/contracts/battle/battle-action-construction.md) contracts
 own the accepted boundaries. **Confirmed native:** the
-[original herb observations](../../../docs/research/map3-messenger-acceptance.md#native-herb-observation-and-completed-branch-recovery)
+[original herb observations](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#native-herb-observation-and-completed-branch-recovery)
 and winning continuation record the reached item/slot/HEALIN/consumption family. Their bounded
 HP facts include 6→11, 9→12, 3→12 and 4→11; these are missing-HP clamps, not four different
 item powers. `MedicalHerbTests` checks those minimal facts separately from controlled RNG cases.

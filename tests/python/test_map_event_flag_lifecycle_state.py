@@ -473,7 +473,7 @@ def test_index_delta_is_exact_and_rejects_stale_or_extra_associations() -> None:
     stale = deepcopy(lifecycle_current)
     next(record for record in stale["records"] if record["id"] == "map.setup.entity-event")[
         "documents"
-    ].append("docs/research/map-event-flag-lifecycle-state.md")
+    ].append("docs/research/world/map-event-flag-lifecycle-state.md")
     with pytest.raises(ValueError, match="index delta"):
         _remove_map_event_flag_lifecycle_state_later_owner_index_delta(stale)
 

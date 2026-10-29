@@ -345,7 +345,7 @@ make Godot an evidence owner. Authored packages, the initialized private battle 
 private world all use the common session. The divergent public-synthetic/private-local readers and
 session paths identified by the [architecture audit](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/architecture-audit.md) were retired at
 [M5](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
-Private source trust checks are not universal gameplay predicates. The [composed private milestone](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+Private source trust checks are not universal gameplay predicates. The [composed private milestone](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 is accepted at its stated modern-clock/keyboard-A/8D boundary; full hardware 8C parity remains Unknown.
 
 ## Profile Summary
@@ -613,7 +613,7 @@ claim:
 - VRAM, CRAM, VInt, DMA, timing, or other 8C hardware observations;
 - save/load, persistence, or complete private-content support; or
 - full executable H4 report or hardware-parity acceptance. The composed milestone has its separate
-  [accepted boundary](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone).
+  [accepted boundary](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone).
 
 An absent capability remains Unsupported or Unknown at its owning contract. Private bytes alone never
 authorize a fidelity claim.

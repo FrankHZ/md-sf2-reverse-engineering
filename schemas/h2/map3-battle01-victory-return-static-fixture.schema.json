@@ -657,9 +657,9 @@
               },
               "battleCutsceneData": {
                 "fixtureId": "sf2-battle-cutscene-data-static-v1",
-                "fixtureSha256": "7DA5C8600AB778481ED4A56DAD3D2463C0EC5BE52F1C37B8573884D6DC75FC08",
-                "semanticSha256": "0B132F95F6EE45C43AD92B0AE54D1D98F3C6759BE6FE1F09EC5FBD28362C1F6E",
-                "sha256": "9DF605F96632BB26F533A4C20693B037468A0894FB5575E483B0F33AABD1F6B1"
+                "fixtureSha256": "3EA2C92DE94CAF90811AF8F24F0292522F5DD8633C1B665EC5988AC53294BE41",
+                "semanticSha256": "4BBFF1C9112097BAFA6CAA167C6EA41AC231FF87952C084A54EECC9D11B3818D",
+                "sha256": "29BBB0D4ABFC9DD0B4CAD47E150993B04446493076D13FC65A6DE5ED41A84F44"
               },
               "mapScriptEngine": {
                 "fixtureId": "sf2-map-script-engine-static-v1",

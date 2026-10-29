@@ -12,7 +12,7 @@ from sf2tool.h3.rng import _rng_step
 from sf2tool.paths import repo_path
 from sf2tool.remake_h4_reference import ROM, UPSTREAM, require
 
-OWNER = "docs/design/contracts/map3-battle01-continuous-scenario.md"
+OWNER = "docs/design/contracts/milestones/map3-battle01-continuous-scenario.md"
 
 
 def admission_seed_binding(actual, context, source_root):

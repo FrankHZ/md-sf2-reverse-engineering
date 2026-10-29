@@ -24,7 +24,7 @@ def w2_consumer_binding(actual, context, source_root):
         occurrences=[],
         sourceRules=dict(
             upstream=UPSTREAM,
-            owner="docs/design/contracts/dialogue-system.md",
+            owner="docs/design/contracts/interface/dialogue-system.md",
             section="w2-composed-semantic-acceptance",
         ),
         unknown=[

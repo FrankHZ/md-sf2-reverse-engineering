@@ -10,7 +10,9 @@ from typing import Any
 ID = "sf2-map3-original-player-locomotion-animation-runtime-v1"
 
 _INDEX_FIXTURE = "tests/fixtures/h3/map3-original-player-locomotion-animation-runtime-v1.json"
-_INDEX_DOCUMENT = "docs/research/map3-original-player-locomotion-animation.md"
+_INDEX_DOCUMENT = (
+    "docs/research/chapters/grans-opening/map3-original-player-locomotion-animation.md"
+)
 _INDEX_VERIFIER = "src/sf2tool/h3/map3_original_player_locomotion_animation.py"
 _INDEX_BINDINGS = {
     "scripting.entity.entityscriptengine-1": (
@@ -60,7 +62,7 @@ _INDEX_ADDRESSES = {
         },
     ),
 }
-_PREDECESSOR_INDEX_SHA256 = "54F3A89A9578BAE26FAB2D7259BA927D88C2756F7137F376C26B7B98161A5FE7"
+_PREDECESSOR_INDEX_SHA256 = "FA5E080085336B0616BFD459B473B41FAF6AD6FB0E9703EE01400B72C10680C2"
 
 
 def _index_digest(value: dict[str, Any]) -> str:

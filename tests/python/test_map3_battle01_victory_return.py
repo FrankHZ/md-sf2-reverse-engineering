@@ -222,7 +222,7 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
     index = json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
     original = copy.deepcopy(index)
     cross_program_fixture_id = "sf2-map-event-cross-program-flag-state-static-v1"
-    cross_program_document = "docs/research/map-event-cross-program-flag-state.md"
+    cross_program_document = "docs/research/world/map-event-cross-program-flag-state.md"
     cross_program_bindings = {
         "map.setup.entity-event": "crossProgramFlagState.categoryRoles.entityEvents",
         "map.setup.zone-event": "crossProgramFlagState.categoryRoles.zoneEvents",
@@ -452,7 +452,7 @@ def test_index_contract_rejects_missing_extra_and_unrelated_owner_record_drift()
 
     malformed = copy.deepcopy(index)
     record = next(item for item in malformed["records"] if item["id"] == "battle.control.outcomes")
-    record["documents"].append("docs/research/map3-battle01-victory-return.md")
+    record["documents"].append("docs/research/chapters/grans-opening/map3-battle01-victory-return.md")
     with pytest.raises(ValueError, match="owner document drift"):
         victory_return._owner_evidence(malformed)
 

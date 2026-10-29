@@ -6,7 +6,7 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
-    "docs/design/contracts/ally-definition-data.md": {
+    "docs/design/contracts/party/ally-definition-data.md": {
         "tests/fixtures/h2/ally-data-static-v1.json": (
             "sf2-ally-data-static-v1"
         ),
@@ -14,7 +14,7 @@ CONTRACTS = {
             "sf2-map-sprite-assignments-static-v1"
         ),
     },
-    "docs/design/contracts/audio-system.md": {
+    "docs/design/contracts/interface/audio-system.md": {
         "tests/fixtures/h2/gameflow-core-static-v1.json": (
             "sf2-gameflow-core-static-v1"
         ),
@@ -25,7 +25,7 @@ CONTRACTS = {
             "sf2-sound-timing-runtime-v1"
         ),
     },
-    "docs/design/contracts/battle-ai-decision.md": {
+    "docs/design/contracts/battle/battle-ai-decision.md": {
         "tests/fixtures/h2/battle-ai-static-v1.json": "sf2-battle-ai-static-v1",
         "tests/fixtures/h2/battle-ai-priority-static-v1.json": (
             "sf2-battle-ai-priority-static-v1"
@@ -49,12 +49,12 @@ CONTRACTS = {
             "sf2-battle-ai-action-choice-runtime-v1"
         ),
     },
-    "docs/design/contracts/battle-action-construction.md": {
+    "docs/design/contracts/battle/battle-action-construction.md": {
         "tests/fixtures/h2/battle-actions-static-v1.json": (
             "sf2-battle-actions-static-v1"
         ),
     },
-    "docs/design/contracts/battle-cutscene-routing.md": {
+    "docs/design/contracts/battle/battle-cutscene-routing.md": {
         "tests/fixtures/h2/battle-cutscene-data-static-v1.json": (
             "sf2-battle-cutscene-data-static-v1"
         ),
@@ -65,7 +65,7 @@ CONTRACTS = {
             "sf2-battle-routing-data-static-v1"
         ),
     },
-    "docs/design/contracts/battle-encounter-definition.md": {
+    "docs/design/contracts/battle/battle-encounter-definition.md": {
         "tests/fixtures/h2/battle-spriteset-data-static-v1.json": (
             "sf2-battle-spriteset-data-static-v1"
         ),
@@ -76,32 +76,32 @@ CONTRACTS = {
             "sf2-battle-routing-data-static-v1"
         ),
     },
-    "docs/design/contracts/battle-functions-control-flow.md": {
+    "docs/design/contracts/battle/battle-functions-control-flow.md": {
         "tests/fixtures/h2/battle-functions-static-v1.json": (
             "sf2-battle-functions-static-v1"
         ),
     },
-    "docs/design/contracts/battle-background-graphics-data.md": {
+    "docs/design/contracts/graphics/battle-background-graphics-data.md": {
         "tests/fixtures/h2/battle-background-decode-v1.json": (
             "sf2-battle-background-decode-v1"
         ),
     },
-    "docs/design/contracts/battle-effect-graphics-data.md": {
+    "docs/design/contracts/graphics/battle-effect-graphics-data.md": {
         "tests/fixtures/h2/battle-effect-graphics-decode-v1.json": (
             "sf2-battle-effect-graphics-decode-v1"
         ),
     },
-    "docs/design/contracts/battle-sprite-graphics-data.md": {
+    "docs/design/contracts/graphics/battle-sprite-graphics-data.md": {
         "tests/fixtures/h2/battle-sprite-decode-v1.json": (
             "sf2-battle-sprite-decode-v1"
         ),
     },
-    "docs/design/contracts/battle-weapon-ground-graphics-data.md": {
+    "docs/design/contracts/graphics/battle-weapon-ground-graphics-data.md": {
         "tests/fixtures/h2/battle-weapon-ground-decode-v1.json": (
             "sf2-battle-weapon-ground-decode-v1"
         ),
     },
-    "docs/design/contracts/battle-scene-presentation.md": {
+    "docs/design/contracts/battle/battle-scene-presentation.md": {
         "tests/fixtures/h2/battle-scene-engine-static-v1.json": (
             "sf2-battle-scene-engine-static-v1"
         ),
@@ -124,7 +124,7 @@ CONTRACTS = {
             "sf2-battle-effect-graphics-decode-v1"
         ),
     },
-    "docs/design/contracts/battle-control-lifecycle.md": {
+    "docs/design/contracts/battle/battle-control-lifecycle.md": {
         "tests/fixtures/h2/battle-loop-static-v1.json": "sf2-battle-loop-static-v1",
         "tests/fixtures/h2/battle-control-static-v1.json": (
             "sf2-battle-control-static-v1"
@@ -145,27 +145,27 @@ CONTRACTS = {
             "sf2-after-turn-status-lifecycle-v1"
         ),
     },
-    "docs/design/contracts/byte-copy-service.md": {
+    "docs/design/contracts/system/byte-copy-service.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": (
             "sf2-tech-services-static-v1"
         ),
     },
-    "docs/design/contracts/music-wait-service.md": {
+    "docs/design/contracts/interface/music-wait-service.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": (
             "sf2-tech-services-static-v1"
         ),
     },
-    "docs/design/contracts/name-table-lookup-service.md": {
+    "docs/design/contracts/interface/name-table-lookup-service.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
     },
-    "docs/design/contracts/stats-null-return-service.md": {
+    "docs/design/contracts/party/stats-null-return-service.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
     },
-    "docs/design/contracts/dialogue-system.md": {
+    "docs/design/contracts/interface/dialogue-system.md": {
         "tests/fixtures/h2/map-script-engine-static-v1.json": (
             "sf2-map-script-engine-static-v1"
         ),
@@ -173,17 +173,17 @@ CONTRACTS = {
             "sf2-map-script-dialogue-runtime-v1"
         ),
     },
-    "docs/design/contracts/debug-control-flow.md": {
+    "docs/design/contracts/system/debug-control-flow.md": {
         "tests/fixtures/h2/remaining-core-static-v1.json": (
             "sf2-remaining-core-static-v1"
         ),
     },
-    "docs/design/contracts/sprite-dialogue-property-data.md": {
+    "docs/design/contracts/interface/sprite-dialogue-property-data.md": {
         "tests/fixtures/h2/sprite-dialogue-static-v1.json": (
             "sf2-sprite-dialogue-static-v1"
         ),
     },
-    "docs/design/contracts/enemy-definition-data.md": {
+    "docs/design/contracts/party/enemy-definition-data.md": {
         "tests/fixtures/h2/core-stats-data-static-v1.json": (
             "sf2-core-stats-data-static-v1"
         ),
@@ -191,7 +191,7 @@ CONTRACTS = {
             "sf2-enemy-map-sprites-static-v1"
         ),
     },
-    "docs/design/contracts/global-flag-state.md": {
+    "docs/design/contracts/world/global-flag-state.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
@@ -199,7 +199,7 @@ CONTRACTS = {
             "sf2-tech-interrupts-static-v1"
         ),
     },
-    "docs/design/contracts/graphics-service-state.md": {
+    "docs/design/contracts/graphics/graphics-service-state.md": {
         "tests/fixtures/h2/tech-graphics-static-v1.json": (
             "sf2-tech-graphics-static-v1"
         ),
@@ -207,12 +207,12 @@ CONTRACTS = {
             "sf2-special-sprite-decode-v1"
         ),
     },
-    "docs/design/contracts/special-sprite-graphics-data.md": {
+    "docs/design/contracts/graphics/special-sprite-graphics-data.md": {
         "tests/fixtures/h2/special-sprite-decode-v1.json": (
             "sf2-special-sprite-decode-v1"
         ),
     },
-    "docs/design/contracts/ui-graphics-asset-data.md": {
+    "docs/design/contracts/graphics/ui-graphics-asset-data.md": {
         "tests/fixtures/h2/ui-graphics-decode-v1.json": (
             "sf2-ui-graphics-decode-v1"
         ),
@@ -220,7 +220,7 @@ CONTRACTS = {
             "sf2-icon-graphics-static-v1"
         ),
     },
-    "docs/design/contracts/special-screen-asset-data.md": {
+    "docs/design/contracts/graphics/special-screen-asset-data.md": {
         "tests/fixtures/h2/special-screen-graphics-decode-v1.json": (
             "sf2-special-screen-graphics-decode-v1"
         ),
@@ -231,17 +231,17 @@ CONTRACTS = {
             "sf2-witch-menu-graphics-static-v1"
         ),
     },
-    "docs/design/contracts/special-screen-control-flow.md": {
+    "docs/design/contracts/system/special-screen-control-flow.md": {
         "tests/fixtures/h2/special-screens-static-v1.json": (
             "sf2-special-screens-static-v1"
         ),
     },
-    "docs/design/contracts/portrait-graphics-data.md": {
+    "docs/design/contracts/graphics/portrait-graphics-data.md": {
         "tests/fixtures/h2/portrait-graphics-decode-v1.json": (
             "sf2-portrait-graphics-decode-v1"
         ),
     },
-    "docs/design/contracts/portrait-window-state.md": {
+    "docs/design/contracts/interface/portrait-window-state.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": (
             "sf2-common-menus-static-v1"
         ),
@@ -249,22 +249,22 @@ CONTRACTS = {
             "sf2-portrait-graphics-decode-v1"
         ),
     },
-    "docs/design/contracts/caravan-and-deals-state.md": {
+    "docs/design/contracts/party/caravan-and-deals-state.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
     },
-    "docs/design/contracts/new-game-state-initialization.md": {
+    "docs/design/contracts/system/new-game-state-initialization.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
     },
-    "docs/design/contracts/party-membership-state.md": {
+    "docs/design/contracts/party/party-membership-state.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
     },
-    "docs/design/contracts/item-definition-data.md": {
+    "docs/design/contracts/party/item-definition-data.md": {
         "tests/fixtures/h2/core-stats-data-static-v1.json": (
             "sf2-core-stats-data-static-v1"
         ),
@@ -272,17 +272,17 @@ CONTRACTS = {
             "sf2-item-auxiliary-static-v1"
         ),
     },
-    "docs/design/contracts/spell-definition-data.md": {
+    "docs/design/contracts/party/spell-definition-data.md": {
         "tests/fixtures/h2/core-stats-data-static-v1.json": (
             "sf2-core-stats-data-static-v1"
         ),
     },
-    "docs/design/contracts/spellbook-state.md": {
+    "docs/design/contracts/party/spellbook-state.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
     },
-    "docs/design/contracts/party-roster-state.md": {
+    "docs/design/contracts/party/party-roster-state.md": {
         "tests/fixtures/h2/map-script-engine-static-v1.json": (
             "sf2-map-script-engine-static-v1"
         ),
@@ -293,47 +293,47 @@ CONTRACTS = {
             "sf2-force-state-roster-death-runtime-v1"
         ),
     },
-    "docs/design/contracts/exploration-control-flow.md": {
+    "docs/design/contracts/world/exploration-control-flow.md": {
         "tests/fixtures/h2/gameflow-core-static-v1.json": (
             "sf2-gameflow-core-static-v1"
         ),
     },
-    "docs/design/contracts/map3-controlled-admission.md": {
+    "docs/design/contracts/milestones/map3-controlled-admission.md": {
         "tests/fixtures/h3/map3-admitted-start-v1.json": (
             "sf2-map3-admitted-start-runtime-v1"
         ),
     },
-    "docs/design/contracts/startup-control-flow.md": {
+    "docs/design/contracts/system/startup-control-flow.md": {
         "tests/fixtures/h2/gameflow-core-static-v1.json": (
             "sf2-gameflow-core-static-v1"
         ),
     },
-    "docs/design/contracts/standalone-map-script-program-data.md": {
+    "docs/design/contracts/world/standalone-map-script-program-data.md": {
         "tests/fixtures/h2/map-scripts-static-v1.json": (
             "sf2-map-scripts-static-v1"
         ),
     },
-    "docs/design/contracts/map-area-description-routing.md": {
+    "docs/design/contracts/world/map-area-description-routing.md": {
         "tests/fixtures/h2/map-descriptions-static-v1.json": (
             "sf2-map-descriptions-static-v1"
         ),
     },
-    "docs/design/contracts/map-camera-update-control-flow.md": {
+    "docs/design/contracts/world/map-camera-update-control-flow.md": {
         "tests/fixtures/h2/common-maps-static-v1.json": (
             "sf2-common-maps-static-v1"
         ),
     },
-    "docs/design/contracts/map-entity-data.md": {
+    "docs/design/contracts/world/map-entity-data.md": {
         "tests/fixtures/h2/map-entities-static-v1.json": (
             "sf2-map-entities-static-v1"
         ),
     },
-    "docs/design/contracts/map-entry-routing-state.md": {
+    "docs/design/contracts/world/map-entry-routing-state.md": {
         "tests/fixtures/h2/common-maps-static-v1.json": (
             "sf2-common-maps-static-v1"
         ),
     },
-    "docs/design/contracts/map-exploration.md": {
+    "docs/design/contracts/world/map-exploration.md": {
         "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
         "tests/fixtures/h2/canonical-map-import-v1.json": "sf2-canonical-map-import-v1",
@@ -428,37 +428,37 @@ CONTRACTS = {
             "sf2-map-script-screen-presentation-runtime-v1"
         ),
     },
-    "docs/design/contracts/map-layout-data.md": {
+    "docs/design/contracts/graphics/map-layout-data.md": {
         "tests/fixtures/h2/map-layout-decode-v1.json": (
             "sf2-map-layout-decode-v1"
         ),
     },
-    "docs/design/contracts/map-palette-data.md": {
+    "docs/design/contracts/graphics/map-palette-data.md": {
         "tests/fixtures/h2/map-palette-static-v1.json": (
             "sf2-map-palette-static-v1"
         ),
     },
-    "docs/design/contracts/map-sprite-assignment-surface.md": {
+    "docs/design/contracts/graphics/map-sprite-assignment-surface.md": {
         "tests/fixtures/h2/map-sprite-assignments-static-v1.json": (
             "sf2-map-sprite-assignments-static-v1"
         ),
     },
-    "docs/design/contracts/map-sprite-graphics-data.md": {
+    "docs/design/contracts/graphics/map-sprite-graphics-data.md": {
         "tests/fixtures/h2/map-sprite-decode-v1.json": (
             "sf2-map-sprite-decode-v1"
         ),
     },
-    "docs/design/contracts/map-setup-data.md": {
+    "docs/design/contracts/world/map-setup-data.md": {
         "tests/fixtures/h2/map-setup-static-v1.json": (
             "sf2-map-setup-static-v1"
         ),
     },
-    "docs/design/contracts/map-tileset-data.md": {
+    "docs/design/contracts/graphics/map-tileset-data.md": {
         "tests/fixtures/h2/map-tileset-decode-v1.json": (
             "sf2-map-tileset-decode-v1"
         ),
     },
-    "docs/design/contracts/battlefield-navigation.md": {
+    "docs/design/contracts/battle/battlefield-navigation.md": {
         "tests/fixtures/h2/battlefield-static-v1.json": "sf2-battlefield-static-v1",
         "tests/fixtures/h2/battle-terrain-decode-v1.json": (
             "sf2-battle-terrain-decode-v1"
@@ -467,7 +467,7 @@ CONTRACTS = {
             "sf2-battlefield-movement-runtime-v1"
         ),
     },
-    "docs/design/contracts/combatant-state-access.md": {
+    "docs/design/contracts/party/combatant-state-access.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"
         ),
@@ -475,7 +475,7 @@ CONTRACTS = {
             "sf2-stat-clamp-boundaries-v1"
         ),
     },
-    "docs/design/contracts/combat-resolution.md": {
+    "docs/design/contracts/battle/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (
             "sf2-muddle-action-guard-both-sides-v1"
         ),
@@ -518,7 +518,7 @@ CONTRACTS = {
         ),
         "tests/fixtures/h3/double-validation-v1.json": "sf2-double-validation-gates-v1",
     },
-    "docs/design/contracts/level-up.md": {
+    "docs/design/contracts/party/level-up.md": {
         "tests/fixtures/h3/stat-gain-v1.json": "sf2-calculate-stat-gain-startup-v1",
         "tests/fixtures/h3/level-up-v1.json": "sf2-level-up-tort-boundary-v1",
         "tests/fixtures/h3/level-up-boundaries-v1.json": "sf2-level-up-boundaries-v1",
@@ -533,7 +533,7 @@ CONTRACTS = {
             "sf2-exp-command-boundaries-v1"
         ),
     },
-    "docs/design/contracts/spell-resolution.md": {
+    "docs/design/contracts/battle/spell-resolution.md": {
         "tests/fixtures/h3/spell-damage-resistance-v1.json": (
             "sf2-spell-damage-resistance-v1"
         ),
@@ -577,7 +577,7 @@ CONTRACTS = {
             "sf2-after-turn-status-lifecycle-v1"
         ),
     },
-    "docs/design/contracts/service-interactions.md": {
+    "docs/design/contracts/party/service-interactions.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": "sf2-common-menus-static-v1",
         "tests/fixtures/h3/church-raise-lifecycle-v1.json": (
             "sf2-church-raise-lifecycle-runtime-v1"
@@ -589,7 +589,7 @@ CONTRACTS = {
             "sf2-church-save-lifecycle-runtime-v1"
         ),
     },
-    "docs/design/contracts/save-system.md": {
+    "docs/design/contracts/system/save-system.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
         "tests/fixtures/h3/witch-save-actions-v1.json": "sf2-witch-save-actions-runtime-v1",
         "tests/fixtures/h3/witch-save-menu-actions-v1.json": (
@@ -599,11 +599,11 @@ CONTRACTS = {
             "sf2-witch-new-game-lifecycle-runtime-v1"
         ),
     },
-    "docs/design/contracts/input-system.md": {
+    "docs/design/contracts/interface/input-system.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
         "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
     },
-    "docs/design/contracts/randomness.md": {
+    "docs/design/contracts/system/randomness.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
         "tests/fixtures/h3/rng-v1.json": "sf2-rng-generate-random-number-v1",
         "tests/fixtures/h3/debug-rng-v1.json": "sf2-rng-debug-override-v1",
@@ -614,12 +614,12 @@ CONTRACTS = {
             "sf2-battle-ai-action-choice-runtime-v1"
         ),
     },
-    "docs/design/contracts/rom-header-data.md": {
+    "docs/design/contracts/system/rom-header-data.md": {
         "tests/fixtures/h2/remaining-core-static-v1.json": (
             "sf2-remaining-core-static-v1"
         ),
     },
-    "docs/design/contracts/text-and-font-system.md": {
+    "docs/design/contracts/interface/text-and-font-system.md": {
         "tests/fixtures/h2/text-huffman-static-v1.json": (
             "sf2-text-huffman-static-v1"
         ),
@@ -630,30 +630,30 @@ CONTRACTS = {
             "sf2-variable-width-font-static-v1"
         ),
     },
-    "docs/design/contracts/ui-layout-data.md": {
+    "docs/design/contracts/interface/ui-layout-data.md": {
         "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
     },
-    "docs/design/contracts/unused-mapload-control-flow.md": {
+    "docs/design/contracts/system/unused-mapload-control-flow.md": {
         "tests/fixtures/h2/common-maps-static-v1.json": (
             "sf2-common-maps-static-v1"
         ),
     },
-    "docs/design/contracts/unused-menu-constant-write-control-flow.md": {
+    "docs/design/contracts/system/unused-menu-constant-write-control-flow.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": (
             "sf2-common-menus-static-v1"
         ),
     },
-    "docs/design/contracts/unused-technical-asset-data.md": {
+    "docs/design/contracts/system/unused-technical-asset-data.md": {
         "tests/fixtures/h2/unused-technical-assets-static-v1.json": (
             "sf2-unused-technical-assets-static-v1"
         ),
     },
-    "docs/design/contracts/window-system.md": {
+    "docs/design/contracts/interface/window-system.md": {
         "tests/fixtures/h2/remaining-core-static-v1.json": "sf2-remaining-core-static-v1",
         "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
         "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
     },
-    "docs/design/contracts/interrupt-dma-and-trap-state.md": {
+    "docs/design/contracts/system/interrupt-dma-and-trap-state.md": {
         "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
     },
 }

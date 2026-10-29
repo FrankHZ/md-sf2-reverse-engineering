@@ -287,8 +287,8 @@ enemy, including outgoing/incoming target and actor phases; Godot never represen
 **Confirmed, static caller selection:** at pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, the following chain beneath `disasm/` distinguishes a
 Medical Herb from casting the HEAL spell. This consumes the existing
-[battle-scene](../../../docs/design/contracts/battle-scene-presentation.md) and
-[action-construction](../../../docs/design/contracts/battle-action-construction.md) contracts; it does
+[battle-scene](../../../docs/design/contracts/battle/battle-scene-presentation.md) and
+[action-construction](../../../docs/design/contracts/battle/battle-action-construction.md) contracts; it does
 not extend their natural timing claims.
 
 | Source / symbol | Selected behavior |
@@ -369,7 +369,7 @@ through the scene, not the construction seed. Private scenes require admitted PR
 idle parameters and healing rasters; authored packages use an explicitly authored small gesture.
 Private AURA, other spell effects and HEAL4 remain unsupported; public authored AURA uses the separate
 consumer above. The historical #523/#437 records do not establish full scene or hardware parity; the
-[current composed milestone](../../../docs/design/synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+[current composed milestone](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 has its separately bounded acceptance.
 
 `HealingFairy` implements source integer word arithmetic, signed motion residuals, wing/dust state,
@@ -398,7 +398,7 @@ Source owners are pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `battlescenes/animation/healingfairy.asm`, `animation/update/healingfairy.asm`, `battlesceneengine_0.asm`
 (`bsc01`, `bsc05`, `bsc0B`, `bsc0D`, `bsc10`), `battlesceneengine_1.asm`, `common/tech/graphics/graphics_1.asm`
 (`sub_179C/table_1840`) and the window/text helpers identified in the
-[retained HEAL evidence](../../../docs/research/map3-messenger-acceptance.md#retained-heal-consumer-evidence).
+[retained HEAL evidence](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#retained-heal-consumer-evidence).
 Paths start below `disasm/code/gameflow/battle/` except the common helpers. PR550's accepted
 prepared-04 instrumentation uses execution `3e69c2d49c8105c0e485dcbea70c688b57a86902` and its explicitly
 rebound Issue515 prepared-11 parent. It does not reinterpret the incompatible older parent.
@@ -443,7 +443,7 @@ superseded by direct cursor execution:149 active opportunities before stop versu
 No149/153/154/26 budget or seed padding is used in production.
 
 **Confirmed — bounded opportunity readback:** the
-[research attribution](../../../docs/research/map3-messenger-acceptance.md#recovery-and-make-idle-opportunity-attribution)
+[research attribution](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#recovery-and-make-idle-opportunity-attribution)
 records three top-level recovery VInts: the first has A6=`FFFFDE80` (the source number buffer), the
 next two have restored script A6=`00FF0028`. Source numeric conversion has no waits; window movement
 has an explicit VInt followed by a wait that repeats conditionally until movement ends. Make-idle

@@ -326,7 +326,7 @@ def test_index_delta_is_exact_and_chains_predecessor_normalization() -> None:
     stale = deepcopy(cross_current)
     next(row for row in stale["records"] if row["id"] == "map.setup.entity-event")[
         "documents"
-    ].append("docs/research/map-event-cross-program-flag-state.md")
+    ].append("docs/research/world/map-event-cross-program-flag-state.md")
     with pytest.raises(ValueError, match="index delta"):
         _remove_map_event_cross_program_flag_state_later_owner_index_delta(stale)
 

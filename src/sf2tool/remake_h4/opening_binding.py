@@ -32,5 +32,5 @@ def admission_opening_binding(actual, context, source_root):
             "natural title/reset ancestry",
             "per-glyph hardware timing",
         ],
-        owner="docs/research/map3-messenger-acceptance.md#controlled-opening-scalar-readback",
+        owner="docs/research/chapters/grans-opening/map3-messenger-acceptance.md#controlled-opening-scalar-readback",
     )

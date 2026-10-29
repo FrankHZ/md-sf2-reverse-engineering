@@ -18,8 +18,8 @@ def heal_consumer_binding(actual, context, source_root):
         occurrences=[],
         sourceRules=dict(
             upstream=UPSTREAM,
-            owner="docs/design/contracts/spell-resolution.md#confirmed-heal-1-subset",
-            clock="docs/research/map3-messenger-acceptance.md#legal-heal-recovery-window-completion",
+            owner="docs/design/contracts/battle/spell-resolution.md#confirmed-heal-1-subset",
+            clock="docs/research/chapters/grans-opening/map3-messenger-acceptance.md#legal-heal-recovery-window-completion",
             fairy="disasm/code/gameflow/battle/battlescenes/animation/healingfairy.asm:1A848; "
             "animation/update/healingfairy.asm:1C53E; updatespellanimation.asm",
             motion="disasm/code/common/tech/graphics/graphics_1.asm:sub_179C; "

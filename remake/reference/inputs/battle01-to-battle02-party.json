@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "private-battle02-controlled-party",
-  "evidenceOwner": "Pinned SF2DISASM c834c652: disasm/code/common/stats/newgame.asm, disasm/data/stats/allies/allystartdefs.asm, disasm/sf2enums.asm; docs/design/contracts/map3-battle01-continuous-scenario.md selected R1; docs/research/map3-admitted-start.md and tests/fixtures/h3/map3-admitted-start-v1.json for separate controlled projection",
+  "evidenceOwner": "Pinned SF2DISASM c834c652: disasm/code/common/stats/newgame.asm, disasm/data/stats/allies/allystartdefs.asm, disasm/sf2enums.asm; docs/design/contracts/milestones/map3-battle01-continuous-scenario.md selected R1; docs/research/chapters/grans-opening/map3-admitted-start.md and tests/fixtures/h3/map3-admitted-start-v1.json for separate controlled projection",
   "bridgeBoundary": "Separate controlled Battle02 pilot and immutable ally baselines. First three source-initial allies match the opening definitions. Jaha is source level1 WARR, growth-start HP/MP/ATK/DEF/AGI and source class movement, Short Axe equipped and Medical Herb; EXP/kills/defeats and independent RNG remain controlled. During continuous play the existing allies use actual live resources/progress/inventory/accounting and seeds; this file does not supply a completed checkpoint. The pilot explicitly supplies activationWord=0 for each ally before session creation; it is a controlled input, not inferred runtime evidence. Continuous re-entry retains existing live ally words; only newly recruited Jaha uses this declared baseline.",
   "profile": "private-local-controlled-start",
   "battle": 2,

@@ -18,9 +18,9 @@ def physical_consumer_binding(actual, context, source_root):
         occurrences=[],
         sourceRules=dict(
             upstream=UPSTREAM,
-            owner="docs/design/contracts/combat-resolution.md",
-            construction="docs/design/contracts/battle-action-construction.md",
-            rng="docs/design/contracts/randomness.md",
+            owner="docs/design/contracts/battle/combat-resolution.md",
+            construction="docs/design/contracts/battle/battle-action-construction.md",
+            rng="docs/design/contracts/system/randomness.md",
             binding="source initial party/battle01 placements, matched operands and scene effects",
         ),
         unknown=[

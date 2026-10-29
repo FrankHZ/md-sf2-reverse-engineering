@@ -41,7 +41,7 @@ Inspectors must collect these during execution; sequence gaps are not complete p
 records without replacing it, and `UpdateSound` advances them under that timer. Note-frequency
 register writes use separate frequency tables. SFX variants therefore retain the reached timer
 context; `pitch_scale` is not a tempo substitute because it would transpose the sampled sound.
-The existing [sound inventory](../../../docs/research/sound-data-inventory.md) owns the ROM/source
+The existing [sound inventory](../../../docs/research/presentation/sound-data-inventory.md) owns the ROM/source
 parity, command identities, type-specific channels and stream termination facts.
 
 **Confirmed in a bounded private host observation:** JOIN opens its text window, waits for the
@@ -165,7 +165,7 @@ record immutable receipts/session identity and expose state without changing rep
 behavior. Reuse this evidence when those dependencies remain unchanged; a commit change alone does
 not require another native observation.
 
-The [continuous contract](../../../docs/design/contracts/map3-battle01-continuous-scenario.md)
+The [continuous contract](../../../docs/design/contracts/milestones/map3-battle01-continuous-scenario.md)
 reports the accepted omission independently of state equivalence and actual lifecycle coverage.
 Normal-reveal speech, actual completion and7C provenance remain required where applicable; unobserved
 coverage stays Unavailable. Historical CB/D2 speech consumption PASS is not state-equivalence evidence,
@@ -339,7 +339,7 @@ WriteFlag(7,true), EndProgram. The existing host continues simulation ticks duri
 those observations remain explicit, and RNG is unchanged. This is authored service coverage;
 no naturally reached generic SoundFade instruction was established in the admitted source world.
 
-The [composed audio consumer binding](../../../docs/design/contracts/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
+The [composed audio consumer binding](../../../docs/design/contracts/milestones/map3-battle01-continuous-scenario.md#composed-reached-audio-consumer-binding)
 now associates the complete selected A playback inventory with legitimate replacement/fade causes
 and the actual scene/JOIN releases. Source slot headers are read from the pinned original driver,
 using the maintained sound inventory parser. A cue with one outstanding start has a unique actual
@@ -354,7 +354,7 @@ consumer families remain outside this A binding. The
 input-release subset; the bounded HEAL consumer is described below. The modern half-second service
 is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
-JOIN uses the [accepted modern finite-music clock](../../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+JOIN uses the [accepted modern finite-music clock](../../../docs/design/contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)
 in addition to actual PCM completion. Explicit `modernEndStep` metadata belongs to Application
 content; SessionAudio binds actual playback to its semantic generation and cue. The host's finite
 completion receipt never creates logical work. Previous music becomes logically eligible at the

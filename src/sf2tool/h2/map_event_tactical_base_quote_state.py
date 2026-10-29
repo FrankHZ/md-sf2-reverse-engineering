@@ -28,7 +28,7 @@ FIXTURE = repo_path("tests/fixtures/h2/map-event-tactical-base-quote-state-stati
 SCHEMA = repo_path("schemas/h2/map-event-tactical-base-quote-state-static-fixture.schema.json")
 _ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
 _UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
-_PREDECESSOR_INDEX_SHA256 = "C905CB82A2C310AAAC8A4B40BA7D14BC5750BB4EE9D59AABBF5E68069042630B"
+_PREDECESSOR_INDEX_SHA256 = "73D5742DCC24BE30F77C98DF4698AA9790EFB60DEBB860FF4AA6FC0670916E75"
 _FUNCTION_PATH = "code/common/scripting/map/headquartersfunctions.asm"
 _MAP37_PATH = "data/maps/entries/map37/mapsetups/s2_entityevents.asm"
 _MAP46_PATH = "data/maps/entries/map46/mapsetups/s2_entityevents.asm"
@@ -1054,7 +1054,7 @@ def _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
             {"id": "close-entry", "space": "rom", "kind": "observation", "value": 92720}
         ],
     }
-    expected_document = "docs/research/map-event-tactical-base-quote-state.md"
+    expected_document = "docs/research/world/map-event-tactical-base-quote-state.md"
     seen: set[str] = set()
     for record in records:
         record_id = record.get("id")

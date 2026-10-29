@@ -347,12 +347,12 @@ _INDEX_CONTRACT = {
         "77EB4C67AC40CADF12CDC0CF6702774825A20F7DA58A6ABE403E50FE77211F3C",
     ),
 }
-_OWNER_DOCUMENT = "docs/research/map3-battle01-victory-return.md"
+_OWNER_DOCUMENT = "docs/research/chapters/grans-opening/map3-battle01-victory-return.md"
 
 _REQUEST_CONSUMPTION_FIXTURE_ID = "sf2-map-event-request-consumption-static-v1"
 _REQUEST_CONSUMPTION_FIXTURE = "tests/fixtures/h2/map-event-request-consumption-static-v1.json"
 _REQUEST_CONSUMPTION_VERIFIER = "src/sf2tool/h2/map_event_request_consumption.py"
-_REQUEST_CONSUMPTION_DOCUMENT = "docs/research/map-event-request-consumption.md"
+_REQUEST_CONSUMPTION_DOCUMENT = "docs/research/world/map-event-request-consumption.md"
 _REQUEST_CONSUMPTION_BINDINGS = {
     "menus.shop-actions": (
         (

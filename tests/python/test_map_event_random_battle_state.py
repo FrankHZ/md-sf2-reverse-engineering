@@ -29,7 +29,7 @@ from sf2tool.research_index import (
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
 _INDEX = repo_path("manifests/research-index.json")
-_DOCUMENT = "docs/research/map-event-random-battle-state.md"
+_DOCUMENT = "docs/research/world/map-event-random-battle-state.md"
 _OWNER_ID = "map.setup.check-random-battle"
 _EXPECTED_CHANGED_IDS = {
     _OWNER_ID,

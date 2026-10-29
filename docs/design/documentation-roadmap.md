@@ -30,12 +30,12 @@ has complete zh-CN mirrors at its reviewed baselines, independently accepted and
 [the design-documentation epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 This corpus covers the roadmap, contracts, thematic synthesis and existing detailed guides under
 `docs/design/`, excluding the glossary, which governs terminology rather than having a mirror.
-It includes the separately reviewed [map-exploration contract](contracts/map-exploration.md),
-the **Proposed** [controlled-admission contract](contracts/map3-controlled-admission.md) and the
-**Historical** [bootstrap plan](synthesis/phase4-bootstrap-plan.md). Translation acceptance does not
+It includes the separately reviewed [map-exploration contract](contracts/world/map-exploration.md),
+the **Proposed** [controlled-admission contract](contracts/milestones/map3-controlled-admission.md) and the
+**Historical** [bootstrap plan](synthesis/milestones/phase4-bootstrap-plan.md). Translation acceptance does not
 promote a proposal, restore superseded implementation guidance or change original evidence.
 
-The [battle-design analysis pilot](synthesis/battle-design-analysis-pilot.md) is a new canonical
+The [battle-design analysis pilot](synthesis/analyses/battle-design-analysis-pilot.md) is a new canonical
 English source with no Chinese mirror (`pending`). Some existing translated sources have also
 changed beyond their reviewed anchors; those differences remain subject to semantic review under
 the continuing agreement below. A pending new source and drift in an existing translation are
@@ -61,11 +61,27 @@ feature alone, as its first-level information architecture:
 - repository-governance documents, including this roadmap and `glossary.md`, remain at the design
   root because they govern both categories.
 - `zh-CN/` preserves the canonical English relative hierarchy: for example,
-  `contracts/save-system.md` maps to `zh-CN/contracts/save-system.md`.
+  `contracts/system/save-system.md` maps to `zh-CN/contracts/system/save-system.md`.
 
 This split is an ownership boundary, not a claim about original-game architecture and not a future
 engine module layout. Add deeper subdirectories only when a concrete slice establishes a durable
 navigation or ownership need; do not create empty category scaffolding.
+
+The current directory organization uses **Standard** rigor because physical paths connect research,
+contract registrations, reader routes and reviewed translation anchors. Contracts group into
+`battle/`, `party/`, `world/`, `interface/`, `graphics/`, `system/` and `milestones/`. Synthesis keeps
+`gameplay-overview.md` at its root and separates `themes/`, `analyses/`, `milestones/` and detailed
+`chapters/`. Research uses subject folders and the same six story reading groups under `chapters/`;
+its baseline, indexing and coverage owners remain at the research root.
+
+Chapter folder names follow the existing editorial sequence: `grans-opening`, `eastern-parmecia`,
+`southern-travel-creed`, `northern-travel-mitula`, `moun-nazca-grans` and
+`final-confrontations-ending`. Detailed synthesis guides currently occupy the first four groups;
+later explanations remain sections of Story Progression with links to their research owners. Keep
+one owner for cross-cutting content and use links for other entry points. Directory changes preserve
+evidence, contract and language boundaries; they do not create new research, translations or gameplay
+capabilities. Acceptance requires working physical routes, registered consumers and paired mirror
+paths, with pre-existing translation drift retained until its own review.
 
 ## Three-Layer Boundary
 
@@ -113,7 +129,7 @@ a new engine, rebalance the game or expand the playable milestone.
 ### Bounded battle-design analysis pilot
 
 **Current scope agreement — Standard:** [Issue #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
-owns one [English analysis page](synthesis/battle-design-analysis-pilot.md) covering Battle01,
+owns one [English analysis page](synthesis/analyses/battle-design-analysis-pilot.md) covering Battle01,
 Taros/Battle18 and Chessboard/Battle22. Existing evidence owners are known, but joining placement,
 activation, equipment and outcomes needs cross-system review. Each example explains its design
 emphasis, overall terrain/starting arrangement, enemy roles and relevant activation, explicit
@@ -141,14 +157,14 @@ encounters or changing balance or production admission.
 ### Accepted starting point
 
 The [Gameplay Overview](synthesis/gameplay-overview.md) remains the reader entry. Existing
-[Tactical Battle Loop](synthesis/tactical-battle-loop.md),
-[Progression and Economy](synthesis/progression-and-economy.md),
-[Story Progression](synthesis/story-progression.md) and
-[Map Design Principles](synthesis/map-design-principles.md) remain the thematic owners. Their
+[Tactical Battle Loop](synthesis/themes/tactical-battle-loop.md),
+[Progression and Economy](synthesis/themes/progression-and-economy.md),
+[Story Progression](synthesis/themes/story-progression.md) and
+[Map Design Principles](synthesis/themes/map-design-principles.md) remain the thematic owners. Their
 accepted revisions provide the connected explanations selected below.
 Existing detailed story guides remain available through Story Progression and the
 [design index](../README.md#design), including the
-[Battle27 activation guide](synthesis/battle27-activation-and-first-turn-dispatch.md).
+[Battle27 activation guide](synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md).
 
 The [story-content coverage owner](../research/story-content-coverage.md#four-different-frontiers)
 separates original static research, original observations, English synthesis and remake production.
@@ -168,17 +184,17 @@ This disposition concerns the selected themes, not all design contracts or detai
 | Selected source | Current reader responsibility | Substantive rewrite remaining |
 | --- | --- | --- |
 | [gameplay-overview.md](synthesis/gameplay-overview.md) | Connected loop, theme entry and original/observed/remake/production boundaries. | None planned. |
-| [story-progression.md](synthesis/story-progression.md) | Six chapter groups through ending/reset, selected optional branches and the Taros/Caravan dependency example. | None planned. |
-| [tactical-battle-loop.md](synthesis/tactical-battle-loop.md) | Common choices, resolution and returns, with five encounter comparisons and their exceptions. | None planned. |
-| [progression-and-economy.md](synthesis/progression-and-economy.md) | Membership, class, equipment and growth joined to receipt, capacity, spending and recovery. | None planned. |
-| [map-design-principles.md](synthesis/map-design-principles.md) | Attempted interaction, dialogue continuation, transport, live/rebuilt state and persistence boundaries. | None planned. |
+| [story-progression.md](synthesis/themes/story-progression.md) | Six chapter groups through ending/reset, selected optional branches and the Taros/Caravan dependency example. | None planned. |
+| [tactical-battle-loop.md](synthesis/themes/tactical-battle-loop.md) | Common choices, resolution and returns, with five encounter comparisons and their exceptions. | None planned. |
+| [progression-and-economy.md](synthesis/themes/progression-and-economy.md) | Membership, class, equipment and growth joined to receipt, capacity, spending and recovery. | None planned. |
+| [map-design-principles.md](synthesis/themes/map-design-principles.md) | Attempted interaction, dialogue continuation, transport, live/rebuilt state and persistence boundaries. | None planned. |
 
 **Accepted integrated source disposition:** the five-source English set has passed independent
 main-gate reader acceptance and is merged, with no substantive rewrite planned in this round.
 Its Chinese theme mirrors have also been independently accepted and merged. The review route is
 overview → appropriate theme → chapter/example → named evidence,
 with thematic and chapter links back to useful reading entry points. Its connected example follows
-[Ribble/Achilles → Taros → Caravan](synthesis/story-progression.md#worked-example-taros-and-the-caravan):
+[Ribble/Achilles → Taros → Caravan](synthesis/themes/story-progression.md#worked-example-taros-and-the-caravan):
 capacity/refusal, custody versus equipment, admission versus effect, first/repeat and non-victory
 returns, acquisition versus boarding, and separate service access. Complementary Creed/Jaro,
 reward/smith and Polca no-scroll/scroll branches check membership/control, resource and lifecycle
@@ -201,24 +217,24 @@ research tasks:
 | Retained question | Owning boundary |
 | --- | --- |
 | Natural campaign reach, every legal action/interaction and unobserved caller/presentation completion. | [Story coverage's four frontiers](../research/story-content-coverage.md#four-different-frontiers) and the selected chapter/encounter owners. Static connections do not extend the original observed route. |
-| Complete promotion mutation, all-roster choices and campaign balance/scarcity. | [Party/resource judgment boundary](synthesis/progression-and-economy.md#judgment-boundary), [promotion](synthesis/progression-and-economy.md#definitions-current-class-and-promotion) and their named contracts. No optimal-build or universal curve claim is made. |
-| Full transport/return lifecycles and durable save/suspend survival. | [Map return/persistence](synthesis/map-design-principles.md#return-and-persistence), [resource persistence](synthesis/progression-and-economy.md#persistence-boundary) and [save contract](contracts/save-system.md). Save-domain inclusion, save return and durable storage remain separate. |
-| Broader playable content, hardware fidelity and future UI/UX or save choices. | [Capability owner](../../remake/docs/capability-status.md), [accepted milestone](synthesis/map3-battle01-readiness.md#accepted-current-milestone) and [accepted/future choices](synthesis/gameplay-overview.md#made-remake-choices-and-remaining-product-choices). English coverage grants no production admission. |
+| Complete promotion mutation, all-roster choices and campaign balance/scarcity. | [Party/resource judgment boundary](synthesis/themes/progression-and-economy.md#judgment-boundary), [promotion](synthesis/themes/progression-and-economy.md#definitions-current-class-and-promotion) and their named contracts. No optimal-build or universal curve claim is made. |
+| Full transport/return lifecycles and durable save/suspend survival. | [Map return/persistence](synthesis/themes/map-design-principles.md#return-and-persistence), [resource persistence](synthesis/themes/progression-and-economy.md#persistence-boundary) and [save contract](contracts/system/save-system.md). Save-domain inclusion, save return and durable storage remain separate. |
+| Broader playable content, hardware fidelity and future UI/UX or save choices. | [Capability owner](../../remake/docs/capability-status.md), [accepted milestone](synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) and [accepted/future choices](synthesis/gameplay-overview.md#made-remake-choices-and-remaining-product-choices). English coverage grants no production admission. |
 
 Historical original/modern failures, #1047's twelve completed unresolved comparisons and prior
 actual diagnostics, corrections and CI remain with the linked evidence and Issue/PR owners.
 No historical suite is rerun or relabeled to establish this source disposition.
 
-The [Map3–Battle01 readiness owner](synthesis/map3-battle01-readiness.md#accepted-current-milestone)
+The [Map3–Battle01 readiness owner](synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 and [retained comparison owner](../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
 retain the accepted composition and completed failures. Original observations retain their
-[separate boundary](synthesis/map3-battle01-readiness.md#accepted-original-frontier).
+[separate boundary](synthesis/milestones/map3-battle01-readiness.md#accepted-original-frontier).
 Current production support belongs to the
 [capability ledger](../../remake/docs/capability-status.md), its linked consumers and the
 [coverage distinction](../research/story-content-coverage.md#four-different-frontiers).
 None of those boundaries advances when prose is reorganized. Historical reports, failed
 comparisons and Unknowns remain with their owners; this plan neither replaces them with PASS
-nor restarts them. The [Phase 4 bootstrap plan](synthesis/phase4-bootstrap-plan.md) remains historical;
+nor restarts them. The [Phase 4 bootstrap plan](synthesis/milestones/phase4-bootstrap-plan.md) remains historical;
 [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md) owns current engine direction.
 
 ### Reader structure and ownership
@@ -257,19 +273,19 @@ review judges reader usefulness as well as evidence interpretation.
 
 | Milestone | Reader question and deliverable | Owners and dependencies | Acceptance boundary |
 | --- | --- | --- | --- |
-| 1. Connected overview and campaign structure | How do the systems fit together, what changes across the world, and where do choices branch? Refresh the overview and turn Story Progression into a chapter-oriented route with links to existing detail. Extend the later chapter explanation from accepted research. | Existing overview/story owners; [chapter coverage](../research/story-content-coverage.md), [gameflow](../research/gameflow-core.md), [dialogue](contracts/dialogue-system.md), [roster](contracts/party-roster-state.md). | A reader can follow qualified entry, prerequisite, encounter/outcome and return connections through the selected chapter spine to the ending, find optional branches and distinguish static connections from observed play. Every selected group is explained or explicitly bounded; chronological numbering is not proof. |
-| 2. Tactical rules and encounter composition | What can a combatant do, how is a turn resolved, what activates enemies, and what changes between encounters? Revise Tactical Battle Loop and organize evidence-backed encounter differences with representative examples. | [Battle control](contracts/battle-control-lifecycle.md), [actions](contracts/battle-action-construction.md), [navigation](contracts/battlefield-navigation.md), [AI](contracts/battle-ai-decision.md), [combat](contracts/combat-resolution.md), [spells](contracts/spell-resolution.md), selected encounter research linked by coverage. | Explain legal actions, movement/target conditions, resolution, enemy activation/control, outcome and retry/return boundaries. Separate common rules from boss, neutral, repeat and special-encounter exceptions; an initial formation or first dispatch does not prove a played battle or every AI decision. No simulator, difficulty rating or balance proposal. |
-| 3. Party development and resources | How do recruitment, active party, class/promotion, equipment and growth interact, and how do items, magic, money and services constrain choices? Give party development a clear owner and revise Progression and Economy around those relationships. | [Roster](contracts/party-roster-state.md), [growth](contracts/level-up.md), [ally definitions](contracts/ally-definition-data.md), [item definitions](contracts/item-definition-data.md), [spellbook](contracts/spellbook-state.md), [services](contracts/service-interactions.md), [Caravan/deals](contracts/caravan-and-deals-state.md), accepted recruitment and service research. | Keep joining, following, active membership and AI distinct; connect growth/equipment to actual rule application. Explain resource sources, transfers, sinks, capacity, refusal/failure and recovery with actual service boundaries. Reference parameters at their owners; do not invent optimal builds, campaign balance curves or complete service/runtime coverage. |
-| 4. Exploration, interaction and continuity | How do movement, interaction, map transitions, dialogue, transport and world changes compose, and which state survives each kind of return? Update Map Design Principles and the relevant story/overview sections, separating save/suspend from ordinary map return. | [Map exploration](contracts/map-exploration.md), [dialogue](contracts/dialogue-system.md), [map-entry state](contracts/map-entry-routing-state.md), [save](contracts/save-system.md), [input](contracts/input-system.md), accepted scene/service/transport owners. | Explain conditional interactions, current versus rebuilt entities, story gates, return/re-entry and persistence limits. Summarize accepted feedback/input/audio choices by linking their owners; no new UI layout, art/accessibility choice, save design or hardware-parity target. |
+| 1. Connected overview and campaign structure | How do the systems fit together, what changes across the world, and where do choices branch? Refresh the overview and turn Story Progression into a chapter-oriented route with links to existing detail. Extend the later chapter explanation from accepted research. | Existing overview/story owners; [chapter coverage](../research/story-content-coverage.md), [gameflow](../research/system/gameflow-core.md), [dialogue](contracts/interface/dialogue-system.md), [roster](contracts/party/party-roster-state.md). | A reader can follow qualified entry, prerequisite, encounter/outcome and return connections through the selected chapter spine to the ending, find optional branches and distinguish static connections from observed play. Every selected group is explained or explicitly bounded; chronological numbering is not proof. |
+| 2. Tactical rules and encounter composition | What can a combatant do, how is a turn resolved, what activates enemies, and what changes between encounters? Revise Tactical Battle Loop and organize evidence-backed encounter differences with representative examples. | [Battle control](contracts/battle/battle-control-lifecycle.md), [actions](contracts/battle/battle-action-construction.md), [navigation](contracts/battle/battlefield-navigation.md), [AI](contracts/battle/battle-ai-decision.md), [combat](contracts/battle/combat-resolution.md), [spells](contracts/battle/spell-resolution.md), selected encounter research linked by coverage. | Explain legal actions, movement/target conditions, resolution, enemy activation/control, outcome and retry/return boundaries. Separate common rules from boss, neutral, repeat and special-encounter exceptions; an initial formation or first dispatch does not prove a played battle or every AI decision. No simulator, difficulty rating or balance proposal. |
+| 3. Party development and resources | How do recruitment, active party, class/promotion, equipment and growth interact, and how do items, magic, money and services constrain choices? Give party development a clear owner and revise Progression and Economy around those relationships. | [Roster](contracts/party/party-roster-state.md), [growth](contracts/party/level-up.md), [ally definitions](contracts/party/ally-definition-data.md), [item definitions](contracts/party/item-definition-data.md), [spellbook](contracts/party/spellbook-state.md), [services](contracts/party/service-interactions.md), [Caravan/deals](contracts/party/caravan-and-deals-state.md), accepted recruitment and service research. | Keep joining, following, active membership and AI distinct; connect growth/equipment to actual rule application. Explain resource sources, transfers, sinks, capacity, refusal/failure and recovery with actual service boundaries. Reference parameters at their owners; do not invent optimal builds, campaign balance curves or complete service/runtime coverage. |
+| 4. Exploration, interaction and continuity | How do movement, interaction, map transitions, dialogue, transport and world changes compose, and which state survives each kind of return? Update Map Design Principles and the relevant story/overview sections, separating save/suspend from ordinary map return. | [Map exploration](contracts/world/map-exploration.md), [dialogue](contracts/interface/dialogue-system.md), [map-entry state](contracts/world/map-entry-routing-state.md), [save](contracts/system/save-system.md), [input](contracts/interface/input-system.md), accepted scene/service/transport owners. | Explain conditional interactions, current versus rebuilt entities, story gates, return/re-entry and persistence limits. Summarize accepted feedback/input/audio choices by linking their owners; no new UI layout, art/accessibility choice, save design or hardware-parity target. |
 | 5. Integrated reader acceptance | Can a reader move from overview to a theme, through a chapter example, and back to its evidence without contradictions? Reconcile cross-links and repeated explanations; record the selected English themes that are stable and any deferred questions. | All accepted theme revisions; roadmap and existing navigation; independent main-gate review. | Review at least one connected route plus an optional/refusal or failure branch across themes. Verify consistent terminology, state distinctions and original/remake boundaries, not just links. Unexplained claimed transitions return to their owner. English completion does not complete the bilingual Epic. |
 
 Integrated review uses the existing reading structure and worked cross-system example. Its accepted
 detail remains in the
-[sword acquisition guide](synthesis/ribble-tree-opening-and-achilles-sword.md),
-[Taros admission guide](synthesis/southwest-parmecia-through-taros-battle18-entry.md),
-[Battle18 initialization/first-control research](../research/battle18-initialization-and-first-control.md),
-[Caravan acquisition guide](synthesis/battle18-outcomes-and-caravan-acquisition.md) and
-[Caravan travel guide](synthesis/caravan-boarding-and-southwest-parmecia-travel.md).
+[sword acquisition guide](synthesis/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md),
+[Taros admission guide](synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md),
+[Battle18 initialization/first-control research](../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md),
+[Caravan acquisition guide](synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md) and
+[Caravan travel guide](synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md).
 The example connects an item/encounter condition, battle and outcome boundaries, acquisition and a
 later traversal option, preserving refusal/failure and missing-prerequisite branches. An outcome
 not established remains a precise gap; the example asserts no naturally uninterrupted itinerary.
@@ -398,9 +414,9 @@ Markdown. Effort budgets bound work expansion, not document length.
    control-flow graph as engine architecture.
 4. **Evidence matrix.** Every substantive entry includes its label, bounded claim, source/research
    owner, contract, fixture ID/path when applicable, and remaining question. Local links such as
-   [runtime RNG and battle math](../research/runtime-rng-and-battle-math.md),
+   [runtime RNG and battle math](../research/battle/runtime-rng-and-battle-math.md),
    [combat fixture](../../tests/fixtures/h3/physical-damage-v1.json), and
-   [combat contract](contracts/combat-resolution.md) are the canonical trace; do not copy another evidence
+   [combat contract](contracts/battle/combat-resolution.md) are the canonical trace; do not copy another evidence
    ledger.
 5. **Original fidelity and modernization.** State the original-fidelity rule first, then mark a
    deliberate deviation as a future decision with a separate expected-deviation fixture. In the
@@ -445,7 +461,7 @@ reverse engineering continues, but they must not rewrite a subsystem contract in
 active worker. When a future finding changes a conclusion, update the owning research note,
 fixture/contract, and design explanation together so the trace remains bidirectional.
 
-**Confirmed repository hygiene closure:** [`party-roster-state.md`](contracts/party-roster-state.md) is now
+**Confirmed repository hygiene closure:** [`party-roster-state.md`](contracts/party/party-roster-state.md) is now
 registered in `src/sf2tool/design_contracts.py` with its H2 map-script and H3 active-party fixtures.
 The public tracked-input gate validates document path, fixture path, and fixture ID traceability in
 both directions. This closure does not change any original-game finding.

@@ -654,7 +654,7 @@ def test_strict_later_owner_normalizer_proves_only_the_declared_delta() -> None:
 
     for mutator in (
         lambda value: value["records"][0]["documents"].append(
-            "docs/research/map-event-item-transactions.md"
+            "docs/research/world/map-event-item-transactions.md"
         ),
         lambda value: next(
             record for record in value["records"] if record["id"] == "stats.item-stats"

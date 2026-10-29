@@ -651,40 +651,40 @@ remaining gap reflects include-site-only map bodies, alternates, and unlabeled s
 unknown files.
 
 Accepted static story research already reaches Zeon, epilogue, credits and Battle0's reset caller.
-The [Battle28 bridge owner](./battle28-bridge-and-outcomes.md) covers its conditional entrances,
+The [Battle28 bridge owner](./chapters/northern-travel-mitula/battle28-bridge-and-outcomes.md) covers its conditional entrances,
 complete scenes/formation/control boundary and outcomes/returns. The
-[Battle15 shrine owner](./battle15-shrine-approach-and-outcomes.md) connects exterior61,
+[Battle15 shrine owner](./chapters/southern-travel-creed/battle15-shrine-approach-and-outcomes.md) connects exterior61,
 both50 admissions, complete scenes/formation/control boundary, hidden chest and outcomes/exits.
-The [Battle14 desert owner](./battle14-desert-encounter-and-outcomes.md) connects Map70 requests,
+The [Battle14 desert owner](./chapters/southern-travel-creed/battle14-desert-encounter-and-outcomes.md) connects Map70 requests,
 base formation/conditional repeat upgrades, empty hooks, control, held-item drop and outcomes/exits.
-The [Fairy Woods44 owner](./battle44-fairy-woods-trial-and-records.md) connects Map23/24 invitation,
+The [Fairy Woods44 owner](./chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md) connects Map23/24 invitation,
 hidden/respawning formation, leader terminal, timer/record and conditional returns.
-The [Village29/smith owner](./dwarven-village-and-mithril-smithing.md) connects the77 entrance,
+The [Village29/smith owner](./chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md) connects the77 entrance,
 all local interactions/search/stairs and static order/readiness/collection/return lifecycle;
 earlier mine30 remains separate. Natural service visits and production consumption remain unproved.
-The [Hub63/Pipe64 and Claude owner](./magic-tunnel-hub-and-claude-recruitment.md) connects both
+The [Hub63/Pipe64 and Claude owner](./chapters/moun-nazca-grans/magic-tunnel-hub-and-claude-recruitment.md) connects both
 entrances, bridge/pipe lifetimes, talk/item-use Arm removal, complete awakening/join/follow and
 exits/revisit. This is static content coverage, not natural travel, production or save acceptance.
-The [late Yeel05/Chaz/Lemon owner](./late-yeel-chaz-and-lemon-recruitment.md) connects both66 entrances,
+The [late Yeel05/Chaz/Lemon owner](./chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md) connects both66 entrances,
 late populations/interactions/search, piano/stairs, both930 underground branches, distinct joins/follows
 and returns/revisits. It adds no natural-route, service/save, runtime/design or production acceptance.
-The [Battle02 account](./battle02-initialization-and-first-control.md) now joins its complete selected
+The [Battle02 account](./chapters/grans-opening/battle02-initialization-and-first-control.md) now joins its complete selected
 formation/orders to fresh/suspended initialization, changed party/death/capacity state, enemy refresh,
 activation/spawn/round and first-control routing. Existing entrance/outcome owners retain their
 conditional connections; controlled production admission/support limits remain separate.
-The [Battle03 account](./battle03-initialization-and-first-control.md) reuses the common lifecycle
+The [Battle03 account](./chapters/grans-opening/battle03-initialization-and-first-control.md) reuses the common lifecycle
 and joins its12/6/1/0 declaration to conditional Yeel egress assignment, region0/15 activation,
 the bat's masked placement item, completed503 upgrades and conditional first-control dispatch.
 The original airborne exclusion defect and production conversion/support limits remain explicit;
 this static account adds no natural arrival, runtime observation or all-action acceptance.
-The [Battle04 account](./battle04-initialization-and-first-control.md) connects its complete5/8/3/1
+The [Battle04 account](./chapters/grans-opening/battle04-initialization-and-first-control.md) connects its complete5/8/3/1
 selection and before scene/text keys to actual party initialization, equipment refresh,
 three initially untriggered regions, point/follow orders, standby and first-control dispatch.
 Battle04 is not a random-upgrade encounter and is not admitted by the current production
 producer/reader; class/movement/AI-word, ranged/equipped and suspended-entry limits remain explicit.
 Capture dialogue does not prove forced defeat. Existing admission/outcome owners remain separate;
 no runtime observation, all-action claim, fixture count or consumer frontier changes.
-The [Battle05 account](./battle05-initialization-and-first-control.md) connects its complete6/8/1/1
+The [Battle05 account](./chapters/grans-opening/battle05-initialization-and-first-control.md) connects its complete6/8/1/1
 selection and empty hooks to Map16/CASTLE metadata, actual party versus templates, equipped
 knight/archer/mage/soldier refresh, BLAZE1 operands, initially untriggered region0, SENTRY versus
 standby and first-control dispatch. It is not a random-upgrade encounter; six templates do not
@@ -692,7 +692,7 @@ recruit Slade and stored FOLLOW_ENEMY0 is not a SENTRY movement command. Current
 admission excludes5, with SENTRY/movement/AI-word, ranged/equipment/BLAZE and suspended-state
 limits explicit. Existing entrance/outcome owners remain separate; no new fixture, runtime,
 all-action or consumer frontier is claimed.
-The [Battle06 account](./battle06-opening-and-first-control.md) connects its complete6/9/1/0
+The [Battle06 account](./chapters/grans-opening/battle06-opening-and-first-control.md) connects its complete6/9/1/0
 selection and before scene/text to Map66/OVERWORLD metadata, actual party versus scene actors,
 Dark Cleric HEAL1/HEALER3/live-follow129, equipped Galam enemies, initially untriggered region0
 and distinct NONE/special-order standby through conditional first-control dispatch. Before writes407;
@@ -700,7 +700,7 @@ victory supplies506 separately. The random-upgrade selector omits6. Current prod
 with HEALER3/SENTRY, cleric prowess, movement/AI-word, ranged/equipment/spell and suspended-state
 limits explicit. Existing entrance/outcome owners retain their endpoints; this adds no fixture,
 runtime observation, all-action acceptance or consumer frontier.
-The [Battle07 account](./battle07-opening-and-first-control.md) connects its complete7/10/4/1
+The [Battle07 account](./chapters/grans-opening/battle07-opening-and-first-control.md) connects its complete7/10/4/1
 selection and28-key before confrontation to Map58/TOWER_INTERIOR metadata, actual party,
 ten enemies and five F507-gated HP0 neutral actors. Seven templates do not recruit Kiwi;
 F83 clears only with the executed before. Four initially untriggered regions, distinct standby
@@ -709,7 +709,7 @@ reach conditional first dispatch. The actual random-upgrade selector omits7. Pro
 hovering/extra-round-action data are expressible, while Smoke prowess/DISPEL, HEALER3/cleric
 prowess, ranged/equipment/spell and suspended-state limits remain explicit. Existing admission/
 outcome owners retain their endpoints; no fixture, runtime, all-action or consumer frontier changes.
-The [Battle08 account](./battle08-initialization-and-first-control.md) connects its complete13/11/4/1
+The [Battle08 account](./chapters/eastern-parmecia/battle08-initialization-and-first-control.md) connects its complete13/11/4/1
 selection to Map72 area`(1,32,32,30)`, actual party/capacity and one F508-gated HP0 worker.
 It reuses the complete before owner and preserves F6/HP-aware Kiwi relocation and actual speaker130.
 Thirteen templates do not recruit thirteen allies. NORTH_CLIFF8 is in the actual random-upgrade
@@ -720,7 +720,7 @@ enemy128 and ally0 orders reach conditional first dispatch. Production excludes8
 STEALTH_ARCHER/ranged/Hunter prowess, MAGE/FREEZE, equipment/refresh/capacity and suspend limits
 remain explicit. Existing before/outcome/New Granseal owners retain their scope; no fixture count,
 runtime observation, all-action acceptance or consumer frontier changes.
-The [Battle09 account](./battle09-initialization-and-first-control.md) connects its complete12/11/2/0
+The [Battle09 account](./chapters/eastern-parmecia/battle09-initialization-and-first-control.md) connects its complete12/11/2/0
 selection to Map69 area`(0,0,48,32)`, actual party/refresh, empty hooks and no neutral entry.
 Peter's joined7/active39/AI bit2/follower67 states remain independent; templates/following prove
 no fixed party or first actor. F509/effective-level/category/bounds/exclusions/shared retry/RNG
@@ -733,7 +733,7 @@ while Bat poison prowess/BLAZE2, Hunter movement/range/prowess, Witch MAGE/FREEZ
 loadouts/general refresh/capacity, Peter AI/class/party and saved-state limits remain explicit.
 Existing admission/outcome/Ribble owners retain their scope; no fixture count, runtime observation,
 all-action acceptance or consumer frontier changes.
-The [Battle10 account](./battle10-initialization-and-first-control.md) connects its complete12/12/3/1
+The [Battle10 account](./chapters/eastern-parmecia/battle10-initialization-and-first-control.md) connects its complete12/12/3/1
 selection to Map70 area`(0,0,32,32)`, actual May/Peter membership/AI/follower distinctions,
 empty hooks, no neutral and independent410/460/510/88. F510 effective-level/category/RNG
 upgrades begin at ordinaryE20 before definition copy; three Bats retain the airborne count0 defect.
@@ -747,7 +747,7 @@ with saturation. Generic cleanup/victory is not that award. Production excludes1
 mechanisms do not supply upgrades, general gear/spells/movement/prowess/party/suspend or Ring/
 action-drop/rare-deals consumers. Adjacent route/outcome/shrine owners retain their scope; no
 natural state/action/custody, fixture count, runtime observation or consumer frontier changes.
-The [Battle11 account](./battle11-initialization-and-first-control.md) connects complete12/10/4/1
+The [Battle11 account](./chapters/eastern-parmecia/battle11-initialization-and-first-control.md) connects complete12/10/4/1
 to exact Map48 trigger15,26/crop27×32, row11-before25 and independent411/461/511/88.
 Actual party/refresh and rebuilt battle entities differ from the retained admission owner's
 complete34-record/seven-text/Plane-B opening population. The real random list omits11: upgrade
@@ -763,7 +763,7 @@ formation/order/Flying/round mechanisms are not missing. Coordinate-trigger admi
 refresh/equipped AI, Hunter/Witch/Bat movement/prowess/spells, arbitrary party/Peter and suspend
 remain explicit limits. Adjacent admission/outcome/Polca owners retain their scope; no natural
 state/actions/darkness/timing/persistence, fixture count, runtime observation or consumer frontier changes.
-The [Battle12 account](./battle12-initialization-and-first-control.md) connects complete12/12/4/1
+The [Battle12 account](./chapters/eastern-parmecia/battle12-initialization-and-first-control.md) connects complete12/12/4/1
 and sole Map52 wildcard/crop32×32 to independent412/462/512/88, empty dispatch hooks, actual
 party/refresh and scene-to-battle replacement. The random list and independent drop table omit12;
 no512 substitution or Battle10 airborne upgrade processing follows. All12 fresh positions miss
@@ -778,7 +778,7 @@ Peter/arbitrary party and suspend remain limits; Hovering/formation/orders/dual-
 mechanisms exist. Descriptive resistance grants no executable attack/spell support. Existing
 admission/leader-outcome/Bedoe owners, retained failures, fixture counts and runtime/design/
 production frontiers remain unchanged; no natural party/first actor/action claim is added.
-The [Battle13 account](./battle13-initialization-and-first-control.md) connects complete12/16/3/1
+The [Battle13 account](./chapters/eastern-parmecia/battle13-initialization-and-first-control.md) connects complete12/16/3/1
 and sole Map13 wildcard/crop32×32 to independent413/463/513/88 and empty hooks.
 Actual Gerhalt F9/conditional41/capacity/HP and Peter's prior Volcanon join/AI-bit2 clear differ
 from templates/scene actors; F513-gated Luke neutral159 at16,13 has HP0/neutral bit3 and differs
@@ -796,7 +796,7 @@ gear/CURSE refresh, attack/healing-spell AI, actual Gerhalt/Peter/Luke classes/j
 neutral159/F513 and suspend requirements. Descriptive resistance grants no executable damage/
 status support. Existing admission/outcome/later-recruitment owners, retained failures, fixture
 counts and runtime/design/production frontiers remain unchanged; no natural state/action claim.
-The [Battle16 account](./battle16-initialization-and-first-control.md) connects complete12/11/0/0
+The [Battle16 account](./chapters/southern-travel-creed/battle16-initialization-and-first-control.md) connects complete12/11/0/0
 and sole Map49 wildcard/crop30×30 to independent416/466/516/88, actual party/refresh and scene
 replacement. The full intro/raft/Luke and leader/outcome/Hassan owners retain their boundaries.
 Complete Kraken Leg10/Arm59/Head87 definitions include resistance/prowess, no gear, AQUA1 and
@@ -813,7 +813,7 @@ SWARM count/threshold/re-wait/stream15, AQUATIC/Kraken costs, Arm/Head ranges, a
 expressions, AQUA execution, actual party/control/refresh/suspend and Head special mapping/services.
 Descriptive resistance/spells are not executable support. No new natural observation, fixture
 counter, runtime/design/production frontier or retained failure status follows.
-The [Battle17 account](./battle17-initialization-and-first-control.md) connects complete12/14/2/0
+The [Battle17 account](./chapters/southern-travel-creed/battle17-initialization-and-first-control.md) connects complete12/14/2/0
 and ordered Map69 row9-before17/crop0,31/30×32 to independent417/467/517/88, actual party,
 healing/gear refresh and first conditional control. Hassan/zone/raft/Rohde/outcome owners retain
 scope. All fourteen rows and six complete definitions retain gear/spells/resistance/prowess.
@@ -831,7 +831,7 @@ trusted conversion,517 upgrades, BRASS_GUNNER/MAGE, Steel Arrow2–2/equipped re
 Monk prowess, exact0/2 healing/spell AI, arbitrary party/control/suspend and17 adapter requirements.
 No new natural observation, fixture count, runtime/design/production frontier or retained failure
 status follows; all-action/natural-state and special-battle limits remain qualified.
-The [Battle18 account](./battle18-initialization-and-first-control.md) joins complete12/14/5/0,
+The [Battle18 account](./chapters/southern-travel-creed/battle18-initialization-and-first-control.md) joins complete12/14/5/0,
 Map12's wildcard row and independent418/468/518/88 to actual party/final-CURSE refresh,
 seven full definitions, no repeat upgrade and first conditional control. Entry/warning/before,
 sword/Rohde producers and outcomes/Caravan owners retain scope. Fresh HP0 neutral159 writes
@@ -849,7 +849,7 @@ type3 region rejection/signed geometry/cache, out-of-table point access, selecte
 ranges, MAGE/BRASS_GUNNER, HEALER3/spell/item AI, Bowie gate/counter/drop/deals, neutral mapping/
 services and actual party/refresh/control/suspend requirements. No new natural observation,
 fixture count, runtime/design/production frontier or completed failure status follows.
-The [Battle19 account](./battle19-initialization-and-first-control.md) joins12/15/3/1,
+The [Battle19 account](./chapters/southern-travel-creed/battle19-initialization-and-first-control.md) joins12/15/3/1,
 Map68's sole wildcard19/crop5,19/48×32 and independent419/469/519/88 to actual
 party/final-CURSE refresh, six full bases and first conditional control. Caravan/request,
 outcome and village owners retain scope. F519 repeat selection uses E29+, actual categories,
@@ -873,7 +873,7 @@ admission/conversion,519 selection, gear/ranges/prowess, MAGE/BRASS_GUNNER, HEAL
 spell/item AI,16 consumption/drop/deals and actual party/refresh/control/suspend requirements.
 No fixture count, natural observation, runtime/design/production frontier or completed failure
 status changes; all-action/natural-state and special-battle limits stay qualified.
-The [Battle20 account](./battle20-initialization-and-first-control.md) joins12/12/0/0,
+The [Battle20 account](./chapters/southern-travel-creed/battle20-initialization-and-first-control.md) joins12/12/0/0,
 Map51's sole wildcard20/crop18×26 and independent420/470/520/88 to actual party/final-CURSE
 refresh and first conditional control. Approach/request, outcome/Elric and passage owners
 retain their boundaries. All24 records and five full Harpy44/Madam70/Priest79/Orc12/Launcher60
@@ -893,7 +893,7 @@ SWARM count/threshold/re-wait/stream15, HEALER3/healing/DISPEL/offensive spell d
 poison/Orc prowess/gear/ranges/MAGE/BRASS_GUNNER, neutral mapping/services and actual party/status/
 control/suspend requirements. No fixture metric, natural observation, four-frontier or completed
 failure status changes; all-action/natural-state and special-battle limits stay qualified.
-The [Battle21 account](./battle21-initialization-and-first-control.md) joins12/12/4/0,
+The [Battle21 account](./chapters/southern-travel-creed/battle21-initialization-and-first-control.md) joins12/12/4/0,
 sole Map67 wildcard21/crop21,0/32×42 and independent421/471/521/88 to actual party/
 final-CURSE refresh and conditional first control. All24 records, four exact regions and
 six full Skeleton17/Orc12/Harpy44/Launcher60/Madam70/Priest79 bases retain gear/spells/
@@ -913,7 +913,7 @@ exact0/2/healing/DISPEL/offensive spells/items/drop/repeat and party/refresh/con
 Opening/outcome owners retain scenes/leader sweep/return. No fixture metric, natural/runtime/
 design/production frontier or completed failure changes; all-action/natural-state and
 special-battle limits stay qualified.
-The [Battle22 account](./battle22-initialization-and-first-control.md) joins12/16/0/1,
+The [Battle22 account](./chapters/southern-travel-creed/battle22-initialization-and-first-control.md) joins12/16/0/1,
 all28 records, Map22 row22/crop9,0/30×30 and422/472/522/88 to actual party/final-CURSE
 refresh and conditional control. Six full chess definitions preserve King89 raw0,
 Bishop80's actual enum, enhanced versus declared power, copied gear/ranges/prowess,
@@ -931,7 +931,7 @@ SWARM count/threshold/re-wait/exact15, exact2/3 AI, enhanced/gear/prowess/spells
 neutral and actual party/status/control/suspend gaps. Entry/outcome/reward owners
 retain their scope. No fixture metric, four-frontier or completed failure changes;
 natural state/actions remain Unknown; all-action and special-battle limits stay qualified.
-The [Battle23 account](./battle23-initialization-and-first-control.md) joins12/12/1/1,
+The [Battle23 account](./chapters/southern-travel-creed/battle23-initialization-and-first-control.md) joins12/12/1/1,
 all24 records/306bytes, sole Map27 row23/crop23,14/27×16 and423/473/523/88 to
 actual party/final-CURSE and conditional control. Full ordinal Willard90(raw0)/Rat15/
 Ooze16 definitions preserve stats/resistance/prowess/spellPower/AI, empty gear and
@@ -950,7 +950,7 @@ ENHANCED/prowess/AQUA/party/refresh/status/control/suspend and actor/services ga
 Admission/outcome owners retain scenes and return. No fixture metric, natural
 observation, four-frontier or completed failure status changes; all-action/natural-state
 and special-battle limits stay qualified.
-The [Battle24 account](./battle24-initialization-and-first-control.md) joins
+The [Battle24 account](./chapters/northern-travel-mitula/battle24-initialization-and-first-control.md) joins
 12/16/3/1, all28 records/378bytes, Map72 admission/crop1,32/32×30 and independent
 424/474/524/88 through actual party/final-CURSE, empty hooks and conditional first
 control. Four full ordinal81/62/17/45 definitions retain raw/spellPower/level,
@@ -973,7 +973,7 @@ exact2 AI/spells/items and party/status/control/suspend/service gaps. Existing
 travel/cave/outcome owners retain their scope. No fixture metric, four-frontier,
 natural observation or completed failure changes; all-action/natural-state and
 special-battle limits stay qualified.
-The [Battle25 account](./battle25-initialization-and-first-control.md) joins
+The [Battle25 account](./chapters/northern-travel-mitula/battle25-initialization-and-first-control.md) joins
 Map48 exact11/25 triggers, crop28,0/32×32, independent425/475/525/88 and empty
 hooks to actual party/final-CURSE, CAVE background and12/15/3/0. All27 records/
 364bytes and full ordinal18/81/45/62/17 definitions retain raw/spellPower/level,
@@ -1018,7 +1018,7 @@ source surface, including the two item include-site identities, while preserving
 runtime-question categories. Under ADR 0014, those Unknowns are a deferred ambiguity register, not a
 per-entity, per-area, or per-item H3 fixture queue.
 The ADR 0009 scenario audit is owned by
-[`map3-battle01-audit.md`](./map3-battle01-audit.md): it inventories the accepted evidence for the
+[`map3-battle01-audit.md`](./chapters/grans-opening/map3-battle01-audit.md): it inventories the accepted evidence for the
 Map 3 through Battle 01-completion chain, consumes ADR 0010's accepted
 `1A+2A+3A+4A+5B+6A+7C+8C+9A+10A` profile, registers the RA-01..RA-12 gaps, and routes its deferred
 questions through ADR 0016 and ADR 0014 rather than an automatic R2/R3/R4 runtime queue. Persistence

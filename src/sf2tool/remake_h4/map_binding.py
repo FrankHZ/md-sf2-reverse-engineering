@@ -10,7 +10,7 @@ from sf2tool.remake_h4.map_source import source_population, source_regions
 from sf2tool.remake_h4.map_witness import compare_witnesses
 from sf2tool.remake_h4_reference import UPSTREAM
 
-OWNER = "docs/design/contracts/map3-battle01-continuous-scenario.md"
+OWNER = "docs/design/contracts/milestones/map3-battle01-continuous-scenario.md"
 
 
 def map_consumer_binding(actual, context, source_root):

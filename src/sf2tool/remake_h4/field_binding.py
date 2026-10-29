@@ -34,7 +34,7 @@ def field_service_binding(actual, context, source_root, read_document):
                 "esc01_waitUntilDestination",
                 "esc06_walkRandomly",
             ],
-            owner="docs/design/contracts/map3-battle01-continuous-scenario.md",
+            owner="docs/design/contracts/milestones/map3-battle01-continuous-scenario.md",
         ),
         unknown=[
             "historical stripped per-callback state and original natural reads/timing",

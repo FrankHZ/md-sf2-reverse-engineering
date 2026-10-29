@@ -54,7 +54,7 @@ _UNKNOWN_KEYS = (
 )
 
 _INDEX_FIXTURE = "tests/fixtures/h2/map-event-interaction-state-static-v1.json"
-_INDEX_DOCUMENT = "docs/research/map-event-interaction-state.md"
+_INDEX_DOCUMENT = "docs/research/world/map-event-interaction-state.md"
 _INDEX_DELTA = {
     "gameflow.exploration.interaction": (
         (),
