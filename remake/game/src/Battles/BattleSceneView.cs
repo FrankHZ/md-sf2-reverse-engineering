@@ -6,6 +6,7 @@ using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -20,7 +21,8 @@ internal sealed partial class BattleSceneView : Control
     private Node2D _canvas = null!;
     private ColorRect _sceneBlack = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
-    private Label _message = null!, _allyStatus = null!, _enemyStatus = null!;
+    private Label _message = null!;
+    private readonly BattleStatusCard _actorCard = new() { Name = "ActorCard" }, _targetCard = new() { Name = "TargetCard" };
     private GameSession _session = null!;
     private InputSettings _settings = null!;
     private SessionAudio? _audio;
@@ -52,8 +54,7 @@ internal sealed partial class BattleSceneView : Control
         _ground = Sprite("Ground", new(136, 140));
         _ally = Sprite("Ally", new(136, 64)); _ally.ZIndex = 2;
         _weapon = Sprite("Weapon", new(136, 64));
-        _allyStatus = Label("AllyStatus", new(136, 8), new(118, 40));
-        _enemyStatus = Label("EnemyStatus", new(2, 8), new(126, 40));
+        AddChild(_actorCard); AddChild(_targetCard);
         _message = Label("Message", new(8, 174), new(240, 48));
         for (int i = 0; i < 2; i++)
         {
@@ -80,6 +81,7 @@ internal sealed partial class BattleSceneView : Control
         var state = _session.Current.BattleScene;
         if (state is null) { Hide(); _laser.Hide(); _aura.Hide(); _state = null; return; }
         if (state.IsFieldDeath) Hide(); else Show();
+        PresentStatus(state);
         if (_state?.Token == state.Token) { _state = state; ProjectHealing(state); return; }
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
@@ -88,7 +90,7 @@ internal sealed partial class BattleSceneView : Control
             if (state.IsAura)
             {
                 if (Content is not null) throw new InvalidOperationException("aura-private-presentation-unsupported");
-                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon, _allyStatus, _enemyStatus }) node.Hide();
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
                 _sceneBlack.Show(); _aura.Present(state, _session.Current.Battle);
                 _message.Text = Message(state);
@@ -99,7 +101,7 @@ internal sealed partial class BattleSceneView : Control
             if (state.Laser is not null && !state.IsFieldDeath)
             {
                 if (Content is not null) throw new InvalidOperationException("prism-private-presentation-unsupported");
-                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon, _allyStatus, _enemyStatus }) node.Hide();
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
                 _sceneBlack.Show(); _laser.Present(state, _session.Current.Battle);
                 _message.Text = Message(state);
@@ -119,17 +121,17 @@ internal sealed partial class BattleSceneView : Control
             _sceneBlack.Visible = !state.IsAfterTurnNotice;
             if (state.IsAfterTurnNotice)
             {
-                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon, _allyStatus, _enemyStatus }) node.Hide();
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
                 _message.Text = Message(state); _message.VisibleCharacters = -1;
                 return;
             }
-            _background.Show(); _backgroundWrap.Show(); _ground.Show(); _ally.Show(); _allyStatus.Show();
+            _background.Show(); _backgroundWrap.Show(); _ground.Show(); _ally.Show();
             var battle = _session.Current.Battle;
             var actor = battle.GetActor(state.Actor); var target = battle.GetActor(state.Target!.Value);
             var ally = battle.GetActor(state.DisplayedAlly!.Value);
             var enemy = state.DisplayedEnemy is { } enemyRef ? battle.GetActor(enemyRef) : null;
-            _enemy.Visible = _enemyStatus.Visible = enemy is not null;
+            _enemy.Visible = enemy is not null;
             _enemyVisual = null; _enemyResource = null; _weaponResource = null;
             if (Content is { } content)
             {
@@ -163,8 +165,6 @@ internal sealed partial class BattleSceneView : Control
             _ally.Position = new(136, 64); _enemy.Position = new(16, 48);
             _background.Position = new(0,56); _backgroundWrap.Position = new(256,56); _ground.Position = new(136,140);
             _ally.Modulate = _enemy.Modulate = Colors.White;
-            _allyStatus.Text = $"{ActorName(ally.Actor)}\nHP {ally.Hp}/{ally.MaxHp}   MP {ally.Mp}";
-            _enemyStatus.Text = enemy is null ? "" : $"{ActorName(enemy.Actor)}\nHP {enemy.Hp}/{enemy.MaxHp}   MP {enemy.Mp}";
             _message.Text = Message(state);
             _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
             if (state.Phase == BattleScenePhase.Initialize) { _castSoundPlayed = false; _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5); }
@@ -364,12 +364,18 @@ internal sealed partial class BattleSceneView : Control
         }
     }
 
-    private string ActorName(ActorRef actor)
+    private string ActorName(ActorRef actor) => BattleCharacterNames.Resolve(_session.Current.Battle.GetActor(actor), Content);
+
+    private void PresentStatus(BattleSceneState state)
     {
-        if (Content is not { } content) return actor.Value;
-        var state = _session.Current.Battle.GetActor(actor);
-        return state.IsAlly ? content.MemberNames[state.ProcessingOrder] :
-            content.EnemyNames?.GetValueOrDefault(actor) ?? throw new InvalidOperationException("scene-enemy-name");
+        var battle = _session.Current.Battle;
+        var actor = battle.GetActor(state.Actor);
+        var target = !state.IsAfterTurnNotice && state.Target is { } id ? battle.GetActor(id) : null;
+        _actorCard.Present(actor, ActorName(actor.Actor), "Acting");
+        _targetCard.Present(target, target is null ? "" : ActorName(target.Actor), "Target");
+        _actorCard.Position = new(32, 32); _actorCard.Size = _actorCard.RequestedSize;
+        _targetCard.Position = new(GetViewportRect().Size.X - 32 - _targetCard.RequestedSize.X, 32);
+        _targetCard.Size = _targetCard.RequestedSize;
     }
 
     private string Message(BattleSceneState state)
@@ -378,8 +384,10 @@ internal sealed partial class BattleSceneView : Control
             return $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}.";
         if (state.IsAura && state.Phase == BattleScenePhase.ResultMessage)
             return $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP.";
-        if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost) return healing.ActionText;
-        if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop) return recovery.RecoveryText;
+        if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
+            return BattleCharacterNames.HealingText(healing.ActionText, _session.Current.Battle.GetActor(state.Actor), Content);
+        if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop)
+            return BattleCharacterNames.HealingText(recovery.RecoveryText, _session.Current.Battle.GetActor(state.Target!.Value), Content);
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         int id = state.Phase switch
         {
@@ -468,7 +476,7 @@ internal sealed partial class BattleSceneView : Control
         background = BoundResource(_background), backgroundWrap = BoundResource(_backgroundWrap), ground = BoundResource(_ground),
         textureCount = _textures.Count, reducedFlash = _settings?.ReducedFlash, message = _message.Text,
         visibleCharacters = _message.VisibleCharacters, messageFont = ObserveMessageFont(),
-        allyStatus = _allyStatus.Text, enemyStatus = _enemyStatus.Text,
+        actorCard = _actorCard.Observe(), targetCard = _targetCard.Observe(),
         allyX = _ally.Position.X, allyY = _ally.Position.Y, enemyX = _enemy.Position.X, enemyY = _enemy.Position.Y,
         backgroundX = _background.Position.X, groundX = _ground.Position.X, weaponX = _weapon.Position.X,
     };

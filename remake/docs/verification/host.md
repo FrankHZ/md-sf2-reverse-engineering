@@ -256,6 +256,114 @@ new natural full-opening claim. Earlier A unsuitable-start/probe failures and mi
 Unknown, B focus-loss Unavailable/physical-release Unknown, #689's entry timeout and #1386 exit
 warnings remain preserved. No broader original comparison or cleanup authority follows.
 
+## Battle status-card observation
+
+[E1's Standard agreement](../godot/presentation.md#battle-status-card-agreement) owns the outcome.
+`engine_battle_status_observation.gd` reuses the existing viewport observer's ordinary Main.tscn,
+mapped input, focus recovery, 75-second deadline and output helpers. It reads actual session actors,
+native name bounds/line counts, card/resource values, cropped-fill draw operands, menu/range geometry
+and scene phases. It never sets gameplay state, completes a presentation synthetically or captures
+images. Six serial finite cases use a few dozen semantic checkpoints each; the pilot reports were
+below 2MB per case. No whole-battle replay, bulk capture, external acquisition or new comparison
+platform is required. Retain failures; do not repeat an unrelated full suite.
+
+Load `local/private-inputs.ps1` in the launching process and force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Run `uv run sf2 verify adapter`; use the configured absolute
+SDK from `remake/` to build `game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore` for
+native load. The first load of the new PNGs needs one existing-editor import:
+`& $env:GODOT_BIN --headless --path remake/game --editor --import --quit`. Reuse the same installation,
+project, imports and caches; a code build needs a new native load, not another installation/project.
+No engine/data change in E1 requires unit tests. On the clean committed head, inspect
+`uv run sf2 verify plan --base origin/main --head HEAD`; adapter-build is the affected product gate.
+
+Prepare only small pre-start authored variants in a fresh ignored output directory:
+
+```python
+import json
+from pathlib import Path
+out = Path("local/issue1397")
+out.mkdir(parents=True, exist_ok=True)
+d = json.loads(Path("remake/content/authored/practice-yard.json").read_text(encoding="utf-8"))
+name = "wandering-medic-of-the-northern-watch"
+d["actors"][0]["id"] = name
+d["start"]["actors"][0].update(actor=name, hp=25)
+d["encounters"][0]["placements"][0]["actor"] = name
+d["encounters"][0]["placements"][1].update(x=3, y=4)
+d["start"]["actors"][1]["hp"] = 2
+(out / "heal.json").write_text(json.dumps(d), encoding="utf-8")
+long_name = "w" * 64
+d["actors"][0]["id"] = long_name
+d["start"]["actors"][0]["actor"] = long_name
+d["encounters"][0]["placements"][0]["actor"] = long_name
+(out / "long.json").write_text(json.dumps(d), encoding="utf-8")
+```
+
+Set `SF2_VIEWPORT_CASE`, `SF2_VIEWPORT_OUTPUT` to a new `native.json`, and select the corresponding
+ordinary startup input below. Give each run its own ignored APPDATA/LOCALAPPDATA/TEMP/TMP directories.
+For example, from the repository root with `$selectedInput` resolved to the selected authored file:
+
+```powershell
+$env:SF2_VIEWPORT_CASE = 'heal'
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $runRoot 'native.json'
+& $env:GODOT_BIN --path remake/game --max-fps 60 --resolution 1920x1080 `
+  --script res://probes/engine_battle_status_observation.gd -- --authored-package $selectedInput
+$nativeExit = $LASTEXITCODE
+```
+
+Adding `--headless` selects a headless actual-host check; label it accordingly. Require actual exit0,
+`passed:true`, empty failure/Unavailable arrays, and inspection of both logs for script/C#/draw errors.
+JSON success does not erase shutdown warnings or prove original pixels/hardware timing. Scene waits
+continuously check focus; one bounded recovery is permitted by the existing helper. Explicit fresh
+menu-page waits prevent an observer from treating an unprocessed input as a selected action.
+
+| Case | Entry | Finite acceptance boundary |
+| --- | --- | --- |
+| `heal` | Prepared `heal.json`, `--authored-package` | Two-line readable name, quarter-HP warning, full MP, image ratios, Magic/self/other target, layered Cancel with unchanged resources, fresh selection and actual heal/cost phases. HP remains old until Reaction; MP remains old until SpellCost. Next actor has its own card and no stale target. |
+| `long` | Prepared `long.json`, `--authored-package` | The valid 64-character identity stays complete in two native lines at >=22px, with a wider safe-edge card, visible numeric/image rows and the same command/heal path. |
+| `damage` | Tracked `content/authored/stone-court.json`, unchanged | Readable Swordsman/Raider, enemy target, full/zero-max-MP tracks, lethal ordinary physical action, HP15→0 at Reaction and the explicit Defeated cue; subsequent usable control. |
+| `laser` | Tracked `content/authored/prism-laser.json`, unchanged | Existing two off-ray Stays and one Up+Stay per ally trigger one actual automatic shot. Every reached TargetEnter/Reaction/ResultMessage/DeathMessage card matches `laser.target`; Reaction cards traverse companion → leader → sentry, including both factions/deaths, then return control. |
+| `aura` | Tracked `content/authored/aura-healing.json`, unchanged | Ordinary Magic list selects AURA4. Shared cards follow a-edge → b-center → n-neutral → m-full → z-priest → f-far, including full-HP recovery and one MP cost. |
+| `private` | Same retained issue1047 private selections/start/party as [B8 private-region](#battle-movement-range-observation), `--private-exploration-start remake/reference/inputs/engine-battle02-egress-start.json` | Real Battle02 entry/skip, Chester name, ordinary Stay to Sarah, actual HEAL list/self/unavailable-other target and Cancel, then real private HEAL scene. Sarah HP11 stays11 while MP10→7 at SpellCost; no fictitious HP event is required for full-HP recovery. Existing scene rasters remain local. |
+
+Private selection reuses `local/issue1047/inputs.ps1`, explicitly selects its `world-01.json` and the
+tracked `reference/inputs/battle02-outcome-party.json`, resolved within the owning checkout. It copies
+no canonical ROM, world or asset pack. All private payloads/starts/logs/reports remain ignored.
+No original enemy/name/art acquisition is implied. Selected scene-name metadata is projected as
+admitted; the host adds no party rename operation.
+
+The targeted `names` / `overflow` cases use that same retained world and
+`--private-exploration-start remake/reference/inputs/battle01-to-battle02-start.json`. Select a small
+ignored copy of the already-admitted Battle01 scene JSON through `SF2_PRIVATE_BATTLE_SCENE_CONTENT`;
+change only its first three `memberNames` before startup. For `names`, use
+`"Northern\n\r\nWatch\t Keeper\nThree"`; require the complete displayed name
+“Northern Watch Keeper Three”. For `overflow`, use three newline-separated 400-character `W`
+strings; require the normalized 1202-character observation, 800px frame and two visible native lines.
+Only these small metadata fixtures are copied (the selected scene is about 122KB); the existing
+127.6MB world/assets remain read-only and are not copied. These cases stop at the first battle menu.
+They directly check the finite width/ellipsis correction; they do not invalidate unrelated completed
+damage/heal/MP observations or require another full case run.
+
+**Confirmed executor boundary:** six windowed source-final cases passed with actual exits0, empty
+failure/Unavailable arrays and clean stdout/stderr (about 51 seconds and 4.93MB total reports).
+The later finite-name correction passed the two targeted windowed cases above, about 6.4 seconds
+and 132KB, also with exits0 and clean logs. Debug/Release adapter compilation passed. Prior private
+runs retained two ObjectDB exit warnings; clean final runs do not establish that historical issue
+resolved. No Godot process is retained. Independent acceptance remains pending.
+
+Completed failures remain in ignored `local/issue1397`: an initial JSON float/string expectation;
+first-show wrapped-card height1402 (fixed using native minimum-size notification); a helper-name
+collision caught by Debug compilation; private-case assumptions about name casing, terrain reach,
+target order and an HP event on full-HP healing; and a long-name case initially routed to an
+unsupported physical action by the observer. Earlier window runs also missed a page/failed to
+complete ActionMessage; explicit page waits and continuous focus checks precede the final cases.
+The extra name-fixture attempts selected Battle02's scene instead of the changed Battle01 names,
+then exposed the direct private-battle start's unavailable battlefield-map resource, then missed the
+eligible Battle01 intro Skip. Corrected cases reuse the admitted world and its ordinary eligible Skip.
+Those window-input anomalies are not declared resolved merely by a later passing run. These are preserved results,
+not interrupted suites or waivers. Prior #689/#1386/#1389/#1393/#1395 focus/release/timing failures
+and ObjectDB shutdown Unknowns remain. Independent main-gate review owns integration and final
+acceptance; broader physical-device, all-map and aesthetic approval are not established here.
+
 ## Logical Input and Accessibility (ADR 0010 9A)
 
 `GameRoot` loads one `InputSettings`/`GameInput` owner before starting a session, installs its

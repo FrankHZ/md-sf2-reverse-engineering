@@ -6,14 +6,14 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // Product UI geometry uses physical window units, independent of map tiles and source pixels.
 internal sealed partial class BattleMenuLayout : Control
 {
-    internal readonly Label Actor = Text("Actor", 30);
+    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard" };
+    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false };
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Detail = Text("Detail", 30);
     internal readonly Label Help = Text("Help", 28);
     internal readonly Control Diamond = new() { Name = "Diamond", MouseFilter = MouseFilterEnum.Ignore };
     internal readonly BattleDiamondButton[] Commands = [new("Attack"), new("Magic"), new("Item"), new("Stay")];
-    private readonly PanelContainer _actor = Frame("ActorPanel");
     private readonly PanelContainer _context = Frame("ContextPanel");
     private readonly PanelContainer _detail = Frame("DescriptionPanel");
     private readonly PanelContainer _list = Frame("ChoicePanel");
@@ -23,7 +23,7 @@ internal sealed partial class BattleMenuLayout : Control
     private string[] _labels = [];
     private int _selected;
     private Vector2 _descriptionSize;
-    private Vector2 _actorSize, _contextSize;
+    private Vector2 _contextSize;
     private bool _commandHint;
     private Rect2 _subject;
 
@@ -66,7 +66,7 @@ internal sealed partial class BattleMenuLayout : Control
     {
         Theme = UI.StoryTheme.Create();
         MouseFilter = MouseFilterEnum.Ignore;
-        AddChild(_actor); _actor.AddChild(Actor);
+        AddChild(Actor); AddChild(Target);
         AddChild(_context); _context.AddChild(Context);
         AddChild(Diamond);
         foreach (var command in Commands) Diamond.AddChild(command);
@@ -78,7 +78,6 @@ internal sealed partial class BattleMenuLayout : Control
         // Wrapped text can shrink after a container sort. Reapply the requested size then;
         // otherwise Control retains the earlier (possibly very tall) minimum-size clamp.
         _detail.MinimumSizeChanged += () => Arrange(Size);
-        _actor.MinimumSizeChanged += () => _actor.Size = _actorSize;
         _context.MinimumSizeChanged += () => _context.Size = _contextSize;
         _list.Hide();
     }
@@ -100,10 +99,11 @@ internal sealed partial class BattleMenuLayout : Control
         SetTextWidths();
         detailHeight = Mathf.Max(detailHeight, _detail.GetCombinedMinimumSize().Y);
         float bottom = size.Y - margin - (narrow ? detailHeight + 12 : 0);
-        _actorSize = new(Mathf.Min(500, size.X * 0.55f - margin), 120);
         _contextSize = new(size.X * 0.45f - margin - 8, 110);
-        _actor.Position = new(margin, margin);
-        _context.Position = new(size.X * 0.55f + 8, margin);
+        Actor.Position = new(margin, margin); Actor.Size = Actor.RequestedSize;
+        Target.Position = new(size.X - margin - Target.RequestedSize.X, margin);
+        Target.Size = Target.RequestedSize;
+        _context.Position = new(size.X * 0.55f + 8, Target.Visible ? margin + Target.Size.Y + 16 : margin);
         Diamond.Position = new(margin, bottom - menuHeight); Diamond.Size = new(menuWidth, menuHeight);
         Vector2[] locations = [new(cell, 0), new(0, step), new(cell * 2, step), new(cell, step * 2)];
         for (int i = 0; i < Commands.Length; i++)
@@ -116,12 +116,12 @@ internal sealed partial class BattleMenuLayout : Control
         _detail.Position = new(narrow ? margin : size.X - margin - detailWidth, size.Y - margin - detailHeight);
         _descriptionSize = new(detailWidth, detailHeight);
         SetTextWidths();
-        _actor.Size = _actorSize; _context.Size = _contextSize;
+        _context.Size = _contextSize;
         _detail.Size = _descriptionSize;
         SetTextWidths();
         // Keep visible corner panels mutually clear as well as clear of the subject.
         // The few vertical alternatives cover the selected 1080p layout; the world never moves for UI.
-        Control[] panels = [_list, _detail, Diamond, _actor, _context];
+        Control[] panels = [_list, _detail, Diamond, Actor, Target, _context];
         foreach (var panel in panels.Where(panel => panel.Visible))
         {
             if (!new Rect2(panel.Position, panel.Size).Intersects(_subject.Grow(16))) continue;
@@ -148,7 +148,6 @@ internal sealed partial class BattleMenuLayout : Control
 
     private void SetTextWidths()
     {
-        Actor.CustomMaximumSize = new(Mathf.Max(1, _actorSize.X - 28), -1);
         Context.CustomMaximumSize = new(Mathf.Max(1, _contextSize.X - 28), -1);
         foreach (var label in new[] { Heading, Detail, Help })
         {
@@ -194,7 +193,8 @@ internal sealed partial class BattleMenuLayout : Control
     {
         diamondVisible = Diamond.Visible, diamond = BattleMapViewport.Rectangle(Diamond.GetGlobalRect()),
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
-        actor = BattleMapViewport.Rectangle(_actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
+        actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
+        actorCard = Actor.Observe(), targetCard = Target.Observe(),
         heading = Heading.Text, detail = Detail.Text, help = Help.Text,
         commandHint = _commandHint, helpVisible = Help.Visible,
         descriptionLabels = new[] { Heading, Detail, Help }.Where(label => label.Visible).Select(label => new { text = label.Text,

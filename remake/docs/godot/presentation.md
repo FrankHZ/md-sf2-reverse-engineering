@@ -1,5 +1,55 @@
 # Godot Host and Presentation
 
+## Battle status-card agreement
+
+**Standard rigor; [#1397](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1397).**
+E1 is a bounded presentation change spanning command, target and action-scene consumers of the
+same authoritative session. `BattleStatusCard` supplies one readable name, labeled HP/MP image
+frame/track/fill and current/max numbers. No new rule, resource authority, rename feature, animation
+clock, generic UI framework or asset pipeline is introduced. E2's party/result/field information,
+rewards, mouse, command animation and additional statuses remain outside this agreement.
+
+`BattleCharacterNames` centralizes presentation names. Admitted scene member names (including
+selected custom names) use the source party-member identity where available; admitted enemy names
+use the content's actor binding. Public-authored packages deliberately title-case their hyphenated
+content identities, for example `guard-a` → “Guard A”. They need no private content or invented
+original character mapping. No runtime rename operation exists in this slice. Diagnostic actor IDs,
+scene target/displayed-side fields and observations remain stable. Existing authored healing wording
+keeps its engine clock; the view replaces only its known leading subject with the readable name.
+
+At the accepted 1920×1080 viewport, cards begin at 500×192 and the 32px safe edges. Native smart
+wrapping keeps complete ordinary names and valid 64-character IDs in two lines at 26–22px, widening
+the card where needed. Name lookup normalizes whitespace only for display. Width expansion has at
+most 19 steps and stops at 800px; exceptional metadata beyond that capacity retains its normalized
+text in observation but uses a two-line native ellipsis fallback. Original name/story data is unchanged.
+The menu retains its existing subject-avoidance algorithm, diamond/list geometry, controls,
+fixed 96px world scale and movement-range visibility. A target card appears only on its target page;
+Cancel and actor changes clear it. Context moves below a visible target card. Action scenes use
+the same component at the safe top edges without changing the scene canvas or world framing.
+The existing native minimum-size notification resets hidden/wrapped controls after actual sorting,
+preventing a temporary width-1 measurement from retaining an oversized frame.
+
+Cards project current `BattleActorState` HP/MP and progress maxima on every session presentation,
+including updates within a single wait token. They never use prepared final reaction operands as
+vitals. MP changes at the existing SpellCost commit; damage/recovery changes at Reaction. A full-HP
+heal can spend MP without an HP event. Bars crop the fill image immediately; they cannot delay a
+wait or progression. Zero maximum MP displays “—” and an empty track. HP at/below one quarter has
+an explicit “! Low HP” cue; zero HP has “Defeated”. Growth uses the then-current maxima.
+
+The asset inspection found no admitted gauge in the local asset repository at
+`293c9460818f4768905be809e83488d77f698fba`. Four minimal public-authored CC0 PNG segments now live
+under the ordinary game's [status art directory](../../game/assets/ui/battle-status/README.md),
+with lossless/no-mipmap imports and nearest sampling. They contain no original game pixels and
+make no original-art or hardware-fidelity claim. Candidate SVG meters are not mounted resources.
+The [asset owner](../content/presentation-assets.md#public-authored-battle-gauges) records that boundary.
+
+Acceptance uses adapter compilation, the committed-head scope plan and the
+[bounded native recipe](../verification/host.md#battle-status-card-observation): public long/low/full/
+dead/zero-MP, target/cancel/actor changes, damage/heal/cost phases, multi-target AURA/Prism and a
+necessary private-local menu/HEAL seam. No engine/data behavior changes require new unit tests.
+Retain completed observer failures and the existing focus/release/shutdown Unknowns. Independent
+main-gate integration and broader aesthetic/all-map approval remain separate.
+
 ## Shared story dialogue agreement
 
 **Standard rigor; [#1393](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1393).**

@@ -47,11 +47,6 @@ internal sealed partial class PrismLaserView : Node2D
                 DrawArc(point, 7, 0, Mathf.Tau, 24, Colors.White, 1);
         }
         DrawString(ThemeDB.FallbackFont, new(8, 55), $"PRISM LASER  {Stage.ToUpperInvariant()}", fontSize: 9, modulate: new Color("cf8fff"));
-        if (_scene.ReactionTarget is { } target && _scene.Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage)
-        {
-            var actor = _battle.GetActor(target);
-            DrawString(ThemeDB.FallbackFont, new(8, 159), $"{target.Value}  {actor.Faction}  HP {actor.Hp}/{actor.MaxHp}", fontSize: 9, modulate: Colors.White);
-        }
     }
     internal object Observe() => new
     {

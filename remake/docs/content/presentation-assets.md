@@ -124,6 +124,22 @@ set fails through the existing adapter-error boundary. Nearest sampling, no mipm
 icon scale preserve pixel edges. Scenes with no command-menu namespace display text-only squares.
 Extracted pixels and prepared scenes stay ignored and must not enter public packages or PR attachments.
 
+## Public-authored battle gauges
+
+The shared ordinary-game status card loads four small PNGs directly from
+[`game/assets/ui/battle-status`](../../game/assets/ui/battle-status/README.md), using Godot's existing
+resource import/packaging. The accompanying source statement dedicates the project-authored
+geometric frame, dark track and two shaded fills to CC0 1.0. Frame size is 244×28 RGBA8; track/fills
+are 232×16. Lossless imports disable mipmaps; the card uses nearest sampling and crops fill width
+from the live current/max ratio. Labels and numbers remain native text. These images are public,
+contain no extracted/private pixels, and are not a reconstruction claimed as original art.
+
+Read-only inspection of local asset Git `293c9460818f4768905be809e83488d77f698fba` found admitted
+yes/no-frame and tactical-cursor masters but no gauge resource in its manifest/runtime. Unreviewed
+SVG candidates therefore supply no runtime mapping. This small public set does not modify that
+independent repository, private preparation/admission, source provenance or its license boundary.
+Its PNGs are the masters and runtime resources; no new derivation platform or private input is needed.
+
 ## SVG HUD Source
 
 HUD SVG tracked in the local asset repository's `masters/` is restricted to a deterministic,

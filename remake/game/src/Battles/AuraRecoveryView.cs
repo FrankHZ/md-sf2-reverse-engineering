@@ -24,13 +24,11 @@ internal sealed partial class AuraRecoveryView : Node2D
         _drawCount++;
         DrawRect(new Rect2(0, 44, 256, 122), new Color("102e2b"));
         DrawString(ThemeDB.FallbackFont, new(10, 60), $"AURA {_scene.Spell!.Spell.Level}  |  {_scene.Phase}", fontSize: 10);
-        var actor = _scene.DisplayedAlly is { } displayed ? _battle.GetActor(displayed) : _battle.GetActor(_scene.Actor);
         Vector2 center = new(128, 110);
         float radius = 12 + 10 * (float)Math.Sin(Math.Min(1, _elapsed / 0.6) * Math.PI);
         DrawCircle(center, 10, new Color("7ce2af"));
         if (_scene.Phase is BattleScenePhase.ActionAnimation or BattleScenePhase.Reaction)
             DrawArc(center, radius, 0, Mathf.Tau, 32, new Color("b5ffde"), 2);
-        DrawString(ThemeDB.FallbackFont, new(10, 145), $"{actor.Actor.Value}  HP {actor.Hp}/{actor.MaxHp}  MP {actor.Mp}", fontSize: 10);
         DrawString(ThemeDB.FallbackFont, new(10, 160), $"{_scene.HealingTargets.Count} ordered recipients", fontSize: 9);
     }
     internal object Observe() => new

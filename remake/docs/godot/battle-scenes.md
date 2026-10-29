@@ -1,5 +1,17 @@
 # Battle Presentation
 
+## Shared action status cards
+
+Command, target and action scenes share the [E1 card](presentation.md#battle-status-card-agreement).
+The acting card follows the scene's Actor; the target card follows its current Target. In the
+existing scene contract Target is ReactionTarget, so multi-target Prism and AURA switch cards at
+the actual reaction boundary, including ally/enemy switches and defeated targets. The native
+[status witness](../verification/host.md#battle-status-card-observation) reads all reached Prism
+TargetEnter/Reaction/ResultMessage/DeathMessage targets rather than retaining the first victim.
+After-turn notices show the actor only; field-death delivery hides the close-up scene and its cards.
+No speculative final HP, MP interpolation, extra acknowledgement or resource/progression owner exists.
+Scene messages use the same centralized readable names; diagnostic IDs remain in observations.
+
 ## Authored poison notices
 
 The ordinary scene view projects the typed poison notices over the battlefield with readable authored
@@ -31,8 +43,8 @@ reads actual choices, label visibility/text, state, input results and subsequent
 
 ## Authored AURA recovery
 
-`AuraRecoveryView` draws a small authored pulse, recipient identity and live HP/MP through
-`BattleSceneView`. One cast is followed by each source-ordered recipient, including zero recovery.
+`AuraRecoveryView` draws a small authored pulse; the shared `BattleSceneView` cards show readable
+actor/recipient names and live HP/MP. One cast is followed by each source-ordered recipient, including zero recovery.
 Target-specific recovery text and one EXP message require ordinary confirmation. Cast/reaction and
 switch stages complete after actual elapsed delivery; the same session then accepts next-turn
 movement. AURA does not use the HEAL1–3 fairy cursor, private rasters or original animation-selector
@@ -52,7 +64,8 @@ origin charges for0.35s, a visible beam fires for0.30s, and settles for0.25s. Th
 presentation durations, not original animation timing. The actual view clock releases the scene's
 ActionAnimation token; ordinary Enter input acknowledges the laser-specific announcement and results.
 Empty shots use the same charge/fire/settle and complete without a fabricated target. Each subsequent
-reaction highlights its real target and faction with current HP; existing field death delivery removes
+reaction highlights its real target and faction; the shared card shows that target's readable name
+and current/max HP/MP. Existing field death delivery removes
 the ordered list and returns control.
 
 The semantic source selection is message319 (authored paraphrase), animation21/enemy selector95(hex),
