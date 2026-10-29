@@ -194,13 +194,17 @@ damage/overflow. Earlier window failures, native joypad interference and shutdow
 no windowed damage/overflow pass is claimed. Engineering acceptance is complete; merge remains
 main-gate owned in [PR1399](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1399).
 
-[E2 / #1398](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1398) waits for E1's independent
-merge. It owns the separately dispatched result/return and read-only returned-party information
-surface, reusing the accepted shared card. Existing rewards must not be counted twice. A supported
-win and ordinary defeat must return clear usable field control without invented values. The user
-has chosen no additional post-battle summary; existing reward/growth messages remain. New field
-actions require separate scope. E1 does not claim this result/return
-outcome complete. Wider retreat, saves/retry, new statuses and later chapters remain excluded.
+[E2 / #1398](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1398) consumes merged E1.
+Its [presentation owner](../godot/presentation.md#battle-messages-return-and-party-status) implements
+readable battle messages, actual return feedback/window retirement and the explicitly approved
+read-only Party Status entry. Existing reward/growth messages remain; no extra summary or reward
+accounting is introduced. The [host recipe](../verification/host.md#battle-return-and-party-status-observation)
+records independently accepted headless authored win/ordinary defeat, return, private/physical
+close-up visibility, startup/program failure and recoverable illegal-move feedback observations.
+Main-gate engineering acceptance is complete; integration is tracked by
+[PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
+Wider retreat, saves/retry, item actions and later chapters
+remain outside this slice.
 
 Recommended dependency order is **consume accepted #689; integrate A/#1391; B can proceed in parallel with
 that decision; then C; D and E consume the accepted surfaces they need**. This is ordering advice,

@@ -17,9 +17,15 @@ internal static class BattleCharacterNames
             return Clean(content.MemberNames[member]);
         if (!actor.IsAlly && content?.EnemyNames?.TryGetValue(actor.Actor, out string? name) == true && !string.IsNullOrWhiteSpace(name))
             return Clean(name);
-        return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
-            Regex.Replace(actor.Actor.Value, "[-_]+", " ").Trim());
+        return ReadableIdentity(actor.Actor);
     }
+
+    internal static string Party(ActorRef actor, int? member, IReadOnlyList<string> names) =>
+        member is >= 0 && member < names.Count && !string.IsNullOrWhiteSpace(names[member.Value])
+            ? Clean(names[member.Value]) : ReadableIdentity(actor);
+
+    private static string ReadableIdentity(ActorRef actor) => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
+        Regex.Replace(actor.Value, "[-_]+", " ").Trim());
 
     private static string Clean(string name) => Regex.Replace(name, @"\s+", " ").Trim();
 

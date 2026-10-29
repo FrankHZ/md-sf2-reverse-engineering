@@ -256,6 +256,86 @@ new natural full-opening claim. Earlier A unsuitable-start/probe failures and mi
 Unknown, B focus-loss Unavailable/physical-release Unknown, #689's entry timeout and #1386 exit
 warnings remain preserved. No broader original comparison or cleanup authority follows.
 
+## Battle return and Party Status observation
+
+[E2's agreement](../godot/presentation.md#battle-messages-return-and-party-status) owns this bounded
+presentation change. `probes/engine_battle_return_status_observation.gd` extends the existing viewport
+witness: ordinary `Main.tscn`, mapped keyboard events, 75-second deadline and semantic checkpoints.
+It reads actual message panels/cards/draw counters, carried resources and return events. No post-start
+state mutation, synthetic completion, screenshots or tests of the observer are used.
+
+Prepare two small authored variants before launch from `content/authored/leader-cleanup.json`:
+set `start.map` to `arena`, append flag401, and replace the `before` program with one `end` instruction.
+Save this as `victory.json`. For `defeat.json`, additionally set the leader's starting HP to1, the enemy's
+HP to its admitted maximum, and that enemy deployment's `aiStrategy` to `attack-then-approach`.
+The existing real rules then perform each outcome; no result is assigned. Retain the dead companion
+and zero maximum MP. These controlled starts exercise actual authored behavior, not original reach.
+Use `{"formatVersion":1,"textMode":"instant"}` for the input-settings JSON.
+
+Load `local/private-inputs.ps1` in the launcher, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, run
+`uv run sf2 verify adapter`, and build the actual Debug adapter from `remake/` with the selected SDK:
+`& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore`.
+For each case set `SF2_VIEWPORT_CASE=victory` or `defeat` and `SF2_VIEWPORT_OUTPUT` to a fresh ignored
+JSON path. Launch the existing `$env:GODOT_BIN` with separate arguments:
+`--headless --path remake/game --max-fps 60 --resolution 1920x1080 --script res://probes/engine_battle_return_status_observation.gd -- --authored-package <variant> --input-settings <settings>`.
+Give each run worktree-local APPDATA, LOCALAPPDATA and TEMP/TMP. The retained executor wrapper is
+`local/issue1398/run-native.ps1 -Case <case> -Run <fresh-name>`; outputs are under that issue directory.
+
+`failed` reuses the ordinary host recipe's `battle-failure` pre-start package; `startup-failed` uses
+an empty JSON object, exercising actual content admission rejection. Both require visible “stopped”
+feedback and stable revision after input. `ContextHint.Arrange` shows nonempty feedback even after
+`RetireWindows`; these cases cover that visibility boundary. Token-local `ResetReading` runs before
+projecting each new battle message; same-token resource refresh retains reading position.
+
+**Confirmed executor, headless only:** final authored victory and ordinary defeat pass real messages,
+one outcome and one completed return, old-window retirement, busy status exclusion, readable live
+party cards and gold, paging, hide/resume, consumed close input, unchanged party/revision while viewing,
+and fresh field movement. Final runs take about6 seconds each and emit under1MB each. Startup failure
+and reached program failure pass visible stopped feedback and immobility in under1 second each.
+Private HEAL reuses the E1 `private` case, retained issue1047 world/inputs and its ordinary controlled
+Battle02 entry: actual private names, card/draw, cost/recovery phases and continued control pass in
+about9 seconds (1.05MB). This verifies the changed shared message consumer with admitted private
+content; it does not replay private Battle01's full victory/defeat routes. Their unchanged engine,
+reward/outcome ordering and after-program evidence remain at the existing
+[Battle01 outcome owner](../application/session-and-programs.md#battle01-outcome-after-program-and-return).
+
+Release and Debug adapter builds pass with zero warnings/errors. No engine behavior changed, so no
+engine unit suite or historical aggregate was launched. Clean-head planner/CI results belong to the
+PR handoff. No GameRoot or Application interface change was needed; existing handoff wiring suffices.
+
+**Retained failure/Unknown:** `defeat-01` completed at75 seconds because the initial authored fixture
+kept the enemy's Stay policy; it could not defeat the player. The corrected pre-start existing attack
+policy passes `defeat-02`; no runtime rule was changed. `victory-01` predates the ally-only display
+filter and is superseded for roster scope by `victory-party-final`. `private-heal-01` passes but emits
+two ObjectDB shutdown warnings, preserving the existing shutdown Unknown. External joypad/focus and
+physical release issues remain; no windowed E2 pass or full-game/original timing claim is made.
+No native process is retained. Main-gate independently accepted the following bounded headless
+observations at `c9410809` (earlier victory/defeat evidence retains unchanged dependencies):
+
+| Independent case | Result / duration / semantic samples |
+| --- | --- |
+| Victory / ordinary defeat | PASS, 5786ms /14; PASS, 5665ms /12; clean stderr |
+| Private close-up visibility | PASS, 9221ms /29, 1048267 bytes; two retained ObjectDB warnings |
+| Physical close-up visibility | PASS, 3831ms /17, 505218 bytes; clean stderr |
+| Startup / reached-program failure | PASS, 286ms /1 /25744 bytes; PASS, 388ms /1 /88851 bytes |
+| Final victory return | PASS, 5915ms /14, 832299 bytes; clean stderr |
+
+Reports remain in `local/issue1398/main-gate-*`. These results establish only their named boundary;
+windowed input/focus, original timing and ObjectDB Unknowns remain unchanged.
+
+The independent review also found duplicate IllegalCommand feedback: the global bottom panel could
+cover the menu's own reason/help. The correction suppresses global recoverable feedback only while
+the command menu is visible. Fatal/startup and errors without a menu retain global feedback.
+For the focused witness, use `SF2_VIEWPORT_CASE=illegal` with unchanged `stone-court.json` and the
+same return/status observer and launch above. Ordinary Up reaches a real rejected movement; the
+witness checks the menu reason/help, hidden global feedback, then Cancel/Confirm recovery into
+ActionChoice. Executor `illegal-feedback-01` passes (3186ms,3 samples,338908 bytes,clean stderr), with
+Debug/Release adapter builds passing zero warnings/errors. Main-gate independently reviewed the
+predicate and repeated the actual illegal-move/recovery observation at `8d7f3225`:
+`main-gate-illegal-01` PASS, exit0, 2601ms,3 samples,338904 bytes, clean stdout/stderr.
+No victory/defeat/private rerun is needed for this predicate-only correction. Engineering acceptance
+is complete; [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400) owns integration.
+
 ## Battle status-card observation
 
 [E1's Standard agreement](../godot/presentation.md#battle-status-card-agreement) owns the outcome.

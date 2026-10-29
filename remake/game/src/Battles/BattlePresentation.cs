@@ -18,13 +18,18 @@ internal static class BattleSnapshotProjection
         var battle = snapshot.Battle;
         var selection = snapshot.Selection;
         string status = result.Failure is { } failure
-            ? $"{failure.Kind}: {failure.Code} ({failure.Field})"
-            : snapshot.BattleResult is { } outcome ? $"Battle ended: {outcome}"
-            : selection is null ? result.StopReason.ToString()
-            : $"{selection.Actor.Value} · {selection.Stage}" +
-                (selection.Target is { } target ? $" · target {target.Value}" : "");
-        if (result.Failure is not null && candidate is { } attempted)
-            status += $" · tried {attempted.Value} · selected target {selection?.Target?.Value ?? "none"}";
+            ? failure.Kind == SessionFailureKind.IllegalCommand ? $"Unavailable: {failure.Message}"
+                : $"The battle has stopped.\n{failure.Message} ({failure.Code})"
+            : snapshot.BattleResult is { } outcome ? $"{outcome}."
+            : selection is null ? "Battle in progress…"
+            : selection.Stage switch
+            {
+                BattleSelectionStage.Movement => "Choose a position.",
+                BattleSelectionStage.ActionChoice => "Choose an action.",
+                BattleSelectionStage.TargetChoice => "Choose a target.",
+                BattleSelectionStage.EquipmentChoice => "Choose equipment.",
+                _ => "Choose or confirm your selection.",
+            };
         var death = snapshot.BattleScene is { IsFieldDeath: true } field ? field : null;
         var markers = battle.Actors.Where(a => a.Position is not null).Select(a => new BattleActorMarker(
             a.Actor, snapshot.BattleMovement?.Actor == a.Actor ? snapshot.BattleMovement.From :

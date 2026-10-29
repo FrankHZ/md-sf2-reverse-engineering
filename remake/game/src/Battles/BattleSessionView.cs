@@ -49,6 +49,7 @@ public sealed partial class BattleSessionView : Control
     private Label _roster = null!;
     private Label _spells = null!;
     private Label _help = null!;
+    private UI.ContextHint _feedback = null!;
     private GameInput _input = null!;
     private SpellRef? _spellCandidate;
     private int? _itemCandidate;
@@ -110,6 +111,8 @@ public sealed partial class BattleSessionView : Control
         _retreat = new BattleRetreatView { Name = "BattleRetreat" }; AddChild(_retreat);
         _story = new BattleStoryView { Name = "BattleStory" }; AddChild(_story);
         _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; AddChild(_appearance);
+        _feedback = new UI.ContextHint { Name = "BattleFeedback", ZIndex = 100 }; AddChild(_feedback);
+        _feedback.Hide(); _title.Hide(); _roster.Hide();
         Arrange();
     }
 
@@ -188,7 +191,7 @@ public sealed partial class BattleSessionView : Control
         _result = result;
         if (first)
         {
-            _scene.Configure(session, _input.Settings, Audio); _retreat.Configure(session, _input.Settings);
+            _scene.Configure(session, _input, Audio); _retreat.Configure(session, _input.Settings);
             _give.Configure(session, _input.Settings); _discard.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings);
             _story.Configure(session, _map, _input);
         }
@@ -225,14 +228,25 @@ public sealed partial class BattleSessionView : Control
     internal void FailStartup(SessionFailure failure)
     {
         _startupFailure = failure;
-        _menu.Hide(); _hud.Show(); Arrange();
+        RetireWindows(); Arrange();
         _title.Text = "BATTLE UNAVAILABLE";
         _status.Text = $"{failure.Kind}: {failure.Code} ({failure.Field})\n{failure.Message}";
+        _feedback.Text.Text = $"The battle has stopped.\n{failure.Message} ({failure.Code})";
+        _feedback.Arrange(GetViewportRect().Size);
+    }
+
+    // Keep only the battlefield beneath the field-owned after/return effects.
+    internal void RetireWindows()
+    {
+        _map.Show();
+        _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
+        _appearance.Hide(); _give.Hide(); _discard.Hide(); _feedback.Hide();
     }
 
     public override void _Process(double delta)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_session?.Current.BattleDiscard is not null)
         {
             if (!_inputSuspended && _discard.Consume(delta) is { } completion) Send(completion);
@@ -275,6 +289,7 @@ public sealed partial class BattleSessionView : Control
     internal void HandleAction(GameAction action)
     {
         if (_startupFailure is not null || _inputSuspended || !IsVisibleInTree()) return;
+        if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_session?.Current.BattleDiscard is not null)
         { if (_discard.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.BattleGive is not null)
@@ -383,6 +398,7 @@ public sealed partial class BattleSessionView : Control
             (_result.Failure is null && _result.Snapshot.Selection?.Action != SessionAction.Item)) _itemCandidate = null;
         if (_result.Snapshot.Mode == SessionMode.Exploration)
         {
+            RetireWindows();
             LeaveBattle?.Invoke(_result);
             return;
         }
@@ -405,6 +421,12 @@ public sealed partial class BattleSessionView : Control
         var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin, _session.QueryBattleMovementRange());
         _title.Text = projection.Title;
         _status.Text = projection.Status;
+        _feedback.Text.Text = projection.Status;
+        _feedback.Arrange(GetViewportRect().Size);
+        _feedback.Visible = (_result.Failure is { } failure &&
+            (failure.Kind != SessionFailureKind.IllegalCommand || !_menu.Visible)) || (!_menu.Visible && _session.Current.Selection is null &&
+            _session.Current.BattleScene is null && _session.Current.BattleRound is null &&
+            _session.Current.BattleRetreat is null && _session.Current.BattleGive is null && _session.Current.BattleDiscard is null);
         _roster.Text = projection.Roster;
         var selection = _session.Current.Selection;
         var equipmentChoices = _session.QueryBattleChoices().Equipment;
@@ -427,6 +449,9 @@ public sealed partial class BattleSessionView : Control
         _discardMenu.Text = BattleDiscardView.Menu(_session);
         _discard.Present();
         _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
+        // Map children have their own Z priorities; a later sibling's black backdrop
+        // cannot occlude them. Full close-ups own rendering, while field notices/deaths keep the map.
+        _map.Visible = _session.Current.BattleScene is not { IsFieldDeath: false, IsAfterTurnNotice: false };
         _story.Present();
         _scene.Present();
         _retreat.Present();
@@ -535,6 +560,7 @@ public sealed partial class BattleSessionView : Control
             actors = current is null || _startupFailure is not null ? null : _map.ObserveActors(current.Battle.Actors),
             observations = _result?.Observations,
             title = _title.Text, status = _status.Text, roster = _roster.Text, help = _help.Text,
+            feedbackVisible = _feedback.IsVisibleInTree(), feedback = _feedback.Text.Text,
             boardChildren = _map.BoardChildren, previewNodes = _map.PreviewCount,
             viewport = BattleMapViewport.Rectangle(GetViewportRect()), mapViewport = BattleMapViewport.Rectangle(_map.GetGlobalRect()),
             hud = BattleMapViewport.Rectangle(_hud.GetGlobalRect()), hudClipsContents = _hud.ClipContents,

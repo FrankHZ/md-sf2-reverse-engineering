@@ -55,6 +55,8 @@ public sealed partial class ExplorationSessionView : Control
     private bool _battleMounted;
     private Action? _releaseBattle;
     private ExplorationDialogueView _dialogueView = null!;
+    private PartyStatusView _partyStatus = null!;
+    private readonly FieldReturnFeedback _returnFeedback = new();
     private Label _dialogue => _dialogueView.Panel.Body;
     private Label _help => _dialogueView.ActiveHint;
     private UI.StoryChoiceRow _choice => _dialogueView.Panel.Choices;
@@ -90,6 +92,8 @@ public sealed partial class ExplorationSessionView : Control
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
         _dialogueView = new ExplorationDialogueView { Name = "StoryDialogue" };
         AddChild(_dialogueView);
+        _partyStatus = new PartyStatusView { Name = "PartyStatus" };
+        AddChild(_partyStatus);
         // Keep a stopped presentation readable even when the world is held black.
         var failureLayer = new CanvasLayer { Layer = 101 };
         var failurePanel = new PanelContainer { Name = "FailurePanel", Position = new(240, 32),
@@ -120,6 +124,7 @@ public sealed partial class ExplorationSessionView : Control
     private void SuspendClock()
     {
         if (_input is not null) _movementHold.Clear(_input);
+        _partyStatus?.Suspend();
         SuspendEntrySkip();
         CancelFieldWait();
         _tickTime = 0;
@@ -149,6 +154,7 @@ public sealed partial class ExplorationSessionView : Control
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
         _session = session; _result = result; _input = input; _enterBattle = enterBattle;
+        if (releaseBattle is not null) _returnFeedback.Begin(result);
         _movementHold.Clear(input);
         if (session.Current.Story.Display?.Visibility == Sf2.Remake.Application.Content.Scenarios.FullFadeVisibility.Black)
             Modulate = Colors.Black;
@@ -174,6 +180,8 @@ public sealed partial class ExplorationSessionView : Control
         if (_session is null) return;
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
+        if (_partyStatus.Open)
+        { _partyStatus.Present(_session, _input); _tickTime = 0; return; }
         if (FinishEntryHandoff()) return;
         if (_handedOff || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
@@ -287,6 +295,18 @@ public sealed partial class ExplorationSessionView : Control
         if (action != GameAction.Wait) CancelFieldWait();
         if (_handedOff || !IsVisibleInTree() || _session is null || SessionPresentationOwner.IsBattle(_session.Current) || PresentationFailure is not null) return;
         var current = _session.Current;
+        if (_partyStatus.Open)
+        {
+            _movementHold.Clear(_input); CancelFieldWait();
+            _partyStatus.Handle(action, _session, _input);
+            Present(); return;
+        }
+        if (action == GameAction.Equipment && current.CanWaitAtInput && !_battleMounted)
+        {
+            _movementHold.Clear(_input); CancelFieldWait(); _returnFeedback.Dismiss();
+            _partyStatus.Begin(_session, _input); Present(); return;
+        }
+        if (current.CanWaitAtInput) _returnFeedback.Dismiss();
         if (direction)
         {
             if (!_movementHold.CanContinue(current)) _movementHold.Clear(_input);
@@ -432,8 +452,13 @@ public sealed partial class ExplorationSessionView : Control
     private void Present()
     {
         if (_session is null) return;
+        if (_session.Current.CanWaitAtInput && _releaseBattle is not null)
+        { _releaseBattle(); _releaseBattle = null; _battleMounted = false; }
         if (!_battleMounted) _lastWorld = _session.Current.Exploration ?? _lastWorld;
-        _dialogueView.Visible = PresentationFailure is null;
+        _dialogueView.Visible = PresentationFailure is null && !_partyStatus.Open;
+        _dialogueView.ReturnNotice = _returnFeedback.Notice(_session.Current);
+        if (PresentationFailure is not null) _partyStatus.Hide();
+        _partyStatus.Present(_session, _input);
         _dialogueView.Present(_session, _input, WorldViewport, _battleMounted, TextRevealed);
         _failureLabel.GetParent<Control>().Visible = PresentationFailure is not null;
         _failureLabel.Text = PresentationFailure is { } failure
@@ -712,7 +737,7 @@ public sealed partial class ExplorationSessionView : Control
                 cameraX = WorldViewport.Origin.X, cameraY = WorldViewport.Origin.Y,
                 bounds = Battles.BattleMapViewport.Rectangle(WorldViewport.Bounds),
                 legalScreen = Battles.BattleMapViewport.Rectangle(WorldViewport.Screen) },
-            battleMounted = _battleMounted,
+            battleMounted = _battleMounted, partyStatus = _partyStatus.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             itemCustody = current?.Exploration?.Party.ItemCustody,
             admittedParty = full && current?.Exploration is { } world ? new

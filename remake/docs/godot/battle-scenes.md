@@ -1,5 +1,30 @@
 # Battle Presentation
 
+## Message and outcome presentation
+
+Action/result/reward/growth text now uses the shared native 30px blue/gold story panel and mapped
+input hints. Existing scene tokens, reveal/acknowledgement semantics and source message operands
+remain authoritative. New message tokens reset reading scroll; reading overflow does not acknowledge
+unread content. The [E2 owner](presentation.md#battle-messages-return-and-party-status) describes
+window retirement, actual field return and the optional read-only party page. No rewards are replayed.
+
+### Battlefield visibility during close-ups
+
+The map branch is hidden during full action close-ups and restored for ordinary control,
+field-death delivery, after-turn notices and field-owned return. This matters because map sprites
+use Z1 and terrain foreground uses higher priorities: a later sibling black backdrop at Z0 cannot
+occlude them. Hiding the branch suppresses actual map sprite/terrain rendering without deleting
+actors, textures or changing gameplay. `engine_battle_scene_visibility_observation.gd` reuses the
+E1 ordinary inputs and reads native map/sprite visibility at semantic scene checkpoints.
+
+**Confirmed headless:** the pre-fix private HEAL run fails the close-up visibility assertion;
+fixed private HEAL and authored physical damage pass map suppression and subsequent control/map
+restoration. The physical case also traverses field-death delivery. Reproduce with the E1 status
+recipe, substituting that observer script and using `private` or `damage`; damage uses the unchanged
+`stone-court.json`. Local issue1398 `run-visibility.ps1` owns fresh outputs. The failed pre-fix run
+retains six ObjectDB exit warnings; fixed private HEAL retains two. These shutdown Unknowns and
+windowed joypad interference are unchanged. No screenshots or original timing claim is involved.
+
 ## Shared action status cards
 
 Command, target and action scenes share the [E1 card](presentation.md#battle-status-card-agreement).
