@@ -449,3 +449,95 @@ projection. The settings startup matrix uses the existing `engine_battle_observa
 case with EXPECT_FAILURE=`invalid-input-settings`; require no session/actors/RNG on rejected input.
 Each launch tests an actual startup configuration in the retained project/installation; no editor,
 project copy, screenshot, original emulator, reference replay or test of the observer is needed.
+
+## Battle Movement Range Observation
+
+[B8 agreement](../godot/presentation.md#battle-movement-range-agreement) owns semantics and layering.
+`engine_movement_range_observation.gd` reuses the existing world-viewport observer's input, focus,
+deadline and output helpers. It performs no post-start state injection. Its four cases are finite
+checkpoints, not a whole-battle or opening replay. Reports retain actual state, range draw destinations,
+board transform/order, actor nodes and lifecycle boundaries. No images or frame captures are produced.
+
+Load `local/private-inputs.ps1`, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and build the actual
+adapter Debug project from `remake/` with the existing absolute SDK. Reuse its Godot installation.
+For each run choose a new ignored output directory, with APPDATA/LOCALAPPDATA/TEMP/TMP beneath it.
+Set `SF2_VIEWPORT_CASE` to a case below and `SF2_VIEWPORT_OUTPUT` to its `native.json`, then launch
+from the repository root (replace the selected entry option/input with the table's entry):
+
+```powershell
+& $env:GODOT_BIN --headless --path remake/game --max-fps 60 --resolution 1920x1080 `
+  --script res://probes/engine_movement_range_observation.gd -- --authored-package $selectedInput
+$nativeExit = $LASTEXITCODE
+```
+
+Read both logs and the actual exit status. `passed:true` alone does not excuse script errors or
+shutdown warnings. Omitting `--headless` selects a bounded windowed integration check; do not claim
+windowed or pixel acceptance from a headless report.
+
+| Case | Pre-start input | Named boundary |
+| --- | --- | --- |
+| `corridor` | Ignored variant of `practice-yard.json`: all terrain rows barriers except row3 all `g`; guard at(4,3), dummy at(1,3); all other fields unchanged. | Medic origin(3,3) has exactly(2,3),(3,3),(5,3),(6,3),(7,3),(8,3). Enemy blocks left travel, ally can be crossed but not stopped on, open budget ends at8. Mapped Right twice retains the same range during animation and after crossing ally; actions/Magic/Item/commit hide; Cancel restores through return animation; Stay refreshes guard's origin and occupied tiles. |
+| `automatic` | Ignored variant of `stone-court.json`: actor2 move3; placement2 strategy `attack-then-approach`, x7; placement3 x6,y5; all other fields unchanged. | Mapped Stay reaches actual Automatic movement with range absent. |
+| `outcome` | Tracked `progression-outcome-victory.json`, unchanged. | Mapped interaction enters battle, one normal physical command defeats the one-HP enemy; range clears at target/commit/scene, remains absent during field-owned outcome dialogue on the retained battle backdrop and after usable return in the same session. |
+| `private-region` | `--private-exploration-start remake/reference/inputs/engine-battle02-egress-start.json`, with retained `local/issue1047/inputs.ps1`, `SF2_PRIVATE_EXPLORATION_CONTENT=local/issue1047/world-01.json` and `SF2_PRIVATE_CONTROLLED_START=remake/reference/inputs/battle02-outcome-party.json` resolved to absolute checkout-local paths. | Existing controlled Battle02 entry/skip reaches actual terrain, foreground and sprite projection at region(16,19); actions/Magic/self-target/retreat clear the overlay; same-session usable field return detaches the battle range. This is not natural original reach. |
+
+Generate the authored variants before startup using Python and fresh ignored paths; no production
+fixture change is required. For example, from repository root:
+
+```python
+import json
+from pathlib import Path
+out = Path("local/issue1395")
+out.mkdir(parents=True, exist_ok=True)
+d = json.loads(Path("remake/content/authored/practice-yard.json").read_text(encoding="utf-8"))
+d["terrains"][0]["rows"] = ["gggggggggggg" if y == 3 else "############" for y in range(9)]
+p = d["encounters"][0]["placements"]
+p[1].update(x=4, y=3)
+p[2].update(x=1, y=3)
+(out / "corridor.json").write_text(json.dumps(d), encoding="utf-8")
+d = json.loads(Path("remake/content/authored/stone-court.json").read_text(encoding="utf-8"))
+d["actors"][2]["move"] = 3
+p = d["encounters"][0]["placements"]
+p[2].update(aiStrategy="attack-then-approach", x=7)
+p[3].update(x=6, y=5)
+(out / "automatic.json").write_text(json.dumps(d), encoding="utf-8")
+```
+
+**Confirmed:** executor headless cases corridor-final, automatic-01, outcome-04 and private-region-final
+passed with actual exits 0 and no script errors. They total about 14 seconds and 0.75MB of checkpoint JSON.
+Private region retains two ObjectDB shutdown leaks; authored cases have clean logs. No process remains.
+Engine behavior tests cover weighted/impassable terrain, exact budget, map edges, occupancy,
+read-only immutable results, preview/return anchoring, stage/story/round/field clearing and actor refresh.
+The selected engine run passed 1642, skipped 31 private-input cases, failed 0; adapter Release and Debug
+builds passed with zero warnings/errors. Native private success is separate from those skips.
+
+Preserved failures under ignored `local/issue1395`: movement-tests-01/02 expected a pause after Stay,
+although the real turn flow advances immediately; corrected query tests pass. corridor-01 compared
+JSON float arrays to integer literals; private-region-01 guessed terrain node names; corrected
+checks use numeric operands and actual nodes. story-01 assumed an initial wait at an input start and
+was retired from the selected coverage. outcome-01 missed DialogueWait input; outcome-02 missed
+field-owned after-program presentation; outcome-03 incorrectly required its retained battlefield
+backdrop to be hidden. Corrected observation checks range visibility on that backdrop and after
+return. Earlier reports/logs remain intact. These observer failures are not product or evidence waivers.
+
+Independent Release movement/query checks passed 15/15 with no skips, using the existing build.
+**Confirmed:** independent windowed corridor, private-region, automatic and outcome observations
+passed on the same production code with the observer phase waits/receipts below. All four actual
+exits were 0, with no failures, Unavailable results, runtime/script errors or warnings. The retained
+`main-gate-window-results.json` records 30 checkpoints, 29.407 seconds and 1,088,375 bytes. This
+includes legal tile sets, fixed geometry/layers, preview/cancel, next actor, automatic clearing,
+private nonzero-region projection, targeting, retreat, outcome story and usable field return.
+
+The first independent windowed corridor run (`main-gate-corridor-01`) failed its Cancel-restoration
+check: earlier legality/preview/menu checks passed, but the final receipt remained ActionChoice at
+revision12 with preview(5,3), no movement and no range. Exit1 and clean stderr are preserved.
+The cause is **Unknown**. A windowed diagnostic recorded the expected first Cancel to ActionChoice
+and second Cancel to Return movement without a production change. The observer now explicitly
+waits for those two phase boundaries and retains menu/command receipts; a bounded windowed check
+passed. There is no extra Cancel, automatic retry or weakened restoration expectation. A passing
+diagnosis does not explain or erase the initial failure.
+
+**Unknown:** complete fixture/full-game coverage, original range pixels/cadence, the initial
+nonreproduced windowed Cancel sequence, earlier physical focus-release boundaries and the private headless shutdown
+warning cause. The earlier A/B/C failures and Unknowns remain in their owners. This slice adds no
+research/H3/H4 comparison or screenshot requirement.

@@ -289,6 +289,39 @@ experiment is described below, with remaining product choices still open.
 The [original proposal and legacy consumers](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/presentation-and-assets.md#decision-summary)
 preserve the exact design and receipts without declaring them current functionality.
 
+### Battle movement range agreement
+
+Standard rigor applies to B8 / [#1395](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1395):
+a bounded read-only engine query and battlefield projection. The outcome is visible legal stopping
+tiles during player movement selection, retaining the accepted 1920×1080 world and 96px cells.
+Movement rules, world-click input, danger ranges, command animation and broader UI work are outside
+this agreement. [Host observation](../verification/host.md#battle-movement-range-observation) owns
+reproduction and its headless/windowed acceptance boundary.
+
+`GameSession.QueryBattleMovementRange` returns immutable actor/origin/destination information only
+for a living player actor in Movement, including that actor's preview/return animation. Domain
+`BattleMovement.Destinations` builds the existing weighted mover/terrain/budget/enemy grid once,
+then reuses Preview's path validation with that grid. Living allies remain traversable but cannot
+be stops; enemies block traversal; the actor's own committed origin is included. Map bounds,
+impassable terrain and budget remain authoritative. Unexpected path-validation failures propagate;
+they are never silently relabeled as unreachable tiles. The query changes no session state, RNG,
+resources, revision or observation sequence.
+
+The origin is the committed actor position, independent of the provisional cursor and moving sprite.
+Action, equipment, list, target and commit stages have no range. Automatic movement, rounds, story,
+scenes, outcomes, retreat and field mode have no range. Cancel restores it from current state; next
+actor and rebuilt map/session presentation compute fresh information. No new cache or invalidation
+protocol is used. One grid plus bounded path checks runs when session state is presented, never per
+render frame; camera animation only transforms the retained drawing. Work is bounded by the existing
+48×48 movement grid and reachable paths, with no per-destination grid propagation.
+
+`BattleMovementRangeView` draws quiet cyan fill (alpha 0.20) with an edge (alpha 0.55) inside each legal
+96px cell, using the existing clipped board and camera transform. Ground is Z0; the range follows
+ground at Z0; actor sprites/labels remain Z1; original foreground walls remain Z2; preview/path/target
+marks remain Z3. Preserving foreground occlusion is part of acceptance. No new art, zoom, camera or
+menu geometry is introduced. Source-original range pixels, animation and hardware cadence remain
+**Unknown**; this is an accepted modern affordance, not an original presentation-parity claim.
+
 ### Modern UI experiment
 
 The user-selected direction for #438 retains the original diamond command arrangement and spatial

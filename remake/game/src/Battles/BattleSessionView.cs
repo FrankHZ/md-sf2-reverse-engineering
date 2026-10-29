@@ -402,7 +402,7 @@ public sealed partial class BattleSessionView : Control
         _menu.Present(_session.Current, _session.QueryBattleChoices(), _result!.Failure, _input);
         _hud.Visible = !_menu.Visible && _session.Current.Selection is not null;
         Arrange();
-        var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin);
+        var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin, _session.QueryBattleMovementRange());
         _title.Text = projection.Title;
         _status.Text = projection.Status;
         _roster.Text = projection.Roster;

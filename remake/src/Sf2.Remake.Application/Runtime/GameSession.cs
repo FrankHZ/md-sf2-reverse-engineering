@@ -17,6 +17,8 @@ public sealed class GameSession
     public BattleChoicesSnapshot QueryBattleChoices() =>
         BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
 
+    public BattleMovementRange? QueryBattleMovementRange() => BattleMovementQuery.Query(Current);
+
     public BattleSceneDefinition? ActiveBattleScenes => Current.Mode == SessionMode.Battle
         ? Definition.ScenesFor(Current.Battle.Definition.Encounter) : null;
 

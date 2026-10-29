@@ -31,6 +31,7 @@ internal sealed partial class BattleMapViewport : Control
     private bool _movementDelivered;
     private ExplorationVisuals? _visuals;
     private BattleSceneDefinition? _sceneContent;
+    private BattleMovementRangeView _range = null!;
     private readonly List<ColorRect> _preview = [];
     private readonly List<ColorRect> _target = [];
     private IReadOnlyList<MapPosition> _focus = [];
@@ -67,6 +68,8 @@ internal sealed partial class BattleMapViewport : Control
             throw new InvalidOperationException("battlefield-map-region-unavailable");
         if (_region is not null) BuildTerrain(definition, content);
         else BuildAuthoredTerrain(definition);
+        _range = new BattleMovementRangeView { Name = "MovementRange" };
+        _board.AddChild(_range);
         foreach (var actor in definition.Deployments)
         {
             var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 8, CellSize - 16),
@@ -162,6 +165,7 @@ internal sealed partial class BattleMapViewport : Control
 
     internal void Present(BattlePresentation projection, SessionSnapshot current, ActorRef? candidate)
     {
+        _range.Present(projection.MovementRange);
         _battleVisuals = current.Battle.Visuals;
         if (_movement?.Token != projection.Movement?.Token)
         { _movementElapsed = _movementProgress = 0; _movementDelivered = false; }
@@ -343,13 +347,14 @@ internal sealed partial class BattleMapViewport : Control
         viewport = Rectangle(GetGlobalRect()), clip = ClipContents,
         visibleLocal = Rectangle(new Rect2(-_board.Position / _board.Scale, Size / _board.Scale).Intersection(new(Vector2.Zero, _mapSize))),
         layers = _terrain.Select(layer => layer.Observe()).ToArray(),
-        children = _board.GetChildren().Select(child => new { name = child.Name.ToString(), id = child.GetInstanceId().ToString() }),
+        children = _board.GetChildren().Select(child => new { name = child.Name.ToString(), id = child.GetInstanceId().ToString(), z = (child as CanvasItem)?.ZIndex }),
         actors = _sprites.Select(pair => new { id = pair.Key.Value, x = pair.Value.Position.X, y = pair.Value.Position.Y,
             z = pair.Value.ZIndex, texture = pair.Value.Texture?.GetInstanceId().ToString(),
             validTexture = pair.Value.Texture is not null && GodotObject.IsInstanceValid(pair.Value.Texture),
             visible = pair.Value.IsVisibleInTree(), scale = pair.Value.Scale.X,
             outputWidth = (pair.Value.Texture?.GetWidth() ?? 0) * pair.Value.Scale.X,
             outputHeight = (pair.Value.Texture?.GetHeight() ?? 0) * pair.Value.Scale.Y }),
+        movementRange = _range.Observe(),
         previewZ = _preview.Select(node => node.ZIndex).Distinct().ToArray(),
         targets = _target.Select(node => new { name = node.Name.ToString(), z = node.ZIndex, rect = Rectangle(new Rect2(node.Position, node.Size)) }),
     });
