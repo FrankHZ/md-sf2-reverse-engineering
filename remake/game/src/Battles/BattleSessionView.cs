@@ -238,6 +238,7 @@ public sealed partial class BattleSessionView : Control
     // Keep only the battlefield beneath the field-owned after/return effects.
     internal void RetireWindows()
     {
+        _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
         _appearance.Hide(); _give.Hide(); _discard.Hide(); _feedback.Hide();
     }
@@ -447,6 +448,9 @@ public sealed partial class BattleSessionView : Control
         _discardMenu.Text = BattleDiscardView.Menu(_session);
         _discard.Present();
         _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
+        // Map children have their own Z priorities; a later sibling's black backdrop
+        // cannot occlude them. Full close-ups own rendering, while field notices/deaths keep the map.
+        _map.Visible = _session.Current.BattleScene is not { IsFieldDeath: false, IsAfterTurnNotice: false };
         _story.Present();
         _scene.Present();
         _retreat.Present();
