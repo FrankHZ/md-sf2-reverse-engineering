@@ -520,7 +520,24 @@ field-owned after-program presentation; outcome-03 incorrectly required its reta
 backdrop to be hidden. Corrected observation checks range visibility on that backdrop and after
 return. Earlier reports/logs remain intact. These observer failures are not product or evidence waivers.
 
-**Unknown:** independent windowed acceptance for B8, complete fixture/full-game coverage, original
-range pixels/cadence, earlier physical focus-release boundaries and the private headless shutdown
+Independent Release movement/query checks passed 15/15 with no skips, using the existing build.
+**Confirmed:** independent windowed corridor, private-region, automatic and outcome observations
+passed on the same production code with the observer phase waits/receipts below. All four actual
+exits were 0, with no failures, Unavailable results, runtime/script errors or warnings. The retained
+`main-gate-window-results.json` records 30 checkpoints, 29.407 seconds and 1,088,375 bytes. This
+includes legal tile sets, fixed geometry/layers, preview/cancel, next actor, automatic clearing,
+private nonzero-region projection, targeting, retreat, outcome story and usable field return.
+
+The first independent windowed corridor run (`main-gate-corridor-01`) failed its Cancel-restoration
+check: earlier legality/preview/menu checks passed, but the final receipt remained ActionChoice at
+revision12 with preview(5,3), no movement and no range. Exit1 and clean stderr are preserved.
+The cause is **Unknown**. A windowed diagnostic recorded the expected first Cancel to ActionChoice
+and second Cancel to Return movement without a production change. The observer now explicitly
+waits for those two phase boundaries and retains menu/command receipts; a bounded windowed check
+passed. There is no extra Cancel, automatic retry or weakened restoration expectation. A passing
+diagnosis does not explain or erase the initial failure.
+
+**Unknown:** complete fixture/full-game coverage, original range pixels/cadence, the initial
+nonreproduced windowed Cancel sequence, earlier physical focus-release boundaries and the private headless shutdown
 warning cause. The earlier A/B/C failures and Unknowns remain in their owners. This slice adds no
 research/H3/H4 comparison or screenshot requirement.

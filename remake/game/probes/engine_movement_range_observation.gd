@@ -6,7 +6,7 @@ var previous_map: Node
 func sample(label: String) -> Dictionary:
     var current := state()
     var facts := {}
-    for key in ["sessionId","revision","observationSequence","stopReason","stage","actor","map","previewX","previewY","actors","movement","wait","canWaitAtInput","failure","viewport","story","scene"]:
+    for key in ["sessionId","revision","observationSequence","stopReason","stage","actor","map","previewX","previewY","actors","movement","wait","canWaitAtInput","failure","viewport","story","scene","menu","observations"]:
         if current.has(key): facts[key] = current[key]
     var row := {"label":label,"state":facts}
     var board := view.get_node_or_null("MapViewport")
@@ -92,7 +92,10 @@ func run() -> void:
     if not await tap(KEY_SPACE): return
     if not hidden("commit-ready"): return
     if not await tap(KEY_ESCAPE): return
+    if not await wait_for(func(s): return s.get("stage") == "ActionChoice" and s.menu.page == "Main", "cancel commit to actions"): return
+    sample("cancel-commit-to-actions")
     if not await tap(KEY_ESCAPE): return
+    if not await wait_for(func(s): return s.get("stage") == "Movement", "cancel actions to movement"): return
     if not stable(range_read("cancel-return-animation"), initial, "return animation"): return
     if not await wait_for(func(s): return s.get("movement") == null, "cancel returned"): return
     if not stable(range_read("cancel-restored"), initial, "cancel restored"): return
