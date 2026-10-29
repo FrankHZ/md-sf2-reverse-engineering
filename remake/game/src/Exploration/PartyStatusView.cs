@@ -85,4 +85,3 @@ internal sealed partial class PartyStatusView : Control
     internal object Observe() => new { visible = IsVisibleInTree(), index = _index, count = _count, requiresRelease = _requiresRelease,
         header = _header.Text.Text, hint = _hint.Text.Text, unavailable = _unavailable, card = _card.Observe() };
 }
-
