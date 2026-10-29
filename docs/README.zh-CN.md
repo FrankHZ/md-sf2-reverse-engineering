@@ -1,7 +1,7 @@
 # 文档索引
 
 这是当前中文阅读入口。[英文索引](./README.md)是规范索引；证据、合同与决策以各自的英文所有者为准。
-设计翻译遵循[术语表](./design/glossary.md)。已索引设计文档均有经独立全文双语验收、合并的完整中文镜像；
+设计翻译遵循[术语表](./design/glossary.md)。先前已接受的设计语料在各自审阅基线均有完整中文镜像；新增战斗分析试点尚无中文镜像，须阅读英文；
 英文研究、ADR 与引擎文档保留各自所有者，不属于这份设计翻译语料。
 
 ## 按阅读目的进入
@@ -63,9 +63,10 @@
 | 北方旅行与 Pacalon | [North Cliff 开通与 Rohde 招募](./design/zh-CN/synthesis/north-cliff-opening-and-rohde-recruitment.md)；[Ketto 交谈与商人迁移](./design/zh-CN/synthesis/ketto-interactions-and-merchant-relocation.md)；[Higins 招募](./design/zh-CN/synthesis/battle26-outcomes-and-higins-recruitment.md)；[Pacalon 城堡初访](./design/zh-CN/synthesis/pacalon-castle-entry-and-first-visit.md) |
 | 后期章节与结局 | [Tristan 居民与 Mitula 洞穴路线](./design/zh-CN/synthesis/story-progression.md#tristan-居民与通向-mitula-的洞穴路线)；[Jaro、Frayja 与 Moun 幸存者](./design/zh-CN/synthesis/story-progression.md#jaro-叛离frayja-加入与-moun-幸存者)；[后期 Yeel：钢琴、Chaz 与 Lemon](./design/zh-CN/synthesis/story-progression.md#后期-yeel钢琴chaz-与-lemon)；[亲吻选择](./design/zh-CN/synthesis/story-progression.md#minister-提示与玩家真正的亲吻选择)；[字幕与隐藏战斗](./design/zh-CN/synthesis/story-progression.md#字幕终场完成存储与隐藏战斗) |
 
-这些文档已经解释规则、条件流程和部分遭遇例外；轻量战斗设计分析
-[#1402（英文任务）](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)仍是后续独立工作，
-尚未交付战术意图、难度或平衡分析。
+这些中文文档解释规则、条件流程和部分遭遇例外。新增的
+[轻量战斗设计分析（英文规范源）](./design/synthesis/battle-design-analysis-pilot.md)覆盖 Battle01、Taros 与 Chessboard：
+设计重点、总体布置、敌人角色/激活、明确的我方准备假设及简单应对与取舍。设计解读保留 **推断**，不证明作者意图或难度；
+该页中文镜像为 `pending`，待英文源稳定后另行限定翻译范围，不能把现有章节指南当作它的译文。
 
 也可沿总览 → [Taros/Caravan 完整示例（中文）](./design/zh-CN/synthesis/story-progression.md#完整示例taros-与-caravan)
 → 物品容量/拒绝、剑的持有与装备、遭遇准入/结果、获取与登乘的各自证据，查看跨系统依赖。
@@ -96,7 +97,7 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 
 ## 翻译状态与持续同步
 
-[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。已索引设计语料均已有独立全文双语验收并合并的完整译文；当前版本锚和漂移状态以现有命令复现。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
+[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。先前已接受语料保留完整译文及原审阅基线；新分析页待译。当前版本锚和漂移状态以现有命令复现。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
 
 当前仍有英文源在对应译文的审阅锚点之后发生变更，这些差异尚须逐项语义复核。
 已有完整译文且曾在各自基线验收，不表示它们与当前英文版本全部同步；复核完成前保留原锚点，不能只刷新 hash 或日期。

@@ -25,8 +25,8 @@ glossary's rules, with terminology consistency, link integrity, evidence-label p
 fixture-trace QA. A zh-CN mirror under `docs/design/zh-CN/` is a derivative; the English source
 remains the review baseline unless a localization batch defines another explicit policy.
 
-**Confirmed current source and language disposition:** all 165 indexed canonical design sources
-have complete zh-CN mirrors, independently accepted and merged under
+**Confirmed current source and language disposition:** the previously accepted design corpus
+has complete zh-CN mirrors at its reviewed baselines, independently accepted and merged under
 [the design-documentation epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
 This corpus covers the roadmap, contracts, thematic synthesis and existing detailed guides under
 `docs/design/`, excluding the glossary, which governs terminology rather than having a mirror.
@@ -34,6 +34,12 @@ It includes the separately reviewed [map-exploration contract](contracts/map-exp
 the **Proposed** [controlled-admission contract](contracts/map3-controlled-admission.md) and the
 **Historical** [bootstrap plan](synthesis/phase4-bootstrap-plan.md). Translation acceptance does not
 promote a proposal, restore superseded implementation guidance or change original evidence.
+
+The [battle-design analysis pilot](synthesis/battle-design-analysis-pilot.md) is a new canonical
+English source with no Chinese mirror (`pending`). Some existing translated sources have also
+changed beyond their reviewed anchors; those differences remain subject to semantic review under
+the continuing agreement below. A pending new source and drift in an existing translation are
+different dispositions.
 
 Chinese synchronization uses independently accepted, merged English sources whose substantive
 content is stable for the selected scope. Full bilingual content and reader-route review, alongside
@@ -103,6 +109,34 @@ later design and implementation decisions. Standard rigor fits known evidence ow
 cross-system dependencies: declare each theme's claims and acceptance, independently review them,
 and reassess when a new claim or ownership conflict changes the scope. This agreement does not select
 a new engine, rebalance the game or expand the playable milestone.
+
+### Bounded battle-design analysis pilot
+
+**Current scope agreement — Standard:** [Issue #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
+owns one [English analysis page](synthesis/battle-design-analysis-pilot.md) covering Battle01,
+Taros/Battle18 and Chessboard/Battle22. Existing evidence owners are known, but joining placement,
+activation, equipment and outcomes needs cross-system review. Each example explains its design
+emphasis, overall terrain/starting arrangement, enemy roles and relevant activation, explicit
+player-preparation assumptions, and one or two simple responses with tradeoffs. A design solution
+links problem → rule/placement → response; interpretations remain **Inferred**, not proof of
+original author intent. Missing facts may narrow an explanation or remain **Unknown**.
+
+Reuse the tactical/progression themes and the selected encounters' accepted research, contracts
+and fixture payloads. No new collection, engine/contract/fixture changes, optimal route, turn script,
+win-rate/difficulty score, damage matrix, normal-player level model, simulator, solver or campaign
+framework is in scope. UI/UX and existing translation-drift repair remain separate work.
+
+The milestone is three usable examples with their residual gaps, then a clean pushed Draft PR for
+independent reader/evidence acceptance. Direct prose, source, links/anchors, UTF-8/private-boundary
+and diff checks, the existing `zh-meta test`, clean-head planner and selected documentation CI own
+verification; no normal/full, SDK, Godot or emulator suite is selected. This is small text synthesis
+using retained tools and inputs, with no data-processing run or new environment.
+
+Only this roadmap and its Chinese mirror are synchronized in this slice, alongside minimal root
+and documentation navigation and their actual translation-index records. The analysis is English
+first; Chinese readers receive an explicit English entry and pending status. Translation follows
+source stabilization as a separate bounded scope. The pilot stops here without expanding to other
+encounters or changing balance or production admission.
 
 ### Accepted starting point
 
@@ -290,9 +324,9 @@ full-game parity or a general comparator.
 
 ### Bounded translation repair agreement
 
-This established section anchor now owns continuing synchronization. The indexed design corpus is
-165 sources, 165 translated mirrors, zero pending and zero source/glossary/mirror drift at the reviewed
-baseline. Reproduce the current state with `uv run --locked sf2 zh-meta test`; use
+This established section anchor owns continuing synchronization. Previously accepted mirrors retain
+their reviewed baselines; the new English pilot is pending, and later changes to existing sources
+can retain source drift until semantic review. Reproduce the current state with `uv run --locked sf2 zh-meta test`; use
 `uv run --locked sf2 zh-meta list` for per-document status and reviewed version anchors. Counts describe
 this corpus, not all repository documentation, game text or original-game completeness.
 

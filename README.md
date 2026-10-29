@@ -16,7 +16,7 @@ sequential delivery plan.
 | Responsibility | Current accepted boundary | Read next |
 | --- | --- | --- |
 | Original rebuild and research | The pinned disassembly rebuilds the private USA ROM byte-for-byte. Static-first research and bounded original runtime observations retain their own provenance and Unknowns. | [Reproducible original](./docs/research/reproducible-original.md), [research coverage](./docs/research/source-coverage.md) |
-| Design explanation in English and Chinese | The indexed design corpus has complete, independently accepted Chinese mirrors at their reviewed baselines: gameplay themes, detailed chapter guides and evidence-bound contracts. Some English sources have since changed beyond their mirrors' review anchors; those differences still require document-by-document semantic review. Selected static story connections reach ending/reset; this is neither a naturally played campaign nor game-script localization. | [English reading routes](./docs/README.md#design), [中文阅读入口](./docs/README.zh-CN.md) |
+| Design explanation in English and Chinese | The previously accepted design corpus has complete Chinese mirrors at their reviewed baselines: themes, chapter guides and contracts. Some English sources have since changed beyond those anchors and require semantic review. The new battle-analysis pilot is English first, with Chinese pending. Selected static story connections reach ending/reset; this is neither naturally played campaign proof nor game-script localization. | [English reading routes](./docs/README.md#design), [中文阅读入口](./docs/README.zh-CN.md) |
 | State/content-driven remake | Godot 4.7.2 .NET/C# hosts a common session with Domain rules, Application programs and validated Content. Authored packages and bounded private-local content are runnable. | [Play and develop](./remake/README.md), [capabilities and limits](./remake/docs/capability-status.md) |
 
 The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
@@ -67,9 +67,10 @@ Use the executable sources of truth instead:
 English is canonical for design review. Chinese design mirrors follow the same relative hierarchy
 under `docs/design/zh-CN/` and the [glossary](./docs/design/glossary.md); research, ADRs and engine
 usage retain their English owners. The [documentation roadmap](./docs/design/documentation-roadmap.md)
-owns design scope and synchronization. Existing rule/flow explanations are delivered; the
-[lightweight battle-design analysis pilot #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
-is separate future work.
+owns design scope and synchronization. The
+[battle-design analysis pilot](./docs/design/synthesis/battle-design-analysis-pilot.md) explains
+Battle01, Taros and Chessboard through preparation, enemy roles and simple responses with tradeoffs;
+its interpretations are labeled and its Chinese mirror is pending.
 
 ## Project Goals
 
@@ -264,7 +265,7 @@ with independent acceptance for each bounded outcome:
   [story coverage](./docs/research/story-content-coverage.md#four-different-frontiers) separates static,
   observed, design and playable boundaries.
 - [Design documentation](./docs/design/documentation-roadmap.md) owns the accepted bilingual corpus
-  and continuing synchronization. Wider analysis is separately scoped, including #1402 above.
+  and continuing synchronization. The three-encounter pilot above does not authorize campaign-wide analysis.
 - [Remake capabilities](./remake/docs/capability-status.md) own current gameplay and Unsupported
   behavior. [#1370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1370) tracks the original
   six special-mechanic families; [#1369](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369)
