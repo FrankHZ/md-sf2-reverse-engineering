@@ -12,6 +12,7 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class ExplorationPresentation : IDisposable
 {
     private readonly Control _owner;
+    internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift), ImageTexture> _sprites = [];
@@ -551,8 +552,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     _resourceSelectors[texture] = new
                     { kind = "portrait", portrait, mirror = key.Item2, eyes = key.Item3, mouth = key.Item4, tiles };
                 }
-                var destination = new Rect2((flags & 0x80) != 0 ? viewport.X - 224 : 32,
-                    work is null ? viewport.Y - 260 : viewport.Y - 260 + work.Y * 12, 192, 224);
+                var destination = DialoguePanel!.MountPortrait(texture, work?.Y ?? 0);
                 if (_observeCamera) _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
                 {
                     ["id"] = portrait, ["flags"] = flags, ["eyesClosed"] = key.Item3, ["mouthOpen"] = key.Item4,
@@ -561,8 +561,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     ["width"] = destination.Size.X, ["height"] = destination.Size.Y,
                     ["simulationTick"] = story.SimulationTick,
                 });
-                _owner.DrawRect(destination.Grow(3), new Color(0.06f, 0.07f, 0.12f));
-                _owner.DrawTextureRect(texture, destination, false);
+
                 if (Streaming)
                 {
                     portraitIdentity = texture.GetInstanceId().ToString();

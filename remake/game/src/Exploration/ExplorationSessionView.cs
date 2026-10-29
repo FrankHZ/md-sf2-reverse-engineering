@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Sf2.Remake.GodotAdapter.Observation;
-using System.Text.RegularExpressions;
 using Godot;
 using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.GodotAdapter.Audio;
@@ -55,19 +54,17 @@ public sealed partial class ExplorationSessionView : Control
     private bool _handedOff;
     private bool _battleMounted;
     private Action? _releaseBattle;
-    private Label _title = null!;
-    private Label _dialogue = null!;
-    private Label _help = null!;
-    private PanelContainer _choice = null!;
-    private Label _choiceYes = null!;
-    private Label _choiceNo = null!;
+    private ExplorationDialogueView _dialogueView = null!;
+    private Label _dialogue => _dialogueView.Panel.Body;
+    private Label _help => _dialogueView.ActiveHint;
+    private UI.StoryChoiceRow _choice => _dialogueView.Panel.Choices;
+    private Label _choiceYes => _choice.Yes;
+    private Label _choiceNo => _choice.No;
     private bool _choiceRequiresRelease;
     private Label _failureLabel = null!;
     private GameInput _input = null!;
     private readonly ExplorationMovementHold _movementHold = new();
-    private TextWindow? _textWindow;
-    private bool _fieldTextProjection;
-    private double _revealed;
+    private double _revealed { get => _dialogueView.Revealed; set => _dialogueView.Revealed = value; }
     private WaitToken? _textDeliveryToken;
     private ulong _textDeliveryFrame;
     private bool _speechSoundToggle;
@@ -91,22 +88,15 @@ public sealed partial class ExplorationSessionView : Control
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
-        _title = new Label { Name = "Title", Position = new(20, 16) };
-        _dialogue = new Label { Name = "Dialogue", AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        _help = new Label { Name = "Help", AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        foreach (var label in new[] { _title, _dialogue, _help }) label.AddThemeFontSizeOverride("font_size", 30);
-        _title.Position = new(32, 32);
-        AddChild(_title); AddChild(_dialogue); AddChild(_help);
-        _choice = new PanelContainer { Name = "Choice", Visible = false, MouseFilter = MouseFilterEnum.Ignore };
-        var choices = new HBoxContainer();
-        _choiceYes = new Label { Name = "Yes", Text = "Yes", SizeFlagsHorizontal = SizeFlags.ExpandFill, HorizontalAlignment = HorizontalAlignment.Center };
-        _choiceNo = new Label { Name = "No", Text = "No", SizeFlagsHorizontal = SizeFlags.ExpandFill, HorizontalAlignment = HorizontalAlignment.Center };
-        _choiceYes.AddThemeFontSizeOverride("font_size", 30); _choiceNo.AddThemeFontSizeOverride("font_size", 30);
-        choices.AddChild(_choiceYes); choices.AddChild(_choiceNo); _choice.AddChild(choices); AddChild(_choice);
-        // Failure text must remain readable when the world is correctly held black.
+        _dialogueView = new ExplorationDialogueView { Name = "StoryDialogue" };
+        AddChild(_dialogueView);
+        // Keep a stopped presentation readable even when the world is held black.
         var failureLayer = new CanvasLayer { Layer = 101 };
-        _failureLabel = new Label { Name = "TransitionFailure", Position = new(20, 20), Visible = false };
-        AddChild(failureLayer); failureLayer.AddChild(_failureLabel);
+        var failurePanel = new PanelContainer { Name = "FailurePanel", Position = new(240, 32),
+            Size = new(1440, 140), Theme = UI.StoryTheme.Create(), MouseFilter = MouseFilterEnum.Ignore };
+        _failureLabel = new Label { Name = "TransitionFailure", AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        AddChild(failureLayer); failureLayer.AddChild(failurePanel); failurePanel.AddChild(_failureLabel);
+        failurePanel.Hide();
         GetViewport().SizeChanged += Present;
         GetWindow().FocusExited += SuspendClock;
         VisibilityChanged += SuspendClock;
@@ -171,9 +161,10 @@ public sealed partial class ExplorationSessionView : Control
             prepareBattle(_result!);
             _battleMounted = true;
             _lastWorld = null;
-            _title.Hide(); _dialogue.Hide(); _help.Hide();
+            _dialogueView.Hide();
             QueueRedraw();
         }, audio, WorldViewport);
+        _presentation.DialoguePanel = _dialogueView.Panel;
         TextureFilter = TextureFilterEnum.Nearest;
         Present();
     }
@@ -202,6 +193,7 @@ public sealed partial class ExplorationSessionView : Control
             _dialogue.VisibleCharacters = (int)_revealed;
             SpeakRevealedCharacters(before, _dialogue.VisibleCharacters);
         }
+        _dialogueView.RefreshHint(_session, _input, _battleMounted, TextRevealed);
         if (_session.Current.Exploration is { Definition.Caravan: not null } authored &&
             _session.Definition.Exploration!.Visuals is null)
             foreach (var entity in authored.AllEntities.Where(actor => actor.WaitingForSprite && actor.SpriteReady != actor.SpriteRequest))
@@ -232,7 +224,7 @@ public sealed partial class ExplorationSessionView : Control
             FieldTextWait { Revealed: false } delivery => delivery.Token,
             _ => null,
         };
-        if (deliveryToken is { } deliveredToken && TextRevealed)
+        if (deliveryToken is { } deliveredToken && TextRevealed && !_dialogueView.Panel.MoreBelow)
         {
             _tickTime = 0;
             // Leave the completed projection mounted for a frame before a tail can close it.
@@ -318,6 +310,7 @@ public sealed partial class ExplorationSessionView : Control
         SessionCommand? command = null;
         if (current.Story.Wait is ChoiceWait choice)
         {
+            if (action == GameAction.Confirm && RevealText()) return;
             if (choice.Work is not null)
             {
                 if (!current.CanWaitForChoice || _choiceRequiresRelease || !GetWindow().HasFocus() || !CanProcess()) return;
@@ -332,7 +325,7 @@ public sealed partial class ExplorationSessionView : Control
             }
             else
             {
-                if (action is not (GameAction.Confirm or GameAction.Cancel) || RevealText()) return;
+                if (action is not (GameAction.Confirm or GameAction.Cancel) || _choiceRequiresRelease || RevealText()) return;
                 command = new ChooseDialogue(choice.Token, action == GameAction.Confirm);
             }
         }
@@ -369,7 +362,7 @@ public sealed partial class ExplorationSessionView : Control
 
     private bool RevealText()
     {
-        if (_dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount()) return false;
+        if (TextRevealed) return _dialogueView.Panel.ReadMore();
         _revealed = _dialogue.GetTotalCharacterCount();
         _dialogue.VisibleCharacters = (int)_revealed;
         return true;
@@ -439,93 +432,12 @@ public sealed partial class ExplorationSessionView : Control
     private void Present()
     {
         if (_session is null) return;
-        var current = _session.Current;
-        if (!_battleMounted) _lastWorld = current.Exploration ?? _lastWorld;
-        var size = GetViewportRect().Size;
-        var choice = (current.Story.Wait as ChoiceWait)?.Work;
-        _choice.Visible = choice is { Visible: true } && current.Story.LogicalView?.HideWindows != true;
-        if (choice is not null)
-        {
-            _choice.Position = new(choice.X * size.X / 40, 17 * size.Y / 28);
-            _choice.Size = new(14 * size.X / 40, 3 * size.Y / 28);
-            _choiceYes.Text = choice.Yes ? "▸ Yes" : "Yes";
-            _choiceNo.Text = choice.Yes ? "No" : "▸ No";
-            _choiceYes.Modulate = choice.YesAlternate ? Colors.Gold : Colors.White;
-            _choiceNo.Modulate = choice.NoAlternate ? Colors.Gold : Colors.White;
-        }
-        _title.Text = _session.Definition.Package.Replace('-', ' ').ToUpperInvariant();
-        bool portrait = _session.Definition.Exploration?.Visuals is not null &&
-            current.Story.PortraitWindow is OpenPortraitWindow or UnknownPortraitWindow { LegacySpeaker: not null };
-        byte portraitFlags = current.Story.PortraitWindow switch
-        { OpenPortraitWindow open => open.Flags, UnknownPortraitWindow unknown => unknown.LegacyFlags, _ => 0 };
-        bool rightPortrait = (portraitFlags & 0x80) != 0;
-        _dialogue.Position = new(portrait && !rightPortrait ? 256 : 32, Mathf.Max(80, size.Y - 260));
-        _dialogue.Size = new(Mathf.Max(1, size.X - _dialogue.Position.X - (portrait && rightPortrait ? 256 : 32)), 156);
-        _help.Position = new(32, Mathf.Max(130, size.Y - 90));
-        _help.Size = new(Mathf.Max(1, size.X - 64), 64);
-        string previousText = _dialogue.Text;
-        int previouslyVisible = _dialogue.VisibleCharacters < 0 ? _dialogue.GetTotalCharacterCount() : _dialogue.VisibleCharacters;
-        _dialogue.Text = current.Story.Wait switch
-        {
-            DialogueWait text => _session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "",
-            ChoiceWait => current.Story.TextWindow is OpenTextWindow question ? _session.Definition.Exploration!.Texts.GetValueOrDefault(question.Text) ?? "" : "Would you like to continue?",
-            PresentationWait => current.Story.TextWindow is OpenTextWindow text ? _session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "" : "",
-            _ => current.Story.TextWindow is OpenTextWindow open ? _session.Definition.Exploration!.Texts.GetValueOrDefault(open.Text) ?? "" : "",
-        };
-        var names = _session.Definition.Exploration!.MemberNames;
-        // The resolved field projection belongs to this open window through program waits and close animation.
-        _fieldTextProjection = current.Story.Wait is FieldTextWait ||
-            (_fieldTextProjection && current.Story.TextWindow is OpenTextWindow && ReferenceEquals(current.Story.TextWindow, _textWindow));
-        if (current.Story.Wait is FieldTextWait fieldSpan) _dialogue.Text = fieldSpan.Projection;
-        else if (_fieldTextProjection) _dialogue.Text = previousText;
-        else if (current.Story.Wait is W1TextWait span)
-            _dialogue.Text = string.Concat(_session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select(part => part.Kind switch
-            {
-                ExplorationTextTokenKind.Literal => part.Value,
-                ExplorationTextTokenKind.Newline => "\n",
-                ExplorationTextTokenKind.MemberName => names[part.Member!.Value],
-                _ => "",
-            }));
-        else
-        {
-            // Compatibility display for consumers outside the admitted W1 contract.
-            _dialogue.Text = Regex.Replace(_dialogue.Text.Replace("{N}", "\n"), @"\{W[0-9]+\}", "");
-            _dialogue.Text = Regex.Replace(_dialogue.Text, @"\{(?:LEADER|NAME;([0-9]+))\}", match =>
-            {
-                int member = match.Groups[1].Success ? int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
-                return member < names.Count ? names[member] : match.Value;
-            });
-        }
-        _help.Text = current.Story.Wait switch
-        {
-            ChoiceWait { Work: not null } => $"{_input.Hint(GameAction.Left)} / {_input.Hint(GameAction.Right)}: Select     {_input.Hint(GameAction.Confirm)}: Confirm     {_input.Hint(GameAction.Cancel)}: No",
-            ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
-            DialogueWait or W1TextWait { AtInput: true } or FieldTextWait { Phase: FieldTextPhase.Input } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
-            W1TextWait or FieldTextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
-            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait => "",
-            _ => current.CanWaitAtInput ? _input.MovementHint +
-                (_session.QueryExplorationInteraction() is not null ? $"\n{_input.Hint(GameAction.Confirm)}: Talk" : "") : "",
-        };
-        _help.Visible = !_battleMounted || BattleEntrySkip.Eligible(current);
-        if (BattleEntrySkip.Eligible(current))
-            _help.Text += current.Story.EntrySkip is null ? $"\n{_input.Hint(GameAction.Cancel)}: Skip battle intro" : "\nSkipping battle intro…";
-        if (current.Story.LogicalText is { IndicatorVisible: true }) _help.Text += " ▾";
-        if (current.CanWaitAtInput || current.CanWaitForText || current.CanWaitForChoice)
-            _help.Text += $"\nHold {_input.Hint(GameAction.Wait)} to wait; release to pause field time (including NPCs).";
-        if (PresentationFailure is { } failure)
-            _dialogue.Text = $"{failure.Message} ({failure.Code})";
-        _failureLabel.Visible = PresentationFailure is not null;
-        _failureLabel.Text = PresentationFailure is { } visibleFailure ? $"{visibleFailure.Message} ({visibleFailure.Code})" : "";
-        // A sound wait can become an input wait on the same already-visible text window.
-        // Restart reveal only for changed text or a newly opened window, not that wait handoff.
-        if (_dialogue.Text != previousText || !ReferenceEquals(current.Story.TextWindow, _textWindow))
-        {
-            bool continuingSpan = current.Story.Wait is (W1TextWait or FieldTextWait) && ReferenceEquals(current.Story.TextWindow, _textWindow) &&
-                _dialogue.Text.StartsWith(previousText, StringComparison.Ordinal);
-            _revealed = continuingSpan ? previouslyVisible : 0;
-            _dialogue.VisibleCharacters = current.Story.EntrySkip is not null || _input.Settings.TextMode == "instant" || PresentationFailure is not null ? -1 : (int)_revealed;
-        }
-        _textWindow = current.Story.TextWindow;
+        if (!_battleMounted) _lastWorld = _session.Current.Exploration ?? _lastWorld;
+        _dialogueView.Visible = PresentationFailure is null;
+        _dialogueView.Present(_session, _input, WorldViewport, _battleMounted, TextRevealed);
+        _failureLabel.GetParent<Control>().Visible = PresentationFailure is not null;
+        _failureLabel.Text = PresentationFailure is { } failure
+            ? $"The scene has stopped.\n{failure.Message} ({failure.Code})" : "";
         QueueRedraw();
     }
 
@@ -763,7 +675,7 @@ public sealed partial class ExplorationSessionView : Control
             entrySkip = current?.Story.EntrySkip, skipRequiresRelease = _skipRequiresRelease, battleHandoffPending = _battleHandoffPending,
             choiceProjection = new { tick = current?.Story.SimulationTick, token = (current?.Story.Wait as ChoiceWait)?.Token.Value,
                 visible = _choice.Visible, x = _choice.Position.X, y = _choice.Position.Y, width = _choice.Size.X, height = _choice.Size.Y,
-                yes = _choiceYes.Text, no = _choiceNo.Text, yesAlternate = _choiceYes.Modulate == Colors.Gold, noAlternate = _choiceNo.Modulate == Colors.Gold },
+                yes = _choiceYes.Text, no = _choiceNo.Text, yesAlternate = _choiceYes.Modulate == UI.StoryTheme.Selected, noAlternate = _choiceNo.Modulate == UI.StoryTheme.Selected },
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
             music = current?.Story.Music, musicWait = current?.Story.Wait as MusicWait,
@@ -838,9 +750,9 @@ public sealed partial class ExplorationSessionView : Control
             egressMap = current?.Story.EgressMap?.Value, thinkingSeed = current?.Exploration?.Party.ThinkingSeed,
             display = current?.Story.Display, fade = current?.Story.Wait as FullFadeWait,
             warp = current?.Story.Warp, loadServices = (current?.Story.Wait as WarpLoadWait)?.Remaining,
-            tickDebt = _tickTime, failureVisible = _failureLabel.Visible,
+            tickDebt = _tickTime, failureVisible = _failureLabel.IsVisibleInTree(),
             token = current?.Story.Wait?.Token.Value, failure = PresentationFailure?.Code, failureField = PresentationFailure?.Field, failureKind = PresentationFailure?.Kind.ToString(), spriteSize = current?.Exploration?.SpriteSize,
-            dialogue = _dialogue.Text, help = _help.Text, helpVisible = _help.IsVisibleInTree(), visibleCharacters = _dialogue.VisibleCharacters,
+            dialoguePanel = _dialogueView.Panel.Observe(), dialogue = _dialogue.Text, help = _help.Text, helpVisible = _help.IsVisibleInTree(), visibleCharacters = _dialogue.VisibleCharacters,
             totalCharacters = _dialogue.GetTotalCharacterCount(), textMode = _input.Settings.TextMode,
             reducedFlash = _input.Settings.ReducedFlash,
             textId = (current?.Story.TextWindow as OpenTextWindow)?.Text,

@@ -64,6 +64,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     public override void _Ready()
     {
+        Theme = UI.StoryTheme.Create();
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(_actor); _actor.AddChild(Actor);
         AddChild(_context); _context.AddChild(Context);
@@ -215,11 +216,6 @@ internal sealed partial class BattleMenuLayout : Control
     private static PanelContainer Frame(string name)
     {
         var panel = new PanelContainer { Name = name, MouseFilter = MouseFilterEnum.Ignore };
-        var style = new StyleBoxFlat { BgColor = new("08275bef"), BorderColor = new("ffe19a"),
-            BorderWidthLeft = 2, BorderWidthTop = 2, BorderWidthRight = 2, BorderWidthBottom = 2,
-            ShadowColor = new("754314"), ShadowSize = 3,
-            ContentMarginLeft = 14, ContentMarginTop = 12, ContentMarginRight = 14, ContentMarginBottom = 12 };
-        panel.AddThemeStyleboxOverride("panel", style);
         return panel;
     }
 }
