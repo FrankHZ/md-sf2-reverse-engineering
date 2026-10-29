@@ -40,10 +40,15 @@ internal static class BattleMovement
 
     internal static BattleMovementPreview Preview(EngineBattleState battle, ActorRef actorRef, MapPosition destination)
     {
-        var actor = battle.GetActor(actorRef);
         if (!battle.Definition.Contains(destination)) throw new BattleRuleException("movement-range", "destination");
+        return Preview(battle, actorRef, destination, Grid(battle, actorRef));
+    }
+
+    private static BattleMovementPreview Preview(EngineBattleState battle, ActorRef actorRef,
+        MapPosition destination, WeightedMovementGrid grid)
+    {
+        var actor = battle.GetActor(actorRef);
         var terrain = battle.Definition.Terrain;
-        var grid = Grid(battle, actorRef);
         if (grid.CostAt(destination) is not { } destinationCost)
             throw new BattleRuleException("movement-range", "destination");
         int current = Offset(destination), origin = Offset(actor.Position!), previousDirection = -1;
@@ -74,6 +79,25 @@ internal static class BattleMovement
         if (actualCost > destinationCost || actualCost > actor.Definition.Move * 2)
             throw new BattleRuleException("movement-path", "destination");
         return new(path, actualCost);
+    }
+
+    internal static IReadOnlyList<MapPosition> Destinations(EngineBattleState battle, ActorRef actorRef)
+    {
+        var grid = Grid(battle, actorRef);
+        var occupied = battle.Actors.Where(a => a.Actor != actorRef && a.Hp > 0 && a.Position is not null)
+            .Select(a => a.Position!).ToHashSet();
+        var destinations = new List<MapPosition>();
+        for (int y = 0; y < battle.Definition.Height; y++)
+            for (int x = 0; x < battle.Definition.Width; x++)
+            {
+                var position = new MapPosition(x, y);
+                if (grid.CostAt(position) is null || occupied.Contains(position)) continue;
+                // Reuse Preview's path-validity contract with this single propagated grid.
+                // Unexpected path failures remain visible rather than becoming hidden tiles.
+                _ = Preview(battle, actorRef, position, grid);
+                destinations.Add(position);
+            }
+        return destinations.AsReadOnly();
     }
 
     internal static WeightedMovementGrid Grid(EngineBattleState battle, ActorRef actorRef)

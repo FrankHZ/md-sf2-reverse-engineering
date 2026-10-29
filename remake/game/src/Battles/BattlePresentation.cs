@@ -8,11 +8,11 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 internal sealed record BattleActorMarker(ActorRef Actor, MapPosition Position, bool Ally, bool Selected, string Text, int? Facing = null, bool DeathEffect = false, bool Targeted = false);
 internal sealed record BattlePresentation(string Title, string Status, string Roster,
     IReadOnlyList<BattleActorMarker> Markers, IReadOnlyList<MapPosition> Preview, IReadOnlyList<MapPosition> Focus,
-    BattleMovementState? Movement);
+    BattleMovementState? Movement, BattleMovementRange? MovementRange);
 
 internal static class BattleSnapshotProjection
 {
-    internal static BattlePresentation Project(SessionResult result, ActorRef? candidate, string origin)
+    internal static BattlePresentation Project(SessionResult result, ActorRef? candidate, string origin, BattleMovementRange? movementRange)
     {
         var snapshot = result.Snapshot;
         var battle = snapshot.Battle;
@@ -44,6 +44,6 @@ internal static class BattleSnapshotProjection
         if (snapshot.BattleMovement is { } movement) { focus.Add(movement.From); focus.Add(movement.To); }
         string title = origin == "private-local-controlled-start" ? "PRIVATE CONTROLLED BATTLE" : "AUTHORED BATTLE";
         return new($"{title} · {battle.Definition.Map.Value} · round {battle.Round} · gold {battle.Gold?.ToString() ?? "Unknown"}", status,
-            roster, Array.AsReadOnly(markers), selection?.Preview.Path ?? [], focus.AsReadOnly(), snapshot.BattleMovement);
+            roster, Array.AsReadOnly(markers), selection?.Preview.Path ?? [], focus.AsReadOnly(), snapshot.BattleMovement, movementRange);
     }
 }
