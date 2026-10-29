@@ -30,7 +30,9 @@ and dependencies are worktree and handoff state, not a second tracked source of 
 - Godot 4.7.2 .NET/C# is the accepted Phase 4 baseline. The user explicitly authorized a bounded
   Phase 4 implementation start on 2026-08-28 under ADR 0016. [`remake/`](../../remake/) now contains
   bounded Domain, Application, validated Content, and a thin Godot host for authored packages and the
-  connected private-local Map 3 through Battle 01 world. Its [capability owner](../../remake/docs/capability-status.md) records
+  connected private-local opening world, plus selected Battle02 return/re-entry and Yeel–Battle03
+  play/control. Battle03 outcomes and later campaign are outside these accepted slices. Its
+  [capability owner](../../remake/docs/capability-status.md) records
   what is runnable, diagnostic, admitted-but-unconsumed, Unsupported, or Unknown.
 - Research coverage, evidence gaps and cadence belong to
   [`research/source-coverage.md`](../research/source-coverage.md); work scheduling and assignments
@@ -42,8 +44,9 @@ and dependencies are worktree and handoff state, not a second tracked source of 
 - [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md) records the adopted
   state/content-driven engine migration and the binding user test policy. Add engine behavior unit
   tests; use verification tools directly without tests of those tools. Old tests may migrate or retire.
-  M1's common session consumes two authored packages through movement/cancel, HEAL/STAY and automatic
-  rounds. M5 retired the transitional reference assembly, host and legacy tests; only external
+  The common session consumes configurable authored packages through supported movement, actions
+  and automatic rounds; current implementations and presentation are in the capability owner.
+  M5 retired the transitional reference assembly, host and legacy tests; only external
   controlled inputs remain under `remake/reference/inputs`. After environment setup use `uv run sf2 verify engine`
   and affected `uv run sf2 verify adapter`. Main-gate owns independent acceptance and remote checks.
 - Load the ignored [shared tool/input selections](./local-private-inputs.md) before tool commands.

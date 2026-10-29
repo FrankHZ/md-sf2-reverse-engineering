@@ -7,8 +7,8 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 One common `GameSession` runs configurable authored battle/exploration packages and the connected
-private Map 3 through Battle 01 world. Content admits reusable immutable definitions and separate
-controlled starts. Domain supplies deterministic movement, admitted actions, progression and rules;
+private opening world and selected Battle02/Yeel–Battle03 content. Content admits reusable immutable
+definitions and separate controlled starts. Domain supplies deterministic movement, admitted actions, progression and rules;
 Application owns program execution, waits, automatic turns, staged effects and return. Godot submits
 semantic input and presents current state. Production has no Reference or verification dependency.
 
@@ -27,6 +27,18 @@ full-game parity and public distribution remain outside that acceptance. The
 [retained evidence route](./docs/evidence/retained-comparisons.md) preserves failed comparisons,
 source/provenance and the retired reference implementation without turning them into current run plans.
 
+Accepted extensions include Battle02 victory, ordinary defeat/return and re-entry, and selected early
+Yeel guidance, Kazin following, Map66 admission and Battle03 play/control. The
+[current engineering frontier](./docs/capability-status.md#current-engineering-frontier) separates
+those implementations from Battle03 outcomes, Hawel recruitment, later campaign, village services
+and save/load, which remain outside their scope. These are selected packages and controlled starts,
+not a complete New Game campaign.
+
+The [current Godot presentation](./docs/godot/presentation.md) includes continuous exploration/Talk,
+a shared 1920×1080 world at 96px per cell, story dialogue, battle movement ranges, HP/MP cards,
+battle messages, return feedback and read-only Party Status. These accepted presentation changes retain
+their own observation limits; broader #438 UI/UX and final human/aesthetic acceptance remain separate.
+
 ## Start Here
 
 | Work | Read |
@@ -42,12 +54,37 @@ source/provenance and the retired reference implementation without turning them 
 | Local asset preparation | [Content presentation assets](./docs/content/presentation-assets.md) |
 | Historical comparisons and remaining Unknowns | [Retained evidence](./docs/evidence/retained-comparisons.md); current test policy is in the verification guide |
 
+## Run Locally
+
+Use this repository's existing worktree environment and selected Godot installation. From the
+repository root, after the [locked environment setup](./docs/development-and-verification.md#locked-net-workflow):
+
+```powershell
+. ./local/private-inputs.ps1
+& $env:GODOT_BIN --path remake/game
+# Choose another tracked authored battle instead of the default:
+& $env:GODOT_BIN --path remake/game -- --authored-package (Resolve-Path -LiteralPath 'remake/content/authored/garden-watch.json').Path
+```
+
+These are alternative launches; reuse the owned running instance during development. Private play
+requires prepared local inputs and an explicit start selection. The
+[ordinary-host recipe](./docs/verification/host.md#ordinary-host-startup) and
+[Yeel–Battle03 recipe](./docs/verification/field-programs.md#yeel-guide-through-battle03)
+own preparation and reproduction; the launch above does not prepare original assets.
+
+Default directional input moves/selects; Confirm opens or confirms the cardinal battle menu, Cancel
+backs out through selection and provisional movement. Exploration exposes contextual Talk. At settled
+field input, E / Pad Start opens the read-only Party Status page. Bindings are configurable; follow
+the displayed hints and [input/presentation owner](./docs/godot/presentation.md#modern-ui-experiment).
+For build/test selection continue to [Build and Test](#build-and-test); documentation-only edits do
+not require a game launch.
+
 ## Runtime Profiles
 
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | default local start, or `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
-| `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; the connected world executes opening, Battle01 and both supported outcomes/returns. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
+| `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; selected connected packages cover opening/Battle01, Battle02 outcomes/returns and Yeel–Battle03 play/control at their separate boundaries. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back
 while reporting private success. Authored battles, the standalone initialized private entry and the

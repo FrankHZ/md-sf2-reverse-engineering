@@ -1,5 +1,20 @@
 # Remake Capability Status
 
+## Current playable and presentation boundary
+
+The common state/content-driven session supports configurable authored packages and selected private
+content. The accepted continuous Map3–Battle01 milestone is followed by bounded
+[Battle02 outcome/field return and re-entry](#battle02-outcome-implementation-agreement) and
+[Yeel–Battle03 play/control](#yeel-guide-through-battle03-implementation-agreement).
+Battle03 outcomes/Hawel recruitment, later campaign, full services and save/load remain outside those
+slices. [Local play](../README.md#run-locally) selects a package/start, not a full New Game campaign.
+
+Current accepted presentation includes continuous exploration/contextual Talk, shared 1080p/96px
+world geometry (A/B), story dialogue (C), reachable movement tiles (B8), status cards and battle/return/
+read-only Party Status (E). The [presentation owner](godot/presentation.md) and its verification links
+retain the specific engineering acceptance and observation limits. Broader #438 product/aesthetic
+acceptance, original timing and distribution rights remain separate.
+
 ## Ordinary host lifecycle agreement
 
 **Standard rigor; bounded adapter correction:** coupled startup/field/return ownership has known
@@ -19,9 +34,11 @@ engine/research suite is selected. Independent integration remains main-gate's r
 
 This closes audit [F1's bounded implementation](evidence/structure-and-quality-review.md#f1--p1-make-host-ownership-and-return-wiring-cover-every-admitted-entry).
 Audit [F2](evidence/structure-and-quality-review.md#f2--p2-validate-json-object-shape-before-optional-field-discovery)
-has a bounded Content correction with direct typed-admission observations, pending independent integration;
+has an integrated bounded Content correction with direct typed-admission observations in
+[PR #1378](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1378);
 F3 remains unresolved. Private content, original natural reach/timing, #1047 Unknowns and
-#638's pause are unchanged. Later UI work in frozen PR #692 must semantically rebase this host boundary.
+#638's pause are unchanged. Current UI consumers retain this host boundary; PR #692 is historical
+design context, not an outstanding integration dependency.
 
 ## Authored Jaro victory agreement
 
@@ -207,9 +224,9 @@ The playable package is `remake/content/authored/jaro-conversion.json`. The
 ## Hidden-enemy lifecycle agreement
 
 **High rigor:** initialization, source region activation, round scheduling, staged appearance and
-ordinary combat/outcome share state. The current candidate implements the bounded authored lifecycle
-from [Issue #1353](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1353), pending independent
-integration. `GameSession` remains the only publisher. Reuse deployment/source-slot/region data,
+ordinary combat/outcome share state. The bounded authored lifecycle from
+[Issue #1353](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1353) is integrated in
+[PR #1354](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1354). `GameSession` remains the only publisher. Reuse deployment/source-slot/region data,
 initialization, ordinary death, encounter defaults and typed completion; no generic scheduler or
 second maximum-HP authority is introduced. Work is bounded to32 enemy slots/62 actors and16 regions,
 with O(enemy slots × roster + regions × allies) scans and at most32 retained appearance IDs. The
@@ -251,7 +268,8 @@ this capability does not supersede them. See the [rule](domain/gameplay-rules.md
 staged scene damage, death accounting and native delivery. The finite implementation uses the
 existing rule/result/session/field-death owners; no general area-action or media platform is added.
 [Issue #1351](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1351) owns coordination;
-this agreement owns scope. Current milestone is bounded authored delivery, pending independent review.
+this agreement owns scope. Bounded authored delivery is integrated in
+[PR #1352](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1352).
 
 The player can leave the fixed ray empty of allies (Flower stays), then move onto it through ordinary
 commands. Preparation reconstructs both factions in explicit source-slot order, including friendly
@@ -298,8 +316,8 @@ later failure, and same-session receipt/full-pack return/reentry through ordinar
 actual engine behavior tests, engine/adapter builds, the two
 [bounded native inputs](development-and-verification.md#battle-item-drop-authored-observations),
 committed verification selection and exact-head CI. Each native run is bounded to180s/5MiB; no
-new assets or capture platform is required. Current milestone is implementation and native validation
-complete, with independent main-gate acceptance pending in
+new assets or capture platform is required. Implementation and native validation are integrated in
+[PR #1350](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1350), closing the bounded
 [Issue #1349](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1349).
 
 Full/private Battle18, wider action families, shops/Deals purchase, Caravan/depot, connected/private equip interaction,
