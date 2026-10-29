@@ -98,6 +98,9 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 
 [路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。已索引设计语料均已有独立全文双语验收并合并的完整译文；当前版本锚和漂移状态以现有命令复现。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
 
+当前仍有英文源在对应译文的审阅锚点之后发生变更，这些差异尚须逐项语义复核。
+已有完整译文且曾在各自基线验收，不表示它们与当前英文版本全部同步；复核完成前保留原锚点，不能只刷新 hash 或日期。
+
 [翻译索引](../manifests/zh-translation-index.json)记录逐文档状态与审阅版本锚。使用 `uv run --locked sf2 zh-meta list` 查看记录、`uv run --locked sf2 zh-meta test` 复现全局检查。元数据 PASS 只证明检查器覆盖的同步、链接、结构与 fixture 约束，不能替代全文语义与读者路线验收。
 
 未来英文实质变更或新增文档须先确认 accepted main 来源与稳定性，再限定范围、完整翻译和独立审阅。只更新已审阅的受影响记录，其他记录与术语表元数据保持不变。尚未同步时保留旧锚并明确报告漂移，不能只刷新 hash 或日期。`translated` 表示有已锚定译文，不保证来源仍最新；`pending` 表示无镜像，应回退英文。它们都不是原版研究或采集队列。持续同步不包括游戏脚本汉化，也不扩大重制能力。

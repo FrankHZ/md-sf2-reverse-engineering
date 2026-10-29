@@ -44,6 +44,13 @@ All indexed design sources have complete, independently accepted Chinese mirrors
 connects themes, chapter guides and English evidence owners. Later chapter sections that link directly
 to English research are not pending Chinese design guides. English remains canonical; translation
 does not advance original observations or playable remake support.
+
+Some current English sources have changed since their Chinese mirrors' review anchors. Those
+outstanding differences require document-by-document semantic review; acceptance at a reviewed
+baseline does not establish synchronization with the current English version. Consult the
+[translation index](../manifests/zh-translation-index.json) and `uv run --locked sf2 zh-meta list`
+for the affected records. Their anchors remain unchanged pending review.
+
 The [continuing synchronization agreement](./design/documentation-roadmap.md#bounded-translation-repair-agreement)
 uses the existing glossary, translation index and original `sf2 zh-meta` checks. Future source changes
 require stable accepted content, full bilingual review and reader-route acceptance before affected
