@@ -158,10 +158,52 @@ discussion with the user; Git integration and Epic closure remain main-gate resp
 
 ## Presentation Policy and Current Layout
 
-The current battle view responds to actual viewport size, with a diamond command menu, list submenus
-and a contextual panel against the right safe edge (below the menu in narrow windows). Map framing follows current origin/path/target; UI
-coordinates do not restrict legal maps or actor positions. Field presentation uses a 320-by-192
-source view and current logical camera/layout state. Texture/node caches are disposable projections.
+The common design baseline is 1920×1080 (16:9). One map cell and ordinary 24×24 sprite
+frame occupy 96×96 output pixels: both consumers use nearest sampling at four output pixels
+per source pixel. The world fills the viewport (480×270 source pixels); UI overlays never resize
+or zoom it. Other resolutions, free zoom, a new theme and broader menu redesign are outside this slice.
+
+### Unified world viewport agreement
+
+Standard rigor: this changes Godot presentation only. Application retains entity coordinates,
+logical camera axes, collision, scripts, clocks and completion tokens. `WorldViewportLayout` owns
+only disposable source-pixel camera geometry, shared by field and battle through `GameRoot`.
+It does not store gameplay state. Both authored and private consumers use the same cell scale.
+
+Field coordinates are sixteenth-source-pixel motion values divided by16. A battle cell is mapped
+to the source map by adding `SourceMapRegion.Origin`, then multiplying by24. Sprite top-left and
+foot alignment stay on that same transform. Battle terrain uses the inverse region translation.
+A same-area, same-map handoff retains the presentation origin and pans toward the new subject; a different
+map initializes its own frame under the existing transition. Disjoint packed rooms on the same
+map also initialize within that transition; the camera never pans across unopened storage. Bounds may clamp a handoff when its
+legal region changes; continuity never authorizes displaying packed neighboring rooms.
+
+Ordinary exploration follows the player through a small dead zone with bounded linear panning.
+An explicit followed story entity has priority. A detached logical camera maps its original
+240×216 logical frame center (origin +120,+108) into the modern frame; logical scroll progress
+remains authoritative. Plane origins are reconstructed from the presentation origin using each
+plane's admitted parallax and offset, preserving the two-plane relationship. Display displacement
+and quake do not write back to logical axes. CameraWait still requires actual settled delivery.
+
+The current logical view area bounds the displayed world (traversal area for unbound authored
+content), independently of packed 64×64 storage. Explicit scene origins select their own area,
+independently of the retained player; non-player story follow targets bypass the player dead zone.
+Its inclusive cell bounds become a half-open pixel rectangle. Rendering clips every plane and
+actor to that rectangle and the viewport. Small areas center on exterior base color, never zoom
+or reveal another area. High tile priority, actor ink masks and draw order remain in their owners.
+Battle regions bound their own legal draw rectangle. Movement/target/story subjects pan into the
+central safe area above the bottom UI; distant objects never cause a zoom change. When a legal
+edge clamp prevents that placement, the overlapping corner UI panel moves vertically to avoid
+the subject. Menu visibility itself never changes the camera. A subject change
+may move the camera, while menu/description visibility alone cannot do so.
+
+At 1080p, body text is 30px, safe edges 32px and field dialogue reserves a 260px bottom overlay.
+The diamond keeps its cardinal arrangement with crisp 96px icons. This is a first readable layout,
+not a new component kit or an aesthetic acceptance claim. Acceptance is an adapter build and a
+bounded native witness of private room/edge/occlusion, map/region handoff, battle movement/target
+and UI geometry plus the existing input/reveal/entry-skip boundaries. No full/H4 replay or new
+Domain tests are needed for this presentation-only change. The
+[host recipe](../verification/host.md#unified-world-viewport-observation) records reproduction and limits.
 
 The earlier 960-by-540 logical grid, 4x authored masters/2x and4x buckets, SVG chrome, product font
 theme, UI-scale choices and safe-area model are retained presentation design/proposal context.
@@ -195,13 +237,13 @@ sit against the right safe edge, leaving the middle open. Magic and inventory us
 cancel path back to the preceding selection. A vertical list replacing the main diamond is not the
 selected direction.
 
-The current 1280×720 review layout uses 72×72 icons (3× source pixels) in a compact 216×168 cardinal
-cluster, with 48-pixel vertical steps between the top, side and bottom positions. This is a modern
+The current 1920×1080 layout uses 96×96 icons (4× source pixels) in a compact 288×224 cardinal
+cluster, with 64-pixel vertical steps between the top, side and bottom positions. This is a modern
 spacing choice inspired by the source arrangement, not a pixel-exact original layout claim.
 The battle map occupies the full game viewport; command menus, lists, hints and supplementary HUD
 draw above it. Opening or closing UI must not resize the map, alter its zoom or reframe its current
-focus. Gameplay movement/target changes retain their existing camera behavior. This overlay change
-does not choose the deferred modern world viewport/camera design.
+focus. Gameplay movement/target changes use the shared fixed-scale pan policy above.
+The earlier1280×720 menu observation remains historical acceptance of its own UI slice.
 
 The existing graphics-remake experiment at commit `172662709b31cb296b55f51894754ce810c30f6c`,
 owned by its `docs/ui-treatment-01.md` and `src/remaster/vector_ui.py`, supplies the window-chrome
@@ -239,8 +281,8 @@ The UI never calculates range, faction or effect legality. Unsupported Search is
 Stay slot. Actor labels retain current content identities; a complete naming/portrait treatment is
 outside this iteration. Pointer activation and new controller acceptance are also outside scope.
 
-Held exploration movement and a wider world viewport are separate requested improvements;
-the earlier 640-by-360 world-view candidate remains a proposal, not an accepted constant.
+Continuous exploration movement retains its [accepted control owner](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk).
+The shared 1080p world viewport is defined above; the earlier 640-by-360 proposal is not a runtime constant.
 
 ## Field Projection
 
@@ -255,13 +297,16 @@ Unknown source palette/layer/timing or final pixels remain unproved by modern no
 The bound camera admits zero-autoscroll layer0/255, with unity/origin0 on the main plane and
 secondary per-axis parallax128/256 and tile offsets0–63, within nonnegative signed-word positions.
 [Source/behavior contract](../../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
-owns initialization, transforms, independent scroll speeds and main-plane follow. A and B tile
-draws use their respective origins; foreground presence compares both offsets and parallax.
+owns initialization, transforms, independent scroll speeds and main-plane follow. A and B logical
+origins remain source state. Their modern draw origins derive from the shared presentation origin
+with each plane's admitted parallax and offsets; foreground presence compares both offsets and parallax.
 Ordinary actors use the area's main plane (B for0, A for255), selected before the source entity
 loop; entity Layer selects signed window priority rather than coordinates. Observation exposes
 each actor's actual origin. Equal unity planes still suppress duplicate foreground. Tile alpha,
 clipping, priority and sprite ordering retain their existing owners. Readback compares draw tick,
-logical origins, actual resources and geometry throughout changing plane separation. Other layer,
+logical state, modern draw origins, actual resources and geometry throughout changing plane separation.
+Historical original-viewport camera readbacks retain their original scale expectations; the unified
+viewport witness checks the modern mapping without rewriting those evidence records. Other layer,
 autoscroll, word-wrap and raster/scroll-table profiles remain Unsupported or Unknown; this does
 not establish original interrupt timing or final hardware pixels.
 

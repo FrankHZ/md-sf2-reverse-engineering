@@ -55,14 +55,16 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private EntityRef? _mosaic;
     private bool _mosaicOut;
     private EntityRef? _storyEffect;
-    private MapId? _map;
+    private readonly WorldViewportLayout _viewport;
     private Vector2 _camera;
     private Rect2 _screen;
     private float _scale;
-    private const int ViewWidth = 320, ViewHeight = 192;
+    private int ViewWidth => (int)Math.Ceiling(_owner.GetViewportRect().Size.X / WorldViewportLayout.PixelScale);
+    private int ViewHeight => (int)Math.Ceiling(_owner.GetViewportRect().Size.Y / WorldViewportLayout.PixelScale);
 
-    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, bool reducedFlash, Action prepareBattle, SessionAudio audio)
+    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, bool reducedFlash, Action prepareBattle, SessionAudio audio, WorldViewportLayout viewport)
     {
+        _viewport = viewport;
         _owner = owner; _visuals = definition.Visuals; _reducedFlash = reducedFlash; _prepareBattle = prepareBattle;
         _audio = audio; Error = audio.Error;
         _capture = ObservationCapture.Find(owner);
@@ -144,26 +146,24 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 _audio.FiniteMusicFinished(music.Generation, music.Cue))
                 completions.Add(new CompleteMusic(music.Generation, music.Cue));
             var target = _camera;
-            if (current.Exploration is { } world)
+            if (current.Exploration is { } world && !(BattleLoads > 0 && current.Active is ActiveBattle))
             {
-                if (current.Story.LogicalView is { } view)
-                    _camera = target = view.Area.Layer == 0
-                        ? new Vector2(view.BX.Position / 16f, view.BY.Position / 16f)
-                        : new Vector2(view.AX.Position / 16f, view.AY.Position / 16f);
-                else
-                {
-                    var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.Area;
-                    var tracked = current.Story.CameraEntitySlot is { } slot
-                        ? world.AllEntities.Single(entity => entity.Slot == slot) : world.PlayerEntity;
-                    target = current.Story.CameraEntitySlot is null && current.Story.Cursor is not null && current.Story.CameraTarget is { } destination
-                        ? new Vector2(destination.X * 24, destination.Y * 24)
-                        : new Vector2(tracked.Motion.X / 16f - ViewWidth / 2f + 12,
-                            tracked.Motion.Y / 16f - ViewHeight / 2f + 12);
-                    target.X = Mathf.Clamp(target.X, area.MinimumX * 24, Math.Max(area.MinimumX * 24, (area.MaximumX + 1) * 24 - ViewWidth));
-                    target.Y = Mathf.Clamp(target.Y, area.MinimumY * 24, Math.Max(area.MinimumY * 24, (area.MaximumY + 1) * 24 - ViewHeight));
-                    if (_map != world.Map) { _map = world.Map; _camera = target; }
-                    else _camera = skipping ? target : _camera.MoveToward(target, (float)(delta * 180));
-                }
+                var view = current.Story.LogicalView;
+                bool explicitCamera = view is { TargetSlot: null } || view?.TargetSlot is { } followed && followed != world.PlayerEntity.Slot || current.Story.CameraEntitySlot is not null;
+                var tracked = (view?.TargetSlot ?? current.Story.CameraEntitySlot) is { } slot
+                    ? world.AllEntities.First(entity => entity.Slot == slot) : world.PlayerEntity;
+                Vector2 point = new(tracked.Motion.X / 16f + 12, tracked.Motion.Y / 16f + 12);
+                if (view is { TargetSlot: null })
+                    point = (view.Area.Layer == 0 ? new Vector2(view.BX.Position, view.BY.Position)
+                        : new Vector2(view.AX.Position, view.AY.Position)) / 16 + WorldViewportLayout.LogicalHalfFrame;
+                else if (view is null && current.Story.CameraEntitySlot is null &&
+                    current.Story.Cursor is not null && current.Story.CameraTarget is { } destination)
+                { point = new(destination.X * 24 + 12, destination.Y * 24 + 12); explicitCamera = true; }
+                _viewport.Focus(world.Map, WorldViewportLayout.FieldBounds(world, view), point,
+                    _owner.GetViewportRect().Size, explicitCamera);
+                _viewport.Advance(delta, skipping);
+                _camera = _viewport.Origin;
+                target = _camera;
                 foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest &&
                     (_visuals is not null || world.Definition.Caravan is null)))
                 {
@@ -309,7 +309,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     complete = _cueAge >= 0.5;
                     if (complete) PaletteFades++;
                     break;
-                case PresentationCueKind.CameraWait: complete = _camera.DistanceTo(target) < 0.01f; break;
+                case PresentationCueKind.CameraWait: complete = _viewport.Settled; break;
                 case PresentationCueKind.Gesture:
                     _nodding = wait.Cue.Resource == "nod" && _cueAge is >= (10.0 / 60) and < (30.0 / 60);
                     // Rendering observes the timeline; culling or a missed phase cannot hold story control.
@@ -354,19 +354,20 @@ internal sealed partial class ExplorationPresentation : IDisposable
         {
             if (!_visuals.Maps.TryGetValue(world.Map, out var visual)) throw new InvalidOperationException("map-visual-binding");
             var viewport = _owner.GetViewportRect().Size;
-            _scale = Math.Max(1, Math.Min((viewport.X - 40) / ViewWidth, (viewport.Y - 200) / ViewHeight));
-            _screen = new(new Vector2((viewport.X - ViewWidth * _scale) / 2, 52), new Vector2(ViewWidth, ViewHeight) * _scale);
+            _scale = WorldViewportLayout.PixelScale;
+            _camera = _viewport.Origin;
+            _screen = _viewport.Screen;
             _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
             var view = story.LogicalView;
-            var background = view is null ? _camera : new Vector2(view.BX.Position / 16f, view.BY.Position / 16f);
-            var foreground = view is null ? _camera : new Vector2(view.AX.Position / 16f, view.AY.Position / 16f);
+            var background = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, false);
+            var foreground = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, true);
             // A deterministic bounded displacement; no gameplay RNG or motion is consumed.
             float quake = world.Quake == 0 || _reducedFlash ? 0 : (story.SimulationTick % 2 == 0 ? world.Quake : -world.Quake);
             background.Y += quake; foreground.Y += quake;
-            if (view is not null) _camera = view.Area.Layer == 0 ? background : foreground;
+
             // VInt_UpdateSprites selects the area's main plane once before its entity loop.
             // ENTITYDEF_LAYER controls signed window priority, not coordinate selection.
-            var actorOrigin = _camera;
+            var actorOrigin = _camera + new Vector2(0, quake);
             var overlay = new MapOverlayOffset(0, 0);
             if (view is null)
             {
@@ -407,7 +408,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 point.X += shiverOffsetX;
                 double mosaicAge = _mosaicOut ? 0.5 - _cueAge : _cueAge;
                 int? mosaicBlock = _mosaic == entity.Entity ? (mosaicAge < 0.1 ? 8 : mosaicAge < 0.2 ? 6 : mosaicAge < 0.3 ? 4 : mosaicAge < 0.4 ? 2 : 1) : null;
-                var destination = new Rect2(_screen.Position + (point - actorOrigin) * _scale, new Vector2(24, 24) * _scale);
+                var destination = new Rect2((point - actorOrigin) * _scale, new Vector2(24, 24) * _scale);
                 bool visible = _screen.Intersects(destination);
                 actors?.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
                     facing = entity.Motion.Facing, layer = entity.Motion.Layer, spritePriority = entity.Priority, highPriority, pass = actorPass,
@@ -486,17 +487,29 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
-                x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y,
+                x = 0, y = 0, width = viewport.X, height = viewport.Y,
+                legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
+                cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
                 scale = _scale, windows, background = backgroundDraw, foreground = foregroundDraw, backgroundHigh, foregroundHigh, actors, occlusionDraws };
             CameraCompactProjection = new { drawSequence = _drawSequence, processFrame = Engine.GetProcessFrames(),
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
-                x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y,
+                x = 0, y = 0, width = viewport.X, height = viewport.Y,
+                legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
+                cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
                 scale = _scale, windows, background = backgroundDraw?.Geometry(), foreground = foregroundDraw?.Geometry(),
                 backgroundHigh = backgroundHigh?.Geometry(), foregroundHigh = foregroundHigh?.Geometry(), actors,
                 occlusionDraws = occlusionDraws?.Cast<LayerDraw>().Select(layer => layer.Geometry()).ToArray() };
             }
+            // Mask actor/effect fragments outside the legal room before drawing UI.
+            // Plane draws are individually clipped; this also covers transformed effects.
+            var exterior = new Color(0.03f, 0.04f, 0.06f);
+            foreach (var border in new[] { new Rect2(0, 0, viewport.X, _screen.Position.Y),
+                new Rect2(0, _screen.End.Y, viewport.X, viewport.Y - _screen.End.Y),
+                new Rect2(0, _screen.Position.Y, _screen.Position.X, _screen.Size.Y),
+                new Rect2(_screen.End.X, _screen.Position.Y, viewport.X - _screen.End.X, _screen.Size.Y) })
+                if (border.Size.X > 0 && border.Size.Y > 0) _owner.DrawRect(border, exterior);
             int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
             PortraitResourceProjection = null;
             object? portraitUse = null;
@@ -532,8 +545,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     _resourceSelectors[texture] = new
                     { kind = "portrait", portrait, mirror = key.Item2, eyes = key.Item3, mouth = key.Item4, tiles };
                 }
-                var destination = new Rect2((flags & 0x80) != 0 ? viewport.X - 92 : 20,
-                    work is null ? viewport.Y - 150 : 52 + work.Y * 12, 72, 84);
+                var destination = new Rect2((flags & 0x80) != 0 ? viewport.X - 224 : 32,
+                    work is null ? viewport.Y - 260 : viewport.Y - 260 + work.Y * 12, 192, 224);
                 if (_observeCamera) _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
                 {
                     ["id"] = portrait, ["flags"] = flags, ["eyesClosed"] = key.Item3, ["mouthOpen"] = key.Item4,
@@ -652,7 +665,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 if (sourceX is < 0 or > 63 || sourceY is < 0 or > 63) continue;
                 int block = world.Layout[sourceX, sourceY] & 0x3FF;
                 if (overlay && block == 0) continue;
-                var rectangle = new Rect2(_screen.Position + (new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
+                var rectangle = new Rect2((new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
                 if (!rectangle.Intersects(_screen) || actor is { } masked && !rectangle.Intersects(masked.Bounds)) continue;
                 var texture = Block(visual, block);
                 // Reuse the existing block resource; split its nine tile regions by the

@@ -6,11 +6,11 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // Product UI geometry uses physical window units, independent of map tiles and source pixels.
 internal sealed partial class BattleMenuLayout : Control
 {
-    internal readonly Label Actor = Text("Actor", 17);
-    internal readonly Label Context = Text("Context", 17);
-    internal readonly Label Heading = Text("Heading", 21);
-    internal readonly Label Detail = Text("Detail", 17);
-    internal readonly Label Help = Text("Help", 15);
+    internal readonly Label Actor = Text("Actor", 30);
+    internal readonly Label Context = Text("Context", 28);
+    internal readonly Label Heading = Text("Heading", 32);
+    internal readonly Label Detail = Text("Detail", 30);
+    internal readonly Label Help = Text("Help", 28);
     internal readonly Control Diamond = new() { Name = "Diamond", MouseFilter = MouseFilterEnum.Ignore };
     internal readonly BattleDiamondButton[] Commands = [new("Attack"), new("Magic"), new("Item"), new("Stay")];
     private readonly PanelContainer _actor = Frame("ActorPanel");
@@ -25,6 +25,14 @@ internal sealed partial class BattleMenuLayout : Control
     private Vector2 _descriptionSize;
     private Vector2 _actorSize, _contextSize;
     private bool _commandHint;
+    private Rect2 _subject;
+
+    internal void AvoidSubject(Rect2 rectangle)
+    {
+        if (_subject == rectangle) return;
+        _subject = rectangle;
+        Arrange(Size);
+    }
 
     internal void ConfigureAssets(BattleSceneDefinition? content)
     {
@@ -77,22 +85,22 @@ internal sealed partial class BattleMenuLayout : Control
     internal void Arrange(Vector2 size)
     {
         Size = size;
-        const float margin = 16;
+        const float margin = 32;
         bool narrow = size.X < 700;
-        // Three display pixels per source pixel: keep the original icon crisp,
+        // Four display pixels per source pixel: keep the original icon crisp,
         // and bring the cardinal centers closer without overlapping the square rasters.
-        const float cell = 24 * 3, step = 48;
+        const float cell = 24 * 4, step = 64;
         const float menuWidth = cell * 3, menuHeight = cell + step * 2;
-        float listHeight = Mathf.Clamp(size.Y * 0.38f, 220, 300);
-        float detailWidth = _commandHint ? Mathf.Min(240, size.X - 2 * margin) :
-            narrow ? size.X - 2 * margin : Mathf.Clamp(size.X * 0.25f, 260, 340);
-        float detailHeight = _commandHint ? 56 : narrow ? 180 : listHeight;
+        float listHeight = Mathf.Clamp(size.Y * 0.38f, 300, 420);
+        float detailWidth = _commandHint ? Mathf.Min(420, size.X - 2 * margin) :
+            narrow ? size.X - 2 * margin : Mathf.Clamp(size.X * 0.25f, 420, 520);
+        float detailHeight = _commandHint ? 88 : narrow ? 180 : listHeight;
         _descriptionSize = new(detailWidth, detailHeight);
         SetTextWidths();
         detailHeight = Mathf.Max(detailHeight, _detail.GetCombinedMinimumSize().Y);
         float bottom = size.Y - margin - (narrow ? detailHeight + 12 : 0);
-        _actorSize = new(Mathf.Min(300, size.X * 0.55f - margin), 76);
-        _contextSize = new(size.X * 0.45f - margin - 8, 62);
+        _actorSize = new(Mathf.Min(500, size.X * 0.55f - margin), 120);
+        _contextSize = new(size.X * 0.45f - margin - 8, 110);
         _actor.Position = new(margin, margin);
         _context.Position = new(size.X * 0.55f + 8, margin);
         Diamond.Position = new(margin, bottom - menuHeight); Diamond.Size = new(menuWidth, menuHeight);
@@ -103,13 +111,26 @@ internal sealed partial class BattleMenuLayout : Control
             Commands[i].Arrange();
         }
         _list.Position = new(margin, bottom - listHeight);
-        _list.Size = new(Mathf.Min(360, size.X - 2 * margin - (narrow ? 0 : detailWidth + 24)), listHeight);
+        _list.Size = new(Mathf.Min(540, size.X - 2 * margin - (narrow ? 0 : detailWidth + 24)), listHeight);
         _detail.Position = new(narrow ? margin : size.X - margin - detailWidth, size.Y - margin - detailHeight);
         _descriptionSize = new(detailWidth, detailHeight);
         SetTextWidths();
         _actor.Size = _actorSize; _context.Size = _contextSize;
         _detail.Size = _descriptionSize;
         SetTextWidths();
+        // A legal edge clamp can leave the focused actor under a corner overlay.
+        // Move that UI panel; never change world size, scale or gameplay coordinates.
+        foreach (var panel in new Control[] { _actor, _context, Diamond, _list, _detail })
+        {
+            if (!new Rect2(panel.Position, panel.Size).Intersects(_subject.Grow(16))) continue;
+            foreach (float y in new[] { 192f, size.Y - margin - panel.Size.Y, margin })
+            {
+                var candidate = new Rect2(new Vector2(panel.Position.X, y), panel.Size);
+                if (y < margin || candidate.End.Y > size.Y - margin || candidate.Intersects(_subject.Grow(16))) continue;
+                panel.Position = candidate.Position;
+                break;
+            }
+        }
     }
 
     internal void ShowCommandHint(bool compact)
@@ -143,8 +164,8 @@ internal sealed partial class BattleMenuLayout : Control
             _rowLabels.Clear(); _labels = labels;
             foreach (string value in labels)
             {
-                var label = Text("Choice", 18); label.Text = value;
-                label.CustomMinimumSize = new(0, 44);
+                var label = Text("Choice", 30); label.Text = value;
+                label.CustomMinimumSize = new(0, 64);
                 _rows.AddChild(label); _rowLabels.Add(label);
             }
         }
@@ -217,7 +238,7 @@ internal sealed partial class BattleDiamondButton : Control
         TextureFilter = TextureFilterEnum.Nearest;
         _label = new Label { Text = caption, HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        _label.AddThemeFontSizeOverride("font_size", 14);
+        _label.AddThemeFontSizeOverride("font_size", 28);
     }
     public override void _Ready() => AddChild(_label);
     protected override void Dispose(bool disposing)

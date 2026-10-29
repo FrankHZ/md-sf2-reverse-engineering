@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.GodotAdapter.Exploration;
 using Godot;
+using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Content.Scenarios;
@@ -12,6 +13,7 @@ namespace Sf2.Remake.GodotAdapter;
 // Ordinary game composition only. Reference play has its own project and entry scene.
 public sealed partial class GameRoot : Node
 {
+    private readonly WorldViewportLayout _worldViewport = new();
     private GameInput? _input;
     private BattleSessionView? _battle;
     private ExplorationSessionView? _exploration;
@@ -34,7 +36,7 @@ public sealed partial class GameRoot : Node
 
     public override void _Ready()
     {
-        var view = new BattleSessionView { Name = "BattleSessionView" };
+        var view = new BattleSessionView { Name = "BattleSessionView", WorldViewport = _worldViewport };
         _battle = view;
         AddChild(view);
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -129,7 +131,7 @@ public sealed partial class GameRoot : Node
 
             void ShowExploration(SessionResult initial, bool returning)
             {
-                var exploration = new ExplorationSessionView { Name = "ExplorationSessionView" };
+                var exploration = new ExplorationSessionView { Name = "ExplorationSessionView", WorldViewport = _worldViewport };
                 _exploration = exploration;
                 AddChild(exploration);
                 if (returning)
