@@ -631,10 +631,14 @@
       "source": "docs/design/documentation-roadmap.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
-      "sourceSha256": "21db94dad7bcaa1c192dc3514abdd937a195eecc5f920cdc76cbe45a4e9130a4",
-      "mirrorSha256": "b5d9bf95325f15960eed261a67913f9da7aad6c175d98a59b957c805901b6064",
+      "sourceSha256": "27b12679ff1ff82d2dc2bb4ecaf4a1d4c25f4d1ff44688bd6928f885507a7e3d",
+      "mirrorSha256": "be661b8e2f6e8080f4c89270be1c49c9ba102b1abb9462ca801f9a4cc1841e17",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-10-26"
+      "translatedDate": "2026-10-29"
+    },
+    {
+      "source": "docs/design/synthesis/battle-design-analysis-pilot.md",
+      "status": "pending"
     },
     {
       "source": "docs/design/synthesis/battle01-return-through-battle02.md",

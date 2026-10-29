@@ -40,7 +40,7 @@ party/resources and exploration/continuity. [Story Progression's six chapter gro
 connect selected accepted static content through ending/reset, with detailed guides and evidence
 at their named boundaries. The [five-theme source disposition](./design/documentation-roadmap.md#selected-english-source-set-and-reconciliation)
 keeps integrated source acceptance separate from the bounded playable remake milestone.
-All indexed design sources have complete, independently accepted Chinese mirrors at their reviewed baselines. The [Chinese reader entry](./README.zh-CN.md)
+The previously accepted design corpus has complete Chinese mirrors at its independently reviewed baselines. The new English battle-analysis pilot has no mirror (`pending`). The [Chinese reader entry](./README.zh-CN.md)
 connects themes, chapter guides and English evidence owners. Later chapter sections that link directly
 to English research are not pending Chinese design guides. English remains canonical; translation
 does not advance original observations or playable remake support.
@@ -57,9 +57,10 @@ require stable accepted content, full bilingual review and reader-route acceptan
 anchors are updated. Metadata PASS alone is insufficient. Content and navigation changes require
 independent semantic and reader-route acceptance; main-gate owns integration and epic completion decisions.
 
-Existing synthesis explains rules, conditional story flow and selected encounter exceptions.
-[The lightweight battle-design analysis pilot #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
-remains future work; this index does not present tactical-intent or balance analysis as delivered.
+Existing themes explain rules, conditional story flow and selected encounter exceptions. The
+[battle-design analysis pilot](./design/synthesis/battle-design-analysis-pilot.md) adds three bounded
+examples: Battle01, Taros and Chessboard, with explicit preparation assumptions and simple responses
+with tradeoffs. Design readings are Inferred; they do not establish author intent or difficulty.
 
 ### Themes and design governance
 
@@ -67,6 +68,7 @@ remains future work; this index does not present tactical-intent or balance anal
 - [Documentation Roadmap and Governance Boundaries](./design/documentation-roadmap.md)
 - [Gameplay Overview and System Boundaries](./design/synthesis/gameplay-overview.md)
 - [Tactical Battle Loop and State Handoffs](./design/synthesis/tactical-battle-loop.md)
+- [Battle Design Analysis: Battle01, Taros and Chessboard](./design/synthesis/battle-design-analysis-pilot.md) — English pilot; Chinese pending
 - [Progression and Economy](./design/synthesis/progression-and-economy.md)
 - [Story Progression](./design/synthesis/story-progression.md)
 - [Map Design Principles: Exploration, Interaction and World Continuity](./design/synthesis/map-design-principles.md)
