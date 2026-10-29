@@ -146,24 +146,30 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 _audio.FiniteMusicFinished(music.Generation, music.Cue))
                 completions.Add(new CompleteMusic(music.Generation, music.Cue));
             var target = _camera;
-            if (current.Exploration is { } world && !(BattleLoads > 0 && current.Active is ActiveBattle))
+            if (current.Exploration is { } world)
             {
-                var view = current.Story.LogicalView;
-                bool explicitCamera = view is { TargetSlot: null } || view?.TargetSlot is { } followed && followed != world.PlayerEntity.Slot || current.Story.CameraEntitySlot is not null;
-                var tracked = (view?.TargetSlot ?? current.Story.CameraEntitySlot) is { } slot
-                    ? world.AllEntities.First(entity => entity.Slot == slot) : world.PlayerEntity;
-                Vector2 point = new(tracked.Motion.X / 16f + 12, tracked.Motion.Y / 16f + 12);
-                if (view is { TargetSlot: null })
-                    point = (view.Area.Layer == 0 ? new Vector2(view.BX.Position, view.BY.Position)
-                        : new Vector2(view.AX.Position, view.AY.Position)) / 16 + WorldViewportLayout.LogicalHalfFrame;
-                else if (view is null && current.Story.CameraEntitySlot is null &&
-                    current.Story.Cursor is not null && current.Story.CameraTarget is { } destination)
-                { point = new(destination.X * 24 + 12, destination.Y * 24 + 12); explicitCamera = true; }
-                _viewport.Focus(world.Map, WorldViewportLayout.FieldBounds(world, view), point,
-                    _owner.GetViewportRect().Size, explicitCamera);
-                _viewport.Advance(delta, skipping);
-                _camera = _viewport.Origin;
-                target = _camera;
+                // Once mounted, battle owns the shared camera while field still delivers entry services.
+                if (!(BattleLoads > 0 && current.Active is ActiveBattle))
+                {
+                    var view = current.Story.LogicalView;
+                    bool explicitCamera = view is { TargetSlot: null } ||
+                        view?.TargetSlot is { } followed && followed != world.PlayerEntity.Slot ||
+                        current.Story.CameraEntitySlot is not null;
+                    var tracked = (view?.TargetSlot ?? current.Story.CameraEntitySlot) is { } slot
+                        ? world.AllEntities.First(entity => entity.Slot == slot) : world.PlayerEntity;
+                    Vector2 point = new(tracked.Motion.X / 16f + 12, tracked.Motion.Y / 16f + 12);
+                    if (view is { TargetSlot: null })
+                        point = (view.Area.Layer == 0 ? new Vector2(view.BX.Position, view.BY.Position)
+                            : new Vector2(view.AX.Position, view.AY.Position)) / 16 + WorldViewportLayout.LogicalHalfFrame;
+                    else if (view is null && current.Story.CameraEntitySlot is null &&
+                        current.Story.Cursor is not null && current.Story.CameraTarget is { } destination)
+                    { point = new(destination.X * 24 + 12, destination.Y * 24 + 12); explicitCamera = true; }
+                    _viewport.Focus(world.Map, WorldViewportLayout.FieldBounds(world, view), point,
+                        _owner.GetViewportRect().Size, explicitCamera);
+                    _viewport.Advance(delta, skipping);
+                    _camera = _viewport.Origin;
+                    target = _camera;
+                }
                 foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest &&
                     (_visuals is not null || world.Definition.Caravan is null)))
                 {

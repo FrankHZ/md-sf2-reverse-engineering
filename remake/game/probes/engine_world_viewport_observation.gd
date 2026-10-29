@@ -49,7 +49,7 @@ func state() -> Dictionary:
 func sample(label: String) -> Dictionary:
     var current := state()
     var row := {"label":label, "focused":root.has_focus(), "owner":str(view.name)}
-    for key in ["sessionId", "revision", "mode", "map", "stage", "actor", "failure", "wait", "stop", "stopReason", "viewport", "mapViewport", "worldGeometry", "cameraProjection", "logicalView", "entities", "actors", "previewRect", "zoom", "menu", "help", "dialogue", "choiceProjection", "entrySkip", "battleHandoffPending", "retreat", "scene", "battleChoices", "textId"]:
+    for key in ["sessionId", "revision", "mode", "map", "stage", "actor", "failure", "wait", "stop", "stopReason", "viewport", "mapViewport", "worldGeometry", "cameraProjection", "logicalView", "entities", "actors", "previewRect", "zoom", "menu", "help", "dialogue", "choiceProjection", "entrySkip", "battleHandoffPending", "retreat", "scene", "battleChoices", "textId", "skipRequiresRelease", "battleMounted"]:
         if current.has(key): row[key] = current[key]
     var board := host.find_child("MapViewport", true, false)
     if board != null and current.has("stage"):
@@ -118,10 +118,13 @@ func run() -> void:
     if not await focus(): return
     if case_name in ["entry", "region"]:
         await entry()
+        return
     elif case_name == "far":
         await far_target()
+        return
     elif case_name == "scene":
         await scene()
+        return
     else:
         if not await wait_for(func(s): return s.get("canWaitAtInput", false), "field input"): return
         await frames(3)
@@ -164,6 +167,7 @@ func run() -> void:
 
 func entry() -> void:
     var skipped := false
+    var skip_attempts := 0
     var deadline := Time.get_ticks_msec() + 15000
     while Time.get_ticks_msec() < deadline:
         if not await focus(): return
@@ -173,10 +177,15 @@ func entry() -> void:
             fail("Entry adapter failure")
             return
         if current.has("stage"): break
-        if not skipped and not current.get("skipRequiresRelease", true) and "Skip battle intro" in str(current.get("help", "")):
+        if not skipped and skip_attempts < 2 and not current.get("skipRequiresRelease", true) and "Skip battle intro" in str(current.get("help", "")):
             sample("field-before-entry")
+            skip_attempts += 1
             await tap(KEY_ESCAPE)
-            skipped = true
+            var after_skip := sample("after-skip-attempt-" + str(skip_attempts))
+            skipped = after_skip.get("entrySkip") != null or after_skip.get("battleHandoffPending", false) or after_skip.has("stage")
+            if not skipped and skip_attempts == 2:
+                fail("Two eligible mapped Cancel attempts did not start entry skip")
+                return
         elif current.get("entrySkip") != null or current.get("battleHandoffPending", false):
             await process_frame
         elif current.get("canWaitForText", false) or current.get("wait") == "ChoiceWait" or "Reveal / Continue" in str(current.get("help", "")):
@@ -243,6 +252,20 @@ func entry() -> void:
     sample("field-return-moved")
     finish(true)
 
+func clear_panels(current: Dictionary) -> bool:
+    var layout: Dictionary = current.menu.layout
+    var panels: Array = [layout.actor, layout.context, layout.description]
+    if layout.listVisible: panels.append(layout.list)
+    if layout.diamondVisible: panels.append(layout.diamond)
+    for i in range(panels.size()):
+        var a: Dictionary = panels[i]
+        var rect := Rect2(a.x,a.y,a.width,a.height)
+        if not check(Rect2(0,0,1920,1080).encloses(rect), "Visible panel stays within viewport"): return false
+        for j in range(i):
+            var b: Dictionary = panels[j]
+            if not check(not rect.intersects(Rect2(b.x,b.y,b.width,b.height)), "Visible panels never overlap"): return false
+    return true
+
 func far_target() -> void:
     if not await wait_for(func(s): return s.get("stage") == "Movement", "authored large board"): return
     await frames(30)
@@ -252,15 +275,21 @@ func far_target() -> void:
     await frames(30)
     var preview := sample("authored-preview")
     if not check(preview.previewX != initial.previewX and preview.zoom == initial.zoom, "Provisional movement retains scale"): return
+    if not await tap(KEY_ESCAPE): return
+    await frames(30)
     if not await tap(KEY_ENTER): return
     if not await tap(KEY_H): return
+    await frames(5)
+    var list_open := sample("authored-list-at-near-subject")
+    if not clear_panels(list_open): return
     if not await tap(KEY_ENTER): return
     await frames(30)
     var near := sample("authored-self-target")
+    if not clear_panels(near): return
     if not await tap(KEY_TAB): return
     await frames(240)
     var far := sample("authored-distant-target")
-    if not geometry(far): return
+    if not geometry(far) or not clear_panels(far): return
     if not check(far.target == "guard-a" and far.zoom == near.zoom, "Far target never shrinks world"): return
     var target: Dictionary = far.actors.filter(func(a): return a.id == "guard-a")[0]
     if not check(target.insideMap, "Distant subject pans inside legal view"): return

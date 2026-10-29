@@ -118,15 +118,19 @@ internal sealed partial class BattleMenuLayout : Control
         _actor.Size = _actorSize; _context.Size = _contextSize;
         _detail.Size = _descriptionSize;
         SetTextWidths();
-        // A legal edge clamp can leave the focused actor under a corner overlay.
-        // Move that UI panel; never change world size, scale or gameplay coordinates.
-        foreach (var panel in new Control[] { _actor, _context, Diamond, _list, _detail })
+        // Keep visible corner panels mutually clear as well as clear of the subject.
+        // The few vertical alternatives cover the selected 1080p layout; the world never moves for UI.
+        Control[] panels = [_list, _detail, Diamond, _actor, _context];
+        foreach (var panel in panels.Where(panel => panel.Visible))
         {
             if (!new Rect2(panel.Position, panel.Size).Intersects(_subject.Grow(16))) continue;
-            foreach (float y in new[] { 192f, size.Y - margin - panel.Size.Y, margin })
+            foreach (float y in new[] { 192f, _subject.End.Y + margin,
+                _subject.Position.Y - margin - panel.Size.Y, size.Y - margin - panel.Size.Y, margin })
             {
                 var candidate = new Rect2(new Vector2(panel.Position.X, y), panel.Size);
-                if (y < margin || candidate.End.Y > size.Y - margin || candidate.Intersects(_subject.Grow(16))) continue;
+                if (y < margin || candidate.End.Y > size.Y - margin || candidate.Intersects(_subject.Grow(16)) ||
+                    panels.Any(other => other != panel && other.Visible &&
+                        candidate.Intersects(new Rect2(other.Position, other.Size).Grow(8)))) continue;
                 panel.Position = candidate.Position;
                 break;
             }
@@ -175,6 +179,7 @@ internal sealed partial class BattleMenuLayout : Control
             _rowLabels[i].Modulate = i == selected ? new Color("ffdf80") : enabled[i] ? Colors.White : new Color("94a4be");
         }
         SetTextWidths();
+        Arrange(Size);
         _selected = selected;
         if (visible && _rowLabels.Count > selected && selected >= 0) Callable.From(ScrollToSelection).CallDeferred();
     }

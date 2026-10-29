@@ -113,9 +113,8 @@ connected package may start directly in battle, win through ordinary input and r
 field view in the same session. Pending round delivery still uses the existing consumers and matching
 tokens; routing does not complete waits or generate queues. The
 [bounded native recipe](../development-and-verification.md#ordinary-host-lifecycle-observation) owns
-startup, pre-battle and return controls. Frozen [PR #692](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/692)
-must semantically rebase its later presentation/view changes onto this accepted host boundary; no
-unmerged UI implementation is consumed here.
+startup, pre-battle and return controls. The accepted cardinal battle menu uses this same lifecycle
+boundary for attachment, ordinary input and field return.
 
 Both source-start paths use `RuleCompositions.ForGame()` and the same `GameSession`. The root routes
 each input event once to the active view. Battle view pumps `AdvanceSimulation` only at the
@@ -194,7 +193,7 @@ or reveal another area. High tile priority, actor ink masks and draw order remai
 Battle regions bound their own legal draw rectangle. Movement/target/story subjects pan into the
 central safe area above the bottom UI; distant objects never cause a zoom change. When a legal
 edge clamp prevents that placement, the overlapping corner UI panel moves vertically to avoid
-the subject. Menu visibility itself never changes the camera. A subject change
+the subject and the other currently visible panels. Menu visibility itself never changes the camera. A subject change
 may move the camera, while menu/description visibility alone cannot do so.
 
 At 1080p, body text is 30px, safe edges 32px and field dialogue reserves a 260px bottom overlay.
