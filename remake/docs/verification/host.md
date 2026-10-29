@@ -309,7 +309,30 @@ policy passes `defeat-02`; no runtime rule was changed. `victory-01` predates th
 filter and is superseded for roster scope by `victory-party-final`. `private-heal-01` passes but emits
 two ObjectDB shutdown warnings, preserving the existing shutdown Unknown. External joypad/focus and
 physical release issues remain; no windowed E2 pass or full-game/original timing claim is made.
-No native process is retained. Independent main-gate review and acceptance remain required.
+No native process is retained. Main-gate independently accepted the following bounded headless
+observations at `c9410809` (earlier victory/defeat evidence retains unchanged dependencies):
+
+| Independent case | Result / duration / semantic samples |
+| --- | --- |
+| Victory / ordinary defeat | PASS, 5786ms /14; PASS, 5665ms /12; clean stderr |
+| Private close-up visibility | PASS, 9221ms /29, 1048267 bytes; two retained ObjectDB warnings |
+| Physical close-up visibility | PASS, 3831ms /17, 505218 bytes; clean stderr |
+| Startup / reached-program failure | PASS, 286ms /1 /25744 bytes; PASS, 388ms /1 /88851 bytes |
+| Final victory return | PASS, 5915ms /14, 832299 bytes; clean stderr |
+
+Reports remain in `local/issue1398/main-gate-*`. These results establish only their named boundary;
+windowed input/focus, original timing and ObjectDB Unknowns remain unchanged.
+
+The independent review also found duplicate IllegalCommand feedback: the global bottom panel could
+cover the menu's own reason/help. The correction suppresses global recoverable feedback only while
+the command menu is visible. Fatal/startup and errors without a menu retain global feedback.
+For the focused witness, use `SF2_VIEWPORT_CASE=illegal` with unchanged `stone-court.json` and the
+same return/status observer and launch above. Ordinary Up reaches a real rejected movement; the
+witness checks the menu reason/help, hidden global feedback, then Cancel/Confirm recovery into
+ActionChoice. Executor `illegal-feedback-01` passes (3186ms,3 samples,338908 bytes,clean stderr), with
+Debug/Release adapter builds passing zero warnings/errors. No victory/defeat/private rerun is needed
+for this predicate-only correction. Final main-gate review of this correction and integration remain
+pending.
 
 ## Battle status-card observation
 

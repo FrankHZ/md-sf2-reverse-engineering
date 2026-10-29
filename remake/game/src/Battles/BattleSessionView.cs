@@ -423,7 +423,8 @@ public sealed partial class BattleSessionView : Control
         _status.Text = projection.Status;
         _feedback.Text.Text = projection.Status;
         _feedback.Arrange(GetViewportRect().Size);
-        _feedback.Visible = _result.Failure is not null || (!_menu.Visible && _session.Current.Selection is null &&
+        _feedback.Visible = (_result.Failure is { } failure &&
+            (failure.Kind != SessionFailureKind.IllegalCommand || !_menu.Visible)) || (!_menu.Visible && _session.Current.Selection is null &&
             _session.Current.BattleScene is null && _session.Current.BattleRound is null &&
             _session.Current.BattleRetreat is null && _session.Current.BattleGive is null && _session.Current.BattleDiscard is null);
         _roster.Text = projection.Roster;

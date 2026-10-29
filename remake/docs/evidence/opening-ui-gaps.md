@@ -199,8 +199,10 @@ Its [presentation owner](../godot/presentation.md#battle-messages-return-and-par
 readable battle messages, actual return feedback/window retirement and the explicitly approved
 read-only Party Status entry. Existing reward/growth messages remain; no extra summary or reward
 accounting is introduced. The [host recipe](../verification/host.md#battle-return-and-party-status-observation)
-records bounded headless authored win/ordinary defeat and private HEAL observations. Independent
-main-gate acceptance remains pending. Wider retreat, saves/retry, item actions and later chapters
+records independently accepted headless authored win/ordinary defeat, return, private/physical
+close-up visibility and startup/program failure observations at `c9410809`. The subsequent narrow
+duplicate IllegalCommand feedback correction has an executor illegal-move/recovery pass and awaits
+final main-gate review; integration remains main-gate owned. Wider retreat, saves/retry, item actions and later chapters
 remain outside this slice.
 
 Recommended dependency order is **consume accepted #689; integrate A/#1391; B can proceed in parallel with

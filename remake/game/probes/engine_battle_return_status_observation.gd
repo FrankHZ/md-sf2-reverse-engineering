@@ -28,6 +28,9 @@ func run() -> void:
     await frames(5)
     if not await focus(): return
     var initial := record("initial")
+    if case_name == "illegal":
+        await illegal_move()
+        return
     if case_name in ["failed", "startup-failed"]:
         if not check(initial.feedbackVisible and "stopped" in initial.feedback, "Failure is visible above battle"): return
         await tap(KEY_ENTER)
@@ -74,6 +77,26 @@ func run() -> void:
             if s.get("wait") == "DialogueWait" or s.get("canWaitForText", false): await tap(KEY_ENTER)
             else: await process_frame
     fail("Bounded return deadline")
+
+func illegal_move() -> void:
+    # Ordinary movement reaches the authored board boundary; no injected command/result.
+    for step in range(12):
+        await tap(KEY_UP)
+        await frames(30)
+        var s := state()
+        if s.get("failure") == null: continue
+        record("illegal-move")
+        if not check(s.failureKind == "IllegalCommand" and s.menu.visible, "Recoverable illegal move retains menu"): return
+        if not check("Unavailable:" in s.menu.layout.detail and s.menu.layout.helpVisible, "Menu preserves readable reason and controls"): return
+        if not check(not s.feedbackVisible, "Global feedback does not cover menu error or controls"): return
+        await tap(KEY_ESCAPE)
+        await frames(30)
+        await tap(KEY_ENTER)
+        var recovered := record("recovered-actions")
+        if not check(recovered.failure == null and recovered.stage == "ActionChoice" and recovered.menu.visible, "Fresh ordinary input recovers after illegal move"): return
+        finish(true)
+        return
+    fail("No illegal boundary reached within twelve moves")
 
 func party_check() -> void:
     var before := record("ready-return")

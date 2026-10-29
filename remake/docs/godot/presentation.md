@@ -10,7 +10,9 @@ Continue and eligible Wait hints. New tokens reset reading position; same-token 
 Display-only reading pages precede acknowledgement. E1 cards retain their live actor resources.
 
 Battle chrome distinguishes ready selection, “Battle in progress…”, rejected commands with their
-reason, and “The battle has stopped” with the retained failure. Startup/adapter errors use the same
+reason, and “The battle has stopped” with the retained failure. A visible command menu owns its
+recoverable IllegalCommand reason; the global feedback panel stays hidden to avoid covering the
+menu description and controls. Errors without a menu and fatal/startup failures retain global feedback. Startup/adapter errors use the same
 visible feedback panel; `ContextHint.Arrange` explicitly shows nonempty text. Fatal stopped sessions
 cannot continue automatic or ordinary input. Diagnostic IDs/stages remain in observations.
 
@@ -34,7 +36,10 @@ Acceptance is adapter compilation and the clean-head scope plan, plus the
 [bounded host witness](../verification/host.md#battle-return-and-party-status-observation).
 No Domain/Application/Content behavior changes require new unit tests. Native observations use
 headless Godot because external joypad interference remains unresolved in windowed runs; this is
-not a new windowed acceptance claim. Independent main-gate integration remains required.
+not a new windowed acceptance claim. Main-gate independently accepted the bounded victory/defeat,
+return, private/physical close-up visibility and startup/program failure observations at `c9410809`;
+the narrow duplicate IllegalCommand feedback correction has executor acceptance and awaits final
+main-gate review. Integration remains main-gate owned.
 
 ## Battle status-card agreement
 
