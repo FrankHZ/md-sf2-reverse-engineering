@@ -20,6 +20,7 @@ internal sealed partial class BattleCommandMenu : Control
     private BattleChoicesSnapshot? _choices;
     private GameInput _input = null!;
     private SessionFailure? _failure;
+    private BattleSceneDefinition? _content;
     internal Action<SessionCommand> Submit { get; set; } = null!;
     internal ActorRef? TargetCandidate { get; private set; }
 
@@ -28,7 +29,7 @@ internal sealed partial class BattleCommandMenu : Control
         MouseFilter = MouseFilterEnum.Ignore; AddChild(_layout);
     }
     internal void Arrange(Vector2 size) { Size = size; _layout.Arrange(size); }
-    internal void ConfigureAssets(BattleSceneDefinition? content) => _layout.ConfigureAssets(content);
+    internal void ConfigureAssets(BattleSceneDefinition? content) { _content = content; _layout.ConfigureAssets(content); }
     internal void Reset() { _actor = null; _page = Page.Main; _row = _command = 0; TargetCandidate = null; }
 
     internal void Present(SessionSnapshot current, BattleChoicesSnapshot choices, SessionFailure? failure, GameInput input)
@@ -145,7 +146,11 @@ internal sealed partial class BattleCommandMenu : Control
         if (_current is null || _choices is null) return;
         var selection = _current.Selection;
         bool moving = selection?.Stage == BattleSelectionStage.Movement;
-        _layout.Actor.Text = _actor is { } actor ? ActorText(actor) : "Battle";
+        var actor = _actor is { } active ? _current.Battle.GetActor(active) : null;
+        _layout.Actor.Present(actor, actor is null ? "" : BattleCharacterNames.Resolve(actor, _content), "Acting");
+        var candidate = !moving && _page == Page.Target && TargetCandidate is { } targetRef
+            ? _current.Battle.GetActor(targetRef) : null;
+        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content), "Target");
         _layout.Context.Text = $"Round {_current.Battle.Round}    Gold {_current.Battle.Gold?.ToString() ?? "—"}";
         for (int i = 0; i < Kinds.Length; i++)
         {
@@ -175,7 +180,7 @@ internal sealed partial class BattleCommandMenu : Control
         else if (_page == Page.Target && SelectedAction() is { } selected)
         {
             var target = selected.Targets.FirstOrDefault(target => target.Actor == TargetCandidate);
-            description = $"{OptionLabel(selected)}\n{(target is null ? "No available target" : ActorText(target.Actor))}";
+            description = $"{OptionLabel(selected)}\n{(target is null ? "No available target" : BattleCharacterNames.Resolve(_current.Battle.GetActor(target.Actor), _content))}";
             if (target?.Reason is { } reason) description += "\n" + Unavailable(reason);
         }
         else if (_page == Page.Commit) description = "End this unit's action at the selected position.";
@@ -192,11 +197,6 @@ internal sealed partial class BattleCommandMenu : Control
         _layout.ShowCommandHint(!moving && _page == Page.Main);
     }
 
-    private string ActorText(ActorRef actor)
-    {
-        var row = _current!.Battle.GetActor(actor);
-        return $"{actor.Value}\nHP {row.Hp}/{row.MaxHp}    MP {row.Mp}/{row.MaxMp}";
-    }
     private string OptionLabel(BattleActionChoice option)
     {
         string label = option.Action.ItemSlot is { } slot ? $"{slot + 1}. {option.Label}" : option.Label;
