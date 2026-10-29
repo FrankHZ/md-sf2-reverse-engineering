@@ -219,7 +219,7 @@ All executor cases below ran with `--headless`. They exercise actual Godot contr
 process/draw callbacks, mounted resources and injected mapped input, but do **not** establish
 windowed compositor delivery, OS window focus or physical-device behavior. Headless root-focus
 flags are only observer preconditions. Independent main-gate owns the bounded windowed checks;
-those results remain separate from these executor records. No windowed pass is claimed here.
+those results remain separate from these executor records. No executor windowed pass is claimed.
 
 **Confirmed at the candidate boundary:** the private portrait/Zone8 pilot and authored question/return
 pilot passed before expansion. Private No and Yes took about50/46 seconds, with24/22 compact samples
@@ -229,6 +229,16 @@ long-text case took about1.9 seconds with eight samples/54 KiB; top, instant, fa
 and skip cases took about1–3.3 seconds each. Body/portrait/choice/hint bounds are disjoint and the
 world rectangle/96px scale remain unchanged. Exact head/build/check identities belong to the Issue
 and Draft PR freeze handoff; these are executor observations pending independent acceptance.
+
+**Independent main-gate windowed validation:** on the unchanged `7066720c` adapter
+(`fd037ee1` changed documentation only), main-gate reports authored, private-choice, repeat, battle,
+top, skip, failure and instant all **PASS**: eight processes exited0,64 semantic checkpoints,
+65.734 seconds observer time and289,323 bytes total. Its stdout/stderr checks found no runtime/script
+errors, focus Unavailable or shutdown warnings; its independent Release adapter build also passed
+with zero warnings/errors. Reproduce the same cases/installation/project/prepared inputs above by
+omitting `--headless`; keep the windowed logs/receipts separate. Results are retained in ignored
+`local/issue1393/main-gate-*` and `main-gate-window-results.json`. These supplied independent results
+do not erase executor headless shutdown warnings or establish physical-device/original fidelity.
 
 Retained failed attempts are in ignored `local/issue1393`: observer parse/type, numeric flag check,
 insufficient reveal/movement sequencing and the original harbor case's automatic battle entry
