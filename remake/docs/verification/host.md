@@ -738,7 +738,7 @@ separate from those assertions. Reports contain only semantic checkpoints.
 are clean. Private retains the known two-ObjectDB shutdown warning under the
 [audio lifetime boundary](#audio-resource-lifetime-observation), with no runtime/script errors. These
 are bounded executor observations; independent windowed acceptance and integration are recorded by
-the Issue/PR. Physical hardware release outside focus and broader human/aesthetic approval remain
+[PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417). Physical hardware release outside focus and broader human/aesthetic approval remain
 Unknown. The prior E2 observations below retain their original one-card/paging boundary; E7's current
 roster/details behavior supersedes that display only.
 

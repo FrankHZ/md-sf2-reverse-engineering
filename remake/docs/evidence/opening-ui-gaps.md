@@ -25,7 +25,7 @@ its findings and historical observations retain their own boundaries. Current so
 the owning implementation; pinned links identify historical evidence. B7 and the complete portrait
 fix are merged in [PR1413](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1413)
 and [PR1415](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1415). E7's details extension has
-bounded executor evidence below; its Issue/PR owns integration
+bounded executor evidence below; [PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417) owns integration
 and independent acceptance status. This document adds no original-game finding.
 
 The route is controlled Map3 opening → castle/palace/Astral and exploration → tower before/load/start
@@ -219,7 +219,7 @@ Main-gate engineering acceptance and merge are complete in
 [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
 The [E7 details extension](../godot/presentation.md#party-details-agreement) adds read-only roster,
 growth/stats/spells/inventory inspection with [executor native evidence](../verification/host.md#party-details-observation);
-its Issue/PR owns independent acceptance and integration. It closes only this inspect subset when accepted.
+[PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417) owns independent acceptance and integration. It closes only this inspect subset when accepted.
 Wider retreat, saves/retry, item actions and later chapters
 remain outside this slice.
 

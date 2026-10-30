@@ -133,7 +133,7 @@ new content admission and full inventory services are outside this agreement.
 
 Acceptance uses small actual engine behavior checks, adapter compilation, the clean-head scope plan
 and [native party-details witness](../verification/host.md#party-details-observation). Executor
-headless observations establish the named input/projection boundary; the Issue/PR owns independent
+headless observations establish the named input/projection boundary; [PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417) owns independent
 main-gate windowed acceptance and integration status. Physical-device release, whole-opening human/aesthetic approval and
 pinned Godot audio shutdown warnings retain their existing Unknowns.
 
