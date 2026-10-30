@@ -98,7 +98,7 @@ public sealed record PortraitWork(short Blink = 20, short Mouth = 6, bool EyesCl
 }
 public sealed record OpenPortraitWindow(int Portrait, byte Flags, PortraitWork? Work = null) : PortraitWindow;
 public sealed record FieldReturnAnchor(MapId Map, MapPosition Position, byte Facing);
-internal sealed record FieldPlayerBinding(EntityRef Player, ushort Speed);
+internal sealed record FieldPlayerBinding(EntityRef Player, ushort Speed, IReadOnlyList<BattleActorStartInput>? RetainedAllies = null);
 public enum ProgramContinuation { FieldInput, MapLoaded, BeforeBattleFinished, BattleLoadFinished, BattleStartFinished, VictoryProgramFinished, DefeatProgramFinished, OutcomeMapLoaded }
 
 public sealed class StoryState
@@ -112,8 +112,9 @@ public sealed class StoryState
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
-        bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null)
+        bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, FieldReturnAnchor? saveAnchor = null)
     {
+        SaveAnchor = saveAnchor;
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
         Continuation = continuation; EnteringBattle = enteringBattle; ReturnAnchor = returnAnchor;
@@ -142,6 +143,7 @@ public sealed class StoryState
         (ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded);
     public FieldReturnAnchor? ReturnAnchor { get; }
     public FieldReturnAnchor? OutcomeReturn { get; }
+    public FieldReturnAnchor? SaveAnchor { get; }
     public TextWindow TextWindow { get; }
     public PortraitWindow PortraitWindow { get; }
     public long SimulationTick { get; }
@@ -182,7 +184,7 @@ public sealed class StoryState
         bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
-        short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, bool clearEntrySkip = false) =>
+        short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, bool clearEntrySkip = false, FieldReturnAnchor? saveAnchor = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -193,7 +195,7 @@ public sealed class StoryState
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
             battleRequest ?? BattleRequest, egressMap ?? EgressMap,
-            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip);
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

@@ -24,6 +24,7 @@ public sealed class ScenarioDefinition
         EncounterScenes = new ReadOnlyDictionary<string, BattleSceneDefinition>((encounterScenes ?? (battleScenes is null ? [] : [battleScenes]))
             .ToDictionary(scene => scene.Encounter, StringComparer.Ordinal));
     }
+    internal Runtime.Persistence.IOpeningRestorePolicy? Persistence { get; init; }
     public string Package { get; }
     public BattleStoryDefinition? BattleStory { get; }
     internal IReadOnlyDictionary<string, StoryProgram> Programs => Exploration?.Programs ?? BattleStory!.Programs;

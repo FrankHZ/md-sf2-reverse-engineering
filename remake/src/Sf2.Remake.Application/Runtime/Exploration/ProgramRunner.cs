@@ -61,7 +61,8 @@ internal static class ProgramRunner
                     }
                     if (current.Story.Continuation == ProgramContinuation.OutcomeMapLoaded)
                         current = Commit(current, current.Active, current.Story.Copy(null,
-                            continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true), observations, "battle-returned");
+                            continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true,
+                            saveAnchor: new(current.Exploration!.Map, current.Exploration.PlayerEntity.Position, 3)), observations, "battle-returned");
                     if (current.Story.Continuation is ProgramContinuation.MapLoaded or ProgramContinuation.BeforeBattleFinished or ProgramContinuation.BattleLoadFinished)
                     {
                         current = MapTransfer.Continue(definition, current, observations, rules);
@@ -90,6 +91,20 @@ internal static class ProgramRunner
                     if (current.Story.LogicalView is { } view && current.Exploration is { } field)
                         current = current.WithStory(current.Story.Copy(null,
                             logicalView: view with { TargetSlot = field.PlayerEntity.Slot }));
+                    if (current.Exploration is { } returned && definition.Exploration?.PartyFlags is { } membership && returned.Party.NewBattle is not null)
+                    {
+                        var lists = MapPartyMembership.Rebuild(current.Story.Flags, membership);
+                        var members = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
+                            .Where(row => row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember is not null)
+                            .GroupBy(row => row.Initialization!.AllyPartyMember!.Value).ToDictionary(group => group.Key, group => group.First().Actor);
+                        var party = returned.Party;
+                        var activeMembers = lists.Active.Select(member => members.TryGetValue(member, out var actor) ? actor :
+                            throw new BattleRuleException("party-member-definition", "party.active", true));
+                        current = new(current.SessionId, current.Revision, current.ObservationSequence,
+                            new ActiveExploration(returned.WithParty(new(party.Encounter, party.Actors, party.MainSeed,
+                                party.ThinkingSeed, party.Gold, party.NewBattle, activeMembers, party.ItemCustody))),
+                            current.Story.Copy(null, partyLists: lists), current.StopReason);
+                    }
                     return Finish(Result(Stop(current, SessionStopReason.PlayerInput), observations));
                 }
                 if (!definition.Programs.TryGetValue(cursor.Program, out var program) ||

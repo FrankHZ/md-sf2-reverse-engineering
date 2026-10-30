@@ -1321,7 +1321,8 @@ own this product entry. Launch `GODOT_BIN --path remake/game` without a session-
 After preparing/selecting the seven-map private world, six pinned battle/static inputs and optional
 battle scenes, choose New Game with the displayed mapped Confirm action. No controlled-start
 selection is required. At settled field input, the New Game… button opens a confirmation defaulting
-to Cancel. New Game never saves or overwrites progress on disk; Save/Continue are not implemented.
+to Cancel. New Game never saves or overwrites progress on disk; the separately implemented
+[Save/Continue boundary](#opening-save-and-continue) owns durable progress.
 
 The bounded ignored `local/issue1420/newgame.gd` witness drives actual mapped keyboard/mouse input
 through the ordinary Main scene and reads native state. It records only selected boundary samples,
@@ -1362,3 +1363,119 @@ battle control and explicit controlled exploration origin. A separate standalone
 `battlefield-map-resource-unavailable`: it has no exploration map material to mount. That existing
 standalone presentation boundary is preserved, not treated as a product pass or repaired by
 fallback. The connected New Game route supplies the map material and reaches actual Battle01.
+
+## Opening Save and Continue
+
+The [High-rigor lifecycle owner](../application/opening-session-lifecycle.md#implemented-savepoint-boundary)
+owns the three recipes, persistent state and exclusions. These are remake savepoints, not original
+SRAM or exact-position suspension. Load the current ignored private/tool configuration in the same
+PowerShell process as each launch, select the existing palette-complete New Game world and six
+battle/static inputs, and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Reuse the owned installation
+and project. Real process exit/relaunch is required here because restart is the behavior under test.
+
+Choose an absolute H-local persistent root outside every checkout and a fresh disposable namespace
+for acceptance. For example, with operator-selected locations:
+
+```powershell
+$env:SF2_SAVE_ROOT = 'H:\sf2-player-saves' # Explicit persistent root, never a worktree.
+$env:SF2_SAVE_NAMESPACE = 'opening-acceptance' # Fresh namespace for a new independent run.
+Remove-Item Env:SF2_PRIVATE_CONTROLLED_START -ErrorAction SilentlyContinue
+& $env:GODOT_BIN --path remake/game
+```
+
+No default root or fallback is inferred. Records live under
+`<root>/<namespace>/sf2-opening/slot1.json` and `slot2.json`, with one `.bak` and a writer `.lock`
+per slot. Private state stays local. New Game never reads or writes these slots. At settled field
+input, click Save… or use the mapped Stay action (default Space / Pad LB); the panel describes the
+restore destination. Select a slot, inspect the explicit save/overwrite confirmation (Cancel is
+selected initially), then confirm Save. Success follows atomic publication and readback. Quit is
+available by button, OS close or the save panel and warns about progress since the last save/load.
+
+Native state observation uses `ReadPersistenceObservationJson` for session identity/revision,
+availability, detached progress and bounded entity-work diagnostics; `SaveSlotView.ReadSaveObservationJson`
+for panel state/message/choices; and the existing field/battle capture APIs with full paths disabled.
+Inspect errors and logical/native music. No screenshot, checkpoint injection, teleport, fixed seed,
+per-frame export or asset recopy establishes this boundary. A UI witness must assert the confirmation
+panel **before** Cancel/Confirm, then its result; click actual control rectangle centers, not a guessed
+edge coordinate. Otherwise a missed Quit click can falsely appear to test cancellation.
+
+Reproduce the finite product route using ordinary input:
+
+1. Title → New Game → ordinary Sarah/Chester joins and messenger → Map3 Save slot1. Existing
+   `map3-battle01-natural-route-v1.json` supplies navigation inputs only. Fresh ambient walkers may
+   require a deliberate mapped Wait and legal step retry; their checkpoint state is never installed.
+2. Exit the process and launch again with the same selected content/root/namespace. Title Continue
+   slot1 restores `(32,13)`, Up. Leave the church through the south door: Down4, Right3, Up8,
+   Left2, Up3, Left2, Up reaches the established castle gate route. Continue actual castle/palace/
+   Astral/tower input and Battle01. Existing `map3-castle-battle-unlock-static-v1.json` and
+   `map3-battle01-player-ready-v1.json` supply input plans, not session values. Battle healing requires
+   opening Magic, confirming the spell, choosing the target and confirming the action.
+3. Win the actual battle, finish its program and Save slot2 at Map57. Exit/relaunch/Continue slot2,
+   verify the dedicated outcome anchor and preserved party, then move in a passable direction.
+   The anchor is the actual completed outcome landing, not a fixed coordinate from a walkthrough.
+4. Separately Continue slot1, play an actual ordinary leader defeat, finish the Map3 return and Save
+   slot2. Exit/relaunch/Continue slot2 and retry the tower battle. Repeat palace entry can stop at
+   `(23,37)` instead of running the first-visit walk: step Down then Up to leave that warp. Confirm
+   and cancel a real battle action after re-entry. This is not retreat or a terminal-state injection.
+5. In disposable UI slots, test controller/mouse Save, initial/overwrite confirmation and cancel,
+   success, unsaved Quit/Cancel, empty Continue, and explicit backup recovery with its own cancel.
+   Corrupt only the designated disposable primary after a valid overwrite has created a backup;
+   preserve its bytes and confirm that recovery does not replace the good backup with corrupt data.
+
+The bounded native witness covers all four route stages above. New process identities differ.
+Every captured persistent value agrees after victory and defeat loads; the joined Map3 load differs
+only by clearing its ordinary map-entry flags256/260/261. Music starts fresh with saved logical
+cue/history. Actual movement, battle commands and return prove usability beyond DTO equality.
+Controller Save, overwrite/cancel, actual Quit confirmation/cancel, empty slot and explicit backup
+recovery have separate native observations. All successful witness processes exit with empty stderr.
+Human/aesthetic approval and device/power-loss survival remain Unknown. Exact run outputs and failed
+driver attempts stay in the Issue/PR handoff; they do not become original-game evidence.
+
+### Engine and storage controls
+
+`OpeningSaveTests` / `OpeningRestoreTests` exercise actual capture, reconstruction and continuation:
+three recipes, intermediate flags, varied victory anchors, live/dead members, retained resources and
+full words, changed valid loadout-derived attack, no on-load/growth/reward/heal replay, unchanged RNG,
+independent repeat loads, stale revisions, pending story/presentation rejection and ambient restart.
+Run those plus affected `FieldPlayerReturnTests` and existing Battle02 consumers against the current
+product world. For the product-only private tests, select the palette-complete world explicitly;
+for source AI/player-ready comparisons, select the corresponding `battle01-player-ready.json` input.
+
+```powershell
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --configuration Release --no-restore `
+  --filter 'FullyQualifiedName~OpeningSaveTests|FullyQualifiedName~OpeningRestoreTests|FullyQualifiedName~FieldPlayerReturnTests|FullyQualifiedName~Battle02'
+uv run sf2 verify adapter
+```
+
+The ordinary `uv run sf2 verify engine` gate runs all currently selected optional private cases too.
+A broad legacy input selection is not the public/no-private profile. The completed local selected
+run retains nine controlled opening cases failing `full-fade-state`: their explicit controlled
+starts lack the required display state. Supplying product world palettes does not supply that start
+state. They are neither new product route passes nor repaired by weakening their comparisons.
+Retain these failures separately from the passing product/restart checks and exact-head public CI.
+Do not rerun the entire aggregate merely to replace this recorded result.
+
+Exercise `OpeningSaveJson.Read/Write` and the compiled `LocalSaveStore.Read/Write/Recover` directly,
+without adding tests of a verification harness. For a local PowerShell control, load the Debug
+Domain/Application/Content/Godot assemblies, create an `OpeningRestoreReader` from the same selected
+inputs, and retain its accepted immutable definition. The store is internal; obtain its type from
+the loaded `Sf2.Remake.Godot` assembly and invoke its constructor/methods with
+`BindingFlags.Instance | BindingFlags.NonPublic`. Supply root, fresh namespace, absolute checkout
+and `Func<OpeningSaveData,string>` validation that calls `GameSession.Restore`. A successful
+PowerShell string delegate must return `[NullString]::Value`, since `$null` converts to an empty
+string and incorrectly reports an error. Read progress from a genuine disposable native save.
+
+Direct controls cover first save, overwrite sequences, byte-preserving writer lock/read-only/held
+destination failures, ignored interrupted first-save temp, backup-only and corrupt-primary recovery,
+invalid backups and incompatible primary without rollback. Hold `.lock` with `FileShare.None` to
+exercise competing writers; hold the primary with `FileShare.Read` to deny atomic replacement.
+Restore attributes/handles in `finally`. Compare primary/backup bytes before/after failure and
+backup bytes before/after recovery. Never fault-inject into retained player slots.
+
+For format controls, decode the envelope's base64 payload. Test truncation, size over1 MiB, duplicate
+keys at both levels, unknown/missing/null fields, wrong digest, unknown format, out-of-range gold,
+incompatible gameplay revision and missing music resource. To reach semantic admission, encode the
+modified UTF-8 payload and recompute its SHA-256 with the production envelope spelling. Otherwise
+the expected result is the earlier checksum rejection. A read never repairs a file. Same-volume
+replace/readback success establishes only the tested filesystem behavior, not all physical crash cases.
