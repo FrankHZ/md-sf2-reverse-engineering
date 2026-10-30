@@ -644,11 +644,12 @@ shutdown warnings. Earlier shared-dialogue failures and Unknowns above remain pr
 ## Party details observation
 
 The [Standard E7 agreement](../godot/presentation.md#party-details-agreement) owns the read-only
-roster/details extension in [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416).
+member-status extension in [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416).
 `probes/engine_party_details_observation.gd` extends the existing
 `engine_battle_return_status_observation.gd` and its native focus/input/return helpers. It loads
 ordinary Main, sends mapped keys/pad and complete pointer events, and reads compact inspected fields,
-actual rectangles, scrolling and carried resources. It never sets session state, constructs a battle
+actual rectangles, aligned stat/value rows, independent magic/item scrolling, complete portraits
+and carried resources. It never sets session state, constructs a battle
 for inspection, captures screenshots or records frames. Budget: one process, 75 seconds and less than
 5MiB/report; reuse prepared data/builds. The pilot reports were below0.5MiB and4 seconds for field-only
 cases. No asset acquisition, extra world export, route replay or new environment is required.
@@ -729,18 +730,38 @@ separate from those assertions. Reports contain only semantic checkpoints.
 
 | Case / ordinary entry | Bounded executor observation |
 | --- | --- |
-| `authored` / `--authored-package local/issue1416/authored.json` | Fourteen-member wrapped roster; four learned spells; long admitted item labels, duplicate/full/empty inventory and defeated member. Keyboard/pad focus and selection, selected-row visibility, both wheel panes, held opening/direction, orphan/drag-out releases, close, visibility suspension and fresh field control. |
-| `private` / `--private-exploration-start local/issue1416/private-start.json` | Actual connected Bowie/Sarah/Chester names, EGRESS1/HEAL1, Wooden Sword/Wooden Rod/Wooden Stick and Medical Herb from admitted metadata; future seeded ally excluded by current joined flags. Current resources, stats, four slots/equipped markers, repeated opening/closing and unchanged revision/resources/flags/seeds while browsing. The earlier unchanged single-joined-member start also passes. |
+| `authored` / `--authored-package local/issue1416/authored.json` | Original member-screen left summary/right status grouping, four aligned stat pairs, magic/items twin columns, compact14-member dropdown and four learned spells. Long admitted item labels, duplicate/full/empty inventory and defeated member; mapped focus/selection, dropdown visibility, independent scrolling, held opening/direction, orphan/drag releases, close and fresh field control. |
+| `private` / `--private-exploration-start local/issue1416/private-start.json` | Actual connected Bowie/Sarah/Chester names, EGRESS1/HEAL1, Wooden Sword/Wooden Rod/Wooden Stick and Medical Herb from admitted metadata; future seeded ally excluded by current joined flags. Reliably mapped complete48×64 portraits at192×256, carried kills/defeats availability, current resources/stats, four slots/equipped markers and unchanged revision/resources/flags/seeds while browsing. The earlier unchanged single-joined-member start also passes. |
 | `victory` / `--authored-package local/issue1416/victory.json` | The real accepted attack, reward/outcome and return route changes leader HP10→40, EXP0→48 and gold73→84. Read returned details, defeated-companion recovery, one outcome/return, repeated menu use and fresh field movement. No terminal state is injected. |
 
-**Confirmed executor, headless:** final authored, three-member private and victory cases pass in
-3573/3137/7234ms with6/5/14 checkpoints respectively; reports remain below0.5MiB. Authored/return logs
-are clean. Private retains the known two-ObjectDB shutdown warning under the
+**Confirmed executor, retained initial layout:** authored/private/victory passed in3573/3137/7234ms
+with6/5/14 checkpoints before the user selected original grouping. Main-gate independently passed
+that old layout windowed in3577/3179/7387ms with clean stderr. Those results retain their data/input
+boundary, not acceptance of the current layout. Current source-grouped checks are recorded below.
+Private retains the known timing-dependent two-ObjectDB shutdown warning under the
 [audio lifetime boundary](#audio-resource-lifetime-observation), with no runtime/script errors. These
 are bounded executor observations; independent windowed acceptance and integration are recorded by
 [PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417). Physical hardware release outside focus and broader human/aesthetic approval remain
 Unknown. The prior E2 observations below retain their original one-card/paging boundary; E7's current
-roster/details behavior supersedes that display only.
+member-status grouping supersedes that display only.
+
+The current source-grouped layout passes authored/private/victory in3939/3390/7465ms with7/6/15
+checkpoints (366339/530577/115511bytes). Native projections check the left portrait/KD/gold summary,
+four row pairings, nonoverlapping label/value columns, parallel magic/items panes, a hidden-by-default
+member dropdown, arrows, long names and independent scrolling. Read-only input/resource assertions
+and the actual changed victory-return route remain. A focused private accounting-width observation
+also passes in3393ms: unavailable counts use24px, known numbers30px; actual native minimum widths
+fit the152px value field and24px summary border inset. Authored/victory logs are clean; private retains
+the known two-ObjectDB shutdown warning. Query, Domain and Content sources/tests are unchanged by
+this layout correction, so their completed checks remain valid by dependency.
+
+`ExplorationRasterImages` extracts the existing decoder/crop only. The unchanged cache ownership,
+mirror flag,64 atlas tile indexes,eye/mouth substitutions and texture disposal remain with their
+existing callers. Direct reuse of the [complete portrait witness](#complete-portrait-raster-observation),
+`local/issue1414/run-native.ps1 -Run issue1416-raster-extraction`, passes in41792ms with55 checkpoints,
+357258bytes and all24 mounted source-pixel states. It retains the known two-ObjectDB shutdown warning.
+No new world, pixel acquisition, screenshot or whole-route suite was introduced. The source-backed
+layout agreement records the fixture orientation discrepancy without modifying research metadata.
 
 Preserve completed failures in `local/issue1416`: initial query-test compilation used mismatched
 nullable assertions and omitted the map constructor argument; the first completed engine run had

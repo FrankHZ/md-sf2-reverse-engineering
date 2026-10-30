@@ -103,13 +103,33 @@ is tracked by [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pul
 ## Party details agreement
 
 **Standard rigor; [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416).**
-This bounded E7 extension lets the player inspect preparation and returned progression. At the
-accepted 1920×1080 baseline a scrollable left roster selects a stable right HP/MP card and scrollable
-details: name, gold, level/EXP, effective attack, defense/agility, learned magic and four numbered
-inventory slots with equipped/broken markers. Duplicate items retain their slots. Full names wrap;
-long lists scroll. Blue/gold shared styling and the existing HP/MP gauges remain. Unavailable maxima
-hide the card; missing accounting, loadout or item/spell names say unavailable, distinct from known
-empty slots or no learned magic. Defeated and absent joined members remain inspectable.
+This bounded E7 extension lets the player inspect preparation and returned progression. The user's
+current direction replaces the persistent left roster/right prose page with original member-screen
+information grouping, at a readable 1920×1080 scale and the existing blue/gold style. A compact member
+selector preserves keyboard/pad/mouse browsing. Left summary: reliably bound admitted portrait,
+carried kills/defeats, gold. Right: name/class availability, aligned Level/Attack, HP/Defense,
+MP/Agility, EXP/Move rows; below, magic and four-slot inventory in parallel columns. Shared HP/MP
+gauges remain; long lists scroll independently, and long names wrap. Missing metadata remains
+unavailable, distinct from empty slots or no learned magic. No new class/status/jewel system or art.
+
+**Confirmed static arrangement:** pinned
+[`memberscreen.asm:BuildMemberScreen/BuildMemberStatusWindow`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/memberscreen.asm)
+and [`sf2enums.asm` member-window constants](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/sf2enums.asm#L2227)
+place portrait/KD/gold left, main status right. The 42-byte row stride gives name(row1,col1),
+Level/Attack(row3), HP/Defense(row5), MP/Agility(row7), EXP/Move(row9), then magic/items at
+row13,col1/10 with three-row entry strides. The accepted
+[layout owner](../../../docs/design/contracts/interface/ui-layout-data.md) binds ROM92770 and546words;
+its historical fixture width26/height21 conflicts with the source's21-column stride/26 rows
+(`SIZE=$151A`, `NEXT_LINE=$2A`). Preserve that discrepancy; no research fixture is repaired here.
+These source placements prove static grouping, not original runtime pixels, timing or natural reach.
+
+Readable spacing, numeric values instead of original tile-level spell indicators, shared modern
+gauges, explicit unavailable class/portrait labels and a compact dropdown selector are intentional
+accessibility/presentation deviations. Class display names and complete status/jewel presentation metadata are not admitted. Status/jewel
+decoration and the animated map-sprite preview are outside this bounded layout and are omitted. Existing
+`ExplorationPresentation.cs` plus `ExplorationRasterImages.cs` share the unchanged portrait crop;
+no pixel acquisition or animation lifecycle is added. `PartyDetailsPanel.cs` replaces prose formatting
+with aligned rows and independent lists; Application/Domain queries/rules stay unchanged.
 
 `GameSession.QueryPartyDetails` reads the current carried party and admitted definitions. The existing
 `MapPartyMembership.Rebuild` with current flags supplies joined membership where source member
@@ -121,9 +141,11 @@ Private item/spell display names come from admitted `PrivateBattleDefinitions`; 
 supply weapon/item labels and readable learned spell identities. There is no UI catalog keyed by
 source IDs, class-name invention or second roster authority.
 
-Up/Down selects the roster; Left/Right also changes member. Target (default Tab / Pad RB) switches
-Up/Down to details scrolling and back. Cancel/Equipment/Confirm closes. A completed left click selects
-a roster row or the visible Close affordance; wheel scrolling stays inside its pane. The existing
+With member focus, Up/Down changes member; Left/Right always changes member. Target (default
+Tab / Pad RB) cycles member, magic and items focus; Up/Down scrolls the focused list.
+Cancel/Equipment/Confirm closes. A completed left click opens the compact selector, selects a member,
+uses Previous/Next or closes the page; selecting a dropdown row closes that dropdown. Wheel scrolling
+stays inside the open selector or its magic/items pane. The existing
 `MenuPointer` rejects orphan releases, drag-out, stale selection, double clicks and suspended presses.
 Opening/visibility/focus suspension requires released gameplay input; the field input owner clears
 movement holds, and modal input cannot reach the field. A fresh command after closing resumes field
