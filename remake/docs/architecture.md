@@ -20,6 +20,7 @@ Use the owner that matches the responsibility being changed:
 | Domain rules, selected algorithms, deterministic state transitions and author workflow | [Gameplay rules](domain/gameplay-rules.md) |
 | Proposed special-mechanic gaps, finite extensions and staged implementation recommendation | [Special mechanics design](domain/special-mechanics-design.md) |
 | Application session authority, program execution, waits, map and outcome continuation | [Session and programs](application/session-and-programs.md) |
+| Proposed opening New Game, savepoint persistence, recovery and feature closure | [Opening session lifecycle](application/opening-session-lifecycle.md) |
 | Content profiles, admission, explicit starts and private provenance | [Profiles and trust](content/profiles-and-trust.md) |
 | Local source/master/runtime assets and offline preparation | [Presentation assets](content/presentation-assets.md) |
 | Godot entry, semantic input, field projection and UI boundaries | [Presentation](godot/presentation.md) |

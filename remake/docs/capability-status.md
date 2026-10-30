@@ -9,6 +9,12 @@ content. The accepted continuous Map3–Battle01 milestone is followed by bounde
 Battle03 outcomes/Hawel recruitment, later campaign, full services and save/load remain outside those
 slices. [Local play](../README.md#run-locally) selects a package/start, not a full New Game campaign.
 
+The [opening lifecycle agreement](application/opening-session-lifecycle.md) proposes genuine New Game,
+two local savepoint slots/Continue, and bounded field preparation/search/services under #1418.
+It separates implemented rules, standalone-only admission, missing integration and missing behavior.
+This is implementation planning; it does not promote persistence or all reachable opening branches
+to delivered capability.
+
 Current accepted presentation includes continuous exploration/contextual Talk, shared 1080p/96px
 world geometry (A/B), story dialogue (C), reachable movement tiles (B8), status cards and battle/return/
 read-only Party Status (E). The [presentation owner](godot/presentation.md) and its verification links
@@ -510,10 +516,10 @@ source provenance and reproduction.
 | Capability | Owner | Status | Retained boundary |
 | --- | --- | --- | --- |
 | Continuous Map 3-through-Battle 01 milestone | Research, design contracts and common Application/Domain/Godot | **Accepted current private milestone** | Existing continuous opening, Battle01 victory and usable 5B return evidence, accepted rule/resource/consumer compositions, unchanged dependencies, checked parent coverage/shared joins and explicit deviations establish the current keyboard A/modern-clock/7C/8D/10A boundary. The [readiness owner](../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) records independent acceptance; the [review route](evidence/retained-comparisons.md#accepted-composition-review) locates retained supporting inspections. Historical A10/default/matrix reports remain Unavailable and scoped reports retain `milestonePass=false`; no fresh full report or corrected whole-A trajectory is claimed. Historical missing fields and original timing retain their owners. Ordinary defeat is a separate bounded capability. |
-| Save/load and persistence | future milestone and save-system owner | **Unsupported / deferred** | no player-facing save, checkpoint, suspend, migration, or persistence adapter |
+| New Game, save/load and Continue | [Opening lifecycle agreement](application/opening-session-lifecycle.md) and original save-system contract | **Unsupported; bounded design proposed** | Current controlled starts remain diagnostic. Proposed fresh construction and stable-field savepoint restoration require their own implementation and real process-restart acceptance; no player save or persistence adapter exists. |
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
-| Item acquisition, area descriptions and setup-event selection | none | **Unsupported** | their only consumers were legacy; accepted contracts and research remain for a future reached consumer |
+| Field item acquisition and area descriptions | [Opening feature map](application/opening-session-lifecycle.md#current-feature-map) | **Unsupported in the common field route** | Search/description/one-time field receipt consumers are missing. Authored battle item custody is a separate implemented capability; imported entity/zone/setup data does not imply pickup support. Selected map setup/event execution is covered above, with unadmitted variants still explicit. |
 | Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, private Battle32 and its full Jaro victory consumer, private Battle36/wider Prism inputs, private/wider hidden-enemy content and trial records, wider retreat/special caller return, and raft/full-map transport still need their owned extensions. The standalone authored Caravan controller and boarding/landing are implemented at the agreement above. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a
