@@ -55,7 +55,7 @@ internal sealed partial class StoryDialoguePanel : Control
         Hint.CustomMaximumSize = new(bodyWidth, -1); Hint.Size = new(bodyWidth, 0);
         float hintHeight = Mathf.Max(34, Hint.GetMinimumSize().Y);
         float footer = hintHeight + 16 + (Choices.Visible ? 60 : 0);
-        float height = Mathf.Clamp(Mathf.Max(280, bodyHeight + 48 + footer), 280, viewport.Y - 64);
+        float height = Mathf.Clamp(Mathf.Max(_portrait ? 304 : 280, bodyHeight + 48 + footer), 280, viewport.Y - 64);
         Size = new(width, height);
         if (!_placed)
         {
@@ -75,7 +75,7 @@ internal sealed partial class StoryDialoguePanel : Control
         Portrait.Visible = _portrait && Portrait.Texture is not null;
         // The source's -10..0 movement remains visible inside its reserved panel column.
         Portrait.Position = new(_right ? width - 216 : 24, 24 + Mathf.Clamp(_portraitY, -10, 0) * 2);
-        Portrait.Size = new(192, 224);
+        Portrait.Size = new(192, 256);
     }
     internal Rect2 MountPortrait(Texture2D texture, float sourceY)
     {

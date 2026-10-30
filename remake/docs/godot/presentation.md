@@ -190,7 +190,7 @@ tick and acknowledgement boundary. `StoryDialoguePanel`, `StoryChoiceRow` and `C
 only native controls/layout/reading position. `StoryTheme` supplies the native Theme also used by
 the existing battle menu frames. There is no gameplay/wait/clock service in these widgets.
 
-At 1080p the panel begins at 1440×280, uses 30px body/24px hints, and measures full shaped text
+At 1080p the panel begins at 1440×280 (304px high with a portrait), uses 30px body/24px hints, and measures full shaped text
 before incremental reveal. It expands within the 32px safe area; screen-sized overflow uses
 Confirm-driven reading pages with a line of overlap. Reveal-all omits incremental speech, retains
 the pending input and shows the full current segment. A later fresh Confirm reads remaining pages
@@ -211,6 +211,16 @@ have separate reserved space. The portrait TextureRect is a child **after** the 
 the existing presenter's cached texture, mirror/eye/mouth selector and source Work.Y movement
 (mapped into its reserved column). The presenter retains resource lifetime and source lifecycle;
 a second portrait service is not introduced.
+
+The portrait's visible source area is 48×64, mounted at 192×256 with nearest sampling. The accepted
+normal/mirrored 8×10 source window layouts contain a border around six columns and eight rows;
+the two remaining atlas columns supply alternate animation tiles. Composition applies eye/mouth
+replacements before cropping and mirroring. The last eight source rows contain intended visible
+pixels for Sarah (1), Chester (2) and Astral (40); their earlier 48×56 crop discarded those pixels.
+Their admitted atlases and animation entries match direct ROM decoding, so preparation stays
+unchanged. The portrait-bearing panel minimum preserves 24px top/bottom margins at rest; source
+movement remains inside that column. The [focused pixel recipe](../verification/host.md#complete-portrait-raster-observation)
+checks the actual mounted textures and native bounds, including both sides and facial states.
 
 There is no reliable admitted entity-to-speaker-name mapping in the current field definition.
 Member-name substitutions in dialogue are not speaker attribution. Names are omitted deliberately;

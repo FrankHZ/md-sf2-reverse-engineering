@@ -546,7 +546,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     for (int tile = 0; tile < tiles.Length; tile++)
                         if (tiles[tile] != tile)
                             composed.BlitRect(raster, new(tiles[tile] % 8 * 8, tiles[tile] / 8 * 8, 8, 8), new(tile % 8 * 8, tile / 8 * 8));
-                    using var crop = composed.GetRegion(new(0, 0, 48, 56));
+                    // The 8x10 source window has a border around six columns and eight rows.
+                    // Atlas columns 6/7 hold alternate tiles; the final visible row is not padding.
+                    using var crop = composed.GetRegion(new(0, 0, 48, 64));
                     if (key.Item2) crop.FlipX();
                     _portraits[key] = texture = ImageTexture.CreateFromImage(crop);
                     _resourceSelectors[texture] = new

@@ -165,7 +165,7 @@ def compare_projection(records, results, session, profile, coverage, check):
                 )
                 and resource["texturePresent"] is True
                 and bool(resource["resourceIdentity"])
-                and (resource["width"], resource["height"]) == (48, 56),
+                and (resource["width"], resource["height"]) == (48, 64),
                 index,
             )
             coverage["eyes-closed" if work["EyesClosed"] else "eyes-open"] += 1
