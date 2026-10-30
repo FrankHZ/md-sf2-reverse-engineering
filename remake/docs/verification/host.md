@@ -616,9 +616,12 @@ changes with the delivered adapter; original evidence remains unchanged. This ad
 expectation correction requires no original-data or whole-route H4 acquisition. The current automatic
 planner nevertheless classifies that Python path as research and selects `public-core` plus
 `tooling-python` beside `adapter-build`; `--scope engine` rejects this path as a research/shared
-input. Preserve both outputs. This is an explicit classifier/policy boundary for main-gate review,
-not a passing engine-scope plan. The user's adapter-only/no-blanket-suite scope still controls local
-execution; no blanket Python/research suite or planner-policy change is made to clear that mismatch.
+input. Preserve both outputs as a classifier limitation, not a passing engine-scope plan. Main-gate
+review accepted direct owner inspection, mounted-pixel observation and adapter compilation as
+sufficient for this exact dimension-only correction under the user's engine policy. It changes no
+research extraction, inputs or comparison algorithm beyond the delivered resource-size expectation.
+Broad local Python/research suites remain intentionally **NOT RUN**; this is not an unresolved
+policy or merge blocker, and no planner/check configuration change is needed.
 Hosted CI independently selects its narrow `research-public` job for this path; record its actual
 result separately from the unexecuted broad local selections.
 
