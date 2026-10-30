@@ -59,7 +59,7 @@ RNG, input admission and explicit command confirmation keep their existing autho
 processing advances a button's short timer; it submits no command and plays no sound. No general
 animation framework, art pipeline or gameplay state was added. The
 [native recipe](../verification/host.md#diamond-focus-emphasis-observation) owns actual drawing,
-lifecycle observations and the pending mounted-original-icon check. Independent acceptance and
+lifecycle observations and mounted-original-icon acceptance evidence. Independent acceptance and
 whole-opening human/aesthetic approval remain separate.
 
 ## Battle messages, return and Party Status

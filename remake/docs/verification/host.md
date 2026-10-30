@@ -184,21 +184,31 @@ The existing headless `battle` witness passes in 4,815 ms, retaining disabled in
 press/release capture, scroll/list/target/cancel and explicit confirmation behavior. These are
 injected native inputs with the retained axis-adjusted settings; all-device release remains Unknown.
 
-**Pending mounted-icon acceptance:** these runs use public text-only fallback squares. The checked
-#1045/#1047 private scene selections and #1397 names/newline/overflow scene variants exist but
-each has 45 rasters without `command-menu.*`; the named #1391/#1395/#1408 inputs supply no separate
-icon scene. `local/issue1412/icon-input-check.json` retains this input-selection result. It is not a
-ROM failure or a passed texture-draw observation. Narrow regeneration using the accepted
-`sf2tool.remake_command_menu` helper was subsequently authorized: the admitted scene is 122,404 bytes,
-with about 152 KB estimated total output. The registered ROM verifier passes, but the configured
-`local/upstream/SF2DISASM` checkout and required `build/sf2build-h1.lst` are absent. No preparation,
-toolchain installation or rebuild was attempted; `local/issue1412/icon-preparation-check.json`
-retains the distinct prerequisite failure. Once an existing admitted scene is selected through `SF2_PRIVATE_BATTLE_SCENE_CONTENT`, use one
-short existing private controlled battle/menu entry and case `emphasis-icons`. Require mounted
-24×24 textures, `.normal`/`.selected` resource readback, nearest 4× sampling, integral advancing and
-settled draw offsets and fixed hit rectangles. Skip eligible entry through the existing bounded
-Cancel seam if needed; do not replay the opening. Exact original cadence and final human/aesthetic
-approval remain Unknown. All earlier menu/audio failures and warning records remain retained.
+**Confirmed, mounted-original-icon executor result:** the same short native witness with case
+`emphasis-icons` passes in 4,633 ms, exit0 without warning/error output. It checks all four mounted
+24×24 textures, the actual `.normal`/`.selected` resource, nearest 4× sampling, integer advancing
+and settled draw offsets, fixed hit rectangles and the same lifecycle/resource/input boundaries.
+It uses the existing controlled `--private-exploration-start` with
+`remake/reference/inputs/battle01-to-battle02-start.json`, #1045 world/party selections from the
+menu recipe, and the existing eligible Cancel entry skip; it does not replay the opening.
+
+Select `SF2_PRIVATE_BATTLE_SCENE_CONTENT` from the worktree-local
+`local/issue1412/main-gate-retained-icons/scene.json`. Main-gate explicitly transferred only the
+frozen accepted #689 `original-icons-02` scene and provenance after confirming its old owner stopped;
+the executor does not access the other checkout. The scene is 150,016 bytes, provenance 1,839 bytes;
+all eight existing resource digests and 24×24 RGBA8 payload sizes match. Provenance pins SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, the registered USA retail ROM and `tiles_MainMenu` in
+`data/graphics/tech/menus/mainmenutiles.bin`. The ordinary Content reader supplies runtime admission.
+The retained `icon-transfer-check.json`, `TRANSFER.md` and exact launcher under `local/issue1412`
+record selection, provenance and input ownership; generated/private pixels remain ignored.
+
+Preserve the initial input-selection failure: the configured #1045/#1047 and #1397 scene variants
+exist but lack `command-menu.*`. Narrow preparation with the accepted helper was authorized, but
+its configured local upstream checkout/H1 listing was absent; the registered ROM verifier passed.
+No preparation, installation, source rebuild or substitute art occurred. `icon-input-check.json`
+and `icon-preparation-check.json` retain these distinct setup results, resolved for this observation
+by the explicit immutable-artifact transfer. Earlier menu/audio failures and warnings remain intact.
+Original cadence, physical-device release and final human/aesthetic approval remain Unknown.
 
 ## Audio resource lifetime observation
 
