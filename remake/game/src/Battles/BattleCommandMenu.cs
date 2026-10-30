@@ -32,14 +32,19 @@ internal sealed partial class BattleCommandMenu : Control
     }
     internal void Arrange(Vector2 size) { Size = size; _layout.Arrange(size); }
     internal void ConfigureAssets(BattleSceneDefinition? content) { _content = content; _layout.ConfigureAssets(content); }
-    internal void Reset() { _actor = null; _page = Page.Main; _row = _command = 0; TargetCandidate = null; }
-    internal void SuspendPointer(bool keyboard = false) { if (keyboard) _pointer.Cancel(); else _pointer.Suspend(); }
+    internal void Reset() { _layout.StopFocusEmphasis(); _actor = null; _page = Page.Main; _row = _command = 0; TargetCandidate = null; }
+    internal void SuspendPointer(bool keyboard = false)
+    {
+        if (keyboard) _pointer.Cancel();
+        else { _pointer.Suspend(); _layout.StopFocusEmphasis(); }
+    }
     public override void _Process(double delta) => _pointer.ReleaseIfNeutral();
     public override void _Notification(int what)
     {
         if (what == NotificationPaused || what == NotificationUnpaused || what == NotificationVisibilityChanged && !IsVisibleInTree())
-            _pointer.Suspend();
+            SuspendPointer();
     }
+    public override void _ExitTree() => _layout.StopFocusEmphasis();
 
     internal bool HandlePointer(InputEvent input)
     {
@@ -202,9 +207,8 @@ internal sealed partial class BattleCommandMenu : Control
         _layout.Context.Text = $"Round {_current.Battle.Round}    Gold {_current.Battle.Gold?.ToString() ?? "—"}";
         for (int i = 0; i < Kinds.Length; i++)
         {
-            _layout.Commands[i].Selected = !moving && i == _command;
+            _layout.Commands[i].SetSelection(Visible && !moving && _page == Page.Main && i == _command, _input.Settings.ReducedFlash);
             _layout.Commands[i].Available = _choices.Actions.Any(option => InGroup(option, i) && option.Enabled);
-            _layout.Commands[i].QueueRedraw();
         }
         bool list = !moving && _page is Page.Magic or Page.Items;
         var options = list ? Options() : [];

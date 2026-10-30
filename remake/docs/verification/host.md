@@ -160,6 +160,56 @@ the reused scene witness now receives its actual initial actor baseline. They al
 erase the other results, resolve raw device interference, prove physical release outside the focused
 window, or establish whole-game/mouse-only, all-device, original-timing or aesthetic acceptance.
 
+## Diamond focus emphasis observation
+
+The [bounded B7 agreement](../godot/presentation.md#diamond-focus-emphasis) extends the existing
+`probes/engine_menu_mouse_observation.gd` witness, reusing ordinary native key/mouse input, focus
+transfer, resource/RNG and error helpers. It records a few actual draw offsets and timers around
+focus changes and settle; no screenshots or per-frame state capture. The native observer retains
+the 75-second deadline; each emphasis case takes about three seconds and emits about 91 KiB.
+
+Use the [menu-pointer launch recipe](#menu-pointer-observation), unchanged project/installation and
+retained `local/issue1408/battle.json` plus `keyboard-pointer.json`. Set `SF2_VIEWPORT_CASE=emphasis`
+and a fresh ignored `SF2_VIEWPORT_OUTPUT`. Rebuild Debug only for changed adapter code; Release
+uses `uv run sf2 verify adapter`. A second run uses case `emphasis-reduced` and an ordinary settings
+copy with `reducedFlash=true`. Both require native windows for actual focus loss/return. The owning
+checkout's `local/issue1412/run-native.ps1` records exact launches, output roots, PIDs and logs.
+
+**Confirmed, bounded executor results:** native fallback emphasis passes in 2,732 ms; reduced-flash
+passes in 2,089 ms, both exit0 without warning/error output. Actual drawing advances −4→−2→0 through
+the short emphasis; quick changes select only the new item. Pointer/keyboard focus, idle/current
+direction non-retrigger, fixed hit rectangles, unchanged revision/resources/RNG, hide/show, native
+focus loss/return, close/reopen and actual host-scene retirement pass. Reduced-flash stays at zero.
+The existing headless `battle` witness passes in 4,815 ms, retaining disabled inspection,
+press/release capture, scroll/list/target/cancel and explicit confirmation behavior. These are
+injected native inputs with the retained axis-adjusted settings; all-device release remains Unknown.
+
+**Confirmed, mounted-original-icon executor result:** the same short native witness with case
+`emphasis-icons` passes in 4,633 ms, exit0 without warning/error output. It checks all four mounted
+24×24 textures, the actual `.normal`/`.selected` resource, nearest 4× sampling, integer advancing
+and settled draw offsets, fixed hit rectangles and the same lifecycle/resource/input boundaries.
+It uses the existing controlled `--private-exploration-start` with
+`remake/reference/inputs/battle01-to-battle02-start.json`, #1045 world/party selections from the
+menu recipe, and the existing eligible Cancel entry skip; it does not replay the opening.
+
+Select `SF2_PRIVATE_BATTLE_SCENE_CONTENT` from the worktree-local
+`local/issue1412/main-gate-retained-icons/scene.json`. Main-gate explicitly transferred only the
+frozen accepted #689 `original-icons-02` scene and provenance after confirming its old owner stopped;
+the executor does not access the other checkout. The scene is 150,016 bytes, provenance 1,839 bytes;
+all eight existing resource digests and 24×24 RGBA8 payload sizes match. Provenance pins SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, the registered USA retail ROM and `tiles_MainMenu` in
+`data/graphics/tech/menus/mainmenutiles.bin`. The ordinary Content reader supplies runtime admission.
+The retained `icon-transfer-check.json`, `TRANSFER.md` and exact launcher under `local/issue1412`
+record selection, provenance and input ownership; generated/private pixels remain ignored.
+
+Preserve the initial input-selection failure: the configured #1045/#1047 and #1397 scene variants
+exist but lack `command-menu.*`. Narrow preparation with the accepted helper was authorized, but
+its configured local upstream checkout/H1 listing was absent; the registered ROM verifier passed.
+No preparation, installation, source rebuild or substitute art occurred. `icon-input-check.json`
+and `icon-preparation-check.json` retain these distinct setup results, resolved for this observation
+by the explicit immutable-artifact transfer. Earlier menu/audio failures and warnings remain intact.
+Original cadence, physical-device release and final human/aesthetic approval remain Unknown.
+
 ## Audio resource lifetime observation
 
 The Standard agreement in [#1410](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1410)

@@ -75,11 +75,23 @@ func run() -> void:
     if case_name.begins_with("private"):
         await private_choices()
         return
+    if case_name.contains("icons"):
+        var deadline := Time.get_ticks_msec()+10000
+        while not state().has("stage"):
+            var field := state()
+            if not check(field.get("failure") == null, "Existing private entry remains healthy"): return
+            if not check(Time.get_ticks_msec() < deadline, "Existing private entry reaches battle through bounded skip"): return
+            if field.get("helpVisible",false) and "Skip battle intro" in str(field.get("help","")):
+                await tap(KEY_ESCAPE)
+            else: await process_frame
     if not await wait_for(func(s): return s.get("stage") == "Movement", "initial battle movement"): return
     var before := state()
     await tap(KEY_ENTER)
     var opened := sample("pilot-opened")
     if not check(opened.stage == "ActionChoice", "Keyboard opens existing action menu"): return
+    if case_name.begins_with("emphasis"):
+        await focus_emphasis(before)
+        return
     if case_name == "focus-battle":
         await battle_focus()
         return
@@ -116,6 +128,80 @@ func run() -> void:
     await click(confirm)
     var committed := sample("pilot-explicit-commit")
     if not check(committed.stage != "CommitReady" and committed.revision > target.revision, "Fresh explicit click commits exactly through the existing session"): return
+    finish(true)
+
+func emphasis_sample(label: String) -> Dictionary:
+    var s := state()
+    samples.append({"label":label,"ms":Time.get_ticks_msec()-began,"revision":s.revision,
+        "command":s.menu.command,"page":s.menu.page,"commands":s.menu.layout.commands})
+    return s
+
+func emphasis_active(s: Dictionary, index: int, reduced: bool) -> bool:
+    for i in range(4):
+        var command: Dictionary = s.menu.layout.commands[i]
+        var art: Dictionary = command.art
+        if not check(command.selected == (i == index), "Only current command is selected"): return false
+        if not check(art.filter == "Nearest" and art.scale == 4, "Nearest integer icon scale is preserved"): return false
+        if not check(art.drawnOffsetY == int(art.drawnOffsetY), "Actual drawing stays on integer pixels"): return false
+        if i != index or reduced:
+            if not check(art.focusRemainingMs == 0 and art.drawnOffsetY == 0, "Unselected/reduced drawing stays stable"): return false
+        elif not check(art.focusRemainingMs > 0 and art.drawnOffsetY < 0, "New focus advances actual selected drawing immediately"): return false
+        if case_name.contains("icons"):
+            if not check(art.mounted and art.width == 24 and art.height == 24 and not art.extraFrame and not art.labelVisible,
+                "Admitted original icons retain their existing rendering"): return false
+            if not check(art.resource.ends_with(".selected" if i == index else ".normal"), "Existing selected/normal resource is drawn"): return false
+    return true
+
+func focus_emphasis(initial: Dictionary) -> void:
+    var reduced := case_name.contains("reduced")
+    await frames(15)
+    var settled := state()
+    var rectangles: Array = settled.menu.layout.commands.map(func(c): return c.rect)
+    var revision: int = settled.revision
+    await tap(KEY_LEFT)
+    var first := emphasis_sample("keyboard-emphasis")
+    if not emphasis_active(first,1,reduced): return
+    await frames(4)
+    var advancing := emphasis_sample("keyboard-advances")
+    if not reduced and not check(advancing.menu.layout.commands[1].art.drawnOffsetY > first.menu.layout.commands[1].art.drawnOffsetY,
+        "Short emphasis advances toward stable selected drawing"): return
+    await tap(KEY_RIGHT)
+    if not emphasis_active(emphasis_sample("quick-new-focus"),2,reduced): return
+    var position := center(state().menu.layout.commands[3].rect)
+    await motion(position)
+    if not emphasis_active(emphasis_sample("pointer-emphasis"),3,reduced): return
+    await frames(16)
+    var idle := emphasis_sample("settled-idle")
+    if not check(idle.menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0 and c.art.drawnOffsetY == 0), "Emphasis settles without idle animation"): return
+    await motion(position) # Same coordinates are not a fresh focus change.
+    if not check(state().menu.layout.commands[3].art.focusRemainingMs == 0, "Stationary pointer cannot restart emphasis"): return
+    await tap(KEY_DOWN)
+    if not check(state().menu.layout.commands[3].art.focusRemainingMs == 0, "Repeated current direction cannot restart emphasis"): return
+    if not check(state().revision == revision and resources(state()) == resources(initial), "Drawing/focus never submits commands or spends resources/RNG"): return
+    if not check(state().menu.layout.commands.map(func(c): return c.rect) == rectangles, "Drawing never moves hit rectangles"): return
+    await tap(KEY_LEFT)
+    view.hide()
+    if not check(state().menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0), "Hiding immediately cancels active emphasis"): return
+    await frames(2)
+    view.show(); await frames(3)
+    var shown := emphasis_sample("shown-stable")
+    if not check(shown.menu.layout.commands.all(func(c): return c.art.drawnOffsetY == 0 and c.art.focusRemainingMs == 0), "Showing cannot resume stale emphasis"): return
+    if not DisplayServer.get_name() == "headless":
+        await tap(KEY_RIGHT)
+        if not await transfer_focus(): return
+        if not check(state().menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0 and c.art.drawnOffsetY == 0), "Native focus loss/return leaves stable selection"): return
+    await tap(KEY_ESCAPE)
+    if not check(state().stage == "Movement" and state().menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0), "Closing cancels emphasis"): return
+    await tap(KEY_ENTER)
+    if not emphasis_active(emphasis_sample("reopened-new-selection"),0,reduced): return
+    await frames(15)
+    if not check(state().menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0 and c.art.drawnOffsetY == 0), "Reopened selection settles without stale motion"): return
+    await tap(KEY_RIGHT)
+    if not emphasis_active(emphasis_sample("before-scene-retirement"),2,reduced): return
+    host.queue_free()
+    await frames(3)
+    if not check(not is_instance_valid(host), "Active menu retires with its ordinary host scene"): return
+    samples.append({"label":"scene-retired","hostFreed":true})
     finish(true)
 
 func battle_menus(initial: Dictionary) -> void:

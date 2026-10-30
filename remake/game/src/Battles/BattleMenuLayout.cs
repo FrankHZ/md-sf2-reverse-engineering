@@ -99,7 +99,17 @@ internal sealed partial class BattleMenuLayout : Control
 
     // Native wrapped-label minimum sizes settle after container sorting. Settle geometry before
     // the next pointer event too, rather than moving a hit region only when that event redraws it.
-    public override void _Process(double delta) { if (IsVisibleInTree()) Arrange(Size); }
+    public override void _Process(double delta)
+    {
+        if (!IsVisibleInTree()) return;
+        Arrange(Size);
+        foreach (var command in Commands) command.AdvanceFocus(delta);
+    }
+
+    internal void StopFocusEmphasis()
+    {
+        foreach (var command in Commands) command.StopFocusEmphasis();
+    }
 
     internal void Arrange(Vector2 size)
     {
@@ -282,13 +292,34 @@ internal sealed partial class BattleMenuLayout : Control
 internal sealed partial class BattleDiamondButton : Control
 {
     internal string Caption { get; }
-    internal bool Selected { get; set; }
+    internal bool Selected { get; private set; }
     internal bool Available { get; set; }
     private readonly Label _label;
     private ImageTexture? _normal, _selected;
     private int _pixelScale = 1;
     private string? _drawnResource;
     private bool _drawnExtraFrame;
+    private double _focusRemaining;
+    private int _drawnOffsetY;
+    private int FocusOffsetY => _focusRemaining > 0.12 ? -4 : _focusRemaining > 0.06 ? -2 : _focusRemaining > 0 ? -1 : 0;
+
+    internal void SetSelection(bool selected, bool reducedFlash)
+    {
+        // Only a new focus starts the short modern emphasis; refresh/idle never restarts it.
+        if (selected != Selected) _focusRemaining = selected && !reducedFlash ? 0.18 : 0;
+        if (reducedFlash) _focusRemaining = 0;
+        Selected = selected;
+        QueueRedraw();
+    }
+
+    internal void AdvanceFocus(double delta)
+    {
+        if (_focusRemaining <= 0) return;
+        _focusRemaining = Math.Max(0, _focusRemaining - delta);
+        QueueRedraw();
+    }
+
+    internal void StopFocusEmphasis() { _focusRemaining = 0; QueueRedraw(); }
     internal BattleDiamondButton(string caption)
     {
         Caption = caption; Name = caption;
@@ -318,20 +349,24 @@ internal sealed partial class BattleDiamondButton : Control
     internal object ObserveArt() => new { shape = "square", mounted = _normal is not null,
         resource = _drawnResource,
         width = _normal?.GetWidth(), height = _normal?.GetHeight(), scale = _pixelScale,
-        filter = TextureFilter.ToString(), extraFrame = _drawnExtraFrame, labelVisible = _label.Visible };
+        filter = TextureFilter.ToString(), extraFrame = _drawnExtraFrame, labelVisible = _label.Visible,
+        focusRemainingMs = _focusRemaining * 1000, drawnOffsetY = _drawnOffsetY };
     public override void _Draw()
     {
+        _drawnOffsetY = FocusOffsetY;
+        var offset = new Vector2(0, _drawnOffsetY);
+        _label.Position = offset;
         var texture = Selected ? _selected : _normal;
         _drawnExtraFrame = texture is null;
         if (texture is not null)
         {
             float side = 24 * _pixelScale;
-            DrawTextureRect(texture, new Rect2((Size - new Vector2(side, side)) / 2, new(side, side)), false);
+            DrawTextureRect(texture, new Rect2(((Size - new Vector2(side, side)) / 2).Round() + offset, new(side, side)), false);
             _drawnResource = $"command-menu.{Caption.ToLowerInvariant()}.{(Selected ? "selected" : "normal")}";
         }
         else
         {
-            var rect = new Rect2(Vector2.One, Size - Vector2.One * 2);
+            var rect = new Rect2(Vector2.One + offset, Size - Vector2.One * 2);
             DrawRect(rect, new Color("002492"));
             DrawRect(rect, Selected ? Colors.White : new Color("ffdb49"), false, 2);
         }
