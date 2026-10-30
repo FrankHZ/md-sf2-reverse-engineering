@@ -30,8 +30,8 @@ copy/delete UI, migration framework, name editor, promotion or Battle03 ending i
 New Game never overwrites a slot; only an explicit confirmed Save does. Quit warns about unsaved
 progress and offers cancel; it does not secretly autosave.
 
-Current milestone: independently accept this design, then the first executable New Game slice
-below. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
+Current milestone: independently accept the implemented New Game slice below, then the separately
+owned persistence and field-feature slices. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
 rigor at the persistence review and final restart acceptance; ordinary inventory/UI slices can
 use Standard once their state boundary is fixed. No unresolved aesthetic choice gates this design.
 
@@ -43,7 +43,7 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 
 | Surface | Current state and owner | Closure disposition |
 | --- | --- | --- |
-| Entry/initialization | **Confirmed structure:** [GameRoot](../../game/src/GameRoot.cs) immediately starts an authored package or explicit private controlled start. [PrivateExplorationReader](../../src/Sf2.Remake.Content/Scenarios/PrivateExplorationReader.cs) requires separately supplied start and party. | **Missing behavior:** product New Game/default initialization, title and independent replacement-session lifetime. #1420. |
+| Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress. Explicit authored/controlled entries remain diagnostic. | #1420; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission) and [native observation](../verification/host.md#opening-new-game-observation). Save/Continue remain missing. |
 | Persistence/Continue | **Unsupported:** no save DTO, disk store, restore admission or player Continue. A controlled start is not a save. | **Missing behavior:** #1421; follow the boundary below. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | [BattleEquipment](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs), [BattleGive](../../src/Sf2.Remake.Domain/Battles/Rules/BattleGive.cs), [BattleDiscard](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDiscard.cs) and battle continuations exist, with standalone authored admission limits. | **Missing integration and field command behavior:** no field consumer. Reuse numerical/custody rules, not battle selection state or a fabricated battle. #1422. |
@@ -78,16 +78,16 @@ Only source uncertainty that prevents a required behavior warrants a focused evi
 
 ## New Game construction
 
-Separate immutable content admission from start construction; reuse existing readers and validation
-helpers rather than a second private parser. The current `PrivateExplorationReader` composition
-through a battle controlled-start reader must be separated where it forces checkpoint input.
-Specifically, `PrivateBattleScenarioReader.Read` passes `ControlledBattleStart` into
-`PrivateBattleDefinitionReader.Read`, and `Assemble` builds ally definitions from that start's class,
-level, maxima and loadout as well as its current resources. Replacing only the outer JSON would retain
-this coupling. The minimum #1420 change is to extract reusable static/encounter admission, build
-immutable ally capabilities from admitted data, and assemble fresh or restored progression separately.
-The controlled-start adapter can still explicitly assemble its diagnostic overrides. Continue must
-not make saved progress redefine trusted base content or reconstruct defaults from a checkpoint.
+Immutable content admission is separate from start construction. `PrivateBattleContentReader`
+selects ally capabilities from pinned static content and selected source growth, independently of
+`ControlledBattleStartReader`. `PrivateBattleDefinitionReader` retains source initial ally records;
+encounters use level-one immutable baselines and progression lives in `BattleActorStartInput`.
+`OpeningPartyInitialization` processes retained allies in ascending member order, scans initial
+spells and reuses ordinary `BattleGrowthRules` in HP/MP/ATT/DEF/AGI order, then restores current
+HP/MP. Curve NONE consumes no draws. Future class growth spells remain admitted capabilities,
+not automatically learned spells. Only supported opening starts are constructed; the unneeded
+HEAL3 initial-prowess branch rejects explicitly rather than simulating another character's startup.
+The controlled adapter still admits its explicit diagnostic baseline overrides.
 The same separation applies to controlled `NewBattleStartPolicy.BridgeBoundary` provenance: a genuine
 new-game entry must not invent an H3 bridge label to satisfy a diagnostic start gate. Keep real source
 difficulty/control/status admission with the selected rules and keep comparison provenance at its
@@ -114,6 +114,29 @@ startup with an actionable content diagnostic, never a plausible number or a pra
 The existing [R1 owner](../../../docs/research/chapters/grans-opening/map3-admitted-start.md) retains
 its controlled menus/naming, omitted POISON and time/NPC-phase limits. New Game adds no original H3
 claim. The product opens after the original title/Witch sequence; recreating that sequence is not required.
+
+### Implemented New Game boundary
+
+The ordinary host displays a title and mapped New Game action. Two seeds are selected once per
+confirmed start across the full uint domain. It admits the candidate and required audio metadata
+before releasing an existing session. Failed replacement stays cancellable over the old paused
+session. Successful replacement detaches old views synchronously, reuses their exit/disposal hooks,
+releases session audio, resets camera projection and disarms held movement/input before attaching
+the candidate. The New Game button consumes its GUI hit independently of underlying game input.
+
+No checkpoint path is selected by this entry, including additional encounter starts in a private
+world. Source initial item bytes are zero-extended into four runtime word slots, preserving the
+source equipped bit and explicitly zero broken/auxiliary bits. EXP/kills/defeats/status/gold start at
+zero; Deals and battle once-flags are empty. Only Bowie is joined/active; normal programs join Sarah
+and Chester. Jaha is initialized only when retained growth/encounter content includes him. Field
+pickup receipt behavior and persistence are still separately unimplemented.
+
+Fresh world counters are step0/battle-request false and source reset EgressMap0. Text settings are
+message speed2/mouth0/view0. Each map must provide admitted `basePalette`; initial current/base
+colors are the Map3 base and fade period3 follows pinned `code/gameflow/start/systeminit.asm` and
+`gameintro.asm` writes to `FADING_COUNTER_MAX`. This is static source plus product initialization,
+not a new original runtime/timing claim. Missing palette metadata rejects before session creation.
+See the [preparation/admission owner](../content/profiles-and-trust.md#opening-new-game-admission).
 
 ## State authority and save boundary
 

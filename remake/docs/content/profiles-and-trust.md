@@ -352,13 +352,15 @@ is accepted at its stated modern-clock/keyboard-A/8D boundary; full hardware 8C 
 
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
-| `public-authored` | default local start or `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
+| `public-authored` | explicit `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
+| `private-local-new-game` | ordinary title → New Game | pinned encounter/static/enemy/gold inputs, selected source growth and prepared world including map palettes; two host seeds, no checkpoint | fresh opening resources/progress through ordinary story and Battle01 entry; no Save/Continue |
 | `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and six explicit input environment selections, or `--private-exploration-start <absolute start JSON>` with the same six plus `SF2_PRIVATE_EXPLORATION_CONTENT` and `SF2_PRIVATE_CONTROLLED_START` | selected encounter, pinned enemy/static/gold definitions, external controlled party/start; for exploration also the prepared private world | initialized common session through inactive standby, activation, set6/set7 pursuit and ordinary enemy/player/kill/HEAL actions; the connected world runs the Map 3 opening through Battle 01 outcome and return. Required unknown accounting and wider effects remain explicit boundaries |
 
 The runtime always displays the appropriate disclosure:
 
 - `AUTHORED BATTLE` with controlled-start help
 - `PRIVATE CONTROLLED BATTLE` with Unknown accounting shown explicitly
+- `BATTLE` for product New Game, with explicit fresh accounting
 
 The ordinary project is `remake/game`, whose GameRoot accepts `--authored-package <path>`,
 `--private-battle-start <path>` or `--private-exploration-start <path>`, once and mutually exclusively,
@@ -737,3 +739,103 @@ they are not clamped into traversable space. Source comments call these two rows
 of a frontier does not establish their universal natural unreachability. Other reached unsupported
 warps still fail explicitly. Full village services, later setups, other ailments, Battle03 outcomes,
 EGRESS gameplay and original timing remain outside this selected capability.
+
+## Opening New Game admission
+
+`OpeningNewGameReader` consumes `SF2_PRIVATE_EXPLORATION_CONTENT`, the same six encounter/static
+selections as the controlled reader and optional `SF2_PRIVATE_BATTLE_SCENE_CONTENT`. The host
+supplies two uint seeds once; no external battle/exploration start or controlled bridge is read.
+The existing prepared world's transport profile/provenance still describes its controlled research
+content origin; the admitted scenario origin is `private-local-new-game`. Original natural timing
+is not inferred from that product label.
+
+The trusted static export supplies names, starting class/level and all four item expressions.
+`InitializeAllyCombatantEntry` zero-extends each starting item byte into a runtime word; no broken or
+auxiliary bits are inherited. The selected `world.growth` supplies source stat curves/spell thresholds
+for Bowie/Sarah/Chester and Jaha when retained. The shared growth reader admits these once; runtime
+progress never redefines the trusted baseline. Additional encounters select those same capabilities
+without opening their historical `start` checkpoint. Explicit controlled readers keep that adapter.
+
+Fresh progress, roster, accounting, RNG and counters follow the
+[construction owner](../application/opening-session-lifecycle.md#new-game-construction). Product battle
+policy carries `NewGame` origin with an empty BridgeBoundary and cannot skip the ordinary before
+route. Actual entry still validates routed policy, difficulty0, control and supported refresh.
+Malformed/missing content returns a typed startup failure with a bounded field/code and no private
+path; the title remains available. Failed replacement preserves its old session for Cancel.
+
+Every retained map must embed `basePalette`. Historical worlds often received palettes from a
+controlled start; those worlds reject product startup with `initial-map-palette-required` at
+`world.maps.basePalette`. Use the existing `selected_map_palette_bindings` helper against the pinned
+source and registered verified ROM to supplement only the already selected maps. It reads the two
+logical palette words, adds its source dependencies to the existing provenance and requires no
+asset export or new original runtime observation. Initial Display uses the Map3 base and source
+period3; the period writes are in pinned `disasm/code/gameflow/start/systeminit.asm` and `gameintro.asm`.
+
+After loading the usual private content selections, set `$pinnedUpstream` to the existing pinned
+SF2DISASM checkout and `$freshWorldPath` to a **new** ignored file beside
+`SF2_PRIVATE_EXPLORATION_CONTENT`. These are explicit caller-selected paths, not new environment
+variables. Run this complete repository-root recipe; it needs no ignored preparation script:
+
+```powershell
+$ErrorActionPreference = 'Stop'
+. ./local/private-inputs.ps1
+uv run sf2 rom verify
+if ($LASTEXITCODE -ne 0) { throw 'ROM verification failed' }
+@'
+import hashlib, json, os, re, subprocess, sys
+from pathlib import Path
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+from sf2tool.remake_exploration_content import selected_map_palette_bindings
+from sf2tool.remake_exploration_programs import OriginalPrograms
+
+upstream = Path(sys.argv[1]).resolve(strict=True)
+source = Path(os.environ["SF2_PRIVATE_EXPLORATION_CONTENT"]).resolve(strict=True)
+target = Path(sys.argv[2]).resolve()
+pin = "c834c652b6862bc5679fd7f69a38a7093206efc6"
+assert subprocess.check_output(["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True).strip() == pin
+assert source.stat().st_size <= 128 * 1024 * 1024
+assert target.parent == source.parent and target != source and not target.exists()
+world = json.loads(source.read_text(encoding="utf-8-sig"))
+assert world["provenance"]["commit"] == pin
+# Only source equates are needed; no program is compiled or reconstructed.
+compiler = OriginalPrograms({"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream)
+compiler.sources.clear()
+compiler.sources.add("disasm/sf2enums.asm")
+ids = [int(row["id"][4:]) for row in world["world"]["maps"]]
+assert sorted(ids) == [3, 19, 20, 21, 40, 57, 66]
+bindings = selected_map_palette_bindings(compiler, ids, private_input_path(ROM_INPUT_IDENTITY))
+for relative in ("disasm/code/gameflow/start/systeminit.asm", "disasm/code/gameflow/start/gameintro.asm"):
+    assert re.search(r"move\.b\s+#3,\(\(FADING_COUNTER_MAX-\$1000000\)\)\.w", (upstream / relative).read_text())
+    compiler.sources.add(relative)
+for row, binding in zip(world["world"]["maps"], bindings, strict=True):
+    assert row["id"] == binding["map"] and "basePalette" not in row
+    row["basePalette"] = binding["base"]
+sources = {row["path"]: row for row in world["provenance"]["sources"]}
+for relative in sorted(compiler.sources):
+    data = (upstream / relative).read_bytes()
+    original = subprocess.check_output(["git", "-C", str(upstream), "show", pin + ":" + relative])
+    assert data.replace(b"\r\n", b"\n") == original.replace(b"\r\n", b"\n")
+    sources[relative] = {"path": relative, "sha256": hashlib.sha256(data).hexdigest().upper()}
+world["provenance"]["sources"] = list(sources.values())
+with target.open("x", encoding="utf-8", newline="\n") as output:
+    json.dump(world, output, ensure_ascii=False, separators=(",", ":"))
+assert target.stat().st_size <= 128 * 1024 * 1024
+print(json.dumps({"maps": bindings, "period": 3, "outputBytes": target.stat().st_size}))
+'@ | uv run python -X utf8 - $pinnedUpstream $freshWorldPath
+if ($LASTEXITCODE -ne 0) { throw 'Opening palette preparation failed' }
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorldPath
+```
+
+The private receipt `local/issue1420/palette-preparation.json` retains the executed seven-map
+supplement and source identities. A direct original/new-world comparison, removing only the seven
+`basePalette` fields and `provenance.sources`, confirms that every other map/program/encounter/
+asset/party operand is unchanged; the original file is preserved. No preparation rerun is needed
+for documentation review.
+
+Verify the pinned source files (allowing the checkout's Git line-ending normalization), retain their
+existing provenance hashes, and merge helper source dependencies into `provenance.sources` before
+writing a fresh ignored world. Keep that world beside its original to preserve already-contained
+relative encounter paths; do not rewrite the canonical input. The bounded run reads one 127.60 MB
+world and writes one 125.82 MB world plus small metadata, O(input bytes) time/memory, below 1 GiB
+expected peak memory and within its measured disk budget. No content or source changes beyond the
+seven map palettes/provenance are required. Field receipts, services and persistence remain separate.

@@ -8,7 +8,8 @@ namespace Sf2.Remake.Content.Scenarios;
 // Additional private encounters are admitted at startup, never read during a map transition.
 internal static class PrivateWorldEncounterReader
 {
-    internal static ScenarioReadAccepted Read(JsonElement selections, string worldPath, ScenarioReadAccepted first)
+    internal static ScenarioReadAccepted Read(JsonElement selections, string worldPath, ScenarioReadAccepted first,
+        PrivateBattleContentReader? newGame = null)
     {
         Require(selections.ValueKind == JsonValueKind.Array, "array-required", "encounters");
         Require(selections.GetArrayLength() <= 1, "encounter-selection-limit", "encounters");
@@ -26,10 +27,11 @@ internal static class PrivateWorldEncounterReader
                     "input-path-escape", "encounters." + key);
                 return resolved;
             }
-            var source = new PrivateBattleScenarioReader(Input("placement"), Input("scene"), Input("terrain"),
-                Input("static"), Input("enemies"), Input("gold"), Input("start"),
-                row.GetProperty("battleScenes").ValueKind == JsonValueKind.Null ? null : Input("battleScenes"));
-            var result = source.Read();
+            string? scenes = row.GetProperty("battleScenes").ValueKind == JsonValueKind.Null ? null : Input("battleScenes");
+            var result = newGame is null
+                ? new PrivateBattleScenarioReader(Input("placement"), Input("scene"), Input("terrain"),
+                    Input("static"), Input("enemies"), Input("gold"), Input("start"), scenes).Read()
+                : newGame.Read(Input("placement"), Input("scene"), Input("terrain"), Input("static"), Input("enemies"), Input("gold"), scenes);
             if (result is ScenarioReadRejected rejected) throw new AdmissionIssue(rejected.Failure);
             admitted.Add((ScenarioReadAccepted)result);
         }
@@ -45,7 +47,8 @@ internal static class PrivateWorldEncounterReader
             definitions.SelectMany(value => value.Items.Values).DistinctBy(value => value.Id),
             definitions.SelectMany(value => value.Spells.Values).DistinctBy(value => value.Spell),
             definitions.SelectMany(value => value.Enemies.Values).DistinctBy(value => value.Code),
-            definitions.SelectMany(value => value.EnemyGold.Values).DistinctBy(value => value.EnemyId));
+            definitions.SelectMany(value => value.EnemyGold.Values).DistinctBy(value => value.EnemyId),
+            definitions.SelectMany(value => value.Allies.Values).DistinctBy(value => value.Id));
         // Shared allies must have one immutable baseline. Progress and inventory changes belong to live state.
         foreach (var group in encounters.SelectMany(encounter => encounter.Deployments)
             .Where(row => row.Faction == BattleFaction.Ally).GroupBy(row => row.Actor))

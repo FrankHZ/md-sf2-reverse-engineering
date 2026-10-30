@@ -31,8 +31,8 @@ Accepted extensions include Battle02 victory, ordinary defeat/return and re-entr
 Yeel guidance, Kazin following, Map66 admission and Battle03 play/control. The
 [current engineering frontier](./docs/capability-status.md#current-engineering-frontier) separates
 those implementations from Battle03 outcomes, Hawel recruitment, later campaign, village services
-and save/load, which remain outside their scope. These are selected packages and controlled starts,
-not a complete New Game campaign.
+and save/load, which remain outside their scope. The ordinary title now constructs a fresh
+opening New Game through the existing Battle01 route; the later campaign remains bounded.
 
 The [current Godot presentation](./docs/godot/presentation.md) includes continuous exploration/Talk,
 a shared 1920×1080 world at 96px per cell, story dialogue, battle movement ranges, HP/MP cards,
@@ -62,12 +62,16 @@ repository root, after the [locked environment setup](./docs/development-and-ver
 ```powershell
 . ./local/private-inputs.ps1
 & $env:GODOT_BIN --path remake/game
-# Choose another tracked authored battle instead of the default:
+# Explicit authored diagnostic entry:
 & $env:GODOT_BIN --path remake/game -- --authored-package (Resolve-Path -LiteralPath 'remake/content/authored/garden-watch.json').Path
 ```
 
 These are alternative launches; reuse the owned running instance during development. Private play
-requires prepared local inputs and an explicit start selection. The
+requires prepared local inputs. The ordinary launch opens the title; New Game needs the six
+private battle/static selections, prepared world and optional battle scene content described by the
+[New Game input owner](docs/content/profiles-and-trust.md#opening-new-game-admission). Missing content
+reports a startup diagnostic. At settled field input, New Game… opens a confirmation; Cancel retains
+the current session. Continue and saving remain unavailable. Explicit diagnostic play uses a start selection. The
 [ordinary-host recipe](./docs/verification/host.md#ordinary-host-startup) and
 [Yeel–Battle03 recipe](./docs/verification/field-programs.md#yeel-guide-through-battle03)
 own preparation and reproduction; the launch above does not prepare original assets.
@@ -85,7 +89,8 @@ not require a game launch.
 
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
-| `public-authored` | default local start, or `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
+| `public-authored` | explicit `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
+| `private-local-new-game` | ordinary title → New Game with admitted private content, no checkpoint | fresh opening party/progress and normal Map3/castle/tower Battle01 entry; no persistence or full campaign claim |
 | `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; selected connected packages cover opening/Battle01, Battle02 outcomes/returns and Yeel–Battle03 play/control at their separate boundaries. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back

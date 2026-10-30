@@ -7,13 +7,16 @@ content. The accepted continuous Map3–Battle01 milestone is followed by bounde
 [Battle02 outcome/field return and re-entry](#battle02-outcome-implementation-agreement) and
 [Yeel–Battle03 play/control](#yeel-guide-through-battle03-implementation-agreement).
 Battle03 outcomes/Hawel recruitment, later campaign, full services and save/load remain outside those
-slices. [Local play](../README.md#run-locally) selects a package/start, not a full New Game campaign.
+slices. [Local play](../README.md#run-locally) opens the title and an opening New Game; explicit
+package/start options retain diagnostic play. This is not a full New Game campaign.
 
-The [opening lifecycle agreement](application/opening-session-lifecycle.md) proposes genuine New Game,
+The [opening lifecycle agreement](application/opening-session-lifecycle.md) implements genuine opening New Game and proposes
 two local savepoint slots/Continue, and bounded field preparation/search/services under #1418.
 It separates implemented rules, standalone-only admission, missing integration and missing behavior.
-This is implementation planning; it does not promote persistence or all reachable opening branches
-to delivered capability.
+New Game admits complete supported fresh resources/progress from content, without a comparison
+start; only Bowie initially belongs to the party. The [native entry observation](verification/host.md#opening-new-game-observation)
+owns replacement/error controls and the ordinary opening route. Persistence and all reachable
+optional opening branches are not promoted to delivered capability.
 
 Current accepted presentation includes continuous exploration/contextual Talk, shared 1080p/96px
 world geometry (A/B), story dialogue (C), reachable movement tiles (B8), status cards and battle/return/

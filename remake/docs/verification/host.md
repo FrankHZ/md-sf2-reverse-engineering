@@ -23,7 +23,7 @@ The same project accepts `--private-battle-start` and `--private-exploration-sta
 An optional `--input-settings <path>` selects the versioned product settings below, independently of
 the entry and in either argument order. Each option takes one path and may appear only once.
 Unknown/positional, duplicate, conflicting entry and missing-path arguments report
-startup ContentError in the common view before creating a session. They cannot select legacy play.
+startup ContentError at the title before creating a session. They cannot select legacy play.
 
 The external observer owns `SF2_OBSERVATION_CASE`, `OUTPUT`, `FOLLOWUP_SHAPE`, `TARGET_SHAPE`,
 `ENEMY_SHAPE`, `CONTINUATION_SHAPE`, `LONG_PATH` and `REVERSE_KILLS` (all with the same prefix).
@@ -1312,3 +1312,53 @@ diagnosis does not explain or erase the initial failure.
 nonreproduced windowed Cancel sequence, earlier physical focus-release boundaries and the private headless shutdown
 warning cause. The earlier A/B/C failures and Unknowns remain in their owners. This slice adds no
 research/H3/H4 comparison or screenshot requirement.
+
+## Opening New Game observation
+
+The [High opening lifecycle agreement](../application/opening-session-lifecycle.md#implemented-new-game-boundary)
+and [content admission/preparation](../content/profiles-and-trust.md#opening-new-game-admission)
+own this product entry. Launch `GODOT_BIN --path remake/game` without a session-entry argument.
+After preparing/selecting the seven-map private world, six pinned battle/static inputs and optional
+battle scenes, choose New Game with the displayed mapped Confirm action. No controlled-start
+selection is required. At settled field input, the New Game… button opens a confirmation defaulting
+to Cancel. New Game never saves or overwrites progress on disk; Save/Continue are not implemented.
+
+The bounded ignored `local/issue1420/newgame.gd` witness drives actual mapped keyboard/mouse input
+through the ordinary Main scene and reads native state. It records only selected boundary samples,
+not screenshots or a per-frame trajectory. After same-process `local/private-inputs.ps1` and private
+content selections, build the affected Debug host with protected locked .NET settings. Run
+`local/issue1420/run-native.ps1 -Run <fresh-name>` with its fresh worktree-local APPDATA/LOCALAPPDATA/
+TEMP and output folder. It deliberately unsets `SF2_PRIVATE_CONTROLLED_START` and supplies no game
+entry option. Existing fixture navigation contributes input directions only, never gameplay state.
+
+Required observations: title → first New Game → ordinary movement → host-button pointer isolation
+and Cancel preserving session → invalid replacement content, visible typed error and Cancel retaining
+old progress → second independent fresh start with old view released → ordinary house/Sarah/school/
+messenger joins → castle/palace/Astral/tower → before/load/start → Battle01 control with ordinary
+Confirm/Cancel. Record fresh resources/loadouts/roster/seeds, program/flag boundaries, actual native
+errors and process exit. Fixed initial seed unit cases separately admit0 and full uint storage.
+
+The first completed route exposed `full-fade-state` at the house exit because the retained world
+had no embedded map palettes; it is preserved. The product now rejects such input during startup,
+and the narrow helper preparation supplies admitted palettes before rerunning the affected route.
+The initial observer's missing optional method argument and later unused palette/guard/text tracking
+are driver failures, retained separately from product failure. No original fixture is weakened to
+satisfy this product path. Exact candidate results, CI and process ownership belong in the PR handoff;
+independent integration remains main-gate's responsibility.
+
+The completed private witness reaches Battle01 `Movement`, opens `ActionChoice` and cancels back
+through actual input with no native stderr. It also observes ordinary mapped Wait when a fresh
+seed places an ambient NPC in the walking path; no saved NPC phase is supplied. The retained
+`native-07` and `native-final-02` runs preserve those bounded results. Source-origin labeling is
+explicit scenario assembly metadata, independent of trusted ally metadata presence. The small
+`entry-controls.gd` cases separately cover missing product input/no practice fallback and retained
+explicit authored/controlled startup. Fixed-seed engine cases and the affected private scenario
+comparison pass; earlier private failures and their current-assertion corrections remain in the
+handoff rather than changing original fixtures.
+
+The final small entry controls pass for missing product content, explicit product origin, authored
+battle control and explicit controlled exploration origin. A separate standalone
+`--private-battle-start` with the selected scene sidecar retains
+`battlefield-map-resource-unavailable`: it has no exploration map material to mount. That existing
+standalone presentation boundary is preserved, not treated as a product pass or repaired by
+fallback. The connected New Game route supplies the map material and reaches actual Battle01.

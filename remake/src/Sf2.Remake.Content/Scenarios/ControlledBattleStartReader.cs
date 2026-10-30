@@ -4,15 +4,9 @@ using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
 
-internal sealed record ControlledAllyStart(byte Id, byte ClassId, byte Level, ushort MaxHp, ushort Hp,
-    byte MaxMp, byte Mp, byte Attack, byte Defense, byte Agility, byte Move, ushort Status,
-    IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells, byte? Exp, ushort? Kills, ushort? Defeats, ushort? ActivationWord = null);
-internal sealed record ControlledBattleStart(byte Battle, uint MainSeed, uint ThinkingSeed, uint? Gold,
-    NewBattleStartPolicy Policy, IReadOnlyList<ControlledAllyStart> Allies);
-
 internal static class ControlledBattleStartReader
 {
-    internal static ControlledBattleStart Read(string path)
+    internal static PrivateBattleStart Read(string path)
     {
         byte[] bytes;
         try
@@ -29,7 +23,7 @@ internal static class ControlledBattleStartReader
         return Decode(document.RootElement);
     }
 
-    internal static ControlledBattleStart Decode(JsonElement root)
+    internal static PrivateBattleStart Decode(JsonElement root)
     {
         Object(root, "controlled-start", "formatVersion", "id", "evidenceOwner", "bridgeBoundary", "profile",
             "battle", "policy", "mainSeed", "thinkingSeed", "gold", "allies");
@@ -43,7 +37,7 @@ internal static class ControlledBattleStartReader
         var inputPolicy = new NewBattleStartPolicy(Text(root, "id"), Text(root, "evidenceOwner"), Text(root, "bridgeBoundary"),
             (byte)Number(policy, "difficulty", 0, 255), true, true, true, Boolean(policy, "allyAutoBattle"),
             Boolean(policy, "opponentControl"), (ushort?)OptionalNumber(policy, "missingCandidateAllyWord", 65535));
-        var allies = new List<ControlledAllyStart>(); var ids = new HashSet<byte>();
+        var allies = new List<PrivateAllyStart>(); var ids = new HashSet<byte>();
         foreach (var row in Array(root, "allies"))
         {
             ObjectOptional(row, "controlled-ally", "activationWord", "id", "classId", "level", "maxHp", "hp", "maxMp", "mp", "attack", "defense", "agility", "move", "status", "items", "spells", "exp", "kills", "defeats");

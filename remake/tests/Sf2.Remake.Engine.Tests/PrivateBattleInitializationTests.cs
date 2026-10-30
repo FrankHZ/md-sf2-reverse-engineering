@@ -10,6 +10,26 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class PrivateBattleInitializationTests
 {
+    [Fact]
+    public void ProductOriginRequiresTheActualBeforeRouteAndKeepsControlAndDifficultyAdmission()
+    {
+        var (scenario, start) = Setup();
+        var product = start.NewBattle! with { Origin = BattleStartOrigin.NewGame, BridgeBoundary = "", SkipIntro = false };
+        BattleStartInput Input(NewBattleStartPolicy policy) => new(start.Encounter, start.Actors,
+            start.MainSeed, start.ThinkingSeed, start.Gold, policy);
+        Assert.Equal("new-game-battle-route", Assert.IsType<SessionStartFailed>(GameSession.Start(scenario, Input(product))).Failure.Code);
+        Assert.Equal("new-game-battle-route", Assert.IsType<SessionStartFailed>(GameSession.Start(scenario,
+            Input(product with { SkipIntro = true }))).Failure.Code);
+        var routed = product with { BeforeBattleRouted = true };
+        Assert.IsType<SessionStarted>(GameSession.Start(scenario, Input(routed)));
+        Assert.Equal("difficulty", Assert.IsType<SessionStartFailed>(GameSession.Start(scenario,
+            Input(routed with { Difficulty = 1 }))).Failure.Code);
+        Assert.Equal("control-mode", Assert.IsType<SessionStartFailed>(GameSession.Start(scenario,
+            Input(routed with { OpponentControl = true }))).Failure.Code);
+        Assert.Equal("controlled-provenance", Assert.IsType<SessionStartFailed>(GameSession.Start(scenario,
+            Input(start.NewBattle with { BridgeBoundary = "" }))).Failure.Code);
+    }
+
     private static NewBattleStartPolicy Policy => new("controlled-varied-party", "project-authored-comparison", "No natural entry claim",
         0, true, true, true, false, false, 0);
     private static (ScenarioDefinition Scenario, BattleStartInput Start) Setup(BattleMover mover = BattleMover.Regular,

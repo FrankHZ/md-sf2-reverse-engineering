@@ -42,7 +42,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         catch (FormatException) { return Rejected("invalid-definition-field", "definitions"); }
     }
 
-    internal static ScenarioReadAccepted Assemble(PrivateBattleDefinitions definitions, ControlledBattleStart start)
+    internal static ScenarioReadAccepted Assemble(PrivateBattleDefinitions definitions, PrivateBattleStart start, bool validateStart = true)
     {
         var encounter = definitions.Encounter;
         Require(start.Battle == encounter.Battle.Id, "controlled-encounter", "start.battle");
@@ -162,7 +162,9 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             retreatSpells: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatSpells(definitions) : [],
             retreatItems: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatItems(definitions) : []);
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
-        BattleTurnFlow.ValidateStart(battle, inputStart);
+        // Product content is assembled before its ordinary before-battle program has run.
+        // The actual battle entry still validates the routed policy through BattleTurnFlow.
+        if (validateStart) BattleTurnFlow.ValidateStart(battle, inputStart);
         return new(new("private-encounter", [battle], definitions), inputStart);
     }
 

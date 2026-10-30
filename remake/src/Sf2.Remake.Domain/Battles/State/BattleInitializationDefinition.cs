@@ -4,6 +4,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth, Flying }
 public enum BattleRegionProgram { None, Required, Authored }
+public enum BattleStartOrigin { Controlled, NewGame }
 public sealed record BattleRegionProgramRow(byte Region, int PlayedFlag, string Program);
 
 // Declared external controlled inputs; these values are not inferred from original entry.
@@ -11,6 +12,7 @@ public sealed record NewBattleStartPolicy(string Declaration, string EvidenceOwn
     byte Difficulty, bool SkipIntro, bool AlreadyRefreshedAllies, bool RosterOnly,
     bool AllyAutoBattle, bool OpponentControl, ushort? MissingCandidateAllyWord)
 {
+    public BattleStartOrigin Origin { get; init; }
     // Produced only by the common map/battle sequencer after the before-battle route returns.
     public bool BeforeBattleRouted { get; internal init; }
 }
