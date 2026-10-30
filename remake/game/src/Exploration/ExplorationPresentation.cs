@@ -541,16 +541,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 var key = (portrait, (flags & 0x40) != 0, work?.EyesClosed == true, work?.MouthOpen == true);
                 if (!_portraits.TryGetValue(key, out var texture))
                 {
-                    using var raster = Image(visualPortrait.Raster);
-                    using var composed = raster.GetRegion(new(0, 0, 64, 64));
-                    for (int tile = 0; tile < tiles.Length; tile++)
-                        if (tiles[tile] != tile)
-                            composed.BlitRect(raster, new(tiles[tile] % 8 * 8, tiles[tile] / 8 * 8, 8, 8), new(tile % 8 * 8, tile / 8 * 8));
-                    // The 8x10 source window has a border around six columns and eight rows.
-                    // Atlas columns 6/7 hold alternate tiles; the final visible row is not padding.
-                    using var crop = composed.GetRegion(new(0, 0, 48, 64));
-                    if (key.Item2) crop.FlipX();
-                    _portraits[key] = texture = ImageTexture.CreateFromImage(crop);
+                    _portraits[key] = texture = ExplorationRasterImages.Portrait(visualPortrait, tiles, key.Item2);
                     _resourceSelectors[texture] = new
                     { kind = "portrait", portrait, mirror = key.Item2, eyes = key.Item3, mouth = key.Item4, tiles };
                 }
@@ -747,7 +738,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         int half = entity.Motion.AnimationCounter > 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
         var key = (sprite, direction, half, nod, headShift);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
-        using var sheet = Image(visual.Directions[direction]);
+        using var sheet = ExplorationRasterImages.Open(visual.Directions[direction]);
         using var image = sheet.GetRegion(new(half * 24, 0, 24, 24));
         ExplorationStoryEffects.ShiftHead(image, headShift);
         if (nod)
@@ -770,15 +761,6 @@ internal sealed partial class ExplorationPresentation : IDisposable
             }
         _spriteInk[texture] = ink;
         return texture;
-    }
-
-    private static Image Image(ExplorationRaster raster)
-    {
-        if (raster.Format == "rgba8") return Godot.Image.CreateFromData(raster.Width, raster.Height, false, Godot.Image.Format.Rgba8, raster.CopyBytes());
-        var image = new Image();
-        if (image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok || image.GetWidth() != raster.Width || image.GetHeight() != raster.Height)
-        { image.Dispose(); throw new InvalidOperationException("raster-decode"); }
-        return image;
     }
 
     public void Dispose()

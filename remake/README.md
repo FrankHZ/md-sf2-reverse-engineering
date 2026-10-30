@@ -74,7 +74,9 @@ own preparation and reproduction; the launch above does not prepare original ass
 
 Default directional input moves/selects; Confirm opens or confirms the cardinal battle menu, Cancel
 backs out through selection and provisional movement. Exploration exposes contextual Talk. At settled
-field input, E / Pad Start opens the read-only Party Status page. Bindings are configurable; follow
+field input, E / Pad Start opens the read-only Party Status member screen.
+Up/Down selects a member; Tab / Pad RB cycles member, magic and inventory focus. Mouse opens the
+compact member selector or changes member with arrows, and scrolls within each list. Close bindings are displayed and configurable; follow
 the displayed hints and [input/presentation owner](./docs/godot/presentation.md#modern-ui-experiment).
 For build/test selection continue to [Build and Test](#build-and-test); documentation-only edits do
 not require a game launch.

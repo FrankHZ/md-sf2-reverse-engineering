@@ -20,6 +20,12 @@ public sealed record BattleEquipmentChoice(int Slot, string Label, bool Equipped
 // Slot4 is the source menu's Unarmed sentinel, never an inventory slot.
 public static class BattleEquipment
 {
+    // Shared by battle construction and carried-party reads; explicit battle overrides stay with the caller.
+    public static byte Attack(BattleActorDefinition definition, BattleActorProgress? progress, BattleSourceLoadout? loadout) =>
+        progress is null && definition.Equipment is null ? definition.Attack :
+        (byte)Math.Min(200, (progress?.BaseAttack ?? definition.Equipment?.BaseAttack ??
+            (byte)(definition.Attack - (definition.Growth?.AttackBonus ?? 0))) + Contribution(definition, loadout));
+
     // RemoveItemBySlot shifts following words and refreshes from the live base.
     internal static BattleActorState RemoveItem(BattleActorState actor, int slot)
     {

@@ -14,6 +14,7 @@ public sealed class GameSession
     public SessionSnapshot Current => _current;
     public SessionRules Rules { get; }
     public EntityRef? QueryExplorationInteraction() => ExplorationInteractionQuery.Query(Current);
+    public PartyDetails? QueryPartyDetails() => PartyDetailsQuery.Query(Definition, Current);
     public BattleChoicesSnapshot QueryBattleChoices() =>
         BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
 

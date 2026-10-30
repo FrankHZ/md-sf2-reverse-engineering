@@ -59,8 +59,9 @@ RNG, input admission and explicit command confirmation keep their existing autho
 processing advances a button's short timer; it submits no command and plays no sound. No general
 animation framework, art pipeline or gameplay state was added. The
 [native recipe](../verification/host.md#diamond-focus-emphasis-observation) owns actual drawing,
-lifecycle observations and mounted-original-icon acceptance evidence. Independent acceptance and
-whole-opening human/aesthetic approval remain separate.
+lifecycle observations and mounted-original-icon acceptance evidence. Merged
+[PR1413](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1413) owns bounded engineering acceptance;
+whole-opening human/aesthetic approval remains Unknown.
 
 ## Battle messages, return and Party Status
 
@@ -85,14 +86,10 @@ it introduces no acknowledgement or reward summary. Ready return also releases a
 mount. The first fresh field command dismisses the notice and executes normally.
 
 At settled field input, the existing Equipment binding (default E / Pad Start) opens **Party Status**.
-One member card is shown, with left/right (or up/down) paging and Cancel/Equipment/Confirm closing.
-The page directly reads current carried ally records, progress maxima or admitted definition maxima,
-member names and gold. Authored containers may retain enemy records; those are excluded using their
-admitted faction. Zero MP and defeated members reuse E1 cues. There is no synthetic battle, mutable
-resource copy, inventory/equipment/healing action, save/retry, arbitrary retreat or general field menu.
-Opening, paging and closing submit no session commands. Opening/focus suspension require released
-input; modal directions clear movement holds, and closing consumes its own event before fresh input.
-Busy or failed field state cannot open it. A changed field boundary automatically closes the page.
+The E7 extension's agreement below owns the roster/details layout and read-only data projection.
+Opening, browsing and closing submit no session commands. Busy or failed field state cannot open it;
+a changed field boundary closes it. Existing return feedback and reward messages retain their own
+ordering and accounting.
 
 Acceptance is adapter compilation and the clean-head scope plan, plus the
 [bounded host witness](../verification/host.md#battle-return-and-party-status-observation).
@@ -102,6 +99,65 @@ not a new windowed acceptance claim. Main-gate independently accepted the bounde
 return, private/physical close-up visibility, startup/program failure and recoverable illegal-move
 feedback observations. The host owner records the exact evidence and retained limits; integration
 is tracked by [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
+
+## Party details agreement
+
+**Standard rigor; [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416).**
+This bounded E7 extension lets the player inspect preparation and returned progression. The user's
+current direction replaces the persistent left roster/right prose page with original member-screen
+information grouping, at a readable 1920×1080 scale and the existing blue/gold style. A compact member
+selector preserves keyboard/pad/mouse browsing. Left summary: reliably bound admitted portrait,
+carried kills/defeats, gold. Right: name/class availability, aligned Level/Attack, HP/Defense,
+MP/Agility, EXP/Move rows; below, magic and four-slot inventory in parallel columns. Shared HP/MP
+gauges remain; long lists scroll independently, and long names wrap. Missing metadata remains
+unavailable, distinct from empty slots or no learned magic. No new class/status/jewel system or art.
+
+**Confirmed static arrangement:** pinned
+[`memberscreen.asm:BuildMemberScreen/BuildMemberStatusWindow`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/memberscreen.asm)
+and [`sf2enums.asm` member-window constants](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/sf2enums.asm#L2227)
+place portrait/KD/gold left, main status right. The 42-byte row stride gives name(row1,col1),
+Level/Attack(row3), HP/Defense(row5), MP/Agility(row7), EXP/Move(row9), then magic/items at
+row13,col1/10 with three-row entry strides. The accepted
+[layout owner](../../../docs/design/contracts/interface/ui-layout-data.md) binds ROM92770 and546words;
+its historical fixture width26/height21 conflicts with the source's21-column stride/26 rows
+(`SIZE=$151A`, `NEXT_LINE=$2A`). Preserve that discrepancy; no research fixture is repaired here.
+These source placements prove static grouping, not original runtime pixels, timing or natural reach.
+
+Readable spacing, numeric values instead of original tile-level spell indicators, shared modern
+gauges, explicit unavailable class/portrait labels and a compact dropdown selector are intentional
+accessibility/presentation deviations. Class display names and complete status/jewel presentation metadata are not admitted. Status/jewel
+decoration and the animated map-sprite preview are outside this bounded layout and are omitted. Existing
+`ExplorationPresentation.cs` plus `ExplorationRasterImages.cs` share the unchanged portrait crop;
+no pixel acquisition or animation lifecycle is added. `PartyDetailsPanel.cs` replaces prose formatting
+with aligned rows and independent lists; Application/Domain queries/rules stay unchanged.
+
+`GameSession.QueryPartyDetails` reads the current carried party and admitted definitions. The existing
+`MapPartyMembership.Rebuild` with current flags supplies joined membership where source member
+bindings exist; reserve membership is included. Seeded future allies and enemy records are excluded.
+Authored packages without source member bindings retain their carried-ally fallback. Current progress
+and carried loadout precede admitted baselines. The existing Domain equipment owner computes attack
+for both battle construction and the query; no temporary battle or mutable actor copy is created.
+Private item/spell display names come from admitted `PrivateBattleDefinitions`; authored definitions
+supply weapon/item labels and readable learned spell identities. There is no UI catalog keyed by
+source IDs, class-name invention or second roster authority.
+
+With member focus, Up/Down changes member; Left/Right always changes member. Target (default
+Tab / Pad RB) cycles member, magic and items focus; Up/Down scrolls the focused list.
+Cancel/Equipment/Confirm closes. A completed left click opens the compact selector, selects a member,
+uses Previous/Next or closes the page; selecting a dropdown row closes that dropdown. Wheel scrolling
+stays inside the open selector or its magic/items pane. The existing
+`MenuPointer` rejects orphan releases, drag-out, stale selection, double clicks and suspended presses.
+Opening/visibility/focus suspension requires released gameplay input; the field input owner clears
+movement holds, and modal input cannot reach the field. A fresh command after closing resumes field
+control. Selection/focus/scroll are disposable UI state; no gold, resources, growth, inventory, flags,
+RNG or session revision is written. Use/Give/Drop/Equip/field magic, saves, shops, title/settings,
+new content admission and full inventory services are outside this agreement.
+
+Acceptance uses small actual engine behavior checks, adapter compilation, the clean-head scope plan
+and [native party-details witness](../verification/host.md#party-details-observation). Executor
+headless observations establish the named input/projection boundary; [PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417) owns independent
+main-gate windowed acceptance and integration status. Physical-device release, whole-opening human/aesthetic approval and
+pinned Godot audio shutdown warnings retain their existing Unknowns.
 
 ## Battle status-card agreement
 
