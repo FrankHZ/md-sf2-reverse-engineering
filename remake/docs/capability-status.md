@@ -10,13 +10,13 @@ Battle03 outcomes/Hawel recruitment, later campaign, full services and save/load
 slices. [Local play](../README.md#run-locally) opens the title and an opening New Game; explicit
 package/start options retain diagnostic play. This is not a full New Game campaign.
 
-The [opening lifecycle agreement](application/opening-session-lifecycle.md) implements genuine opening New Game and proposes
-two local savepoint slots/Continue, and bounded field preparation/search/services under #1418.
+The [opening lifecycle agreement](application/opening-session-lifecycle.md) implements genuine opening New Game,
+two local savepoint slots/Continue, and scopes field preparation/search/services under #1418.
 It separates implemented rules, standalone-only admission, missing integration and missing behavior.
 New Game admits complete supported fresh resources/progress from content, without a comparison
 start; only Bowie initially belongs to the party. The [native entry observation](verification/host.md#opening-new-game-observation)
-owns replacement/error controls and the ordinary opening route. Persistence and all reachable
-optional opening branches are not promoted to delivered capability.
+owns replacement/error controls and the ordinary opening route. [Save/restart observation](verification/host.md#opening-save-and-continue)
+owns the three finite savepoint recipes; all reachable optional opening branches remain a separate boundary.
 
 Current accepted presentation includes continuous exploration/contextual Talk, shared 1080p/96px
 world geometry (A/B), story dialogue (C), reachable movement tiles (B8), status cards and battle/return/
@@ -519,7 +519,7 @@ source provenance and reproduction.
 | Capability | Owner | Status | Retained boundary |
 | --- | --- | --- | --- |
 | Continuous Map 3-through-Battle 01 milestone | Research, design contracts and common Application/Domain/Godot | **Accepted current private milestone** | Existing continuous opening, Battle01 victory and usable 5B return evidence, accepted rule/resource/consumer compositions, unchanged dependencies, checked parent coverage/shared joins and explicit deviations establish the current keyboard A/modern-clock/7C/8D/10A boundary. The [readiness owner](../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) records independent acceptance; the [review route](evidence/retained-comparisons.md#accepted-composition-review) locates retained supporting inspections. Historical A10/default/matrix reports remain Unavailable and scoped reports retain `milestonePass=false`; no fresh full report or corrected whole-A trajectory is claimed. Historical missing fields and original timing retain their owners. Ordinary defeat is a separate bounded capability. |
-| New Game, save/load and Continue | [Opening lifecycle agreement](application/opening-session-lifecycle.md) and original save-system contract | **Unsupported; bounded design proposed** | Current controlled starts remain diagnostic. Proposed fresh construction and stable-field savepoint restoration require their own implementation and real process-restart acceptance; no player save or persistence adapter exists. |
+| New Game, save/load and Continue | [Opening lifecycle agreement](application/opening-session-lifecycle.md) and [native restart](verification/host.md#opening-save-and-continue) | **Implemented, bounded** | Genuine New Game plus two explicit local slots, title Continue, overwrite/cancel/backup recovery and unsaved Quit. Map3 pre/post-messenger and completed Battle01 Map57 return rebuild at safe anchors without replaying initialization or outcome. Actual victory and defeat/retry cross fresh processes. Interiors, battle suspend, later setups/campaign, autosave, migration and original SRAM parity remain outside scope. |
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
 | Field item acquisition and area descriptions | [Opening feature map](application/opening-session-lifecycle.md#current-feature-map) | **Unsupported in the common field route** | Search/description/one-time field receipt consumers are missing. Authored battle item custody is a separate implemented capability; imported entity/zone/setup data does not imply pickup support. Selected map setup/event execution is covered above, with unadmitted variants still explicit. |

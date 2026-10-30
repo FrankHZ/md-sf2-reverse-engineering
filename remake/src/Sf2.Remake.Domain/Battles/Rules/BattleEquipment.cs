@@ -8,9 +8,10 @@ public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint Class
 
 public sealed class BattleEquipmentDefinition
 {
-    internal BattleEquipmentDefinition(byte baseAttack, IEnumerable<BattleWeaponDefinition> weapons)
-    { BaseAttack = baseAttack; Weapons = new ReadOnlyDictionary<byte, BattleWeaponDefinition>(weapons.ToDictionary(w => w.ItemId)); }
+    internal BattleEquipmentDefinition(byte baseAttack, IEnumerable<BattleWeaponDefinition> weapons, bool allowChanges = true)
+    { BaseAttack = baseAttack; AllowChanges = allowChanges; Weapons = new ReadOnlyDictionary<byte, BattleWeaponDefinition>(weapons.ToDictionary(w => w.ItemId)); }
     public byte BaseAttack { get; }
+    public bool AllowChanges { get; }
     public IReadOnlyDictionary<byte, BattleWeaponDefinition> Weapons { get; }
 }
 
@@ -79,6 +80,8 @@ public static class BattleEquipment
 
     internal static void RequireActor(BattleActorState actor)
     {
+        if (actor.Definition.Equipment?.AllowChanges != true)
+            throw new BattleRuleException("equipment-unavailable", "actor.equipment", true);
         ValidateLoadout(actor.Definition, actor.SourceLoadout);
         if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Hp == 0 || actor.Position is null ||
             actor.Status is not (0 or 2) || actor.Definition.Physical is null)

@@ -9,6 +9,10 @@ public sealed partial class SessionEntryView : Control
 {
     internal Action? NewGame;
     internal Action? Cancel;
+    internal Action? Continue;
+    internal Action? Quit;
+    private readonly List<Button> _titleButtons = [];
+    private int _titleSelection;
     private Label _message = null!;
     private Button _newGame = null!;
     private Button _cancel = null!;
@@ -33,6 +37,14 @@ public sealed partial class SessionEntryView : Control
         column.AddChild(_message);
         _newGame = new Button { Text = "New Game", CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
         _newGame.Pressed += () => NewGame?.Invoke(); column.AddChild(_newGame);
+        _titleButtons.Add(_newGame);
+        if (!Replacement)
+        {
+            var resume = new Button { Text = "Continue", CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
+            resume.Pressed += () => Continue?.Invoke(); column.AddChild(resume); _titleButtons.Add(resume);
+            var quit = new Button { Text = "Quit", CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
+            quit.Pressed += () => Quit?.Invoke(); column.AddChild(quit); _titleButtons.Add(quit);
+        }
         _cancel = new Button { Text = "Cancel", Visible = Replacement, CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
         _cancel.Pressed += () => Cancel?.Invoke(); column.AddChild(_cancel);
         column.AddChild(new Label { Text = "Confirm: Enter / Pad South    Cancel: Esc / Pad East",
@@ -48,6 +60,20 @@ public sealed partial class SessionEntryView : Control
 
     internal void Handle(GameAction action)
     {
+        if (!Replacement)
+        {
+            if (action == GameAction.Up) _titleSelection = (_titleSelection + _titleButtons.Count - 1) % _titleButtons.Count;
+            else if (action == GameAction.Down) _titleSelection = (_titleSelection + 1) % _titleButtons.Count;
+            else if (action == GameAction.Confirm)
+            {
+                if (_titleSelection == 0 && !_newGame.Disabled) NewGame?.Invoke();
+                else if (_titleSelection == 1) Continue?.Invoke();
+                else if (_titleSelection == 2) Quit?.Invoke();
+            }
+            for (int index = 0; index < _titleButtons.Count; index++)
+                _titleButtons[index].Modulate = index == _titleSelection ? StoryTheme.Selected : Colors.White;
+            return;
+        }
         if (Replacement && action is GameAction.Up or GameAction.Down) Select(!_cancelSelected);
         else if (action == GameAction.Cancel && Replacement) Cancel?.Invoke();
         else if (action == GameAction.Confirm && (_cancelSelected || !_newGame.Disabled))
@@ -70,5 +96,5 @@ public sealed partial class SessionEntryView : Control
     }
 
     public string ReadEntryObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
-    { title = true, replacement = Replacement, cancelSelected = _cancelSelected, message = _message.Text });
+    { title = true, replacement = Replacement, cancelSelected = _cancelSelected, titleSelection = _titleSelection, message = _message.Text });
 }

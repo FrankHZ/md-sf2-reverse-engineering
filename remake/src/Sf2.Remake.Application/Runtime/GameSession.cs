@@ -3,6 +3,7 @@ using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Application.Runtime.Persistence;
 
 namespace Sf2.Remake.Application.Runtime;
 
@@ -13,6 +14,30 @@ public sealed class GameSession
     public ScenarioDefinition Definition { get; }
     public SessionSnapshot Current => _current;
     public SessionRules Rules { get; }
+    public SaveAvailability QuerySave() => OpeningSave.Query(Definition, Current, Rules);
+    public SaveCapture CaptureSave(Guid session, long revision) => OpeningSave.Capture(Definition, Current, Rules, session, revision);
+
+    public static SessionStartOutcome Restore(IScenarioSource definitions, OpeningSaveData data, SessionRules? rules = null)
+    {
+        var admitted = definitions.Read();
+        if (admitted is ScenarioReadRejected rejected) return new SessionStartFailed(rejected.Failure);
+        if (admitted is not ExplorationReadAccepted accepted)
+            return new SessionStartFailed(new(SessionFailureKind.ContentError, "save-content-required", "save", "Restore requires opening content."));
+        return Restore(accepted.Definition, data, rules ?? RuleCompositions.Sf2());
+    }
+
+    public static SessionStartOutcome Restore(ScenarioDefinition definition, OpeningSaveData data, SessionRules rules)
+    {
+        try
+        {
+            var result = OpeningRestore.Build(definition, data, rules);
+            return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
+        }
+        catch (BattleRuleException error)
+        {
+            return new SessionStartFailed(new(SessionFailureKind.ContentError, error.Code, error.Field, "Cannot restore this save: " + error.Code));
+        }
+    }
     public EntityRef? QueryExplorationInteraction() => ExplorationInteractionQuery.Query(Current);
     public PartyDetails? QueryPartyDetails() => PartyDetailsQuery.Query(Definition, Current);
     public BattleChoicesSnapshot QueryBattleChoices() =>
@@ -105,6 +130,12 @@ public sealed class GameSession
             return BattleCommandDispatcher.Reject(current, "stale-input", "envelope");
         if (current.BattleResult is not null) return BattleCommandDispatcher.Reject(current, "battle-ended", "command");
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
+        if (envelope.Command is ObserveFieldMusic music)
+        {
+            var observed = OpeningSave.ObserveMusic(Definition, current, music);
+            _current = observed.Snapshot;
+            return observed;
+        }
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
         if (envelope.Command is BattleEntrySkipCommand skip)

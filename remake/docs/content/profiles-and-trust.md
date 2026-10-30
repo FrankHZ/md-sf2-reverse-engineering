@@ -353,7 +353,7 @@ is accepted at its stated modern-clock/keyboard-A/8D boundary; full hardware 8C 
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-authored` | explicit `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
-| `private-local-new-game` | ordinary title → New Game | pinned encounter/static/enemy/gold inputs, selected source growth and prepared world including map palettes; two host seeds, no checkpoint | fresh opening resources/progress through ordinary story and Battle01 entry; no Save/Continue |
+| `private-local-new-game` | ordinary title → New Game or Continue | pinned encounter/static/enemy/gold inputs, selected source growth and prepared world including map palettes; new-game seeds or validated save progress, no checkpoint | fresh opening resources/progress, three finite savepoints and process restart; no wider campaign |
 | `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and six explicit input environment selections, or `--private-exploration-start <absolute start JSON>` with the same six plus `SF2_PRIVATE_EXPLORATION_CONTENT` and `SF2_PRIVATE_CONTROLLED_START` | selected encounter, pinned enemy/static/gold definitions, external controlled party/start; for exploration also the prepared private world | initialized common session through inactive standby, activation, set6/set7 pursuit and ordinary enemy/player/kill/HEAL actions; the connected world runs the Map 3 opening through Battle 01 outcome and return. Required unknown accounting and wider effects remain explicit boundaries |
 
 The runtime always displays the appropriate disclosure:
@@ -838,4 +838,22 @@ writing a fresh ignored world. Keep that world beside its original to preserve a
 relative encounter paths; do not rewrite the canonical input. The bounded run reads one 127.60 MB
 world and writes one 125.82 MB world plus small metadata, O(input bytes) time/memory, below 1 GiB
 expected peak memory and within its measured disk budget. No content or source changes beyond the
-seven map palettes/provenance are required. Field receipts, services and persistence remain separate.
+seven map palettes/provenance are required. Field receipts and services remain separate.
+
+### Opening save admission
+
+`OpeningRestoreReader` selects these same trusted inputs and `PrivateBattleContentReader.Definitions`;
+it never runs `OpeningPartyInitialization`. Saved values cannot choose input paths or alter content.
+Product definitions bind supported adjacent weapons to the existing numerical loadout accessor,
+independently of saved equipment. Commands for changing equipment remain outside this profile's
+admission. The [lifecycle owner](../application/opening-session-lifecycle.md#implemented-savepoint-boundary)
+owns reconstruction and supported semantic state.
+
+`OpeningSaveJson` version1 encodes one UTF-8 JSON record as base64 `payload`, with uppercase hex
+`sha256` over exactly the decoded payload bytes. The whole envelope is at most1 MiB and depth32;
+duplicate/unknown/missing/null fields reject, including nested objects. Format, profile/package,
+gameplay/rule/recipe revisions and pinned source/ROM identity must match exactly. Current revisions
+are1; a semantic content/rule/recipe change requires updating its revision. Rendering-only changes
+can retain compatibility when required logical resources still admit. A valid checksum is not
+authorization or proof of valid gameplay state; Application independently validates membership,
+attained values, loadouts, flags, anchor and music resources before publishing a session.

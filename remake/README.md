@@ -71,7 +71,11 @@ requires prepared local inputs. The ordinary launch opens the title; New Game ne
 private battle/static selections, prepared world and optional battle scene content described by the
 [New Game input owner](docs/content/profiles-and-trust.md#opening-new-game-admission). Missing content
 reports a startup diagnostic. At settled field input, New Game… opens a confirmation; Cancel retains
-the current session. Continue and saving remain unavailable. Explicit diagnostic play uses a start selection. The
+the current session. Save… (default Space / Pad LB) opens two local slots at a supported settled
+field boundary; title Continue restores the selected journey at its displayed savepoint. Configure
+absolute `SF2_SAVE_ROOT` outside every checkout and a unique `SF2_SAVE_NAMESPACE` first; there is no
+default save folder. See [save/restart usage and limits](docs/verification/host.md#opening-save-and-continue).
+Explicit diagnostic play uses a start selection. The
 [ordinary-host recipe](./docs/verification/host.md#ordinary-host-startup) and
 [Yeel–Battle03 recipe](./docs/verification/field-programs.md#yeel-guide-through-battle03)
 own preparation and reproduction; the launch above does not prepare original assets.
@@ -90,7 +94,7 @@ not require a game launch.
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | explicit `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
-| `private-local-new-game` | ordinary title → New Game with admitted private content, no checkpoint | fresh opening party/progress and normal Map3/castle/tower Battle01 entry; no persistence or full campaign claim |
+| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, Map3/Battle01 savepoints and process restart; no interior/battle suspend or full campaign claim |
 | `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; selected connected packages cover opening/Battle01, Battle02 outcomes/returns and Yeel–Battle03 play/control at their separate boundaries. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back

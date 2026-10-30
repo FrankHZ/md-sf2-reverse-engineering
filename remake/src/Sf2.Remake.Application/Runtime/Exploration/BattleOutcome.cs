@@ -29,7 +29,7 @@ internal static class BattleOutcome
             var battle = current.Battle;
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Where(actor => actor.IsAlly || definition.EncounterStarts.Count == 0).Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp, actor.Exp,
-                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)),
+                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)).Concat(current.Story.FieldPlayer?.RetainedAllies ?? []),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, kind, party);
             var player = current.Story.FieldPlayer ?? throw new BattleRuleException("field-player-binding", "battle.outcome", true);
@@ -64,7 +64,7 @@ internal static class BattleOutcome
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Where(actor => actor.IsAlly).Select(actor => new BattleActorStartInput(actor.Actor,
                     actor.Hp, actor.Mp, actor.Exp, actor.Kills, actor.Defeats, actor.Status, null,
-                    actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)),
+                    actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)).Concat(current.Story.FieldPlayer?.RetainedAllies ?? []),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, BattleOutcomeKind.Retreat, party);
             // ExplorationLoop heals before fade/load; this is later than retreat payment and closure.

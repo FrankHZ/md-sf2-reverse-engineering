@@ -53,6 +53,7 @@ public sealed partial class ExplorationSessionView : Control
     private Action<SessionResult>? _enterBattle;
     private bool _handedOff;
     private bool _battleMounted;
+    internal bool CanOpenHostMenu => _session?.Current.CanWaitAtInput == true && !_partyStatus.Open && !_battleMounted;
     private Action? _releaseBattle;
     private ExplorationDialogueView _dialogueView = null!;
     private PartyStatusView _partyStatus = null!;

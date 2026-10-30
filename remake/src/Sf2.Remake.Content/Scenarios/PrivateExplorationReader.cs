@@ -14,10 +14,11 @@ public sealed class PrivateExplorationReader : IScenarioSource
     private readonly string? startPath;
     private readonly IScenarioSource? partySource;
     private readonly PrivateBattleContentReader? newGame;
+    private readonly bool initializeParty;
     public PrivateExplorationReader(string path, string startPath, IScenarioSource partySource)
     { this.path = path; this.startPath = startPath; this.partySource = partySource; }
-    internal PrivateExplorationReader(string path, PrivateBattleContentReader newGame)
-    { this.path = path; this.newGame = newGame; }
+    internal PrivateExplorationReader(string path, PrivateBattleContentReader newGame, bool initializeParty = true)
+    { this.path = path; this.newGame = newGame; this.initializeParty = initializeParty; }
 
     public ScenarioReadResult Read()
     {
@@ -90,7 +91,7 @@ public sealed class PrivateExplorationReader : IScenarioSource
                     if (scene.FieldDeath is { } field)
                         Require(field.AllySprites.Values.Concat(field.EnemySprites.Values).All(visuals.Sprites.ContainsKey),
                             "field-actor-resource-unavailable", "world.presentation.sprites");
-            return newGame?.Initialize(result) ?? result;
+            return newGame is null ? result : initializeParty ? newGame.Initialize(result) : newGame.Definitions(result);
         }
         catch (AdmissionIssue error) { return new ScenarioReadRejected(error.Failure); }
         catch (BattleRuleException error)

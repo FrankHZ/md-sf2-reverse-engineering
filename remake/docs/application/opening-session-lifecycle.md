@@ -4,9 +4,10 @@
 
 **High rigor:** initialization and durable recovery cross Content, the one Application session,
 party resources and the host; an apparently successful load can silently lose progress. This owner
-defines the proposed implementation contract for [#1418](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1418)
+defines the implementation contract for [#1418](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1418)
 and design [#1419](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1419).
-It is design, not implemented persistence or independent product acceptance.
+New Game and bounded savepoint persistence are implemented. The remaining field-feature work and
+whole-opening product acceptance remain separate; implementation does not establish original SRAM parity.
 
 The outcome is New Game → Map3 exploration → Battle01 → usable victory/defeat return → Save →
 process exit → fresh process Continue. Required preparation, pickups and opening services share
@@ -14,7 +15,7 @@ that same party. Existing Battle02/Yeel consumers are shared-state regression de
 an extension of this endpoint. The [capability matrix](../capability-status.md) owns delivered
 behavior; [UI gaps](../evidence/opening-ui-gaps.md) owns presentation acceptance.
 
-Recommend **two manually selected local slots and savepoint restoration**, initially for the
+Use **two manually selected local slots and savepoint restoration**, initially for the
 supported Map3 phases and settled Battle01 return on Map57. Save is explicit from a field menu;
 Continue chooses a slot. A save records progress now, but loading relocates to the declared safe
 anchor and rebuilds ambient NPCs/doors/camera. Show that destination before saving. It neither
@@ -30,8 +31,8 @@ copy/delete UI, migration framework, name editor, promotion or Battle03 ending i
 New Game never overwrites a slot; only an explicit confirmed Save does. Quit warns about unsaved
 progress and offers cancel; it does not secretly autosave.
 
-Current milestone: independently accept the implemented New Game slice below, then the separately
-owned persistence and field-feature slices. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
+Current milestone: independently accept save/restart/Continue, then the separately owned
+field-feature slices. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
 rigor at the persistence review and final restart acceptance; ordinary inventory/UI slices can
 use Standard once their state boundary is fixed. No unresolved aesthetic choice gates this design.
 
@@ -43,7 +44,7 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 
 | Surface | Current state and owner | Closure disposition |
 | --- | --- | --- |
-| Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress. Explicit authored/controlled entries remain diagnostic. | #1420; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission) and [native observation](../verification/host.md#opening-new-game-observation). Save/Continue remain missing. |
+| Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress; Continue reconstructs supported field savepoints. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [restart](../verification/host.md#opening-save-and-continue). |
 | Persistence/Continue | **Unsupported:** no save DTO, disk store, restore admission or player Continue. A controlled start is not a save. | **Missing behavior:** #1421; follow the boundary below. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | [BattleEquipment](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs), [BattleGive](../../src/Sf2.Remake.Domain/Battles/Rules/BattleGive.cs), [BattleDiscard](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDiscard.cs) and battle continuations exist, with standalone authored admission limits. | **Missing integration and field command behavior:** no field consumer. Reuse numerical/custody rules, not battle selection state or a fabricated battle. #1422. |
@@ -129,7 +130,8 @@ world. Source initial item bytes are zero-extended into four runtime word slots,
 source equipped bit and explicitly zero broken/auxiliary bits. EXP/kills/defeats/status/gold start at
 zero; Deals and battle once-flags are empty. Only Bowie is joined/active; normal programs join Sarah
 and Chester. Jaha is initialized only when retained growth/encounter content includes him. Field
-pickup receipt behavior and persistence are still separately unimplemented.
+pickup receipt behavior is separately unimplemented. Persistence retains existing battle custody;
+it does not invent a field-pickup ledger before that capability is admitted.
 
 Fresh world counters are step0/battle-request false and source reset EgressMap0. Text settings are
 message speed2/mouth0/view0. Each map must provide admitted `basePalette`; initial current/base
@@ -199,7 +201,7 @@ asks the selected profile for a recipe and validates its typed result using exis
   small location-owned anchor at completed return; validate it against Map57 content on capture/load.
   Restore the void setup/player/followers and flags without `abcs_battle01`, stat reset or reward replay.
 
-These are proposed product recipes, not existing save support. #1421 must implement and prove
+These are implemented product recipes. Their acceptance includes
 ordinary legal variations within all three required boundaries: reordered optional conversations,
 refusal/retry, changed party resources/equipment, living/dead members, earned progress and different
 valid flags/landing tuples. Missing handling of such a state is an implementation defect or unfinished
@@ -222,6 +224,42 @@ ambient programs begin on the next deliberate service. Repeated loads with the s
 and semantic input/poll sequence must agree in gameplay results. Comparison with uninterrupted play
 is limited to persistent resources/progress: NPC phases, elapsed music and subsequent draw timing
 can differ because this is a savepoint reload. This distinction must appear in player help and tests.
+
+### Implemented savepoint boundary
+
+`GameSession.QuerySave` and revision-checked `CaptureSave` export detached progress; neither services
+the world nor changes its seeds. `OpeningRestoreReader` admits immutable definitions through the
+same private Content readers without invoking new-game party initialization. `OpeningRestore`
+validates the DTO, delegates location semantics to `Sf2OpeningRestore`, rebuilds through the existing
+map allocator/layout helpers and publishes a fresh session only after success. It does not execute
+the map's on-load program. Encounter-excluded retained allies survive field/battle/field transitions;
+completed joins update the existing party membership projection before field control returns.
+
+The SF2 recipe admits map-default ambient programs and an already-entered closed
+random-walk/wait/back-jump cycle on Map3. The completed messenger installs such a loop at a new
+origin, so object identity or equality to the initial map script cannot establish safety. Pending
+setup, story-installed movement, sprite work and follower motion still reject. A completed
+Battle01 return records its own Map57 anchor; later movement cannot overwrite that anchor.
+
+Private product definitions bind supported adjacent weapons from trusted item/class data to the
+existing numerical equipment accessor. Changed carried loadouts therefore derive attack from
+attained base stats plus the equipped weapon. This binding does not enable field or private battle
+equipment commands; those remain separately owned. Unsupported weapon effects still reject.
+
+Same-context unknown music history rejects capture. The native audio owner can supply its actual
+bounded cue/history through `ObserveFieldMusic`, a session command equivalent to other host
+observations. It never guesses the default cue for an unknown current context. Existing known
+clock/completion state is retained, and identical knowledge is a no-op. Continue starts the saved
+cue/history on a fresh logical/native clock; it does not claim to resume PCM position.
+
+The host pauses dispatch while the slot panel is open. Save displays the recipe destination,
+defaults confirmation to Cancel, and records success only after storage readback. Title Continue
+admits the configured content and offers explicit compatible-backup recovery. Candidate audio is
+prepared before releasing the old session; Content validates raster/sprite links before mounting.
+Quit always has a cancel path and warns when the live revision differs from the last save/load.
+The [native and storage recipe](../verification/host.md#opening-save-and-continue) owns reproduction
+and the limits of failure testing. Wider campaign, exact-position suspend, services and field
+receipts remain outside this implementation.
 
 ## Format, compatibility and local storage
 
@@ -337,15 +375,15 @@ full content dumps. A save/recovery control needs at most primary+backup+one tem
 Replan if a valid save exceeds 1 MiB, reconstruction needs an arbitrary story interpreter, or required
 opening branches exceed the finite recipes: fix scope/ownership before building a generic framework.
 
-## Design validation and remaining limits
+## Verification and remaining limits
 
-This documentation slice uses bounded static inspection, relative-link/anchor and ownership checks,
-`git diff --check`, a clean-head `uv run sf2 verify plan --base origin/main --head HEAD`, and actual CI
-reporting. It launches no SDK, Godot, emulator, extraction or normal/full suite. Exact Git objects,
-command results and CI belong to the Issue/PR handoff, not a milestone log here.
+The [restart verification owner](../verification/host.md#opening-save-and-continue) combines actual
+engine behavior tests, direct strict-format/filesystem controls and native state/input observation.
+Use the affected engine/adapter gates and clean-head dependency plan; no research/full/H3 suite is
+implied. Exact Git objects, command results, preserved failures and CI belong to the Issue/PR handoff.
 
 **Unknown:** full optional-route runtime reach, original R1 POISON/bootstrap chronology, original
 durable SRAM behavior and exact presentation timing remain with their original owners. **Inferred:**
 savepoint normalization is simpler and safer for this opening than arbitrary interpreter snapshots;
-the implementation must demonstrate the finite recipes, not rely on that inference as a pass.
-Design acceptance does not close #1418, establish all opened branches, or make persistence runnable.
+the implemented finite recipes have bounded restart observations, not arbitrary snapshot acceptance.
+This delivery does not close #1418 or establish all opened branches.

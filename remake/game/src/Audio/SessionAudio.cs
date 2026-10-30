@@ -98,6 +98,29 @@ internal sealed partial class SessionAudio : IDisposable
         if (cue is not null) Record("stopped", player, cue);
     }
 
+    internal void Restore(SessionSnapshot snapshot)
+    {
+        try
+        {
+            var world = snapshot.Exploration!;
+            var music = snapshot.Story.Music ?? throw new InvalidOperationException("restore-music-required");
+            // Prepare the new playback and its logical history before replacing the old host session.
+            Play(music.Cue, remember: false);
+            _history.Clear(); _history.Add(music.Cue); _history.AddRange(music.Previous);
+            _context = (world.Map, music.Area, false);
+            BindMusic(music.Generation, music.Cue);
+        }
+        catch (Exception error) when (error is InvalidOperationException or ArgumentException)
+        { Error = "restore-audio-unavailable"; }
+    }
+
+    internal Sf2.Remake.Application.Runtime.Persistence.ObserveFieldMusic? ObserveFieldHistory()
+    {
+        if (Error is not null || _context is not { Battle: false } context || MusicCue is null ||
+            _history.Count == 0 || _history[0] != MusicCue) return null;
+        return new(context.Map, context.Area, new(MusicCue, Array.AsReadOnly(_history.Skip(1).Take(9).ToArray())));
+    }
+
     internal void Observe(SessionResult result, bool entrySkipDelivery = false)
     {
         _capture?.BindSession(result.Snapshot.SessionId);

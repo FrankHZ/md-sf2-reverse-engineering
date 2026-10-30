@@ -79,6 +79,8 @@ public sealed class BattleActorDefinition
     public BattleEquipmentDefinition? Equipment { get; }
     internal BattleActorDefinition WithGrowth(BattleGrowthDefinition growth) => new(Actor, ClassRule,
         Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, growth, Equipment);
+    internal BattleActorDefinition WithEquipment(BattleEquipmentDefinition equipment) => new(Actor, ClassRule,
+        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, Growth, equipment);
 }
 
 public sealed class BattleActorState

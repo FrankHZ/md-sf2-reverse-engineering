@@ -31,8 +31,8 @@ public sealed partial class GameRoot : Node
     {
         if (input is InputEventMouse)
         {
-            if (_entry is not null) return;
-            if (_restart is not null && _restart.GetGlobalRect().HasPoint(((InputEventMouse)input).Position)) return;
+            if (_entry is not null || _slots is not null) return;
+            if (new[] { _restart, _saveButton, _quitButton }.Any(button => button is not null && button.GetGlobalRect().HasPoint(((InputEventMouse)input).Position))) return;
             if (_exploration is { } field && GodotObject.IsInstanceValid(field) && field.IsVisibleInTree())
                 field.HandlePointer(input);
             else if (_battle?.IsVisibleInTree() == true) _battle.HandlePointer(input);
@@ -47,7 +47,9 @@ public sealed partial class GameRoot : Node
             GetViewport().SetInputAsHandled(); return;
         }
         if (action is null) return;
-        if (_entry is not null) _entry.Handle(action.Value);
+        if (_slots is not null) _slots.Handle(action.Value);
+        else if (_entry is not null) _entry.Handle(action.Value);
+        else if (action == GameAction.Stay && _exploration?.CanOpenHostMenu == true) ShowSave();
         else if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
             exploration.HandleAction(action.Value);
         else if (_battle?.IsVisibleInTree() == true) _battle.HandleAction(action.Value);
@@ -56,11 +58,14 @@ public sealed partial class GameRoot : Node
 
     public override void _Process(double delta)
     {
-        if (_restart is not null) _restart.Disabled = _session?.Current.CanWaitAtInput != true;
+        if (_restart is not null) _restart.Disabled = _slots is not null || _session?.Current.CanWaitAtInput != true;
+        if (_saveButton is not null) _saveButton.Disabled = _slots is not null || _entry is not null;
+        if (_quitButton is not null) _quitButton.Disabled = _slots is not null || _entry is not null;
     }
 
     public override void _Ready()
     {
+        GetTree().AutoAcceptQuit = false;
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         var arguments = OS.GetCmdlineUserArgs();
         for (int index = 0; index < arguments.Length; index++)
@@ -101,7 +106,7 @@ public sealed partial class GameRoot : Node
         if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Disabled;
         if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
         _entry = new SessionEntryView { Name = "SessionEntryView", Replacement = _session is not null,
-            NewGame = BeginNewGame, Cancel = CloseEntry };
+            NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit };
         AddChild(_entry);
         if (_input is not null) _entry.ConfigureHints(_input);
         DisarmInput();
@@ -143,6 +148,7 @@ public sealed partial class GameRoot : Node
         if (battle is not null && GodotObject.IsInstanceValid(battle)) { battle.GetParent()?.RemoveChild(battle); battle.Free(); }
         _audio?.Dispose(); _audio = null;
         if (_restart is not null) { RemoveChild(_restart); _restart.QueueFree(); _restart = null; }
+        ReleasePersistenceButtons();
         _worldViewport = new();
         DisarmInput();
     }
@@ -153,6 +159,11 @@ public sealed partial class GameRoot : Node
         if (outcome is SessionStartFailed failed) { Fail(failed.Failure); return; }
         var started = (SessionStarted)outcome;
         if (started.Result.Failure is { } startFailure) { Fail(startFailure); return; }
+        MountSession(started);
+    }
+
+    private void MountSession(SessionStarted started)
+    {
         SessionAudio? candidateAudio = null;
         if (started.Session.Definition.Exploration is { } candidateDefinition)
         {
@@ -162,10 +173,17 @@ public sealed partial class GameRoot : Node
                 candidateAudio.Dispose(); Fail(error, "Selected private audio content is unavailable."); return;
             }
         }
+        if (_restoring && candidateAudio is not null)
+        {
+            candidateAudio.Restore(started.Result.Snapshot);
+            if (candidateAudio.Error is { } restoreAudioError)
+            { candidateAudio.Dispose(); SaveError(restoreAudioError); return; }
+        }
         // Admission and required audio preparation succeed before the old owner is released.
         // A failed replacement leaves the old session paused behind the cancellable entry.
         ReleaseSession();
         CloseEntry();
+        CloseSavePanel();
         _session = started.Session;
         _audio = candidateAudio;
         var view = new BattleSessionView { Name = "BattleSessionView", WorldViewport = _worldViewport };
@@ -184,6 +202,7 @@ public sealed partial class GameRoot : Node
             OffsetLeft = -220, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 60,
             Theme = UI.StoryTheme.Create(), FocusMode = Control.FocusModeEnum.None };
         _restart.Pressed += ShowEntry; AddChild(_restart);
+        ConfigurePersistenceButtons();
         DisarmInput();
 
         void CheckAudio() { if (_audio?.Error is { } failure) Fail(failure, "Required private audio could not be consumed."); }
@@ -211,6 +230,7 @@ public sealed partial class GameRoot : Node
     private void Fail(string code, string message) => Fail(new(SessionFailureKind.ContentError, code, "startup", message));
     private void Fail(SessionFailure failure)
     {
+        if (_slots is not null) { SaveError(failure.Code); return; }
         ShowEntry(); _entry!.Fail(failure, _input is not null);
     }
 }
