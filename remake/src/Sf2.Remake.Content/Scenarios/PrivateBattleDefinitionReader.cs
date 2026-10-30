@@ -12,7 +12,8 @@ internal static class PrivateBattleDefinitionReader
     internal const string EnemyDigest = "8E77363833F31861DB23765E5BEE7263EA2BD2D09F5F4DA869C302A83C25BE06";
 
     internal static PrivateBattleDefinitions Read(string staticPath, string enemyPath, string goldPath,
-        BattleEncounterDefinition encounter, ControlledBattleStart start)
+        BattleEncounterDefinition encounter, PrivateBattleStart start, IReadOnlyList<SourceAllyDefinition>? initialAllies = null,
+        IReadOnlyList<byte>? growthSpells = null)
     {
         var coreBytes = PrivateBattleEncounterReader.ReadInput(staticPath, StaticDigest, "static-data", maximumLength: 1048576);
         var enemyBytes = PrivateBattleEncounterReader.ReadInput(enemyPath, EnemyDigest, "enemy-data", maximumLength: 1048576);
@@ -20,11 +21,12 @@ internal static class PrivateBattleDefinitionReader
         using var enemy = JsonDocument.Parse(enemyBytes, new JsonDocumentOptions { MaxDepth = 32 });
         using var gold = JsonDocument.Parse(PrivateBattleEncounterReader.ReadInput(goldPath,
             "16607CA1AE0477BC22FE81BEA044B7711D8C1EA3A31F4A0064C0288C026AD3DF", "enemy-gold", maximumLength: 16384));
-        return Decode(core.RootElement, enemy.RootElement, gold.RootElement, encounter, start);
+        return Decode(core.RootElement, enemy.RootElement, gold.RootElement, encounter, start, initialAllies, growthSpells);
     }
 
     internal static PrivateBattleDefinitions Decode(JsonElement core, JsonElement enemy, JsonElement gold,
-        BattleEncounterDefinition encounter, ControlledBattleStart start)
+        BattleEncounterDefinition encounter, PrivateBattleStart start, IReadOnlyList<SourceAllyDefinition>? initialAllies = null,
+        IReadOnlyList<byte>? growthSpells = null)
     {
         Object(core, "static-data", "schemaVersion", "provenance", "romRangeConvention", "romRanges", "allies", "classes", "items", "spellNames", "spellDefinitions");
         Object(enemy, "enemy-data", "schemaVersion", "provenance", "romRangeConvention", "romRanges", "promotions", "enemies");
@@ -39,7 +41,7 @@ internal static class PrivateBattleDefinitionReader
             itemIds.Add((byte)Number(FindCode(core, "items", row.ItemExpression.Split('|')[0]), "id", 0, 127));
         var items = itemIds.Order().Select(id => Item(FindId(core, "items", id))).ToArray();
         var spellKeys = new HashSet<(byte Id, byte Level)>();
-        foreach (byte packed in start.Allies.SelectMany(row => row.Spells))
+        foreach (byte packed in start.Allies.SelectMany(row => row.Spells).Concat(growthSpells ?? []))
             if ((packed & 63) != 63)
                 for (byte level = 1; level <= (packed >> 6) + 1; level++) spellKeys.Add(((byte)(packed & 63), level));
         foreach (var row in enemies.SelectMany(row => row.Spells)) AddSpell(row.Spell, row.Level);
@@ -58,13 +60,48 @@ internal static class PrivateBattleDefinitionReader
         var selectedGold = enemies.Select(row => new SourceEnemyGold(row.Id, rewards[row.Id],
             Text(gold, "upstreamCommit"), Text(gold, "romSha256"), Text(gold, "sourcePath"),
             Number(gold.GetProperty("romRange"), "start", 0, int.MaxValue) + row.Id * 2));
-        return new(encounter, sources, classes, items, spells, enemies, selectedGold);
+        return new(encounter, sources, classes, items, spells, enemies, selectedGold, initialAllies);
 
         void AddSpell(string code, byte level)
         {
             if (code == "NOTHING") return;
             spellKeys.Add(((byte)Number(FindCode(core, "spellNames", code), "id", 0, 43), level));
         }
+    }
+
+    internal static IReadOnlyList<SourceAllyDefinition> OpeningAllies(string staticPath, JsonElement growth)
+    {
+        using var document = JsonDocument.Parse(PrivateBattleEncounterReader.ReadInput(staticPath, StaticDigest, "static-data", maximumLength: 1048576));
+        var core = document.RootElement;
+        _ = Sources(core).ToArray();
+        Require(growth.ValueKind == JsonValueKind.Array, "initial-growth-required", "world.growth");
+        var members = growth.EnumerateArray().Select(row => Text(row, "actor")).ToHashSet(StringComparer.Ordinal);
+        Require(new[] { "ally-0", "ally-1", "ally-2" }.All(members.Contains) &&
+            members.All(actor => actor is "ally-0" or "ally-1" or "ally-2" or "ally-3"),
+            "initial-growth-members", "world.growth");
+        var result = new List<SourceAllyDefinition>();
+        foreach (byte id in new byte[] { 0, 1, 2, 3 })
+        {
+            if (!members.Contains("ally-" + id)) continue;
+            var row = FindId(core, "allies", id);
+            Object(row, "ally", "id", "code", "displayName", "nameExpression", "startClass", "startLevel", "startItems");
+            var sourceClass = Class(FindCode(core, "classes", Text(row, "startClass")));
+            Require(growth.EnumerateArray().Count(g => Text(g, "actor") == "ally-" + id && Number(g, "classId", 0, 31) == sourceClass.Id) == 1,
+                "initial-growth-required", "world.growth.ally-" + id);
+            var items = Array(row, "startItems").Select(item =>
+            {
+                Object(item, "startItem", "expression", "item", "equipped");
+                string code = Text(item, "item");
+                bool equipped = Boolean(item, "equipped");
+                Require(Text(item, "expression") == code + (equipped ? "|EQUIPPED" : ""), "initial-item-expression", "allies.startItems");
+                // InitializeAllyCombatantEntry zero-extends each source byte into a runtime word.
+                return (ushort)(Number(FindCode(core, "items", code), "id", 0, 127) | (equipped ? 128 : 0));
+            }).ToArray();
+            Require(items.Length == 4, "initial-item-slots", "allies.startItems");
+            result.Add(new(id, Text(row, "code"), Text(row, "displayName"), sourceClass.Id,
+                (byte)Number(row, "startLevel", 1, 40), System.Array.AsReadOnly(items)));
+        }
+        return result.AsReadOnly();
     }
 
     private static IEnumerable<EncounterSource> Sources(JsonElement document)

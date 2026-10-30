@@ -43,7 +43,7 @@ public sealed class PrivateBattleScenarioTests
         Assert.Equal(new BattleMapRegion(new("map-" + source.Encounter.Area.MapId),
             new(source.Encounter.Area.X, source.Encounter.Area.Y)), battle.Definition.SourceMapRegion);
         Assert.Same(admitted.Definition, session.Definition);
-        Assert.Equal(new[] { "new-battle-initialized", "regions-tested", "region-program-none", "spawn-modes-admitted", "round-started", "round-rng", "player-control" },
+        Assert.Equal(new[] { "new-battle-initialized", "regions-tested", "region-program-none", "spawn-list-ready", "round-started", "round-rng", "player-control" },
             started.Result.Observations.Select(row => row.Kind));
         using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "player-ready.json")));
         var record = fixture.RootElement.GetProperty("expectedObservation").GetProperty("records")[0];
@@ -81,9 +81,11 @@ public sealed class PrivateBattleScenarioTests
         Assert.Equal(2304, source.Encounter.Terrain.Count);
         var original = session.Current.Battle;
         var moved = FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
-        Assert.Equal(new MapPosition(9, 17), moved.Snapshot.Selection!.Preview.Destination); Assert.Same(original, moved.Snapshot.Battle);
+        Assert.Equal(new MapPosition(9, 17), moved.Snapshot.Selection!.Preview.Destination);
+        Battle02OutcomeTests.UnchangedExceptFacing(original, moved.Snapshot.Battle, new("ally-1"), 1);
         Accept(session, new Confirm()); var cancelled = FinishMovement(session, Accept(session, new Cancel()));
-        Assert.Equal(new MapPosition(9, 18), cancelled.Snapshot.Selection!.Preview.Destination); Assert.Same(original, cancelled.Snapshot.Battle);
+        Assert.Equal(new MapPosition(9, 18), cancelled.Snapshot.Selection!.Preview.Destination);
+        Battle02OutcomeTests.UnchangedExceptFacing(original, cancelled.Snapshot.Battle, new("ally-1"), 3);
         Accept(session, new Confirm());
         // This reader selected no private HEAL scene sidecar. The semantic choice boundary
         // rejects the target at that missing consumer capability before resource preparation.
@@ -121,13 +123,17 @@ public sealed class PrivateBattleScenarioTests
         {
             var original = JsonNode.Parse(File.ReadAllText(Input(StartInput)))!;
             var path = Path.Combine(folder, "controlled.json");
+            // The accepted controlled adapter admits an explicit player activation word.
+            var explicitWord = original.DeepClone(); explicitWord["allies"]![0]!["activationWord"] = 0;
+            File.WriteAllText(path, explicitWord.ToJsonString());
+            var explicitSession = Assert.IsType<SessionStarted>(GameSession.Start(Selected(path))).Session;
+            Assert.Equal((ushort)0, explicitSession.Current.Battle.GetActor(new("ally-0")).ActivationWord);
             foreach (var (change, code) in new (Action<JsonNode>, string)[]
             {
                 (row => row["policy"]!["missingCandidateAllyWord"] = null, "player-control-missingactivationword"),
                 (row => row["policy"]!["missingCandidateAllyWord"] = 4, "player-control-aicontrolled"),
                 (row => row["policy"]!["difficulty"] = 1, "difficulty"),
                 (row => row["policy"]!["allyAutoBattle"] = true, "control-mode"),
-                (row => row["allies"]![0]!["activationWord"] = 0, "unknown-or-duplicate-field"),
                 // Source initialization retains low three bits; broader refresh remains unsupported.
                 (row => row["allies"]![0]!["status"] = 8, "new-battle-status-refresh"),
                 (row => row["allies"]![0]!["items"]![0] = 213, "incompatible-equipment"),
@@ -146,7 +152,7 @@ public sealed class PrivateBattleScenarioTests
     }
 
     [Fact]
-    public void PartialPrivateSelectionFailsWithoutPathsAndThePublicDefaultRemainsAuthored()
+    public void PartialPrivateSelectionFailsWithoutPathsAndExplicitAuthoredEntryRemainsAvailable()
     {
         var failed = Assert.IsType<SessionStartFailed>(GameSession.Start(new PrivateBattleScenarioReader("", "", "", "", "", "", "")));
         Assert.Equal("private-input-selection", failed.Failure.Code);

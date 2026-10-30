@@ -184,10 +184,12 @@ public sealed class ExplorationStartInput
 {
     public ExplorationStartInput(MapId map, EntityRef player, MapPosition position, byte facing, ushort speed,
         IEnumerable<int> flags, BattleStartInput party, ProgramLocation? entryProgram = null,
-        IEnumerable<ExplorationEntityStartPhase>? entityPhases = null, ExplorationDisplay? display = null, ExplorationTextSettings? textSettings = null)
+        IEnumerable<ExplorationEntityStartPhase>? entityPhases = null, ExplorationDisplay? display = null, ExplorationTextSettings? textSettings = null,
+        short? stepCounter = null, MapId? egressMap = null)
     { Map = map; Player = player; Position = position; Facing = facing; Speed = speed;
         Flags = Array.AsReadOnly(flags.ToArray()); Party = party; EntryProgram = entryProgram;
-        EntityPhases = Array.AsReadOnly((entityPhases ?? []).ToArray()); Display = display; TextSettings = textSettings; }
+        EntityPhases = Array.AsReadOnly((entityPhases ?? []).ToArray()); Display = display; TextSettings = textSettings;
+        StepCounter = stepCounter; EgressMap = egressMap; }
     public MapId Map { get; }
     public EntityRef Player { get; }
     public MapPosition Position { get; }
@@ -199,6 +201,8 @@ public sealed class ExplorationStartInput
     public IReadOnlyList<ExplorationEntityStartPhase> EntityPhases { get; }
     public ExplorationDisplay? Display { get; }
     public ExplorationTextSettings? TextSettings { get; }
+    public short? StepCounter { get; }
+    public MapId? EgressMap { get; }
 }
 public sealed record ExplorationEntityStartPhase(EntityRef Entity, int Slot, int ActionCursor, byte NextWaitTicks,
     bool WaitingForMotion, EntityMotionState Motion);

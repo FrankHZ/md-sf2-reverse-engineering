@@ -12,9 +12,11 @@ public sealed class ScenarioDefinition
 {
     internal ScenarioDefinition(string package, IEnumerable<BattleDefinition> encounters, PrivateBattleDefinitions? privateDefinitions = null, ExplorationDefinition? exploration = null,
         BattleSceneDefinition? battleScenes = null, IEnumerable<BattleStartInput>? encounterStarts = null,
-        IEnumerable<BattleSceneDefinition>? encounterScenes = null, BattleStoryDefinition? battleStory = null)
+        IEnumerable<BattleSceneDefinition>? encounterScenes = null, BattleStoryDefinition? battleStory = null,
+        BattleStartOrigin startOrigin = BattleStartOrigin.Controlled)
     {
         Package = package; PrivateDefinitions = privateDefinitions; Exploration = exploration; BattleScenes = battleScenes; BattleStory = battleStory;
+        StartOrigin = startOrigin;
         Encounters = new ReadOnlyDictionary<string, BattleDefinition>(
             encounters.ToDictionary(encounter => encounter.Encounter, StringComparer.Ordinal));
         EncounterStarts = new ReadOnlyDictionary<string, BattleStartInput>((encounterStarts ?? [])
@@ -32,7 +34,9 @@ public sealed class ScenarioDefinition
     public IReadOnlyDictionary<string, BattleSceneDefinition> EncounterScenes { get; }
     public BattleSceneDefinition? ScenesFor(string encounter) => EncounterScenes.GetValueOrDefault(encounter);
     public PrivateBattleDefinitions? PrivateDefinitions { get; }
-    public string Origin => PrivateDefinitions is null ? "public-authored-controlled-start" : "private-local-controlled-start";
+    public BattleStartOrigin StartOrigin { get; }
+    public string Origin => PrivateDefinitions is null ? "public-authored-controlled-start" :
+        StartOrigin == BattleStartOrigin.NewGame ? "private-local-new-game" : "private-local-controlled-start";
     public IReadOnlyDictionary<string, BattleDefinition> Encounters { get; }
 }
 

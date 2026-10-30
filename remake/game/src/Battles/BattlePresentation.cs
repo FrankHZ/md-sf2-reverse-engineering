@@ -47,7 +47,12 @@ internal static class BattleSnapshotProjection
             foreach (var id in death.DeadActors)
                 if (battle.GetActor(id).Position is { } position) focus.Add(position);
         if (snapshot.BattleMovement is { } movement) { focus.Add(movement.From); focus.Add(movement.To); }
-        string title = origin == "private-local-controlled-start" ? "PRIVATE CONTROLLED BATTLE" : "AUTHORED BATTLE";
+        string title = origin switch
+        {
+            "private-local-controlled-start" => "PRIVATE CONTROLLED BATTLE",
+            "private-local-new-game" => "BATTLE",
+            _ => "AUTHORED BATTLE",
+        };
         return new($"{title} · {battle.Definition.Map.Value} · round {battle.Round} · gold {battle.Gold?.ToString() ?? "Unknown"}", status,
             roster, Array.AsReadOnly(markers), selection?.Preview.Path ?? [], focus.AsReadOnly(), snapshot.BattleMovement, movementRange);
     }

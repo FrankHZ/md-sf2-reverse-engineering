@@ -6,6 +6,8 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 public sealed record SourceClassDefinition(byte Id, string Code, string NameExpression, byte Movement,
     string ResistanceExpression, string MovementType, string ProwessExpression);
 public sealed record SourceEquipEffect(string Type, int Parameter);
+public sealed record SourceAllyDefinition(byte Id, string Code, string DisplayName, byte ClassId,
+    byte StartingLevel, IReadOnlyList<ushort> Items);
 public sealed record SourceItemDefinition(byte Id, string Code, string DisplayName, string NameExpression,
     string EquipFlagsExpression, IReadOnlyList<string> EquipFlags, byte MinimumRange, byte MaximumRange,
     ushort Price, string ItemTypeExpression, string UseSpellExpression, string UseSpell, byte UseSpellLevel,
@@ -31,16 +33,19 @@ public sealed class PrivateBattleDefinitions
 {
     internal PrivateBattleDefinitions(BattleEncounterDefinition encounter, IEnumerable<EncounterSource> sources,
         IEnumerable<SourceClassDefinition> classes, IEnumerable<SourceItemDefinition> items,
-        IEnumerable<SourceSpellDefinition> spells, IEnumerable<SourceEnemyDefinition> enemies, IEnumerable<SourceEnemyGold> gold)
+        IEnumerable<SourceSpellDefinition> spells, IEnumerable<SourceEnemyDefinition> enemies, IEnumerable<SourceEnemyGold> gold,
+        IEnumerable<SourceAllyDefinition>? allies = null)
     {
         EnemyGold = new ReadOnlyDictionary<byte, SourceEnemyGold>(gold.ToDictionary(row => row.EnemyId));
         Encounter = encounter; Sources = Array.AsReadOnly(sources.ToArray());
+        Allies = new ReadOnlyDictionary<byte, SourceAllyDefinition>((allies ?? []).ToDictionary(row => row.Id));
         Classes = new ReadOnlyDictionary<byte, SourceClassDefinition>(classes.ToDictionary(row => row.Id));
         Items = new ReadOnlyDictionary<byte, SourceItemDefinition>(items.ToDictionary(row => row.Id));
         Spells = new ReadOnlyDictionary<SpellRef, SourceSpellDefinition>(spells.ToDictionary(row => row.Spell));
         Enemies = new ReadOnlyDictionary<string, SourceEnemyDefinition>(enemies.ToDictionary(row => row.Code, StringComparer.Ordinal));
     }
     public IReadOnlyDictionary<byte, SourceEnemyGold> EnemyGold { get; }
+    public IReadOnlyDictionary<byte, SourceAllyDefinition> Allies { get; }
     public BattleEncounterDefinition Encounter { get; }
     public IReadOnlyList<EncounterSource> Sources { get; }
     public IReadOnlyDictionary<byte, SourceClassDefinition> Classes { get; }

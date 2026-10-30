@@ -41,7 +41,8 @@ internal static class ExplorationDispatcher
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
-            display: start.Display, textSettings: start.TextSettings, stepCounter: map.Caravan?.InitialStepCounter);
+            display: start.Display, textSettings: start.TextSettings, stepCounter: start.StepCounter ?? map.Caravan?.InitialStepCounter,
+            egressMap: start.EgressMap);
         story = ExplorationTextRunner.Initialize(world, story);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
             SessionStopReason.SimulationWait), [], rules);
