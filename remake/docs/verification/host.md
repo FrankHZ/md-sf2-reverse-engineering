@@ -160,6 +160,46 @@ the reused scene witness now receives its actual initial actor baseline. They al
 erase the other results, resolve raw device interference, prove physical release outside the focused
 window, or establish whole-game/mouse-only, all-device, original-timing or aesthetic acceptance.
 
+## Diamond focus emphasis observation
+
+The [bounded B7 agreement](../godot/presentation.md#diamond-focus-emphasis) extends the existing
+`probes/engine_menu_mouse_observation.gd` witness, reusing ordinary native key/mouse input, focus
+transfer, resource/RNG and error helpers. It records a few actual draw offsets and timers around
+focus changes and settle; no screenshots or per-frame state capture. The native observer retains
+the 75-second deadline; each emphasis case takes about three seconds and emits about 91 KiB.
+
+Use the [menu-pointer launch recipe](#menu-pointer-observation), unchanged project/installation and
+retained `local/issue1408/battle.json` plus `keyboard-pointer.json`. Set `SF2_VIEWPORT_CASE=emphasis`
+and a fresh ignored `SF2_VIEWPORT_OUTPUT`. Rebuild Debug only for changed adapter code; Release
+uses `uv run sf2 verify adapter`. A second run uses case `emphasis-reduced` and an ordinary settings
+copy with `reducedFlash=true`. Both require native windows for actual focus loss/return. The owning
+checkout's `local/issue1412/run-native.ps1` records exact launches, output roots, PIDs and logs.
+
+**Confirmed, bounded executor results:** native fallback emphasis passes in 2,732 ms; reduced-flash
+passes in 2,089 ms, both exit0 without warning/error output. Actual drawing advances −4→−2→0 through
+the short emphasis; quick changes select only the new item. Pointer/keyboard focus, idle/current
+direction non-retrigger, fixed hit rectangles, unchanged revision/resources/RNG, hide/show, native
+focus loss/return, close/reopen and actual host-scene retirement pass. Reduced-flash stays at zero.
+The existing headless `battle` witness passes in 4,815 ms, retaining disabled inspection,
+press/release capture, scroll/list/target/cancel and explicit confirmation behavior. These are
+injected native inputs with the retained axis-adjusted settings; all-device release remains Unknown.
+
+**Pending mounted-icon acceptance:** these runs use public text-only fallback squares. The checked
+#1045/#1047 private scene selections and #1397 names/newline/overflow scene variants exist but
+each has 45 rasters without `command-menu.*`; the named #1391/#1395/#1408 inputs supply no separate
+icon scene. `local/issue1412/icon-input-check.json` retains this input-selection result. It is not a
+ROM failure or a passed texture-draw observation. Narrow regeneration using the accepted
+`sf2tool.remake_command_menu` helper was subsequently authorized: the admitted scene is 122,404 bytes,
+with about 152 KB estimated total output. The registered ROM verifier passes, but the configured
+`local/upstream/SF2DISASM` checkout and required `build/sf2build-h1.lst` are absent. No preparation,
+toolchain installation or rebuild was attempted; `local/issue1412/icon-preparation-check.json`
+retains the distinct prerequisite failure. Once an existing admitted scene is selected through `SF2_PRIVATE_BATTLE_SCENE_CONTENT`, use one
+short existing private controlled battle/menu entry and case `emphasis-icons`. Require mounted
+24×24 textures, `.normal`/`.selected` resource readback, nearest 4× sampling, integral advancing and
+settled draw offsets and fixed hit rectangles. Skip eligible entry through the existing bounded
+Cancel seam if needed; do not replay the opening. Exact original cadence and final human/aesthetic
+approval remain Unknown. All earlier menu/audio failures and warning records remain retained.
+
 ## Audio resource lifetime observation
 
 The Standard agreement in [#1410](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1410)

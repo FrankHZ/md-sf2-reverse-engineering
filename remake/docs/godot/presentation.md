@@ -39,6 +39,29 @@ adapter compilation and committed scope selection are the gates. No research sui
 new input framework, recorder or asset pipeline is introduced. Independent main-gate integration and
 broader human/aesthetic acceptance remain separate.
 
+## Diamond focus emphasis
+
+**Standard rigor; [#1412](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1412).**
+The existing diamond has one short focus-change emphasis shared by keyboard/pad and pointer focus.
+The selected drawing rises four display pixels, then settles through two and one pixels to zero
+over 180 ms. It uses the existing normal/selected 24×24 resources, four-times nearest sampling and
+integer draw coordinates. Text-only public squares use the same drawing offset. This is a modern
+presentation choice; original animation cadence remains **Unknown** and creates no acquisition task.
+
+Only a new selection starts the emphasis. Idle, refresh, repeated current-direction input and a
+stationary pointer never restart it. Another focus cancels the previous item's motion. Closing,
+list/target handoff, hiding, pause, native focus loss and scene retirement cancel pending emphasis;
+showing or regaining focus cannot resume it. Reopening starts from the current menu selection.
+Reduced-flash always draws the stable selected image without motion.
+
+Only drawing changes: cardinal controls, hit rectangles, description, disabled reasons, resources,
+RNG, input admission and explicit command confirmation keep their existing authorities. Frame
+processing advances a button's short timer; it submits no command and plays no sound. No general
+animation framework, art pipeline or gameplay state was added. The
+[native recipe](../verification/host.md#diamond-focus-emphasis-observation) owns actual drawing,
+lifecycle observations and the pending mounted-original-icon check. Independent acceptance and
+whole-opening human/aesthetic approval remain separate.
+
 ## Battle messages, return and Party Status
 
 **Standard rigor; [#1398](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1398).**
