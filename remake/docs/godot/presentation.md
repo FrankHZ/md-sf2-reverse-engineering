@@ -1,5 +1,44 @@
 # Godot Host and Presentation
 
+## Menu pointer agreement
+
+**Standard rigor; [#1408](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1408).**
+This bounded input change covers the existing battle command diamond, spell/item lists, ordered
+targets and Stay confirmation, followed by the existing field Yes/No choices. It retains the
+accepted 1920×1080 geometry, original admitted command rasters and shared story panel. World movement,
+map/actor picking, title/settings menus, supplementary Equipment/Give/Drop and Party Status mouse
+redesign, new targeting rules and full-game mouse-only play are outside this agreement.
+
+Actual pointer movement over an option takes focus and updates its description. Keyboard/pad
+navigation takes focus back; redraw and a stationary pointer never select another option. Disabled
+entries remain inspectable and explain their refusal. A complete left press/release on the same
+current control activates that option. Blank clicks do nothing. Dragging out, double-click tails,
+focus loss, hiding, control replacement, keyboard handoff and changed session/menu boundaries cancel
+an old press. A release without its own press cannot activate a newly attached menu or question.
+Native wrapped-label geometry settles independently of input before hit regions are used.
+
+Action/list clicks enter the existing target or Stay flow. Previous/Next cycle the existing ordered
+candidate set, including unavailable candidates. Confirm commits only the current enabled candidate;
+inspecting an unavailable candidate cannot commit an earlier valid target. Back and right click
+unwind one layer, preserving the existing movement-preview, resource and RNG rules. Wheel scrolling
+is confined to the open list. Existing keyboard/pad commands retain their ordinary bindings.
+
+Yes/No starts with Yes focused. Pointer hover, then directional selection, share the displayed focus;
+Confirm answers that focus. A deliberate click answers the clicked option. Cancel and right click
+mean No, explicitly labeled in the hint. Authored focus is disposable UI state; the answer still uses
+the existing `ChooseDialogue` command. Source focus remains `ChoiceWork.Yes`; the same command now
+accepts an explicit answer only in its admitted Input phase, using the existing choice runner's
+selection and closing path. Entry, held-button Release, Opening, Closing, result publication and
+program continuation remain Application-owned. Reading/reveal and matching wait-token guards
+precede pointer admission. A completed answer never writes a story flag from a widget.
+
+The [finite host recipe](../verification/host.md#menu-pointer-observation) owns controlled inputs,
+windowed focus/drag/layer observations, headless battle and source/authored choice observations,
+completed failures and remaining physical-device limits. Small actual Application behavior tests,
+adapter compilation and committed scope selection are the gates. No research suite, H3/H4 comparison,
+new input framework, recorder or asset pipeline is introduced. Independent main-gate integration and
+broader human/aesthetic acceptance remain separate.
+
 ## Battle messages, return and Party Status
 
 **Standard rigor; [#1398](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1398).**
@@ -137,7 +176,8 @@ remains distinct from script `Acknowledge`. Ordinary Cancel remains unable to sk
 Reading resets on an explicitly new window/segment, including identical text; source append spans
 and temporary window hiding retain it. Attached choice rows cannot submit Confirm past unread
 content. Source Yes/default/Cancel=No and release phases remain session-owned; authored choices
-still mean direct Confirm=Yes/Cancel=No, without a fabricated source selection phase.
+retain direct `ChooseDialogue` answers without a fabricated source selection phase. The current
+[menu pointer agreement](#menu-pointer-agreement) adds shared focus and Confirm-on-highlight behavior.
 
 Placement is selected once when a live window first becomes visible. It uses the projected speaker,
 retained camera subject or player and moves to the top only if the bottom covers that subject and

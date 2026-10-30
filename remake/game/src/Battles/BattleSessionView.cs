@@ -42,7 +42,7 @@ public sealed partial class BattleSessionView : Control
     private SessionFailure? _startupFailure;
     private bool _started;
     private bool _inputSuspended;
-    private void SuspendInput() => _inputSuspended = true;
+    private void SuspendInput() { _inputSuspended = true; _menu?.SuspendPointer(); }
     private void ResumeInput() => _inputSuspended = false;
     private Label _title = null!;
     private Label _status = null!;
@@ -286,8 +286,18 @@ public sealed partial class BattleSessionView : Control
         if (_startupFailure is null && _session?.Current is { HasBattleControl: true, StopReason: SessionStopReason.SimulationWait }) Send(new AdvanceSimulation());
     }
 
+    internal void HandlePointer(InputEvent input)
+    {
+        if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() ||
+            _session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted ||
+            _session?.Current.HasBattleControl != true || _session.Current.BattleMovement is not null)
+        { _menu.SuspendPointer(); return; }
+        if (_menu.HandlePointer(input)) Present();
+    }
+
     internal void HandleAction(GameAction action)
     {
+        _menu.SuspendPointer(keyboard: true);
         if (_startupFailure is not null || _inputSuspended || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_session?.Current.BattleDiscard is not null)
