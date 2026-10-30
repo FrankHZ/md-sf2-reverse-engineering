@@ -613,7 +613,14 @@ native launch above, with a fresh local report/log/TEMP directory. Inspect actua
 stderr, report failures and coverage; private bytes stay untracked. The current executable field
 comparison in `sf2tool.remake_h4.field_projection` also expects48×64. Its resource-size expectation
 changes with the delivered adapter; original evidence remains unchanged. This adapter-only
-expectation correction selects no research or whole-route H4 acquisition.
+expectation correction requires no original-data or whole-route H4 acquisition. The current automatic
+planner nevertheless classifies that Python path as research and selects `public-core` plus
+`tooling-python` beside `adapter-build`; `--scope engine` rejects this path as a research/shared
+input. Preserve both outputs. This is an explicit classifier/policy boundary for main-gate review,
+not a passing engine-scope plan. The user's adapter-only/no-blanket-suite scope still controls local
+execution; no blanket Python/research suite or planner-policy change is made to clear that mismatch.
+Hosted CI independently selects its narrow `research-public` job for this path; record its actual
+result separately from the unexecuted broad local selections.
 
 The focused headless run passed in41.893 seconds:56 checkpoints,357,187 report bytes,24 distinct
 pixel states (all eye/mouth combinations for each portrait and side), exact byte equality,304px
