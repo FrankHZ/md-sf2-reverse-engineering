@@ -6,6 +6,32 @@ policies, source provenance and limits; [asset admission](../content/presentatio
 private payloads and [retained comparisons](../evidence/retained-comparisons.md#scoped-audio-consumer-comparison)
 owns the bounded evidence.
 
+## Resource lifetime and shutdown
+
+**Confirmed, bounded adapter behavior:** on Godot 4.7.2 .NET, four repeated cycles in one
+`SessionAudio` release replaced music, naturally finished effects and interrupted effects without
+retaining their native objects. Finite music reports its actual completion once; disjoint effects
+retain independent tails. Explicit disposal disconnects callbacks, releases active music/effects and
+frees their players without inventing completion. The observation uses authored silence, native
+object IDs and both Dummy and WASAPI; it does not establish original audio timing or audible fidelity.
+The [reproduction and failure record](../verification/host.md#audio-resource-lifetime-observation)
+also explains why C# validity polling can itself retain a resource.
+
+**Confirmed upstream teardown limitation:** the pinned Godot build can report `AudioStreamWAV` and
+`AudioStreamPlaybackWAV` pairs at immediate exit, including with a standalone GDScript player and
+with ordinary host window close. `Stop()` requests deferred mixer deletion; it is not synchronous
+resource destruction. Godot's audio-server shutdown stops drivers without draining live playback
+entries. Running the event/mix loop until the observed objects disappear releases the same pairs.
+Thus an exit-zero gameplay report is not a clean-shutdown report. See the pinned source and exact
+cases in the reproduction owner.
+
+No project audio-lifetime defect was established by this investigation. Keep normal release and
+finite-completion behavior; do not add GC, fixed sleeps, delayed gameplay completion or log filtering
+to hide upstream teardown. The appropriate repair is an upstream audio-server shutdown change,
+followed by the bounded reproductions on an explicitly accepted Godot version. The current warning
+remains visible. **Unknown:** behavior on other versions/drivers, exact race-dependent exit counts,
+and arbitrarily long sessions beyond the exercised cycles. This is not a blanket leak-free claim.
+
 ## Audio Boundary
 
 Music and sound effects follow the same explicit local-pack rule as graphics. Their source and accepted

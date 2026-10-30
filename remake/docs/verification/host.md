@@ -136,8 +136,10 @@ claim is authorized. The owning checkout's ignored `local/issue1408/run-native.p
 launches, settings, fresh directories, PIDs and stdout/stderr alongside the JSON reports.
 
 **Confirmed, bounded executor results:** battle, physical, actual healing cost, authored mixed and
-clicked answers, source No/Yes, and both native window focus cases pass. The source runs retain six
-ObjectDB leaked-instance warnings at exit; they are not a clean-shutdown claim. Small actual
+clicked answers, source No/Yes, and both native window focus cases pass. The source runs retain one
+ObjectDB warning listing six leaked instances at exit; they are not a clean-shutdown claim. The
+[audio lifetime investigation](#audio-resource-lifetime-observation) distinguishes this from runtime
+accumulation. Small actual
 Application tests cover explicit source answer selection, stale/wrong token, Entry/Opening/Release,
 Closing/result delay and next-question guards, and unchanged authored direct answers. Independent
 main-gate review/merge remains separate.
@@ -157,6 +159,106 @@ erase `heal-resource-headless-01`'s observer baseline-shape error and completed 
 the reused scene witness now receives its actual initial actor baseline. They also do not
 erase the other results, resolve raw device interference, prove physical release outside the focused
 window, or establish whole-game/mouse-only, all-device, original-timing or aesthetic acceptance.
+
+## Audio resource lifetime observation
+
+The Standard agreement in [#1410](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1410)
+owns a bounded lifetime investigation, not an audio redesign. Production `SessionAudio`,
+`GameRoot` and gameplay remain unchanged. Two explicit observations isolate the backend and actual
+adapter; neither is loaded by ordinary startup. No private audio, screenshots, emulator, forced GC,
+sleep-based repair or new engine tests are needed. Reuse the existing installation/project and
+Debug build. `uv run sf2 verify adapter` covers compilation; use the committed dependency plan and
+applicable CI. Scope and current policy belong to the [audio owner](../godot/audio.md#resource-lifetime-and-shutdown).
+
+### Reproduce
+
+From the owning checkout, load `local/private-inputs.ps1` and force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Build Debug from `remake/` using
+`& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore` when the
+observation source changes. For each launch, select a fresh ignored directory and direct APPDATA,
+LOCALAPPDATA, TEMP, TMP, stdout and stderr there as in the menu-pointer recipe. Set
+`SF2_AUDIO_OUTPUT=<fresh-run>/native.json` for the adapter observation. Launch with argument arrays
+from the repository root:
+
+```powershell
+$repo = (& git rev-parse --show-toplevel)
+$arguments = @('--verbose', '--path', (Join-Path $repo 'remake/game'), '--max-fps', '60',
+    '--script', 'res://probes/engine_audio_lifetime_observation.gd')
+# Dummy: prepend --headless. WASAPI: omit it and verify the actual driver in the report/log.
+& $env:GODOT_BIN @arguments
+$nativeExit = $LASTEXITCODE
+```
+
+`AudioLifetimeObservation.cs` calls the real `SessionAudio` owner. Reflection constructs only
+immutable diagnostic definitions containing 8 kHz mono PCM16 silence: loop/finite music and finite
+commands67/83. It bypasses content admission explicitly; it is not a source-content or gameplay test.
+Four cycles observe music replacement/finite completion, natural effect completion, same-slot
+interruption and disjoint completion. Active disposal follows. It tracks IDs without holding
+resource references, bounds each release/completion at two seconds, and records thirteen compact
+samples. Every tracked release must invalidate its native IDs; disposed player nodes must also be
+gone. A failed predicate exits1 with its label and completed samples in the logs. A successful JSON
+does not override any stderr or later shutdown error.
+
+For the independent backend reproduction, select
+`res://probes/engine_audio_backend_observation.gd` instead. Set `SF2_AUDIO_CASE`:
+
+| Case | Evidence |
+| --- | --- |
+| `runtime` | Four natural-finish/interruption cycles with weak references; interrupted objects are initially alive and become invalid during ordinary processing. Exit1 if resources remain or real Finished callbacks are missing. |
+| `active` | Exit while one looping WAV is active; retain verbose ObjectDB warning details even when exit0. |
+| `stop-quit` | Stop, clear stream, queue-free the player, then quit immediately; distinguishes deferred backend cleanup from forgotten project release. |
+
+This GDScript case uses authored 0.1-second silence and no project classes. For a native ordinary
+host comparison, launch the Main scene without `--script`, using the retained menu-pointer private
+entry/settings. Send normal window close to the actual Godot child process, whose parent matches
+the launched console PID. The console wrapper has no window. Retain the launch, close result,
+stdout/stderr and actual process completion; do not substitute a forced kill as normal exit.
+
+### Findings and limits
+
+**Confirmed:** installed `4.7.2.stable.mono.official.ed1daf0bf`, upstream commit
+`ed1daf0bf001b61586d9930840f2f1394092c079`. In
+[`AudioServer::stop_playback_stream`, `_delete_stream_playback_list_node`, `_cleanup_lists`, `finish` and destructor](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/servers/audio/audio_server.cpp),
+Stop marks playback for fade/deletion. Mixer processing schedules deletion, and main-thread cleanup
+releases the playback reference. Shutdown stops drivers and clears buses; it does not enumerate
+remaining playback entries. The destructor only cleans already-erased entries through
+[`SafeList::maybe_cleanup`](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/core/templates/safe_list.h).
+This explains retained WAV/playback pairs when teardown outruns deferred deletion; no game code
+is needed to reproduce it.
+
+| Completed observation | Result and boundary |
+| --- | --- |
+| Preserved menu-pointer private No, Dummy | Gameplay PASS, 46,556ms, exit0; six instances (three WAV/playback pairs), each refcount1. This old warning remains evidence. |
+| Menu-pointer private No, WASAPI | Gameplay PASS, 46,625ms, exit0, no stderr or exit warning; same controlled choice/closing/result continuation. A clean native run does not invalidate the headless failure or prove every exit clean. |
+| Backend `active` and `stop-quit`, Dummy | Exit0, two retained instances each: one WAV and one playback, refcount1. Immediate Stop/clear/queue-free is insufficient. |
+| Backend `runtime`, Dummy and WASAPI | PASS; four genuine Finished callbacks, zero remaining weak-reference targets after each release, no exit warning. |
+| Actual SessionAudio, Dummy and WASAPI | PASS; four cycles, sixteen natural completions, 54 tracked resource/playback IDs released, final active disposal and player-node release, no exit warning. No runtime accumulation in this bounded sequence. |
+| Ordinary Main window close, WASAPI | Normal close of the verified child succeeded and process stopped. One run had no warning; another retained one WAV/playback pair. Exit-code receipts were not captured for these manual closes. Counts are timing-dependent, not evidence of growth. |
+
+**Confirmed diagnostic defect:** C#
+[`GodotObject.IsInstanceIdValid`](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/modules/mono/glue/GodotSharp/GodotSharp/Core/Extensions/GodotObjectExtensions.cs)
+calls `InstanceFromId`. Polling it after disposal can recreate a managed RefCounted wrapper while
+native deletion is pending. Initial adapter observations therefore retained one music WAV with no
+playback; the same failure reproduced without SessionAudio. Native GDScript `is_instance_id_valid`
+avoids this observer-created reference. Only the diagnostic changed; no production workaround or
+forced collection was applied.
+
+Retained local evidence is under `local/issue1410`; the inherited warning is under
+`local/issue1408/shutdown-verbose-no-01`. Completed failures include the initial backend check that
+mistook `Playing == false` for the queued Finished callback, C# validity-polling disposal failures,
+one nullable diagnostic build failure, and ordinary-close launchers that targeted the console or
+checked window readiness too early. The verified native child windows were subsequently closed
+normally; these launcher failures were not converted to passed automated checks. The corrected
+observations use actual Finished and native identity queries. A first WASAPI choice run passed its
+gameplay assertions in46,600ms but reported a shader-cache path error; its output selection contained
+`..`. Canonicalizing the new run's output path yielded the clean native result above. Preserve both
+results and all original logs.
+
+**Inferred:** the retained source-observer pairs share the demonstrated upstream teardown cause;
+their exact historical IDs were not instrumented before exit. **Unknown:** exact retention count
+under other timing/drivers/versions and unbounded-session behavior. No whole-game, hardware or
+audible-fidelity claim follows. An upstream shutdown repair is the appropriate remedy; the warning
+remains an explicit limitation on the pinned version. Do not suppress it or add a product delay.
 
 ## Unified world viewport observation
 
