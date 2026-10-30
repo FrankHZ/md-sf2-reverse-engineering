@@ -74,7 +74,9 @@ own preparation and reproduction; the launch above does not prepare original ass
 
 Default directional input moves/selects; Confirm opens or confirms the cardinal battle menu, Cancel
 backs out through selection and provisional movement. Exploration exposes contextual Talk. At settled
-field input, E / Pad Start opens the read-only Party Status page. Bindings are configurable; follow
+field input, E / Pad Start opens the read-only Party Status roster/details page.
+Up/Down selects a member; Tab / Pad RB switches to details scrolling. Mouse selects roster rows
+and scrolls within each pane. Close bindings are displayed and configurable; follow
 the displayed hints and [input/presentation owner](./docs/godot/presentation.md#modern-ui-experiment).
 For build/test selection continue to [Build and Test](#build-and-test); documentation-only edits do
 not require a game launch.

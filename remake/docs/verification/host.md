@@ -641,6 +641,119 @@ the actual child's image. These are completed input/observer failures, not inter
 evidence that the corrected portrait pixels failed. Retain their logs and the two/four-ObjectDB
 shutdown warnings. Earlier shared-dialogue failures and Unknowns above remain preserved.
 
+## Party details observation
+
+The [Standard E7 agreement](../godot/presentation.md#party-details-agreement) owns the read-only
+roster/details extension in [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416).
+`probes/engine_party_details_observation.gd` extends the existing
+`engine_battle_return_status_observation.gd` and its native focus/input/return helpers. It loads
+ordinary Main, sends mapped keys/pad and complete pointer events, and reads compact inspected fields,
+actual rectangles, scrolling and carried resources. It never sets session state, constructs a battle
+for inspection, captures screenshots or records frames. Budget: one process, 75 seconds and less than
+5MiB/report; reuse prepared data/builds. The pilot reports were below0.5MiB and4 seconds for field-only
+cases. No asset acquisition, extra world export, route replay or new environment is required.
+
+After loading the owning `local/private-inputs.ps1`, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`.
+Run `uv sync --locked`, `uv run sf2 verify adapter` and the configured absolute SDK's Debug adapter
+build from `remake/`. The small actual engine behavior checks in `PartyDetailsQueryTests` cover
+joined/future/reserve/dead/absent membership, authored fallback, growth/equipment after real rules,
+slot identity, unknown versus empty loadout and unchanged snapshot identity. The shared Domain attack
+extraction was checked by `uv run sf2 verify engine`:1651 passed,31 private-input skips,0 failures.
+Later query-only corrections pass all4 owning tests directly; the complete earlier failure remains
+below rather than being replaced by repeated aggregate runs. The clean committed scope plan and
+actual CI belong to the PR handoff.
+
+Create only small pre-start controlled variants, from the owning repository root:
+
+```python
+import copy, json
+from pathlib import Path
+repo = Path.cwd().resolve()  # Run from the owning repository root.
+out = repo / "local/issue1416"
+out.mkdir(parents=True, exist_ok=True)
+a = json.loads((repo / "remake/content/authored/harbor-arrival.json").read_text())
+b = a["battle"]
+actor, start, placement = (copy.deepcopy(b["actors"][0]), copy.deepcopy(b["start"]["actors"][0]),
+                          copy.deepcopy(b["encounters"][0]["placements"][0]))
+enemy = (b["actors"][-1], b["start"]["actors"][-1], b["encounters"][0]["placements"][-1])
+b["actors"], b["start"]["actors"], b["encounters"][0]["placements"] = [], [], []
+spell = copy.deepcopy(b["spells"][0])
+for name in ["gentle-restoration", "renewed-vigor", "restorative-light"]:
+    row = copy.deepcopy(spell); row["id"] = name; b["spells"].append(row)
+for i in range(14):
+    row, initial, deployed = copy.deepcopy(actor), copy.deepcopy(start), copy.deepcopy(placement)
+    row["id"] = ("long-authored-party-member-name-for-roster-and-details" if i == 0 else "companion") + f"-{i}"
+    row["items"] = [] if i == 1 else [0,0,0,0] if i == 3 else [0,0,127,127]
+    row["spells"] = [dict(id=s["id"], level=1) for s in b["spells"]]
+    initial.update(actor=row["id"], hp=0 if i == 2 else 95, exp=i)
+    deployed.update(actor=row["id"], x=1+i%7, y=1+i//7, processingOrder=i)
+    b["actors"].append(row); b["start"]["actors"].append(initial)
+    b["encounters"][0]["placements"].append(deployed)
+for destination, row in zip([b["actors"], b["start"]["actors"], b["encounters"][0]["placements"]], enemy):
+    destination.append(row)
+b["items"] = [dict(id=0, name="Authored restorative herb with a deliberately lengthy readable label for checking wrapped inventory information in the details panel",
+                   effect="consumable-healing", power=10, minimumRange=0, maximumRange=1)]
+for m in a["world"]["maps"]:
+    m.update(battle=None, onLoad=None, events=[])
+victory = json.loads((repo / "remake/content/authored/leader-cleanup.json").read_text())
+victory["start"]["map"] = "arena"; victory["start"]["flags"].append(401)
+next(p for p in victory["world"]["programs"] if p["id"] == "before")["instructions"] = [dict(op="end")]
+private = json.loads((repo / "local/issue1391/scene-start.json").read_text(encoding="utf-8-sig"))
+private["start"]["flags"] = [0,1,2,32,33,34,256,260,261,601,602]
+for name, document in [("authored",a), ("victory",victory), ("private-start",private)]:
+    (out / f"{name}.json").write_text(json.dumps(document), encoding="utf-8")
+```
+
+The private start reuses the retained viewport Zone8 approach and admits three joined allies; the
+world remains the unchanged `local/issue1045/world-route-13.json`. Load `local/issue1045/inputs.ps1`
+and select `SF2_PRIVATE_CONTROLLED_START` as tracked `remake/reference/inputs/battle01-player-ready.json`,
+not the later grown Battle02 party. Preserve relative encounter paths by selecting the existing world
+in place. No world copy or source/input modification is needed. The retained scene-start can be
+recreated using the [viewport recipe](#unified-world-viewport-observation).
+
+For each case use a fresh ignored output directory with worktree-local APPDATA, LOCALAPPDATA,
+TEMP/TMP, `SF2_VIEWPORT_OUTPUT=<run>/native.json` and `SF2_VIEWPORT_CASE` below. Launch the registered
+Godot from the repository root with separate arguments:
+
+```powershell
+$nativeArguments = @('--headless', '--path', (Join-Path $repo 'remake/game'), '--max-fps', '60',
+    '--resolution', '1920x1080', '--script', 'res://probes/engine_party_details_observation.gd',
+    '--', $entryOption, $selectedInput)
+& $env:GODOT_BIN @nativeArguments
+$nativeExit = $LASTEXITCODE
+```
+
+The retained launcher is `local/issue1416/run-native.ps1 -Case <case> -Run <fresh-name>`. Require exit0,
+`passed:true`, no failures/Unavailable and no runtime/script errors. A private shutdown warning stays
+separate from those assertions. Reports contain only semantic checkpoints.
+
+| Case / ordinary entry | Bounded executor observation |
+| --- | --- |
+| `authored` / `--authored-package local/issue1416/authored.json` | Fourteen-member wrapped roster; four learned spells; long admitted item labels, duplicate/full/empty inventory and defeated member. Keyboard/pad focus and selection, selected-row visibility, both wheel panes, held opening/direction, orphan/drag-out releases, close, visibility suspension and fresh field control. |
+| `private` / `--private-exploration-start local/issue1416/private-start.json` | Actual connected Bowie/Sarah/Chester names, EGRESS1/HEAL1, Wooden Sword/Wooden Rod/Wooden Stick and Medical Herb from admitted metadata; future seeded ally excluded by current joined flags. Current resources, stats, four slots/equipped markers, repeated opening/closing and unchanged revision/resources/flags/seeds while browsing. The earlier unchanged single-joined-member start also passes. |
+| `victory` / `--authored-package local/issue1416/victory.json` | The real accepted attack, reward/outcome and return route changes leader HP10→40, EXP0→48 and gold73→84. Read returned details, defeated-companion recovery, one outcome/return, repeated menu use and fresh field movement. No terminal state is injected. |
+
+**Confirmed executor, headless:** final authored, three-member private and victory cases pass in
+3573/3137/7234ms with6/5/14 checkpoints respectively; reports remain below0.5MiB. Authored/return logs
+are clean. Private retains the known two-ObjectDB shutdown warning under the
+[audio lifetime boundary](#audio-resource-lifetime-observation), with no runtime/script errors. These
+are bounded executor observations; independent windowed acceptance and integration are recorded by
+the Issue/PR. Physical hardware release outside focus and broader human/aesthetic approval remain
+Unknown. The prior E2 observations below retain their original one-card/paging boundary; E7's current
+roster/details behavior supersedes that display only.
+
+Preserve completed failures in `local/issue1416`: initial query-test compilation used mismatched
+nullable assertions and omitted the map constructor argument; the first completed engine run had
+1649 passes/31 skips and one failing `MissingLoadoutIsUnknownRatherThanEmptyAndBattleHasNoFieldQuery`
+whose fixture actually declared empty slots. Corrected owning tests pass. Authored native attempts
+`-01/-02/-03` hit existing equipment-standalone-only, missing-item and battle-outcome admission bounds;
+the failed-admission observer also emitted existing startup-read/JSON errors. `-04` incorrectly
+required overflow for a short member whose text fitted. Private `-01` selected incompatible grown
+party definitions; later correct registered selections pass. Victory `-01` found authored party flags
+without source member bindings hiding all members; the query now preserves the authored carried-ally
+fallback and the owning behavior test covers it. These were completed failures, not interrupted runs
+or unavailable ROMs. Earlier E2, portrait, device and audio failures remain unchanged.
+
 ## Battle return and Party Status observation
 
 [E2's agreement](../godot/presentation.md#battle-messages-return-and-party-status) owns this bounded

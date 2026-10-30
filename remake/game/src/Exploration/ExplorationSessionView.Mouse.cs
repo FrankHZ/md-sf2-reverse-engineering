@@ -23,6 +23,7 @@ public sealed partial class ExplorationSessionView
 
     internal void HandlePointer(InputEvent input)
     {
+        if (_partyStatus.Open) { _partyStatus.HandlePointer(input); return; }
         if (_session is null || _handedOff || _battleHandoffPending || _skipRequiresRelease ||
             !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() || PresentationFailure is not null ||
             _partyStatus.Open || _session.Current.Story.Wait is not ChoiceWait choice)

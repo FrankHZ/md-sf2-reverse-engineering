@@ -92,8 +92,7 @@ public sealed class BattleActorState
         Initialized = initialized; Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 && !retainDeadPosition ? null : position;
         Kills = kills; Defeats = defeats; LastTarget = lastTarget;
         Progress = progress is null ? null : progress with { SourceLoadout = SourceLoadout };
-        Attack = attack ?? (progress is null && Definition.Equipment is null ? Definition.Attack :
-            (byte)Math.Min(200, BaseAttack + BattleEquipment.Contribution(Definition, SourceLoadout)));
+        Attack = attack ?? BattleEquipment.Attack(Definition, progress, SourceLoadout);
         // PositionBattleEntities declares ordinary allies/enemies with facing3 (DOWN).
         if (facing > 3) throw new ArgumentOutOfRangeException(nameof(facing));
         Facing = facing;

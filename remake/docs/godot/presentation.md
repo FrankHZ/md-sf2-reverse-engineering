@@ -59,8 +59,9 @@ RNG, input admission and explicit command confirmation keep their existing autho
 processing advances a button's short timer; it submits no command and plays no sound. No general
 animation framework, art pipeline or gameplay state was added. The
 [native recipe](../verification/host.md#diamond-focus-emphasis-observation) owns actual drawing,
-lifecycle observations and mounted-original-icon acceptance evidence. Independent acceptance and
-whole-opening human/aesthetic approval remain separate.
+lifecycle observations and mounted-original-icon acceptance evidence. Merged
+[PR1413](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1413) owns bounded engineering acceptance;
+whole-opening human/aesthetic approval remains Unknown.
 
 ## Battle messages, return and Party Status
 
@@ -85,14 +86,10 @@ it introduces no acknowledgement or reward summary. Ready return also releases a
 mount. The first fresh field command dismisses the notice and executes normally.
 
 At settled field input, the existing Equipment binding (default E / Pad Start) opens **Party Status**.
-One member card is shown, with left/right (or up/down) paging and Cancel/Equipment/Confirm closing.
-The page directly reads current carried ally records, progress maxima or admitted definition maxima,
-member names and gold. Authored containers may retain enemy records; those are excluded using their
-admitted faction. Zero MP and defeated members reuse E1 cues. There is no synthetic battle, mutable
-resource copy, inventory/equipment/healing action, save/retry, arbitrary retreat or general field menu.
-Opening, paging and closing submit no session commands. Opening/focus suspension require released
-input; modal directions clear movement holds, and closing consumes its own event before fresh input.
-Busy or failed field state cannot open it. A changed field boundary automatically closes the page.
+The E7 extension's agreement below owns the roster/details layout and read-only data projection.
+Opening, browsing and closing submit no session commands. Busy or failed field state cannot open it;
+a changed field boundary closes it. Existing return feedback and reward messages retain their own
+ordering and accounting.
 
 Acceptance is adapter compilation and the clean-head scope plan, plus the
 [bounded host witness](../verification/host.md#battle-return-and-party-status-observation).
@@ -102,6 +99,43 @@ not a new windowed acceptance claim. Main-gate independently accepted the bounde
 return, private/physical close-up visibility, startup/program failure and recoverable illegal-move
 feedback observations. The host owner records the exact evidence and retained limits; integration
 is tracked by [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
+
+## Party details agreement
+
+**Standard rigor; [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416).**
+This bounded E7 extension lets the player inspect preparation and returned progression. At the
+accepted 1920×1080 baseline a scrollable left roster selects a stable right HP/MP card and scrollable
+details: name, gold, level/EXP, effective attack, defense/agility, learned magic and four numbered
+inventory slots with equipped/broken markers. Duplicate items retain their slots. Full names wrap;
+long lists scroll. Blue/gold shared styling and the existing HP/MP gauges remain. Unavailable maxima
+hide the card; missing accounting, loadout or item/spell names say unavailable, distinct from known
+empty slots or no learned magic. Defeated and absent joined members remain inspectable.
+
+`GameSession.QueryPartyDetails` reads the current carried party and admitted definitions. The existing
+`MapPartyMembership.Rebuild` with current flags supplies joined membership where source member
+bindings exist; reserve membership is included. Seeded future allies and enemy records are excluded.
+Authored packages without source member bindings retain their carried-ally fallback. Current progress
+and carried loadout precede admitted baselines. The existing Domain equipment owner computes attack
+for both battle construction and the query; no temporary battle or mutable actor copy is created.
+Private item/spell display names come from admitted `PrivateBattleDefinitions`; authored definitions
+supply weapon/item labels and readable learned spell identities. There is no UI catalog keyed by
+source IDs, class-name invention or second roster authority.
+
+Up/Down selects the roster; Left/Right also changes member. Target (default Tab / Pad RB) switches
+Up/Down to details scrolling and back. Cancel/Equipment/Confirm closes. A completed left click selects
+a roster row or the visible Close affordance; wheel scrolling stays inside its pane. The existing
+`MenuPointer` rejects orphan releases, drag-out, stale selection, double clicks and suspended presses.
+Opening/visibility/focus suspension requires released gameplay input; the field input owner clears
+movement holds, and modal input cannot reach the field. A fresh command after closing resumes field
+control. Selection/focus/scroll are disposable UI state; no gold, resources, growth, inventory, flags,
+RNG or session revision is written. Use/Give/Drop/Equip/field magic, saves, shops, title/settings,
+new content admission and full inventory services are outside this agreement.
+
+Acceptance uses small actual engine behavior checks, adapter compilation, the clean-head scope plan
+and [native party-details witness](../verification/host.md#party-details-observation). Executor
+headless observations establish the named input/projection boundary; the Issue/PR owns independent
+main-gate windowed acceptance and integration status. Physical-device release, whole-opening human/aesthetic approval and
+pinned Godot audio shutdown warnings retain their existing Unknowns.
 
 ## Battle status-card agreement
 
