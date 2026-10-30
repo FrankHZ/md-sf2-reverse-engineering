@@ -1,5 +1,9 @@
 # Session and Resumable Programs
 
+The proposed New Game, stable-field savepoint/Continue boundary and opening feature closure belong
+to [Opening session lifecycle](opening-session-lifecycle.md). Persistence remains unimplemented;
+this owner describes the current session and program machinery that the design must preserve.
+
 ## Jaro victory program continuation
 
 The [High-rigor agreement](../domain/gameplay-rules.md#authored-jaro-victory-recruitment) uses the
@@ -999,8 +1003,10 @@ other entrances do not run the royal scene. Physical slot allocation uses the li
 while membership remains a separate source flag range. The group tests cover first/repeat visits,
 initial/revealed/departed Astral, zero/two/three followers, initial acceptance and refusal followed
 by an actual Sarah re-prompt. All four F608/F256 guard branches are compared with each follower count,
-including dialogue-only branches that never set F401 or move the guard. A direct castle approach with F600 clear still reaches the explicitly
-unimplemented `cs_51454`/`moveNextToPlayer` branch; the tests do not manufacture F600.
+including dialogue-only branches that never set F401 or move the guard. The earlier direct-castle
+F600-clear `cs_51454` stop remains historical evidence; the current compiler and ProgramRunner now
+implement `moveNextToPlayer`. That structural correction does not establish complete branch acceptance;
+see the [current branch disposition](opening-session-lifecycle.md#reachable-branch-disposition).
 
 Map19/20 reuse their registered shared atlas; Map21 uses its own registered atlas. `setPriority`
 persists on the physical entity. The modern renderer draws priority entities after ordinary
@@ -1331,8 +1337,9 @@ The accepted Map21 default-population contract resolves135 to slot0 under its st
 conditions. Natural original call-time RAM, full sprite/hardware effects and timing remain **Unknown**;
 remake continuation is not a new original H3 observation. The continuous remake route reaches
 Battle01 victory/ordinary-defeat return; original natural continuity across the H3 bridge and
-original presentation remain outside this claim. Other Map3 native branches such as ChurchMenu and
-moveNextToPlayer retain executable source frontiers.
+original presentation remain outside this claim. Other Map3 native branches such as ChurchMenu
+retain executable source frontiers. `moveNextToPlayer` itself is implemented; whole optional-route
+closure remains distinct from opcode support.
 
 The post-F603 abstraction above is specific to inactive window scratch on normal reload. Active
 windows, deferred DMA, other missing-entity helpers and later storage reuse remain Unknown; no
