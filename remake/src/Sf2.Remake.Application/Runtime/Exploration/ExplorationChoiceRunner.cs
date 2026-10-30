@@ -6,6 +6,15 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 // repeat ancestry is outside the admitted fresh conditioned semantic input stream.
 internal static class ExplorationChoiceRunner
 {
+    // Explicit option intent shares selection, closing, result publication and return with pad/key input.
+    internal static SessionSnapshot Answer(ScenarioDefinition definition, SessionSnapshot current, bool yes,
+        List<SessionObservation> observations)
+    {
+        if (((ChoiceWait)current.Story.Wait!).Work!.Yes != yes)
+            current = Poll(definition, current, yes ? ChoiceInput.Left : ChoiceInput.Right, observations);
+        return Poll(definition, current, ChoiceInput.ConfirmC, observations);
+    }
+
     internal static SessionSnapshot Held(SessionSnapshot current, bool held, List<SessionObservation> observations)
     {
         var wait = (ChoiceWait)current.Story.Wait!;

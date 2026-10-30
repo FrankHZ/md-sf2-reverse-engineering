@@ -13,6 +13,7 @@ internal sealed partial class BattleCommandMenu : Control
     private enum Page { Main, Magic, Items, Target, Commit }
     private static readonly BattleActionKind[] Kinds = [BattleActionKind.Physical, BattleActionKind.Healing, BattleActionKind.Item, BattleActionKind.Stay];
     private readonly BattleMenuLayout _layout = new() { Name = "Layout" };
+    private readonly MenuPointer _pointer = new();
     private Page _page;
     private int _command, _row;
     private ActorRef? _actor;
@@ -26,11 +27,58 @@ internal sealed partial class BattleCommandMenu : Control
 
     public override void _Ready()
     {
+        _layout.InvalidatePointer = _pointer.Cancel;
         MouseFilter = MouseFilterEnum.Ignore; AddChild(_layout);
     }
     internal void Arrange(Vector2 size) { Size = size; _layout.Arrange(size); }
     internal void ConfigureAssets(BattleSceneDefinition? content) { _content = content; _layout.ConfigureAssets(content); }
     internal void Reset() { _actor = null; _page = Page.Main; _row = _command = 0; TargetCandidate = null; }
+    internal void SuspendPointer(bool keyboard = false) { if (keyboard) _pointer.Cancel(); else _pointer.Suspend(); }
+    public override void _Process(double delta) => _pointer.ReleaseIfNeutral();
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPaused || what == NotificationUnpaused || what == NotificationVisibilityChanged && !IsVisibleInTree())
+            _pointer.Suspend();
+    }
+
+    internal bool HandlePointer(InputEvent input)
+    {
+        if (!IsVisibleInTree() || _current?.Selection is not { } selection ||
+            selection.Stage == BattleSelectionStage.Movement) { _pointer.Cancel(); return false; }
+        Vector2 position = ((InputEventMouse)input).Position;
+        var hit = _layout.Hit(position);
+        if (input is InputEventMouseMotion motion)
+        {
+            if (_pointer.Moved(motion) && hit.Id is not null) Focus(hit.Id);
+            return true;
+        }
+        if (input is not InputEventMouseButton button) return true;
+        if (button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
+        {
+            _pointer.Cancel();
+            if (button.Pressed) _layout.Scroll(position, button.ButtonIndex == MouseButton.WheelUp ? -1 : 1);
+            return true;
+        }
+        if (button.ButtonIndex == MouseButton.Right) hit = ("Back", GetGlobalRect());
+        object boundary = (_current.SessionId, _current.Revision, _actor, _page);
+        if (_pointer.Read(button, hit.Id, hit.Rect, boundary) is not { } activated) return true;
+        Focus(activated);
+        if (activated.StartsWith("command:", StringComparison.Ordinal)) { Open(); Refresh(); }
+        else if (activated.StartsWith("row:", StringComparison.Ordinal)) { Select(Options()[_row]); Refresh(); }
+        else if (activated == "PreviousTarget") Handle(GameAction.Left);
+        else if (activated == "NextTarget") Handle(GameAction.Right);
+        else if (activated == "Confirm") Handle(GameAction.Confirm);
+        else if (activated == "Back") Handle(GameAction.Cancel);
+        return true;
+    }
+
+    private void Focus(string id)
+    {
+        if (id.StartsWith("command:", StringComparison.Ordinal)) _command = int.Parse(id.AsSpan(8));
+        else if (id.StartsWith("row:", StringComparison.Ordinal)) _row = int.Parse(id.AsSpan(4));
+        else return;
+        Refresh();
+    }
 
     internal void Present(SessionSnapshot current, BattleChoicesSnapshot choices, SessionFailure? failure, GameInput input)
     {
@@ -194,6 +242,9 @@ internal sealed partial class BattleCommandMenu : Control
         if (_choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
         if (_failure is not null) description += "\n" + Unavailable(_failure);
         _layout.Detail.Text = description;
+        bool canConfirm = _page == Page.Commit || _page == Page.Target && SelectedAction()?.Targets.Any(target =>
+            target.Actor == TargetCandidate && target.Enabled && selection?.Target == TargetCandidate) == true;
+        _layout.ShowNavigation(!moving, _page == Page.Target, _page == Page.Commit, canConfirm);
         _layout.ShowCommandHint(!moving && _page == Page.Main);
     }
 

@@ -25,6 +25,15 @@ public sealed partial class GameRoot : Node
 
     public override void _Input(InputEvent input)
     {
+        if (input is InputEventMouse)
+        {
+            // Exactly one current view receives this physical event, including its release.
+            if (_exploration is { } field && GodotObject.IsInstanceValid(field) && field.IsVisibleInTree())
+                field.HandlePointer(input);
+            else if (_battle?.IsVisibleInTree() == true) _battle.HandlePointer(input);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
         if (_input?.Resolve(input) is not { } action) return;
         // Resolve once, even for releases and inactive modes. A transition cannot dispatch
         // this same event to the newly attached view as another command.

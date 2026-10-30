@@ -12,6 +12,9 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Detail = Text("Detail", 30);
     internal readonly Label Help = Text("Help", 28);
+    private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
+    private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
     internal readonly Control Diamond = new() { Name = "Diamond", MouseFilter = MouseFilterEnum.Ignore };
     internal readonly BattleDiamondButton[] Commands = [new("Attack"), new("Magic"), new("Item"), new("Stay")];
     private readonly PanelContainer _context = Frame("ContextPanel");
@@ -26,6 +29,7 @@ internal sealed partial class BattleMenuLayout : Control
     private Vector2 _contextSize;
     private bool _commandHint;
     private Rect2 _subject;
+    internal Action InvalidatePointer { get; set; } = () => { };
 
     internal void AvoidSubject(Rect2 rectangle)
     {
@@ -70,17 +74,32 @@ internal sealed partial class BattleMenuLayout : Control
         AddChild(_context); _context.AddChild(Context);
         AddChild(Diamond);
         foreach (var command in Commands) Diamond.AddChild(command);
+        foreach (var command in Commands) command.ItemRectChanged += () => InvalidatePointer();
+        Diamond.ItemRectChanged += () => InvalidatePointer();
         AddChild(_list); _list.AddChild(_scroll); _scroll.AddChild(_rows);
         _scroll.GetVScrollBar().FocusMode = FocusModeEnum.None;
         AddChild(_detail);
         var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; column.AddThemeConstantOverride("separation", 9);
         _detail.AddChild(column); column.AddChild(Heading); column.AddChild(Detail); column.AddChild(Help);
+        column.AddChild(_navigation);
+        foreach (var control in new[] { _previous, _next, _confirm, _back })
+        {
+            control.CustomMinimumSize = new(0, 44);
+            control.HorizontalAlignment = HorizontalAlignment.Center;
+            _navigation.AddChild(control);
+            control.ItemRectChanged += () => InvalidatePointer();
+        }
+        _previous.Text = "‹ Prev"; _next.Text = "Next ›"; _confirm.Text = "Confirm"; _back.Text = "Back";
         // Wrapped text can shrink after a container sort. Reapply the requested size then;
         // otherwise Control retains the earlier (possibly very tall) minimum-size clamp.
         _detail.MinimumSizeChanged += () => Arrange(Size);
         _context.MinimumSizeChanged += () => _context.Size = _contextSize;
         _list.Hide();
     }
+
+    // Native wrapped-label minimum sizes settle after container sorting. Settle geometry before
+    // the next pointer event too, rather than moving a hit region only when that event redraws it.
+    public override void _Process(double delta) { if (IsVisibleInTree()) Arrange(Size); }
 
     internal void Arrange(Vector2 size)
     {
@@ -146,6 +165,37 @@ internal sealed partial class BattleMenuLayout : Control
         Arrange(Size);
     }
 
+    internal void ShowNavigation(bool visible, bool target, bool commit, bool canConfirm)
+    {
+        _navigation.Visible = visible;
+        _previous.Visible = _next.Visible = target;
+        _confirm.Visible = target || commit;
+        _confirm.Modulate = canConfirm ? UI.StoryTheme.Selected : new Color("94a4be");
+    }
+
+    internal (string? Id, Rect2 Rect) Hit(Vector2 position)
+    {
+        foreach (var control in new[] { _previous, _next, _confirm, _back })
+            if (control.IsVisibleInTree() && control.GetGlobalRect().HasPoint(position)) return (control.Name.ToString(), control.GetGlobalRect());
+        if (Diamond.IsVisibleInTree())
+            for (int i = 0; i < Commands.Length; i++)
+                if (Commands[i].GetGlobalRect().HasPoint(position)) return ($"command:{i}", Commands[i].GetGlobalRect());
+        if (_list.IsVisibleInTree() && _scroll.GetGlobalRect().HasPoint(position))
+            for (int i = 0; i < _rowLabels.Count; i++)
+            {
+                var rect = _rowLabels[i].GetGlobalRect().Intersection(_scroll.GetGlobalRect());
+                if (rect.HasPoint(position)) return ($"row:{i}", rect);
+            }
+        return (null, default);
+    }
+
+    internal bool Scroll(Vector2 position, int direction)
+    {
+        if (!_list.IsVisibleInTree() || !_list.GetGlobalRect().HasPoint(position)) return false;
+        _scroll.ScrollVertical += direction * 80;
+        return true;
+    }
+
     private void SetTextWidths()
     {
         Context.CustomMaximumSize = new(Mathf.Max(1, _contextSize.X - 28), -1);
@@ -160,10 +210,12 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal void ShowRows(string[] labels, bool[] enabled, int selected, bool visible)
     {
+        bool changed = !labels.SequenceEqual(_labels) || selected != _selected || visible != _list.Visible;
         _list.Visible = visible;
         Diamond.Visible = !visible;
         if (!labels.SequenceEqual(_labels))
         {
+            InvalidatePointer();
             foreach (var child in _rows.GetChildren()) { _rows.RemoveChild(child); child.QueueFree(); }
             _rowLabels.Clear(); _labels = labels;
             foreach (string value in labels)
@@ -171,6 +223,7 @@ internal sealed partial class BattleMenuLayout : Control
                 var label = Text("Choice", 30); label.Text = value;
                 label.CustomMinimumSize = new(0, 64);
                 _rows.AddChild(label); _rowLabels.Add(label);
+                label.ItemRectChanged += () => InvalidatePointer();
             }
         }
         for (int i = 0; i < _rowLabels.Count; i++)
@@ -181,7 +234,7 @@ internal sealed partial class BattleMenuLayout : Control
         SetTextWidths();
         Arrange(Size);
         _selected = selected;
-        if (visible && _rowLabels.Count > selected && selected >= 0) Callable.From(ScrollToSelection).CallDeferred();
+        if (changed && visible && _rowLabels.Count > selected && selected >= 0) Callable.From(ScrollToSelection).CallDeferred();
     }
 
     private void ScrollToSelection()
@@ -201,6 +254,10 @@ internal sealed partial class BattleMenuLayout : Control
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),
         listVisible = _list.Visible, list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),
         rows = _rowLabels.Select(label => label.Text).ToArray(), selectedRow = _selected,
+        rowRects = _rowLabels.Select(label => BattleMapViewport.Rectangle(label.GetGlobalRect())).ToArray(),
+        scroll = _scroll.ScrollVertical,
+        navigation = new[] { _previous, _next, _confirm, _back }.Select(control => new { id = control.Name.ToString(),
+            visible = control.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
         commands = Commands.Select(button => new { label = button.Caption, selected = button.Selected, enabled = button.Available,
             rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }).ToArray(),
     };

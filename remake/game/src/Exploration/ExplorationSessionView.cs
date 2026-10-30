@@ -91,6 +91,7 @@ public sealed partial class ExplorationSessionView : Control
         MouseFilter = MouseFilterEnum.Ignore;
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
         _dialogueView = new ExplorationDialogueView { Name = "StoryDialogue" };
+        _dialogueView.Panel.Choices.InvalidatePointer = _choicePointer.Cancel;
         AddChild(_dialogueView);
         _partyStatus = new PartyStatusView { Name = "PartyStatus" };
         AddChild(_partyStatus);
@@ -123,6 +124,7 @@ public sealed partial class ExplorationSessionView : Control
 
     private void SuspendClock()
     {
+        _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
         SuspendEntrySkip();
@@ -177,6 +179,7 @@ public sealed partial class ExplorationSessionView : Control
 
     public override void _Process(double delta)
     {
+        _choicePointer.ReleaseIfNeutral();
         if (_session is null) return;
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
@@ -185,13 +188,14 @@ public sealed partial class ExplorationSessionView : Control
         if (FinishEntryHandoff()) return;
         if (_handedOff || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
-        if (!_input.GameplayHeld) { _choiceRequiresRelease = false; _skipRequiresRelease = false; }
+        if (!ChoiceButtonsHeld) _choiceRequiresRelease = false;
+        if (!_input.GameplayHeld) _skipRequiresRelease = false;
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
-        { Send(new ChoiceHeldInput(entry.Token, _input.GameplayHeld)); return; }
+        { Send(new ChoiceHeldInput(entry.Token, ChoiceButtonsHeld)); return; }
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Release } release)
         {
             _tickTime = 0;
-            if (!_input.GameplayHeld) Send(new ChoiceHeldInput(release.Token, false));
+            if (!ChoiceButtonsHeld) Send(new ChoiceHeldInput(release.Token, false));
             return;
         }
         if (_session.Current.Story.EntrySkip is null && _dialogue.VisibleCharacters >= 0)
@@ -289,6 +293,7 @@ public sealed partial class ExplorationSessionView : Control
 
     internal void HandleAction(GameAction action, bool repeating = false)
     {
+        _choicePointer.Cancel();
         if (!GetWindow().HasFocus() || !CanProcess()) { SuspendClock(); return; }
         bool direction = action is GameAction.Up or GameAction.Right or GameAction.Down or GameAction.Left;
         if (!direction) _movementHold.Clear(_input);
@@ -345,8 +350,13 @@ public sealed partial class ExplorationSessionView : Control
             }
             else
             {
+                if (action is GameAction.Left or GameAction.Up or GameAction.Right or GameAction.Down)
+                {
+                    _dialogueView.Panel.Choices.Focus(action is GameAction.Left or GameAction.Up);
+                    Present(); return;
+                }
                 if (action is not (GameAction.Confirm or GameAction.Cancel) || _choiceRequiresRelease || RevealText()) return;
-                command = new ChooseDialogue(choice.Token, action == GameAction.Confirm);
+                command = new ChooseDialogue(choice.Token, action == GameAction.Confirm && _dialogueView.Panel.Choices.SelectedYes);
             }
         }
         else if (current.Story.Wait is FieldTextWait fieldText)
@@ -446,12 +456,13 @@ public sealed partial class ExplorationSessionView : Control
         }
         Present();
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
-            Send(new ChoiceHeldInput(entry.Token, _input.GameplayHeld));
+            Send(new ChoiceHeldInput(entry.Token, ChoiceButtonsHeld));
     }
 
     private void Present()
     {
         if (_session is null) return;
+        RefreshChoicePointer();
         if (_session.Current.CanWaitAtInput && _releaseBattle is not null)
         { _releaseBattle(); _releaseBattle = null; _battleMounted = false; }
         if (!_battleMounted) _lastWorld = _session.Current.Exploration ?? _lastWorld;
@@ -778,6 +789,7 @@ public sealed partial class ExplorationSessionView : Control
             tickDebt = _tickTime, failureVisible = _failureLabel.IsVisibleInTree(),
             token = current?.Story.Wait?.Token.Value, failure = PresentationFailure?.Code, failureField = PresentationFailure?.Field, failureKind = PresentationFailure?.Kind.ToString(), spriteSize = current?.Exploration?.SpriteSize,
             dialoguePanel = _dialogueView.Panel.Observe(), dialogue = _dialogue.Text, help = _help.Text, helpVisible = _help.IsVisibleInTree(), visibleCharacters = _dialogue.VisibleCharacters,
+            choicePointer = _dialogueView.Panel.Choices.Observe(),
             totalCharacters = _dialogue.GetTotalCharacterCount(), textMode = _input.Settings.TextMode,
             reducedFlash = _input.Settings.ReducedFlash,
             textId = (current?.Story.TextWindow as OpenTextWindow)?.Text,

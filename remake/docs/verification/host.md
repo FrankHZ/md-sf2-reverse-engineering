@@ -49,6 +49,115 @@ The legacy `remake/reference/game` host, its `--map3-smoke`/profile arguments an
 were retired at M5. Ordinary export configuration excludes `probes/*`; complete ordinary export and
 package contents remain unverified.
 
+## Menu pointer observation
+
+The [Standard D agreement](../godot/presentation.md#menu-pointer-agreement) uses the ordinary Main
+scene and `probes/engine_menu_mouse_observation.gd`. It reuses the viewport/status observer's native
+input, bounded focus, semantic-result and error helpers. It supplies real Godot mouse press/release,
+motion and mapped key events and reads current session/control state. No session setters,
+screenshots, bulk frames or tests of observers are involved. Each run has the existing 75-second
+deadline and a fresh ignored output directory; selected cases take seconds, private story cases
+about 47 seconds. Reuse the installation, project, imports and prepared private inputs. Rebuild Debug
+only when changed adapter code needs a new native load; Release uses `uv run sf2 verify adapter`.
+
+Prepare these small public variations from tracked packages, once under ignored `local/issue1408`:
+
+```python
+import copy, json
+from pathlib import Path
+repo = Path(__file__).resolve().parents[2]  # Save as local/issue1408/prepare-inputs.py.
+out = repo / "local/issue1408"
+out.mkdir(parents=True, exist_ok=True)
+b = json.loads((repo / "remake/content/authored/practice-yard.json").read_text())
+b["items"] = [dict(id=0, name="Recovery leaf", effect="consumable-healing", power=10,
+                   minimumRange=0, maximumRange=1),
+              dict(id=6, name="Small remedy", effect="consumable-healing", power=4,
+                   minimumRange=0, maximumRange=2)]
+b["actors"][0]["items"] = [256, 6, 255, 383]
+b["actors"][1]["items"] = [0, 127, 127, 127]
+b["start"]["actors"][0]["hp"] = 60
+# Four admitted long labels require scrolling without expanding spellbook capacity.
+b["spells"] = [dict(copy.deepcopy(b["spells"][0]), id="m"+"w"*62+str(i),
+                    mpCost=3 if i < 3 else 25) for i in range(4)]
+b["actors"][0]["spells"] = [dict(id=s["id"], level=1) for s in b["spells"]]
+(out / "battle.json").write_text(json.dumps(b), encoding="utf-8")
+a = json.loads((repo / "remake/content/authored/harbor-arrival.json").read_text())
+a["start"]["program"] = dict(program="invitation", instruction=0)
+a["world"]["texts"][0]["text"] = "Will you accept the invitation? " * 10
+a["world"]["programs"][0]["instructions"] = [dict(op="text-cursor", text=100),
+    dict(op="show-text", mode="single", speaker=None), dict(op="yes-no", flag=10),
+    dict(op="yes-no", flag=11), dict(op="close-text"), dict(op="end")]
+(out / "authored.json").write_text(json.dumps(a), encoding="utf-8")
+settings = dict(formatVersion=1, textMode="adjustable", charactersPerSecond=40, bindings={
+    name: dict(keys=keys, buttons=[button], axes=[]) for name, keys, button in [
+        ("up", ["Up","W"], "DpadUp"), ("right", ["Right","D"], "DpadRight"),
+        ("down", ["Down","S"], "DpadDown"), ("left", ["Left","A"], "DpadLeft")]})
+(out / "keyboard-pointer.json").write_text(json.dumps(settings), encoding="utf-8")
+```
+
+Use `uv run python -X utf8 local/issue1408/prepare-inputs.py`. The explicit ordinary input configuration removes
+only the interfering movement-axis bindings. It preserves keyboard and pad buttons, plus the
+existing Drop axis. The observer checks the installed `sf2_*` actions: unbound raw axis events remain
+diagnostic; mapped external axis/button input still reports Unavailable. This changes neither
+default product settings nor user devices/registry. An attempted preset removing Drop's only pad
+axis was correctly rejected; the maintained preset leaves it intact.
+
+After loading `local/private-inputs.ps1` in the launching process and forcing
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, select one case/input below. Give that run new worktree-local
+APPDATA, LOCALAPPDATA, TEMP and TMP directories, and set `SF2_VIEWPORT_CASE` plus
+`SF2_VIEWPORT_OUTPUT=<fresh-run>/native.json`. Launch from the repository root:
+
+```powershell
+$repo = (& git rev-parse --show-toplevel)
+$arguments = @('--path', (Join-Path $repo 'remake/game'), '--max-fps', '60',
+    '--resolution', '1920x1080', '--script', 'res://probes/engine_menu_mouse_observation.gd',
+    '--', $entryOption, $selectedInput, '--input-settings',
+    (Join-Path $repo 'local/issue1408/keyboard-pointer.json'))
+# Add --headless only for the table's headless cases. Focus cases require native windows.
+& $env:GODOT_BIN @arguments
+$nativeExit = $LASTEXITCODE
+```
+
+| Case / ordinary entry | Bounded observation |
+| --- | --- |
+| `battle` / `--authored-package local/issue1408/battle.json`; headless | All four commands, long-label wheel scrolling, unavailable spell/empty item, available item, unavailable ordered target, previous/next, explicit confirmation guard, layered Back/right click, Stay, keyboard handoff, drag/hide/menu-creation release isolation; no rejected/canceled resource or RNG mutation. |
+| `physical` / `--authored-package remake/content/authored/stone-court.json`; headless | Click Attack into its admitted target flow, then a separate click Confirm. |
+| `heal` / retained E1 `local/issue1397/heal.json`; headless | Selection remains provisional; explicit click plus double-click tail reaches the actual healing consumer, one MP cost and HP recovery, then next actor. Reuses the existing scene observer. |
+| `focus-battle` / `--authored-package local/issue1408/battle.json`; windowed | Actual native Window focus transfer/return during a press, drag-out/re-entry cancellation, fresh click after return and keyboard replacement of a pressed list layer. |
+| `authored` / `--authored-package local/issue1408/authored.json`; headless | Unread text rejects click; text acknowledgement attaches a new row without adopting an old press; hover No→Confirm answers No; a second question rejects stale release/double click; direction takes focus back to Yes and Confirm answers Yes. |
+| `authored-clicks` / same authored input; headless | Deliberate clicked Yes, followed by right-click No on the next question; normal close and usable field return. |
+| `authored-focus` / same authored input; windowed | Actual native focus transfer/return, drag-out, fresh No answer, newly attached next-question release isolation, right-click No and field return. |
+| `private-no`, `private-yes` / `--private-exploration-start local/issue1391/scene-start.json`; headless | Existing Zone8 source sequence through the real question, held-entry Opening/Release and rejected click, authoritative hover/directional focus, deliberate clicked answer, retained Closing, deletion/result flag and existing program continuation. Stops before later JOIN work. |
+
+Private cases reuse `local/issue1045/inputs.ps1`, `world-route-13.json`, and the tracked
+`remake/reference/inputs/battle01-player-ready.json` controlled party selection. Resolve these
+within the owning checkout; retain their original identities. No new extraction or original-reach
+claim is authorized. The owning checkout's ignored `local/issue1408/run-native.ps1` records exact
+launches, settings, fresh directories, PIDs and stdout/stderr alongside the JSON reports.
+
+**Confirmed, bounded executor results:** battle, physical, actual healing cost, authored mixed and
+clicked answers, source No/Yes, and both native window focus cases pass. The source runs retain six
+ObjectDB leaked-instance warnings at exit; they are not a clean-shutdown claim. Small actual
+Application tests cover explicit source answer selection, stale/wrong token, Entry/Opening/Release,
+Closing/result delay and next-question guards, and unchanged authored direct answers. Independent
+main-gate review/merge remains separate.
+
+Completed discoveries remain in `local/issue1408`: initial adapter CS0266 notification constants
+(corrected narrowly); `pilot-01` hover failure (**Unknown** cause); `battle-01` external Axis0=-0.51
+and `battle-window-06` mapped Button1 interference (**Unavailable**). The successful initial window
+pilot did not yet have input receipts; later explicit-settings focus witnesses retain those receipts.
+`battle-headless-02/-03` used an inadmissible nine-entry spellbook or expected nine offers from three
+learned entries; `-04` clicked a still-clipped row fragment. Those fixture/observer failures led to
+four legal long labels and sufficient local scrolling. `battle-headless-05` found stale container
+geometry moving navigation on the next input; native layout now settles without input. `-07` is the
+rejected Drop preset above. `authored-headless-01` expected unread content under instant text;
+`-02` reached the correct mixed answers but its controlled program omitted close-text and failed
+the return wait. Corrected inputs retain ordinary unread/close behavior. Passing finite runs do not
+erase `heal-resource-headless-01`'s observer baseline-shape error and completed 75-second timeout;
+the reused scene witness now receives its actual initial actor baseline. They also do not
+erase the other results, resolve raw device interference, prove physical release outside the focused
+window, or establish whole-game/mouse-only, all-device, original-timing or aesthetic acceptance.
+
 ## Unified world viewport observation
 
 The [Standard presentation agreement](../godot/presentation.md#unified-world-viewport-agreement)

@@ -179,6 +179,11 @@ internal static class ExplorationDispatcher
                         observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     break;
                 case ChooseDialogue choice:
+                    if (current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Input } sourceChoice && sourceChoice.Token == choice.Wait)
+                    {
+                        current = ExplorationChoiceRunner.Answer(definition, current, choice.Yes, observations);
+                        break;
+                    }
                     if (current.Story.Wait is not ChoiceWait { Work: null } waiting || waiting.Token != choice.Wait)
                         return Reject(current, "stale-or-wrong-wait", "wait");
                     current = ProgramRunner.Commit(current, current.Active,

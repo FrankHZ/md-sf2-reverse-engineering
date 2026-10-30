@@ -84,7 +84,8 @@ internal sealed partial class ExplorationDialogueView : Control
         bool sourceChoice = current.Story.Wait is ChoiceWait { Work: not null };
         var choice = (current.Story.Wait as ChoiceWait)?.Work;
         Panel.Choices.Present(current.Story.Wait is ChoiceWait && (choice is null || choice.Visible) &&
-            current.Story.LogicalView?.HideWindows != true, choice?.Yes ?? true, sourceChoice);
+            current.Story.LogicalView?.HideWindows != true, choice?.Yes ?? true,
+            revealed && !Panel.MoreBelow && (choice is null || current.CanWaitForChoice), sourceChoice);
         Rect2 subject = default;
         var world = current.Exploration;
         var speaker = (current.Story.TextWindow as OpenTextWindow)?.Speaker;
@@ -104,8 +105,7 @@ internal sealed partial class ExplorationDialogueView : Control
         bool atInput = current.Story.Wait is DialogueWait or W1TextWait { AtInput: true, Revealed: true } || current.CanWaitForText;
         string hint = current.Story.Wait switch
         {
-            ChoiceWait { Work: not null } => $"{input.Hint(GameAction.Left)} / {input.Hint(GameAction.Right)}: Select    {input.Hint(GameAction.Confirm)}: Confirm    {input.Hint(GameAction.Cancel)}: No",
-            ChoiceWait => $"{input.Hint(GameAction.Confirm)}: Yes    {input.Hint(GameAction.Cancel)}: No",
+            ChoiceWait => $"{input.Hint(GameAction.Left)} / {input.Hint(GameAction.Right)}: Select    {input.Hint(GameAction.Confirm)}: Confirm    {input.Hint(GameAction.Cancel)} / Right click: No",
             _ when Panel.Visible && !revealed => $"{input.Hint(GameAction.Confirm)}: Reveal",
             _ when Panel.Visible && atInput => $"{input.Hint(GameAction.Confirm)}: Continue ▾",
             _ when current.CanWaitAtInput => (session.QueryExplorationInteraction() is not null ? $"{input.Hint(GameAction.Confirm)}: Talk    " : "") + $"Hold {input.Hint(GameAction.Wait)}: Wait    {input.Hint(GameAction.Equipment)}: Party Status",
