@@ -517,6 +517,120 @@ new natural full-opening claim. Earlier A unsuitable-start/probe failures and mi
 Unknown, B focus-loss Unavailable/physical-release Unknown, #689's entry timeout and #1386 exit
 warnings remain preserved. No broader original comparison or cleanup authority follows.
 
+### Complete portrait raster observation
+
+**Confirmed; [#1414](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1414).**
+The accepted `ui-layout-static-v1` fixture locates `layout_PortraitWindow` at75342 and its mirrored
+layout at75502, each8×10 words. Direct reading of the registered, verified ROM shows a border
+around six columns and eight rows, selecting atlas columns0–5 in all eight rows. The mirrored
+layout reverses those columns and flips their tiles. Therefore the source interior is48×64;
+the prior48×56 crop lost the final tile row. Sarah1/Chester2 each lost384 nontransparent pixels,
+and Astral40 lost383. Astral looking normal to the user did not establish that its lower row was
+empty. All three admitted64×64 atlases and eye/mouth records match direct ROM decoding exactly.
+This is a presentation defect; no extracted resource is repaired or regenerated.
+
+`engine_story_dialogue_observation.gd` case `private-portraits` compares **every RGBA byte** of each
+newly observed mounted texture with private expected bytes, then checks the actual child/resource
+identity,48×64 texture,192×256 mount,304px panel minimum, safe bounds, child order and separation
+from text/hints. Ordinary typewriting/blinking supplies facial states. A pre-start diagnostic caller
+opens Astral, Sarah and Chester once on each side, then closes and returns to fresh field movement.
+It changes only controlled input metadata, uses admitted assets and normal mapped acknowledgements,
+and makes no original natural-route claim. No screenshot or post-start session mutation is used.
+
+Reuse the prepared world/party and environment above. The diagnostic world must remain beside the
+selected prepared world, because additional encounter selections resolve relative to that document.
+Budget one127.6MB source read, one controlled copy of similar size, less than0.5MB expected bytes,
+one process at a time, at most75 seconds and5MiB per report. Reuse the existing environment/build;
+do not prepare another asset set. Run `uv run sf2 rom verify` before the direct decode. The following
+Python, run with `uv run python` from the owning checkout, creates the ignored inputs:
+
+```python
+import base64, json, os, struct
+from pathlib import Path
+from sf2tool.compression import decode_stack_compressed
+from sf2tool.h2.portraits import _read_animation_entries
+from sf2tool.texture_extract import decode_md_4bpp_tile, md_palette_color, palette_index_rgba
+
+source = Path('local/issue1045/world-route-13.json')
+out = Path('local/issue1414'); out.mkdir(exist_ok=True)
+doc = json.loads(source.read_text(encoding='utf-8')); world = doc['world']
+rom = (Path(os.environ['SF2_SHARED_INPUT_ROOT']) / 'roms/sf2-us.bin').read_bytes()
+expected = {}
+for pid in (1, 2, 40):
+    record = next(r for r in world['presentation']['portraits'] if r['portrait'] == pid)
+    address = int.from_bytes(rom[0x1C8004+pid*4:0x1C8008+pid*4], 'big')
+    data = rom[address:]
+    eyes, offset = _read_animation_entries(data, 0, 'eye')
+    mouth, offset = _read_animation_entries(data, offset, 'mouth')
+    palette = [md_palette_color(int.from_bytes(data[i:i+2], 'big'))
+               for i in range(offset, offset+32, 2)]
+    raw = decode_stack_compressed(data[offset+32:], expected_output_bytes=2048).output
+    tiles = [decode_md_4bpp_tile(raw[i:i+32]) for i in range(0,2048,32)]
+    atlas = bytes(c for y in range(64) for x in range(64)
+                  for c in palette_index_rgba(palette, tiles[y//8*8+x//8][y%8*8+x%8]))
+    assert atlas == base64.b64decode(record['raster']['data'])
+    assert eyes == record['eyes'] and mouth == record['mouth']
+    for mirror in (False, True):
+        words = struct.unpack_from('>80H', rom, 75502 if mirror else 75342)
+        mapping = [words[(y+1)*8+x+1] for y in range(8) for x in range(6)]
+        assert all((word & 0x7ff)-0x7c0 == y*8+(5-x if mirror else x)
+                   and bool(word & 0x800) == mirror
+                   for y in range(8) for x,word in enumerate(mapping[y*6:y*6+6]))
+        for eye in (False, True):
+            for mouth_open in (False, True):
+                changes = {e[1]*8+e[0]: e[3]*8+e[2]
+                           for entries in (eyes if eye else [], mouth if mouth_open else [])
+                           for e in entries}
+                rgba = bytearray()
+                for y in range(64):
+                    for x in range(48):
+                        word = mapping[y//8*6+x//8]; tile = (word & 0x7ff)-0x7c0
+                        index = tiles[changes.get(tile,tile)][y%8*8+(7-x%8 if word & 0x800 else x%8)]
+                        rgba.extend(palette_index_rgba(palette,index))
+                expected[f'{pid}:{int(mirror)}:{int(eye)}:{int(mouth_open)}'] = base64.b64encode(rgba).decode()
+(out/'expected.json').write_text(json.dumps(expected), encoding='utf-8')
+
+world['texts'].append(dict(id=65000,text='Portrait observation. The speaker continues talking '
+    'while the eyes and mouth use their admitted animation tiles. The complete lower row '
+    'must stay visible throughout this sentence.'))
+instructions = []
+for pid,entity in ((40,'entity-142'),(1,'entity-1'),(2,'entity-2')):
+    for flags in (0,192):
+        if pid == 40: instructions.append(dict(op='sprite',entity=entity,sprite=213))
+        instructions += [dict(op='open-portrait',entity=entity,flags=flags),
+            dict(op='show-text',mode='single',speaker=entity,speakerFlags=flags,
+                 explicitWindows=True,text=65000),dict(op='close-portrait'),dict(op='close-text')]
+instructions.append(dict(op='end-map-script'))
+next(p for p in world['programs'] if p['id']=='cs-5149a')['instructions'] = instructions
+with source.with_name('issue1414-world.json').open('w',encoding='utf-8') as f:
+    json.dump(doc,f,separators=(',',':'))
+```
+
+After the adapter and Debug build above, select `SF2_PRIVATE_EXPLORATION_CONTENT` as that controlled
+`issue1414-world.json`, `SF2_PORTRAIT_EXPECTED` as the absolute `local/issue1414/expected.json`, and
+`SF2_VIEWPORT_CASE=private-portraits`. Use the existing Zone8 start, adjustable text settings and
+native launch above, with a fresh local report/log/TEMP directory. Inspect actual exit, stdout,
+stderr, report failures and coverage; private bytes stay untracked. The current executable field
+comparison in `sf2tool.remake_h4.field_projection` also expects48×64. Its resource-size expectation
+changes with the delivered adapter; original evidence remains unchanged. This adapter-only
+expectation correction selects no research or whole-route H4 acquisition.
+
+The focused headless run passed in41.893 seconds:56 checkpoints,357,187 report bytes,24 distinct
+pixel states (all eye/mouth combinations for each portrait and side), exact byte equality,304px
+panels, safe non-overlapping mounts, actual close and fresh field movement. Astral has no eye-entry
+replacements; its logical blink states still produce the correct unchanged eye pixels. No runtime
+or script error occurred. The run retains the known two-ObjectDB shutdown warning separately
+tracked under#1410; exit0 and pixel acceptance do not resolve that warning. This is executor
+headless evidence, not independent windowed or aesthetic acceptance.
+
+Preserved failed attempts in ignored `local/issue1414` include four private admission failures from
+placing the controlled world away from its relative encounter inputs, one61-second observer deadline
+and one eight-second observer stop from comparing signed GDScript IDs with unsigned C# ID strings.
+Corrected observation compares the presenter's textual child/resource identities and directly reads
+the actual child's image. These are completed input/observer failures, not interrupted runs or
+evidence that the corrected portrait pixels failed. Retain their logs and the two/four-ObjectDB
+shutdown warnings. Earlier shared-dialogue failures and Unknowns above remain preserved.
+
 ## Battle return and Party Status observation
 
 [E2's agreement](../godot/presentation.md#battle-messages-return-and-party-status) owns this bounded

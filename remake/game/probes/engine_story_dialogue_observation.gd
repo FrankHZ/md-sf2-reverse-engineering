@@ -9,6 +9,8 @@ var text_window := false
 func observe_node(node: Node) -> void:
     if node.has_signal("SessionResultObserved"):
         node.connect("SessionResultObserved", on_result)
+    if case_name == "private-portraits" and node.has_signal("ResourceDrawObserved"):
+        node.connect("ResourceDrawObserved", func(): pass)
 
 func on_result(json: String) -> void:
     var result: Dictionary = JSON.parse_string(json)
@@ -23,6 +25,10 @@ func sample(label: String) -> Dictionary:
     var compact := {}
     for name in ["sessionId","revision","mode","stage","actor","map","wait","token","stop","failure","failureVisible","canWaitAtInput","canWaitForText","canWaitForChoice","choiceRequiresRelease","gameplayHeld","visibleCharacters","totalCharacters","textId","dialogue","help","dialoguePanel","portraitId","portraitFlags","portraitWork","portraitProjection","portraitResourceProjection","textWindow","portraitWindow","choice","choiceProjection","flags","viewport","mapViewport","worldGeometry","story","cameraFocus","entrySkip","skipRequiresRelease","simulationTick"]:
         if s.has(name): compact[name] = s[name]
+    if s.get("failure") != null:
+        compact["failureLabels"] = []
+        for label_node in host.find_children("*","Label",true,false):
+            if label_node.is_visible_in_tree(): compact.failureLabels.append(label_node.text)
     samples.append({"label":label,"state":compact})
     return s
 
@@ -55,6 +61,12 @@ func continue_text() -> bool:
 
 func run() -> void:
     root.size = Vector2i(1920,1080)
+    if case_name == "private-portraits":
+        var inputs := {}
+        for suffix in ["BATTLE01_DATA","BATTLE01_SCENE","BATTLE01_TERRAIN"]:
+            var path := OS.get_environment("SF2_PRIVATE_"+suffix)
+            inputs[suffix] = {"length":path.length(),"exists":FileAccess.file_exists(path)}
+        samples.append({"label":"private-input-availability","inputs":inputs})
     node_added.connect(observe_node)
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
@@ -63,7 +75,9 @@ func run() -> void:
     state()
     await frames(4)
     if not await focus(): return
-    if case_name.begins_with("private"):
+    if case_name == "private-portraits":
+        await portrait_pixels()
+    elif case_name.begins_with("private"):
         await private_scene()
     elif case_name == "skip":
         await skip_entry()
@@ -71,6 +85,78 @@ func run() -> void:
         await battle_story()
     else:
         await authored()
+
+# Read-only texture comparison against private expected pixels derived from the accepted
+# ROM window layouts and decoded tiles. The pre-start diagnostic caller opens six windows;
+# all animation, reveal, close and input transitions still use the ordinary session.
+func portrait_pixels() -> void:
+    var expected_path := OS.get_environment("SF2_PORTRAIT_EXPECTED")
+    var expected: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(expected_path))
+    var seen := {}
+    var windows := {}
+    var previous_texture := ""
+    if not await wait_for(func(s): return s.get("canWaitAtInput",false), "portrait approach"): return
+    await tap(KEY_DOWN)
+    if not await wait_for(func(s): return s.canWaitAtInput, "portrait approach settled"): return
+    await tap(KEY_RIGHT)
+    sample("portrait-zone-entered")
+    var last_boundary := ""
+    var started := Time.get_ticks_msec()
+    var deadline := Time.get_ticks_msec()+60000
+    while Time.get_ticks_msec() < deadline:
+        if not await focus(): return
+        var s := state()
+        var boundary := str(s.wait)+":"+str(s.textId)+":"+str(s.portraitId)
+        if boundary != last_boundary:
+            sample("portrait-boundary-"+boundary)
+            last_boundary = boundary
+        if seen.is_empty() and Time.get_ticks_msec()-started > 8000:
+            sample("portrait-not-mounted")
+            fail("No mounted portrait after eight seconds"); return
+        if not check(s.failure == null, "Healthy portrait caller"): return
+        var resource = s.get("portraitResourceProjection")
+        var panel: Dictionary = s.dialoguePanel
+        if panel.portraitVisible and resource != null:
+            var selector: Dictionary = resource.selector
+            var key := "%d:%d:%d:%d" % [selector.portrait,int(selector.mirror),int(selector.eyes),int(selector.mouth)]
+            var portrait := view.find_child("Portrait",true,false) as TextureRect
+            if not check(portrait != null and portrait.texture != null, "Actual mounted portrait texture"): return
+            # C# exposes the unsigned object ID as text; GDScript's signed ID can wrap.
+            if panel.portraitTexture != resource.resourceIdentity:
+                await process_frame
+                continue
+            if not seen.has(key):
+                var actual := portrait.texture.get_image()
+                sample("portrait-pixels-"+key)
+                if not check(actual.get_size() == Vector2i(48,64), "Complete 48x64 source window texture: "+key): return
+                if not check(expected.has(key) and actual.get_data() == Marshalls.base64_to_raw(expected[key]), "All mounted RGBA pixels match source layout including bottom row: "+key): return
+                if not layout(s): return
+                if not check(rect(panel.portrait).size == Vector2(192,256), "Uniform 4x portrait scale"): return
+                if not check(resource.width == 48 and resource.height == 64 and s.portraitProjection.mirrored == selector.mirror, "Draw/resource geometry and mirror agree"): return
+                seen[key] = true
+            previous_texture = str(resource.resourceIdentity)
+            windows["%d:%d" % [selector.portrait,int(selector.mirror)]] = true
+        if s.canWaitAtInput and windows.size() == 6:
+            for id in [1,2,40]:
+                for mirror in [0,1]:
+                    var mouth := {}
+                    var eyes := {}
+                    for key in seen:
+                        var parts := str(key).split(":")
+                        if int(parts[0]) == id and int(parts[1]) == mirror:
+                            eyes[parts[2]] = true; mouth[parts[3]] = true
+                    if not check(mouth.size() == 2 and (id == 40 or eyes.size() == 2), "Natural eye/mouth coverage on both sides: %d:%d" % [id,mirror]): return
+            sample("portrait-closed-fresh-control")
+            if not check(not panel.visible and not panel.portraitVisible and not previous_texture.is_empty(), "Portrait windows close after real acknowledgements"): return
+            await tap(KEY_DOWN)
+            if not await wait_for(func(x): return x.canWaitAtInput, "fresh portrait field command"): return
+            sample("portrait-fresh-movement")
+            finish(true); return
+        if s.canWaitForText:
+            await tap(KEY_ENTER)
+        else: await process_frame
+    sample("portrait-deadline")
+    fail("Portrait pixel observation deadline")
 
 func authored() -> void:
     if not await wait_for(func(s): return s.get("canWaitAtInput", false), "authored control"): return
