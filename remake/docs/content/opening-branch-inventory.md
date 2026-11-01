@@ -85,7 +85,10 @@ The [observation owner](../verification/field-programs.md#opening-search-and-rec
 commands, actual input/state/error checks and source-runtime limits. Engine acceptance covers
 rejection before grant, atomic receipts, source-order dispatch, full packs and changed content/state.
 Private native acceptance uses New Game acquisition, save, process exit, fresh Continue/revisit and
-carriage into Battle01. Public fixtures contain only minimal authored facts. Completed diagnostic
+carriage into Battle01. The [composed opening observation](../evidence/opening-loop-acceptance.md) additionally joins ordinary
+preparation, school pickup/description, real Church return and Battle01 victory before Save/Quit/Continue.
+It reuses this bounded inventory and does not promote excluded branches to runtime passes.
+Public fixtures contain only minimal authored facts. Completed diagnostic
 failures remain in the slice handoff; they are not erased by this inventory or by successful product play.
 
 ## Opening service callers
