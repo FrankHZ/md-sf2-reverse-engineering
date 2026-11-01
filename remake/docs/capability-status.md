@@ -18,7 +18,8 @@ start; only Bowie initially belongs to the party. The [native entry observation]
 owns replacement/error controls and the ordinary opening route. [Save/restart observation](verification/host.md#opening-save-and-continue)
 owns the three finite savepoint recipes; all reachable optional opening branches remain a separate boundary.
 
-Field preparation is **implemented, bounded; independent review pending** under #1422:
+Field preparation is **implemented, bounded** under #1422; [PR1429](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1429)
+owns review/integration status:
 Party Status → Prepare offers Equip/Unarmed, Give/full-pack exchange, Use, Magic and confirmed Drop
 on that same carried party, including defeated members' inventory access. Original field HEAL and
 ordinary recovery-item NoEffect are explicit; Antidote/DETOX1 have caller-specific poison-cure payment.
