@@ -1717,3 +1717,36 @@ work, allowing ordinary continuation or an explicit new request without hanging 
 loss also disarms; a fresh request is required. Input release barriers span choice and combat
 handoff. The [presentation and acceptance owner](../godot/battle-entry-skip.md) records delivery,
 commands, resource limits and current acceptance. No Domain, Content or research change is planned.
+
+
+## Field Search and revisit state
+
+`FieldSearch` is a revision-checked settled-field command on the common session. Typed Search results
+hold their own input wait; they do not borrow a battle, event speaker or a second inventory. Queries
+and rejected commands cannot claim a placement. Successful grants/empty chest opening publish carried
+party, source placement flag and chest block together. Layout reconstruction uses the same source
+flags already persisted by savepoints. [Opening policy](opening-session-lifecycle.md#implemented-opening-search)
+and [metadata admission](../content/profiles-and-trust.md#opening-search-admission) own the bounded domain.
+
+A declared unavailable warp is checked before movement/facing, entity service, fade or transfer.
+Its dismissible result leaves the field playable. The opening church event similarly reports its
+service dependency before entering the native-call handler. Other unresolved native instructions
+still stop as Unsupported; they are never relabeled as successful story completion.
+
+Same-map warps retain layout/population and run the real initializer. A repeated source hide after
+alias removal is represented safely only when the current population retains that identity's
+already hidden physical record, with no aliases to its slot. This operation retains that record;
+it never selects player slot0 or a reused slot. Other unresolved references still fail. This is the
+safe representation permitted by the [map contract](../../../docs/design/contracts/world/map-exploration.md),
+not original unchecked-memory parity. The source's FF-derived raw writes and natural timing remain
+Unknown. The source speech-clear/copy shape also lowers to existing speakerless text, allowing the
+fainted guard description without inventing a new dialogue engine or progression rule.
+
+
+**Confirmed (static source):** pinned `explorationfunctions_0.asm:GetActivatedEntity` repeatedly
+advances the faced point past desk/counter markers, then selects the first physical non-follower
+within a strict one-tile Manhattan distance. `ExplorationInteractionQuery` uses that same live
+counter scan for the hint and command admission; a regular intervening block ends the scan.
+This connects opening merchant dialogue and the priest dependency without inventing a shop or
+church transaction. Bounds remain the engine's finite map domain; original unchecked lookup and
+natural interaction timing remain separately Unknown.

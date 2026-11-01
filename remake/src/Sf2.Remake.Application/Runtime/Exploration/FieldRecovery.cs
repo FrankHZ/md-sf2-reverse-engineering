@@ -21,8 +21,9 @@ internal static class FieldRecovery
         if (command is FieldUseItem use)
         {
             item = FieldInventory.Slot(definition, member, use.Slot, use.ExpectedWord);
-            if (!capabilities.ItemEffects.TryGetValue((byte)(item.Word & 127), out effect))
+            if (capabilities.Effect((byte)(item.Word & 127), current.Exploration!.Map) is not { } itemEffect)
                 throw new BattleRuleException("field-item-effect-unsupported", "item", true);
+            effect = itemEffect;
             targetRef = use.Target;
         }
         else if (command is FieldCast cast)

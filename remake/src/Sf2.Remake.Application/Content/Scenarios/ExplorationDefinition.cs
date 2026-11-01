@@ -64,7 +64,7 @@ public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,
     MapPosition? Destination = null, byte Facing = 0, ushort? RequiredMarker = null,
     int? RequiredFlag = null, bool RequiredFlagValue = true, byte? EntityFlags = null, MapLoadMode LoadMode = MapLoadMode.Rebuild,
-    EntityActionProgram? SourceInit = null);
+    EntityActionProgram? SourceInit = null, string? Unavailable = null);
 public sealed record ExplorationBattleRoute(string Encounter, int? UnlockedFlag, int? CompletedFlag,
     int? IntroFlag, ProgramLocation? BeforeProgram, ProgramLocation? StartProgram, ProgramLocation? LoadProgram = null,
     ExplorationOutcomeRoute? Outcome = null);
@@ -91,9 +91,9 @@ public sealed class ExplorationMapDefinition
         ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null,
         IEnumerable<WriteFlag>? entryFlags = null, PalettePair? basePalette = null, IEnumerable<ExplorationViewArea>? viewAreas = null,
         IEnumerable<ExplorationSetupDefinition>? setups = null, IEnumerable<ExplorationBattleRoute>? battles = null,
-        CaravanDefinition? caravan = null)
+        CaravanDefinition? caravan = null, FieldSearchDefinition? search = null)
     {
-        Caravan = caravan;
+        Caravan = caravan; Search = search;
         Map = map; Layout = layout; Traversal = traversal; Entities = Array.AsReadOnly(entities.ToArray());
         Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad;
         Battles = Array.AsReadOnly((battles ?? (battle is null ? [] : new[] { battle })).ToArray());
@@ -104,6 +104,7 @@ public sealed class ExplorationMapDefinition
         Setups = new ReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition>((setups ?? []).ToDictionary(value => value.Id));
     }
     public CaravanDefinition? Caravan { get; }
+    public FieldSearchDefinition? Search { get; }
     public MapId Map { get; }
     public WorkingMapLayout Layout { get; }
     public OriginalMapTraversal Traversal { get; }
@@ -132,13 +133,13 @@ public sealed class ExplorationMapDefinition
             throw new BattleRuleException("map-setup", selected.Value, true);
         return new(Map, Layout, Traversal, content.Entities, content.Events, content.OnLoad, Battle,
             content.InputProgram, population: content.Population, layoutEvents: LayoutEvents, overlays: OverlayOffsets,
-            entryFlags: EntryFlags, basePalette: BasePalette, viewAreas: ViewAreas, battles: Battles);
+            entryFlags: EntryFlags, basePalette: BasePalette, viewAreas: ViewAreas, battles: Battles, search: content.Search);
     }
 }
 
 public sealed record ExplorationSetupDefinition(MapSetupId Id, IReadOnlyList<ExplorationEntityDefinition> Entities,
     IReadOnlyList<ExplorationEvent> Events, ProgramLocation? OnLoad, ProgramLocation? InputProgram,
-    ExplorationPopulation Population);
+    ExplorationPopulation Population, FieldSearchDefinition? Search = null);
 
 public sealed class ExplorationProvenance
 {

@@ -26,9 +26,21 @@ public sealed partial class ExplorationSessionView
         if (_partyStatus.Open) { _partyStatus.HandlePointer(input); return; }
         if (_session is null || _handedOff || _battleHandoffPending || _skipRequiresRelease ||
             !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() || PresentationFailure is not null ||
-            _partyStatus.Open || _session.Current.Story.Wait is not ChoiceWait choice)
+            _partyStatus.Open)
         { _choicePointer.Suspend(); return; }
         _movementHold.Clear(_input); CancelFieldWait();
+        if (_session.Current.Story.Wait is FieldSearchWait search)
+        {
+            if (input is not InputEventMouseButton searchButton) return;
+            bool cancel = searchButton.ButtonIndex == MouseButton.Right;
+            var area = cancel ? GetViewportRect() : _dialogueView.Panel.GetGlobalRect();
+            if (_choicePointer.Read(searchButton, area.HasPoint(searchButton.Position) ? "search" : null, area,
+                (_session.Current.SessionId, search.Token)) is not null && (cancel || !RevealText()))
+                Send(new Acknowledge(search.Token));
+            return;
+        }
+        if (_session.Current.Story.Wait is not ChoiceWait choice) { _choicePointer.Suspend(); return; }
+
         var row = _dialogueView.Panel.Choices;
         bool ready = !_choiceRequiresRelease && TextRevealed && !_dialogueView.Panel.MoreBelow &&
             row.IsVisibleInTree() && (choice.Work is null || _session.Current.CanWaitForChoice);

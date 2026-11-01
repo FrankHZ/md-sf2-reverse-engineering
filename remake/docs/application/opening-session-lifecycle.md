@@ -31,8 +31,8 @@ copy/delete UI, migration framework, name editor, promotion or Battle03 ending i
 New Game never overwrites a slot; only an explicit confirmed Save does. Quit warns about unsaved
 progress and offers cancel; it does not secretly autosave.
 
-Current milestone: independently accept save/restart/Continue, then the separately owned
-field-feature slices. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
+Current milestone: close bounded Search and opening branch exploration, then the separately owned
+service consumers and whole-opening acceptance. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
 rigor at the persistence review and final restart acceptance; ordinary inventory/UI slices can
 use Standard once their state boundary is fixed. No unresolved aesthetic choice gates this design.
 
@@ -49,8 +49,8 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | **Implemented, bounded:** Party Status → Prepare changes the carried party through revision-checked field commands, shared equipment/word rules and existing custody. | #1422; [field boundary](#implemented-field-preparation). Source class/slot legality, full-pack exchange and confirmed Drop are explicit; private battle command capabilities stay separate. |
 | Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL; Antidote/DETOX1 cure poison with caller-specific payment. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
-| Search/descriptions/chests/ground items | Original contracts exist; the current common field command surface has Move/Interact, not Search. Source map preparation imports entity/zone events and layout events; that is not an item pickup consumer. | **Missing behavior/content integration:** area descriptions, one-time receipt and full-pack handling; preserve receipt state across reload and save. #1423. |
-| Receipts/Deals | [BattleItemCustody](../../src/Sf2.Remake.Domain/Battles/State/BattleItemCustody.cs) owns authored battle drop once-flags and Deals; carried through field party. Null means unobserved, not empty. | **Standalone-only:** private field pickups/services need explicit admitted data and their own receipt IDs. Do not use battle drop flags as chest IDs or silently replace null with empty. |
+| Search/descriptions/chests/ground items | **Implemented, bounded:** explicit faced-cell Search consumes validated opening descriptions and placements, shared carried inventory and source item flags. Full packs retain the reward; revisits and savepoint reconstruction retain opened chests. | #1423; [Search boundary](#implemented-opening-search) and [branch inventory](../content/opening-branch-inventory.md). Original input/presentation cadence remains Unknown. |
+| Receipts/Deals | [BattleItemCustody](../../src/Sf2.Remake.Domain/Battles/State/BattleItemCustody.cs) owns authored battle drop once-flags and Deals; carried through field party. Null means unobserved, not empty. | **Distinct authorities:** field receipts use the source placement flag in durable story progress; battle custody retains its own drop flags/Deals. Field Search neither adds battle once-flags nor replaces null custody. Services remain #1424. |
 | Church/shop | Map3 entity event13 names ChurchMenu in accepted source. Generic native calls do not implement service transactions or a UI. | **Missing behavior/integration:** raise, supported cure and common Save entry first; buy/sell only at verified reachable opening shops. #1424. No shop is invented because inventory rules exist. |
 | Battle01/outcomes | Connected before/load/start, combat, growth, victory Map57 return and ordinary defeat Map3 return are bounded implemented capabilities. | Preserve reward/join/flag order and once-only outcome commits. Continue must prove actual play through this existing boundary. |
 | Later encounters | Selected Battle02/Yeel behavior exists independently. | Do not claim later campaign, private battle equipment or battle suspend from this design. Shared records must remain compatible or reject explicitly. |
@@ -65,16 +65,16 @@ success is not all-branch closure. The bounded inspection is of these selected m
 | Location/phase | Established implementation versus remaining closure |
 | --- | --- |
 | Map3 house, Sarah, school stairs, Zone7, messenger and Zone8 | Connected programs and joins exist. Save anchors must distinguish pre-messenger and F603-set phases; no reload may replay JOIN or grant starting items. |
-| Map3 optional NPCs/default events, descriptions and two item placements | Source table inventory is established; natural optionality/reach of every branch is **Unknown**. Lowered ordinary dialogue is reusable, ChurchMenu remains missing, descriptions/items lack the field consumer. #1423 records each actual offer/guard/result, including empty fallback, before declaring the opened area complete. |
+| Map3 optional NPCs/default events, descriptions and two item placements | Source table inventory is established; natural optionality/reach of every branch is **Unknown**. Lowered ordinary dialogue and typed Search are connected. ChurchMenu reports its #1424 dependency before entering a handler. The [branch inventory](../content/opening-branch-inventory.md) separates executable consumers, future boundaries and original Unknowns. |
 | F600-clear direct castle approach / `cs_51454` | The old blanket `moveNextToPlayer` gap is stale: [compiler](../../../src/sf2tool/remake_exploration_programs.py) emits move/waits/facing; [ProgramRunner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) executes `MoveEntityNextToPlayer`. **Confirmed structure**, not proof this whole optional route now completes. Check its remaining native calls and actual return, without fabricating F600 or implementing the opcode twice. |
 | Map19 castle and Map20 palace/Astral revisit | First/repeat visits, refusal/re-prompt and follower variants have bounded acceptance in [session programs](session-and-programs.md#castle-palace-astral-and-tower). Other NPC branches/alternate map setups are not promoted to accepted by that group. Interior save is deferred, not disabled traversal. |
 | Map21 guard, tower and Battle01 | Accepted conditional guard and battle admission remain authoritative. A save attempt during guard motion, entry or combat rejects; it never completes the program or sets unlock flags. |
 | Map57 victory / Map3 defeat | Usable returns are implemented. Map57 F506 layout-copy remains a guarded frontier; reject that unsupported restore phase. Map3 defeat retains unlock, halves gold and restores the leader under the existing outcome policy. Loading must not run either outcome again. |
 | Open warps beyond this endpoint | Preparation retains warp rows and fails at unadmitted destinations/setups. #1423 must identify any reachable stop and provide a clearly bounded unavailable destination before committing transfer, or implement the necessary opening branch. Silently accepting Unsupported as a no-op is forbidden. Later campaign admission remains outside #1418. |
 
-This is an accurate gap disposition, not a claim that all reachable NPCs were exercised. #1423's
-bounded first pass must enumerate offered entity/default/zone/search/warp branches in Maps3/19/20/21
-and returned Map57 for the admitted opening flags, with supported, unavailable or Unknown outcomes.
+This is an accurate gap disposition, not a claim that all reachable NPCs were exercised. The [bounded inventory](../content/opening-branch-inventory.md) enumerates the offered
+entity/default/zone/search/warp surfaces in Maps3/19/20/21 and returned Map57 for the admitted
+opening flags. Static lowering and focused remake execution do not prove original natural reach.
 Only source uncertainty that prevents a required behavior warrants a focused evidence follow-up.
 
 ## New Game construction
@@ -442,3 +442,40 @@ durable SRAM behavior and exact presentation timing remain with their original o
 savepoint normalization is simpler and safer for this opening than arbitrary interpreter snapshots;
 the implemented finite recipes have bounded restart observations, not arbitrary snapshot acceptance.
 This delivery does not close #1418 or establish all opened branches.
+
+
+## Implemented opening Search
+
+**Standard rigor for #1423:** the bounded outcome is safely exploring Maps3/19/20/21 and the
+Battle01 return on Map57, using the carried party and the existing savepoints. Source metadata,
+Application publication, Content admission and host input have separate owners. Services remain
+#1424; Map57 F506, later campaign, new save locations and original presentation timing are excluded.
+Acceptance covers faced dispatch, descriptions/empty results, every admitted placement, full packs,
+alternate carriers, once/repeat, rejection, map re-entry, save/restart/Continue and Battle01 entry.
+The [branch inventory](../content/opening-branch-inventory.md) and
+[direct observation route](../verification/field-programs.md#opening-search-and-receipts) own details.
+
+`Search` uses the current view target and faced working-layout cell. Chest, vase, barrel,
+bookshelf and generic searchable markers precede ordered area descriptions. Explicit Search may
+use MenuOnly descriptions and the ordinary empty fallback; the no-entity action entry may return
+Unhandled with no publication. The modern visible Confirm/Search shortcut deliberately selects
+explicit menu Search. It does not claim the original no-entity C-button fallback or menu raster.
+
+The shared field inventory selects the leader, then joined members in source member order,
+including reserve/defeated members. It keeps complete item words and uses the ordinary AddItem
+rule to clear equipped on the received word. Full packs retain inventory, flag and chest block;
+making room permits retry. One revision publishes the grant, source item flag and opened block.
+An empty registered chest still opens. Gold uses carried gold and the source saturation limit,
+although the five admitted opening placements contain no gold. Battle custody is unchanged.
+
+The existing save captures story flags and complete carried loadouts. No receipt array, new
+snapshot, savepoint, format or compatibility revision is needed. Rebuild and scene-layout reload
+project opened chests from their flags. New Game/Continue require Search metadata on all five maps
+and their admitted setups, known reward items and required common/description texts before
+publication. Search/result input owns control until dismissal; Cancel closes feedback without
+undoing an already committed acquisition. Stale or unsupported commands retain the old snapshot.
+
+Angel Wing is admitted as opening immutable content and can be acquired, given, saved and carried
+into Battle01. On these five non-overworld maps only, field Use has the source NoEffect behavior
+and consumes nothing. Other maps require their separately admitted effect policy; no new Battle01
+retreat profile or later Egress behavior is enabled.

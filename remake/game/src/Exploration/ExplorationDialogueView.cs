@@ -32,6 +32,8 @@ internal sealed partial class ExplorationDialogueView : Control
         int previouslyVisible = _dialogue.VisibleCharacters < 0 ? _dialogue.GetTotalCharacterCount() : _dialogue.VisibleCharacters;
         _dialogue.Text = current.Story.Wait switch
         {
+            FieldSearchWait search => string.Join("\n", search.Result.Texts.Select(id => session.Definition.Exploration!.Texts.GetValueOrDefault(id) ?? "")) +
+                (search.Result.Message is { } message ? "\n" + message : ""),
             DialogueWait text => session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "",
             ChoiceWait => current.Story.TextWindow is OpenTextWindow question ? session.Definition.Exploration!.Texts.GetValueOrDefault(question.Text) ?? "" : previousText,
             PresentationWait => current.Story.TextWindow is OpenTextWindow text ? session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "" : "",
@@ -54,8 +56,8 @@ internal sealed partial class ExplorationDialogueView : Control
         else
         {
             // Compatibility display for consumers outside the admitted W1 contract.
-            _dialogue.Text = Regex.Replace(_dialogue.Text.Replace("{N}", "\n"), @"\{W[0-9]+\}", "");
-            _dialogue.Text = Regex.Replace(_dialogue.Text, @"\{(?:LEADER|NAME;([0-9]+))\}", match =>
+            _dialogue.Text = Regex.Replace(_dialogue.Text.Replace("{N}", "\n").Replace("{CLEAR}", "\n"), @"\{W[0-9]+\}", "");
+            _dialogue.Text = Regex.Replace(_dialogue.Text, @"\{(?:LEADER|NAME|NAME;([0-9]+))\}", match =>
             {
                 int member = match.Groups[1].Success ? int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
                 return member < names.Count ? names[member] : match.Value;
@@ -95,20 +97,21 @@ internal sealed partial class ExplorationDialogueView : Control
             subject = new Rect2((new Vector2(actor.Motion.X / 16f, actor.Motion.Y / 16f) - viewport.Origin) * WorldViewportLayout.PixelScale,
                 Vector2.One * WorldViewportLayout.CellSize);
         bool openWindow = current.Story.TextWindow is OpenTextWindow || current.Story.PortraitWindow is OpenPortraitWindow ||
-            current.Story.Wait is DialogueWait or ChoiceWait;
+            current.Story.Wait is DialogueWait or ChoiceWait or FieldSearchWait;
         Panel.Present(openWindow && current.Story.LogicalView?.HideWindows != true, portrait, (flags & 0x80) != 0, subject, "", openWindow);
         RefreshHint(session, input, battleMounted, revealed);
     }
     internal void RefreshHint(GameSession session, GameInput input, bool battleMounted, bool revealed)
     {
         var current = session.Current;
-        bool atInput = current.Story.Wait is DialogueWait or W1TextWait { AtInput: true, Revealed: true } || current.CanWaitForText;
+        bool atInput = current.Story.Wait is DialogueWait or FieldSearchWait or W1TextWait { AtInput: true, Revealed: true } || current.CanWaitForText;
         string hint = current.Story.Wait switch
         {
+            FieldSearchWait when revealed => $"{input.Hint(GameAction.Confirm)} / Click: Continue    {input.Hint(GameAction.Cancel)} / Right click: Close",
             ChoiceWait => $"{input.Hint(GameAction.Left)} / {input.Hint(GameAction.Right)}: Select    {input.Hint(GameAction.Confirm)}: Confirm    {input.Hint(GameAction.Cancel)} / Right click: No",
             _ when Panel.Visible && !revealed => $"{input.Hint(GameAction.Confirm)}: Reveal",
             _ when Panel.Visible && atInput => $"{input.Hint(GameAction.Confirm)}: Continue ▾",
-            _ when current.CanWaitAtInput => (session.QueryExplorationInteraction() is not null ? $"{input.Hint(GameAction.Confirm)}: Talk    " : "") + $"Hold {input.Hint(GameAction.Wait)}: Wait    {input.Hint(GameAction.Equipment)}: Party Status",
+            _ when current.CanWaitAtInput => (session.QueryExplorationInteraction() is not null ? $"{input.Hint(GameAction.Confirm)}: Talk    " : session.CanSearch ? $"{input.Hint(GameAction.Confirm)}: Search    " : "") + $"Hold {input.Hint(GameAction.Wait)}: Wait    {input.Hint(GameAction.Equipment)}: Party Status",
             _ => "Scene in progress…",
         };
         if (Panel.Visible && Panel.MoreBelow && revealed) hint = $"{input.Hint(GameAction.Confirm)}: Read more";

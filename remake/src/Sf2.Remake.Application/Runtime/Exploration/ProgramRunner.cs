@@ -450,7 +450,7 @@ internal static class ProgramRunner
                     case SetEntityVisibility visible:
                         active = EditEntity(current, visible.Entity, entity => entity with { Visible = visible.Visible }); break;
                     case HideMapEntity hide:
-                        active = new ActiveExploration(current.Exploration!.Hide(Entity(current, hide.Entity), hide.RemoveAliases)); break;
+                        active = new ActiveExploration(current.Exploration!.Hide(hide.Entity, hide.RemoveAliases)); break;
                     case SetEntityPosition position:
                         active = EditEntity(current, position.Entity, entity => entity with
                         {

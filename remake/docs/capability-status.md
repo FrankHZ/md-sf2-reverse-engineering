@@ -11,12 +11,14 @@ slices. [Local play](../README.md#run-locally) opens the title and an opening Ne
 package/start options retain diagnostic play. This is not a full New Game campaign.
 
 The [opening lifecycle agreement](application/opening-session-lifecycle.md) implements genuine opening New Game,
-two local savepoint slots/Continue and bounded field preparation; search/services remain under #1418.
+two local savepoint slots/Continue, bounded field preparation and opening Search/receipts; services
+remain under #1418.
 It separates implemented rules, standalone-only admission, missing integration and missing behavior.
 New Game admits complete supported fresh resources/progress from content, without a comparison
 start; only Bowie initially belongs to the party. The [native entry observation](verification/host.md#opening-new-game-observation)
 owns replacement/error controls and the ordinary opening route. [Save/restart observation](verification/host.md#opening-save-and-continue)
-owns the three finite savepoint recipes; all reachable optional opening branches remain a separate boundary.
+owns the three finite savepoint recipes; the bounded optional-branch inventory is linked below,
+while original natural reach remains Unknown.
 
 Field preparation is **implemented, bounded** under #1422; [PR1429](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1429)
 owns review/integration status:
@@ -25,13 +27,22 @@ on that same carried party, including defeated members' inventory access. Origin
 ordinary recovery-item NoEffect are explicit; Antidote/DETOX1 have caller-specific poison-cure payment.
 Unsupported effects remain distinct. [State/policy](application/opening-session-lifecycle.md#implemented-field-preparation)
 and [native acceptance](verification/host.md#opening-field-preparation) own the exact limits. No field
-HP-healing deviation, private battle inventory profile, Search, service or broader campaign is enabled.
+HP-healing deviation, private battle inventory profile, service or broader campaign is enabled.
 
 Current accepted presentation includes continuous exploration/contextual Talk, shared 1080p/96px
 world geometry (A/B), story dialogue (C), reachable movement tiles (B8), status cards and battle/return/
 read-only Party Status (E). The [presentation owner](godot/presentation.md) and its verification links
 retain the specific engineering acceptance and observation limits. Broader #438 product/aesthetic
 acceptance, original timing and distribution rights remain separate.
+
+Opening Search is **implemented, bounded** under #1423: the five-map
+[branch inventory](content/opening-branch-inventory.md) distinguishes source descriptions/placements,
+ordinary handlers, service dependency and future destinations. Items and source receipt flags commit
+atomically to the carried party/progress; full-pack retry, revisits and existing savepoint restoration
+retain them. Angel Wing has map-scoped field NoEffect and can be carried into Battle01. The modern
+visible Search/result panel and safe repeated removal are explicit remake policies; original natural
+reach, input/presentation cadence and unchecked-memory parity remain Unknown. See
+[state/limits](application/opening-session-lifecycle.md#implemented-opening-search).
 
 ## Ordinary host lifecycle agreement
 

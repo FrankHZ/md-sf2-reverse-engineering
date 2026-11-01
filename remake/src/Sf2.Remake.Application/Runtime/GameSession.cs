@@ -38,6 +38,7 @@ public sealed class GameSession
             return new SessionStartFailed(new(SessionFailureKind.ContentError, error.Code, error.Field, "Cannot restore this save: " + error.Code));
         }
     }
+    public bool CanSearch => FieldSearch.Available(Current);
     public EntityRef? QueryExplorationInteraction() => ExplorationInteractionQuery.Query(Current);
     public PartyDetails? QueryPartyDetails() => PartyDetailsQuery.Query(Definition, Current);
     public FieldActionChoices QueryFieldActions(ActorRef actor) => FieldInventory.Query(Definition, Current, actor);
@@ -139,6 +140,12 @@ public sealed class GameSession
         }
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
+        if (current.Mode == SessionMode.Exploration && envelope.Command is Search search)
+        {
+            var searched = FieldSearch.Submit(Definition, current, search);
+            _current = searched.Snapshot;
+            return searched;
+        }
         if (current.Mode == SessionMode.Exploration && envelope.Command is FieldCommand field)
         {
             var prepared = FieldCommands.Submit(Definition, current, field);

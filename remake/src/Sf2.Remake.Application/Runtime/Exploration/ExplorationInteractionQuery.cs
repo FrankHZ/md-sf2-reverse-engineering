@@ -9,7 +9,7 @@ internal static class ExplorationInteractionQuery
     {
         if (!current.CanWaitAtInput || current.Exploration is not { } world || world.Definition.InputProgram is not null)
             return null;
-        foreach (var entity in world.AllEntities)
+        foreach (var entity in world.AllEntities.OrderBy(entity => entity.Slot))
             if (entity.Entity != world.Player && InReach(current, entity.Entity) && Event(current, entity.Entity)?.Program is not null)
                 return entity.Entity;
         return null;
@@ -18,11 +18,20 @@ internal static class ExplorationInteractionQuery
     internal static bool InReach(SessionSnapshot current, EntityRef target)
     {
         var world = current.Exploration!;
-        if (target == world.Player || !world.Entities.TryGetValue(target, out var entity) || !entity.Visible) return false;
+        if (target == world.Player || !world.Entities.TryGetValue(target, out var entity) || !entity.Visible || entity.Follower is not null) return false;
         var player = world.PlayerEntity;
-        int dx = entity.Position.X - player.Position.X, dy = entity.Position.Y - player.Position.Y;
-        return Math.Abs(dx) + Math.Abs(dy) == 1 && player.Motion.Facing ==
-            (dx > 0 ? 0 : dx < 0 ? 2 : dy < 0 ? 1 : 3);
+        var offset = (player.Motion.Facing & 3) switch { 0 => (384, 0), 1 => (0, -384), 2 => (-384, 0), _ => (0, 384) };
+        int x = player.Motion.X, y = player.Motion.Y;
+        // GetActivatedEntity skips any consecutive desk/counter blocks, then scans
+        // physical entities within one tile (strictly), excluding installed followers.
+        for (int cell = 0; cell < 64; cell++)
+        {
+            x += offset.Item1; y += offset.Item2;
+            if (x < 0 || y < 0 || x >= 64 * 384 || y >= 64 * 384) return false;
+            if ((world.Layout[x / 384, y / 384] & 0x3C00) != 0x2800)
+                return Math.Abs(entity.Motion.X - x) + Math.Abs(entity.Motion.Y - y) < 384;
+        }
+        return false;
     }
 
     internal static ExplorationEvent? Event(SessionSnapshot current, EntityRef target) =>
