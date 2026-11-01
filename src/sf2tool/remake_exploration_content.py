@@ -211,7 +211,8 @@ def prepare(
                     "id": setup.lower().replace("_", "-"),
                     **{
                         key: prepared[key]
-                        for key in ("entities", "events", "onLoad", "input", "population")
+                        for key in ("entities", "events", "onLoad", "input", "population", "search")
+                        if key in prepared
                     },
                 }
             )

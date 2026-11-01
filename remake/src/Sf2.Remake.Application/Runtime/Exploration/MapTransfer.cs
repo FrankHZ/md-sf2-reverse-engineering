@@ -189,6 +189,7 @@ internal static class MapTransfer
         var layout = map.Layout;
         foreach (var copy in map.LayoutEvents?.Flags ?? [])
             if ((layoutFlags ?? flags).Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
+        layout = FieldSearch.RestoreChests(layout, map.Search, flags);
         if (!map.Traversal.IsWithinActiveArea(position) || OriginalMapTraversal.IsBlocked(layout, position))
             throw new BattleRuleException("map-entry-position", "map.position");
         if (map.Population is { } population)
@@ -228,7 +229,7 @@ internal static class MapTransfer
         if (world.Definition.BasePalette != story.Display!.Base)
             throw new BattleRuleException("scene-reload-palette", "story.display", true);
         // csc36/csc46 rebuild the current layout, without reallocating entities or invoking map init.
-        var next = world.WithLayout(world.Definition.Layout, MapBlockCopyLifecycleState.Inactive);
+        var next = world.WithLayout(FieldSearch.RestoreChests(world.Definition.Layout, world.Definition.Search, story.Flags), MapBlockCopyLifecycleState.Inactive);
         return (next, story.Copy(story.Cursor,
             logicalView: ExplorationViewRunner.LoadScene(next, reload.Camera, story.LogicalView!),
             logicalText: new(), clearCameraEntity: true, clearCameraTarget: true));

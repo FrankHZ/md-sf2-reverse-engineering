@@ -103,5 +103,12 @@
   },
   "outcomeBattles": [
     1
+  ],
+  "searchMaps": [
+    3,
+    19,
+    20,
+    21,
+    57
   ]
 }

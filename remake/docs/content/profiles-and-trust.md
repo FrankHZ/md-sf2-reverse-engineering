@@ -771,10 +771,13 @@ logical palette words, adds its source dependencies to the existing provenance a
 asset export or new original runtime observation. Initial Display uses the Map3 base and source
 period3; the period writes are in pinned `disasm/code/gameflow/start/systeminit.asm` and `gameintro.asm`.
 
-After loading the usual private content selections, set `$pinnedUpstream` to the existing pinned
-SF2DISASM checkout and `$freshWorldPath` to a **new** ignored file beside
-`SF2_PRIVATE_EXPLORATION_CONTENT`. These are explicit caller-selected paths, not new environment
-variables. Run this complete repository-root recipe; it needs no ignored preparation script:
+After loading the usual private content selections, set `$pinnedUpstream` to the pinned source
+checkout, `$canonicalMapPath` to the existing canonical map import and `$freshWorldPath` to a new
+ignored file beside `SF2_PRIVATE_EXPLORATION_CONTENT`. Keep the original input. The following
+repository-root supplement reuses its embedded assets and contained relative encounter files;
+it does not export another asset tree. It accepts an already palette-complete input as well.
+The named source text program is the bounded fainted-guard consumer correction.
+Other compiled program differences, including asset/audio aliases, stay with the original world.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
@@ -784,33 +787,58 @@ if ($LASTEXITCODE -ne 0) { throw 'ROM verification failed' }
 @'
 import hashlib, json, os, re, subprocess, sys
 from pathlib import Path
+from sf2tool.paths import repo_path
 from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
-from sf2tool.remake_exploration_content import selected_map_palette_bindings
+from sf2tool.remake_exploration_content import prepare, selected_map_palette_bindings
 from sf2tool.remake_exploration_programs import OriginalPrograms
 
 upstream = Path(sys.argv[1]).resolve(strict=True)
+canonical = Path(sys.argv[2]).resolve(strict=True)
 source = Path(os.environ["SF2_PRIVATE_EXPLORATION_CONTENT"]).resolve(strict=True)
-target = Path(sys.argv[2]).resolve()
+target = Path(sys.argv[3]).resolve()
 pin = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 assert subprocess.check_output(["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True).strip() == pin
 assert source.stat().st_size <= 128 * 1024 * 1024
 assert target.parent == source.parent and target != source and not target.exists()
+metadata = target.with_suffix(".metadata.json")
+assert not metadata.exists()
+prepare(canonical, upstream, repo_path("remake/reference/inputs/battle01-to-battle02-programs.json"), metadata)
+new = json.loads(metadata.read_text(encoding="utf-8"))
 world = json.loads(source.read_text(encoding="utf-8-sig"))
-assert world["provenance"]["commit"] == pin
-# Only source equates are needed; no program is compiled or reconstructed.
+assert world["provenance"]["commit"] == new["provenance"]["commit"] == pin
+compiled_maps = {row["id"]: row for row in new["world"]["maps"]}
+for row in world["world"]["maps"]:
+    compiled = compiled_maps[row["id"]]
+    if "search" in compiled:
+        row["search"] = compiled["search"]
+    assert len(row["events"]) == len(compiled["events"])
+    for old_event, new_event in zip(row["events"], compiled["events"], strict=True):
+        if "unavailable" in new_event:
+            old_event["unavailable"] = new_event["unavailable"]
+    for old_setup, new_setup in zip(row.get("setups", []), compiled.get("setups", []), strict=True):
+        assert old_setup["id"] == new_setup["id"]
+        if "search" in new_setup:
+            old_setup["search"] = new_setup["search"]
+        for old_event, new_event in zip(old_setup["events"], new_setup["events"], strict=True):
+            if "unavailable" in new_event:
+                old_event["unavailable"] = new_event["unavailable"]
+programs = {row["id"]: row for row in new["world"]["programs"]}
+for index, row in enumerate(world["world"]["programs"]):
+    if row["id"] in ("map21-1f5-entityevent0",):
+        world["world"]["programs"][index] = programs[row["id"]]
 compiler = OriginalPrograms({"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream)
 compiler.sources.clear()
 compiler.sources.add("disasm/sf2enums.asm")
 ids = [int(row["id"][4:]) for row in world["world"]["maps"]]
-assert sorted(ids) == [3, 19, 20, 21, 40, 57, 66]
 bindings = selected_map_palette_bindings(compiler, ids, private_input_path(ROM_INPUT_IDENTITY))
+for row, binding in zip(world["world"]["maps"], bindings, strict=True):
+    assert row["id"] == binding["map"]
+    row["basePalette"] = binding["base"]
 for relative in ("disasm/code/gameflow/start/systeminit.asm", "disasm/code/gameflow/start/gameintro.asm"):
     assert re.search(r"move\.b\s+#3,\(\(FADING_COUNTER_MAX-\$1000000\)\)\.w", (upstream / relative).read_text())
     compiler.sources.add(relative)
-for row, binding in zip(world["world"]["maps"], bindings, strict=True):
-    assert row["id"] == binding["map"] and "basePalette" not in row
-    row["basePalette"] = binding["base"]
 sources = {row["path"]: row for row in world["provenance"]["sources"]}
+sources.update({row["path"]: row for row in new["provenance"]["sources"]})
 for relative in sorted(compiler.sources):
     data = (upstream / relative).read_bytes()
     original = subprocess.check_output(["git", "-C", str(upstream), "show", pin + ":" + relative])
@@ -820,25 +848,17 @@ world["provenance"]["sources"] = list(sources.values())
 with target.open("x", encoding="utf-8", newline="\n") as output:
     json.dump(world, output, ensure_ascii=False, separators=(",", ":"))
 assert target.stat().st_size <= 128 * 1024 * 1024
-print(json.dumps({"maps": bindings, "period": 3, "outputBytes": target.stat().st_size}))
-'@ | uv run python -X utf8 - $pinnedUpstream $freshWorldPath
-if ($LASTEXITCODE -ne 0) { throw 'Opening palette preparation failed' }
+print(json.dumps({"searchMaps": [row["id"] for row in world["world"]["maps"] if "search" in row], "outputBytes": target.stat().st_size}))
+'@ | uv run python -X utf8 - $pinnedUpstream $canonicalMapPath $freshWorldPath
+if ($LASTEXITCODE -ne 0) { throw 'Opening metadata preparation failed' }
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorldPath
 ```
 
-The private receipt `local/issue1420/palette-preparation.json` retains the executed seven-map
-supplement and source identities. A direct original/new-world comparison, removing only the seven
-`basePalette` fields and `provenance.sources`, confirms that every other map/program/encounter/
-asset/party operand is unchanged; the original file is preserved. No preparation rerun is needed
-for documentation review.
-
-Verify the pinned source files (allowing the checkout's Git line-ending normalization), retain their
-existing provenance hashes, and merge helper source dependencies into `provenance.sources` before
-writing a fresh ignored world. Keep that world beside its original to preserve already-contained
-relative encounter paths; do not rewrite the canonical input. The bounded run reads one 127.60 MB
-world and writes one 125.82 MB world plus small metadata, O(input bytes) time/memory, below 1 GiB
-expected peak memory and within its measured disk budget. No content or source changes beyond the
-seven map palettes/provenance are required. Field receipts and services remain separate.
+This bounded supplement reads the existing approximately126MB world and writes one similarly sized
+world plus a small logic intermediate. Time and memory are O(input bytes); expected peak memory is
+below1GiB. Budget at least150MB of free output space plus build/report headroom before running.
+The original, relative inputs and earlier evidence remain intact. Search metadata and its named
+text consumers are required product content; services remain separate.
 
 ### Opening save admission
 
@@ -866,7 +886,7 @@ simple adjacent ATT-only weapons reuse #1421's trusted numerical bindings. Give/
 custody properties come from selected source item records; unadmitted equipped/broken weapon
 effects reject. No battle Give/Drop profile or `Equipment.AllowChanges` is relaxed.
 
-Opening static selection additionally retains Medical Herb0, Healing Seed1 and Antidote3 with their
+Opening static selection additionally retains Medical Herb0, Healing Seed1, Antidote3 and Angel Wing4 with their
 exact codes, use-spell families and no-equipment-effect definitions. This is immutable admission,
 not possession or an award. Field effects admit the first two as original NoEffect and Antidote as
 poison cure. Selected HEAL spells admit NoEffect; selected DETOX1 admits poison cure with its trusted
@@ -875,3 +895,21 @@ MP cost. Other item/spell effects remain explicitly unavailable. The
 static caller provenance and exact payment; battle healing power/EXP/RNG is not reused for field use.
 Existing save format/revisions remain compatible because captured values and restoration semantics
 are unchanged. No new world export, source input mutation or public private-content fixture is needed.
+
+
+### Opening Search admission
+
+The existing preparation selection explicitly lists Search maps3/19/20/21/57. The compiler consumes
+canonical item tables and ordered area-description records, retaining source flags, complete item
+words, gold amounts and open/closed block words in typed metadata. Setup-specific descriptions
+stay with the selected setup. Exact placements/dialogue and derived worlds remain private/local.
+Callback description maps without a connected consumer receive no Search admission; compiling
+other supported capabilities on those maps remains possible. The opening requires text-only tables.
+
+`FieldSearchReader` validates record shape/ranges, reward alternatives, receipt uniqueness per map,
+chest words and every required common/description text. `OpeningLoadoutBindings` requires all five
+maps and their admitted setups to carry this metadata and known reward identities. Missing content
+rejects before New Game or Continue publication. Static battle content selection includes Angel Wing;
+this is content availability, not possession. Its map-scoped NoEffect policy is separate from
+battle retreat and other maps. The existing save's source flags and item words reconstruct receipt
+state without a format/revision expansion. See [state authority](../application/opening-session-lifecycle.md#implemented-opening-search).

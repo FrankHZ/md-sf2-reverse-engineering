@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
@@ -8,17 +9,23 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 public sealed class FieldPreparationDefinition
 {
     internal FieldPreparationDefinition(IEnumerable<BattleDiscardItem> items,
-        IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>>? itemEffects = null, IEnumerable<FieldSpellChoice>? spells = null)
+        IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>>? itemEffects = null, IEnumerable<FieldSpellChoice>? spells = null, IEnumerable<FieldItemMapEffect>? mapEffects = null)
     {
+        MapEffects = Array.AsReadOnly((mapEffects ?? []).ToArray());
         Items = new ReadOnlyDictionary<byte, BattleDiscardItem>(items.ToDictionary(item => item.ItemId));
         ItemEffects = new ReadOnlyDictionary<byte, FieldRecoveryEffect>((itemEffects ?? []).ToDictionary());
         Spells = new ReadOnlyDictionary<SpellRef, FieldSpellChoice>((spells ?? []).ToDictionary(spell => spell.Spell));
     }
     public IReadOnlyDictionary<byte, BattleDiscardItem> Items { get; }
     public IReadOnlyDictionary<byte, FieldRecoveryEffect> ItemEffects { get; }
+    public IReadOnlyList<FieldItemMapEffect> MapEffects { get; }
+    internal FieldRecoveryEffect? Effect(byte item, MapId? map) =>
+        MapEffects.FirstOrDefault(row => row.Item == item && row.Maps.Contains(map!))?.Effect ??
+        (ItemEffects.TryGetValue(item, out var effect) ? effect : null);
     public IReadOnlyDictionary<SpellRef, FieldSpellChoice> Spells { get; }
 }
 
+public sealed record FieldItemMapEffect(byte Item, FieldRecoveryEffect Effect, IReadOnlyList<MapId> Maps);
 public sealed record FieldInventoryChoice(int Slot, ushort Word, string Name, bool CanDrop, FieldRecoveryEffect? Use = null);
 public sealed record FieldActionChoices(Guid SessionId, long Revision, ActorRef Actor,
     IReadOnlyList<BattleEquipmentChoice> Equipment, IReadOnlyList<FieldInventoryChoice> Items,
@@ -43,7 +50,7 @@ internal static class FieldInventory
         member.Carried.SourceLoadout ?? member.Carried.Progress?.SourceLoadout ?? member.Deployment!.Definition.SourceLoadout
             ?? throw new BattleRuleException("field-loadout-unavailable", "actor.items", true);
 
-    internal static IReadOnlyList<FieldInventoryChoice> Items(ScenarioDefinition definition, PartyMemberDetails member)
+    internal static IReadOnlyList<FieldInventoryChoice> Items(ScenarioDefinition definition, PartyMemberDetails member, MapId? map = null)
     {
         var loadout = Loadout(member);
         if (loadout.Items.Count != 4) throw new BattleRuleException("field-item-slots", "actor.items");
@@ -60,7 +67,7 @@ internal static class FieldInventory
             if ((word & 128) != 0 && member.Deployment.Definition.Equipment?.Weapons.ContainsKey(id) != true)
                 throw new BattleRuleException("field-equipped-item-unsupported", "actor.items", true);
             choices.Add(new(slot, word, item.Name, !item.Unsellable,
-                definition.FieldPreparation.ItemEffects.TryGetValue(id, out var effect) ? effect : null));
+                definition.FieldPreparation.Effect(id, map)));
         }
         return choices.AsReadOnly();
     }
@@ -73,7 +80,7 @@ internal static class FieldInventory
         try
         {
             var member = Member(definition, current, actor);
-            var items = Items(definition, member);
+            var items = Items(definition, member, current.Exploration!.Map);
             var equipment = member.Deployment!.Definition.Equipment is null ? [] :
                 BattleEquipment.Choices(member.Deployment.Definition, BaseAttack(member), Loadout(member));
             var learned = member.Carried.Progress?.Spells ?? member.Deployment.Definition.Spells;
@@ -87,11 +94,11 @@ internal static class FieldInventory
         member.Carried with { SourceLoadout = loadout, Progress = member.Carried.Progress is { } progress
             ? progress with { SourceLoadout = loadout } : null };
 
-    internal static BattleStartInput Replace(BattleStartInput party, IEnumerable<BattleActorStartInput> changed, BattleItemCustody? custody = null)
+    internal static BattleStartInput Replace(BattleStartInput party, IEnumerable<BattleActorStartInput> changed, BattleItemCustody? custody = null, uint? gold = null)
     {
         var actors = changed.ToDictionary(actor => actor.Actor);
         return new(party.Encounter, party.Actors.Select(actor => actors.GetValueOrDefault(actor.Actor, actor)),
-            party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, custody ?? party.ItemCustody,
+            party.MainSeed, party.ThinkingSeed, gold ?? party.Gold, party.NewBattle, party.ActiveAllies, custody ?? party.ItemCustody,
             party.StoryFlags, party.Visuals, party.RetainedSourceSlots, party.DeathCredit);
     }
 

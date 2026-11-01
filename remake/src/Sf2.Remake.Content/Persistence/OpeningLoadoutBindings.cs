@@ -11,6 +11,27 @@ internal static class OpeningLoadoutBindings
     internal static ScenarioDefinition Bind(ScenarioDefinition admitted)
     {
         var source = admitted.PrivateDefinitions!;
+        // Product opening content must include the source search/receipt surface before
+        // either New Game or Continue can publish a session. Saves already carry its flags.
+        var openingMaps = new[] { "map-3", "map-19", "map-20", "map-21", "map-57" };
+        foreach (string id in openingMaps)
+        {
+            ScenarioJson.Require(admitted.Exploration!.Maps.TryGetValue(new(id), out var map) && map.Search is not null &&
+                map.Setups.Values.All(setup => setup.Search is not null), "opening-search-required", "world.search");
+            foreach (var item in map!.Search!.Chests.Concat(map.Search.OtherItems))
+                ScenarioJson.Require(item.ItemWord is null || (item.ItemWord.Value & 127) == 127 || source.Items.ContainsKey((byte)(item.ItemWord.Value & 127)),
+                    "search-item-identity", "world.search");
+        }
+        // mainactions @StartItemUse admits Angel Wing egress only on overworld maps.
+        // Opening setup item-event handlers directly return (Map57 has no setup).
+        // Here Use is NoEffect.
+        const byte wing = 4;
+        ScenarioJson.Require(source.Items.TryGetValue(wing, out var angelWing) && angelWing.Code == "ANGEL_WING" &&
+            angelWing.UseSpell == "EGRESS" && angelWing.UseSpellLevel == 1 &&
+            angelWing.ItemTypeExpression == "CONSUMABLE" && angelWing.EquipFlagsExpression == "NONE" &&
+            angelWing.MinimumRange == 0 && angelWing.MaximumRange == 0 &&
+            angelWing.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
+            "source-field-angel-wing", "field.items");
         var weapons = source.Items.Values.Where(item => item.ItemTypeExpression == "WEAPON" &&
             item.MinimumRange == 1 && item.MaximumRange == 1 && item.EquipEffects.All(effect =>
                 effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
@@ -37,7 +58,8 @@ internal static class OpeningLoadoutBindings
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
                 FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 })
                     .Select(spell => new FieldSpellChoice(spell.Spell, spell.DisplayName, spell.MpCost,
-                        spell.Code == "DETOX" ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect))),
+                        spell.Code == "DETOX" ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect)),
+                [new(wing, FieldRecoveryEffect.NoEffect, openingMaps.Select(id => new Sf2.Remake.Domain.Maps.MapId(id)).ToArray())]),
         };
     }
 

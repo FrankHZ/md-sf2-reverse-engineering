@@ -89,7 +89,7 @@ internal static class ExplorationContentReader
         foreach (var row in Array(world, "maps"))
         {
             ObjectOptional(row, "map", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup"],
-                "input", "setups", "caravan", "battles", "basePalette", "population", "entryFlags", "layoutEvents");
+                "input", "setups", "caravan", "battles", "basePalette", "population", "entryFlags", "layoutEvents", "search");
             var id = new MapId(Id(row, "id"));
             Require(mapIds.Add(id), "duplicate-map", "world.maps");
             PalettePair? palette = null;
@@ -150,14 +150,14 @@ internal static class ExplorationContentReader
             if (row.TryGetProperty("setups", out _))
                 foreach (var variant in Array(row, "setups"))
                 {
-                    Object(variant, "map.setup.content", "id", "entities", "events", "onLoad", "input", "population");
+                    ObjectOptional(variant, "map.setup.content", ["id", "entities", "events", "onLoad", "input", "population"], "search");
                     var key = new MapSetupId(Id(variant, "id"));
                     Require(setupRoute is not null && setupRoute.FlagAlternatives.Any(value => value.Setup == key),
                         "unknown-setup", "map.setups");
                     Require(setups.All(value => value.Id != key), "duplicate-setup", "map.setups");
                     setups.Add(new(key, ReadEntities(variant), Array(variant, "events").Select(ReadEvent).ToArray(),
                         Location(variant.GetProperty("onLoad")), Location(variant.GetProperty("input")),
-                        ReadPopulation(variant.GetProperty("population"))));
+                        ReadPopulation(variant.GetProperty("population")), variant.TryGetProperty("search", out var variantSearch) ? FieldSearchReader.Read(variantSearch, texts) : null));
                 }
             maps.Add(new(id, new(words), new(areas), entities, events, Location(row.GetProperty("onLoad")), encounter, row.TryGetProperty("input", out var input) ? Location(input) : null, setupRoute, population, row.TryGetProperty("layoutEvents", out var layoutEvents) ? ReadLayoutEvents(layoutEvents) : null, Array(row, "areas").Select(area =>
                 {
@@ -169,7 +169,8 @@ internal static class ExplorationContentReader
                     Object(flag, "entryFlag", "flag", "value");
                     return new WriteFlag(Number(flag, "flag", 0, 65535), Boolean(flag, "value"));
                 }) : null, palette, Array(row, "areas").Where(area => area.TryGetProperty("view", out _)).Select(ReadViewArea), setups, routes, row.TryGetProperty("caravan", out var caravan)
-                    ? CaravanContentReader.Read(caravan, entities, new(Id(start, "player")), battle) : null));
+                    ? CaravanContentReader.Read(caravan, entities, new(Id(start, "player")), battle) : null,
+                search: row.TryGetProperty("search", out var search) ? FieldSearchReader.Read(search, texts) : null));
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
@@ -438,10 +439,11 @@ internal static class ExplorationContentReader
         string kind = Text(row, "kind");
         if (kind == "interact")
         {
-            ObjectOptional(row, "event", "entityFlags", "kind", "entity", "program", "requiredFlag", "requiredValue");
+            ObjectOptional(row, "event", ["kind", "entity", "program", "requiredFlag", "requiredValue"], "entityFlags", "unavailable");
             return new(ExplorationEventKind.Interact, null, null, row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")), RequiredLocation(row.GetProperty("program")),
                 RequiredFlag: NullableNumber(row, "requiredFlag", 65535), RequiredFlagValue: Boolean(row, "requiredValue"),
-                EntityFlags: row.TryGetProperty("entityFlags", out _) ? (byte)Number(row, "entityFlags", 0, 255) : null);
+                EntityFlags: row.TryGetProperty("entityFlags", out _) ? (byte)Number(row, "entityFlags", 0, 255) : null,
+                Unavailable: row.TryGetProperty("unavailable", out _) ? Text(row, "unavailable") : null);
         }
         if (kind is "step" or "warp-frontier" or "source-zone")
         {
@@ -451,7 +453,8 @@ internal static class ExplorationContentReader
                 NullableNumber(row, "x", 255), NullableNumber(row, "y", 255), null,
                 RequiredLocation(row.GetProperty("program")), RequiredMarker: (ushort?)NullableNumber(row, "marker", 0x3C00),
                 RequiredFlag: NullableNumber(row, "requiredFlag", 65535), RequiredFlagValue: Boolean(row, "requiredValue"),
-                SourceInit: kind == "source-zone" ? Actions(row) : null);
+                SourceInit: kind == "source-zone" ? Actions(row) : null,
+                Unavailable: kind == "warp-frontier" ? "This destination is beyond the available opening. You can continue exploring here." : null);
         }
         Require(kind == "warp", "event-kind", "event.kind", true);
         ObjectOptional(row, "event", "loadMode", "kind", "x", "y", "map", "position", "facing", "marker", "requiredFlag", "requiredValue");
@@ -656,12 +659,15 @@ internal static class ExplorationContentReader
         }
         foreach (var map in definition.Maps.Values.SelectMany(map => new[] { map }.Concat(map.Setups.Values.Select(setup =>
             new ExplorationMapDefinition(map.Map, map.Layout, map.Traversal, setup.Entities, setup.Events, setup.OnLoad,
-                inputProgram: setup.InputProgram, population: setup.Population)))))
+                inputProgram: setup.InputProgram, population: setup.Population, search: setup.Search)))))
         {
             if (definition.Visuals is { } visuals)
             {
                 Require(visuals.Maps.TryGetValue(map.Map, out var visual), "missing-map-visual", "presentation.maps");
                 Require(map.Layout.Words.All(word => (word & 0x3FF) < visual!.Blocks.Count), "map-block-binding", "presentation.blocks");
+                Require(map.Search is not { Chests.Count: > 0 } search ||
+                    new[] { search.ClosedChest, search.OpenChest }.All(word => (word & 0x3FF) < visual!.Blocks.Count),
+                    "search-chest-block-binding", "presentation.blocks");
                 var sprites = map.Population is { } population
                     ? map.Entities.Where(entity => entity.Sprite >= population.AllyCount).Select(entity => entity.Sprite)
                         .Concat(population.Followers.Where(follower => follower.Character >= population.AllyCount).Select(follower => (int?)follower.Sprite))
@@ -720,7 +726,7 @@ internal static class ExplorationContentReader
         Object(value, "program-location", "program", "instruction");
         return new(Id(value, "program"), Number(value, "instruction", 0, 65535));
     }
-    private static MapPosition Position(JsonElement value)
+    internal static MapPosition Position(JsonElement value)
     { Object(value, "position", "x", "y"); return new(Number(value, "x", 0, 63), Number(value, "y", 0, 63)); }
     private static int? NullableNumber(JsonElement row, string key, int maximum) =>
         row.GetProperty(key).ValueKind == JsonValueKind.Null ? null : Number(row, key, 0, maximum);

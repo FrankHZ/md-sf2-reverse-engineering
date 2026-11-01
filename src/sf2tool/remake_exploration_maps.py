@@ -3,6 +3,7 @@
 import re
 
 from sf2tool.h2.battle_global_data import _tokens
+from sf2tool.remake_exploration_search import compile_search
 
 
 def _location(program, instruction=0):
@@ -60,6 +61,7 @@ def compile_maps(
         areas = resources["areaTables"][references["areaTable"]]["records"]
         route_id = references["setupRoute"]
         route = resources["setupRoutes"].get(route_id)
+        setup = None
         entities = []
         if route is not None:
             setup = resources["setupDefinitions"][
@@ -175,6 +177,15 @@ def compile_maps(
                             {
                                 "kind": "interact",
                                 **common,
+                                **(
+                                    {"unavailable": "Church services are not available yet."}
+                                    if any(
+                                        op["opcode"] == "jsr"
+                                        and op["operandText"] == "j_ChurchMenu"
+                                        for op in compiler.raw[symbol]["operations"]
+                                    )
+                                    else {}
+                                ),
                                 "entity": compiler.entity(args[0])
                                 if source_row["opcode"] == macro
                                 else None,
@@ -269,6 +280,11 @@ def compile_maps(
         if selected in selection.get("eventMaps", []):
             input_program = None
             on_load = compiler.compile(setup["references"]["initFunction"])
+        search = (
+            compile_search(compiler, resources, references, setup, selected)
+            if selected in selection.get("searchMaps", [])
+            else None
+        )
         maps.append(
             {
                 "id": "map-" + str(selected),
@@ -330,6 +346,7 @@ def compile_maps(
                     else {}
                 ),
                 "events": events,
+                **({"search": search} if search is not None else {}),
                 "onLoad": _location(on_load),
                 "battle": battles[0] if len(battles) == 1 else None,
                 **({"battles": battles} if len(battles) > 1 else {}),

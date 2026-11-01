@@ -770,3 +770,15 @@ the actual caller/load flags at every reached Map3 load joined to the source506 
 one controlled start and static metadata cannot establish that route-wide result. The retained small
 W2 selections do not cover every Map3 load, so that binding remains **Unknown**. Providing these
 operands does not close H4 item9 or the other outstanding obligations.
+
+
+## Exploration Search and results
+
+At settled opening field input, the existing Confirm binding offers Talk for a faced NPC, otherwise
+visible Search. This modern shortcut invokes explicit menu Search; it does not reproduce the
+original no-entity C fallback. The common story panel shows source investigation/description text
+and typed acquisition, full-pack or unavailable feedback. Confirm/click reveals then continues;
+Cancel/right click closes it. Field movement, Party Status and save controls stay closed while the
+result owns input. A dismissed acquisition remains acquired. Result delivery adds no gameplay/RNG
+services and claims no original typewriter, item-music or menu timing. Final UI aesthetics remain
+outside this behavior slice. [State and acceptance](../application/opening-session-lifecycle.md#implemented-opening-search).

@@ -2623,3 +2623,42 @@ while retaining identity/order/count, seed/accounting, enemy immutability and re
 The exact private living/dead recovery node and small extra-encounter ally/unknown/enemy cases pass.
 Prior failures remain recorded. Human-play acceptance, independent integration and Battle02 resolution
 are not established by this candidate.
+
+## Opening Search and receipts
+
+Use the [current content supplement](../content/profiles-and-trust.md#opening-new-game-admission)
+with the existing private world, canonical import, pinned source and verified ROM. Keep the fresh
+world beside the old one so encounter-relative inputs remain contained; reuse all embedded assets.
+The [branch inventory](../content/opening-branch-inventory.md) owns offered handlers and future stops.
+
+After loading the owning environment, run the affected engine and adapter entries and the existing
+source checks directly:
+
+```powershell
+uv run sf2 verify engine
+uv run sf2 verify adapter
+uv run sf2 h2 field-search-control --upstream-path $pinnedUpstream
+uv run sf2 h2 map3-optional-interactions --upstream-path $pinnedUpstream
+```
+
+The field-search H2 reader also requires its pinned H1 listing/binary. Reuse retained verified
+outputs read-only when the selected source checkout has no build; record their exact selection in
+the ignored handoff. A missing default filename is not a passed CLI gate or a reason to rebuild or
+copy canonical inputs. The affected H2 verification can use the existing Python API with those
+explicit retained output selections. No source fixture or expected comparison is weakened.
+
+Native observation uses the actual configured Godot project and input, current session/party/flags,
+result panel, bounded layout regions and process errors; no screenshots or bulk frame capture.
+Start New Game, acquire each reachable opening placement, repeat Search and inspect descriptions,
+then save at an existing supported Map3 boundary. Exit that process, start a new process, Continue,
+revisit and verify no grant repeats. Carry the same party into Battle01, preserving the complete
+Angel Wing/Antidote words and the unchanged battle capability boundary. Field Use of Angel Wing on
+an admitted opening map must explain NoEffect and retain all resources. Empty registered chests,
+full-pack rollback/retry, alternate/dead carriers, gold and malformed/missing metadata are small
+actual-engine behaviors; source geometry must not be bypassed to manufacture native access.
+
+Inspect the F600-clear direct-castle branch through its existing motion consumer, and the reachable
+service dependency/future-stop feedback through actual controls. Dismissal must retain playable
+field control. Source/runtime reach and timing remain Unknown outside named original evidence;
+modern Search shortcut/result delivery and safe repeated hide are explicit remake policies.
+Preserve prior controlled-start fade diagnostic failures and all completed attempts in the handoff.

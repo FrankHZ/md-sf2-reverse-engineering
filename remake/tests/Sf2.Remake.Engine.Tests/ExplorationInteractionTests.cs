@@ -10,6 +10,43 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class ExplorationInteractionTests
 {
+    [Theory]
+    [InlineData(0, false)] [InlineData(1, true)] [InlineData(2, true)]
+    public void CounterScanOffersAndCommitsTheSameFirstTarget(int counters, bool offered)
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            var map = document["world"]!["maps"]![0]!;
+            map["entities"]![0]!["position"]!["x"] = counters == 0 ? 3 : 2 + counters;
+            for (int x = 2; x < 2 + counters; x++) map["layout"]![1]![x] = 0xE800;
+        });
+        Assert.Equal(offered ? new EntityRef("ferryman") : (EntityRef?)null, session.QueryExplorationInteraction());
+        Assert.Equal(offered ? null : "interaction-range-or-facing", Send(session, new Interact(new("ferryman"))).Failure?.Code);
+        if (offered) Assert.IsType<DialogueWait>(session.Current.Story.Wait);
+    }
+
+    [Fact]
+    public void ARegularWallEndsCounterScanAndInstalledFollowersAreExcluded()
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            var map = document["world"]!["maps"]![0]!;
+            map["entities"]![0]!["position"]!["x"] = 4;
+            map["layout"]![1]![2] = 0xE800;
+            map["layout"]![1]![3] = 0xC000;
+        });
+        Assert.Null(session.QueryExplorationInteraction());
+        session = Start("harbor-arrival");
+        var before = session.Current;
+        var world = before.Exploration!;
+        var npc = world.Entities[new("ferryman")];
+        world = world.WithEntity(npc with { Follower = new(world.PlayerEntity.Slot, 0, 0) });
+        var followed = new SessionSnapshot(before.SessionId, before.Revision, before.ObservationSequence,
+            new ActiveExploration(world), before.Story, before.StopReason);
+        Assert.Null(ExplorationInteractionQuery.Query(followed));
+        Assert.False(ExplorationInteractionQuery.InReach(followed, npc.Entity));
+    }
+
     [Fact]
     public void QueryIsReadOnlyAndInteractionUsesTheOfferedTarget()
     {

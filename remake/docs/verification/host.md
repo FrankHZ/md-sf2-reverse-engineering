@@ -1488,7 +1488,9 @@ separate from the following **Confirmed remake observations**; no original field
 all-device/human acceptance is claimed.
 
 Load `local/issue1045/inputs.ps1`, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and select the existing
-palette-complete `local/issue1045/world-new-game-issue1420.json` as `SF2_PRIVATE_EXPLORATION_CONTENT`.
+palette-and-Search-complete world as `SF2_PRIVATE_EXPLORATION_CONTENT`; use the
+[current metadata supplement](../content/profiles-and-trust.md#opening-new-game-admission).
+A palette-only historical world rejects before product session publication.
 Use existing absolute SDK/Godot selections and the same project/imports. No new export, asset copy,
 comparison checkpoint or screenshot is needed. Build the actual Debug host and run affected engine
 behavior directly:

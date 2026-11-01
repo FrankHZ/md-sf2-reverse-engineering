@@ -81,6 +81,12 @@ internal static class ExplorationDispatcher
             switch (command)
             {
                 case Acknowledge ack:
+                    if (current.Story.Wait is FieldSearchWait searchWait)
+                    {
+                        if (searchWait.Token != ack.Wait) return Reject(current, "stale-or-wrong-wait", "wait");
+                        return ProgramRunner.Run(definition, ProgramRunner.Commit(current, current.Active,
+                            current.Story.Copy(null), observations, "field-search-closed"), observations, rules);
+                    }
                     if (current.Story.Wait is FieldTextWait fieldText)
                     {
                         if (fieldText.Token != ack.Wait) return Reject(current, "stale-or-wrong-wait", "wait");
@@ -423,6 +429,8 @@ internal static class ExplorationDispatcher
         var preview = MapEventDispatcher.Move(controlled, move.Direction, current.Story.Flags);
         if (preview.Outcome.Event is { Kind: ExplorationEventKind.Warp } warp)
         {
+            if (warp.Unavailable is { } unavailable)
+                return FieldSearch.Feedback(current, new(FieldSearchKind.Unavailable, [], Message: unavailable), prior: observations);
             if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp, rules);
         }
         else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.VehicleEvent is null && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
@@ -445,6 +453,8 @@ internal static class ExplorationDispatcher
             return Reject(current, "interaction-range-or-facing", "entity");
         var entry = ExplorationInteractionQuery.Event(current, command.Entity);
         if (entry?.Program is not { } program) return Reject(current, "no-interaction", "entity");
+        if (entry.Unavailable is { } unavailable)
+            return FieldSearch.Feedback(current, new(FieldSearchKind.Unavailable, [], Message: unavailable), prior: observations);
         current = MapEventDispatcher.Interact(definition, current, entry, command.Entity, observations);
         return ProgramRunner.Run(definition, current, observations, rules);
     }

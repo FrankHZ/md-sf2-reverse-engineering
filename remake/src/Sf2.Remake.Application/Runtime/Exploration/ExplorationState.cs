@@ -269,6 +269,18 @@ public sealed class ExplorationState
         new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population, Quake, TravelMode, CurrentEntities);
     internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities);
     internal ExplorationState WithQuake(byte amount) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, amount, TravelMode, CurrentEntities);
+    internal ExplorationState Hide(EntityRef reference, bool removeAliases)
+    {
+        if (TryResolveEntity(reference, out var entity)) return Hide(entity, removeAliases);
+        // Safe remake representation of a repeated source hide after FF removal.
+        // Only a retained, already hidden physical record proves this lifecycle state.
+        // Never resolve an arbitrary absent/removed identity to the player or a reused slot.
+        if (removeAliases && Population is not null && AllEntities.Any(row => row.Entity == reference &&
+            !row.Visible && row.Motion.X == 0x7000 && row.Motion.Y == 0x7000 &&
+            row.Motion.XDestination == 0x7000 && row.Motion.YDestination == 0x7000 &&
+            row.Actions is null && !Aliases.Values.Contains(row.Slot))) return this;
+        throw new BattleRuleException("program-entity", "program.entity", true);
+    }
     internal ExplorationState Hide(ExplorationEntity entity, bool removeAliases)
     {
         var hidden = entity with { Visible = false, Actions = null, Follower = null, WaitingForSprite = false,

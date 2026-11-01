@@ -110,7 +110,9 @@ public sealed class FieldRecoveryTests
         var reader = new OpeningNewGameReader(Input("SF2_PRIVATE_EXPLORATION_CONTENT"), Input("SF2_PRIVATE_BATTLE01_DATA"),
             Input("SF2_PRIVATE_BATTLE01_SCENE"), Input("SF2_PRIVATE_BATTLE01_TERRAIN"), Input("SF2_PRIVATE_STATIC_DATA"),
             Input("SF2_PRIVATE_ENEMY_DATA"), Input("SF2_PRIVATE_ENEMY_GOLD"), 0, uint.MaxValue);
-        var session = Assert.IsType<SessionStarted>(GameSession.Start(reader)).Session;
+        var started = GameSession.Start(reader);
+        Assert.True(started is SessionStarted, (started as SessionStartFailed)?.Failure.ToString());
+        var session = Assert.IsType<SessionStarted>(started).Session;
         ActorRef leader = new("ally-0");
         var query = session.QueryFieldActions(leader); Assert.Null(query.Error);
         Assert.False(session.Definition.Encounters.Values.First().Deployments.First(row => row.Actor == leader).Definition.Equipment!.AllowChanges);

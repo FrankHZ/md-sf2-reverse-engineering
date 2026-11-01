@@ -291,6 +291,7 @@ public sealed partial class ExplorationSessionView : Control
     }
 
     private static bool NeedsTicks(SessionSnapshot current) =>
+        current.Story.Wait is FieldSearchWait ? false :
         current.Story.Wait is MusicWait music ? !music.LogicalDone :
         current.Story.TextSettings is not null && current.Story.Wait is PresentationWait
             { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade } ? false :
@@ -379,6 +380,10 @@ public sealed partial class ExplorationSessionView : Control
             if (action == GameAction.Confirm && !RevealText() && w1 is { AtInput: true, Revealed: true })
                 command = new Acknowledge(w1.Token);
         }
+        else if (current.Story.Wait is FieldSearchWait search)
+        {
+            if (action == GameAction.Cancel || action == GameAction.Confirm && !RevealText()) command = new Acknowledge(search.Token);
+        }
         else if (current.Story.Wait is DialogueWait)
         {
             if (action == GameAction.Confirm && !RevealText()) command = new Acknowledge(current.Story.Wait.Token);
@@ -394,6 +399,7 @@ public sealed partial class ExplorationSessionView : Control
             if (action == GameAction.Confirm)
             {
                 if (_session.QueryExplorationInteraction() is { } target) command = new Interact(target);
+                else if (_session.CanSearch) command = new Search();
             }
         }
         if (command is null) return;

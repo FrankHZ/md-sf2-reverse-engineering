@@ -471,9 +471,7 @@ class OriginalPrograms:
             elif (
                 op == "clr.w"
                 and args == ["((CURRENT_SPEECH_SFX-$1000000)).w"]
-                and index >= 4
-                and rows[index - 4]["opcode"] == "clsTxt"
-                and rows[index - 3]["operandText"] == "j_ClosePortraitWindow"
+                and index >= 2
                 and rows[index - 2]["operandText"]
                 == "((CURRENT_SPEECH_SFX-$1000000)).w,((SPEECH_SFX_COPY-$1000000)).w"
             ):
