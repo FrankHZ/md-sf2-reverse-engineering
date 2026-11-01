@@ -82,7 +82,11 @@ own preparation and reproduction; the launch above does not prepare original ass
 
 Default directional input moves/selects; Confirm opens or confirms the cardinal battle menu, Cancel
 backs out through selection and provisional movement. Exploration exposes contextual Talk. At settled
-field input, E / Pad Start opens the read-only Party Status member screen.
+field input, E / Pad Start opens Party Status. Confirm or the Prepare button opens Equip,
+Give/exchange, Use, Magic and Drop for the selected member. Selection and Cancel are free;
+each change requires its own confirmation. HEAL and ordinary HP recovery items have no field
+effect in the original; the menu explains this and keeps their resources. Antidote and DETOX1
+use their separately admitted poison-cure rules. Defeated members retain inventory access.
 Up/Down selects a member; Tab / Pad RB cycles member, magic and inventory focus. Mouse opens the
 compact member selector or changes member with arrows, and scrolls within each list. Close bindings are displayed and configurable; follow
 the displayed hints and [input/presentation owner](./docs/godot/presentation.md#modern-ui-experiment).

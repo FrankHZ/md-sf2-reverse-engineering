@@ -22,6 +22,9 @@ internal sealed partial class PartyStatusView : Control
         VerticalScrollMode = ScrollContainer.ScrollMode.Auto, FocusMode = FocusModeEnum.None };
     private readonly VBoxContainer _rows = new() { Name = "Members", SizeFlagsHorizontal = SizeFlags.ExpandFill };
     private readonly MenuPointer _pointer = new();
+    private readonly Label _prepare = Text("Prepare", 28);
+    private readonly FieldActionView _actions = new() { Name = "FieldActions" };
+    internal Func<Sf2.Remake.Application.Runtime.Exploration.FieldCommand, long, SessionResult>? SubmitField { get; set; }
     private readonly List<Label> _labels = [];
     private GameSession? _session;
     private GameInput? _input;
@@ -40,6 +43,7 @@ internal sealed partial class PartyStatusView : Control
         foreach (var node in new Control[] { _portraitFrame, _recordFrame, _goldFrame, _selectorFrame, _details,
             _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _gold, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) AddChild(node);
         _roster.AddChild(_rows);
+        AddChild(_prepare); AddChild(_actions); _prepare.Text = "Prepare…"; _prepare.Modulate = StoryTheme.Selected;
         _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _selector.HorizontalAlignment = _portraitNote.HorizontalAlignment = _gold.HorizontalAlignment = HorizontalAlignment.Center;
         _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -54,12 +58,14 @@ internal sealed partial class PartyStatusView : Control
     {
         _session = session; _input = input; _index = 0; _details.FocusPane = 0; _selectorOpen = false;
         _requiresRelease = true; _pointer.Suspend(); _roster.ScrollVertical = 0; _details.ResetReading();
+        _actions.Hide();
         Show(); Present(session, input);
     }
 
     internal void Present(GameSession session, GameInput input)
     {
         if (!Open) return;
+        if (_actions.Open) { _actions.Present(); return; }
         _session = session; _input = input; _pointer.ReleaseIfNeutral();
         if (!input.GameplayHeld) _requiresRelease = false;
         if (!session.Current.CanWaitAtInput || session.QueryPartyDetails() is not { } party) { Hide(); return; }
@@ -90,13 +96,13 @@ internal sealed partial class PartyStatusView : Control
         _gold.Text = $"GOLD\n{party.Gold?.ToString() ?? "Unavailable"}";
         PresentPortrait(session, member);
         string focus = _details.FocusPane switch { 1 => "Magic", 2 => "Items", _ => "Member" };
-        _hint.Text = $"Read only · {input.Hint(GameAction.Up)} / {input.Hint(GameAction.Down)}: {focus}   " +
+        _hint.Text = $"{input.Hint(GameAction.Confirm)}: Prepare · {input.Hint(GameAction.Up)} / {input.Hint(GameAction.Down)}: {focus}   " +
             $"{input.Hint(GameAction.Target)}: Focus   {input.Hint(GameAction.Cancel)} / {input.Hint(GameAction.Equipment)}: Close\n" +
             "Mouse: member selector / arrows · Wheel: scroll the open list";
         Arrange();
     }
 
-    private static string MemberName(PartyMemberDetails member, GameSession session)
+    internal static string MemberName(PartyMemberDetails member, GameSession session)
     {
         int? binding = member.Deployment?.Initialization?.AllyPartyMember;
         var names = session.Definition.Exploration!.MemberNames;
@@ -143,6 +149,7 @@ internal sealed partial class PartyStatusView : Control
         _gold.Position = new(192, 808); _gold.Size = new(288, 108);
         _details.Position = new(528, 144); _details.Size = new(1224, 816); _details.Arrange();
         _hint.Position = new(168, 980); _hint.Size = new(1584, 72);
+        _prepare.Position = new(1456, 908); _prepare.Size = new(260, 48);
         _rosterFrame.Visible = _roster.Visible = _selectorOpen;
         _rosterFrame.Position = new(256, 124); _rosterFrame.Size = new(1232, 680);
         _roster.Position = new(276, 144); _roster.Size = new(1192, 640);
@@ -150,11 +157,19 @@ internal sealed partial class PartyStatusView : Control
 
     private void Select(int index)
     { if (_count == 0) return; _index = (index + _count) % _count; _details.ResetReading(); if (_selectorOpen) _roster.EnsureControlVisible(_labels[_index]); }
-    internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); }
+    internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _actions.Suspend(); }
+    private void Prepare()
+    {
+        if (_shown is null || _count == 0 || SubmitField is null) return;
+        var member = _shown.Members[_index];
+        _actions.Begin(_session!, _input!, member.Carried.Actor, MemberName(member, _session!), SubmitField);
+    }
     internal void Handle(GameAction action, GameSession session, GameInput input)
     {
+        if (_actions.Open) { _actions.Handle(action); _requiresRelease = true; return; }
         _pointer.Cancel(); if (_requiresRelease) return;
-        if (action is GameAction.Cancel or GameAction.Equipment or GameAction.Confirm) { Hide(); return; }
+        if (action is GameAction.Cancel or GameAction.Equipment) { Hide(); return; }
+        if (action == GameAction.Confirm) { Prepare(); return; }
         if (action == GameAction.Target) { _details.FocusPane = (_details.FocusPane + 1) % 3; _selectorOpen = false; }
         int step = action is GameAction.Left or GameAction.Up ? -1 : action is GameAction.Right or GameAction.Down ? 1 : 0;
         if (_details.FocusPane != 0 && action is GameAction.Up or GameAction.Down) _details.ScrollFocused(step * 112);
@@ -164,6 +179,7 @@ internal sealed partial class PartyStatusView : Control
 
     internal void HandlePointer(InputEvent @event)
     {
+        if (_actions.Open) { _actions.HandlePointer(@event); _requiresRelease = true; return; }
         if (!Open || @event is not (InputEventMouseButton or InputEventMouseMotion)) return;
         if (!GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree()) { Suspend(); return; }
         if (@event is InputEventMouseMotion motion) { _pointer.Moved(motion); return; }
@@ -179,7 +195,7 @@ internal sealed partial class PartyStatusView : Control
         string? id = null; Rect2 rect = default;
         if (button.ButtonIndex == MouseButton.Left)
         {
-            foreach (var (key, control) in new[] { ("close", _close), ("previous", _previous), ("next", _next), ("selector", _selector) })
+            foreach (var (key, control) in new[] { ("close", _close), ("previous", _previous), ("next", _next), ("selector", _selector), ("prepare", _prepare) })
                 if (control.GetGlobalRect().HasPoint(button.Position)) { id = key; rect = control.GetGlobalRect(); break; }
             if (_selectorOpen && _roster.GetGlobalRect().HasPoint(button.Position))
                 for (int i = 0; i < _count; i++)
@@ -188,6 +204,7 @@ internal sealed partial class PartyStatusView : Control
         string? clicked = _pointer.Read(button, id, rect, (_index, _selectorOpen, _roster.ScrollVertical));
         if (_requiresRelease || clicked is null) return;
         if (clicked == "close") { Hide(); return; }
+        if (clicked == "prepare") { Prepare(); return; }
         if (clicked == "selector") { _selectorOpen = !_selectorOpen; _details.FocusPane = 0; }
         else if (clicked is "previous" or "next") Select(_index + (clicked == "previous" ? -1 : 1));
         else { Select(int.Parse(clicked)); _selectorOpen = false; _details.FocusPane = 0; }
@@ -196,6 +213,7 @@ internal sealed partial class PartyStatusView : Control
 
     internal object Observe() => new { visible = IsVisibleInTree(), index = _index, count = _count, requiresRelease = _requiresRelease,
         header = _selector.Text, hint = _hint.Text, selectorOpen = _selectorOpen, focusPane = _details.FocusPane,
+        preparation = _actions.Observe(), prepareRect = Rect(_prepare),
         card = _details.Card(), layout = _details.Observe(), portraitId = _portraitId, portraitVisible = _portrait.IsVisibleInTree(),
         portraitRect = Rect(_portrait), recordRect = Rect(_recordFrame), goldRect = Rect(_goldFrame), kills = _killsValue.Text, defeats = _defeatsValue.Text, gold = _gold.Text,
         recordValues = new[] { _killsValue, _defeatsValue }.Select(label => new { text = label.Text,

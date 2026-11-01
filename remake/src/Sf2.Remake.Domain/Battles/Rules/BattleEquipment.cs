@@ -30,8 +30,7 @@ public static class BattleEquipment
     // RemoveItemBySlot shifts following words and refreshes from the live base.
     internal static BattleActorState RemoveItem(BattleActorState actor, int slot)
     {
-        var words = actor.SourceLoadout!.Items.ToList(); words.RemoveAt(slot); words.Add(127);
-        var loadout = new BattleSourceLoadout(words, actor.SourceLoadout.Spells);
+        var loadout = BattleInventory.Remove(actor.SourceLoadout!, slot);
         return actor.With(sourceLoadout: loadout, attack: actor.Definition.Equipment is null ? actor.Attack :
             (byte)Math.Min(200, actor.BaseAttack + Contribution(actor.Definition, loadout)));
     }
@@ -93,16 +92,22 @@ public static class BattleEquipment
     public static IReadOnlyList<BattleEquipmentChoice> Choices(BattleActorState actor)
     {
         RequireActor(actor);
-        var equipment = actor.Definition.Equipment!;
-        byte sourceClass = Sf2ClassRules.SourceClass(actor.Definition.ClassRule)!.Value;
-        int equipped = EquippedSlot(actor.Definition, actor.SourceLoadout);
+        return Choices(actor.Definition, actor.BaseAttack, actor.SourceLoadout!);
+    }
+
+    internal static IReadOnlyList<BattleEquipmentChoice> Choices(BattleActorDefinition definition, byte baseAttack, BattleSourceLoadout loadout)
+    {
+        ValidateLoadout(definition, loadout);
+        var equipment = definition.Equipment!;
+        byte sourceClass = Sf2ClassRules.SourceClass(definition.ClassRule)!.Value;
+        int equipped = EquippedSlot(definition, loadout);
         List<BattleEquipmentChoice> choices = [];
         for (int slot = 0; slot < 4; slot++)
-            if (equipment.Weapons.TryGetValue((byte)(actor.SourceLoadout!.Items[slot] & 127), out var weapon) &&
+            if (equipment.Weapons.TryGetValue((byte)(loadout.Items[slot] & 127), out var weapon) &&
                 (weapon.ClassMask & (1u << sourceClass)) != 0)
                 choices.Add(new(slot, weapon.Name, equipped == slot,
-                    (byte)Math.Min(200, actor.BaseAttack + weapon.AttackBonus), weapon.MinimumRange, weapon.MaximumRange));
-        if (choices.Count is > 0 and < 4) choices.Add(new(4, "Unarmed", equipped == 4, actor.BaseAttack, 1, 1));
+                    (byte)Math.Min(200, baseAttack + weapon.AttackBonus), weapon.MinimumRange, weapon.MaximumRange));
+        if (choices.Count is > 0 and < 4) choices.Add(new(4, "Unarmed", equipped == 4, baseAttack, 1, 1));
         return choices.AsReadOnly();
     }
 
@@ -110,9 +115,14 @@ public static class BattleEquipment
     {
         var choice = Choices(actor).SingleOrDefault(choice => choice.Slot == slot)
             ?? throw new BattleRuleException("equipment-slot", "equipment.slot");
-        var words = actor.SourceLoadout!.Items.Select((word, index) =>
-            actor.Definition.Equipment!.Weapons.ContainsKey((byte)(word & 127))
+        return actor.With(sourceLoadout: Equip(actor.Definition, actor.SourceLoadout!, slot), attack: choice.Attack);
+    }
+
+    internal static BattleSourceLoadout Equip(BattleActorDefinition definition, BattleSourceLoadout loadout, int slot)
+    {
+        var words = loadout.Items.Select((word, index) =>
+            definition.Equipment!.Weapons.ContainsKey((byte)(word & 127))
                 ? (ushort)((word & ~128) | (index == slot ? 128 : 0)) : word).ToArray();
-        return actor.With(sourceLoadout: new(words, actor.SourceLoadout.Spells), attack: choice.Attack);
+        return new(words, loadout.Spells);
     }
 }

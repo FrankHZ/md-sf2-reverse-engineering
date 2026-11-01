@@ -1,5 +1,25 @@
 # Gameplay Rules and Composition
 
+## Opening field inventory and use
+
+The [Standard field-preparation agreement](../application/opening-session-lifecycle.md#implemented-field-preparation)
+owns the finite #1422 outcome, original static policy and scope. `BattleInventory` shares immutable
+four-word Add/Remove semantics; `BattleEquipment` shares class/slot choices, loadout changes and
+derived attack. Battle callers retain their existing position, turn and profile admission. Application
+field transactions consume carried members directly and publish only through `GameSession`.
+
+Field Give supports self/change-hands and explicit full-pack exchange, including source return-slot
+adjustment after compaction and same-slot unequip. Give/Drop recompute through the live equipment
+accessor; retained progress and source words agree. Rare Drop uses the existing saturating Deals
+counter and preserves receipt flags. Unknown custody stays unknown and rejects a rare discard.
+
+`FieldRecovery` consumes separately admitted effects. HEAL/Medical Herb/Healing Seed have original
+NoEffect without cost or gameplay RNG. Antidote consumes even on no effect; DETOX1 pays its admitted
+MP cost with a zero clamp, even on no effect or low MP. Joined defeated/full-HP members can receive
+poison cure; it neither revives nor increases HP. Unrelated status bits, EXP and seeds survive.
+These are field caller rules, not battle target/EXP rules. Original runtime timing/reach remains
+Unknown. Rings/curses, stat boosters and later effects have no field consumer in this slice.
+
 ## Authored Jaro victory recruitment
 
 **High rigor:** [Issue #1371](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1371)

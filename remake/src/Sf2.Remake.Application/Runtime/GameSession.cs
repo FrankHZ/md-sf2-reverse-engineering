@@ -40,6 +40,7 @@ public sealed class GameSession
     }
     public EntityRef? QueryExplorationInteraction() => ExplorationInteractionQuery.Query(Current);
     public PartyDetails? QueryPartyDetails() => PartyDetailsQuery.Query(Definition, Current);
+    public FieldActionChoices QueryFieldActions(ActorRef actor) => FieldInventory.Query(Definition, Current, actor);
     public BattleChoicesSnapshot QueryBattleChoices() =>
         BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
 
@@ -138,6 +139,12 @@ public sealed class GameSession
         }
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
+        if (current.Mode == SessionMode.Exploration && envelope.Command is FieldCommand field)
+        {
+            var prepared = FieldCommands.Submit(Definition, current, field);
+            _current = prepared.Snapshot;
+            return prepared;
+        }
         if (envelope.Command is BattleEntrySkipCommand skip)
         {
             var skipped = BattleEntrySkip.Submit(Definition, current, skip, Rules);

@@ -1,6 +1,8 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Content.Scenarios;
 
 namespace Sf2.Remake.Content.Persistence;
 
@@ -26,6 +28,29 @@ internal static class OpeningLoadoutBindings
             encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness,
             encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser, encounter.Give, encounter.Discard, encounter.Poison));
         return new(admitted.Package, encounters, source, admitted.Exploration, admitted.BattleScenes, admitted.EncounterStarts.Values,
-            admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame) { Persistence = new Sf2OpeningRestore() };
+            admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
+        {
+            Persistence = new Sf2OpeningRestore(),
+            FieldPreparation = new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) ||
+                item.ItemTypeExpression == "CONSUMABLE").Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
+                    item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
+                    item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
+                FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 })
+                    .Select(spell => new FieldSpellChoice(spell.Spell, spell.DisplayName, spell.MpCost,
+                        spell.Code == "DETOX" ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect))),
+        };
+    }
+
+    private static IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>> FieldItems(Application.Content.Scenarios.PrivateBattleDefinitions source)
+    {
+        foreach (var (id, code, useSpell, level) in new (byte, string, string, byte)[]
+            { (0, "MEDICAL_HERB", "HEALIN", 1), (1, "HEALING_SEED", "HEALIN", 2), (3, "ANTIDOTE", "DETOX", 1) })
+        {
+            if (!source.Items.TryGetValue(id, out var item)) continue;
+            ScenarioJson.Require(item.Code == code && item.UseSpell == useSpell && item.UseSpellLevel == level &&
+                item.ItemTypeExpression == "CONSUMABLE" && item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
+                "source-field-item", "field.items");
+            yield return new(id, id == 3 ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect);
+        }
     }
 }

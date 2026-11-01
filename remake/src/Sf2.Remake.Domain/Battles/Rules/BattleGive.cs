@@ -95,10 +95,6 @@ public static class BattleGive
 
     private static BattleActorState Add(BattleActorState actor, ushort word)
     {
-        var words = actor.SourceLoadout!.Items.ToArray();
-        int slot = Array.FindIndex(words, value => (value & 127) == 127);
-        if (slot < 0) throw new BattleRuleException("give-full", "target.items");
-        words[slot] = (ushort)(word & 0x17F); // AddItem retains identity/broken only; admission excludes broken.
-        return actor.With(sourceLoadout: new(words, actor.SourceLoadout.Spells));
+        return actor.With(sourceLoadout: BattleInventory.Add(actor.SourceLoadout!, word));
     }
 }
