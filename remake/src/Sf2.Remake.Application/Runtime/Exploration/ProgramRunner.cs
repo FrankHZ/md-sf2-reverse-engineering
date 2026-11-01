@@ -125,6 +125,9 @@ internal static class ProgramRunner
                 var token = new WaitToken(checked(current.ObservationSequence + 1));
                 switch (instruction)
                 {
+                    case OpenChurch church when current.Exploration is not null:
+                        story = story.Copy(story.Cursor, new ChurchWait(token, church.Definition));
+                        break;
                     case CaravanInstruction caravan:
                         (active, story) = CaravanRuntime.Execute(definition, current, caravan, story, token);
                         break;
@@ -553,7 +556,7 @@ internal static class ProgramRunner
         {
             FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
-            DialogueWait or W1TextWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
+            DialogueWait or W1TextWait or ChoiceWait or ChurchWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or PhysicalEntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };

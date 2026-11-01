@@ -5,7 +5,7 @@
 **Standard rigor; #1423.** The outcome is safe exploration of Maps3/19/20/21 and the completed
 Battle01 return on Map57, with carried items and durable receipts. The endpoint, savepoints and
 later-campaign boundary remain in the [opening lifecycle](../application/opening-session-lifecycle.md).
-Services belong to #1424. Broader UI aesthetics, F506 and later campaign are excluded.
+The bounded Church consumer belongs to [#1424](../application/opening-session-lifecycle.md#implemented-opening-church). Broader UI aesthetics, F506 and later campaign are excluded.
 
 **Confirmed (static):** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, the pinned USA ROM,
 canonical map import, and the current `remake_exploration_{maps,programs,search}` lowering establish
@@ -19,7 +19,7 @@ records consumers and boundaries; a static consumer is not proof of natural orig
 
 | Source owner / admitted phase | Executable consumer and disposition |
 | --- | --- |
-| Map3 default `s2_entityevents.asm`: `Map3_EntityEvent0` through13, reused8,15 and default | Existing source-ordered flag branches, dialogue, choice, scripts and default return use the common program engine. The shared interaction query scans through consecutive source counter cells and excludes followers. Sarah/Chester interactions follow live membership/progress; no alternate party is constructed. Event13 names ChurchMenu: **missing service consumer (#1424)**, reported as unavailable before the handler starts. The bounded default/F501 event audit found no other unresolved native consumer after the named exclusions below. |
+| Map3 default `s2_entityevents.asm`: `Map3_EntityEvent0` through13, reused8,15 and default | Existing source-ordered flag branches, dialogue, choice, scripts and default return use the common program engine. The shared interaction query scans through consecutive source counter cells and excludes followers. Sarah/Chester interactions follow live membership/progress; no alternate party is constructed. Event13 names ChurchMenu: **implemented bounded service consumer (#1424)**, with ordered Raise/Cure and common Save after caller return. The bounded default/F501 event audit found no other unresolved native consumer after the named exclusions below. |
 | Map3 default `s3_zoneevents.asm`: Zone0,1,4,6,7,8 and default | West-exit guard, the F600-clear direct-castle refusal, joined castle request, home, school/Astral and messenger retain their source guards and continuations. `cs_51454` already uses `MoveEntityNextToPlayer`; no second movement consumer is added. Refusal/repeat and temporary flags remain live state. |
 | Map19 default and F501 setup entity/default/zone tables | Existing ordinary dialogue, castle gate, palace transfer and direct-return default zone are lowered. F501 selects its own population/handlers; no source setup is inferred from a remembered route. |
 | Map20 default and F501 setup entity/default/zone tables | Existing palace/royal, Astral first/revisit, refusal/re-prompt, follower and ordinary dialogue paths retain their common text/choice/motion consumers. The default zone returns. |
@@ -32,7 +32,7 @@ records consumers and boundaries; a static consumer is not proof of natural orig
 The bounded audit used the pinned canonical setup references and the prepared world from
 `remake/reference/inputs/battle01-to-battle02-programs.json`. Transitive call/jump/branch bodies of
 the default/F501 offered entity/default/zone/warp handlers have **no other unresolved native
-instruction** after excluding Church, declared frontier warps and Map21’s markerless later zone
+instruction** after excluding declared frontier warps and Map21’s markerless later zone
 body. Their admitted initializers have typed consumers; Map57’s native layout frontier is guarded
 by excluded F506. F609 bodies and the unused Map40 corpse handler remain future/unoffered; their
 remaining native instructions are not claimed as opening closure. Exact bounded selections and
@@ -87,3 +87,23 @@ rejection before grant, atomic receipts, source-order dispatch, full packs and c
 Private native acceptance uses New Game acquisition, save, process exit, fresh Continue/revisit and
 carriage into Battle01. Public fixtures contain only minimal authored facts. Completed diagnostic
 failures remain in the slice handoff; they are not erased by this inventory or by successful product play.
+
+## Opening service callers
+
+**Confirmed static inventory; #1424:** direct and transitive default/F501 handler inspection on
+Maps3/19/20/21 and returned57 resolves one opening service caller:
+`map03/mapsetups/s2_entityevents.asm:Map3_EntityEvent13` calls `j_ChurchMenu` then returns.
+The existing live interaction query reaches entity141 through the source counter cells. Map3 F501
+reuses this event table. Other offered entity/zone/default bodies in those phases contain no Shop
+call. The only `j_ShopMenu` sites in these five source map folders are in
+`map03/mapsetups/s2_entityevents_609.asm` (two sites); its Church site is excluded with that setup.
+Maps19/20/21 have no direct Church/Shop call; Map57 has no service table to invent. The prepared
+F609 Church instruction is structural lowering, not opening admission.
+
+Required Church Raise/Cure and settled common Save have a
+[typed live consumer](../application/opening-session-lifecycle.md#implemented-opening-church).
+The ordinary producer omits the temporary unavailable marker, and upgrading an existing world
+explicitly removes its stale key. Buy/sell, Repair, Promotion, curse removal and a shop/Deals UI
+are **deferred outside this opening outcome**. No stock list or new service/campaign destination
+is fabricated. This inventory establishes the admitted remake consumer boundary; original natural
+service admission/return timing and the obstructed shop chest's original access remain **Unknown**.

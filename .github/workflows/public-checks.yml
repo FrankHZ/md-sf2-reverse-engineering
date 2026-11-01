@@ -51,7 +51,7 @@ jobs:
             if ($changedPath -like 'tools/h4-comparison/*' -or $changedPath -in @('src/sf2tool/h4_dotnet.py', 'src/sf2tool/remake_h4_comparison.py', 'src/sf2tool/dotnet_environment.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/verification_engine_paths.py', '.github/workflows/public-checks.yml')) {
               $h4 = $true
             }
-            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_exploration_content.py', 'src/sf2tool/remake_exploration_search.py', 'src/sf2tool/verification_engine_paths.py', 'src/sf2tool/remake_battle_scene_content.py', 'remake/reference/inputs/map3-programs.json')) {
+            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_exploration_content.py', 'src/sf2tool/remake_exploration_search.py', 'src/sf2tool/remake_exploration_services.py', 'src/sf2tool/verification_engine_paths.py', 'src/sf2tool/remake_battle_scene_content.py', 'remake/reference/inputs/map3-programs.json')) {
               $engine = $true
               $adapter = $true
               $research = $true

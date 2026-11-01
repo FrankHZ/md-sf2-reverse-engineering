@@ -471,6 +471,11 @@ internal static class ExplorationContentReader
         string opcode = Text(row, "op");
         switch (opcode)
         {
+            case "church":
+                Object(row, opcode, "op", "raisePerLevel", "promotedExtra", "raisedHpCap", "poisonCost", "stunCost");
+                return new OpenChurch(new((ushort)Number(row, "raisePerLevel", 1, 65535),
+                    (ushort)Number(row, "promotedExtra", 0, 65535), (ushort)Number(row, "raisedHpCap", 1, 65535),
+                    (ushort)Number(row, "poisonCost", 1, 65535), (ushort)Number(row, "stunCost", 1, 65535)));
             case "convert-battle-actor":
                 Object(row, opcode, "op", "enemySlot", "allySlot");
                 return new ConvertBattleActor(Number(row, "enemySlot", 128, 159), Number(row, "allySlot", 0, 29));

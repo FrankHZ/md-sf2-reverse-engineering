@@ -11,6 +11,10 @@ internal static class OpeningLoadoutBindings
     internal static ScenarioDefinition Bind(ScenarioDefinition admitted)
     {
         var source = admitted.PrivateDefinitions!;
+        ScenarioJson.Require(admitted.Exploration!.Programs.TryGetValue("map3-entityevent13", out var church) &&
+            church.Instructions is [OpenChurch { Definition: { RaisePerLevel: 10, PromotedExtra: 200, RaisedHpCap: 200, PoisonCost: 10, StunCost: 20 } }, EndProgram] &&
+            admitted.Exploration.Maps[new("map-3")].Events.Any(row => row.Program?.Program == church.Id && row.Unavailable is null),
+            "opening-church-required", "world.programs");
         // Product opening content must include the source search/receipt surface before
         // either New Game or Continue can publish a session. Saves already carry its flags.
         var openingMaps = new[] { "map-3", "map-19", "map-20", "map-21", "map-57" };

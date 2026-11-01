@@ -1750,3 +1750,20 @@ counter scan for the hint and command admission; a regular intervening block end
 This connects opening merchant dialogue and the priest dependency without inventing a shop or
 church transaction. Bounds remain the engine's finite map domain; original unchecked lookup and
 natural interaction timing remain separately Unknown.
+
+## Church transactions and caller return
+
+`OpenChurch` installs a typed `ChurchWait` at the next program instruction. It preserves the
+program/call/event stack. Service commands carry its token; the session envelope owns revision
+admission. Ordered immutable offers describe the current joined party. An answer rechecks the live
+offer, then publishes payment and effect in one snapshot via the existing carried-party replacement.
+Later offers for the same member use its newly committed HP/status, so poison then stun does not
+reuse a stale status word. Query and decline leave gameplay state unchanged. Other program input,
+field preparation/Search and Save capture cannot consume a service wait.
+
+Leaving invokes `ProgramRunner` and the actual caller/event cleanup. Its result uses the same host
+consumption path as ordinary input, including audio, movement/wait reset and lifecycle/error handling.
+A retained-snapshot rejection stays in the menu; a continuation failure after state advances remains
+visible through ordinary error presentation. Service Save is disposable host intent until actual
+settled field return, then opens the existing eligible-save flow. The interpreter or suspended
+service is never persisted. See [cost/status policy and limits](opening-session-lifecycle.md#implemented-opening-church).

@@ -9,6 +9,7 @@ from typing import Any
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.remake_exploration_joins import join_service
+from sf2tool.remake_exploration_services import church_service
 
 
 def _location(program: str, instruction: int = 0) -> dict[str, Any]:
@@ -455,6 +456,8 @@ class OriginalPrograms:
             ):
                 # These stores are represented by the following typed dialogue speaker binding.
                 pass
+            elif op == "jsr" and args == ["j_ChurchMenu"]:
+                result.append(church_service(self))
             elif op == "jsr" and args == ["GetEntityPortaitAndSpeechSfx"]:
                 speaker = self.entity(str(registers["d0"]))
             elif op == "jsr" and args == ["DisplayCurrentPortrait"]:
