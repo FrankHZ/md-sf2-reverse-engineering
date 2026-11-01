@@ -14,8 +14,9 @@ optional source branch or later campaign. [UI gaps](opening-ui-gaps.md) retains 
 The runtime base is accepted `cf7a511f2d909c40c74cb72f2c828319d81f9d29`, tree
 `97f7693249ef33c08e18a97b21c05ed7552a26b2`. The final acceptance changes documentation only;
 production, admitted content rules and the retained built host are unchanged. The observations below
-are executor evidence. Independent review and integration status belong to the #1425 pull request,
-linked from the Issue; executor completion does not assert main-gate approval or close #1418.
+are executor evidence. [PR1432](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1432) owns
+independent review and integration status; executor completion does not assert main-gate approval
+or close #1418.
 
 This is remake product evidence. Original facts retain their named source/H2/H3 owners and pinned
 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` plus the registered USA input identity.
