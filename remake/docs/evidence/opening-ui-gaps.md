@@ -1,9 +1,10 @@
 # Opening UI Gap Assessment
 
-The connected private opening is playable from a controlled Map3 start through story/exploration,
-tower entry, Battle01 and usable return. That acceptance does not establish a complete product
-opening or a finished UI. The remaining product gaps include settings/discoverability UX, broader field/service coverage,
-and whole-opening human/aesthetic approval. A–E now have accepted bounded deliveries: world scale,
+The connected private product opening offers ordinary New Game, field preparation, Search/pickups,
+required Church services, Battle01 and usable return, with explicit Save/Quit and fresh-process Continue.
+The [composed acceptance](opening-loop-acceptance.md) records its state/resource and resumed-play boundary.
+Remaining gaps include settings/discoverability UX, services beyond the admitted opening, and
+whole-opening human/aesthetic approval. A–E now have accepted bounded deliveries: world scale,
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
@@ -19,13 +20,13 @@ Cross-scene dependencies and concurrent candidate acceptance require explicit ev
 
 The High-rigor [opening lifecycle and feature agreement](../application/opening-session-lifecycle.md)
 owns New Game, state recovery and the implementation-versus-integration feature map under #1418.
-Search/receipts and reachable opening branches are scoped by #1423; necessary church/shop services
-by #1424. Imported NPC events or a successful main route do not establish those consumers. Their
-product acceptance includes real restart continuation in #1425; this UI matrix retains human
+The accepted [branch inventory](../content/opening-branch-inventory.md) bounds Search/receipts and
+required Church services; no opening Shop caller is admitted. Their linked observations and
+[final composition](opening-loop-acceptance.md) establish the bounded product route; this UI matrix retains human
 discoverability/aesthetic Unknowns and does not duplicate the gameplay inventory.
 
 Current delivery status is calibrated against accepted main
-[`f2a200da44cb597e50f50633559b5f21cb8f7f13`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/f2a200da44cb597e50f50633559b5f21cb8f7f13).
+[`cf7a511f2d909c40c74cb72f2c828319d81f9d29`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/cf7a511f2d909c40c74cb72f2c828319d81f9d29).
 The original #1385 static assessment used
 [`5138b532c4d4ff84dd13ca97d5a02892448f0e69`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/5138b532c4d4ff84dd13ca97d5a02892448f0e69);
 its findings and historical observations retain their own boundaries. Current source links route to
@@ -34,8 +35,9 @@ fix are merged in [PR1413](https://github.com/FrankHZ/md-sf2-reverse-engineering
 and [PR1415](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1415). E7's details extension is independently accepted; [PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417) owns integration
 and independent acceptance evidence. This document adds no original-game finding.
 
-The route is controlled Map3 opening → castle/palace/Astral and exploration → tower before/load/start
-→ Battle01 → outcome and field return. Title/New Game now have a separately implemented product entry under #1420 and its
+The current product route is New Game → Map3 preparation/Search/Church → castle/palace/Astral
+→ tower before/load/start → Battle01 → usable return → Save/Quit → fresh-process Continue.
+The original controlled Map3 assessment retains its narrower scope. Entry belongs to #1420 and its
 [native observation](../verification/host.md#opening-new-game-observation). Save/Continue now have a separate
 [restart boundary](../verification/host.md#opening-save-and-continue); the earlier controlled assessment
 does not establish it. Later chapters, broader gameplay, asset acquisition and complete art direction remain outside this assessment.
@@ -76,7 +78,8 @@ there is no separately dispatched implementation Issue yet.
 | E5 · Hold direction, release, lose focus; then use a menu | Continuous mapped field walking is **accepted, bounded**: fresh step, 220 ms initial delay, 120 ms repeat without catch-up. Ordinary motion waits retain the hold; release/lifecycle/story handoffs stop future steps. | Bounded engineering observations do not establish full opening experience. **Unknown:** physical device release outside the focused window. Choices/menu retain edge input; no original timing claim. | **Confirmed structure and bounded executor observations:** [control owner](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk), covering mapped keys/stick, real native focus transfer and handoffs. Independent attempts encountered external focus loss; completed failures remain with merged [PR #1390](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1390). | **P1.** [B](#b--walk-to-a-character-talk-and-regain-control), [#1389](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1389); independent of #689 and viewport choice. |
 | E6 · Face an NPC and try to interact | Binding-derived Confirm + Talk appears only for a current legal interaction offer: **accepted, bounded**. Confirm requeries; Interact rechecks the same target/event predicate. | No fabricated names or new interactions. **Unknown:** broader prompt discoverability and opening-route experience; cue placement uses A's accepted baseline. | **Confirmed structure and bounded engineering observations:** [shared Application query and host observation](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk); tests cover visibility/range/facing/flag/busy changes; executor host observations cover facing/leaving/busy hints and dialogue. Accepted integration belongs to [PR #1390](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1390). | **P1.** [B](#b--walk-to-a-character-talk-and-regain-control), [#1389](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1389); no Search/acquisition. |
 | E7 · Inspect party/status or open a field menu | **Accepted, bounded inspection:** E / Pad Start opens Party Status with source-grouped member details and mapped/mouse browsing. **Implemented, bounded preparation:** Confirm/Prepare opens Equip, Give/exchange, Use, Magic and Drop. | Original HEAL/recovery-item NoEffect is explicit; poison cure, payment, confirmation and Cancel follow the [field policy](../application/opening-session-lifecycle.md#implemented-field-preparation). Bounded opening Search and Church are implemented below; human discoverability, all-device and whole-opening approval remain separate/Unknown. | [E7 agreement](../godot/presentation.md#party-details-agreement), [inspection evidence](../verification/host.md#party-details-observation), [field preparation observations](../verification/host.md#opening-field-preparation). Inspection/preview writes no gameplay state; confirmed transactions publish through the session. | **P2; [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416) inspection and [#1422](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1422) preparation.** [PR1429](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1429) owns preparation review/integration status. [#1421](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1421) owns implemented Save/Continue. These subsets do not close [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438). |
-| E8 · Opening Church and service Save | **Implemented, bounded:** actual priest/counter input, ordered Raise/Cure, explicit cost/confirm/decline/results and common Save after real caller return. Mapped keyboard/controller and mouse rows share the live service wait. | No reachable opening Shop caller; buy/sell, Repair, Promotion and curse removal deferred. Original cadence/music/exhausted-sprite parity, human aesthetics and whole-opening acceptance remain separate. | [Service policy](../application/opening-session-lifecycle.md#implemented-opening-church), [source caller inventory](../content/opening-branch-inventory.md#opening-service-callers), [native paid recovery/restart](../verification/host.md#opening-church-services). | #1424 implements this subset; independent composed opening acceptance remains #1425 and aesthetic approval remains #438. |
+| E8 · Opening Church and service Save | **Implemented, bounded:** actual priest/counter input, ordered Raise/Cure, explicit cost/confirm/decline/results and common Save after real caller return. Mapped keyboard/controller and mouse rows share the live service wait. | No reachable opening Shop caller; buy/sell, Repair, Promotion and curse removal deferred. Original cadence/music/exhausted-sprite parity and human aesthetics remain separate; the [composed route](opening-loop-acceptance.md) owns engineering acceptance. | [Service policy](../application/opening-session-lifecycle.md#implemented-opening-church), [source caller inventory](../content/opening-branch-inventory.md#opening-service-callers), [native paid recovery/restart](../verification/host.md#opening-church-services). | #1424 implements this subset; [#1425 composition and integration status](opening-loop-acceptance.md) separate executor observations from main-gate acceptance. Aesthetic approval remains #438. |
+| E9 · Search a reachable object or description | **Implemented, bounded:** mapped Confirm/Search reads the faced source marker/description and returns dismissible feedback; pickups publish carried item words and the source receipt atomically. | Repeat/revisit/savepoint reconstruction retain receipts; full packs preserve the reward for retry. The obstructed shop chest and future destinations remain explicitly bounded, with original natural reach/timing Unknown. | [Branch inventory](../content/opening-branch-inventory.md), [Search observation](../verification/field-programs.md#opening-search-and-receipts) and [composed route](opening-loop-acceptance.md). | #1423 owns Search; #1425 composes pickup and description with preparation, Church, victory and restart. Human discoverability remains #438. |
 
 ## Dialogue and cutscene matrix
 
@@ -143,8 +146,9 @@ claiming natural full-opening timing or whole-game UI acceptance.
 ## Delivered slices and remaining acceptance
 
 A–E are merged bounded deliveries under #438, with the limits below. Keep their existing owners;
-there is no pending A–E implementation batch or reason to open duplicate tickets. Product decisions
-about entry/settings/persistence and broader human/aesthetic acceptance remain open; link #1369
+there is no pending A–E implementation batch or reason to open duplicate tickets. Settings UI/persistence
+decisions and broader human/aesthetic acceptance remain open; opening entry and game-progress
+persistence have their bounded #1418 consumers. Link #1369
 when its engine scope is actually needed.
 
 ### A · See the connected world at the chosen baseline
@@ -271,6 +275,7 @@ The current calibration uses the merged PRs above and the current presentation o
 warning records remain intact. The [audio-lifetime investigation](../verification/host.md#audio-resource-lifetime-observation)
 confirms bounded shutdown retention and no accumulation in its named runtime sequence; it does not
 individually explain every earlier warning or establish universally clean exit. B7 observations and
-limits belong to its linked host recipe. Title/New Game/Continue, settings UI/persistence, field
-Use/Give/Drop/Equip/spell actions, all-device coverage and whole-opening human/aesthetic approval
-remain explicit gaps; #438 stays open.
+limits belong to its linked host recipe. Title/New Game/Continue and bounded field preparation,
+Search and Church are implemented with their linked native observations and composed restart route.
+Settings UI/persistence, broader service/campaign scope, all-device coverage and whole-opening
+human/aesthetic approval remain explicit gaps; #438 stays open.

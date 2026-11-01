@@ -2,6 +2,10 @@
 
 Startup, logical input and accessibility checks observe the actual ordinary Godot host.
 
+The [composed opening-loop acceptance](../evidence/opening-loop-acceptance.md) joins the entry,
+field preparation, Search, Church, Battle01 outcome and restart recipes below. It owns the bounded
+end-to-end reproduction, retained child evidence and final state/resource comparison.
+
 Load the owning worktree's private-input configuration and protected SDK/Godot environment from
 [development](../development-and-verification.md#locked-net-workflow) in the same launching process.
 Unless a recipe explicitly changes directory, commands run from the repository root. Reuse the
