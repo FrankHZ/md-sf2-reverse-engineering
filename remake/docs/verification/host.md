@@ -1583,7 +1583,7 @@ no per-frame capture, screenshot, teleport or later-state injection is used.
   and takes no payment. A held click interrupted by view hide and Confirm during pause cannot submit
   after resumption. A fresh mapped action still works, then actual Quit closes the process.
 
-The accepted local runs (`pilot-03`, `raise-02`, `continue-01`) have empty stderr. The source-world
+The accepted local runs (`pilot-03`, `raise-02`, `continue-guard`) have empty stderr. The source-world
 supplement was exercised from the accepted #1423 world, including removal of stale unavailable keys.
 Positive naturally arising poison/stun is **Unknown** for the opening; its cost/status behavior is
 covered by changed-state engine assertions. Original admission/return timing, service music/window

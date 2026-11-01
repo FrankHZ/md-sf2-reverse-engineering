@@ -142,6 +142,7 @@ public sealed partial class ExplorationSessionView : Control
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
         _church?.Suspend();
+        if (PresentationFailure is not null) { _church?.Hide(); _churchSaveRequested = false; }
         SuspendEntrySkip();
         CancelFieldWait();
         _tickTime = 0;
@@ -508,6 +509,8 @@ public sealed partial class ExplorationSessionView : Control
 
     private void PresentChurch()
     {
+        if (PresentationFailure is not null)
+        { _church.Hide(); _church.Suspend(); _churchSaveRequested = false; return; }
         _church.Present(_session!, _input, (command, revision) => Send(command, revision, recoverable: true));
         if (_churchSaveRequested && _session!.Current.CanWaitAtInput)
         { _churchSaveRequested = false; RequestServiceSave?.Invoke(); }
