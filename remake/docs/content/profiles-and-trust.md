@@ -777,7 +777,8 @@ ignored file beside `SF2_PRIVATE_EXPLORATION_CONTENT`. Keep the original input. 
 repository-root supplement reuses its embedded assets and contained relative encounter files;
 it does not export another asset tree. It accepts an already palette-complete input as well.
 The named source text program is the bounded fainted-guard consumer correction.
-Other compiled program differences, including asset/audio aliases, stay with the original world.
+The Church callers also receive their typed service instruction. Other compiled program differences,
+including asset/audio aliases, stay with the original world.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
@@ -815,6 +816,8 @@ for row in world["world"]["maps"]:
     for old_event, new_event in zip(row["events"], compiled["events"], strict=True):
         if "unavailable" in new_event:
             old_event["unavailable"] = new_event["unavailable"]
+        else:
+            old_event.pop("unavailable", None)
     for old_setup, new_setup in zip(row.get("setups", []), compiled.get("setups", []), strict=True):
         assert old_setup["id"] == new_setup["id"]
         if "search" in new_setup:
@@ -822,9 +825,13 @@ for row in world["world"]["maps"]:
         for old_event, new_event in zip(old_setup["events"], new_setup["events"], strict=True):
             if "unavailable" in new_event:
                 old_event["unavailable"] = new_event["unavailable"]
+            else:
+                old_event.pop("unavailable", None)
 programs = {row["id"]: row for row in new["world"]["programs"]}
 for index, row in enumerate(world["world"]["programs"]):
-    if row["id"] in ("map21-1f5-entityevent0",):
+    if row["id"] in ("map21-1f5-entityevent0",) or any(
+        instruction["op"] == "church" for instruction in programs.get(row["id"], {}).get("instructions", [])
+    ):
         world["world"]["programs"][index] = programs[row["id"]]
 compiler = OriginalPrograms({"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream)
 compiler.sources.clear()
@@ -848,7 +855,9 @@ world["provenance"]["sources"] = list(sources.values())
 with target.open("x", encoding="utf-8", newline="\n") as output:
     json.dump(world, output, ensure_ascii=False, separators=(",", ":"))
 assert target.stat().st_size <= 128 * 1024 * 1024
-print(json.dumps({"searchMaps": [row["id"] for row in world["world"]["maps"] if "search" in row], "outputBytes": target.stat().st_size}))
+print(json.dumps({"searchMaps": [row["id"] for row in world["world"]["maps"] if "search" in row],
+    "churchPrograms": [row["id"] for row in world["world"]["programs"] if any(op["op"] == "church" for op in row["instructions"])],
+    "outputBytes": target.stat().st_size}))
 '@ | uv run python -X utf8 - $pinnedUpstream $canonicalMapPath $freshWorldPath
 if ($LASTEXITCODE -ne 0) { throw 'Opening metadata preparation failed' }
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorldPath
@@ -858,7 +867,10 @@ This bounded supplement reads the existing approximately126MB world and writes o
 world plus a small logic intermediate. Time and memory are O(input bytes); expected peak memory is
 below1GiB. Budget at least150MB of free output space plus build/report headroom before running.
 The original, relative inputs and earlier evidence remain intact. Search metadata and its named
-text consumers are required product content; services remain separate.
+text and Church consumers are required product content. Product New Game/Continue reject an old
+unavailable/native Church caller with `opening-church-required`; supplement the existing world first.
+The supplement removes stale `unavailable` keys as well as copying present keys, so upgrading an
+already prepared #1423 world reaches the priest. The original source world remains unchanged.
 
 ### Opening save admission
 
@@ -913,3 +925,19 @@ rejects before New Game or Continue publication. Static battle content selection
 this is content availability, not possession. Its map-scoped NoEffect policy is separate from
 battle retreat and other maps. The existing save's source flags and item words reconstruct receipt
 state without a format/revision expansion. See [state authority](../application/opening-session-lifecycle.md#implemented-opening-search).
+
+### Opening Church admission
+
+The producer lowers `j_ChurchMenu` to a typed `church` instruction. Its positive bounded operands
+come from pinned `sf2enums.asm`: Raise per-level10, promoted surcharge200, HP cap200, poison10 and
+stun20. The two source Church action files join the existing provenance list. The instruction reader
+validates its exact shape and operand ranges; the product opening binding additionally requires the
+known source caller's typed instruction/end, matching source operands and available mapped event.
+Old native/unavailable caller content rejects with `opening-church-required` before publication.
+This is Content-specific trust; generic runtime contains no opening map/caller/story identifiers.
+
+The ordinary metadata preparation emits service data and omits the temporary marker. The existing
+supplement upgrades only named text/Church programs and map metadata, explicitly removing absent
+`unavailable` keys. Embedded assets/audio aliases and contained relative encounter inputs stay with
+the selected world. One derivative remains within the128MiB ceiling; no asset re-export, stock or
+save schema is introduced. F609 remains outside opening reach even when its Church body is lowered.

@@ -177,15 +177,6 @@ def compile_maps(
                             {
                                 "kind": "interact",
                                 **common,
-                                **(
-                                    {"unavailable": "Church services are not available yet."}
-                                    if any(
-                                        op["opcode"] == "jsr"
-                                        and op["operandText"] == "j_ChurchMenu"
-                                        for op in compiler.raw[symbol]["operations"]
-                                    )
-                                    else {}
-                                ),
                                 "entity": compiler.entity(args[0])
                                 if source_row["opcode"] == macro
                                 else None,

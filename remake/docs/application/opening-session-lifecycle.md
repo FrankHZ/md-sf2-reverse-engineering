@@ -31,8 +31,8 @@ copy/delete UI, migration framework, name editor, promotion or Battle03 ending i
 New Game never overwrites a slot; only an explicit confirmed Save does. Quit warns about unsaved
 progress and offers cancel; it does not secretly autosave.
 
-Current milestone: close bounded Search and opening branch exploration, then the separately owned
-service consumers and whole-opening acceptance. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
+Current milestone: independently review the bounded Church/service composition, then perform the
+whole-opening acceptance. Main-gate owns Issue dispatch, exact production ownership and integration. Reassess High
 rigor at the persistence review and final restart acceptance; ordinary inventory/UI slices can
 use Standard once their state boundary is fixed. No unresolved aesthetic choice gates this design.
 
@@ -51,7 +51,7 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 | Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL; Antidote/DETOX1 cure poison with caller-specific payment. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
 | Search/descriptions/chests/ground items | **Implemented, bounded:** explicit faced-cell Search consumes validated opening descriptions and placements, shared carried inventory and source item flags. Full packs retain the reward; revisits and savepoint reconstruction retain opened chests. | #1423; [Search boundary](#implemented-opening-search) and [branch inventory](../content/opening-branch-inventory.md). Original input/presentation cadence remains Unknown. |
 | Receipts/Deals | [BattleItemCustody](../../src/Sf2.Remake.Domain/Battles/State/BattleItemCustody.cs) owns authored battle drop once-flags and Deals; carried through field party. Null means unobserved, not empty. | **Distinct authorities:** field receipts use the source placement flag in durable story progress; battle custody retains its own drop flags/Deals. Field Search neither adds battle once-flags nor replaces null custody. Services remain #1424. |
-| Church/shop | Map3 entity event13 names ChurchMenu in accepted source. Generic native calls do not implement service transactions or a UI. | **Missing behavior/integration:** raise, supported cure and common Save entry first; buy/sell only at verified reachable opening shops. #1424. No shop is invented because inventory rules exist. |
+| Church/shop | **Implemented, bounded:** Map3 event13 opens typed Church Raise/Cure and a common Save entry after caller return. | #1424; [service boundary](#implemented-opening-church). No shop caller is admitted in the bounded opening phases; buy/sell remains deferred. |
 | Battle01/outcomes | Connected before/load/start, combat, growth, victory Map57 return and ordinary defeat Map3 return are bounded implemented capabilities. | Preserve reward/join/flag order and once-only outcome commits. Continue must prove actual play through this existing boundary. |
 | Later encounters | Selected Battle02/Yeel behavior exists independently. | Do not claim later campaign, private battle equipment or battle suspend from this design. Shared records must remain compatible or reject explicitly. |
 
@@ -65,7 +65,7 @@ success is not all-branch closure. The bounded inspection is of these selected m
 | Location/phase | Established implementation versus remaining closure |
 | --- | --- |
 | Map3 house, Sarah, school stairs, Zone7, messenger and Zone8 | Connected programs and joins exist. Save anchors must distinguish pre-messenger and F603-set phases; no reload may replay JOIN or grant starting items. |
-| Map3 optional NPCs/default events, descriptions and two item placements | Source table inventory is established; natural optionality/reach of every branch is **Unknown**. Lowered ordinary dialogue and typed Search are connected. ChurchMenu reports its #1424 dependency before entering a handler. The [branch inventory](../content/opening-branch-inventory.md) separates executable consumers, future boundaries and original Unknowns. |
+| Map3 optional NPCs/default events, descriptions and two item placements | Source table inventory is established; natural optionality/reach of every branch is **Unknown**. Lowered ordinary dialogue and typed Search are connected. ChurchMenu uses the typed service consumer and returns through its actual handler. The [branch inventory](../content/opening-branch-inventory.md) separates executable consumers, future boundaries and original Unknowns. |
 | F600-clear direct castle approach / `cs_51454` | The old blanket `moveNextToPlayer` gap is stale: [compiler](../../../src/sf2tool/remake_exploration_programs.py) emits move/waits/facing; [ProgramRunner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) executes `MoveEntityNextToPlayer`. **Confirmed structure**, not proof this whole optional route now completes. Check its remaining native calls and actual return, without fabricating F600 or implementing the opcode twice. |
 | Map19 castle and Map20 palace/Astral revisit | First/repeat visits, refusal/re-prompt and follower variants have bounded acceptance in [session programs](session-and-programs.md#castle-palace-astral-and-tower). Other NPC branches/alternate map setups are not promoted to accepted by that group. Interior save is deferred, not disabled traversal. |
 | Map21 guard, tower and Battle01 | Accepted conditional guard and battle admission remain authoritative. A save attempt during guard motion, entry or combat rejects; it never completes the program or sets unlock flags. |
@@ -479,3 +479,56 @@ Angel Wing is admitted as opening immutable content and can be acquired, given, 
 into Battle01. On these five non-overworld maps only, field Use has the source NoEffect behavior
 and consumes nothing. Other maps require their separately admitted effect policy; no new Battle01
 retreat profile or later Egress behavior is enabled.
+
+## Implemented opening Church
+
+**Standard transactional scope; #1424, within this owner's High recovery agreement.** The outcome
+is the real Map3 default/F501 Church caller, ordered Raise/supported Cure, usable return and the
+existing Save/Continue boundary. The [caller inventory](../content/opening-branch-inventory.md#opening-service-callers)
+finds no admitted opening shop. Buy/sell, Deals trading, Repair, Promotion, curse removal, Caravan,
+later setups/campaign and original service presentation/timing are excluded.
+
+Content lowers `j_ChurchMenu` to `OpenChurch(ChurchDefinition)` with immutable source operands.
+`ChurchWait` owns the service menu and ordered immutable offers; its cursor retains the actual caller.
+`GameSession` admits each answer against session/revision and a matching live token/offer. Querying
+or selecting an action cannot change gameplay resources. Decline advances the source-ordered scan;
+closing the menu resumes its program and event cleanup. No battle initialization or replacement
+party occurs. The view owns focus/gestures only; failures that retain the snapshot remain inline,
+while a failed real continuation uses the host's ordinary stopped-scene error path.
+
+Raise skips living members and visits joined members in source member order. Cost is current level
+×10 plus200 when the admitted member definition is promoted. Exact funds are affordable. An accepted
+transaction deducts gold and sets HP to `min(current maximum HP,200)` together, retaining MP,
+status, progress/accounting, item words/custody and both RNG channels. Decline or insufficient gold
+keeps all resources; Raise continues to the next dead member. Cure scans all poison members before
+all stunned members, including dead members. Poison costs10 and clears only bit2; stun costs20
+and clears only bit1. Decline advances; insufficient funds skips the rest of that status family,
+as in the source. The next family still runs. Curse bits are preserved with an explicit unavailable
+notice. Supported status recovery never revives or changes EXP/RNG. Missing accounting, illegal,
+stale and duplicate confirmations reject before payment and preserve usable controls.
+
+**Confirmed source/seam boundary:** [service interactions](../../../docs/design/contracts/party/service-interactions.md)
+and its named H2/H3 owners establish these ordered cost/payment/recovery rules at pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, `churchactions_1.asm`/`churchactions_2.asm` and
+`sf2enums.asm`. This implementation does not establish original natural caller reach or presentation.
+The admitted opening field allocator already projects normal ally sprites independently of HP;
+raising retains those live entities, aliases and sprites. It does not emulate original exhausted
+sprite selection or claim the full original `UpdateAllyMapsprite` lifecycle. Authored Caravan's
+separate defeated appearance policy is outside this admission.
+
+Save from Church requests close first. The host waits for actual program/event/portrait return to
+settled field input, then uses the existing Save menu, music-history observation, eligibility query,
+slot confirmation and format. A service wait is never captured. A settled but ineligible location
+or transient save condition explains the existing reason and preserves the live session. Savepoint
+locations/recipes and format/rule revisions remain unchanged: service payments/resources already
+belong to the saved party. Lifecycle replacement discards old view/save intent; focus/hide/pause
+suspends service gestures. New Game/Continue require the admitted Church program and the documented
+[world supplement](../content/profiles-and-trust.md#opening-new-game-admission) explicitly clears the
+old unavailable marker.
+
+Acceptance combines [actual engine behavior](../../tests/Sf2.Remake.Engine.Tests/FieldServiceTests.cs),
+the affected existing inventory/recovery/restore consumers, direct pinned source checks and the
+[native Church observation](../verification/host.md#opening-church-services). Changed valid party
+levels, caps, promotion, dead/status combinations and content costs are covered; a fixed route does
+not define legality. Positive poison/stun naturally arising in the opening and original service
+input/music/portrait cadence remain **Unknown**. Independent whole-opening acceptance is #1425.

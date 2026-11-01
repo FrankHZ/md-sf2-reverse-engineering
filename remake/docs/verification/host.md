@@ -1543,3 +1543,51 @@ No source state was injected or acceptance condition weakened. Initial compile/f
 their focused passing corrections remain in the Issue's local handoff. The completed #1421 broad
 private aggregate (1692 pass/20 fail/1 skip) and nine remaining controlled-start full-fade-state failures
 remain preserved; this slice does not rerun that aggregate or turn those diagnostics into passes.
+
+## Opening Church services
+
+The [#1424 agreement](../application/opening-session-lifecycle.md#implemented-opening-church) owns
+service legality and exclusions. [Caller inventory](../content/opening-branch-inventory.md#opening-service-callers)
+keeps excluded F609 shops separate from the admitted default/F501 priest. Reproduce the direct
+source boundary with `uv run sf2 h2 common-menus --upstream-path <pinned-source> --output-path <ignored-output>`;
+that source selection needs its matching retained H1 listing. The pinned read-only retained source/
+listing may be selected instead of rebuilding or copying it. Missing default selection/listing is
+not a ROM or gameplay failure. No original H3 observation is added by this slice.
+
+After same-process environment setup and the [documented metadata supplement](../content/profiles-and-trust.md#opening-new-game-admission),
+select the supplemented world for `SF2_PRIVATE_EXPLORATION_CONTENT`. Run `uv run sf2 verify engine`
+with optional private assertions unselected, `uv run sf2 verify adapter`, and the affected private
+behavior group directly with that world. `FieldServiceTests` covers source-order offers, changed
+current progress/content, exact/insufficient funds, decline/retry, dead/status combinations,
+missing accounting, stale/duplicate confirmation and attributed real-caller failure. It does not
+test a verifier, UI helper or reference route. Preserve completed failures and use focused corrections.
+
+The retained native driver is `local/issue1424/run-native.ps1 -Run <fresh-output> -EntryMode <phase>
+-Namespace <disposable-name>`, with `church-native.gd` extending existing #1423/#1422 mapped-input
+navigation. Outputs stay under the owning worktree; saves use the configured external disposable
+namespace. One existing Godot project/installation, serial processes and no asset exports suffice.
+Expected input/output is one125.8MB world derivative plus compact semantic reports below10MiB;
+allow at least150MB output headroom and replan below1GB free. A run is bounded to two minutes;
+no per-frame capture, screenshot, teleport or later-state injection is used.
+
+- `pilot` uses ordinary New Game, actual counter/priest entry, no-applicable Raise/Cure, keyboard,
+  controller and mouse selection, caller return, service Save, slot confirmation and actual Quit.
+- `raise` uses ordinary New Game/joins and actual Battle01 commands. It earns a real enemy reward,
+  lets Sarah and then the leader fall, and runs ordinary defeat return. The priest offers Sarah's
+  level1 Raise at10 gold. Decline retains30 gold/HP0; retry confirms30→20 gold and HP0→11. Cure has
+  no applicable target. Cancel returns playable field; service Save waits for caller cleanup, then
+  writes the existing joined Map3 savepoint and quits through the normal confirmation.
+- `continue` launches a distinct process against that same disposable namespace. The entire detached
+  saved progress record matches, including party/progress/items/status, gold, receipts/custody, flags,
+  both RNG channels and save recipe/music. A legal resumed step works; reopening Raise has no target
+  and takes no payment. A held click interrupted by view hide and Confirm during pause cannot submit
+  after resumption. A fresh mapped action still works, then actual Quit closes the process.
+
+The accepted local runs (`pilot-03`, `raise-02`, `continue-01`) have empty stderr. The source-world
+supplement was exercised from the accepted #1423 world, including removal of stale unavailable keys.
+Positive naturally arising poison/stun is **Unknown** for the opening; its cost/status behavior is
+covered by changed-state engine assertions. Original admission/return timing, service music/window
+cadence, exhausted-sprite parity, empty-shop-chest access and later campaign remain **Unknown** or
+outside admission. This does not repeat #1423's already accepted victory/Search/restart route or
+close #1425. Initial discovery/build/driver failures and inherited controlled-start fade diagnostics
+remain in the Issue's local handoff; no aggregate rerun replaces them.

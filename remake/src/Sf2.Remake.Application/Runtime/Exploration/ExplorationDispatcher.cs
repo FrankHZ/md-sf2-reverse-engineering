@@ -55,6 +55,7 @@ internal static class ExplorationDispatcher
     {
         if (current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted)
             return Reject(current, "session-stopped", "command");
+        if (current.Story.Wait is ChurchWait) return Reject(current, "service-owns-control", "command");
         List<SessionObservation> observations = [];
         try
         {

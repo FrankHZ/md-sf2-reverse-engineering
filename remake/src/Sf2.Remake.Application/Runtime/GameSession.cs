@@ -140,6 +140,12 @@ public sealed class GameSession
         }
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
+        if (envelope.Command is ChurchCommand service)
+        {
+            var serviced = FieldService.Submit(Definition, current, service, Rules);
+            _current = serviced.Snapshot;
+            return serviced;
+        }
         if (current.Mode == SessionMode.Exploration && envelope.Command is Search search)
         {
             var searched = FieldSearch.Submit(Definition, current, search);

@@ -11,8 +11,8 @@ slices. [Local play](../README.md#run-locally) opens the title and an opening Ne
 package/start options retain diagnostic play. This is not a full New Game campaign.
 
 The [opening lifecycle agreement](application/opening-session-lifecycle.md) implements genuine opening New Game,
-two local savepoint slots/Continue, bounded field preparation and opening Search/receipts; services
-remain under #1418.
+two local savepoint slots/Continue, bounded field preparation, opening Search/receipts and required
+Church Raise/Cure. Whole-opening integration acceptance remains under #1418.
 It separates implemented rules, standalone-only admission, missing integration and missing behavior.
 New Game admits complete supported fresh resources/progress from content, without a comparison
 start; only Bowie initially belongs to the party. The [native entry observation](verification/host.md#opening-new-game-observation)
@@ -37,12 +37,23 @@ acceptance, original timing and distribution rights remain separate.
 
 Opening Search is **implemented, bounded** under #1423: the five-map
 [branch inventory](content/opening-branch-inventory.md) distinguishes source descriptions/placements,
-ordinary handlers, service dependency and future destinations. Items and source receipt flags commit
+ordinary handlers, the bounded Church consumer and future destinations. Items and source receipt flags commit
 atomically to the carried party/progress; full-pack retry, revisits and existing savepoint restoration
 retain them. Angel Wing has map-scoped field NoEffect and can be carried into Battle01. The modern
 visible Search/result panel and safe repeated removal are explicit remake policies; original natural
 reach, input/presentation cadence and unchecked-memory parity remain Unknown. See
 [state/limits](application/opening-session-lifecycle.md#implemented-opening-search).
+
+Opening Church is **implemented, bounded** under #1424: actual counter interaction enters ordered
+Raise and poison/stun Cure on the same carried party, with separate confirmation, refusal, exact/
+insufficient funds, no applicable target and stale/duplicate protection. Save opens only after the
+real caller returns to settled field control. Native ordinary battle defeat → paid Raise → Save →
+fresh-process Continue retains the recovery/payment without reinitialization or repayment.
+[Policy/limits](application/opening-session-lifecycle.md#implemented-opening-church),
+[caller inventory](content/opening-branch-inventory.md#opening-service-callers) and
+[observation](verification/host.md#opening-church-services) own these claims. No opening shop is
+admitted: the only scoped source Shop callers use excluded F609. Buy/sell, Repair, Promotion,
+curse removal and original service presentation/exhausted-sprite parity remain outside this subset.
 
 ## Ordinary host lifecycle agreement
 
@@ -542,7 +553,7 @@ source provenance and reproduction.
 | New Game, save/load and Continue | [Opening lifecycle agreement](application/opening-session-lifecycle.md) and [native restart](verification/host.md#opening-save-and-continue) | **Implemented, bounded** | Genuine New Game plus two explicit local slots, title Continue, overwrite/cancel/backup recovery and unsaved Quit. Map3 pre/post-messenger and completed Battle01 Map57 return rebuild at safe anchors without replaying initialization or outcome. Actual victory and defeat/retry cross fresh processes. Interiors, battle suspend, later setups/campaign, autosave, migration and original SRAM parity remain outside scope. |
 | Hardware 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 | Legacy public-synthetic and private-local profiles | none | **Retired at M5** | the public-synthetic Map 3/battle package and export smoke, legacy private traversal views, project-authored battle bridge, legacy local asset-pack Godot consumers and controlled Battle01 receipt chains were removed with the reference runtime; the common host renders prepared private worlds instead |
-| Field item acquisition and area descriptions | [Opening feature map](application/opening-session-lifecycle.md#current-feature-map) | **Unsupported in the common field route** | Search/description/one-time field receipt consumers are missing. Authored battle item custody is a separate implemented capability; imported entity/zone/setup data does not imply pickup support. Selected map setup/event execution is covered above, with unadmitted variants still explicit. |
+| Field item acquisition and area descriptions | [Opening Search](application/opening-session-lifecycle.md#implemented-opening-search) | **Implemented, bounded opening subset** | Maps3/19/20/21/57 consume source descriptions and once-only item receipts through carried inventory and savepoint reconstruction. Full-pack refusal/retry and revisits preserve custody. The fixed-merchant empty chest obstruction, future setups/maps and original natural reach remain explicit limits in the [branch inventory](content/opening-branch-inventory.md). |
 | Special encounters, retreat and transport extensions | [Staged engineering design](domain/special-mechanics-design.md) | **Authored Taros physical effectiveness and selected Battle02 retreat implemented; wider consumers proposed/unsupported** | The finite identity/live-weapon gate delivers explicit ineffective feedback in controlled authored content. Authored leader cleanup and usable return are implemented with explicit source-slot binding. Authored physical receipt/Deals and session custody are implemented; private Battle18/natural Taros loot, private Battle32 and its full Jaro victory consumer, private Battle36/wider Prism inputs, private/wider hidden-enemy content and trial records, wider retreat/special caller return, and raft/full-map transport still need their owned extensions. The standalone authored Caravan controller and boarding/landing are implemented at the agreement above. Existing flags, following, region activation and ordinary outcomes are reusable; acquisition flags alone do not implement vehicles or services. |
 
 Future diagnostic facts should extend one bounded inspector or observation model. They do not receive a

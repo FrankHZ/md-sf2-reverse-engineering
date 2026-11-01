@@ -23,6 +23,8 @@ public sealed partial class ExplorationSessionView
 
     internal void HandlePointer(InputEvent input)
     {
+        if (_session?.Current.Story.Wait is ChurchWait && GetWindow().HasFocus() && CanProcess())
+        { _church.HandlePointer(input); return; }
         if (_partyStatus.Open) { _partyStatus.HandlePointer(input); return; }
         if (_session is null || _handedOff || _battleHandoffPending || _skipRequiresRelease ||
             !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() || PresentationFailure is not null ||

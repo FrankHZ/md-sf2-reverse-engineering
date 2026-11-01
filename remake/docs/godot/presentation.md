@@ -782,3 +782,19 @@ Cancel/right click closes it. Field movement, Party Status and save controls sta
 result owns input. A dismissed acquisition remains acquired. Result delivery adds no gameplay/RNG
 services and claims no original typewriter, item-music or menu timing. Final UI aesthetics remain
 outside this behavior slice. [State and acceptance](../application/opening-session-lifecycle.md#implemented-opening-search).
+
+## Opening Church panel
+
+The actual priest interaction opens `ChurchServiceView` over the field. Keyboard/controller mapped
+Up/Down and Confirm choose Raise, Cure, explicit unavailable Promotion, Save or Leave; mouse rows
+use the existing press/release pointer guard. The source-ordered member/status offers show current
+gold and exact cost before a separate confirm/decline. No applicable member, insufficient funds,
+refusal and success are readable results. Cancel declines the current offer or leaves the menu.
+The Application wait owns offers and progression; the panel stores only focus/gesture state.
+
+The panel pauses automatic field service, movement, party preparation and Search. Focus loss,
+hiding or pause suspends its gesture and requires release. Service results, including real caller
+continuation, use the established session-result/audio/lifecycle consumer. Save closes Church and
+waits for real settled caller return before the existing slot menu opens. Replacement discards old
+service/save intent. These are bounded modern controls, not original menu layout, timing, service
+music, exhausted-sprite or human aesthetic parity. [Policy and acceptance](../application/opening-session-lifecycle.md#implemented-opening-church).

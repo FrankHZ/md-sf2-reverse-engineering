@@ -58,6 +58,9 @@ public sealed partial class ExplorationSessionView : Control
     private Action? _releaseBattle;
     private ExplorationDialogueView _dialogueView = null!;
     private PartyStatusView _partyStatus = null!;
+    private ChurchServiceView _church = null!;
+    private bool _churchSaveRequested;
+    internal Action? RequestServiceSave { get; set; }
     private readonly FieldReturnFeedback _returnFeedback = new();
     private Label _dialogue => _dialogueView.Panel.Body;
     private Label _help => _dialogueView.ActiveHint;
@@ -105,6 +108,7 @@ public sealed partial class ExplorationSessionView : Control
             return result;
         };
         AddChild(_partyStatus);
+        _church = new ChurchServiceView { Name = "ChurchService" }; AddChild(_church);
         // Keep a stopped presentation readable even when the world is held black.
         var failureLayer = new CanvasLayer { Layer = 101 };
         var failurePanel = new PanelContainer { Name = "FailurePanel", Position = new(240, 32),
@@ -137,6 +141,7 @@ public sealed partial class ExplorationSessionView : Control
         _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
+        _church?.Suspend();
         SuspendEntrySkip();
         CancelFieldWait();
         _tickTime = 0;
@@ -165,7 +170,7 @@ public sealed partial class ExplorationSessionView : Control
     internal void Begin(GameSession session, SessionResult result, GameInput input, SessionAudio audio, Action<SessionResult> enterBattle,
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
-        _session = session; _result = result; _input = input; _enterBattle = enterBattle;
+        _session = session; _result = result; _input = input; _enterBattle = enterBattle; _churchSaveRequested = false;
         if (releaseBattle is not null) _returnFeedback.Begin(result);
         _movementHold.Clear(input);
         if (session.Current.Story.Display?.Visibility == Sf2.Remake.Application.Content.Scenarios.FullFadeVisibility.Black)
@@ -193,6 +198,8 @@ public sealed partial class ExplorationSessionView : Control
         if (_session is null) return;
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
+        if (_session.Current.Story.Wait is ChurchWait)
+        { PresentChurch(); _tickTime = 0; return; }
         if (_partyStatus.Open)
         { _partyStatus.Present(_session, _input); _tickTime = 0; return; }
         if (FinishEntryHandoff()) return;
@@ -311,6 +318,7 @@ public sealed partial class ExplorationSessionView : Control
         if (action != GameAction.Wait) CancelFieldWait();
         if (_handedOff || !IsVisibleInTree() || _session is null || SessionPresentationOwner.IsBattle(_session.Current) || PresentationFailure is not null) return;
         var current = _session.Current;
+        if (current.Story.Wait is ChurchWait) { _church.Handle(action); return; }
         if (_partyStatus.Open)
         {
             _movementHold.Clear(_input); CancelFieldWait();
@@ -431,13 +439,16 @@ public sealed partial class ExplorationSessionView : Control
         }
     }
 
-    private void Send(SessionCommand command)
+    private SessionResult Send(SessionCommand command, long? revision = null, bool recoverable = false)
     {
         var current = _session!.Current;
         // Observe the actual adapter handoff before Submit can resume its caller.
         // The last draw keeps its own identity; this signal neither draws nor completes anything.
         if (command is CompletePresentation completion) PublishResult("presentation-completion-before-submit", completion);
-        _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
+        var submitted = _session.Submit(new(current.SessionId, revision ?? current.Revision, null, command));
+        if (recoverable && submitted.Failure is not null && ReferenceEquals(current, submitted.Snapshot)) return submitted;
+        _result = submitted;
+        if (command is LeaveChurch { Save: true } && submitted.Failure is null) _churchSaveRequested = true;
         _movementHold.Observe(_input, current, _result, command);
         if (current.Story.Wait?.Token != _session.Current.Story.Wait?.Token) _tickTime = 0;
         if (!CanSubmitWait || current.Story.Wait?.Token != _session.Current.Story.Wait?.Token || _result.Failure is not null) CancelFieldWait();
@@ -468,11 +479,12 @@ public sealed partial class ExplorationSessionView : Control
                 FinishEntryHandoff();
             }
             else { _handedOff = true; _enterBattle!(_result); }
-            return;
+            return submitted;
         }
         Present();
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
             Send(new ChoiceHeldInput(entry.Token, ChoiceButtonsHeld));
+        return submitted;
     }
 
     private void Present()
@@ -482,7 +494,8 @@ public sealed partial class ExplorationSessionView : Control
         if (_session.Current.CanWaitAtInput && _releaseBattle is not null)
         { _releaseBattle(); _releaseBattle = null; _battleMounted = false; }
         if (!_battleMounted) _lastWorld = _session.Current.Exploration ?? _lastWorld;
-        _dialogueView.Visible = PresentationFailure is null && !_partyStatus.Open;
+        _dialogueView.Visible = PresentationFailure is null && !_partyStatus.Open && _session.Current.Story.Wait is not ChurchWait;
+        PresentChurch();
         _dialogueView.ReturnNotice = _returnFeedback.Notice(_session.Current);
         if (PresentationFailure is not null) _partyStatus.Hide();
         _partyStatus.Present(_session, _input);
@@ -491,6 +504,13 @@ public sealed partial class ExplorationSessionView : Control
         _failureLabel.Text = PresentationFailure is { } failure
             ? $"The scene has stopped.\n{failure.Message} ({failure.Code})" : "";
         QueueRedraw();
+    }
+
+    private void PresentChurch()
+    {
+        _church.Present(_session!, _input, (command, revision) => Send(command, revision, recoverable: true));
+        if (_churchSaveRequested && _session!.Current.CanWaitAtInput)
+        { _churchSaveRequested = false; RequestServiceSave?.Invoke(); }
     }
 
     public override void _Draw()
@@ -764,7 +784,7 @@ public sealed partial class ExplorationSessionView : Control
                 cameraX = WorldViewport.Origin.X, cameraY = WorldViewport.Origin.Y,
                 bounds = Battles.BattleMapViewport.Rectangle(WorldViewport.Bounds),
                 legalScreen = Battles.BattleMapViewport.Rectangle(WorldViewport.Screen) },
-            battleMounted = _battleMounted, partyStatus = _partyStatus.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
+            battleMounted = _battleMounted, partyStatus = _partyStatus.Observe(), church = _church.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             itemCustody = current?.Exploration?.Party.ItemCustody,
             admittedParty = full && current?.Exploration is { } world ? new
