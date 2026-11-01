@@ -845,8 +845,8 @@ seven map palettes/provenance are required. Field receipts and services remain s
 `OpeningRestoreReader` selects these same trusted inputs and `PrivateBattleContentReader.Definitions`;
 it never runs `OpeningPartyInitialization`. Saved values cannot choose input paths or alter content.
 Product definitions bind supported adjacent weapons to the existing numerical loadout accessor,
-independently of saved equipment. Commands for changing equipment remain outside this profile's
-admission. The [lifecycle owner](../application/opening-session-lifecycle.md#implemented-savepoint-boundary)
+independently of saved equipment. Field preparation has separate admission below; private battle
+equipment changes remain disabled. The [lifecycle owner](../application/opening-session-lifecycle.md#implemented-savepoint-boundary)
 owns reconstruction and supported semantic state.
 
 `OpeningSaveJson` version1 encodes one UTF-8 JSON record as base64 `payload`, with uppercase hex
@@ -857,3 +857,21 @@ are1; a semantic content/rule/recipe change requires updating its revision. Rend
 can retain compatibility when required logical resources still admit. A valid checksum is not
 authorization or proof of valid gameplay state; Application independently validates membership,
 attained values, loadouts, flags, anchor and music resources before publishing a session.
+
+### Opening field preparation admission
+
+`OpeningLoadoutBindings` adds an explicit `FieldPreparationDefinition` to product New Game and
+restore definitions. Controlled/authored profiles acquire no capability implicitly. Class masks and
+simple adjacent ATT-only weapons reuse #1421's trusted numerical bindings. Give/Drop names and
+custody properties come from selected source item records; unadmitted equipped/broken weapon
+effects reject. No battle Give/Drop profile or `Equipment.AllowChanges` is relaxed.
+
+Opening static selection additionally retains Medical Herb0, Healing Seed1 and Antidote3 with their
+exact codes, use-spell families and no-equipment-effect definitions. This is immutable admission,
+not possession or an award. Field effects admit the first two as original NoEffect and Antidote as
+poison cure. Selected HEAL spells admit NoEffect; selected DETOX1 admits poison cure with its trusted
+MP cost. Other item/spell effects remain explicitly unavailable. The
+[field policy](../application/opening-session-lifecycle.md#implemented-field-preparation) names the
+static caller provenance and exact payment; battle healing power/EXP/RNG is not reused for field use.
+Existing save format/revisions remain compatible because captured values and restoration semantics
+are unchanged. No new world export, source input mutation or public private-content fixture is needed.

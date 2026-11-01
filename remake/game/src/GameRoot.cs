@@ -58,9 +58,10 @@ public sealed partial class GameRoot : Node
 
     public override void _Process(double delta)
     {
-        if (_restart is not null) _restart.Disabled = _slots is not null || _session?.Current.CanWaitAtInput != true;
-        if (_saveButton is not null) _saveButton.Disabled = _slots is not null || _entry is not null;
-        if (_quitButton is not null) _quitButton.Disabled = _slots is not null || _entry is not null;
+        bool partyMenu = _exploration?.PartyMenuOpen == true;
+        if (_restart is not null) _restart.Disabled = _slots is not null || _session?.Current.CanWaitAtInput != true || partyMenu;
+        if (_saveButton is not null) _saveButton.Disabled = _slots is not null || _entry is not null || partyMenu;
+        if (_quitButton is not null) _quitButton.Disabled = _slots is not null || _entry is not null || partyMenu;
     }
 
     public override void _Ready()

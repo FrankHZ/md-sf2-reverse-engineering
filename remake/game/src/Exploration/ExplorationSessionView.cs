@@ -54,6 +54,7 @@ public sealed partial class ExplorationSessionView : Control
     private bool _handedOff;
     private bool _battleMounted;
     internal bool CanOpenHostMenu => _session?.Current.CanWaitAtInput == true && !_partyStatus.Open && !_battleMounted;
+    internal bool PartyMenuOpen => _partyStatus?.Open == true;
     private Action? _releaseBattle;
     private ExplorationDialogueView _dialogueView = null!;
     private PartyStatusView _partyStatus = null!;
@@ -95,6 +96,14 @@ public sealed partial class ExplorationSessionView : Control
         _dialogueView.Panel.Choices.InvalidatePointer = _choicePointer.Cancel;
         AddChild(_dialogueView);
         _partyStatus = new PartyStatusView { Name = "PartyStatus" };
+        _partyStatus.SubmitField = (command, revision) =>
+        {
+            var current = _session!.Current;
+            var result = _session.Submit(new(current.SessionId, revision, null, command));
+            // An illegal/stale preparation stays a readable menu result, not a stopped presentation.
+            if (result.Failure is null) { _result = result; PublishResult("submit"); Present(); }
+            return result;
+        };
         AddChild(_partyStatus);
         // Keep a stopped presentation readable even when the world is held black.
         var failureLayer = new CanvasLayer { Layer = 101 };

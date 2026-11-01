@@ -25,6 +25,7 @@ public sealed class ScenarioDefinition
             .ToDictionary(scene => scene.Encounter, StringComparer.Ordinal));
     }
     internal Runtime.Persistence.IOpeningRestorePolicy? Persistence { get; init; }
+    internal Runtime.Exploration.FieldPreparationDefinition? FieldPreparation { get; init; }
     public string Package { get; }
     public BattleStoryDefinition? BattleStory { get; }
     internal IReadOnlyDictionary<string, StoryProgram> Programs => Exploration?.Programs ?? BattleStory!.Programs;

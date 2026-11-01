@@ -1479,3 +1479,65 @@ incompatible gameplay revision and missing music resource. To reach semantic adm
 modified UTF-8 payload and recompute its SHA-256 with the production envelope spelling. Otherwise
 the expected result is the earlier checksum rejection. A read never repairs a file. Same-volume
 replace/readback success establishes only the tested filesystem behavior, not all physical crash cases.
+
+## Opening field preparation
+
+The [Standard #1422 boundary](../application/opening-session-lifecycle.md#implemented-field-preparation)
+adds field transactions to the existing party and opening/save world. Original source policy remains
+separate from the following **Confirmed remake observations**; no original field timing/reach or
+all-device/human acceptance is claimed.
+
+Load `local/issue1045/inputs.ps1`, force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and select the existing
+palette-complete `local/issue1045/world-new-game-issue1420.json` as `SF2_PRIVATE_EXPLORATION_CONTENT`.
+Use existing absolute SDK/Godot selections and the same project/imports. No new export, asset copy,
+comparison checkpoint or screenshot is needed. Build the actual Debug host and run affected engine
+behavior directly:
+
+```powershell
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --configuration Release --no-restore --filter 'FullyQualifiedName~FieldInventoryTests|FullyQualifiedName~FieldRecoveryTests|FullyQualifiedName~BattleEquipmentTests|FullyQualifiedName~BattleGiveTests|FullyQualifiedName~BattleDiscardTests|FullyQualifiedName~OpeningSaveTests|FullyQualifiedName~OpeningRestoreTests|FullyQualifiedName~PartyDetailsQueryTests'
+```
+
+The targeted selection passes130 cases with the correct product input, including detached private
+New Game save/restore. Query/cancel/stale/unsupported cases, duplicate/full/empty slots, class and
+Unarmed choices, both sides of exchange, dead inventory access, self-exchange, rare/unsellable Drop,
+full-HP/dead status-cure targets, low/zero MP, payment on no effect and EXP/RNG preservation are covered.
+Meaningful poison cure is engine-tested; no naturally acquired Antidote/DETOX native witness is claimed.
+
+Native runs use the actual mapped input and `ReadCaptureState`/`ReadPersistenceObservationJson` on a
+1920×1080 window. Party Status → Prepare is available through Confirm and the visible Prepare control;
+E / Pad Start opens the member screen. Directional input selects, Confirm enters an action or commits,
+Cancel returns without a command, and pointer press/release uses the actual observed row rectangles.
+The panel's preparation observation includes stage, selected index, captured revision, visible title
+and row rectangles. Inspect authoritative `party` values rather than treating provisional UI as state.
+
+Reproduce with a fresh owned namespace under the explicitly configured save root outside worktrees:
+
+1. New Game; open preparation with the controller and pointer. Preview Unarmed, Cancel and compare
+   party/revision/seeds; then confirm Unarmed. Use Medical Herb through the pointer and assert the
+   no-effect result with unchanged party/seeds. Close normally.
+2. Follow ordinary legal opening inputs through Sarah/Chester joins and the messenger. Sarah's field
+   HEAL reports no effect without payment. Give Chester's herb to Sarah to fill her pack; Give Bowie's
+   herb with an explicit return of Sarah's Wooden Rod. Cancel Drop, verify unchanged state, then confirm
+   dropping that rod. Close and explicitly Save slot1 at an eligible settled field boundary.
+3. Exit and start a fresh OS process. Title Continue → slot1 restores all four retained ally records,
+   gold/custody and seeds exactly. The session identity changes. Follow normal castle/palace/Astral/tower
+   movement/programs into Battle01. Its three joined allies consume the saved full item/spell words,
+   HP/MP/EXP/status/progression. Unarmed Bowie and Sarah use their saved base ATT; this is actual battle
+   entry, not a constructed field-only example. No outcome/reward is replayed by Continue.
+
+Retained executions are `local/issue1422/run-native.ps1` with `field-native.gd`: `smoke-01` (1,655ms),
+`preparation-02` (36,618ms) and `continue-battle-01` (37,506ms), all exit0, passed and empty stderr.
+`compare-native.py`/`continuity-01.json` compare saved/restored party and actual battle consumers.
+Use fresh `-Run` and `-Namespace` values when reproducing; the latter two runs share one disposable
+namespace. The driver reuses #1421's bounded input/navigation functions and records selected boundaries,
+not per-frame acquisition. One native process at a time, existing ~126MB world, at most80 marks/run,
+less than10MiB evidence and a two-minute run bound are sufficient. No slot/output cleanup is implied.
+
+Preserved completed discovery: `preparation-01` exited2 because its driver matched display names with
+wrong case and assumed a second Bowie herb; corrected inputs use actual labels/starting inventories.
+No source state was injected or acceptance condition weakened. Initial compile/fixture failures and
+their focused passing corrections remain in the Issue's local handoff. The completed #1421 broad
+private aggregate (1692 pass/20 fail/1 skip) and nine remaining controlled-start full-fade-state failures
+remain preserved; this slice does not rerun that aggregate or turn those diagnostics into passes.

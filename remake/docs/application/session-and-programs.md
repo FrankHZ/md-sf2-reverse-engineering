@@ -1,8 +1,23 @@
 # Session and Resumable Programs
 
-The proposed New Game, stable-field savepoint/Continue boundary and opening feature closure belong
-to [Opening session lifecycle](opening-session-lifecycle.md). Persistence remains unimplemented;
-this owner describes the current session and program machinery that the design must preserve.
+New Game, implemented stable-field savepoint/Continue and opening feature closure belong
+to [Opening session lifecycle](opening-session-lifecycle.md). This owner describes the current
+session/program machinery that those features preserve.
+
+## Field preparation transactions
+
+`GameSession.QueryFieldActions` reads the same joined carried party as `QueryPartyDetails`.
+`FieldCommands` prepares Equip, Give/exchange, Drop and the admitted field Use/magic family without
+constructing an `EngineBattleState`. The session facade checks session/revision/envelope actor before
+dispatch; selected slot words are rechecked before publication. Success publishes one field snapshot
+and ordered result observation. Rejection retains the old snapshot and the host displays a recoverable
+menu result. No program cursor, map, tick, party membership or gameplay seed is advanced by preparation.
+
+The host's provisional menu is disposable. Cancel sends no command; Confirm carries the revision
+captured by its query. Closing refreshes Party Status from carried state. Existing encounter entry,
+outcome transfer and save/restore consume these same loadouts/progress; they do not reinitialize
+equipment. Source-specific payment, dead-member access and NoEffect belong to the
+[field policy](opening-session-lifecycle.md#implemented-field-preparation), not battle selection rules.
 
 ## Jaro victory program continuation
 

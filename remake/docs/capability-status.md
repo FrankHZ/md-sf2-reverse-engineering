@@ -11,12 +11,20 @@ slices. [Local play](../README.md#run-locally) opens the title and an opening Ne
 package/start options retain diagnostic play. This is not a full New Game campaign.
 
 The [opening lifecycle agreement](application/opening-session-lifecycle.md) implements genuine opening New Game,
-two local savepoint slots/Continue, and scopes field preparation/search/services under #1418.
+two local savepoint slots/Continue and bounded field preparation; search/services remain under #1418.
 It separates implemented rules, standalone-only admission, missing integration and missing behavior.
 New Game admits complete supported fresh resources/progress from content, without a comparison
 start; only Bowie initially belongs to the party. The [native entry observation](verification/host.md#opening-new-game-observation)
 owns replacement/error controls and the ordinary opening route. [Save/restart observation](verification/host.md#opening-save-and-continue)
 owns the three finite savepoint recipes; all reachable optional opening branches remain a separate boundary.
+
+Field preparation is **implemented, bounded; independent review pending** under #1422:
+Party Status → Prepare offers Equip/Unarmed, Give/full-pack exchange, Use, Magic and confirmed Drop
+on that same carried party, including defeated members' inventory access. Original field HEAL and
+ordinary recovery-item NoEffect are explicit; Antidote/DETOX1 have caller-specific poison-cure payment.
+Unsupported effects remain distinct. [State/policy](application/opening-session-lifecycle.md#implemented-field-preparation)
+and [native acceptance](verification/host.md#opening-field-preparation) own the exact limits. No field
+HP-healing deviation, private battle inventory profile, Search, service or broader campaign is enabled.
 
 Current accepted presentation includes continuous exploration/contextual Talk, shared 1080p/96px
 world geometry (A/B), story dialogue (C), reachable movement tiles (B8), status cards and battle/return/

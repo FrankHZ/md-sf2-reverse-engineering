@@ -47,8 +47,8 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 | Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress; Continue reconstructs supported field savepoints. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [restart](../verification/host.md#opening-save-and-continue). |
 | Persistence/Continue | **Implemented, bounded:** two explicit local slots, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. Three savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3 and completed Battle01 Map57 return. | #1421; [implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). Interiors, battle/story suspend, later setups/campaign, autosave, migration and original SRAM parity remain outside scope. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
-| Equip/Give/Drop | [BattleEquipment](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs), [BattleGive](../../src/Sf2.Remake.Domain/Battles/Rules/BattleGive.cs), [BattleDiscard](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDiscard.cs) and battle continuations exist, with standalone authored admission limits. | **Missing integration and field command behavior:** no field consumer. Reuse numerical/custody rules, not battle selection state or a fabricated battle. #1422. |
-| Field Use/magic | Selected battle healing/item rules exist; the ordinary field menu does not consume them. | **Missing field policy/integration:** living targets, cost, no-effect/cancel, consumption and field EXP policy require the named contracts. Start with early recovery only. #1422. |
+| Equip/Give/Drop | **Implemented, bounded:** Party Status → Prepare changes the carried party through revision-checked field commands, shared equipment/word rules and existing custody. | #1422; [field boundary](#implemented-field-preparation). Source class/slot legality, full-pack exchange and confirmed Drop are explicit; private battle command capabilities stay separate. |
+| Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL; Antidote/DETOX1 cure poison with caller-specific payment. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
 | Search/descriptions/chests/ground items | Original contracts exist; the current common field command surface has Move/Interact, not Search. Source map preparation imports entity/zone events and layout events; that is not an item pickup consumer. | **Missing behavior/content integration:** area descriptions, one-time receipt and full-pack handling; preserve receipt state across reload and save. #1423. |
 | Receipts/Deals | [BattleItemCustody](../../src/Sf2.Remake.Domain/Battles/State/BattleItemCustody.cs) owns authored battle drop once-flags and Deals; carried through field party. Null means unobserved, not empty. | **Standalone-only:** private field pickups/services need explicit admitted data and their own receipt IDs. Do not use battle drop flags as chest IDs or silently replace null with empty. |
 | Church/shop | Map3 entity event13 names ChurchMenu in accepted source. Generic native calls do not implement service transactions or a UI. | **Missing behavior/integration:** raise, supported cure and common Save entry first; buy/sell only at verified reachable opening shops. #1424. No shop is invented because inventory rules exist. |
@@ -243,8 +243,8 @@ Battle01 return records its own Map57 anchor; later movement cannot overwrite th
 
 Private product definitions bind supported adjacent weapons from trusted item/class data to the
 existing numerical equipment accessor. Changed carried loadouts therefore derive attack from
-attained base stats plus the equipped weapon. This binding does not enable field or private battle
-equipment commands; those remain separately owned. Unsupported weapon effects still reject.
+attained base stats plus the equipped weapon. Field commands have their own explicit admission below;
+private battle equipment commands remain disabled. Unsupported weapon effects still reject.
 
 Same-context unknown music history rejects capture. The native audio owner can supply its actual
 bounded cue/history through `ObserveFieldMusic`, a session command equivalent to other host
@@ -260,6 +260,61 @@ Quit always has a cancel path and warns when the live revision differs from the 
 The [native and storage recipe](../verification/host.md#opening-save-and-continue) owns reproduction
 and the limits of failure testing. Wider campaign, exact-position suspend, services and field
 receipts remain outside this implementation.
+
+## Implemented field preparation
+
+**Standard rigor for #1422:** the party/save boundary is fixed; these finite transactions share
+existing item words, numerical rules, custody and `GameSession` publication. #1418 retains High
+for overall lifecycle closure. The outcome is ordinary New Game → field preparation → Save → fresh
+Continue → legal Battle01 entry consuming that same party. Search/receipts, services, rings/curses,
+stat boosters, later effects and UI redesign remain outside this slice. Small engine behavior tests,
+direct native input/state/errors and dependency-selected public gates own acceptance; original
+runtime reach/timing and human aesthetics remain Unknown.
+
+`FieldInventory` reads only joined, initialized carried members; encounter-excluded members and
+defeated allies keep inventory access. No battle position/control/status eligibility is imported.
+`FieldEquip`, `FieldGive`, `FieldDrop`, `FieldUseItem` and `FieldCast` are single commands behind
+the ordinary session/revision envelope. Item commands also bind selected slot words. Queries,
+preview and Cancel do not publish or advance simulation/RNG. Confirm prepares all changes before
+one revision publication; stale, unsupported and illegal requests retain the complete old snapshot.
+The host holds provisional choices only, pauses field dispatch while browsing, and keeps a rejected
+confirmation readable without stopping the game. Close returns to the same member/field.
+
+Equip shares class masks, duplicate-slot identity, source Unarmed sentinel4 and derived ATT with
+battle rules. Give clears equipped on moved words, compacts removals and fills the first empty
+slot. Full packs require an explicit return slot; field self-exchange retains its source slot
+adjustment and equal-slot unequip branch. Other words, spells, attained bases, membership, gold,
+receipts/Deals and resources survive. Drop rejects unsellable content; rare items require known
+custody and add one saturating Deals entry. Item/class metadata must be admitted before mutation;
+these commands do not enable private battle Give/Drop/Equip.
+
+**Confirmed static source policy:** SF2DISASM commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/common/menus/main/mainactions.asm` (`FieldMenu`, `byte_21348`,
+`@HandleNonAngelWingItems`, `@StartExchange`, `@SkipExchange`),
+`disasm/code/common/menus/memberslistscreen.asm`
+(`ValidateMembersListScreenConfirmationInput`, `ExecuteExplorationMagicMenu`, `EquipNewItem`),
+and `disasm/code/common/stats/itemstats.asm` (`AddItem`, `RemoveItemBySlot`, `DropItemBySlot`).
+The accepted [field-menu](../../../docs/research/presentation/field-menu-control.md) and
+[field-item](../../../docs/research/world/field-item-effects.md) owners retain H1/ROM provenance.
+The field member screens do not filter HP/status or check MP. Medical Herb0 and Healing Seed1
+are outside the field-use allowlist and have no opening item event; HEAL takes the non-DETOX,
+non-Egress no-effect branch. Their confirmations report “But nothing happened” and preserve
+HP/MP/items/EXP and both gameplay seeds, including at zero MP. This is original NoEffect,
+distinct from a typed unsupported implementation effect.
+
+Antidote3 clears poison and consumes the selected item even when no poison was present.
+DETOX1 clears poison and subtracts its admitted MP cost with the source zero clamp, even on an
+ineffective cast or with insufficient MP. Full-HP and defeated joined targets are selectable;
+curing never revives or restores HP, and unrelated status bits remain. No field operation awards
+battle EXP or draws gameplay RNG. Wider status effects remain unsupported.
+Map3's pinned `data/maps/entries/map03/{7-chest-items,8-other-items}.asm` records an empty chest
+and Medical Herb; this inspection does not implement Search or establish natural acquisition.
+
+Save/restore retain the same format/revisions and interpret existing values identically; field
+commands add ways to reach already admitted loadouts, without changing restore or replaying starts.
+The [native recipe and results](../verification/host.md#opening-field-preparation) separate remake
+observations from original static policy. No original runtime timing claim follows from them.
 
 ## Format, compatibility and local storage
 
