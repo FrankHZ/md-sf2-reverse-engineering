@@ -150,8 +150,20 @@ public sealed class PrivateBattleOutcomeProgramTests
             victory.GetProperty("mainLoopReturn").GetProperty("orderedSteps").EnumerateArray().Select(step => step.GetString()));
         Assert.DoesNotContain(unlocked, session.Current.Story.Flags); Assert.Contains(completed, session.Current.Story.Flags);
         var program = session.Definition.Exploration!.Programs["abcs-battle01"];
-        Assert.Equal(Enumerable.Range(0, program.Instructions.Count), observations.Where(row => row.Program?.Program == program.Id)
-            .Select(row => row.Program!.Value.Instruction).Distinct().Order());
+        foreach (int index in Enumerable.Range(0, program.Instructions.Count))
+        {
+            if (program.Instructions[index] is PresentCue { Kind: PresentationCueKind.FadeOut or PresentationCueKind.FadeIn } fade)
+            {
+                int preceding = observations.FindLastIndex(row => row.Program == new ProgramLocation(program.Id, index - 1));
+                int following = observations.FindIndex(row => row.Program == new ProgramLocation(program.Id, index + 1));
+                Assert.True(preceding >= 0 && following > preceding, $"fade instruction {index}");
+                var fadeRows = observations.Skip(preceding + 1).Take(following - preceding - 1).ToArray();
+                Assert.Equal(new[] { "full-fade-started", "presentation-completed", "full-fade-completed" },
+                    fadeRows.Where(row => row.Detail == fade.Kind.ToString()).Select(row => row.Kind));
+                Assert.Contains(fadeRows, row => row.Kind == "fade-service");
+            }
+            else Assert.Contains(observations, row => row.Program == new ProgramLocation(program.Id, index));
+        }
         int lastAfterProgram = observations.FindLastIndex(row => row.Program?.Program == program.Id);
         int join = observations.FindIndex(row => row.Kind == "after-battle-join");
         int clear = observations.FindIndex(row => row.Kind == "battle-unlock-cleared");
@@ -169,7 +181,15 @@ public sealed class PrivateBattleOutcomeProgramTests
         Assert.Equal(3, session.Current.Exploration.PlayerEntity.Motion.Facing);
         Assert.Contains(observations, row => row.Kind == "battle-returned");
         var party = session.Current.Exploration.Party;
-        var reentered = BattleTurnFlow.Start(session.Definition.Encounters[party.Encounter], party);
+        // A travelling party also contains other encounters' allies and no enemy starts.
+        // Keep its live ally progress; select this encounter's other admitted defaults.
+        var encounter = session.Definition.Encounters[party.Encounter];
+        var defaults = session.Definition.EncounterStarts[party.Encounter];
+        var inputs = encounter.Deployments.Select(deployment =>
+            party.Actors.FirstOrDefault(input => input.Actor == deployment.Actor) ??
+            defaults.Actors.Single(input => input.Actor == deployment.Actor));
+        var reentered = BattleTurnFlow.Start(encounter, new(party.Encounter, inputs, party.MainSeed,
+            party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody));
         foreach (var actor in reentered.Actors.Where(actor => actor.IsAlly))
         {
             var saved = party.Actors.Single(input => input.Actor == actor.Actor);

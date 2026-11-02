@@ -158,6 +158,12 @@ public sealed class Battle01ToBattle02Tests
         Assert.Contains(402, current.Story.Flags);
         Assert.DoesNotContain(66, current.Story.Flags);
         Assert.Equal(664, current.Story.TextCursor);
+        Assert.Equal(SessionStopReason.PlayerInput, current.StopReason);
+        // JoinForce's counted prefix precedes its active write; returning from a
+        // NAME/CLASS message does not execute the LEADER symbol's UpdateForce.
+        Assert.Empty(current.Story.PartyLists!.Active);
+        Assert.Equal(new[] { member }, current.Story.PartyLists.Reserve);
+        Assert.Equal(new[] { new ActorRef("hero") }, current.Exploration!.Party.ActiveAllies);
     }
 
     [Fact]

@@ -582,6 +582,12 @@ equipment and spells. Other initial ally appearances and names come from pinned 
 this group does not claim a full travelling roster, mutable names, promotion/death appearance,
 general field inventory operations or later battles. At Battle01 admission the sequencer rebuilds active membership
 from live flags, so the earlier `JoinForce` list timing never forces a missing ally into battle.
+Returning to ordinary field control also derives the travelling party's gameplay `ActiveAllies`
+from flags, but preserves `Story.PartyLists`. Returning itself is not an `UpdateForce` consumer.
+Explicit `{LEADER}` text still rebuilds the counted lists before selecting its name, and battle
+entry and restore keep their own membership reconstruction boundaries. The
+[controlled-start comparison](../evidence/controlled-start-display-audit.md#downstream-resolution)
+records the opening seam and its focused behavior checks.
 
 ## Definitions and execution
 

@@ -1466,10 +1466,14 @@ now explicitly initialize R1 and a separate Map21 bridge, retain their displays 
 and use the existing palette-complete world only through explicit command selection. No embedded/start
 palette duplication or global selection change is made. Map21 period/restored visibility are labelled
 remake-only controls; original display values at that seam remain Unknown. The nine actual corrected-input
-results are **3 pass/6 downstream fail/0 skip**, with original assertions retained. Passing cases cover
-refusal/retry, changed active membership and ordinary defeat/reload/return; remaining failures concern
-active-list comparison, before-program instruction coverage and explicit typed-text waiting. Their exact
-nodes, retained logs and main-gate follow-up boundaries belong to the audit; they are not passed gates.
+baseline was **3 pass/6 downstream fail/0 skip**. The
+[downstream resolution](../evidence/controlled-start-display-audit.md#downstream-resolution) now runs
+**9 pass/0 fail/0 skip** with actual typed text receipts, encounter-scoped diagnostic bindings and
+ordered fade lifecycle checks. The R2a Active `[0,1]` assertion remains unchanged: field-control
+return preserves the counted lists while independently deriving gameplay ActiveAllies from flags.
+All six former failure nodes and the three dependency regressions pass; this is bounded engine
+execution, not a new native/original-continuity or original-display observation. Exact commands,
+preserved failures and scope are in the audit.
 Retain the completed 1692 pass/20 fail/1 skip aggregate and these failures separately from
 passing product/restart checks and exact-head public CI. Do not weaken comparisons or rerun the
 entire aggregate merely to replace the recorded result.
