@@ -11,7 +11,7 @@ internal sealed partial class SessionAudio : IDisposable
 {
     private readonly IReadOnlyDictionary<string, ExplorationAudio> _assets;
     private readonly IReadOnlyDictionary<MapId, ExplorationMapVisual> _maps;
-    private readonly ExplorationDefinition _definition;
+    private readonly ExplorationDefinition? _definition;
     private (MapId Map, int Area, bool Battle)? _context;
     private readonly AudioStreamPlayer _music;
     private readonly Node _owner;
@@ -31,18 +31,30 @@ internal sealed partial class SessionAudio : IDisposable
     private bool _fading;
     private double _fadeProgress;
     internal long? MusicGeneration { get; private set; }
-    internal SessionAudio(Node owner, ExplorationDefinition definition)
+    internal SessionAudio(Node owner, ExplorationDefinition definition) : this(owner,
+        definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>())
     {
         _definition = definition;
-        _assets = definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>();
         _maps = definition.Visuals?.Maps ?? new Dictionary<MapId, ExplorationMapVisual>();
+        if (definition.Provenance is not null && _assets.Count == 0) Error = "private-audio-required";
+    }
+
+    internal SessionAudio(Node owner, IReadOnlyDictionary<string, ExplorationAudio> assets)
+    {
+        _assets = assets;
+        _maps = new Dictionary<MapId, ExplorationMapVisual>();
         _music = new AudioStreamPlayer { Name = "SessionMusic" };
         _owner = owner;
         _capture = ObservationCapture.Find(owner);
         owner.AddChild(_music);
         _musicFinished = () => { if (_music.Playing || _entrySuppressed || _entryMusicConsumed) return; MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
         _music.Finished += _musicFinished;
-        if (definition.Provenance is not null && _assets.Count == 0) Error = "private-audio-required";
+    }
+
+    internal void SetPaused(bool paused)
+    {
+        _music.StreamPaused = paused;
+        foreach (var voice in _sounds) voice.Player.StreamPaused = paused;
     }
 
     internal string? Error { get; private set; }
@@ -58,7 +70,7 @@ internal sealed partial class SessionAudio : IDisposable
     internal object ObserveState() => new
     {
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
-        musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
+        musicCue = MusicCue, musicPlaying = _music.Playing, musicPaused = _music.StreamPaused, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
         musicDeliverySkipped = _entryMusicConsumed, musicPosition = MusicPosition, timerB = TimerB, soundCue = _soundCue,
         soundPlaying = _sounds.Any(voice => voice.Player.Playing),
     };
@@ -66,7 +78,7 @@ internal sealed partial class SessionAudio : IDisposable
     internal object ObservePlayback() => new
     {
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
-        musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
+        musicCue = MusicCue, musicPlaying = _music.Playing, musicPaused = _music.StreamPaused, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
         musicDeliverySkipped = _entryMusicConsumed, musicPosition = MusicPosition, timerB = TimerB,
         musicVolumeDb = _music.VolumeDb, fading = _fading, fadeProgress = _fadeProgress,
         soundCue = _soundCue, soundPlaying = _sounds.Any(voice => voice.Player.Playing),
@@ -151,7 +163,7 @@ internal sealed partial class SessionAudio : IDisposable
             }
             else if (current.Active is ActiveBattle battle)
             {
-                var bindings = _definition.Maps.Values.Where(map =>
+                var bindings = _definition!.Maps.Values.Where(map =>
                     map.Battles.Any(route => route.Encounter == battle.Battle.Definition.Encounter)).ToArray();
                 if (bindings.Length != 1 || !_maps.TryGetValue(bindings[0].Map, out var visual))
                     throw new InvalidOperationException("battle-music-map-binding");

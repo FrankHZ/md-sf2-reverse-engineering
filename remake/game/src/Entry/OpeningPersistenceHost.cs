@@ -162,7 +162,8 @@ public sealed partial class GameRoot
 
     private void ConfigurePersistenceButtons()
     {
-        _saveButton = HostButton("SaveEntry", "Save… " + _input!.Hint(Input.GameAction.Stay), -540, -240, ShowSave);
+        _saveButton = HostButton("SaveEntry", "Save…", -540, -240, ShowSave);
+        _saveButton.TooltipText = "Save: " + _input!.Hint(Input.GameAction.Stay);
         _quitButton = HostButton("QuitEntry", "Quit…", -760, -560, RequestQuit);
     }
     private Button HostButton(string name, string text, float left, float right, Action pressed)

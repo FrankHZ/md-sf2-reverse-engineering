@@ -7,94 +7,182 @@ namespace Sf2.Remake.GodotAdapter.Entry;
 
 public sealed partial class SessionEntryView : Control
 {
-    internal Action? NewGame;
-    internal Action? Cancel;
-    internal Action? Continue;
-    internal Action? Quit;
-    private readonly List<Button> _titleButtons = [];
-    private int _titleSelection;
-    private Label _message = null!;
-    private Button _newGame = null!;
-    private Button _cancel = null!;
-    private bool _cancelSelected;
+    internal Action? NewGame, Cancel, Continue, Quit;
     internal bool Replacement { get; init; }
+    private EntryPresentationAssets? _assets;
+    private EntryBackdrop _backdrop = null!;
+    private StoryDialoguePanel _dialogue = null!;
+    private Button _start = null!;
+    private Button _read = null!;
+    private Label _hint = null!;
+    private readonly List<Button> _buttons = [];
+    private GameInput? _input;
+    private int _page = -1, _selection;
+    private double _revealed;
+    private bool _latched, _activated, _failed;
+    private string? _assetError;
+    private bool Revealed => _dialogue.Body.VisibleCharacters < 0 || _dialogue.Body.VisibleCharacters >= _dialogue.Body.GetTotalCharacterCount();
+    private string Stage => _page == -1 ? "title" : _page >= 0 ? "dialogue" : "menu";
 
     public override void _Ready()
     {
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        Theme = StoryTheme.Create();
-        var background = new ColorRect { Color = new("081a35"), MouseFilter = MouseFilterEnum.Stop };
-        background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(background);
-        var center = new CenterContainer(); center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(center);
-        var panel = new PanelContainer { CustomMinimumSize = new(768, 480) }; center.AddChild(panel);
-        var column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
-        column.AddThemeConstantOverride("separation", 28); panel.AddChild(column);
-        var title = new Label { Text = "SHINING FORCE II", HorizontalAlignment = HorizontalAlignment.Center };
-        title.AddThemeFontSizeOverride("font_size", 48); column.AddChild(title);
-        _message = new Label { Text = Replacement ? "Start a new game? Current progress will be discarded." : "A new journey begins.",
-            HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            CustomMinimumSize = new(720, 96) };
-        column.AddChild(_message);
-        _newGame = new Button { Text = "New Game", CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
-        _newGame.Pressed += () => NewGame?.Invoke(); column.AddChild(_newGame);
-        _titleButtons.Add(_newGame);
-        if (!Replacement)
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create();
+        try { _assets = new EntryPresentationAssets(); _assets.AttachAudio(this); }
+        catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or
+            System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException or FormatException)
+        { _assets?.Dispose(); _assets = null; _assetError = "entry-content-unavailable"; }
+        _backdrop = new EntryBackdrop { Name = "EntryBackdrop", Assets = _assets }; AddChild(_backdrop);
+        _backdrop.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _dialogue = new StoryDialoguePanel { Name = "EntryDialogue" }; AddChild(_dialogue);
+        _start = new Button { Name = "Start", Text = "Press Start", Position = new(640, 900), Size = new(640, 72), FocusMode = FocusModeEnum.None };
+        _start.Pressed += Advance; AddChild(_start);
+        _read = new Button { Name = "ReadDialogue", Text = "Continue", Position = new(1440, 680), Size = new(300, 64),
+            FocusMode = FocusModeEnum.None, Visible = false };
+        _read.Pressed += Advance; AddChild(_read);
+        _hint = new Label { Name = "EntryHint", Position = new(1180, 160), Size = new(620, 100), Text = "Normal difficulty",
+            HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        AddChild(_hint);
+        string[] labels = Replacement ? ["New Game", "Cancel"] : ["New Game", "Continue", "Quit"];
+        for (int index = 0; index < labels.Length; index++)
         {
-            var resume = new Button { Text = "Continue", CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
-            resume.Pressed += () => Continue?.Invoke(); column.AddChild(resume); _titleButtons.Add(resume);
-            var quit = new Button { Text = "Quit", CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
-            quit.Pressed += () => Quit?.Invoke(); column.AddChild(quit); _titleButtons.Add(quit);
+            int selected = index;
+            var button = new Button { Name = labels[index].Replace(" ", ""), Text = labels[index],
+                Position = new(1240, 300 + 100 * index), Size = new(500, 76), FocusMode = FocusModeEnum.None, Visible = false };
+            button.Pressed += () => Activate(selected);
+            button.MouseEntered += () => { if (_page == -2) Select(selected); };
+            AddChild(button); _buttons.Add(button);
         }
-        _cancel = new Button { Text = "Cancel", Visible = Replacement, CustomMinimumSize = new(0, 72), FocusMode = FocusModeEnum.None };
-        _cancel.Pressed += () => Cancel?.Invoke(); column.AddChild(_cancel);
-        column.AddChild(new Label { Text = "Confirm: Enter / Pad South    Cancel: Esc / Pad East",
-            HorizontalAlignment = HorizontalAlignment.Center });
-        Select(Replacement);
+        if (_assetError is not null)
+        {
+            ShowMenu(); _buttons[0].Disabled = true;
+            Message("Title / Witch content is unavailable. Select a prepared private entry package with SF2_PRIVATE_ENTRY_CONTENT, then relaunch.");
+        }
+        else if (Replacement) { ShowMenu(); Select(1); }
+        else _assets!.Audio!.Play("MUSIC_TITLE");
     }
 
     internal void ConfigureHints(GameInput input)
     {
-        var hint = (Label)((VBoxContainer)_message.GetParent()).GetChild(-1);
-        hint.Text = $"Confirm: {input.Hint(GameAction.Confirm)}    Cancel: {input.Hint(GameAction.Cancel)}";
+        _input = input; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
+        _start.Text = $"Press Start  •  {input.Hint(GameAction.Confirm)} / {input.Hint(GameAction.Equipment)}";
+        RefreshHint();
     }
-
+    public override void _ExitTree()
+    {
+        _backdrop.Assets = null; _assets?.Dispose(); _assets = null;
+    }
+    public override void _Process(double delta)
+    {
+        if (_input?.GameplayHeld == false) _latched = false;
+        if (!IsVisibleInTree()) return;
+        if (!Revealed)
+        {
+            _revealed = Math.Min(_dialogue.Body.GetTotalCharacterCount(), _revealed + delta * (_input?.Settings.CharactersPerSecond ?? 40));
+            _dialogue.Body.VisibleCharacters = (int)_revealed;
+        }
+        _backdrop.Speaking = !Revealed;
+        RefreshHint();
+    }
     internal void Handle(GameAction action)
     {
-        if (!Replacement)
+        if (_latched || _activated) return;
+        if (_page == -1)
+        { if (action is GameAction.Confirm or GameAction.Equipment) Advance(); return; }
+        if (_page >= 0)
         {
-            if (action == GameAction.Up) _titleSelection = (_titleSelection + _titleButtons.Count - 1) % _titleButtons.Count;
-            else if (action == GameAction.Down) _titleSelection = (_titleSelection + 1) % _titleButtons.Count;
-            else if (action == GameAction.Confirm)
-            {
-                if (_titleSelection == 0 && !_newGame.Disabled) NewGame?.Invoke();
-                else if (_titleSelection == 1) Continue?.Invoke();
-                else if (_titleSelection == 2) Quit?.Invoke();
-            }
-            for (int index = 0; index < _titleButtons.Count; index++)
-                _titleButtons[index].Modulate = index == _titleSelection ? StoryTheme.Selected : Colors.White;
+            if (action == GameAction.Equipment) { Latch(); ShowMenu(); }
+            else if (action == GameAction.Confirm) Advance();
+            else if (action == GameAction.Cancel) { Latch(); ShowTitle(); }
             return;
         }
-        if (Replacement && action is GameAction.Up or GameAction.Down) Select(!_cancelSelected);
-        else if (action == GameAction.Cancel && Replacement) Cancel?.Invoke();
-        else if (action == GameAction.Confirm && (_cancelSelected || !_newGame.Disabled))
-        { if (_cancelSelected) Cancel?.Invoke(); else NewGame?.Invoke(); }
+        if (action == GameAction.Up) Select((_selection + _buttons.Count - 1) % _buttons.Count);
+        else if (action == GameAction.Down) Select((_selection + 1) % _buttons.Count);
+        else if (action == GameAction.Cancel) { Latch(); if (Replacement) Cancel?.Invoke(); else ShowTitle(); }
+        else if (action == GameAction.Confirm)
+        {
+            if (!Revealed) { _dialogue.Body.VisibleCharacters = -1; Latch(); }
+            else Activate(_selection);
+        }
     }
-
-    private void Select(bool cancel)
+    private void Latch() => _latched = _input?.GameplayHeld == true;
+    private void Advance()
     {
-        _cancelSelected = cancel;
-        _newGame.Modulate = cancel ? Colors.White : StoryTheme.Selected;
-        _cancel.Modulate = cancel ? StoryTheme.Selected : Colors.White;
+        if (_latched || _activated || _assets is null) return;
+        Latch();
+        if (_page == -1)
+        {
+            _page = 0; _start.Hide(); _backdrop.Witch = true; _backdrop.Arrival = true;
+            _assets.Audio!.Play("MUSIC_WITCH"); Message(_assets.Content.Dialogue["216"]); return;
+        }
+        if (!Revealed) { _dialogue.Body.VisibleCharacters = -1; return; }
+        if (_dialogue.ReadMore()) return;
+        if (++_page >= 5) { ShowMenu(); return; }
+        _backdrop.Arrival = false; Message(_assets.Content.Dialogue[(216 + _page).ToString()]);
     }
-
+    private void ShowMenu()
+    {
+        _page = -2; _start.Hide(); _backdrop.Witch = true; _backdrop.Arrival = false;
+        foreach (var button in _buttons) button.Show();
+        if (_assets is not null) _assets.Audio!.Play("MUSIC_WITCH");
+        Message(Replacement ? "Start a new game? Current unsaved progress will be discarded." : _assets?.Content.Dialogue["221"] ?? "Entry unavailable.");
+        Select(Replacement ? 1 : 0);
+    }
+    private void ShowTitle()
+    {
+        if (_failed || _assetError is not null) return;
+        _page = -1; _backdrop.Witch = false; _dialogue.Hide(); _start.Show();
+        foreach (var button in _buttons) button.Hide();
+        _assets!.Audio!.Play("MUSIC_TITLE");
+    }
+    private void Message(string text)
+    {
+        _revealed = 0; _dialogue.ResetReading(); _dialogue.Body.Text = text;
+        _dialogue.Body.VisibleCharacters = _input?.Settings.TextMode == "adjustable" ? 0 : -1;
+        _dialogue.Present(true, false, false, new(), ""); RefreshHint();
+    }
+    private void RefreshHint()
+    {
+        _hint.Visible = _page != -1;
+        _read.Visible = _page >= 0;
+        _read.Text = Revealed ? "Continue" : "Reveal";
+        _hint.Text = Replacement ? "New Game  •  Normal difficulty" : "Choose your journey  •  Normal difficulty";
+        if (_input is null) return;
+        _dialogue.SetHint(!Revealed ? $"{_input.Hint(GameAction.Confirm)}: Reveal" : _page >= 0
+            ? $"{_input.Hint(GameAction.Confirm)}: Continue   •   {_input.Hint(GameAction.Equipment)}: Skip greeting"
+            : $"{_input.Hint(GameAction.Confirm)}: Choose   •   {_input.Hint(GameAction.Cancel)}: Back");
+    }
+    private void Select(int index)
+    {
+        _selection = index;
+        for (int i = 0; i < _buttons.Count; i++) _buttons[i].Modulate = i == index ? StoryTheme.Selected : Colors.White;
+    }
+    private void Activate(int index)
+    {
+        if (_page != -2 || _activated || _latched || _buttons[index].Disabled) return;
+        Select(index); Latch();
+        if (index == 0) { _activated = true; NewGame?.Invoke(); }
+        else if (Replacement) Cancel?.Invoke();
+        else if (index == 1) Continue?.Invoke();
+        else Quit?.Invoke();
+    }
     internal void Fail(SessionFailure failure, bool canRetry)
     {
-        _newGame.Disabled = !canRetry;
-        _message.Text = $"Cannot start: {failure.Code} ({failure.Field}).\n" + (canRetry
+        _activated = false; _failed = true; ShowMenu(); _buttons[0].Disabled = !canRetry || _assets is null;
+        Message($"Cannot start: {failure.Code} ({failure.Field}).\n" + (canRetry
             ? "Check the prepared private opening content selections and try New Game again."
-            : "Correct the startup options or input settings, then relaunch.");
+            : "Correct the startup options or input settings, then relaunch."));
     }
-
     public string ReadEntryObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
-    { title = true, replacement = Replacement, cancelSelected = _cancelSelected, titleSelection = _titleSelection, message = _message.Text });
+    {
+        title = _page == -1, stage = Stage, replacement = Replacement, cancelSelected = Replacement && _selection == 1,
+        titleSelection = _selection, page = _page, message = _dialogue.Body.Text, visibleCharacters = _dialogue.Body.VisibleCharacters,
+        totalCharacters = _dialogue.Body.GetTotalCharacterCount(), latched = _latched, activated = _activated, assetError = _assetError,
+        artFrame = _backdrop.Frame, artRect = new { x = _backdrop.Art.Position.X, y = _backdrop.Art.Position.Y, width = _backdrop.Art.Size.X, height = _backdrop.Art.Size.Y },
+        textureCount = _assets?.Textures.Count ?? 0, sourceWidth = 256, sourceHeight = 224, integerScale = 4,
+        textureIds = _assets?.Textures.Values.Select(texture => texture.GetInstanceId().ToString()).ToArray(),
+        layers = _page == -1 ? new[] { "numeral", "title", "start" } : new[] { "witch", "menu", "dialogue" },
+        buttons = _buttons.Select(button => new { name = button.Name.ToString(), visible = button.IsVisibleInTree(), disabled = button.Disabled,
+            x = button.Position.X, y = button.Position.Y, width = button.Size.X, height = button.Size.Y }),
+        audio = _assets?.Audio?.ObservePlayback(), dialogue = _dialogue.Observe(),
+    });
 }
