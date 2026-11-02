@@ -51,6 +51,7 @@ public sealed class PrivateExplorationTests
                 DialogueWait dialogue => new Acknowledge(dialogue.Token),
                 ChoiceWait choice => new ChooseDialogue(choice.Token, yes),
                 PresentationWait cue => new CompletePresentation(cue.Token, cue.Cue.Kind),
+                FullFadeWait { LogicalDone: true } fade => new CompletePresentation(fade.Token, fade.Kind),
                 _ => new AdvanceSimulation(waiting?.Token),
             };
             result = Send(session, command);

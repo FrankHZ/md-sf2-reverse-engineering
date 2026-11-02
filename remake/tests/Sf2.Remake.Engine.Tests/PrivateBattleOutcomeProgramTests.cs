@@ -16,10 +16,10 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class PrivateBattleOutcomeProgramTests
 {
     private const string World = "SF2_PRIVATE_EXPLORATION_CONTENT";
-    internal static ExplorationReadAccepted Read()
+    internal static ExplorationReadAccepted Read(string start = "map40-intro-start")
     {
         var source = new PrivateExplorationReader(PrivateInputFactAttribute.RequireInput(World),
-            Path.Combine(AppContext.BaseDirectory, "controlled", "map40-intro-start.json"),
+            Path.Combine(AppContext.BaseDirectory, "controlled", start + ".json"),
             PrivateBattleScenarioTests.Selected(Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-party.json")));
         var result = source.Read();
         Assert.True(result is ExplorationReadAccepted, result is ScenarioReadRejected failed ? failed.Failure.ToString() : "admission");
@@ -28,13 +28,15 @@ public sealed class PrivateBattleOutcomeProgramTests
 
     internal static GameSession StartBattle(List<SessionObservation> observations)
     {
-        var read = Read();
+        var read = Read("map21-battle-bridge-start");
         var input = read.Start.Party;
         var party = new BattleStartInput(input.Encounter, input.Actors, input.MainSeed, input.ThinkingSeed, 123, input.NewBattle);
         // External controlled comparison at the existing Map21 seam. Native observation separately
         // supplies the uninterrupted opening/castle session; this does not claim original continuity.
-        var started = GameSession.Start(read.Definition, new ExplorationStartInput(new("map-21"), new("entity-0"), new(5, 15), 3, 32,
-            [0, 1, 2, 32, 33, 34, 401, 600, 601, 602, 603, 604, 605, 607, 608], party));
+        // The declaration supplies Map21 BASE and explicit remake-only period/restored controls.
+        var started = GameSession.Start(read.Definition, new ExplorationStartInput(read.Start.Map, read.Start.Player,
+            read.Start.Position, read.Start.Facing, read.Start.Speed,
+            [0, 1, 2, 32, 33, 34, 401, 600, 601, 602, 603, 604, 605, 607, 608], party, display: read.Start.Display));
         var session = Assert.IsType<SessionStarted>(started).Session;
         PrivateBattleEntryProgramTests.Traverse(session, observations);
         return session;

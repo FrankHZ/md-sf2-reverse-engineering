@@ -117,12 +117,14 @@ public sealed class PrivateBattleEntryProgramTests
     internal static GameSession Bridge(bool seen = false, bool sarah = true)
     {
         var source = new PrivateExplorationReader(PrivateInputFactAttribute.RequireInput(World),
-            Path.Combine(AppContext.BaseDirectory, "controlled", "map40-intro-start.json"),
+            Path.Combine(AppContext.BaseDirectory, "controlled", "map21-battle-bridge-start.json"),
             PrivateBattleScenarioTests.Selected(Path.Combine(AppContext.BaseDirectory, "controlled", "battle01-player-ready.json")));
         var admitted = Assert.IsType<ExplorationReadAccepted>(source.Read());
         // Explicit H3 control: selected seed and roster, separate from the continuous test above.
         int[] flags = [0, 2, 32, 34, 401, .. sarah ? new[] { 1, 33 } : [], .. seen ? new[] { 451 } : []];
-        var start = new ExplorationStartInput(new("map-21"), admitted.Start.Player, new(5, 15), 3, 32, flags, admitted.Start.Party);
+        // Map21's own BASE; period/restored visibility are declared remake controls, not H3 display observations.
+        var start = new ExplorationStartInput(admitted.Start.Map, admitted.Start.Player, admitted.Start.Position,
+            admitted.Start.Facing, admitted.Start.Speed, flags, admitted.Start.Party, display: admitted.Start.Display);
         return Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, start)).Session;
     }
 
@@ -132,7 +134,12 @@ public sealed class PrivateBattleEntryProgramTests
         var session = Bridge(seen: true, sarah: false);
         var source = session.Current.Exploration!.Party;
         var encounter = session.Definition.Encounters[source.Encounter];
-        var inputs = source.Actors.Select(input => input.Actor.Value switch
+        // A palette-complete world may carry other encounters' allies. As at BattleEntry,
+        // this encounter keeps its live actors and obtains its own enemies from admitted defaults.
+        var defaults = session.Definition.EncounterStarts.GetValueOrDefault(source.Encounter) ?? source;
+        var inputs = encounter.Deployments.Select(deployment =>
+            source.Actors.FirstOrDefault(input => input.Actor == deployment.Actor) ??
+            defaults.Actors.Single(input => input.Actor == deployment.Actor)).Select(input => input.Actor.Value switch
         {
             "ally-0" => input with { Hp = 1, Mp = 0, Exp = 13, Kills = 2, Defeats = 1, Status = 1 },
             "ally-1" => input with { Hp = 0, Mp = 0, Exp = 17, Kills = 3, Defeats = 2 },

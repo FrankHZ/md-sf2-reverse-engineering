@@ -2,27 +2,31 @@
 
 ## Decision and scope
 
-**Standard rigor:** [#1433](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1433)
-investigates nine retained diagnostic failures and their product impact. The dependency crosses
-Content admission, Application startup and transfer, but the deliverable is bounded evidence and a
-repair proposal. Production, tests and reference inputs remain unchanged. No aggregate rerun,
-emulator acquisition, Godot launch, screenshots, asset export or audio work is required.
+**Standard rigor:** [#1435](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1435)
+repairs the diagnostic display declarations and selected palette dependencies investigated by
+[#1433](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1433). The dependency crosses
+Content admission, Application startup and transfer; scope is controlled inputs and their existing
+test wiring, with all original behavior/comparison assertions retained. Production, schemas and
+goldens remain unchanged. No aggregate rerun, emulator acquisition, Godot launch, screenshots,
+asset export or audio work is required. The nine corrected-input executions yield **3 pass,
+6 downstream fail, 0 skip**; the [repair result](#corrected-initialization-and-nine-node-results)
+distinguishes those failures from the removed null-display defect.
 
-The inspected and reproduced base is accepted `966728ebee075f208c3af7cd4c8afff46c840adf`, tree
+The original investigation reproduced accepted `966728ebee075f208c3af7cd4c8afff46c840adf`, tree
 `a43d4393ed9bc16d6a4e284c83e0b4f2229ad145`. Original-source identities remain SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6` and USA ROM SHA-256
 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
 This audit adds remake execution evidence, not a new original runtime observation.
 
-**Confirmed:** all nine historical failures stop at the first ordinary warp because the selected
+**Confirmed (investigation base):** all nine historical failures stop at the first ordinary warp because the selected
 diagnostic session has no `Story.Display`. There are two missing initialization owners: the R1
 checkpoint omits display state; the Map21 helpers construct another start without display state.
 The historical world also omits map palettes, a separate content dependency masked by the first
 failure. A palette-complete world still leaves the diagnostic display null.
 
-**Disposition:** correct diagnostic start declarations/construction and their selected content in a
-separate bounded slice. No production fade change or assertion retirement is justified here.
-No historical FAIL becomes PASS. Later assertions remain unexecuted or unverified by this audit.
+**Disposition:** the bounded repair below supplies the missing declarations and selects existing
+palette-complete content. No production fade change or assertion retirement is justified here.
+Historical FAIL records remain failures; only actual corrected-input results are reported anew.
 
 ## Invariant and failure boundary
 
@@ -51,7 +55,7 @@ The [existing display contract](../verification/field-programs.md#ordinary-warp-
 and [source proof](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#selected-r1-period-and-initial-display-binding)
 retain that boundary.
 
-## Actual input and start chains
+## Investigated input and start chains
 
 The retained `local/issue1045/inputs.ps1` selections resolve all six required encounter/static inputs
 and the world successfully. `PrivateBattleScenarioTests.Selected(controlled)` explicitly replaces
@@ -79,7 +83,7 @@ the Rebuild path: `MapTransfer.Apply` requires the target palette when display i
 `Validate` independently requires it for Rebuild. This was reviewed directly, not demonstrated by
 injecting an invented display state. Preserve warps still need the initial live BASE/CURRENT pair.
 
-## Nine-node disposition
+## Historical nine-node disposition
 
 All names below are under `Sf2.Remake.Engine.Tests`. Every historical stack in
 `local/issue1421/engine-final-01.log` names `full-fade-state`; the nine-node inventory remains
@@ -102,7 +106,7 @@ The common immediate cause is established for all nine, not merely inferred from
 **Unknown:** downstream results after correct initialization, including exact RNG/phase comparisons.
 No nine-node PASS, original display-timing closure or obsolete-test retirement is claimed.
 
-## Product impact and smallest follow-up
+## Product impact
 
 | Entry or transition | Dependency review and impact |
 | --- | --- |
@@ -120,31 +124,127 @@ launching another host. This is a bounded impact assessment, not universal start
 [#1410 audio lifetime warnings](../verification/host.md#audio-resource-lifetime-observation) concern
 different resources and remain outside the display investigation.
 
-The smallest follow-up should own the two diagnostic test constructors, the R1 start declaration
-and the specifically selected palette binding, using the existing reader and palette helper:
+The diagnostic repair uses the existing reader and palette helper. It retains the independent
+R1 proof, the separate Map21 evidence boundary and an explicit palette-complete content selection.
+There is no default display in `GameSession`, relaxed `ValidateDisplay`, Map40 BASE copied into
+Map21, skipped node, production-code owner, new schema or startup framework. The following results
+retain the investigation's failures and original assertions.
 
-1. Bind R1's explicit display to its existing
-   [period3/restored-pair source proof](../../../docs/research/chapters/grans-opening/map3-controlled-start-egress-transition.md#selected-r1-period-and-initial-display-binding).
-   Reuse `selected_map_palette_bindings` only if a missing small binding must be reproduced; no asset
-   export or new runtime acquisition is implied. Do not derive observed CURRENT from palette data alone.
-2. Give each Map21 seam an explicit Map21 display declaration and pass it to the constructed start.
-   Reuse an evidenced binding if one covers that exact seam. Otherwise record the missing
-   period/CURRENT/visibility as **Unknown** before changing an original-comparison input. The R1
-   proof does not automatically prove the separately seeded H3 bridge's display state. Any declared
-   remake-only control must be labelled as such, with its effect on the H3 endpoint assessed.
-3. Select the already prepared palette-complete content where its other admitted behavior matches
-   the diagnostic scope, or supply the minimum source-backed `mapPalettes` for the retained old
-   world. These are alternative bindings: the reader rejects embedded-plus-start duplicates even
-   when equal. Do not silently switch all tests to a different world or overwrite the old input.
-4. Rerun only the affected nodes after correction and investigate any new failure at its own seam.
-   Preserve party/seeds/phase assertions and historical results. Do not add a default display in
-   `GameSession`, relax `ValidateDisplay`, copy Map40 BASE into Map21, or skip the nine nodes.
+## Corrected initialization and nine-node results
 
-No production-code owner, new schema, startup framework or repair batch is needed for this audit.
-Whether all comparisons still match after the bounded correction remains **Unknown**, not a
-reason to retire useful engine assertions in advance.
+The repair consumes accepted `614185ba9f92bec6aad0aecfd4dfbc40454bfdba`. R1 now declares period3,
+BASE=CURRENT `(3716,36)` and `base-restored`, using the independent selected-R1 proof above;
+its party, flags, seeds and complete walking phases are unchanged.
+[`map21-battle-bridge-start.json`](../../reference/inputs/map21-battle-bridge-start.json)
+owns the separate Map21 `(5,15)`, Down, speed32 display binding. Bridge and StartBattle read this
+declaration and explicitly retain its display when constructing their different flags/party inputs.
 
-## Reproduction and retained results
+**Confirmed (pinned source/ROM):** Map21's own `00-tilesets.asm` selects palette0, whose words
+at offsets4/6 are `(3716,36)`. This is not Map40's pair `(3204,34)`. Reproduction uses the existing
+`sf2tool.remake_exploration_content.selected_map_palette_bindings` with the verified pinned
+`OriginalPrograms` compiler, map IDs `[3,19,20,21,40,57]` and the identity-verified registered ROM.
+The existing helper checks ROM SHA-256 and the map-palette pointer; no asset export is performed.
+
+| Map IDs | BASE colors 2 / 3 (decimal) |
+| --- | --- |
+| 3, 19, 20, 21 | 3716 / 36 |
+| 40 | 3204 / 34 |
+| 57 | 3240 / 34 |
+
+**Unknown:** original period/CURRENT/visibility at the separately controlled Map21 bridge.
+The player-ready fixture's bridge/deterministic state does not retain them;
+`tools/bizhawk/map3_messenger_acceptance_observer.lua:seed_extension_terminal` changes flags,
+guard placement, RNG and counters but supplies no display observation. R1 evidence is not extended
+to this seam. The Map21 declaration explicitly labels period3 and restored CURRENT/visibility as
+**remake-only controls**. Its original-comparison claim stays the existing selected H3 battle
+endpoint, not natural continuity or original display/interrupt timing. On actual execution, the
+unchanged ready MainSeed, thinking-seed high word, selected actor, turn order, region and flags
+assertions pass before the later instruction-coverage failure. This confirms that endpoint subset
+under the declared control; it does not prove the Unknown original display values or the whole node.
+
+### Selected content and compatibility boundary
+
+The nine-node commands explicitly select retained `world-services-issue1424.json` after loading
+`local/issue1045/inputs.ps1`. Global `accepted-inputs.json`, old worlds and environment defaults are
+untouched. Both starts omit `mapPalettes`; embedded palettes are the single binding authority.
+The old six-map world still admits the corrected R1 Preserve prefix, but the corrected Map21
+prefixes reject input18 with `warp-palette-binding`. It is not a sufficient Rebuild input.
+
+Direct JSON comparison establishes equal layouts, areas, default entities/population, setup
+selectors, onLoad and battle routes for the shared six maps, and unchanged `bbcs-01`,
+`abcs-battle01` and messenger `cs-51580`. Text/font/member-name/party-flag definitions are equal.
+The newer world also adds Battle02/Map66, search and setup variants, Church and supported source
+actions; Map3's former x=0 frontier is an admitted warp. None of these commands uses that exit,
+Search, Church or later setup flags. `cs-51614`/`cs-51406` lower text447 directly rather than with
+a preceding text-cursor write; join/follower/flag operands are unchanged. Reached original
+opening text/position/flag assertions still match. This is a reviewed, bounded selection, not an
+assertion that the two worlds are interchangeable for all consumers or unexecuted suffixes.
+
+The extra encounter changes the reader's party input to carried allies, including ally3;
+per-encounter enemies live in existing `EncounterStarts`. The membership test's four pure battle
+starts now select the current encounter's deployments, preferring carried actors and filling from
+that encounter's admitted defaults, as production BattleEntry does. Its live session party is
+untouched; all original formation/resources/seed/dead-member assertions remain and pass.
+
+The existing `RunUntilStop` driver also now sends `CompletePresentation` for a logically completed
+`FullFadeWait`, reusing the typed receipt pattern already used by other engine tests. Its initial
+omission was exposed as two `fade-awaiting-presentation` failures, retained in
+`local/issue1435/representative.{log,trx}`; no production invariant was changed.
+
+The retained prefix observer from #1433 was adapted only for the corrected declarations/display,
+existing typed driver and stopping after the first warp. With the selected world all four chains
+return to PlayerInput: R1 Preserve input2 retains BASE=CURRENT `(3716,36)`; Bridge, Membership and
+Defeat Rebuild input18 each reach Map40 with BASE=CURRENT `(3204,34)`. All retain period3 and
+BaseRestored. `prefix-product.json` and `prefix-baseline.json` distinguish this corrected execution
+from #1433's null-display reproduction. They are local engine state observations, not H3 evidence.
+
+### Actual result matrix
+
+Names below retain namespace `Sf2.Remake.Engine.Tests`. Every row ran with required private inputs;
+no missing-input skip, expectation change or nine-node PASS is claimed.
+
+| Node | Actual corrected-input result / next owner |
+| --- | --- |
+| `PrivateExplorationTests.FullOriginalOpeningConsumesR1InputsAndMatchesR2AndR2aThroughStableFieldControl` | **FAIL**, after R1/R2/messenger texts, positions, flags and joined list match: Active expects `[0,1]`, actual `[0,1,2]`. Main-gate owns assessment of this comparison versus `MapPartyMembership.Rebuild` and flags2/34 already asserted by the same node. No expectation changed. |
+| `PrivateBattleEntryProgramTests.ExplicitH3BridgeRunsTheFullBeforeBodyAndMatchesPlayerReadyWithoutClaimingR1Continuity` | **FAIL**, after ready seed/order/actor/flags match: full instruction-range assertion lacks instruction2 (FadeOut). The selected before program is unchanged between worlds. Main-gate owns assessment of entry fade routing/observation coverage versus this assertion. Remaining assertions unexecuted. |
+| `PrivateExplorationTests.RefusalPreservesUnjoinedStateAndARealSarahInteractionCanLaterJoinTheParty` | **PASS**, including refusal, real retry interaction, join/follower and final control assertions. |
+| `PrivateBattleEntryProgramTests.LiveActiveMembershipPacksFormationWithoutAddingSarahOrReplacingThePartyResources` | **PASS** after the per-encounter input binding correction; earlier `missing-actor` failure retained. |
+| `PrivateBattleOutcomeProgramTests.OrdinaryLeaderLossKeepsItsOwnRecoveryAndRunsTheRealPostMessengerReload` | **PASS**, including actual defeat, recovery/gold, real reload program and usable return. |
+| `PrivateBattleEntryProgramTests.ContinuousOpeningCastleTowerAndBeforeBattleRetainTheLivePartyAndReachActualBattleInput` | **FAIL**, `explicit-text-wait-required` in `RunUntilStop` through `ContinuousBattle`'s Astral interaction. Main-gate owns the separate typed-text driver boundary; final battle assertions unexecuted. |
+| `PrivateBattleOutcomeProgramTests.ActualCommandsCompleteTheWholeVictoryProgramFlagsAndUsableReturn` | **FAIL**, same continuous Astral typed-text boundary before Play; victory/reward/return assertions unexecuted. Same owner. |
+| `PrivateBattleOutcomeProgramTests.ContinuousOpeningDefeatKeepsOneSessionThroughTheWholeProgramAndReturn` | **FAIL**, same continuous Astral typed-text boundary before Play; defeat/return assertions unexecuted. Same owner. |
+| `PrivateExplorationTests.CastlePalaceAndAstralRunFromTheLiveOpeningWithFirstRepeatAndChoiceVariants` | **FAIL**, `explicit-text-wait-required` at its actual Astral interaction. Same typed-text owner; remaining repeat/choice assertions unexecuted. |
+
+Combined latest per-node result: **3 pass / 6 fail / 0 skip**. All nine missing-display paths are
+repaired; the six downstream failures remain open for main-gate scope/owner assessment, not silent
+engine or comparison changes here. No full-route victory/defeat parity or all-world compatibility
+follows from the repaired initialization.
+
+Run the exact FullyQualifiedNames above with the existing project command below, selecting only
+the intended rows. In this slice the initial two representative nodes ran first, then those two
+reran after the fade-receipt correction (`representative-receipt.trx`: 0/2/0); the other seven ran
+once (`remaining-seven.trx`: 2/5/0). Only membership reran after its input-binding correction
+(`membership-binding.trx`: 1/0/0). The other eight results remain valid for the final diff.
+The existing `SelectedR1WalkingPhasesResumeBeforeTheFirstAutonomousDraw` behavior node also passes
+on the corrected R1 declaration (`r1-phase-regression.trx`: 1/0/0), preserving its exact phase/RNG assertions.
+
+```powershell
+. ./local/issue1045/inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$env:SF2_REQUIRE_PRIVATE_TESTS = '1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = (Resolve-Path -LiteralPath 'local/issue1045/world-services-issue1424.json').Path
+# $filter uses FullyQualifiedName=<namespace + exact matrix node>, joined with | for a bounded group.
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --configuration Release --no-restore --filter $filter `
+  --logger 'trx;LogFileName=selected-nodes.trx' --results-directory local/issue1435
+```
+
+Configured DOTNET_BIN and DOTNET_CLI_HOME are absolute; SDK10.0.204, shared installations and
+worktree-local caches/TEMP are reused. Compact results remain in `local/issue1435`, with no new
+world, environment, SDK, save slot or native instance. The historical completed aggregate
+**1692 pass / 20 fail / 1 skip** and all five #1433 failure reproductions remain unchanged.
+
+## Investigation reproduction and retained results
 
 All commands run from the owning repository root with existing inputs/installations/caches, after
 loading `local/issue1045/inputs.ps1` in the same process and forcing
@@ -192,7 +292,8 @@ and subsequent narrow results in `local/issue1421`–`local/issue1425`. Neither 
 profile was rerun. New compact outputs occupy under 0.1 MB, with about 3.09 GB free on the execution
 drive. No new environment, SDK, asset copy, native instance or save slot was created.
 
-For this documentation diff, perform direct ownership, links/anchors, tables/fences, whitespace
-and private-boundary checks, then inspect `uv run sf2 verify plan --base origin/main --head HEAD`
-on the clean committed candidate. Exact candidate/remote/CI identity belongs to the PR handoff;
-a documentation-only CI skip is not a runtime PASS. Main-gate retains independent acceptance.
+For the corrected diagnostic diff, perform direct ownership, links/anchors, tables/fences,
+whitespace, unchanged-assertion and private-boundary checks, then inspect
+`uv run sf2 verify plan --base origin/main --head HEAD` on the clean committed candidate.
+Exact candidate/remote/CI identity belongs to the PR handoff; public CI does not substitute for
+the private nine-node results above. Main-gate retains independent acceptance.

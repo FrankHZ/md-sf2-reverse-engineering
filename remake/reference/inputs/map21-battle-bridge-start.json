@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "Explicit Map21 (5,15) diagnostic battle bridge, separate from natural R1 continuity. BASE is source-backed Map21 palette0 colors 2+3. Period3 and restored CURRENT/visibility are remake-only controls, not observed original bridge display values; those remain Unknown. The retained H3 player-ready endpoint assertions still apply, without a display or interrupt-timing claim. Requires palette-complete selected world content; mapPalettes is deliberately absent to avoid duplicate embedded bindings.",
+  "start": {
+    "map": "map-21",
+    "player": "entity-0",
+    "position": { "x": 5, "y": 15 },
+    "facing": 3,
+    "speed": 32,
+    "flags": [0, 1, 2, 32, 33, 34, 401],
+    "display": {
+      "period": 3,
+      "base": { "color2": 3716, "color3": 36 },
+      "current": { "color2": 3716, "color3": 36 },
+      "visibility": "base-restored"
+    }
+  }
+}
