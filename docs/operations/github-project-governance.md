@@ -259,16 +259,36 @@ with its cause, not an implementation or review blocker. Do not ask for nonessen
 permission, bypass/retry a denial, choose another channel or redo completed work. A successful send
 proves submission only; preserve any earlier NOT SENT outcome as history.
 
-During authorized orchestration, main-gate uses the existing completion-wait tool (`wait_threads`)
-and returned cursors while advancing independent work. After a timeout, continue independent work
-or renew the bounded wait; silence and timeout are not failure or completion. Do not end the
-coordinating turn merely because the executor started, assuming a later callback will resume it.
-On completion or attention, read the compact result and named Issue/PR handoff, then review or handle
-the concrete blocker. A frozen handoff is sufficient for intake even when no callback was sent.
-Avoid repeated full-history reads and requests for routine progress.
+#### Completion Intake
+
+Main-gate owns the event-driven wait from dispatch through independent review within the authorized
+scope. A worker's final answer and frozen Issue/PR handoff are its delivery; a cross-chat callback is
+not required. A dispatch acknowledgement belongs in commentary, not a final answer that leaves
+the user responsible for noticing completion. An explicit dispatch-only or stop request controls.
+
+1. After task creation, retain the actual `threadId`, returned `hostId` and Issue. For queued
+   creation, resolve the actual thread identity before waiting; do not pass a `clientThreadId` as
+   a thread ID. Record the next intake action in the existing local handoff, not a new registry.
+2. Use `wait_threads` for the active targets, passing each latest returned cursor as `afterCursor`.
+   Use one target for a single worker, or one bounded call for up to eight targets. Reserve
+   `timeoutMs: 0` for an initial/recovery snapshot or a user-requested status check; during ordinary
+   waiting use a positive bounded timeout compatible with the host's responsiveness limits.
+   Completion or attention wakes the wait; routine commentary does not. This is a bounded event
+   wait, not a persistent subscription that survives the coordinating turn ending.
+3. On timeout, retain the cursor and continue independent authorized work or renew the wait.
+   Silence and timeout are neither failure nor completion. Do not repeatedly read full histories,
+   send progress requests or narrate unchanged snapshots. Keep a completed-but-unreviewed result
+   and its next action in the handoff; advancing a cursor does not complete acceptance.
+4. On completion or attention, inspect the actual turn status/errors and compact result, then the
+   named Issue/PR handoff. A finished turn is not necessarily a finished Issue or a passed gate.
+   Independently review and, when authorized and accepted, merge and update tracking without
+   waiting for a callback or another user prompt. Handle concrete blockers through their owner;
+   leave genuine user approval/input requests for the user. Return corrections to the same worker
+   and resume its completion wait.
 
 If the coordinating turn is interrupted or must end, record the pending task identity, last wait
-cursor and next intake action in the current handoff. Resume with a read-only completion check;
+cursor, returned host, unreviewed result and next intake action in the current handoff. Resume with
+a read-only completion snapshot before dispatching or rerunning anything;
 do not claim work will resume automatically without an actual, authorized wake-up mechanism. Do not
 add a scheduler, hook or service merely to deliver a completion notification.
 Review corrections return to the same execution task and scoped Issue, with In Progress restored when

@@ -61,6 +61,11 @@ Keep implementation and corrections for the same outcome in the same task. Start
 new independent outcome; compaction alone is not a new task boundary. Keep in-thread subagents limited
 to small, independent subtasks, not replacements for an Issue's accountable executor or main-gate.
 
+Main-gate owns event-driven completion intake through the
+[completion-wait procedure](./docs/operations/github-project-governance.md#completion-intake).
+Keep authorized orchestration active through worker completion and independent review; do not finish
+with only a dispatch acknowledgement or depend on a worker callback or user reminder.
+
 For routine continuation of the same Issue, send only the current objective, changes to
 base/branch/ownership, slice-specific constraints, acceptance and stopping conditions, and links to
 necessary owners and results. Reference stable rules rather than repeating them. Explicitly carry
