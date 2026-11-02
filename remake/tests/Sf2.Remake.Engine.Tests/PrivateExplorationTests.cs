@@ -15,8 +15,14 @@ public sealed class PrivateExplorationTests
     private const string World = "SF2_PRIVATE_EXPLORATION_CONTENT";
     private static GameSession StartSource(string start, bool opening = false)
     {
+        string Input(string name) => PrivateInputFactAttribute.RequireInput(name);
+        var party = opening ? new PrivateBattleScenarioReader(Input("SF2_PRIVATE_BATTLE01_DATA"),
+            Input("SF2_PRIVATE_BATTLE01_SCENE"), Input("SF2_PRIVATE_BATTLE01_TERRAIN"),
+            Input("SF2_PRIVATE_STATIC_DATA"), Input("SF2_PRIVATE_ENEMY_DATA"), Input("SF2_PRIVATE_ENEMY_GOLD"),
+            Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-party.json"),
+            Input("SF2_PRIVATE_BATTLE_SCENE_CONTENT")) : PrivateBattleScenarioTests.Selected();
         var source = new PrivateExplorationReader(PrivateInputFactAttribute.RequireInput(World),
-            Path.Combine(AppContext.BaseDirectory, "controlled", start + ".json"), PrivateBattleScenarioTests.Selected(opening ? Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-party.json") : null));
+            Path.Combine(AppContext.BaseDirectory, "controlled", start + ".json"), party);
         var read = source.Read();
         Assert.True(read is ExplorationReadAccepted, read is ScenarioReadRejected rejected ? rejected.Failure.ToString() : "world admission");
         var admitted = (ExplorationReadAccepted)read;
@@ -29,6 +35,7 @@ public sealed class PrivateExplorationTests
         List<SessionObservation>? observations = null, List<(int Id, int? Speaker)>? texts = null, bool yes = true)
     {
         SessionResult? result = null;
+        OpenTextWindow? recordedWindow = null;
         for (int index = 0; index < limit && session.Current.StopReason is SessionStopReason.SimulationWait or SessionStopReason.PresentationWait; index++)
         {
             foreach (var entity in session.Current.Exploration?.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest).ToArray() ?? [])
@@ -40,6 +47,12 @@ public sealed class PrivateExplorationTests
             var waiting = session.Current.Story.Wait;
             if (waiting is DialogueWait text)
                 texts?.Add((text.Text, text.Speaker is { } speaker ? int.Parse(speaker.Value[7..], System.Globalization.CultureInfo.InvariantCulture) | text.SpeakerFlags << 8 : null));
+            if (waiting is FieldTextWait or W1TextWait && session.Current.Story.TextWindow is OpenTextWindow window &&
+                !ReferenceEquals(window, recordedWindow))
+            {
+                texts?.Add((window.Text, window.Speaker is { } actor ? int.Parse(actor.Value[7..], System.Globalization.CultureInfo.InvariantCulture) | window.SpeakerFlags << 8 : null));
+                recordedWindow = window;
+            }
             if (waiting is PresentationWait { Cue.Kind: PresentationCueKind.Gesture } gesture)
             {
                 Assert.Equal(255, session.Current.Exploration!.Entities[gesture.Cue.Entity!.Value].Motion.AnimationCounter);
@@ -48,6 +61,10 @@ public sealed class PrivateExplorationTests
             // A typed test presentation port; native Godot observations separately prove drawing/playback.
             SessionCommand command = waiting switch
             {
+                FieldTextWait { LogicalDone: true, Revealed: false } field => new CompleteTextReveal(field.Token),
+                FieldTextWait { LogicalDone: true } field when session.Current.CanWaitForText => new Acknowledge(field.Token),
+                W1TextWait { Revealed: false } span => new CompleteTextReveal(span.Token),
+                W1TextWait span => new Acknowledge(span.Token),
                 DialogueWait dialogue => new Acknowledge(dialogue.Token),
                 ChoiceWait choice => new ChooseDialogue(choice.Token, yes),
                 PresentationWait cue => new CompletePresentation(cue.Token, cue.Cue.Kind),

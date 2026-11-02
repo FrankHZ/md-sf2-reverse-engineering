@@ -2,13 +2,22 @@
 
 ## Decision and scope
 
-**Standard rigor:** [#1435](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1435)
-repairs the diagnostic display declarations and selected palette dependencies investigated by
+**Standard rigor:** [#1437](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1437)
+resolves the six downstream failures with existing typed commands/receipts, source-ordered counted
+membership and actual fade lifecycle coverage. The accepted diagnostic initialization from
+[#1435](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1435) remains its dependency.
+Scope includes the three private behavior files, focused JoinMessage behavior assertions,
+`ProgramRunner`'s field-return publication and their owning documentation. Main-gate authorized
+that narrow production boundary after the source-chronology finding. No golden, fixture, source
+expectation or private input bytes change. The [current result](#downstream-resolution) is
+**9 pass/0 fail/0 skip**; the earlier failures below remain discovery evidence.
+
+The preceding repair corrected the diagnostic display declarations and selected palette dependencies investigated by
 [#1433](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1433). The dependency crosses
-Content admission, Application startup and transfer; scope is controlled inputs and their existing
-test wiring, with all original behavior/comparison assertions retained. Production, schemas and
-goldens remain unchanged. No aggregate rerun, emulator acquisition, Godot launch, screenshots,
-asset export or audio work is required. The nine corrected-input executions yield **3 pass,
+Content admission, Application startup and transfer; its scope was controlled inputs and their existing
+test wiring, with all original behavior/comparison assertions retained. That repair left production,
+schemas and goldens unchanged. No aggregate rerun, emulator acquisition, Godot launch, screenshots,
+asset export or audio work is required. Its nine corrected-input executions yielded **3 pass,
 6 downstream fail, 0 skip**; the [repair result](#corrected-initialization-and-nine-node-results)
 distinguishes those failures from the removed null-display defect.
 
@@ -200,8 +209,9 @@ from #1433's null-display reproduction. They are local engine state observations
 
 ### Actual result matrix
 
-Names below retain namespace `Sf2.Remake.Engine.Tests`. Every row ran with required private inputs;
-no missing-input skip, expectation change or nine-node PASS is claimed.
+This is the historical #1435 corrected-input baseline. Names below retain namespace
+`Sf2.Remake.Engine.Tests`. Every row ran with required private inputs; that run claimed no
+missing-input skip, expectation change or nine-node PASS. See the [current resolution](#downstream-resolution).
 
 | Node | Actual corrected-input result / next owner |
 | --- | --- |
@@ -215,10 +225,9 @@ no missing-input skip, expectation change or nine-node PASS is claimed.
 | `PrivateBattleOutcomeProgramTests.ContinuousOpeningDefeatKeepsOneSessionThroughTheWholeProgramAndReturn` | **FAIL**, same continuous Astral typed-text boundary before Play; defeat/return assertions unexecuted. Same owner. |
 | `PrivateExplorationTests.CastlePalaceAndAstralRunFromTheLiveOpeningWithFirstRepeatAndChoiceVariants` | **FAIL**, `explicit-text-wait-required` at its actual Astral interaction. Same typed-text owner; remaining repeat/choice assertions unexecuted. |
 
-Combined latest per-node result: **3 pass / 6 fail / 0 skip**. All nine missing-display paths are
-repaired; the six downstream failures remain open for main-gate scope/owner assessment, not silent
-engine or comparison changes here. No full-route victory/defeat parity or all-world compatibility
-follows from the repaired initialization.
+Combined #1435 per-node result: **3 pass / 6 fail / 0 skip**. All nine missing-display paths were
+repaired; the six downstream failures were handed to main-gate and #1437 for the bounded resolution
+below. No full-route victory/defeat parity or all-world compatibility follows from initialization alone.
 
 Run the exact FullyQualifiedNames above with the existing project command below, selecting only
 the intended rows. In this slice the initial two representative nodes ran first, then those two
@@ -243,6 +252,98 @@ Configured DOTNET_BIN and DOTNET_CLI_HOME are absolute; SDK10.0.204, shared inst
 worktree-local caches/TEMP are reused. Compact results remain in `local/issue1435`, with no new
 world, environment, SDK, save slot or native instance. The historical completed aggregate
 **1692 pass / 20 fail / 1 skip** and all five #1433 failure reproductions remain unchanged.
+
+## Downstream resolution
+
+**Confirmed (engine execution):** the final nine-node selection completes **9 pass/0 fail/0 skip**
+in `local/issue1437/final-nine.trx`. The matrix above retains #1435's **3/6/0** baseline; its six
+FAIL rows are now resolved, not erased. Every exact node in that matrix was rerun because the
+shared field-return publication and diagnostic reader/driver affect their dependencies.
+
+| Former downstream failure | Final result and retained assertion |
+| --- | --- |
+| R1/R2/R2a full opening | **PASS**; original Active `[0,1]`, joined list, flags, texts, speakers, guards, followers and stable movement assertions unchanged. |
+| Explicit H3 bridge | **PASS**; ready RNG/high thinking word, selected actor, queue, region and flags unchanged; every before-program instruction still required. |
+| Continuous castle/tower/battle input | **PASS**; same session, live formation/resources, before-program and actual first battle input. |
+| Actual-command victory | **PASS**; actual battle/growth, every after-program instruction, ordered join/flags/return, carried progression and usable field movement. |
+| Continuous defeat | **PASS**; same-session actual defeat, whole return program and usable field movement. |
+| Castle/palace/Astral variants | **PASS**; both initial follower cases, refusal/acceptance, repeat text579 and terminal control. |
+
+The three prior passing rows (refusal/retry, changed membership, ordinary defeat/reload) also
+**PASS** in the same final run. This is an engine diagnostic result; the Map21 display controls
+remain remake-only and original display/timing and natural continuity remain **Unknown**.
+
+### Counted membership versus gameplay membership
+
+**Confirmed (pinned source):** `battleparty.asm:JoinForce` (`0x9956`) sets the joined flag,
+calls `UpdateForce`, then conditionally calls `JoinBattleParty`; it does not rebuild after the
+active write. `mapscriptengine_2.asm:csc08_joinForce` calls Sarah1 then Chester2 for selector128.
+The resulting counted Active prefix is `[0,1]`, although flags32/33/34 are all set. The last
+`{LEADER}` in `cs_51614` is text536 **before** those joins. Join text447 contains `{NAME;1}` and
+`{NAME;2}`, not `{LEADER}`. The remaining follower/guard commands, `ExecuteMapScript:loc_47234`,
+`Map3_ZoneEvent8`'s F603 write, `RunMapSetupZoneEvent`,
+`ProcessMapEventType6_ZoneEvent` and `WaitForEvent` return path contain no later `UpdateForce`.
+All paths are beneath the already pinned SF2DISASM `disasm/` tree; no source or ROM input changed.
+This is static source-order support for the retained assertion, not a new original RAM capture.
+
+The incorrect surface was `ProgramRunner`'s ordinary field-control return, which derived gameplay
+ActiveAllies from flags **and published that reconstruction as Story.PartyLists**. It now continues
+to synchronize carried ActiveAllies but preserves the last actual counted-list state. `Join`,
+explicit `{LEADER}` (`ExplorationTextRunner.Begin` / source `symbol_leader`) and battle entry keep
+their own real rebuilds; restore remains separately reconstructed. No active flag or expected
+R2a value changes. The existing two JoinMessage behavior cases now assert both the cached reserve
+prefix and current gameplay ActiveAllies after actual return. Their pre-fix run fails both cache
+assertions; the existing LEADER test passes before and after the correction.
+
+### Typed waits, real fade receipts and encounter inputs
+
+`RunUntilStop` advances mandatory FieldText work, supplies actual `CompleteTextReveal`, then
+acknowledges only an available text-input boundary. W1 spans use the same existing commands.
+Typed text recording reads each actual OpenTextWindow once, retaining speaker operands without
+duplicating multi-span text IDs. No state mutation, synthesized input bypass or helper test is added.
+
+**Confirmed (execution and code):** `ProgramRunner` routes black fades through
+`MapTransfer.BeginFade` and `FullFadeWait`; that path emits `full-fade-started`, actual
+`presentation-completed`, `fade-service` and `full-fade-completed`, without Program coordinates.
+The old coordinate-only assertion therefore missed executed fades (first index2, then index10).
+The before/after-program assertions now require every non-fade instruction's actual coordinate and
+every fade's ordered request/delivery/logical-completion lifecycle **between its two adjacent
+instruction coordinates**, including real service work. They neither exclude index2 nor append an
+unobserved coordinate. All eight before-program and ten after-program fades are covered.
+
+The selected world carries a later encounter's ally3 as well as the opening three. ContinuousBattle
+now checks this encounter's actors and separately checks exact retained off-encounter allies;
+it never changes the live party. The pure post-victory BattleTurnFlow comparison similarly selects
+the encounter's deployments from carried actors and admitted defaults rather than treating a
+travelling ally-only party as a complete enemy-inclusive battle start. Existing growth/resource
+assertions remain. Opening diagnostics also pass the already configured
+`SF2_PRIVATE_BATTLE_SCENE_CONTENT` to the existing PrivateBattleScenarioReader optional input;
+its admitted healing content is required by the actual victory commands. No assets were generated,
+copied or reselected globally, and production Content admission is unchanged.
+
+### Verification and preserved discoveries
+
+Reuse the earlier command with the exact nine FullyQualifiedNames, selected world, absolute SDK
+selections and required-private flag; change only the results directory to `local/issue1437` and
+logger filename to `final-nine.trx`. The local `run-nodes.ps1` records this invocation. Existing
+`local/issue1045/inputs.ps1` supplies the scene selection; no implicit optional-input skip counts.
+
+`focused-regression.trx` completes **283 pass/0 fail/0 skip** across Battle01ToBattle02Tests,
+MapEntityLifecycleTests, ExplorationTextWaitTests, BattleEntryProgramTests, FieldPlayerReturnTests,
+OpeningRestoreTests, OpeningSaveTests and JaroVictoryProgramTests. This checks counted chronology,
+LEADER rebuilding, entry/retention and restore/save boundaries affected by the shared publication.
+`uv run sf2 verify adapter` completes locked restore and actual adapter build with zero warnings/errors.
+No complete engine/private aggregate, native launch, emulator or comparator is run.
+
+Retained completed failures in `local/issue1437` include `typed-text-four` (0/4/0: missing typed
+text recording and off-encounter actor assertion), `continuous-candidates` (compile failure:
+incorrect Battle.Encounter property), `continuous-candidate-binding` (2/1/0: healing scene input),
+`bridge-fade-coverage` (0/1/0: next FadeIn coordinate), `chronology-before-fix` (1/2/0: counted
+prefix overwritten), `chronology-after-fix` (4/1/0: after-program fade coordinate) and
+`victory-fade-coverage` (0/1/0: incomplete pure re-entry input). Each correction used a focused rerun;
+final-nine was justified by the final shared dependency changes. Historical #1433/#1435 receipts and
+the completed **1692/20/1** aggregate are untouched. Public CI and exact candidate identity belong
+to the PR handoff; neither substitutes for these private results or broadens their fidelity claim.
 
 ## Investigation reproduction and retained results
 

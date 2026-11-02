@@ -71,8 +71,12 @@ public sealed class PrivateBattleEntryProgramTests
         Assert.True(session.Current.HasBattleControl);
         Assert.Equal(liveMembers.Select(member => "ally-" + member), session.Current.Battle.Actors.Where(actor => actor.IsAlly && actor.Position is not null).Select(actor => actor.Actor.Value));
         Assert.Equal(party.Gold, session.Current.Battle.Gold);
+        var encounter = session.Current.Battle.Definition;
+        var retained = party.Actors.Where(input => !encounter.Deployments.Any(row => row.Actor == input.Actor)).ToArray();
+        Assert.Equal(retained, session.Current.Story.FieldPlayer!.RetainedAllies ?? []);
         foreach (var input in party.Actors.Where(input => input.Actor.Value.StartsWith("ally-", StringComparison.Ordinal)))
         {
+            if (!encounter.Deployments.Any(row => row.Actor == input.Actor)) continue;
             var actor = session.Current.Battle.GetActor(input.Actor);
             Assert.Equal(input.Exp, actor.Exp); Assert.Equal(input.Kills, actor.Kills); Assert.Equal(input.Defeats, actor.Defeats);
             Assert.Equal(actor.Definition.MaxHp, actor.Hp); Assert.Equal(actor.Definition.MaxMp, actor.Mp);
@@ -104,8 +108,22 @@ public sealed class PrivateBattleEntryProgramTests
         Assert.Contains(399, session.Current.Story.Flags);
         Assert.Contains(observations, row => row.Program?.Program == "bbcs-01");
         var beforeProgram = session.Definition.Exploration!.Programs["bbcs-01"];
-        Assert.Equal(Enumerable.Range(0, beforeProgram.Instructions.Count), observations.Where(row => row.Program?.Program == "bbcs-01")
-            .Select(row => row.Program!.Value.Instruction).Distinct().Order());
+        foreach (int index in Enumerable.Range(0, beforeProgram.Instructions.Count))
+        {
+            // Full fades use their own typed lifecycle rather than program-instruction rows.
+            // Require the actual request, delivery and logical completion between its neighbours.
+            if (beforeProgram.Instructions[index] is PresentCue { Kind: PresentationCueKind.FadeOut or PresentationCueKind.FadeIn } fade)
+            {
+                int preceding = observations.FindLastIndex(row => row.Program == new ProgramLocation("bbcs-01", index - 1));
+                int following = observations.FindIndex(row => row.Program == new ProgramLocation("bbcs-01", index + 1));
+                Assert.True(preceding >= 0 && following > preceding, $"fade instruction {index}");
+                var fadeRows = observations.Skip(preceding + 1).Take(following - preceding - 1).ToArray();
+                Assert.Equal(new[] { "full-fade-started", "presentation-completed", "full-fade-completed" },
+                    fadeRows.Where(row => row.Detail == fade.Kind.ToString()).Select(row => row.Kind));
+                Assert.Contains(fadeRows, row => row.Kind == "fade-service");
+            }
+            else Assert.Contains(observations, row => row.Program == new ProgramLocation("bbcs-01", index));
+        }
         using var admission = Fixture("battle01-admission");
         var sourceCommands = admission.RootElement.GetProperty("static").GetProperty("cutscenes").GetProperty("beforeBattle")
             .GetProperty("program").GetProperty("commands");

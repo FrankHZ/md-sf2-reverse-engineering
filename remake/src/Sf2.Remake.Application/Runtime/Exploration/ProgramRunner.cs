@@ -103,7 +103,9 @@ internal static class ProgramRunner
                         current = new(current.SessionId, current.Revision, current.ObservationSequence,
                             new ActiveExploration(returned.WithParty(new(party.Encounter, party.Actors, party.MainSeed,
                                 party.ThinkingSeed, party.Gold, party.NewBattle, activeMembers, party.ItemCustody))),
-                            current.Story.Copy(null, partyLists: lists), current.StopReason);
+                            // Gameplay consumes current flags; the source counted lists change
+                            // only at their actual UpdateForce consumers (join, LEADER, entry).
+                            current.Story.Copy(null), current.StopReason);
                     }
                     return Finish(Result(Stop(current, SessionStopReason.PlayerInput), observations));
                 }
