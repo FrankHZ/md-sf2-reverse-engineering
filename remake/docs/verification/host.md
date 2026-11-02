@@ -1454,15 +1454,23 @@ uv run sf2 verify adapter
 
 The ordinary `uv run sf2 verify engine` gate runs all currently selected optional private cases too.
 A broad legacy input selection is not the public/no-private profile. The completed local selected
-run retains nine controlled opening cases failing `full-fade-state`. The
+run retains nine historical controlled opening cases failing `full-fade-state`. The
 [controlled-start display audit](../evidence/controlled-start-display-audit.md) maps every node to
 its actual input and first-warp preflight: the R1 checkpoint omits display, and two Map21 helper
 constructors also omit it. The historical world separately lacks map palettes; selecting the
 palette-complete product world still leaves these diagnostic displays null. Ordinary New Game and
 Continue explicitly construct display state, and accepted transfers/battle returns retain it.
-No product correction or test retirement is established by these pre-battle failures. The audit
-proposes source-backed diagnostic initialization/content corrections; downstream results remain
-Unknown. Retain the completed 1692 pass/20 fail/1 skip aggregate and these failures separately from
+No product correction or test retirement is established by these pre-battle failures. The
+[corrected diagnostic inputs](../evidence/controlled-start-display-audit.md#corrected-initialization-and-nine-node-results)
+now explicitly initialize R1 and a separate Map21 bridge, retain their displays in both constructors,
+and use the existing palette-complete world only through explicit command selection. No embedded/start
+palette duplication or global selection change is made. Map21 period/restored visibility are labelled
+remake-only controls; original display values at that seam remain Unknown. The nine actual corrected-input
+results are **3 pass/6 downstream fail/0 skip**, with original assertions retained. Passing cases cover
+refusal/retry, changed active membership and ordinary defeat/reload/return; remaining failures concern
+active-list comparison, before-program instruction coverage and explicit typed-text waiting. Their exact
+nodes, retained logs and main-gate follow-up boundaries belong to the audit; they are not passed gates.
+Retain the completed 1692 pass/20 fail/1 skip aggregate and these failures separately from
 passing product/restart checks and exact-head public CI. Do not weaken comparisons or rerun the
 entire aggregate merely to replace the recorded result.
 

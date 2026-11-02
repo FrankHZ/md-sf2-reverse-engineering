@@ -14,6 +14,12 @@
       0,
       32
     ],
+    "display": {
+      "period": 3,
+      "base": { "color2": 3716, "color3": 36 },
+      "current": { "color2": 3716, "color3": 36 },
+      "visibility": "base-restored"
+    },
     "entityPhases": [
       {
         "entity": "entity-130",
