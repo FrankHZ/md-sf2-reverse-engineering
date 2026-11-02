@@ -19,7 +19,9 @@ public static class CharacterNames
         var names = definition.Exploration!.MemberNames;
         var actor = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
             .FirstOrDefault(row => row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == member)?.Actor;
-        string fallback = member >= 0 && member < names.Count ? names[member] : "Name unavailable";
+        string fallback = member >= 0 && member < names.Count && !string.IsNullOrWhiteSpace(names[member])
+            ? Clean(names[member]) : definition.PrivateDefinitions is null && actor is { } authored
+                ? ReadableIdentity(authored) : "Name unavailable";
         return actor is { } id ? overrides.GetValueOrDefault(id.Value) ?? fallback : fallback;
     }
 

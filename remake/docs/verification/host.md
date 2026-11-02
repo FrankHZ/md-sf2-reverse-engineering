@@ -1427,6 +1427,29 @@ the first naming release-barrier finding and the initial-Continue `restore-audio
 rejection with their focused corrections. Immediate-exit WAV/Playback warnings remain under the
 [existing audio lifetime finding](#audio-resource-lifetime-observation); no production delay/GC/filter.
 
+### Authored names without member-name metadata
+
+Name overrides remain the shared actor-keyed authority. A valid content member name supplies the
+default; public authored content without that metadata uses the readable stable actor identity.
+Private missing evidence retains `Name unavailable` rather than inventing an identity label. An
+admitted custom name wins over either fallback, including absent default metadata.
+
+Reproduce the authored regression with the unchanged `jaro-victory.json` package: launch ordinary
+`--authored-package`, acknowledge the invitation, attack the enemy, finish the actual victory/return
+program, then open Party Status. The two joined records must show `Leader` and `Ally Jaro` distinctly.
+This package does not admit field preparation; its normal Prepare path must still report unsupported.
+The same actual party was also rendered through the existing target-list projection in a controlled
+read-only UI observation, with no revision change or command submission. A controlled start through
+ordinary `GameSession.Start` on the same fixture, supplying only an actor-keyed `Nova` override,
+projects `Nova` in both the party and target list. This is a name projection check, not a claim that
+the fixture gained field services or that the authored profile exposes the Witch name editor.
+
+The local `NameProjectionProbe.cs`/`name-projection.targets` instrument only that direct projection
+and controlled start during a Debug observation; standard Debug/Release builds exclude them. No
+production observation API, fixture, golden or helper test is added. The existing actual save/restore
+name test also exercises missing default metadata. Preserve the initial native regression and the
+fixture's unsupported boundary separately from the passing corrected observations.
+
 ## Opening New Game observation
 
 The [High opening lifecycle agreement](../application/opening-session-lifecycle.md#implemented-new-game-boundary)

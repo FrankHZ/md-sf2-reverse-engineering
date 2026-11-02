@@ -47,17 +47,19 @@ public sealed class NewGameSetupTests
         Assert.Equal(error, GameSession.PrepareNewGame(new UnreadableSource(), new(name), RuleCompositions.Sf2()).Failure!.Code);
     }
 
-    [Fact]
-    public void NamesAreDetachedSharedStateAndSurviveOrdinarySaveWithoutRenamingContent()
+    [Theory]
+    [InlineData(true)] [InlineData(false)]
+    public void NamesAreDetachedSharedStateAndSurviveOrdinarySaveWithoutRenamingContent(bool memberNames)
     {
-        var (definition, data) = Fixture();
+        var (definition, data) = Fixture(memberNames: memberNames);
         var names = new Dictionary<string, string> { ["ally-0"] = "Nova 7" };
         data = data with { Names = names };
         var session = Restored(definition, data);
         names["ally-0"] = "Changed";
         Assert.Equal("Nova 7", CharacterNames.Member(definition, session.Current.Story, 0));
-        Assert.Equal("Sarah", CharacterNames.Member(definition, session.Current.Story, 1));
-        Assert.Equal("Bowie", definition.Exploration!.MemberNames[0]);
+        Assert.Equal(memberNames ? "Sarah" : "Ally 1", CharacterNames.Member(definition, session.Current.Story, 1));
+        if (memberNames) Assert.Equal("Bowie", definition.Exploration!.MemberNames[0]);
+        else Assert.Empty(definition.Exploration!.MemberNames);
         Assert.Equal("Nova 7", session.Current.Story.Copy(null).Names["ally-0"]);
         var capture = session.CaptureSave(session.Current.SessionId, session.Current.Revision);
         Assert.Null(capture.Error);
@@ -167,13 +169,14 @@ public sealed class NewGameSetupTests
     private static GameSession Restored(ScenarioDefinition definition, OpeningSaveData data) =>
         Assert.IsType<SessionStarted>(GameSession.Restore(definition, data, RuleCompositions.Sf2())).Session;
 
-    private static (ScenarioDefinition, OpeningSaveData) Fixture(bool initial = false)
+    private static (ScenarioDefinition, OpeningSaveData) Fixture(bool initial = false, bool memberNames = true)
     {
         var (old, data) = OpeningRestoreTests.Fixture();
         var world = old.Exploration!;
         var definition = new ScenarioDefinition(old.Package, old.Encounters.Values, exploration:
             new(world.Maps.Values, [new("dangerous-onload", [new WaitProgramTicks(4), new WriteFlag(999, true), new EndProgram()])],
-                provenance: world.Provenance, partyFlags: world.PartyFlags, visuals: world.Visuals, memberNames: ["Bowie", "Sarah"]))
+                provenance: world.Provenance, partyFlags: world.PartyFlags, visuals: world.Visuals,
+                memberNames: memberNames ? ["Bowie", "Sarah"] : []))
             { Persistence = old.Persistence };
         if (initial) data = data with { Recipe = "new-game", Flags = [0, 32, 80], Gold = 0, OnceFlags = [], Deals = [],
             StepCounter = 0, EgressMap = "map-0", TextCursor = 0,
