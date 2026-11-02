@@ -1454,11 +1454,17 @@ uv run sf2 verify adapter
 
 The ordinary `uv run sf2 verify engine` gate runs all currently selected optional private cases too.
 A broad legacy input selection is not the public/no-private profile. The completed local selected
-run retains nine controlled opening cases failing `full-fade-state`: their explicit controlled
-starts lack the required display state. Supplying product world palettes does not supply that start
-state. They are neither new product route passes nor repaired by weakening their comparisons.
-Retain these failures separately from the passing product/restart checks and exact-head public CI.
-Do not rerun the entire aggregate merely to replace this recorded result.
+run retains nine controlled opening cases failing `full-fade-state`. The
+[controlled-start display audit](../evidence/controlled-start-display-audit.md) maps every node to
+its actual input and first-warp preflight: the R1 checkpoint omits display, and two Map21 helper
+constructors also omit it. The historical world separately lacks map palettes; selecting the
+palette-complete product world still leaves these diagnostic displays null. Ordinary New Game and
+Continue explicitly construct display state, and accepted transfers/battle returns retain it.
+No product correction or test retirement is established by these pre-battle failures. The audit
+proposes source-backed diagnostic initialization/content corrections; downstream results remain
+Unknown. Retain the completed 1692 pass/20 fail/1 skip aggregate and these failures separately from
+passing product/restart checks and exact-head public CI. Do not weaken comparisons or rerun the
+entire aggregate merely to replace the recorded result.
 
 Exercise `OpeningSaveJson.Read/Write` and the compiled `LocalSaveStore.Read/Write/Recover` directly,
 without adding tests of a verification harness. For a local PowerShell control, load the Debug
