@@ -105,10 +105,11 @@ internal sealed partial class PartyStatusView : Control
     internal static string MemberName(PartyMemberDetails member, GameSession session)
     {
         int? binding = member.Deployment?.Initialization?.AllyPartyMember;
-        var names = session.Definition.Exploration!.MemberNames;
-        if (member.Deployment is null || session.Definition.PrivateDefinitions is not null &&
-            (binding is null || binding < 0 || binding >= names.Count || string.IsNullOrWhiteSpace(names[binding.Value]))) return "Name unavailable";
-        return BattleCharacterNames.Party(member.Carried.Actor, binding, names);
+        if (member.Deployment is null)
+            return CharacterNames.Actor(session.Current.Story, member.Carried.Actor, "Name unavailable");
+        return binding is { } index ? CharacterNames.Member(session.Definition, session.Current.Story, index)
+            : CharacterNames.Actor(session.Current.Story, member.Carried.Actor, session.Definition.PrivateDefinitions is null
+                ? CharacterNames.ReadableIdentity(member.Carried.Actor) : "Name unavailable");
     }
 
     private void PresentPortrait(GameSession session, PartyMemberDetails? member)

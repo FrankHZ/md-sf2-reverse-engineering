@@ -1,4 +1,5 @@
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
@@ -12,7 +13,8 @@ internal sealed record BattlePresentation(string Title, string Status, string Ro
 
 internal static class BattleSnapshotProjection
 {
-    internal static BattlePresentation Project(SessionResult result, ActorRef? candidate, string origin, BattleMovementRange? movementRange)
+    internal static BattlePresentation Project(SessionResult result, ActorRef? candidate, string origin, BattleMovementRange? movementRange,
+        BattleSceneDefinition? names = null)
     {
         var snapshot = result.Snapshot;
         var battle = snapshot.Battle;
@@ -34,12 +36,12 @@ internal static class BattleSnapshotProjection
         var markers = battle.Actors.Where(a => a.Position is not null).Select(a => new BattleActorMarker(
             a.Actor, snapshot.BattleMovement?.Actor == a.Actor ? snapshot.BattleMovement.From :
                 selection?.Actor == a.Actor ? selection.Preview.Destination : a.Position!, a.IsAlly, a.Actor == selection?.Actor,
-            $"{a.Actor.Value}\n{a.Hp}/{a.MaxHp}",
+            $"{CharacterNames.Battle(snapshot.Story, a, names)}\n{a.Hp}/{a.MaxHp}",
             death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : a.Facing,
             death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit,
             selection?.Target == a.Actor && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady)).ToArray();
         string roster = string.Join("\n", battle.Actors.Select(a =>
-            $"{a.Actor.Value}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));
+            $"{CharacterNames.Battle(snapshot.Story, a, names)}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));
         var focus = selection?.Preview.Path.ToList() ?? [];
         foreach (var actor in battle.Actors.Where(a => a.Hp > 0 && (a.Actor == selection?.Actor ||
             a.Actor == selection?.Target || a.Actor == candidate))) focus.Add(actor.Position!);

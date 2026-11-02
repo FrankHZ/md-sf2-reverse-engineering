@@ -12,12 +12,13 @@ internal sealed partial class SaveSlotView : Control
     private readonly List<Action> _actions = [];
     private int _selected;
     internal Action? Cancel;
+    internal bool OverEntry { get; init; }
     internal string State { get; private set; } = "slots";
 
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create();
-        var shade = new ColorRect { Color = new("081a35"), MouseFilter = MouseFilterEnum.Stop };
+        var shade = new ColorRect { Color = OverEntry ? new Color(0, 0, 0, 0.25f) : new("081a35"), MouseFilter = MouseFilterEnum.Stop };
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
         var center = new CenterContainer(); center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(center);
         var panel = new PanelContainer { CustomMinimumSize = new(900, 540) }; center.AddChild(panel);

@@ -204,6 +204,7 @@ public sealed class ExplorationStartInput
     public ExplorationTextSettings? TextSettings { get; }
     public short? StepCounter { get; }
     public MapId? EgressMap { get; }
+    public IReadOnlyDictionary<string, string> Names { get; init; } = new Dictionary<string, string>();
 }
 public sealed record ExplorationEntityStartPhase(EntityRef Entity, int Slot, int ActionCursor, byte NextWaitTicks,
     bool WaitingForMotion, EntityMotionState Motion);

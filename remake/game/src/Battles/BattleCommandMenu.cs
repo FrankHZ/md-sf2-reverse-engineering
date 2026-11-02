@@ -200,10 +200,10 @@ internal sealed partial class BattleCommandMenu : Control
         var selection = _current.Selection;
         bool moving = selection?.Stage == BattleSelectionStage.Movement;
         var actor = _actor is { } active ? _current.Battle.GetActor(active) : null;
-        _layout.Actor.Present(actor, actor is null ? "" : BattleCharacterNames.Resolve(actor, _content), "Acting");
+        _layout.Actor.Present(actor, actor is null ? "" : BattleCharacterNames.Resolve(actor, _content, _current!.Story), "Acting");
         var candidate = !moving && _page == Page.Target && TargetCandidate is { } targetRef
             ? _current.Battle.GetActor(targetRef) : null;
-        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content), "Target");
+        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, _current!.Story), "Target");
         _layout.Context.Text = $"Round {_current.Battle.Round}    Gold {_current.Battle.Gold?.ToString() ?? "—"}";
         for (int i = 0; i < Kinds.Length; i++)
         {
@@ -232,7 +232,7 @@ internal sealed partial class BattleCommandMenu : Control
         else if (_page == Page.Target && SelectedAction() is { } selected)
         {
             var target = selected.Targets.FirstOrDefault(target => target.Actor == TargetCandidate);
-            description = $"{OptionLabel(selected)}\n{(target is null ? "No available target" : BattleCharacterNames.Resolve(_current.Battle.GetActor(target.Actor), _content))}";
+            description = $"{OptionLabel(selected)}\n{(target is null ? "No available target" : BattleCharacterNames.Resolve(_current.Battle.GetActor(target.Actor), _content, _current.Story))}";
             if (target?.Reason is { } reason) description += "\n" + Unavailable(reason);
         }
         else if (_page == Page.Commit) description = "End this unit's action at the selected position.";

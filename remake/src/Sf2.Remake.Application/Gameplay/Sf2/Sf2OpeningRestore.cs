@@ -9,6 +9,39 @@ namespace Sf2.Remake.Application.Gameplay.Sf2;
 // Finite opening savepoint recipes. No ordinary on-load program is executed here.
 internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
 {
+    private const string InitialRecipe = "new-game";
+
+    public SaveLocation InitialLocation(ScenarioDefinition definition, ExplorationStartInput start)
+    {
+        if (start.Party.NewBattle is not { Origin: BattleStartOrigin.NewGame, Difficulty: 0, AllyAutoBattle: false, OpponentControl: false } ||
+            start.Map.Value != "map-3" || start.Player.Value != "entity-0" || start.Position != new MapPosition(56, 3) ||
+            start.Facing != 3 || start.Speed != 32 || start.EntryProgram is not null || start.EntityPhases.Count != 0 ||
+            !start.Flags.Order().SequenceEqual(new[] { 0, 32, 80 }))
+            throw new BattleRuleException("new-game-initial-boundary", "newGame");
+        return new(InitialRecipe, new(start.Map, start.Position, start.Facing), "Granseal, beginning of the opening");
+    }
+
+    public ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party)
+    {
+        if (data.Recipe != InitialRecipe) return null;
+        if (data.Map != "map-3" || data.X != 56 || data.Y != 3 || data.Facing != 3 ||
+            !data.Flags.Order().SequenceEqual(new[] { 0, 32, 80 }) || data.Gold != 0 || data.OnceFlags.Count != 0 || data.Deals.Count != 0 ||
+            data.StepCounter != 0 || data.EgressMap != "map-0" || data.TextCursor != 0 || data.FadePeriod != 3 ||
+            data.TextSettings != new ExplorationTextSettings(2, 0, 0) || data.Difficulty != 0 || data.AllyAutoBattle || data.OpponentControl ||
+            !data.ActiveAllies.SequenceEqual(new[] { "ally-0" }) ||
+            data.Allies.Any(ally => ally.Hp != ally.MaxHp || ally.Mp != ally.MaxMp || ally.Exp != 0 || ally.Kills != 0 ||
+                ally.Defeats != 0 || ally.Status != 0 || ally.Absent) || data.Music.Previous.Count != 0)
+            throw new BattleRuleException("save-initial-boundary", "save");
+        var map = definition.Exploration!.Maps[new("map-3")];
+        int area = map.Traversal.SelectActiveArea(new(56, 3))!.OneBasedRecordOrdinal - 1;
+        if (definition.Exploration.Visuals!.Audio[data.Music.Cue].Command != definition.Exploration.Visuals.Maps[map.Map].Music[area].Field)
+            throw new BattleRuleException("save-initial-music", "save");
+        var palette = map.BasePalette!;
+        return new(new("map-3"), new("entity-0"), new(56, 3), 3, 32, data.Flags, party,
+            display: new(3, palette, palette, FullFadeVisibility.BaseRestored), textSettings: data.TextSettings,
+            stepCounter: 0, egressMap: new("map-0")) { Names = data.Names };
+    }
+
     public void ValidateRegisters(OpeningSaveData data)
     {
         // Fresh system initialization uses map0; admitted ordinary defeat uses Map3.
@@ -43,7 +76,7 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
                 Fail();
             return flags.Contains(603)
                 ? new("map3-joined", new(map, new(32, 13), 1), "Granseal, outside the church")
-                : new("map3-opening", new(map, new(56, 3), 3), "Granseal, Bowie's home");
+                : new("map3-opening", new(map, new(56, 3), 3), "Granseal, home");
         }
         if (map.Value == "map-57" && flags.Contains(501) && !flags.Contains(506) &&
             anchor is { Map.Value: "map-57", Facing: 3 })

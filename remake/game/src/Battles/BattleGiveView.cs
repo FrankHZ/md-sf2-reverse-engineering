@@ -36,7 +36,10 @@ internal sealed partial class BattleGiveView : Control
         if (_state?.Token != state.Token)
         {
             _characters = 0; _delivered = false;
-            _text.Text = state.Text + "\nConfirm to continue.";
+            string Name(Sf2.Remake.Domain.Battles.ActorRef id) => CharacterNames.Battle(_session.Current.Story,
+                _session.Current.Battle.GetActor(id), _session.ActiveBattleScenes);
+            _text.Text = $"{Name(state.Giver)} gave {state.Item} to {Name(state.Recipient)}" +
+                (state.Returned is null ? "." : $" and received {state.Returned}.") + "\nConfirm to continue.";
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
         }
         _state = state; Show();
@@ -93,19 +96,21 @@ internal sealed partial class BattleGiveView : Control
 
     internal static string Menu(GameSession session)
     {
+        string Name(Sf2.Remake.Domain.Battles.ActorRef? id) => id is { } actor
+            ? CharacterNames.Battle(session.Current.Story, session.Current.Battle.GetActor(actor), session.ActiveBattleScenes) : "";
         var selection = session.Current.Selection;
         if (!Selecting(selection?.Stage)) return "";
         var choices = session.QueryBattleChoices().Give;
         string given = choices.Items.FirstOrDefault(item => item.Slot == selection!.ItemSlot)?.Name ?? "item";
         if (selection!.Stage == BattleSelectionStage.GiveTargetChoice)
             return $"Give {given}: choose an adjacent teammate\n" + string.Join("\n", choices.Targets.Select(actor =>
-                (actor == selection.Target ? "> " : "  ") + actor.Value)) + "\nDirections / Target cycle; Confirm selects; Cancel returns.";
+                (actor == selection.Target ? "> " : "  ") + Name(actor))) + "\nDirections / Target cycle; Confirm selects; Cancel returns.";
         if (selection.Stage == BattleSelectionStage.GiveCommitReady)
-            return $"Give {given} to {selection.Target?.Value}" + (selection.ReturnSlot is null ? "" :
+            return $"Give {given} to {Name(selection.Target)}" + (selection.ReturnSlot is null ? "" :
                 $" for {choices.Returns.FirstOrDefault(item => item.Slot == selection.ReturnSlot)?.Name}") +
                 "?\nConfirm transfers and ends this action; Cancel returns.";
         bool exchange = selection.Stage == BattleSelectionStage.GiveExchangeChoice;
-        return (exchange ? $"{selection.Target?.Value}'s hands are full. Choose an item to return:" : "Choose an item to give:") +
+        return (exchange ? $"{Name(selection.Target)}'s hands are full. Choose an item to return:" : "Choose an item to give:") +
             "\n" + string.Join("\n", (exchange ? choices.Returns : choices.Items).Select(item =>
                 $"{(item.Slot == (exchange ? selection.ReturnSlot : selection.ItemSlot) ? "> " : "  ")}slot {item.Slot + 1}: {item.Name}")) +
             "\nDirections cycle; Confirm selects; Cancel returns.";

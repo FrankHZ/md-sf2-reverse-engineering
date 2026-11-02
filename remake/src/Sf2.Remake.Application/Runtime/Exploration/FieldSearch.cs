@@ -67,7 +67,7 @@ internal static class FieldSearch
                 party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(recipient,
                     BattleInventory.Add(FieldInventory.Loadout(recipient), item))]);
                 result = new(FieldSearchKind.Item, prefix, receipt, recipient.Carried.Actor, item,
-                    Message: $"{MemberName(definition, recipient)} received {itemDefinition!.Name}.");
+                    Message: $"{CharacterNames.Actor(current.Story, recipient.Carried.Actor, MemberName(definition, recipient))} received {itemDefinition!.Name}.");
             }
             else if (!repeated && placement?.Gold is { } gold)
             {

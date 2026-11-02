@@ -112,9 +112,11 @@ public sealed class StoryState
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
-        bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, FieldReturnAnchor? saveAnchor = null)
+        bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, FieldReturnAnchor? saveAnchor = null,
+        IReadOnlyDictionary<string, string>? names = null)
     {
         SaveAnchor = saveAnchor;
+        Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>((names ?? new Dictionary<string, string>()).ToDictionary(pair => pair.Key, pair => pair.Value));
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
         Continuation = continuation; EnteringBattle = enteringBattle; ReturnAnchor = returnAnchor;
@@ -130,6 +132,7 @@ public sealed class StoryState
         FieldPlayer = fieldPlayer; EntrySkip = entrySkip;
     }
     public BattleEntrySkipState? EntrySkip { get; }
+    public IReadOnlyDictionary<string, string> Names { get; }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
     public IReadOnlyList<ProgramLocation> Callers { get; }
@@ -195,7 +198,7 @@ public sealed class StoryState
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
             battleRequest ?? BattleRequest, egressMap ?? EgressMap,
-            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor);
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, Names);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

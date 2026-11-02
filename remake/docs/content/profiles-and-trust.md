@@ -744,7 +744,12 @@ EGRESS gameplay and original timing remain outside this selected capability.
 
 `OpeningNewGameReader` consumes `SF2_PRIVATE_EXPLORATION_CONTENT`, the same six encounter/static
 selections as the controlled reader and optional `SF2_PRIVATE_BATTLE_SCENE_CONTENT`. The host
-supplies two uint seeds once; no external battle/exploration start or controlled bridge is read.
+supplies two uint seeds once per confirmed candidate; no external battle/exploration start or
+controlled bridge is read. Application `NewGameOptions` validates the protagonist draft and binds an
+actor-keyed name override to shared state, leaving these content defaults immutable. Final Start
+requires a selected slot and admitted initial save before replacing a paused session. The
+[lifecycle design](../application/opening-session-lifecycle.md#slot-name-and-initial-save-design-1443)
+owns the pre-on-load reconstruction recipe, publication order and version1 name compatibility.
 The existing prepared world's transport profile/provenance still describes its controlled research
 content origin; the admitted scenario origin is `private-local-new-game`. Original natural timing
 is not inferred from that product label.

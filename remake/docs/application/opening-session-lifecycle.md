@@ -5,7 +5,8 @@
 **High rigor:** initialization and durable recovery cross Content, the one Application session,
 party resources and the host; an apparently successful load can silently lose progress. This owner
 defines the implementation contract for [#1418](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1418)
-and design [#1419](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1419).
+and design [#1419](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1419), with the
+slot/name/initial-save extension [#1443](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1443).
 New Game, bounded savepoint persistence, field preparation, Search and required Church services are
 implemented. The [composed acceptance](../evidence/opening-loop-acceptance.md) joins these consumers
 through Battle01 return and fresh-process Continue; independent integration belongs to main-gate.
@@ -29,8 +30,9 @@ This persistence policy is a remake choice and does not reconstruct original SRA
 [save-system contract](../../../docs/design/contracts/system/save-system.md) confirms two logical
 slots and bounded in-process original helpers, but leaves physical restart/power-loss and normal
 player save UX Unknown. No arbitrary story/battle snapshot, autosave, cloud save, SRAM import,
-copy/delete UI, migration framework, name editor, promotion or Battle03 ending is promised here.
-New Game never overwrites a slot; only an explicit confirmed Save does. Quit warns about unsaved
+copy/delete UI, migration framework, whole-party naming, promotion or Battle03 ending is promised here.
+New Game selects a slot and writes only after final confirmation, including explicit occupied-slot
+replacement consent. Ordinary field Save remains explicit. Quit warns about unsaved
 progress and offers cancel; it does not secretly autosave.
 
 Current acceptance endpoint: the composed opening loop through usable Battle01 return and restart. Main-gate
@@ -102,7 +104,7 @@ test fixtures, prior slots, comparison checkpoints or a test's expected end stat
 
 | Initial field | Required source/default and admission |
 | --- | --- |
-| Identity, name, class, starting level, loadout, spells and growth | Existing private static/growth content from the pinned ally/start/class/name/item tables, under [ally data](../../../docs/design/contracts/party/ally-definition-data.md) and [level-up](../../../docs/design/contracts/party/level-up.md). Store stable actor IDs; display default localized names from content. No player naming UI initially. Do not infer class/name from a sprite or reuse battle-ready stats as new-game stats. |
+| Identity, name, class, starting level, loadout, spells and growth | Existing private static/growth content from the pinned ally/start/class/name/item tables, under [ally data](../../../docs/design/contracts/party/ally-definition-data.md) and [level-up](../../../docs/design/contracts/party/level-up.md). Store stable actor IDs; retain immutable default names in content and resolve the protagonist override from session state. Do not infer class/name from a sprite or reuse battle-ready stats as new-game stats. |
 | Roster | Only member0 joined/active initially, source flags/membership mapping retained; Sarah/Chester join via ordinary programs. Construct the supported opening actors and future join baselines once, including Jaha if retained shared encounter content requires it. Unjoined actors are not displayed or deployed. Do not initialize all 30 merely to satisfy a full-game target. |
 | HP/MP/base stats and learned spells | Apply the selected start-level initialization/growth and equipment refresh, with full current HP/MP. Use the existing algorithms where valid; any missing new-game initializer is real #1420 work. Initial growth consumes the declared main seed in source order; do not copy R1 numeric stats. |
 | EXP, kills, defeats, status, gold | Explicit supported fresh defaults: EXP/kills/defeats/status = 0; gold = 0. Gold0 is also observed at the controlled R1 seam in [admitted start](../../../docs/research/chapters/grans-opening/map3-admitted-start.md); zero status is a remake fresh-start policy, not closure of R1's inherited POISON Unknown. No nullable transaction-critical accounting in a product start. |
@@ -124,9 +126,9 @@ no natural original menu/naming or exact presentation-timing claim.
 
 **Standard rigor, slice A of [#1440](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1440):**
 the outcome is a recognizable, playable title → Witch → existing New Game/Continue/Quit entry at
-1920×1080. The High-rigor persistence agreement above remains unchanged. A uses source default names
-and Normal difficulty only. Naming, choosing an initial slot, confirmed initial Save and the final
-composed milestone belong to B; there is no difficulty selector, Copy/Delete service or intro film.
+1920×1080. The High-rigor persistence agreement also owns the delivered slot/name/initial-save flow
+below. Normal difficulty is fixed. There is no difficulty selector, Copy/Delete service or intro film;
+whole-party naming and original natural naming cadence remain outside this boundary.
 
 The ordinary host renders separate title/numeral layers with a short modern entrance. Confirm or
 mapped Party Status/Pad Start enters the source Witch greeting. Confirm first reveals adjustable
@@ -174,6 +176,67 @@ seam avoids an arbitrary30s cutoff. The current candidate retains capture sample
 and loops279,419–1,561,247 relative to that retained PCM. This is a reviewed modern loop, not a claim
 of sample-exact YM phase, an original interrupt boundary or natural menu reach. Preparation and native
 reproduction belong to the [entry observation](../verification/host.md#title-and-witch-entry-observation).
+
+### Slot, name and initial-save design (#1443)
+
+High rigor remains appropriate for this change: a confirmed New Game must bind names, admitted
+content, durable progress and replacement of the paused session without a second state authority.
+The supported outcome is Witch New Game → either local slot → protagonist name → final confirmation
+→ initial save → actual Map3 opening. Normal is fixed; other difficulty, whole-party naming,
+SRAM compatibility, arbitrary suspend, later campaign and the cold-boot film remain outside scope.
+
+Application owns immutable `NewGameOptions` and the validated actor-keyed name overrides in
+`StoryState`; its copies retain them through maps, battles and outcomes. A common Application query
+resolves an override before content defaults for member/actor names. Dialogue token expansion,
+field messages, Party Status, battle cards/messages and slot labels consume that same query.
+Stable actor IDs, source names, mechanical definitions and membership never change. UI text is a
+draft until final confirmation and is not live party state.
+
+**Confirmed static:** pinned `c834c652b6862bc5679fd7f69a38a7093206efc6` source
+`disasm/code/common/menus/nameallyscreen.asm` (`NameAlly`, `NavigateAlphabetWindow`),
+`disasm/data/graphics/tech/windowlayouts/alphabetwindowlayout.asm` (`AlphabetStart`) and
+`disasm/sf2enums.asm` establish a seven-character displayed limit, uppercase/lowercase letters,
+digits, comma, period, minus, exclamation/question marks, number sign, apostrophe and space,
+DEL/END controls and empty input retaining the default. Ten-byte ally storage is not the editor's
+limit. Keyboard editing and the controller grid share the seven-character validator; unsupported
+characters/overlength input report an error without truncation. Spaces are preserved; empty selects
+the immutable default. Font-supported ASCII is the admitted set. Original natural navigation and
+timing remain **Unknown**; this source-informed editor is not a new original runtime observation.
+
+The initial save is a distinct finite `new-game` reconstruction recipe at the pre-on-load Map3
+boundary. It captures initialized party/progress, seeds after initial growth, fresh flags, settings
+and the validated name before any map program executes. Continue validates those values, rebuilds
+that same initial start without rerolling growth, then runs the ordinary map on-load program. It
+does not serialize a program cursor, fabricate completions, set story-completed flags, acknowledge
+dialogue or call the ordinary settled Save capture. `OpeningSave.RequireStable` remains unchanged.
+The ordinary pre-messenger/after-join/return recipes keep their existing meanings.
+
+Final confirmation performs admission and detached initial capture/restore validation, constructs
+the candidate session and prepares required audio before any write or old-session replacement.
+The existing store validates and publishes the selected slot; only confirmed publication mounts
+the prepared candidate and enables gameplay. Held/duplicate input is disarmed at page transitions
+and during the synchronous commit. Seeds are selected once for that candidate, retained on a safe
+write retry. No generic transaction or migration framework is introduced.
+
+Back from final confirmation returns to the retained name draft; Back from naming retains it and
+returns to slots; Cancel from slots returns to the Witch (or the old paused session via its Cancel).
+Final occupied-slot wording names the slot and explains backup replacement. Cancellation, invalid
+names, content/audio rejection and failures before publication preserve the old live session and
+old primary/backup. A failed safe write permits Retry/Back/Cancel. The existing
+`save-publication-uncertain` result means replacement may already have succeeded: keep the old
+session paused, retain files, offer Continue inspection/Cancel and prohibit blind write retry.
+Corrupt/incompatible primary recovery remains explicit through the existing Continue mechanism.
+
+Format version1 gains one optional actor-name map; missing means no overrides and uses defaults.
+Present data must be a non-null bounded map with valid retained actor keys and valid nonempty names;
+unknown fields, duplicate keys, invalid types/characters/length and incompatible content still reject.
+New writes include the map. No broad migration support or change to content/rules compatibility.
+
+Acceptance uses actual engine behavior tests for name resolution, old/new save roundtrip, invalid
+names, initial reconstruction and unchanged busy-save rejection; adapter build and real Godot input,
+state/projection/error observations cover both slots, keyboard/controller editor, Back/Cancel,
+overwrite decline/accept, write failure/retry, fresh-process Continue and named opening joins into
+Battle01. Use disposable saves and existing assets/environment; no screenshots or aggregate rerun.
 
 ### Implemented New Game boundary
 
@@ -273,9 +336,11 @@ new persistent map mutations become reachable.
 
 Restore builds a candidate off-session: admit content → validate saved state → select recipe →
 rebuild world/projections → validate the first field boundary → mount required resources → publish
-the new session. Do **not** call ordinary `GameSession.Start` with the saved flags and let its on-load
-program replay. Refactor the shared pure construction where necessary; Continue must not trigger a
-battle, service, heal, growth draw, one-time script or reward while reconstructing. A failed candidate
+the new session. These ordinary savepoint recipes must not call `GameSession.Start` with saved flags
+and replay on-load. The separate pre-on-load initial recipe above intentionally runs the actual
+opening setup, with fresh progress and already initialized party values. Reuse shared pure
+construction where necessary. Ordinary savepoint Continue must not trigger a battle, service, heal,
+growth draw, one-time script or reward while reconstructing. A failed candidate
 leaves the current session/slot usable; disposing candidate resources follows existing host ownership.
 
 The seeds in the candidate equal the saved seeds. Restoration itself has no gameplay RNG draws;
@@ -290,8 +355,9 @@ can differ because this is a savepoint reload. This distinction must appear in p
 the world nor changes its seeds. `OpeningRestoreReader` admits immutable definitions through the
 same private Content readers without invoking new-game party initialization. `OpeningRestore`
 validates the DTO, delegates location semantics to `Sf2OpeningRestore`, rebuilds through the existing
-map allocator/layout helpers and publishes a fresh session only after success. It does not execute
-the map's on-load program. Encounter-excluded retained allies survive field/battle/field transitions;
+map allocator/layout helpers and publishes a fresh session only after success. Ordinary settled
+savepoints do not execute on-load; the explicit initial recipe reconstructs the ordinary fresh start.
+Encounter-excluded retained allies survive field/battle/field transitions;
 completed joins update the existing party membership projection before field control returns.
 
 The SF2 recipe admits map-default ambient programs and an already-entered closed

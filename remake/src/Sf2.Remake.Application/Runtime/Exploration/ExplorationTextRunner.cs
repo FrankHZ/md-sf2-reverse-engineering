@@ -115,7 +115,8 @@ internal static class ExplorationTextRunner
             string value = part.Kind switch
             {
                 ExplorationTextTokenKind.Literal => part.Value,
-                ExplorationTextTokenKind.MemberName when member is >= 0 && member < definition.MemberNames.Count => definition.MemberNames[member.Value],
+                ExplorationTextTokenKind.MemberName when member is >= 0 && member < definition.MemberNames.Count => scenario is null
+                    ? definition.MemberNames[member.Value] : CharacterNames.Member(scenario, current.Story, member.Value),
                 ExplorationTextTokenKind.ClassName => JoinedClass(scenario, current, text.NameMember),
                 _ => throw new BattleRuleException("field-text-token", "program.text", true),
             };

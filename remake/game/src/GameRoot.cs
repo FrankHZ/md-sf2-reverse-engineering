@@ -24,11 +24,18 @@ public sealed partial class GameRoot : Node
     private Button? _restart;
     private bool _releaseBarrier;
 
-    public override void _ExitTree() => _audio?.Dispose();
+    public override void _ExitTree() { _audio?.Dispose(); ClearPreparedNewGame(); }
     public string ReadAudioObservationJson() => System.Text.Json.JsonSerializer.Serialize(_audio?.ObservePlayback());
 
     public override void _Input(InputEvent input)
     {
+        if (_releaseBarrier && input is not InputEventMouse)
+        {
+            _input?.Resolve(input); _input?.DisarmMovement();
+            if (_input?.GameplayHeld == false) _releaseBarrier = false;
+            GetViewport().SetInputAsHandled(); return;
+        }
+        if (_nameEntry?.Editing(input) == true) return;
         if (input is InputEventMouse)
         {
             if (_entry is not null || _slots is not null) return;
@@ -40,14 +47,9 @@ public sealed partial class GameRoot : Node
             return;
         }
         var action = _input?.Resolve(input);
-        if (_releaseBarrier)
-        {
-            _input?.DisarmMovement();
-            if (_input?.GameplayHeld == false) _releaseBarrier = false;
-            GetViewport().SetInputAsHandled(); return;
-        }
         if (action is null) return;
-        if (_slots is not null) _slots.Handle(action.Value);
+        if (_nameEntry is not null) _nameEntry.Handle(action.Value);
+        else if (_slots is not null) _slots.Handle(action.Value);
         else if (_entry is not null) _entry.Handle(action.Value);
         else if (action == GameAction.Stay && _exploration?.CanOpenHostMenu == true) ShowSave();
         else if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
@@ -129,18 +131,6 @@ public sealed partial class GameRoot : Node
         _releaseBarrier = _input?.GameplayHeld == true;
     }
 
-    private void BeginNewGame()
-    {
-        if (_input is null) return;
-        // Select each seed once per confirmed start, including the full legal uint domain.
-        Span<byte> seeds = stackalloc byte[8]; System.Security.Cryptography.RandomNumberGenerator.Fill(seeds);
-        BeginSource(new OpeningNewGameReader(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"),
-            Selected("SF2_PRIVATE_BATTLE01_DATA"), Selected("SF2_PRIVATE_BATTLE01_SCENE"), Selected("SF2_PRIVATE_BATTLE01_TERRAIN"),
-            Selected("SF2_PRIVATE_STATIC_DATA"), Selected("SF2_PRIVATE_ENEMY_DATA"), Selected("SF2_PRIVATE_ENEMY_GOLD"),
-            BitConverter.ToUInt32(seeds[..4]), BitConverter.ToUInt32(seeds[4..]),
-            System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT")));
-    }
-
     private void ReleaseSession()
     {
         // Detach synchronously: old views cannot receive input/ticks or publish old completions.
@@ -165,10 +155,10 @@ public sealed partial class GameRoot : Node
         MountSession(started);
     }
 
-    private void MountSession(SessionStarted started)
+    private void MountSession(SessionStarted started, SessionAudio? preparedAudio = null)
     {
-        SessionAudio? candidateAudio = null;
-        if (started.Session.Definition.Exploration is { } candidateDefinition)
+        SessionAudio? candidateAudio = preparedAudio;
+        if (candidateAudio is null && started.Session.Definition.Exploration is { } candidateDefinition)
         {
             candidateAudio = new SessionAudio(this, candidateDefinition);
             if (candidateAudio.Error is { } error)

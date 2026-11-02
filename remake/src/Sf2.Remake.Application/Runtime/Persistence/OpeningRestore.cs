@@ -26,6 +26,8 @@ internal static class OpeningRestore
                 data.Deals.All(deal => source.Items.ContainsKey(deal.Item)), "save-item-identity");
         var deployments = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
             .Where(row => row.Faction == BattleFaction.Ally).GroupBy(row => row.Actor).ToDictionary(group => group.Key, group => group.First());
+        Require(data.Names is { Count: <= 30 } && data.Names.All(pair => deployments.ContainsKey(new(pair.Key)) &&
+            pair.Value is { Length: > 0 } && NewGameName.Error(pair.Value) is null), "save-name");
         Require(deployments.Keys.Select(actor => actor.Value).ToHashSet().SetEquals(data.Allies.Select(actor => actor.Actor)), "save-roster");
         var actors = data.Allies.Select(saved => Ally(saved, deployments[new(saved.Actor)].Definition)).ToArray();
         var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("save-membership-unavailable", "save.party");
@@ -41,12 +43,17 @@ internal static class OpeningRestore
                 data.AllyAutoBattle, data.OpponentControl, null) { Origin = BattleStartOrigin.NewGame },
             data.ActiveAllies.Select(id => new ActorRef(id)), new(data.OnceFlags, data.Deals.ToDictionary(deal => deal.Item, deal => deal.Count)));
         var anchor = new FieldReturnAnchor(new(data.Map), new(data.X, data.Y), data.Facing);
+        var visuals = definition.Exploration!.Visuals;
+        Require(data.Music is { Previous.Count: <= 9 } && visuals is not null &&
+            data.Music.Previous.Prepend(data.Music.Cue).All(cue => cue is not null && visuals.Audio.TryGetValue(cue, out var audio) && audio.Command < 65), "save-music-resource");
+        if (definition.Persistence.InitialStart(definition, data, party) is { } initial)
+        {
+            _ = rules.Bind(definition.Encounters.Values, actors);
+            return ExplorationDispatcher.Start(definition, initial, rules);
+        }
         var location = definition.Persistence!.Select(definition, anchor.Map, data.Flags, anchor);
         Require(location.Recipe == data.Recipe && location.Anchor == anchor, "save-recipe");
         var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, out var flags);
-        var visuals = definition.Exploration.Visuals;
-        Require(data.Music is { Previous.Count: <= 9 } && visuals is not null &&
-            data.Music.Previous.Prepend(data.Music.Cue).All(cue => cue is not null && visuals.Audio.TryGetValue(cue, out var audio) && audio.Command < 65), "save-music-resource");
         Require(world.Definition.BasePalette is { Valid: true }, "save-palette-resource");
         int area = world.Definition.Traversal.SelectActiveArea(anchor.Position)!.OneBasedRecordOrdinal - 1;
         var music = new MusicProgress(1, data.Music.Cue, Array.AsReadOnly(data.Music.Previous.ToArray()), anchor.Map, area,
@@ -54,7 +61,7 @@ internal static class OpeningRestore
         var palette = world.Definition.BasePalette!;
         var story = new StoryState(flags, textCursor: data.TextCursor, partyLists: MapPartyMembership.Rebuild(flags, layout),
             display: new(data.FadePeriod, palette, palette, FullFadeVisibility.BaseRestored), textSettings: data.TextSettings,
-            stepCounter: data.StepCounter, egressMap: new(data.EgressMap), music: music, saveAnchor: anchor);
+            stepCounter: data.StepCounter, egressMap: new(data.EgressMap), music: music, saveAnchor: anchor, names: data.Names);
         story = ExplorationTextRunner.Initialize(world, story);
         _ = rules.Bind(definition.Encounters.Values, actors);
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story, SessionStopReason.PlayerInput);

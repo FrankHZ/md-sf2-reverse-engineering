@@ -19,7 +19,7 @@ public sealed partial class SessionEntryView : Control
     private GameInput? _input;
     private int _page = -1, _selection;
     private double _revealed;
-    private bool _latched, _activated, _failed;
+    private bool _latched, _activated, _failed, _setup;
     private string? _assetError;
     private bool Revealed => _dialogue.Body.VisibleCharacters < 0 || _dialogue.Body.VisibleCharacters >= _dialogue.Body.GetTotalCharacterCount();
     private string Stage => _page == -1 ? "title" : _page >= 0 ? "dialogue" : "menu";
@@ -67,6 +67,13 @@ public sealed partial class SessionEntryView : Control
         _start.Text = $"Press Start  •  {input.Hint(GameAction.Confirm)} / {input.Hint(GameAction.Equipment)}";
         RefreshHint();
     }
+    internal void Setup(bool active)
+    {
+        _activated = active; _setup = active;
+        foreach (var button in _buttons) button.Visible = !active;
+        _dialogue.Visible = !active; _hint.Visible = !active;
+    }
+    internal void ReturnFromSetup() { _activated = _setup = false; ShowMenu(); }
     public override void _ExitTree()
     {
         _backdrop.Assets = null; _assets?.Dispose(); _assets = null;
@@ -142,6 +149,7 @@ public sealed partial class SessionEntryView : Control
     }
     private void RefreshHint()
     {
+        if (_setup) { _hint.Hide(); _read.Hide(); return; }
         _hint.Visible = _page != -1;
         _read.Visible = _page >= 0;
         _read.Text = Revealed ? "Continue" : "Reveal";

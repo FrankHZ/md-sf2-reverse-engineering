@@ -21,7 +21,11 @@ public sealed record OpeningSaveData(SaveCompatibility Compatibility, string Rec
     IReadOnlyList<SavedAlly> Allies, IReadOnlyList<string> ActiveAllies, uint MainSeed, uint ThinkingSeed,
     uint Gold, IReadOnlyList<byte> OnceFlags, IReadOnlyList<SavedDeal> Deals, IReadOnlyList<int> Flags,
     short StepCounter, string EgressMap, int TextCursor, ExplorationTextSettings TextSettings,
-    byte FadePeriod, SavedMusic Music, byte Difficulty, bool AllyAutoBattle, bool OpponentControl);
+    byte FadePeriod, SavedMusic Music, byte Difficulty, bool AllyAutoBattle, bool OpponentControl)
+{
+    // Optional on disk for compatible pre-naming version1 saves; all new writes include it.
+    public IReadOnlyDictionary<string, string> Names { get; init; } = new Dictionary<string, string>();
+}
 public sealed record SaveLocation(string Recipe, FieldReturnAnchor Anchor, string Description);
 public sealed record SaveAvailability(Guid SessionId, long Revision, SaveLocation? Location, string? Error)
 {
@@ -31,6 +35,8 @@ public sealed record SaveCapture(OpeningSaveData? Data, string? Error);
 
 internal interface IOpeningRestorePolicy
 {
+    SaveLocation InitialLocation(ScenarioDefinition definition, ExplorationStartInput start);
+    ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party);
     void ValidateRegisters(OpeningSaveData data);
     bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity);
     SaveLocation Select(ScenarioDefinition definition, MapId map, IReadOnlyList<int> flags, FieldReturnAnchor? anchor);

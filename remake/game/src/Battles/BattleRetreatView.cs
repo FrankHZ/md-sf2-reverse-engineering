@@ -58,8 +58,7 @@ internal sealed partial class BattleRetreatView : Control
         {
             _elapsed = _revealed = 0; _delivered = false;
             var actor = _session.Current.Battle.GetActor(state.Actor);
-            string name = _session.ActiveBattleScenes is { } content
-                ? content.MemberNames[actor.ProcessingOrder] : state.Actor.Value;
+            string name = CharacterNames.Battle(_session.Current.Story, actor, _session.ActiveBattleScenes);
             _text.Text = state.TextFor(name);
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
             if (state.Phase == BattleRetreatPhase.Effect) { _cue.Play(); _cue.StreamPaused = _suspended; }

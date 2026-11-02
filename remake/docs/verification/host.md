@@ -1343,7 +1343,8 @@ skip the greeting → adjustable reveal/next/skip and Witch head/eye/mouth proje
 Continue slot selection/cancel and restoration of an existing journey; real New Game to Map3;
 replacement default Cancel and failed content admission retaining identity; repeated fresh starts;
 Quit cancel/actual Quit; missing/corrupt entry diagnostics; reduced-flash and pointer reading.
-No name/initial-slot/difficulty control is displayed. Admission must require a looping Witch cue.
+The slot/name/initial-save flow below follows New Game; Normal is fixed with no difficulty selector.
+Admission must require a looping Witch cue.
 
 **Confirmed bounded adapter observations:** these paths run with the palette-complete opening
 world. The held Start remains at greeting216, the revealed/head states project actual frames, and
@@ -1366,6 +1367,89 @@ No fixed sleep, GC or warning filter was added to production. Headless success d
 human aesthetic approval, physical-controller behavior, natural source navigation, exact cadence,
 render/CRAM timing, original DMA tails or sample-exact audio parity.
 
+## Witch slot, naming and initial save
+
+The [High lifecycle design](../application/opening-session-lifecycle.md#slot-name-and-initial-save-design-1443)
+owns parameters, shared names, compatibility and commit order. Load the same private/tool selections
+as title/Witch entry, configure an absolute external `SF2_SAVE_ROOT` and fresh disposable
+`SF2_SAVE_NAMESPACE`, then launch the ordinary Main scene. Reuse the existing entry package,
+palette-complete world, installation and imports; do not copy assets or use valuable progress.
+
+1. Witch New Game shows both actual slot states. Choose either slot, then type/edit the name or use
+   directions and Confirm on the character grid. Keyboard Backspace and grid DEL delete; END/Use name
+   opens final confirmation. Supported input is seven ASCII letters/digits or `,.-!?#' ` characters.
+   Empty retains the immutable default; spaces remain significant. Unsupported text and overlength
+   stay visible with an error and cannot continue. The selected private font maps every allowed
+   character to an admitted glyph.
+2. Back from final confirmation retains the draft; Back from naming returns to slots. Cancel from
+   slots returns to the Witch, whose replacement Cancel resumes the old paused session. Assert
+   unchanged identity and slot bytes. Both occupied slots remain selectable; final wording names
+   the target and explains backup replacement. No draft or provisional selection writes a file.
+3. Final Start/save admits the content, initialized progress, detached initial record and required
+   audio before publication. A prepublication storage rejection leaves the paused session and old
+   primary/backup intact. Correct the disposable failure and Retry; the candidate/seeds are retained.
+   Rejected content can be corrected and retried without replacing the old session. Success writes
+   once, makes the old valid primary the backup, mounts one fresh session and disarms held input.
+   `save-publication-uncertain` retains the paused session/files and offers Continue inspection, with
+   no blind write retry. This exceptional result is an explicit code/store boundary, not a claimed
+   deterministic native filesystem-failure observation.
+4. Exit, start a distinct process and Continue the initial slot. Its `new-game` recipe retains the
+   initialized party and post-growth seeds, then enters actual Map3 setup with fresh-map audio,
+   rather than invoking settled-savepoint audio restoration or rerolling growth. Walk the ordinary
+   house/Sarah/school/messenger route; observe original program joins, name tokens and flags. Save
+   at the joined Map3 anchor, restart again, Continue, inspect Party Status, then follow normal
+   castle/palace/Astral/tower inputs into Battle01. Read actual dialogue projection, command/target
+   cards, battle messages and name state; IDs/source content remain unchanged. Old version1 records
+   lacking `names` retain defaults; malformed present maps/names reject through typed admission.
+
+**Confirmed bounded remake observations:** real keyboard text/Backspace, mapped controller grid/DEL,
+Back/Cancel, both occupied slots, empty/default, unsupported/overlength input, held final Confirm,
+content rejection, prepublication write failure/retry, exact previous-primary backup bytes, actual
+initial Continue and joined-save Continue are exercised. The latter continues through named dialogue,
+Party Status and Battle01. This is semantic input/state/projection acceptance, without screenshots,
+teleports, terminal flags or injected completion receipts. Original NameAlly natural reach/timing,
+hardware rendering/audio parity and human/aesthetic/physical-device approval remain **Unknown**.
+
+Focused behavior is in `NewGameSetupTests`, `OpeningSaveTests` and `OpeningRestoreTests`; run the
+selected engine tests after locked .NET/input setup, then `uv run sf2 verify adapter` and the native
+steps above. Retained local drivers/results are under `local/issue1443`; they extend the existing
+bounded input/navigation helpers. One serial process, existing ~128MB world and at most80 semantic
+marks per run suffice; allow10MiB of output and150MB headroom, with a two-minute process bound.
+No new export, acquisition or slow aggregate is required. The live-play selection is not the
+fixed PlayerReady comparison selection: the legacy seed/first-actor checks require
+`remake/reference/inputs/battle01-player-ready.json`, and the single-encounter/malformed-input
+checks require the existing smaller single-encounter world. Selecting the live R1 party and expanded
+world exposed six failures in a completed engine run; those same six nodes pass with only these
+comparison selections corrected. Product startup still never reads comparison starts. The original
+completed result and configuration-only targeted correction remain separate evidence.
+Preserve initial test equality failures,
+the first naming release-barrier finding and the initial-Continue `restore-audio-unavailable`
+rejection with their focused corrections. Immediate-exit WAV/Playback warnings remain under the
+[existing audio lifetime finding](#audio-resource-lifetime-observation); no production delay/GC/filter.
+
+### Authored names without member-name metadata
+
+Name overrides remain the shared actor-keyed authority. A valid content member name supplies the
+default; public authored content without that metadata uses the readable stable actor identity.
+Private missing evidence retains `Name unavailable` rather than inventing an identity label. An
+admitted custom name wins over either fallback, including absent default metadata.
+
+Reproduce the authored regression with the unchanged `jaro-victory.json` package: launch ordinary
+`--authored-package`, acknowledge the invitation, attack the enemy, finish the actual victory/return
+program, then open Party Status. The two joined records must show `Leader` and `Ally Jaro` distinctly.
+This package does not admit field preparation; its normal Prepare path must still report unsupported.
+The same actual party was also rendered through the existing target-list projection in a controlled
+read-only UI observation, with no revision change or command submission. A controlled start through
+ordinary `GameSession.Start` on the same fixture, supplying only an actor-keyed `Nova` override,
+projects `Nova` in both the party and target list. This is a name projection check, not a claim that
+the fixture gained field services or that the authored profile exposes the Witch name editor.
+
+The local `NameProjectionProbe.cs`/`name-projection.targets` instrument only that direct projection
+and controlled start during a Debug observation; standard Debug/Release builds exclude them. No
+production observation API, fixture, golden or helper test is added. The existing actual save/restore
+name test also exercises missing default metadata. Preserve the initial native regression and the
+fixture's unsupported boundary separately from the passing corrected observations.
+
 ## Opening New Game observation
 
 The [High opening lifecycle agreement](../application/opening-session-lifecycle.md#implemented-new-game-boundary)
@@ -1374,8 +1458,9 @@ own this product entry. Launch `GODOT_BIN --path remake/game` without a session-
 After preparing/selecting the private world, entry package, six pinned battle/static inputs and optional
 battle scenes, pass the title/Witch entry above and choose New Game. No controlled-start
 selection is required. At settled field input, the New Game… button opens a confirmation defaulting
-to Cancel. New Game never saves or overwrites progress on disk; the separately implemented
-[Save/Continue boundary](#opening-save-and-continue) owns durable progress.
+to Cancel. Confirm New Game to choose a real slot, edit the protagonist name and inspect a final
+Start/save confirmation. New Game writes only at that final confirmation, using the existing
+[Save/Continue store](#opening-save-and-continue).
 
 The historical bounded `local/issue1420/newgame.gd` witness drove actual mapped keyboard/mouse input
 through the ordinary Main scene and read native state. It retained selected boundary samples,
@@ -1438,7 +1523,9 @@ Remove-Item Env:SF2_PRIVATE_CONTROLLED_START -ErrorAction SilentlyContinue
 
 No default root or fallback is inferred. Records live under
 `<root>/<namespace>/sf2-opening/slot1.json` and `slot2.json`, with one `.bak` and a writer `.lock`
-per slot. Private state stays local. New Game never reads or writes these slots. At settled field
+per slot. Private state stays local. New Game reads both slot states and writes its detached initial
+journey only after explicit final confirmation; occupied replacement retains the previous valid
+primary as backup. Ordinary Save retains its stable-boundary rules. At settled field
 input, click Save… or use the mapped Stay action (default Space / Pad LB); the panel describes the
 restore destination. Select a slot, inspect the explicit save/overwrite confirmation (Cancel is
 selected initially), then confirm Save. Success follows atomic publication and readback. Quit is

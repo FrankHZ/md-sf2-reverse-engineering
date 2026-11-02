@@ -24,7 +24,7 @@ public sealed partial class GameRoot
         var capture = offer?.Allowed == true ? _session!.CaptureSave(offer.SessionId, offer.Revision) : null;
         var world = _session?.Current.Exploration;
         return System.Text.Json.JsonSerializer.Serialize(new { sessionId = _session?.Current.SessionId,
-            revision = _session?.Current.Revision, availability = offer, progress = capture?.Data, panel = _slots?.State,
+            revision = _session?.Current.Revision, names = _session?.Current.Story.Names, availability = offer, progress = capture?.Data, panel = _slots?.State,
             entityWork = world?.AllEntities.Where(entity => entity.Visible && entity.Actions is not null && !entity.IsScriptIdle)
                 .Select(entity => new { entity.Entity, entity.ActionCursor, entity.Motion.IsMoving, entity.WaitingForMotion,
                     actions = entity.Actions!.Actions.Select(action => action.GetType().Name),
@@ -41,13 +41,13 @@ public sealed partial class GameRoot
         System.IO.Path.GetFullPath(System.IO.Path.Combine(ProjectSettings.GlobalizePath("res://"), "..", "..")),
         data => GameSession.Restore(definition, data, RuleCompositions.ForGame()) is SessionStartFailed failed ? failed.Failure.Code : null);
 
-    private void OpenSavePanel()
+    private void OpenSavePanel(bool overEntry = false)
     {
         if (_slots is not null) return;
         if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Disabled;
         if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
-        if (_entry is not null) _entry.Hide();
-        _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel };
+        if (_entry is not null && !overEntry) _entry.Hide();
+        _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry };
         AddChild(_slots); DisarmInput();
     }
     private void CloseSavePanel()
@@ -90,14 +90,14 @@ public sealed partial class GameRoot
             var store = Store(_session.Definition);
             _slots!.ShowChoices("save-slots", $"Save current progress. Continue returns to {offer.Location!.Description}.\n" +
                 "NPC positions and music restart; your party and earned progress are preserved.",
-                (Label(1, store.Read(1)), () => ConfirmSave(1, store, offer)),
-                (Label(2, store.Read(2)), () => ConfirmSave(2, store, offer)), ("Cancel", CloseSavePanel), ("Quit…", QuitFromMenu));
+                (Label(1, store.Read(1), _session.Definition), () => ConfirmSave(1, store, offer)),
+                (Label(2, store.Read(2), _session.Definition), () => ConfirmSave(2, store, offer)), ("Cancel", CloseSavePanel), ("Quit…", QuitFromMenu));
         }
         catch (ArgumentException error) { SaveError(error.Message); }
     }
 
-    private static string Label(int slot, SlotRead read) => $"Slot {slot}: " + (read.Primary is { } record
-        ? $"{record.SavedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC — {record.Data.Recipe}"
+    private static string Label(int slot, SlotRead read, ScenarioDefinition definition) => $"Slot {slot}: " + (read.Primary is { } record
+        ? $"{record.SavedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC — {CharacterNames.Member(definition, record.Data.Names, 0)} — {record.Data.Recipe}"
         : read.Error is not null ? $"{read.Error}" : read.Backup is not null ? "Primary missing — backup available" : "Empty");
 
     private void ConfirmSave(int slot, LocalSaveStore store, SaveAvailability offer)
@@ -125,8 +125,8 @@ public sealed partial class GameRoot
         {
             var store = Store(admitted.Definition);
             _slots!.ShowChoices("continue-slots", "Choose a saved journey.",
-                (Label(1, store.Read(1)), () => ContinueSlot(1, store, admitted.Definition)),
-                (Label(2, store.Read(2)), () => ContinueSlot(2, store, admitted.Definition)), ("Cancel", CloseSavePanel));
+                (Label(1, store.Read(1), admitted.Definition), () => ContinueSlot(1, store, admitted.Definition)),
+                (Label(2, store.Read(2), admitted.Definition), () => ContinueSlot(2, store, admitted.Definition)), ("Cancel", CloseSavePanel));
         }
         catch (ArgumentException error) { SaveError(error.Message); }
     }
@@ -153,7 +153,9 @@ public sealed partial class GameRoot
     {
         var result = GameSession.Restore(definition, record.Data, RuleCompositions.ForGame());
         if (result is SessionStartFailed failed) { SaveError(failed.Failure.Code); return; }
-        _restoring = true;
+        // The admitted initial recipe runs ordinary on-load and starts fresh-map playback.
+        // Settled savepoints instead restore their saved music/history generation.
+        _restoring = record.Data.Recipe != "new-game";
         try { MountSession((SessionStarted)result); }
         finally { _restoring = false; }
         if (_session?.Current.SessionId == ((SessionStarted)result).Session.Current.SessionId)
