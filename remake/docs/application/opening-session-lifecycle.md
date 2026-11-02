@@ -25,7 +25,7 @@ rolls the party back to arrival nor promises exact position, NPC phase or uninte
 Castle/palace/tower interiors initially explain “Save after returning to a supported location.”
 They remain playable. Adding a save location requires its own bounded reconstruction acceptance.
 
-This is a remake choice, not a reconstruction of the Witch screen or original SRAM. The
+This persistence policy is a remake choice and does not reconstruct original SRAM. The
 [save-system contract](../../../docs/design/contracts/system/save-system.md) confirms two logical
 slots and bounded in-process original helpers, but leaves physical restart/power-loss and normal
 player save UX Unknown. No arbitrary story/battle snapshot, autosave, cloud save, SRAM import,
@@ -117,7 +117,63 @@ portrait/class-label translations may remain visibly unavailable. Missing mechan
 startup with an actionable content diagnostic, never a plausible number or a practice-yard fallback.
 The existing [R1 owner](../../../docs/research/chapters/grans-opening/map3-admitted-start.md) retains
 its controlled menus/naming, omitted POISON and time/NPC-phase limits. New Game adds no original H3
-claim. The product opens after the original title/Witch sequence; recreating that sequence is not required.
+claim. The source-informed title/Witch presentation below precedes this same construction; it adds
+no natural original menu/naming or exact presentation-timing claim.
+
+### Title and Witch presentation
+
+**Standard rigor, slice A of [#1440](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1440):**
+the outcome is a recognizable, playable title → Witch → existing New Game/Continue/Quit entry at
+1920×1080. The High-rigor persistence agreement above remains unchanged. A uses source default names
+and Normal difficulty only. Naming, choosing an initial slot, confirmed initial Save and the final
+composed milestone belong to B; there is no difficulty selector, Copy/Delete service or intro film.
+
+The ordinary host renders separate title/numeral layers with a short modern entrance. Confirm or
+mapped Party Status/Pad Start enters the source Witch greeting. Confirm first reveals adjustable
+text, then advances; mapped Start skips to the action menu, and Cancel returns to the title.
+Mouse Start and Reveal/Continue buttons cover the same reading path. The Witch changes from its
+arrival head to open eyes and animates its mouth while revealing text, with a small periodic blink.
+Reduced-flash keeps static frames. These are presentation choices, not original frame timing.
+The source 256×224 composition uses 4× nearest sampling independently of the world's 96px grid;
+native 30px text, right-side actions and the shared dialogue panel remain readable at1080p.
+
+`SessionEntryView` owns only presentation/input and disposable resources; `GameRoot` retains
+session construction/replacement. Continue uses the existing slot/backup diagnostics. Replacement
+opens on Cancel; failed admission preserves the paused old session. Entry music uses `SessionAudio`;
+the old session's players pause during entry and resume on Cancel. Successful mounting releases
+entry textures/audio and the old session through their existing hooks. Held mapped actions require
+release across entry and mounting. Save's long binding hint is a tooltip so its actual button cannot
+cover New Game. No save bytes, name schema, initial party or difficulty rules change.
+
+Private preparation uses `sf2tool.remake_entry_content`, the registered USA ROM and pinned
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. It reads only the named title/Witch/font
+spans owned by [special screens](../../../docs/research/presentation/special-screens.md), reuses Stack,
+tile, color and PNG decoding, and rejects visible references beyond decoded tiles. It does not
+split a ROM, rebuild H1, mutate the read-only source or fill unknown DMA tails. Source comments
+216–221 supply the bounded greeting. Omitting music produces a layout sample, not a runnable package.
+The actual Content reader requires the complete images/dialogue and validated title/Witch PCM,
+including a Witch loop; no missing-input practice world or counterfeit original art is substituted.
+
+After same-process private configuration and the narrow ROM identity check, select reviewed
+`sf2tool.remake_audio` candidates and fresh ignored output:
+
+```powershell
+uv run python -m sf2tool.remake_entry_content --rom $romPath --upstream $pinnedUpstream `
+  --title-audio $titleCandidate --witch-audio $witchCandidate --output $freshEntryOutput
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $freshEntryOutput 'entry.json'
+# Preserve the palette-complete world and existing battle/static selections.
+& $env:GODOT_BIN --path remake/game
+```
+
+**Confirmed, bounded command-only audio:** commands28/10, source `Music_28` C2 / `Music_10` C1
+headers, finite title `channel_end` and repeating Witch `mainLoopStart/mainLoopEnd` use the existing
+PCM consumer. The title capture falls silent after its finite score. **Inferred:** the Witch's modern
+unchanged-PCM loop has period1,281,828 samples at44,100Hz (about29.0664s); four independently sampled
+windows retain their correlation results, including the20s outlier, and a low-amplitude matched
+seam avoids an arbitrary30s cutoff. The current candidate retains capture samples179,000–1,740,247
+and loops279,419–1,561,247 relative to that retained PCM. This is a reviewed modern loop, not a claim
+of sample-exact YM phase, an original interrupt boundary or natural menu reach. Preparation and native
+reproduction belong to the [entry observation](../verification/host.md#title-and-witch-entry-observation).
 
 ### Implemented New Game boundary
 

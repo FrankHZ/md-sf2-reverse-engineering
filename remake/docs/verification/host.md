@@ -1317,24 +1317,73 @@ nonreproduced windowed Cancel sequence, earlier physical focus-release boundarie
 warning cause. The earlier A/B/C failures and Unknowns remain in their owners. This slice adds no
 research/H3/H4 comparison or screenshot requirement.
 
+## Title and Witch entry observation
+
+The [Standard A agreement](../application/opening-session-lifecycle.md#title-and-witch-presentation)
+owns the current entry. Select `SF2_PRIVATE_ENTRY_CONTENT` as an absolute prepared `entry.json`,
+alongside the existing palette-complete world/battle/static configuration. No controlled start is
+selected for this route. Load private/tool settings in-process, protect locked .NET selections,
+compile the actual adapter, and use its existing Debug project/installation. A missing running
+instance requires startup for actual input/state/render observations; it does not authorize a
+new project/toolchain or screenshots.
+
+The bounded reproduction retained in `local/issue1441/run-native.ps1` uses fresh local APPDATA,
+LOCALAPPDATA, TEMP, stdout/stderr and a compact JSON report. Its `entry.gd` drives mapped keyboard,
+Pad Start/South/D-pad and real GUI pointer events, then reads `ReadEntryObservationJson`, the existing
+field/persistence/audio observations and actual node rectangles. The headless engineering observation
+is separate from a windowed human visual/device review. Reproduce from the owning worktree with
+`pwsh -NoProfile -File local/issue1441/run-native.ps1 -Run <fresh-name>` after preparing the selected
+entry package under the lifecycle recipe. Supporting bounded scripts in that same retained folder
+cover Continue/replacement, resources, controls and music; their inputs and exact results are named
+in the PR/local handoff. The tracked lifecycle recipe defines preparation without requiring those
+ignored reports as source evidence.
+
+Required observations are cold title layers/source dimensions/integer scale → held Start does not
+skip the greeting → adjustable reveal/next/skip and Witch head/eye/mouth projection → actual actions;
+Continue slot selection/cancel and restoration of an existing journey; real New Game to Map3;
+replacement default Cancel and failed content admission retaining identity; repeated fresh starts;
+Quit cancel/actual Quit; missing/corrupt entry diagnostics; reduced-flash and pointer reading.
+No name/initial-slot/difficulty control is displayed. Admission must require a looping Witch cue.
+
+**Confirmed bounded adapter observations:** these paths run with the palette-complete opening
+world. The held Start remains at greeting216, the revealed/head states project actual frames, and
+Map3 is a new session. Continue restores a retained Map3 save; three subsequent fresh starts retain
+one playing field music owner plus the pre-existing inactive retreat-cue player. Old session music
+pauses during entry and resumes on cancellation. All six entry texture native IDs become invalid
+after entry removal. A42s real-time Witch observation crosses the35.4s first PCM end, wraps to its
+6.34s loop start and remains playing. Mouse and reduced-flash resource observations pass without
+native stderr after the backend has processed release. No game-state/completion injection or
+original framebuffer capture is involved.
+
+Preserved discovery: the first observer compared a string map ID with an integer; another counted
+only `SessionMusic` names and missed Godot's auto-renamed candidate, then counted all audio nodes
+without accounting for the existing inactive retreat player. The actual Save rectangle was469px
+wide and intercepted New Game; its shortened label now leaves the long binding in a tooltip.
+These are separate observer/product findings, not weakened assertions or original evidence changes.
+Immediate-exit observations retain WAV/Playback pair warnings, independently identified by verbose
+type output and the [accepted upstream teardown finding](#audio-resource-lifetime-observation).
+No fixed sleep, GC or warning filter was added to production. Headless success does not close
+human aesthetic approval, physical-controller behavior, natural source navigation, exact cadence,
+render/CRAM timing, original DMA tails or sample-exact audio parity.
+
 ## Opening New Game observation
 
 The [High opening lifecycle agreement](../application/opening-session-lifecycle.md#implemented-new-game-boundary)
 and [content admission/preparation](../content/profiles-and-trust.md#opening-new-game-admission)
 own this product entry. Launch `GODOT_BIN --path remake/game` without a session-entry argument.
-After preparing/selecting the seven-map private world, six pinned battle/static inputs and optional
-battle scenes, choose New Game with the displayed mapped Confirm action. No controlled-start
+After preparing/selecting the private world, entry package, six pinned battle/static inputs and optional
+battle scenes, pass the title/Witch entry above and choose New Game. No controlled-start
 selection is required. At settled field input, the New Game… button opens a confirmation defaulting
 to Cancel. New Game never saves or overwrites progress on disk; the separately implemented
 [Save/Continue boundary](#opening-save-and-continue) owns durable progress.
 
-The bounded ignored `local/issue1420/newgame.gd` witness drives actual mapped keyboard/mouse input
-through the ordinary Main scene and reads native state. It records only selected boundary samples,
-not screenshots or a per-frame trajectory. After same-process `local/private-inputs.ps1` and private
-content selections, build the affected Debug host with protected locked .NET settings. Run
-`local/issue1420/run-native.ps1 -Run <fresh-name>` with its fresh worktree-local APPDATA/LOCALAPPDATA/
-TEMP and output folder. It deliberately unsets `SF2_PRIVATE_CONTROLLED_START` and supplies no game
-entry option. Existing fixture navigation contributes input directions only, never gameplay state.
+The historical bounded `local/issue1420/newgame.gd` witness drove actual mapped keyboard/mouse input
+through the ordinary Main scene and read native state. It retained selected boundary samples,
+without screenshots or a per-frame trajectory, using worktree-local APPDATA/LOCALAPPDATA/TEMP and
+output. Its direct pre-Witch title interaction is historical; use the current entry recipe above
+before the same underlying game route. It deliberately unset `SF2_PRIVATE_CONTROLLED_START` and
+supplied no game entry option. Existing fixture navigation contributed input directions only,
+never gameplay state.
 
 Required observations: title → first New Game → ordinary movement → host-button pointer isolation
 and Cancel preserving session → invalid replacement content, visible typed error and Cancel retaining

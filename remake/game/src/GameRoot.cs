@@ -106,6 +106,7 @@ public sealed partial class GameRoot : Node
         if (_entry is not null) return;
         if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Disabled;
         if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
+        _audio?.SetPaused(true);
         _entry = new SessionEntryView { Name = "SessionEntryView", Replacement = _session is not null,
             NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit };
         AddChild(_entry);
@@ -118,6 +119,7 @@ public sealed partial class GameRoot : Node
         if (_entry is { } entry) { _entry = null; RemoveChild(entry); entry.QueueFree(); }
         if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Inherit;
         if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Inherit;
+        _audio?.SetPaused(false);
         DisarmInput();
     }
 
