@@ -11,6 +11,10 @@ internal static class ExplorationDispatcher
         Start(definition, start, Gameplay.RuleCompositions.Sf2());
 
     internal static SessionResult Start(ScenarioDefinition definition, ExplorationStartInput start, SessionRules rules)
+        => ProgramRunner.Run(definition, Initialize(definition, start), [], rules);
+
+    // Initial-save capture stops here, before on-load work, waits or presentation are executed.
+    internal static SessionSnapshot Initialize(ScenarioDefinition definition, ExplorationStartInput start)
     {
         if (definition.Exploration is null || !definition.Exploration.Maps.TryGetValue(start.Map, out var map))
             throw new BattleRuleException("missing-map", "start.map");
@@ -42,10 +46,9 @@ internal static class ExplorationDispatcher
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
             display: start.Display, textSettings: start.TextSettings, stepCounter: start.StepCounter ?? map.Caravan?.InitialStepCounter,
-            egressMap: start.EgressMap);
+            egressMap: start.EgressMap, names: start.Names);
         story = ExplorationTextRunner.Initialize(world, story);
-        return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
-            SessionStopReason.SimulationWait), [], rules);
+        return new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story, SessionStopReason.SimulationWait);
     }
 
     internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, SessionCommand command) =>

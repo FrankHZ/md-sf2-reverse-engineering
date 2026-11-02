@@ -19,7 +19,8 @@ public static class OpeningSaveJson
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { info =>
-            { foreach (var property in info.Properties) property.IsRequired = true; } } },
+            { foreach (var property in info.Properties)
+                property.IsRequired = !(info.Type == typeof(OpeningSaveData) && property.Name == "names"); } } },
         MaxDepth = 32,
     };
 

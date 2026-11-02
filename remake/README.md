@@ -70,8 +70,11 @@ These are alternative launches; reuse the owned running instance during developm
 requires prepared local inputs. The ordinary launch opens the title; New Game needs the six
 private battle/static selections, prepared world and optional battle scene content described by the
 [New Game input owner](docs/content/profiles-and-trust.md#opening-new-game-admission). Missing content
-reports a startup diagnostic. At settled field input, New Game… opens a confirmation; Cancel retains
-the current session. Save… (default Space / Pad LB) opens two local slots at a supported settled
+reports a startup diagnostic. Witch New Game chooses one of two slots, then a protagonist name
+(up to seven supported characters; empty keeps the default) and a final Normal Start/save
+confirmation. A write succeeds before gameplay replaces the paused session; occupied replacement
+is explicit and Cancel retains current progress. At settled field input, New Game… opens the same
+flow with Cancel selected. Save… (default Space / Pad LB) opens two local slots at a supported settled
 field boundary; title Continue restores the selected journey at its displayed savepoint. Configure
 absolute `SF2_SAVE_ROOT` outside every checkout and a unique `SF2_SAVE_NAMESPACE` first; there is no
 default save folder. See [save/restart usage and limits](docs/verification/host.md#opening-save-and-continue).
@@ -98,7 +101,7 @@ not require a game launch.
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | explicit `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
-| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, Map3/Battle01 savepoints and process restart; no interior/battle suspend or full campaign claim |
+| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, a confirmed initial save, shared custom protagonist name, Map3/Battle01 savepoints and process restart; no interior/battle suspend or full campaign claim |
 | `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; selected connected packages cover opening/Battle01, Battle02 outcomes/returns and Yeel–Battle03 play/control at their separate boundaries. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back

@@ -92,7 +92,7 @@ public sealed class OpeningRestoreTests
         Assert.Equal(data, session.CaptureSave(session.Current.SessionId, session.Current.Revision).Data! with
         {
             Allies = data.Allies, ActiveAllies = data.ActiveAllies, OnceFlags = data.OnceFlags, Deals = data.Deals,
-            Flags = data.Flags, Music = data.Music,
+            Flags = data.Flags, Music = data.Music, Names = data.Names,
         });
     }
 

@@ -49,7 +49,7 @@ public sealed record HealingSceneCursor
             throw new BattleRuleException("healing-scene-content", "battleScenes.healing", true);
     }
 
-    internal static HealingSceneCursor Create(BattleActionResolution action, BattleSceneDefinition? content)
+    internal static HealingSceneCursor Create(BattleActionResolution action, BattleSceneDefinition? content, StoryState? story = null)
     {
         RequireContent(action.Prepared, action.Actor, action.Reactions[0].Target, content, false);
         var actor = action.Prepared.GetActor(action.Actor);
@@ -59,7 +59,8 @@ public sealed record HealingSceneCursor
         var cast = new BattleSceneAnimation(0, 2, 255, false, null,
             [new(0, 1, 0, 0, null), new(0, 1, 0, 0, null)]);
         int casterIdle = 1, targetIdle = 1;
-        string ActorName(BattleActorState a) => content is null ? a.Actor.Value : content.MemberNames[a.ProcessingOrder];
+        string ActorName(BattleActorState a) => story is null ? content is null ? a.Actor.Value : content.MemberNames[a.ProcessingOrder]
+            : CharacterNames.Actor(story, a.Actor, content is null ? a.Actor.Value : content.MemberNames[a.Deployment.Initialization?.AllyPartyMember ?? a.ProcessingOrder]);
         string actionText = "{NAME} cast\n{SPELL} level {#}!", recoveryText = "{NAME} recovered\n{#} hit points.";
         if (content is not null)
         {
@@ -286,7 +287,7 @@ internal static class BattleSceneContinuation
                 observations.Add(Observe(effect, ++sequence, revision));
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
-            healing: action.Spell is null || action.Spell.IsAura ? null : HealingSceneCursor.Create(action, sceneContent));
+            healing: action.Spell is null || action.Spell.IsAura ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
         return Result(current, action.Prepared.With(deathCredit: new(action.Laser is null ? action.FirstAlly : null)), scene, revision, sequence, observations);
     }
 

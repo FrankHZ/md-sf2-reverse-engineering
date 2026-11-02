@@ -50,7 +50,7 @@ internal sealed partial class ExplorationDialogueView : Control
             {
                 ExplorationTextTokenKind.Literal => part.Value,
                 ExplorationTextTokenKind.Newline => "\n",
-                ExplorationTextTokenKind.MemberName => names[part.Member!.Value],
+                ExplorationTextTokenKind.MemberName => CharacterNames.Member(session.Definition, current.Story, part.Member!.Value),
                 _ => "",
             }));
         else
@@ -60,7 +60,7 @@ internal sealed partial class ExplorationDialogueView : Control
             _dialogue.Text = Regex.Replace(_dialogue.Text, @"\{(?:LEADER|NAME|NAME;([0-9]+))\}", match =>
             {
                 int member = match.Groups[1].Success ? int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
-                return member < names.Count ? names[member] : match.Value;
+                return member < names.Count ? CharacterNames.Member(session.Definition, current.Story, member) : match.Value;
             });
         }
         // A sound wait can become an input wait on the same already-visible text window.

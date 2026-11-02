@@ -369,7 +369,7 @@ internal sealed partial class BattleSceneView : Control
         }
     }
 
-    private string ActorName(ActorRef actor) => BattleCharacterNames.Resolve(_session.Current.Battle.GetActor(actor), Content);
+    private string ActorName(ActorRef actor) => BattleCharacterNames.Resolve(_session.Current.Battle.GetActor(actor), Content, _session.Current.Story);
 
     private void PresentStatus(BattleSceneState state)
     {
@@ -390,9 +390,9 @@ internal sealed partial class BattleSceneView : Control
         if (state.IsAura && state.Phase == BattleScenePhase.ResultMessage)
             return $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP.";
         if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
-            return BattleCharacterNames.HealingText(healing.ActionText, _session.Current.Battle.GetActor(state.Actor), Content);
+            return BattleCharacterNames.HealingText(healing.ActionText, _session.Current.Battle.GetActor(state.Actor), Content, _session.Current.Story);
         if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop)
-            return BattleCharacterNames.HealingText(recovery.RecoveryText, _session.Current.Battle.GetActor(state.Target!.Value), Content);
+            return BattleCharacterNames.HealingText(recovery.RecoveryText, _session.Current.Battle.GetActor(state.Target!.Value), Content, _session.Current.Story);
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         int id = state.Phase switch
         {

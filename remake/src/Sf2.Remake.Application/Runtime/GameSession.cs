@@ -14,6 +14,8 @@ public sealed class GameSession
     public ScenarioDefinition Definition { get; }
     public SessionSnapshot Current => _current;
     public SessionRules Rules { get; }
+    public static PreparedNewGame PrepareNewGame(IScenarioSource source, NewGameOptions options, SessionRules rules) =>
+        OpeningNewGame.Prepare(source, options, rules);
     public SaveAvailability QuerySave() => OpeningSave.Query(Definition, Current, Rules);
     public SaveCapture CaptureSave(Guid session, long revision) => OpeningSave.Capture(Definition, Current, Rules, session, revision);
 

@@ -96,7 +96,7 @@ internal static class OpeningSave
         { return new(current, [], current.StopReason, new(SessionFailureKind.IllegalCommand, error.Code, error.Field, error.Code)); }
     }
 
-    private static OpeningSaveData CaptureValues(ScenarioDefinition definition, SessionSnapshot current, SessionRules rules, SaveLocation location)
+    internal static OpeningSaveData CaptureValues(ScenarioDefinition definition, SessionSnapshot current, SessionRules rules, SaveLocation location)
     {
         var world = current.Exploration!;
         var party = world.Party;
@@ -125,7 +125,8 @@ internal static class OpeningSave
             Array.AsReadOnly(party.ItemCustody.Deals.Select(pair => new SavedDeal(pair.Key, pair.Value)).ToArray()),
             Array.AsReadOnly(story.Flags.ToArray()), story.StepCounter.Value, story.EgressMap.Value, story.TextCursor,
             story.TextSettings with { }, story.Display!.Period, music, party.NewBattle.Difficulty,
-            party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl);
+            party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl)
+            { Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
     }
 
     private static SavedMusic Music(ScenarioDefinition definition, SessionSnapshot current)

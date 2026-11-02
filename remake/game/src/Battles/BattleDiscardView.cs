@@ -36,7 +36,7 @@ internal sealed partial class BattleDiscardView : Control
         if (_state?.Token != state.Token)
         {
             _characters = 0; _delivered = false;
-            _text.Text = state.Text + "\nConfirm to continue.";
+            _text.Text = $"{CharacterNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Actor), _session.ActiveBattleScenes)} discarded {state.Item}.\nConfirm to continue.";
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
         }
         _state = state; Show();
