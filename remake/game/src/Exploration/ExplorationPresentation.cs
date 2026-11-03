@@ -26,7 +26,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private readonly SessionAudio _audio;
     private readonly ColorRect _white;
     private readonly Action _prepareBattle;
-    private readonly bool _reducedFlash;
+    private readonly Input.InputSettings _settings;
+    private bool _reducedFlash => _settings.ReducedFlash;
     private int _spriteMounts;
     private WaitToken? _cue;
     private string? _cueResource;
@@ -63,10 +64,10 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private int ViewWidth => (int)Math.Ceiling(_owner.GetViewportRect().Size.X / WorldViewportLayout.PixelScale);
     private int ViewHeight => (int)Math.Ceiling(_owner.GetViewportRect().Size.Y / WorldViewportLayout.PixelScale);
 
-    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, bool reducedFlash, Action prepareBattle, SessionAudio audio, WorldViewportLayout viewport)
+    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, Input.InputSettings settings, Action prepareBattle, SessionAudio audio, WorldViewportLayout viewport)
     {
         _viewport = viewport;
-        _owner = owner; _visuals = definition.Visuals; _reducedFlash = reducedFlash; _prepareBattle = prepareBattle;
+        _owner = owner; _visuals = definition.Visuals; _settings = settings; _prepareBattle = prepareBattle;
         _audio = audio; Error = audio.Error;
         _capture = ObservationCapture.Find(owner);
         _white = new ColorRect { Name = "WhiteFade", Color = new Color(1, 1, 1, 0),

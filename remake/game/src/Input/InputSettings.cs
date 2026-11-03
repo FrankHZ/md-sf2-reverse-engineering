@@ -8,21 +8,34 @@ internal sealed record ActionBinding(string[] Keys, string[] Buttons, string[] A
 // Product settings only; gameplay never reads device bindings or reveal timing.
 internal sealed class InputSettings
 {
-    public required int FormatVersion { get; init; }
-    public string ConfirmCancel { get; init; } = "standard";
-    public bool ReducedFlash { get; init; }
-    public string TextMode { get; init; } = "instant";
-    public double CharactersPerSecond { get; init; } = 40;
-    public Dictionary<string, ActionBinding> Bindings { get; init; } = [];
+    public required int FormatVersion { get; set; }
+    public string ConfirmCancel { get; set; } = "standard";
+    public bool ReducedFlash { get; set; }
+    public string TextMode { get; set; } = "instant";
+    public double CharactersPerSecond { get; set; } = 40;
+    public Dictionary<string, ActionBinding> Bindings { get; set; } = [];
 
     internal static InputSettings Load(string? path)
     {
         var settings = path is null ? new InputSettings { FormatVersion = 1 } :
-            JsonSerializer.Deserialize<InputSettings>(System.IO.File.ReadAllText(path), new JsonSerializerOptions
+            Parse(System.IO.File.ReadAllBytes(path));
+        Validate(settings);
+        return settings;
+    }
+
+    internal static InputSettings Parse(byte[] bytes)
+    {
+        var settings = JsonSerializer.Deserialize<InputSettings>(bytes.AsSpan().StartsWith(new byte[] { 0xef, 0xbb, 0xbf }) ? bytes.AsSpan(3) : bytes.AsSpan(), new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
             }) ?? throw new ArgumentException("Settings must be an object.");
+        Validate(settings);
+        return settings;
+    }
+
+    internal static void Validate(InputSettings settings)
+    {
         if (settings.FormatVersion != 1) throw new ArgumentException("formatVersion must be 1.");
         if (settings.ConfirmCancel is not ("standard" or "swapped"))
             throw new ArgumentException("confirmCancel must be standard or swapped.");
@@ -31,6 +44,23 @@ internal sealed class InputSettings
         if (!double.IsFinite(settings.CharactersPerSecond) || settings.CharactersPerSecond is < 1 or > 240)
             throw new ArgumentException("charactersPerSecond must be between 1 and 240.");
         if (settings.Bindings is null) throw new ArgumentException("bindings must be an object.");
-        return settings;
+    }
+
+    internal InputSettings Draft(bool defaults = false)
+    {
+        var draft = defaults ? Load(null) : new InputSettings
+        {
+            FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
+            TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
+        };
+        draft.Bindings = Bindings;
+        return draft;
+    }
+
+    internal void Publish(InputSettings candidate)
+    {
+        ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
+        TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
+        Bindings = candidate.Bindings;
     }
 }
