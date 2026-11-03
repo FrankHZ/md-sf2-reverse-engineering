@@ -11,12 +11,13 @@ internal sealed partial class SettingsView : Control
     internal string? Notice { get; init; }
     internal bool ReadOnly { get; init; }
     private InputSettings _draft = null!;
-    private bool _reset, _help;
+    private bool _reset;
+    private ControlsHelpView? _help;
     private int _selected;
     private string _status = "";
     private PanelContainer _panel = null!;
     private ScrollContainer _scroll = null!;
-    private Label _message = null!, _hint = null!, _controls = null!;
+    private Label _message = null!, _hint = null!;
     private readonly List<Button> _buttons = [];
     private readonly MenuPointer _pointer = new();
     private readonly object _boundary = new();
@@ -42,8 +43,6 @@ internal sealed partial class SettingsView : Control
                 AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && i < 6 };
             column.AddChild(button); _buttons.Add(button);
         }
-        _controls = new Label { Name = "SettingsHelp", AutowrapMode = TextServer.AutowrapMode.WordSmart, Visible = false };
-        _controls.AddThemeFontSizeOverride("font_size", 22); column.AddChild(_controls);
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(_hint);
         _selected = ReadOnly ? 6 : 0;
@@ -56,7 +55,7 @@ internal sealed partial class SettingsView : Control
         _panel.Position = (Size - _panel.Size) / 2;
     }
 
-    internal void SuspendPointer() => _pointer.Suspend();
+    internal void SuspendPointer() { _pointer.Suspend(); _help?.SuspendPointer(); }
 
     public override void _Process(double delta)
     {
@@ -67,6 +66,7 @@ internal sealed partial class SettingsView : Control
     internal void Handle(GameAction action)
     {
         _pointer.Suspend();
+        if (_help is not null) { _help.Handle(action); return; }
         if (action == GameAction.Cancel) { Close(); return; }
         if (action is GameAction.Up or GameAction.Down)
         {
@@ -80,6 +80,7 @@ internal sealed partial class SettingsView : Control
 
     internal void HandlePointer(InputEvent input)
     {
+        if (_help is not null) { _help.HandlePointer(input); return; }
         if (!GetWindow().HasFocus()) { _pointer.Suspend(); return; }
         int hit = _buttons.FindIndex(button => button.IsVisibleInTree() && !button.Disabled &&
             _scroll.GetGlobalRect().Intersection(button.GetGlobalRect()).HasPoint(((InputEventMouse)input).Position));
@@ -114,9 +115,19 @@ internal sealed partial class SettingsView : Control
                 if (_status == "") { Close(); return; }
                 break;
             case 6: Close(); return;
-            case 7: _help = !_help; break;
+            case 7:
+                _pointer.Suspend(); _panel.Hide();
+                _help = new ControlsHelpView { Name = "ControlsHelpView", Input = Input, Back = CloseHelp };
+                AddChild(_help); break;
         }
         Refresh();
+    }
+
+    private void CloseHelp()
+    {
+        if (_help is not { } help) return;
+        _help = null; RemoveChild(help); help.QueueFree();
+        _pointer.Suspend(); _panel.Show(); Refresh();
     }
 
     private void Refresh()
@@ -124,15 +135,13 @@ internal sealed partial class SettingsView : Control
         string[] labels = [$"Text: {(_draft.TextMode == "instant" ? "Instant" : "Gradual")}",
             $"Text speed: {_draft.CharactersPerSecond:0.##} characters/sec · Left/Right −/+10",
             $"Confirm / Cancel: {_draft.ConfirmCancel}", $"Reduced flash: {(_draft.ReducedFlash ? "On" : "Off")}",
-            "Restore defaults (draft)", "Apply", ReadOnly ? "Close" : "Cancel", _help ? "Hide control help" : "Control help"];
+            "Restore defaults (draft)", "Apply", ReadOnly ? "Close" : "Cancel", "Control help"];
         for (int i = 0; i < labels.Length; i++) { _buttons[i].Text = labels[i]; StoryTheme.Select(_buttons[i], i == _selected); }
         _message.Text = _status != "" ? _status : Notice ?? "Changes take effect only after Apply. Text speed is used in Gradual mode.";
         _hint.Text = $"{Input.CompactHint(GameAction.Confirm)}: Choose/change   •   {Input.CompactHint(GameAction.Cancel)}: Cancel/close";
-        _controls.Visible = _help;
-        _controls.Text = "At settled field input: Cancel opens Settings; Stay opens Save.\n" + string.Join("\n", Enum.GetValues<GameAction>().Select(action => $"{action}: {Input.Hint(action)}"));
     }
 
     public string ReadSettingsObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { draft = _draft, applied = Input.Settings, selected = _selected, readOnly = ReadOnly, reset = _reset, message = _message.Text,
-        help = _help, bindings = Enum.GetValues<GameAction>().ToDictionary(action => action.ToString(), Input.Hint) });
+        help = _help is not null, scroll = _scroll.ScrollVertical, bindings = Enum.GetValues<GameAction>().ToDictionary(action => action.ToString(), Input.Hint) });
 }

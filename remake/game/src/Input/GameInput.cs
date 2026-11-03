@@ -100,6 +100,10 @@ internal sealed class GameInput
                 Unique("axis:" + axis);
                 events.Add(new InputEventJoypadMotion { Axis = code, AxisValue = value, Device = -1 });
             }
+            // Godot 4.7.2 Input::MAX_EVENT is 32 across keys, buttons and signed axes.
+            // Reject before any caller can persist or install a partially usable action.
+            if (events.Count > 32)
+                throw new ArgumentException($"{name} supports at most 32 total key, button and axis bindings.");
             prepared.Add(Enum.Parse<GameAction>(name, true), events);
         }
         if (settings.ConfirmCancel == "swapped")
