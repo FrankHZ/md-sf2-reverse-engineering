@@ -43,7 +43,7 @@ internal sealed partial class PartyStatusView : Control
         foreach (var node in new Control[] { _portraitFrame, _recordFrame, _goldFrame, _selectorFrame, _details,
             _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _gold, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) AddChild(node);
         _roster.AddChild(_rows);
-        AddChild(_prepare); AddChild(_actions); _prepare.Text = "Prepare…"; _prepare.Modulate = StoryTheme.Selected;
+        AddChild(_prepare); AddChild(_actions); _prepare.Text = "Prepare…";
         _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _selector.HorizontalAlignment = _portraitNote.HorizontalAlignment = _gold.HorizontalAlignment = HorizontalAlignment.Center;
         _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -83,11 +83,12 @@ internal sealed partial class PartyStatusView : Control
             var row = party.Members[i];
             _labels[i].Text = (i == _index ? "▸ " : "   ") + MemberName(row, session) +
                 (row.Carried.Absent ? " · Absent" : row.Carried.Hp == 0 ? " · Defeated" : "");
-            _labels[i].Modulate = i == _index ? StoryTheme.Selected : Colors.White;
+            if (i == _index) _labels[i].AddThemeColorOverride("font_color", StoryTheme.Selected);
+            else _labels[i].RemoveThemeColorOverride("font_color");
         }
         var member = _count == 0 ? null : party.Members[_index];
         string name = member is null ? "Party information unavailable" : MemberName(member, session);
-        _selector.Text = $"{(_count == 0 ? 0 : _index + 1)} / {_count}    {name}   ▾";
+        _selector.Text = $"{(_details.FocusPane == 0 ? "▸ " : "")}{(_count == 0 ? 0 : _index + 1)} / {_count}    {name}   ▾";
         _details.Present(member, name);
         _killsValue.Text = member?.Carried.Kills?.ToString() ?? "Unavailable";
         _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? "Unavailable";
@@ -138,8 +139,9 @@ internal sealed partial class PartyStatusView : Control
         _previous.Position = new(188, 54); _previous.Size = new(56, 48);
         _next.Position = new(1512, 54); _next.Size = new(56, 48);
         _selector.Position = new(256, 42); _selector.Size = new(1232, 72);
-        _selector.Modulate = _details.FocusPane == 0 ? StoryTheme.Selected : Colors.White;
-        _close.Position = new(1616, 56); _close.Size = new(136, 48); _close.Modulate = StoryTheme.Selected;
+        if (_details.FocusPane == 0) _selector.AddThemeColorOverride("font_color", StoryTheme.Selected);
+        else _selector.RemoveThemeColorOverride("font_color");
+        _close.Position = new(1616, 56); _close.Size = new(136, 48);
         _portraitFrame.Position = new(168, 144); _portraitFrame.Size = new(336, 352);
         _portrait.Position = new(240, 192); _portrait.Size = new(192, 256);
         _portraitNote.Position = new(192, 280); _portraitNote.Size = new(288, 80);

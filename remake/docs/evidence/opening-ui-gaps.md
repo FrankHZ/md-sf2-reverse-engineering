@@ -135,11 +135,14 @@ independent marker/suffix/reason text. Existing custom input/scroll/release auth
 The [native recipe](../verification/host.md#shared-visual-menu-pilot-1453) bounds engineering evidence;
 human visual approval remains [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
 
-This is not global visual completion. The presentation inventory explicitly allocates remaining
-host New Game, Church/Prepare and Party focus work, plus real Give/Discard/Retreat and fallback HUD
-text treatment. Appearance is an explicit later-capability gap outside this opening route. Existing
+The finite consumer candidate extends existing treatment to host New Game, Church/Prepare and Party
+focus, plus real Give/Discard/Retreat results and the auxiliary Give/Discard/equipment HUD. Shared
+reading pages preserve keyboard/pad access to long current-choice text before Confirm; candidate/
+phase changes reset reading, and Cancel/directions/Target remain usable. Source and native evidence
+are bounded engineering checks pending independent integration, not global visual completion.
+Appearance is the explicit later-capability gap [#1463](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1463), outside this opening route. Existing
 Entry/Save/Quit/Settings/help, StoryChoice, dialogue/context/status/detail consumers need no automatic
-rewrite. Remaining exact production paths await independent pilot review. Wording/transient refusal
+rewrite. Wording/transient refusal
 belongs to #1454; new art/fonts and #1447 remain deferred. All earlier bounded human approval,
 physical-focus/DPI limits, original timing/media Unknowns and warning/failure records remain intact.
 

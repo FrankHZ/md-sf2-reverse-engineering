@@ -14,7 +14,7 @@ internal sealed partial class FieldActionView : Control
     private readonly Panel _panel = new();
     private readonly Label _title = Text("Title", 32), _hint = Text("Hint", 24);
     private readonly List<Label> _rows = [];
-    private readonly List<(string Label, Action Choose)> _options = [];
+    private readonly List<(string Label, Action Choose, bool Available)> _options = [];
     private readonly MenuPointer _pointer = new();
     private GameSession _session = null!;
     private GameInput _input = null!;
@@ -46,11 +46,11 @@ internal sealed partial class FieldActionView : Control
         Show(); Actions();
     }
 
-    private void Menu(string stage, string title, IEnumerable<(string Label, Action Choose)> options)
+    private void Menu(string stage, string title, IEnumerable<(string Label, Action Choose, bool Available)> options)
     {
         _stage = stage; _title.Text = title; _index = 0; _generation++; _pointer.Suspend(); _requiresRelease = true;
         _options.Clear(); _options.AddRange(options);
-        if (_options.Count == 0) _options.Add(("Nothing available · Back", Actions));
+        if (_options.Count == 0) _options.Add(("Nothing available · Back", Actions, true));
         while (_rows.Count < _options.Count)
         {
             var row = Text("Choice" + _rows.Count, 28); _rows.Add(row); _panel.AddChild(row);
@@ -65,13 +65,14 @@ internal sealed partial class FieldActionView : Control
         _choices = _session.QueryFieldActions(_member);
         if (_choices.Error is { } error) { Message("Preparation unavailable: " + error.Replace('-', ' ')); return; }
         Menu("actions", _name + " · Prepare", [
-            ("Equip", Equip), ("Give / exchange", Give), ("Use item", Use), ("Magic", Magic), ("Drop", Drop), ("Back", Hide)]);
+            ("Equip", Equip, true), ("Give / exchange", Give, true), ("Use item", Use, true),
+            ("Magic", Magic, true), ("Drop", Drop, true), ("Back", Hide, true)]);
     }
 
     private void Equip() => Menu("equipment", _name + " · Equip", _choices.Equipment.Select(choice =>
         ($"{choice.Label}{(choice.Equipped ? " · Equipped" : "")}    ATT {choice.Attack}", (Action)(() => Confirm(
             new FieldEquip(_member, choice.Slot, choice.Slot == 4 ? null : _choices.Items.Single(item => item.Slot == choice.Slot).Word),
-            $"Equip {choice.Label}? Attack will be {choice.Attack}.")))));
+            $"Equip {choice.Label}? Attack will be {choice.Attack}.")), true)));
 
     private void Give() => Menu("give-item", "Give which item?", _choices.Items.Select(item =>
         ($"{item.Slot + 1}. {item.Name}", (Action)(() => Targets("give-target", "Give to whom?", true, target =>
@@ -82,9 +83,9 @@ internal sealed partial class FieldActionView : Control
                 Menu("exchange", "Full pack · Choose an item in return", other.Items.Select(returned =>
                     ($"{returned.Slot + 1}. {returned.Name}", (Action)(() => Confirm(
                         new FieldGive(_member, item.Slot, item.Word, target, returned.Slot, returned.Word),
-                        $"Exchange {item.Name} for {returned.Name}? Moved weapons become unequipped.")))));
+                        $"Exchange {item.Name} for {returned.Name}? Moved weapons become unequipped.")), true)));
             else Confirm(new FieldGive(_member, item.Slot, item.Word, target), $"Give {item.Name}? The moved item becomes unequipped.");
-        })))));
+        })), true)));
 
     private void Use() => Menu("use-item", "Use which item?", _choices.Items.Select(item =>
         ($"{item.Slot + 1}. {item.Name}{(item.Use is null ? " · Unavailable" : "")}", (Action)(() =>
@@ -94,7 +95,7 @@ internal sealed partial class FieldActionView : Control
                 Confirm(new FieldUseItem(_member, item.Slot, item.Word), $"Use {item.Name}? This item has no effect here and will be kept.");
             else Targets("use-target", "Use on whom?", true, target => Confirm(new FieldUseItem(_member, item.Slot, item.Word, target),
                 $"Use {item.Name}? One item is consumed, including when there is no poison to cure."));
-        }))));
+        }), item.Use is not null)));
 
     private void Magic() => Menu("magic", "Choose magic", _choices.Spells.Select(spell =>
         ($"{spell.Name} · Level {spell.Spell.Level}", (Action)(() =>
@@ -103,18 +104,18 @@ internal sealed partial class FieldActionView : Control
                 Confirm(new FieldCast(_member, spell.Spell), $"Cast {spell.Name}? Nothing happens here; MP is kept.");
             else Targets("magic-target", "Cast on whom?", true, target => Confirm(new FieldCast(_member, spell.Spell, target),
                 $"Cast {spell.Name}? Cost: {spell.MpCost} MP, including when there is no poison to cure."));
-        }))));
+        }), true)));
 
     private void Drop() => Menu("drop-item", "Drop which item?", _choices.Items.Select(item =>
         ($"{item.Slot + 1}. {item.Name}{(!item.CanDrop ? " · Cannot drop" : "")}", (Action)(() =>
         {
             if (!item.CanDrop) { Message("This item cannot be dropped."); return; }
             Confirm(new FieldDrop(_member, item.Slot, item.Word), $"Drop {item.Name}? This removes it from the pack.");
-        }))));
+        }), item.CanDrop)));
 
     private void Targets(string stage, string title, bool self, Action<ActorRef> select) => Menu(stage, title,
         _session.QueryPartyDetails()!.Members.Where(member => self || member.Carried.Actor != _member)
-            .Select(member => (PartyStatusView.MemberName(member, _session), (Action)(() => select(member.Carried.Actor)))));
+            .Select(member => (PartyStatusView.MemberName(member, _session), (Action)(() => select(member.Carried.Actor)), true)));
 
     private void Confirm(FieldCommand command, string title) => Menu("confirm", title,
         [("Confirm", () =>
@@ -122,15 +123,19 @@ internal sealed partial class FieldActionView : Control
             var result = _submit(command, _choices.Revision);
             Message(result.Failure is { } failure ? "Could not complete: " + failure.Message :
                 result.Observations.Any(row => row.Kind == "field-no-effect") ? "But nothing happened." : "Done.");
-        }), ("Cancel", Actions)]);
+        }, true), ("Cancel", Actions, true)]);
 
-    private void Message(string message) => Menu("result", message, [("Back", Actions)]);
+    private void Message(string message) => Menu("result", message, [("Back", Actions, true)]);
     internal void Present()
     {
         if (!Open) return;
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < _options.Count; i++)
-        { _rows[i].Text = (i == _index ? "▸ " : "   ") + _options[i].Label; _rows[i].Modulate = i == _index ? StoryTheme.Selected : Colors.White; }
+        {
+            _rows[i].Text = (i == _index ? "▸ " : "   ") + _options[i].Label;
+            if (_options[i].Available && i != _index) _rows[i].RemoveThemeColorOverride("font_color");
+            else _rows[i].AddThemeColorOverride("font_color", !_options[i].Available ? StoryTheme.Unavailable : StoryTheme.Selected);
+        }
         _hint.Text = $"{_input.CompactHint(GameAction.Up)} / {_input.CompactHint(GameAction.Down)}: Choose   " +
             $"{_input.CompactHint(GameAction.Confirm)}: Select   {_input.CompactHint(GameAction.Cancel)}: Back\nMouse: select a row";
     }

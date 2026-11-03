@@ -205,7 +205,7 @@ public sealed partial class GameRoot : Node
         // A bounded New Game confirmation, available only at settled field input.
         _restart = new Button { Name = "NewGameEntry", Text = "New Game…", AnchorLeft = 1, AnchorRight = 1,
             OffsetLeft = -220, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 60,
-            Theme = UI.StoryTheme.Create(), FocusMode = Control.FocusModeEnum.None };
+            Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
         _restart.Pressed += ShowEntry; AddChild(_restart);
         ConfigurePersistenceButtons(); ConfigureSettingsButton();
         ApplyHostPause(); DisarmInput();

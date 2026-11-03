@@ -94,7 +94,46 @@ receipts, retained intermediate geometry finding and CI belong to the Issue/PR h
 These checks establish engineering behavior, not human readability/aesthetic approval or physical
 controller release. #1456 retains those and actual 1080p-display/DPI checks. Existing WAV/PlaybackWAV
 warning causes and original timing/media remain Unknown; #1447 remains deferred. Other consumers
-are explicitly dispositioned in the presentation inventory and await independent pilot review.
+are explicitly dispositioned in the presentation inventory.
+
+### Finite consumer migration
+
+The [current agreement](../godot/presentation.md#shared-visual-rules-and-finite-consumers-1453)
+selects host New Game, Church/Prepare/Party, Give/Discard/Retreat results and the real auxiliary HUD.
+Use the same SDK/project/input setup and a fresh `local/issue1453/stage2` run directory per process:
+100 MiB total, serial native runs at most 45 seconds. Observe named input/semantic boundaries,
+real node font/color/geometry/visibility and errors, without screenshots or frame dumps.
+
+- Menu pilot: ordinary New Game using the already prepared opening/services input, then the existing
+  Party/Prepare and actual Church caller. Read New Game's native button style, Party member marker/
+  focus versus ordinary Prepare/Close accents, and unavailable Prepare/Church color plus marker and
+  actual explanation/refusal. Keyboard/pad/pointer navigation and normal follow-up must preserve
+  revision, party, gold and RNG on refusals and return usable field control. Retain #1454's separate
+  wording/transient refusal boundary. Older controlled starts that omit product preparation or add
+  duplicate palette definitions are not substitutes for this product-path observation.
+- Result/HUD pilot: reuse `battle-give.json` and the existing Give observer's real movement, commands,
+  result/reveal and state/error helpers. Observe current item/recipient/index/count, pad cycling,
+  free provisional selection, shared 30px frame/body, focus/hide suspension, reveal/acknowledgement
+  and exactly one transfer followed by control. The HUD now exposes `hudPanel` reading geometry;
+  its retired label-stack/wheel geometry assertions are not the current acceptance interface.
+- Long text: a disposable variation of the existing authored Give weapon name, within its admitted
+  text boundary and deliberately containing line breaks, makes HUD and result exceed one reading
+  area. Confirm must read without changing revision/resources; candidate/Target switches reset
+  reading, Cancel stays available, and result acknowledgement waits for complete reading.
+  Keep the authored variation and receipts local; it proves modern reading behavior, not original
+  game text, natural reach or timing. No new content/parser/verification framework is needed.
+- Distinct siblings only: `battle-discard.json` for protected refusal, duplicate-slot pad navigation,
+  shared result and same-actor continuation; `battle-equipment.json` for current offer/ATT/range,
+  provisional/cancel/confirm and usable movement; existing controlled Battle02 Egress inputs for
+  shared Retreat text, hidden text during effect, retained cue/reduced-flash and same-session usable
+  field return. Do not replay the whole opening or all old probe routes.
+
+**Confirmed, bounded executor observations:** these finite native 1080p cases pass. The representative
+menus and Give precede sibling checks; long-name/current-choice/result reading retains commands and
+one-time mutations. Earlier build/input-admission failures remain in the local handoff. Adapter,
+necessary Debug, direct document/source/private checks and committed plan/actual CI complete the
+engineering evidence. Appearance stays deferred to #1463; human aesthetics/physical release/display/
+DPI stay #1456. Existing warning records and original timing/media Unknowns remain; #1447 is deferred.
 
 ## Menu pointer observation
 

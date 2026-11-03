@@ -70,7 +70,11 @@ internal sealed partial class ChurchServiceView : Control
         }
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < _options.Count; i++)
-        { _rows[i].Text = (i == _index ? "▸ " : "   ") + _options[i].Label; _rows[i].Modulate = i == _index ? StoryTheme.Selected : Colors.White; }
+        {
+            _rows[i].Text = (i == _index ? "▸ " : "   ") + _options[i].Label;
+            if (_options[i].Command is not null && i != _index) _rows[i].RemoveThemeColorOverride("font_color");
+            else _rows[i].AddThemeColorOverride("font_color", _options[i].Command is null ? StoryTheme.Unavailable : StoryTheme.Selected);
+        }
         _hint.Text = _error ?? $"{input.Hint(GameAction.Up)} / {input.Hint(GameAction.Down)}: Choose   {input.Hint(GameAction.Confirm)}: Select\n{input.Hint(GameAction.Cancel)}: Decline / Back   Mouse: select a row";
     }
 
