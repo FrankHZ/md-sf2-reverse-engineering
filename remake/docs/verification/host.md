@@ -5,6 +5,9 @@ Startup, logical input and accessibility checks observe the actual ordinary Godo
 The [composed opening-loop acceptance](../evidence/opening-loop-acceptance.md) joins the entry,
 field preparation, Search, Church, Battle01 outcome and restart recipes below. It owns the bounded
 end-to-end reproduction, retained child evidence and final state/resource comparison.
+Its [current human play preparation](../evidence/opening-loop-acceptance.md#current-human-play-preparation-1456)
+is the ordinary launch/short-route guide. Historical probe recipes below retain their original
+observed boundaries; preparing #1456 does not rerun them or establish user acceptance.
 
 Load the owning worktree's private-input configuration and protected SDK/Godot environment from
 [development](../development-and-verification.md#locked-net-workflow) in the same launching process.
@@ -571,6 +574,13 @@ At a safe disposable session, use the user's already-owned keyboard/controller o
   extra row change; one fresh press must work. Check the existing held-Apply/remapped return once.
 - At the existing eligible before/load/start seam, hold mapped skip/wait, leave focus, release outside
   and return. Existing supported continuation must regain fresh control without repeated skip/wait.
+- On an actual 1920×1080 display, check ordinary startup/Restore/fullscreen, decorations/work-area
+  fit and accessible controls. A 1080p viewport on a larger display is not this check. Below-minimum
+  clients must retain the journey/modal in the reachable recovery shell rather than crop gameplay.
+- If a mixed-DPI setup is available, move between its displays, return and use pointer/menu controls.
+  Record display size/scaling/fullscreen conditions and any clipping or misaligned input; unavailable
+  hardware stays Unknown. Read dialogue, Party/Prepare/Church hints, battle results and Save panels
+  for comfortable reading and a clear next action, without screenshot capture.
 
 Record device, physical action, focus owner, observed state and any error; stop on unexpected movement
 or confirmation and preserve the receipt. Human readability/feel belongs to
@@ -1365,8 +1375,11 @@ are the names in the table plus `Start`, `LeftStick` and `RightStick`. Signed ax
 are `LeftX-`, `LeftX+`, `LeftY-`, `LeftY+`, `RightX-`, `RightX+`, `RightY-`, `RightY+`.
 Unknown fields/actions/identities, conflicting bindings, missing device access and invalid values
 produce `ContentError: invalid-input-settings` before a session is published. A missing or unreadable
-explicit file also fails; it never silently restores defaults. No file selects documented defaults.
-Settings are loaded once at startup; there is no in-game settings UI or automatic settings save.
+explicit file also fails; it never silently restores defaults.
+An explicit `--input-settings` file is a read-only startup override. Ordinary launches without it use
+the integrated [basic Settings/Apply and preferences persistence](../godot/presentation.md#basic-preferences-agreement),
+including title/Witch and safe settled-field access plus grouped Controls help. Active battle/story
+settings access and capture/remapping UI remain excluded; progress saves stay separate.
 
 Adjustable text uses the actual Label's visible-character count. Time reveals characters but never
 submits a gameplay command. Confirm while text is incomplete reveals the rest and preserves the real

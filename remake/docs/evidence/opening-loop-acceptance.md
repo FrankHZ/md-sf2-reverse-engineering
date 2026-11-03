@@ -11,12 +11,77 @@ Church caller. The accepted [branch inventory](../content/opening-branch-invento
 required opening consumers and future boundaries; success on this route does not admit every
 optional source branch or later campaign. [UI gaps](opening-ui-gaps.md) retains human/aesthetic scope.
 
-The runtime base is accepted `cf7a511f2d909c40c74cb72f2c828319d81f9d29`, tree
-`97f7693249ef33c08e18a97b21c05ed7552a26b2`. The final acceptance changes documentation only;
-production, admitted content rules and the retained built host are unchanged. The observations below
-are executor evidence. [PR1432](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1432) owns
-independent review and integration status; executor completion does not assert main-gate approval
-or close #1418.
+The historical composed observation used accepted `cf7a511f2d909c40c74cb72f2c828319d81f9d29`, tree
+`97f7693249ef33c08e18a97b21c05ed7552a26b2`. Its documentation-only acceptance retained that built host.
+The observations below are executor evidence; merged
+[PR1432](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1432) owns independent review and
+integration evidence. These receipts have not been rerun at the current UI preparation base.
+
+## Current human play preparation (#1456)
+
+**Standard rigor:** prepare a usable review route against accepted
+[`b78f630fe754ae6e7b7e610acc1a8761cf0e1718`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/b78f630fe754ae6e7b7e610acc1a8761cf0e1718)
+after integrated #1451–#1455. Reuse its already compiled, independently native-observed Debug host,
+existing imports and current private entry/world/battle selections. This documentation/navigation
+slice does not change the High save/recovery agreement or require another all-opening run.
+Engineering readiness is **Confirmed** by direct configuration/build-path checks and the accepted
+finite observations in the [host owner](../verification/host.md). Current whole-route readability,
+feel and aesthetic approval remain **Unknown** until the user plays. The
+[gap matrix](opening-ui-gaps.md#scope-and-reading-rules) preserves #689's actual bounded human approval.
+
+Load the owning checkout's ignored private-input and prepared entry selections in the launching
+PowerShell process and set `$repoRoot` to that checkout's absolute root. Keep
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Set an absolute `SF2_SAVE_ROOT`
+outside every checkout and a new `SF2_SAVE_NAMESPACE` used only for this disposable review; check
+that it is unused. Reuse that pair for Continue. Concrete selections and copyable commands live in
+the ignored `local/issue1456/PLAY.md`; private content remains in place. Do not select an input-settings
+override for ordinary review, so the delivered Settings/Apply/persistence path stays available.
+
+```powershell
+# After loading the owning checkout's selections and fresh external save namespace:
+Remove-Item Env:SF2_PRIVATE_CONTROLLED_START -ErrorAction SilentlyContinue
+& $env:GODOT_BIN --path (Join-Path $repoRoot 'remake/game')
+# After actual Quit and process exit, repeat the same launch, then choose Continue.
+```
+
+Use ordinary title/Witch/New Game rather than a probe or controlled-start argument. Gameplay needs
+an actual client at least 1920×1080; use the existing Restore/fullscreen recovery when needed.
+A 1080p desktop's decorations/work area and mixed-DPI behavior still need the
+[physical/display review](../verification/host.md#later-physical-focus-human-checklist-1456).
+No launch, SDK/build, export, private-world copy, save conversion or new runtime observation is
+needed for this preparation; availability checks do not establish human acceptance.
+
+Play in short segments; a complete uninterrupted replay is unnecessary:
+
+1. At title/Witch, inspect Settings and grouped Controls help, Cancel a draft, then Apply a desired
+   preference. Choose New Game in a disposable slot; use the physical keyboard for the admitted
+   name (up to seven characters). Check focus, selected/unavailable distinctions and confirmation wording.
+2. In Map3, walk/talk, read/reveal/advance dialogue and regain control. Open Party → Prepare; inspect
+   Equip/Give/Use/Magic/Drop and back out or make a deliberate legal change. Try a reachable Search
+   pickup/description. At the real Church caller inspect Raise/Cure, decline and return; Promotion
+   remains unavailable. Review the next legal action rather than requiring a positive status ailment.
+3. Continue the castle/palace/Astral/tower route into Battle01. Check eligible intro Skip separately
+   from dialogue Confirm; read commands, unavailable reasons, targets, HP/MP, action/results and
+   EXP/gold/growth. Finish victory and usable field return when reviewing R1. Ordinary defeat/retry
+   is a separate supported R2 segment; no loss needs to be manufactured during preparation.
+4. At a supported settled field, use Save (button or mapped Stay), read the destination and explicit
+   confirmation, then actual Quit. Wait for process exit, relaunch with the same selections/root/
+   namespace and choose Continue. Move or interact to check resumed control and retained name/party.
+
+The existing [restart recipe](../verification/host.md#opening-save-and-continue) supplies optional
+joined-Map3, victory-return and defeat/retry segments. Reuse an existing checkpoint only when its
+content/rules identity matches the selected world and its original namespace is explicitly disposable;
+do not convert/copy saves or reinterpret a controlled start as ordinary New Game. No checkpoint is
+required for the fresh route above. Storage corruption/backup and broader failure matrices retain
+their accepted engineering evidence; this review needs only safe visible refusal/Cancel checks.
+
+For each short segment, record the matrix IDs, actual device/display conditions, visible result,
+feedback and explicit accept/fix/defer/Unknown decision. Include dialogue/control return, reading
+comfort, selected/unavailable states, battle results, Save/Continue and the linked physical-focus/
+display checklist. Absence of a user result remains pending, not an environment blocker.
+[#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) stays open after engineering
+integration until the user explicitly accepts the chosen scope. #1447 title animation/music and
+#1463 Appearance remain deferred; no new art direction, full campaign or gameplay expansion is implied.
 
 This is remake product evidence. Original facts retain their named source/H2/H3 owners and pinned
 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` plus the registered USA input identity.
@@ -39,6 +104,8 @@ committed transfer. These source/inventory and engine boundaries are reused, not
 teleporting a player or changing flags to manufacture native reach. F506 and later campaign stay out.
 
 ## Reproduce the composed route
+
+This is the historical #1425 engineering recipe, separate from the current human play guide above.
 
 Load the owning checkout's ignored `local/issue1045/inputs.ps1` in the launching process; keep absolute
 configured SDK/Godot selections and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Select the existing
@@ -137,8 +204,10 @@ controlled-start `full-fade-state` diagnostics in `local/issue1423/inherited-fai
 route neither changes their fixtures nor turns those failures into passes. Accepted child runtime,
 behavior and CI evidence remains valid by dependency; no blanket legacy aggregate is repeated.
 
-For this exact documentation scope, use direct diff/ownership, links/anchors/tables/fences and
-private-boundary checks, plus the new composed native observation. On the clean committed candidate,
+The #1425 acceptance used direct diff/ownership, links/anchors/tables/fences and private-boundary
+checks plus its then-new composed native observation. Current #1456 preparation uses only direct
+document/scope/private checks and build/configuration availability inspection; no SDK, engine,
+adapter, full suite or all-route rerun. On the clean committed candidate,
 run `uv run sf2 verify plan --base origin/main --head HEAD`; report its actual selection and exact-head
 CI in the handoff. A documentation-only CI skip is not a runtime pass. Main-gate independently reviews
-the evidence and performs its necessary focused observation before integration.
+the evidence before integration; current user acceptance remains pending separately.
