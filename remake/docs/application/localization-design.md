@@ -2,11 +2,11 @@
 
 ## Scope and status
 
-**Implemented bounded M1, M2a and M2b consumers; independent integration/product acceptance remains separate.**
+**Implemented bounded M1, M2a, M2b and M2c consumers; independent integration/product acceptance remains separate.**
 The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469)
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
-settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search and the entry/save
-screen group under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
+settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save and Party/Prepare
+screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
 These describe the remake, not new original-game evidence.
@@ -436,6 +436,36 @@ a readable English recovery route. Continue admits progress normally and project
 current language without rewriting the slot. No mid-message Apply or catalog/font disk hot reload
 is supported initially, so a locale change cannot reset active reveal, speech or confirmations.
 
+## Implemented M2c Party and field Prepare boundary
+
+**Standard rigor:** reuse the accepted catalogs/font/settings for the existing read-only member screen
+and field preparation. English/zh-CN cover stat and availability labels, member/list hints, inventory
+status, action choices, confirmations, cancellation, NoEffect and refusal/recovery. Class and missing
+values remain unavailable. Valid admitted member/item/spell names and literal custom names retain
+their existing resolver precedence; only explicitly missing names receive a localized fallback.
+This scope changes no Application/Domain/Content behavior, naming/save compatibility or field effect.
+
+Stat node IDs remain `LEVEL`, `ATTACK`, `DEFENSE`, `AGILITY`, `EXP`, `MOVE`; displayed Text is localized.
+Menu stages, option indices, actor/slot/packed-word closures and captured revision still select typed
+FieldCommands. Deferred display getters redraw the existing choice without rebuilding commands,
+resetting focus or submitting a transaction. No English sentence parsing chooses an operation.
+Settings remains unavailable while Party/Prepare is open; close, Apply and reopen to change language.
+
+Known failure codes select finite localized recovery advice; exact code/field/source details remain
+in a separately identified diagnostic line. Unknown codes use general refresh/reselect advice.
+NoEffect still reads the existing `field-no-effect` observation. The title measures wrapped text and
+moves choices below it; unavailable-query Back/Cancel returns to the member screen rather than
+reopening the same failed query. The measured footer keeps hints, untranslated-name notice and key/reason
+fallback readable. Missing Chinese rows use complete English templates. Existing small triangle
+markers lacked bundled glyphs; supported triangle arrows keep the same focus/selector meaning.
+
+The M2a field-only catalog still grants no Use, spell or map effects. Supported native transactions
+reuse the admitted opening/retained Prepare route; localized presentation does not establish natural
+acquisition or add Antidote/DETOX content. [Native reproduction](../verification/host.md#localized-party-and-field-prepare)
+owns readonly/navigation, confirm/cancel, transaction, real refusal and font/geometry observations.
+Other battle/result consumers, terminology/private dialogue, Unicode names, human translation and
+typography approval remain outside this boundary; integration remains main-gate work.
+
 ## Names, IME and compatibility
 
 M1 retains the current seven-character ASCII rule and says so in translated help. Chinese display
@@ -555,7 +585,8 @@ M1 does not enable Unicode naming or close the epic.
 | M3 bounded opening terminology/dialogue after admitted consumers and rights/review | Public owner `remake/docs/application/localization-design.md` only if coverage/boundary changes; private catalog under a separately declared non-worktree content root. Dispatch must name those actual private files before writing | Start with reached IDs/names in one playable segment. Direct source/control/parameter comparison plus bilingual review. No runtime/export edits by translators. Drift/ambiguity stops affected rows; fallback stays explicitly untranslated. No whole-game batch. |
 | M4 Chinese naming/IME after M1 and accepted High compatibility policy | `A/Runtime/NewGameOptions.cs`, `A/Runtime/OpeningNewGame.cs`, `A/Runtime/CharacterNames.cs`, `A/Runtime/Exploration/ExplorationTextRunner.cs`, `A/Runtime/Battles/BattleSceneContinuation.cs`, `A/Runtime/Persistence/OpeningSaveData.cs`, `A/Runtime/Persistence/OpeningSave.cs`, `A/Runtime/Persistence/OpeningRestore.cs`, `C/Persistence/OpeningSaveJson.cs`, `G/src/Entry/NameEntryView.cs`, `T/OpeningSaveTests.cs`, `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs` | Actual composition/commit/cancel/paste/focus, old name/save preservation and Unicode independent-process Save/Continue. Refuse enablement with unresolved canonical work/backward reading/downgrade; no lossy conversion. Stop at named admitted characters/consumers. |
 
-Further Party/Prepare/battle screens are separate consumer groups, not implicit all-files ownership.
+Party/Prepare has the bounded M2c consumer agreement above. Further battle screens are separate
+consumer groups, not implicit all-files ownership.
 M5 is the epic's opening-route and bilingual human acceptance, not another framework. No candidate
 authorizes production edits, new tickets or dispatch during M0.
 

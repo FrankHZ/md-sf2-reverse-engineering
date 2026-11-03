@@ -442,7 +442,7 @@ source IDs, class-name invention or second roster authority.
 
 With member focus, Up/Down changes member; Left/Right always changes member. Target (default
 Tab / Pad RB) cycles member, magic and items focus; Up/Down scrolls the focused list.
-Cancel/Equipment/Confirm closes. A completed left click opens the compact selector, selects a member,
+Cancel/Equipment closes; Confirm opens the existing field Prepare overlay. A completed left click opens the compact selector, selects a member,
 uses Previous/Next or closes the page; selecting a dropdown row closes that dropdown. Wheel scrolling
 stays inside the open selector or its magic/items pane. The existing
 `MenuPointer` rejects orphan releases, drag-out, stale selection, double clicks and suspended presses.
@@ -457,6 +457,15 @@ and [native party-details witness](../verification/host.md#party-details-observa
 headless observations establish the named input/projection boundary; [PR1417](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1417) owns independent
 main-gate windowed acceptance and integration status. Physical-device release, whole-opening human/aesthetic approval and
 pinned Godot audio shutdown warnings retain their existing Unknowns.
+
+Party details and the existing Prepare overlay use the [M2c English/zh-CN boundary](../application/localization-design.md#implemented-m2c-party-and-field-prepare-boundary).
+Displayed stat titles are independent of stable node IDs. Member/item/spell identities stay admitted
+or literal; missing data remains unavailable. Menus retain typed command closures, confirmation,
+release/pointer state and revision authority. Known error codes select localized recovery while
+retaining exact diagnostics; measured title/footer height keeps the return choice readable. No field
+capability or member-screen redesign is added. Settings can be applied after closing Party, then
+reopening it. [Native observation](../verification/host.md#localized-party-and-field-prepare) owns the
+bounded 1080p geometry/input evidence; human translation/typography remains unaccepted.
 
 ## Battle status-card agreement
 

@@ -114,7 +114,7 @@ msgstr "Language resources are unavailable (localization-resources). Current set
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
+msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -514,3 +514,222 @@ msgstr "Start and save to Slot {0}"
 
 msgid "new.error"
 msgstr "New Game unavailable: {0}.\nNo new session was mounted. Existing progress files were retained.\nCorrect the input or storage problem, then retry; Cancel returns to the Witch."
+
+msgid "party.prepare"
+msgstr "Prepare…"
+
+msgid "party.close"
+msgstr "Close ×"
+
+msgid "party.kills"
+msgstr "Kills"
+
+msgid "party.defeats"
+msgstr "Defeats"
+
+msgid "party.absent"
+msgstr "Absent"
+
+msgid "party.defeated"
+msgstr "Defeated"
+
+msgid "party.unavailable"
+msgstr "Party information unavailable"
+
+msgid "party.value-unavailable"
+msgstr "Unavailable"
+
+msgid "party.gold"
+msgstr "GOLD\n{0}"
+
+msgid "party.magic"
+msgstr "MAGIC"
+
+msgid "party.items"
+msgstr "ITEMS"
+
+msgid "party.member"
+msgstr "Member"
+
+msgid "party.name-unavailable"
+msgstr "Name unavailable"
+
+msgid "party.portrait-unavailable"
+msgstr "Portrait unavailable"
+
+msgid "party.class-unavailable"
+msgstr "Class: unavailable"
+
+msgid "party.none-learned"
+msgstr "None learned"
+
+msgid "party.spell-unavailable"
+msgstr "Name unavailable · Level {0}"
+
+msgid "party.empty"
+msgstr "Empty"
+
+msgid "party.inventory-unavailable"
+msgstr "Inventory unavailable"
+
+msgid "party.item-unavailable"
+msgstr "Item name unavailable"
+
+msgid "party.equipped"
+msgstr "Equipped"
+
+msgid "party.broken"
+msgstr "Broken"
+
+msgid "party.stat.level"
+msgstr "LEVEL"
+
+msgid "party.stat.attack"
+msgstr "ATTACK"
+
+msgid "party.stat.defense"
+msgstr "DEFENSE"
+
+msgid "party.stat.agility"
+msgstr "AGILITY"
+
+msgid "party.stat.exp"
+msgstr "EXP"
+
+msgid "party.stat.move"
+msgstr "MOVE"
+
+msgid "party.hint"
+msgstr "{0}: Prepare · {1}/{2}: {3}   {4}: Focus   {5}/{6}: Close\nMouse: member selector / arrows · Wheel: scroll the open list"
+
+msgid "prepare.empty"
+msgstr "Nothing available · Back"
+
+msgid "prepare.title"
+msgstr "{0} · Prepare"
+
+msgid "prepare.equipment"
+msgstr "{0} · Equip"
+
+msgid "prepare.equip"
+msgstr "Equip"
+
+msgid "prepare.give"
+msgstr "Give / exchange"
+
+msgid "prepare.use"
+msgstr "Use item"
+
+msgid "prepare.magic"
+msgstr "Magic"
+
+msgid "prepare.drop"
+msgstr "Drop"
+
+msgid "prepare.back"
+msgstr "Back"
+
+msgid "prepare.unarmed"
+msgstr "Unarmed"
+
+msgid "prepare.equipment-row"
+msgstr "{0}{1}    ATT {2}"
+
+msgid "prepare.confirm-equip"
+msgstr "Equip {0}? Attack will be {1}."
+
+msgid "prepare.give-item"
+msgstr "Give which item?"
+
+msgid "prepare.give-target"
+msgstr "Give to whom?"
+
+msgid "prepare.exchange"
+msgstr "Full pack · Choose an item in return"
+
+msgid "prepare.confirm-exchange"
+msgstr "Exchange {0} for {1}? Moved weapons become unequipped."
+
+msgid "prepare.confirm-give"
+msgstr "Give {0}? The moved item becomes unequipped."
+
+msgid "prepare.use-item"
+msgstr "Use which item?"
+
+msgid "prepare.use-target"
+msgstr "Use on whom?"
+
+msgid "prepare.use-unsupported"
+msgstr "This item's field effect is not supported yet. Nothing was changed. Back returns to preparation."
+
+msgid "prepare.confirm-no-effect-item"
+msgstr "Use {0}? This item has no effect here and will be kept."
+
+msgid "prepare.confirm-use"
+msgstr "Use {0}? One item is consumed, including when there is no poison to cure."
+
+msgid "prepare.choose-magic"
+msgstr "Choose magic"
+
+msgid "prepare.spell-row"
+msgstr "{0} · Level {1}"
+
+msgid "prepare.magic-target"
+msgstr "Cast on whom?"
+
+msgid "prepare.confirm-no-effect-spell"
+msgstr "Cast {0}? Nothing happens here; MP is kept."
+
+msgid "prepare.confirm-cast"
+msgstr "Cast {0}? Cost: {1} MP, including when there is no poison to cure."
+
+msgid "prepare.drop-item"
+msgstr "Drop which item?"
+
+msgid "prepare.cannot-drop"
+msgstr "Cannot drop"
+
+msgid "prepare.drop-refused"
+msgstr "This item cannot be dropped. Nothing was changed. Back returns to preparation."
+
+msgid "prepare.confirm-drop"
+msgstr "Drop {0}? This removes it from the pack."
+
+msgid "prepare.confirm"
+msgstr "Confirm"
+
+msgid "prepare.cancel"
+msgstr "Cancel"
+
+msgid "prepare.done"
+msgstr "Done."
+
+msgid "prepare.no-effect"
+msgstr "But nothing happened."
+
+msgid "prepare.unavailable"
+msgstr "{0}\nPreparation unavailable ({1}). Back returns to the member screen."
+
+msgid "prepare.failure"
+msgstr "{0}\nDetails ({1} · {2}): {3}"
+
+msgid "prepare.hint"
+msgstr "{0} / {1}: Choose   {2}: Select   {3}: Back\nMouse: select a row"
+
+msgid "prepare.recovery.settle"
+msgstr "Preparation needs settled field control. Nothing was changed. Close and wait for field input before trying again."
+
+msgid "prepare.recovery.member"
+msgstr "This member cannot be prepared here. Nothing was changed. Close and choose another member."
+
+msgid "prepare.recovery.unsupported"
+msgstr "Required preparation data or this effect is unavailable. Nothing was changed. Close this menu or choose a different action."
+
+msgid "prepare.recovery.exchange"
+msgstr "The recipient has a full pack. Nothing was changed. Back refreshes choices; select an item to exchange."
+
+msgid "prepare.recovery.retry"
+msgstr "Could not complete. Nothing was changed. Back refreshes choices; choose again or close to return to the field."
+
+msgid "prepare.recovery.custody"
+msgstr "Rare-item custody data is unavailable, so this item cannot be dropped safely. The item was kept. Back refreshes choices; close to return to the field."

@@ -114,7 +114,7 @@ msgstr "语言资源不可用（localization-resources）。已保留当前设�
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "中文显示：入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
+msgstr "中文显示：队伍／整备、入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -514,3 +514,222 @@ msgstr "开始并保存到槽位 {0}"
 
 msgid "new.error"
 msgstr "新游戏不可用：{0}。\n未载入新游戏，原进度文件已保留。\n请修正输入或存储问题后重试；取消可返回女巫菜单。"
+
+msgid "party.prepare"
+msgstr "整备…"
+
+msgid "party.close"
+msgstr "关闭 ×"
+
+msgid "party.kills"
+msgstr "击杀"
+
+msgid "party.defeats"
+msgstr "战败"
+
+msgid "party.absent"
+msgstr "离队"
+
+msgid "party.defeated"
+msgstr "战斗不能"
+
+msgid "party.unavailable"
+msgstr "队伍信息不可用"
+
+msgid "party.value-unavailable"
+msgstr "不可用"
+
+msgid "party.gold"
+msgstr "金币\n{0}"
+
+msgid "party.magic"
+msgstr "魔法"
+
+msgid "party.items"
+msgstr "道具"
+
+msgid "party.member"
+msgstr "成员"
+
+msgid "party.name-unavailable"
+msgstr "姓名不可用"
+
+msgid "party.portrait-unavailable"
+msgstr "头像不可用"
+
+msgid "party.class-unavailable"
+msgstr "职业：不可用"
+
+msgid "party.none-learned"
+msgstr "尚未习得"
+
+msgid "party.spell-unavailable"
+msgstr "名称不可用 · 等级 {0}"
+
+msgid "party.empty"
+msgstr "空"
+
+msgid "party.inventory-unavailable"
+msgstr "背包信息不可用"
+
+msgid "party.item-unavailable"
+msgstr "道具名称不可用"
+
+msgid "party.equipped"
+msgstr "已装备"
+
+msgid "party.broken"
+msgstr "已损坏"
+
+msgid "party.stat.level"
+msgstr "等级"
+
+msgid "party.stat.attack"
+msgstr "攻击"
+
+msgid "party.stat.defense"
+msgstr "防御"
+
+msgid "party.stat.agility"
+msgstr "敏捷"
+
+msgid "party.stat.exp"
+msgstr "经验"
+
+msgid "party.stat.move"
+msgstr "移动"
+
+msgid "party.hint"
+msgstr "{0}：整备 · {1}/{2}：{3}   {4}：切换区域   {5}/{6}：关闭\n鼠标：选择成员／前后切换 · 滚轮：滚动当前列表"
+
+msgid "prepare.empty"
+msgstr "没有可选内容 · 返回"
+
+msgid "prepare.title"
+msgstr "{0} · 整备"
+
+msgid "prepare.equipment"
+msgstr "{0} · 装备"
+
+msgid "prepare.equip"
+msgstr "装备"
+
+msgid "prepare.give"
+msgstr "交付／交换"
+
+msgid "prepare.use"
+msgstr "使用道具"
+
+msgid "prepare.magic"
+msgstr "魔法"
+
+msgid "prepare.drop"
+msgstr "丢弃"
+
+msgid "prepare.back"
+msgstr "返回"
+
+msgid "prepare.unarmed"
+msgstr "空手"
+
+msgid "prepare.equipment-row"
+msgstr "{0}{1}    攻击 {2}"
+
+msgid "prepare.confirm-equip"
+msgstr "装备{0}？攻击将变为 {1}。"
+
+msgid "prepare.give-item"
+msgstr "交付哪件道具？"
+
+msgid "prepare.give-target"
+msgstr "交给谁？"
+
+msgid "prepare.exchange"
+msgstr "背包已满 · 选择交换的道具"
+
+msgid "prepare.confirm-exchange"
+msgstr "用{0}交换{1}？移动的武器会解除装备。"
+
+msgid "prepare.confirm-give"
+msgstr "交付{0}？移动的道具会解除装备。"
+
+msgid "prepare.use-item"
+msgstr "使用哪件道具？"
+
+msgid "prepare.use-target"
+msgstr "对谁使用？"
+
+msgid "prepare.use-unsupported"
+msgstr "尚不支持此道具的场地效果。未做更改。选择返回可重新整备。"
+
+msgid "prepare.confirm-no-effect-item"
+msgstr "使用{0}？此道具在这里无效，会保留在背包中。"
+
+msgid "prepare.confirm-use"
+msgstr "使用{0}？将消耗一件道具，即使目标没有中毒。"
+
+msgid "prepare.choose-magic"
+msgstr "选择魔法"
+
+msgid "prepare.spell-row"
+msgstr "{0} · 等级 {1}"
+
+msgid "prepare.magic-target"
+msgstr "对谁施法？"
+
+msgid "prepare.confirm-no-effect-spell"
+msgstr "施放{0}？在这里无效，不消耗 MP。"
+
+msgid "prepare.confirm-cast"
+msgstr "施放{0}？消耗 {1} MP，即使目标没有中毒。"
+
+msgid "prepare.drop-item"
+msgstr "丢弃哪件道具？"
+
+msgid "prepare.cannot-drop"
+msgstr "不可丢弃"
+
+msgid "prepare.drop-refused"
+msgstr "此道具不可丢弃。未做更改。选择返回可重新整备。"
+
+msgid "prepare.confirm-drop"
+msgstr "丢弃{0}？将从背包中移除此道具。"
+
+msgid "prepare.confirm"
+msgstr "确认"
+
+msgid "prepare.cancel"
+msgstr "取消"
+
+msgid "prepare.done"
+msgstr "已完成。"
+
+msgid "prepare.no-effect"
+msgstr "但是什么也没有发生。"
+
+msgid "prepare.unavailable"
+msgstr "{0}\n整备不可用（{1}）。选择返回可回到成员画面。"
+
+msgid "prepare.failure"
+msgstr "{0}\n诊断（{1} · {2}）：{3}"
+
+msgid "prepare.hint"
+msgstr "{0} / {1}：选择   {2}：确定   {3}：返回\n鼠标：选择一行"
+
+msgid "prepare.recovery.settle"
+msgstr "整备需要场地控制就绪。未做更改。请关闭菜单，等到可操作场地后重试。"
+
+msgid "prepare.recovery.member"
+msgstr "无法在这里为该成员整备。未做更改。请关闭菜单并选择其他成员。"
+
+msgid "prepare.recovery.unsupported"
+msgstr "所需的整备数据或此效果不可用。未做更改。请关闭此菜单，或选择其他操作。"
+
+msgid "prepare.recovery.exchange"
+msgstr "接收者的背包已满。未做更改。选择返回可刷新选项，然后选择交换的道具。"
+
+msgid "prepare.recovery.retry"
+msgstr "未能完成。未做更改。选择返回可刷新选项；请重新选择，或关闭以回到场地。"
+
+msgid "prepare.recovery.custody"
+msgstr "稀有道具的保管记录不可用，无法安全丢弃。道具已保留。选择返回可刷新选项；关闭可回到场地。"
