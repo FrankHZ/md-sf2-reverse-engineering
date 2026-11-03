@@ -20,6 +20,7 @@ internal sealed partial class StoryDialoguePanel : Control
     internal TextureRect Portrait { get; } = new() { Name = "Portrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = TextureFilterEnum.Nearest,
         MouseFilter = MouseFilterEnum.Ignore };
+    internal Rect2? LayoutRegion { get; init; }
     private bool _placed, _top, _portrait, _right;
     private float _portraitY, _readThrough;
     private Rect2 _subject;
@@ -45,8 +46,10 @@ internal sealed partial class StoryDialoguePanel : Control
     public override void _Process(double delta) { if (IsVisibleInTree()) Arrange(); }
     private void Arrange()
     {
-        Vector2 viewport = GetViewportRect().Size;
-        float width = Mathf.Min(1440, viewport.X - 64);
+        var region = LayoutRegion ?? new Rect2(Vector2.Zero, GetViewportRect().Size);
+        Vector2 viewport = region.Size;
+        float inset = LayoutRegion is null ? 32 : 0;
+        float width = Mathf.Min(1440, viewport.X - inset * 2);
         float bodyWidth = width - 48 - (_portrait ? 216 : 0);
         Body.CustomMinimumSize = new(bodyWidth, 0); Body.CustomMaximumSize = new(bodyWidth, -1);
         Body.Size = new(bodyWidth, 0);
@@ -55,16 +58,16 @@ internal sealed partial class StoryDialoguePanel : Control
         Hint.CustomMaximumSize = new(bodyWidth, -1); Hint.Size = new(bodyWidth, 0);
         float hintHeight = Mathf.Max(34, Hint.GetMinimumSize().Y);
         float footer = hintHeight + 16 + (Choices.Visible ? 60 : 0);
-        float height = Mathf.Clamp(Mathf.Max(_portrait ? 304 : 280, bodyHeight + 48 + footer), 280, viewport.Y - 64);
+        float height = Mathf.Clamp(Mathf.Max(_portrait ? 304 : 280, bodyHeight + 48 + footer), 280, viewport.Y - inset * 2);
         Size = new(width, height);
         if (!_placed)
         {
-            var bottom = new Rect2(new((viewport.X - width) / 2, viewport.Y - 32 - height), Size);
-            var top = new Rect2(new((viewport.X - width) / 2, 32), Size);
+            var bottom = new Rect2(new((viewport.X - width) / 2, viewport.Y - inset - height), Size);
+            var top = new Rect2(new((viewport.X - width) / 2, inset), Size);
             _top = _subject.HasArea() && bottom.Intersects(_subject.Grow(16)) && !top.Intersects(_subject.Grow(16));
             _placed = true;
         }
-        Position = new((viewport.X - width) / 2, _top ? 32 : viewport.Y - 32 - height);
+        Position = region.Position + new Vector2((viewport.X - width) / 2, _top ? inset : viewport.Y - inset - height);
         _frame.Size = Size;
         _scroll.Position = new(_portrait && !_right ? 240 : 24, 24);
         _scroll.Size = new(bodyWidth, height - 48 - footer);

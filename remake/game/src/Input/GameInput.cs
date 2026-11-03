@@ -156,14 +156,21 @@ internal sealed class GameInput
         return null;
     }
 
-    internal string Hint(GameAction action) => string.Join(" / ", _bindings[action].Select(input => input switch
+    internal string Hint(GameAction action) => string.Join(" / ", _bindings[action].Select(Describe));
+    private static string Describe(InputEvent input) => input switch
     {
         InputEventKey key => key.Keycode.ToString(),
         InputEventJoypadButton button => "Pad " + (button.ButtonIndex switch
         { JoyButton.A => "South", JoyButton.B => "East", JoyButton.X => "West", JoyButton.Y => "North", _ => button.ButtonIndex.ToString() }),
         InputEventJoypadMotion axis => $"Stick {axis.Axis}{(axis.AxisValue < 0 ? "-" : "+")}",
         _ => "",
-    }));
+    };
+    // Presentation only: use the admitted, possibly swapped mapping rather than a second key table.
+    internal string CompactHint(GameAction action) => string.Join("/", new[]
+    {
+        _bindings[action].OfType<InputEventKey>().First(),
+        _bindings[action].First(input => input is InputEventJoypadButton or InputEventJoypadMotion),
+    }.Select(input => Describe(input).Replace("Pad ", "", StringComparison.Ordinal)));
     internal string MovementHint => string.Join("; ", new[] { GameAction.Up, GameAction.Right, GameAction.Down, GameAction.Left }
         .Select(action => $"{action}: {Hint(action)}"));
     private static string MapName(GameAction action) => "sf2_" + action.ToString().ToLowerInvariant();

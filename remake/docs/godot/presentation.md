@@ -608,6 +608,65 @@ outside this iteration. Pointer activation and new controller acceptance are als
 Continuous exploration movement retains its [accepted control owner](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk).
 The shared 1080p world viewport is defined above; the earlier 640-by-360 proposal is not a runtime constant.
 
+## Entry windows and hints (#1445)
+
+Standard rigor: this bounded presentation slice makes title, Witch choices, slot/recovery/error
+windows and name entry consistent. The existing High-rigor save/session agreement is unchanged.
+The selected modern blue/gold chrome grows through an opt-in entry theme: readable typography,
+spaced controls and distinct normal, selected, hover, pressed, disabled and editor-focus states.
+Existing story/gameplay consumers retain their current theme. No general widget or device service
+is introduced. Menu selection remains disposable adapter state; bindings remain `GameInput` authority.
+
+At the existing1920×1080 canvas, reserve the Witch's entire4× art rectangle (160,92,1024,896).
+Use the separate right region (1216,64,640,952) for ordinary choices, slots and confirmations;
+no full-screen shade covers the art. Greeting text reuses the story reading/pagination component
+with entry-only bounds. Naming uses the same right window with a13-column version of the existing
+alphabet grid; typing, caret/deletion, DEL/END, seven-character validation and draft/Back semantics
+are retained. The planned keyboard-only editor belongs to #1446.
+
+One compact contextual line shows the primary keyboard binding and one mapped pad alternative for
+the currently available actions (for example `Enter/South: Choose • Escape/East: Back`);
+full alternatives remain in existing binding help/tooltips. It
+reads the installed mapping after Confirm/Cancel swap. No device detection or duplicated key table.
+Errors retain their diagnostic and safe retry/back actions; long slot labels wrap within the window.
+The focused keyboard editor instead identifies its retained Enter/Escape editing semantics; mapped
+grid hints resume when it releases focus. Normal-only, overwrite, backup recovery and safe publication remain owned by the
+[session lifecycle](../application/opening-session-lifecycle.md). Title animation/audio work is #1447.
+
+Acceptance requires actual Godot input/state/projection/error readback at1280×720 and supported
+resizing, including panel/art separation, text/control containment, mapped keyboard/pad and pointer
+selection, disabled/failure states, draft Back and safe overwrite/recovery. Reuse the existing local
+installation, project, inputs and observers, with disposable saves and fresh ignored reports.
+The entry temporarily uses the project's canvas scaling and restores the previous window mode on
+exit. This covers reopening it from gameplay views, which use native coordinates; it does not change
+the gameplay viewport policy. Adapter compilation and the committed dependency plan select code checks; no screenshots or tests
+of probes. Engineering integration does not establish user aesthetic/playability approval; that
+acceptance remains tracked by [the gap owner](../evidence/opening-ui-gaps.md).
+
+**Confirmed, executor observation:** the actual1280×720 native window retains1920×1080 entry
+coordinates. Art is (160,92,1024,896); normal slot/name/confirmation windows are (1216,64,640,952),
+with32px between their horizontal extents. Actual child controls/text remain contained at1280×720,
+1600×900 and1100×800 letterboxing. Mouse hover/press, mapped keyboard/pad focus, adjustable greeting
+reveal/advance, disabled invalid-name/entry-error states, draft Back, failed publication/Retry,
+occupied-slot decline/overwrite, initial Continue and explicit backup recovery were observed.
+These are modern adapter observations, not original-game or human aesthetic evidence.
+
+Reproduce after the existing [entry/private-input setup](../verification/host.md#title-and-witch-entry-observation):
+launch `GODOT_BIN --resolution 1280x720 --path remake/game` with disposable save root/namespace.
+Read `SessionEntryView.ReadEntryObservationJson` for art/dialogue/selection, existing save/name
+observations for state, and each visible entry window/control's `GetGlobalRect` for containment.
+Resize the same window to1600×900 and1100×800, then restore1280×720. Follow New Game → slot →
+invalid eight-character name → valid draft → Back/reopen → final Back → confirm; reject storage
+using a disposable non-directory save root, restore configuration and Retry. From settled play,
+reopen New Game and decline/confirm an occupied slot; compare only those disposable primary/backup
+bytes. Relaunch Continue; in a separate disposable namespace use the resulting valid backup with an
+invalid primary to exercise Cancel then explicit Recover. Repeat entry with `confirmCancel: swapped`
+and with missing entry content; use adjustable text for mouse Reveal/Continue through the greeting.
+Retained narrow automation: `pwsh -NoProfile -File local/issue1445/run-native.ps1 -Run <fresh-name> -Phase <phase> -Namespace <disposable-name>`, phases `pilot`, `continue`, `recover`, `reading`,
+`missing`, or `swapped` (also `-Swapped`). Its local driver reuses existing input/state observers;
+it records semantic checkpoints, actual node geometry/styles and native errors, with no screenshots.
+Independent integration and final user visual approval remain separate gates.
+
 ## Field Projection
 
 Content validates the prepared world's raster shape/identity and required map/sprite/portrait

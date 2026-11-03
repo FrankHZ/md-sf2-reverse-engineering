@@ -7,6 +7,10 @@ namespace Sf2.Remake.GodotAdapter.Entry;
 
 internal sealed partial class NameEntryView : Control
 {
+    internal GameInput? Input { get; init; }
+    private Label _hint = null!;
+    private Button _use = null!;
+    private const int Columns = 13;
     private LineEdit _edit = null!;
     private Label _error = null!;
     private readonly List<Button> _keys = [];
@@ -18,39 +22,52 @@ internal sealed partial class NameEntryView : Control
 
     public override void _Ready()
     {
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create();
-        var center = new CenterContainer(); center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(center);
-        var panel = new PanelContainer { CustomMinimumSize = new(1240, 590) }; center.AddChild(panel);
-        var column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddThemeConstantOverride("separation", 20); panel.AddChild(column);
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
+        var panel = new PanelContainer { Name = "NameWindow", Position = EntryLayout.Window.Position, Size = EntryLayout.Window.Size }; AddChild(panel);
+        var column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddThemeConstantOverride("separation", 14); panel.AddChild(column);
         column.AddChild(new Label { Text = "What is your name?", HorizontalAlignment = HorizontalAlignment.Center });
         _edit = new LineEdit { Name = "NameInput", Text = Draft, PlaceholderText = "Empty keeps Bowie", CustomMinimumSize = new(500, 64),
             Alignment = HorizontalAlignment.Center, ContextMenuEnabled = false, SelectAllOnFocus = true };
         column.AddChild(_edit);
         _edit.TextChanged += _ => Validate();
         _edit.TextSubmitted += _ => Finish();
-        column.AddChild(new Label { Text = "Up to 7 characters • letters, digits, , . - ! ? # ' and space\nKeyboard: type / Backspace / Enter • Pad: directions / Confirm • Cancel: Back",
-            HorizontalAlignment = HorizontalAlignment.Center });
-        var grid = new GridContainer { Columns = 26 }; grid.AddThemeConstantOverride("h_separation", 2); grid.AddThemeConstantOverride("v_separation", 8); column.AddChild(grid);
+        var help = new Label { Text = "Up to 7 characters • Empty keeps the default name", AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            HorizontalAlignment = HorizontalAlignment.Center, TooltipText = "Letters, digits, , . - ! ? # ' and space. Keyboard: type, Backspace, Enter. Pad: directions and Confirm. DEL removes; END finishes." };
+        help.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(help);
+        var grid = new GridContainer { Columns = Columns }; grid.AddThemeConstantOverride("h_separation", 2); grid.AddThemeConstantOverride("v_separation", 6); column.AddChild(grid);
         for (int index = 0; index < Characters.Length; index++)
         {
             int key = index;
             var button = new Button { Name = "NameKey" + index, Text = Characters[index] == " " ? "␣" : Characters[index],
-                CustomMinimumSize = new(44, 62), FocusMode = FocusModeEnum.None };
-            button.AddThemeFontSizeOverride("font_size", Characters[index].Length > 1 ? 18 : 28);
+                CustomMinimumSize = new(44, 48), FocusMode = FocusModeEnum.None };
+            button.AddThemeFontSizeOverride("font_size", Characters[index].Length > 1 ? 16 : 24);
+            button.MouseEntered += () => Select(key);
             button.Pressed += () => { _edit.ReleaseFocus(); Select(key); Activate(); }; grid.AddChild(button); _keys.Add(button);
         }
-        _error = new Label { CustomMinimumSize = new(0, 45), HorizontalAlignment = HorizontalAlignment.Center }; column.AddChild(_error);
+        _error = new Label { Name = "NameError", AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 68), HorizontalAlignment = HorizontalAlignment.Center }; column.AddChild(_error);
         var actions = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddChild(actions);
         AddAction("Back", () => Back?.Invoke(_edit.Text));
         AddAction("Keyboard edit", () => _edit.GrabFocus());
         AddAction("Use name", Finish);
+        _hint = new Label { Name = "NameHint",
+            HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(_hint);
         Select(0); Validate(); _edit.GrabFocus();
 
         void AddAction(string text, Action action)
         {
-            var button = new Button { Text = text, CustomMinimumSize = new(300, 64), FocusMode = FocusModeEnum.None };
+            var button = new Button { Text = text, CustomMinimumSize = new(190, 64), FocusMode = FocusModeEnum.None };
+            button.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
             button.Pressed += action; actions.AddChild(button);
+            if (text == "Use name") _use = button;
         }
+    }
+
+    public override void _Process(double delta)
+    {
+        // LineEdit's existing editing keys are distinct from mapped grid navigation.
+        _hint.Text = _edit.HasFocus() ? "Enter: Use name   •   Escape: Back" : Input is null ? "" :
+            $"{Input.CompactHint(GameAction.Confirm)}: Choose   •   {Input.CompactHint(GameAction.Cancel)}: Back";
     }
 
     internal bool Editing(InputEvent input)
@@ -68,13 +85,13 @@ internal sealed partial class NameEntryView : Control
         else if (action == GameAction.Confirm) Activate();
         else if (action == GameAction.Left) Select((_selected + Characters.Length - 1) % Characters.Length);
         else if (action == GameAction.Right) Select((_selected + 1) % Characters.Length);
-        else if (action == GameAction.Up) Select(_selected < 26 ? Math.Min(_selected + 52, Characters.Length - 1) : _selected - 26);
-        else if (action == GameAction.Down) Select(_selected + 26 < Characters.Length ? _selected + 26 : _selected % 26);
+        else if (action == GameAction.Up) Select(_selected < Columns ? Math.Min(_selected + (Characters.Length - 1) / Columns * Columns, Characters.Length - 1) : _selected - Columns);
+        else if (action == GameAction.Down) Select(_selected + Columns < Characters.Length ? _selected + Columns : _selected % Columns);
     }
     private void Select(int key)
     {
         _selected = key;
-        for (int i = 0; i < _keys.Count; i++) _keys[i].Modulate = i == key ? StoryTheme.Selected : Colors.White;
+        for (int i = 0; i < _keys.Count; i++) StoryTheme.Select(_keys[i], i == key, key: true);
     }
     private void Activate()
     {
@@ -85,12 +102,18 @@ internal sealed partial class NameEntryView : Control
         {
             string candidate = _edit.Text + value;
             if (NewGameName.Error(candidate) is null) _edit.Text = candidate;
-            else _error.Text = "Use at most 7 supported characters. DEL removes the last character.";
+            else { _error.Text = "Use at most 7 supported characters. DEL removes the last character."; _error.Modulate = new("ffc4ad"); }
             if (NewGameName.Error(candidate) is null) Validate();
         }
     }
-    private void Validate() => _error.Text = NewGameName.Error(_edit.Text) switch
-    { "name-too-long" => "Name is too long. Use at most 7 characters.", "name-character" => "Unsupported character. Use the displayed alphabet.", _ => _edit.Text.Length == 0 ? "The default name will be used." : "" };
+    private void Validate()
+    {
+        string? error = NewGameName.Error(_edit.Text);
+        _use.Disabled = error is not null;
+        _error.Modulate = error is null ? StoryTheme.Selected : new("ffc4ad");
+        _error.Text = error switch
+        { "name-too-long" => "Name is too long. Use at most 7 characters.", "name-character" => "Unsupported character. Use the displayed alphabet.", _ => _edit.Text.Length == 0 ? "The default name will be used." : "" };
+    }
     private void Finish()
     {
         Validate();

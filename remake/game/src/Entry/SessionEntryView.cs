@@ -21,25 +21,30 @@ public sealed partial class SessionEntryView : Control
     private double _revealed;
     private bool _latched, _activated, _failed, _setup;
     private string? _assetError;
+    private Window.ContentScaleModeEnum _previousScaleMode;
     private bool Revealed => _dialogue.Body.VisibleCharacters < 0 || _dialogue.Body.VisibleCharacters >= _dialogue.Body.GetTotalCharacterCount();
     private string Stage => _page == -1 ? "title" : _page >= 0 ? "dialogue" : "menu";
 
     public override void _Ready()
     {
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create();
+        // Gameplay views use native window coordinates. Entry alone uses the project's
+        // authored 1080p canvas, including when opened over an already mounted session.
+        _previousScaleMode = GetWindow().ContentScaleMode;
+        GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.CanvasItems;
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
         try { _assets = new EntryPresentationAssets(); _assets.AttachAudio(this); }
         catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or
             System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException or FormatException)
         { _assets?.Dispose(); _assets = null; _assetError = "entry-content-unavailable"; }
         _backdrop = new EntryBackdrop { Name = "EntryBackdrop", Assets = _assets }; AddChild(_backdrop);
         _backdrop.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _dialogue = new StoryDialoguePanel { Name = "EntryDialogue" }; AddChild(_dialogue);
+        _dialogue = new StoryDialoguePanel { Name = "EntryDialogue", LayoutRegion = EntryLayout.Greeting }; AddChild(_dialogue);
         _start = new Button { Name = "Start", Text = "Press Start", Position = new(640, 900), Size = new(640, 72), FocusMode = FocusModeEnum.None };
-        _start.Pressed += Advance; AddChild(_start);
-        _read = new Button { Name = "ReadDialogue", Text = "Continue", Position = new(1440, 680), Size = new(300, 64),
+        _start.Pressed += Advance; AddChild(_start); StoryTheme.Select(_start, true);
+        _read = new Button { Name = "ReadDialogue", Text = "Continue", Position = new(1216, 548), Size = new(640, 76),
             FocusMode = FocusModeEnum.None, Visible = false };
-        _read.Pressed += Advance; AddChild(_read);
-        _hint = new Label { Name = "EntryHint", Position = new(1180, 160), Size = new(620, 100), Text = "Normal difficulty",
+        _read.Pressed += Advance; AddChild(_read); StoryTheme.Select(_read, true);
+        _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 100), Text = "Normal difficulty",
             HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_hint);
         string[] labels = Replacement ? ["New Game", "Cancel"] : ["New Game", "Continue", "Quit"];
@@ -47,7 +52,7 @@ public sealed partial class SessionEntryView : Control
         {
             int selected = index;
             var button = new Button { Name = labels[index].Replace(" ", ""), Text = labels[index],
-                Position = new(1240, 300 + 100 * index), Size = new(500, 76), FocusMode = FocusModeEnum.None, Visible = false };
+                Position = new(1216, 548 + 100 * index), Size = new(640, 76), FocusMode = FocusModeEnum.None, Visible = false };
             button.Pressed += () => Activate(selected);
             button.MouseEntered += () => { if (_page == -2) Select(selected); };
             AddChild(button); _buttons.Add(button);
@@ -64,7 +69,10 @@ public sealed partial class SessionEntryView : Control
     internal void ConfigureHints(GameInput input)
     {
         _input = input; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
-        _start.Text = $"Press Start  •  {input.Hint(GameAction.Confirm)} / {input.Hint(GameAction.Equipment)}";
+        _start.Text = $"Start  •  {input.CompactHint(GameAction.Confirm)}";
+        _start.TooltipText = input.Hint(GameAction.Confirm) + " / " + input.Hint(GameAction.Equipment);
+        foreach (var button in _buttons)
+            button.TooltipText = $"Choose: {input.Hint(GameAction.Confirm)} • Back: {input.Hint(GameAction.Cancel)}";
         RefreshHint();
     }
     internal void Setup(bool active)
@@ -76,6 +84,7 @@ public sealed partial class SessionEntryView : Control
     internal void ReturnFromSetup() { _activated = _setup = false; ShowMenu(); }
     public override void _ExitTree()
     {
+        GetWindow().ContentScaleMode = _previousScaleMode;
         _backdrop.Assets = null; _assets?.Dispose(); _assets = null;
     }
     public override void _Process(double delta)
@@ -155,14 +164,14 @@ public sealed partial class SessionEntryView : Control
         _read.Text = Revealed ? "Continue" : "Reveal";
         _hint.Text = Replacement ? "New Game  •  Normal difficulty" : "Choose your journey  •  Normal difficulty";
         if (_input is null) return;
-        _dialogue.SetHint(!Revealed ? $"{_input.Hint(GameAction.Confirm)}: Reveal" : _page >= 0
-            ? $"{_input.Hint(GameAction.Confirm)}: Continue   •   {_input.Hint(GameAction.Equipment)}: Skip greeting"
-            : $"{_input.Hint(GameAction.Confirm)}: Choose   •   {_input.Hint(GameAction.Cancel)}: Back");
+        _dialogue.SetHint(!Revealed ? $"{_input.CompactHint(GameAction.Confirm)}: Reveal" : _page >= 0
+            ? $"{_input.CompactHint(GameAction.Confirm)}: Continue   •   {_input.CompactHint(GameAction.Equipment)}: Skip greeting"
+            : $"{_input.CompactHint(GameAction.Confirm)}: Choose   •   {_input.CompactHint(GameAction.Cancel)}: Back");
     }
     private void Select(int index)
     {
         _selection = index;
-        for (int i = 0; i < _buttons.Count; i++) _buttons[i].Modulate = i == index ? StoryTheme.Selected : Colors.White;
+        for (int i = 0; i < _buttons.Count; i++) StoryTheme.Select(_buttons[i], i == index);
     }
     private void Activate(int index)
     {

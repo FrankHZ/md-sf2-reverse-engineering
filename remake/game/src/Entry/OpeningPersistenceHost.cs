@@ -47,13 +47,14 @@ public sealed partial class GameRoot
         if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Disabled;
         if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
         if (_entry is not null && !overEntry) _entry.Hide();
-        _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry };
+        _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry, Input = _input };
+        if (overEntry) _entry?.Setup(true);
         AddChild(_slots); DisarmInput();
     }
     private void CloseSavePanel()
     {
         if (_slots is { } slots) { _slots = null; RemoveChild(slots); slots.QueueFree(); }
-        if (_entry is not null) _entry.Show();
+        if (_entry is not null) { _entry.Show(); _entry.ReturnFromSetup(); }
         else
         {
             if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Inherit;
@@ -117,7 +118,7 @@ public sealed partial class GameRoot
 
     private void ShowContinue()
     {
-        OpenSavePanel();
+        OpenSavePanel(overEntry: _entry is not null);
         var read = RestoreSource().Read();
         if (read is not ExplorationReadAccepted admitted)
         { SaveError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "save-content-required"); return; }
