@@ -90,13 +90,9 @@ public sealed partial class GameRoot
     {
         if (!CanOpenSettings) return;
         _input!.DisarmMovement(); _input.DisarmWait();
-        if (_entry is not null) _entry.ProcessMode = ProcessModeEnum.Disabled;
-        if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Disabled;
-        if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
-        _audio?.SetPaused(true);
         _settings = new SettingsView { Name = "SettingsView", Input = _input, Close = CloseSettings,
             Apply = ApplySettings, ReadOnly = _settingsOverride, Notice = _settingsNotice };
-        AddChild(_settings); DisarmInput();
+        AddChild(_settings); ApplyHostPause(); DisarmInput();
     }
 
     private string? ApplySettings(InputSettings candidate, bool reset)
@@ -119,10 +115,7 @@ public sealed partial class GameRoot
     {
         if (_settings is not { } settings) return;
         _settings = null; RemoveChild(settings); settings.QueueFree();
-        if (_entry is not null) _entry.ProcessMode = ProcessModeEnum.Inherit;
-        if (_exploration is not null && _entry is null) _exploration.ProcessMode = ProcessModeEnum.Inherit;
-        if (_battle is not null && _entry is null) _battle.ProcessMode = ProcessModeEnum.Inherit;
-        _audio?.SetPaused(_entry is not null); DisarmInput();
+        ApplyHostPause(); DisarmInput();
     }
 
     private void ConfigureSettingsButton()
