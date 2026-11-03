@@ -180,7 +180,7 @@ public sealed partial class ExplorationSessionView : Control
         _audio = audio; audio.Observe(result);
         _releaseBattle = releaseBattle;
         _battleMounted = releaseBattle is not null;
-        _presentation = new(this, session.Definition.Exploration!, input.Settings.ReducedFlash, () =>
+        _presentation = new(this, session.Definition.Exploration!, input.Settings, () =>
         {
             prepareBattle(_result!);
             _battleMounted = true;

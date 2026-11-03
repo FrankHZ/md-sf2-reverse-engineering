@@ -1,5 +1,76 @@
 # Godot Host and Presentation
 
+## Basic preferences agreement
+
+**Standard rigor; [#1451](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1451).**
+Deliver the four existing `InputSettings` preferences: instant/adjustable text, 1–240 characters
+per second, standard/swapped Confirm/Cancel and reduced flash. Existing blue/gold controls expose
+Settings and control help directly on the title and Witch menu. At settled exploration input,
+Cancel opens Settings; the visible Settings button names that mapped shortcut. Active text, choices,
+Church, party menus, movement and battle decisions cannot open it. The host pauses the existing
+view/audio while the modal is open; no gameplay command, session replacement, revision, RNG or game
+save write belongs to this operation. Battle settings can be changed on the next safe field return.
+
+The view owns a disposable draft. Cancel closes without publication or writes; Defaults changes
+only the four draft preferences, preserving custom bindings. Apply validates the entire candidate,
+including device bindings, writes it, then updates the existing settings and input objects in place.
+All mounted consumers retain those objects. Reduced flash and reveal policy apply to subsequent
+presentation at this safe boundary. Hint refresh and a held-input release barrier prevent the old
+Confirm event, pad deflection or key echo from accepting a subsequent screen. Installing admitted
+bindings explicitly releases old Godot action state. A temporary barrier tracks only the activating
+Apply event until its release/neutral edge; window focus loss clears it and the settings-held action
+state. Global input admission retains its existing `GameplayHeld` rule without historical key sets.
+Native focus loss suspends pointer gestures; an orphan release cannot activate a control. Control help reads the admitted bindings.
+
+`--input-settings` is the highest-priority, read-only whole-file override. Settings explains that
+controlled launch, displays its values/help and offers only Close; neither the override nor ordinary
+preferences are written. Otherwise load `<SF2_SAVE_ROOT>/<SF2_SAVE_NAMESPACE>/sf2-preferences/input.json`,
+then existing model defaults only when absent or unreadable. The absolute root and 1–64 character
+alphanumeric/underscore/hyphen namespace follow existing persistent-save conventions; the root must
+be outside checkouts and link paths. There is no OS-directory or removable-worktree fallback.
+Settings are separate from `sf2-opening` progress slots and never enter their schema. WM-close
+first cancels the settings draft, then enters the existing Quit owner; settings and Quit never coexist.
+
+Missing configuration/read failures show an explanation while current defaults remain usable.
+Invalid content or bindings retain the original file and require explicit Restore defaults, then
+Apply to recover; the replaced bytes are retained in a uniquely named `input.*.invalid.json` file.
+Other read/write failures refuse Apply and retain the prior live settings and files. Each write
+uses the existing style of exclusive file lock, same-directory flushed temporary, and atomic
+replace/move; no settings framework, manifest, checksums or autosave is introduced. A settings file
+changed by another process since load is refused until relaunch, using direct byte comparison.
+
+The pilot covers draft/Cancel/Apply/write refusal before finite native observations expand to fresh
+process reading, corrupt recovery, read-only override/custom bindings, held-remap and actual reveal/
+reduced-flash consumers. Use `uv run sf2 verify adapter`, a committed dependency plan and bounded
+windowed state/input/geometry/error reads. No new engine behavior or helper tests, full suite,
+screenshots, per-frame acquisition or platform. Keep new local evidence under `local/issue1451`,
+reuse existing tools/media/caches, budget 100 MiB and serial native runs of at most 45 seconds.
+Reassess before broader acquisition or cross-engine changes. Volume/resolution/remapping remain
+future presentation/input work; human visual acceptance and original timing/media remain Unknown.
+
+Bounded implementation observations cover keyboard/pad/mouse entry and help, draft/Defaults/Cancel,
+held keyboard/pad remapping, fresh-process loading, preserved custom bindings, explicit corrupt-file
+recovery, unreadable storage, write refusal and externally changed-file refusal. At one stable field
+input, Apply and Cancel retain session identity, revision, captured progress and the existing slot
+bytes; the same mounted presenter reads changed settings. Gradual Witch text and suppressed mouth/
+blink drawing consume the new values. Settings fits 1920×1080 and native 1280×720 with scrolling.
+A real secondary native-window focus cycle omits old key-up and still admits a fresh new Confirm;
+this is controlled input/focus evidence, not physical controller hardware approval. A direct Godot
+WM-close notification confirms cancel-draft → existing Quit → Cancel → retained field control; real
+OS WM-close delivery remains unobserved. Selected teardown runs emitted two ObjectDB-leak warnings;
+a verbose focused repeat did not reproduce them. No memory-lifetime or all-device approval is claimed.
+
+To reproduce the product boundary, load the existing private-input/entry selections and configure a
+fresh persistent namespace outside the checkout, launch the existing Godot project without an input
+override, and open Settings using mapped Cancel at the title. Edit all four values, choose Defaults,
+then Cancel; reopen and Apply the changes. Hold the old Confirm through Apply, release, and use the
+new mapping. Relaunch in the same namespace to check persistence; use a disposable malformed file,
+unreadable path or blocked writer lock for the explicit refusal/recovery cases. A separate launch
+with `--input-settings <path>` must show read-only values/help without editing either file. Use the
+ordinary New Game route for a settled field comparison, then active dialogue/Church to check refusal.
+Do not change user saves or canonical inputs to construct these disposable cases. Exact local receipts,
+retained failed observations and CI/head identities belong to the Issue/PR handoff.
+
 ## Menu pointer agreement
 
 **Standard rigor; [#1408](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1408).**

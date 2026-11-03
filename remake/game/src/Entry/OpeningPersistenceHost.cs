@@ -221,7 +221,7 @@ public sealed partial class GameRoot
     }
 
     public override void _Notification(int what)
-    { if (what == NotificationWMCloseRequest) RequestQuit(); }
+    { SettingsNotification(what); }
     private void RequestQuit()
     {
         if (_session is null) { GetTree().Quit(); return; }

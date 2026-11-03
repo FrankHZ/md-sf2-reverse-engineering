@@ -7,13 +7,15 @@ namespace Sf2.Remake.GodotAdapter.Entry;
 
 public sealed partial class SessionEntryView : Control
 {
-    internal Action? NewGame, Cancel, Continue, Quit;
+    internal Action? NewGame, Cancel, Continue, Quit, Settings;
+    internal bool CanOpenSettings => _page < 0 && !_setup && !_activated && Revealed;
     internal bool Replacement { get; init; }
     private EntryPresentationAssets? _assets;
     private EntryBackdrop _backdrop = null!;
     private StoryDialoguePanel _dialogue = null!;
     private Button _start = null!;
     private Button _read = null!;
+    private Button _settingsAccess = null!;
     private Label _hint = null!;
     private readonly List<Button> _buttons = [];
     private GameInput? _input;
@@ -47,12 +49,14 @@ public sealed partial class SessionEntryView : Control
         _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 100), Text = "Normal difficulty",
             HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_hint);
-        string[] labels = Replacement ? ["New Game", "Cancel"] : ["New Game", "Continue", "Quit"];
+        _settingsAccess = new Button { Name = "TitleSettings", Text = "Settings / Controls", Position = new(1320, 900), Size = new(536, 72), FocusMode = FocusModeEnum.None };
+        _settingsAccess.Pressed += () => { if (CanOpenSettings) Settings?.Invoke(); }; AddChild(_settingsAccess);
+        string[] labels = Replacement ? ["New Game", "Cancel", "Settings / Controls"] : ["New Game", "Continue", "Quit", "Settings / Controls"];
         for (int index = 0; index < labels.Length; index++)
         {
             int selected = index;
             var button = new Button { Name = labels[index].Replace(" ", ""), Text = labels[index],
-                Position = new(1216, 548 + 100 * index), Size = new(640, 76), FocusMode = FocusModeEnum.None, Visible = false };
+                Position = new(1216, 548 + 88 * index), Size = new(640, 76), FocusMode = FocusModeEnum.None, Visible = false };
             button.Pressed += () => Activate(selected);
             button.MouseEntered += () => { if (_page == -2) Select(selected); };
             AddChild(button); _buttons.Add(button);
@@ -69,6 +73,8 @@ public sealed partial class SessionEntryView : Control
     internal void ConfigureHints(GameInput input)
     {
         _input = input; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
+        _settingsAccess.Text = $"Settings / Controls · {input.CompactHint(GameAction.Cancel)}";
+        _settingsAccess.AddThemeFontSizeOverride("font_size", 24);
         _start.Text = $"Start  •  {input.CompactHint(GameAction.Confirm)}";
         _start.TooltipText = input.Hint(GameAction.Confirm) + " / " + input.Hint(GameAction.Equipment);
         foreach (var button in _buttons)
@@ -103,7 +109,11 @@ public sealed partial class SessionEntryView : Control
     {
         if (_latched || _activated) return;
         if (_page == -1)
-        { if (action is GameAction.Confirm or GameAction.Equipment) Advance(); return; }
+        {
+            if (action == GameAction.Cancel && CanOpenSettings) Settings?.Invoke();
+            else if (action is GameAction.Confirm or GameAction.Equipment) Advance();
+            return;
+        }
         if (_page >= 0)
         {
             if (action == GameAction.Equipment) { Latch(); ShowMenu(); }
@@ -160,6 +170,7 @@ public sealed partial class SessionEntryView : Control
     {
         if (_setup) { _hint.Hide(); _read.Hide(); return; }
         _hint.Visible = _page != -1;
+        _settingsAccess.Visible = _page == -1 && !_setup;
         _read.Visible = _page >= 0;
         _read.Text = Revealed ? "Continue" : "Reveal";
         _hint.Text = Replacement ? "New Game  •  Normal difficulty" : "Choose your journey  •  Normal difficulty";
@@ -177,6 +188,7 @@ public sealed partial class SessionEntryView : Control
     {
         if (_page != -2 || _activated || _latched || _buttons[index].Disabled) return;
         Select(index); Latch();
+        if (index == _buttons.Count - 1) { Settings?.Invoke(); return; }
         if (index == 0) { _activated = true; NewGame?.Invoke(); }
         else if (Replacement) Cancel?.Invoke();
         else if (index == 1) Continue?.Invoke();

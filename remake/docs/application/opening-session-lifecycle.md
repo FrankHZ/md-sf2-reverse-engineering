@@ -689,3 +689,13 @@ levels, caps, promotion, dead/status combinations and content costs are covered;
 not define legality. Positive poison/stun naturally arising in the opening and original service
 input/music/portrait cadence remain **Unknown**. The [composed opening acceptance](../evidence/opening-loop-acceptance.md) joins these consumers;
 main-gate owns independent integration.
+
+## Host preferences boundary
+
+The [basic preferences agreement](../godot/presentation.md#basic-preferences-agreement) owns
+Issue1451's four-field draft, safe application, independent file and recovery behavior. The host
+opens this modal only outside entry dialogue or at settled exploration input without another menu.
+It pauses existing presentation and retains the same session/input identities. Settings operations
+do not capture/write progress or submit a session command. Persisted story text settings retain
+their original meaning; adapter preferences remain outside game progress and its High-risk save
+transaction agreement. Explicit launch settings override ordinary preferences read-only.

@@ -24,17 +24,20 @@ public sealed partial class GameRoot : Node
     private Button? _restart;
     private bool _releaseBarrier;
 
-    public override void _ExitTree() { _audio?.Dispose(); ClearPreparedNewGame(); }
+    public override void _ExitTree() { GetWindow().FocusExited -= SettingsFocusLost; _audio?.Dispose(); ClearPreparedNewGame(); }
     public string ReadAudioObservationJson() => System.Text.Json.JsonSerializer.Serialize(_audio?.ObservePlayback());
 
     public override void _Input(InputEvent input)
     {
+        if (BlockSettingsRelease(input)) { GetViewport().SetInputAsHandled(); return; }
         if (_releaseBarrier && input is not InputEventMouse)
         {
             _input?.Resolve(input); _input?.DisarmMovement();
             if (_input?.GameplayHeld == false) _releaseBarrier = false;
             GetViewport().SetInputAsHandled(); return;
         }
+        if (_settings is not null && input is InputEventMouse)
+        { _settings.HandlePointer(input); GetViewport().SetInputAsHandled(); return; }
         if (_nameEntry is { } name)
         {
             // Track pad button/axis releases and wait state without routing actions to
@@ -47,7 +50,7 @@ public sealed partial class GameRoot : Node
         if (input is InputEventMouse)
         {
             if (_entry is not null || _slots is not null) return;
-            if (new[] { _restart, _saveButton, _quitButton }.Any(button => button is not null && button.GetGlobalRect().HasPoint(((InputEventMouse)input).Position))) return;
+            if (new[] { _restart, _saveButton, _quitButton, _settingsButton }.Any(button => button is not null && button.GetGlobalRect().HasPoint(((InputEventMouse)input).Position))) return;
             if (_exploration is { } field && GodotObject.IsInstanceValid(field) && field.IsVisibleInTree())
                 field.HandlePointer(input);
             else if (_battle?.IsVisibleInTree() == true) _battle.HandlePointer(input);
@@ -56,8 +59,10 @@ public sealed partial class GameRoot : Node
         }
         var action = _input?.Resolve(input);
         if (action is null) return;
-        if (_slots is not null) _slots.Handle(action.Value);
+        if (_settings is not null) HandleSettingsAction(action.Value, input);
+        else if (_slots is not null) _slots.Handle(action.Value);
         else if (_entry is not null) _entry.Handle(action.Value);
+        else if (action == GameAction.Cancel && CanOpenSettings) ShowSettings();
         else if (action == GameAction.Stay && _exploration?.CanOpenHostMenu == true) ShowSave();
         else if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
             exploration.HandleAction(action.Value);
@@ -67,15 +72,17 @@ public sealed partial class GameRoot : Node
 
     public override void _Process(double delta)
     {
+        if (_settingsButton is not null) _settingsButton.Disabled = !CanOpenSettings;
         bool partyMenu = _exploration?.PartyMenuOpen == true;
-        if (_restart is not null) _restart.Disabled = _slots is not null || _session?.Current.CanWaitAtInput != true || partyMenu;
-        if (_saveButton is not null) _saveButton.Disabled = _slots is not null || _entry is not null || partyMenu;
-        if (_quitButton is not null) _quitButton.Disabled = _slots is not null || _entry is not null || partyMenu;
+        if (_restart is not null) _restart.Disabled = _settings is not null || _slots is not null || _session?.Current.CanWaitAtInput != true || partyMenu;
+        if (_saveButton is not null) _saveButton.Disabled = _settings is not null || _slots is not null || _entry is not null || partyMenu;
+        if (_quitButton is not null) _quitButton.Disabled = _settings is not null || _slots is not null || _entry is not null || partyMenu;
     }
 
     public override void _Ready()
     {
         GetTree().AutoAcceptQuit = false;
+        GetWindow().FocusExited += SettingsFocusLost;
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         var arguments = OS.GetCmdlineUserArgs();
         for (int index = 0; index < arguments.Length; index++)
@@ -91,7 +98,7 @@ public sealed partial class GameRoot : Node
             { Fail("missing-startup-path", "The selected game option requires a path."); return; }
             options.Add(option, arguments[index]);
         }
-        try { _input = new GameInput(InputSettings.Load(options.GetValueOrDefault("--input-settings"))); }
+        try { LoadPreferences(options.GetValueOrDefault("--input-settings")); }
         catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or
             System.Text.Json.JsonException or ArgumentException or NotSupportedException)
         { Fail("invalid-input-settings", "Cannot read the versioned input settings."); return; }
@@ -117,7 +124,7 @@ public sealed partial class GameRoot : Node
         if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
         _audio?.SetPaused(true);
         _entry = new SessionEntryView { Name = "SessionEntryView", Replacement = _session is not null,
-            NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit };
+            NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit, Settings = ShowSettings };
         AddChild(_entry);
         if (_input is not null) _entry.ConfigureHints(_input);
         DisarmInput();
@@ -148,7 +155,7 @@ public sealed partial class GameRoot : Node
         if (battle is not null && GodotObject.IsInstanceValid(battle)) { battle.GetParent()?.RemoveChild(battle); battle.Free(); }
         _audio?.Dispose(); _audio = null;
         if (_restart is not null) { RemoveChild(_restart); _restart.QueueFree(); _restart = null; }
-        ReleasePersistenceButtons();
+        ReleasePersistenceButtons(); ReleaseSettingsButton();
         _worldViewport = new();
         DisarmInput();
     }
@@ -202,7 +209,7 @@ public sealed partial class GameRoot : Node
             OffsetLeft = -220, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 60,
             Theme = UI.StoryTheme.Create(), FocusMode = Control.FocusModeEnum.None };
         _restart.Pressed += ShowEntry; AddChild(_restart);
-        ConfigurePersistenceButtons();
+        ConfigurePersistenceButtons(); ConfigureSettingsButton();
         DisarmInput();
 
         void CheckAudio() { if (_audio?.Error is { } failure) Fail(failure, "Required private audio could not be consumed."); }

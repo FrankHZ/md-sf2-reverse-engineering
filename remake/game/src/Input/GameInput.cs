@@ -26,6 +26,14 @@ internal sealed class GameInput
     internal GameInput(InputSettings settings)
     {
         Settings = settings;
+        Apply(settings, Prepare(settings));
+    }
+
+    // Pure admission: preparing a candidate must never install InputMap actions.
+    internal static Dictionary<GameAction, List<InputEvent>> Prepare(InputSettings settings)
+    {
+        InputSettings.Validate(settings);
+        Dictionary<GameAction, List<InputEvent>> prepared = [];
         Dictionary<string, ActionBinding> bindings = new(StringComparer.Ordinal)
         {
             ["up"] = new(["Up", "W"], ["DpadUp"], ["LeftY-"]),
@@ -92,22 +100,32 @@ internal sealed class GameInput
                 Unique("axis:" + axis);
                 events.Add(new InputEventJoypadMotion { Axis = code, AxisValue = value, Device = -1 });
             }
-            _bindings.Add(Enum.Parse<GameAction>(name, true), events);
+            prepared.Add(Enum.Parse<GameAction>(name, true), events);
         }
         if (settings.ConfirmCancel == "swapped")
-            (_bindings[GameAction.Confirm], _bindings[GameAction.Cancel]) = (_bindings[GameAction.Cancel], _bindings[GameAction.Confirm]);
-        // Install only after the complete explicit configuration has passed admission.
-        foreach (var (action, events) in _bindings)
-        {
-            string name = MapName(action);
-            if (InputMap.HasAction(name)) InputMap.EraseAction(name);
-            InputMap.AddAction(name, 0.5f);
-            foreach (var input in events) InputMap.ActionAddEvent(name, input);
-        }
+            (prepared[GameAction.Confirm], prepared[GameAction.Cancel]) = (prepared[GameAction.Cancel], prepared[GameAction.Confirm]);
+        return prepared;
         void Unique(string identity)
         {
             if (!identities.Add(identity)) throw new ArgumentException($"Duplicate binding: {identity}.");
         }
+    }
+
+    internal void Apply(InputSettings candidate, Dictionary<GameAction, List<InputEvent>> prepared)
+    {
+        Settings.Publish(candidate);
+        _bindings.Clear();
+        foreach (var (action, events) in prepared)
+        {
+            _bindings.Add(action, events);
+            string name = MapName(action);
+            // InputMap replacement alone can retain a held old action in Godot.
+            if (InputMap.HasAction(name))
+            { Godot.Input.ActionRelease(name); InputMap.EraseAction(name); }
+            InputMap.AddAction(name, 0.5f);
+            foreach (var input in events) InputMap.ActionAddEvent(name, input);
+        }
+        DisarmMovement(); DisarmWait();
     }
 
     internal GameAction? Resolve(InputEvent input)
@@ -154,6 +172,12 @@ internal sealed class GameInput
                 return action == GameAction.Wait && (!freshWait || _waitRequiresRelease) ? null : action;
             }
         return null;
+    }
+
+    internal void ReleaseSettingsHold()
+    {
+        DisarmMovement(); DisarmWait();
+        foreach (var action in _bindings.Keys) Godot.Input.ActionRelease(MapName(action));
     }
 
     internal string Hint(GameAction action) => string.Join(" / ", _bindings[action].Select(Describe));
