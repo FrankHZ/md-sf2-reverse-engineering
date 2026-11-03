@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Sf2.Remake.GodotAdapter.Observation;
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
@@ -201,9 +202,9 @@ public sealed partial class BattleSessionView : Control
     {
         _startupFailure = failure;
         RetireWindows(); Arrange();
-        _title = "BATTLE UNAVAILABLE";
+        _title = GameText.Get("battle.start-unavailable");
         _status = $"{failure.Kind}: {failure.Code} ({failure.Field})\n{failure.Message}";
-        _feedback.Text.Text = $"The battle has stopped.\n{failure.Message} ({failure.Code})";
+        _feedback.Text.Text = GameText.BattleFailure(failure, stopped: true);
         _feedback.Arrange(GetViewportRect().Size);
     }
 
@@ -286,7 +287,7 @@ public sealed partial class BattleSessionView : Control
         { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.HasBattleControl != true) return;
         if (action == GameAction.Confirm && _hud.IsVisibleInTree() && _hud.ReadMore())
-        { _hud.SetHint(_hud.MoreBelow ? $"{_input.CompactHint(GameAction.Confirm)}: Read more" : _help); return; }
+        { _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help); return; }
         if (BattleDiscardView.Selecting(_session.Current.Selection?.Stage))
         { if (BattleDiscardView.Select(_session, action) is { } discardCommand) Send(discardCommand); return; }
         if (BattleGiveView.Selecting(_session.Current.Selection?.Stage))
@@ -415,7 +416,9 @@ public sealed partial class BattleSessionView : Control
         var equipmentChoices = _session.QueryBattleChoices().Equipment;
         var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
         _equipment = currentActor?.Definition.Equipment is null ? "" :
-            $"Equipment ({_input.Hint(GameAction.Equipment)}): {equipmentChoices.FirstOrDefault(o => o.Equipped)?.Label ?? "Unarmed"} · ATT {currentActor.Attack} · range {BattleEquipment.Physical(currentActor)!.MinimumRange}–{BattleEquipment.Physical(currentActor)!.MaximumRange}";
+            GameText.Get("battle.equipment-current", _input.Hint(GameAction.Equipment),
+                equipmentChoices.FirstOrDefault(o => o.Equipped) is { } equipped ? GameText.BattleEquipmentLabel(equipped) : GameText.Get("prepare.unarmed"),
+                currentActor.Attack, BattleEquipment.Physical(currentActor)!.MinimumRange, BattleEquipment.Physical(currentActor)!.MaximumRange);
         _spells = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             _session.QueryBattleChoices().Spells.Select(option =>
                 option.Label + (option.Spell == selection.Spell ? " · selected" : "") +
@@ -434,13 +437,19 @@ public sealed partial class BattleSessionView : Control
         if (equipment)
         {
             int index = equipmentChoices.ToList().FindIndex(option => option.Slot == selection!.EquipmentSlot);
-            _equipment = "Choose equipment" + (index < 0 ? "\nNo available equipment." :
-                $"\n{index + 1} / {equipmentChoices.Count}\n> {equipmentChoices[index].Label}" +
-                $"\nATT {equipmentChoices[index].Attack} · range {equipmentChoices[index].MinimumRange}–{equipmentChoices[index].MaximumRange}");
+            _equipment = GameText.Get("battle.equipment-title") + "\n" + (index < 0 ? GameText.Get("battle.no-equipment") :
+                GameText.Get("battle.equipment-row", index + 1, equipmentChoices.Count, GameText.BattleEquipmentLabel(equipmentChoices[index]),
+                    equipmentChoices[index].Attack, equipmentChoices[index].MinimumRange, equipmentChoices[index].MaximumRange));
+            if (_session.QueryBattleChoices().EquipmentFailure is { } equipmentFailure)
+                _equipment += "\n" + GameText.BattleFailure(equipmentFailure);
+            string fallback = GameText.Fallback("battle.", includeKey: true);
+            if (fallback.Length > 0) _equipment += "\n" + fallback;
         }
-        _help = auxiliary ? $"{_input.CompactHint(GameAction.Up)} / {_input.CompactHint(GameAction.Down)}: cycle choices\n" +
-            (give ? $"{_input.CompactHint(GameAction.Target)}: cycle recipients\n" : "") +
-            $"{_input.CompactHint(GameAction.Confirm)}: select / confirm\n{_input.CompactHint(GameAction.Cancel)}: back" : _battleHelp;
+        _help = equipment ? GameText.Get("battle.aux-help", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
+            _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel)) :
+            auxiliary ? $"{_input.CompactHint(GameAction.Up)} / {_input.CompactHint(GameAction.Down)}: cycle choices\n" +
+                (give ? $"{_input.CompactHint(GameAction.Target)}: cycle recipients\n" : "") +
+                $"{_input.CompactHint(GameAction.Confirm)}: select / confirm\n{_input.CompactHint(GameAction.Cancel)}: back" : _battleHelp;
         // One readable current choice; directions still visit every typed offer. Reuse story reading
         // before Confirm rather than requiring a mouse wheel to reach long choice text.
         string body = _status + "\n\n" + (give ? _giveMenu : discard ? _discardMenu : equipment ? _equipment :
@@ -448,7 +457,7 @@ public sealed partial class BattleSessionView : Control
         if (_hud.Body.Text != body) { _hud.Body.Text = body; _hud.ResetReading(); }
         bool hudVisible = !_menu.Visible && selection is not null;
         _hud.Present(hudVisible, false, false, _hudSubject, _help, lifetimeOpen: hudVisible);
-        _hud.SetHint(_hud.MoreBelow ? $"{_input.CompactHint(GameAction.Confirm)}: Read more" : _help);
+        _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help);
         _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
         // Map children have their own Z priorities; a later sibling's black backdrop
         // cannot occlude them. Full close-ups own rendering, while field notices/deaths keep the map.

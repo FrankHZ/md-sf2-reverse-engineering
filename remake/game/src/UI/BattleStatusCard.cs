@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Battles;
 
@@ -40,7 +41,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
         _actor = actor; Visible = actor is not null;
         PresentName(name);
         bool low = hp > 0 && maxHp > 0 && hp * 4 <= maxHp;
-        _role.Text = role + (hp == 0 ? " · Defeated" : low ? " · ! Low HP" : "");
+        _role.Text = role + (hp == 0 ? GameText.Get("battle.defeated") : low ? GameText.Get("battle.low-hp") : "");
         _role.Modulate = low ? StoryTheme.Selected : Colors.White;
         Size = RequestedSize;
         _hp.Present(hp, maxHp);

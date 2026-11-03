@@ -2,7 +2,7 @@
 
 ## Bounded bilingual localization
 
-**Implemented M1/M2a/M2b/M2c, bounded:** English/简体中文 selection uses the existing settings transaction and separate
+**Implemented M1/M2a/M2b/M2c/M2d, bounded:** English/简体中文 selection uses the existing settings transaction and separate
 preference. Settings, one original authored FieldTextWait with captured names/source controls, and
 semantic HEAL cast/recovery text, Church and Search consume exact catalogs with explicit English fallback. The bundled
 licensed CJK face loads in Godot 4.7.2 without system fallback. Canonical execution and game-save
@@ -10,11 +10,15 @@ identity remain unchanged. [Scope/failures](application/localization-design.md#i
 and [Church/Search boundary](application/localization-design.md#implemented-m2a-churchsearch-boundary)
 and [entry/save boundary](application/localization-design.md#implemented-m2b-entry-and-save-boundary),
 and [Party/Prepare boundary](application/localization-design.md#implemented-m2c-party-and-field-prepare-boundary),
+and [battle menu/status boundary](application/localization-design.md#implemented-m2d-battle-menu-and-status-boundary),
 with [native entry reproduction](verification/host.md#localized-entry-and-save) and
 [Party/Prepare observation](verification/host.md#localized-party-and-field-prepare), own the limits. Entry,
 restricted naming help, slots, Save/Quit/Continue and recovery now consume UI keys; six entry source
 IDs can consume a validated overlay, with explicit English fallback and long-text reading. Read-only Party labels and field Prepare choices/confirmations/results/recovery are also localized;
-stat IDs and typed commands retain their authority. Remaining battle menus,
+stat IDs and typed commands retain their authority. Battle movement/actions/targets, equipment and
+shared low-HP/defeated suffixes now consume UI keys; HP/MP resources, stable command/raster identities
+and literal names are preserved. Actual stop status selects stopped versus choice-level recovery.
+Give/Discard selections/results, Retreat, dynamic scene results and original image lettering,
 original/private dialogue, unapproved default/item names and other results remain English; seven-character ASCII names
 remain in force. No whole-opening bilingual, human typography, Unicode naming or export claim.
 

@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -200,13 +201,14 @@ internal sealed partial class BattleCommandMenu : Control
         var selection = _current.Selection;
         bool moving = selection?.Stage == BattleSelectionStage.Movement;
         var actor = _actor is { } active ? _current.Battle.GetActor(active) : null;
-        _layout.Actor.Present(actor, actor is null ? "" : BattleCharacterNames.Resolve(actor, _content, _current!.Story), "Acting");
+        _layout.Actor.Present(actor, actor is null ? "" : BattleCharacterNames.Resolve(actor, _content, _current!.Story), GameText.Get("battle.acting"));
         var candidate = !moving && _page == Page.Target && TargetCandidate is { } targetRef
             ? _current.Battle.GetActor(targetRef) : null;
-        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, _current!.Story), "Target");
-        _layout.Context.Text = $"Round {_current.Battle.Round}    Gold {_current.Battle.Gold?.ToString() ?? "—"}";
+        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, _current!.Story), GameText.Get("battle.target"));
+        _layout.Context.Text = GameText.Get("battle.context", _current.Battle.Round, _current.Battle.Gold?.ToString() ?? "—");
         for (int i = 0; i < Kinds.Length; i++)
         {
+            _layout.Commands[i].RefreshCaption();
             _layout.Commands[i].SetSelection(Visible && !moving && _page == Page.Main && i == _command, _input.Settings.ReducedFlash);
             _layout.Commands[i].Available = _choices.Actions.Any(option => InGroup(option, i) && option.Enabled);
         }
@@ -215,37 +217,40 @@ internal sealed partial class BattleCommandMenu : Control
         _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
         _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list);
         _layout.Diamond.Visible &= selection is not null && !moving && _page == Page.Main;
-        _layout.Heading.Text = moving ? "Choose a position" : _page switch
+        _layout.Heading.Text = moving ? GameText.Get("battle.position") : _page switch
         {
-            Page.Magic => "Magic", Page.Items => "Items", Page.Target => "Choose a target",
-            Page.Commit => "Stay here?", _ => _layout.Commands[_command].Caption,
+            Page.Magic => GameText.Get("battle.magic"), Page.Items => GameText.Get("battle.items"), Page.Target => GameText.Get("battle.choose-target"),
+            Page.Commit => GameText.Get("battle.stay-here"), _ => _layout.Commands[_command].Caption,
         };
         string confirm = KeyHint(GameAction.Confirm), cancel = KeyHint(GameAction.Cancel);
         string directions = string.Join("/", new[] { GameAction.Up, GameAction.Left, GameAction.Down, GameAction.Right }.Select(KeyHint));
-        _layout.Help.Text = moving ? $"{directions}: move\n{confirm}: actions" :
-            _page == Page.Target ? $"{KeyHint(GameAction.Target)}: next target\n{confirm}: commit · {cancel}: back" :
-            $"{(list ? $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}: choice\n" : _page == Page.Main ? directions + ": command\n" : "")}{confirm}: confirm · {cancel}: back";
+        _layout.Help.Text = moving ? GameText.Get("battle.move-help", directions, confirm) :
+            _page == Page.Target ? GameText.Get("battle.target-help", KeyHint(GameAction.Target), confirm, cancel) :
+            (list ? GameText.Get("battle.choice-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") :
+                _page == Page.Main ? GameText.Get("battle.command-help", directions) : "") +
+                GameText.Get("battle.confirm-help", confirm, cancel);
         if (!moving && _page == Page.Main)
-            _layout.Help.Text += $"\n{KeyHint(GameAction.Equipment)}: equip · {KeyHint(GameAction.Give)}: give · {KeyHint(GameAction.Discard)}: drop";
+            _layout.Help.Text += GameText.Get("battle.extra-help", KeyHint(GameAction.Equipment), KeyHint(GameAction.Give), KeyHint(GameAction.Discard));
         string description;
-        if (moving) description = "Move to a tile, then open the action menu.";
+        if (moving) description = GameText.Get("battle.move-detail");
         else if (_page == Page.Target && SelectedAction() is { } selected)
         {
             var target = selected.Targets.FirstOrDefault(target => target.Actor == TargetCandidate);
-            description = $"{OptionLabel(selected)}\n{(target is null ? "No available target" : BattleCharacterNames.Resolve(_current.Battle.GetActor(target.Actor), _content, _current.Story))}";
+            description = $"{OptionLabel(selected)}\n{(target is null ? GameText.Get("battle.no-target") : BattleCharacterNames.Resolve(_current.Battle.GetActor(target.Actor), _content, _current.Story))}";
             if (target?.Reason is { } reason) description += "\n" + Unavailable(reason);
         }
-        else if (_page == Page.Commit) description = "End this unit's action at the selected position.";
-        else if (list) description = options.Length == 0 ? (_page == Page.Magic ? "No learned magic." : "No carried items.") : Describe(options[_row]);
+        else if (_page == Page.Commit) description = GameText.Get("battle.stay-detail");
+        else if (list) description = options.Length == 0 ? (_page == Page.Magic ? GameText.Get("battle.no-magic") : GameText.Get("battle.no-items")) : Describe(options[_row]);
         else
         {
             var offers = Options();
-            description = offers.Length == 0 ? (_command == 1 ? "No learned magic." : "No carried items.") :
+            description = offers.Length == 0 ? (_command == 1 ? GameText.Get("battle.no-magic") : GameText.Get("battle.no-items")) :
                 !offers.Any(option => option.Enabled) && offers[0].Reason is { } reason ? Unavailable(reason) : "";
         }
         if (_choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
         if (_failure is not null) description += "\n" + Unavailable(_failure);
-        _layout.Detail.Text = description;
+        string fallback = GameText.Fallback("battle.", includeKey: true);
+        _layout.Detail.Text = description + (fallback.Length == 0 ? "" : "\n" + fallback);
         bool canConfirm = _page == Page.Commit || _page == Page.Target && SelectedAction()?.Targets.Any(target =>
             target.Actor == TargetCandidate && target.Enabled && selection?.Target == TargetCandidate) == true;
         _layout.ShowNavigation(!moving, _page == Page.Target, _page == Page.Commit, canConfirm);
@@ -254,26 +259,19 @@ internal sealed partial class BattleCommandMenu : Control
 
     private string OptionLabel(BattleActionChoice option)
     {
-        string label = option.Action.ItemSlot is { } slot ? $"{slot + 1}. {option.Label}" : option.Label;
+        string name = GameText.BattleActionLabel(option);
+        string label = option.Action.ItemSlot is { } slot ? $"{slot + 1}. {name}" : name;
         if (option.Action.Spell is { } spell && _current!.Battle.Definition.Spells.TryGetValue(spell, out var definition)) label += $" · {definition.MpCost} MP";
-        return label + (option.Enabled ? "" : " · unavailable");
+        return label + (option.Enabled ? "" : GameText.Get("battle.unavailable-tag"));
     }
     private string Describe(BattleActionChoice option)
     {
         string text = OptionLabel(option);
-        if (option.MinimumRange is { } minimum) text += $"\nRange {minimum}–{option.MaximumRange}";
+        if (option.MinimumRange is { } minimum) text += "\n" + GameText.Get("battle.range", minimum, option.MaximumRange!);
         if (option.Reason is { } reason) text += "\n" + Unavailable(reason);
         return text;
     }
-    private static string Unavailable(SessionFailure reason) => "Unavailable: " + (reason.Code switch
-    {
-        "movement-range" => "Choose a tile within the highlighted movement range.",
-        "occupied-destination" => "Another unit is on this tile. Choose an unoccupied tile within the highlighted range.",
-        "target-range" => "Out of range.", "insufficient-mp" => "Not enough MP.",
-        "empty-item-slot" => "This slot is empty.",
-        "physical-definition" => "Attack is not supported for this unit.",
-        _ => reason.Message,
-    });
+    private static string Unavailable(SessionFailure reason) => GameText.BattleFailure(reason);
     private string KeyHint(GameAction action) => _input.Hint(action).Split(" / ", 2)[0];
 
     internal object Observe() => new { page = _page.ToString(), command = _command, row = _row,
