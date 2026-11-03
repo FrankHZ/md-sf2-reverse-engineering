@@ -297,6 +297,12 @@ func services() -> void:
     finish()
 
 func searches() -> void:
+    if case_name == "search-ordinary":
+        await field_done("ordinary-pilot-dialogue")
+        for key in [KEY_UP, KEY_RIGHT, KEY_RIGHT, KEY_DOWN]:
+            await press(key)
+            for frame in range(12): await process_frame
+        sample("ordinary-chest-approach")
     var initial := sample("search-initial")
     await press(KEY_ENTER)
     var found := sample("search-result")
@@ -304,7 +310,7 @@ func searches() -> void:
     var kind: int = found.search.Kind
     var zh := case_name not in ["search-en", "search-switch"]
     if case_name in ["search-full", "search-invalid"]:
-        check(kind == 4 and not found.flags.any(func(f): return int(f) == 150) and found.searchBlock == 0x1800, "full pack leaves flag/chest untouched")
+        check(kind == 4 and not found.flags.any(func(f): return int(f) == 150) and found.searchBlock == 0xD800, "full pack leaves flag/chest untouched")
         check(found.party == initial.party and found.gold == initial.gold, "full pack leaves all resources untouched")
         if case_name == "search-invalid": check("hands are full" in found.dialogue and found.displayFallback == "invalid-translation" and "英文回退" in found.hint, "invalid result row falls back wholly to English")
         else: check("背包已满" in found.dialogue, "Chinese full-pack template")
@@ -313,7 +319,7 @@ func searches() -> void:
     elif case_name == "search-description":
         check(kind == 1 and found.search.Texts.map(func(n): return int(n)) == [425, 900] and "Traveler" in found.dialogue and "给" in found.dialogue, "description IDs and source name binding")
     else:
-        check(kind == 2 and found.flags.any(func(f): return int(f) == 150) and found.searchBlock == 0x1801, "item flag/chest commit together")
+        check(kind == 2 and found.flags.any(func(f): return int(f) == 150) and found.searchBlock == 0xD801, "item flag/chest commit together")
         check(found.revision == initial.revision + 1 and found.party[0].SourceLoadout.Items[0] == (113 if case_name == "search-field-only" else 0), "single authoritative item revision")
         check(("获得了" if zh else "received") in found.dialogue and ("Practice Token" if case_name == "search-field-only" else "Practice Leaf") in found.dialogue, "localized semantic item template retains untranslated name")
         if case_name == "search-fallback": check(found.displayFallback == "missing-translation" and "英文回退" in found.hint, "missing source row remains visibly English fallback")
@@ -367,5 +373,5 @@ func searches() -> void:
     var repeat := sample("search-repeat")
     check(repeat.search.Kind == (4 if case_name in ["search-full", "search-invalid"] else 1 if case_name == "search-description" else 0), "repeat keeps appropriate typed result")
     check(repeat.party == found.party and repeat.gold == found.gold and repeat.mainSeed == initial.mainSeed and repeat.thinkingSeed == initial.thinkingSeed, "repeat cannot grant or consume RNG")
-    if case_name not in ["search-full", "search-invalid", "search-description"]: check(repeat.searchBlock == 0x1801, "repeat retains opened chest")
+    if case_name not in ["search-full", "search-invalid", "search-description"]: check(repeat.searchBlock == 0xD801, "repeat retains opened chest")
     finish()
