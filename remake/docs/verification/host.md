@@ -2446,13 +2446,15 @@ Each process is serial and bounded to 45 wall seconds, with named checkpoints an
 | `retreat` | Reuse `local/issue1047/world-01.json`, tracked `battle02-outcome-party.json` and `engine-battle02-egress-start.json` with current issue1047 input selection. Ordinary STAY reaches Bowie, spell selection/Cancel retains MP, actual EGRESS pays 8→0 once before localized text, then cue/effect/close and same-session usable field return/step. |
 | `wing` | Reuse the existing accepted `local/issue1343/world-01.json` unchanged with `battle02-angel-wing-party.json` and `engine-battle02-angel-wing-start.json`. Ordinary Chester control, Item list/second Wing/self-target, Cancel then confirm. Payment retains slot2/word4, MP0 and source name Angel Wing; one payment precedes localized text, effect/close and usable return. No world copy or new acquisition. |
 
-A `retreat-long` variation removes the Chinese spell row and supplies a complete multiline English
+`-Case retreat -Run retreat-long-zhNN` selects the long variation. It removes the Chinese spell row and supplies a complete multiline English
 baseline template in memory, before composition. Reveal-all and each ReadMore must retain the Text
 token/revision/MP/inventory; only a fresh final Confirm starts Effect. Effect/Close tokens remain
 separate and return uses the same session. Inspect native visible labels/glyphs, actual panel/body/
 hint geometry and wrapped line heights, SessionResultObserved receipts and stderr. Long content is
 clipped within the retained reading area; its frame/hint stay inside 1080p. Compare bilingual semantic
-checkpoints for actor/target/slots, revision, resources/RNG, queue/round and accepted continuations.
+checkpoints for actor/target/slots, resources/RNG, queue/round and accepted continuations.
+Compare revision/sequence/token deltas from the common prepayment boundary when the retained intro
+completed naturally in one run and used the existing entry skip in another; retain both raw histories.
 Custom member names retain the unchanged CharacterNames source/custom resolver; no new name-entry,
 Unicode/IME or private terminology translation is admitted.
 
@@ -2469,3 +2471,13 @@ fallback retain once-only work. This does not establish human translation/typogr
 original reach/timing/audio, source/default-name translation, source-image lettering, other dynamic
 attack/growth/status/results or opening-wide bilingual coverage. These remain outside M2e; canonical
 execution, game-save identity and seven-character ASCII naming are unchanged.
+
+
+**Unknown, retained exit warning:** one passing Chinese Wing observation emitted two ObjectDB
+exit warnings. One same-case `-Case wing -Run wing-zh-verboseNN -VerboseNative` observation completed
+with empty stderr and no leaked-object type output. The original warning is preserved; its owner
+(observer-held references versus existing host/resource lifecycle) is not established. The changed
+consumer code adds string formatting/catalog rows, with no new Godot node/resource creation or
+lifecycle changes. This does not establish that the original warning is resolved or attributable to
+an independent issue; main-gate retains that acceptance boundary. No broader audio investigation or
+repetition of passing scenarios is implied.
