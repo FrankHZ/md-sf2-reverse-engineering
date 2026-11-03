@@ -1903,6 +1903,59 @@ their focused passing corrections remain in the Issue's local handoff. The compl
 private aggregate (1692 pass/20 fail/1 skip) and nine remaining controlled-start full-fade-state failures
 remain preserved; this slice does not rerun that aggregate or turn those diagnostics into passes.
 
+## Finite gameplay feedback observation (#1454)
+
+The [Standard presentation agreement](../godot/presentation.md#gameplay-feedback-and-recovery-wording-1454)
+limits this check to actionable movement refusals, Church effect wording and transient refusal/focus.
+Load the current ignored selections in the same launch process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, reuse the installed SDK/Godot, project/imports and short
+inputs/observer helpers. Adapter and necessary Debug builds plus the existing `FieldServiceTests`
+behavior group suffice locally; inspect the clean committed dependency plan and actual CI separately.
+Do not add string/helper tests or replay the full opening/defeat route merely for a message change.
+
+Use fresh `local/issue1454` outputs, serial native processes <=45 seconds, <=50 MiB cumulative output
+and a 1 GiB free-space replan floor. Start with one representative short pilot before siblings.
+Observe only named state/input/control boundaries, actual geometry and errors; no screenshot,
+per-frame capture, new acquisition or mutation of canonical inputs.
+
+1. Reuse the authored movement corridor: preview the occupied ally tile, Confirm and retain the
+   typed occupied refusal, revision, actors/resources and both seeds. Move to a legal tile, request
+   blocked movement, retain the range refusal and actionable visible message. Follow with legal
+   action/commit and observe resumed play. Retain actual reason codes independently of player text.
+2. Reuse ordinary New Game and the real Map3 counter/priest helpers from #1424/#1453. Focus Promotion
+   with keyboard/pad, refuse it and compare revision/party/gold/seeds. Read the actual Hint Label:
+   refusal plus mapped Choose/Select/Decline/Back must fit. Change focus and verify stale error
+   clears; repeat pointer selection and normal service follow-up/return. Unavailable marker/color
+   and all release guards retain the accepted shared behavior.
+3. For paid treatment, use a short explicit authored initial-state variation of the existing harbor
+   field package: a dead ally, exact affordable Raise and its ordinary Church instruction/interaction.
+   Observe offer/decline or confirmation, one real payment/recovery, Continue and legal field input.
+   This is authored presentation evidence, not natural original or product-opening reach. Existing
+   FieldService behavior assertions cover poison-before-stun, masks, current cost, insufficient/stale/
+   duplicate commands and preserved RNG; direct typed offer/outcome mapping covers removal wording.
+
+The reproducible local entry is `local/issue1454/run-native.ps1 -Case <battle|field|treatment>
+-Run <fresh-name>`, using the existing menu/Church observers. Poison/stun natural native acquisition,
+human readability, physical devices, actual display/DPI and original media/timing remain **Unknown**.
+Earlier controlled-town duplicate-palette/preparation failures and all prior accepted/failing records
+remain preserved; those failed starts are not a route for this check. #1447/#1463 remain deferred.
+
+**Confirmed:** remake observations. `pilot-battle-02` passes in 615 ms: both typed refusals keep
+revision/resources/seeds, actionable text fits the actual 1080p viewport, and legal Stay reaches the
+next actor. `field-01` passes in 7,221 ms: ordinary New Game/real Church, key/pad/pointer Promotion
+refusal with unchanged party/gold/seeds/revision, muted marker, actual three-line Hint text measured
+inside its rectangle, cleared focus error, no-target Raise and fresh field input. `treatment-02`
+passes in 467 ms: the explicit authored Raise offer spends 10→0 gold exactly once, HP 0→100 with other
+party data and both seeds retained, then Continue/Leave and a legal field step. All three processes
+exit0 with clean native error logs. These are finite engineering observations, not human approval.
+
+Retained observer failures: `pilot-battle-01` assumed an object for the existing string failure-code
+readback and reached its observer deadline after a script error; the corrected pilot reads the real
+code. `treatment-01` completed with `authored-legal-step:timeout`: inherited product navigation only
+recognizes `entity-0`, whereas this authored package uses `traveler`. The corrected short case uses
+bounded ticks and actual settled-input readback, without changing product code/content rules or
+replaying the opening. Both failed receipts/logs remain local; no suite was interrupted or rerun.
+
 ## Opening Church services
 
 The [#1424 agreement](../application/opening-session-lifecycle.md#implemented-opening-church) owns

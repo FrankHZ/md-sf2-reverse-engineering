@@ -267,6 +267,8 @@ internal sealed partial class BattleCommandMenu : Control
     }
     private static string Unavailable(SessionFailure reason) => "Unavailable: " + (reason.Code switch
     {
+        "movement-range" => "Choose a tile within the highlighted movement range.",
+        "occupied-destination" => "Another unit is on this tile. Choose an unoccupied tile within the highlighted range.",
         "target-range" => "Out of range.", "insufficient-mp" => "Not enough MP.",
         "empty-item-slot" => "This slot is empty.",
         "physical-definition" => "Attack is not supported for this unit.",

@@ -32,7 +32,7 @@ internal sealed partial class ChurchServiceView : Control
         _panel.Position = new(424, 160); _panel.Size = new(1072, 760);
         _panel.AddChild(_title); _title.Position = new(32, 24); _title.Size = new(1008, 150);
         _title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _panel.AddChild(_hint); _hint.Position = new(32, 660); _hint.Size = new(1008, 80);
+        _panel.AddChild(_hint); _hint.Position = new(32, 612); _hint.Size = new(1008, 128);
         Hide();
     }
 
@@ -53,7 +53,7 @@ internal sealed partial class ChurchServiceView : Control
             else if (wait.Offer is { } offer)
             {
                 var member = session.QueryPartyDetails()!.Members.Single(row => row.Carried.Actor == offer.Member);
-                _title.Text = $"{offer.Effect} · {PartyStatusView.MemberName(member, session)}\nCost: {offer.Cost} gold. Current gold: {session.Current.Exploration!.Party.Gold}";
+                _title.Text = $"{Treatment(offer.Effect)} · {PartyStatusView.MemberName(member, session)}\nCost: {offer.Cost} gold. Current gold: {session.Current.Exploration!.Party.Gold}";
                 _options.Add(("Confirm treatment", new AnswerChurch(wait.Token, offer, true)));
                 _options.Add(("Decline this treatment", new AnswerChurch(wait.Token, offer, false)));
             }
@@ -75,13 +75,14 @@ internal sealed partial class ChurchServiceView : Control
             if (_options[i].Command is not null && i != _index) _rows[i].RemoveThemeColorOverride("font_color");
             else _rows[i].AddThemeColorOverride("font_color", _options[i].Command is null ? StoryTheme.Unavailable : StoryTheme.Selected);
         }
-        _hint.Text = _error ?? $"{input.Hint(GameAction.Up)} / {input.Hint(GameAction.Down)}: Choose   {input.Hint(GameAction.Confirm)}: Select\n{input.Hint(GameAction.Cancel)}: Decline / Back   Mouse: select a row";
+        _hint.Text = (_error is null ? "" : _error + "\n") +
+            $"{input.CompactHint(GameAction.Up)} / {input.CompactHint(GameAction.Down)}: Choose   {input.CompactHint(GameAction.Confirm)}: Select\n{input.CompactHint(GameAction.Cancel)}: Decline / Back   Mouse: select a row";
     }
 
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); }
     private void Choose(ChurchCommand? command)
     {
-        if (command is null) { _error = "Promotion is unavailable in the admitted opening content."; return; }
+        if (command is null) { _error = "Promotion is unavailable here. Choose another service or Leave."; Present(_session, _input, _submit); return; }
         _requiresRelease = true;
         var result = _submit(command, _revision);
         if (result.Failure is { } failure) _error = "Could not complete: " + failure.Message;
@@ -95,7 +96,7 @@ internal sealed partial class ChurchServiceView : Control
             Choose(_wait.Message is not null ? new ContinueChurch(_wait.Token) : _wait.Offer is { } offer
                 ? new AnswerChurch(_wait.Token, offer, false) : new LeaveChurch(_wait.Token)); return;
         }
-        if (action is GameAction.Up or GameAction.Down) _index = (_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count;
+        if (action is GameAction.Up or GameAction.Down) Focus((_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count);
         else if (action == GameAction.Confirm) Choose(_options[_index].Command);
         Present(_session, _input, _submit);
     }
@@ -105,8 +106,17 @@ internal sealed partial class ChurchServiceView : Control
         if (input is not InputEventMouseButton button || _wait is null) return;
         int hit = _rows.FindIndex(row => row.Visible && row.GetGlobalRect().HasPoint(button.Position));
         string? clicked = _pointer.Read(button, hit < 0 ? null : hit.ToString(), hit < 0 ? default : _rows[hit].GetGlobalRect(), _wait.Token);
-        if (!_requiresRelease && clicked is not null) { _index = int.Parse(clicked); Choose(_options[_index].Command); }
+        if (!_requiresRelease && clicked is not null) { Focus(int.Parse(clicked)); Choose(_options[_index].Command); }
     }
+    private void Focus(int index)
+    {
+        if (_index != index) _error = null;
+        _index = index;
+    }
+    private static string Treatment(ChurchEffect effect) => effect switch
+    {
+        ChurchEffect.Poison => "Remove poison", ChurchEffect.Stun => "Remove stun", _ => "Raise",
+    };
     internal object Observe() => new { visible = IsVisibleInTree(), wait = _wait, index = _index, revision = _revision,
         title = _title.Text, error = _error, requiresRelease = _requiresRelease,
         rows = _rows.Where(row => row.Visible).Select(row => new { text = row.Text, rect = BattleMapViewport.Rectangle(row.GetGlobalRect()) }) };
