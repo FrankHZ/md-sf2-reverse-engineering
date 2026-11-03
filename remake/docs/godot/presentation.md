@@ -3,7 +3,9 @@
 ## Shared visual rules and finite consumers (#1453)
 
 **Standard rigor:** harmonize existing readable gameplay controls in independently reviewed stages.
-The shared-theme/battle-list pilot is independently accepted. The finite consumer migration below
+The shared-theme/battle-list pilot and finite consumer migration are independently accepted and
+integrated in [PR1462](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1462) and
+[PR1464](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1464). The inventory below
 owns only existing host-button, Church/Prepare/Party and battle result/auxiliary-HUD presentation,
 this owner, the [gap disposition](../evidence/opening-ui-gaps.md#shared-visual-pilot-1453)
 and the [necessary native recipe](../verification/host.md#finite-consumer-migration).
@@ -33,7 +35,7 @@ Current shared rules:
 
 **Confirmed, source inventory and bounded implementation:** the selected consumers below use
 existing mechanisms; other consumers do not become an automatic migration checklist. The finite
-migration remains subject to independent review/integration and does not assert human acceptance.
+migration has bounded engineering acceptance; it does not assert human acceptance.
 
 | Consumer | Current treatment and disposition |
 | --- | --- |
@@ -63,8 +65,8 @@ finite sibling checks. Observe real colors/fonts/geometry, explanatory unavailab
 current-choice reading, reveal/acknowledgement once and subsequent control without unintended resource
 mutation. Reuse existing inputs/observers; fresh consumer outputs belong under `local/issue1453/stage2`,
 with a 100 MiB budget and serial native runs of at most 45 seconds. No engine/full
-suite, helper tests, screenshots, per-frame capture or whole route is needed. Main-gate independently
-reviews the finite candidate before integration. Human aesthetics, physical release, actual
+suite, helper tests, screenshots, per-frame capture or whole route is needed for that recipe. These
+are the migration's acceptance checks, not a new #1456 rerun requirement. Human aesthetics, physical release, actual
 1080p-display/DPI approval stay with #1456; original media/timing and existing WAV teardown warnings
 remain **Unknown**. #1447 stays deferred.
 
@@ -100,7 +102,27 @@ rejection/legal continuation and Church refusal/focus/normal treatment, with act
 RNG and errors checked. Reuse short cases and observers; pilot before expanding, serial runs <=45s,
 fresh `local/issue1454` output <=50 MiB, replan below 1 GiB free. No full route, screenshots, acquisition,
 helper tests or unrelated suites. Main-gate independently reviews/merges the frozen Draft PR.
+The finite correction is independently accepted and integrated in
+[PR1465](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1465).
 Human readability/physical devices/DPI remain **Unknown** under #1456; #1447/#1463 stay deferred.
+
+## Human opening review boundary (#1456)
+
+The [current play preparation](../evidence/opening-loop-acceptance.md#current-human-play-preparation-1456)
+owns ordinary launch, isolated disposable saves and short New Game/dialogue/Prepare/Church/battle/
+return/Save-Quit/Continue segments. Accepted #1451 basic preferences, #1452 grouped Controls help,
+#1453 finite shared presentation, #1454 feedback and #1455 minimum-window recovery are integrated;
+their native observations establish finite engineering behavior. The
+[gap matrix](../evidence/opening-ui-gaps.md) records every E/D/B/R/X disposition and retains #689's
+actual limited human approval. They do not establish current whole-opening human acceptance.
+
+Readability, selected versus unavailable states, dialogue/control return, battle feedback, save
+clarity and feel await the user's actual play. Real keyboard/controller off-focus release, an actual
+1080p display with fullscreen/decorations and DPI use the
+[human checklist](../verification/host.md#later-physical-focus-human-checklist-1456). Current results
+remain **Unknown/pending**; injected events, node geometry and available builds cannot fill them.
+Keep #1456 open for the explicit experience decision after engineering integration. No new font/art
+direction, all-map UI or gameplay extension is authorized; #1447 and Appearance #1463 remain deferred.
 
 ## Basic preferences agreement
 
@@ -721,8 +743,9 @@ discussion with the user; Git integration and Epic closure remain main-gate resp
 The common design baseline is 1920×1080 (16:9). One map cell and ordinary 24×24 sprite
 frame occupy 96×96 output pixels: both consumers use nearest sampling at four output pixels
 per source pixel. The world fills the viewport (480×270 source pixels); UI overlays never resize
-or zoom it. Other resolutions, free zoom and broader menu redesign remain outside the bounded world-layout
-work. The shared story treatment above supplies the current narrow Theme implementation.
+or zoom it. The [minimum-window policy](#window-support-and-recovery-1455) also admits larger native
+clients, including 4K fullscreen at that fixed scale; sub-1080p gameplay and free zoom remain outside
+the bounded world-layout work. The shared visual/story treatment above supplies the current finite Theme consumers.
 
 ### Unified world viewport agreement
 
@@ -773,7 +796,8 @@ window/catalog consumers were retired. Keep simulation coordinates, presentation
 pixels and physical output pixels distinct; none may change gameplay collision or rules.
 
 Current configurable input, text speed/reveal, reduced flash and finite audio policies have their
-specific owners. Broader art/theme/fullscreen/resizing/UI-scale work remains
+specific owners, including the minimum-client/fullscreen recovery policy below. Broader art/theme,
+sub-1080p reflow, configurable resolution and UI-scale work remains
 [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438); its selected initial
 experiment is described below, with remaining product choices still open.
 The [original proposal and legacy consumers](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/presentation-and-assets.md#decision-summary)
@@ -838,8 +862,9 @@ The two baseline default-binding overflows found during design are corrected onl
 [FieldActionView](../../game/src/Exploration/FieldActionView.cs): installed compact hints wrap within
 their existing fixed hint rectangles. Full bindings remain in Controls help. Actual standard/swapped
 1080p text bounds pass. Party/Prepare/Church still have native fixed coordinates, so their existence
-never establishes 720p support. Broader visual unification remains
-[#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453).
+never establishes 720p support. The finite visual migration under
+[#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453) is integrated; it does not
+establish full-game visual completion.
 
 The chosen minimum policy reuses native expansion and existing overlay anchors. Exactly 1080p-only
 would add equality/resize restrictions and reject usable 4K fullscreen without a correctness need.
