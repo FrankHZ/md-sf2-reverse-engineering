@@ -6,6 +6,7 @@ internal static class StoryTheme
 {
     internal const int BodySize = 30, HintSize = 24;
     internal static readonly Color Selected = new("ffe19a");
+    internal static readonly Color Unavailable = new("8e9bab");
     // Entry and Save/Quit opt in; other story and gameplay menus keep their accepted treatment.
     internal static Theme CreateEntry()
     {
@@ -18,7 +19,7 @@ internal static class StoryTheme
         theme.SetColor("font_color", "Button", new("f4f5fc"));
         theme.SetColor("font_hover_color", "Button", Colors.White);
         theme.SetColor("font_pressed_color", "Button", Selected);
-        theme.SetColor("font_disabled_color", "Button", new("8e9bab"));
+        theme.SetColor("font_disabled_color", "Button", Unavailable);
         theme.SetTypeVariation("EntrySelectedButton", "Button");
         theme.SetStylebox("normal", "EntrySelectedButton", Box("294966", "ffe19a"));
         theme.SetStylebox("hover", "EntrySelectedButton", Box("365d7c", "ffe19a"));

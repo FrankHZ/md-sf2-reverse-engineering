@@ -125,6 +125,24 @@ media, natural reach and SRAM parity. This bounded change does not close #438 or
 | X3 · Switch keyboard and basic menu mouse use | **Accepted, bounded:** hover/click on battle commands and spell/item rows; local wheel scrolling; ordered Previous/Next targets, Confirm and Back/right click; field choices share keyboard/pointer focus. | Complete current-control gestures prevent drag-out, focus-loss and cross-layer/scene release reuse. Native window focus is observed with an explicit axis-adjusted input configuration; physical-device release and all-device experience remain **Unknown**. World click movement and map targeting are excluded. [Grouped help](../godot/presentation.md#grouped-controls-help-and-remapping-boundary) adds visible Previous/Next/Back and keyboard/pad reading without hover or wheel; capture/rebinding UI remains deferred. | [Pointer agreement](../godot/presentation.md#menu-pointer-agreement), [finite native recipe/results](../verification/host.md#menu-pointer-observation). Existing [9A](../verification/host.md#native-9a-observation) retains its keyboard/pad scope. | **P2 D / [#1408](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1408).** Merged [PR1409](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1409) records independent integration; broader human acceptance remains separate. |
 | X4 · Invalid/disabled command or adapter failure during any scene | Field/story stopped presentation now uses the shared readable frame above fades, retained message/code and pending state; no invented retry. Existing semantic Enabled/Reason and battle/startup diagnostics remain. | **Bounded C disposition:** a controlled field failure is observed; E2 also supplies readable battle messages and unobscured recoverable illegal-command feedback; generic recovery/retry remains **Unknown**. | [Failure/current owner](../godot/presentation.md#shared-story-dialogue-agreement), [controlled failure witness](../verification/host.md#shared-story-dialogue-observation), [semantic interface](../godot/presentation.md#semantic-interface). | **P1.** C / [#1393](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1393) handles field/story; #689/E retain their own reasons and result boundaries. |
 
+## Shared visual pilot (#1453)
+
+**Stage1, bounded; X2/B1–B6.** The [current visual rules and finite inventory](../godot/presentation.md#shared-visual-rules-and-finite-consumers-1453)
+retain the accepted blue/gold assets, fonts, diamond layout/animation, Party source grouping and
+96px/4× world. The actual battle list/navigation pilot separates selected focus from availability:
+shared gold for an available selection, shared disabled text for unavailable rows/Confirm, and
+independent marker/suffix/reason text. Existing custom input/scroll/release authority remains.
+The [native recipe](../verification/host.md#shared-visual-menu-pilot-1453) bounds engineering evidence;
+human visual approval remains [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
+
+This is not global visual completion. The presentation inventory explicitly allocates remaining
+host New Game, Church/Prepare and Party focus work, plus real Give/Discard/Retreat and fallback HUD
+text treatment. Appearance is an explicit later-capability gap outside this opening route. Existing
+Entry/Save/Quit/Settings/help, StoryChoice, dialogue/context/status/detail consumers need no automatic
+rewrite. Remaining exact production paths await independent pilot review. Wording/transient refusal
+belongs to #1454; new art/fonts and #1447 remain deferred. All earlier bounded human approval,
+physical-focus/DPI limits, original timing/media Unknowns and warning/failure records remain intact.
+
 ## Window and physical-focus disposition (#1455)
 
 **Implemented, bounded; X1/X3/E5/D5 retain human limits.** The

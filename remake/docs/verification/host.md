@@ -53,6 +53,49 @@ The legacy `remake/reference/game` host, its `--map3-smoke`/profile arguments an
 were retired at M5. Ordinary export configuration excludes `probes/*`; complete ordinary export and
 package contents remain unverified.
 
+## Shared visual menu pilot (#1453)
+
+The [Stage1 visual agreement](../godot/presentation.md#shared-visual-rules-and-finite-consumers-1453)
+changes only shared disabled text and the existing battle list/navigation colors. Reuse the
+[menu pointer recipe](#menu-pointer-observation), its prepared `local/issue1408/battle.json`
+and keyboard/pointer settings. This input already supplies four admitted long spell names,
+available/unavailable MP offers, empty items and available/out-of-range targets. No new gameplay
+fixture, media acquisition, scene setter or whole-route replay is needed.
+
+After loading the existing local input/tool selections, build the affected adapter and necessary
+Debug native assembly using the [locked SDK workflow](../development-and-verification.md#locked-net-workflow).
+Launch ordinary Main at 1920×1080 with that authored package. Extend the existing
+`engine_menu_mouse_observation.gd` only in ignored Issue output to read actual Label font colors,
+font sizes, modulate, text, visibility, focus/mouse filters and rectangles, plus frame style values.
+Read named action samples rather than frames. Give each serial run fresh worktree-local writable
+directories and a 45-second process bound; retain all results under `local/issue1453`, at most
+100 MiB. No screenshot, observer test or engine/full suite belongs to this styling check.
+
+1. Pilot Magic: inspect available selected/unselected and unavailable selected rows using keyboard
+   and pad. Expect font colors `ffe19a`, `f4f5fc` and `8e9bab` respectively, white modulate,
+   30px rows, `›` only on the selected row and literal unavailable/Not enough MP explanation.
+   Confirm on the unavailable row must retain revision, RNG, inventories and HP/MP.
+2. On the same representative consumer, reuse the existing pointer battle sequence for long-name
+   wheel scrolling, enabled/empty-item selection, target navigation, unavailable-target refusal,
+   Back and explicit commit. Check enabled/unavailable Confirm colors, retained compact label,
+   26px/44px navigation within the description and native viewport. A real secondary-window focus
+   transfer while pressed must reject the orphan release; fresh input works. Keep drag-out,
+   keyboard takeover, layer-replacement and double-release guards from the existing recipe.
+3. Reuse the existing `emphasis-icons` short private case and its already admitted raster package
+   for unchanged 24px icons at nearest 4×, selected/normal resource use, 288×224 diamond geometry,
+   stable hit regions and normal focus emphasis. The authored menu reads actual 96px/4× terrain
+   and fixed world zoom. Source diff review must exclude all diamond/art/animation/geometry logic.
+
+**Confirmed, bounded executor observations:** the representative pilot and final menu sequence
+pass in native 1080p, including actual colors/fonts/frame margins, long-name scrolling, key/pad
+selection, unavailable reason/refusal with no resource mutation, complete pointer/focus/release
+gestures and navigation bounds. The reused private icon case also passes. Exact heads, commands,
+receipts, retained intermediate geometry finding and CI belong to the Issue/PR handoff.
+These checks establish engineering behavior, not human readability/aesthetic approval or physical
+controller release. #1456 retains those and actual 1080p-display/DPI checks. Existing WAV/PlaybackWAV
+warning causes and original timing/media remain Unknown; #1447 remains deferred. Other consumers
+are explicitly dispositioned in the presentation inventory and await independent pilot review.
+
 ## Menu pointer observation
 
 The [Standard D agreement](../godot/presentation.md#menu-pointer-agreement) uses the ordinary Main

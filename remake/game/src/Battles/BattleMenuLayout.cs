@@ -180,7 +180,7 @@ internal sealed partial class BattleMenuLayout : Control
         _navigation.Visible = visible;
         _previous.Visible = _next.Visible = target;
         _confirm.Visible = target || commit;
-        _confirm.Modulate = canConfirm ? UI.StoryTheme.Selected : new Color("94a4be");
+        _confirm.AddThemeColorOverride("font_color", canConfirm ? UI.StoryTheme.Selected : UI.StoryTheme.Unavailable);
     }
 
     internal (string? Id, Rect2 Rect) Hit(Vector2 position)
@@ -239,7 +239,9 @@ internal sealed partial class BattleMenuLayout : Control
         for (int i = 0; i < _rowLabels.Count; i++)
         {
             _rowLabels[i].Text = (i == selected ? "›  " : "   ") + labels[i];
-            _rowLabels[i].Modulate = i == selected ? new Color("ffdf80") : enabled[i] ? Colors.White : new Color("94a4be");
+            // Focus stays inspectable even when unavailable; the marker and reason are independent of color.
+            if (enabled[i] && i != selected) _rowLabels[i].RemoveThemeColorOverride("font_color");
+            else _rowLabels[i].AddThemeColorOverride("font_color", !enabled[i] ? UI.StoryTheme.Unavailable : UI.StoryTheme.Selected);
         }
         SetTextWidths();
         Arrange(Size);
