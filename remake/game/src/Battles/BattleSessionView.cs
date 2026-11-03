@@ -445,11 +445,9 @@ public sealed partial class BattleSessionView : Control
             string fallback = GameText.Fallback("battle.", includeKey: true);
             if (fallback.Length > 0) _equipment += "\n" + fallback;
         }
-        _help = equipment ? GameText.Get("battle.aux-help", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
-            _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel)) :
-            auxiliary ? $"{_input.CompactHint(GameAction.Up)} / {_input.CompactHint(GameAction.Down)}: cycle choices\n" +
-                (give ? $"{_input.CompactHint(GameAction.Target)}: cycle recipients\n" : "") +
-                $"{_input.CompactHint(GameAction.Confirm)}: select / confirm\n{_input.CompactHint(GameAction.Cancel)}: back" : _battleHelp;
+        _help = auxiliary ? GameText.Get("battle.aux-help", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
+            _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel)) +
+            (give ? "\n" + GameText.Get("battle.give-recipient-help", _input.CompactHint(GameAction.Target)) : "") : _battleHelp;
         // One readable current choice; directions still visit every typed offer. Reuse story reading
         // before Confirm rather than requiring a mouse wheel to reach long choice text.
         string body = _status + "\n\n" + (give ? _giveMenu : discard ? _discardMenu : equipment ? _equipment :

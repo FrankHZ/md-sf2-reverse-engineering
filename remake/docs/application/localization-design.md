@@ -2,10 +2,10 @@
 
 ## Scope and status
 
-**Implemented bounded M1, M2a, M2b, M2c and M2d consumers; independent integration/product acceptance remains separate.**
+**Implemented bounded M1, M2a, M2b, M2c, M2d and M2e consumers; independent integration/product acceptance remains separate.**
 The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469)
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
-settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status
+settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
@@ -155,7 +155,7 @@ exhaustive string dump. Linked files and symbols locate the claims without relyi
 | [FieldService.Submit/Completion](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldService.cs): M2a `ChurchWait.Result` retains typed outcome/treatment and independent curse notice | [ChurchServiceView.Present](../../game/src/Exploration/ChurchServiceView.cs) | M2a consumes finite result/effect/cost and explicit phase; payment/queue advancement precede display. English wording has no phase authority. |
 | [HealingSceneCursor.Create/Enter](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs): names/spell/amount substituted into `ActionText`/`RecoveryText`; private IDs 274/298 | `Enter` creates logical work per character; [BattleSceneView.Message](../../game/src/Battles/BattleSceneView.cs) displays the same strings | Chinese replacement would change work and potentially fairy/RNG progression. Retain execution strings and add semantic display operands for M1. |
 | `BattleSceneState`: phase, actor, target, amount, rewards, item and growth values | `BattleSceneView.Message` maps source IDs and replaces tags; AURA uses English interpolation | Most semantics already exist. Reuse those fields, without a duplicate event bus. Reward/HP publication remains in the continuation. |
-| [BattleGiveState.Text](../../src/Sf2.Remake.Application/Runtime/Battles/BattleGiveContinuation.cs), [BattleDiscardState.Text](../../src/Sf2.Remake.Application/Runtime/Battles/BattleDiscardContinuation.cs), [BattleRetreatContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleRetreatContinuation.cs) | Respective battle views | Migrate each real consumer using retained actor/item/spell operands. Authored English is not a universal source-text ID. |
+| [BattleGiveState.Text](../../src/Sf2.Remake.Application/Runtime/Battles/BattleGiveContinuation.cs), [BattleDiscardState.Text](../../src/Sf2.Remake.Application/Runtime/Battles/BattleDiscardContinuation.cs), [BattleRetreatContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleRetreatContinuation.cs) | Respective battle views | M2e views format retained typed actor/item/returned/payment operands through GameText. Canonical Text/TextFor remain unchanged; authored English is not a universal source-text ID. |
 | [remake_exploration_content.py](../../../src/sf2tool/remake_exploration_content.py) reads pinned `disasm/data/scripting/text/gamescript.txt` hexadecimal IDs and `allynames.asm`; [ExplorationContentReader.ReadTextTokens](../../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) tokenizes text | [ProgramRunner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) selects DialogueWait, W1TextWait or FieldTextWait; [ExplorationDialogueView](../../game/src/Exploration/ExplorationDialogueView.cs) has separate projections | Reuse integer ID plus namespace, not English spelling or list position. The compatibility regex path is not a general token interpreter. |
 | [ExplorationTextRunner.Begin/Normalize/Span/Accepted](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationTextRunner.cs) expands names/classes and builds source glyph units | [FieldTextWait](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationState.cs) stores units, projection and logical cursor; host separately reveals/delivers/acknowledges | Characters above 255 or absent from source font mapping reject (`field-text-symbol`). Glyph advances determine logical wrap/scroll work. Chinese must not replace those units/advances. |
 | [EntryPresentationReader](../../src/Sf2.Remake.Content/Scenarios/EntryPresentationReader.cs) admits private dialogue keys 216–221 and six named image resources | `SessionEntryView` / [EntryPresentationAssets](../../game/src/Entry/EntryPresentationAssets.cs) | Entry has a separate namespace/profile/preparation path. Title/numeral image lettering is not fixed by a string catalog. |
@@ -491,8 +491,8 @@ schema, new message system or engine-behavior test is required by this display-o
   and relaunch. Formatting does not promise an unavailable Back/retry operation or issue commands.
 - Actual equipment HUD/current choice, ATT/range and ReadMore are localized. `_title`, `_roster` and
   non-equipment spell/item strings in observation are diagnostic projections, not another visible
-  localized menu. Give/Discard selections/results, Retreat, dynamic scene/result text other than the
-  earlier HEAL consumer, source terminology/dialogue and source-image lettering remain English.
+  localized menu. The separate M2e boundary below covers Give/Discard/Retreat. Other dynamic
+  scene/results beyond HEAL, source terminology/dialogue and source-image lettering remain English.
   Language is chosen through existing settings before battle; no mid-battle settings are added.
 - Missing/invalid rows use the complete English template and existing key/reason/effective-locale
   diagnostics. Native geometry checks cover long fallback, low/zero HP, zero MP, equipment and
@@ -501,6 +501,38 @@ schema, new message system or engine-behavior test is required by this display-o
 
 The [native reproduction owner](../verification/host.md#localized-battle-commands-targets-and-status)
 records the finite input recipes, coherent retained private icon selection and remaining boundaries.
+
+## Implemented M2e battle transactions and retreat boundary
+
+**Standard rigor:** [#1480](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1480) extends
+existing GameText/PO/font consumers through Give/exchange and Discard choices, confirmation/results,
+auxiliary recipient/back hints and authored EGRESS/Angel Wing feedback. Acceptance uses direct
+catalog/parameter checks, adapter compilation, bounded English/zh-CN native input/state/token/geometry
+and error observations, then the clean committed planner and selected CI. No engine, Content, save,
+schema, input remapping, message framework or additional gameplay capability is introduced.
+
+- GiveState Giver/Recipient/Item/Returned and DiscardState Actor/Item select complete result templates.
+  Selection Stage/Slot/Target/ReturnSlot and typed item metadata retain their authority. Full-pack
+  exchange, exact duplicate slots, equipped/rare/protected explanations and explicit confirmation/
+  cancel remain. English Label/Text matching never selects semantics. CharacterNames resolves names
+  before formatting; valid source/custom names, including template-like literal characters, are
+  arguments rather than translated keys or format strings.
+- Give commits once before text; reveal and reading retain that inventory, and acknowledgement ends
+  the action/advances. Discard commits once before text but acknowledgement retains the same actor,
+  action and provisional movement. Selection/cancel and display redraw do not publish a transaction.
+- RetreatPayment selects the complete spell or item template: existing Spell/level/MpCost versus
+  item Name/word/slot. Canonical Text/TextFor remain unchanged. MP/item payment precedes feedback and
+  happens once; Text → Effect → Close → Return retain distinct WaitTokens, reveal and completion
+  commands, cue/pulse, reduced-flash and focus suspension. This remains an authored approximation,
+  with no new original-game timing/audio or natural-reach claim.
+- Result hints use the existing panel. Confirm completes reveal, then reads any remaining pages
+  before a fresh acknowledgement; reading does not change revision, resources or the logical wait.
+  Display length can alter visual reveal duration, never gameplay work/RNG or return semantics.
+  Missing/invalid Chinese rows retain the complete English template with existing diagnostics.
+  Language is selected before battle; no mid-result locale switch is added.
+
+The [native reproduction owner](../verification/host.md#localized-battle-transactions-and-retreat)
+owns the bounded scenarios, source/custom-name boundary and remaining English/Unknown surfaces.
 
 ## Names, IME and compatibility
 
@@ -621,7 +653,7 @@ M1 does not enable Unicode naming or close the epic.
 | M3 bounded opening terminology/dialogue after admitted consumers and rights/review | Public owner `remake/docs/application/localization-design.md` only if coverage/boundary changes; private catalog under a separately declared non-worktree content root. Dispatch must name those actual private files before writing | Start with reached IDs/names in one playable segment. Direct source/control/parameter comparison plus bilingual review. No runtime/export edits by translators. Drift/ambiguity stops affected rows; fallback stays explicitly untranslated. No whole-game batch. |
 | M4 Chinese naming/IME after M1 and accepted High compatibility policy | `A/Runtime/NewGameOptions.cs`, `A/Runtime/OpeningNewGame.cs`, `A/Runtime/CharacterNames.cs`, `A/Runtime/Exploration/ExplorationTextRunner.cs`, `A/Runtime/Battles/BattleSceneContinuation.cs`, `A/Runtime/Persistence/OpeningSaveData.cs`, `A/Runtime/Persistence/OpeningSave.cs`, `A/Runtime/Persistence/OpeningRestore.cs`, `C/Persistence/OpeningSaveJson.cs`, `G/src/Entry/NameEntryView.cs`, `T/OpeningSaveTests.cs`, `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs` | Actual composition/commit/cancel/paste/focus, old name/save preservation and Unicode independent-process Save/Continue. Refuse enablement with unresolved canonical work/backward reading/downgrade; no lossy conversion. Stop at named admitted characters/consumers. |
 
-Party/Prepare has the bounded M2c consumer agreement above. M2d battle commands/targets/equipment/status have their separate boundary above. Further battle screens are separate
+Party/Prepare has the bounded M2c consumer agreement above. M2d battle commands/targets/equipment/status have their separate boundary above. M2e Give/Discard/retreat has its separate boundary above. Further battle screens are separate
 consumer groups, not implicit all-files ownership.
 M5 is the epic's opening-route and bilingual human acceptance, not another framework. No candidate
 authorizes production edits, new tickets or dispatch during M0.

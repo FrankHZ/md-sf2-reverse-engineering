@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
@@ -38,12 +39,13 @@ internal sealed partial class BattleGiveView : Control
             _panel.Present(false, false, false, default, "", lifetimeOpen: false);
             string Name(Sf2.Remake.Domain.Battles.ActorRef id) => CharacterNames.Battle(_session.Current.Story,
                 _session.Current.Battle.GetActor(id), _session.ActiveBattleScenes);
-            _text.Text = $"{Name(state.Giver)} gave {state.Item} to {Name(state.Recipient)}" +
-                (state.Returned is null ? "." : $" and received {state.Returned}.") + "\nConfirm to continue.";
+            _text.Text = state.Returned is null
+                ? GameText.Get("battle.give-result", Name(state.Giver), state.Item, Name(state.Recipient))
+                : GameText.Get("battle.exchange-result", Name(state.Giver), state.Item, Name(state.Recipient), state.Returned);
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
         }
         _state = state; Show();
-        _panel.Present(true, false, false, default, _panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue.");
+        _panel.Present(true, false, false, default, GameText.Get(_panel.MoreBelow ? "battle.result-more" : "battle.result-continue"));
     }
 
     internal SessionCommand? Consume(double delta)
@@ -64,7 +66,7 @@ internal sealed partial class BattleGiveView : Control
         if (_state is not { } state || action != GameAction.Confirm || !IsVisibleInTree() || !CanProcess()) return null;
         if (!state.Revealed) { _text.VisibleCharacters = -1; return null; }
         if (_panel.ReadMore())
-        { _panel.SetHint(_panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue."); return null; }
+        { _panel.SetHint(GameText.Get(_panel.MoreBelow ? "battle.result-more" : "battle.result-continue")); return null; }
         return new Acknowledge(state.Token);
     }
 
@@ -105,18 +107,19 @@ internal sealed partial class BattleGiveView : Control
         var selection = session.Current.Selection;
         if (!Selecting(selection?.Stage)) return "";
         var choices = session.QueryBattleChoices().Give;
-        string given = choices.Items.FirstOrDefault(item => item.Slot == selection!.ItemSlot)?.Name ?? "item";
+        string given = choices.Items.FirstOrDefault(item => item.Slot == selection!.ItemSlot)?.Name ?? GameText.Get("battle.give-item");
         if (selection!.Stage == BattleSelectionStage.GiveTargetChoice)
-            return $"Give {given}: choose an adjacent teammate\n" +
-                $"{choices.Targets.ToList().IndexOf(selection.Target ?? default) + 1} / {choices.Targets.Count}\n> {Name(selection.Target)}";
+            return GameText.Get("battle.give-target", given,
+                choices.Targets.ToList().IndexOf(selection.Target ?? default) + 1, choices.Targets.Count, Name(selection.Target));
         if (selection.Stage == BattleSelectionStage.GiveCommitReady)
-            return $"Give {given} to {Name(selection.Target)}" + (selection.ReturnSlot is null ? "" :
-                $" for {choices.Returns.FirstOrDefault(item => item.Slot == selection.ReturnSlot)?.Name}") +
-                "?\nConfirm transfers and ends this action; Cancel returns.";
+            return selection.ReturnSlot is null ? GameText.Get("battle.give-confirm", given, Name(selection.Target)) :
+                GameText.Get("battle.exchange-confirm", given, Name(selection.Target),
+                    choices.Returns.FirstOrDefault(item => item.Slot == selection.ReturnSlot)?.Name ?? GameText.Get("battle.give-item"));
         bool exchange = selection.Stage == BattleSelectionStage.GiveExchangeChoice;
         var items = exchange ? choices.Returns : choices.Items;
         int index = items.ToList().FindIndex(item => item.Slot == (exchange ? selection.ReturnSlot : selection.ItemSlot));
-        return (exchange ? $"{Name(selection.Target)}'s hands are full. Choose an item to return:" : "Choose an item to give:") +
-            (index < 0 ? "\nNo available item." : $"\n{index + 1} / {items.Count}\n> slot {items[index].Slot + 1}: {items[index].Name}");
+        return (exchange ? GameText.Get("battle.exchange-title", Name(selection.Target)) : GameText.Get("battle.give-title")) + "\n" +
+            (index < 0 ? GameText.Get("battle.transaction-empty") :
+                GameText.Get("battle.transaction-item", index + 1, items.Count, items[index].Slot + 1, items[index].Name));
     }
 }

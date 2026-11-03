@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
@@ -36,11 +37,12 @@ internal sealed partial class BattleDiscardView : Control
         {
             _characters = 0; _delivered = false;
             _panel.Present(false, false, false, default, "", lifetimeOpen: false);
-            _text.Text = $"{CharacterNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Actor), _session.ActiveBattleScenes)} discarded {state.Item}.\nConfirm to continue.";
+            _text.Text = GameText.Get("battle.discard-result",
+                CharacterNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Actor), _session.ActiveBattleScenes), state.Item);
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
         }
         _state = state; Show();
-        _panel.Present(true, false, false, default, _panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue.");
+        _panel.Present(true, false, false, default, GameText.Get(_panel.MoreBelow ? "battle.result-more" : "battle.result-continue"));
     }
 
     internal SessionCommand? Consume(double delta)
@@ -61,7 +63,7 @@ internal sealed partial class BattleDiscardView : Control
         if (_state is not { } state || action != GameAction.Confirm || !IsVisibleInTree() || !CanProcess()) return null;
         if (!state.Revealed) { _text.VisibleCharacters = -1; return null; }
         if (_panel.ReadMore())
-        { _panel.SetHint(_panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue."); return null; }
+        { _panel.SetHint(GameText.Get(_panel.MoreBelow ? "battle.result-more" : "battle.result-continue")); return null; }
         return new Acknowledge(state.Token);
     }
 
@@ -91,13 +93,14 @@ internal sealed partial class BattleDiscardView : Control
         if (!Selecting(selection?.Stage) || session.Current.BattleDiscard is not null) return "";
         var items = session.QueryBattleChoices().Discard.Items;
         if (selection!.Stage == BattleSelectionStage.DiscardCommitReady)
-            return $"Discard {items.FirstOrDefault(item => item.Slot == selection.ItemSlot)?.Item.Name}?\n" +
-                "Confirm discards; Cancel keeps it. Your action and movement preview remain available.";
+            return GameText.Get("battle.discard-confirm",
+                items.FirstOrDefault(item => item.Slot == selection.ItemSlot)?.Item.Name ?? GameText.Get("battle.give-item"));
         int index = items.ToList().FindIndex(item => item.Slot == selection.ItemSlot);
-        if (index < 0) return "Choose an item to discard:\nNo available item.";
+        string title = GameText.Get("battle.discard-title") + "\n";
+        if (index < 0) return title + GameText.Get("battle.transaction-empty");
         var item = items[index];
-        return $"Choose an item to discard:\n{index + 1} / {items.Count}\n> slot {item.Slot + 1}: {item.Item.Name}" +
-            ((item.Word & 128) != 0 ? " · equipped" : "") +
-            (item.Item.Unsellable ? " · protected: cannot discard" : item.Item.Rare ? " · rare: enters Deals" : "");
+        return title + GameText.Get("battle.transaction-item", index + 1, items.Count, item.Slot + 1, item.Item.Name) +
+            ((item.Word & 128) != 0 ? GameText.Get("battle.discard-equipped") : "") +
+            (item.Item.Unsellable ? GameText.Get("battle.discard-protected") : item.Item.Rare ? GameText.Get("battle.discard-rare") : "");
     }
 }
