@@ -1,5 +1,9 @@
 # Godot Host and Presentation
 
+The proposed [game localization design](../application/localization-design.md) owns English/zh-CN
+catalogs, safe settings refresh, name/IME and font boundaries. It is not implemented: translated
+display must remain separate from Application's canonical text work and game-save identity.
+
 ## Shared visual rules and finite consumers (#1453)
 
 **Standard rigor:** harmonize existing readable gameplay controls in independently reviewed stages.
