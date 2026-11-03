@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -9,6 +10,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 internal sealed partial class BattleGiveView : Control
 {
     private Label _text = null!;
+    private readonly StoryDialoguePanel _panel = new() { Name = "ResultPanel" };
     private GameSession _session = null!;
     private InputSettings _settings = null!;
     private BattleGiveState? _state;
@@ -21,10 +23,7 @@ internal sealed partial class BattleGiveView : Control
         MouseFilter = MouseFilterEnum.Ignore;
         var veil = new ColorRect { Color = new(0, 0, 0, 0.85f), MouseFilter = MouseFilterEnum.Ignore };
         AddChild(veil); veil.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _text = new Label { Name = "GiveResult", HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            MouseFilter = MouseFilterEnum.Ignore };
-        AddChild(_text); _text.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        AddChild(_panel); _panel.Choices.Hide(); _text = _panel.Body;
         Hide();
     }
 
@@ -36,6 +35,7 @@ internal sealed partial class BattleGiveView : Control
         if (_state?.Token != state.Token)
         {
             _characters = 0; _delivered = false;
+            _panel.Present(false, false, false, default, "", lifetimeOpen: false);
             string Name(Sf2.Remake.Domain.Battles.ActorRef id) => CharacterNames.Battle(_session.Current.Story,
                 _session.Current.Battle.GetActor(id), _session.ActiveBattleScenes);
             _text.Text = $"{Name(state.Giver)} gave {state.Item} to {Name(state.Recipient)}" +
@@ -43,6 +43,7 @@ internal sealed partial class BattleGiveView : Control
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
         }
         _state = state; Show();
+        _panel.Present(true, false, false, default, _panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue.");
     }
 
     internal SessionCommand? Consume(double delta)
@@ -62,11 +63,14 @@ internal sealed partial class BattleGiveView : Control
     {
         if (_state is not { } state || action != GameAction.Confirm || !IsVisibleInTree() || !CanProcess()) return null;
         if (!state.Revealed) { _text.VisibleCharacters = -1; return null; }
+        if (_panel.ReadMore())
+        { _panel.SetHint(_panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue."); return null; }
         return new Acknowledge(state.Token);
     }
 
     internal object Observe() => new { active = _state is not null, token = _state?.Token.Value,
-        revealed = _state?.Revealed, text = _text.Text, visible = IsVisibleInTree(), visibleCharacters = _text.VisibleCharacters };
+        revealed = _state?.Revealed, text = _text.Text, visible = IsVisibleInTree(), visibleCharacters = _text.VisibleCharacters,
+        panel = _panel.Observe() };
 
     internal static bool Selecting(BattleSelectionStage? stage) => stage is BattleSelectionStage.GiveItemChoice or
         BattleSelectionStage.GiveTargetChoice or BattleSelectionStage.GiveExchangeChoice or BattleSelectionStage.GiveCommitReady;
@@ -103,16 +107,16 @@ internal sealed partial class BattleGiveView : Control
         var choices = session.QueryBattleChoices().Give;
         string given = choices.Items.FirstOrDefault(item => item.Slot == selection!.ItemSlot)?.Name ?? "item";
         if (selection!.Stage == BattleSelectionStage.GiveTargetChoice)
-            return $"Give {given}: choose an adjacent teammate\n" + string.Join("\n", choices.Targets.Select(actor =>
-                (actor == selection.Target ? "> " : "  ") + Name(actor))) + "\nDirections / Target cycle; Confirm selects; Cancel returns.";
+            return $"Give {given}: choose an adjacent teammate\n" +
+                $"{choices.Targets.ToList().IndexOf(selection.Target ?? default) + 1} / {choices.Targets.Count}\n> {Name(selection.Target)}";
         if (selection.Stage == BattleSelectionStage.GiveCommitReady)
             return $"Give {given} to {Name(selection.Target)}" + (selection.ReturnSlot is null ? "" :
                 $" for {choices.Returns.FirstOrDefault(item => item.Slot == selection.ReturnSlot)?.Name}") +
                 "?\nConfirm transfers and ends this action; Cancel returns.";
         bool exchange = selection.Stage == BattleSelectionStage.GiveExchangeChoice;
+        var items = exchange ? choices.Returns : choices.Items;
+        int index = items.ToList().FindIndex(item => item.Slot == (exchange ? selection.ReturnSlot : selection.ItemSlot));
         return (exchange ? $"{Name(selection.Target)}'s hands are full. Choose an item to return:" : "Choose an item to give:") +
-            "\n" + string.Join("\n", (exchange ? choices.Returns : choices.Items).Select(item =>
-                $"{(item.Slot == (exchange ? selection.ReturnSlot : selection.ItemSlot) ? "> " : "  ")}slot {item.Slot + 1}: {item.Name}")) +
-            "\nDirections cycle; Confirm selects; Cancel returns.";
+            (index < 0 ? "\nNo available item." : $"\n{index + 1} / {items.Count}\n> slot {items[index].Slot + 1}: {items[index].Name}");
     }
 }

@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -11,6 +12,7 @@ internal sealed partial class BattleRetreatView : Control
 {
     private ColorRect _veil = null!;
     private Label _text = null!;
+    private readonly StoryDialoguePanel _panel = new() { Name = "ResultPanel" };
     private AudioStreamPlayer _cue = null!;
     private GameSession _session = null!;
     private InputSettings _settings = null!;
@@ -24,9 +26,7 @@ internal sealed partial class BattleRetreatView : Control
         MouseFilter = MouseFilterEnum.Ignore;
         _veil = new ColorRect { Name = "RetreatEffect", MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_veil); _veil.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _text = new Label { Name = "RetreatText", HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        AddChild(_text); _text.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        AddChild(_panel); _panel.Choices.Hide(); _text = _panel.Body;
         _cue = new AudioStreamPlayer { Name = "AuthoredRetreatCue", VolumeDb = -18 };
         AddChild(_cue);
         const int rate = 22050, samples = 7718;
@@ -57,6 +57,7 @@ internal sealed partial class BattleRetreatView : Control
         if (_state?.Token != state.Token)
         {
             _elapsed = _revealed = 0; _delivered = false;
+            _panel.Present(false, false, false, default, "", lifetimeOpen: false);
             var actor = _session.Current.Battle.GetActor(state.Actor);
             string name = CharacterNames.Battle(_session.Current.Story, actor, _session.ActiveBattleScenes);
             _text.Text = state.TextFor(name);
@@ -65,6 +66,7 @@ internal sealed partial class BattleRetreatView : Control
         }
         _state = state;
         _text.Visible = state.Phase == BattleRetreatPhase.Text;
+        _panel.Present(_text.Visible, false, false, default, _panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue.");
         _veil.Color = state.Phase == BattleRetreatPhase.Text ? new(0, 0, 0, 0.65f) : Colors.Transparent;
     }
 
@@ -102,6 +104,8 @@ internal sealed partial class BattleRetreatView : Control
     {
         if (_suspended || !CanProcess() || _state is not { Phase: BattleRetreatPhase.Text } state || action != GameAction.Confirm) return null;
         if (!state.Revealed) { _text.VisibleCharacters = -1; return null; }
+        if (_panel.ReadMore())
+        { _panel.SetHint(_panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue."); return null; }
         return new Acknowledge(state.Token);
     }
 
@@ -110,5 +114,5 @@ internal sealed partial class BattleRetreatView : Control
         token = _state?.Token.Value, paidMp = _state?.PaidMp, payment = (object?)_state?.Payment, revealed = _state?.Revealed,
         text = _text.Text, visibleCharacters = _text.VisibleCharacters, textVisible = _text.Visible,
         elapsed = _elapsed, delivered = _delivered, suspended = _suspended,
-        effectAlpha = _veil.Color.A, cuePlaying = _cue.Playing, cue = "authored-egress-tone-v1" };
+        effectAlpha = _veil.Color.A, cuePlaying = _cue.Playing, cue = "authored-egress-tone-v1", panel = _panel.Observe() };
 }

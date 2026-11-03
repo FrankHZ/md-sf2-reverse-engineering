@@ -44,28 +44,28 @@ public sealed partial class BattleSessionView : Control
     private bool _inputSuspended;
     private void SuspendInput() { _inputSuspended = true; _menu?.SuspendPointer(); }
     private void ResumeInput() => _inputSuspended = false;
-    private Label _title = null!;
-    private Label _status = null!;
-    private Label _roster = null!;
-    private Label _spells = null!;
-    private Label _help = null!;
+    private string _title = "";
+    private string _status = "";
+    private string _roster = "";
+    private string _spells = "";
+    private string _help = "";
     private UI.ContextHint _feedback = null!;
     private GameInput _input = null!;
     private SpellRef? _spellCandidate;
     private int? _itemCandidate;
-    private Label _items = null!;
-    private Label _equipment = null!;
-    private Label _giveMenu = null!;
+    private string _items = "";
+    private string _equipment = "";
+    private string _giveMenu = "";
     private BattleGiveView _give = null!;
-    private Label _discardMenu = null!;
+    private string _discardMenu = "";
     private BattleDiscardView _discard = null!;
     private BattleMapViewport _map = null!;
     private BattleCommandMenu _menu = null!;
     private BattleDefinition? _mapDefinition;
     private BattleSceneDefinition? _mapScenes;
-    private ScrollContainer _hud = null!;
-    private VBoxContainer _hudContent = null!;
-    private readonly List<Label> _hudLabels = [];
+    private readonly UI.StoryDialoguePanel _hud = new() { Name = "AuxiliaryHud" };
+    private Rect2 _hudSubject;
+    private string _battleHelp = "";
     private BattleSceneView _scene = null!;
     private BattleRetreatView _retreat = null!;
     private BattleAppearanceView _appearance = null!;
@@ -85,24 +85,10 @@ public sealed partial class BattleSessionView : Control
         // This common battle UI responds to the actual window; legacy reference composition keeps its policy.
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
         _map = new BattleMapViewport { Name = "MapViewport", WorldViewport = WorldViewport };
-        _map.SubjectChanged = rectangle => _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle);
+        _map.SubjectChanged = rectangle =>
+        { _hudSubject = rectangle; _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle); };
         AddChild(_map);
-        _hud = new ScrollContainer { Name = "Hud", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
-            FocusMode = FocusModeEnum.None };
-        AddChild(_hud);
-        _hud.GetVScrollBar().FocusMode = FocusModeEnum.None;
-        _hudContent = new VBoxContainer { Name = "Content", SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        _hudContent.AddThemeConstantOverride("separation", 12);
-        _hud.AddChild(_hudContent);
-        _title = AddLabel("Title");
-        _status = AddLabel("Status");
-        _giveMenu = AddLabel("Give");
-        _discardMenu = AddLabel("Discard");
-        _equipment = AddLabel("Equipment");
-        _spells = AddLabel("Spells");
-        _items = AddLabel("Items");
-        _roster = AddLabel("Roster");
-        _help = AddLabel("Help");
+        AddChild(_hud); _hud.Choices.Hide();
         _menu = new BattleCommandMenu { Name = "CommandMenu", Submit = Send };
         AddChild(_menu);
         _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
@@ -112,14 +98,14 @@ public sealed partial class BattleSessionView : Control
         _story = new BattleStoryView { Name = "BattleStory" }; AddChild(_story);
         _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; AddChild(_appearance);
         _feedback = new UI.ContextHint { Name = "BattleFeedback", ZIndex = 100 }; AddChild(_feedback);
-        _feedback.Hide(); _title.Hide(); _roster.Hide();
+        _feedback.Hide();
         Arrange();
     }
 
     internal void ConfigureInput(GameInput input)
     {
         _input = input;
-        _help.Text = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
+        _help = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
             $"{input.Hint(GameAction.Spell)}: open magic list from diamond\n" +
             $"{input.Hint(GameAction.Item)}: open item list from diamond\n" +
             $"{input.Hint(GameAction.Discard)}: Drop; select slot, confirm, cancel returns\n" +
@@ -128,6 +114,7 @@ public sealed partial class BattleSessionView : Control
             $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
             $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: cancel all provisional choices\n" +
             $"{input.Hint(GameAction.Wait)}: wait at a healing message\n\nAI and rounds advance automatically.";
+        _battleHelp = _help;
     }
 
     public override void _EnterTree()
@@ -153,21 +140,6 @@ public sealed partial class BattleSessionView : Control
         _map.Position = Vector2.Zero;
         _map.Size = size;
         _menu?.Arrange(size);
-        const int margin = 16;
-        if (size.X >= 800)
-        {
-            float hudWidth = Mathf.Clamp(size.X * 0.32f, 260, 380);
-            _hud.Position = new(size.X - margin - hudWidth, margin);
-            _hud.Size = new(hudWidth, Mathf.Max(1, size.Y - 2 * margin));
-        }
-        else
-        {
-            float height = Mathf.Max(2, size.Y - 3 * margin);
-            _hud.Position = new(margin, margin * 2 + height * 0.6f);
-            _hud.Size = new(Mathf.Max(1, size.X - 2 * margin), height * 0.4f);
-        }
-        float textWidth = Mathf.Max(1, _hud.Size.X - _hud.GetVScrollBar().GetCombinedMinimumSize().X - 4);
-        foreach (var label in _hudLabels) label.CustomMaximumSize = new(textWidth, -1);
     }
 
     internal void Begin(IScenarioSource source)
@@ -229,8 +201,8 @@ public sealed partial class BattleSessionView : Control
     {
         _startupFailure = failure;
         RetireWindows(); Arrange();
-        _title.Text = "BATTLE UNAVAILABLE";
-        _status.Text = $"{failure.Kind}: {failure.Code} ({failure.Field})\n{failure.Message}";
+        _title = "BATTLE UNAVAILABLE";
+        _status = $"{failure.Kind}: {failure.Code} ({failure.Field})\n{failure.Message}";
         _feedback.Text.Text = $"The battle has stopped.\n{failure.Message} ({failure.Code})";
         _feedback.Arrange(GetViewportRect().Size);
     }
@@ -313,6 +285,8 @@ public sealed partial class BattleSessionView : Control
         if (_session?.Current.BattleScene is not null)
         { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.HasBattleControl != true) return;
+        if (action == GameAction.Confirm && _hud.IsVisibleInTree() && _hud.ReadMore())
+        { _hud.SetHint(_hud.MoreBelow ? $"{_input.CompactHint(GameAction.Confirm)}: Read more" : _help); return; }
         if (BattleDiscardView.Selecting(_session.Current.Selection?.Stage))
         { if (BattleDiscardView.Select(_session, action) is { } discardCommand) Send(discardCommand); return; }
         if (BattleGiveView.Selecting(_session.Current.Selection?.Stage))
@@ -426,38 +400,55 @@ public sealed partial class BattleSessionView : Control
             { _movementSoundToken = movement.Token; Audio?.PlayEffect(79); }
         }
         _menu.Present(_session.Current, _session.QueryBattleChoices(), _result!.Failure, _input);
-        _hud.Visible = !_menu.Visible && _session.Current.Selection is not null;
         Arrange();
         var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin, _session.QueryBattleMovementRange(), _session.ActiveBattleScenes);
-        _title.Text = projection.Title;
-        _status.Text = projection.Status;
+        _title = projection.Title;
+        _status = projection.Status;
         _feedback.Text.Text = projection.Status;
         _feedback.Arrange(GetViewportRect().Size);
         _feedback.Visible = (_result.Failure is { } failure &&
             (failure.Kind != SessionFailureKind.IllegalCommand || !_menu.Visible)) || (!_menu.Visible && _session.Current.Selection is null &&
             _session.Current.BattleScene is null && _session.Current.BattleRound is null &&
             _session.Current.BattleRetreat is null && _session.Current.BattleGive is null && _session.Current.BattleDiscard is null);
-        _roster.Text = projection.Roster;
+        _roster = projection.Roster;
         var selection = _session.Current.Selection;
         var equipmentChoices = _session.QueryBattleChoices().Equipment;
         var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
-        _equipment.Text = currentActor?.Definition.Equipment is null ? "" :
-            $"Equipment ({_input.Hint(GameAction.Equipment)}): {equipmentChoices.FirstOrDefault(o => o.Equipped)?.Label ?? "Unarmed"} · ATT {currentActor.Attack} · range {BattleEquipment.Physical(currentActor)!.MinimumRange}–{BattleEquipment.Physical(currentActor)!.MaximumRange}\n" +
-            (selection?.Stage != BattleSelectionStage.EquipmentChoice ? "" : string.Join("\n", equipmentChoices.Select(option =>
-                $"{(option.Slot == selection.EquipmentSlot ? "> " : "  ")}{(option.Slot == 4 ? "" : $"slot {option.Slot + 1}: ")}{option.Label} · ATT {option.Attack} · range {option.MinimumRange}–{option.MaximumRange}")) +
-                $"\n{_input.Hint(GameAction.Confirm)} equips · {_input.Hint(GameAction.Cancel)} restores selection");
-        _spells.Text = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
+        _equipment = currentActor?.Definition.Equipment is null ? "" :
+            $"Equipment ({_input.Hint(GameAction.Equipment)}): {equipmentChoices.FirstOrDefault(o => o.Equipped)?.Label ?? "Unarmed"} · ATT {currentActor.Attack} · range {BattleEquipment.Physical(currentActor)!.MinimumRange}–{BattleEquipment.Physical(currentActor)!.MaximumRange}";
+        _spells = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             _session.QueryBattleChoices().Spells.Select(option =>
                 option.Label + (option.Spell == selection.Spell ? " · selected" : "") +
                 (option.Enabled ? "" : $" · unavailable: {option.Reason!.Code}")));
-        _items.Text = selection is null ? "" : $"Items ({_input.Hint(GameAction.Item)} to cycle):\n" + string.Join("\n",
+        _items = selection is null ? "" : $"Items ({_input.Hint(GameAction.Item)} to cycle):\n" + string.Join("\n",
             _session.QueryBattleChoices().Items.Select(option => $"{option.Slot + 1}: {option.Label}" +
                 (option.Slot == selection.ItemSlot ? " · selected" : "") +
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
-        _giveMenu.Text = BattleGiveView.Menu(_session);
+        _giveMenu = BattleGiveView.Menu(_session);
         _give.Present();
-        _discardMenu.Text = BattleDiscardView.Menu(_session);
+        _discardMenu = BattleDiscardView.Menu(_session);
         _discard.Present();
+        bool give = BattleGiveView.Selecting(selection?.Stage), discard = BattleDiscardView.Selecting(selection?.Stage);
+        bool equipment = selection?.Stage == BattleSelectionStage.EquipmentChoice;
+        bool auxiliary = give || discard || equipment;
+        if (equipment)
+        {
+            int index = equipmentChoices.ToList().FindIndex(option => option.Slot == selection!.EquipmentSlot);
+            _equipment = "Choose equipment" + (index < 0 ? "\nNo available equipment." :
+                $"\n{index + 1} / {equipmentChoices.Count}\n> {equipmentChoices[index].Label}" +
+                $"\nATT {equipmentChoices[index].Attack} · range {equipmentChoices[index].MinimumRange}–{equipmentChoices[index].MaximumRange}");
+        }
+        _help = auxiliary ? $"{_input.CompactHint(GameAction.Up)} / {_input.CompactHint(GameAction.Down)}: cycle choices\n" +
+            (give ? $"{_input.CompactHint(GameAction.Target)}: cycle recipients\n" : "") +
+            $"{_input.CompactHint(GameAction.Confirm)}: select / confirm\n{_input.CompactHint(GameAction.Cancel)}: back" : _battleHelp;
+        // One readable current choice; directions still visit every typed offer. Reuse story reading
+        // before Confirm rather than requiring a mouse wheel to reach long choice text.
+        string body = _status + "\n\n" + (give ? _giveMenu : discard ? _discardMenu : equipment ? _equipment :
+            _equipment + "\n" + _spells + "\n" + _items);
+        if (_hud.Body.Text != body) { _hud.Body.Text = body; _hud.ResetReading(); }
+        bool hudVisible = !_menu.Visible && selection is not null;
+        _hud.Present(hudVisible, false, false, _hudSubject, _help, lifetimeOpen: hudVisible);
+        _hud.SetHint(_hud.MoreBelow ? $"{_input.CompactHint(GameAction.Confirm)}: Read more" : _help);
         _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
         // Map children have their own Z priorities; a later sibling's black backdrop
         // cannot occlude them. Full close-ups own rendering, while field notices/deaths keep the map.
@@ -467,15 +458,6 @@ public sealed partial class BattleSessionView : Control
         _retreat.Present();
         _appearance.Present();
         if (_scene.Error is { } error) FailStartup(new(SessionFailureKind.AdapterError, error, "battleScene", "Battle scene playback is unavailable."));
-    }
-
-    private Label AddLabel(string name)
-    {
-        var label = new Label { Name = name, AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            SizeFlagsHorizontal = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Ignore };
-        _hudContent.AddChild(label);
-        _hudLabels.Add(label);
-        return label;
     }
 
     // Explicit adapter observation input; never a gameplay command or logical Wait.
@@ -556,27 +538,24 @@ public sealed partial class BattleSessionView : Control
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
             terrain = full ? current?.Battle.Definition.Terrain.Select(tile => tile.Surface.ToString()) : null,
             target = current?.Selection?.Target?.Value, candidate = (_menu.Visible ? _menu.TargetCandidate : _targetCandidate)?.Value,
-            itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items.Text,
+            itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items,
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
-            discard = _discard.Observe(), discardMenu = _discardMenu.Text, custody = current?.Battle.ItemCustody,
-            give = _give.Observe(), giveMenu = _giveMenu.Text, returnSlot = current?.Selection?.ReturnSlot,
-            equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment.Text, equipmentVisible = _equipment.IsVisibleInTree(),
+            discard = _discard.Observe(), discardMenu = _discardMenu, custody = current?.Battle.ItemCustody,
+            give = _give.Observe(), giveMenu = _giveMenu, returnSlot = current?.Selection?.ReturnSlot,
+            equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment, equipmentVisible = _hud.IsVisibleInTree() && current?.Selection?.Stage == BattleSelectionStage.EquipmentChoice,
             equipmentActors = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, baseAttack = a.BaseAttack,
                 attack = a.Attack, equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),
                 minimumRange = BattleEquipment.Physical(a)?.MinimumRange, maximumRange = BattleEquipment.Physical(a)?.MaximumRange }),
-            spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells.Text,
+            spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,
             actors = current is null || _startupFailure is not null ? null : _map.ObserveActors(current.Battle.Actors),
             observations = _result?.Observations,
-            title = _title.Text, status = _status.Text, roster = _roster.Text, help = _help.Text,
+            title = _title, status = _status, roster = _roster, help = _help,
             feedbackVisible = _feedback.IsVisibleInTree(), feedback = _feedback.Text.Text,
             boardChildren = _map.BoardChildren, previewNodes = _map.PreviewCount,
             viewport = BattleMapViewport.Rectangle(GetViewportRect()), mapViewport = BattleMapViewport.Rectangle(_map.GetGlobalRect()),
-            hud = BattleMapViewport.Rectangle(_hud.GetGlobalRect()), hudClipsContents = _hud.ClipContents,
-            hudContentHeight = _hudContent.Size.Y,
-            hudLabels = _hudLabels.Select(label => new { name = label.Name.ToString(), rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }),
-            hudScroll = _hud.ScrollVertical, hudScrollMaximum = _hud.GetVScrollBar().MaxValue, hudScrollPage = _hud.GetVScrollBar().Page,
+            hud = BattleMapViewport.Rectangle(_hud.GetGlobalRect()), hudPanel = _hud.Observe(),
             previewRect = _map.PreviewRectangle, previewInsideMap = _map.PreviewInsideMap, zoom = _map.Zoom,
         };
     }

@@ -3,10 +3,11 @@
 ## Shared visual rules and finite consumers (#1453)
 
 **Standard rigor:** harmonize existing readable gameplay controls in independently reviewed stages.
-Stage1 owns `UI/StoryTheme.cs`, only non-diamond list/navigation styling in
-`Battles/BattleMenuLayout.cs`, this owner, the [gap disposition](../evidence/opening-ui-gaps.md#shared-visual-pilot-1453)
-and the [necessary native recipe](../verification/host.md#shared-visual-menu-pilot-1453).
-The representative consumer precedes further migration. No new UI kit, font/art acquisition,
+The shared-theme/battle-list pilot is independently accepted. The finite consumer migration below
+owns only existing host-button, Church/Prepare/Party and battle result/auxiliary-HUD presentation,
+this owner, the [gap disposition](../evidence/opening-ui-gaps.md#shared-visual-pilot-1453)
+and the [necessary native recipe](../verification/host.md#finite-consumer-migration).
+Representative menu/result observations precede sibling checks. No new UI kit, font/art acquisition,
 gameplay rules, input authority or world rendering belongs to this work. Preserve existing fonts,
 blue/gold assets, diamond icons/animation, source-grouped Party layout and 96px/4× world scale.
 
@@ -30,31 +31,40 @@ Current shared rules:
   scroll clipping and release guards. They do not become native Buttons or acquire a second
   activation/focus authority. A stationary pointer cannot steal keyboard selection.
 
-**Confirmed, source inventory; remaining finite allocation:** these are existing consumers, not
-an automatic migration checklist. Only the battle list/navigation pilot changes production in Stage1.
+**Confirmed, source inventory and bounded implementation:** the selected consumers below use
+existing mechanisms; other consumers do not become an automatic migration checklist. The finite
+migration remains subject to independent review/integration and does not assert human acceptance.
 
 | Consumer | Current treatment and disposition |
 | --- | --- |
 | Entry, SaveSlot, NameEntry, Settings/control help, gameplay Save/Quit | Already consume shared native button/editor treatment. Regression consumers; no Stage1 rewrite. Preserve their separate persistence and release boundaries. |
-| `GameRoot.NewGameEntry` | Uses `Create`, unlike adjacent Save/Quit/Settings buttons. Later bounded host migration to existing button treatment; no lifecycle change. |
+| `GameRoot.NewGameEntry` | Uses `CreateEntry`, matching adjacent Save/Quit/Settings native buttons; no lifecycle change. |
 | `BattleMenuLayout` non-diamond rows/navigation | Stage1 actual consumer: shared selected/unavailable colors and independent marker/reason, including unavailable target feedback. Existing geometry, fonts, scroll and command authority remain. |
-| `ChurchServiceView` and `FieldActionView` (Prepare) | Already share frames and marked selected rows; unavailable rows currently receive selected gold. Later finite availability/focus migration, preserving explanatory focus and real refusal. Church wording/transient error repair belongs to #1454. |
-| `PartyStatusView` / `PartyDetailsPanel` | Already share frames, source grouping, gauges and detail scrolling. Later finite selector-focus distinction from persistent Prepare/Close gold; retain role-specific typography and panes. |
+| `ChurchServiceView` and `FieldActionView` (Prepare) | Shared font-color overrides keep unavailable rows muted even when focused, with the existing marker/explanation/refusal. Church derives availability from its nullable command; Prepare uses actual `Use`/`CanDrop` offers. Action/menu/confirmation rows stay inspectable; no English-string parsing or new legality. Wording/transient error repair stays with #1454. |
+| `PartyStatusView` / `PartyDetailsPanel` | Member focus has shared gold plus `▸`; Prepare/Close retain ordinary body text rather than permanent selected accents. Source grouping, gauges, pane hints, typography and detail scrolling remain. `PartyDetailsPanel` is unchanged. |
 | `StoryChoiceRow` | Already uses shared gold plus a selection marker and the caller's phase/release rules. No change justified by this inventory. |
 | Dialogue, ContextHint, status/detail panels, battle messages/results | Already use shared readable frames with distinct content roles. No Stage1 change; preserve portraits, numeric warnings and the existing reward sequence without another summary. |
-| `BattleGiveView` / `BattleDiscardView` | Real supported result consumers, currently centered default-size labels over a dark veil. Later finite shared frame/body migration using existing components; retain their own reveal/token/acknowledgement boundary. They are not dismissed as diagnostics. |
-| `BattleRetreatView` | Real authored retreat text/effect/closure consumer with default label styling. Later finite text-frame/body migration; preserve cue/pulse, reduced-flash and delivery phases. No original timing claim. |
-| `BattleAppearanceView` | Authored hidden-spawn notice/animation, outside the selected opening route; default-size gold text and raw actor notice remain a known later-consumer gap. Defer its text treatment until that finite capability is selected, without changing emergence timing. |
-| `BattleSessionView` fallback HUD | Unthemed scrollable labels include actual Give/Discard/equipment choices and fallback status/help, not just diagnostics. Later bounded frame/type treatment must preserve those commands and scrolling; do not hide it or claim global completion. Title/roster already hidden remain diagnostic. |
+| `BattleGiveView` / `BattleDiscardView` | Real results now reuse `StoryDialoguePanel` frame/body and existing reading pages over their retained veil. Reveal completion and token acknowledgement remain with each view; a fresh Confirm reads remaining pages before acknowledgement. |
+| `BattleRetreatView` | Text uses the same panel/body/reading guard; effect/closure hide that panel. Cue/pulse, reduced-flash, focus suspension, payment and delivery phases remain. No original timing claim. |
+| `BattleAppearanceView` | Explicitly deferred outside this opening route: default-size gold text/raw actor notice remain the finite later-consumer gap [#1463](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1463). No production or emergence-timing change here. |
+| `BattleSessionView` auxiliary HUD | Actual Give/Discard/equipment choices now use one shared reading panel, projecting the current typed offer and index/count with existing mapped cycle/confirm/back guidance. Every offer remains reachable. Irrelevant spell/item/equipment stacks no longer crowd the current choice. Title/roster strings stay diagnostic. |
+
+The auxiliary HUD replaces its separate label/scroll geometry with the existing `StoryDialoguePanel`,
+not another paging implementation. Candidate/phase text changes reset reading; Cancel, directions
+and Target remain command-owned and usable while unread. Only Confirm first reads remaining content,
+then a later fresh Confirm reaches the original command. This also makes long current-choice text
+readable with keyboard/pad. Existing battle pointer coverage remains the diamond/list/target menu;
+the auxiliary keyboard/pad controls do not acquire a second pointer or input authority. World framing
+is unchanged; the panel consumes the existing subject rectangle for stable top/bottom placement.
 
 Acceptance uses adapter/necessary Debug builds, a clean committed dependency plan, direct
-source/doc/private-boundary checks and one actual 1080p battle menu before any distinct consumer
-expansion. Observe real theme colors/fonts/geometry, available and unavailable selected rows,
-keyboard/pad/pointer/scroll/focus/release, unchanged diamond/96px state and rejected-command resource
-preservation. Reuse the prepared long-name/MP/target cases and existing observer, with new outputs
-under `local/issue1453`, a 100 MiB budget and serial native runs of at most 45 seconds. No engine/full
+source/doc/private-boundary checks and representative actual 1080p menu/result consumers before
+finite sibling checks. Observe real colors/fonts/geometry, explanatory unavailable focus/refusal,
+current-choice reading, reveal/acknowledgement once and subsequent control without unintended resource
+mutation. Reuse existing inputs/observers; fresh consumer outputs belong under `local/issue1453/stage2`,
+with a 100 MiB budget and serial native runs of at most 45 seconds. No engine/full
 suite, helper tests, screenshots, per-frame capture or whole route is needed. Main-gate independently
-reviews this pilot before allocating remaining paths. Human aesthetics, physical release, actual
+reviews the finite candidate before integration. Human aesthetics, physical release, actual
 1080p-display/DPI approval stay with #1456; original media/timing and existing WAV teardown warnings
 remain **Unknown**. #1447 stays deferred.
 

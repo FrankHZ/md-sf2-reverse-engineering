@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -9,6 +10,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 internal sealed partial class BattleDiscardView : Control
 {
     private Label _text = null!;
+    private readonly StoryDialoguePanel _panel = new() { Name = "ResultPanel" };
     private GameSession _session = null!;
     private InputSettings _settings = null!;
     private BattleDiscardState? _state;
@@ -21,10 +23,7 @@ internal sealed partial class BattleDiscardView : Control
         MouseFilter = MouseFilterEnum.Ignore;
         var veil = new ColorRect { Color = new(0, 0, 0, 0.85f), MouseFilter = MouseFilterEnum.Ignore };
         AddChild(veil); veil.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _text = new Label { Name = "DiscardResult", HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            MouseFilter = MouseFilterEnum.Ignore };
-        AddChild(_text); _text.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        AddChild(_panel); _panel.Choices.Hide(); _text = _panel.Body;
         Hide();
     }
 
@@ -36,10 +35,12 @@ internal sealed partial class BattleDiscardView : Control
         if (_state?.Token != state.Token)
         {
             _characters = 0; _delivered = false;
+            _panel.Present(false, false, false, default, "", lifetimeOpen: false);
             _text.Text = $"{CharacterNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Actor), _session.ActiveBattleScenes)} discarded {state.Item}.\nConfirm to continue.";
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
         }
         _state = state; Show();
+        _panel.Present(true, false, false, default, _panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue.");
     }
 
     internal SessionCommand? Consume(double delta)
@@ -59,11 +60,14 @@ internal sealed partial class BattleDiscardView : Control
     {
         if (_state is not { } state || action != GameAction.Confirm || !IsVisibleInTree() || !CanProcess()) return null;
         if (!state.Revealed) { _text.VisibleCharacters = -1; return null; }
+        if (_panel.ReadMore())
+        { _panel.SetHint(_panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue."); return null; }
         return new Acknowledge(state.Token);
     }
 
     internal object Observe() => new { active = _state is not null, token = _state?.Token.Value,
-        revealed = _state?.Revealed, text = _text.Text, visible = IsVisibleInTree(), visibleCharacters = _text.VisibleCharacters };
+        revealed = _state?.Revealed, text = _text.Text, visible = IsVisibleInTree(), visibleCharacters = _text.VisibleCharacters,
+        panel = _panel.Observe() };
 
     internal static bool Selecting(BattleSelectionStage? stage) => stage is BattleSelectionStage.DiscardItemChoice or
         BattleSelectionStage.DiscardCommitReady;
@@ -89,10 +93,11 @@ internal sealed partial class BattleDiscardView : Control
         if (selection!.Stage == BattleSelectionStage.DiscardCommitReady)
             return $"Discard {items.FirstOrDefault(item => item.Slot == selection.ItemSlot)?.Item.Name}?\n" +
                 "Confirm discards; Cancel keeps it. Your action and movement preview remain available.";
-        return "Choose an item to discard:\n" + string.Join("\n", items.Select(item =>
-            $"{(item.Slot == selection.ItemSlot ? "> " : "  ")}slot {item.Slot + 1}: {item.Item.Name}" +
+        int index = items.ToList().FindIndex(item => item.Slot == selection.ItemSlot);
+        if (index < 0) return "Choose an item to discard:\nNo available item.";
+        var item = items[index];
+        return $"Choose an item to discard:\n{index + 1} / {items.Count}\n> slot {item.Slot + 1}: {item.Item.Name}" +
             ((item.Word & 128) != 0 ? " · equipped" : "") +
-            (item.Item.Unsellable ? " · protected: cannot discard" : item.Item.Rare ? " · rare: enters Deals" : ""))) +
-            "\nDirections cycle; Confirm selects; Cancel returns.";
+            (item.Item.Unsellable ? " · protected: cannot discard" : item.Item.Rare ? " · rare: enters Deals" : "");
     }
 }
