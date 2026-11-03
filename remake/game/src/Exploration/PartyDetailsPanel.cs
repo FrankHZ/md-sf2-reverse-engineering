@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Battles;
 using Sf2.Remake.GodotAdapter.UI;
@@ -31,8 +32,7 @@ internal sealed partial class PartyDetailsPanel : Panel
             _stats.Add((label, value)); AddChild(label); AddChild(value);
         }
         _name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _class.Text = "Class: unavailable";
-        _magicTitle.Text = "MAGIC"; _itemsTitle.Text = "ITEMS";
+
         _spells.SizeFlagsHorizontal = _inventory.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _spells.AddThemeConstantOverride("separation", 12); _inventory.AddThemeConstantOverride("separation", 12);
         _magic.AddChild(_spells); _items.AddChild(_inventory);
@@ -41,22 +41,24 @@ internal sealed partial class PartyDetailsPanel : Panel
     internal void Present(PartyMemberDetails? member, string name)
     {
         _member = member; _name.Text = name;
-        _class.Text = "Class: unavailable" + (member?.Carried.Absent == true ? " · Absent" : member?.Carried.Hp == 0 ? " · Defeated" : "");
+        _class.Text = GameText.Get("party.class-unavailable") + (member?.Carried.Absent == true ? " · " + GameText.Get("party.absent") : member?.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
         string[] values = [Number(member?.Level), Number(member?.Attack), Number(member?.Defense), Number(member?.Agility),
             Number(member?.Carried.Exp), Number(member?.Deployment?.Definition.Move)];
-        for (int i = 0; i < values.Length; i++) _stats[i].Value.Text = values[i];
+        for (int i = 0; i < values.Length; i++)
+        { _stats[i].Title.Text = GameText.Get("party.stat." + _titles[i].ToLowerInvariant()); _stats[i].Value.Text = values[i]; }
+        _magicTitle.Text = GameText.Get("party.magic"); _itemsTitle.Text = GameText.Get("party.items");
         _hp.Visible = member?.MaxHp is not null; _mp.Visible = member?.MaxMp is not null;
         _unknownHp.Visible = !_hp.Visible; _unknownMp.Visible = !_mp.Visible;
-        _unknownHp.Text = $"HP   {member?.Carried.Hp.ToString() ?? "Unavailable"} / Unavailable";
-        _unknownMp.Text = $"MP   {member?.Carried.Mp.ToString() ?? "Unavailable"} / Unavailable";
+        _unknownHp.Text = $"HP   {member?.Carried.Hp.ToString() ?? GameText.Get("party.value-unavailable")} / {GameText.Get("party.value-unavailable")}";
+        _unknownMp.Text = $"MP   {member?.Carried.Mp.ToString() ?? GameText.Get("party.value-unavailable")} / {GameText.Get("party.value-unavailable")}";
         if (member is not null && member.MaxHp is { } hp) _hp.Present(member.Carried.Hp, hp);
         if (member is not null && member.MaxMp is { } mp) _mp.Present(member.Carried.Mp, mp);
-        var spells = member?.Spells is not { } learned ? new[] { "Unavailable" } : learned.Count == 0 ? ["None learned"] :
-            learned.Select(spell => spell.Name ?? $"Name unavailable · Level {spell.Spell.Level}").ToArray();
+        var spells = member?.Spells is not { } learned ? new[] { GameText.Get("party.value-unavailable") } : learned.Count == 0 ? [GameText.Get("party.none-learned")] :
+            learned.Select(spell => spell.Name ?? GameText.Get("party.spell-unavailable", spell.Spell.Level)).ToArray();
         Rows(_spells, _spellRows, spells);
         Rows(_inventory, _itemRows, member?.Inventory.Select(slot => $"{slot.Slot + 1}. " +
-            (slot.Empty == true ? "Empty" : slot.Empty is null ? "Inventory unavailable" : slot.Name ?? "Item name unavailable") +
-            (slot.Equipped ? "\n    Equipped" : "") + (slot.Broken ? " · Broken" : "")).ToArray() ?? ["Inventory unavailable"]);
+            (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") : slot.Name ?? GameText.Get("party.item-unavailable")) +
+            (slot.Equipped ? "\n    " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")]);
         Arrange();
     }
 
@@ -110,7 +112,7 @@ internal sealed partial class PartyDetailsPanel : Panel
     private static object List(ScrollContainer scroll, Control column, List<Label> rows) => new
     { rect = BattleMapViewport.Rectangle(scroll.GetGlobalRect()), scroll = scroll.ScrollVertical, height = column.Size.Y,
         entries = rows.Where(label => label.Visible).Select(label => new { text = label.Text, rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }) };
-    private static string Number(object? value) => value?.ToString() ?? "Unavailable";
+    private static string Number(object? value) => value?.ToString() ?? GameText.Get("party.value-unavailable");
     private static Label Text(string name, int size)
     { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }
     private static ScrollContainer Scroll(string name) => new() { Name = name, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,

@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Battles;
@@ -11,7 +12,7 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class PartyStatusView : Control
 {
     private readonly PartyDetailsPanel _details = new() { Name = "MemberDetails" };
-    private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", 24), _close = Text("Close", 26);
+    private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", 22), _close = Text("Close", 26);
     private readonly Label _previous = Text("Previous", 32), _next = Text("Next", 32);
     private readonly Label _portraitNote = Text("PortraitNote", 24), _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("Gold", 32);
     private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30);
@@ -43,13 +44,13 @@ internal sealed partial class PartyStatusView : Control
         foreach (var node in new Control[] { _portraitFrame, _recordFrame, _goldFrame, _selectorFrame, _details,
             _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _gold, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) AddChild(node);
         _roster.AddChild(_rows);
-        AddChild(_prepare); AddChild(_actions); _prepare.Text = "Prepare…";
+        AddChild(_prepare); AddChild(_actions);
         _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _selector.HorizontalAlignment = _portraitNote.HorizontalAlignment = _gold.HorizontalAlignment = HorizontalAlignment.Center;
         _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _kills.Text = "Kills"; _defeats.Text = "Defeats";
+
         _killsValue.HorizontalAlignment = _defeatsValue.HorizontalAlignment = HorizontalAlignment.Right;
-        _close.Text = "Close ×"; _previous.Text = "◀"; _next.Text = "▶";
+        _previous.Text = "◀"; _next.Text = "▶";
         Hide();
     }
 
@@ -69,6 +70,8 @@ internal sealed partial class PartyStatusView : Control
         _session = session; _input = input; _pointer.ReleaseIfNeutral();
         if (!input.GameplayHeld) _requiresRelease = false;
         if (!session.Current.CanWaitAtInput || session.QueryPartyDetails() is not { } party) { Hide(); return; }
+        _prepare.Text = GameText.Get("party.prepare"); _close.Text = GameText.Get("party.close");
+        _kills.Text = GameText.Get("party.kills"); _defeats.Text = GameText.Get("party.defeats");
         _shown = party; _count = party.Members.Count; _index = Math.Clamp(_index, 0, Math.Max(0, _count - 1));
         while (_labels.Count < _count)
         {
@@ -81,27 +84,30 @@ internal sealed partial class PartyStatusView : Control
             _labels[i].Visible = i < _count;
             if (i >= _count) continue;
             var row = party.Members[i];
-            _labels[i].Text = (i == _index ? "▸ " : "   ") + MemberName(row, session) +
-                (row.Carried.Absent ? " · Absent" : row.Carried.Hp == 0 ? " · Defeated" : "");
+            _labels[i].Text = (i == _index ? "▶ " : "   ") + MemberName(row, session) +
+                (row.Carried.Absent ? " · " + GameText.Get("party.absent") : row.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
             if (i == _index) _labels[i].AddThemeColorOverride("font_color", StoryTheme.Selected);
             else _labels[i].RemoveThemeColorOverride("font_color");
         }
         var member = _count == 0 ? null : party.Members[_index];
-        string name = member is null ? "Party information unavailable" : MemberName(member, session);
-        _selector.Text = $"{(_details.FocusPane == 0 ? "▸ " : "")}{(_count == 0 ? 0 : _index + 1)} / {_count}    {name}   ▾";
+        string name = member is null ? GameText.Get("party.unavailable") : MemberName(member, session);
+        _selector.Text = $"{(_details.FocusPane == 0 ? "▶ " : "")}{(_count == 0 ? 0 : _index + 1)} / {_count}    {name}   ▼";
         _details.Present(member, name);
-        _killsValue.Text = member?.Carried.Kills?.ToString() ?? "Unavailable";
-        _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? "Unavailable";
+        _killsValue.Text = member?.Carried.Kills?.ToString() ?? GameText.Get("party.value-unavailable");
+        _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? GameText.Get("party.value-unavailable");
         _killsValue.AddThemeFontSizeOverride("font_size", member?.Carried.Kills is null ? 24 : 30);
         _defeatsValue.AddThemeFontSizeOverride("font_size", member?.Carried.Defeats is null ? 24 : 30);
-        _gold.Text = $"GOLD\n{party.Gold?.ToString() ?? "Unavailable"}";
+        _gold.Text = GameText.Get("party.gold", party.Gold?.ToString() ?? GameText.Get("party.value-unavailable"));
         PresentPortrait(session, member);
-        string focus = _details.FocusPane switch { 1 => "Magic", 2 => "Items", _ => "Member" };
+        string focus = GameText.Get(_details.FocusPane switch { 1 => "party.magic", 2 => "party.items", _ => "party.member" });
         _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _hint.CustomMaximumSize = new(1584, -1);
-        _hint.Text = $"{input.CompactHint(GameAction.Confirm)}: Prepare · {input.CompactHint(GameAction.Up)}/{input.CompactHint(GameAction.Down)}: {focus}   " +
-            $"{input.CompactHint(GameAction.Target)}: Focus   {input.CompactHint(GameAction.Cancel)}/{input.CompactHint(GameAction.Equipment)}: Close\n" +
-            "Mouse: member selector / arrows · Wheel: scroll the open list";
+        _hint.Text = GameText.Get("party.hint", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Up),
+            input.CompactHint(GameAction.Down), focus, input.CompactHint(GameAction.Target),
+            input.CompactHint(GameAction.Cancel), input.CompactHint(GameAction.Equipment));
+        if (GameText.Language == "zh-CN") _hint.Text += "\n" + GameText.Get("localization.names");
+        string fallback = GameText.Fallback("party.", true);
+        if (fallback.Length > 0) _hint.Text += " · " + fallback;
         Arrange();
     }
 
@@ -109,10 +115,10 @@ internal sealed partial class PartyStatusView : Control
     {
         int? binding = member.Deployment?.Initialization?.AllyPartyMember;
         if (member.Deployment is null)
-            return CharacterNames.Actor(session.Current.Story, member.Carried.Actor, "Name unavailable");
+            return CharacterNames.Actor(session.Current.Story, member.Carried.Actor, GameText.Get("party.name-unavailable"));
         return binding is { } index ? CharacterNames.Member(session.Definition, session.Current.Story, index)
             : CharacterNames.Actor(session.Current.Story, member.Carried.Actor, session.Definition.PrivateDefinitions is null
-                ? CharacterNames.ReadableIdentity(member.Carried.Actor) : "Name unavailable");
+                ? CharacterNames.ReadableIdentity(member.Carried.Actor) : GameText.Get("party.name-unavailable"));
     }
 
     private void PresentPortrait(GameSession session, PartyMemberDetails? member)
@@ -130,7 +136,7 @@ internal sealed partial class PartyStatusView : Control
                 _portrait.Texture = _portraitTexture = ExplorationRasterImages.Portrait(visual);
         }
         _portrait.Visible = _portraitTexture is not null;
-        _portraitNote.Visible = !_portrait.Visible; _portraitNote.Text = "Portrait unavailable";
+        _portraitNote.Visible = !_portrait.Visible; _portraitNote.Text = GameText.Get("party.portrait-unavailable");
     }
 
     private void Arrange()
@@ -153,7 +159,7 @@ internal sealed partial class PartyStatusView : Control
         _goldFrame.Position = new(168, 768); _goldFrame.Size = new(336, 192);
         _gold.Position = new(192, 808); _gold.Size = new(288, 108);
         _details.Position = new(528, 144); _details.Size = new(1224, 816); _details.Arrange();
-        _hint.Position = new(168, 980); _hint.Size = new(1584, 72);
+        _hint.Position = new(168, 968); _hint.Size = new(1584, 100);
         _prepare.Position = new(1456, 908); _prepare.Size = new(260, 48);
         _rosterFrame.Visible = _roster.Visible = _selectorOpen;
         _rosterFrame.Position = new(256, 124); _rosterFrame.Size = new(1232, 680);

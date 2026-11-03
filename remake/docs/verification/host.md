@@ -2275,3 +2275,73 @@ Run affected engine/adapter gates and the clean committed planner; record actual
 startup/driver/geometry discoveries in the handoff. Missing private translation, title/numeral image
 lettering, other menus, Unicode names/IME, export and human bilingual typography approval remain
 outside this result. Do not close the localization epic from this screen-group acceptance.
+
+## Localized Party and field Prepare
+
+The [M2c consumer agreement](../application/localization-design.md#implemented-m2c-party-and-field-prepare-boundary)
+owns English/zh-CN labels, inventory/status, choices, confirmations, NoEffect and recovery. No engine,
+source admission, save or naming rule changes are included. Use the installed Godot, current Debug
+adapter, existing imported font and the ordinary [opening Prepare route](#opening-field-preparation).
+Load the current ignored input configuration in the launching process and force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Keep fresh reports local and use an explicitly configured
+external disposable save namespace; preserve original slots. No screenshot or world copy is needed.
+
+At 1920×1080, Continue an existing eligible opening save (or reach the same settled field normally):
+
+1. Open Party with E / Pad Start. Read class availability, all six aligned stat values, HP/MP,
+   kills/defeats/gold, learned magic and inventory. Valid source/custom names remain literal.
+   Confirm the stat nodes retain `LEVEL`, `ATTACK`, `DEFENSE`, `AGILITY`, `EXP`, `MOVE` names.
+   Navigate members, cycle focus, scroll each list, open the roster and select a member with a
+   complete pointer press/release. Compare party, revision, gold, flags and both seeds unchanged.
+2. Open Prepare by Confirm or its visible control. Preview equipment and Cancel; compare the full
+   state again. Explicitly confirm one supported equipment change and observe one publication and
+   the projected attack/loadout. Redraw the result without repeating the command. Choose an actual
+   unsupported weapon Use and check localized refusal without changes. An already carried Medical
+   Herb's ordinary NoEffect confirmation/result keeps its item/resources and both seeds; this is
+   not an unsupported effect. Do not acquire new private effects for this screen check.
+3. Close, Apply the other language through the existing Settings menu, then reopen Party/Prepare.
+   Compare session/resources/revision/seeds across Apply. Settings is unavailable while Party is open.
+   Reopen/close the panels repeatedly and verify ordinary field control returns. Read text and actual
+   font/geometry, including wrapped hints and return controls; human typography approval is separate.
+
+For a genuine callback failure, use a small pre-start authored variation of
+`remake/content/authored/localization-pilot.json` under the owning ignored report directory. Remove
+`start.program`, place the player at `(2,1)` facing0, replace the existing field-only item113 with
+already admitted rare/droppable item61 in `battle.battleDiscard.items` and the first chest's
+`itemWord`, keeping its original authored label and setting `unsellable=false`. Leave item0 and all
+other definitions unchanged; omit `battle.start.itemCustody` as in the original. This is an input
+variation of supported Drop, not a new Use/spell/map effect or reader capability. Launch through
+`--authored-package <absolute-variant>`, Search the chest normally, dismiss its result, then open
+Party → Prepare → Drop → item → Confirm. The actual engine returns
+`discard-custody-unavailable` / `party.itemCustody`: the item is kept, localized custody advice precedes
+exact diagnostics, and Back lies below the measured body and returns to action selection. Repeat in
+English and Chinese and compare complete old party/revision/seeds. No result is injected into the UI.
+The source diagnostic remains English intentionally.
+
+A private diagnostic controlled-start through the existing `PrivateExplorationReader` does not bind
+product opening preparation. Its real `field-preparation-unsupported` query exercises unavailable
+recovery separately. Use an existing bounded start whose palettes are supplied by the selected world
+rather than duplicated in `start.mapPalettes`. Both pointer Back and Cancel must return to the member
+screen, then Close returns to field control, with the complete state unchanged. Retrying Prepare
+refreshes the query; it must not trap the player in the same unavailable result.
+
+Missing-row observation uses only the native resource cache before host construction: erase Chinese
+`party.stat.attack` and `prepare.confirm-equip` in that observer process. Open the actual consumers;
+ATTACK and the whole equipment confirmation use English, while other rows stay Chinese. Their
+existing row metadata must say effective `en` / `missing-translation`, and the hint must show the
+key/reason. Disk resources and source content stay unchanged. Check glyph presence against each
+actual label's font, minimum/wrapped height against its allocation, scroll-pane bounds and the
+1080p canvas. Display refresh retains option index, typed command, actor/slot/word and captured revision.
+
+Bounded native observations cover these English/Chinese transactions, cancel/readonly navigation,
+actual custody/query failures, fallback, redraw and return controls with no geometry/glyph failures
+or runtime warnings/errors. Prepare's title and choices measure wrapped body height; hints reserve
+room for untranslated names and fallback. Supported triangle markers replace the prior missing small
+triangle glyphs without changing node/action identity. The ordinary opening/retained Prepare drivers
+are reused; successful checks and original completed failures remain in the Issue's local handoff.
+Adapter compilation, direct catalog argument/coverage checks, the clean committed dependency plan and
+actual selected CI complete this boundary. There are no new engine rules or tests of probes/readers.
+
+Antidote/DETOX acquisition, private terminology/dialogue translation, other battle menus/results,
+Unicode names, original natural reach/timing, public exports and human translation/typography approval
+remain outside this check. Do not enlarge the field-only catalog's effect admission to test them.
