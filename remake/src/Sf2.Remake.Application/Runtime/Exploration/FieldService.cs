@@ -64,7 +64,12 @@ internal static class FieldService
                             party = FieldInventory.Replace(party, [changed], gold: gold - offer.Cost);
                             next = next with { Offers = Array.AsReadOnly(wait.Offers!.Select(row => row.Member == changed.Actor
                                 ? row with { Hp = changed.Hp, Status = changed.Status } : row).ToArray()) };
-                            kind = "church-paid"; message = $"{offer.Effect} completed. Paid {offer.Cost} gold.";
+                            kind = "church-paid";
+                            string outcome = offer.Effect switch
+                            {
+                                ChurchEffect.Poison => "Poison removed", ChurchEffect.Stun => "Stun removed", _ => "Raise completed",
+                            };
+                            message = $"{outcome}. Paid {offer.Cost} gold.";
                         }
                     }
                     next = next with { Index = index, Message = message }; break;

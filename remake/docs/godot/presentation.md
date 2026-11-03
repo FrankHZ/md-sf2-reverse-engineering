@@ -40,7 +40,7 @@ migration remains subject to independent review/integration and does not assert 
 | Entry, SaveSlot, NameEntry, Settings/control help, gameplay Save/Quit | Already consume shared native button/editor treatment. Regression consumers; no Stage1 rewrite. Preserve their separate persistence and release boundaries. |
 | `GameRoot.NewGameEntry` | Uses `CreateEntry`, matching adjacent Save/Quit/Settings native buttons; no lifecycle change. |
 | `BattleMenuLayout` non-diamond rows/navigation | Stage1 actual consumer: shared selected/unavailable colors and independent marker/reason, including unavailable target feedback. Existing geometry, fonts, scroll and command authority remain. |
-| `ChurchServiceView` and `FieldActionView` (Prepare) | Shared font-color overrides keep unavailable rows muted even when focused, with the existing marker/explanation/refusal. Church derives availability from its nullable command; Prepare uses actual `Use`/`CanDrop` offers. Action/menu/confirmation rows stay inspectable; no English-string parsing or new legality. Wording/transient error repair stays with #1454. |
+| `ChurchServiceView` and `FieldActionView` (Prepare) | Shared font-color overrides keep unavailable rows muted even when focused, with the existing marker/explanation/refusal. Church derives availability from its nullable command; Prepare uses actual `Use`/`CanDrop` offers. Action/menu/confirmation rows stay inspectable; no English-string parsing or new legality. The [finite feedback agreement](#gameplay-feedback-and-recovery-wording-1454) owns Church wording/transient refusal. |
 | `PartyStatusView` / `PartyDetailsPanel` | Member focus has shared gold plus `▸`; Prepare/Close retain ordinary body text rather than permanent selected accents. Source grouping, gauges, pane hints, typography and detail scrolling remain. `PartyDetailsPanel` is unchanged. |
 | `StoryChoiceRow` | Already uses shared gold plus a selection marker and the caller's phase/release rules. No change justified by this inventory. |
 | Dialogue, ContextHint, status/detail panels, battle messages/results | Already use shared readable frames with distinct content roles. No Stage1 change; preserve portraits, numeric warnings and the existing reward sequence without another summary. |
@@ -67,6 +67,40 @@ suite, helper tests, screenshots, per-frame capture or whole route is needed. Ma
 reviews the finite candidate before integration. Human aesthetics, physical release, actual
 1080p-display/DPI approval stay with #1456; original media/timing and existing WAV teardown warnings
 remain **Unknown**. #1447 stays deferred.
+
+## Gameplay feedback and recovery wording (#1454)
+
+**Standard rigor:** a finite presentation correction after the accepted shared visual consumers.
+The outcome is an actionable battle movement refusal and an understandable Church offer/result,
+with usable navigation after refusal. Scope is `BattleCommandMenu`, `ChurchServiceView`, the existing
+`FieldService` message producer, this owner, the [gap disposition](../evidence/opening-ui-gaps.md#gameplay-feedback-disposition-1454)
+and [necessary native recipe](../verification/host.md#finite-gameplay-feedback-observation-1454).
+The Application remains the sole service/command authority; no price, status mask/order, legality,
+rewards, story, input binding, storage or shared style changes belong to this slice.
+
+- `movement-range` asks for a tile within the highlighted movement range; `occupied-destination`
+  asks for an unoccupied tile within that range. The typed failure/code remains diagnostic, the
+  failed command retains progress/resources, and ordinary legal input continues without a Retry.
+- Church offers explicitly say Remove poison / Remove stun; paid results say Poison removed /
+  Stun removed with the actual payment. Raise retains its existing meaning. These are direct typed
+  effect mappings, not English-string parsing or additional supported treatments.
+- Promotion stays inspectable, marked and muted. Its refusal says it is unavailable here and points
+  to another service or Leave. Mapped Choose/Select/Decline/Back guidance remains visible alongside
+  the refusal. Changing the focused row clears the transient error through the same focus update
+  for keyboard/pad selection and an accepted pointer selection. Pointer hover/gesture and release
+  guards retain their existing behavior. Compact installed hints and reserved three-line space keep
+  refusal and navigation inside the existing panel.
+
+Talk/Search already share interaction authority and Party offers Prepare. Dialogue already separates
+reveal/read/continue/automatic states; accepted result/reward/return ordering stays intact. No guessed
+speaker name, automatic timeout/skip, reward summary, UI framework or new recovery operation is added.
+Acceptance uses existing FieldService behavior assertions, adapter/necessary Debug builds, a clean
+committed dependency plan and direct scope/docs/private checks. Native evidence is limited to battle
+rejection/legal continuation and Church refusal/focus/normal treatment, with actual revision/resources/
+RNG and errors checked. Reuse short cases and observers; pilot before expanding, serial runs <=45s,
+fresh `local/issue1454` output <=50 MiB, replan below 1 GiB free. No full route, screenshots, acquisition,
+helper tests or unrelated suites. Main-gate independently reviews/merges the frozen Draft PR.
+Human readability/physical devices/DPI remain **Unknown** under #1456; #1447/#1463 stay deferred.
 
 ## Basic preferences agreement
 
@@ -1227,7 +1261,8 @@ outside this behavior slice. [State and acceptance](../application/opening-sessi
 The actual priest interaction opens `ChurchServiceView` over the field. Keyboard/controller mapped
 Up/Down and Confirm choose Raise, Cure, explicit unavailable Promotion, Save or Leave; mouse rows
 use the existing press/release pointer guard. The source-ordered member/status offers show current
-gold and exact cost before a separate confirm/decline. No applicable member, insufficient funds,
+gold and exact cost before a separate confirm/decline, with explicit poison/stun removal wording.
+No applicable member, insufficient funds,
 refusal and success are readable results. Cancel declines the current offer or leaves the menu.
 The Application wait owns offers and progression; the panel stores only focus/gesture state.
 

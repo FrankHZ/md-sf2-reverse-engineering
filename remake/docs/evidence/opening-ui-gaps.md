@@ -142,9 +142,28 @@ phase changes reset reading, and Cancel/directions/Target remain usable. Source 
 are bounded engineering checks pending independent integration, not global visual completion.
 Appearance is the explicit later-capability gap [#1463](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1463), outside this opening route. Existing
 Entry/Save/Quit/Settings/help, StoryChoice, dialogue/context/status/detail consumers need no automatic
-rewrite. Wording/transient refusal
-belongs to #1454; new art/fonts and #1447 remain deferred. All earlier bounded human approval,
+rewrite. The [finite feedback disposition](#gameplay-feedback-disposition-1454) owns wording/transient
+refusal; new art/fonts and #1447 remain deferred. All earlier bounded human approval,
 physical-focus/DPI limits, original timing/media Unknowns and warning/failure records remain intact.
+
+## Gameplay feedback disposition (#1454)
+
+**Confirmed:** the bounded source review selected the three existing responsibilities below
+after accepted #1453. **Inferred:** their confusing wording can obscure the next legal action. The [presentation agreement](../godot/presentation.md#gameplay-feedback-and-recovery-wording-1454)
+owns the implemented behavior; the [native recipe](../verification/host.md#finite-gameplay-feedback-observation-1454)
+bounds engineering acceptance. Final human understanding remains **Unknown** under #1456.
+
+| Trigger / previous display and inferred confusion | Current correction / boundary |
+| --- | --- |
+| Confirm an occupied tile or request unreachable movement: internal `occupied destination` / `movement range` labels do not explain a next step. | Ask for an unoccupied tile within the highlighted movement range. Original typed failures and legal continuation remain authoritative. |
+| Church Cure offer/result: bare Poison / Stun and completed could imply applying a status. | Name Remove poison / Remove stun and Poison removed / Stun removed plus the actual payment; preserve source-ordered costs/status treatment. |
+| Select unavailable Promotion, then change Church row: operator-only wording replaces all hints and remains stale. | Explain unavailability here and another service/Leave, retain mapped navigation, clear transient refusal on actual focus change for key/pad or accepted pointer selection. Preserve unavailable styling/inspectability and release guards. |
+
+No change was needed for Talk/Search authority, Party Prepare discovery, dialogue reveal/read/wait/
+continue, or accepted action/result/EXP/gold/level/skill/return ordering. They remain bounded accepted
+consumers, without new retry, guessed speakers, timeout/skip or reward summary. No engine-rule or
+storage change is implied. Positive poison/stun naturally arising in the opening, original timing/
+media and broad discoverability remain **Unknown**; #1447 and Appearance #1463 stay deferred.
 
 ## Window and physical-focus disposition (#1455)
 
