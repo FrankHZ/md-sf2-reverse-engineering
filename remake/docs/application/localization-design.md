@@ -129,8 +129,8 @@ Godot 4.7 documents [PO loading](https://docs.godotengine.org/en/4.7/tutorials/i
 and [TranslationServer](https://docs.godotengine.org/en/4.7/classes/class_translationserver.html)
 locale selection/normalization/plurals. Its [internationalization guide](https://docs.godotengine.org/en/4.7/tutorials/i18n/internationalizing_games.html)
 shows C# Tr/TrN with C# formatting. These version-family API facts were checked 2026-11-03; the
-project pins Godot.NET.Sdk/4.7.2. No import/runtime was run. M1 must compile and exercise the installed
-4.7.2 bindings; documentation is not project execution evidence.
+project pins Godot.NET.Sdk/4.7.2. The M1 pilot now compiles and exercises those installed bindings
+at the bounded native boundary above; the API documentation alone is not execution evidence.
 
 ### Modules and flow
 
@@ -395,13 +395,13 @@ is the potential migration trigger.
 
 ## Font, layout and delivery
 
-Recommend one bundled Simplified Chinese sans face with existing Latin/symbol coverage through
-StoryTheme and necessary overrides. Start M1 selection with Noto Sans CJK SC Regular: upstream
+M1 bundles Noto Sans CJK SC Regular through StoryTheme for Simplified Chinese and the required
+Latin/symbol coverage. Upstream
 [Sans documentation](https://github.com/notofonts/noto-cjk/blob/main/Sans/README.md) describes the
 family and the [license](https://github.com/notofonts/noto-cjk/blob/main/Sans/LICENSE) is SIL OFL 1.1.
-This is a candidate, not a pinned/vendored asset. Acquisition must pin release/file/license, retain
-notices, check modification/reserved-name conditions for any subset, and declare distribution
-ownership before committing bytes. M0 downloads no font.
+The [bundled asset owner](../../game/fonts/localization/README.md) records the exact revision, file,
+version and notices. M1 distributes the unmodified face; future subsets must separately review OFL
+modification/reserved-name conditions before replacing it.
 
 Godot documents [Font fallbacks](https://docs.godotengine.org/en/4.7/classes/class_font.html),
 [Theme/default font configuration](https://docs.godotengine.org/en/4.7/tutorials/ui/gui_using_fonts.html)
@@ -416,7 +416,8 @@ seven-cluster mixed names. Keep WordSmart/ReadMore; visual lines do not add sour
 Do not shrink every label or crop required choices. Test missing glyphs explicitly. The
 [Label API](https://docs.godotengine.org/en/4.7/classes/class_label.html) supplies plain text,
 wrapping/language and visible-character controls; actual mixed-script reveal and the host Rune-based
-speech loop need observation. UTF-16 units, code points, grapheme clusters and shaped glyphs differ.
+speech loop have bounded M1 observations above. UTF-16 units, code points, grapheme clusters and
+shaped glyphs differ; broader naming/typography still needs its own acceptance.
 
 Preserve field alternating nonspace speech with instant/reveal-all silent; do not replay it on
 refresh. No new battle speech bleeps. Chinese pacing is a human-readability question, not a reason
@@ -428,13 +429,13 @@ asset decision; retain it and identify the untranslated gap until then. A catalo
 The M1 paths below are implemented only at the bounded pilot boundary above. Later phases remain
 finite candidates, not an implementation queue. Paths are repository
 relative: `A` = `remake/src/Sf2.Remake.Application`, `C` = `remake/src/Sf2.Remake.Content`,
-`G` = `remake/game`, `T` = `remake/tests/Sf2.Remake.Engine.Tests`. New paths are proposals; no
-scaffolding exists in M0. Dispatch must recheck names and single-writer ownership, especially shared
-settings/catalogs/reader/theme files. Update closest capability/verification owners when behavior lands.
+`G` = `remake/game`, `T` = `remake/tests/Sf2.Remake.Engine.Tests`. M1 owns the implemented paths
+below; future dispatch must recheck names and single-writer ownership, especially shared
+settings/catalogs/reader/theme files, and update closest capability/verification owners.
 
 ### M1 integrated sample
 
-| Responsibility | Exact proposed paths |
+| Responsibility | M1 implementation paths |
 | --- | --- |
 | Selection, lookup, settings | New `G/src/Localization/GameText.cs`, `G/localization/en.po`, `G/localization/zh_CN.po`; existing `G/project.godot`, `G/src/GameRoot.cs`, `G/src/Input/InputSettings.cs`, `G/src/Entry/SettingsHost.cs`, `G/src/UI/SettingsView.cs`, `G/src/Entry/SessionEntryView.cs` (settings access refresh only) |
 | Overlay and token reuse | New `C/Localization/DisplayCatalog.cs`, `C/Localization/DisplayCatalogReader.cs`, `C/Scenarios/ExplorationTextTokens.cs`; existing `C/Scenarios/ExplorationContentReader.cs`; new original `remake/content/authored/localization-pilot.json` and `remake/content/authored/localization-pilot.zh-CN.json` |
