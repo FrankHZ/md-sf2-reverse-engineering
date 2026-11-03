@@ -68,7 +68,7 @@ with a 100 MiB budget and serial native runs of at most 45 seconds. No engine/fu
 suite, helper tests, screenshots, per-frame capture or whole route is needed for that recipe. These
 are the migration's acceptance checks, not a new #1456 rerun requirement. Human aesthetics, physical release, actual
 1080p-display/DPI approval stay with #1456; original media/timing and existing WAV teardown warnings
-remain **Unknown**. #1447 stays deferred.
+remain **Unknown**. The #1447 investigation below adds no human approval.
 
 ## Gameplay feedback and recovery wording (#1454)
 
@@ -104,7 +104,8 @@ fresh `local/issue1454` output <=50 MiB, replan below 1 GiB free. No full route,
 helper tests or unrelated suites. Main-gate independently reviews/merges the frozen Draft PR.
 The finite correction is independently accepted and integrated in
 [PR1465](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1465).
-Human readability/physical devices/DPI remain **Unknown** under #1456; #1447/#1463 stay deferred.
+Human readability/physical devices/DPI remain **Unknown** under #1456; #1447 findings await
+independent review and #1463 stays deferred.
 
 ## Human opening review boundary (#1456)
 
@@ -122,7 +123,9 @@ clarity and feel await the user's actual play. Real keyboard/controller off-focu
 [human checklist](../verification/host.md#later-physical-focus-human-checklist-1456). Current results
 remain **Unknown/pending**; injected events, node geometry and available builds cannot fill them.
 Keep #1456 open for the explicit experience decision after engineering integration. No new font/art
-direction, all-map UI or gameplay extension is authorized; #1447 and Appearance #1463 remain deferred.
+direction, all-map UI or gameplay extension is authorized. #1447 has a bounded
+[investigation-only finding](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)
+awaiting independent review; Appearance #1463 remains deferred.
 
 ## Basic preferences agreement
 
@@ -877,8 +880,9 @@ adapter build, clean committed dependency plan, direct source/docs/private-bound
 native state/input/geometry/errors. No engine/full suites, helper tests, screenshots, full route or
 new collection platform. Physical off-focus release, actual 1080p display/DPI and human readability
 remain **Unknown** with the later [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456)
-checklist. Existing failures and [#1447](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1447)
-audio/title deferral remain intact.
+checklist. Existing failures remain intact; the
+[#1447 investigation](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)
+adds no physical-focus acceptance or production change.
 
 ### Battle movement range agreement
 
@@ -980,6 +984,12 @@ Continuous exploration movement retains its [accepted control owner](../verifica
 The shared 1080p world viewport is defined above; the earlier 640-by-360 proposal is not a runtime constant.
 
 ## Entry windows and hints (#1445)
+
+The [title lifecycle finding](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)
+distinguishes the short instance-lifetime entrance from static title idle/return and finite title
+music. Reduced-flash selects static frames. Native state/draw progression does not establish
+perceived animation, human audibility or aesthetic approval; no presentation change is authorized
+by that investigation alone.
 
 Standard rigor: this bounded presentation slice makes title, Witch choices, slot/recovery/error
 windows and name entry consistent. The existing High-rigor save/session agreement is unchanged.

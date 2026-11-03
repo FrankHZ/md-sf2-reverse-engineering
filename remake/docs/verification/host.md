@@ -1581,6 +1581,69 @@ No fixed sleep, GC or warning filter was added to production. Headless success d
 human aesthetic approval, physical-controller behavior, natural source navigation, exact cadence,
 render/CRAM timing, original DMA tails or sample-exact audio parity.
 
+### Title lifecycle investigation (#1447)
+
+The [investigation-only agreement](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)
+uses accepted base `a4b787068f1f0c2b05210949bc74df8c07ed7cdd`, unchanged production and the existing
+Debug build/private package selected by `local/issue1441/inputs.ps1`. No SDK/build, emulator,
+capture, screenshot, recording or asset acquisition is needed. `EntryBackdrop._Process/_Draw`,
+`SessionEntryView._Ready/Advance/ShowMenu/ShowTitle`, `EntryPresentationAssets`,
+`GameRoot.ShowEntry` and `SessionAudio.Play/ObservePlayback` own the inspected behavior.
+The pinned source remains `c834c652b6862bc5679fd7f69a38a7093206efc6`: under
+`disasm/data/sound/musicbank0/`, `music28.asm` (`Music_28`, C2 header, nine `channel_end`,
+no main loops) and `music10.asm` (`Music_10`, C1 header, eight main loops and one ended channel)
+support finite versus repeating score structure. The [special-screen owner](../../../docs/research/presentation/special-screens.md#logo-and-title)
+retains original fade/scroll timing Unknowns. These are source facts, not natural original navigation.
+
+Reproduce using the existing native SceneTree observer approach above and a fresh ignored output:
+
+1. Load `local/issue1441/inputs.ps1` in the launch process; keep its current entry/world selections.
+   Use fresh local APPDATA/LOCALAPPDATA/TEMP/save directories, explicit version1 adjustable40cps
+   input settings, and the owned Godot/project/Debug installation. Instantiate ordinary `Main.tscn`
+   at1920×1080, with no controlled start. Do not use fixed simulation time to infer audio duration.
+2. Read `ReadEntryObservationJson` and actual `AudioStreamPlayer` stream length, loop mode/bounds,
+   mix rate/stereo, position, volume, bus/mute and paused state. Record `IsVisibleInTree`, window
+   visibility, process-frame count and first `RenderingServer.frame_post_draw`; no pixel capture.
+   Sample title at roughly0.25/0.6/1.1/2s and after11s. Send mapped Enter to Witch, Enter reveal/next,
+   E/Start to menu, Escape back to title; sample return at1.15s and after another10s, then Enter again.
+3. Run one distinct reduced-flash case through title/Witch/return. Inspect the actual projected
+   frames during reading/idle. Keep each native process under45s, serial, with a1GiB free-space
+   floor and total new outputs below10MiB. A short initial pilot precedes the longer case.
+
+The retained invocation is `pwsh -NoProfile -File local/issue1447/run-native.ps1 -Phase <pilot|normal|reduced>`
+from the owning checkout. The ignored driver extends the existing `local/issue1441/entry.gd`
+input/readback access, writes bounded marks rather than per-frame data, and stops only its own
+process on the45s watchdog. The recipe above and named production/source owners define the
+reproduction independently of the retained private reports.
+
+**Confirmed bounded native observations:** Godot4.7.2 .NET, native OpenGL Compatibility/WASAPI;
+pilot2.200s, normal25.682s, reduced6.522s at their final marks. All exit0, no timeout, empty
+stderr and no software audio error. Before the first draw the ordinary entry is already visible;
+normal first post-draw is216ms after observer start, followed by17/38/68/122 draws at the named
+early title samples. There is no observed host visibility delay consuming the entire entrance.
+The existing projection does not expose numeral alpha/offset: the0.9s curve and lack of return
+reset are **Confirmed structure**, not measured pixels or a claim that a person noticed the fade.
+
+Loaded title WAV:44,100Hz stereo,450,995 frames,10.226643991s, loop disabled. Playback progresses
+from0.29896s to2.04916s; at the11s sample it has a natural `finished` receipt, is not playing and
+remains on the visible title. Witch WAV:1,561,247 frames,35.402426304s, Forward loop279,419–1,561,247.
+Its loop wrap is not re-observed in this shorter investigation; the earlier42s observation above
+retains that evidence. Arrival/reading/open-head/mouth and normal idle blink project; reduced-flash
+idle samples all project `witch`. Returning requests title at0.04354s and later records a second
+natural finish; fresh Enter then starts Witch. The ordered receipts are title start/finish → Witch
+start → Witch stop/title start → title finish → Witch start. Entering the Witch menu does not restart
+its cue. Every mark has one entry music player, unpaused/processable,0dB player/Master volume,
+Master unmuted, with no competing host-session player in this cold-entry route. Field-session
+pause/resume/replacement keeps its earlier observation above; it was not rerun here.
+
+**Inferred:** ordinary static idle and silence after the finite title score can account for part of
+the reported experience; this run supplies no confirmed startup playback defect. **Unknown:**
+physical output/audibility, why the user heard silence, perceived entrance visibility, and whether
+return replay is desired. No nonzero-sample or software-playing claim establishes human listening.
+Recommend retaining production pending independent review. The prior WAV/Playback teardown warnings
+remain preserved above and are not erased by these empty-stderr runs. New ignored output was about
+3MiB, with more than2.5GiB free; no general audio audit or user visual/listening approval is implied.
+
 ## Witch slot, naming and initial save
 
 The [High lifecycle design](../application/opening-session-lifecycle.md#slot-name-and-initial-save-design-1443)

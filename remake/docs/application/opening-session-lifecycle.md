@@ -183,6 +183,34 @@ and loops279,419–1,561,247 relative to that retained PCM. This is a reviewed m
 of sample-exact YM phase, an original interrupt boundary or natural menu reach. Preparation and native
 reproduction belong to the [entry observation](../verification/host.md#title-and-witch-entry-observation).
 
+#### Title lifecycle investigation (#1447)
+
+**Standard rigor, investigation only:** distinguish ordinary first entry, Witch, return and idle
+using the accepted consumers and prepared package. Production/assets remain read-only. A static
+title or finite score is not itself a defect; this investigation recommends retaining current
+behavior pending independent review, not adding idle motion or changing the title score to a loop.
+
+**Confirmed structure:** `EntryBackdrop` advances its instance-lifetime elapsed counter in
+`_Process`. The numeral reaches full opacity and its final position after0.9s, from a24px offset;
+the title then stays static. `ShowTitle` changes layers and requests title music without resetting
+that counter, so returning from the Witch retains the completed entrance. Reduced-flash selects
+the completed title immediately and static Witch head frames. This describes the current modern
+implementation, not original timing or a newly accepted requirement to replay on return.
+
+**Confirmed bounded software behavior:** the [native investigation](../verification/host.md#title-lifecycle-investigation-1447)
+observes visible title entry, progressing draws/playback, finite title completion, Witch arrival/
+reading/menu, return with restarted title music, and a second finite completion. The loaded title
+is450,995 stereo frames at44,100Hz (10.226644s), with looping disabled. Witch uses1,561,247 frames
+(35.402426s), with the existing279,419–1,561,247 loop. Source `Music_28`'s finite channels and
+`Music_10`'s repeating channels support that distinction; the modern PCM seam retains the Inferred
+limit above. No new original-game runtime observation is made.
+
+**Unknown:** the cause of the user's reported silence, physical audibility, perceived motion and
+whether a return should replay the entrance. No software playback flag proves listening approval.
+If replay is later chosen, the minimal proposed boundary is resetting the existing backdrop entrance
+when title becomes visible, with first-entry/return/reduced-flash acceptance; it needs no new art,
+idle animation or audio service. #1447 remains open for independent investigation acceptance.
+
 ### Slot, name and initial-save design (#1443)
 
 High rigor remains appropriate for this change: a confirmed New Game must bind names, admitted
