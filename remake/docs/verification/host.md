@@ -1598,7 +1598,8 @@ retains original fade/scroll timing Unknowns. These are source facts, not natura
 Reproduce using the existing native SceneTree observer approach above and a fresh ignored output:
 
 1. Load `local/issue1441/inputs.ps1` in the launch process; keep its current entry/world selections.
-   Use fresh local APPDATA/LOCALAPPDATA/TEMP/save directories, explicit version1 adjustable40cps
+   Use fresh local APPDATA/LOCALAPPDATA/TEMP directories, an absolute save root outside all
+   checkouts with a fresh disposable namespace, and explicit version1 adjustable40cps
    input settings, and the owned Godot/project/Debug installation. Instantiate ordinary `Main.tscn`
    at1920×1080, with no controlled start. Do not use fixed simulation time to infer audio duration.
 2. Read `ReadEntryObservationJson` and actual `AudioStreamPlayer` stream length, loop mode/bounds,
@@ -1610,7 +1611,7 @@ Reproduce using the existing native SceneTree observer approach above and a fres
    frames during reading/idle. Keep each native process under45s, serial, with a1GiB free-space
    floor and total new outputs below10MiB. A short initial pilot precedes the longer case.
 
-The retained invocation is `pwsh -NoProfile -File local/issue1447/run-native.ps1 -Phase <pilot|normal|reduced>`
+The retained invocation is `pwsh -NoProfile -File local/issue1447/run-native.ps1 -Phase <pilot|normal|reduced> -Run <fresh-name>`
 from the owning checkout. The ignored driver extends the existing `local/issue1441/entry.gd`
 input/readback access, writes bounded marks rather than per-frame data, and stops only its own
 process on the45s watchdog. The recipe above and named production/source owners define the
@@ -1632,17 +1633,29 @@ retains that evidence. Arrival/reading/open-head/mouth and normal idle blink pro
 idle samples all project `witch`. Returning requests title at0.04354s and later records a second
 natural finish; fresh Enter then starts Witch. The ordered receipts are title start/finish → Witch
 start → Witch stop/title start → title finish → Witch start. Entering the Witch menu does not restart
-its cue. Every mark has one entry music player, unpaused/processable,0dB player/Master volume,
+its cue. These three cases have one entry music player at every mark, unpaused/processable,0dB player/Master volume,
 Master unmuted, with no competing host-session player in this cold-entry route. Field-session
 pause/resume/replacement keeps its earlier observation above; it was not rerun here.
+
+Configuration correction: the initial three runs selected a worktree-local save root, which
+`LocalSaveStore` would reject. Their explicit input-settings override bypassed preference storage,
+and title/Witch did not construct a save store; retained entry messages contain no storage diagnostic.
+That configuration is insufficient for a full ordinary storage-entry claim. The corrected runner
+uses an external operator save root and a fresh namespace plus independent `-Run` output selection;
+it cannot overwrite the earlier cases. One additional normal observation (27.564s, exit0, empty
+stderr) actually opens Continue: two Empty slots, `continue-slots`, no storage error or slot writes.
+The panel temporarily disables entry processing and pauses its player via `ApplyHostPause`; Back resumes the same Witch
+cue without a new start receipt. Its first draw is219ms, title naturally finishes twice, and the
+seven title/Witch receipts match the earlier sequence. The title/audio recommendation is unchanged;
+the other unaffected observations are retained rather than rerun.
 
 **Inferred:** ordinary static idle and silence after the finite title score can account for part of
 the reported experience; this run supplies no confirmed startup playback defect. **Unknown:**
 physical output/audibility, why the user heard silence, perceived entrance visibility, and whether
 return replay is desired. No nonzero-sample or software-playing claim establishes human listening.
 Recommend retaining production pending independent review. The prior WAV/Playback teardown warnings
-remain preserved above and are not erased by these empty-stderr runs. New ignored output was about
-3MiB, with more than2.5GiB free; no general audio audit or user visual/listening approval is implied.
+remain preserved above and are not erased by these empty-stderr runs. New ignored output stays below
+10MiB, with more than2.5GiB free; no general audio audit or user visual/listening approval is implied.
 
 ## Witch slot, naming and initial save
 
