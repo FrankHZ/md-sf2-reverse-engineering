@@ -677,6 +677,123 @@ experiment is described below, with remaining product choices still open.
 The [original proposal and legacy consumers](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/presentation-and-assets.md#decision-summary)
 preserve the exact design and receipts without declaring them current functionality.
 
+### Window support and recovery proposal (#1455)
+
+**Standard rigor: bounded design, pending main-gate selection; no window/input implementation.**
+The outcome is reachable controls and a recoverable window at the chosen 1920×1080 gameplay baseline,
+including a physical 1080p desktop whose decorations leave less than 1080 client pixels. Preserve
+96px cells/ordinary frames, 4× nearest sampling and independent overlays. Stage 1 owns only this
+section, the [gap disposition](../evidence/opening-ui-gaps.md#window-and-physical-focus-disposition-1455)
+and the [bounded evidence/acceptance recipe](../verification/host.md#window-boundary-design-observation-1455).
+Production code is read-only. Existing High save/recovery guarantees remain unchanged.
+
+**Confirmed structure at accepted `c58d41ec`:** [project.godot](../../game/project.godot) requests
+1920×1080 and permits resizing. [SessionEntryView](../../game/src/Entry/SessionEntryView.cs) temporarily
+selects CanvasItems with that logical canvas; entry exit restores the previous mode.
+[ExplorationSessionView](../../game/src/Exploration/ExplorationSessionView.cs) and
+[BattleSessionView](../../game/src/Battles/BattleSessionView.cs) select Disabled scaling: their viewport
+is the native client. [WorldViewportLayout](../../game/src/Maps/WorldViewportLayout.cs) keeps scale 4
+and cells 96 as its visible extent changes. Entry scaling therefore proves no gameplay-size support.
+
+| Consumer / authority | Coordinate boundary and current limitation |
+| --- | --- |
+| Entry, slot/name windows | Fixed logical 1080p canvas, stretched/letterboxed by the root Window; existing 720p entry input uses the final transform. |
+| Party Status / details, Prepare, Church | Native fixed coordinates in [PartyStatusView](../../game/src/Exploration/PartyStatusView.cs), [PartyDetailsPanel](../../game/src/Exploration/PartyDetailsPanel.cs), [FieldActionView](../../game/src/Exploration/FieldActionView.cs) and [ChurchServiceView](../../game/src/Exploration/ChurchServiceView.cs); they cannot establish 720p support. |
+| Dialogue / battle command, lists, cards and messages | Native viewport-aware placement, existing fixed font/icon/card dimensions and local scroll; one fitting battle menu does not establish every overlay fits. |
+| Settings/help and gameplay Save/Quit | Native bounded panels/local scrolling; existing 720p Settings/help observations do not resize the world or repair Party/Prepare. |
+| Input/focus | GameRoot routes installed GameInput actions and native pointer positions. Field focus/pause clears walking, waits, choices and skip; battle suspends input/pointer gestures. Settings owns its narrower Apply barrier. Simulation, completion tokens and saves remain outside window policy. |
+
+**Confirmed bounded observations:** entry at native 1280×720 retains logical 1920×1080; gameplay
+changes to native 1280×720 with scale 4/cells96. Party Close `(1616,56,136,48)` and Prepare
+`(1456,908,260,48)` cannot be clicked there. Prepare's panel `(424,128,1072,824)` also exceeds it.
+At 1080p their actions fit, but default full-binding PartyHint `(168,980,2335,72)` and Prepare Hint
+`(456,864,1752,72)` extend past the right edge. These are retained **failures**, not a readability pass.
+A separate segment using accepted controlled Battle02 entry/menu/Egress/field-return inputs retains
+zoom 1 and 96px geometry through 720p/1080p changes; the sampled command menu fits 720p. It proves neither a
+complete Battle01 playthrough nor general small-window support. Exact reproduction and limits are
+in the host recipe.
+
+**Recommendation: minimum 1920×1080 native gameplay client, including larger windows/fullscreen,
+with explicit recovery.** Avoid a minimum-size-only fix: the observed 1920×1080 client occupies 1946×1151 with this host's decorations. **Inferred:** it
+cannot fit a 1920×1080 desktop even before a taskbar. Decoration dimensions are host-dependent.
+Godot [Window mode documentation](https://docs.godotengine.org/en/stable/classes/class_window.html#enum-window-mode)
+confirms ordinary fullscreen uses the monitor size without changing its video mode. Our 4K fullscreen
+snapshot actually became 3840×2160; requesting 1080p first does not make fullscreen 1080p.
+
+| Proposed support boundary | Admission / recovery; implementation still pending |
+| --- | --- |
+| Gameplay client width ≥1920 and height ≥1080 | Proposed supported range after bounded implementation acceptance. Start with a centered 1920×1080 window when it fits; allow larger native windows/maximize, retaining 96px/4×. Decorations/work area guide startup and explicit Restore placement only; moving a valid-sized window partly offscreen does not suspend gameplay. |
+| Ordinary fullscreen whose actual native client width ≥1920 and height ≥1080, including 1080p and 4K screens | Proposed supported range after bounded acceptance. Remove decorations without changing video mode or scaling the world. Prefer it at startup when a decorated baseline window cannot fit; permit it on the current 4K screen too. |
+| Existing entry shell at native 1280×720,1600×900 or 1100×800 | Retain its existing bounded entry behavior. Before New Game/Continue/replacement can publish or mount a gameplay session, establish the supported gameplay client or show recovery. This is not 720p gameplay support. |
+| Gameplay with either native dimension below baseline, even on a larger physical screen | Outside the gameplay support range. Retain the session behind recovery; offer a fitting baseline window or ordinary fullscreen if its resulting client meets both minimum dimensions. No aspect-ratio restriction is needed above both minima. |
+| Actual client below minimum, with neither a fitting baseline window nor qualifying fullscreen available | Recovery shell with reason and existing Quit flow; gameplay remains suspended/unavailable. Fit the shell to the actual usable client with entry scaling/local scroll, validating 1280×720 first; smaller shell sizes remain unassessed. No forced oversized window or world scaling. DPI/mixed-monitor behavior is Unknown until actual client/outer-rect checks are observed. |
+
+Reuse the current Window and entry/theme mechanisms. Startup chooses the fitting baseline window
+or a qualifying native fullscreen without persisting a display preference. Gameplay admission checks
+only actual client width/height, not window position or work-area containment. When an actual runtime
+client dimension falls below minimum, cover gameplay with one small responsive recovery modal, suspend
+its processing/audio and disarm walking/wait/skip/pointer gestures. Keep session identity, revision,
+progress, pending modal/draft and files; recovery sends no gameplay/save command. Its visible actions
+are **Restore 1080p window**, **Use fullscreen** only when available, and **Quit** through the existing
+dirty-progress confirmation. Explain unavailable actions. Retain the recovery until actual client
+readback meets the minimum dimensions; never trust only the requested size. Startup and explicit
+Restore use current usable-screen/decorations to choose a fitting mode and safe centered placement.
+Dragging a valid-sized window to an edge or another screen neither pauses nor recenters it; monitor/
+DPI changes matter to admission only if actual client dimensions become invalid. No position-polling
+framework is needed. Placement failure alone never opens recovery on a valid-sized client. A failed
+mode request keeps an already size-invalid client recoverable; no repeated automatic mode loop,
+preference schema or new Settings row.
+
+Recovery owns input before underlying modals, drains its activating event, requires release/neutral
+and then fresh non-echo input. Closing Settings/Save/entry must not resume a view while recovery is
+active, nor may recovery resume a view still paused by another modal. Reuse the existing finite
+host conditions; a general pause/window/device framework is unnecessary. WM-close retains the
+Settings cancel-draft → Quit ordering. Treat window loss/minimize/mode transitions as disarming
+boundaries, without redefining ordinary focus timing or granting physical-device approval.
+
+The 96px world choice fixes pixel scale, not viewport extent. **Confirmed structure:** both views
+already pass native size into their shared world layout. A larger client exposes more legal world
+at the same scale, still clipped to the owning map/region; it does not change simulation coordinates.
+Fixed Party/Prepare/Church geometry that fits the 1080p baseline also fits a larger client. Their
+existing placement can remain; future centering may translate a whole panel group without scaling.
+Viewport-aware story/battle/host controls retain their existing native anchors. Repair the demonstrated
+baseline hint overflow; do not introduce a second UI coordinate authority merely to center every screen.
+
+| Option | Engineering cost, user effect and recovery |
+| --- | --- |
+| **Minimum 1080p client plus larger native windows/fullscreen — recommended** | Reuse native viewport expansion, fixed 96px/4×, existing overlay anchors and fixed baseline groups. Add one host admission/recovery owner and the two known hint repairs. Resize below either minimum suspends gameplay and offers fitting window/native fullscreen/Quit. Observe 1080p plus the existing 4K host; no complete resolution/device matrix. |
+| Exactly 1920×1080 client only | Adds equality checks, resize/maximize restrictions and rejection/recovery for otherwise usable 4K fullscreen. Existing source/evidence shows no correctness need for those extra restrictions. It saves no UI-adaptation work over the minimum policy and worsens normal use; reject it. |
+| Finite UI-only adaptation below 1080p | Could keep smaller gameplay clients and 96px world cells, but Party/Church/dialogue/battle/host controls need separate placement/reflow and exactly one inverse pointer transform. Font/card/portrait/readability decisions and acceptance expand across consumers. Global root CanvasItems would also scale the world and violate 4×. Defer until small-window gameplay is selected. |
+
+The current 4K observation is a field/mode snapshot, not a complete 4K battle/return pass. It supports
+reusing native expansion and allowing 4K, while leaving the bounded cross-scene check in implementation
+acceptance. No demonstrated defect justifies blocking larger clients. No global world zoom, automatic
+UI shrink or display-mode switching enters this proposal.
+
+**Minimum implementation allocation for main-gate:**
+
+- Host Window admission/recovery: [GameRoot](../../game/src/GameRoot.cs) and a small partial host/view
+  responsibility, alongside existing Entry/UI owners. Coordinate the resume sites in
+  [SettingsHost](../../game/src/Entry/SettingsHost.cs) and
+  [OpeningPersistenceHost](../../game/src/Entry/OpeningPersistenceHost.cs), and pre-publication admission
+  in [NewGameSetupHost](../../game/src/Entry/NewGameSetupHost.cs). Own root native-size/screen checks;
+  preserve SessionEntryView's temporary logical-canvas restore. No WorldViewportLayout or simulation
+  change is needed. Declare exact new paths before implementation; do not retrofit every viewport.
+- Baseline readability prerequisite: narrowly constrain/wrap or use installed compact hints in
+  PartyStatusView and FieldActionView; remeasure their actual labels with standard/swapped mappings.
+  This fixes the two demonstrated 1080p overflows without redesigning the screens. Serialize with
+  [#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453); full visual unification stays there.
+- Input remains read-only initially: reuse DisarmInput, native pause/focus and gesture barriers.
+  GameInput's pad button/axis edge memory and wait-neutral rule are **Confirmed structure**, but
+  whether the OS supplies releases outside focus is **Unknown**. Change that policy only for a
+  named failing observation and a newly declared finite correction; no device service or speculative reset.
+
+Main-gate selects/adjusts this allocation after independent design review, then dispatches finite
+implementation in the same task. The host recipe owns its staged acceptance and later physical
+checklist under [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456). Human readability,
+physical release outside focus, mixed DPI/screens, original timing/media and natural route reach
+remain Unknown. [#1447](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1447) stays deferred.
+
 ### Battle movement range agreement
 
 Standard rigor applies to B8 / [#1395](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1395):
