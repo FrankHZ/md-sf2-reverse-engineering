@@ -133,11 +133,14 @@ views. The credible failure is loss of semantic identity before display, not lac
   not add change-detection hashes/dates. A private overlay with a different pinned source identity
   is unavailable until reviewed. Same control shape does not prove a changed source meaning safe.
 
-Reject duplicate IDs/locales, wrong identity, unknown fields, malformed UTF-8/shape, unbound
-placeholders and altered controls. Missing rows mean explicit partial coverage. Optional overlay
-failure deactivates that overlay, not the valid gameplay package. Required source admission still
-fails normally. Proposed M1 bounds are 256 KiB/64 entries per overlay with no external includes;
-these are tiny-pilot limits, not measured full-game requirements.
+Reject the entire optional overlay for malformed UTF-8/JSON or object shape, unknown fields,
+duplicate IDs/locales, size-limit violations or wrong package/source identity: its membership and
+binding context cannot be trusted. Once that structural/context admission succeeds, reject only an
+individual row for an unknown target ID/namespace, unbound placeholders, unsupported tags or changed
+control topology. Other independently valid rows may remain available. Missing rows mean explicit
+partial coverage. Optional overlay failure never invalidates the gameplay package; required source
+admission still fails normally. Proposed M1 bounds are 256 KiB/64 entries per overlay with no external
+includes; these are tiny-pilot limits, not measured full-game requirements.
 
 ### Source controls and names
 
@@ -165,8 +168,8 @@ escape inserted values at its own boundary; catalog text cannot execute markup, 
 | Condition | Runtime behavior | Diagnosis / acceptance |
 | --- | --- | --- |
 | Selected row missing | Complete English row for that message/name | `missing-translation`, key/effective locale; not counted as translated |
-| Wrong placeholders/controls | Reject row during admission; valid English fallback | `invalid-translation`, not an ordinary missing row |
-| Optional overlay missing/corrupt/wrong identity | English display over valid gameplay; bounded unavailable notice | Retain requested versus effective locale and stored preference; no automatic rewrite |
+| Structurally valid row with wrong target/parameters/tags/controls | Reject the entire row and its derived mapping; canonical English row/bindings only | `invalid-translation`, not an ordinary missing row |
+| Optional overlay missing or structurally corrupt/wrong identity | Reject whole overlay; English display over valid gameplay; bounded unavailable notice | Retain requested versus effective locale and stored preference; no automatic rewrite |
 | Required English UI row absent/invalid | Refuse candidate/Apply; startup has small compiled English recovery text and usable recovery controls | Packaging defect; no raw key or empty success message |
 | Required canonical source text missing/unsupported | Existing Content/Application failure | Translation cannot invent executable source |
 | Runtime operands absent/wrong type | Safe generic message plus code; retain pending delivery when semantic result cannot be established | Producer defect, not missing translation; no acknowledgement of unseen success |
@@ -242,7 +245,10 @@ GameText selects translated tokens for that ID/range and captured bindings, emit
 literals/names/newlines. Canonical units and FieldTextPhase remain the executor. W1/W2/D1/CLEAR never
 execute from translation. D1 retains its logical pause, not a new host timer; CLEAR changes projection
 when the runner clears; W1/W2 retain current next-token/ack boundaries. Invalid/missing translation
-falls back as a whole row to preserve mapping.
+falls back as a whole row to preserve mapping. Discard all translated fragments and derived
+control/name mappings for that rejected row; derive English display solely from canonical tokens
+and the captured source bindings. Never combine English literals with a rejected translation's
+range or name map, including when only one translated segment is invalid.
 
 Reuse ExplorationSessionView delivery: translated reveal/ReadMore precede CompleteTextReveal, while
 logical readiness still gates Acknowledge. Replace English-prefix reveal continuity for this migrated
@@ -389,7 +395,7 @@ settings/catalogs/reader/theme files. Update closest capability/verification own
 | Overlay and token reuse | New `C/Localization/DisplayCatalog.cs`, `C/Localization/DisplayCatalogReader.cs`, `C/Scenarios/ExplorationTextTokens.cs`; existing `C/Scenarios/ExplorationContentReader.cs`; new original `remake/content/authored/localization-pilot.json` and `remake/content/authored/localization-pilot.zh-CN.json` |
 | Field display | `A/Runtime/Exploration/ExplorationState.cs`, `A/Runtime/Exploration/ExplorationTextRunner.cs`, `G/src/Exploration/ExplorationDialogueView.cs`, `G/src/Exploration/ExplorationSessionView.cs` |
 | HEAL display | `A/Runtime/Battles/BattleSceneContinuation.cs`, `G/src/Battles/BattleSceneView.cs`, `G/src/Battles/BattleCharacterNames.cs` |
-| Font and focused acceptance | `G/src/UI/StoryTheme.cs`; new `G/fonts/localization/NotoSansCJKsc-Regular.otf`, `G/fonts/localization/LICENSE.txt`, `G/fonts/localization/README.md`; existing `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs`; new `T/LocalizationDisplayTests.cs` for actual engine/content behavior; new `G/probes/localization_observation.gd` only if existing observations cannot drive the necessary cases |
+| Font and focused acceptance | `G/src/UI/StoryTheme.cs`; new `G/fonts/localization/NotoSansCJKsc-Regular.otf`, `G/fonts/localization/LICENSE.txt`, `G/fonts/localization/README.md`; existing `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs`; new `T/LocalizationDisplayTests.cs` only for actual Application/Domain behavior; new `G/probes/localization_observation.gd` only if existing observations cannot drive the necessary cases |
 
 Dependencies: accepted M0, pinned licensed font, existing settings and field/HEAL delivery owners.
 Exercise one original authored miniature through FieldTextWait with name/W1/W2/CLEAR and an ordinary
@@ -402,9 +408,13 @@ state/seeds across Apply; all visual pages before actual delivery; stale/duplica
 rejected. Changed translation length must preserve canonical units/HEAL work and semantic outcomes
 for the same logical command sequence. Observe fast/slow reading without additional simulation debt
 or fairy RNG. Cover missing row, wrong parameters/controls/identity and missing font; expose effective
-locale/fallback. Use actual engine/content behavior tests, affected `uv run sf2 verify engine`,
-`uv run sf2 verify adapter`, and bounded actual Godot state/input/geometry/errors. Do not test the
-probe or capture screenshots. Restart only for necessary changed-code/font import/startup acceptance.
+locale/fallback. Unit assertions cover actual Application/Domain behavior: captured display operands,
+unchanged logical work/state/RNG and stale/duplicate completion semantics. Exercise overlay reading,
+parameter/control validation and fallback directly with bounded input variants; do not add unit
+tests of those validators, the probe or other verification programs. Run affected
+`uv run sf2 verify engine`, `uv run sf2 verify adapter`, and bounded actual Godot
+state/input/geometry/errors, without screenshots. Restart only for necessary changed-code/font
+import/startup acceptance.
 
 Stop with a reviewable pilot PR, font/import measurements and remaining English consumers explicit.
 If preserving logical work requires a new interpreter/timing policy, private rights are unestablished,
