@@ -434,7 +434,9 @@ These are **NOT RUN** future checks, pending main-gate's finite implementation s
    no NewGame publication before admission, no underlying activation and no automatic size loop.
    Exercise unavailable mode request and Quit/Cancel without losing the recovery or dirty progress.
    Larger windows and 4K fullscreen must be admitted without shrinking the 96px/4× world; recovery is
-   required only when either native dimension is below minimum or a decorated window cannot fit.
+   required only when either native client dimension is below minimum. Dragging a valid-sized window
+   partly offscreen/over an edge must not pause or recenter it. Work-area/decorations checks choose
+   placement only at startup or an explicit Restore request; no position-polling matrix is required.
 2. Observe the selected 1920×1080 gameplay target across existing entry/field/Party/Prepare and one
    battle/return segment, then one larger native/fullscreen checkpoint on the existing 4K host.
    Verify fixed panels and viewport-aware anchors remain contained; full 4K route/matrix is not required.

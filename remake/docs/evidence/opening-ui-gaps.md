@@ -138,7 +138,9 @@ not repair those failures or establish small-window gameplay support.
 Recommend a minimum 1920×1080 native gameplay client, including larger native windows and 4K
 fullscreen at the same 96px/4× scale, plus reachable recovery below either minimum. A fitting decorated
 window or qualifying native fullscreen handles 1080p-desktop decorations; a minimum-size flag alone
-does not. Current viewport expansion gives no reason to restrict gameplay to exactly 1080p. This is
+does not. Only client dimensions gate gameplay; work area/decorations guide startup/explicit Restore,
+not automatic pause/recentering when a valid-sized window is dragged to an edge. Current viewport
+expansion gives no reason to restrict gameplay to exactly 1080p. This is
 pending main-gate selection/implementation, not a new accepted capability or all-size test claim.
 The two baseline hint failures require a narrow repair serialized with
 [#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453). Entry's existing 720p shell
