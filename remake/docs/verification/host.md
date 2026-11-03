@@ -376,6 +376,107 @@ still be checked for errors. Original icon namespace selection remains with the
 [private icon owner](../content/presentation-assets.md#private-command-menu-icons); these map/sprite
 checks do not claim a new original-icon acquisition or asset redistribution right.
 
+## Window boundary design observation (#1455)
+
+This is Stage1 design evidence at accepted `c58d41ecb1c11ed93d8c13b29c9b4a608d726ee6`, using the
+existing Debug host from accepted #1452; no production code, SDK/build or observer platform changed.
+The [support/recovery proposal](../godot/presentation.md#window-support-and-recovery-proposal-1455)
+is pending main-gate selection. An observer's exit 0 means its bounded observation completed;
+recorded out-of-viewport controls are product findings, not a claim all geometry passed.
+
+**Confirmed:** two serial native Godot 4.7.2 runs, no screenshots or frame capture:
+
+| Receipt / reproduction seam | Actual result and limitation |
+| --- | --- |
+| `window` / ordinary title → Witch → New Game slot/name → settled field, Party, Prepare, Settings → mode restore | Entry 1280×720 uses logical 1920×1080/CanvasItems, final scale 2/3. Field 1280×720 uses native viewport/Disabled, pixelScale 4/cellSize 96. Party/Prepare retain revision 4 and the same session throughout resizing/menu cancellation. Close and Prepare lie entirely outside 720p; their 1080p action bounds fit. Settings remains reachable at 720p. |
+| Same run, baseline hint bounds | PartyHint ends at x2503; Prepare Hint ends at x2208 in 1920×1080. Both use long installed default bindings. These are **failed containment findings**, even though navigation/cancellation completed. Bounds establish clipping risk and unreachable pointer areas, not human typography acceptance. |
+| Same run, native Window metadata | Client 1920×1080 has decorated 1946×1151 on this host. Physical display readback 3840×2160; ordinary fullscreen becomes 3840×2160, scale 4/cellSize 96; returning windowed restores 1920×1080. The checkpoint name `fullscreen1080-display` is misleading: its recorded native size is 4K. No physical 1080p-display test occurred. |
+| `battle` / accepted controlled Battle02 before/load/start → mapped intro skip → command menu → Egress → usable Map3 return | Native 1280×720 and restored 1920×1080 at settled battle/menu/returned-field checkpoints; command menu sampled controls fit 720p, mapViewport equals viewport, zoom 1. Existing actor/terrain readback retains 96px cells. Egress returns in the same session and accepts ordinary movement. This separate controlled segment is not NewGame→Battle01 completion or natural reach proof. |
+
+Executor receipts are `local/issue1455/pilot-01/native.json` (1769ms) and
+`local/issue1455/battle-01/native.json` (3342ms); report/log/script detail remains private/ignored.
+Both complete with empty observer failures and no script/C#/engine errors; the window report records
+no native pad interference, the battle report has no unavailable boundary, and both stderr logs are
+empty. Earlier #1445 pilot-01's 720p Party failure, #1451 failed observers/stale-input findings, #1452's oversized binding failure and historical audio/focus failures remain
+preserved in their own handoffs. These two clean exits do not resolve prior WAV/Playback warnings.
+
+Reproduce the product seams using the existing configured Godot project/Debug host, fresh ignored
+reports and disposable external save namespace. Load `local/issue1045/inputs.ps1` and
+`local/issue1441/inputs.ps1` in the launching process. Use separate CLI arguments `--resolution`,
+`1920x1080`, then actual Window.size 1280×720 and restore; read Window.size, visible rect, content-scale mode/size, final transform, decorated size, current screen
+and usable rect, visible control GetGlobalRect and existing ReadObservationJson at each checkpoint.
+Use ordinary mapped keys and transformed complete pointer clicks, never session setters. For the
+separate battle segment, load `local/issue1047/inputs.ps1`, select its existing world and controlled
+Battle02 party, then use `--private-exploration-start` with
+`remake/reference/inputs/engine-battle02-egress-start.json`. Follow the existing
+[region recipe](#unified-world-viewport-observation); insert only the 720p/restore samples around
+settled battle/menu/returned-field boundaries. Do not duplicate private worlds/assets or replay a
+full battle. Retained local wrappers:
+
+```powershell
+# Existing ignored wrappers resolve paths from their owning repository; use fresh Run names.
+pwsh -NoProfile -File local/issue1455/run-native.ps1 -Run <fresh-window> -Phase window
+pwsh -NoProfile -File local/issue1455/run-native.ps1 -Run <fresh-battle> -Phase battle
+```
+
+The pilot preceded battle expansion. O(visible controls × finite checkpoints), fewer than 100 samples,
+20MiB new-output budget and serial 45-second launch bounds were sufficient; actual new local evidence
+was about 3.7MiB after these runs, with about 2.8GB free on H. No SDK/cache/tool/media installation or
+copy, broad runner repair, engine/adapter/research/full suite, acquisition or old-evidence cleanup.
+Both owned processes exited; no Godot/SDK remains. Replan before exceeding the budget or adding cases.
+
+### Selected-implementation acceptance plan
+
+These are **NOT RUN** future checks, pending main-gate's finite implementation selection:
+
+1. Pilot baseline startup/admission and recovery first. On the existing 4K desktop, observe a fully
+   fitting 1920×1080 decorated window; 720p launch/invalid runtime resize must show reachable recovery,
+   no NewGame publication before admission, no underlying activation and no automatic size loop.
+   Exercise unavailable mode request and Quit/Cancel without losing the recovery or dirty progress.
+   Larger windows and 4K fullscreen must be admitted without shrinking the 96px/4× world; recovery is
+   required only when either native dimension is below minimum or a decorated window cannot fit.
+2. Observe the selected 1920×1080 gameplay target across existing entry/field/Party/Prepare and one
+   battle/return segment, then one larger native/fullscreen checkpoint on the existing 4K host.
+   Verify fixed panels and viewport-aware anchors remain contained; full 4K route/matrix is not required.
+   Fix/recheck the two known 1080p hint failures, actual text bounds, complete
+   pointer gestures and keyboard/pad actions with installed standard/swapped mappings. No whole-route
+   or all-screen pass follows. Keep 96px/4×, native world bounds and entry's logical-canvas restoration.
+3. Resize/restore while a direction, wait or eligible skip is held and with Settings draft or Save/Quit
+   open. Compare same session/revision/progress/files after suspension settles; no catch-up work,
+   stale click/Confirm, resurrected hold, modal overlap or premature resume. Require release/neutral
+   then fresh action, including a failed recovery request. Reuse existing observation/input tools;
+   injected events establish only controlled handler behavior.
+4. Actual 1080p-display fullscreen fit/Alt-Tab/restore, taskbar/decorations and DPI correctness remain
+   **Unknown** on this 4K-only observation environment. Do not alter the user's display mode to claim
+   that check. A synthetic size/work-area check can validate branching, never physical display fit.
+   Keep this observation open for the matching display/human condition; no unobserved gate is PASS.
+5. After source changes, run the affected adapter build and clean committed dependency plan, plus
+   the above finite native checks. Add engine behavior tests only for actual engine behavior changes;
+   no tests of these observers, blanket engine/full suites or new collection framework. Design-only
+   Stage1 instead uses direct Markdown links/anchors/scope/private-boundary and `git diff --check`.
+
+### Later physical-focus human checklist (#1456)
+
+Reuse accepted #1451's actual secondary-window transfer/return and held-Apply correction; its key/pad
+input was injected. Field walking/skip and pointer owners retain their prior bounded observations.
+No person physically operated keyboard/controller for #1455; all physical-release claims remain
+**Unknown**, including whether pad release/neutral events reach GameInput while another OS window
+owns focus. An unrelated physical pad event in an old observer is not this deliberate check.
+
+At a safe disposable session, use the user's already-owned keyboard/controller only:
+
+- Hold an exploration direction; Alt-Tab away, release outside, return. No resumed walking or repeat
+  is allowed until a fresh direction; then stop normally. Repeat for a stick returned to neutral.
+- In an ordinary menu hold Confirm/direction, leave focus, release outside, return. No activation or
+  extra row change; one fresh press must work. Check the existing held-Apply/remapped return once.
+- At the existing eligible before/load/start seam, hold mapped skip/wait, leave focus, release outside
+  and return. Existing supported continuation must regain fresh control without repeated skip/wait.
+
+Record device, physical action, focus owner, observed state and any error; stop on unexpected movement
+or confirmation and preserve the receipt. Human readability/feel belongs to
+[#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456); no new device matrix or
+hardware-timing claim. Missing participation does not block independent window implementation.
+
 ## Shared story dialogue observation
 
 The [Standard agreement/current treatment](../godot/presentation.md#shared-story-dialogue-agreement)

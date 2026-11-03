@@ -125,6 +125,33 @@ media, natural reach and SRAM parity. This bounded change does not close #438 or
 | X3 · Switch keyboard and basic menu mouse use | **Accepted, bounded:** hover/click on battle commands and spell/item rows; local wheel scrolling; ordered Previous/Next targets, Confirm and Back/right click; field choices share keyboard/pointer focus. | Complete current-control gestures prevent drag-out, focus-loss and cross-layer/scene release reuse. Native window focus is observed with an explicit axis-adjusted input configuration; physical-device release and all-device experience remain **Unknown**. World click movement and map targeting are excluded. [Grouped help](../godot/presentation.md#grouped-controls-help-and-remapping-boundary) adds visible Previous/Next/Back and keyboard/pad reading without hover or wheel; capture/rebinding UI remains deferred. | [Pointer agreement](../godot/presentation.md#menu-pointer-agreement), [finite native recipe/results](../verification/host.md#menu-pointer-observation). Existing [9A](../verification/host.md#native-9a-observation) retains its keyboard/pad scope. | **P2 D / [#1408](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1408).** Merged [PR1409](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1409) records independent integration; broader human acceptance remains separate. |
 | X4 · Invalid/disabled command or adapter failure during any scene | Field/story stopped presentation now uses the shared readable frame above fades, retained message/code and pending state; no invented retry. Existing semantic Enabled/Reason and battle/startup diagnostics remain. | **Bounded C disposition:** a controlled field failure is observed; E2 also supplies readable battle messages and unobscured recoverable illegal-command feedback; generic recovery/retry remains **Unknown**. | [Failure/current owner](../godot/presentation.md#shared-story-dialogue-agreement), [controlled failure witness](../verification/host.md#shared-story-dialogue-observation), [semantic interface](../godot/presentation.md#semantic-interface). | **P1.** C / [#1393](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1393) handles field/story; #689/E retain their own reasons and result boundaries. |
 
+## Window and physical-focus disposition (#1455)
+
+**Stage1 design only; X1/X3/E5/D5 remain bounded.** The
+[window proposal](../godot/presentation.md#window-support-and-recovery-proposal-1455) and
+[native evidence/acceptance plan](../verification/host.md#window-boundary-design-observation-1455)
+separate 1080p entry scaling from native gameplay. **Confirmed:** at 1280×720 Party Close/Prepare
+cannot be clicked and Prepare exceeds the client; at 1920×1080 the default Party/Prepare binding
+hints still overflow horizontally. The sampled 720p battle command menu and Settings fit, which does
+not repair those failures or establish small-window gameplay support.
+
+Recommend a minimum 1920×1080 native gameplay client, including larger native windows and 4K
+fullscreen at the same 96px/4× scale, plus reachable recovery below either minimum. A fitting decorated
+window or qualifying native fullscreen handles 1080p-desktop decorations; a minimum-size flag alone
+does not. Current viewport expansion gives no reason to restrict gameplay to exactly 1080p. This is
+pending main-gate selection/implementation, not a new accepted capability or all-size test claim.
+The two baseline hint failures require a narrow repair serialized with
+[#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453). Entry's existing 720p shell
+remains; smaller gameplay/UI scaling/new settings are not promised.
+
+X3/E5/D5 physical release outside focus remains **Unknown**. Accepted #1451 secondary-window focus
+and held-Apply results used injected keys/pad; do not repeat them solely to relabel hardware coverage.
+The linked host recipe supplies the short real keyboard/controller checklist for
+[#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456), alongside actual 1080p-display
+fit and human readability. No physical participation occurred here. Earlier 720p, focus/input and exit
+failures remain retained; #1447 audio/title stays deferred. Independent window work can proceed after
+design selection while these human observations remain explicitly open.
+
 ## User feedback disposition and existing acceptance
 
 The [2026-10-28 user feedback](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438#issuecomment-6461577919)
