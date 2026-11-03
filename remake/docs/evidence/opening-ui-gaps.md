@@ -81,6 +81,16 @@ there is no separately dispatched implementation Issue yet.
 | E8 · Opening Church and service Save | **Implemented, bounded:** actual priest/counter input, ordered Raise/Cure, explicit cost/confirm/decline/results and common Save after real caller return. Mapped keyboard/controller and mouse rows share the live service wait. | No reachable opening Shop caller; buy/sell, Repair, Promotion and curse removal deferred. Original cadence/music/exhausted-sprite parity and human aesthetics remain separate; the [composed route](opening-loop-acceptance.md) owns engineering acceptance. | [Service policy](../application/opening-session-lifecycle.md#implemented-opening-church), [source caller inventory](../content/opening-branch-inventory.md#opening-service-callers), [native paid recovery/restart](../verification/host.md#opening-church-services). | #1424 implements this subset; [#1425 composition and integration status](opening-loop-acceptance.md) separate executor observations from main-gate acceptance. Aesthetic approval remains #438. |
 | E9 · Search a reachable object or description | **Implemented, bounded:** mapped Confirm/Search reads the faced source marker/description and returns dismissible feedback; pickups publish carried item words and the source receipt atomically. | Repeat/revisit/savepoint reconstruction retain receipts; full packs preserve the reward for retry. The obstructed shop chest and future destinations remain explicitly bounded, with original natural reach/timing Unknown. | [Branch inventory](../content/opening-branch-inventory.md), [Search observation](../verification/field-programs.md#opening-search-and-receipts) and [composed route](opening-loop-acceptance.md). | #1423 owns Search; #1425 composes pickup and description with preparation, Church, victory and restart. Human discoverability remains #438. |
 
+Game-progress Save/Quit presentation is implemented by [#1450](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1450)
+under the [bounded window agreement](../godot/presentation.md#gameplay-save-and-quit-windows-1450).
+The common field/Church Save, overwrite, success/refusal/storage failure, backup and clean/dirty Quit
+windows use shared blue/gold controls, readable saved-character/destination/time labels, secondary
+diagnostics and mapped hints. Gameplay remains visible and paused beneath the centered modal;
+entry retains its Witch-safe geometry/scaling. Existing save eligibility, cancel/backup/publication
+and no-autosave contracts remain authoritative. Native engineering observations and independent
+integration are distinct from **Unknown** human visual/discoverability approval and original timing,
+media, natural reach and SRAM parity. This bounded change does not close #438 or start #1447.
+
 ## Dialogue and cutscene matrix
 
 | ID / flow and trigger | Existing behavior and delivery state | Gap and user impact | Evidence and limits | Priority / dependencies / suggested slice and Issue |

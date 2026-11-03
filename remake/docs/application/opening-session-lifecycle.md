@@ -401,6 +401,21 @@ The [native and storage recipe](../verification/host.md#opening-save-and-continu
 and the limits of failure testing. Wider campaign, exact-position suspend, services and field
 receipts remain outside this implementation.
 
+### Save and Quit presentation
+
+The [gameplay window agreement](../godot/presentation.md#gameplay-save-and-quit-windows-1450)
+uses the same SaveSlotView for field Save, Church Save, overwrite/result/error, backup and Quit.
+Gameplay retains the paused scene beneath a translucent scrim and a centered shared-style window;
+entry retains its Witch-safe arrangement. Slots show the saved character, the known recipe's
+readable destination and UTC timestamp, without promising exact-position or elapsed-time recovery.
+Unknown recipe labels remain unavailable. A backup's presence alone never promises recovery:
+only Continue labels it as an offered action, using the same existing compatibility/storage/music
+exclusions as the recovery consumer. Save and New Game describe backup presence without that action.
+Readable refusal/storage/uncertain-publication messages keep full diagnostic codes secondary.
+Cancel-first confirmation, explicit success/readback, existing-file retention, no autosave and
+explicit Quit remain unchanged. UI observations supplement the existing storage/restart evidence;
+they do not replace its transaction or original-parity limits, or establish human aesthetic approval.
+
 ## Implemented field preparation
 
 **Standard rigor for #1422:** the party/save boundary is fixed; these finite transactions share

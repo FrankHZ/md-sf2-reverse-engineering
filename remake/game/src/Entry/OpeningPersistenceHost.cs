@@ -62,16 +62,25 @@ public sealed partial class GameRoot
         }
         DisarmInput();
     }
-    private void SaveError(string code) => _slots!.ShowChoices("error", Explain(code), ("Back", CloseSavePanel),
-        ("Quit…", QuitFromMenu));
+    private void SaveError(string code)
+    {
+        _slots!.ShowChoices("error", Explain(code), ("Back", CloseSavePanel), ("Quit…", QuitFromMenu));
+        _slots.ShowDetail("Details: " + code);
+    }
     private void QuitFromMenu() { CloseSavePanel(); RequestQuit(); }
     private static string Explain(string code) => code switch
     {
         "save-location-unavailable" => "Save after returning to a supported location: opening Granseal or the settled first battle return.",
         "save-incompatible" or "save-version" => "This save needs the matching content/rules. The file has been kept.",
         "save-publication-uncertain" => "The write outcome is uncertain. Progress files have been kept. Reopen Continue to check them before trying again.",
-        "save-root-configuration" => "Saving needs an explicitly configured persistent save folder and checkout namespace. No default folder is used.",
-        _ => "Save / Continue unavailable: " + code + ". Your existing progress files have been kept.",
+        "save-storage-unavailable" => "The save folder could not be read or written. Check available disk space and folder access. Your existing saves have been kept.",
+        "save-slot-empty" => "This slot is empty. Choose another slot or start a new journey.",
+        "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion" =>
+            "Finish the current action or conversation, then try Save again. Your existing saves have been kept.",
+        "save-stale-revision" => "Your journey changed while this window was open. Return to the game and open Save again. Your existing saves have been kept.",
+        "save-root-configuration" or "save-root-inside-worktree" or "save-root-inside-worktree-or-link" =>
+            "The save folder is not configured safely. Check the launch settings. Your existing saves have been kept.",
+        _ => "This save is unavailable. Your existing progress files have been kept. Check the details below before trying again.",
     };
 
     private void ShowSave()
@@ -97,9 +106,34 @@ public sealed partial class GameRoot
         catch (ArgumentException error) { SaveError(error.Message); }
     }
 
-    private static string Label(int slot, SlotRead read, ScenarioDefinition definition) => $"Slot {slot}: " + (read.Primary is { } record
-        ? $"{record.SavedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC — {CharacterNames.Member(definition, record.Data.Names, 0)} — {record.Data.Recipe}"
-        : read.Error is not null ? $"{read.Error}" : read.Backup is not null ? "Primary missing — backup available" : "Empty");
+    private static string Label(int slot, SlotRead read, ScenarioDefinition definition, bool forContinue = false)
+    {
+        if (read.Primary is { } record)
+            return $"Slot {slot} · {CharacterNames.Member(definition, record.Data.Names, 0)}\n" +
+                $"{SavedDestination(record.Data)} · {record.SavedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC";
+        string status = read.Error switch
+        {
+            "save-incompatible" or "save-version" => "Needs matching content / rules",
+            "save-storage-unavailable" => "Cannot read this slot",
+            not null => "Save unavailable — existing file kept",
+            _ => read.Backup is null ? "Empty" : "Primary missing",
+        };
+        return $"Slot {slot} · {status}" + (read.Backup is null ? "" : forContinue && CanRecover(read)
+            ? "\nBackup available — choose to review recovery" : "\nBackup present");
+    }
+
+    private static bool CanRecover(SlotRead read) => read.Backup is not null &&
+        read.Error is not ("save-incompatible" or "save-version" or "save-storage-unavailable" or "save-music-resource");
+
+    // Display names for the existing finite recipes, not a new savepoint selection policy.
+    private static string SavedDestination(OpeningSaveData data) => data.Recipe switch
+    {
+        "new-game" => "Granseal, beginning of the opening",
+        "map3-opening" => "Granseal, home",
+        "map3-joined" => "Granseal, outside the church",
+        "battle01-return" => "Ancient Tower, completed battle return",
+        _ => "Return location unavailable",
+    };
 
     private void ConfirmSave(int slot, LocalSaveStore store, SaveAvailability offer)
     {
@@ -126,8 +160,8 @@ public sealed partial class GameRoot
         {
             var store = Store(admitted.Definition);
             _slots!.ShowChoices("continue-slots", "Choose a saved journey.",
-                (Label(1, store.Read(1), admitted.Definition), () => ContinueSlot(1, store, admitted.Definition)),
-                (Label(2, store.Read(2), admitted.Definition), () => ContinueSlot(2, store, admitted.Definition)), ("Cancel", CloseSavePanel));
+                (Label(1, store.Read(1), admitted.Definition, forContinue: true), () => ContinueSlot(1, store, admitted.Definition)),
+                (Label(2, store.Read(2), admitted.Definition, forContinue: true), () => ContinueSlot(2, store, admitted.Definition)), ("Cancel", CloseSavePanel));
         }
         catch (ArgumentException error) { SaveError(error.Message); }
     }
@@ -136,15 +170,18 @@ public sealed partial class GameRoot
     {
         var read = store.Read(slot);
         if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
-        if (read.Backup is { } backup && read.Error is not ("save-incompatible" or "save-version" or "save-storage-unavailable" or "save-music-resource"))
+        if (read.Backup is { } backup && CanRecover(read))
         {
-            _slots!.ShowChoices("recover-backup", $"Slot {slot}: {read.Error ?? "primary missing"}.\nRecover compatible backup from {backup.SavedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC?",
+            _slots!.ShowChoices("recover-backup", $"Slot {slot}'s main save is missing or unavailable.\n" +
+                $"Recover {CharacterNames.Member(definition, backup.Data.Names, 0)}'s compatible backup?\n" +
+                $"{SavedDestination(backup.Data)} · {backup.SavedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC",
                 ("Cancel", CloseSavePanel), ("Recover backup", () =>
                 {
                     var recovery = store.Recover(slot);
                     if (recovery.Record is null) SaveError(recovery.Error!);
                     else RestoreRecord(recovery.Record, definition);
                 }));
+            _slots.ShowDetail("Details: " + (read.Error ?? "primary missing"));
             return;
         }
         SaveError(read.Error ?? read.BackupError ?? "save-slot-empty");
@@ -173,7 +210,7 @@ public sealed partial class GameRoot
     {
         var button = new Button { Name = name, Text = text, AnchorLeft = 1, AnchorRight = 1,
             OffsetLeft = left, OffsetRight = right, OffsetTop = 12, OffsetBottom = 60,
-            Theme = UI.StoryTheme.Create(), FocusMode = Control.FocusModeEnum.None };
+            Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
         button.Pressed += () => pressed(); AddChild(button); return button;
     }
     private void ReleasePersistenceButtons()

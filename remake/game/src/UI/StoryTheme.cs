@@ -6,7 +6,7 @@ internal static class StoryTheme
 {
     internal const int BodySize = 30, HintSize = 24;
     internal static readonly Color Selected = new("ffe19a");
-    // Entry opts in; existing story and gameplay menus keep their accepted treatment.
+    // Entry and Save/Quit opt in; other story and gameplay menus keep their accepted treatment.
     internal static Theme CreateEntry()
     {
         var theme = Create();
