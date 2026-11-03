@@ -71,6 +71,103 @@ ordinary New Game route for a settled field comparison, then active dialogue/Chu
 Do not change user saves or canonical inputs to construct these disposable cases. Exact local receipts,
 retained failed observations and CI/head identities belong to the Issue/PR handoff.
 
+## Grouped controls help and remapping boundary
+
+**Standard rigor; [#1452](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1452).**
+The outcome is complete keyboard/pad reading of installed controls through the existing title/Witch
+and settled-field Settings entry. A separate help view owns only reading position and pointer gestures.
+Settings retains its draft, Defaults flag, message, selected Control help row and scroll position;
+Back returns there without Apply, storage access or a gameplay command. Help pages cover exploration,
+dialogue/choices, battle and menus, including keyboard-only naming. Page labels explain context;
+a binding does not promise that its command is legal in every state. Existing visible disabled
+reasons remain authoritative. Active battle/story settings access is not added.
+
+Left/Right turn pages; Confirm also advances. Up/Down scroll the current page, including unusually
+long custom bindings. Fixed Previous/Next/Back controls also support deliberate pointer gestures.
+Every binding string comes from `GameInput.Hint`, after the installed Confirm/Cancel swap; pending
+draft edits never masquerade as installed controls. The four existing accessibility preferences
+remain the capability: instant/gradual text, text speed, Confirm/Cancel swap and reduced flash.
+No device service, new persistence, arbitrary scale, screen reader or new device promise is added.
+
+Acceptance uses adapter build, clean committed dependency plan, direct docs/diff checks and finite
+native input/state/control-geometry/error observations. Pilot one page and Back/draft/focus first;
+then read every page with keyboard and pad, standard/swapped/custom bindings, pointer return and
+1920×1080/native1280×720. Retain session/progress/slot bytes across field help. Reuse installed tools,
+project and existing local observers; ignored issue1452 reports budget 100 MiB, serial runs 45 seconds.
+No screenshots, whole route, aggregate suite, helper tests or new verification platform. Existing
+AudioStreamWAV/AudioStreamPlaybackWAV teardown warnings remain **Unknown**, outside this slice.
+Human readability/aesthetic approval remains [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
+
+A custom-help sample exposed a concrete pre-existing admission defect: Godot accepted an InputMap
+with more than 32 events but failed when a late event was parsed. Main-gate authorized the bounded
+`GameInput.Prepare` correction within #1452: reject any action with more than 32 total key, button
+and signed-axis events before returning a prepared candidate. This follows Godot 4.7.2
+[`Input::MAX_EVENT`](https://github.com/godotengine/godot/blob/4.7.2-stable/core/input/input.h) and its
+[event-index guard](https://github.com/godotengine/godot/blob/4.7.2-stable/core/input/input.cpp).
+The existing load/Apply paths validate before installation and, for Apply, before persistence.
+An invalid saved configuration retains its bytes and uses the existing explicit recovery notice;
+invalid overrides fail startup. No storage policy or binding-conflict rule changes. The original
+failed sample/log is preserved in local issue1452 evidence; this is not a remapping UI expansion.
+
+**Confirmed, bounded executor observations:** all 12 pages are readable through keyboard and pad
+page/scroll input with standard, swapped and custom installed mappings; a read-only launch override
+also exposes complete help. Native 1280×720 and 1920×1080 controls retain fixed navigation and a
+scrollable reading area. Keyboard/pad/mouse Back retains the pending draft, Defaults status, selected
+help row and Settings scroll. A real New Game field visit retains session identity, revision,
+captured progress and slot bytes throughout help and Settings Cancel. No command/save write occurs.
+At the capacity boundary, 31 keys plus one pad event install and the final pad event works; a saved
+33-event configuration retains its bytes, shows invalid-preferences recovery, installs defaults as
+a whole and refuses Apply before reset. Exact commands, retained failures and CI/head are in the
+Issue/PR handoff. These observations do not establish physical controller or human visual approval.
+
+Reproduce after the existing entry/private-input setup: use a fresh disposable persistent namespace,
+open Settings at title/Witch or settled field, stage a preference/swap/defaults change and select
+Control help. Read every page via Left/Right or Confirm and Up/Down, then Back to the same draft/row.
+Repeat with pad navigation and visible pointer controls, native 720p field and installed swapped/custom
+bindings; pending swaps must never change the binding text. Compare session/progress/slot bytes across
+field help. For capacity, use 31 unique nonconflicting keys plus one pad event on one action; then
+add one key in a separate disposable namespace. The latter must show recovery/defaults, retain its
+file and refuse ordinary Apply. Do not modify canonical inputs or user preferences for these cases.
+
+### Deferred per-action remapping design
+
+This is an implementable boundary, **not implemented UI**. A separate bounded follow-up may expose
+the existing finite 15 actions: Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay,
+Item, Wait, Equipment, Give and Discard. Display context labels from this help and installed bindings;
+name editing keeps its explicit LineEdit keyboard contract outside this action inventory.
+
+- Edit one whole candidate draft using existing `InputSettings`/`ActionBinding`. Clone the bindings
+  dictionary and arrays before any edit: current four-field drafts intentionally share that immutable
+  data. Capture only supported `GameInput.Prepare` key/button/signed-axis identities, after the opener
+  is released; modifier-only keys, unknown identities and unsupported axes are refused visibly.
+  At most 32 total key/button/signed-axis events may belong to one action.
+- Keep the existing global unique-identity policy, including within one action. Report both action
+  names and the colliding identity; do not silently steal a binding or infer safe context overlaps.
+  Each action requires at least one keyboard binding and one pad button or signed axis. Removing the
+  last required-device binding leaves an invalid draft with a reason and disabled Apply. Capture has
+  an explicit Cancel control; physical Escape or Pad Back aborts armed capture, independent of the
+  action being edited. Reserved identities remain assignable through explicit named choices instead
+  of capture. After any captured candidate, require release/neutral before a review screen accepts
+  it with the installed Confirm or discards it with installed Cancel. Aborting changes no bindings.
+- Confirm/Cancel swap is a view of the configured base pair: label base and effective bindings, store
+  the existing `confirmCancel` value once and apply the swap once in `Prepare`. Conflict reporting
+  uses base identities; installed help/menus always use effective ones. Use existing logical Godot Keycode names and pad positions; do not infer physical keyboard layout
+  aliases or platform-specific glyphs. No automatic device/layout service.
+- Validate the complete candidate with `GameInput.Prepare` before installation or writing. Reuse
+  `SettingsStore.Write` atomic publication/error/conflict path, then `GameInput.Apply`; failures leave
+  the previous runtime/file intact. Ordinary preferences persist and explicit launch overrides stay
+  read-only. No partial InputMap installation, second store or game-save fields.
+- Existing Restore defaults continues to reset only four preferences and preserve bindings. A future
+  explicitly named **Reset bindings** stages removal of overrides in the candidate; Apply validates
+  and publishes all settings together. Cancel discards the entire candidate without writes.
+- Reuse the Apply-event release/neutral and focus-loss barriers; drain the key/button/axis used to
+  finish capture before accepting another UI action. Refresh all mounted help/context hints only
+  after successful install. Acceptance must cover conflict/illegal rejection, Cancel, defaults,
+  restart, swap with custom pairs, held capture/apply events and write refusal with unchanged state.
+
+Full capture/rebinding UI is deferred; this agreement adds no scaffolding. Broader device/layout and
+accessibility policy requires its own consumer and acceptance decision, not an automatic continuation.
+
 ## Menu pointer agreement
 
 **Standard rigor; [#1408](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1408).**
