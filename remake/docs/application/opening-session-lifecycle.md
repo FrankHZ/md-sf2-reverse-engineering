@@ -206,6 +206,7 @@ digits, comma, period, minus, exclamation/question marks, number sign, apostroph
 DEL/END controls and empty input retaining the default. Ten-byte ally storage is not the editor's
 limit. The remake deliberately uses a physical-keyboard-only `LineEdit` (#1446), with the shared
 `NewGameName` validator; unsupported characters/overlength input report an error without truncation.
+Rejected Enter submission keeps text editing active so the name can be corrected immediately.
 Spaces are preserved; empty selects the immutable default. The field receives initial focus, restores
 it when the window regains focus, and recovers it before keyboard GUI dispatch after other focus
 loss. Enter uses the name, Escape returns to slots with the draft retained; ordinary typing,

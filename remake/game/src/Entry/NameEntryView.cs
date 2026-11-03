@@ -19,7 +19,7 @@ internal sealed partial class NameEntryView : Control
         var column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddThemeConstantOverride("separation", 20); panel.AddChild(column);
         column.AddChild(new Label { Text = "What is your name?", HorizontalAlignment = HorizontalAlignment.Center });
         _edit = new LineEdit { Name = "NameInput", Text = Draft, PlaceholderText = "Empty keeps Bowie", CustomMinimumSize = new(500, 64),
-            Alignment = HorizontalAlignment.Center, ContextMenuEnabled = false };
+            Alignment = HorizontalAlignment.Center, ContextMenuEnabled = false, KeepEditingOnTextSubmit = true };
         column.AddChild(_edit);
         _edit.TextChanged += _ => Validate();
         _edit.TextSubmitted += _ => Finish();
@@ -46,7 +46,7 @@ internal sealed partial class NameEntryView : Control
     }
 
     public override void _ExitTree() => GetWindow().FocusEntered -= FocusEditor;
-    private void FocusEditor() => _edit.GrabFocus();
+    private void FocusEditor() { _edit.GrabFocus(); _edit.Edit(); }
 
     internal void HandleKeyboard(InputEventKey key)
     {
@@ -58,7 +58,7 @@ internal sealed partial class NameEntryView : Control
         }
         // Recover GUI focus before dispatch, even after clicking the backdrop. Ordinary
         // typing/caret/deletion/Enter belong to LineEdit, including mapped gameplay letters.
-        if (key.Pressed && !_edit.HasFocus()) FocusEditor();
+        if (key.Pressed && (!_edit.HasFocus() || !_edit.IsEditing())) FocusEditor();
     }
 
     private void Validate()
@@ -76,5 +76,5 @@ internal sealed partial class NameEntryView : Control
     }
     public string ReadNameObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { draft = _edit.Text, error = _error.Text, valid = NewGameName.Error(_edit.Text) is null,
-        keyboard = _edit.HasFocus(), inputMode = "keyboard", alphabet = NewGameName.Alphabet, maximumLength = NewGameName.MaximumLength });
+        keyboard = _edit.HasFocus(), editing = _edit.IsEditing(), inputMode = "keyboard", alphabet = NewGameName.Alphabet, maximumLength = NewGameName.MaximumLength });
 }
