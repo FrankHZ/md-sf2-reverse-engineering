@@ -79,6 +79,8 @@ func _run() -> void:
         chinese.add_message("ui.settings.speed", "坏参数 {99999999999999999999999999999999}")
     if case_name in ["service-fallback", "search-invalid"]:
         chinese.erase_message("church.paid.raise")
+        chinese.erase_message("church.promotion")
+        english.add_message("church.promotion", "Promotion is unavailable here. Choose another service or Leave. Your current gold and party status are unchanged. Return to the service list or Leave to resume exploration.")
         chinese.add_message("search.full", "错误参数 {7}")
     host = (load("res://Main.tscn") as PackedScene).instantiate(); root.add_child(host)
     await process_frame; await process_frame
@@ -228,9 +230,10 @@ func church_phase(phase: int, label: String) -> Dictionary:
     for key in ["title", "hint"]:
         var rect: Dictionary = s.church[key + "Rect"]
         check(rect.x >= 0 and rect.y >= 0 and rect.x + rect.width <= 1920 and rect.y + rect.height <= 1080, key + " stays within 1080p")
-        check(s.church[key + "MinimumHeight"] <= (192 if key == "hint" else 150), key + " fits allocated text height")
+        check(s.church[key + "MinimumHeight"] <= rect.height, key + " fits allocated text height")
         var panel: Dictionary = s.church.panelRect
         check(rect.y + rect.height <= panel.y + panel.height - 20, key + " remains inside panel bottom")
+    check(s.church.panelRect.y + s.church.panelRect.height <= 1080, "Church panel stays within 1080p")
     for row in s.church.rows:
         check(row.rect.y + row.rect.height <= s.church.hintRect.y, "hint does not overlap Church choices")
     return s
@@ -245,7 +248,7 @@ func services() -> void:
     # The unavailable row remains selectable for its explanation, without a command.
     await click_row(2)
     var promote := church_phase(0, "promote-unavailable")
-    check(promote.revision == menu.revision and ("暂不支持转职" if zh else "Promotion is unavailable") in promote.church.error, "Promote unavailable reason retains gameplay")
+    check(promote.revision == menu.revision and ("暂不支持转职" if zh and case_name != "service-fallback" else "Promotion is unavailable") in promote.church.error, "Promote unavailable reason retains gameplay")
     if case_name == "service-low":
         await click_row(1)
         var offer := church_phase(1, "poison-offer")

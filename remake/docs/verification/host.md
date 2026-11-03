@@ -2168,7 +2168,7 @@ which needs a fresh writable external preferences namespace and no read-only ove
 | --- | --- |
 | `service-en`, `service-zh` | Base party/gold; English/Chinese Raise, Cure, decline, no-applicable, curse, Promote, Save close, keyboard and pointer press/release. |
 | `service-low` | Gold 9; second ally status `poison-stun`. Insufficient Cure skips the remaining same-family members and retains resources. |
-| `service-fallback` | Base Church variant, Chinese preferences. Observer removes one loaded Chinese paid template before composition; complete English fallback and status remain visible. |
+| `service-fallback` | Base Church variant, Chinese preferences. Observer removes loaded Chinese paid/refusal rows and supplies a longer original English refusal before composition; complete fallback/status and measured footer growth remain operable. |
 | `search-ordinary` | Unmodified pilot including opening dialogue; ordinary north/east/east/south movement reaches the blocked chest, followed by acquisition and empty repeat. |
 | `search-en`, `search-zh` | Chest item 0, space available; typed single-revision grant/flag/open block then empty repeat. |
 | `search-full`, `search-invalid` | Each actor's four authored item slots holds 0; full refusal retains party, flag and closed chest. `search-invalid` changes only the loaded Chinese full template to invalid arguments before composition and observes whole English fallback. |

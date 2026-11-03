@@ -97,6 +97,9 @@ internal sealed partial class ChurchServiceView : Control
             string fallback = GameText.Fallback("church.");
             if (fallback.Length > 0) _hint.Text += "\n" + fallback;
         }
+        float hintHeight = Math.Max(192, _hint.GetMinimumSize().Y);
+        _hint.Size = new(1008, hintHeight);
+        _panel.Size = new(1072, _hint.Position.Y + hintHeight + 20);
     }
 
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); }

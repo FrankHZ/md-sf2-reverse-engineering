@@ -1324,8 +1324,8 @@ No applicable member, insufficient funds,
 refusal and success are readable results. Cancel declines the current offer or leaves the menu.
 The Application typed phase/result owns offers and progression; the panel stores only focus/gesture state.
 Localized text never selects the transaction phase. The independent curse-unavailable notice and
-diagnostic code/field remain visible. Church reserves a measured 192px hint footer inside its 824px
-panel at 1080p, keeping fallback/name notes and refusal text clear of the choice rows.
+diagnostic code/field remain visible. Church reserves a minimum 192px hint footer, growing its panel from 824px with measured text
+at 1080p to keep fallback/name notes and refusal text clear of the choice rows.
 
 The panel pauses automatic field service, movement, party preparation and Search. Focus loss,
 hiding or pause suspends its gesture and requires release. Service results, including real caller

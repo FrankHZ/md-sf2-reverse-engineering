@@ -102,8 +102,8 @@ is M2b; independent review/integration of this candidate remains main-gate work.
   insufficient Cure family skip, curse/no-applicable/Promote and Save closing; Search item/full/repeat,
   gold, named description, missing source/invalid template fallback, field-only item 113 and ordinary
   language Apply before a repeat. Resources/revision/flags/chest/RNG remain authoritative. Search's
-  existing panel measures its hint; Church reserves 192px for the measured fallback/refusal footer,
-  within its 824px panel. No screenshots, world copy, new font/import installation or emulator is used.
+  existing panel measures its hint; Church reserves a minimum 192px for the fallback/refusal footer
+  and grows its panel from 824px with measured text. No screenshots, world copy, new font/import installation or emulator is used.
 
 [Host reproduction](../verification/host.md#localized-church-and-search) owns the finite original
 pre-start variants and observation entry points. Human translation/typography and private-content
