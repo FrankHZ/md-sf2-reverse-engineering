@@ -3,6 +3,9 @@ using System.Text.RegularExpressions;
 using Godot;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.GodotAdapter.Exploration;
 using Sf2.Remake.Content.Localization;
 using Sf2.Remake.GodotAdapter.UI;
 
@@ -41,6 +44,40 @@ internal static class GameText
         ["ui.settings.display"] = 0,
         ["ui.settings.partial"] = 0,
         ["ui.settings.overlay"] = 0,
+        ["church.menu"] = 1,
+        ["church.offer"] = 4,
+        ["church.raise"] = 0,
+        ["church.poison"] = 0,
+        ["church.stun"] = 0,
+        ["church.cure"] = 0,
+        ["church.promote"] = 0,
+        ["church.save"] = 0,
+        ["church.leave"] = 0,
+        ["church.confirm"] = 0,
+        ["church.decline"] = 0,
+        ["church.continue"] = 0,
+        ["church.none"] = 0,
+        ["church.declined"] = 0,
+        ["church.insufficient"] = 0,
+        ["church.paid.raise"] = 1,
+        ["church.paid.poison"] = 1,
+        ["church.paid.stun"] = 1,
+        ["church.curse"] = 0,
+        ["church.promotion"] = 0,
+        ["church.failure"] = 3,
+        ["church.hint"] = 4,
+        ["search.item"] = 2,
+        ["search.full"] = 1,
+        ["search.gold"] = 1,
+        ["search.unavailable"] = 1,
+        ["search.continue"] = 2,
+        ["field.reveal"] = 1,
+        ["field.more"] = 1,
+        ["field.controls"] = 3,
+        ["field.talk"] = 1,
+        ["field.search"] = 1,
+        ["localization.names"] = 0,
+        ["localization.fallback"] = 1,
         ["battle.heal.action"] = 3,
         ["battle.heal.recovery"] = 2,
     };
@@ -71,7 +108,7 @@ internal static class GameText
         ["ui.settings.storage"] = "Preferences were not changed. Recovery details above remain in English.",
         ["ui.settings.invalid"] = "Preferences could not be validated. Current settings are retained.",
         ["ui.settings.display"] = "Language resources are unavailable (localization-resources). Current settings are retained.",
-        ["ui.settings.partial"] = "Chinese pilot: settings, authored field text and HEAL only. Missing rows use English.",
+        ["ui.settings.partial"] = "Chinese pilot: settings, authored field text, HEAL, Church and Search. Missing rows and untranslated names use English.",
         ["ui.settings.overlay"] = "Field translation unavailable (overlay-unavailable); English fallback. Preference retained.",
     };
     private static Candidate? _current;
@@ -168,6 +205,55 @@ internal static class GameText
         else result = _overlay.Resolve(wait, definition);
         if (result.Reason is { } reason) Diagnose(reason, $"world.text/{wait.Text}");
         return result;
+    }
+    internal static string Fallback(string prefix)
+    {
+        var row = _current?.Status.FirstOrDefault(pair => pair.Key.StartsWith(prefix, StringComparison.Ordinal) && pair.Value.Reason is not null);
+        return row?.Value?.Reason is { } reason ? Get("localization.fallback", reason) : "";
+    }
+    internal static DisplayResult Search(FieldSearchResult result, GameSession session)
+    {
+        var source = session.Definition.Exploration!;
+        var rows = new List<DisplayResult>();
+        foreach (int id in result.Texts)
+        {
+            var names = new List<DisplayNameBinding>();
+            if (source.TextTokens.TryGetValue(id, out var tokens))
+                for (int i = 0; i < tokens.Count; i++)
+                    if (tokens[i].Kind == ExplorationTextTokenKind.MemberName)
+                    {
+                        int member = tokens[i].Member ?? 0;
+                        names.Add(new(i, member, CharacterNames.Member(session.Definition, session.Current.Story, member), null));
+                    }
+            var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names) : _overlay.Resolve(id, source, names);
+            if (Language != "en" && _overlay is null && row.Reason is null) row = row with { Reason = "overlay-unavailable" };
+            if (row.Reason is { } reason) Diagnose(reason, $"world.text/{id}");
+            rows.Add(row);
+        }
+        string? key = result.Kind switch
+        {
+            FieldSearchKind.Item => "search.item", FieldSearchKind.Full => "search.full",
+            FieldSearchKind.Gold => "search.gold", FieldSearchKind.Unavailable => "search.unavailable", _ => null,
+        };
+        if (key is not null)
+        {
+            if (result.Kind is FieldSearchKind.Item or FieldSearchKind.Full && (result.ItemWord is null || result.ItemName is null))
+            {
+                Diagnose("display-operands", key);
+                return new("Text unavailable (display-operands).", "en", "display-operands");
+            }
+            string item = result.ItemName ?? "";
+            string value = result.Kind switch
+            {
+                FieldSearchKind.Item => Get(key, PartyStatusView.MemberName(session.QueryPartyDetails()!.Members.Single(member => member.Carried.Actor == result.Recipient), session), item),
+                FieldSearchKind.Full => Get(key, item), FieldSearchKind.Gold => Get(key, result.Gold!.Value),
+                _ => Get(key, result.Message ?? ""),
+            };
+            var status = _current?.Status.GetValueOrDefault(key);
+            rows.Add(new(value, status?.EffectiveLocale ?? "en", status?.Reason));
+        }
+        string? fallback = rows.FirstOrDefault(row => row.Reason is not null)?.Reason;
+        return new(string.Join("\n", rows.Select(row => row.Text)), rows.Any(row => row.EffectiveLocale == "zh-CN") ? "zh-CN" : "en", fallback);
     }
     private static void Diagnose(string reason, string key)
     { if (_diagnostics.Count < 128) _diagnostics.Add(reason + ":" + key); }

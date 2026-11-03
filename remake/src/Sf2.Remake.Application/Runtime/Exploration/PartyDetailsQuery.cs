@@ -56,6 +56,7 @@ internal static class PartyDetailsQuery
 
     private static string? ItemName(ScenarioDefinition definition, BattleDefinition encounter, BattleActorDefinition? actor, byte item) =>
         definition.PrivateDefinitions?.Items.GetValueOrDefault(item)?.DisplayName ??
+        definition.FieldPreparation?.Items.GetValueOrDefault(item)?.Name ??
         actor?.Equipment?.Weapons.GetValueOrDefault(item)?.Name ??
         encounter.HealingItems.GetValueOrDefault(item)?.Name ?? encounter.RetreatItems.GetValueOrDefault(item)?.Name ??
         encounter.ItemDrops?.Items.GetValueOrDefault(item)?.Name ?? encounter.Give?.Items.GetValueOrDefault(item) ??

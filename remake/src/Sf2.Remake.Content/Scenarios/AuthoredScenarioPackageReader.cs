@@ -172,7 +172,17 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         })
             .Concat(weapons.Select(w => w.ItemId)).Distinct().ToArray();
         var dropItems = EnemyItemDropReader.Items(root);
-        var discard = BattleDiscardReader.Read(root, allowLeaderCleanup, dropItems, weapons, healingItems.Values, retreatItems.Values);
+        // In connected authored content the same admitted rows are field inventory metadata only.
+        var discard = BattleDiscardReader.Read(root, false, dropItems, weapons, healingItems.Values, retreatItems.Values);
+        if (allowLeaderCleanup && discard is not null)
+            foreach (var item in discard.Items.Values)
+            {
+                var labels = healingItems.Values.Where(row => row.ItemId == item.ItemId).Select(row => row.Name)
+                    .Concat(retreatItems.Values.Where(row => row.ItemId == item.ItemId).Select(row => row.Name))
+                    .Concat(weapons.Where(row => row.ItemId == item.ItemId).Select(row => row.Name))
+                    .Concat(dropItems.Values.Where(row => row.ItemId == item.ItemId).Select(row => row.Name));
+                Require(labels.All(name => name == item.Name), "conflicting-field-item-name", "battleDiscard.items.name");
+            }
         Require(dropItems.Keys.All(id => id == 0 ? !weaponItems.Contains(id) && !retreatItems.ContainsKey(id) :
             !healingItems.ContainsKey(id) && !retreatItems.ContainsKey(id)), "conflicting-item-type", "dropItems");
         Require(!weaponItems.Any(id => healingItems.ContainsKey(id) || retreatItems.ContainsKey(id)),
@@ -303,7 +313,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
                 itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
                 prismLaser: PrismLaserReader.Read(encounter, placements),
-                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: discard, poison: poison)),
+                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: allowLeaderCleanup ? null : discard, poison: poison)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
@@ -322,7 +332,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var initialized = AuthoredBattleInitializationReader.Start(input);
             startActors.Add(new(new ActorRef(Id(input, "actor")), (ushort)Number(input, "hp", 0, 65535),
                 (byte)Number(input, "mp", 0, 255), (byte)Number(input, "exp", 0, 99),
-                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input, poison), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized,
+                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), StartStatus(input, poison, allowLeaderCleanup), position, ActivationWord: initialized.Word, Initialized: initialized.Initialized,
                 Absent: input.TryGetProperty("absent", out _) && Boolean(input, "absent"),
                 RetainDeadPosition: input.TryGetProperty("retainDeadPosition", out _) && Boolean(input, "retainDeadPosition")));
         }
@@ -336,7 +346,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var storyStart = BattleStoryReader.Start(start, encounters[selectedEncounter]);
         var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
             (uint)Number(start, "gold", 0, 9999999), itemCustody: EnemyItemDropReader.Start(start, BattleDiscardReader.CustodyItems(dropItems, discard)), storyFlags: storyStart.Flags, visuals: storyStart.Visuals, retainedSourceSlots: storyStart.Retained, deathCredit: poison ? new(start.GetProperty("firstAlly").ValueKind == JsonValueKind.Null ? null : new ActorRef(Id(start, "firstAlly"))) : null);
-        BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
+        ValidateStart(encounters[selectedEncounter], startInput, allowLeaderCleanup);
         // Drop/initialization-enabled encounters need fresh enemies on each entry. Their
         // controlled start is a definition input, never a replacement for live allies.
         IEnumerable<BattleDefinition> freshEncounters = encounters.Values.Any(encounter => encounter.ItemDrops is not null || encounter.Initialization is not null)
@@ -346,15 +356,36 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var input = new BattleStartInput(encounter.Encounter,
                 startActors.Where(actor => encounter.Deployments.Any(row => row.Actor == actor.Actor)),
                 mainSeed, thinkingSeed, startInput.Gold, itemCustody: startInput.ItemCustody, storyFlags: startInput.StoryFlags, visuals: startInput.Visuals, retainedSourceSlots: startInput.RetainedSourceSlots, deathCredit: startInput.DeathCredit);
-            BattleTurnFlow.ValidateStart(encounter, input);
+            ValidateStart(encounter, input, allowLeaderCleanup);
             return input;
         }).ToArray();
-        return new(new ScenarioDefinition(package, encounters.Values, encounterStarts: defaults, battleStory: battleStory), startInput);
+        return new(new ScenarioDefinition(package, encounters.Values, encounterStarts: defaults, battleStory: battleStory)
+        {
+            FieldPreparation = allowLeaderCleanup && discard is not null ? new(discard.Items.Values) : null,
+        }, startInput);
     }
 
-    private static ushort StartStatus(JsonElement input, bool poison)
+    private static void ValidateStart(BattleDefinition encounter, BattleStartInput start, bool connected)
+    {
+        if (!connected) { BattleTurnFlow.ValidateStart(encounter, start); return; }
+        // Carried Church status is field state, not permission for new battle effects.
+        Require(start.Actors.All(actor => actor.Status == 0 || encounter.Deployments.Any(row =>
+            row.Actor == actor.Actor && row.Faction == BattleFaction.Ally)), "actor-status", "start.actors.status", true);
+        var neutral = new BattleStartInput(start.Encounter, start.Actors.Select(actor => actor with { Status = 0 }),
+            start.MainSeed, start.ThinkingSeed, start.Gold, start.NewBattle, start.ActiveAllies, start.ItemCustody,
+            start.StoryFlags, start.Visuals, start.RetainedSourceSlots, start.DeathCredit);
+        BattleTurnFlow.ValidateStart(encounter, neutral);
+    }
+
+    private static ushort StartStatus(JsonElement input, bool poison, bool connected)
     {
         string status = Text(input, "status");
+        if (connected) return status switch
+        {
+            "none" => 0, "stun" => 1, "poison" => 2, "poison-stun" => 3,
+            "curse" => 4, "stun-curse" => 5, "poison-curse" => 6, "poison-stun-curse" => 7,
+            _ => throw new BattleRuleException("actor-status", "start.actors.status", true),
+        };
         Require(status == "none" || poison && status == "poison", "actor-status", "start.actors.status", true);
         return status == "poison" ? (ushort)2 : (ushort)0;
     }

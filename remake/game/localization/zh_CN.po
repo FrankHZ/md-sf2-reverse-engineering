@@ -105,7 +105,7 @@ msgstr "语言资源不可用（localization-resources）。已保留当前设�
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "中文小样仅覆盖设置、原创场景对白与 HEAL。缺译条目使用英文。"
+msgstr "中文试点：设置、原创场景文本、HEAL、教堂与搜索。缺失条目及未译名称保留英文。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -118,3 +118,137 @@ msgstr "{0}施放{1}，等级 {2}。"
 #. Arguments: target name, recovered HP.
 msgid "battle.heal.recovery"
 msgstr "{0}恢复了{1}点生命。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.menu"
+msgstr "教堂 · 金币 {0}\n请选择所需的服务。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.offer"
+msgstr "{0} · {1}\n费用：{2} 金币。现有金币：{3}"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.raise"
+msgstr "复活"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.poison"
+msgstr "解除中毒"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.stun"
+msgstr "解除眩晕"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.cure"
+msgstr "治疗"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.promote"
+msgstr "转职 · 不可用"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.save"
+msgstr "保存… · 先离开教堂"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.leave"
+msgstr "离开"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.confirm"
+msgstr "确认治疗"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.decline"
+msgstr "谢绝本次治疗"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.continue"
+msgstr "继续"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.none"
+msgstr "没有需要此项服务的成员。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.declined"
+msgstr "已谢绝本次治疗。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.insufficient"
+msgstr "金币不足。未收取费用。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.raise"
+msgstr "已完成复活。支付了 {0} 金币。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.poison"
+msgstr "已解除中毒。支付了 {0} 金币。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.stun"
+msgstr "已解除眩晕。支付了 {0} 金币。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.curse"
+msgstr "此内容暂不支持解除诅咒。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.promotion"
+msgstr "此处暂不支持转职。请选择其他服务或离开。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.failure"
+msgstr "未能完成（{0}，{1}）：{2}"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.hint"
+msgstr "{0} / {1}：选择   {2}：确认\n{3}：谢绝 / 返回   鼠标：选择一行"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.item"
+msgstr "{0} 获得了 {1}。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.full"
+msgstr "发现了 {0}。所有成员的背包已满，物品仍留在原处。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.gold"
+msgstr "发现了 {0} 金币。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.unavailable"
+msgstr "此目的地暂不可用。{0}"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.continue"
+msgstr "{0} / 单击：继续    {1} / 右键：关闭"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "field.reveal"
+msgstr "{0}：显示全文"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "field.more"
+msgstr "{0}：继续阅读"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "field.controls"
+msgstr "{0}按住 {1}：等待    {2}：队伍状态"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "localization.names"
+msgstr "姓名与物品名未翻译时保留英文；自定义姓名保持原样。"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "localization.fallback"
+msgstr "英文回退（{0}）。"
+
+msgid "field.talk"
+msgstr "{0}：交谈    "
+
+msgid "field.search"
+msgstr "{0}：搜索    "

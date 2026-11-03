@@ -2142,3 +2142,50 @@ planner selection and actual CI; completed failures and targeted corrections bel
 No screenshots, per-frame capture, emulator, world export or full-opening replay is needed. Actual
 observations establish this finite engineering boundary, not translation/typography approval or
 whole-epic coverage. Private overlays remain private; Chinese naming/IME remains unsupported.
+
+
+## Localized Church and Search
+
+Use the [localization pilot launch](#localization-pilot), selected installed Godot, current Debug
+build, existing imported font and worktree runtime. The original pilot keeps its opening dialogue.
+After it returns, face south at the starting cell and Confirm to Talk to the practice priest; Raise
+then Cure exercise one payment at a time, poison before stun, declining, no-applicable and the
+independent unavailable curse notice. Promote has a readable refusal. Save closes the caller before
+the existing persistence flow (the public sample has no opening-save policy). The chest is at (3,1):
+walk north/east around the guide, stand at (2,1), face east, then Confirm. Dismiss and repeat to see
+empty; delivery and visual redraw cannot grant again. Default names/item labels remain untranslated.
+
+For short actual host observations, prepare finite variants **before launch** by changing a copy of
+`localization-pilot.json` under the owning ignored report directory. Keep its original art, package
+identity, programs, catalog and input route; remove `start.program` for settled input. Church starts
+at (1,1), facing 3. Search starts at (2,1), facing 0, with the diagnostic NPC entities/events removed.
+Set `SF2_LOCALIZATION_CASE` and `SF2_LOCALIZATION_OUTPUT`, then launch the ordinary authored host with
+`--script res://probes/localization_observation.gd -- --authored-package <absolute-variant>`.
+Use existing version1 English/zh-CN preferences through `--input-settings` except `search-switch`,
+which needs a fresh writable external preferences namespace and no read-only override.
+
+| Case | Pre-start authored difference / actual observation |
+| --- | --- |
+| `service-en`, `service-zh` | Base party/gold; English/Chinese Raise, Cure, decline, no-applicable, curse, Promote, Save close, keyboard and pointer press/release. |
+| `service-low` | Gold 9; second ally status `poison-stun`. Insufficient Cure skips the remaining same-family members and retains resources. |
+| `service-fallback` | Base Church variant, Chinese preferences. Observer removes one loaded Chinese paid template before composition; complete English fallback and status remain visible. |
+| `search-en`, `search-zh` | Chest item 0, space available; typed single-revision grant/flag/open block then empty repeat. |
+| `search-full`, `search-invalid` | Each actor's four authored item slots holds 0; full refusal retains party, flag and closed chest. `search-invalid` changes only the loaded Chinese full template to invalid arguments before composition and observes whole English fallback. |
+| `search-field-only` | Chest item 113 (`Practice Token`), defined only in the admitted field catalog. Real Search and Party's read-only projection retain the label; no battle Discard or field Use is enabled. |
+| `search-gold` | Chest itemWord null, gold 25; reward and receipt then empty repeat. |
+| `search-description` | Search starts at (1,1), facing 1; admitted description IDs 425/900 and the literal source-name binding. |
+| `search-fallback` | Base Search, selected overlay omits row 403. Original source row remains English with visible fallback. |
+| `search-switch` | Base Search and fresh English preferences; acquire, dismiss, ordinary Settings → Language → Apply, then Chinese repeat without another reward/revision change from Apply. |
+
+Connected authored `battleDiscard.items` is a field-only catalog using existing complete property and
+loadout validation. Same-ID label conflicts reject. Battle Discard stays null; no field effect/spell
+is guessed. Finite connected ally status strings are `none`, `stun`, `poison`, `poison-stun`, `curse`,
+`stun-curse`, `poison-curse`, `poison-stun-curse`. Their carry does not enable unsupported battle effects;
+standalone statuses and the explicit `battlePoison` restriction retain their existing admission.
+
+The native observer records state/choices, actual glyphs, measured title/hint bounds and input/resource
+outcomes, with a short external process deadline. The selected engine/adapter checks and clean
+committed planner/actual CI remain required; no screenshots, private story export, full opening or
+new validation framework is needed. Preserve initial startup/driver failures and narrow corrections
+in the slice handoff. These observations establish the finite implementation boundary; human
+translation/typography and opening-wide bilingual coverage are not claimed.

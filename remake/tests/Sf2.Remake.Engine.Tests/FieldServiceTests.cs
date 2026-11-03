@@ -119,7 +119,8 @@ public sealed class FieldServiceTests
     public void NoApplicableTargetAndRetryKeepControlsAndParty(ChurchAction action)
     {
         var session = Session(hp: 100); var before = session.Current.Exploration!.Party;
-        Choose(session, action); Assert.Null(Wait(session).Offer); Assert.Contains("No applicable", Wait(session).Message);
+        Choose(session, action); Assert.Null(Wait(session).Offer); Assert.Equal(ChurchResultKind.NoApplicableMember, Wait(session).Result!.Kind);
+        Assert.Equal(ChurchPhase.Result, Wait(session).Phase);
         Continue(session); Choose(session, action); Continue(session);
         Accept(session, new LeaveChurch(Wait(session).Token, true));
         Assert.Same(before, session.Current.Exploration!.Party); Assert.True(session.Current.CanWaitAtInput);
@@ -140,6 +141,30 @@ public sealed class FieldServiceTests
     }
 
     [Fact]
+    public void ResultPhaseRejectsFreshTokenAnswersUntilContinueWithoutAnotherPayment()
+    {
+        var session = Session(status: 7); Choose(session, ChurchAction.Cure);
+        var offered = Wait(session).Offer!;
+        Assert.Equal(ChurchPhase.Offer, Wait(session).Phase);
+        Assert.NotNull(Send(session, new ContinueChurch(Wait(session).Token)).Failure);
+        Answer(session); var paid = session.Current; var result = Wait(session);
+        Assert.Equal(ChurchPhase.Result, result.Phase);
+        Assert.Equal(new ChurchResult(ChurchResultKind.Paid, offered), result.Result);
+        Assert.False(result.CurseUnavailable); // Stun is still queued; curse notice is independent at completion.
+        Assert.NotNull(Send(session, new AnswerChurch(result.Token, result.Offer!, true)).Failure);
+        Assert.Same(paid, session.Current);
+        Continue(session); Assert.Equal(ChurchPhase.Offer, Wait(session).Phase);
+        Assert.Equal(ChurchEffect.Stun, Wait(session).Offer!.Effect);
+        Answer(session, false);
+        Assert.Equal(ChurchResultKind.Declined, Wait(session).Result!.Kind);
+        Assert.True(Wait(session).CurseUnavailable);
+        Continue(session); Assert.Equal(ChurchPhase.Menu, Wait(session).Phase);
+        Assert.Null(Wait(session).Result); Assert.False(Wait(session).CurseUnavailable);
+        Assert.Equal(90u, session.Current.Exploration!.Party.Gold);
+        Assert.Equal(5, Member(session, First).Status);
+    }
+
+    [Fact]
     public void MissingGoldRejectsAtomicallyAndAllowsDeclineAndReturn()
     {
         var session = Session(gold: null); Choose(session, ChurchAction.Raise); var before = session.Current; var wait = Wait(session);
@@ -153,7 +178,8 @@ public sealed class FieldServiceTests
     {
         var session = Session(gold: 7, hp: 100, status: 6, terms: new(4, 50, 80, 7, 11));
         Choose(session, ChurchAction.Cure); Assert.Equal(7u, Wait(session).Offer!.Cost); Answer(session);
-        Assert.Equal(4, Member(session, First).Status); Assert.Contains("Curse removal is unavailable", Wait(session).Message);
+        Assert.Equal(4, Member(session, First).Status); Assert.True(Wait(session).CurseUnavailable);
+        Assert.Equal(new ChurchResult(ChurchResultKind.Paid, new(First, ChurchEffect.Poison, 7, 100, 6)), Wait(session).Result);
         Continue(session); Choose(session, ChurchAction.Cure); Assert.Null(Wait(session).Offer);
     }
 
