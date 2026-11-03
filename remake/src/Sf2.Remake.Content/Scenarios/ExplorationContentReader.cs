@@ -9,30 +9,6 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class ExplorationContentReader
 {
-    private static IReadOnlyList<ExplorationTextToken> ReadTextTokens(string text)
-    {
-        var tokens = new List<ExplorationTextToken>();
-        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(text, @"\{[^{}]*\}|[{}]|[^{}]+"))
-        {
-            string value = match.Value;
-            if (value == "{N}") tokens.Add(new(ExplorationTextTokenKind.Newline, value));
-            else if (value == "{W1}") tokens.Add(new(ExplorationTextTokenKind.Wait1, value));
-            else if (value == "{W2}") tokens.Add(new(ExplorationTextTokenKind.Wait2, value));
-            else if (value == "{D1}") tokens.Add(new(ExplorationTextTokenKind.Delay1, value));
-            else if (value == "{CLEAR}") tokens.Add(new(ExplorationTextTokenKind.Clear, value));
-            else if (value == "{LEADER}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value, 0));
-            else if (value == "{NAME}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value));
-            else if (value == "{CLASS}") tokens.Add(new(ExplorationTextTokenKind.ClassName, value));
-            else if (value.StartsWith("{NAME;", StringComparison.Ordinal) && value.EndsWith('}') &&
-                int.TryParse(value.AsSpan(6, value.Length - 7), System.Globalization.NumberStyles.None,
-                    System.Globalization.CultureInfo.InvariantCulture, out int member))
-                tokens.Add(new(ExplorationTextTokenKind.MemberName, value, member));
-            else tokens.Add(new(value.Contains('{') || value.Contains('}') ? ExplorationTextTokenKind.Unsupported :
-                ExplorationTextTokenKind.Literal, value));
-        }
-        return tokens.AsReadOnly();
-    }
-
     internal static ExplorationReadAccepted ReadAuthored(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "battle", "world", "start");
@@ -181,7 +157,7 @@ internal static class ExplorationContentReader
             {
                 Require(name.ValueKind == JsonValueKind.String && name.GetString()!.Length is > 0 and <= 32, "member-name", "world.memberNames");
                 return name.GetString()!;
-            }) : null, texts.Select(pair => new KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>(pair.Key, ReadTextTokens(pair.Value))),
+            }) : null, texts.Select(pair => new KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>(pair.Key, ExplorationTextTokens.Read(pair.Value))),
             world.TryGetProperty("textFont", out var font) ? ReadFont(font) : null);
         Link(definition);
         ObjectOptional(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags"],

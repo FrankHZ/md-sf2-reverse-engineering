@@ -11,6 +11,7 @@ internal sealed class InputSettings
     public required int FormatVersion { get; set; }
     public string ConfirmCancel { get; set; } = "standard";
     public bool ReducedFlash { get; set; }
+    public string Language { get; set; } = "en";
     public string TextMode { get; set; } = "instant";
     public double CharactersPerSecond { get; set; } = 40;
     public Dictionary<string, ActionBinding> Bindings { get; set; } = [];
@@ -39,6 +40,7 @@ internal sealed class InputSettings
         if (settings.FormatVersion != 1) throw new ArgumentException("formatVersion must be 1.");
         if (settings.ConfirmCancel is not ("standard" or "swapped"))
             throw new ArgumentException("confirmCancel must be standard or swapped.");
+        if (settings.Language is not ("en" or "zh-CN")) throw new ArgumentException("language must be en or zh-CN.");
         if (settings.TextMode is not ("instant" or "adjustable"))
             throw new ArgumentException("textMode must be instant or adjustable.");
         if (!double.IsFinite(settings.CharactersPerSecond) || settings.CharactersPerSecond is < 1 or > 240)
@@ -51,7 +53,7 @@ internal sealed class InputSettings
         var draft = defaults ? Load(null) : new InputSettings
         {
             FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
-            TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
+            Language = Language, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
         };
         draft.Bindings = Bindings;
         return draft;
@@ -60,7 +62,7 @@ internal sealed class InputSettings
     internal void Publish(InputSettings candidate)
     {
         ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
-        TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
+        Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
         Bindings = candidate.Bindings;
     }
 }

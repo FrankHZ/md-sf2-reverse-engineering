@@ -1,0 +1,11 @@
+{
+  "package": "authored-localization-pilot",
+  "locale": "zh-CN",
+  "texts": [
+    {
+      "namespace": "world.text",
+      "id": 100,
+      "text": "请稍候，{NAME;0}。{W1}{CLEAR}大门已经打开。{N}{NAME;0}，准备好了吗？{D1}{W2}"
+    }
+  ]
+}

@@ -28,3 +28,8 @@ project/assembly_name="Sf2.Remake.Godot"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.025, 0.035, 0.055, 1)
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://localization/en.po", "res://localization/zh_CN.po")
+locale/fallback="en"

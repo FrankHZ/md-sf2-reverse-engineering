@@ -1,9 +1,20 @@
+using System.Text;
 using Godot;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
 internal static class StoryTheme
 {
+    private static FontFile? _font;
+    internal static void PrepareFont(string required)
+    {
+        var font = _font ?? GD.Load<FontFile>("res://fonts/localization/NotoSansCJKsc-Regular.otf");
+        if (font is null) throw new ArgumentException();
+        font.AllowSystemFallback = false;
+        if (required.EnumerateRunes().Any(rune => !char.IsControl((char)rune.Value) && !font.HasChar(rune.Value)))
+            throw new ArgumentException();
+        _font = font;
+    }
     internal const int BodySize = 30, HintSize = 24;
     internal static readonly Color Selected = new("ffe19a");
     internal static readonly Color Unavailable = new("8e9bab");
@@ -47,7 +58,7 @@ internal static class StoryTheme
     };
     internal static Theme Create()
     {
-        var theme = new Theme { DefaultFontSize = BodySize };
+        var theme = new Theme { DefaultFontSize = BodySize, DefaultFont = _font };
         theme.SetColor("font_color", "Label", new Color("f4f5fc"));
         theme.SetStylebox("panel", "PanelContainer", new StyleBoxFlat
         {

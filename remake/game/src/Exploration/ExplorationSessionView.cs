@@ -88,7 +88,9 @@ public sealed partial class ExplorationSessionView : Control
     private SessionAudio? _audio;
     private SessionFailure? PresentationFailure => _result?.Failure ??
         (_presentation?.Error is { } error ? new(SessionFailureKind.AdapterError,
-            "presentation-unavailable", "presentation", error) : null);
+            "presentation-unavailable", "presentation", error) :
+            _dialogueView?.FallbackReason == "display-operands" ? new(SessionFailureKind.AdapterError,
+                "display-operands", "presentation.text", "Text display operands are unavailable; delivery is retained.") : null);
 
     public override void _Ready()
     {
@@ -752,6 +754,7 @@ public sealed partial class ExplorationSessionView : Control
                 visible = _choice.Visible, x = _choice.Position.X, y = _choice.Position.Y, width = _choice.Size.X, height = _choice.Size.Y,
                 yes = _choiceYes.Text, no = _choiceNo.Text, yesAlternate = _choiceYes.Modulate == UI.StoryTheme.Selected, noAlternate = _choiceNo.Modulate == UI.StoryTheme.Selected },
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
+            displayLocale = _dialogueView.EffectiveLocale, displayFallback = _dialogueView.FallbackReason,
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
             music = current?.Story.Music, musicWait = current?.Story.Wait as MusicWait,
             windowFixPending = current?.Story.WindowFixPending,

@@ -681,6 +681,22 @@ are projections; Application owns gameplay state, program/scene continuation and
 See [audio](audio.md), [battle scenes](battle-scenes.md), [Content assets](../content/presentation-assets.md)
 and [host observations](../verification/host.md).
 
+## Bilingual pilot presentation
+
+The [M1 localization owner](../application/localization-design.md#implemented-m1-boundary) supplies
+English/zh-CN settings, original authored FieldTextWait and HEAL templates. Language is a draft row in
+the existing safe Settings access; Apply prepares the native PO and licensed font before storing,
+then refreshes settings access without remounting or issuing gameplay. Cancel retains the old
+language. Chinese missing/invalid rows retain exact fallback metadata and complete English wording.
+Settings recovery details are currently English with a localized explanation.
+
+StoryTheme uses the bundled Noto Sans CJK SC at the existing 30px body/24px hint hierarchy, with system
+fallback disabled. Plain Label rendering retains literal names; visual wrap/ReadMore never adds source
+controls or acknowledgements. Field reveal continuity uses window/text/source range; HEAL consumes
+captured semantic operands while its original work strings stay unchanged. Other menus/messages
+remain explicitly English. [Native recipe](../verification/host.md#localization-pilot) includes
+geometry/glyph/input observations; human typography acceptance remains separate.
+
 ## Ordinary Godot Host
 
 [`Main.tscn`](../../game/Main.tscn) instantiates [`GameRoot`](../../game/src/GameRoot.cs).

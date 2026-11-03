@@ -1,0 +1,120 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_CN\n"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.title"
+msgstr "设置"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.language"
+msgstr "语言：{0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.text"
+msgstr "文本显示：{0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.instant"
+msgstr "立即显示"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.gradual"
+msgstr "逐字显示"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.speed"
+msgstr "文字速度：每秒 {0} 字 · 左／右 −／＋10"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.confirm"
+msgstr "确认／取消：{0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.standard"
+msgstr "标准"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.swapped"
+msgstr "互换"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.flash"
+msgstr "减少闪烁：{0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.on"
+msgstr "开启"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.off"
+msgstr "关闭"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.defaults"
+msgstr "恢复默认设置（草稿）"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.apply"
+msgstr "应用"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.cancel"
+msgstr "取消"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.close"
+msgstr "关闭"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.help"
+msgstr "操作帮助（英文）"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.staged"
+msgstr "已暂存默认值。应用后保存；取消则保留当前设置。"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.notice"
+msgstr "应用后更改才会生效。文字速度仅用于逐字显示。中文显示仍使用原有的七字符 ASCII 命名规则。其他界面目前仍有英文。"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.hint"
+msgstr "{0}：选择／更改   •   {1}：取消／关闭"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.entry"
+msgstr "设置／操作 · {0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.readonly"
+msgstr "本次启动的设置为只读。移除 --input-settings 后重新启动才能保存。"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.storage"
+msgstr "设置未更改。上方的恢复说明目前为英文。"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.invalid"
+msgstr "设置验证失败。已保留当前设置。"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.display"
+msgstr "语言资源不可用（localization-resources）。已保留当前设置。"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.partial"
+msgstr "中文小样仅覆盖设置、原创场景对白与 HEAL。缺译条目使用英文。"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.overlay"
+msgstr "场景译文不可用（overlay-unavailable）；回退英文。已保留语言偏好。"
+
+#. Arguments: caster name, spell identity, level.
+msgid "battle.heal.action"
+msgstr "{0}施放{1}，等级 {2}。"
+
+#. Arguments: target name, recovered HP.
+msgid "battle.heal.recovery"
+msgstr "{0}恢复了{1}点生命。"

@@ -1,0 +1,120 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.title"
+msgstr "Settings"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.language"
+msgstr "Language: {0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.text"
+msgstr "Text: {0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.instant"
+msgstr "Instant"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.gradual"
+msgstr "Gradual"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.speed"
+msgstr "Text speed: {0} characters/sec · Left/Right −/+10"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.confirm"
+msgstr "Confirm / Cancel: {0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.standard"
+msgstr "Standard"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.swapped"
+msgstr "Swapped"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.flash"
+msgstr "Reduced flash: {0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.on"
+msgstr "On"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.off"
+msgstr "Off"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.defaults"
+msgstr "Restore defaults (draft)"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.apply"
+msgstr "Apply"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.cancel"
+msgstr "Cancel"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.close"
+msgstr "Close"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.help"
+msgstr "Control help (English)"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.staged"
+msgstr "Defaults staged. Apply saves them; Cancel keeps current settings."
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.notice"
+msgstr "Changes take effect only after Apply. Text speed is used in Gradual mode. Chinese display keeps the existing seven-character ASCII naming rule. Other screens remain partly English."
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.hint"
+msgstr "{0}: Choose/change   •   {1}: Cancel/close"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.entry"
+msgstr "Settings / Controls · {0}"
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.readonly"
+msgstr "This launch uses read-only preferences. Relaunch without --input-settings to save changes."
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.storage"
+msgstr "Preferences were not changed. Recovery details above remain in English."
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.invalid"
+msgstr "Preferences could not be validated. Current settings are retained."
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.display"
+msgstr "Language resources are unavailable (localization-resources). Current settings are retained."
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.partial"
+msgstr "Chinese pilot: settings, authored field text and HEAL only. Missing rows use English."
+
+#. Settings display; actions use stable indexes.
+msgid "ui.settings.overlay"
+msgstr "Field translation unavailable (overlay-unavailable); English fallback. Preference retained."
+
+#. Arguments: caster name, spell identity, level.
+msgid "battle.heal.action"
+msgstr "{0} casts {1}, level {2}."
+
+#. Arguments: target name, recovered HP.
+msgid "battle.heal.recovery"
+msgstr "Recovery for {0}: {1} HP."

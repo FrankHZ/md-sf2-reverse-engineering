@@ -1,5 +1,16 @@
 # Remake Capability Status
 
+## Bounded bilingual localization
+
+**Implemented M1 pilot:** English/简体中文 selection uses the existing settings transaction and separate
+preference. Settings, one original authored FieldTextWait with captured names/source controls, and
+semantic HEAL cast/recovery text consume exact catalogs with explicit English fallback. The bundled
+licensed CJK face loads in Godot 4.7.2 without system fallback. Canonical execution and game-save
+identity remain unchanged. [Scope/failures](application/localization-design.md#implemented-m1-boundary)
+and [native reproduction](verification/host.md#localization-pilot) own the limits. Remaining menus,
+original/private dialogue, terminology and other results remain English; seven-character ASCII names
+remain in force. No whole-opening bilingual, human typography, Unicode naming or export claim.
+
 ## Current playable and presentation boundary
 
 The common state/content-driven session supports configurable authored packages and selected private

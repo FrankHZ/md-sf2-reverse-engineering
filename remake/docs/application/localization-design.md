@@ -2,25 +2,68 @@
 
 ## Scope and status
 
-**Proposed design; localization is Planned / Not implemented.** This is the M0 investigation for
-[#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469), under the
-[game localization epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
-Acceptance selects an implementation direction, not bilingual product acceptance. Source findings
-use accepted commit `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; they describe this remake, not new
-original-game evidence. Inspect named symbols with `rg -n`, or reproduce the baseline using
-`git show <commit>:<path>` for the linked files.
+**Implemented bounded M1 pilot; independent integration/product acceptance remains separate.**
+The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469)
+now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
+settings, authored FieldTextWait and semantic HEAL consumers under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
+This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
+source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
+These describe the remake, not new original-game evidence.
 
-**Standard rigor:** this is a lasting cross-Application/Content/Godot capability. Prove three real
-consumers before expansion. The existing [High save/restore boundary](opening-session-lifecycle.md#format-compatibility-and-local-storage)
-still governs format/identity changes. M0 changes documentation only. M1 should establish
-English/zh-CN settings, explicit fallback, a deliverable CJK font, one controlled dialogue and a
-dynamic battle result without making translations inputs to gameplay execution.
+**Standard rigor:** prove three real consumers before expanding this lasting
+Application/Content/Godot capability. The existing [High save/restore boundary](opening-session-lifecycle.md#format-compatibility-and-local-storage)
+continues to govern identity changes. Canonical source tokens, glyph units, name expansion, HEAL work,
+program acknowledgements, gameplay/RNG and game-save format remain independent of display locale.
 
 The product target remains title/Witch, New Game/naming, supported opening exploration/services,
 Battle01 outcomes and independent-process Continue, then other implemented consumers. One pilot
 does not establish that coverage. Unimplemented chapters, ROM patching, voice/TTS, other languages,
 full string export, a translation platform and UI redesign are non-goals. Preserve the 1080p minimum,
 96px world cells, source grouping, input/reward authority and private-content boundary.
+
+## Implemented M1 boundary
+
+- `GameText` loads exact native PO resources and validates the complete English baseline. Selected
+  Chinese rows resolve individually with key/effective-locale/reason metadata. Missing or invalid rows
+  use the complete English template; required baseline/catalog/font failure refuses Apply before the
+  existing settings write. Compiled English recovery retains distinct usable Apply/Cancel/Close controls.
+- The existing `InputSettings` draft/Apply/Cancel/store owns optional `language` (`en`, `zh-CN`). Old
+  settings default to English. Apply prepares resources, writes once, then publishes and refreshes
+  mounted settings access. Read-only, unreadable, invalid, externally changed or unwritable settings
+  retain their existing detailed recovery errors (currently English) with a localized explanation.
+  No gameplay command, save operation, scene remount or music restart implements a locale change.
+- An explicit absolute `SF2_DISPLAY_CATALOG` selects the optional package overlay once per session
+  composition. `DisplayCatalogReader` reuses `ExplorationTextTokens`, enforces the 256 KiB/64-row
+  envelope and package/locale/private source identity, and retains complete per-row control/name maps.
+  Structural failures reject the overlay; semantic row failures discard that whole row and mapping.
+  Missing rows remain distinguishable from invalid rows and producer-operand defects. Diagnostics are
+  bounded to 128 distinct key/reason pairs per composition and contain no selected private path.
+- Application captures source-token ranges and actor/member/default/custom-name bindings at Begin.
+  A saved override remains literal even when it equals the default. Content joins control segments;
+  translated token indexes never address English arrays. Both English paths and Chinese use the same
+  effective visible range after CLEAR. The view retains it through the open window and uses source
+  identity/range for reveal continuity. Missing producer operands stop delivery with `display-operands`.
+- HEAL captures caster/target/spell/amount and display names beside unchanged ActionText/RecoveryText.
+  The view formats `battle.heal.action` / `battle.heal.recovery`; it does not repair an English prefix.
+  Reading/reveal/ReadMore do not add logical opportunities, MP cost, recovery, EXP or RNG draws.
+- The public authored `localization-pilot.json` / `.zh-CN.json` contain original prose, simple solid
+  diagnostic art and a synthesized tone, without extracted source content. W1/W2/CLEAR/N/D1, captured
+  names, mixed-script reveal and ReadMore exercise ordinary host/session consumers. Other dialogue
+  paths, terminology/default-name translation and other UI/results remain English/unmigrated.
+- One unmodified [Noto Sans CJK SC Regular](../../game/fonts/localization/README.md) is bundled under
+  OFL 1.1, version 2.004, pinned upstream revision `f8d157532fbfaeda587e826d4cd5b21a49186f7c`.
+  It is 16,437,364 bytes; the necessary 4.7.2 font import produced 14,444,319 bytes in about 6.3 seconds.
+  The initial wrapper-only memory sample does not measure importer peak memory; necessary native
+  consumer runs measured roughly 262–336 MB peak working set. System fallback is disabled. Actual
+  glyph coverage, mixed punctuation/wrapping, 1080p geometry, ReadMore and silent instant/reveal-all
+  versus normal speech have bounded native observations. Human typography/translation acceptance
+  and export packaging are not claimed.
+
+See [native reproduction](../verification/host.md#localization-pilot) for startup, settings and direct
+failure entry points. Seven-character ASCII naming and game-save identities remain unchanged; this
+is Chinese display, not Chinese IME naming. Older executables reject the new settings property:
+retain the file, then use the existing explicit Restore defaults recovery or restore an older
+preferences backup for downgrade. Never rewrite game slots to change language.
 
 ## Current production and consumption paths
 
@@ -41,7 +84,8 @@ exhaustive string dump. Linked files and symbols locate the claims without relyi
 | Item/spell/class identities and labels from [PrivateBattleDefinitionReader](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleDefinitionReader.cs), definitions and [BattleSceneDefinition](../../src/Sf2.Remake.Application/Content/Scenarios/BattleSceneDefinition.cs) | Choices, party details, scene messages and offers | Preserve packed item flags/slot, item ID, SpellRef/level, class ID and ActorRef. Never translate IDs or uppercase translated spell names. |
 | `SessionFailure.Kind/Code/Field/Message`, Content and storage failures | Recoverable UI and local diagnostics | Map finite codes to user messages; retain stable code/field/stop reason. Unknown failures get safe generic wording plus code. English fallback cannot turn unsupported content into success. |
 
-There is no game localization service/catalog configured in the current host.
+At the inventory baseline there was no game localization catalog. M1 now supplies the finite
+`GameText`/PO/Content overlay composition described above.
 [StoryTheme](../../game/src/UI/StoryTheme.cs) sets styles and 30px body/24px hint sizes, without an
 explicit CJK font. [StoryDialoguePanel](../../game/src/UI/StoryDialoguePanel.cs) already uses plain
 Label, WordSmart, CharsAfterShaping, measured geometry and ReadMore. It owns reading position and
@@ -85,8 +129,8 @@ Godot 4.7 documents [PO loading](https://docs.godotengine.org/en/4.7/tutorials/i
 and [TranslationServer](https://docs.godotengine.org/en/4.7/classes/class_translationserver.html)
 locale selection/normalization/plurals. Its [internationalization guide](https://docs.godotengine.org/en/4.7/tutorials/i18n/internationalizing_games.html)
 shows C# Tr/TrN with C# formatting. These version-family API facts were checked 2026-11-03; the
-project pins Godot.NET.Sdk/4.7.2. No import/runtime was run. M1 must compile and exercise the installed
-4.7.2 bindings; documentation is not project execution evidence.
+project pins Godot.NET.Sdk/4.7.2. The M1 pilot now compiles and exercises those installed bindings
+at the bounded native boundary above; the API documentation alone is not execution evidence.
 
 ### Modules and flow
 
@@ -351,13 +395,13 @@ is the potential migration trigger.
 
 ## Font, layout and delivery
 
-Recommend one bundled Simplified Chinese sans face with existing Latin/symbol coverage through
-StoryTheme and necessary overrides. Start M1 selection with Noto Sans CJK SC Regular: upstream
+M1 bundles Noto Sans CJK SC Regular through StoryTheme for Simplified Chinese and the required
+Latin/symbol coverage. Upstream
 [Sans documentation](https://github.com/notofonts/noto-cjk/blob/main/Sans/README.md) describes the
 family and the [license](https://github.com/notofonts/noto-cjk/blob/main/Sans/LICENSE) is SIL OFL 1.1.
-This is a candidate, not a pinned/vendored asset. Acquisition must pin release/file/license, retain
-notices, check modification/reserved-name conditions for any subset, and declare distribution
-ownership before committing bytes. M0 downloads no font.
+The [bundled asset owner](../../game/fonts/localization/README.md) records the exact revision, file,
+version and notices. M1 distributes the unmodified face; future subsets must separately review OFL
+modification/reserved-name conditions before replacing it.
 
 Godot documents [Font fallbacks](https://docs.godotengine.org/en/4.7/classes/class_font.html),
 [Theme/default font configuration](https://docs.godotengine.org/en/4.7/tutorials/ui/gui_using_fonts.html)
@@ -372,7 +416,8 @@ seven-cluster mixed names. Keep WordSmart/ReadMore; visual lines do not add sour
 Do not shrink every label or crop required choices. Test missing glyphs explicitly. The
 [Label API](https://docs.godotengine.org/en/4.7/classes/class_label.html) supplies plain text,
 wrapping/language and visible-character controls; actual mixed-script reveal and the host Rune-based
-speech loop need observation. UTF-16 units, code points, grapheme clusters and shaped glyphs differ.
+speech loop have bounded M1 observations above. UTF-16 units, code points, grapheme clusters and
+shaped glyphs differ; broader naming/typography still needs its own acceptance.
 
 Preserve field alternating nonspace speech with instant/reveal-all silent; do not replay it on
 refresh. No new battle speech bleeps. Chinese pacing is a human-readability question, not a reason
@@ -381,15 +426,16 @@ asset decision; retain it and identify the untranslated gap until then. A catalo
 
 ## Implementation sequence and acceptance
 
-These are finite candidates, not authorized implementation or a new queue. Paths are repository
+The M1 paths below are implemented only at the bounded pilot boundary above. Later phases remain
+finite candidates, not an implementation queue. Paths are repository
 relative: `A` = `remake/src/Sf2.Remake.Application`, `C` = `remake/src/Sf2.Remake.Content`,
-`G` = `remake/game`, `T` = `remake/tests/Sf2.Remake.Engine.Tests`. New paths are proposals; no
-scaffolding exists in M0. Dispatch must recheck names and single-writer ownership, especially shared
-settings/catalogs/reader/theme files. Update closest capability/verification owners when behavior lands.
+`G` = `remake/game`, `T` = `remake/tests/Sf2.Remake.Engine.Tests`. M1 owns the implemented paths
+below; future dispatch must recheck names and single-writer ownership, especially shared
+settings/catalogs/reader/theme files, and update closest capability/verification owners.
 
 ### M1 integrated sample
 
-| Responsibility | Exact proposed paths |
+| Responsibility | M1 implementation paths |
 | --- | --- |
 | Selection, lookup, settings | New `G/src/Localization/GameText.cs`, `G/localization/en.po`, `G/localization/zh_CN.po`; existing `G/project.godot`, `G/src/GameRoot.cs`, `G/src/Input/InputSettings.cs`, `G/src/Entry/SettingsHost.cs`, `G/src/UI/SettingsView.cs`, `G/src/Entry/SessionEntryView.cs` (settings access refresh only) |
 | Overlay and token reuse | New `C/Localization/DisplayCatalog.cs`, `C/Localization/DisplayCatalogReader.cs`, `C/Scenarios/ExplorationTextTokens.cs`; existing `C/Scenarios/ExplorationContentReader.cs`; new original `remake/content/authored/localization-pilot.json` and `remake/content/authored/localization-pilot.zh-CN.json` |
@@ -459,18 +505,19 @@ rows and names; sample a dialogue/result with human review and estimate review e
 from translation throughput. No API/model expenditure is authorized by this plan. Rights/terminology
 and quality are not established by placeholder checks.
 
-Outstanding boundaries: installed 4.7.2 catalog/font behavior; display-range mapping through
-CLEAR/D1/choice/close; HEAL invariance under slow translated reading; mixed-script reveal/speech/
-punctuation; exact licensed font pin; game terminology/private translation publication; Windows IME
-event ordering; Unicode save downgrade marker. Runtime projection/font/invariance are M1 stopping
-gates; naming questions belong to M4. None authorizes runtime work in this docs-only M0.
+Remaining boundaries: human typography/readability and translation review, terminology/default-name
+translation, private translated-content publication, other dialogue/choice consumers, Windows IME
+event ordering and a future Unicode save downgrade marker. The bounded installed-font, source-range,
+HEAL-invariance and mixed-script observations are described above; they do not establish broader
+content coverage or naming support.
 
-## M0 review and verification
+## Verification ownership
 
 Review the three real consumers, dependency direction, settings transaction, canonical-work
 separation and save identity. Check links/anchors, examples/fences/tables, exact scope and absence
 of private content. On a clean committed candidate load the owning ignored configuration and run
 `uv run sf2 verify plan --base origin/main --head HEAD`; interpret it under the
-[documentation-only scope](../development-and-verification.md#scope). Record exact head/tree/base,
-direct checks and actual CI in the handoff/PR, not a growing history here. No engine/adapter/full
-suite or runtime observation is an M0 acceptance claim. Main-gate owns independent integration.
+[current verification scope](../development-and-verification.md#scope). Record exact head/tree/base,
+direct checks and actual CI in the handoff/PR, not a growing history here. M0 did not claim runtime observations. M1 uses actual engine behavior tests, adapter compilation
+and directly executed bounded native/catalog variants; no tests of validators or probes are added.
+Main-gate owns independent integration.

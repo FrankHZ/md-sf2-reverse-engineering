@@ -5,6 +5,18 @@ prepared private worlds/scene documents; it does not reopen a ROM or reconstruct
 asset catalog. [Profiles and trust](profiles-and-trust.md) owns runtime admission and redistribution.
 [Godot](../godot/presentation.md) owns disposable rendering, not source provenance.
 
+## Public localization pilot assets
+
+The game bundles one unmodified OFL 1.1 Noto Sans CJK SC Regular font and its
+[exact upstream pin/notices](../../game/fonts/localization/README.md). The adjacent `.otf.import`
+records `res://` paths and disables system fallback; generated `.godot` font data stays local.
+The original authored localization pilot contains only simple solid diagnostic rasters, a generated
+20ms tone and original prose/translation. Its minimal glyph metrics express authored logical work,
+not original font evidence. No source-derived script, translated private text or extracted asset is
+publicized. Package display overlays are optional separate inputs; `SF2_DISPLAY_CATALOG` is explicit
+and absolute, with existing private repository/commit/ROM identity checked by Content when applicable.
+See [admission/fallback](../application/localization-design.md#implemented-m1-boundary).
+
 ## Master and Runtime Buckets
 
 Original material is the canonical private source. Newly authored raster masters and reviewed
