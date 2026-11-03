@@ -1,5 +1,63 @@
 # Godot Host and Presentation
 
+## Shared visual rules and finite consumers (#1453)
+
+**Standard rigor:** harmonize existing readable gameplay controls in independently reviewed stages.
+Stage1 owns `UI/StoryTheme.cs`, only non-diamond list/navigation styling in
+`Battles/BattleMenuLayout.cs`, this owner, the [gap disposition](../evidence/opening-ui-gaps.md#shared-visual-pilot-1453)
+and the [necessary native recipe](../verification/host.md#shared-visual-menu-pilot-1453).
+The representative consumer precedes further migration. No new UI kit, font/art acquisition,
+gameplay rules, input authority or world rendering belongs to this work. Preserve existing fonts,
+blue/gold assets, diamond icons/animation, source-grouped Party layout and 96px/4× world scale.
+
+Current shared rules:
+
+- Existing dark-blue frames use a thin pale-gold border, 14px horizontal/12px vertical content
+  margins. Keep role-specific headings/body/hints, card gauges and portrait reservations; do not
+  force every label into a single font size. Dialogue's 30px body/24px hints remain its own defaults;
+  battle rows remain 30px with their existing 64px minimum and native wrapping/scrolling.
+- `StoryTheme.Selected` (`ffe19a`) marks an available current choice. The shared
+  `Unavailable` (`8e9bab`) also serves existing entry-button disabled text. Battle labels override
+  the native font color directly, avoiding multiplication by the inherited body color. Ordinary
+  rows inherit the existing theme body color (`f4f5fc`).
+- Focus and availability are separate: a selected battle row always retains `›`, including an
+  unavailable row. Unavailable text stays muted regardless of focus, keeps its literal
+  `unavailable` suffix and exposes the actual reason in the description. Unavailable target Confirm
+  keeps its compact label and the description's explicit refusal reason; an enabled Confirm uses shared gold. Color alone never promises
+  legality. Numeric HP/MP and existing Low HP/Defeated text remain the status-card authority.
+- Existing native buttons retain hover/pressed/focus/disabled boxes from `CreateEntry`.
+  Custom Label menus keep their existing deliberate pointer gestures, keyboard/pad focus,
+  scroll clipping and release guards. They do not become native Buttons or acquire a second
+  activation/focus authority. A stationary pointer cannot steal keyboard selection.
+
+**Confirmed, source inventory; remaining finite allocation:** these are existing consumers, not
+an automatic migration checklist. Only the battle list/navigation pilot changes production in Stage1.
+
+| Consumer | Current treatment and disposition |
+| --- | --- |
+| Entry, SaveSlot, NameEntry, Settings/control help, gameplay Save/Quit | Already consume shared native button/editor treatment. Regression consumers; no Stage1 rewrite. Preserve their separate persistence and release boundaries. |
+| `GameRoot.NewGameEntry` | Uses `Create`, unlike adjacent Save/Quit/Settings buttons. Later bounded host migration to existing button treatment; no lifecycle change. |
+| `BattleMenuLayout` non-diamond rows/navigation | Stage1 actual consumer: shared selected/unavailable colors and independent marker/reason, including unavailable target feedback. Existing geometry, fonts, scroll and command authority remain. |
+| `ChurchServiceView` and `FieldActionView` (Prepare) | Already share frames and marked selected rows; unavailable rows currently receive selected gold. Later finite availability/focus migration, preserving explanatory focus and real refusal. Church wording/transient error repair belongs to #1454. |
+| `PartyStatusView` / `PartyDetailsPanel` | Already share frames, source grouping, gauges and detail scrolling. Later finite selector-focus distinction from persistent Prepare/Close gold; retain role-specific typography and panes. |
+| `StoryChoiceRow` | Already uses shared gold plus a selection marker and the caller's phase/release rules. No change justified by this inventory. |
+| Dialogue, ContextHint, status/detail panels, battle messages/results | Already use shared readable frames with distinct content roles. No Stage1 change; preserve portraits, numeric warnings and the existing reward sequence without another summary. |
+| `BattleGiveView` / `BattleDiscardView` | Real supported result consumers, currently centered default-size labels over a dark veil. Later finite shared frame/body migration using existing components; retain their own reveal/token/acknowledgement boundary. They are not dismissed as diagnostics. |
+| `BattleRetreatView` | Real authored retreat text/effect/closure consumer with default label styling. Later finite text-frame/body migration; preserve cue/pulse, reduced-flash and delivery phases. No original timing claim. |
+| `BattleAppearanceView` | Authored hidden-spawn notice/animation, outside the selected opening route; default-size gold text and raw actor notice remain a known later-consumer gap. Defer its text treatment until that finite capability is selected, without changing emergence timing. |
+| `BattleSessionView` fallback HUD | Unthemed scrollable labels include actual Give/Discard/equipment choices and fallback status/help, not just diagnostics. Later bounded frame/type treatment must preserve those commands and scrolling; do not hide it or claim global completion. Title/roster already hidden remain diagnostic. |
+
+Acceptance uses adapter/necessary Debug builds, a clean committed dependency plan, direct
+source/doc/private-boundary checks and one actual 1080p battle menu before any distinct consumer
+expansion. Observe real theme colors/fonts/geometry, available and unavailable selected rows,
+keyboard/pad/pointer/scroll/focus/release, unchanged diamond/96px state and rejected-command resource
+preservation. Reuse the prepared long-name/MP/target cases and existing observer, with new outputs
+under `local/issue1453`, a 100 MiB budget and serial native runs of at most 45 seconds. No engine/full
+suite, helper tests, screenshots, per-frame capture or whole route is needed. Main-gate independently
+reviews this pilot before allocating remaining paths. Human aesthetics, physical release, actual
+1080p-display/DPI approval stay with #1456; original media/timing and existing WAV teardown warnings
+remain **Unknown**. #1447 stays deferred.
+
 ## Basic preferences agreement
 
 **Standard rigor; [#1451](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1451).**
