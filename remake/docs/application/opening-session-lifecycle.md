@@ -137,7 +137,13 @@ Mouse Start and Reveal/Continue buttons cover the same reading path. The Witch c
 arrival head to open eyes and animates its mouth while revealing text, with a small periodic blink.
 Reduced-flash keeps static frames. These are presentation choices, not original frame timing.
 The source 256×224 composition uses 4× nearest sampling independently of the world's 96px grid;
-native 30px text, right-side actions and the shared dialogue panel remain readable at1080p.
+native30px text uses the [bounded entry windows](../godot/presentation.md#entry-windows-and-hints-1445).
+Title/Witch choices, Continue/backup/error, New Game slots, naming and final confirmation now use
+that opt-in chrome and the Witch-safe right region. Continue retains the Witch backdrop while
+selecting/restoring a slot; Back returns to its menu. The temporary entry canvas mode restores the
+previous gameplay mode on exit. Compact hints consume installed mappings; keyboard name editing
+retains its existing Enter/Escape semantics. These presentation changes preserve the High-rigor
+publication, backup and session-replacement contract; final human visual acceptance remains pending.
 
 `SessionEntryView` owns only presentation/input and disposable resources; `GameRoot` retains
 session construction/replacement. Continue uses the existing slot/backup diagnostics. Replacement

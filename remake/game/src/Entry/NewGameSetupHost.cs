@@ -23,7 +23,7 @@ public sealed partial class GameRoot
     {
         if (_input is null || _slots is not null || _nameEntry is not null) return;
         _nameDraft = ""; _newSlot = 1; _newMainSeed = _newThinkingSeed = null;
-        OpenSavePanel(overEntry: true); _entry!.Setup(true); ShowNewSlots();
+        OpenSavePanel(overEntry: true); ShowNewSlots();
     }
 
     private void ShowNewSlots()
@@ -47,7 +47,7 @@ public sealed partial class GameRoot
     private void ShowName()
     {
         ClearPreparedNewGame(); _slots!.Hide(); CloseName();
-        _nameEntry = new NameEntryView { Name = "NameEntryView", Draft = _nameDraft,
+        _nameEntry = new NameEntryView { Name = "NameEntryView", Draft = _nameDraft, Input = _input,
             Done = name => { _nameDraft = name; CloseName(); ConfirmNewGame(); },
             Back = name => { _nameDraft = name; ShowNewSlots(); } };
         AddChild(_nameEntry); DisarmInput();
