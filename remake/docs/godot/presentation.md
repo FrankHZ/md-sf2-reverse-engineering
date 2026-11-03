@@ -677,6 +677,64 @@ its owning handoff records keyboard editing, invalid/default/draft handling, pad
 focused/unfocused, held button/axis release across exit, final Start and fresh-process Continue.
 No persistence/engine semantics changed, so earlier name/save compatibility evidence remains applicable.
 
+## Gameplay Save and Quit windows (#1450)
+
+Standard rigor: a bounded presentation change in the existing SaveSlotView and persistence host;
+the High-rigor [save contract](../application/opening-session-lifecycle.md#agreement-and-decision)
+retains query/capture, publication/backup, failure retention and explicit confirmation authority.
+No save schema, supported location, transaction, engine rule, autosave or new UI framework changes.
+
+Gameplay uses a centered, content-height window up to1040px wide with32px side clearance in native
+coordinates. A translucent navy scrim preserves the paused field/battle behind it; entry continues
+to use its Witch-safe right window and existing canvas scaling. Both use the accepted shared blue/gold
+button normal/hover/pressed/disabled/selection treatment and compact mapped hints. Gameplay adds a
+short state heading; entry keeps its accepted vertical arrangement. Slot rows wrap the complete
+character name, known savepoint destination and UTC save timestamp. Only the four already supported
+recipe identities receive readable destination labels; unknown identities say location unavailable.
+No current NPC/position, elapsed playtime or original-game state is inferred from a slot.
+
+State sequence: Save explains the safe return destination and ambient reset, then offers both slots,
+Cancel and Quit. Slot selection opens a cancel-first save/overwrite confirmation, with backup wording
+only for replacement. Success offers Return to game. Unsupported/busy/configuration/storage errors
+have a readable reason, explicit file-retention wording, Back and Quit; the existing diagnostic code
+is secondary. Uncertain publication remains distinct and directs the player to check Continue before
+retrying. Missing/damaged/incompatible slots and available backups have readable summaries; explicit
+backup recovery retains Cancel first. Ordinary and unsaved Quit share the same window and explicit
+Cancel-first Quit action. Opening, browsing and canceling never write a slot; no implicit retry or save.
+Church Save closes its real caller and enters this same settled Save path.
+
+Acceptance: adapter compilation, clean committed scope plan, direct document/diff checks and bounded
+actual native input/state/control geometry/error observations. Pilot Save, cancel and failed write
+before expanding to both slots, replacement, success, refusal, backup, Church, control return and
+clean/dirty Quit; use disposable namespaces and direct file comparison. Observe1920×1080 gameplay
+and the existing entry scaling transition in the same owned project, with mapped keyboard/pad/mouse.
+Reuse existing local observers and tool/input selections; reports under local/issue1450, compact
+semantic checkpoints only, routine output budget100MiB and bounded native runs. No aggregate suite,
+screenshots, media collection, #1447 work or new verification platform. Stop expansion for repeated
+observer repair without useful product evidence. Engineering checks do not establish human visual
+approval or original timing/natural reach; those remain Unknown.
+
+**Confirmed, executor native observation:** at1920×1080, the one-occupied-slot window is
+(440,219,1040,641), and both occupied slots produce (440,205,1040,669). The scene remains visible
+and disabled beneath a scrim with alpha below1; control returns on close. Keyboard, pad and complete
+pointer clicks cover cancel-first overwrite, two saves, success, same-slot write failure with unchanged
+primary/backup, and clean/dirty Quit. Explicit Quit exits without changing either saved file. Real
+Church input returns through its caller before opening this same Save window; Save during Church
+refuses and preserves its wait/files. Entry keeps (1216,64,640,952) logical bounds at1280×720 and
+1100×800 letterboxing, then restores native gameplay coordinates. Backup Cancel/recovery and the
+unavailable-primary compatibility exclusion were observed separately; Save/New Game never offer
+recovery. These observations establish the named adapter boundary, not user visual acceptance.
+
+After the [existing private entry setup](../verification/host.md#title-and-witch-entry-observation),
+reproduce retained automation with `pwsh -NoProfile -File local/issue1450/run-native.ps1 -Run <fresh>
+-Phase <phase> -Namespace <disposable>`. Phases `pilot`, `full` and `church` create their own initial
+save through ordinary entry; `recover`, `blocked-recovery` and `slot-context` use disposable fixtures
+from that successful run. Recovery uses a damaged primary plus the valid backup; the blocked case
+uses a correctly enveloped version2 primary plus a version1 backup. Slot-context continues slot2
+then inspects damaged slot1 through Save/New Game. The ignored handoff names exact results, fixture
+preparation, retained observer/startup/navigation failures and unobserved boundaries. No storage
+contract evidence is replaced, and no screenshot or original-game reach claim is made.
+
 ## Field Projection
 
 Content validates the prepared world's raster shape/identity and required map/sprite/portrait
