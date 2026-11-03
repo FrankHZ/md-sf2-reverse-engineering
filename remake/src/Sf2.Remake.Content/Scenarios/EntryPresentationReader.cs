@@ -5,7 +5,8 @@ namespace Sf2.Remake.Content.Scenarios;
 
 // Private offline entry package, independent of gameplay/save definitions.
 public sealed record EntryPresentation(IReadOnlyDictionary<string, byte[]> Images,
-    IReadOnlyDictionary<string, string> Dialogue, IReadOnlyDictionary<string, ExplorationAudio> Audio);
+    IReadOnlyDictionary<string, string> Dialogue, IReadOnlyDictionary<string, ExplorationAudio> Audio,
+    string Profile, string UpstreamCommit, string RomSha256);
 
 public static class EntryPresentationReader
 {
@@ -54,6 +55,7 @@ public static class EntryPresentationReader
         if (audio.Count != 2 || !audio.TryGetValue("MUSIC_TITLE", out var title) || title.Command != 28 ||
             !audio.TryGetValue("MUSIC_WITCH", out var witch) || witch.Command != 10 || witch.LoopBegin is null)
             throw new ArgumentException("entry-music-required");
-        return new(images, dialogue, audio);
+        return new(images, dialogue, audio, root.GetProperty("profile").GetString()!,
+            root.GetProperty("upstreamCommit").GetString()!, root.GetProperty("romSha256").GetString()!);
     }
 }

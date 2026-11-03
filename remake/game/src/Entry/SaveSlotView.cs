@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.UI;
 
@@ -11,6 +12,7 @@ internal sealed partial class SaveSlotView : Control
     private Label _message = null!;
     private Label _title = null!;
     private Label _detail = null!;
+    private Label _coverage = null!;
     private PanelContainer _panel = null!;
     private VBoxContainer _column = null!;
     private readonly List<Button> _buttons = [];
@@ -48,6 +50,9 @@ internal sealed partial class SaveSlotView : Control
             AutowrapMode = TextServer.AutowrapMode.WordSmart, Visible = false };
         _detail.AddThemeFontSizeOverride("font_size", 20);
         _detail.AddThemeColorOverride("font_color", new Color("a7b9cf")); _column.AddChild(_detail);
+        _coverage = new Label { Name = "SlotCoverage", HorizontalAlignment = HorizontalAlignment.Center,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        _coverage.AddThemeFontSizeOverride("font_size", 20); _column.AddChild(_coverage);
         Resized += ArrangeWindow; ArrangeWindow();
     }
 
@@ -62,12 +67,15 @@ internal sealed partial class SaveSlotView : Control
     {
         State = state; _message.Text = message;
         _detail.Hide(); _detail.Text = "";
-        _title.Text = state switch { "save-slots" => "Save your journey", "confirm-save" => "Confirm save",
-            "saved" => "Progress saved", "confirm-quit" => "Leave the game?", "error" => "Unable to save",
-            "recover-backup" => "Recover a saved journey", _ => "Saved journeys" };
+        _coverage.Text = string.Join("\n", new[] { GameText.Fallback("slot.", includeKey: true), GameText.Fallback("save.", includeKey: true),
+            GameText.Fallback("new.", includeKey: true), GameText.Fallback("entry.", includeKey: true) }.Where(text => text != ""));
+        _coverage.Visible = _coverage.Text != "";
+        _title.Text = state switch { "save-slots" => GameText.Get("slot.title.save"), "confirm-save" => GameText.Get("slot.title.confirm"),
+            "saved" => GameText.Get("slot.title.saved"), "confirm-quit" => GameText.Get("slot.title.quit"), "error" => GameText.Get("slot.title.error"),
+            "recover-backup" => GameText.Get("slot.title.recover"), _ => GameText.Get("slot.title.default") };
         _message.AddThemeColorOverride("font_color", state.Contains("error") || state.Contains("uncertain")
             ? new Color("ffc4ad") : Colors.White);
-        _hint.Text = Input is null ? "" : $"{Input.CompactHint(GameAction.Confirm)}: Choose   •   {Input.CompactHint(GameAction.Cancel)}: Back";
+        _hint.Text = Input is null ? "" : GameText.Get("entry.choose-hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
         foreach (var button in _buttons) { _column.RemoveChild(button); button.QueueFree(); }
         _buttons.Clear(); _actions.Clear(); _selected = 0;
         foreach (var (label, action) in choices)
@@ -76,11 +84,12 @@ internal sealed partial class SaveSlotView : Control
             var button = new Button { Text = label, AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(OverEntry ? 600 : 0, 76), FocusMode = FocusModeEnum.None };
             button.Pressed += () => { Select(index); action(); };
             button.MouseEntered += () => Select(index);
-            button.TooltipText = Input is null ? "" : Input.Hint(GameAction.Confirm) + " • Back: " + Input.Hint(GameAction.Cancel);
+            button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.Hint(GameAction.Confirm), Input.Hint(GameAction.Cancel));
             _column.AddChild(button); _buttons.Add(button); _actions.Add(action);
         }
         _column.MoveChild(_hint, _column.GetChildCount() - 1);
         _column.MoveChild(_detail, _column.GetChildCount() - 1);
+        _column.MoveChild(_coverage, _column.GetChildCount() - 1);
         Select(0);
     }
 

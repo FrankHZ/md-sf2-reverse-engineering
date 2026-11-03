@@ -1,6 +1,8 @@
 using Godot;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.GodotAdapter.Audio;
+using Sf2.Remake.GodotAdapter.Localization;
+using Sf2.Remake.Content.Localization;
 
 namespace Sf2.Remake.GodotAdapter.Entry;
 
@@ -9,10 +11,19 @@ internal sealed class EntryPresentationAssets : IDisposable
     internal readonly Dictionary<string, ImageTexture> Textures = [];
     internal readonly EntryPresentation Content;
     internal SessionAudio? Audio { get; private set; }
+    private readonly DisplayCatalog? _display;
+    private readonly string? _displayError;
+    internal DisplayResult Dialogue(int id)
+    {
+        if (GameText.Language == "en") return new(Content.Dialogue[id.ToString(System.Globalization.CultureInfo.InvariantCulture)], "en", null);
+        return _display?.ResolveEntry(id, Content) ?? new(Content.Dialogue[id.ToString(System.Globalization.CultureInfo.InvariantCulture)], "en", _displayError);
+    }
 
     internal EntryPresentationAssets()
     {
         Content = EntryPresentationReader.Read(System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENTRY_CONTENT") ?? "");
+        var display = GameText.EntryCatalog(Content, System.Environment.GetEnvironmentVariable("SF2_ENTRY_DISPLAY_CATALOG"));
+        _display = display.Catalog; _displayError = display.Error;
         try
         {
             foreach (var (name, bytes) in Content.Images)

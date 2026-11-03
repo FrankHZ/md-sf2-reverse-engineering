@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Content.Scenarios;
 
 namespace Sf2.Remake.Content.Localization;
 
@@ -23,6 +24,10 @@ public sealed class DisplayCatalog
         Diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }
     private static readonly DisplayCatalog English = new("en", new Dictionary<int, Row>(), new Dictionary<int, string>(), []);
+    public DisplayResult ResolveEntry(int text, EntryPresentation source) =>
+        source.Dialogue.TryGetValue(text.ToString(System.Globalization.CultureInfo.InvariantCulture), out var original)
+            ? ResolveRange(text, ExplorationTextTokens.Read(original), [], 0, int.MaxValue)
+            : new("Text unavailable (display-operands).", "en", "display-operands");
     public static DisplayResult Canonical(FieldTextWait wait, ExplorationDefinition source)
     {
         var result = English.Resolve(wait, source);

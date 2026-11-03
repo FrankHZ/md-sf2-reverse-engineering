@@ -8,6 +8,7 @@ using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Exploration;
 using Sf2.Remake.Content.Localization;
 using Sf2.Remake.GodotAdapter.UI;
+using Sf2.Remake.Content.Scenarios;
 
 namespace Sf2.Remake.GodotAdapter.Localization;
 
@@ -17,6 +18,93 @@ internal static class GameText
     internal sealed record Candidate(string Language, IReadOnlyDictionary<string, string> Rows, IReadOnlyDictionary<string, RowStatus> Status);
     private static readonly Dictionary<string, int> Arguments = new()
     {
+        ["entry.new-menu"] = 0,
+        ["entry.more"] = 0,
+        ["entry.more-hint"] = 1,
+        ["entry.new"] = 0,
+        ["entry.cancel"] = 0,
+        ["entry.continue"] = 0,
+        ["entry.quit"] = 0,
+        ["entry.back"] = 0,
+        ["entry.save"] = 0,
+        ["entry.quit-menu"] = 0,
+        ["entry.save-menu"] = 0,
+        ["entry.retry"] = 0,
+        ["entry.return"] = 0,
+        ["entry.recover"] = 0,
+        ["entry.inspect"] = 0,
+        ["entry.reveal"] = 0,
+        ["entry.press-start"] = 0,
+        ["entry.normal"] = 0,
+        ["entry.replacement"] = 0,
+        ["entry.unavailable"] = 0,
+        ["entry.assets"] = 0,
+        ["entry.new-hint"] = 0,
+        ["entry.journey-hint"] = 0,
+        ["entry.retry-help"] = 0,
+        ["entry.launch-help"] = 0,
+        ["name.title"] = 0,
+        ["name.empty"] = 0,
+        ["name.help"] = 0,
+        ["name.use"] = 0,
+        ["name.hint"] = 0,
+        ["name.too-long"] = 0,
+        ["name.character"] = 0,
+        ["name.default"] = 0,
+        ["name.bowie-default"] = 0,
+        ["slot.title.save"] = 0,
+        ["slot.title.confirm"] = 0,
+        ["slot.title.saved"] = 0,
+        ["slot.title.quit"] = 0,
+        ["slot.title.error"] = 0,
+        ["slot.title.recover"] = 0,
+        ["slot.title.default"] = 0,
+        ["slot.matching"] = 0,
+        ["slot.unreadable"] = 0,
+        ["slot.unavailable"] = 0,
+        ["slot.empty"] = 0,
+        ["slot.primary-missing"] = 0,
+        ["slot.backup-review"] = 0,
+        ["slot.backup"] = 0,
+        ["save.destination.new-game"] = 0,
+        ["save.destination.map3-opening"] = 0,
+        ["save.destination.map3-joined"] = 0,
+        ["save.destination.battle01-return"] = 0,
+        ["save.destination.unavailable"] = 0,
+        ["save.choose"] = 0,
+        ["save.quit-dirty"] = 0,
+        ["save.quit-clean"] = 0,
+        ["new.slots"] = 0,
+        ["new.uncertain"] = 0,
+        ["save.error.location"] = 0,
+        ["save.error.compatibility"] = 0,
+        ["save.error.uncertain"] = 0,
+        ["save.error.storage"] = 0,
+        ["save.error.empty"] = 0,
+        ["save.error.busy"] = 0,
+        ["save.error.stale"] = 0,
+        ["save.error.config"] = 0,
+        ["save.error.other"] = 0,
+        ["entry.start"] = 1,
+        ["entry.choose-hint"] = 2,
+        ["entry.choose-tooltip"] = 2,
+        ["entry.reveal-hint"] = 1,
+        ["entry.read-hint"] = 2,
+        ["entry.fail"] = 3,
+        ["entry.fallback"] = 1,
+        ["save.details"] = 1,
+        ["save.offer"] = 1,
+        ["slot.record"] = 4,
+        ["slot.status"] = 3,
+        ["save.overwrite"] = 1,
+        ["save.confirm"] = 1,
+        ["save.saved"] = 2,
+        ["save.recovery"] = 4,
+        ["save.tooltip"] = 1,
+        ["slot.tooltip"] = 2,
+        ["new.confirm"] = 2,
+        ["new.start"] = 1,
+        ["new.error"] = 1,
         ["ui.settings.title"] = 0,
         ["ui.settings.language"] = 1,
         ["ui.settings.text"] = 1,
@@ -108,7 +196,7 @@ internal static class GameText
         ["ui.settings.storage"] = "Preferences were not changed. Recovery details above remain in English.",
         ["ui.settings.invalid"] = "Preferences could not be validated. Current settings are retained.",
         ["ui.settings.display"] = "Language resources are unavailable (localization-resources). Current settings are retained.",
-        ["ui.settings.partial"] = "Chinese pilot: settings, authored field text, HEAL, Church and Search. Missing rows and untranslated names use English.",
+        ["ui.settings.partial"] = "Chinese display: entry, naming help, slots, Save/Quit, settings, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English.",
         ["ui.settings.overlay"] = "Field translation unavailable (overlay-unavailable); English fallback. Preference retained.",
     };
     private static Candidate? _current;
@@ -193,6 +281,17 @@ internal static class GameText
         catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         { _overlayError = "overlay-unavailable"; }
     }
+    internal static DisplayCatalogAdmission EntryCatalog(EntryPresentation source, string? path)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(path) || !System.IO.Path.IsPathFullyQualified(path) ||
+                new System.IO.FileInfo(path).Length > 256 * 1024) return new(null, "overlay-unavailable");
+            return DisplayCatalogReader.Read(System.IO.File.ReadAllBytes(path), source);
+        }
+        catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        { return new(null, "overlay-unavailable"); }
+    }
     internal static DisplayResult Field(FieldTextWait wait, ExplorationDefinition definition)
     {
         DisplayResult result;
@@ -206,10 +305,10 @@ internal static class GameText
         if (result.Reason is { } reason) Diagnose(reason, $"world.text/{wait.Text}");
         return result;
     }
-    internal static string Fallback(string prefix)
+    internal static string Fallback(string prefix, bool includeKey = false)
     {
         var row = _current?.Status.FirstOrDefault(pair => pair.Key.StartsWith(prefix, StringComparison.Ordinal) && pair.Value.Reason is not null);
-        return row?.Value?.Reason is { } reason ? Get("localization.fallback", reason) : "";
+        return row?.Value?.Reason is { } reason ? Get("localization.fallback", includeKey ? reason + ": " + row.Value.Key : reason) : "";
     }
     internal static DisplayResult Search(FieldSearchResult result, GameSession session)
     {

@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
@@ -36,8 +37,8 @@ public sealed partial class GameRoot
             if (read is not ExplorationReadAccepted admitted)
             { NewGameError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "new-game-content-required"); return; }
             var store = Store(admitted.Definition);
-            _slots.ShowChoices("new-game-slots", "Choose a slot for your new journey. Nothing is written until final confirmation.\nNormal difficulty",
-                (Label(1, store.Read(1), admitted.Definition), () => ChooseNewSlot(1)), (Label(2, store.Read(2), admitted.Definition), () => ChooseNewSlot(2)), ("Cancel", CancelNewGame));
+            _slots.ShowChoices("new-game-slots", GameText.Get("new.slots"),
+                (Label(1, store.Read(1), admitted.Definition), () => ChooseNewSlot(1)), (Label(2, store.Read(2), admitted.Definition), () => ChooseNewSlot(2)), (GameText.Get("entry.cancel"), CancelNewGame));
         }
         catch (ArgumentException error) { NewGameError(error.Message); }
         DisarmInput();
@@ -61,10 +62,8 @@ public sealed partial class GameRoot
     private void ConfirmNewGame()
     {
         _slots!.Show(); _slots.Cancel = ShowName;
-        _slots.ShowChoices("confirm-new-game", $"Begin a new journey as {(_nameDraft.Length == 0 ? "Bowie (default)" : _nameDraft)}?\n" +
-            $"Slot {_newSlot} • Normal difficulty\nIf occupied, this replaces that slot; its previous valid save becomes the backup.\n" +
-            "The initial save returns to the beginning of the opening. Current unsaved progress will be discarded only after saving succeeds.",
-            ("Back", ShowName), ($"Start and save to Slot {_newSlot}", CommitNewGame));
+        _slots.ShowChoices("confirm-new-game", GameText.Get("new.confirm", _nameDraft.Length == 0 ? GameText.Get("name.bowie-default") : _nameDraft, _newSlot),
+            (GameText.Get("entry.back"), ShowName), (GameText.Get("new.start", _newSlot), CommitNewGame));
         DisarmInput();
     }
 
@@ -102,7 +101,7 @@ public sealed partial class GameRoot
                     _slots!.Cancel = CancelNewGame;
                     _slots.ShowChoices("new-game-publication-uncertain", "The write may already have completed. Your current session is still paused.\n" +
                         "Progress files have been retained. Inspect Continue before deciding whether to start another journey.",
-                        ("Inspect Continue", () => { CancelNewGame(); ShowContinue(); }), ("Cancel", CancelNewGame));
+                        (GameText.Get("entry.inspect"), () => { CancelNewGame(); ShowContinue(); }), (GameText.Get("entry.cancel"), CancelNewGame));
                 }
                 else NewGameError(written.Error!);
                 return;
@@ -118,9 +117,8 @@ public sealed partial class GameRoot
     private void NewGameError(string error)
     {
         _slots!.Show(); _slots.Cancel = CancelNewGame;
-        _slots.ShowChoices("new-game-error", $"New Game unavailable: {error}.\nNo new session was mounted. Existing progress files were retained.\n" +
-            "Correct the input or storage problem, then retry; Cancel returns to the Witch.",
-            ("Back", ShowNewSlots), ("Retry", _newMainSeed is null ? ShowNewSlots : CommitNewGame), ("Cancel", CancelNewGame));
+        _slots.ShowChoices("new-game-error", GameText.Get("new.error", error),
+            (GameText.Get("entry.back"), ShowNewSlots), (GameText.Get("entry.retry"), _newMainSeed is null ? ShowNewSlots : CommitNewGame), (GameText.Get("entry.cancel"), CancelNewGame));
         DisarmInput();
     }
     private void ClearPreparedNewGame() { _preparedAudio?.Dispose(); _preparedAudio = null; _preparedNewGame = null; }

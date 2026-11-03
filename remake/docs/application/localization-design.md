@@ -2,10 +2,11 @@
 
 ## Scope and status
 
-**Implemented bounded M1 and M2a consumers; independent integration/product acceptance remains separate.**
+**Implemented bounded M1, M2a and M2b consumers; independent integration/product acceptance remains separate.**
 The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469)
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
-settings, authored FieldTextWait and semantic HEAL consumers, plus localized Church/Search under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
+settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search and the entry/save
+screen group under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
 These describe the remake, not new original-game evidence.
@@ -71,8 +72,8 @@ The current slice owns English/zh-CN Church menus, offers, results, choices, err
 Search source-ID rows and typed item/gold/full/empty feedback. Entry/slots, other menus, private script
 translation batches, Unicode names, new services, layout redesign and save migration remain outside
 scope. Acceptance preserves payment/queue order, atomic reward/flag/chest publication, unavailable
-services, ordinary input/release, English fallback and controls recovery. The next independent slice
-is M2b; independent review/integration of this candidate remains main-gate work.
+services, ordinary input/release, English fallback and controls recovery. Entry/save consumers have
+their separate M2b boundary below; independent integration remains main-gate work.
 
 - Application `ChurchWait.Phase` derives only from typed Action/Result. `ChurchResult` retains
   NoApplicableMember, Declined, InsufficientGold or Paid with the immutable treatment/cost; the curse
@@ -109,6 +110,40 @@ is M2b; independent review/integration of this candidate remains main-gate work.
 pre-start variants and observation entry points. Human translation/typography and private-content
 coverage remain unaccepted. The existing High save/restore boundary and format are unchanged.
 
+## Implemented M2b entry and save boundary
+
+English/zh-CN now cover title/Witch controls, New Game setup, restricted-name help/errors, slot
+status/destination/UTC time, Save/Quit/Continue, overwrite/backup recovery and recoverable failures.
+Node/action identity is independent of labels. Custom names, including an explicit `Bowie` override,
+stay literal. Granseal and Ancient Tower retain source names pending M3 terminology review.
+Only the existing Normal difficulty, seven-character restricted alphabet and save recipes are admitted.
+
+`EntryPresentationReader` retains the validated entry profile/upstream commit/ROM identity alongside
+its existing images, six dialogue rows and audio. Optional absolute `SF2_ENTRY_DISPLAY_CATALOG`
+selects a separate display overlay for that actual entry source; `SF2_DISPLAY_CATALOG` still selects
+world text. Both use the existing bounded reader/token/control mapping, with no fabricated gameplay
+scenario. Entry package is `private-local-entry`, namespace `entry.text`, IDs 216–221. The source
+object requires `repository`, `commit` and `romSha256` matching the admitted entry identity. An absent
+overlay, missing row, invalid row or structural/source failure keeps the corresponding complete
+English text and distinct effective-locale/reason metadata. No private translated script ships here.
+
+Entry and naming hints and the slot footer expose UI fallback reason/key separately from entry
+source fallback. Error rendering retains actual failure/code/field/retry operands. Successful Apply
+refreshes existing entry/error and New Game/Save/Quit labels without replaying ShowMenu, audio,
+page advancement or session work. A changed menu body resets only its visual reading position.
+Long greeting/menu/error text uses the existing ReadMore mechanism: Confirm or a pointer command
+reads before activation; a visible Read more control occupies the first menu row until reading
+finishes. Settings and Cancel remain accessible, and ordinary short text adds no reading step.
+
+Persistence changes are display-only: destinations derive from `Recipe`, never English Description.
+Final confirmation still precedes New Game write; write precedes mount; retry retains the prepared
+candidate/seeds; uncertain publication still offers Inspect Continue (检查存档). Backups, stale revision,
+Church caller return, UTC timestamps, game-save format and preference write/publish order are unchanged.
+[Native reproduction](../verification/host.md#localized-entry-and-save) owns actual input, long text,
+fallback and independent-process observations. Image lettering, private dialogue translation, other
+menus, Unicode/IME names, full-opening coverage, export and human translation/typography acceptance
+remain outside this slice. Standard rigor and the existing High save boundary continue unchanged.
+
 ## Current production and consumption paths
 
 **Confirmed by source inspection:** the following is a bounded responsibility inventory, not an
@@ -116,7 +151,7 @@ exhaustive string dump. Linked files and symbols locate the claims without relyi
 
 | Producer / identity | Current consumer | Consequence for localization |
 | --- | --- | --- |
-| [SettingsView.Refresh](../../game/src/UI/SettingsView.cs), [SessionEntryView](../../game/src/Entry/SessionEntryView.cs), [NameEntryView](../../game/src/Entry/NameEntryView.cs): hardcoded labels/help/errors | Godot Button/Label/LineEdit and hints | Resolve stable UI keys when views refresh. `NameEntryView.AddAction` currently uses `text == "Use name"` to identify a button; change that to an action/reference before translating. Keep node names derived from labels stable too. |
+| [SettingsView.Refresh](../../game/src/UI/SettingsView.cs), [SessionEntryView](../../game/src/Entry/SessionEntryView.cs), [NameEntryView](../../game/src/Entry/NameEntryView.cs): migrated UI keys/help/errors | Godot Button/Label/LineEdit and hints | M1/M2b use stable keys and action/node identities. The UseName button reference and entry node names no longer depend on displayed English. |
 | [FieldService.Submit/Completion](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldService.cs): M2a `ChurchWait.Result` retains typed outcome/treatment and independent curse notice | [ChurchServiceView.Present](../../game/src/Exploration/ChurchServiceView.cs) | M2a consumes finite result/effect/cost and explicit phase; payment/queue advancement precede display. English wording has no phase authority. |
 | [HealingSceneCursor.Create/Enter](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs): names/spell/amount substituted into `ActionText`/`RecoveryText`; private IDs 274/298 | `Enter` creates logical work per character; [BattleSceneView.Message](../../game/src/Battles/BattleSceneView.cs) displays the same strings | Chinese replacement would change work and potentially fairy/RNG progression. Retain execution strings and add semantic display operands for M1. |
 | `BattleSceneState`: phase, actor, target, amount, rewards, item and growth values | `BattleSceneView.Message` maps source IDs and replaces tags; AURA uses English interpolation | Most semantics already exist. Reuse those fields, without a duplicate event bus. Reward/HP publication remains in the continuation. |
@@ -516,7 +551,7 @@ M1 does not enable Unicode naming or close the epic.
 | Candidate / dependencies | Initial exact ownership | Acceptance, failure and stop |
 | --- | --- | --- |
 | Implemented M2a Church/Search feedback after M1 | `A/Runtime/Exploration/FieldService.cs`, `A/Runtime/Exploration/FieldSearch.cs`, `G/src/Exploration/ChurchServiceView.cs`, `G/src/Exploration/ExplorationDialogueView.cs`, `G/src/Localization/GameText.cs`, `G/localization/en.po`, `G/localization/zh_CN.po`, `T/FieldSearchTests.cs`, `T/FieldServiceTests.cs` | Finite result values replace concatenation/string-phase coupling. Success/decline/insufficient/full-pack cases preserve payment, party/status/receipt order and confirmation. Actual behavior/adapter checks; display failure retains committed rewards. Stop after these consumers. |
-| M2b Entry/slots/naming help after M1 | `G/src/Entry/SessionEntryView.cs`, `G/src/Entry/NameEntryView.cs`, `G/src/Entry/SaveSlotView.cs`, `G/src/Entry/OpeningPersistenceHost.cs`, `G/src/Entry/EntryPresentationAssets.cs`, `G/src/Localization/GameText.cs`, both PO paths above, `C/Localization/DisplayCatalogReader.cs` for entry namespace | Stable node/action identity, six entry dialogue bindings, readable errors/slots, old names/saves unchanged. Direct entry/Continue observations; no refresh-triggered music restart or schema/image replacement. Stop with untranslated image lettering explicit. |
+| Implemented M2b Entry/slots/naming help after M1 | `G/src/Entry/SessionEntryView.cs`, `NameEntryView.cs`, `SaveSlotView.cs`, `OpeningPersistenceHost.cs`, `NewGameSetupHost.cs`, `EntryPresentationAssets.cs`; `SettingsHost.cs` and `G/src/GameRoot.cs` existing label refresh only; `G/src/Localization/GameText.cs`, both PO paths; `C/Localization/DisplayCatalogReader.cs`, `DisplayCatalog.cs`, `C/Scenarios/EntryPresentationReader.cs` | Stable action/node identity, actual entry identity for six dialogue bindings, readable errors/slots, source/UI fallback and long menu reading. Old names/saves unchanged; direct entry/Continue observations without refresh-triggered audio restart or schema/image replacement. |
 | M3 bounded opening terminology/dialogue after admitted consumers and rights/review | Public owner `remake/docs/application/localization-design.md` only if coverage/boundary changes; private catalog under a separately declared non-worktree content root. Dispatch must name those actual private files before writing | Start with reached IDs/names in one playable segment. Direct source/control/parameter comparison plus bilingual review. No runtime/export edits by translators. Drift/ambiguity stops affected rows; fallback stays explicitly untranslated. No whole-game batch. |
 | M4 Chinese naming/IME after M1 and accepted High compatibility policy | `A/Runtime/NewGameOptions.cs`, `A/Runtime/OpeningNewGame.cs`, `A/Runtime/CharacterNames.cs`, `A/Runtime/Exploration/ExplorationTextRunner.cs`, `A/Runtime/Battles/BattleSceneContinuation.cs`, `A/Runtime/Persistence/OpeningSaveData.cs`, `A/Runtime/Persistence/OpeningSave.cs`, `A/Runtime/Persistence/OpeningRestore.cs`, `C/Persistence/OpeningSaveJson.cs`, `G/src/Entry/NameEntryView.cs`, `T/OpeningSaveTests.cs`, `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs` | Actual composition/commit/cancel/paste/focus, old name/save preservation and Unicode independent-process Save/Continue. Refuse enablement with unresolved canonical work/backward reading/downgrade; no lossy conversion. Stop at named admitted characters/consumers. |
 
