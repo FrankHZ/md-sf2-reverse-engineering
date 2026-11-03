@@ -61,6 +61,7 @@ public sealed class FieldSearchTests
         Assert.Contains(150, session.Current.Story.Flags);
         Assert.Equal((ushort)0xD802, session.Current.Exploration!.Layout[2, 1]);
         Assert.Equal((ushort)256, session.Current.Exploration.Party.Actors.First().SourceLoadout!.Items[0]);
+        Assert.Equal("Healing Herb", result.ItemName); Assert.Null(result.Message);
         Assert.Same(before.Exploration!.Party.ItemCustody, session.Current.Exploration.Party.ItemCustody);
         Assert.Equal(before.Exploration.Party.MainSeed, session.Current.Exploration.Party.MainSeed);
         Assert.Equal(before.Exploration.Party.ThinkingSeed, session.Current.Exploration.Party.ThinkingSeed);
@@ -156,6 +157,38 @@ public sealed class FieldSearchTests
         Assert.Null(session.QueryFieldActions(FieldInventoryTests.Giver).Items.Single().Use);
         Assert.Equal("field-item-effect-unsupported", Send(session, new FieldUseItem(FieldInventoryTests.Giver, 0, 4)).Failure!.Code);
         Assert.Same(snapshot, session.Current);
+    }
+
+    [Fact]
+    public void FieldOnlyCatalogItemKeepsItsNameAndUnsellableRuleWithoutEnablingBattleDiscardOrUse()
+    {
+        var document = Document("localization-pilot");
+        document["start"]!.AsObject().Remove("program");
+        document["start"]!["position"]!["x"] = 2;
+        document["world"]!["maps"]![0]!["entities"] = new JsonArray();
+        document["world"]!["maps"]![0]!["events"] = new JsonArray();
+        document["world"]!["maps"]![0]!["search"]!["chests"]![0]!["itemWord"] = 113;
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(Reader(document))).Session;
+        Assert.All(session.Definition.Encounters.Values, encounter => Assert.Null(encounter.Discard));
+        var before = session.Current;
+        var found = Search(session);
+        Assert.Equal(FieldSearchKind.Item, found.Kind); Assert.Equal((ushort)113, found.ItemWord);
+        Assert.Equal("Practice Token", found.ItemName); Assert.Null(found.Message);
+        Assert.Equal(before.Revision + 1, session.Current.Revision);
+        Close(session);
+        var actor = found.Recipient!.Value;
+        var inventory = session.QueryFieldActions(actor);
+        Assert.Null(inventory.Error);
+        var item = Assert.Single(inventory.Items);
+        Assert.Equal("Practice Token", item.Name); Assert.False(item.CanDrop); Assert.Null(item.Use);
+        Assert.Empty(inventory.Spells);
+        Assert.Equal("Practice Token", session.QueryPartyDetails()!.Members.Single(member => member.Carried.Actor == actor).Inventory[0].Name);
+        var settled = session.Current;
+        Assert.NotNull(Send(session, new FieldUseItem(actor, item.Slot, item.Word)).Failure);
+        Assert.NotNull(Send(session, new FieldDrop(actor, item.Slot, item.Word)).Failure);
+        Assert.Same(settled, session.Current);
+        Assert.Equal(FieldSearchKind.Empty, Search(session).Kind);
+        Assert.Same(settled.Exploration!.Party, session.Current.Exploration!.Party);
     }
 
     [Fact]

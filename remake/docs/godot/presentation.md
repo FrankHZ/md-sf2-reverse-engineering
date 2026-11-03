@@ -1,8 +1,8 @@
 # Godot Host and Presentation
 
-The proposed [game localization design](../application/localization-design.md) owns English/zh-CN
-catalogs, safe settings refresh, name/IME and font boundaries. It is not implemented: translated
-display must remain separate from Application's canonical text work and game-save identity.
+The implemented bounded [game localization design](../application/localization-design.md) owns English/zh-CN
+catalogs, safe settings refresh, name/IME and font boundaries. Translated
+display remains separate from Application's canonical text work and game-save identity.
 
 ## Shared visual rules and finite consumers (#1453)
 
@@ -684,7 +684,9 @@ and [host observations](../verification/host.md).
 ## Bilingual pilot presentation
 
 The [M1 localization owner](../application/localization-design.md#implemented-m1-boundary) supplies
-English/zh-CN settings, original authored FieldTextWait and HEAL templates. Language is a draft row in
+English/zh-CN settings, original authored FieldTextWait and HEAL templates. The
+[M2a boundary](../application/localization-design.md#implemented-m2a-churchsearch-boundary) adds Church
+menus/offers/results/hints and Search source-ID/typed feedback through the same resolver. Language is a draft row in
 the existing safe Settings access; Apply prepares the native PO and licensed font before storing,
 then refreshes settings access without remounting or issuing gameplay. Cancel retains the old
 language. Chinese missing/invalid rows retain exact fallback metadata and complete English wording.
@@ -1307,7 +1309,8 @@ visible Search. This modern shortcut invokes explicit menu Search; it does not r
 original no-entity C fallback. The common story panel shows source investigation/description text
 and typed acquisition, full-pack or unavailable feedback. Confirm/click reveals then continues;
 Cancel/right click closes it. Field movement, Party Status and save controls stay closed while the
-result owns input. A dismissed acquisition remains acquired. Result delivery adds no gameplay/RNG
+result owns input. The display uses the retained typed result and admitted source-ID mapping, with explicit whole-row
+English fallback and untranslated-name notes. A dismissed acquisition remains acquired. Result delivery adds no gameplay/RNG
 services and claims no original typewriter, item-music or menu timing. Final UI aesthetics remain
 outside this behavior slice. [State and acceptance](../application/opening-session-lifecycle.md#implemented-opening-search).
 
@@ -1319,7 +1322,10 @@ use the existing press/release pointer guard. The source-ordered member/status o
 gold and exact cost before a separate confirm/decline, with explicit poison/stun removal wording.
 No applicable member, insufficient funds,
 refusal and success are readable results. Cancel declines the current offer or leaves the menu.
-The Application wait owns offers and progression; the panel stores only focus/gesture state.
+The Application typed phase/result owns offers and progression; the panel stores only focus/gesture state.
+Localized text never selects the transaction phase. The independent curse-unavailable notice and
+diagnostic code/field remain visible. Church reserves a minimum 192px hint footer, growing its panel from 824px with measured text
+at 1080p to keep fallback/name notes and refusal text clear of the choice rows.
 
 The panel pauses automatic field service, movement, party preparation and Search. Focus loss,
 hiding or pause suspends its gesture and requires release. Service results, including real caller

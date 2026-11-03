@@ -6,10 +6,14 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public enum ChurchAction { Raise, Cure }
 public enum ChurchEffect { Raise, Poison, Stun }
+public enum ChurchPhase { Menu, Offer, Result }
+public enum ChurchResultKind { NoApplicableMember, Declined, InsufficientGold, Paid }
+public sealed record ChurchResult(ChurchResultKind Kind, ChurchOffer? Treatment = null);
 public sealed record ChurchOffer(ActorRef Member, ChurchEffect Effect, uint Cost, ushort Hp, ushort Status);
 public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, ChurchAction? Action = null,
-    IReadOnlyList<ChurchOffer>? Offers = null, int Index = 0, string? Message = null) : ProgramWait(Token)
+    IReadOnlyList<ChurchOffer>? Offers = null, int Index = 0, ChurchResult? Result = null, bool CurseUnavailable = false) : ProgramWait(Token)
 {
+    public ChurchPhase Phase => Result is not null ? ChurchPhase.Result : Action is null ? ChurchPhase.Menu : ChurchPhase.Offer;
     public ChurchOffer? Offer => Offers is not null && Index < Offers.Count ? Offers[Index] : null;
 }
 public abstract record ChurchCommand(WaitToken Wait) : SessionCommand;
@@ -32,25 +36,26 @@ internal static class FieldService
             string kind;
             switch (command)
             {
-                case ChooseChurch choose when wait.Action is null && Enum.IsDefined(choose.Action):
+                case ChooseChurch choose when wait.Phase == ChurchPhase.Menu && Enum.IsDefined(choose.Action):
                     var offers = Offers(definition, current, wait.Definition, choose.Action);
                     next = next with { Action = choose.Action, Offers = offers, Index = 0,
-                        Message = offers.Count == 0 ? Completion(definition, current, choose.Action, "No applicable member.") : null };
+                        Result = offers.Count == 0 ? new(ChurchResultKind.NoApplicableMember) : null,
+                        CurseUnavailable = offers.Count == 0 && CurseUnavailable(definition, current, choose.Action) };
                     kind = "church-action"; break;
-                case AnswerChurch answer when wait.Action is not null && wait.Message is null && wait.Offer == answer.Offer:
+                case AnswerChurch answer when wait.Phase == ChurchPhase.Offer && wait.Offer == answer.Offer:
                     var offer = wait.Offer!;
                     // Recheck the complete immutable offer against live membership/vitals/cost.
-                    if (!Offers(definition, current, wait.Definition, wait.Action.Value).Contains(offer))
+                    if (!Offers(definition, current, wait.Definition, wait.Action!.Value).Contains(offer))
                         throw new BattleRuleException("stale-service-offer", "service.offer");
                     int index = wait.Index + 1;
-                    string message;
-                    if (!answer.Accept) { kind = "church-declined"; message = "Treatment declined."; }
+                    ChurchResult result;
+                    if (!answer.Accept) { kind = "church-declined"; result = new(ChurchResultKind.Declined, offer); }
                     else
                     {
                         uint gold = party.Gold ?? throw new BattleRuleException("service-gold-unavailable", "party.gold", true);
                         if (gold < offer.Cost)
                         {
-                            kind = "church-insufficient-gold"; message = "Not enough gold. No payment taken.";
+                            kind = "church-insufficient-gold"; result = new(ChurchResultKind.InsufficientGold, offer);
                             // Source Cure aborts the remaining members of this status family.
                             if (wait.Action == ChurchAction.Cure)
                                 while (index < wait.Offers!.Count && wait.Offers[index].Effect == offer.Effect) index++;
@@ -65,25 +70,21 @@ internal static class FieldService
                             next = next with { Offers = Array.AsReadOnly(wait.Offers!.Select(row => row.Member == changed.Actor
                                 ? row with { Hp = changed.Hp, Status = changed.Status } : row).ToArray()) };
                             kind = "church-paid";
-                            string outcome = offer.Effect switch
-                            {
-                                ChurchEffect.Poison => "Poison removed", ChurchEffect.Stun => "Stun removed", _ => "Raise completed",
-                            };
-                            message = $"{outcome}. Paid {offer.Cost} gold.";
+                            result = new(ChurchResultKind.Paid, offer);
                         }
                     }
-                    next = next with { Index = index, Message = message }; break;
-                case ContinueChurch when wait.Message is not null:
-                    next = wait.Offer is null ? new(next.Token, wait.Definition) : next with { Message = null };
+                    next = next with { Index = index, Result = result }; break;
+                case ContinueChurch when wait.Phase == ChurchPhase.Result:
+                    next = wait.Offer is null ? new(next.Token, wait.Definition) : next with { Result = null, CurseUnavailable = false };
                     kind = "church-continued"; break;
-                case LeaveChurch when wait.Action is null:
+                case LeaveChurch when wait.Phase == ChurchPhase.Menu:
                     current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor), observations,
                         command is LeaveChurch { Save: true } ? "church-save-requested" : "church-closed");
                     return ProgramRunner.Run(definition, current, observations, rules);
                 default: return BattleCommandDispatcher.Reject(current, "invalid-service-selection", "service");
             }
             if (next.Action is { } action && next.Offer is null)
-                next = next with { Message = Completion(definition, current, action, next.Message ?? "Finished.") };
+                next = next with { CurseUnavailable = CurseUnavailable(definition, current, action) };
             current = ProgramRunner.Commit(current, new ActiveExploration(field.WithParty(party)),
                 current.Story.Copy(current.Story.Cursor, next), observations, kind);
             return ProgramRunner.Result(current, observations);
@@ -96,9 +97,8 @@ internal static class FieldService
         }
     }
 
-    private static string Completion(ScenarioDefinition definition, SessionSnapshot current, ChurchAction action, string message) =>
-        action == ChurchAction.Cure && PartyDetailsQuery.Query(definition, current)!.Members.Any(member => (member.Carried.Status & 4) != 0)
-            ? message + " Curse removal is unavailable in this content." : message;
+    private static bool CurseUnavailable(ScenarioDefinition definition, SessionSnapshot current, ChurchAction action) =>
+        action == ChurchAction.Cure && PartyDetailsQuery.Query(definition, current)!.Members.Any(member => (member.Carried.Status & 4) != 0);
 
     private static IReadOnlyList<ChurchOffer> Offers(ScenarioDefinition definition, SessionSnapshot current, ChurchDefinition terms, ChurchAction action)
     {

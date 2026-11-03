@@ -232,7 +232,8 @@ internal static class ExplorationContentReader
         Require(encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
             "leader-cleanup-outcome", "encounter.leaderCleanup", true);
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
-                battle.Definition.EncounterStarts.Values, battle.Definition.EncounterScenes.Values),
+                battle.Definition.EncounterStarts.Values, battle.Definition.EncounterScenes.Values)
+            { FieldPreparation = authored ? battle.Definition.FieldPreparation : null },
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
                 (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases,
                 start.TryGetProperty("display", out var display) ? ReadDisplay(display) : null,

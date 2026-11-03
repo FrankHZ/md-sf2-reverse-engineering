@@ -6,6 +6,61 @@
       "namespace": "world.text",
       "id": 100,
       "text": "请稍候，{NAME;0}。{W1}{CLEAR}大门已经打开。{N}{NAME;0}，准备好了吗？{D1}{W2}"
+    },
+    {
+      "namespace": "world.text",
+      "id": 403,
+      "text": "一个练习用的小箱子。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 404,
+      "text": "一个练习用的架子。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 405,
+      "text": "一个练习用的花瓶。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 408,
+      "text": "只剩下一张纸条。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 409,
+      "text": "架子已经空了。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 410,
+      "text": "花瓶已经空了。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 412,
+      "text": "这里没有其他东西。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 423,
+      "text": "一个安静的角落。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 427,
+      "text": "一个练习用的木箱。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 425,
+      "text": "给 {NAME;0} 的告示。"
+    },
+    {
+      "namespace": "world.text",
+      "id": 900,
+      "text": "练习用品就在附近。"
     }
   ]
 }

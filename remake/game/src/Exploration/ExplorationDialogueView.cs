@@ -37,8 +37,6 @@ internal sealed partial class ExplorationDialogueView : Control
         int previouslyVisible = _dialogue.VisibleCharacters < 0 ? _dialogue.GetTotalCharacterCount() : _dialogue.VisibleCharacters;
         _dialogue.Text = current.Story.Wait switch
         {
-            FieldSearchWait search => string.Join("\n", search.Result.Texts.Select(id => session.Definition.Exploration!.Texts.GetValueOrDefault(id) ?? "")) +
-                (search.Result.Message is { } message ? "\n" + message : ""),
             DialogueWait text => session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "",
             ChoiceWait => current.Story.TextWindow is OpenTextWindow question ? session.Definition.Exploration!.Texts.GetValueOrDefault(question.Text) ?? "" : previousText,
             PresentationWait => current.Story.TextWindow is OpenTextWindow text ? session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "" : "",
@@ -54,7 +52,12 @@ internal sealed partial class ExplorationDialogueView : Control
             FallbackReason = current.Story.TextWindow is OpenTextWindow || current.Story.Wait is DialogueWait or W1TextWait or FieldSearchWait
                 ? "unmigrated-consumer" : null;
         }
-        if (current.Story.Wait is FieldTextWait fieldSpan)
+        if (current.Story.Wait is FieldSearchWait search)
+        {
+            var display = GameText.Search(search.Result, session);
+            _dialogue.Text = display.Text; EffectiveLocale = display.EffectiveLocale; FallbackReason = display.Reason;
+        }
+        else if (current.Story.Wait is FieldTextWait fieldSpan)
         {
             var display = GameText.Field(fieldSpan, session.Definition.Exploration);
             _dialogue.Text = display.Text; EffectiveLocale = display.EffectiveLocale; FallbackReason = display.Reason;
@@ -129,18 +132,26 @@ internal sealed partial class ExplorationDialogueView : Control
         bool atInput = current.Story.Wait is DialogueWait or FieldSearchWait or W1TextWait { AtInput: true, Revealed: true } || current.CanWaitForText;
         string hint = current.Story.Wait switch
         {
-            FieldSearchWait when revealed => $"{input.Hint(GameAction.Confirm)} / Click: Continue    {input.Hint(GameAction.Cancel)} / Right click: Close",
+            FieldSearchWait when revealed => GameText.Get("search.continue", input.Hint(GameAction.Confirm), input.Hint(GameAction.Cancel)),
             ChoiceWait => $"{input.Hint(GameAction.Left)} / {input.Hint(GameAction.Right)}: Select    {input.Hint(GameAction.Confirm)}: Confirm    {input.Hint(GameAction.Cancel)} / Right click: No",
-            _ when Panel.Visible && !revealed => $"{input.Hint(GameAction.Confirm)}: Reveal",
+            _ when Panel.Visible && !revealed => GameText.Get("field.reveal", input.Hint(GameAction.Confirm)),
             _ when Panel.Visible && atInput => $"{input.Hint(GameAction.Confirm)}: Continue ▾",
-            _ when current.CanWaitAtInput => (session.QueryExplorationInteraction() is not null ? $"{input.Hint(GameAction.Confirm)}: Talk    " : session.CanSearch ? $"{input.Hint(GameAction.Confirm)}: Search    " : "") + $"Hold {input.Hint(GameAction.Wait)}: Wait    {input.Hint(GameAction.Equipment)}: Party Status",
+            _ when current.CanWaitAtInput => GameText.Get("field.controls",
+                session.QueryExplorationInteraction() is not null ? GameText.Get("field.talk", input.Hint(GameAction.Confirm)) :
+                session.CanSearch ? GameText.Get("field.search", input.Hint(GameAction.Confirm)) : "",
+                input.Hint(GameAction.Wait), input.Hint(GameAction.Equipment)),
             _ => "Scene in progress…",
         };
-        if (Panel.Visible && Panel.MoreBelow && revealed) hint = $"{input.Hint(GameAction.Confirm)}: Read more";
+        if (Panel.Visible && Panel.MoreBelow && revealed) hint = GameText.Get("field.more", input.Hint(GameAction.Confirm));
         if (current.Story.Wait is ChoiceWait { Work: null } && !revealed) hint = $"{input.Hint(GameAction.Confirm)}: Reveal";
         if (BattleEntrySkip.Eligible(current)) hint += current.Story.EntrySkip is null
             ? $"    {input.Hint(GameAction.Cancel)}: Skip battle intro" : "    Skipping battle intro…";
         if (!Panel.Visible && ReturnNotice.Length > 0) hint = ReturnNotice + "\n" + hint;
+        if (current.Story.Wait is FieldSearchWait && GameText.Language == "zh-CN")
+        {
+            hint += "\n" + GameText.Get("localization.names");
+            if (FallbackReason is { } reason) hint += " " + GameText.Get("localization.fallback", reason);
+        }
         _context.Text.Text = hint;
         _context.Arrange(GetViewportRect().Size);
         _context.Visible = !Panel.Visible && (!battleMounted || BattleEntrySkip.Eligible(current));

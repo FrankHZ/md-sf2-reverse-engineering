@@ -11,16 +11,16 @@
       "initialVitals": "authored-controlled",
       "mainSeed": 305402420,
       "thinkingSeed": 3203334210,
-      "gold": 0,
+      "gold": 100,
       "actors": [
         {
           "actor": "medic-a",
-          "hp": 95,
+          "hp": 0,
           "mp": 20,
           "exp": 0,
           "kills": 0,
           "defeats": 0,
-          "status": "none",
+          "status": "poison-stun-curse",
           "positionOverride": null
         },
         {
@@ -113,7 +113,18 @@
             "id": "mend",
             "level": 1
           }
-        ]
+        ],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-32",
+            "damageBonus": "half"
+          },
+          "promoted": false,
+          "leader": false,
+          "gold": 0,
+          "special": "none"
+        }
       },
       {
         "id": "guard-a",
@@ -127,7 +138,18 @@
         "extraRoundAction": false,
         "move": 5,
         "items": [],
-        "spells": []
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-32",
+            "damageBonus": "half"
+          },
+          "promoted": false,
+          "leader": false,
+          "gold": 0,
+          "special": "none"
+        }
       },
       {
         "id": "dummy-a",
@@ -141,7 +163,18 @@
         "extraRoundAction": false,
         "move": 5,
         "items": [],
-        "spells": []
+        "spells": [],
+        "physical": {
+          "movementType": "regular",
+          "critical": {
+            "chance": "one-in-32",
+            "damageBonus": "half"
+          },
+          "promoted": false,
+          "leader": false,
+          "gold": 0,
+          "special": "none"
+        }
       }
     ],
     "encounters": [
@@ -178,7 +211,33 @@
           }
         ]
       }
-    ]
+    ],
+    "items": [
+      {
+        "id": 0,
+        "name": "Practice Leaf",
+        "effect": "consumable-healing",
+        "power": 10,
+        "minimumRange": 0,
+        "maximumRange": 1
+      }
+    ],
+    "battleDiscard": {
+      "items": [
+        {
+          "id": 0,
+          "name": "Practice Leaf",
+          "rare": false,
+          "unsellable": false
+        },
+        {
+          "id": 113,
+          "name": "Practice Token",
+          "rare": true,
+          "unsellable": true
+        }
+      ]
+    }
   },
   "world": {
     "maps": [
@@ -186,7 +245,7 @@
         "id": "quay",
         "layout": [
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 55296, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -252,6 +311,18 @@
             "visible": true,
             "obstruction": true,
             "sprite": 30
+          },
+          {
+            "id": "entity-129",
+            "position": {
+              "x": 1,
+              "y": 2
+            },
+            "facing": 1,
+            "speed": 96,
+            "visible": true,
+            "obstruction": true,
+            "sprite": 30
           }
         ],
         "events": [
@@ -260,6 +331,16 @@
             "entity": "entity-128",
             "program": {
               "program": "invitation",
+              "instruction": 0
+            },
+            "requiredFlag": null,
+            "requiredValue": true
+          },
+          {
+            "kind": "interact",
+            "entity": "entity-129",
+            "program": {
+              "program": "practice-church",
               "instruction": 0
             },
             "requiredFlag": null,
@@ -274,6 +355,35 @@
           "nonAllyStart": 128,
           "playerSprite": 30,
           "followers": []
+        },
+        "search": {
+          "chests": [
+            {
+              "position": {
+                "x": 3,
+                "y": 1
+              },
+              "flag": 150,
+              "itemWord": 0,
+              "gold": null
+            }
+          ],
+          "otherItems": [],
+          "descriptions": [
+            {
+              "position": {
+                "x": 1,
+                "y": 0
+              },
+              "menuOnly": false,
+              "texts": [
+                425,
+                900
+              ]
+            }
+          ],
+          "closedChest": 55296,
+          "openChest": 55297
         }
       }
     ],
@@ -299,12 +409,73 @@
           }
         ],
         "entitiesRunning": false
+      },
+      {
+        "id": "practice-church",
+        "instructions": [
+          {
+            "op": "church",
+            "raisePerLevel": 10,
+            "promotedExtra": 200,
+            "raisedHpCap": 200,
+            "poisonCost": 10,
+            "stunCost": 20
+          },
+          {
+            "op": "end"
+          }
+        ],
+        "entitiesRunning": false
       }
     ],
     "texts": [
       {
         "id": 100,
         "text": "{NAME;0}, please wait.{W1}{CLEAR}The gate is open.{N}Ready, {NAME;0}?{D1}{W2}"
+      },
+      {
+        "id": 403,
+        "text": "A small practice chest."
+      },
+      {
+        "id": 404,
+        "text": "A practice shelf."
+      },
+      {
+        "id": 405,
+        "text": "A practice vase."
+      },
+      {
+        "id": 408,
+        "text": "Only a paper note remains."
+      },
+      {
+        "id": 409,
+        "text": "The shelf is clear."
+      },
+      {
+        "id": 410,
+        "text": "The vase is clear."
+      },
+      {
+        "id": 412,
+        "text": "Nothing else is here."
+      },
+      {
+        "id": 423,
+        "text": "A quiet corner."
+      },
+      {
+        "id": 427,
+        "text": "A practice crate."
+      },
+      {
+        "id": 425,
+        "text": "A notice for {NAME;0}."
+      },
+      {
+        "id": 900,
+        "text": "Practice supplies are kept nearby."
       }
     ],
     "memberNames": [
@@ -666,6 +837,7 @@
           },
           "scale": 1,
           "blocks": [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0]
           ],
           "music": [

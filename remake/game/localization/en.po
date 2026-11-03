@@ -105,7 +105,7 @@ msgstr "Language resources are unavailable (localization-resources). Current set
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "Chinese pilot: settings, authored field text and HEAL only. Missing rows use English."
+msgstr "Chinese pilot: settings, authored field text, HEAL, Church and Search. Missing rows and untranslated names use English."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -118,3 +118,137 @@ msgstr "{0} casts {1}, level {2}."
 #. Arguments: target name, recovered HP.
 msgid "battle.heal.recovery"
 msgstr "Recovery for {0}: {1} HP."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.menu"
+msgstr "Church · Gold {0}\nYour desire will be fulfilled."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.offer"
+msgstr "{0} · {1}\nCost: {2} gold. Current gold: {3}"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.raise"
+msgstr "Raise"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.poison"
+msgstr "Remove poison"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.stun"
+msgstr "Remove stun"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.cure"
+msgstr "Cure"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.promote"
+msgstr "Promote · Unavailable"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.save"
+msgstr "Save… · Close Church first"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.leave"
+msgstr "Leave"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.confirm"
+msgstr "Confirm treatment"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.decline"
+msgstr "Decline this treatment"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.continue"
+msgstr "Continue"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.none"
+msgstr "No applicable member."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.declined"
+msgstr "Treatment declined."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.insufficient"
+msgstr "Not enough gold. No payment taken."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.raise"
+msgstr "Raise completed. Paid {0} gold."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.poison"
+msgstr "Poison removed. Paid {0} gold."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.stun"
+msgstr "Stun removed. Paid {0} gold."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.curse"
+msgstr "Curse removal is unavailable in this content."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.promotion"
+msgstr "Promotion is unavailable here. Choose another service or Leave."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.failure"
+msgstr "Could not complete ({0}, {1}): {2}"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.hint"
+msgstr "{0} / {1}: Choose   {2}: Select\n{3}: Decline / Back   Mouse: select a row"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.item"
+msgstr "{0} received {1}."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.full"
+msgstr "Found {0}. Everyone's hands are full. The item remains here."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.gold"
+msgstr "Found {0} gold coins."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.unavailable"
+msgstr "Destination unavailable. {0}"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "search.continue"
+msgstr "{0} / Click: Continue    {1} / Right click: Close"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "field.reveal"
+msgstr "{0}: Reveal"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "field.more"
+msgstr "{0}: Read more"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "field.controls"
+msgstr "{0}Hold {1}: Wait    {2}: Party Status"
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "localization.names"
+msgstr "Untranslated names and items use English; custom names stay literal."
+
+#. Church/Search display only; positional arguments are retained semantic values.
+msgid "localization.fallback"
+msgstr "English fallback ({0})."
+
+msgid "field.talk"
+msgstr "{0}: Talk    "
+
+msgid "field.search"
+msgstr "{0}: Search    "

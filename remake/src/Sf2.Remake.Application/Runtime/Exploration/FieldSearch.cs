@@ -9,7 +9,7 @@ public enum FieldSearchKind { Empty, Description, Item, Gold, Full, Unavailable,
 public sealed record FieldItemReceipt(MapId Map, MapPosition Position, int Flag, bool Chest);
 public sealed record FieldSearchResult(FieldSearchKind Kind, IReadOnlyList<int> Texts,
     FieldItemReceipt? Receipt = null, ActorRef? Recipient = null, ushort? ItemWord = null,
-    uint? Gold = null, string? Message = null);
+    uint? Gold = null, string? Message = null, string? ItemName = null);
 public sealed record FieldSearchWait(WaitToken Token, FieldSearchResult Result) : ProgramWait(Token);
 
 internal static class FieldSearch
@@ -63,17 +63,17 @@ internal static class FieldSearch
                 }
                 if (recipient is null)
                     return Feedback(current, new(FieldSearchKind.Full, prefix, receipt, ItemWord: item,
-                        Message: $"Found {itemDefinition!.Name}. Everyone's hands are full. The item remains here."));
+                        ItemName: itemDefinition!.Name));
                 party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(recipient,
                     BattleInventory.Add(FieldInventory.Loadout(recipient), item))]);
                 result = new(FieldSearchKind.Item, prefix, receipt, recipient.Carried.Actor, item,
-                    Message: $"{CharacterNames.Actor(current.Story, recipient.Carried.Actor, MemberName(definition, recipient))} received {itemDefinition!.Name}.");
+                    ItemName: itemDefinition!.Name);
             }
             else if (!repeated && placement?.Gold is { } gold)
             {
                 if (party.Gold is null) throw new BattleRuleException("search-gold-unknown", "party.gold", true);
                 party = FieldInventory.Replace(party, [], gold: (uint)Math.Min(999999UL, (ulong)party.Gold.Value + gold));
-                result = new(FieldSearchKind.Gold, prefix, receipt, Gold: gold, Message: $"Found {gold} gold coins.");
+                result = new(FieldSearchKind.Gold, prefix, receipt, Gold: gold);
             }
             else result = new(FieldSearchKind.Empty, [.. prefix, marker switch { 0x1800 => 408, 0x2C00 => 409, 0x3000 => 410, _ => 412 }], receipt);
             if (placement is not null) flags = flags.Append(placement.Flag).Distinct().Order().ToArray();
@@ -88,13 +88,6 @@ internal static class FieldSearch
                 new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.IllegalCommand,
                     error.Code, error.Field, error.Code.Replace('-', ' ')));
         }
-    }
-
-    private static string MemberName(ScenarioDefinition definition, PartyMemberDetails member)
-    {
-        int index = member.Deployment?.Initialization?.AllyPartyMember ?? -1;
-        return index >= 0 && index < definition.Exploration!.MemberNames.Count
-            ? definition.Exploration.MemberNames[index] : member.Carried.Actor.Value;
     }
 
     internal static SessionResult Feedback(SessionSnapshot current, FieldSearchResult result,

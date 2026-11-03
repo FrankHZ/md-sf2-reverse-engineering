@@ -33,24 +33,39 @@ public sealed class DisplayCatalog
         if (!source.TextTokens.TryGetValue(wait.Text, out var canonical) || wait.DisplayNames is null || wait.SourceTokenCount != canonical.Count ||
             wait.DisplayStart < 0 || wait.DisplayStart > wait.DisplayEnd || wait.DisplayEnd > canonical.Count)
             return new("Text unavailable (display-operands).", "en", "display-operands");
-        bool translated = _rows.TryGetValue(wait.Text, out var row);
+        return ResolveRange(wait.Text, canonical, wait.DisplayNames, wait.DisplayStart, wait.DisplayEnd);
+    }
+    // Search reads complete admitted rows; it does not run a second text interpreter or wait.
+    public static DisplayResult Canonical(int text, ExplorationDefinition source, IReadOnlyList<DisplayNameBinding> names)
+    {
+        var result = English.Resolve(text, source, names);
+        return result.Reason == "missing-translation" ? result with { Reason = null } : result;
+    }
+    public DisplayResult Resolve(int text, ExplorationDefinition source, IReadOnlyList<DisplayNameBinding> names) =>
+        source.TextTokens.TryGetValue(text, out var tokens)
+            ? ResolveRange(text, tokens, names, 0, tokens.Count)
+            : new("Text unavailable (display-operands).", "en", "display-operands");
+    private DisplayResult ResolveRange(int text, IReadOnlyList<ExplorationTextToken> canonical,
+        IReadOnlyList<DisplayNameBinding> names, int start, int end)
+    {
+        bool translated = _rows.TryGetValue(text, out var row);
         var tokens = translated ? row!.Tokens : canonical;
         var output = new System.Text.StringBuilder();
         for (int i = 0; i < tokens.Count; i++)
         {
             int original = translated ? row!.SourceTokens[i] : i;
-            if (original < wait.DisplayStart || original >= wait.DisplayEnd) continue;
+            if (original < start || original >= end) continue;
             var token = tokens[i];
             if (token.Kind == ExplorationTextTokenKind.Literal) output.Append(token.Value);
             else if (token.Kind == ExplorationTextTokenKind.Newline) output.Append('\n');
             else if (token.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName)
             {
-                var binding = wait.DisplayNames.FirstOrDefault(name => name.SourceToken == original);
+                var binding = names.FirstOrDefault(name => name.SourceToken == original);
                 if (binding is null) return new("Text unavailable (display-operands).", "en", "display-operands");
                 output.Append(binding.CustomName ?? binding.CanonicalName);
             }
         }
         return new(output.ToString(), translated ? Locale : "en", translated ? null :
-            _rejected.ContainsKey(wait.Text) ? "invalid-translation" : "missing-translation");
+            _rejected.ContainsKey(text) ? "invalid-translation" : "missing-translation");
     }
 }
