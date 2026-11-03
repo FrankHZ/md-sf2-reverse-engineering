@@ -4,6 +4,7 @@ using Godot;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Exploration;
 using Sf2.Remake.Content.Localization;
@@ -18,6 +19,63 @@ internal static class GameText
     internal sealed record Candidate(string Language, IReadOnlyDictionary<string, string> Rows, IReadOnlyDictionary<string, RowStatus> Status);
     private static readonly Dictionary<string, int> Arguments = new()
     {
+        ["battle.command.attack"] = 0,
+        ["battle.command.magic"] = 0,
+        ["battle.command.item"] = 0,
+        ["battle.command.stay"] = 0,
+        ["battle.acting"] = 0,
+        ["battle.target"] = 0,
+        ["battle.context"] = 2,
+        ["battle.position"] = 0,
+        ["battle.magic"] = 0,
+        ["battle.items"] = 0,
+        ["battle.choose-target"] = 0,
+        ["battle.stay-here"] = 0,
+        ["battle.move-help"] = 2,
+        ["battle.target-help"] = 3,
+        ["battle.choice-help"] = 1,
+        ["battle.command-help"] = 1,
+        ["battle.confirm-help"] = 2,
+        ["battle.extra-help"] = 3,
+        ["battle.move-detail"] = 0,
+        ["battle.no-target"] = 0,
+        ["battle.stay-detail"] = 0,
+        ["battle.no-magic"] = 0,
+        ["battle.no-items"] = 0,
+        ["battle.empty"] = 0,
+        ["battle.unavailable-tag"] = 0,
+        ["battle.range"] = 2,
+        ["battle.previous"] = 0,
+        ["battle.next"] = 0,
+        ["battle.confirm"] = 0,
+        ["battle.back"] = 0,
+        ["battle.defeated"] = 0,
+        ["battle.low-hp"] = 0,
+        ["battle.unavailable"] = 2,
+        ["battle.stopped"] = 2,
+        ["battle.recovery.movement"] = 0,
+        ["battle.recovery.occupied"] = 0,
+        ["battle.recovery.range"] = 0,
+        ["battle.recovery.mp"] = 0,
+        ["battle.recovery.empty"] = 0,
+        ["battle.recovery.attack"] = 0,
+        ["battle.recovery.target"] = 0,
+        ["battle.recovery.unsupported"] = 0,
+        ["battle.recovery.general"] = 0,
+        ["battle.recovery.stop"] = 0,
+        ["battle.in-progress"] = 0,
+        ["battle.status.position"] = 0,
+        ["battle.status.action"] = 0,
+        ["battle.status.target"] = 0,
+        ["battle.status.equipment"] = 0,
+        ["battle.status.confirm"] = 0,
+        ["battle.start-unavailable"] = 0,
+        ["battle.equipment-current"] = 5,
+        ["battle.equipment-title"] = 0,
+        ["battle.no-equipment"] = 0,
+        ["battle.equipment-row"] = 6,
+        ["battle.aux-help"] = 4,
+        ["battle.read-more"] = 1,
         ["prepare.recovery.custody"] = 0,
         ["prepare.recovery.settle"] = 0,
         ["prepare.recovery.member"] = 0,
@@ -269,7 +327,7 @@ internal static class GameText
         ["ui.settings.storage"] = "Preferences were not changed. Recovery details above remain in English.",
         ["ui.settings.invalid"] = "Preferences could not be validated. Current settings are retained.",
         ["ui.settings.display"] = "Language resources are unavailable (localization-resources). Current settings are retained.",
-        ["ui.settings.partial"] = "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English.",
+        ["ui.settings.partial"] = "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, battle commands/targets/equipment/status, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English.",
         ["ui.settings.overlay"] = "Field translation unavailable (overlay-unavailable); English fallback. Preference retained.",
     };
     private static Candidate? _current;
@@ -427,6 +485,29 @@ internal static class GameText
         string? fallback = rows.FirstOrDefault(row => row.Reason is not null)?.Reason;
         return new(string.Join("\n", rows.Select(row => row.Text)), rows.Any(row => row.EffectiveLocale == "zh-CN") ? "zh-CN" : "en", fallback);
     }
+    internal static string BattleActionLabel(BattleActionChoice choice) => choice.Empty ? Get("battle.empty") :
+        choice.Action.ItemSlot is not null || choice.Action.Spell is not null ? choice.Label :
+        choice.Action.Kind switch
+        {
+            BattleActionKind.Physical => Get("battle.command.attack"),
+            BattleActionKind.Stay => Get("battle.command.stay"), _ => choice.Label,
+        };
+    internal static string BattleEquipmentLabel(BattleEquipmentChoice choice) =>
+        choice.Slot == 4 ? Get("prepare.unarmed") : choice.Label;
+
+    internal static string BattleFailure(SessionFailure failure, bool stopped = false)
+    {
+        string recovery = stopped ? "stop" : failure.Code switch
+        {
+            "movement-range" => "movement", "occupied-destination" => "occupied",
+            "target-range" => "range", "insufficient-mp" => "mp", "empty-item-slot" => "empty",
+            "physical-definition" => "attack", "no-healing-target" or "no-action-target" => "target",
+            _ => failure.Kind == SessionFailureKind.UnsupportedCapability ? "unsupported" : "general",
+        };
+        return Get(stopped ? "battle.stopped" : "battle.unavailable", Get("battle.recovery." + recovery),
+            $"{failure.Kind}: {failure.Code} ({failure.Field})");
+    }
+
     private static void Diagnose(string reason, string key)
     { if (_diagnostics.Count < 128) _diagnostics.Add(reason + ":" + key); }
 }

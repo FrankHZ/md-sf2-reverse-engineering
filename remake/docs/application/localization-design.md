@@ -2,10 +2,10 @@
 
 ## Scope and status
 
-**Implemented bounded M1, M2a, M2b and M2c consumers; independent integration/product acceptance remains separate.**
+**Implemented bounded M1, M2a, M2b, M2c and M2d consumers; independent integration/product acceptance remains separate.**
 The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469)
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
-settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save and Party/Prepare
+settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
@@ -466,6 +466,42 @@ owns readonly/navigation, confirm/cancel, transaction, real refusal and font/geo
 Other battle/result consumers, terminology/private dialogue, Unicode names, human translation and
 typography approval remain outside this boundary; integration remains main-gate work.
 
+## Implemented M2d battle menu and status boundary
+
+**Standard rigor:** [#1478](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1478) extends
+GameText/PO/font through the existing battle movement/action/target menus, equipment choices and
+shared low-HP/defeated suffixes. Preserve the 1080p/96px layout and existing session/input authority.
+Acceptance is adapter/catalog checks plus finite English/zh-CN native state/input/geometry/error
+observations, followed by the committed plan and selected CI. No Domain/Application/Content, save,
+schema, new message system or engine-behavior test is required by this display-only change.
+
+- Diamond Identity/Name and `command-menu.*` raster keys stay Attack/Magic/Item/Stay; localized
+  Caption supplies the selected heading and unmounted text fallback. Original mounted image
+  lettering remains untranslated. Focus timers, `command:`/`row:`, navigation node IDs, action refs,
+  target legality, session/revision/actor boundaries and pointer release remain unchanged.
+- BattleActionChoice.Empty/Kind/Spell/ItemSlot select generic wording. Admitted spell/item/member
+  names and literal custom names retain the existing resolver; English Label text never selects
+  semantics. Equipment Slot4 alone means localized Unarmed; real weapons named Unarmed stay literal.
+  Shared BattleStatusCard translates only its suffixes; role callers outside this group retain their
+  wording, and HP/MP node/resource IDs, values, gauge colors and geometry remain unchanged.
+- Choice failures use codes for finite localized recovery, with Kind/Code/Field diagnostics. Unknown
+  codes use general recovery rather than guessing their meaning. Global feedback additionally reads
+  actual snapshot Unsupported/Faulted status; startup failure is explicitly stopped. A choice-level
+  Unsupported can return to actions, while a stopped session directs the player to retain diagnostics
+  and relaunch. Formatting does not promise an unavailable Back/retry operation or issue commands.
+- Actual equipment HUD/current choice, ATT/range and ReadMore are localized. `_title`, `_roster` and
+  non-equipment spell/item strings in observation are diagnostic projections, not another visible
+  localized menu. Give/Discard selections/results, Retreat, dynamic scene/result text other than the
+  earlier HEAL consumer, source terminology/dialogue and source-image lettering remain English.
+  Language is chosen through existing settings before battle; no mid-battle settings are added.
+- Missing/invalid rows use the complete English template and existing key/reason/effective-locale
+  diagnostics. Native geometry checks cover long fallback, low/zero HP, zero MP, equipment and
+  target navigation, including canceled/rejected/committed choices and stable idle/redraw state.
+  These are bounded remake observations, not human translation approval or original-game evidence.
+
+The [native reproduction owner](../verification/host.md#localized-battle-commands-targets-and-status)
+records the finite input recipes, coherent retained private icon selection and remaining boundaries.
+
 ## Names, IME and compatibility
 
 M1 retains the current seven-character ASCII rule and says so in translated help. Chinese display
@@ -585,7 +621,7 @@ M1 does not enable Unicode naming or close the epic.
 | M3 bounded opening terminology/dialogue after admitted consumers and rights/review | Public owner `remake/docs/application/localization-design.md` only if coverage/boundary changes; private catalog under a separately declared non-worktree content root. Dispatch must name those actual private files before writing | Start with reached IDs/names in one playable segment. Direct source/control/parameter comparison plus bilingual review. No runtime/export edits by translators. Drift/ambiguity stops affected rows; fallback stays explicitly untranslated. No whole-game batch. |
 | M4 Chinese naming/IME after M1 and accepted High compatibility policy | `A/Runtime/NewGameOptions.cs`, `A/Runtime/OpeningNewGame.cs`, `A/Runtime/CharacterNames.cs`, `A/Runtime/Exploration/ExplorationTextRunner.cs`, `A/Runtime/Battles/BattleSceneContinuation.cs`, `A/Runtime/Persistence/OpeningSaveData.cs`, `A/Runtime/Persistence/OpeningSave.cs`, `A/Runtime/Persistence/OpeningRestore.cs`, `C/Persistence/OpeningSaveJson.cs`, `G/src/Entry/NameEntryView.cs`, `T/OpeningSaveTests.cs`, `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs` | Actual composition/commit/cancel/paste/focus, old name/save preservation and Unicode independent-process Save/Continue. Refuse enablement with unresolved canonical work/backward reading/downgrade; no lossy conversion. Stop at named admitted characters/consumers. |
 
-Party/Prepare has the bounded M2c consumer agreement above. Further battle screens are separate
+Party/Prepare has the bounded M2c consumer agreement above. M2d battle commands/targets/equipment/status have their separate boundary above. Further battle screens are separate
 consumer groups, not implicit all-files ownership.
 M5 is the epic's opening-route and bilingual human acceptance, not another framework. No candidate
 authorizes production edits, new tickets or dispatch during M0.

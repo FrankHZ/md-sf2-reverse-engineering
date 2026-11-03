@@ -2345,3 +2345,75 @@ actual selected CI complete this boundary. There are no new engine rules or test
 Antidote/DETOX acquisition, private terminology/dialogue translation, other battle menus/results,
 Unicode names, original natural reach/timing, public exports and human translation/typography approval
 remain outside this check. Do not enlarge the field-only catalog's effect admission to test them.
+
+## Localized battle commands targets and status
+
+The [M2d Standard agreement](../application/localization-design.md#implemented-m2d-battle-menu-and-status-boundary)
+is a Godot consumer slice. Compile with `uv run sf2 verify adapter`; build the actual Debug adapter
+from `remake/` using the existing absolute `DOTNET_BIN`, `DOTNET_CLI_HOME` and forced
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Changed PO resources need one necessary existing-editor
+`--headless --editor --import` scan. Reuse existing imports/project/SDK; serialize all SDK/native
+launches. No engine rules change, so no new engine tests, research/full/H3/H4 or opening replay.
+
+The retained `local/issue1478/run-native.ps1 -Run <fresh-case>` and `battle-native.gd` extend the
+existing `engine_menu_mouse_observation.gd` input/focus/receipt helpers. They use Main.tscn, real
+mapped keys and mouse motion/press/release, actual state/labels/glyphs/geometry and emitted session
+results. No state setters, screenshots, new probe framework or private acquisition is involved.
+Each native process has a 45-second wall limit; input is fixed60 at1920×1080. Reuse the transferred
+`local/issue1471/field-01` APPDATA/LOCALAPPDATA/TEMP and fresh external `issue1478` save namespaces.
+Read-only English/Chinese settings derive from the existing `local/issue1408/keyboard-pointer.json`:
+keep ordinary keys, unbind only its already-unbound movement axes, select instant text and language.
+The user still chooses product language through settings before battle.
+
+| Fresh case prefix | Existing input and bounded claim |
+| --- | --- |
+| `heal-en`, `heal-zh` | Small pre-start `healing-rule-demo.json` variant: medic HP5; guard positionOverride(7,4). Open Magic/MEND1/self-target, release-click NextTarget to the out-of-range guard, reject Confirm without revision, Back to the same spell list, reopen and commit one real heal; subsequent ordinary control. Acting/target low HP and zero-MP values/resources remain truthful. |
+| `heal-fallback` | Same variant, Chinese settings. Before host construction erase `battle.choose-target`; replace Chinese `battle.target-help` with invalid `{9}` and extend that complete English template with a longer explanation retaining exactly parameters0/1/2. Verify missing/invalid effective-locale metadata, whole English fallback, Chinese neighboring rows and measured bounds without changing command meaning. |
+| `equip-en`, `equip-zh` | Unchanged `battle-equipment.json`: preview/cancel without mutation, one committed selected Slot, unchanged RNG, Slot4 Unarmed, empty magic and literal Healing Herb. Actual AuxiliaryHud/current choice and reading hints are localized; diagnostic-only spell/item dumps need no translation claim. |
+| `literal-zh` | Same equipment package with item0 name `Empty`, weapon50 name `Unarmed`, actor0 items[2]=127. Real names remain English while actual empty slots and Slot4 translate; no English Label matching is allowed. |
+| `defeated-en`, `defeated-zh` | Unchanged `stone-court.json`: ordinary Attack, target and Confirm, then actual lethal Reaction target card HP15→0 and localized defeated cue. This does not acquire new game data. |
+| `refusal-en`, `refusal-zh` | Retained `local/issue1395/corridor.json` from the movement-range owner. Actual occupied-destination refusal retains revision/resources/RNG, shows code-based recovery, then legal movement/action input clears it. |
+| `stopped-en`, `stopped-zh` | Small public variant below: menu physical-definition Unsupported remains cancellable. Stay then actual automatic decision produces Unsupported with selection cleared; global feedback must direct relaunch, retain code/target.physical, and reject later Confirm/Cancel without mutation. |
+| `startup-zh` | Existing registered standalone battle01-player-ready input lacks exploration map resources. Its actual adapter startup failure must display stopped recovery and battlefield-map-resource-unavailable, retain diagnostics, and accept no gameplay command. This is an expected negative case, not a valid private battle entry. |
+| `private-en`, `private-zh` | Reuse the coherent retained original-icon recipe below; actual source textures retain command/node/resource identities, 96px squares and untranslated raster lettering. Chinese heading translates. Pointer press alone does not activate command:3; release chooses Stay; idle/redraw does not submit/restart emphasis; Cancel returns usable actions. |
+
+For the stopped input, reproduce the existing actual-engine case
+`TargetSelectionTests.MissingRequiredCandidateDataOrLateSettlementRejectsWholeAction` (`physical`)
+without adding a test of this observer. Starting from `stone-court.json`, set mainSeed=(55<<16)|0x1234,
+thinkingSeed=0x00EF0042. For actors/start rows0/1/2 set current/max HP500, DEF4, ATT18/18/30;
+physical critical chance one-in-32/one-in-32/one-in-16 and damageBonus half/half/quarter. Set classes0/1
+to unpromoted-warrior/unpromoted-swordsman; placement2 aiStrategy=attack-then-approach and actor2
+move1; place actor1 one tile left of placement2. Finally remove actor0.physical. This is admitted
+content followed by a real AI fault, not a failure message injected into a Label or synthetic session.
+
+The private-icon selection must stay coherent: load `local/issue1045/inputs.ps1`, select retained
+`local/issue1045/world-route-13.json`, tracked `battle01-player-ready.json` for controlled party,
+`local/issue1412/main-gate-retained-icons/scene.json` for the already transferred immutable rasters,
+and `--private-exploration-start remake/reference/inputs/battle01-to-battle02-start.json`. Use the
+existing bounded eligible Cancel skip before battle control; do not replay the full opening.
+Standalone private battle lacks field resources; old Battle02 world/scene selections lack these
+command rasters. Neither is evidence that mounted icon identity passed. Do not rebuild/copy the
+world or regenerate assets to repair a mismatched selection.
+
+Require actual exit0, `passed:true`, empty failure/Unavailable arrays and clean runtime stderr.
+Inspect actual visible labels for bundled glyphs, viewport/allocated wrapped-text bounds and stable
+navigation IDs; check current/max/drawn HP/MP resource names and values. Compare actor/target/round/
+revision/loadout/seeds before and after idle, hover, cancellation and rejected confirmation; record
+real commit/result receipts. Long fallback must preserve readable target/Back/Confirm geometry.
+Directly check both PO catalogs' unique keys/exact parameters, typed consumers, stable identities,
+source sizes, relative document links, private boundary and exact owned diff. On a clean committed
+head inspect `uv run sf2 verify plan --base origin/main --head HEAD` and actual selected CI.
+
+Keep this slice's reports <=15MiB and H free >=1GiB; peak native observations are around1.1GB, not a
+universal memory bound. Prefer compact semantic checkpoints and only relevant localization metadata.
+If completed JSON/logs need lossless gzip archival, compare decompressed bytes with the originals
+before replacing only this slice's files; preserve all failures/process exits. Do not clean older
+slices or recreate caches. The first necessary PO scan can recreate untracked script UID sidecars from
+cache; retain them under ignored slice output before freeze, without committing generated files.
+
+**Confirmed, bounded remake observations:** English/Chinese keys and pointer release cover these
+command/target/equipment/status cases, long whole-template fallback, real stop versus choice-level
+Unsupported, actual lethal cards and mounted original command rasters. These do not claim human
+translation/typography acceptance, physical gamepad/DPI coverage, source-image translation, private
+terminology/default-name translation, new effects or battle-wide localization. Give/Discard/Retreat,
+other dynamic scene/results and seven-character ASCII naming retain their existing boundaries.

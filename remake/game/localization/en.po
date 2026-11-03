@@ -114,7 +114,7 @@ msgstr "Language resources are unavailable (localization-resources). Current set
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
+msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, battle commands/targets/equipment/status, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -733,3 +733,174 @@ msgstr "Could not complete. Nothing was changed. Back refreshes choices; choose 
 
 msgid "prepare.recovery.custody"
 msgstr "Rare-item custody data is unavailable, so this item cannot be dropped safely. The item was kept. Back refreshes choices; close to return to the field."
+
+msgid "battle.command.attack"
+msgstr "Attack"
+
+msgid "battle.command.magic"
+msgstr "Magic"
+
+msgid "battle.command.item"
+msgstr "Item"
+
+msgid "battle.command.stay"
+msgstr "Stay"
+
+msgid "battle.acting"
+msgstr "Acting"
+
+msgid "battle.target"
+msgstr "Target"
+
+msgid "battle.context"
+msgstr "Round {0}    Gold {1}"
+
+msgid "battle.position"
+msgstr "Choose a position"
+
+msgid "battle.magic"
+msgstr "Magic"
+
+msgid "battle.items"
+msgstr "Items"
+
+msgid "battle.choose-target"
+msgstr "Choose a target"
+
+msgid "battle.stay-here"
+msgstr "Stay here?"
+
+msgid "battle.move-help"
+msgstr "{0}: move\n{1}: actions"
+
+msgid "battle.target-help"
+msgstr "{0}: next target\n{1}: commit · {2}: back"
+
+msgid "battle.choice-help"
+msgstr "{0}: choice\n"
+
+msgid "battle.command-help"
+msgstr "{0}: command\n"
+
+msgid "battle.confirm-help"
+msgstr "{0}: confirm · {1}: back"
+
+msgid "battle.extra-help"
+msgstr "\n{0}: equip · {1}: give · {2}: drop"
+
+msgid "battle.move-detail"
+msgstr "Move to a tile, then open the action menu."
+
+msgid "battle.no-target"
+msgstr "No available target"
+
+msgid "battle.stay-detail"
+msgstr "End this unit's action at the selected position."
+
+msgid "battle.no-magic"
+msgstr "No learned magic."
+
+msgid "battle.no-items"
+msgstr "No carried items."
+
+msgid "battle.empty"
+msgstr "Empty"
+
+msgid "battle.unavailable-tag"
+msgstr " · unavailable"
+
+msgid "battle.range"
+msgstr "Range {0}–{1}"
+
+msgid "battle.previous"
+msgstr "‹ Prev"
+
+msgid "battle.next"
+msgstr "Next ›"
+
+msgid "battle.confirm"
+msgstr "Confirm"
+
+msgid "battle.back"
+msgstr "Back"
+
+msgid "battle.defeated"
+msgstr " · Defeated"
+
+msgid "battle.low-hp"
+msgstr " · ! Low HP"
+
+msgid "battle.unavailable"
+msgstr "Unavailable: {0}\n{1}"
+
+msgid "battle.stopped"
+msgstr "The battle has stopped. {0}\n{1}"
+
+msgid "battle.recovery.movement"
+msgstr "Choose a tile within the highlighted movement range."
+
+msgid "battle.recovery.occupied"
+msgstr "Another unit is on this tile. Choose an unoccupied tile within the highlighted range."
+
+msgid "battle.recovery.range"
+msgstr "Out of range. Choose another target or go back."
+
+msgid "battle.recovery.mp"
+msgstr "Not enough MP. Go back and choose another action."
+
+msgid "battle.recovery.empty"
+msgstr "This slot is empty. Choose another slot or go back."
+
+msgid "battle.recovery.attack"
+msgstr "Attack is not supported for this unit. Choose another action."
+
+msgid "battle.recovery.target"
+msgstr "No available target. Go back and choose another action or position."
+
+msgid "battle.recovery.unsupported"
+msgstr "This action is not supported. Go back and choose another action."
+
+msgid "battle.recovery.general"
+msgstr "The selection could not be completed. Go back or cancel and try another choice."
+
+msgid "battle.recovery.stop"
+msgstr "This battle cannot continue. Retain the diagnostic details and relaunch the game."
+
+msgid "battle.in-progress"
+msgstr "Battle in progress…"
+
+msgid "battle.status.position"
+msgstr "Choose a position."
+
+msgid "battle.status.action"
+msgstr "Choose an action."
+
+msgid "battle.status.target"
+msgstr "Choose a target."
+
+msgid "battle.status.equipment"
+msgstr "Choose equipment."
+
+msgid "battle.status.confirm"
+msgstr "Choose or confirm your selection."
+
+msgid "battle.start-unavailable"
+msgstr "BATTLE UNAVAILABLE"
+
+msgid "battle.equipment-current"
+msgstr "Equipment ({0}): {1} · ATT {2} · range {3}–{4}"
+
+msgid "battle.equipment-title"
+msgstr "Choose equipment"
+
+msgid "battle.no-equipment"
+msgstr "No available equipment."
+
+msgid "battle.equipment-row"
+msgstr "{0} / {1}\n> {2}\nATT {3} · range {4}–{5}"
+
+msgid "battle.aux-help"
+msgstr "{0} / {1}: cycle choices\n{2}: select / confirm\n{3}: back"
+
+msgid "battle.read-more"
+msgstr "{0}: Read more"

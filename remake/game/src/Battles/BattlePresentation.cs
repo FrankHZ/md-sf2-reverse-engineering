@@ -1,3 +1,4 @@
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -20,17 +21,16 @@ internal static class BattleSnapshotProjection
         var battle = snapshot.Battle;
         var selection = snapshot.Selection;
         string status = result.Failure is { } failure
-            ? failure.Kind == SessionFailureKind.IllegalCommand ? $"Unavailable: {failure.Message}"
-                : $"The battle has stopped.\n{failure.Message} ({failure.Code})"
+            ? GameText.BattleFailure(failure, snapshot.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted)
             : snapshot.BattleResult is { } outcome ? $"{outcome}."
-            : selection is null ? "Battle in progress…"
+            : selection is null ? GameText.Get("battle.in-progress")
             : selection.Stage switch
             {
-                BattleSelectionStage.Movement => "Choose a position.",
-                BattleSelectionStage.ActionChoice => "Choose an action.",
-                BattleSelectionStage.TargetChoice => "Choose a target.",
-                BattleSelectionStage.EquipmentChoice => "Choose equipment.",
-                _ => "Choose or confirm your selection.",
+                BattleSelectionStage.Movement => GameText.Get("battle.status.position"),
+                BattleSelectionStage.ActionChoice => GameText.Get("battle.status.action"),
+                BattleSelectionStage.TargetChoice => GameText.Get("battle.status.target"),
+                BattleSelectionStage.EquipmentChoice => GameText.Get("battle.status.equipment"),
+                _ => GameText.Get("battle.status.confirm"),
             };
         var death = snapshot.BattleScene is { IsFieldDeath: true } field ? field : null;
         var markers = battle.Actors.Where(a => a.Position is not null).Select(a => new BattleActorMarker(

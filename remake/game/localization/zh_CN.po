@@ -114,7 +114,7 @@ msgstr "语言资源不可用（localization-resources）。已保留当前设�
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "中文显示：队伍／整备、入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
+msgstr "中文显示：战斗指令／目标／装备／状态、队伍／整备、入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -733,3 +733,174 @@ msgstr "未能完成。未做更改。选择返回可刷新选项；请重新选
 
 msgid "prepare.recovery.custody"
 msgstr "稀有道具的保管记录不可用，无法安全丢弃。道具已保留。选择返回可刷新选项；关闭可回到场地。"
+
+msgid "battle.command.attack"
+msgstr "攻击"
+
+msgid "battle.command.magic"
+msgstr "魔法"
+
+msgid "battle.command.item"
+msgstr "道具"
+
+msgid "battle.command.stay"
+msgstr "待机"
+
+msgid "battle.acting"
+msgstr "行动单位"
+
+msgid "battle.target"
+msgstr "目标"
+
+msgid "battle.context"
+msgstr "回合 {0}    金币 {1}"
+
+msgid "battle.position"
+msgstr "选择位置"
+
+msgid "battle.magic"
+msgstr "魔法"
+
+msgid "battle.items"
+msgstr "道具"
+
+msgid "battle.choose-target"
+msgstr "选择目标"
+
+msgid "battle.stay-here"
+msgstr "在此待机？"
+
+msgid "battle.move-help"
+msgstr "{0}：移动\n{1}：指令"
+
+msgid "battle.target-help"
+msgstr "{0}：下个目标\n{1}：执行 · {2}：返回"
+
+msgid "battle.choice-help"
+msgstr "{0}：选择\n"
+
+msgid "battle.command-help"
+msgstr "{0}：指令\n"
+
+msgid "battle.confirm-help"
+msgstr "{0}：确认 · {1}：返回"
+
+msgid "battle.extra-help"
+msgstr "\n{0}：装备 · {1}：交给 · {2}：丢弃"
+
+msgid "battle.move-detail"
+msgstr "移动至目的地后打开指令菜单。"
+
+msgid "battle.no-target"
+msgstr "没有可用目标"
+
+msgid "battle.stay-detail"
+msgstr "在选定位置结束此单位的行动。"
+
+msgid "battle.no-magic"
+msgstr "尚未学会魔法。"
+
+msgid "battle.no-items"
+msgstr "未携带道具。"
+
+msgid "battle.empty"
+msgstr "空"
+
+msgid "battle.unavailable-tag"
+msgstr " · 不可用"
+
+msgid "battle.range"
+msgstr "射程 {0}–{1}"
+
+msgid "battle.previous"
+msgstr "‹ 上个"
+
+msgid "battle.next"
+msgstr "下个 ›"
+
+msgid "battle.confirm"
+msgstr "确认"
+
+msgid "battle.back"
+msgstr "返回"
+
+msgid "battle.defeated"
+msgstr " · 已倒下"
+
+msgid "battle.low-hp"
+msgstr " · ! HP偏低"
+
+msgid "battle.unavailable"
+msgstr "不可用：{0}\n{1}"
+
+msgid "battle.stopped"
+msgstr "战斗已停止。{0}\n{1}"
+
+msgid "battle.recovery.movement"
+msgstr "请在高亮移动范围内选择位置。"
+
+msgid "battle.recovery.occupied"
+msgstr "此位置已有单位。请在高亮范围内选择空位。"
+
+msgid "battle.recovery.range"
+msgstr "超出射程。请选择其他目标或返回。"
+
+msgid "battle.recovery.mp"
+msgstr "MP不足。请返回并选择其他指令。"
+
+msgid "battle.recovery.empty"
+msgstr "此栏为空。请选择其他栏或返回。"
+
+msgid "battle.recovery.attack"
+msgstr "此单位不支持攻击。请选择其他指令。"
+
+msgid "battle.recovery.target"
+msgstr "没有可用目标。请返回并选择其他指令或位置。"
+
+msgid "battle.recovery.unsupported"
+msgstr "此操作暂不支持。请返回并选择其他指令。"
+
+msgid "battle.recovery.general"
+msgstr "无法完成此次选择。请返回或取消后尝试其他选择。"
+
+msgid "battle.recovery.stop"
+msgstr "本次战斗无法继续。请保留诊断信息并重新启动游戏。"
+
+msgid "battle.in-progress"
+msgstr "战斗进行中…"
+
+msgid "battle.status.position"
+msgstr "请选择位置。"
+
+msgid "battle.status.action"
+msgstr "请选择指令。"
+
+msgid "battle.status.target"
+msgstr "请选择目标。"
+
+msgid "battle.status.equipment"
+msgstr "请选择装备。"
+
+msgid "battle.status.confirm"
+msgstr "请选择或确认。"
+
+msgid "battle.start-unavailable"
+msgstr "战斗不可用"
+
+msgid "battle.equipment-current"
+msgstr "装备（{0}）：{1} · 攻击 {2} · 射程 {3}–{4}"
+
+msgid "battle.equipment-title"
+msgstr "选择装备"
+
+msgid "battle.no-equipment"
+msgstr "没有可用装备。"
+
+msgid "battle.equipment-row"
+msgstr "{0} / {1}\n> {2}\n攻击 {3} · 射程 {4}–{5}"
+
+msgid "battle.aux-help"
+msgstr "{0} / {1}：切换选项\n{2}：选择 / 确认\n{3}：返回"
+
+msgid "battle.read-more"
+msgstr "{0}：继续阅读"

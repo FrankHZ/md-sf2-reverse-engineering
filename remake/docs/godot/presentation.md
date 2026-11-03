@@ -467,6 +467,23 @@ capability or member-screen redesign is added. Settings can be applied after clo
 reopening it. [Native observation](../verification/host.md#localized-party-and-field-prepare) owns the
 bounded 1080p geometry/input evidence; human translation/typography remains unaccepted.
 
+## Localized battle command and equipment display
+
+The [M2d consumer agreement](../application/localization-design.md#implemented-m2d-battle-menu-and-status-boundary)
+owns English/zh-CN movement, command/list/target/commit labels, hints, finite failure recovery and
+actual equipment HUD. BattleDiamondButton separates stable Identity/Name/raster lookup from Caption;
+original mounted raster lettering is retained and the selected heading/unmounted fallback translates.
+Typed action Empty/Kind/Spell/ItemSlot and equipment Slot4 select generic wording, preserving admitted
+source labels and custom names. Refresh retains command/target focus and does not restart animation,
+submit work, advance a round or consume RNG. Existing list/ReadMore/subject avoidance own layout.
+
+BattleStatusCard translates low-HP/defeated suffixes for every shared caller. HP/MP gauge identities,
+resources, numbers, colors and geometry remain unchanged. Global recovery uses actual snapshot
+Unsupported/Faulted/startup status; choice Unsupported remains cancellable. Code/field diagnostics
+stay visible. Give/Discard/Retreat and other dynamic result text remain outside M2d; diagnostic
+observation strings are not a claim of visible translation. Settings chooses language before battle.
+See the [finite native recipe](../verification/host.md#localized-battle-commands-targets-and-status).
+
 ## Battle status-card agreement
 
 **Standard rigor; [#1397](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1397).**

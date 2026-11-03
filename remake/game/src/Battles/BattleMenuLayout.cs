@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Content.Scenarios;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
@@ -51,7 +52,7 @@ internal sealed partial class BattleMenuLayout : Control
             foreach (var command in Commands)
                 foreach (string state in new[] { "normal", "selected" })
                 {
-                    string key = $"command-menu.{command.Caption.ToLowerInvariant()}.{state}";
+                    string key = $"command-menu.{command.Identity.ToLowerInvariant()}.{state}";
                     if (!content.Rasters.TryGetValue(key, out var raster) || raster.Width != 24 || raster.Height != 24)
                         throw new InvalidOperationException("command-menu-resource-required");
                     using var image = raster.Format == "rgba8"
@@ -89,7 +90,7 @@ internal sealed partial class BattleMenuLayout : Control
             _navigation.AddChild(control);
             control.ItemRectChanged += () => InvalidatePointer();
         }
-        _previous.Text = "‹ Prev"; _next.Text = "Next ›"; _confirm.Text = "Confirm"; _back.Text = "Back";
+
         // Wrapped text can shrink after a container sort. Reapply the requested size then;
         // otherwise Control retains the earlier (possibly very tall) minimum-size clamp.
         _detail.MinimumSizeChanged += () => Arrange(Size);
@@ -177,6 +178,8 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal void ShowNavigation(bool visible, bool target, bool commit, bool canConfirm)
     {
+        _previous.Text = GameText.Get("battle.previous"); _next.Text = GameText.Get("battle.next");
+        _confirm.Text = GameText.Get("battle.confirm"); _back.Text = GameText.Get("battle.back");
         _navigation.Visible = visible;
         _previous.Visible = _next.Visible = target;
         _confirm.Visible = target || commit;
@@ -270,7 +273,7 @@ internal sealed partial class BattleMenuLayout : Control
         scroll = _scroll.ScrollVertical,
         navigation = new[] { _previous, _next, _confirm, _back }.Select(control => new { id = control.Name.ToString(),
             visible = control.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
-        commands = Commands.Select(button => new { label = button.Caption, selected = button.Selected, enabled = button.Available,
+        commands = Commands.Select(button => new { id = button.Identity, label = button.Caption, selected = button.Selected, enabled = button.Available,
             rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }).ToArray(),
     };
 
@@ -293,7 +296,9 @@ internal sealed partial class BattleMenuLayout : Control
 // An unmounted public scene shows text-only squares; it never substitutes authored glyphs.
 internal sealed partial class BattleDiamondButton : Control
 {
-    internal string Caption { get; }
+    internal string Identity { get; }
+    internal string Caption => GameText.Get("battle.command." + Identity.ToLowerInvariant());
+    internal void RefreshCaption() { if (_label.Text != Caption) _label.Text = Caption; }
     internal bool Selected { get; private set; }
     internal bool Available { get; set; }
     private readonly Label _label;
@@ -322,12 +327,12 @@ internal sealed partial class BattleDiamondButton : Control
     }
 
     internal void StopFocusEmphasis() { _focusRemaining = 0; QueueRedraw(); }
-    internal BattleDiamondButton(string caption)
+    internal BattleDiamondButton(string identity)
     {
-        Caption = caption; Name = caption;
+        Identity = identity; Name = identity;
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = TextureFilterEnum.Nearest;
-        _label = new Label { Text = caption, HorizontalAlignment = HorizontalAlignment.Center,
+        _label = new Label { HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
         _label.AddThemeFontSizeOverride("font_size", 28);
     }
@@ -364,7 +369,7 @@ internal sealed partial class BattleDiamondButton : Control
         {
             float side = 24 * _pixelScale;
             DrawTextureRect(texture, new Rect2(((Size - new Vector2(side, side)) / 2).Round() + offset, new(side, side)), false);
-            _drawnResource = $"command-menu.{Caption.ToLowerInvariant()}.{(Selected ? "selected" : "normal")}";
+            _drawnResource = $"command-menu.{Identity.ToLowerInvariant()}.{(Selected ? "selected" : "normal")}";
         }
         else
         {
