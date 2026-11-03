@@ -1375,7 +1375,7 @@ are the names in the table plus `Start`, `LeftStick` and `RightStick`. Signed ax
 are `LeftX-`, `LeftX+`, `LeftY-`, `LeftY+`, `RightX-`, `RightX+`, `RightY-`, `RightY+`.
 Unknown fields/actions/identities, conflicting bindings, missing device access and invalid values
 produce `ContentError: invalid-input-settings` before a session is published. A missing or unreadable
-explicit file also fails; it never silently restores defaults. No file selects documented defaults.
+explicit file also fails; it never silently restores defaults.
 An explicit `--input-settings` file is a read-only startup override. Ordinary launches without it use
 the integrated [basic Settings/Apply and preferences persistence](../godot/presentation.md#basic-preferences-agreement),
 including title/Witch and safe settled-field access plus grouped Controls help. Active battle/story
