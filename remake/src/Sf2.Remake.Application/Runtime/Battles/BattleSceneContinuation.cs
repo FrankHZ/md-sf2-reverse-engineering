@@ -15,6 +15,9 @@ internal sealed record HealingWork(HealingWorkKind Kind, int Count, string Calle
 
 // One continuation local to this scene. Counters are source work, not host frames.
 // Presentation delivery can finish before or after them without adding work.
+public sealed record HealingDisplay(ActorRef Caster, ActorRef Target, SpellRef Spell, int RecoveredHp,
+    string CasterName, string TargetName, int? ActionSourceText, int? RecoverySourceText);
+
 public sealed record HealingSceneCursor
 {
     internal BattleSceneAnimation Cast { get; init; } = null!;
@@ -26,6 +29,7 @@ public sealed record HealingSceneCursor
     public bool Delivered { get; internal init; }
     public HealingFairyState? Fairy { get; internal init; }
     public bool CastRequested { get; internal init; }
+    public HealingDisplay Display { get; internal init; } = null!;
     public string ActionText { get; internal init; } = "";
     public string RecoveryText { get; internal init; } = "";
     public bool LogicalComplete => Index >= Work.Count;
@@ -71,6 +75,10 @@ public sealed record HealingSceneCursor
             actionText = content.Texts[274]; recoveryText = content.Texts[298];
         }
         return new() { Cast = cast, CasterIdleTicks = casterIdle, TargetIdleTicks = targetIdle,
+            Display = new(action.Actor, target.Actor, action.Spell!.Spell, action.Reactions[0].Amount,
+                story is null ? CharacterNames.ReadableIdentity(actor.Actor) : CharacterNames.Battle(story, actor, content),
+                story is null ? CharacterNames.ReadableIdentity(target.Actor) : CharacterNames.Battle(story, target, content),
+                content is null ? null : 274, content is null ? null : 298),
             ActionText = actionText.Replace("{NAME}", ActorName(actor)).Replace("{SPELL}", action.Spell!.Spell.Value.ToUpperInvariant())
                 .Replace("{#}", action.Spell.Spell.Level.ToString()).Replace("{N}", "\n"),
             RecoveryText = recoveryText.Replace("{NAME}", ActorName(target)).Replace("{#}", action.Reactions[0].Amount.ToString()).Replace("{N}", "\n") };

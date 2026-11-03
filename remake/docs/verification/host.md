@@ -2092,3 +2092,53 @@ cadence, exhausted-sprite parity, empty-shop-chest access and later campaign rem
 outside admission. This does not repeat #1423's already accepted victory/Search/restart route or
 close #1425. Initial discovery/build/driver failures and inherited controlled-start fade diagnostics
 remain in the Issue's local handoff; no aggregate rerun replaces them.
+
+## Localization pilot
+
+After loading this worktree's `local/private-inputs.ps1`, reuse the selected Godot installation and
+project. The first checkout/import of the new PO/font resources needs the ordinary editor import;
+changed C# needs the existing Debug build, with absolute `DOTNET_BIN`, shared `DOTNET_CLI_HOME` and
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Keep native APPDATA/LOCALAPPDATA/TEMP and logs in the owned
+ignored runtime directory and reuse its caches. Configure `SF2_SAVE_ROOT` outside all checkouts and a
+unique `SF2_SAVE_NAMESPACE`; language belongs to `sf2-preferences/input.json`, not game slots.
+
+```powershell
+$env:SF2_DISPLAY_CATALOG = (Resolve-Path -LiteralPath 'remake/content/authored/localization-pilot.zh-CN.json').Path
+& $env:GODOT_BIN --path remake/game -- --authored-package (Resolve-Path -LiteralPath 'remake/content/authored/localization-pilot.json').Path
+```
+
+The real field program shows the captured Traveler name with W1/CLEAR/N/D1/W2, then returns control.
+At settled field input press Escape for Settings. The fifth row is Language; Confirm changes only
+its draft endonym. Apply (seventh row) stores/publishes it; Cancel retains the old preference. Talk
+repeats the authored dialogue in the selected language. The existing title settings access also
+refreshes. Relaunch the same namespace to reload the preference. For a dynamic battle sample use
+`healing-rule-demo.json` through the same `--authored-package` route: Confirm opens the diamond, H
+opens Magic, Confirm selects its spell/self target and another Confirm commits. Result text uses
+captured name/HP amount. Source work, resources and seeds do not depend on display length/reveal.
+
+`remake/game/probes/localization_observation.gd` drives these actual consumers using ordinary keys.
+Set `SF2_LOCALIZATION_OUTPUT` to an explicit ignored JSON destination. Default case covers English,
+draft Cancel, Chinese Apply, same session/revision and repeat dialogue; `SF2_LOCALIZATION_CASE=heal`
+uses a battle package with Chinese settings, `heal-en` expects English, `heal-slow` expects adjustable
+Chinese. Cases `field-slow`, `field-instant` and `restart` observe speech/acknowledgements and loaded
+preference. `SF2_LOCALIZATION_LONG=1` additionally requires ReadMore and measured glyph/geometry
+checks; select a separately authored long overlay with the same source controls.
+
+Direct native failure cases `ui-fallback`, `required-ui`, `required-font`, `write-failure`, `read-only`
+exercise loaded resource mutations before composition/Apply or actual settings access; mutations are
+process-local and never edit PO/font files. Read-only requires an explicit `--input-settings` file;
+write-failure uses `SF2_LOCALIZATION_PREFS` only as the observer's external conflict destination.
+Required resources retain distinct compiled English recovery controls and refuse Apply. Exact row
+metadata distinguishes Chinese missing/invalid templates and retains English fallback. Existing
+specific storage recovery remains visible; no English-message parsing supplies error semantics.
+
+Bounded Content admission is exercised directly, not by tests of its reader: valid reordered names,
+partial/malformed/duplicate/wrong-identity/oversized overlays, invalid parameter/control rows, literal
+arguments, missing producer bindings and `A{CLEAR}B{W1}C{W2}`. Both English routes project B then BC;
+Chinese projects its corresponding segments, with exactly two source acknowledgements. Behavior
+unit tests live in `LocalizationDisplayTests`; affected existing FieldText/scene tests retain their
+real Application assertions. Use `uv run sf2 verify engine`, `uv run sf2 verify adapter`, the committed
+planner selection and actual CI; completed failures and targeted corrections belong in the handoff.
+No screenshots, per-frame capture, emulator, world export or full-opening replay is needed. Actual
+observations establish this finite engineering boundary, not translation/typography approval or
+whole-epic coverage. Private overlays remain private; Chinese naming/IME remains unsupported.

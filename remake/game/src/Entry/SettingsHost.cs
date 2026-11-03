@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.UI;
 
@@ -15,7 +16,7 @@ public sealed partial class GameRoot
 
     public string ReadSettingsHostObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { applied = _input?.Settings, releaseBarrier = _releaseBarrier, remapRelease = _settingsRelease?.AsText(),
-        remapDevice = _settingsRelease?.Device, held = _input?.GameplayHeld });
+        remapDevice = _settingsRelease?.Device, held = _input?.GameplayHeld, localization = GameText.Observe() });
 
     private void HandleSettingsAction(GameAction action, InputEvent input)
     {
@@ -80,6 +81,8 @@ public sealed partial class GameRoot
                 _settingsNotice = "Preferences storage is not configured safely. Current defaults are usable; configure SF2_SAVE_ROOT and SF2_SAVE_NAMESPACE outside the checkout, then relaunch to save changes.";
             }
         }
+        GameText.Initialize(settings.Language);
+        if (GameText.StartupError is { } languageError) _settingsNotice = languageError + (_settingsNotice is null ? "" : "\n" + _settingsNotice);
         _input = new GameInput(settings);
     }
 
@@ -91,21 +94,24 @@ public sealed partial class GameRoot
         if (!CanOpenSettings) return;
         _input!.DisarmMovement(); _input.DisarmWait();
         _settings = new SettingsView { Name = "SettingsView", Input = _input, Close = CloseSettings,
-            Apply = ApplySettings, ReadOnly = _settingsOverride, Notice = _settingsNotice };
+            Apply = ApplySettings, ReadOnly = _settingsOverride, Notice = _settingsOverride ? GameText.Get("ui.settings.readonly") + (GameText.StartupError is null ? "" : "\n" + GameText.StartupError) : _settingsNotice is null ? null : _settingsNotice + "\n" + GameText.Get("ui.settings.storage") };
         AddChild(_settings); ApplyHostPause(); DisarmInput();
     }
 
     private string? ApplySettings(InputSettings candidate, bool reset)
     {
-        if (_settingsOverride) return "This launch override is read-only.";
-        if (_preferences is null) return _settingsNotice;
+        if (_settingsOverride) return GameText.Get("ui.settings.readonly");
+        if (_preferences is null) return _settingsNotice + "\n" + GameText.Get("ui.settings.storage");
         Dictionary<GameAction, List<InputEvent>> prepared;
+        GameText.Candidate display;
         try { prepared = GameInput.Prepare(candidate); }
-        catch (ArgumentException) { return "The complete preferences could not be validated. Current settings are retained."; }
+        catch (ArgumentException) { return GameText.Get("ui.settings.invalid"); }
+        try { display = GameText.Prepare(candidate.Language); }
+        catch (ArgumentException) { return GameText.Get("ui.settings.display"); }
         string? error = _preferences.Write(candidate, reset);
-        if (error is not null) return error;
+        if (error is not null) return error + "\n" + GameText.Get("ui.settings.storage");
         _settingsRelease = _settingsActivation;
-        _input!.Apply(candidate, prepared); _settingsNotice = null;
+        _input!.Apply(candidate, prepared); GameText.Publish(display); _settingsNotice = null;
         _entry?.ConfigureHints(_input);
         RefreshSettingsShortcut();
         return null;
@@ -126,7 +132,7 @@ public sealed partial class GameRoot
     }
     private void RefreshSettingsShortcut()
     {
-        if (_settingsButton is not null) _settingsButton.Text = $"Settings · {_input!.CompactHint(GameAction.Cancel)}";
+        if (_settingsButton is not null) _settingsButton.Text = GameText.Get("ui.settings.entry", _input!.CompactHint(GameAction.Cancel));
     }
     private void ReleaseSettingsButton()
     {

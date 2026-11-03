@@ -12,9 +12,7 @@ internal static class BattleCharacterNames
     internal static string Resolve(BattleActorState actor, BattleSceneDefinition? content, StoryState story) =>
         CharacterNames.Battle(story, actor, content);
 
-    // Authored healing cursors retain their engine-authored wording and timing. Only the
-    // known leading subject is renamed; no arbitrary substring or private text is rewritten.
-    internal static string HealingText(string text, BattleActorState actor, BattleSceneDefinition? content, StoryState story) =>
-        content is null && text.StartsWith(actor.Actor.Value + " ", StringComparison.Ordinal)
-            ? Resolve(actor, content, story) + text[actor.Actor.Value.Length..] : text;
+    internal static string HealingText(Sf2.Remake.Application.Runtime.Battles.HealingDisplay display, bool recovery) =>
+        recovery ? Sf2.Remake.GodotAdapter.Localization.GameText.Get("battle.heal.recovery", display.TargetName, display.RecoveredHp) :
+        Sf2.Remake.GodotAdapter.Localization.GameText.Get("battle.heal.action", display.CasterName, display.Spell.Value.ToUpperInvariant(), display.Spell.Level);
 }

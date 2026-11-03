@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.UI;
@@ -73,7 +74,8 @@ public sealed partial class SessionEntryView : Control
     internal void ConfigureHints(GameInput input)
     {
         _input = input; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
-        _settingsAccess.Text = $"Settings / Controls · {input.CompactHint(GameAction.Cancel)}";
+        _settingsAccess.Text = GameText.Get("ui.settings.entry", input.CompactHint(GameAction.Cancel));
+        if (_buttons.Count > 0) _buttons[^1].Text = GameText.Get("ui.settings.entry", input.CompactHint(GameAction.Cancel));
         _settingsAccess.AddThemeFontSizeOverride("font_size", 24);
         _start.Text = $"Start  •  {input.CompactHint(GameAction.Confirm)}";
         _start.TooltipText = input.Hint(GameAction.Confirm) + " / " + input.Hint(GameAction.Equipment);

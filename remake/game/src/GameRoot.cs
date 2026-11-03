@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.GodotAdapter.Exploration;
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.Maps;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Runtime;
@@ -169,6 +170,7 @@ public sealed partial class GameRoot : Node
 
     private void MountSession(SessionStarted started, SessionAudio? preparedAudio = null)
     {
+        GameText.Bind(started.Session.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
         SessionAudio? candidateAudio = preparedAudio;
         if (candidateAudio is null && started.Session.Definition.Exploration is { } candidateDefinition)
         {

@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -57,7 +58,7 @@ internal sealed partial class BattleSceneView : Control
         _ally = Sprite("Ally", new(136, 64)); _ally.ZIndex = 2;
         _weapon = Sprite("Weapon", new(136, 64));
         AddChild(_actorCard); AddChild(_targetCard);
-        AddChild(_messagePanel); _message = _messagePanel.Body; _messagePanel.Choices.Hide();
+        AddChild(_messagePanel); _message = _messagePanel.Body; _message.AutoTranslateMode = AutoTranslateModeEnum.Disabled; _messagePanel.Choices.Hide();
         for (int i = 0; i < 2; i++)
         {
             _fairyBodies.Add(Sprite("FairyBody" + i, Vector2.Zero));
@@ -385,14 +386,21 @@ internal sealed partial class BattleSceneView : Control
 
     private string Message(BattleSceneState state)
     {
+        if (state.Healing is { } message && (!GameText.Ready || message.Display is null ||
+            string.IsNullOrEmpty(message.Display.CasterName) || string.IsNullOrEmpty(message.Display.TargetName) ||
+            message.Display.RecoveredHp < 0))
+        {
+            Error = GameText.Ready ? "display-operands" : "localization-resources";
+            return "Message unavailable (" + Error + ").";
+        }
         if (state.IsAura && state.Phase == BattleScenePhase.ActionMessage)
             return $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}.";
         if (state.IsAura && state.Phase == BattleScenePhase.ResultMessage)
             return $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP.";
         if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
-            return BattleCharacterNames.HealingText(healing.ActionText, _session.Current.Battle.GetActor(state.Actor), Content, _session.Current.Story);
+            return BattleCharacterNames.HealingText(healing.Display, false);
         if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop)
-            return BattleCharacterNames.HealingText(recovery.RecoveryText, _session.Current.Battle.GetActor(state.Target!.Value), Content, _session.Current.Story);
+            return BattleCharacterNames.HealingText(recovery.Display, true);
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         int id = state.Phase switch
         {

@@ -15,11 +15,14 @@ public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mod
 // EndToken excludes the next W1, or equals the stream length for trailing delivery.
 public sealed record W1TextWait(WaitToken Token, int Text, int EndToken, bool AtInput, bool Revealed = false) : ProgramWait(Token);
 public enum FieldTextPhase { ClearFirst, ClearSecond, Opening, Tokens, GlyphCursor, GlyphDelay, Scroll, Input, End, TextPause, ClearToken }
-public sealed record FieldTextUnit(ExplorationTextTokenKind Kind, string Text, byte Symbol = 0, byte Advance = 0);
+public sealed record FieldTextUnit(ExplorationTextTokenKind Kind, string Text, byte Symbol = 0, byte Advance = 0, int SourceToken = 0);
+public sealed record DisplayNameBinding(int SourceToken, int? Member, string CanonicalName, string? CustomName, ActorRef? Actor = null);
 public sealed record FieldTextWait(WaitToken Token, int Text, IReadOnlyList<FieldTextUnit> Units,
     int Index, int End, string Projection, FieldTextPhase Phase, int Remaining = 0,
-    bool FirstGlyph = true, bool Revealed = false, bool SavedTypewriting = false) : ProgramWait(Token)
+    bool FirstGlyph = true, bool Revealed = false, bool SavedTypewriting = false,
+    int DisplayStart = 0, int SourceTokenCount = 0, IReadOnlyList<DisplayNameBinding>? DisplayNames = null) : ProgramWait(Token)
 {
+    public int DisplayEnd => End < Units.Count ? Units[End].SourceToken : SourceTokenCount;
     public bool LogicalDone => Phase is FieldTextPhase.Input or FieldTextPhase.End;
     public bool Wait2 => End < Units.Count && Units[End].Kind == ExplorationTextTokenKind.Wait2;
 }

@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter.UI;
@@ -24,6 +25,7 @@ internal sealed partial class SettingsView : Control
 
     public override void _Ready()
     {
+        AutoTranslateMode = AutoTranslateModeEnum.Disabled;
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
         _draft = Input.Settings.Draft();
         var shade = new ColorRect { Name = "SettingsShade", Color = new("051225b8") };
@@ -33,19 +35,19 @@ internal sealed partial class SettingsView : Control
         _panel.AddChild(_scroll);
         var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         column.AddThemeConstantOverride("separation", 12); _scroll.AddChild(column);
-        column.AddChild(new Label { Text = "Settings", HorizontalAlignment = HorizontalAlignment.Center });
+        column.AddChild(new Label { Text = GameText.Get("ui.settings.title"), HorizontalAlignment = HorizontalAlignment.Center });
         _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart, Text = Notice ?? "Changes take effect only after Apply." };
         column.AddChild(_message);
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 9; i++)
         {
             var button = new Button { Name = "Setting" + i, CustomMinimumSize = new(0, 58),
                 FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore,
-                AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && i < 6 };
+                AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && i < 7 };
             column.AddChild(button); _buttons.Add(button);
         }
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(_hint);
-        _selected = ReadOnly ? 6 : 0;
+        _selected = ReadOnly ? 7 : 0;
         Resized += Arrange; Arrange(); Refresh();
     }
 
@@ -75,7 +77,7 @@ internal sealed partial class SettingsView : Control
             Refresh(); _scroll.EnsureControlVisible(_buttons[_selected]);
         }
         else if (action == GameAction.Confirm) Activate(1);
-        else if (action is GameAction.Left or GameAction.Right && _selected < 4) Activate(action == GameAction.Left ? -1 : 1);
+        else if (action is GameAction.Left or GameAction.Right && _selected < 5) Activate(action == GameAction.Left ? -1 : 1);
     }
 
     internal void HandlePointer(InputEvent input)
@@ -109,13 +111,14 @@ internal sealed partial class SettingsView : Control
             case 1: _draft.CharactersPerSecond = Math.Clamp(_draft.CharactersPerSecond + direction * 10, 1, 240); break;
             case 2: _draft.ConfirmCancel = _draft.ConfirmCancel == "standard" ? "swapped" : "standard"; break;
             case 3: _draft.ReducedFlash = !_draft.ReducedFlash; break;
-            case 4: _draft = Input.Settings.Draft(defaults: true); _reset = true; _status = "Defaults staged. Apply saves them; Cancel keeps current settings."; break;
-            case 5:
+            case 4: _draft.Language = _draft.Language == "en" ? "zh-CN" : "en"; break;
+            case 5: _draft = Input.Settings.Draft(defaults: true); _reset = true; _status = GameText.Get("ui.settings.staged"); break;
+            case 6:
                 _status = Apply(_draft, _reset) ?? "";
                 if (_status == "") { Close(); return; }
                 break;
-            case 6: Close(); return;
-            case 7:
+            case 7: Close(); return;
+            case 8:
                 _pointer.Suspend(); _panel.Hide();
                 _help = new ControlsHelpView { Name = "ControlsHelpView", Input = Input, Back = CloseHelp };
                 AddChild(_help); break;
@@ -132,16 +135,19 @@ internal sealed partial class SettingsView : Control
 
     private void Refresh()
     {
-        string[] labels = [$"Text: {(_draft.TextMode == "instant" ? "Instant" : "Gradual")}",
-            $"Text speed: {_draft.CharactersPerSecond:0.##} characters/sec · Left/Right −/+10",
-            $"Confirm / Cancel: {_draft.ConfirmCancel}", $"Reduced flash: {(_draft.ReducedFlash ? "On" : "Off")}",
-            "Restore defaults (draft)", "Apply", ReadOnly ? "Close" : "Cancel", "Control help"];
+        string[] labels = [GameText.Get("ui.settings.text", GameText.Get(_draft.TextMode == "instant" ? "ui.settings.instant" : "ui.settings.gradual")),
+            GameText.Get("ui.settings.speed", _draft.CharactersPerSecond),
+            GameText.Get("ui.settings.confirm", GameText.Get(_draft.ConfirmCancel == "standard" ? "ui.settings.standard" : "ui.settings.swapped")),
+            GameText.Get("ui.settings.flash", GameText.Get(_draft.ReducedFlash ? "ui.settings.on" : "ui.settings.off")),
+            GameText.Get("ui.settings.language", _draft.Language == "en" ? "English" : "简体中文"),
+            GameText.Get("ui.settings.defaults"), GameText.Get("ui.settings.apply"),
+            GameText.Get(ReadOnly ? "ui.settings.close" : "ui.settings.cancel"), GameText.Get("ui.settings.help")];
         for (int i = 0; i < labels.Length; i++) { _buttons[i].Text = labels[i]; StoryTheme.Select(_buttons[i], i == _selected); }
-        _message.Text = _status != "" ? _status : Notice ?? "Changes take effect only after Apply. Text speed is used in Gradual mode.";
-        _hint.Text = $"{Input.CompactHint(GameAction.Confirm)}: Choose/change   •   {Input.CompactHint(GameAction.Cancel)}: Cancel/close";
+        _message.Text = _status != "" ? _status : Notice ?? GameText.Get("ui.settings.notice") + "\n" + GameText.Coverage;
+        _hint.Text = GameText.Get("ui.settings.hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
     }
 
     public string ReadSettingsObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { draft = _draft, applied = Input.Settings, selected = _selected, readOnly = ReadOnly, reset = _reset, message = _message.Text,
-        help = _help is not null, scroll = _scroll.ScrollVertical, bindings = Enum.GetValues<GameAction>().ToDictionary(action => action.ToString(), Input.Hint) });
+        locale = GameText.Language, coverage = GameText.Coverage, diagnostics = GameText.Diagnostics, labels = _buttons.Select(button => button.Text), help = _help is not null, scroll = _scroll.ScrollVertical, bindings = Enum.GetValues<GameAction>().ToDictionary(action => action.ToString(), Input.Hint) });
 }

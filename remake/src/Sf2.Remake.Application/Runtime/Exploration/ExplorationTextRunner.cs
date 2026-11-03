@@ -100,10 +100,12 @@ internal static class ExplorationTextRunner
             throw new BattleRuleException("field-text-font", "world.textFont", true);
         var units = new List<FieldTextUnit>();
         var partyLists = current.Story.PartyLists;
-        foreach (var part in tokens)
+        var names = new List<DisplayNameBinding>();
+        for (int sourceToken = 0; sourceToken < tokens.Count; sourceToken++)
         {
+            var part = tokens[sourceToken];
             if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Clear)
-            { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "")); continue; }
+            { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "", SourceToken: sourceToken)); continue; }
             int? member = part.Member;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{NAME}") member = text.NameMember;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{LEADER}" && definition.PartyFlags is { } partyFlags)
@@ -120,16 +122,27 @@ internal static class ExplorationTextRunner
                 ExplorationTextTokenKind.ClassName => JoinedClass(scenario, current, text.NameMember),
                 _ => throw new BattleRuleException("field-text-token", "program.text", true),
             };
+            if (part.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName)
+            {
+                ActorRef? namedActor = part.Kind == ExplorationTextTokenKind.MemberName && scenario is not null
+                    ? scenario.Encounters.Values.SelectMany(encounter => encounter.Deployments).FirstOrDefault(row =>
+                        row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == member)?.Actor : null;
+                string canonical = part.Kind == ExplorationTextTokenKind.MemberName && scenario is not null && member is { } number
+                    ? CharacterNames.Member(scenario, new Dictionary<string, string>(), number) : value;
+                string? custom = namedActor is { } identity ? current.Story.Names.GetValueOrDefault(identity.Value) : null;
+                names.Add(new(sourceToken, member, canonical, custom, namedActor));
+            }
             foreach (char character in value)
             {
                 if (character > 255 || font.AsciiToSymbol[character] is not (> 0 and <= 80))
                     throw new BattleRuleException("field-text-symbol", "program.text", true);
                 byte symbol = font.AsciiToSymbol[character];
-                units.Add(new(ExplorationTextTokenKind.Literal, character.ToString(), symbol, font.Advances[symbol - 1]));
+                units.Add(new(ExplorationTextTokenKind.Literal, character.ToString(), symbol, font.Advances[symbol - 1], sourceToken));
             }
         }
         var wait = Span(token, textId, units.AsReadOnly(), 0,
-            current.Story.LogicalText!.Open ? FieldTextPhase.Tokens : FieldTextPhase.ClearFirst);
+            current.Story.LogicalText!.Open ? FieldTextPhase.Tokens : FieldTextPhase.ClearFirst) with
+            { SourceTokenCount = tokens.Count, DisplayNames = names.AsReadOnly() };
         var story = current.Story.Copy(current.Story.Cursor, wait,
             textCursor: text.TextId is null ? checked(current.Story.TextCursor + 1) : current.Story.TextCursor, partyLists: partyLists,
             textWindow: new OpenTextWindow(textId, text.Mode, speaker, text.SpeakerFlags),
@@ -184,6 +197,7 @@ internal static class ExplorationTextRunner
                 window = window with { X = 2, Y = 0, Row = 0 };
                 int following = wait.Index + 1;
                 wait = wait with { Index = following, Phase = FieldTextPhase.ClearToken, Revealed = false,
+                    DisplayStart = unit.SourceToken + 1,
                     Projection = string.Concat(wait.Units.Skip(following).Take(wait.End - following).Select(part => part.Text)) };
                 break;
             }
@@ -273,6 +287,7 @@ internal static class ExplorationTextRunner
         int next = wait.End + 1;
         story = story.Copy(story.Cursor, logicalText: story.LogicalText! with { Indicator = 0, IndicatorVisible = false }, typewriting: true);
         if (next == wait.Units.Count) return story.Copy(ProgramRunner.Next(story.Cursor!.Value), typewriting: false);
-        return Normalize(story.Copy(story.Cursor, Span(nextToken, wait.Text, wait.Units, next, FieldTextPhase.Tokens, wait.FirstGlyph)));
+        return Normalize(story.Copy(story.Cursor, Span(nextToken, wait.Text, wait.Units, next, FieldTextPhase.Tokens, wait.FirstGlyph) with
+            { DisplayStart = wait.DisplayStart, SourceTokenCount = wait.SourceTokenCount, DisplayNames = wait.DisplayNames }));
     }
 }

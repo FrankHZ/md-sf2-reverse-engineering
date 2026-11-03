@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Content.Scenarios;
@@ -18,12 +19,16 @@ internal sealed partial class ExplorationDialogueView : Control
     private Label _dialogue => Panel.Body;
     private TextWindow? _textWindow;
     private bool _fieldTextProjection;
+    private FieldTextWait? _displaySpan;
+    internal string EffectiveLocale { get; private set; } = "en";
+    internal string? FallbackReason { get; private set; }
     internal double Revealed { get; set; }
     internal string ReturnNotice { get; set; } = "";
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Panel); AddChild(_context);
+        _dialogue.AutoTranslateMode = AutoTranslateModeEnum.Disabled;
     }
     internal void Present(GameSession session, GameInput input, WorldViewportLayout viewport, bool battleMounted, bool revealed)
     {
@@ -43,7 +48,17 @@ internal sealed partial class ExplorationDialogueView : Control
         // The resolved field projection belongs to this open window through program waits and close animation.
         _fieldTextProjection = current.Story.Wait is FieldTextWait ||
             (_fieldTextProjection && current.Story.TextWindow is OpenTextWindow && ReferenceEquals(current.Story.TextWindow, _textWindow));
-        if (current.Story.Wait is FieldTextWait fieldSpan) _dialogue.Text = fieldSpan.Projection;
+        if (!_fieldTextProjection)
+        {
+            EffectiveLocale = "en";
+            FallbackReason = current.Story.TextWindow is OpenTextWindow || current.Story.Wait is DialogueWait or W1TextWait or FieldSearchWait
+                ? "unmigrated-consumer" : null;
+        }
+        if (current.Story.Wait is FieldTextWait fieldSpan)
+        {
+            var display = GameText.Field(fieldSpan, session.Definition.Exploration);
+            _dialogue.Text = display.Text; EffectiveLocale = display.EffectiveLocale; FallbackReason = display.Reason;
+        }
         else if (_fieldTextProjection) _dialogue.Text = previousText;
         else if (current.Story.Wait is W1TextWait span)
             _dialogue.Text = string.Concat(session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select(part => part.Kind switch
@@ -66,18 +81,25 @@ internal sealed partial class ExplorationDialogueView : Control
         // A sound wait can become an input wait on the same already-visible text window.
         // Restart reveal only for changed text or a newly opened window, not that wait handoff.
         bool retainedQuestion = current.Story.Wait is ChoiceWait { Work: null } && _dialogue.Text == previousText;
-        if (!retainedQuestion && (_dialogue.Text != previousText || !ReferenceEquals(current.Story.TextWindow, _textWindow)))
+        bool newFieldSpan = current.Story.Wait is FieldTextWait newSpan && (_displaySpan?.Token != newSpan.Token ||
+            _displaySpan.DisplayStart != newSpan.DisplayStart);
+        bool fieldContinuity = current.Story.Wait is FieldTextWait continuous && _displaySpan is { } prior &&
+            ReferenceEquals(current.Story.TextWindow, _textWindow) && continuous.Text == prior.Text &&
+            continuous.DisplayStart == prior.DisplayStart && continuous.DisplayEnd >= prior.DisplayEnd;
+        if (!retainedQuestion && (newFieldSpan || _dialogue.Text != previousText || !ReferenceEquals(current.Story.TextWindow, _textWindow)))
         {
-            bool continuingSpan = current.Story.Wait is (W1TextWait or FieldTextWait) && ReferenceEquals(current.Story.TextWindow, _textWindow) &&
+            bool continuingSpan = fieldContinuity || current.Story.Wait is W1TextWait && ReferenceEquals(current.Story.TextWindow, _textWindow) &&
                 _dialogue.Text.StartsWith(previousText, StringComparison.Ordinal);
             Revealed = continuingSpan ? previouslyVisible : 0;
             _dialogue.VisibleCharacters = current.Story.EntrySkip is not null || input.Settings.TextMode == "instant" ? -1 : (int)Revealed;
         }
-        bool continuingProjection = ReferenceEquals(current.Story.TextWindow, _textWindow) &&
-            current.Story.Wait is W1TextWait or FieldTextWait && _dialogue.Text.StartsWith(previousText, StringComparison.Ordinal);
+        bool continuingProjection = fieldContinuity || ReferenceEquals(current.Story.TextWindow, _textWindow) &&
+            current.Story.Wait is W1TextWait && _dialogue.Text.StartsWith(previousText, StringComparison.Ordinal);
         if (!ReferenceEquals(current.Story.TextWindow, _textWindow) && current.Story.TextWindow is OpenTextWindow ||
             _dialogue.Text != previousText && !continuingProjection)
             Panel.ResetReading();
+        if (current.Story.Wait is FieldTextWait displayed) _displaySpan = displayed;
+        else if (!_fieldTextProjection) _displaySpan = null;
         _textWindow = current.Story.TextWindow;
         bool portrait = session.Definition.Exploration?.Visuals is not null &&
             current.Story.PortraitWindow is OpenPortraitWindow or UnknownPortraitWindow { LegacySpeaker: not null };
