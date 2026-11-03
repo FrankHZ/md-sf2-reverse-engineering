@@ -114,6 +114,8 @@ public sealed partial class GameRoot
         _input!.Apply(candidate, prepared); GameText.Publish(display); _settingsNotice = null;
         _entry?.ConfigureHints(_input);
         RefreshSettingsShortcut();
+        RefreshPersistenceLabels();
+        if (_restart is not null) _restart.Text = GameText.Get("entry.new-menu");
         return null;
     }
 

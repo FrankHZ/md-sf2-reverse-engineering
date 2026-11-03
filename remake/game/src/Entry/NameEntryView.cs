@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.GodotAdapter.UI;
 
@@ -17,31 +18,34 @@ internal sealed partial class NameEntryView : Control
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
         var panel = new PanelContainer { Name = "NameWindow", Position = EntryLayout.Window.Position, Size = EntryLayout.Window.Size }; AddChild(panel);
         var column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddThemeConstantOverride("separation", 20); panel.AddChild(column);
-        column.AddChild(new Label { Text = "What is your name?", HorizontalAlignment = HorizontalAlignment.Center });
-        _edit = new LineEdit { Name = "NameInput", Text = Draft, PlaceholderText = "Empty keeps Bowie", CustomMinimumSize = new(500, 64),
+        column.AddChild(new Label { Text = GameText.Get("name.title"), HorizontalAlignment = HorizontalAlignment.Center });
+        _edit = new LineEdit { Name = "NameInput", Text = Draft, PlaceholderText = GameText.Get("name.empty"), CustomMinimumSize = new(500, 64),
             Alignment = HorizontalAlignment.Center, ContextMenuEnabled = false, KeepEditingOnTextSubmit = true };
         column.AddChild(_edit);
         _edit.TextChanged += _ => Validate();
         _edit.TextSubmitted += _ => Finish();
-        var help = new Label { Name = "NameHelp", Text = "Keyboard only • Up to 7 characters\nLetters A–Z / a–z, digits 0–9\n, . - ! ? # ' and space\nBackspace/Delete: Remove characters\nEmpty keeps the default name",
+        var help = new Label { Name = "NameHelp", Text = GameText.Get("name.help"),
             AutowrapMode = TextServer.AutowrapMode.WordSmart, HorizontalAlignment = HorizontalAlignment.Center };
         help.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(help);
+        string fallback = string.Join("\n", new[] { GameText.Fallback("name.", includeKey: true),
+            GameText.Fallback("entry.back", includeKey: true) }.Where(text => text != ""));
+        if (fallback != "") help.Text += "\n" + fallback;
         _error = new Label { Name = "NameError", AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 68), HorizontalAlignment = HorizontalAlignment.Center }; column.AddChild(_error);
         var actions = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddChild(actions);
-        AddAction("Back", () => Back?.Invoke(_edit.Text));
-        AddAction("Use name", Finish);
-        var hint = new Label { Name = "NameHint", Text = "Enter: Use name   •   Escape: Back",
+        AddAction("Back", "entry.back", () => Back?.Invoke(_edit.Text));
+        _use = AddAction("UseName", "name.use", Finish);
+        var hint = new Label { Name = "NameHint", Text = GameText.Get("name.hint"),
             HorizontalAlignment = HorizontalAlignment.Center };
         hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(hint);
         Validate(); FocusEditor(); _edit.SelectAll();
         GetWindow().FocusEntered += FocusEditor;
 
-        void AddAction(string text, Action action)
+        Button AddAction(string name, string key, Action action)
         {
-            var button = new Button { Text = text, CustomMinimumSize = new(250, 64), FocusMode = FocusModeEnum.None };
+            var button = new Button { Name = name, Text = GameText.Get(key), CustomMinimumSize = new(250, 64), FocusMode = FocusModeEnum.None };
             button.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
             button.Pressed += action; actions.AddChild(button);
-            if (text == "Use name") _use = button;
+            return button;
         }
     }
 
@@ -67,7 +71,7 @@ internal sealed partial class NameEntryView : Control
         _use.Disabled = error is not null;
         _error.Modulate = error is null ? StoryTheme.Selected : new("ffc4ad");
         _error.Text = error switch
-        { "name-too-long" => "Name is too long. Use at most 7 characters.", "name-character" => "Unsupported character. Use the letters, digits or punctuation listed above.", _ => _edit.Text.Length == 0 ? "The default name will be used." : "" };
+        { "name-too-long" => GameText.Get("name.too-long"), "name-character" => GameText.Get("name.character"), _ => _edit.Text.Length == 0 ? GameText.Get("name.default") : "" };
     }
     private void Finish()
     {

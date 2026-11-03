@@ -9,6 +9,19 @@ public sealed record DisplayCatalogAdmission(DisplayCatalog? Catalog, string? Er
 public static class DisplayCatalogReader
 {
     public static DisplayCatalogAdmission Read(byte[] bytes, ScenarioDefinition source)
+        => Read(bytes, source.Package, "world.text", source.Exploration?.TextTokens,
+            source.Exploration?.Provenance?.Repository, source.Exploration?.Provenance?.Commit,
+            source.Exploration?.Provenance?.RomSha256);
+
+    // Entry has its own admitted profile and source identity; it is not a gameplay scenario.
+    public static DisplayCatalogAdmission Read(byte[] bytes, EntryPresentation source)
+        => Read(bytes, source.Profile, "entry.text", source.Dialogue.ToDictionary(pair => int.Parse(pair.Key,
+            System.Globalization.CultureInfo.InvariantCulture), pair => ExplorationTextTokens.Read(pair.Value)),
+            "ShiningForceCentral/SF2DISASM", source.UpstreamCommit, source.RomSha256);
+
+    private static DisplayCatalogAdmission Read(byte[] bytes, string package, string targetNamespace,
+        IReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>>? originals,
+        string? repository, string? commit, string? romSha256)
     {
         try
         {
@@ -16,17 +29,17 @@ public static class DisplayCatalogReader
             string json = new UTF8Encoding(false, true).GetString(bytes);
             using var document = JsonDocument.Parse(json);
             var root = document.RootElement;
-            Shape(root, source.Exploration?.Provenance is null ? ["package", "locale", "texts"] :
+            Shape(root, repository is null ? ["package", "locale", "texts"] :
                 ["package", "locale", "texts", "source"]);
-            if (root.GetProperty("package").GetString() != source.Package ||
-                root.GetProperty("locale").GetString() != "zh-CN" || source.Exploration is not { } world)
+            if (root.GetProperty("package").GetString() != package ||
+                root.GetProperty("locale").GetString() != "zh-CN" || originals is null)
                 throw new ArgumentException();
-            if (world.Provenance is { } identity)
+            if (repository is not null)
             {
                 var pin = root.GetProperty("source"); Shape(pin, ["repository", "commit", "romSha256"]);
-                if (pin.GetProperty("repository").GetString() != identity.Repository ||
-                    pin.GetProperty("commit").GetString() != identity.Commit ||
-                    pin.GetProperty("romSha256").GetString() != identity.RomSha256) throw new ArgumentException();
+                if (pin.GetProperty("repository").GetString() != repository ||
+                    pin.GetProperty("commit").GetString() != commit ||
+                    pin.GetProperty("romSha256").GetString() != romSha256) throw new ArgumentException();
             }
             var texts = root.GetProperty("texts");
             if (texts.ValueKind != JsonValueKind.Array || texts.GetArrayLength() > 64) throw new ArgumentException();
@@ -40,8 +53,10 @@ public static class DisplayCatalogReader
                 int id = entry.GetProperty("id").GetInt32();
                 string value = entry.GetProperty("text").GetString() ?? throw new ArgumentException();
                 if (!seen.Add((space, id))) throw new ArgumentException();
-                string key = space == "world.text" && id is >= 0 and <= 65535 ? $"world.text/{id}" : "unknown-target";
-                if (space != "world.text" || !world.TextTokens.TryGetValue(id, out var original) || value.Length > 8192 ||
+                string key = space == targetNamespace && id is >= 0 and <= 65535 ? $"{targetNamespace}/{id}" : "unknown-target";
+                if (space != targetNamespace)
+                { diagnostics.Add(new("invalid-translation", key)); continue; }
+                if (!originals.TryGetValue(id, out var original) || value.Length > 8192 ||
                     !Map(original, ExplorationTextTokens.Read(value), out var row))
                 {
                     rejected[id] = "invalid-translation"; diagnostics.Add(new("invalid-translation", key)); continue;

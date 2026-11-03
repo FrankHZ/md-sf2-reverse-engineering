@@ -692,6 +692,16 @@ then refreshes settings access without remounting or issuing gameplay. Cancel re
 language. Chinese missing/invalid rows retain exact fallback metadata and complete English wording.
 Settings recovery details are currently English with a localized explanation.
 
+The [M2b entry/save boundary](../application/localization-design.md#implemented-m2b-entry-and-save-boundary)
+adds title/Witch controls, New Game/restricted-name help, slots, Save/Quit/Continue and recovery.
+Actual entry IDs 216–221 use their admitted profile/source through optional
+`SF2_ENTRY_DISPLAY_CATALOG`; no private translation ships with the UI. Entry source fallback and
+UI-key fallback remain independently visible/diagnosable. Long menu/error text consumes ReadMore
+before a command; Settings/Cancel stay accessible. Apply refreshes labels/errors and resets visual
+reading only when their body changes, retaining page/selection/failure/audio and paused progress.
+Slot destinations format the existing Recipe, custom names stay literal, and UTC stays explicit.
+Image lettering and game terminology remain source English pending separate work.
+
 StoryTheme uses the bundled Noto Sans CJK SC at the existing 30px body/24px hint hierarchy, with system
 fallback disabled. Plain Label rendering retains literal names; visual wrap/ReadMore never adds source
 controls or acknowledgements. Field reveal continuity uses window/text/source range; HEAL consumes

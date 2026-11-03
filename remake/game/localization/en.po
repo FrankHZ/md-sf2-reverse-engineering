@@ -3,6 +3,15 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: en\n"
 
+msgid "entry.new-menu"
+msgstr "New Game…"
+
+msgid "entry.more"
+msgstr "Read more"
+
+msgid "entry.more-hint"
+msgstr "{0}: Read more before choosing"
+
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.title"
 msgstr "Settings"
@@ -105,7 +114,7 @@ msgstr "Language resources are unavailable (localization-resources). Current set
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "Chinese pilot: settings, authored field text, HEAL, Church and Search. Missing rows and untranslated names use English."
+msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -252,3 +261,256 @@ msgstr "{0}: Talk    "
 
 msgid "field.search"
 msgstr "{0}: Search    "
+
+#. Entry and persistence UI. Actions and save recipes retain stable identities.
+msgid "entry.new"
+msgstr "New Game"
+
+msgid "entry.cancel"
+msgstr "Cancel"
+
+msgid "entry.continue"
+msgstr "Continue"
+
+msgid "entry.quit"
+msgstr "Quit"
+
+msgid "entry.back"
+msgstr "Back"
+
+msgid "entry.save"
+msgstr "Save"
+
+msgid "entry.quit-menu"
+msgstr "Quit…"
+
+msgid "entry.save-menu"
+msgstr "Save…"
+
+msgid "entry.retry"
+msgstr "Retry"
+
+msgid "entry.return"
+msgstr "Return to game"
+
+msgid "entry.recover"
+msgstr "Recover backup"
+
+msgid "entry.inspect"
+msgstr "Inspect Continue"
+
+msgid "entry.reveal"
+msgstr "Reveal"
+
+msgid "entry.press-start"
+msgstr "Press Start"
+
+msgid "entry.normal"
+msgstr "Normal difficulty"
+
+msgid "entry.replacement"
+msgstr "Start a new game? Current unsaved progress will be discarded."
+
+msgid "entry.unavailable"
+msgstr "Entry unavailable."
+
+msgid "entry.assets"
+msgstr "Title / Witch content is unavailable. Select a prepared private entry package with SF2_PRIVATE_ENTRY_CONTENT, then relaunch."
+
+msgid "entry.new-hint"
+msgstr "New Game  •  Normal difficulty"
+
+msgid "entry.journey-hint"
+msgstr "Choose your journey  •  Normal difficulty"
+
+msgid "entry.retry-help"
+msgstr "Check the prepared private opening content selections and try New Game again."
+
+msgid "entry.launch-help"
+msgstr "Correct the startup options or input settings, then relaunch."
+
+msgid "name.title"
+msgstr "What is your name?"
+
+msgid "name.empty"
+msgstr "Empty keeps Bowie"
+
+msgid "name.help"
+msgstr "Keyboard only • Up to 7 characters\nLetters A–Z / a–z, digits 0–9\n, . - ! ? # ' and space\nBackspace/Delete: Remove characters\nEmpty keeps the default name"
+
+msgid "name.use"
+msgstr "Use name"
+
+msgid "name.hint"
+msgstr "Enter: Use name   •   Escape: Back"
+
+msgid "name.too-long"
+msgstr "Name is too long. Use at most 7 characters."
+
+msgid "name.character"
+msgstr "Unsupported character. Use the letters, digits or punctuation listed above."
+
+msgid "name.default"
+msgstr "The default name will be used."
+
+msgid "name.bowie-default"
+msgstr "Bowie (default)"
+
+msgid "slot.title.save"
+msgstr "Save your journey"
+
+msgid "slot.title.confirm"
+msgstr "Confirm save"
+
+msgid "slot.title.saved"
+msgstr "Progress saved"
+
+msgid "slot.title.quit"
+msgstr "Leave the game?"
+
+msgid "slot.title.error"
+msgstr "Unable to save"
+
+msgid "slot.title.recover"
+msgstr "Recover a saved journey"
+
+msgid "slot.title.default"
+msgstr "Saved journeys"
+
+msgid "slot.matching"
+msgstr "Needs matching content / rules"
+
+msgid "slot.unreadable"
+msgstr "Cannot read this slot"
+
+msgid "slot.unavailable"
+msgstr "Save unavailable — existing file kept"
+
+msgid "slot.empty"
+msgstr "Empty"
+
+msgid "slot.primary-missing"
+msgstr "Primary missing"
+
+msgid "slot.backup-review"
+msgstr "\nBackup available — choose to review recovery"
+
+msgid "slot.backup"
+msgstr "\nBackup present"
+
+msgid "save.destination.new-game"
+msgstr "Granseal, beginning of the opening"
+
+msgid "save.destination.map3-opening"
+msgstr "Granseal, home"
+
+msgid "save.destination.map3-joined"
+msgstr "Granseal, outside the church"
+
+msgid "save.destination.battle01-return"
+msgstr "Ancient Tower, completed battle return"
+
+msgid "save.destination.unavailable"
+msgstr "Return location unavailable"
+
+msgid "save.choose"
+msgstr "Choose a saved journey."
+
+msgid "save.quit-dirty"
+msgstr "Quit? Progress since your last save will be lost. No automatic save is made."
+
+msgid "save.quit-clean"
+msgstr "Quit to desktop? Your last save is safe."
+
+msgid "new.slots"
+msgstr "Choose a slot for your new journey. Nothing is written until final confirmation.\nNormal difficulty"
+
+msgid "new.uncertain"
+msgstr "The write may already have completed. Your current session is still paused.\nProgress files have been retained. Inspect Continue before deciding whether to start another journey."
+
+msgid "save.error.location"
+msgstr "Save after returning to a supported location: opening Granseal or the settled first battle return."
+
+msgid "save.error.compatibility"
+msgstr "This save needs the matching content/rules. The file has been kept."
+
+msgid "save.error.uncertain"
+msgstr "The write outcome is uncertain. Progress files have been kept. Reopen Continue to check them before trying again."
+
+msgid "save.error.storage"
+msgstr "The save folder could not be read or written. Check available disk space and folder access. Your existing saves have been kept."
+
+msgid "save.error.empty"
+msgstr "This slot is empty. Choose another slot or start a new journey."
+
+msgid "save.error.busy"
+msgstr "Finish the current action or conversation, then try Save again. Your existing saves have been kept."
+
+msgid "save.error.stale"
+msgstr "Your journey changed while this window was open. Return to the game and open Save again. Your existing saves have been kept."
+
+msgid "save.error.config"
+msgstr "The save folder is not configured safely. Check the launch settings. Your existing saves have been kept."
+
+msgid "save.error.other"
+msgstr "This save is unavailable. Your existing progress files have been kept. Check the details below before trying again."
+
+msgid "entry.start"
+msgstr "Start  •  {0}"
+
+msgid "entry.choose-hint"
+msgstr "{0}: Choose   •   {1}: Back"
+
+msgid "entry.choose-tooltip"
+msgstr "Choose: {0} • Back: {1}"
+
+msgid "entry.reveal-hint"
+msgstr "{0}: Reveal"
+
+msgid "entry.read-hint"
+msgstr "{0}: Continue   •   {1}: Skip greeting"
+
+msgid "entry.fail"
+msgstr "Cannot start: {0} ({1}).\n{2}"
+
+msgid "entry.fallback"
+msgstr "Entry dialogue uses English ({0}). Image lettering is unchanged."
+
+msgid "save.details"
+msgstr "Details: {0}"
+
+msgid "save.offer"
+msgstr "Save current progress. Continue returns to {0}.\nNPC positions and music restart; your party and earned progress are preserved."
+
+msgid "slot.record"
+msgstr "Slot {0} · {1}\n{2} · {3} UTC"
+
+msgid "slot.status"
+msgstr "Slot {0} · {1}{2}"
+
+msgid "save.overwrite"
+msgstr "Overwrite Slot {0}? The previous valid save becomes its backup."
+
+msgid "save.confirm"
+msgstr "Save current progress to Slot {0}?"
+
+msgid "save.saved"
+msgstr "Saved to Slot {0}. Continue returns to {1}."
+
+msgid "save.recovery"
+msgstr "Slot {0}'s main save is missing or unavailable.\nRecover {1}'s compatible backup?\n{2} · {3} UTC"
+
+msgid "save.tooltip"
+msgstr "Save: {0}"
+
+msgid "slot.tooltip"
+msgstr "{0} • Back: {1}"
+
+msgid "new.confirm"
+msgstr "Begin a new journey as {0}?\nSlot {1} • Normal difficulty\nIf occupied, this replaces that slot; its previous valid save becomes the backup.\nThe initial save returns to the beginning of the opening. Current unsaved progress will be discarded only after saving succeeds."
+
+msgid "new.start"
+msgstr "Start and save to Slot {0}"
+
+msgid "new.error"
+msgstr "New Game unavailable: {0}.\nNo new session was mounted. Existing progress files were retained.\nCorrect the input or storage problem, then retry; Cancel returns to the Witch."

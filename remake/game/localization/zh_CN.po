@@ -3,6 +3,15 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: zh_CN\n"
 
+msgid "entry.new-menu"
+msgstr "新游戏…"
+
+msgid "entry.more"
+msgstr "继续阅读"
+
+msgid "entry.more-hint"
+msgstr "{0}：读完正文后选择"
+
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.title"
 msgstr "设置"
@@ -105,7 +114,7 @@ msgstr "语言资源不可用（localization-resources）。已保留当前设�
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "中文试点：设置、原创场景文本、HEAL、教堂与搜索。缺失条目及未译名称保留英文。"
+msgstr "中文显示：入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -252,3 +261,256 @@ msgstr "{0}：交谈    "
 
 msgid "field.search"
 msgstr "{0}：搜索    "
+
+#. Entry and persistence UI. Actions and save recipes retain stable identities.
+msgid "entry.new"
+msgstr "新游戏"
+
+msgid "entry.cancel"
+msgstr "取消"
+
+msgid "entry.continue"
+msgstr "继续"
+
+msgid "entry.quit"
+msgstr "退出"
+
+msgid "entry.back"
+msgstr "返回"
+
+msgid "entry.save"
+msgstr "保存"
+
+msgid "entry.quit-menu"
+msgstr "退出…"
+
+msgid "entry.save-menu"
+msgstr "保存…"
+
+msgid "entry.retry"
+msgstr "重试"
+
+msgid "entry.return"
+msgstr "返回游戏"
+
+msgid "entry.recover"
+msgstr "恢复备份"
+
+msgid "entry.inspect"
+msgstr "检查存档"
+
+msgid "entry.reveal"
+msgstr "显示全文"
+
+msgid "entry.press-start"
+msgstr "按键开始"
+
+msgid "entry.normal"
+msgstr "普通难度"
+
+msgid "entry.replacement"
+msgstr "开始新游戏？当前未保存的进度将被放弃。"
+
+msgid "entry.unavailable"
+msgstr "入口内容不可用。"
+
+msgid "entry.assets"
+msgstr "标题／女巫内容不可用。请配置 SF2_PRIVATE_ENTRY_CONTENT 私有入口包后重新启动。"
+
+msgid "entry.new-hint"
+msgstr "新游戏  •  普通难度"
+
+msgid "entry.journey-hint"
+msgstr "选择旅程  •  普通难度"
+
+msgid "entry.retry-help"
+msgstr "请检查私有开场内容配置，然后重试新游戏。"
+
+msgid "entry.launch-help"
+msgstr "请修正启动选项或输入设置后重新启动。"
+
+msgid "name.title"
+msgstr "你叫什么名字？"
+
+msgid "name.empty"
+msgstr "留空使用 Bowie"
+
+msgid "name.help"
+msgstr "仅支持键盘输入，最多 7 个字符\n字母 A–Z / a–z、数字 0–9\n以及 , . - ! ? # ' 和空格\nBackspace/Delete：删除字符\n留空使用默认名字，不支持中文命名"
+
+msgid "name.use"
+msgstr "使用此名"
+
+msgid "name.hint"
+msgstr "Enter：使用此名  •  Escape：返回"
+
+msgid "name.too-long"
+msgstr "名字过长，最多可输入 7 个字符。"
+
+msgid "name.character"
+msgstr "不支持此字符。请使用上方列出的字母、数字或标点。"
+
+msgid "name.default"
+msgstr "将使用默认名字。"
+
+msgid "name.bowie-default"
+msgstr "Bowie（默认）"
+
+msgid "slot.title.save"
+msgstr "保存旅程"
+
+msgid "slot.title.confirm"
+msgstr "确认保存"
+
+msgid "slot.title.saved"
+msgstr "进度已保存"
+
+msgid "slot.title.quit"
+msgstr "退出游戏？"
+
+msgid "slot.title.error"
+msgstr "无法保存"
+
+msgid "slot.title.recover"
+msgstr "恢复已保存的旅程"
+
+msgid "slot.title.default"
+msgstr "已保存的旅程"
+
+msgid "slot.matching"
+msgstr "需要匹配的内容／规则"
+
+msgid "slot.unreadable"
+msgstr "无法读取此槽位"
+
+msgid "slot.unavailable"
+msgstr "存档不可用，原文件已保留"
+
+msgid "slot.empty"
+msgstr "空槽位"
+
+msgid "slot.primary-missing"
+msgstr "主存档缺失"
+
+msgid "slot.backup-review"
+msgstr "\n有可用备份，选择后可查看恢复选项"
+
+msgid "slot.backup"
+msgstr "\n存在备份"
+
+msgid "save.destination.new-game"
+msgstr "Granseal，开场起点"
+
+msgid "save.destination.map3-opening"
+msgstr "Granseal，家中"
+
+msgid "save.destination.map3-joined"
+msgstr "Granseal，教堂外"
+
+msgid "save.destination.battle01-return"
+msgstr "Ancient Tower，战斗结束后的返回点"
+
+msgid "save.destination.unavailable"
+msgstr "返回地点不可用"
+
+msgid "save.choose"
+msgstr "选择已保存的旅程。"
+
+msgid "save.quit-dirty"
+msgstr "退出游戏？上次保存后的进度将丢失，游戏不会自动保存。"
+
+msgid "save.quit-clean"
+msgstr "退出到桌面？上次保存的进度已保留。"
+
+msgid "new.slots"
+msgstr "为新旅程选择槽位。最终确认前不会写入存档。\n普通难度"
+
+msgid "new.uncertain"
+msgstr "写入可能已经完成，当前游戏仍保持暂停。\n进度文件已保留。请先打开读档界面检查存档，再决定是否开始新的旅程。"
+
+msgid "save.error.location"
+msgstr "请回到支持的地点再保存：开场的Granseal，或首场战斗结束后的返回点。"
+
+msgid "save.error.compatibility"
+msgstr "此存档需要匹配的内容／规则，文件已保留。"
+
+msgid "save.error.uncertain"
+msgstr "写入结果不确定，进度文件已保留。请重新打开继续游戏检查存档，再决定是否重试。"
+
+msgid "save.error.storage"
+msgstr "无法读取或写入存档文件夹。请检查磁盘空间和文件夹权限，原存档已保留。"
+
+msgid "save.error.empty"
+msgstr "此槽位为空。请选择其他槽位，或开始新旅程。"
+
+msgid "save.error.busy"
+msgstr "请完成当前动作或对话后再保存，原存档已保留。"
+
+msgid "save.error.stale"
+msgstr "此窗口打开期间游戏进度已改变。请返回游戏并重新打开保存，原存档已保留。"
+
+msgid "save.error.config"
+msgstr "存档文件夹配置不安全。请检查启动设置，原存档已保留。"
+
+msgid "save.error.other"
+msgstr "此存档不可用，原进度文件已保留。请先检查下方详情再重试。"
+
+msgid "entry.start"
+msgstr "开始  •  {0}"
+
+msgid "entry.choose-hint"
+msgstr "{0}：选择  •  {1}：返回"
+
+msgid "entry.choose-tooltip"
+msgstr "选择：{0}  •  返回：{1}"
+
+msgid "entry.reveal-hint"
+msgstr "{0}：显示全文"
+
+msgid "entry.read-hint"
+msgstr "{0}：继续  •  {1}：跳过问候"
+
+msgid "entry.fail"
+msgstr "无法开始：{0}（{1}）。\n{2}"
+
+msgid "entry.fallback"
+msgstr "入口对白使用英文（{0}），图片内文字保持原样。"
+
+msgid "save.details"
+msgstr "详情：{0}"
+
+msgid "save.offer"
+msgstr "保存当前进度，继续游戏将返回{0}。\nNPC 位置和音乐会重新开始，队伍与已获得的进度将保留。"
+
+msgid "slot.record"
+msgstr "槽位 {0} · {1}\n{2} · {3} UTC"
+
+msgid "slot.status"
+msgstr "槽位 {0} · {1}{2}"
+
+msgid "save.overwrite"
+msgstr "覆盖槽位 {0}？原有的有效存档将成为备份。"
+
+msgid "save.confirm"
+msgstr "将当前进度保存到槽位 {0}？"
+
+msgid "save.saved"
+msgstr "已保存到槽位 {0}，继续游戏将返回{1}。"
+
+msgid "save.recovery"
+msgstr "槽位 {0} 的主存档缺失或不可用。\n恢复 {1} 的兼容备份？\n{2} · {3} UTC"
+
+msgid "save.tooltip"
+msgstr "保存：{0}"
+
+msgid "slot.tooltip"
+msgstr "{0}  •  返回：{1}"
+
+msgid "new.confirm"
+msgstr "以 {0} 开始新旅程？\n槽位 {1}  •  普通难度\n若已有存档，将覆盖此槽位；原有的有效存档会成为备份。\n初始存档返回开场起点。仅在保存成功后放弃当前未保存进度。"
+
+msgid "new.start"
+msgstr "开始并保存到槽位 {0}"
+
+msgid "new.error"
+msgstr "新游戏不可用：{0}。\n未载入新游戏，原进度文件已保留。\n请修正输入或存储问题后重试；取消可返回女巫菜单。"

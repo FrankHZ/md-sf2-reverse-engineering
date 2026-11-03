@@ -205,7 +205,7 @@ public sealed partial class GameRoot : Node
         if (SessionPresentationOwner.IsBattle(started.Result.Snapshot)) EnterBattle(started.Result);
         else { view.Hide(); ShowExploration(started.Result, returning: false); }
         // A bounded New Game confirmation, available only at settled field input.
-        _restart = new Button { Name = "NewGameEntry", Text = "New Game…", AnchorLeft = 1, AnchorRight = 1,
+        _restart = new Button { Name = "NewGameEntry", Text = GameText.Get("entry.new-menu"), AnchorLeft = 1, AnchorRight = 1,
             OffsetLeft = -220, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 60,
             Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
         _restart.Pressed += ShowEntry; AddChild(_restart);

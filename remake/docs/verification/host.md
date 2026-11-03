@@ -2190,3 +2190,88 @@ committed planner/actual CI remain required; no screenshots, private story expor
 new validation framework is needed. Preserve initial startup/driver failures and narrow corrections
 in the slice handoff. These observations establish the finite implementation boundary; human
 translation/typography and opening-wide bilingual coverage are not claimed.
+
+## Localized entry and save
+
+[#1474](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1474) owns this bounded screen
+group under the [localization agreement](../application/localization-design.md#implemented-m2b-entry-and-save-boundary).
+Reuse the admitted entry/opening selections from [entry](#opening-new-game-observation) and
+[save/Continue](#opening-save-and-continue), the owned Godot installation/project/imports and local
+private-input configuration. Use disposable external save/preference namespaces, serial short runs
+at 1920×1080, a 50-second external deadline and no screenshots. New evidence budget is 15 MiB;
+do not copy/rebuild the world or reset old failure records. Necessary changed C# builds and PO imports
+use the existing absolute SDK/shared CLI home with `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`.
+
+The retained local entry is `local/issue1474/run-native.ps1 -Run <case> [-Namespace <existing>]`;
+it extends the existing entry/save input driver rather than introducing another probe framework.
+`catalog.ps1` directly exercises the real Content reader; neither driver nor reader gains unit tests.
+From the owned checkout, load the current private selections in-process, build the existing Debug
+adapter only for changed C#, and use `-Run po-import -Import` only when native PO resources changed.
+Choose fresh attempt/namespace names for new writes. Record actual native/SDK exits and semantic
+results; a process exit alone does not establish a successful observation.
+
+Reproduce the normal route with these actual host actions in each language:
+
+1. Start at title, open Settings, change the language draft then Cancel. Confirm unchanged entry
+   texture identities and audio start receipts. Confirm each ordinary greeting row 216–220 through
+   reveal/ReadMore to menu row 221. Without an overlay, Chinese UI retains the original private
+   English rows with `en` / `overlay-unavailable`, visibly separate from UI labels.
+2. On the settled menu Apply English↔zh-CN. Keep page, selection, source/failure identity, textures
+   and audio receipts; do not restart music. New Game → slot → naming must reject eight characters
+   and Han input, allow empty/default, and retain a literal seven-or-fewer ASCII draft through Back.
+   Confirm a literal `Bowie` remains an override, not an instruction to translate a default name.
+3. Final confirmation defaults to Back and writes nothing. Prepare a disposable *file* as an invalid
+   save-root destination before startup, attempt the real write, inspect the localized failure, then
+   retry with the valid root. The same prepared candidate must be written before mounting. No live
+   session/party/result injection is permitted. Cancel and failed writes preserve prior progress.
+4. At ordinary settled opening field input Apply another language; compare session ID/revision,
+   complete save capture and slot bytes. Existing New Game/Save/Quit buttons refresh in place.
+   Save → occupied slot → Cancel must keep bytes; confirm Save retains the previous valid backup.
+   Reopen New Game and cancel the occupied-slot path, retaining the paused session. Quit through
+   the real confirmation. Start a new OS process with the same namespace, Continue that slot and
+   perform a legal field step. Compare saved/restored party, names, flags, resources and both seeds.
+5. In another disposable namespace prepare a truncated primary and a compatible genuine backup.
+   Continue shows recovery explicitly; Cancel leaves both files unchanged. Confirm recovery, verify
+   the restored name/progress and normal control. UTC remains explicit on occupied/recovery rows.
+
+Optional entry display selection is an absolute `SF2_ENTRY_DISPLAY_CATALOG`, independent of the
+world's `SF2_DISPLAY_CATALOG`. This complete original sample translates no extracted script:
+
+```json
+{
+  "package": "private-local-entry",
+  "locale": "zh-CN",
+  "source": {
+    "repository": "ShiningForceCentral/SF2DISASM",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+  },
+  "texts": [{"namespace": "entry.text", "id": 216, "text": "原创入口，欢迎开始新的旅程。"}]
+}
+```
+
+This binds to the actual admitted entry profile, with IDs 217–221 explicitly missing. Run direct
+missing-row, unexpected `{W1}` / `{NAME}`, duplicate row, wrong namespace/package/source and one-bad-row
+controls. A semantic row defect falls back only that row; wrong identity/structural input rejects
+the overlay. Retain effective locale/reason/diagnostics without recording private paths or prose in
+public reports. `overlay-valid`, `overlay-invalid` and `overlay-source` use normal host entry input.
+
+For `long-overlay`, give all six real IDs finite original Chinese prose, repeating one short sentence
+about 30 times. Read to 221. A pointer Continue and keyboard Confirm must read first, without opening
+slots or changing page. The visible Read more control finishes the body; then the original command
+works. Apply English after a partial scroll, then Chinese: changed bodies reset scroll/read-through,
+with the menu page/selection/audio retained. A long original resource-error explanation exercises
+the same reading/reset boundary. Resource-error and actual failed-start menus must refresh their
+localized explanation while retaining the original asset error or failure/code/field/retry values.
+
+With a valid short entry overlay, erase Chinese `entry.new` and `name.help`, and give `save.offer`
+an invalid parameter before startup. The actual entry, naming and Save screens must show complete
+English fallback and the corresponding key/reason, even though entry source text is Chinese.
+Inspect loaded glyphs, control/panel viewport bounds, allocated text height and native errors.
+Scrollable dialogue content may extend beyond its clipped reading viewport; its viewport and footer
+must fit. No source-control acknowledgement, session command, seed or write implements reading.
+
+Run affected engine/adapter gates and the clean committed planner; record actual CI and preserved
+startup/driver/geometry discoveries in the handoff. Missing private translation, title/numeral image
+lettering, other menus, Unicode names/IME, export and human bilingual typography approval remain
+outside this result. Do not close the localization epic from this screen-group acceptance.
