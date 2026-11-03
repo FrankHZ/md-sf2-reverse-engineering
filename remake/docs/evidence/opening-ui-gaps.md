@@ -127,32 +127,29 @@ media, natural reach and SRAM parity. This bounded change does not close #438 or
 
 ## Window and physical-focus disposition (#1455)
 
-**Stage1 design only; X1/X3/E5/D5 remain bounded.** The
-[window proposal](../godot/presentation.md#window-support-and-recovery-proposal-1455) and
-[native evidence/acceptance plan](../verification/host.md#window-boundary-design-observation-1455)
-separate 1080p entry scaling from native gameplay. **Confirmed:** at 1280×720 Party Close/Prepare
-cannot be clicked and Prepare exceeds the client; at 1920×1080 the default Party/Prepare binding
-hints still overflow horizontally. The sampled 720p battle command menu and Settings fit, which does
-not repair those failures or establish small-window gameplay support.
+**Implemented, bounded; X1/X3/E5/D5 retain human limits.** The
+[window policy](../godot/presentation.md#window-support-and-recovery-1455) admits actual native clients
+at least 1920×1080, including larger windows and 4K fullscreen at 96px/4×. Below either minimum, a
+reachable recovery shell pauses the retained journey/modal and offers Restore/fullscreen/Quit.
+Work area/decorations affect startup/explicit Restore only; valid-sized edge/cross-screen movement
+does not pause or recenter. This is engineering scope, not all-resolution/device/experience approval.
 
-Recommend a minimum 1920×1080 native gameplay client, including larger native windows and 4K
-fullscreen at the same 96px/4× scale, plus reachable recovery below either minimum. A fitting decorated
-window or qualifying native fullscreen handles 1080p-desktop decorations; a minimum-size flag alone
-does not. Only client dimensions gate gameplay; work area/decorations guide startup/explicit Restore,
-not automatic pause/recentering when a valid-sized window is dragged to an edge. Current viewport
-expansion gives no reason to restrict gameplay to exactly 1080p. This is
-pending main-gate selection/implementation, not a new accepted capability or all-size test claim.
-The two baseline hint failures require a narrow repair serialized with
-[#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453). Entry's existing 720p shell
-remains; smaller gameplay/UI scaling/new settings are not promised.
+**Confirmed historical failures:** native 720p Party Close/Prepare lay outside the client, and the
+1920×1080 default Party/Prepare hints overflowed horizontally. The selected policy now prevents
+unsupported small-window gameplay, while the two hints use bounded installed compact strings/wrap.
+The [finite native evidence](../verification/host.md#window-boundary-design-observation-1455) covers
+standard/swapped hints, publication refusal, real constrained Restore/readback, retained draft/Save
+and Quit cancellation, fresh input after holds, larger/native 4K and a controlled battle/return seam.
+New Game/Continue/backup publication cannot precede admission; restore does not auto-confirm the form.
+Existing 720p entry forms remain distinct from gameplay support. Full visual unification stays with
+[#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453).
 
-X3/E5/D5 physical release outside focus remains **Unknown**. Accepted #1451 secondary-window focus
-and held-Apply results used injected keys/pad; do not repeat them solely to relabel hardware coverage.
-The linked host recipe supplies the short real keyboard/controller checklist for
-[#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456), alongside actual 1080p-display
-fit and human readability. No physical participation occurred here. Earlier 720p, focus/input and exit
-failures remain retained; #1447 audio/title stays deferred. Independent window work can proceed after
-design selection while these human observations remain explicitly open.
+X3/E5/D5 physical release outside focus remains **Unknown**. Accepted #1451 secondary-window focus/
+held-Apply and this slice's key/pad events are controlled injection, not physical approval. The host
+recipe's short real keyboard/controller checklist, actual 1080p-display/DPI and human readability
+remain under [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456). Missing physical
+participation does not block independent engineering acceptance. Earlier focus/input/exit failures
+remain retained; AudioStreamWAV/PlaybackWAV warning cause is Unknown and #1447 stays deferred.
 
 ## User feedback disposition and existing acceptance
 

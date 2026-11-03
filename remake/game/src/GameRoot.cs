@@ -24,7 +24,7 @@ public sealed partial class GameRoot : Node
     private Button? _restart;
     private bool _releaseBarrier;
 
-    public override void _ExitTree() { GetWindow().FocusExited -= SettingsFocusLost; _audio?.Dispose(); ClearPreparedNewGame(); }
+    public override void _ExitTree() { ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost; _audio?.Dispose(); ClearPreparedNewGame(); }
     public string ReadAudioObservationJson() => System.Text.Json.JsonSerializer.Serialize(_audio?.ObservePlayback());
 
     public override void _Input(InputEvent input)
@@ -36,6 +36,7 @@ public sealed partial class GameRoot : Node
             if (_input?.GameplayHeld == false) _releaseBarrier = false;
             GetViewport().SetInputAsHandled(); return;
         }
+        if (RouteWindowInput(input)) return;
         if (_settings is not null && input is InputEventMouse)
         { _settings.HandlePointer(input); GetViewport().SetInputAsHandled(); return; }
         if (_nameEntry is { } name)
@@ -103,6 +104,7 @@ public sealed partial class GameRoot : Node
             System.Text.Json.JsonException or ArgumentException or NotSupportedException)
         { Fail("invalid-input-settings", "Cannot read the versioned input settings."); return; }
 
+        InitializeWindowSupport();
         if (options.TryGetValue("--private-battle-start", out string? controlledStart)) BeginSource(PrivateBattle(controlledStart));
         else if (options.TryGetValue("--private-exploration-start", out string? explorationStart))
             BeginSource(new PrivateExplorationReader(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"), explorationStart,
@@ -120,22 +122,17 @@ public sealed partial class GameRoot : Node
     private void ShowEntry()
     {
         if (_entry is not null) return;
-        if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Disabled;
-        if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
-        _audio?.SetPaused(true);
         _entry = new SessionEntryView { Name = "SessionEntryView", Replacement = _session is not null,
             NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit, Settings = ShowSettings };
         AddChild(_entry);
         if (_input is not null) _entry.ConfigureHints(_input);
-        DisarmInput();
+        ApplyHostPause(); DisarmInput();
     }
 
     private void CloseEntry()
     {
         if (_entry is { } entry) { _entry = null; RemoveChild(entry); entry.QueueFree(); }
-        if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Inherit;
-        if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Inherit;
-        _audio?.SetPaused(false);
+        ApplyHostPause();
         DisarmInput();
     }
 
@@ -162,6 +159,7 @@ public sealed partial class GameRoot : Node
 
     private void BeginSource(IScenarioSource source)
     {
+        if (!EnsureWindowSupport()) { _windowStartup = () => BeginSource(source); return; }
         var outcome = GameSession.Start(source, Sf2.Remake.Application.Gameplay.RuleCompositions.ForGame());
         if (outcome is SessionStartFailed failed) { Fail(failed.Failure); return; }
         var started = (SessionStarted)outcome;
@@ -210,7 +208,7 @@ public sealed partial class GameRoot : Node
             Theme = UI.StoryTheme.Create(), FocusMode = Control.FocusModeEnum.None };
         _restart.Pressed += ShowEntry; AddChild(_restart);
         ConfigurePersistenceButtons(); ConfigureSettingsButton();
-        DisarmInput();
+        ApplyHostPause(); DisarmInput();
 
         void CheckAudio() { if (_audio?.Error is { } failure) Fail(failure, "Required private audio could not be consumed."); }
         void EnterBattle(SessionResult result)

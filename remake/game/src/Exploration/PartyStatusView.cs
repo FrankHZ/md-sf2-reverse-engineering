@@ -96,8 +96,10 @@ internal sealed partial class PartyStatusView : Control
         _gold.Text = $"GOLD\n{party.Gold?.ToString() ?? "Unavailable"}";
         PresentPortrait(session, member);
         string focus = _details.FocusPane switch { 1 => "Magic", 2 => "Items", _ => "Member" };
-        _hint.Text = $"{input.Hint(GameAction.Confirm)}: Prepare · {input.Hint(GameAction.Up)} / {input.Hint(GameAction.Down)}: {focus}   " +
-            $"{input.Hint(GameAction.Target)}: Focus   {input.Hint(GameAction.Cancel)} / {input.Hint(GameAction.Equipment)}: Close\n" +
+        _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _hint.CustomMaximumSize = new(1584, -1);
+        _hint.Text = $"{input.CompactHint(GameAction.Confirm)}: Prepare · {input.CompactHint(GameAction.Up)}/{input.CompactHint(GameAction.Down)}: {focus}   " +
+            $"{input.CompactHint(GameAction.Target)}: Focus   {input.CompactHint(GameAction.Cancel)}/{input.CompactHint(GameAction.Equipment)}: Close\n" +
             "Mouse: member selector / arrows · Wheel: scroll the open list";
         Arrange();
     }

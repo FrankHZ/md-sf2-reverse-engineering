@@ -50,7 +50,7 @@ public sealed partial class GameRoot
         _nameEntry = new NameEntryView { Name = "NameEntryView", Draft = _nameDraft,
             Done = name => { _nameDraft = name; CloseName(); ConfirmNewGame(); },
             Back = name => { _nameDraft = name; ShowNewSlots(); } };
-        AddChild(_nameEntry); DisarmInput();
+        AddChild(_nameEntry); ApplyHostPause(); DisarmInput();
     }
     private void CloseName()
     {
@@ -70,7 +70,7 @@ public sealed partial class GameRoot
 
     private void CommitNewGame()
     {
-        if (_committing) return;
+        if (_committing || !EnsureWindowSupport()) return;
         _committing = true;
         try
         {

@@ -44,22 +44,16 @@ public sealed partial class GameRoot
     private void OpenSavePanel(bool overEntry = false)
     {
         if (_slots is not null) return;
-        if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Disabled;
-        if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Disabled;
         if (_entry is not null && !overEntry) _entry.Hide();
         _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry, Input = _input };
         if (overEntry) _entry?.Setup(true);
-        AddChild(_slots); DisarmInput();
+        AddChild(_slots); ApplyHostPause(); DisarmInput();
     }
     private void CloseSavePanel()
     {
         if (_slots is { } slots) { _slots = null; RemoveChild(slots); slots.QueueFree(); }
         if (_entry is not null) { _entry.Show(); _entry.ReturnFromSetup(); }
-        else
-        {
-            if (_exploration is not null) _exploration.ProcessMode = ProcessModeEnum.Inherit;
-            if (_battle is not null) _battle.ProcessMode = ProcessModeEnum.Inherit;
-        }
+        ApplyHostPause();
         DisarmInput();
     }
     private void SaveError(string code)
@@ -168,6 +162,7 @@ public sealed partial class GameRoot
 
     private void ContinueSlot(int slot, LocalSaveStore store, ScenarioDefinition definition)
     {
+        if (!EnsureWindowSupport()) return;
         var read = store.Read(slot);
         if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
         if (read.Backup is { } backup && CanRecover(read))
@@ -177,6 +172,7 @@ public sealed partial class GameRoot
                 $"{SavedDestination(backup.Data)} · {backup.SavedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC",
                 ("Cancel", CloseSavePanel), ("Recover backup", () =>
                 {
+                    if (!EnsureWindowSupport()) return;
                     var recovery = store.Recover(slot);
                     if (recovery.Record is null) SaveError(recovery.Error!);
                     else RestoreRecord(recovery.Record, definition);
@@ -189,6 +185,7 @@ public sealed partial class GameRoot
 
     private void RestoreRecord(OpeningSaveRecord record, ScenarioDefinition definition)
     {
+        if (!EnsureWindowSupport()) return;
         var result = GameSession.Restore(definition, record.Data, RuleCompositions.ForGame());
         if (result is SessionStartFailed failed) { SaveError(failed.Failure.Code); return; }
         // The admitted initial recipe runs ordinary on-load and starts fresh-map playback.
@@ -225,10 +222,14 @@ public sealed partial class GameRoot
     private void RequestQuit()
     {
         if (_session is null) { GetTree().Quit(); return; }
+        if (_windowRecovery is not null) { ShowWindowQuit(); return; }
         if (_slots is not null) return;
-        OpenSavePanel();
-        bool dirty = _savedSession != _session.Current.SessionId || _savedRevision != _session.Current.Revision;
-        _slots!.ShowChoices("confirm-quit", dirty ? "Quit? Progress since your last save will be lost. No automatic save is made." : "Quit to desktop? Your last save is safe.",
-            ("Cancel", CloseSavePanel), ("Quit", () => GetTree().Quit()));
+        OpenSavePanel(); PresentQuitChoices(_slots!, CloseSavePanel);
+    }
+    private void PresentQuitChoices(SaveSlotView view, Action cancel)
+    {
+        bool dirty = _savedSession != _session!.Current.SessionId || _savedRevision != _session.Current.Revision;
+        view.ShowChoices("confirm-quit", dirty ? "Quit? Progress since your last save will be lost. No automatic save is made." : "Quit to desktop? Your last save is safe.",
+            ("Cancel", cancel), ("Quit", () => GetTree().Quit()));
     }
 }

@@ -380,8 +380,9 @@ checks do not claim a new original-icon acquisition or asset redistribution righ
 
 This is Stage1 design evidence at accepted `c58d41ecb1c11ed93d8c13b29c9b4a608d726ee6`, using the
 existing Debug host from accepted #1452; no production code, SDK/build or observer platform changed.
-The [support/recovery proposal](../godot/presentation.md#window-support-and-recovery-proposal-1455)
-is pending main-gate selection. An observer's exit 0 means its bounded observation completed;
+The [support/recovery proposal](../godot/presentation.md#window-support-and-recovery-1455)
+was independently accepted as Stage1; the selected implementation and its receipts follow below.
+An observer's exit 0 means its bounded observation completed;
 recorded out-of-viewport controls are product findings, not a claim all geometry passed.
 
 **Confirmed:** two serial native Godot 4.7.2 runs, no screenshots or frame capture:
@@ -425,37 +426,52 @@ was about 3.7MiB after these runs, with about 2.8GB free on H. No SDK/cache/tool
 copy, broad runner repair, engine/adapter/research/full suite, acquisition or old-evidence cleanup.
 Both owned processes exited; no Godot/SDK remains. Replan before exceeding the budget or adding cases.
 
-### Selected-implementation acceptance plan
+### Selected implementation observation
 
-These are **NOT RUN** future checks, pending main-gate's finite implementation selection:
+**Confirmed, bounded Stage2 executor receipts:** actual adapter compilation and native observations,
+using the existing project/install, accepted input selections and disposable external namespaces.
+The existing Debug host was rebuilt because new adapter code had to be loaded; this is not a docs-only
+Stage1 rebuild. New ignored evidence stays under `local/issue1455/stage2` with 100MiB total budget and
+serial 45-second launches. No installation/cache/media copy, full route, screenshots or new platform.
 
-1. Pilot baseline startup/admission and recovery first. On the existing 4K desktop, observe a fully
-   fitting 1920×1080 decorated window; 720p launch/invalid runtime resize must show reachable recovery,
-   no NewGame publication before admission, no underlying activation and no automatic size loop.
-   Exercise unavailable mode request and Quit/Cancel without losing the recovery or dirty progress.
-   Larger windows and 4K fullscreen must be admitted without shrinking the 96px/4× world; recovery is
-   required only when either native client dimension is below minimum. Dragging a valid-sized window
-   partly offscreen/over an edge must not pause or recenter it. Work-area/decorations checks choose
-   placement only at startup or an explicit Restore request; no position-polling matrix is required.
-2. Observe the selected 1920×1080 gameplay target across existing entry/field/Party/Prepare and one
-   battle/return segment, then one larger native/fullscreen checkpoint on the existing 4K host.
-   Verify fixed panels and viewport-aware anchors remain contained; full 4K route/matrix is not required.
-   Fix/recheck the two known 1080p hint failures, actual text bounds, complete
-   pointer gestures and keyboard/pad actions with installed standard/swapped mappings. No whole-route
-   or all-screen pass follows. Keep 96px/4×, native world bounds and entry's logical-canvas restoration.
-3. Resize/restore while a direction, wait or eligible skip is held and with Settings draft or Save/Quit
-   open. Compare same session/revision/progress/files after suspension settles; no catch-up work,
-   stale click/Confirm, resurrected hold, modal overlap or premature resume. Require release/neutral
-   then fresh action, including a failed recovery request. Reuse existing observation/input tools;
-   injected events establish only controlled handler behavior.
-4. Actual 1080p-display fullscreen fit/Alt-Tab/restore, taskbar/decorations and DPI correctness remain
-   **Unknown** on this 4K-only observation environment. Do not alter the user's display mode to claim
-   that check. A synthetic size/work-area check can validate branching, never physical display fit.
-   Keep this observation open for the matching display/human condition; no unobserved gate is PASS.
-5. After source changes, run the affected adapter build and clean committed dependency plan, plus
-   the above finite native checks. Add engine behavior tests only for actual engine behavior changes;
-   no tests of these observers, blanket engine/full suites or new collection framework. Design-only
-   Stage1 instead uses direct Markdown links/anchors/scope/private-boundary and `git diff --check`.
+| Receipt | Native result / stopping boundary |
+| --- | --- |
+| `pilot-04`, `pilot-final-01` |1923/1777ms. Final New Game at 720p refuses before save/mount; a native 1280×720 maximum constrains Restore, leaves recovery and a visible reason. Clearing that constraint permits normal Restore, retaining confirmation until fresh input. Dirty Settings and pending Save survive recovery→Quit→Cancel→restore; gameplay remains paused under the restored modal. |
+| `field-standard-03`, `field-swapped-01` |3429/3306ms. Actual 1080p Party/Prepare hint bounds/text fit with installed standard/swapped mappings. Held Confirm/echo cannot leak across restore; pending replacement-name draft/editor focus survives. Native 2560×1440 edge placement does not pause/recenter; 4K fullscreen retains 96px/4×. A Save-button press before recovery cannot activate on orphan release after restore. |
+| `restore-first-fullscreen-01`, `restore-fullscreen-rollback-01` |1119/925ms. Fullscreen startup has no known windowed borders. First constrained Restore reads actual 26×71 overhead and rolls back prior mode/size; the second case specifically returns to prior native 4K fullscreen when its windowed client is constrained below minimum. A fresh unconstrained Restore centers an outer rect contained by this 4K desktop. No New Game publication. These are controlled native size requests, not a physical 1080p-desktop fit test. |
+| `quit-02` |1510ms to prompt. Existing dirty-progress confirmation is reachable by actual pointer input at 720p; prompt/control geometry, progress and saved bytes retained. A deliberate click on Quit ends the owned process with exit 0. Cancel preservation is separately covered by pilot. |
+| `continue-02`, `backup-01` |1106/1064ms. Fresh-process Continue and explicit backup recovery both refuse 720p before mount/publication, retain form/files and require fresh confirmation after Restore. Backup bytes remain unchanged; only the explicitly confirmed admitted recovery publishes a primary. The tiny disposable backup fixture reuses the generated pilot save, not user progress. |
+| `hold-02` |1732ms. Held wait/pad direction cannot advance while recovered or restart an old hold on return. Release then fresh wait works; saved bytes remain unchanged. Events use synthetic device 42, not a physically operated controller. |
+| `battle-02` |3208ms. Accepted controlled Battle02 entry/skip/menu/Egress→usable Map3 return. Resize while skip is held pauses without continuation debt; battle/menu/return 720p requests show recovery, restore 1080p and retain the same session. Native 4K battle-menu bounds retain zoom 1, cell 96/pixelScale 4. No whole Battle01/campaign or original reach claim. |
+| `availability-03` |1689ms. **Controlled presentation availability**, with both modes passed as unavailable to the existing view while the physical 4K screen is unchanged. Native 1280×720 body has 235px scroll range: keyboard/pad Left/Right reach bottom and return to 0, Up/Down skips disabled actions without losing reading position, and fixed Quit/navigation stay in bounds. Pointer Quit reaches the existing confirmation. This does not validate a real small display. |
+| `diagnostic-01` |1225ms. Controlled start requested at 720p has no mounted view and retains a pending source behind recovery. Restore admits 1920×1080 and mounts that source once; no fabricated session/completion injection. |
+
+Reports contain observer failures/geometry failures/unavailable lists; require their emptiness,
+actual process completion and clean script/C#/engine logs together. The first-fullscreen run retains
+the existing two-ObjectDB exit warning category; this slice does not resolve WAV/Playback lifetime.
+Retain completed earlier attempts: Slot1/Slot2 fixture mismatch, held Confirm activating recovery
+before the intended mouse click, incomplete nested-menu unwinding, an ambiguous underlying Quit
+button query, a battle state-array versus terrain-readback lookup, and inherited GDScript helper
+signature errors. Corrected observers use the same product boundaries; these failures and logs are
+preserved in the local handoff, not relabeled as interrupted or hidden by a full-suite rerun.
+The controlled-unavailable pilot also exposed a real recovery-layout failure: container minimum height
+expanded past 720p. A finite manual panel layout now fixes actions/navigation and scrolls only the
+explanation; availability-01/02 failures remain preserved, with 03 passing the same containment/readability boundary.
+
+Reproduce with fresh Run names using `local/issue1455/stage2/run-native.ps1`: phases `pilot`, `field`
+(optional `-Variant swapped`), `restore` (native fullscreen startup), `quit`, `hold`, `battle`, and
+`continue`, `availability` (explicitly controlled view availability) and `diagnostic`. Continue uses an
+existing disposable namespace via `-Namespace`; backup uses a fresh
+`-Variant backup` namespace and the generated pilot input named in the local handoff. Read actual
+Window client/mode/decoration values, `ReadWindowSupportObservationJson`, mounted state/geometry,
+settings draft/slot state, files and errors. Keep all canonical media/inputs read-only. Script wrappers
+are ignored, not production hooks; no test of an observer/helper is added.
+
+Run `uv run sf2 verify adapter`, the existing native Debug build, clean committed
+`uv run sf2 verify plan --base origin/main --head HEAD`, and direct source/docs/diff/private-boundary
+checks. This host/UI-only implementation needs no engine/research/full suite. The small-desktop
+startup fallback, unavailable modes and actual 1080p physical fit/DPI cannot be promoted from 4K/source
+observations to hardware acceptance; matching human conditions remain open below under #1456.
 
 ### Later physical-focus human checklist (#1456)
 

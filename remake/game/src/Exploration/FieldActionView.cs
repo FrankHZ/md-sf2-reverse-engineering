@@ -36,6 +36,7 @@ internal sealed partial class FieldActionView : Control
         _panel.AddChild(_title); _title.Position = new(32, 24); _title.Size = new(1008, 112);
         _title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _panel.AddChild(_hint); _hint.Position = new(32, 736); _hint.Size = new(1008, 72);
+        _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart; _hint.CustomMaximumSize = new(1008, -1);
         Hide();
     }
 
@@ -130,8 +131,8 @@ internal sealed partial class FieldActionView : Control
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < _options.Count; i++)
         { _rows[i].Text = (i == _index ? "▸ " : "   ") + _options[i].Label; _rows[i].Modulate = i == _index ? StoryTheme.Selected : Colors.White; }
-        _hint.Text = $"{_input.Hint(GameAction.Up)} / {_input.Hint(GameAction.Down)}: Choose   " +
-            $"{_input.Hint(GameAction.Confirm)}: Select   {_input.Hint(GameAction.Cancel)}: Back\nMouse: select a row";
+        _hint.Text = $"{_input.CompactHint(GameAction.Up)} / {_input.CompactHint(GameAction.Down)}: Choose   " +
+            $"{_input.CompactHint(GameAction.Confirm)}: Select   {_input.CompactHint(GameAction.Cancel)}: Back\nMouse: select a row";
     }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); }
     internal void Handle(GameAction action)
