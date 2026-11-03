@@ -23,23 +23,14 @@ internal static class StoryTheme
         theme.SetStylebox("normal", "EntrySelectedButton", Box("294966", "ffe19a"));
         theme.SetStylebox("hover", "EntrySelectedButton", Box("365d7c", "ffe19a"));
         theme.SetColor("font_color", "EntrySelectedButton", Selected);
-        foreach (string type in new[] { "EntryKeyButton", "EntrySelectedKeyButton" })
-        {
-            theme.SetTypeVariation(type, "Button");
-            theme.SetStylebox("normal", type, Box(type == "EntryKeyButton" ? "102c50" : "294966", type == "EntryKeyButton" ? "607d9f" : "ffe19a", 6, 6));
-            theme.SetStylebox("hover", type, Box("365d7c", "ffe19a", 6, 6));
-            theme.SetStylebox("pressed", type, Box("354c64", "ffe19a", 6, 6));
-        }
-        theme.SetColor("font_color", "EntrySelectedKeyButton", Selected);
         theme.SetStylebox("normal", "LineEdit", Box("081b35", "607d9f"));
         theme.SetStylebox("focus", "LineEdit", Focus());
         theme.SetColor("font_color", "LineEdit", Colors.White);
         theme.SetColor("font_placeholder_color", "LineEdit", new("a7b9cf"));
         return theme;
     }
-    internal static void Select(Button button, bool selected, bool key = false) =>
-        button.ThemeTypeVariation = key ? selected ? "EntrySelectedKeyButton" : "EntryKeyButton"
-            : selected ? "EntrySelectedButton" : "";
+    internal static void Select(Button button, bool selected) =>
+        button.ThemeTypeVariation = selected ? "EntrySelectedButton" : "";
     private static StyleBoxFlat Box(string background, string border, float horizontal = 12, float vertical = 10) => new()
     {
         BgColor = new(background), BorderColor = new(border),

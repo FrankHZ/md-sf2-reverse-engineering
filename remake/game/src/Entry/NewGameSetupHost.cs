@@ -47,7 +47,7 @@ public sealed partial class GameRoot
     private void ShowName()
     {
         ClearPreparedNewGame(); _slots!.Hide(); CloseName();
-        _nameEntry = new NameEntryView { Name = "NameEntryView", Draft = _nameDraft, Input = _input,
+        _nameEntry = new NameEntryView { Name = "NameEntryView", Draft = _nameDraft,
             Done = name => { _nameDraft = name; CloseName(); ConfirmNewGame(); },
             Back = name => { _nameDraft = name; ShowNewSlots(); } };
         AddChild(_nameEntry); DisarmInput();

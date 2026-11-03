@@ -620,17 +620,22 @@ is introduced. Menu selection remains disposable adapter state; bindings remain 
 At the existing1920×1080 canvas, reserve the Witch's entire4× art rectangle (160,92,1024,896).
 Use the separate right region (1216,64,640,952) for ordinary choices, slots and confirmations;
 no full-screen shade covers the art. Greeting text reuses the story reading/pagination component
-with entry-only bounds. Naming uses the same right window with a13-column version of the existing
-alphabet grid; typing, caret/deletion, DEL/END, seven-character validation and draft/Back semantics
-are retained. The planned keyboard-only editor belongs to #1446.
+with entry-only bounds. Naming now uses a focused physical-keyboard `LineEdit` in the same right
+window (#1446), with seven-character validation, visible admitted alphabet/default/error help and
+retained draft/Back semantics. The controller alphabet grid and its key-theme variants are removed.
+The existing entry editor-focus style and mouse Back/Use name buttons remain.
 
 One compact contextual line shows the primary keyboard binding and one mapped pad alternative for
 the currently available actions (for example `Enter/South: Choose • Escape/East: Back`);
 full alternatives remain in existing binding help/tooltips. It
 reads the installed mapping after Confirm/Cancel swap. No device detection or duplicated key table.
 Errors retain their diagnostic and safe retry/back actions; long slot labels wrap within the window.
-The focused keyboard editor instead identifies its retained Enter/Escape editing semantics; mapped
-grid hints resume when it releases focus. Normal-only, overwrite, backup recovery and safe publication remain owned by the
+The name editor always identifies fixed Enter/Escape editing semantics and keyboard-only input;
+window focus recovery or the next key restores text focus without changing the draft. All naming
+key events bypass mapped game actions; pad events update existing release bookkeeping but are
+consumed before either GUI navigation or the hidden slot/entry menu. Leaving naming still uses the
+existing held-input barrier and subsequent menus retain mapped keyboard/pad access, including swaps.
+Normal-only, overwrite, backup recovery and safe publication remain owned by the
 [session lifecycle](../application/opening-session-lifecycle.md). Title animation/audio work is #1447.
 
 Acceptance requires actual Godot input/state/projection/error readback at1280×720 and supported
@@ -665,7 +670,12 @@ and with missing entry content; use adjustable text for mouse Reveal/Continue th
 Retained narrow automation: `pwsh -NoProfile -File local/issue1445/run-native.ps1 -Run <fresh-name> -Phase <phase> -Namespace <disposable-name>`, phases `pilot`, `continue`, `recover`, `reading`,
 `missing`, or `swapped` (also `-Swapped`). Its local driver reuses existing input/state observers;
 it records semantic checkpoints, actual node geometry/styles and native errors, with no screenshots.
-Independent integration and final user visual approval remain separate gates.
+Independent integration and final user visual approval remain separate gates. The retained #1445
+observations describe that accepted grid-era implementation; their results are unchanged. For the
+current keyboard-only editor, use `local/issue1446/run-native.ps1` with fresh disposable outputs;
+its owning handoff records keyboard editing, invalid/default/draft handling, pad isolation while
+focused/unfocused, held button/axis release across exit, final Start and fresh-process Continue.
+No persistence/engine semantics changed, so earlier name/save compatibility evidence remains applicable.
 
 ## Field Projection
 

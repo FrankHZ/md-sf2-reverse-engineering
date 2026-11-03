@@ -204,10 +204,18 @@ draft until final confirmation and is not live party state.
 `disasm/sf2enums.asm` establish a seven-character displayed limit, uppercase/lowercase letters,
 digits, comma, period, minus, exclamation/question marks, number sign, apostrophe and space,
 DEL/END controls and empty input retaining the default. Ten-byte ally storage is not the editor's
-limit. Keyboard editing and the controller grid share the seven-character validator; unsupported
-characters/overlength input report an error without truncation. Spaces are preserved; empty selects
-the immutable default. Font-supported ASCII is the admitted set. Original natural navigation and
-timing remain **Unknown**; this source-informed editor is not a new original runtime observation.
+limit. The remake deliberately uses a physical-keyboard-only `LineEdit` (#1446), with the shared
+`NewGameName` validator; unsupported characters/overlength input report an error without truncation.
+Spaces are preserved; empty selects the immutable default. The field receives initial focus, restores
+it when the window regains focus, and recovers it before keyboard GUI dispatch after other focus
+loss. Enter uses the name, Escape returns to slots with the draft retained; ordinary typing,
+caret movement and deletion stay with `LineEdit`, including letters mapped to gameplay actions.
+The allowed letters, digits and punctuation are visible. Mouse focus/Back/Use name remain available.
+There is no controller alphabet grid or controller editing/submission; the host consumes pad events
+while retaining their button/axis release edges and disarming movement/wait state. Other menus and
+the final Start/save confirmation retain their installed keyboard/pad mappings and held-input barrier.
+Font-supported ASCII is the admitted set. Original natural navigation and timing remain **Unknown**;
+this intentional modern editor is not a new original runtime observation.
 
 The initial save is a distinct finite `new-game` reconstruction recipe at the pre-on-load Map3
 boundary. It captures initialized party/progress, seeds after initial growth, fresh flags, settings
@@ -240,7 +248,7 @@ New writes include the map. No broad migration support or change to content/rule
 
 Acceptance uses actual engine behavior tests for name resolution, old/new save roundtrip, invalid
 names, initial reconstruction and unchanged busy-save rejection; adapter build and real Godot input,
-state/projection/error observations cover both slots, keyboard/controller editor, Back/Cancel,
+state/projection/error observations cover both slots, keyboard editing and pad isolation, Back/Cancel,
 overwrite decline/accept, write failure/retry, fresh-process Continue and named opening joins into
 Battle01. Use disposable saves and existing assets/environment; no screenshots or aggregate rerun.
 

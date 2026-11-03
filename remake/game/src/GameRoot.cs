@@ -35,7 +35,15 @@ public sealed partial class GameRoot : Node
             if (_input?.GameplayHeld == false) _releaseBarrier = false;
             GetViewport().SetInputAsHandled(); return;
         }
-        if (_nameEntry?.Editing(input) == true) return;
+        if (_nameEntry is { } name)
+        {
+            // Track pad button/axis releases and wait state without routing actions to
+            // the name editor or the hidden slot/menu. Only keyboard and pointer GUI remain.
+            _input?.Resolve(input); _input?.DisarmMovement(); _input?.DisarmWait();
+            if (input is InputEventKey key) name.HandleKeyboard(key);
+            else if (input is not InputEventMouse) GetViewport().SetInputAsHandled();
+            return;
+        }
         if (input is InputEventMouse)
         {
             if (_entry is not null || _slots is not null) return;
@@ -48,8 +56,7 @@ public sealed partial class GameRoot : Node
         }
         var action = _input?.Resolve(input);
         if (action is null) return;
-        if (_nameEntry is not null) _nameEntry.Handle(action.Value);
-        else if (_slots is not null) _slots.Handle(action.Value);
+        if (_slots is not null) _slots.Handle(action.Value);
         else if (_entry is not null) _entry.Handle(action.Value);
         else if (action == GameAction.Stay && _exploration?.CanOpenHostMenu == true) ShowSave();
         else if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
