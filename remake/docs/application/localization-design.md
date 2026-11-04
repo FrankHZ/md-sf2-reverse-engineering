@@ -31,7 +31,10 @@ languages, a translation platform and UI redesign remain non-goals. Preserve the
 
 **Standard rigor:** [#1495](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1495)
 authorizes Chinese translation and independent batch review of the complete fixed **4,267 message
-IDs 0–4266, 173,995 source characters**, including chapters without playable consumers. This replaces
+IDs 0–4266, 173,995 source characters**, including chapters without playable consumers.
+[#1506](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1506) separately owns the
+**337 ally/class/item/spell/enemy name-table entries**; their category/index identities form different
+namespaces and never extend the message-ID count. This replaces
 the earlier opening-only/no-whole-game restriction for static translation. Historical M0/M3 pilot
 boundaries below remain their own evidence, not a veto on this authorization. Static translation,
 semantic review, runtime admission and human typography/reading acceptance are separate states;
@@ -50,13 +53,20 @@ display rows are projections of world IDs 216–221, not six additional message 
 ### One authority and exact ownership
 
 A separately configured persistent private content root outside Git and removable worktrees owns
-exactly `README.md`, `source.jsonl`, `batches.json`, `terminology.tsv`, `control-tokens.json` and
-`accepted-seed.zh-CN.jsonl`. Absolute selections and executable checks stay in the local handoff.
+`README.md`, `source.jsonl`, `batches.json`, `terminology.tsv`, `control-tokens.json`,
+`accepted-seed.zh-CN.jsonl`, `names.zh-CN.jsonl` and `names-review.zh-CN.md`.
+Absolute selections and executable checks stay in the local handoff.
 No original/translated prose or private review is published. `source.jsonl` retains one row per
 occurrence, with locked namespace/ID/source/category/duplicate links/batch/context, nullable translation
-and explicit review state. It is the **only full-text translation writeback source**. A batch writer
+and explicit review state. It is the **only message-text translation writeback source**. A batch writer
 may edit only its assigned translation/review fields; whole-file writes are serialized. Review views
 and the immutable accepted-seed mirror are derived, never independent editable translations.
+`names.zh-CN.jsonl` is the **only name-table translation writeback source**, keyed by table category
+and zero-based index, with locked original value/expression/file/line and explicit classification,
+duplicate links, target and review state. `names-review.zh-CN.md` and name-linked terminology cells
+derive from it. `terminology.tsv` owns additional prose-only NPC/location proposals, with exact pinned
+message references; it is not a second editable name-table translation. The two namespaces do not
+duplicate authority even when a message mentions a table name.
 
 The existing 209-row world and six-row entry overlays stay frozen admitted subsets in this slice.
 Their historical pilot ownership does not create a second full-text authority. Future corrections
@@ -108,26 +118,38 @@ within each control segment, including unsupported tags. Do not substitute guess
 | `{D2}`, `{D3}`, `{ITEM}`, `{SPELL}`, `{DICT}`, `{#}` | Unsupported by `ExplorationTextTokens`; reader rejects the row, static draft still preserves it |
 
 No new source timing or DICT caller/payload contract is claimed. Unknown operands stay Unknown;
-upstream tag descriptions alone do not establish their live use. Terminology has 24 small candidates
-or explicit English holds for independent main-gate review; documentation Chinese and existing
-functional UI labels do not approve game names. Existing seed wording stays fixed until an explicitly
-owned consistency revision. Player-customized names always retain their exact saved values.
+upstream tag descriptions alone do not establish their live use. The working terminology has 75
+source-referenced proposals or explicit contextual holds, including 48 derived name-table lookups.
+All are **agent-reviewed / proposed-for-independent-review**, not main-gate or human approval;
+documentation Chinese and existing functional UI labels do not approve game names. Context-dependent
+prose homographs stay separate rather than triggering global replacements. Existing seed wording
+stays fixed until an explicitly owned consistency revision. Player-customized names always retain
+their exact saved values; dynamic name tokens retain identity rather than fixed translated names.
 
-Name tables outside these 4,267 message IDs remain **untranslated/unadmitted by this intake**:
+The name tables outside these 4,267 message IDs have a **complete static working draft under #1506,
+pending independent semantic acceptance; runtime default-name display remains unadmitted**:
 `disasm/data/stats/allies/allynames.asm` (30), `allies/classes/classnames.asm` (32),
 `items/itemnames.asm` (128), `spells/spellnames.asm` (44) and `enemies/enemynames.asm` (103), with the
 last four paths relative to `disasm/data/stats/`. A prose occurrence does not translate its independent
-table entry. No separate canonical location-display table was identified in those stats tables;
+table entry. All 337 pairs were individually agent-reviewed: 335 language entries and one empty-slot
+label have Chinese targets; one source-marked technical anomaly retains its original label and
+reason. Duplicate entries and potential unused entries keep their original indexes; this static
+work does not establish natural use or repair source anomalies. Item layout operands remain exact
+source evidence, not parts of the translated word. Class targets use working Chinese full names;
+abbreviation/width policy belongs to later admission. The names draft is not an overlay and changes
+no Actor/Item/Spell/Class identity, rules, save data or custom name. No separate canonical
+location-display table was identified in those stats tables;
 selected message occurrences are indexed, while a complete location-name inventory remains Unknown.
 No name-table expansion enters the fixed message count.
 
 The measured 209-row sample has 9,995 source characters, 5,215 target characters, 10,931 target UTF-8
-bytes and 155,406 bytes in the full context-bearing row structure. The complete frozen persistent
-intake is about **2.58 MiB**; extrapolating that sample's target-byte ratio plus a bounded derived
+bytes and 155,406 bytes in the full context-bearing row structure. The current persistent corpus,
+including the names draft/review, is **under 2.75 MiB**; extrapolating that sample's target-byte ratio plus a bounded derived
 review gives an estimated **under 6 MiB**, within the initial **8 MiB persistent / 16 MiB temporary**
-budgets and at least **1 GiB free** storage condition. Direct checking parses the existing 125,828,417-byte
-world once per invocation, O(world bytes + text/reference bytes), then compares the small corpus;
-no world/assets are copied. Local results record measured duration/peak memory. Replan before
+budgets and at least **1 GiB free** storage condition. Message-intake checking parses the existing
+125,828,417-byte world once per invocation, O(world bytes + text/reference bytes). Name checks use
+only the small tables/corpus and generated review, without rereading that world. No world/assets
+are copied. Local results record measured duration/peak memory. Replan before
 crossing these budgets or adding external processing; no paid translation API is authorized.
 
 Acceptance is direct live-source/pinned-table equality, exact disjoint batch IDs/counts/context owners,
@@ -137,10 +159,14 @@ blocks with coherent scene/function context, initially about 80–150 rows, then
 never split solely to hit a row count. Freeze corrections to ownership through the coordinating owner.
 Recovery reads the current corpus and retained results before writing; the one-time preparation
 freezer must not overwrite later translations. Local reproduction loads the existing input selection
-and runs `python -X utf8 local/issue1496/check.py`; no SDK, Godot, emulator, full research gate or
-whole-game replay is required for this static intake. Retained prior failures remain in their original
+and uses the current slice's direct checks in its private handoff. The #1496 snapshot checker asserts
+the original intake terminology/seed state; do not rerun it against later authorized changes or use
+its freezer to restore them. Name checks compare the pinned tables, exact category/index/source
+fields, classifications, complete targets, duplicates, terminology, lengths and generated review.
+No SDK, Godot, emulator, full research gate or whole-game replay is required for this static work.
+Retained prior failures remain in their original
 handoff and are not converted into passing runtime evidence. #1504 owns later cross-batch consistency
-and complete-draft closure; this intake does not close #1495 or epic #1468.
+and complete-draft closure, including this name corpus; neither static slice closes #1495 or epic #1468.
 
 ## Implemented M1 boundary
 
