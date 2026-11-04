@@ -186,6 +186,12 @@ def prepare(
         compiler.compile(symbol)
     battle_routes = compile_routes(compiler, selection, upstream)
     maps = compile_maps(compiler, canonical, selection, battle_routes)
+    if selection.get("basePalettes"):
+        if rom_path is None:
+            raise ValueError("product map palettes require the registered ROM")
+        palettes = selected_map_palette_bindings(compiler, selection["maps"], rom_path)
+        for map_row, palette in zip(maps, palettes, strict=True):
+            map_row["basePalette"] = palette["base"]
     resources = {
         key: {row["id"]: row for row in rows} for key, rows in canonical["resources"].items()
     }
@@ -281,11 +287,13 @@ def prepare(
             "start",
             "battleScenes",
         }
-        if not isinstance(encounters, list) or len(encounters) > 1:
-            raise ValueError("at most one additional encounter input selection is supported")
+        if not isinstance(encounters, list) or len(encounters) > 2:
+            raise ValueError("at most two additional encounters are supported")
         for entry in encounters:
-            if not isinstance(entry, dict) or set(entry) != keys:
+            if not isinstance(entry, dict) or set(entry) not in (keys, keys - {"start"}):
                 raise ValueError("encounter input selection fields")
+            if len(encounters) > 1 and "start" in entry:
+                raise ValueError("multiple additional encounters require product-only rows")
             for key, value in entry.items():
                 if key == "battleScenes" and value is None:
                     continue
