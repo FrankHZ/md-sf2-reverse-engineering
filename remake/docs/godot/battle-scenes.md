@@ -1,5 +1,109 @@
 # Battle Presentation
 
+## Pre-voyage battle presentation audit
+
+**Decision for #1535.** Keep the working opening scenes, semantic spell effects and ordinary message
+controls. The first required presentation change is admitting the private Battle04 board and its
+combatants after Hawel. Battle03 outcome and chapter selection also need wiring. The later
+encounters have concrete admission limits today, but no connected Battle04–07 native run from
+which to report a failed turn. The [chapter acceptance table](../evidence/opening-ui-gaps.md#pre-voyage-implementation-order)
+assigns the minimum work to the issue that first needs it.
+
+### Which combatants need a scene
+
+Read each row with the previous row's **party**, subject to real membership, HP, equipment and
+deployment. Enemies are listed afresh for each encounter. Numbers in parentheses are original
+close-up sprite/palette selectors, independent of map sprites, party IDs and weapon item IDs.
+The original column is **Confirmed** static for the US retail baseline and SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. Natural levels, actions and timing are **Unknown**.
+The remake column describes accepted code and the named observation only.
+
+| Battle and evidence | Original party, starting gear and opposing species | Remake consumer, evidence and disposition |
+| --- | --- | --- |
+| 01 · [opening acceptance](../evidence/opening-loop-acceptance.md) | Bowie SDMN (0/0) Wooden Sword 71, Sarah PRST (1/0) Wooden Rod 85, Chester KNTE (2/0) Wooden Stick 56 vs Gizmo (22/2). | Ordinary opening through victory and usable return. Map57 movement/death sprites and the Tower close-up are bound. Player and enemy hits, Chester's live stick, friendly Herb and Sarah's HEAL have bounded private witnesses below. Preserve these combinations. |
+| 02 · [formation](../../../docs/research/chapters/grans-opening/battle02-initialization-and-first-control.md), [outcomes and retry](../verification/field-programs.md#battle02-outcomes-and-retry) | Add joined Jaha WARR (3/0) Short Axe 33. Huge Rat (1/0), Ooze (0/1). | The selected Map66 board and private scene admit all four starting class/weapon pairs. Connected entry and selected outcome, defeat and retreat/retry have their own evidence. Binding a pair does not establish every attack, dodge or counter was played. |
+| 03 · [formation](../../../docs/research/chapters/grans-opening/battle03-initialization-and-first-control.md), [Yeel witness](../verification/field-programs.md#yeel-guide-through-battle03) | Same battle party. Kazin may follow in the field. Huge Rat, Ooze, Huge Bat (23/0) with sleep critical. | Selected Battle02-return start connects Yeel to Battle03 control. The real bat can inflict sleep, skip an entry and release control after waking in the bounded variation. Twelve formation rows are capacity. #1537 owns composing the ordinary route and the outcome. |
+| 04 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle04-initialization-and-first-control.md) | After Hawel add Kazin MAGE (4/0) Wooden Rod 85. Galam Soldier (2/0) Short Axe, Galam Archer (31/0) Wooden Arrow at distance 2, Huge Bat. | First unsupported private encounter. Sharing Sarah's rod does not supply Kazin's body, idle, item or attack sequence, even when Kazin is only the target. #1537 needs the new bindings plus bat reuse. The bow user here is an enemy. |
+| 05 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md) | Retain Kazin. Slade follows before his formal post-victory join. Galam Knight (3/0) Short Spear at 1–2, Archer, Soldier, Galam Mage (36/0) Short Rod and BLAZE1. | #1538 needs Knight/Mage and retained Soldier/Archer on this board. Mage's ordinary physical/defensive poses still need binding even though its fire effect renders independently. Slade's scripted positioning in the Knight outcome does not require a pre-join player attack. |
+| 06 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle06-opening-and-first-control.md) | Add Slade THIF (5/0) Short Knife 103. Actual equipment may now include Galam purchases. Dark Cleric (40/0) Short Rod and HEAL1, Galam Mage, Soldier, Knight, Archer. | #1538 owns the usable entrance with the real post-shop loadout. #1539 owns combat, including Slade physical and the cleric casting on its own faction. The authored enemy HEAL witness cannot supply a private cleric cast sequence. |
+| 07 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle07-opening-and-first-control.md) | Optional joined Kiwi TORT (6/0), unarmed. Dark Smoke (22/0), Galam Mage, Dark Cleric, Galam Archer, Galam Knight. Smoke has DISPEL1, silence critical and a possible extra round entry. | #1539 needs optional TORT class and scene/field bindings, plus Smoke with its own palette even though it shares Gizmo's sprite index. Keep the absent-Kiwi path and story followers distinct. Victory follows ordinary faction counts. No forced Smoke cast, critical or boss kill. |
+
+To reproduce the original selectors without generating art, use the ROM identity and table offsets
+in the [ally fixture](../../../tests/fixtures/h2/ally-data-static-v1.json) and
+[enemy fixture](../../../tests/fixtures/h2/core-stats-data-static-v1.json). For members 0–6 read
+class, level and four packed items at `table_AllyStartDefinitions + 6 * member` (equipped bit 7,
+item low seven bits). Their first class/sprite/palette triple is at `table_AllyBattlesprites + 9 * member`.
+Enemy sprite/palette pairs are at `table_EnemyBattlesprites + 2 * species`; species IDs are in the
+linked formation tables. These are selectors from read-only inputs. The [asset policy](../content/presentation-assets.md#product-design-and-distribution-limit)
+keeps original frames, palettes, terrain, audio and derived packs private. Public visuals require
+project authorship or a compatible license.
+
+### Where private play stops
+
+**Confirmed in production code at `a5e68a53`.** Three consumers have different requirements.
+
+1. **Entry and board.** The private [scenario reader](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
+   admits region programs for 1–3. The [scene producer](../../../src/sf2tool/remake_battle_scene_content.py)
+   selects those same encounters. The [board](../../game/src/Battles/BattleMapViewport.cs) needs the
+   visual map, playable region and each placed actor's field sprite from the encounter and world.
+   The field-death selectors also serve ordinary movement. A close-up texture alone cannot get a
+   new board to player input. For Battle04 reuse the Battle03 terrain alias and Map66 region,
+   with encounter-specific placements and terrain-selected scenery. Battle05 needs Map16 and
+   Castle background 8, Battle06 uses a different Map66 region and terrain-selected scenery,
+   and Battle07 uses Map58 with Tower Interior 9. The original rows are linked above.
+2. **Physical, friendly actions and recipients.** The [scene reader](../../src/Sf2.Remake.Content/Scenarios/BattleSceneContentReader.cs)
+   admits ally sprites 0–3, one visual per class, and four enemy species (Gizmo, Ooze, Huge Rat, Huge Bat)
+   bound to actual placements. The [presenter](../../game/src/Battles/BattleSceneView.cs) selects
+   the displayed ally by class, checks its live equipped item against that visual, and selects the
+   enemy by ActorRef. An unknown class/species rejects admission. A missing displayed actor or
+   mismatching equipped ally stops delivery with `battle-scene-actor-unavailable` or
+   `battle-scene-weapon-unavailable`. Galam stock includes Short Sword, Short Spear, Bronze Lance,
+   Short Axe, Wooden Rod, Short Rod and Short Knife. Bind reachable **compatible** choices including
+   the correct attack/idle/item/weapon frames and unequipped state. Chester's starting stick is
+   range 1. A Short Spear changes both range and attack selection. Enemy equipment controls legality,
+   while the current separate weapon overlay belongs to the ally. Reuse the enemy's selected visual.
+3. **Enemy healing.** [HealingSceneCursor.RequireContent](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
+   requires healing resources, a cast sequence for the caster and positive idle ticks on caster and
+   recipient. Today's producer emits `cast` only for the priest. Adding a Dark Cleric idle/attack
+   sprite alone still leaves its real HEAL target blocked by `healing-scene-content`.
+   Use the existing enemy-side switch and cast consumer with verified operands.
+
+These are implementation boundaries for the chapter that needs them. **Inferred** risks for the
+newly connected route include a wrong identity after a recruit or equipment change, a stale target
+card during a switch, or stranded input after death. The representative checks below distinguish
+these risks from an observed failure. The existing 4 MiB private scene-document cap applies per
+file. A chapter owner should size its selected pack before expanding generation.
+
+### Which actions can be reused
+
+| Action and direction | Working consumer and bounded evidence | Remaining decision or minimum check at first use |
+| --- | --- | --- |
+| Physical, ally → enemy and enemy → ally | [Physical scenes](#physical-battle-scenes) use the acting side's attack and the target's reaction, including dodge, damage recoil, second/counter role changes, result and death. Private samples cover actual hits in both directions. [Ranged sample](../development-and-verification.md#early-ranged-physical-observation) covers changed equip/range, distance-2 attacks and continued input with authored content. | Reuse the combat rule. For newly bound archers and knights check a legal station, actual attacker/defender and equipped presentation. For a follow-up that occurs, cards and reaction must follow the current pair. No projectile asset or exhaustive per-actor dice outcomes required. |
+| HEAL, ally → ally or self | [Private HEAL1–3](#heal-spell-scenes) has cast/idle, healing fairy, recovery, recipient switch where required, restore caster, EXP and release. | Reuse for Sarah. A new recipient needs its own bound idle and current equipment, even if that member never casts. |
+| HEAL1, enemy → wounded enemy | The [enemy-spell witness](../development-and-verification.md#enemy-spell-observation) reads one 3 MP payment, 8→23 HP, no enemy reward and later player movement in the authored package. | #1539 needs the private cast/idle binding above. Check enemy-side recipient switch, recovery text/card and return after a legal heal. Full-health enemies do not establish this case. |
+| BLAZE1–2 / BLAST1, learned ally → enemy; BLAZE1, Mage → ally | [AttackSpellView](../../game/src/Battles/AttackSpellView.cs) draws modern fire or wind. Cards and messages carry identity and damage. [Player witness](../development-and-verification.md#player-attack-spell-observation) covers BLAZE2's ordered pair and BLAST1's single target; the enemy witness covers BLAZE1. | Keep the effects. Marks show affected targets and the current card/text identifies the reaction. Check Kazin or Mage in the actual chapter and a reached change of recipient. Recipient-specific highlighting and original spell art can wait. |
+| DISPEL1 / suppressed spell / physical silence | [Silence witness](../development-and-verification.md#silence-observation) covers area results, one cost, a paid suppressed cast, expiry, effective later cast and movement. Support/suppressed scenes intentionally show messages/cards on black, with no character gesture. Physical silence uses the physical hit and a notice. | #1539 checks the displayed recipient and status/no-effect, or paid suppression as reached, then continued play. A quiet backdrop between acknowledged messages is expected. A stuck wait, wrong name or missing result would be a functional defect. |
+| Sleep / poison / removal | [Battle03 sleep](../verification/field-programs.md#yeel-guide-through-battle03) is private. [Poison notices](#authored-poison-notices) have authored damage/exhaustion and lethal field removal. [Field death](#battlefield-death-batches) hides close-ups, spins/exits the actual batch and settles before subsequent control or outcome. | Retain after-turn notices and ordered deaths on their own board. Check a reached new species disappears only after its exit and the correct next actor/field accepts input. Natural opening poison remains Unknown. |
+| Medical Herb / Healing Seed, friendly | [Herb](#medical-herb-scenes) has private self/other-ally item frames, switch back and recovery. The [purchased Seed witness](../development-and-verification.md#galam-shop-and-supply-observation) consumes the actual slot and restores 20 HP in its authored sample. | Reuse ordinary item, no fairy or MP. Check slot, named user/recipient and capped HP on the post-shop route. |
+| Antidote / DETOX1, friendly | Same supply witness covers purchased item removing poison and a learned ordinary cast spending 3 MP. [RequireCureContent](../../src/Sf2.Remake.Application/Runtime/Battles/BattleChoices.cs) checks caster/target/equipment and scenery for private DETOX. Its cast has no HEAL fairy. | Antidote consumes one slot, DETOX pays MP. Check cure versus ineffective text and preserved unrelated status when applicable. A naturally poisoned pre-voyage target is not required to prove the route. |
+| EGRESS / Angel Wing, actor → retreat | [Retreat delivery](#authored-egress-delivery) uses text, a modern pulse/tone and fade, then field input. Private Battle02 witnesses distinguish spell payment (8 MP) from one Wing slot, including walking retry. | Reuse only where the encounter permits retreat. Check the actual return destination and resources through re-entry. A successful Wing never enters Herb or HEAL playback. |
+| Result → next actor, victory, loss or escape | [Shared cards](#shared-action-status-cards), [message/return owner](presentation.md#battle-messages-return-and-party-status) and opening observations cover HP, death, EXP/growth/gold and resumed control. | Keep outcome ownership with the chapter. A finished animation alone cannot certify a first victory, special loss, repeat or usable field return. |
+
+**Confirmed feedback gap, authored English.** In the retained #1527 English supply witness,
+the Seed and Antidote action labels both call item use an attack. Seed's result names the recipient
+and amount without saying HP. Both effects and the next movement succeed. Reproduce with
+`engine_supplies_observation.gd` and inspect the `supply-scene` messages. In
+`BattleSceneView.Message`, absent English source text falls back to the generic action/amount
+strings. Private scenes bind item text 275 and recovery text 298. #1538 should check those actual
+product labels. Correct the shared item message if the product misidentifies an action. Authored
+fallback wording alone does not stall the campaign.
+
+The modern visuals have bounded **engineering** acceptance. Whole-route legibility and personal
+preference require human judgment. Original frame/audio alignment, final pixels and naturally
+occurring proc order remain **Unknown**. Prior [capability results and retained failures](../evidence/engine-script-boundary-review.md#accepted-corrections-and-explicit-continuation-limits)
+and the [F4/F5 repair evidence](../evidence/structure-and-quality-review.md#f4f5-bounded-repair-disposition)
+keep their own scopes, including the ObjectDB exit Unknown.
+
 ## Message and outcome presentation
 
 Action/result/reward/growth text now uses the shared native 30px blue/gold story panel and mapped
@@ -367,8 +471,9 @@ cleanup, actor restoration, EXP/growth and input release. Full HP still casts an
 minimum; self-healing preserves the already charged caster MP. Growth consumes the seed carried
 through the scene, not the construction seed. Private scenes require admitted PRST cast content,
 idle parameters and healing rasters; authored packages use an explicitly authored small gesture.
-Private AURA, other spell effects and HEAL4 remain unsupported; public authored AURA uses the separate
-consumer above. The historical #523/#437 records do not establish full scene or hardware parity; the
+Private AURA and HEAL4 remain unsupported. Public authored AURA and the
+[finite attack, support and cure spells](#which-actions-can-be-reused) use their own delivery paths.
+The historical #523/#437 records do not establish full scene or hardware parity; the
 [current composed milestone](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 has its separately bounded acceptance.
 
