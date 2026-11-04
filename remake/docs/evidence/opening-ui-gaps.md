@@ -8,6 +8,25 @@ whole-opening human/aesthetic approval. A–E now have accepted bounded deliveri
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
+## Church and shared-save calibration (#1519)
+
+**Standard, bounded candidate:** the existing priest Save already completed the real caller and
+opened the same save host. The [current agreement](../godot/presentation.md#church-and-shared-save-agreement-1519)
+clarifies its Record adventure label and selected-row common-slot/save-point/return explanation.
+Actual font inspection found the old small focus triangle absent from the bundled face; `>` retains
+its selector meaning. A controlled-profile refusal now states its true unavailability instead of
+asking to finish an already-ended conversation. A paused Church's early return skipped the ordinary
+neutral-input release reset, canceling old gestures but also blocking fresh mouse clicks; its bounded
+branch correction retains the old-gesture guard and restores fresh pointer input after release.
+
+[Finite observation](../verification/host.md#church-and-shared-save-calibration) covers the actual
+Map3 priest, service cost/target/decline/payment/unavailable feedback, common slot/destination/overwrite
+rules, Church cancel/success/storage-failure returns, and one ordinary Save/fresh-process Continue.
+Authored treatment states do not establish natural opening poison/stun reach. This candidate awaits
+independent integration; headless state/input/font/geometry is not final pixel, physical focus/device
+or human acceptance. E8 remains **experience pending**. Preserve existing shutdown Unknowns and
+completed historical failures; no whole-route acceptance or new Church service is claimed.
+
 ## Sprite and interface overlap (#1517)
 
 **Confirmed — bounded implementation and headless Godot state/input observation:** private HEAL

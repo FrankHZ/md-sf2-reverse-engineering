@@ -2786,3 +2786,53 @@ Historical #1491 engine1801PASS/6FAIL/1SKIP and school03 exit2 remain completed 
 not rerun or reclassified. Headless facts do not establish final raster, physical focus or human
 approval. Run affected `uv run sf2 verify adapter`, then obtain `verify plan` on the clean committed
 head and compare actual CI with that plan.
+
+## Church and shared Save calibration
+
+The [Standard agreement](../godot/presentation.md#church-and-shared-save-agreement-1519) owns #1519
+inside the existing High save/recovery contract. Reuse the transferred worktree, SDK/Godot/project/
+imports, `local/issue1441/inputs.ps1` and `local/issue1471/field-01` runtime directories. Load selections
+in the actual launch process and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Reports belong in
+`local/issue1519`, at most15MiB; keep at least1GiB free on H. Use one native instance, headless fixed60,
+1920×1080, bounded45s; a selected Church/common-slot sample also checks2560×1440. No screenshots,
+frame acquisition, environment recreation, large derivatives or full route are needed.
+
+The retained launcher is `local/issue1519/run-native.ps1 -Run <fresh-name> -Case <case>`. Its small
+local observer reuses #1518's actual-host input and observation helpers and #1424/#1443/#1454 fixtures;
+it is not another production verifier. For equivalent reproduction, instantiate ordinary `Main.tscn`,
+send mapped keyboard/pad inputs and complete mouse gestures via `Input.parse_input_event`, and read
+`ReadObservationJson`, `ReadPersistenceObservationJson`, `ReadSaveObservationJson`, native Control
+rectangles, minimum text sizes, bundled-font glyphs and errors. Never set session state or manufacture
+a transaction receipt.
+
+| Case / existing input | Finite acceptance |
+| --- | --- |
+| `field`: #1517 Map3 priest-position diagnostic start and current #1441 world/party | Ordinary Confirm reaches the real priest/counter and `ChurchWait`. Inspect all services and bilingual rows; unavailable Promotion refuses without changing resources and focus clears its message. Healthy Raise/Cure show no applicable member. Leave completes the caller. Church Save closes the service, then the controlled profile correctly refuses saving; Back restores usable exploration. This initial-position seam does not establish natural reach or save eligibility. |
+| `field` pause boundary | Hold a Church-row mouse press, open and close the real system Menu, then release the old press. No command/payment occurs. A fresh complete row click after neutral input works. This reproduced the old stuck release flag; checking only keyboard continuation would miss it. |
+| `product`: disposable copy of #1443 route-01 slot1 | Ordinary title/Witch/Continue restores the real product savepoint at the priest counter. Menu Save and Church Save have exactly equal slot labels, destination and Cancel-first overwrite choices. Confirm Back returns slots; Menu slots Back returns Menu. Church cancellation returns exploration with unchanged save bytes and no service/event wait. Check selected-row help in both languages and1080p/1440p geometry. |
+| English `product`, then `storage` | Perform one explicit Church overwrite, retain the original valid backup, and close success with held Confirm; it cannot reopen services or leak gameplay input. Reuse that disposable namespace for `storage`: after opening confirmation, retain its ordinary lock file, temporarily substitute a directory at that disposable lock path, then confirm. The real write reports failure, preserving primary/backup bytes. Restore only that test obstacle, close failure, reenter priest/Leave, and verify fresh legal movement without a second write. |
+| `continue` | In a fresh process, ordinary Continue from that same issue1519 disposable save restores playable exploration without `ChurchWait`; fresh legal movement works. Original source save bytes remain unchanged. |
+| `raise` / `insufficient` / `cure` | Reuse #1454's small authored treatment package; vary only disposable starting gold/status for insufficient funds and poison+stun+curse. Inspect real offer target/cost and mapped Decline, Confirm, results and return. Exact10-gold Raise restores100HP once; zero funds changes no resources; poison10 then stun20 clear only those bits, preserve dead HP and curse4, and state that curse removal is unavailable. Preserve MP, other members, progress and RNG; no duplicate payment on return. These are controlled service states, not proof of naturally acquired opening statuses. |
+
+Use distinct fresh reports and issue1519 disposable save namespaces; for `storage`/`continue`, select
+the already-saved product namespace rather than copying the original again. The original #1443 input
+is read-only. Preserve complete stdout/stderr, exit/time/peak, actual observations and failed attempts.
+The finite runs retain ObjectDB teardown warnings (two or four instances), without leak attribution.
+Physical focus/real-device delivery, final pixels, original timing and human acceptance remain
+**Unknown**. Preserve #1491's completed1801PASS/6FAIL/1SKIP and school03 exit2; none is relabeled or
+rerun for this UI slice.
+
+The first glyph check failed on the old `▸`; the Church uses supported `>` after correction. The
+first product attempt completed its overwrite but stopped because the observer assumed no persistent
+lock file. `storage` retains that file before substituting its disposable obstacle; no extra product
+write is needed. Initial authored resource comparisons mixed integer expected values with JSON
+floating-point values; typed numeric normalization corrects the observer without changing gameplay.
+The fresh-click-after-pause failures reproduce the actual Church release defect and remain retained
+alongside the passing correction; keyboard-only intermediate passes do not close that failure.
+
+Run affected `uv run sf2 verify adapter`, the necessary existing Debug host build for native
+observations, and inspect `uv run sf2 verify plan --base origin/main --head HEAD` on the clean committed
+candidate. This is an adapter/UI correction, with no new engine behavior or helper tests and no broad
+research/engine/H3/full-suite rerun. Direct ownership, source-size, document/link/catalog and private
+boundary checks complete the slice. Record actual CI independently from the selected plan; queued is
+not passed. Freeze a Draft PR for main-gate's independent review and merge.

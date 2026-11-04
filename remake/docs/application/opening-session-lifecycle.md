@@ -702,7 +702,12 @@ separate defeated appearance policy is outside this admission.
 
 Save from Church requests close first. The host waits for actual program/event/portrait return to
 settled field input, then uses the existing Save menu, music-history observation, eligibility query,
-slot confirmation and format. A service wait is never captured. A settled but ineligible location
+slot confirmation and format. A service wait is never captured. The Church
+[Record adventure entry](../godot/presentation.md#church-and-shared-save-agreement-1519) explains the
+shared two slots and existing save-point limits. Closing its save flow after cancel, success or
+failure returns to usable exploration; another priest interaction opens services again. Menu Save
+keeps its own existing Back-to-Menu hierarchy. Both use identical slot/destination/overwrite rules;
+neither grants arbitrary saving. A settled but ineligible location
 or transient save condition explains the existing reason and preserves the live session. Savepoint
 locations/recipes and format/rule revisions remain unchanged: service payments/resources already
 belong to the saved party. Lifecycle replacement discards old view/save intent; focus/hide/pause

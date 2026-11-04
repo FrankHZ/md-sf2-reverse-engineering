@@ -66,6 +66,7 @@ public sealed partial class GameRoot
     private static string Explain(string code) => code switch
     {
         "save-location-unavailable" => GameText.Get("save.error.location"),
+        "save-profile-unavailable" => GameText.Get("save.error.profile"),
         "save-incompatible" or "save-version" => GameText.Get("save.error.compatibility"),
         "save-publication-uncertain" => GameText.Get("save.error.uncertain"),
         "save-storage-unavailable" => GameText.Get("save.error.storage"),

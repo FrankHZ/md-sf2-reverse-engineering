@@ -158,7 +158,10 @@ msgstr "转职 · 不可用"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.save"
-msgstr "保存… · 先离开教堂"
+msgstr "记录冒险…（存档）"
+
+msgid "church.save-hint"
+msgstr "与菜单→保存使用相同的两个槽位，仍需在可保存地点使用。\n关闭存档界面后继续探索；需要其他服务时，请再次与祭司交谈。"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.leave"
@@ -202,7 +205,7 @@ msgstr "已解除眩晕。支付了 {0} 金币。"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.curse"
-msgstr "此内容暂不支持解除诅咒。"
+msgstr "此处暂不支持解除诅咒。"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.promotion"
@@ -430,6 +433,9 @@ msgstr "写入可能已经完成，当前游戏仍保持暂停。\n进度文件�
 
 msgid "save.error.location"
 msgstr "请回到支持的地点再保存：开场的Granseal，或首场战斗结束后的返回点。"
+
+msgid "save.error.profile"
+msgstr "本次游戏无法保存。已有存档已保留。"
 
 msgid "save.error.compatibility"
 msgstr "此存档需要匹配的内容／规则，文件已保留。"
