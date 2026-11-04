@@ -2662,3 +2662,78 @@ service dependency/future-stop feedback through actual controls. Dismissal must 
 field control. Source/runtime reach and timing remain Unknown outside named original evidence;
 modern Search shortcut/result delivery and safe repeated hide are explicit remake policies.
 Preserve prior controlled-start fade diagnostic failures and all completed attempts in the handoff.
+
+## Private house-exit translation sample
+
+[#1489](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1489) owns the finite
+[M3 house-exit boundary](../application/localization-design.md#m3-private-house-exit-review-sample):
+`private-battle01-to-battle02`, `world.text/510,511,483`, existing `cs-5145c`. The
+[opening guide](../../../docs/design/synthesis/chapters/grans-opening/opening-through-battle01.md#1-map-3-leaving-the-house-and-meeting-the-school-entities)
+retains the original-source evidence boundary. Translation adds no original reach/timing claim.
+All source/translated prose, bilingual review, absolute private paths and generated reports stay
+local. The stable external world owner has exactly `world.zh-CN.json`, `review.zh-CN.md` and
+`README.md`; preserve it when retiring a consuming worktree. It contains only these three rows,
+uses the existing catalog envelope, and creates no segment merger or complete-world copy.
+
+From the assigned existing checkout, load `local/issue1441/inputs.ps1` in the launch process.
+Select this owner's absolute `world.zh-CN.json` with `SF2_DISPLAY_CATALOG`; select `zh-CN` or `en`
+through existing preferences. Reuse compiled Content/adapter, imports, Godot and the owned
+`local/issue1471/field-01` runtime directories. Finite ignored entry points are:
+
+```powershell
+pwsh -NoProfile -File ./local/issue1489/catalog.ps1
+pwsh -NoProfile -File ./local/issue1489/run-native.ps1 -Run <fresh-pilot> -Rows 1
+pwsh -NoProfile -File ./local/issue1489/run-native.ps1 -Run <fresh-zh> -Language zh-CN
+pwsh -NoProfile -File ./local/issue1489/run-native.ps1 -Run <fresh-en> -Language en
+python -X utf8 ./local/issue1489/compare.py
+```
+
+The compiled `OpeningNewGameReader` supplies the actual admitted definition to
+`DisplayCatalogReader`; the one-row pilot precedes all-three admission. Compare exact package,
+repository URL, commit and ROM identity, per-row controls/name positions, captured literal names,
+resolved text/effective locale/reason and empty diagnostics. Missing and invalid-control row 511
+retain its complete English text with distinct reasons; mismatched source identity rejects the
+overlay. Source size/mtime remain unchanged. Reports name the read-only selection without publishing
+it. Static controls total four N, two W2, one W1, LEADER and NAME;1 across 156 source characters.
+
+The native launcher uses fresh disposable external save/preference namespaces, supported
+`adjustable` text mode, headless 1920×1080, a 50-second outer deadline and the existing ordinary
+production input path. No focus notification is injected. Ordinary title/greeting skip, menu reveal,
+New Game, slot/name and final confirmation create a fresh initial house session. Preserve the
+captured literal name within the existing ASCII naming limit. From `(56,3)`, use Left, Left through the existing house warp,
+then Right to trigger the three-text program. Read/confirm 510,511,483, wait for caller return at
+`(4,4)`, then Down to `(4,5)` proves field input recovery. Stop there: no school/messenger/battle,
+Save/Continue compatibility replay, canonical-input mutation, screenshot or general observer.
+
+**Confirmed:** both full runs exit 0 with no deadline, input/text/glyph/geometry or session failure.
+All three actual bodies match reader/source expectations, use their selected locale without fallback,
+and are fully read before acknowledgement; no overflow page is needed. Captured player/member names
+and the unapproved source proper name remain literal. Fourteen key inputs agree between the Chinese
+and English runs. Wait tokens `165/390/514`, cursor/wait, canonical FieldText units, names, revision,
+flags, party, gold, continuation and logical clock agree at the three input boundaries and comparable
+initial/return/moved states. Their independent ordinary New Game starts choose different main/thinking
+seeds; actual values remain in the private comparison, without injection or an equality claim.
+
+A focused one-row observation captures the actual adjustable reveal: Confirm changes 0 to 24 visible
+characters, keeps row 510 and its token/flags/party/gold/seeds, and leaves acknowledgement unavailable
+until canonical delivery completes. The logical clock advances normally from 115 to 119 during the
+input interval; reveal does not replace source execution. This additional input history is separate
+from the matching full-run histories. Headless glyph/geometry checks do not establish physical
+rendering, typography or human reading comfort.
+
+Prior completed failed attempts and their corrections remain in the ignored handoff. Exit 0 without
+the required checkpoint report is not a passed observation; the current launcher requires both.
+
+The worker runs `pilot03`, `zh01`, `en01` and `reveal01` have empty stderr. The independent
+`main-gate01` three-row run passes and exits 0 but retains the two-ObjectDB shutdown warning also
+seen in the first attempt. Its cause remains an unresolved lifecycle **Unknown**; no audio
+investigation is implied. Peak working set is about 1.42 GiB for this existing private world/entry
+composition; one serial native consumer stays below the revised 2 GiB planning estimate. Private
+three-file text remains below 16 KiB, all Issue reports below 2 MiB and H free above 1 GiB. No new
+worktree, environment, cache, SDK, import or acquisition is needed.
+
+Direct document/link/scope/private-boundary checks, the clean committed planner and actual selected
+hosted CI own the three-document tracked diff. No fresh SDK, engine, normal research/full or H3 suite
+is selected solely for this sample. Main-gate's independent semantic/wording review passed without
+requested edits; human review of these three rows and actual in-game reading remains pending.
+Technical connection neither expands the script batch nor grants publication rights.

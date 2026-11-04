@@ -7,8 +7,10 @@ The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
 settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat, story controls/choices/return notices and semantic battle feedback
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
-A private six-row M3 Witch-entry suggestion is technically connected, with human review pending, at the
-[bounded sample boundary](#m3-private-witch-entry-review-sample). This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
+The private six-row M3 [Witch-entry suggestion](#m3-private-witch-entry-review-sample) has approved
+human text tone; in-game typography/reading remains pending. A separate three-row
+[house-exit sample](#m3-private-house-exit-review-sample) is technically connected and agent-reviewed.
+This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
 These describe the remake, not new original-game evidence.
 
@@ -178,11 +180,55 @@ recipe, actual results, caller corrections and shutdown warning. This reuses the
 imports, with no SDK/research/full/H3 or campaign/save-compatibility rerun.
 
 Main-gate's independent semantic review passed for this suggestion with the requested Chinese phrase
-breaks in rows 218–219. **Human tone, typography and actual reading approval remain pending** in the
-private review artifact; technical admission and agent review cannot supply that approval. The
-engineering sample task may close after independent integration while epic #1468's human checkpoint
+breaks in rows 218–219. **The user approved this sample's text tone on 2026-11-03. In-game typography
+and actual reading approval remain pending** in the private review artifact. That tone approval applies
+to this speaker and does not prescribe other characters' voices. The engineering sample task may close after independent integration while epic #1468's human checkpoint
 remains open. No reply authorizes expansion. Terminology, other private dialogue, image lettering,
 full-opening Chinese, Unicode naming and publication remain outside this sample.
+
+## M3 private house-exit review sample
+
+[#1489](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1489) adds exactly
+`world.text/510,511,483` to the existing `private-battle01-to-battle02` display consumer. Standard
+rigor remains appropriate: the outcome is one bounded private content group, preserving source
+controls, captured names, English fallback and field control. No code, PO, schema, production probe,
+source package, glossary, default-name or Unicode/IME change belongs to this slice.
+
+The [opening guide's House-exit row](../../../docs/design/synthesis/chapters/grans-opening/opening-through-battle01.md#1-map-3-leaving-the-house-and-meeting-the-school-entities)
+locates entity operand 128 and `cs-5145c`: cursor 510 supplies 510/511, then cursor 483 supplies 483.
+Its pinned source is `disasm/data/maps/entries/map03/mapsetups/scripts_1.asm:cs_5145C` at SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, USA ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. This is provenance and existing
+structure, not a new original-game reach, acknowledgement or timing claim.
+
+The inventory is three rows, 156 source characters including literal controls: one `{LEADER}`, one
+`{NAME;1}`, four `{N}`, two `{W2}` and one `{W1}`. The translation retains their exact per-row order
+and control-segment name mapping. Unapproved proper names retain their source English form; captured
+player/member names remain literal. The prior Witch tone is not imposed on this different speaker.
+
+One stable external private world owner, outside Git and removable worktrees, contains exactly
+`world.zh-CN.json`, `review.zh-CN.md` and `README.md`. Its current catalog has only these three rows;
+future separately authorized bounded additions use the same existing 256 KiB/64-row contract, not
+per-segment overlays or a merger/manifest. `SF2_DISPLAY_CATALOG` selects that optional absolute local
+path. The `source` object matches the actual admitted world repository/commit/ROM identity, including
+the repository URL verbatim. The separate Witch owner and source inputs remain read-only. These
+three files are persistent user content, not cleanup scratch; local admission grants no publication
+rights. Public Git retains no original/translated prose, review table or absolute private path.
+
+**Confirmed technical boundary:** existing compiled Content admission passes a one-row pilot, all
+three rows, exact controls/captured names, complete missing/invalid-row English fallback and source
+mismatch rejection. Ordinary headless New Game reaches the initial house, displays all three rows in
+Chinese and English, confirms them and returns to usable field movement. An early Confirm reveals
+row 510 from 0 to 24 visible characters without acknowledging it. Comparable canonical units, waits,
+tokens, flags, party/resources and logical clocks agree; two independent New Game seeds differ and
+remain explicit. The [field-program reproduction owner](../verification/field-programs.md#private-house-exit-translation-sample)
+records the exact bounded method, corrections, input comparison and shutdown-warning boundary.
+
+Main-gate independently passed the three pairs' semantics and wording with no requested changes.
+**Human text-tone review of these three rows, in-game typography and actual reading experience remain
+pending.** This is an explicit experience boundary, not a new engineering authorization gate. School,
+messenger, recruitment, battle, other dialogue groups, naming/IME and opening-wide Chinese remain
+outside this sample. No further batch or publication is authorized by its technical success.
 
 ## Current production and consumption paths
 
