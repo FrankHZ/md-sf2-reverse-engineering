@@ -171,13 +171,12 @@ public sealed class PoisonSessionTests
     }
 
     [Fact]
-    public void UnpoisonedActorDoesNotTickAndMixedPhysicalStatusesRemainUnsupported()
+    public void UnpoisonedActorDoesNotTick()
     {
         var session = Start("poison-turn", d => d["start"]!["actors"]![0]!["status"] = "none");
         var result = Stay(session);
         Assert.Equal((ushort)3, session.Current.Battle.GetActor(Hero).Hp);
         Assert.DoesNotContain(result.Observations, e => e.Kind is "poison-message" or "poison-hp");
-        Assert.False(Sf2.Remake.Domain.Gameplay.Sf2.PoisonTurnRules.SupportedPhysicalStatus(0xC2));
     }
 
 }

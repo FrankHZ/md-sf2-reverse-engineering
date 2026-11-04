@@ -5,7 +5,7 @@ namespace Sf2.Remake.Domain.Battles;
 internal sealed record BattleActionOffer(BattleActionRef Action, string Label, bool Empty = false);
 internal sealed record BattleActionAdmission(byte? MinimumRange = null, byte? MaximumRange = null,
     HealingSpellDefinition? Spell = null, HealingItemDefinition? Item = null, RetreatSpellDefinition? Retreat = null,
-    RetreatItemDefinition? RetreatItem = null, Sf2.Remake.Domain.Gameplay.Sf2.AttackSpellDefinition? AttackSpell = null);
+    RetreatItemDefinition? RetreatItem = null, Sf2.Remake.Domain.Gameplay.Sf2.AttackSpellDefinition? AttackSpell = null, Sf2.Remake.Domain.Gameplay.Sf2.SupportSpellDefinition? SupportSpell = null);
 
 // Queries are disposable and do not construct an action or consume either RNG stream.
 internal interface IBattleActionRule
@@ -47,7 +47,8 @@ internal static class BattleActionRules
         {
             var admission = rule.RequireAction(battle, actor, action);
             if (target is { } victim) _ = rule.RequireTarget(battle, actor, destination, action, victim);
-            var prepared = rule.Prepare(battle, actor, destination, action, target, progression);
+            var prepared = Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Suppress(battle, actor, destination, action, admission)
+                ?? rule.Prepare(battle, actor, destination, action, target, progression);
             prepared.Validate(battle, actor, destination, action, target, admission);
             if (prepared.Reward is { } reward)
                 BattleProgressionRules.Preflight(progression, prepared.Prepared.GetActor(reward.Actor), reward.Amount,

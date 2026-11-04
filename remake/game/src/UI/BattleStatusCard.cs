@@ -32,7 +32,9 @@ internal sealed partial class BattleStatusCard : PanelContainer
 
     internal void Present(BattleActorState? actor, string name, string role)
     {
-        Present(actor?.Actor, name, role, actor?.Hp ?? 0, actor?.MaxHp ?? 0, actor?.Mp ?? 0, actor?.MaxMp ?? 0);
+        string silence = actor is not null && (actor.Status & 0x300) != 0
+            ? " · " + GameText.Get("battle.status.silence", (actor.Status & 0x300) >> 8) : "";
+        Present(actor?.Actor, name, role + silence, actor?.Hp ?? 0, actor?.MaxHp ?? 0, actor?.Mp ?? 0, actor?.MaxMp ?? 0);
     }
 
     // Field callers project scalar carried resources without constructing a battle actor.

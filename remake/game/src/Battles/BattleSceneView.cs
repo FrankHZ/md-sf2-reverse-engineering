@@ -100,6 +100,14 @@ internal sealed partial class BattleSceneView : Control
         try
         {
             _laser.Hide(); _aura.Hide(); _attackSpell.Hide();
+            if (state.SupportSpell is not null || state.IsSilencedCast)
+            {
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
+                foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
+                _sceneBlack.Show(); PresentMessage(state);
+                _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
+                return;
+            }
             if (state.AttackSpell is not null && !state.IsFieldDeath)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
@@ -219,7 +227,7 @@ internal sealed partial class BattleSceneView : Control
         _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
         RefreshMessageHint(state);
         _elapsed += delta;
-        if (state.IsAfterTurnNotice || state.Phase == BattleScenePhase.SleepMessage)
+        if (state.IsAfterTurnNotice || state.Phase is BattleScenePhase.SleepMessage or BattleScenePhase.SilenceMessage)
         {
             // Modern finite delivery of the source's no-input status notices. Actual
             // completion releases the status command; reveal/input speed adds no RNG.
@@ -239,6 +247,11 @@ internal sealed partial class BattleSceneView : Control
                 (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()) && !_messagePanel.MoreBelow)
                 return new CompletePresentation(state.Token, state.CompletionKind);
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
+        }
+        if (state.SupportSpell is not null || state.IsSilencedCast)
+        {
+            if (_elapsed < 0.25) return null;
+            _completed = true; return new CompletePresentation(state.Token, state.CompletionKind);
         }
         if (state.AttackSpell is not null)
         {
@@ -423,6 +436,14 @@ internal sealed partial class BattleSceneView : Control
             Error = GameText.Ready ? "display-operands" : "localization-resources";
             return "Message unavailable (" + Error + ").";
         }
+        if (state.IsSilencedCast || state.SupportSpell is not null || state.IsSilenceTurn || state.Phase == BattleScenePhase.SilenceMessage)
+        {
+            var spell = state.SilencedSpell ?? state.SupportSpell?.Spell;
+            if (spell is { } key && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
+                return LocalizedMessage("battle.spell.action", ActorName(state.Actor), key.Value.ToUpperInvariant(), key.Level);
+            if (SemanticMessage(state) is { } statusMessage) return statusMessage;
+            return "";
+        }
         if (state.AttackSpell is { } attack)
         {
             if (state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
@@ -515,6 +536,7 @@ internal sealed partial class BattleSceneView : Control
             },
             BattleScenePhase.ResultMessage => state.ReactionKind switch
             {
+                "Status" => LocalizedMessage("battle.scene.silence", Target()),
                 "Recovery" => LocalizedMessage("battle.heal.recovery", Target(), state.Amount),
                 "Damage" => LocalizedMessage(state.Critical ? "battle.scene.critical" : "battle.scene.damage", Target(), state.Amount),
                 "Dodge" => LocalizedMessage("battle.scene.dodge", Target()),
@@ -526,6 +548,9 @@ internal sealed partial class BattleSceneView : Control
             BattleScenePhase.ItemDroppedMessage => LocalizedMessage("battle.scene.dropped", Target(), state.ItemReceipt!.Item.Name),
             BattleScenePhase.RewardMessage => LocalizedMessage("battle.scene.exp", Name(state.RewardActor), state.RewardAmount),
             BattleScenePhase.GoldMessage => LocalizedMessage("battle.scene.gold", state.GoldAmount),
+            BattleScenePhase.SilencedCastMessage => LocalizedMessage("battle.scene.silenced-cast", ActorName(state.Actor)),
+            BattleScenePhase.SilenceMessage => LocalizedMessage("battle.scene.silence", Target()),
+            BattleScenePhase.SilenceTurnMessage => LocalizedMessage("battle.scene.silence-expired", ActorName(state.Actor)),
             BattleScenePhase.SleepMessage => LocalizedMessage("battle.scene.sleep", Target()),
             // SleepTurnText is the typed existing discriminator: 306 asleep, 354 awake.
             BattleScenePhase.SleepTurnMessage => state.SleepTurnText switch
@@ -607,9 +632,9 @@ internal sealed partial class BattleSceneView : Control
             step = field.FieldStep, facing = field.FieldFacing, delay = field.FieldDelay } : null,
         elapsed = _elapsed, completed = _completed, animationIndex = _animationIndex, frameIndex = _frameIndex, reactionState = _logicalReaction,
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
-        enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,
+        enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind, supportSpell = _state?.SupportSpell, silencedSpell = _state?.SilencedSpell,
         reactionAmount = _state?.Amount,
-        item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell,
+        item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
         spellAnimationSelector = _state?.AttackSpell is not null ? (int?)null : _state?.IsAura == true ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,

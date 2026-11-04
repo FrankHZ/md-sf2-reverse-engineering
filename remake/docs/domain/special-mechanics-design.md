@@ -446,7 +446,20 @@ The finite [early enemy spell agreement](gameplay-rules.md#finite-early-enemy-sp
 now composes source SENTRY8/HEALER3 command order, Normal target scripts3/4, BLAZE1/HEAL1,
 shared payment/effect/end rules and actual same-faction recovery through subsequent player control.
 Pinned early bindings and authored native delivery remain separate from Battle05/06 chapter import.
-DISPEL/silence, shops and later story remain separate slices.
+The finite DISPEL/silence implementation retains Standard rigor and the same transaction authority. Its
+finite agreement is one packed SILENCE field (`0x0300`, unit `0x0100`), staged DISPEL1 reactions
+(MP5, range1–2, radius1), source resistance/spell-count gating and successful recast refresh.
+Marked spells remain selectable while silenced: payment precedes the no-effect result; physical,
+item and Stay actions are unaffected. SUPPORT scores actual area recipients with attack/healing
+spells and requires at least two points, rather than reusing center damage scoring. Physical
+silence critical retains source1/4/no damage bonus, learned-spell gating and the existing double,
+counter and extra-round-entry mechanisms. Sleep, silence and poison compose through the existing
+after-turn owner in that order, once per living action entry. Other status bits remain Unsupported.
+Acceptance includes changed valid combinations, atomic failed/cancelled preparation, staged cost,
+effects and expiry, shared player/AI consumption, Content admission and ordinary Godot input through
+subsequent usable control in English/Chinese. No full buff platform, new acquisition or complete
+Battle07 story is in scope; capability, private binding and story connection remain separate.
+Shops and later story remain separate slices.
 
 Accepted foundations include authored AURA, ordinary physical equipment, Give/Drop, drops/Deals and
 poison, plus bounded opening Search, field preparation/DETOX, Church Raise/Cure and shared two-slot

@@ -536,6 +536,7 @@ public sealed partial class BattleSessionView : Control
             failureKind = (_result?.Failure ?? _startupFailure)?.Kind.ToString(),
             round = current?.Battle.Round, revision = current?.Revision,
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed, gold = current?.Battle.Gold,
+            statuses = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, status = a.Status }),
             itemCustody = current?.Battle.ItemCustody,
             deathCredit = current?.Battle.DeathCredit,
             queueCursor = current?.Battle.Cursor,

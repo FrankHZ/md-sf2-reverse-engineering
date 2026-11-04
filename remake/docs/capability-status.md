@@ -1,5 +1,26 @@
 # Remake Capability Status
 
+## DISPEL1, finite SUPPORT and silence
+
+**Implemented bounded capability:** player/enemy DISPEL1 uses actual opposing radius recipients,
+source resistance/known-spell/fresh-recast gates, staged status results and one5MP payment. Source
+SUPPORT scores attack/healing recipients across the whole area, requires at least2 and honors
+earlier command success. Physical silence prowess uses1/4 with no damage bonus, learned-spell
+gating and existing1/16 double/counter plus extra action entries. Ordinary marked spells remain
+selectable under silence and pay before their no-effect result; physical/items/Stay and the special
+EGRESS route retain their separate behavior. Sleep/silence/opted-in poison compose per living action
+entry through actual expiry/delivery/death/next-control boundaries.
+
+The [rules](domain/gameplay-rules.md#finite-dispel-support-and-silence),
+[Content admission](content/profiles-and-trust.md#silence-and-support-admission) and
+[native recipe](development-and-verification.md#silence-observation) own details. The
+[silence-watch package](../content/authored/silence-watch.json) has English/Chinese ordinary-input
+witnesses of SUPPORT → silence → paid suppressed spell → expiry → effective next cast → movement.
+Functional messages/cards project the actual state; this is not original magic media/timing.
+Pinned Dark Smoke definitions independently reach shared action admission in a controlled existing
+encounter. Battle07 placement/story import, natural original casts/criticals/repeated lifetime,
+broader statuses and full SUPPORT/spell AI remain Unsupported or Unknown, not implied by admission.
+
 ## Early enemy BLAZE1 and HEAL1
 
 **Implemented, bounded:** source SENTRY8 and HEALER3/2 decisions now reach ordinary BLAZE1/HEAL1
@@ -12,7 +33,7 @@ of automatic Mage/Cleric actions and real subsequent movement. Recovery switches
 enemy side. [Content admission](content/profiles-and-trust.md#early-enemy-spell-admission) separately
 binds pinned Galam Mage/Dark Cleric commandsets, mover, spells and cleric counter prowess.
 
-This does not import full Battle05/06 or connect Battle03-07 story. DISPEL/support/silence,
+This does not import full Battle05/06 or connect Battle03-07 story. Wider support spells,
 item AI, higher-rank enemy spells, all-AI parity and non-Normal difficulty remain Unsupported;
 natural original first casts/timing and newly required private scene assets remain outside this
 observation. See [verification](development-and-verification.md#enemy-spell-observation).
@@ -33,7 +54,7 @@ Pinned private definitions admit the three selected records and class/enemy resi
 a controlled learned Sarah/Kazin-class composition reaches their distinct action admission. Existing
 private growth may expose a supported learned rank without an expected-level ban. This is separate
 from recruiting Kazin, importing another battle or connecting the entire Battle03-07 story.
-The finite enemy BLAZE1/HEAL1 extension is described above; DISPEL/silence and other spell families/ranks remain Unsupported.
+The finite enemy BLAZE1/HEAL1 and DISPEL/silence extensions are described above; other spell families/ranks remain Unsupported.
 Presentation is a functional modern effect, including private admitted casts, not original magic
 assets/timing or new original-runtime evidence. Natural pre-departure levels/opportunities remain
 Unknown. The older completed private comparison failures remain with their evidence owners.
@@ -202,7 +223,8 @@ The [High-rigor agreement/source rules](domain/gameplay-rules.md#authored-poison
 [admission](content/profiles-and-trust.md#authored-poison-admission),
 [continuation](application/session-and-programs.md#poison-after-turn-continuation) and
 [verification](development-and-verification.md#poison-authored-observation) own acceptance and limits.
-Mixed poison/sleep, poison infliction, DETOX/cure, other statuses, private/connected poison admission,
+The finite sleep/silence/poison composition is described above. Poison infliction, battle DETOX/cure,
+other statuses, private/connected poison admission,
 original timing and save/load remain Unsupported or Unknown as identified there. Existing sleep and
 retained historical failures, #1047's twelve Unknowns and paused #638 are unchanged.
 
@@ -609,7 +631,7 @@ full-game parity and public distribution remain outside the accepted boundary.
 | Private initialized entry | **Implemented subset:** actual trusted encounter plus pinned selected enemy/class/item/spell exports and external controlled PlayerReady party/start enter the common session. New-battle heal/effective ATT, initial AI/region state, activation/program/spawn admission, carried first queue and candidate control lead to common movement/cancel. Required regular/healer/Centaur/hovering/Stealth/Flying movers work. Unknown accounting stays null; source baseline/loadout/words/provenance remain retained. |
 | Private source enemy continuation | **Implemented subset:** actual common player commands reach inactive anchor-relative standby, evolving occupancy/memory, region activation and source set6/set7 no-action pursuit, then the next live player. Source NONE orders, activation/tested words, last target and both RNG channels remain intact. Standby/pursuit calculations have one production owner; one common movement/action publisher commits results. Reached physical operands use the shared action binding below; failures remain atomic. Nonempty move-order/action categories and broader status/neutral behavior remain Unsupported. |
 | Private actions and spell selection | **Implemented subset:** actual class prowess/adjacent ATT-only equipment, source HEAL1–3, selected player BLAZE1-2/BLAST1 and pinned enemy gold bind to common physical/reward/death/after-turn. Hovering/Flying share airborne dodge and priority; only Flying ignores ground land protection. The logical Spell action (default H / Pad North) cycles learned spells and levels without content reordering; engine owns legality/resources. Explicit external accounting enables actual enemy/player/kill/HEAL continuation; natural counters and seeds remain Unknown. Selected Battle02 EGRESS/Angel Wing is implemented at the agreement above; wider effects remain Unsupported. The connected private world binds growth and terminal programs below; broader M2 capabilities and hardware 8C remain incomplete; current milestone acceptance is recorded below. |
-| Ordinary physical attack and rewards | **Implemented subset:** regular-ground, status0 or admitted pure poison, frozen or explicitly admitted authored ATT-only equipment, explicit paired critical chance/bonus definitions (1/32 plus half or1/16 plus quarter); source-ordered first/second/reversed counter, dodge/critical/spread, per-action EXP/gold, ordinary enemy/ally cleanup, capped kills/defeats and next living control. Both authored physical packages support either legal kill order. |
+| Ordinary physical attack and rewards | **Implemented subset:** admitted ground/hovering mover, silence/sleep targets and opted-in poison combinations, frozen or explicitly admitted authored ATT-only equipment, explicit paired critical chance/bonus definitions (1/32 plus half or1/16 plus quarter); source-ordered first/second/reversed counter, dodge/critical/spread, per-action EXP/gold, ordinary enemy/ally cleanup, capped kills/defeats and next living control. Both authored physical packages support either legal kill order. |
 | Physical battle scene execution | **Implemented bounded consumer:** typed construction, animation/reaction, result/death, EXP/growth/gold and end waits retain input and turn ownership. Damage reactions advance shared-main RNG by 24 source draws each; growth uses the carried seed. Godot consumes privately prepared actor/weapon/environment frames and source music2/5, hit81/83 and level102 SFX through actual audio. Normal/reduced-flash observations preserve gameplay/RNG. HEAL has the separate bounded consumer below; modern text/fade timing and controlled native entry do not prove original timing, final pixels or H4. [Scene owner](godot/battle-scenes.md#physical-battle-scenes). |
 | HEAL spell scenes | **Implemented bounded consumer:** HEAL1–3 MP-before-cast, one/one/two source-rule fairies, shared-main RNG, self/other HP recovery, stop/cleanup before rewards/input, private rasters and actual77/113 audio. Function comparison under externally supplied opportunities/control passes; normal/reduced native semantic events match. **Unknown:** continuous original opportunity admission; recovery bsc0B is the first observed divergence and produces intermediate RNG differences. The accepted selected HEAL/scene composition supplies the current milestone obligation; this historical timing divergence remains with its owner. [Exact boundary](godot/battle-scenes.md#heal-spell-scenes). |
 | Medical Herb battle scenes | **Implemented bounded consumer:** live inventory consumption during construction, deferred mode2 HP recovery without MP cost, single-ally display/target switch/restoration, EXP/growth and end-of-scene input release. Uses source item animation NONE/Nothing and SFX113, with no fairy or physical recoil draws. Wounded controlled entry and full-HP source-world normal/reduced observations cover different boundaries; natural timing and whole-scene HEAL parity remain unfinished. [Scene owner](godot/battle-scenes.md#medical-herb-scenes). |

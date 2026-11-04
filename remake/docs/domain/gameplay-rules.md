@@ -1,5 +1,83 @@
 # Gameplay Rules and Composition
 
+## Finite DISPEL, SUPPORT and silence
+
+**Implemented bounded capability, Standard rigor:** `SupportSpellDefinition` and
+`Sf2SupportSpellAction` add DISPEL1 (MP5, range1–2, radius1) at the existing action seam.
+One packed `BattleActorState.Status` remains authoritative. SILENCE is `0x0300`, counter unit
+`0x0100`; it changes no numerical ATT/DEF/AGI. Immutable outcome/deployment copies retain support
+definitions alongside the existing capabilities. No buff platform, secondary status map or scene-ID
+legality is introduced. Existing transaction and later-failure prefix boundaries remain binding.
+
+The living, placed, initialized, non-neutral opposing center must be in caster range. Actual
+Manhattan area recipients use deployment/source processing order. Each recipient consumes one main
+range8 draw. Without a known spell, threshold8 makes the target immune; otherwise the threshold is
+`5 + ((Resistance >> 14) & 3)`. A roll at least that threshold succeeds. Fresh and already-silenced
+targets use the same roll; success ORs `0x0300` with their existing status, refreshing all three
+counters, and contributes5 EXP (per-action cap49, existing battle halving and two-draw award).
+The source minimum award can still grant1 EXP for an unsuppressed wholly ineffective player cast.
+Enemy casts do not award EXP. Preparation publishes neither status nor MP; one cost reaction precedes
+ordered per-target status/no-effect results, reward and after-turn. Invalid/unsupported preparation,
+queries and cancellation publish no speculative movement, RNG, cost or effects.
+
+Ordinary learned HEAL/AURA, BLAZE/BLAST and DISPEL carry `AFFECTEDBYSILENCE`. They remain selectable
+and confirmable under silence, with their usual learning/MP/target admission. The common action
+boundary prepares a suppressed cast without target-effect or award draws. Its scene publishes MP
+once, then the silenced/no-effect message and action end; HP/status/EXP target commands are absent.
+This is a paid legal action, not an illegal-command refusal. Physical attacks, Stay, free Equip,
+Give/Drop and items remain unaffected; Herb's HEALIN is unmarked. EGRESS is a source exception:
+`ExecuteIndividualTurn @CheckBattleaction_CastEgress` branches to its special return before the
+ordinary spell scene even though its table has the silence property. It retains its own8MP payment
+and retreat continuation. Unmarked SPOIT is not implemented by this slice.
+
+`EnemySupportDecision` participates at the existing SUPPORT command positions in sets2/6/7/8/9/14,
+after standby/earlier successful commands. It requires known DISPEL1, sufficient MP and a reachable
+legal station. Score is the number of actual area recipients whose first eligible attack-spell
+family has an affordable rank, or who know a healing spell. Healing's getter ignores MP; silence
+and existing status/resistance do not remove contributors. Each actor contributes at most1. Areas
+below2 are filtered; the last highest candidate in source processing order wins, with existing
+station/path construction. SUPPORT consumes no scoring/category RNG and does not update LastTarget.
+It never substitutes center damage, a Mage attack tie table or MP alone for this score. A silenced
+enemy can select the same action and reaches the same paid suppression as the player.
+
+The admitted source silence prowess has critical1/4, no bonus damage, double1/16 and counter1/16.
+A successful physical critical ORs silence only if the surviving target knows a spell; there is no
+DISPEL resistance draw. Damage and the later status-message/reaction remain separate publications.
+Miss/no-spell/dead cases do not fabricate a silence write. Existing sleep, double/counter and
+`ExtraRoundAction` mechanisms remain in use; numerical AGI13 plus the extra entry is not AGI141.
+
+`SilenceRules` and the existing `BattleAfterTurnContinuation` process each living, nonterminal action
+entry once: sleep first, then silence, then opted-in poison. Silence draws main range equal to the
+current masked field. A masked-zero result expires it with message351; otherwise it subtracts one
+unit silently. Expiry status publishes after matching notice delivery. One counter always expires;
+two/three can expire early. Combined sleep/silence/poison retain unrelated bits, including lethal
+poison's existing death/accounting/queue path. Extra round entries each take their own pass; death
+or a resolved action outcome bypasses it. Other status bits and Prism's status-free profile remain
+explicitly Unsupported. A repeated engine lifetime is not new original-runtime evidence.
+
+**Confirmed provenance:** the accepted [spell contract](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-dispel-1-spell-gate-and-recast)
+and [Battle07 static account](../../../docs/research/chapters/grans-opening/battle07-opening-and-first-control.md)
+own original evidence. Additional exact source reads use pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:
+`sf2enums.asm` (DISPEL6, status masks), `data/stats/spells/spelldefs.asm`,
+`data/stats/allies/classes/criticalhitdefs.asm`, `data/stats/enemies/enemydefs.asm` (Dark Smoke86),
+and these paths under `code/gameflow/battle/`: `ai/command/support.asm`,
+`ai/command/support/prioritizetargetsforsupportspells.asm`, `ai/getnextuseableaiaction.asm`,
+`ai/gethighestusablespelllevel.asm`, `battleactions/{castspell,inflictailment,determinecriticalhit,earnexp,giveexpandgold}.asm`,
+`battlefunctions/executeindividualturn.asm`, and `battleloop/processafterturneffects.asm`.
+Under each full `code/gameflow/battle/` path, reproduce an exact object with
+`git -C $pinnedSf2Disasm show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>`.
+SUPPORT's occupancy branch follows the actual CCR-overwriting MOVE/CLR instructions, not just the
+table targeting property. This is static support, not proof of a natural first cast or critical.
+
+[Behavior tests](../../tests/Sf2.Remake.Engine.Tests/SilenceSpellTests.cs),
+[session tests](../../tests/Sf2.Remake.Engine.Tests/SilenceSessionTests.cs) and
+[decision tests](../../tests/Sf2.Remake.Engine.Tests/SupportDecisionTests.cs) cover changed states,
+source/private admission, staged writes/cost, mixed lifecycle and queue boundaries. The
+[native recipe](../development-and-verification.md#silence-observation) uses an authored small battle
+through ordinary inputs in English/Chinese. Private binding, original natural timing/reach and
+full Battle07 story connection remain separate; MUDDLE/BOOST/SLOW/full buff behavior is deferred.
+
 ## Finite early enemy spell decisions
 
 **Implemented bounded capability, Standard rigor:** activated source enemies can choose BLAZE1 and
@@ -54,7 +132,7 @@ The accepted [Battle05](../../../docs/research/chapters/grans-opening/battle05-i
 and [Battle06](../../../docs/research/chapters/grans-opening/battle06-opening-and-first-control.md)
 owners distinguish static availability from natural first casts. Those natural routes/timing remain
 **Unknown**. This engine capability does not import Battle05/06, implement higher-rank enemy spells,
-DISPEL/support/silence, item AI, all AI or non-Normal difficulty.
+item AI, all AI or non-Normal difficulty. DISPEL/SUPPORT and silence use the finite owner above.
 
 [Enemy decision tests](../../tests/Sf2.Remake.Engine.Tests/EnemySpellDecisionTests.cs),
 [session tests](../../tests/Sf2.Remake.Engine.Tests/EnemySpellSessionTests.cs) and
@@ -190,7 +268,7 @@ this finite admission/package if acceptance fails; do not change shared source r
 
 **High rigor:** the finite poison slice joins action publication, timed notices, death accounting,
 outcome and queue ownership. Its acceptance boundary is standalone authored status0/POISON2 with
-fixed2-HP damage, existing sleep unchanged, exactly-once ordered completion and preserved failure
+fixed2-HP damage, the finite sleep/silence composition above, exactly-once ordered completion and preserved failure
 prefixes. It reuses the existing action, field-death and outcome owners; no general status scheduler.
 
 **Confirmed, static:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
@@ -211,8 +289,8 @@ invents an attacker nor grants EXP/gold/drop rewards. `countremainingcombatants.
 living units and forces zero allies for zero-HP leader; defeat precedes victory.
 
 `PoisonTurnRules` supplies fixed clamping and eligibility. In an opted-in encounter, pure poison allows movement, physical,
-admitted healing/items, Give, free Equip/Drop and growth. An attack whose sleep-critical participant
-could create poison+sleep rejects as Unsupported; mixed statuses, poison infliction, DETOX/cure,
+admitted healing/items, Give, free Equip/Drop and growth. Sleep and silence may combine with poison
+through the finite lifecycle above; other mixed statuses, poison infliction, DETOX/cure,
 regeneration/buffs and PrismLaser's separate status-free profile remain outside scope. Content uses
 an explicit standalone opt-in and initial retained credit; [admission](../content/profiles-and-trust.md#authored-poison-admission)
 and [execution](../application/session-and-programs.md#poison-after-turn-continuation) own those boundaries.
@@ -594,7 +672,7 @@ positive-HP enemy in source-slot order, including already-unplaced actors. Force
 explicitly distinguished from action deaths. The sweep never changes HP or constructs attacks.
 At accepted field exit, each enemy entry credits a kill when the retained context contains an ally;
 known-none laser custody suppresses that increment. Allied action deaths credit their own defeats. The existing capped counter policy clears placement/status.
-Admitted sleep and pure poison have no stat modifier to recompute; wider stat/status refresh remains unsupported.
+Admitted sleep, silence and poison have no stat modifier to recompute; wider stat/status refresh remains unsupported.
 Only the original action earns damage/end EXP and death gold; the sweep adds no EXP, gold or drops.
 Outcome counts placed living combatants after cleanup and checks allied defeat first.
 

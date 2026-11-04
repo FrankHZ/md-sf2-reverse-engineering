@@ -1176,3 +1176,19 @@ msgstr "Finish movement and story events, then try again at a save point."
 #. Arguments: caster name, spell identity, level.
 msgid "battle.spell.action"
 msgstr "{0} casts {1} level {2}."
+
+#. Project-authored functional silence feedback.
+msgid "battle.scene.silence"
+msgstr "{0} is silenced."
+
+#. Project-authored functional silence feedback.
+msgid "battle.scene.silenced-cast"
+msgstr "{0} is silenced. MP was spent, but the spell has no effect."
+
+#. Project-authored functional silence feedback.
+msgid "battle.scene.silence-expired"
+msgstr "DISPEL expires. {0} can cast again."
+
+#. Project-authored functional silence feedback.
+msgid "battle.status.silence"
+msgstr "Silenced ({0})"

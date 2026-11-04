@@ -31,7 +31,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         actions ??= [physical];
         var actor = current.GetActor(actorRef);
         if (actor.IsAlly || actor.Position is null || actor.Hp == 0 ||
-            !(actor.Status == 0 || current.Definition.Poison && actor.Status == 2) ||
+            !(SilenceRules.Supported(actor.Status, current.Definition.Poison) && (actor.Status & 0xC0) == 0) ||
             actor.Deployment.Initialization is not { } source || current.Regions is null)
             throw new BattleRuleException("source-ai-state", "actor.ai", true);
         if (actor.ActivationWord is not { } word)
@@ -106,6 +106,9 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
             return heal with { Effects = Array.AsReadOnly<BattleEffect>([
                 .. effects, new("ai-command-heal1", actorRef, After: 0), .. heal.Effects]) };
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
+        if (EnemySupportDecision.Resolve(prepared, actorRef, actions) is { } support)
+            return support with { Effects = Array.AsReadOnly<BattleEffect>([
+                .. effects, new("ai-command-support", actorRef, After: 0), .. support.Effects]) };
         effects.Add(new("ai-command-support", actorRef, After: -1));
         if (commandset == 8 || targets.Length == 0)
             return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);

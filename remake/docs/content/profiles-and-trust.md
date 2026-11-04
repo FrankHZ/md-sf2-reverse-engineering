@@ -1,9 +1,34 @@
 # Runtime Profiles and Trust
 
+## Silence and support admission
+
+Standalone format7 admits DISPEL1 as `effect:{kind:"dispel",radius:1}` with MP5/range1–2.
+It enters a separate immutable support definition/action; it is never decoded as healing or damage.
+Missing/duplicate spell references and malformed operands fail before session publication.
+Authored `movementType:"hovering"` uses the existing mover. The finite silence prowess is
+`critical:{chance:"one-in-4",damageBonus:"silence",doubleChance:"one-in-16",counterChance:"one-in-16"}`;
+other override combinations remain Unsupported. No identity or encounter ID selects these rules.
+
+Controlled start `status` strings admit `none`, `sleep1/2/3` and `silence1/2/3`. Combine one token
+from each field with `-`, optionally `poison` only under the existing `battlePoison` opt-in and
+its required credit/outcome inputs. Duplicate fields, unknown tokens and numeric status bypasses
+reject. Source-created sleep/silence combinations use the same packed snapshot; no parallel status
+payload is stored. Existing field Church low-bit strings retain their caller-specific boundary.
+Prism and wider status effects are not admitted by these tokens.
+
+Private binding verifies pinned DISPEL base6/MP5/range1–2/radius1/power0 and exact
+`TYPE_SUPPORT|AFFECTEDBYSILENCE`; Dark Smoke's prowess binds the same rule, while its numerical
+AGI and extra-entry bit retain the existing split. Nonempty source books match decoded HEAL0,
+DISPEL6 and BLAZE11 entries. Authored semantic books retain their empty packed representation.
+Existing outcome/deployment copies retain support definitions. The actual private admission test
+composes pinned Dark Smoke records into a supported controlled encounter; it neither imports
+Battle07 nor claims private support-scene assets or original natural reach. See the
+[rule agreement](../domain/gameplay-rules.md#finite-dispel-support-and-silence).
+
 ## Early enemy spell admission
 
 The finite [enemy rule owner](../domain/gameplay-rules.md#finite-early-enemy-spell-decisions)
-admits semantic BLAZE1/HEAL1 books in source orders. Enemy BLAZE1 requires radius0; nonzero radius
+admits semantic BLAZE1/HEAL1 books and the finite DISPEL1 support book in source orders. Enemy BLAZE1 requires radius0; nonzero radius
 is Unsupported at both automatic decision and shared enemy action admission, before AI state/resources
 publish. Player attack radius variants remain admitted. Authored books retain the existing empty packed
 book; nonempty packed source books must match their decoded definitions. Other spells/items/AI-use
@@ -15,7 +40,7 @@ the entire Battle05/06 chapters. The private behavior test composes those pinned
 a controlled existing encounter and reaches shared action admission; it is not original placement evidence.
 
 Standalone physical `movementType:"healer"` and optional `critical.counterChance:"one-in-16"`
-admit only the fixed critical1/32/half-bonus, double1/32, counter1/16 profile. The counter and double
+admit only the fixed critical1/32/half-bonus, double1/32, counter1/16 profile. Outside the dedicated silence prowess above, the counter and double
 overrides cannot combine. The actor's semantic book, actual faction, live MP/status/position and
 selected action still control execution. Enemy casting does not require enemy EXP/kills fields;
 reached ally death accounting and terminal outcome bindings remain required.
@@ -96,8 +121,8 @@ distinguishes authored support from the unbound actual Battle32/Moun chapter.
 
 ## Authored poison admission
 
-Standalone format7 opts in with `"battlePoison":"fixed-two-after-turn"`. Its start actors admit only
-`"status":"none"` or `"status":"poison"` (source2), and `start.firstAlly` is required: an allied
+Standalone format7 opts in with `"battlePoison":"fixed-two-after-turn"`. It adds the `poison`
+status token (source2), including the finite sleep/silence composition above. `start.firstAlly` is required: an allied
 ActorRef or explicit null for the source FF no-credit sentinel. Omission is Unknown, not null.
 Each encounter also requires `outcome:{leader,defeatedGateEnemy}` referring to an ally and enemy;
 the existing defeat-first/count rule supplies a standalone terminal result. Names are bindings, not
@@ -107,7 +132,7 @@ growth definition copies preserve the poison capability and outcome binding.
 [poison-turn.json](../../content/authored/poison-turn.json) supplies one survivor and one lethal ally
 with ordinary equipment/items and a standby opponent. Initial HP, credit and poison are controlled
 inputs, not natural original acquisition. Embedded exploration/old private profiles reject this opt-in;
-without it, the old status admission is unchanged. Numeric statuses, poison+sleep, other mixtures,
+without it, poison remains Unsupported. Numeric statuses, other status mixtures,
 infliction/cure, persistence and private presentation remain Unsupported. Existing sleep in its
 accepted private boundary is unaffected. The newly admitted pure-poison action, AI, AURA, Give/Drop
 and growth paths require `BattleDefinition.Poison`. Existing private `NewBattle` initialization still
@@ -146,9 +171,9 @@ closed. Weapon metadata remains uncursed and ATT-only; names/arena values are au
 
 If weapons are declared, every allied recipient needs the existing `equipment` metadata so removing
 an equipped return item can refresh its current base contribution. Existing equipment startup
-admission still applies (player allies, status0 or admitted pure poison, supported source classes and physical metadata).
+admission still applies (player allies, admitted non-sleeping silence/poison status, supported source classes and physical metadata).
 Class-ineligible weapons remain carryable; their class mask only governs Equip. Live Give checks
-living placed allied actors, non-neutral activation and status0 or admitted pure poison; an ordinary standalone absent
+living placed allied actors, non-neutral activation and admitted non-sleeping silence/poison status; an ordinary standalone absent
 activation word carries no neutral flag. This is not private source-state inference.
 
 The growth reader preserves Give when reconstructing definitions. Immutable initial loadouts and
@@ -167,7 +192,7 @@ retreat items. Existing Taros type bindings must include all declared weapon ide
 An actor opts in with `equipment: { "baseAttack": N }` (0–200). Its existing initial `attack` must
 match clamped base plus the actual equipped contribution. All declared weapon identities need full
 metadata; physical metadata is required, unpromoted and mapped to an already admitted source class
-(SDMN/WARR/PRST). Player ally control and status0 or admitted pure poison are required; automatic/source-controlled switching
+(SDMN/WARR/PRST). Player ally control and admitted non-sleeping silence/poison status are required; automatic/source-controlled switching
 is excluded. Initial multiple equipped weapons, wrong-class equipped items, equipped nonweapons and
 broken weapons reject. Class-ineligible weapons can be carried without becoming offers. Other carried
 items retain their slot words, flags and order. Existing profiles without this opt-in are unchanged.

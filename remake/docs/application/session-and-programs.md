@@ -1,5 +1,22 @@
 # Session and Resumable Programs
 
+## Finite silence continuation
+
+DISPEL1 and paid silenced casts use the common action/scene authority. The support action's
+prepared RNG and ordered reactions contain no published status or cost. `SpellCost` deducts MP
+once before status recipients or `SilencedCastMessage`; suppressed casts contain no target reactions,
+reward or effect RNG. Selection/cancel and rejected preparation retain the previous snapshot.
+Physical silence has its own no-input `SilenceMessage`; matching delivery applies its status write
+after the damage result. Wrong/stale completions do not reapply cost, status or queue work.
+
+The existing `BattleAfterTurnContinuation` owns sleep followed by silence; `BattlePoisonContinuation`
+retains poison damage/death. Sleep completion preserves silence/poison bits and continues without
+consuming the queue. Silence continuation draws once, publishing a decrement directly or waiting
+at `SilenceTurnMessage` before expiry status publication. Only the final stage consumes one entry.
+Extra action entries get independent passes; terminal/dead actors skip this work. The notice records
+are pending source operands, not another mutable actor authority. See the
+[finite rule/source boundary](../domain/gameplay-rules.md#finite-dispel-support-and-silence).
+
 New Game, implemented stable-field savepoint/Continue and opening feature closure belong
 to [Opening session lifecycle](opening-session-lifecycle.md). This owner describes the current
 session/program machinery that those features preserve.
@@ -43,7 +60,8 @@ are not retained by this outcome representation; source X-only removal is bounde
 ## Poison after-turn continuation
 
 The [finite High-rigor agreement and source provenance](../domain/gameplay-rules.md#authored-poison-after-turn)
-cover standalone poison only. Normal action/scene publication and costs precede poison. The first
+cover standalone opted-in poison, now composable with the finite sleep/silence owner above.
+Normal action/scene publication and costs, then sleep/silence, precede poison. The first
 outcome pass skips poison for resolved victory/defeat or a dead/unplaced acting actor. Eligible
 QueueOnly automatic standby also enters the existing publisher, retaining prior first-ally custody.
 

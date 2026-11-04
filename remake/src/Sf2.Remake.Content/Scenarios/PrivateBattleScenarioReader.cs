@@ -167,7 +167,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 new(encounter.Area.X, encounter.Area.Y)),
             retreatSpells: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatSpells(definitions) : [],
             retreatItems: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatItems(definitions) : [],
-            attackSpells: PrivateAttackSpellBindings.Spells(definitions));
+            attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         // Product content is assembled before its ordinary before-battle program has run.
         // The actual battle entry still validates the routed policy through BattleTurnFlow.

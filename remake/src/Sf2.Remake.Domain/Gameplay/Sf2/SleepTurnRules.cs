@@ -10,7 +10,7 @@ internal static class SleepTurnRules
     internal static SleepTurnResult? Prepare(BattleActorState actor, uint seed)
     {
         if (actor.Hp == 0 || (actor.Status & 0xC0) == 0) return null;
-        if ((actor.Status & ~0xC0) != 0)
+        if (!SilenceRules.Supported(actor.Status))
             throw new BattleRuleException("after-turn-status", "actor.status", true);
         ushort counter = (ushort)(actor.Status & 0xC0);
         var draw = BattleRandom.NextMain(seed, counter);
