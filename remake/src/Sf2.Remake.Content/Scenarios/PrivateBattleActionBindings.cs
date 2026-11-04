@@ -19,18 +19,29 @@ internal static class PrivateBattleActionBindings
 
     internal static IEnumerable<HealingItemDefinition> HealingItems(PrivateBattleDefinitions definitions)
     {
-        // Accepted item 0 delegates to HEALIN-1. Other carried families remain explicit unsupported commands.
-        if (!definitions.Items.TryGetValue(0, out var item)) yield break;
-        Require(item.Code == "MEDICAL_HERB" && item.ItemTypeExpression == "CONSUMABLE" &&
-            item.UseSpell == "HEALIN" && item.UseSpellLevel == 1 && item.EquipFlagsExpression == "NONE" &&
-            item.MinimumRange == 0 && item.MaximumRange == 1 &&
-            item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
-            "source-herb-definition", "items", true);
-        Require(definitions.Spells.TryGetValue(new("healin", 1), out var spell) &&
-            spell is { BaseId: 16, MpCost: 0, Radius: 0, Power: 10, MinimumRange: 0, MaximumRange: 1 } &&
-            spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES",
-            "source-herb-effect", "items.useSpell", true);
-        yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange);
+        foreach (var (id, code, effect, level, power) in new (byte, string, string, byte, ushort)[]
+            { (0, "MEDICAL_HERB", "HEALIN", 1, 10), (1, "HEALING_SEED", "HEALIN", 2, 20), (3, "ANTIDOTE", "DETOX", 1, 0) })
+        {
+            if (!definitions.Items.TryGetValue(id, out var item)) continue;
+            Require(item.Code == code && item.ItemTypeExpression == "CONSUMABLE" &&
+                item.UseSpell == effect && item.UseSpellLevel == level && item.EquipFlagsExpression == "NONE" &&
+                item.MinimumRange == 0 && item.MaximumRange == 1 &&
+                item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }), "source-supply-definition", "items", true);
+            Require(definitions.Spells.TryGetValue(new(effect.ToLowerInvariant(), level), out var spell) &&
+                spell.MpCost == (id == 3 ? 3 : 0) && spell.Radius == 0 && spell.Power == power &&
+                spell.MinimumRange == 0 && spell.MaximumRange == 1 && spell.PropertiesExpression ==
+                    (id == 3 ? "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" : "TYPE_HEAL|TARGET_TEAMMATES"),
+                "source-supply-effect", "items.useSpell", true);
+            yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange, CuresPoison: id == 3);
+        }
+    }
+
+    internal static IEnumerable<HealingSpellDefinition> PoisonCure(PrivateBattleDefinitions definitions)
+    {
+        if (!definitions.Spells.TryGetValue(new("detox", 1), out var spell)) yield break;
+        Require(spell is { BaseId: 2, Code: "DETOX", MpCost: 3, Radius: 0, Power: 0, MinimumRange: 0, MaximumRange: 1 } &&
+            spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE", "source-detox-definition", "spells.detox", true);
+        yield return new(spell.Spell, spell.MpCost, 0, spell.MinimumRange, spell.MaximumRange, CuresPoison: true);
     }
 
     internal static IEnumerable<RetreatItemDefinition> RetreatItems(PrivateBattleDefinitions definitions)

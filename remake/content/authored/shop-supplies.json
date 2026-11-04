@@ -1,0 +1,622 @@
+{
+  "formatVersion": 8,
+  "package": "shop-supplies",
+  "battle": {
+    "formatVersion": 7,
+    "package": "shop-supplies-battle",
+    "profile": "public-authored",
+    "ruleProfile": "sf2-semantic-subset-v1",
+    "start": {
+      "encounter": "yard-watch",
+      "initialVitals": "authored-controlled",
+      "mainSeed": 305402420,
+      "thinkingSeed": 3203334210,
+      "gold": 500,
+      "actors": [
+        {
+          "actor": "medic-a",
+          "hp": 15,
+          "mp": 20,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        },
+        {
+          "actor": "guard-a",
+          "hp": 100,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "poison",
+          "positionOverride": null
+        },
+        {
+          "actor": "scout-a",
+          "hp": 100,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "poison",
+          "positionOverride": null
+        },
+        {
+          "actor": "dummy-a",
+          "hp": 15,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        }
+      ],
+      "firstAlly": "medic-a"
+    },
+    "terrains": [
+      {
+        "id": "yard-ground",
+        "legend": {
+          "#": {
+            "surface": "barrier",
+            "protection": "none"
+          },
+          "g": {
+            "surface": "open",
+            "protection": "light"
+          },
+          "b": {
+            "surface": "brush",
+            "protection": "heavy"
+          }
+        },
+        "rows": [
+          "############",
+          "gggggggggggg",
+          "gggggggggggg",
+          "ggggbbgggggg",
+          "ggggbbgggggg",
+          "gggggggggggg",
+          "gggggggggggg",
+          "gggggggggggg",
+          "############"
+        ]
+      }
+    ],
+    "maps": [
+      {
+        "id": "yard-map",
+        "terrain": "yard-ground"
+      }
+    ],
+    "spells": [
+      {
+        "id": "mend",
+        "level": 1,
+        "mpCost": 3,
+        "minimumRange": 0,
+        "maximumRange": 1,
+        "effect": {
+          "kind": "heal",
+          "adjustedPower": 15,
+          "fullRecovery": false
+        }
+      },
+      {
+        "id": "detox",
+        "level": 1,
+        "mpCost": 3,
+        "minimumRange": 0,
+        "maximumRange": 1,
+        "effect": {
+          "kind": "cure-poison"
+        }
+      }
+    ],
+    "actors": [
+      {
+        "id": "medic-a",
+        "classRule": "unpromoted-priest",
+        "level": 1,
+        "maxHp": 100,
+        "maxMp": 20,
+        "attack": 11,
+        "defense": 6,
+        "agility": 60,
+        "extraRoundAction": false,
+        "move": 5,
+        "items": [
+          127,
+          127,
+          127,
+          127
+        ],
+        "spells": [
+          {
+            "id": "mend",
+            "level": 1
+          },
+          {
+            "id": "detox",
+            "level": 1
+          }
+        ]
+      },
+      {
+        "id": "guard-a",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 100,
+        "maxMp": 0,
+        "attack": 11,
+        "defense": 6,
+        "agility": 40,
+        "extraRoundAction": false,
+        "move": 5,
+        "items": [
+          127,
+          127,
+          127,
+          127
+        ],
+        "spells": []
+      },
+      {
+        "id": "scout-a",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 100,
+        "maxMp": 0,
+        "attack": 11,
+        "defense": 6,
+        "agility": 20,
+        "extraRoundAction": false,
+        "move": 5,
+        "items": [
+          127,
+          127,
+          127,
+          127
+        ],
+        "spells": []
+      },
+      {
+        "id": "dummy-a",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 15,
+        "maxMp": 0,
+        "attack": 11,
+        "defense": 6,
+        "agility": 1,
+        "extraRoundAction": false,
+        "move": 5,
+        "items": [
+          127,
+          127,
+          127,
+          127
+        ],
+        "spells": []
+      }
+    ],
+    "encounters": [
+      {
+        "id": "yard-watch",
+        "map": "yard-map",
+        "placements": [
+          {
+            "actor": "medic-a",
+            "x": 1,
+            "y": 2,
+            "faction": "ally",
+            "processingOrder": 7,
+            "control": "player",
+            "aiStrategy": null
+          },
+          {
+            "actor": "guard-a",
+            "x": 2,
+            "y": 2,
+            "faction": "ally",
+            "processingOrder": 9,
+            "control": "player",
+            "aiStrategy": null
+          },
+          {
+            "actor": "scout-a",
+            "x": 1,
+            "y": 3,
+            "faction": "ally",
+            "processingOrder": 2,
+            "control": "player",
+            "aiStrategy": null
+          },
+          {
+            "actor": "dummy-a",
+            "x": 5,
+            "y": 5,
+            "faction": "enemy",
+            "processingOrder": 128,
+            "control": "automatic",
+            "aiStrategy": "stay"
+          }
+        ],
+        "outcome": {
+          "leader": "medic-a",
+          "defeatedGateEnemy": "dummy-a"
+        }
+      }
+    ],
+    "items": [
+      {
+        "id": 0,
+        "name": "Medical Herb",
+        "effect": "consumable-healing",
+        "power": 10,
+        "minimumRange": 0,
+        "maximumRange": 1
+      },
+      {
+        "id": 1,
+        "name": "Healing Seed",
+        "effect": "consumable-healing",
+        "power": 20,
+        "minimumRange": 0,
+        "maximumRange": 1
+      },
+      {
+        "id": 3,
+        "name": "Antidote",
+        "effect": "consumable-poison-cure",
+        "power": 0,
+        "minimumRange": 0,
+        "maximumRange": 1
+      }
+    ],
+    "battlePoison": "fixed-two-after-turn"
+  },
+  "world": {
+    "maps": [
+      {
+        "id": "quay",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [
+          {
+            "id": "merchant",
+            "position": {
+              "x": 2,
+              "y": 1
+            },
+            "facing": 2,
+            "speed": 96,
+            "visible": true,
+            "obstruction": true
+          }
+        ],
+        "events": [
+          {
+            "kind": "interact",
+            "entity": "merchant",
+            "program": {
+              "program": "shop-caller",
+              "instruction": 0
+            },
+            "requiredFlag": null,
+            "requiredValue": true
+          },
+          {
+            "kind": "step",
+            "x": 4,
+            "y": 1,
+            "program": {
+              "program": "travel",
+              "instruction": 0
+            },
+            "requiredFlag": null,
+            "requiredValue": true,
+            "marker": null
+          }
+        ],
+        "onLoad": null,
+        "battle": null,
+        "setup": null
+      },
+      {
+        "id": "yard-map",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [],
+        "events": [],
+        "onLoad": {
+          "program": "arrival",
+          "instruction": 0
+        },
+        "battle": {
+          "encounter": "yard-watch",
+          "unlockedFlag": 13,
+          "completedFlag": 21,
+          "introFlag": 20,
+          "before": {
+            "program": "before-battle",
+            "instruction": 0
+          },
+          "start": {
+            "program": "battle-start",
+            "instruction": 0
+          }
+        },
+        "setup": null
+      }
+    ],
+    "programs": [
+      {
+        "id": "arrival",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 14,
+            "value": true
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "before-battle",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 15,
+            "value": true
+          },
+          {
+            "op": "text-cursor",
+            "text": 101
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "battle-start",
+        "instructions": [
+          {
+            "op": "branch-flag",
+            "flag": 20,
+            "whenSet": false,
+            "target": {
+              "program": "missing-intro-flag",
+              "instruction": 0
+            }
+          },
+          {
+            "op": "set-flag",
+            "flag": 16,
+            "value": true
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "missing-intro-flag",
+        "instructions": [
+          {
+            "op": "native-call",
+            "symbol": "unreachable-if-intro-wrapper-ran",
+            "source": "authored-start-contract"
+          }
+        ]
+      },
+      {
+        "id": "shop-caller",
+        "instructions": [
+          {
+            "op": "shop",
+            "stock": [
+              0,
+              1,
+              3
+            ],
+            "items": [
+              {
+                "id": 0,
+                "name": "Medical Herb",
+                "price": 10,
+                "unsellable": false,
+                "rare": false
+              },
+              {
+                "id": 1,
+                "name": "Healing Seed",
+                "price": 40,
+                "unsellable": false,
+                "rare": false
+              },
+              {
+                "id": 3,
+                "name": "Antidote",
+                "price": 20,
+                "unsellable": false,
+                "rare": false
+              }
+            ]
+          },
+          {
+            "op": "set-flag",
+            "flag": 999,
+            "value": true
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "travel",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 13,
+            "value": true
+          },
+          {
+            "op": "transfer",
+            "map": "yard-map",
+            "position": {
+              "x": 1,
+              "y": 1
+            },
+            "facing": 1,
+            "loadMode": "rebuild"
+          },
+          {
+            "op": "end"
+          }
+        ]
+      }
+    ],
+    "texts": [
+      {
+        "id": 101,
+        "text": "The watch has spotted movement. Prepare your party."
+      }
+    ]
+  },
+  "start": {
+    "map": "quay",
+    "player": "traveler",
+    "position": {
+      "x": 1,
+      "y": 1
+    },
+    "facing": 0,
+    "speed": 96,
+    "flags": []
+  }
+}

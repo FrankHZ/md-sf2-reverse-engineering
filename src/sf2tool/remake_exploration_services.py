@@ -3,6 +3,21 @@
 from __future__ import annotations
 
 from typing import Any
+import re
+
+from sf2tool.h2.battle_global_data import _arguments, _tokens
+
+
+def shop_service(compiler: Any, index: int) -> dict[str, Any]:
+    """Only the finite early Galam stock is admitted, from the pinned source table."""
+    if index not in (compiler.number("SHOP_WEAPON_GALAM_0"), compiler.number("SHOP_ITEM_GALAM_0")):
+        return compiler.native("j_ShopMenu", "stock-" + str(index))
+    path = "disasm/data/stats/items/shopinventories.asm"
+    compiler.sources.add(path)
+    source = (compiler.upstream / path).read_text(encoding="utf-8")
+    source = re.sub(r"&\s*\n", "", source)
+    inventories = _arguments(source, "shopInventory")
+    return {"op": "shop", "stock": [compiler.number("ITEM_" + token) for token in _tokens(inventories[index])]}
 
 
 def church_service(compiler: Any) -> dict[str, Any]:

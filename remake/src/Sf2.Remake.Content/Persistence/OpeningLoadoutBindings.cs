@@ -36,14 +36,7 @@ internal static class OpeningLoadoutBindings
             angelWing.MinimumRange == 0 && angelWing.MaximumRange == 0 &&
             angelWing.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
             "source-field-angel-wing", "field.items");
-        var weapons = source.Items.Values.Where(item => item.ItemTypeExpression == "WEAPON" &&
-            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) && item.EquipEffects.All(effect =>
-                effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
-            .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName,
-                source.Classes.Values.Where(allowed => allowed.Id < 32 && item.EquipFlags.Contains(allowed.Code))
-                    .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id),
-                checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
-                item.MinimumRange, item.MaximumRange)).ToArray();
+        var weapons = PrivateFieldPreparation.Weapons(source);
         var encounters = admitted.Encounters.Values.Select(encounter => encounter.WithDeployments(
             encounter.Deployments.Select(deployment =>
                 deployment.Faction != BattleFaction.Ally || deployment.Definition.Growth is not { } growth ? deployment :
@@ -53,27 +46,8 @@ internal static class OpeningLoadoutBindings
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {
             Persistence = new Sf2OpeningRestore(),
-            FieldPreparation = new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) ||
-                item.ItemTypeExpression == "CONSUMABLE").Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
-                    item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
-                    item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
-                FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 })
-                    .Select(spell => new FieldSpellChoice(spell.Spell, spell.DisplayName, spell.MpCost,
-                        spell.Code == "DETOX" ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect)),
-                [new(wing, FieldRecoveryEffect.NoEffect, openingMaps.Select(id => new Sf2.Remake.Domain.Maps.MapId(id)).ToArray())]),
+            FieldPreparation = PrivateFieldPreparation.Read(source, openingMaps),
         };
     }
 
-    private static IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>> FieldItems(Application.Content.Scenarios.PrivateBattleDefinitions source)
-    {
-        foreach (var (id, code, useSpell, level) in new (byte, string, string, byte)[]
-            { (0, "MEDICAL_HERB", "HEALIN", 1), (1, "HEALING_SEED", "HEALIN", 2), (3, "ANTIDOTE", "DETOX", 1) })
-        {
-            if (!source.Items.TryGetValue(id, out var item)) continue;
-            ScenarioJson.Require(item.Code == code && item.UseSpell == useSpell && item.UseSpellLevel == level &&
-                item.ItemTypeExpression == "CONSUMABLE" && item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
-                "source-field-item", "field.items");
-            yield return new(id, id == 3 ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect);
-        }
-    }
 }

@@ -142,6 +142,12 @@ public sealed class GameSession
         }
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
+        if (envelope.Command is ShopCommand shop)
+        {
+            var serviced = ShopService.Submit(Definition, current, shop, Rules);
+            _current = serviced.Snapshot;
+            return serviced;
+        }
         if (envelope.Command is ChurchCommand service)
         {
             var serviced = FieldService.Submit(Definition, current, service, Rules);

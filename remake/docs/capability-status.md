@@ -1,5 +1,23 @@
 # Remake Capability Status
 
+## Finite Galam shop and purchased-supply closure
+
+**Implemented bounded capability, Standard with existing transactional/persistence High:** ordinary
+Buy/Sell, member/actual-slot selection, exact prices, atomic gold/loadout changes, full/poor/cancel/
+unsellable/stale handling, equipped-sale refresh and caller return. Private F663 Map16 entity135/144
+bind the source inventories1/16. Default Map16 has no such shop rows; F530 remains a separate frontier.
+Purchased Healing Seed restores up to20 HP in battle; Antidote and learned DETOX1 perform finite
+poison cure through the existing scene/payment/end rules. Actual English/Chinese observations cover
+private Talk/trades/return and a separate authored same-session purchase→battle→use→further control.
+The existing save payload preserves completed trade resources at its already supported recipes.
+
+Deals/Repair, rare/broken sale support, higher DETOX, full Map16 and Battle03–07 story connection are
+Unsupported. No Map16 save eligibility or natural original timing/reach is claimed. The current
+[service owner](application/session-and-programs.md#finite-galam-shop-transactions),
+[private boundary](content/profiles-and-trust.md#finite-galam-shop-admission),
+[rules/source](domain/gameplay-rules.md#finite-purchased-supplies-and-detox1) and
+[reproduction](development-and-verification.md#galam-shop-and-supply-observation) own details.
+
 ## DISPEL1, finite SUPPORT and silence
 
 **Implemented bounded capability:** player/enemy DISPEL1 uses actual opposing radius recipients,
@@ -167,7 +185,8 @@ fresh-process Continue retains the recovery/payment without reinitialization or 
 [Policy/limits](application/opening-session-lifecycle.md#implemented-opening-church),
 [caller inventory](content/opening-branch-inventory.md#opening-service-callers) and
 [observation](verification/host.md#opening-church-services) own these claims. No opening shop is
-admitted: the only scoped source Shop callers use excluded F609. Buy/sell, Repair, Promotion,
+admitted in those opening five maps: their scoped Shop callers use excluded F609.
+The separate [Galam F663 subset](#finite-galam-shop-and-purchased-supply-closure) now implements Buy/Sell. Repair, Promotion,
 curse removal and original service presentation/exhausted-sprite parity remain outside this subset.
 
 ## Ordinary host lifecycle agreement

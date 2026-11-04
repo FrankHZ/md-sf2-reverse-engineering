@@ -1,5 +1,42 @@
 # Runtime Profiles and Trust
 
+## Finite Galam shop admission
+
+`galam-shop-programs.json` selects Map16 plus its F663 variant and the two real caller symbols.
+The maintained source compiler recognizes the immediate `CURRENT_SHOP_INDEX` assignment followed by
+`j_ShopMenu`, and lowers only Galam stock1/16. It derives the lists from pinned
+`data/stats/items/shopinventories.asm`; other stock indices retain explicit native frontiers. Content
+admits the stock IDs against source item prices/types/names, independently of possession, and does
+not accept authored price overrides in a private shop instruction. The finite early11 stock records
+and their use-spell definitions are retained before session creation, so a first purchase is usable
+without injecting new definitions. Raw metadata admission does not admit unrelated item effects.
+The shop-bound controlled world reuses the opening field-preparation metadata and equipment accessors;
+opening persistence remains a separate binding.
+
+**Confirmed static caller boundary:** `data/maps/mapsetups.asm` routes Map16 default, F663 and F530.
+`map16/mapsetups/s2_entityevents.asm:Map16_297_EntityEvent7` selects weapon inventory1;
+`Map16_297_EntityEvent16` selects item inventory16. Despite their shared body filename, only
+`s2_entityevents_663.asm` binds these bodies to entity135/144. The default table has the priest and a
+no-op default event; it does **not** admit these shops. F530 is a distinct late setup and remains
+unadmitted. Source counter reach uses the existing consecutive-counter Talk logic, not teleportation
+or an added default event. Controlled starts put the player before the real F663 counters with flags
+and initial accounting declared separately; no mid-session state writes are needed.
+
+Private Source binds Seed1→HEALIN2/power20 and Antidote3→DETOX1, plus the learned battle DETOX1
+capability, through exact ordinary type/property/range/equip-effect checks. Source PRST learning
+retains Sarah's level4 DETOX1 entry; broader DETOX ranks remain visible Unsupported. Authored format7
+adds `effect:{kind:"cure-poison"}` and item `effect:"consumable-poison-cure",power:0`; format8 can
+compose the existing finite poison mode and its declared death-credit context. The shop opcode uses
+explicit authored stock and `{id,name,price,unsellable,rare}` terms in public packages. Duplicate,
+unknown, rare/unsellable stock and malformed records reject before publication.
+
+**Implemented/admitted:** finite engine transactions, private F663 source callers and purchased
+supplies; actual English/Chinese consumer observations have separate source versus authored scope.
+**Unsupported:** full Map16, default/late-shop invention, complete Battle03–07 chapter, Deals/Repair,
+new save recipes and source new-battle poison lifecycle. **Unknown:** natural original shop/use reach
+and complete runtime timing. [Usage/verification](../development-and-verification.md#galam-shop-and-supply-observation)
+uses existing inputs and no original capture; private assets remain ignored and undistributable.
+
 ## Silence and support admission
 
 Standalone format7 admits DISPEL1 as `effect:{kind:"dispel",radius:1}` with MP5/range1–2.

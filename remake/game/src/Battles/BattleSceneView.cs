@@ -450,6 +450,14 @@ internal sealed partial class BattleSceneView : Control
                 return LocalizedMessage("battle.spell.action", ActorName(state.Actor), attack.Spell.Value.ToUpperInvariant(), attack.Spell.Level);
             if (SemanticMessage(state) is { } spellMessage) return spellMessage;
         }
+        if (state.Spell?.CuresPoison == true)
+        {
+            if (state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
+                return LocalizedMessage("battle.heal.action", ActorName(state.Actor), state.Spell.Spell.Value.ToUpperInvariant(), state.Spell.Spell.Level);
+            if (SemanticMessage(state) is { } cureMessage) return cureMessage;
+        }
+        if (state.Item?.CuresPoison == true && state.Phase == BattleScenePhase.ResultMessage && SemanticMessage(state) is { } itemCure)
+            return itemCure;
         if (state.IsAura && state.Phase == BattleScenePhase.ActionMessage)
             return GameText.Language == "en" ? $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}." :
                 LocalizedMessage("battle.heal.action", ActorName(state.Actor), state.Spell!.Spell.Value.ToUpperInvariant(), state.Spell.Spell.Level);
@@ -536,7 +544,7 @@ internal sealed partial class BattleSceneView : Control
             },
             BattleScenePhase.ResultMessage => state.ReactionKind switch
             {
-                "Status" => LocalizedMessage("battle.scene.silence", Target()),
+                "Status" => LocalizedMessage(state.Spell?.CuresPoison == true || state.Item?.CuresPoison == true ? "battle.scene.poison-cured" : "battle.scene.silence", Target()),
                 "Recovery" => LocalizedMessage("battle.heal.recovery", Target(), state.Amount),
                 "Damage" => LocalizedMessage(state.Critical ? "battle.scene.critical" : "battle.scene.damage", Target(), state.Amount),
                 "Dodge" => LocalizedMessage("battle.scene.dodge", Target()),

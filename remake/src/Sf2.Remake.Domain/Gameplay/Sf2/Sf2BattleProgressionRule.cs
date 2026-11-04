@@ -12,9 +12,13 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
         foreach (var reaction in reactions.Where(reaction => reaction.Actor == recipient.Actor))
         {
             var target = battle.GetActor(reaction.Target);
-            if (kind == BattleActionKind.SupportSpell)
+            if (kind == BattleActionKind.SupportSpell ||
+                kind is BattleActionKind.Healing or BattleActionKind.Item && reaction.Kind is BattleReactionKind.Status or BattleReactionKind.Ineffective)
             {
+                int before = accumulated;
                 if (reaction.Kind == BattleReactionKind.Status) accumulated = Math.Min(49, accumulated + 5);
+                if (kind == BattleActionKind.Healing)
+                    effects.Add(new("healing-exp-contribution", recipient.Actor, before, accumulated, Target: reaction.Target));
             }
             else if (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell)
             {
@@ -34,7 +38,8 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
             }
         }
         List<PhysicalRoll> rolls = [];
-        int award = BattleRewards.Award(accumulated, (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell or BattleActionKind.SupportSpell) && battle.Definition.Rewards!.HalvedExperience, ref seed, rolls);
+        bool statusEffect = reactions.Any(reaction => reaction.Kind is BattleReactionKind.Status or BattleReactionKind.Ineffective);
+        int award = BattleRewards.Award(accumulated, (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell or BattleActionKind.SupportSpell || statusEffect) && battle.Definition.Rewards?.HalvedExperience == true, ref seed, rolls);
         effects.AddRange(rolls.Select(roll => new BattleEffect("rng-" + roll.Purpose, recipient.Actor,
             roll.Before, roll.After, roll.Range, roll.Result)));
         return award;

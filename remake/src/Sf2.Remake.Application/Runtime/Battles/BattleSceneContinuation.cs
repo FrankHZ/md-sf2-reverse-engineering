@@ -312,7 +312,7 @@ internal static class BattleSceneContinuation
                 observations.Add(Observe(effect, ++sequence, revision));
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
-            healing: action.Silenced is not null || action.Spell is null || action.Spell.IsAura ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
+            healing: action.Silenced is not null || action.Spell is null || action.Spell.IsAura || action.Spell.CuresPoison ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
         return Result(current, action.Prepared.With(deathCredit: new(action.Laser is null ? action.FirstAlly : null)), scene, revision, sequence, observations);
     }
 

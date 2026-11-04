@@ -1192,3 +1192,107 @@ msgstr "封魔效果结束。{0}可以再次施法。"
 #. Project-authored functional silence feedback.
 msgid "battle.status.silence"
 msgstr "沉默（{0}）"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.title"
+msgstr "商店 · 金币 {0}"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.buy"
+msgstr "购买"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.sell"
+msgstr "出售"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.repair"
+msgstr "修理（未开放）"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.deals"
+msgstr "特价品（未开放）"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.leave"
+msgstr "离开"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.back"
+msgstr "返回 / 取消"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.stock"
+msgstr "{0} · {1} 金币"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.slot"
+msgstr "槽位 {0} · {1} {2}"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.equipped"
+msgstr "（已装备）"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.unknown"
+msgstr "未知物品 {0}"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.recipient"
+msgstr "由谁收下物品？"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.seller"
+msgstr "出售谁的物品？"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.confirm-buy"
+msgstr "为 {1} 购买 {0}，支付 {2} 金币？购得物品不会自动装备。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.confirm-sell"
+msgstr "出售 {1} 的 {0}，获得 {2} 金币？"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.confirm"
+msgstr "确认交易"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.continue"
+msgstr "继续"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.bought"
+msgstr "购买成功，物品已交给所选成员。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.sold"
+msgstr "出售成功，已收款并移除物品。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.full"
+msgstr "该成员背包已满，未扣除金币。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.insufficientgold"
+msgstr "金币不足。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.unsellable"
+msgstr "此物品不可出售。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.unsupporteditem"
+msgstr "此物品所需的交易服务尚未开放。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.unavailable"
+msgstr "当前前期普通库存不提供修理或特价品服务。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.hint"
+msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回。购买后可离店，在队伍菜单中装备。"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "battle.scene.poison-cured"
+msgstr "{0} 的中毒已治愈。"

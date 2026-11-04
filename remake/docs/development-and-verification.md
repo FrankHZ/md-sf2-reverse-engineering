@@ -1,5 +1,71 @@
 # Development and Verification
 
+## Galam shop and supply observation
+
+Use the finite [scope/source agreement](domain/gameplay-rules.md#finite-purchased-supplies-and-detox1)
+and [private admission](content/profiles-and-trust.md#finite-galam-shop-admission). This is engine and
+Content/adapter work consuming existing static evidence; it adds no research extractor or original
+runtime claim. Normal/full research suites and new H3 capture are not required solely for these paths.
+Keep selected existing input/tool configuration in the same process as every command.
+
+`ShopServiceTests`, `PoisonCureTests`, `OpeningSaveTests.CompletedShopResourcesUseTheExistingSavePayloadAndRestoreAuthority`
+and optional `GalamShopContentTests` exercise actual transaction, effect, connected-entry and save
+behavior. The private test selects `SF2_GALAM_WORLD` (prepared metadata world), with separately declared
+`party.json`, `start-item.json`, `start-weapon.json` and `start-default.json` beside it. Party input uses
+the existing private controlled-start schema and finite accounting/loadout choices. Start documents
+use the existing format1 controlled exploration schema: Map16/entity-0/speed32/facingUp; F663 counter
+starts are `(35,26)` for item entity144 and `(39,26)` for weapon entity135, flags0/1/2/32/33/34/663.
+Default uses no663 and a valid field position such as `(17,22)`; it must not acquire the two shop rows.
+
+Prepare selected source definitions using the existing producer and registered read-only inputs:
+
+```powershell
+uv run python -m sf2tool.remake_exploration_content --canonical $canonicalMapExport `
+  --upstream $pinnedSource --selection remake/reference/inputs/galam-shop-programs.json `
+  --output local/galam/world.json
+```
+
+For actual private rendering/audio, the same producer additionally needs `--rom-path $registeredRom`
+and `--presentation-root $existingProductAssets`, with the selected source Castle music and the
+existing required resources available. The retained bounded observation reused prepared
+Map16 graphics, existing `MUSIC_CASTLE` for the field-only profile. Leave `SF2_PRIVATE_BATTLE_SCENE_CONTENT` unselected for this
+shop-only world: it has no battle route and requires no unrelated Battle01 scene/field-death
+resources. These are private input preparation, not new original capture.
+A metadata-only world correctly fails native startup; never remove its required audio/resource guard.
+The music choice is source Map16 command38, rather than Town command8. Reuse the existing installation,
+project, runtime directory and process ownership. Initialize only necessary changed `.po`/source inputs.
+
+Launch the ordinary host with the selected `SF2_PRIVATE_EXPLORATION_CONTENT`, existing private static/
+party selections and `--private-exploration-start <start-item.json or start-weapon.json>`, adding
+`--script remake/game/probes/engine_shop_observation.gd` before `--`. `SF2_SHOP_CASE=item|weapon`
+selects the input witness. English item and Chinese weapon consumers check actual stock, Buy, recipient,
+payment/grant, sale of the actual new slot, gold/removal, caller return and further movement. They read
+current controls and labels/glyph/layout/errors; they do not mutate gameplay, synthesize delivery or
+capture screenshots. Names retain the established original-name fallback note.
+
+The public authored `shop-supplies.json` and `engine_supplies_observation.gd` form a separate ordinary
+input witness: Buy Seed for Medic and Antidote for Guard, leave, walk to the existing battle transition,
+consume the purchased Seed for20 HP and Antidote for poison removal, then learned DETOX1 pays3 MP to
+cure Scout. Same-session identity, actual slot consumption, visible English/Chinese messages and later
+movement are observed. It uses the existing friendly scene and poison lifecycle, not a scripted effect
+setter or original-game trace. Example, after protected SDK build and runtime setup:
+
+```powershell
+$env:SF2_OBSERVATION_OUTPUT = (Join-Path $PWD 'local/galam/supplies-en.json')
+& $env:GODOT_BIN --headless --path remake/game --script `
+  remake/game/probes/engine_supplies_observation.gd -- `
+  --authored-package remake/content/authored/shop-supplies.json --input-settings $englishInputSettings
+```
+
+Run the affected behavior selection and `uv run sf2 verify adapter`; on the clean committed candidate
+run `uv run sf2 verify plan --base origin/main --head HEAD`, interpret its actual dependency selection,
+and inspect actual CI. Preserve completed failures and rerun only their owning nodes/corrections;
+comparison fixtures with Unknown accounting need their own comparison start, whereas action tests need
+accounting-bearing starts. Neither input is a universal substitute for the other. Reports stay<=15MiB,
+native instances serial/bounded and disk>=1GiB free. Actual private metadata/native inputs are separate
+ignored files; private content and local machine paths never enter the PR. Original natural reach,
+shop/audio timing, full Map16 and full Battle03–07 connection remain Unknown/Unsupported.
+
 ## Silence observation
 
 Use the existing selected SDK/editor, worktree project and native runtime. New launches here follow

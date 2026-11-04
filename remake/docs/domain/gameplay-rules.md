@@ -1,5 +1,42 @@
 # Gameplay Rules and Composition
 
+## Finite purchased supplies and DETOX1
+
+**Standard finite pre-voyage agreement; existing payment/custody High retained.** Source is pinned
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, consuming the accepted
+[service contract](../../../docs/design/contracts/party/service-interactions.md#shop-source-boundary),
+[item data](../../../docs/design/contracts/party/item-definition-data.md) and
+[DETOX contract](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-detox-status-clearing-subset).
+`shopactions.asm` Buy calls DecreaseGold then AddItem; Sell calls IncreaseGold then DropItemBySlot,
+using `ITEMSELLPRICE_MULTIPLIER=3` and shift2 (`sf2enums.asm`). The runtime publishes each pair atomically,
+using live member and slot, preserving the existing gold cap, packed custody and equipment accessors.
+Selection/decline/cancel and failed preparation never spend, grant, remove or draw RNG.
+
+`HealingItemDefinition.CuresPoison` / `HealingSpellDefinition.CuresPoison` explicitly distinguish the
+finite poison-removal algorithm from HP recovery within the existing friendly action family. They
+survive immutable definition copies. Healing Seed1 uses HEALIN2 power20, no variance or MP cost, and
+`min(20, missingHP)`; Herb0 and Wing4 keep their existing effects. Antidote3 delegates to DETOX1 without
+MP cost and consumes its selected compacting slot. DETOX1 uses learned-spell legality, MP3/range0–1,
+single living same-faction target; marked-spell silence still pays before its no-effect result.
+`castspell.asm:spellEffect_Detox` clears poison bit2 and preserves every unrelated bit. An effective
+target contributes5 status EXP once; a clean target consumes the source threshold8 range8 ineffective
+draw and contributes0 before the common randomized/minimum EXP award. Status EXP respects the existing
+halved-experience battle flag. Neither case restores HP or clears stun/curse/sleep/silence. Payment,
+status reaction, notice and subsequent turn remain staged; DETOX uses no HEAL fairy. Antidote does not
+inherit the spell-only silence gate. Query/cancel, bad range/target, missing MP/accounting and stale
+input preserve the complete prior state. Higher DETOX levels and other cure/status families remain
+Unsupported. Field policies remain separate and unchanged.
+
+**Confirmed static operands:** `data/stats/items/shopinventories.asm` stock1 has Short Sword, Short
+Spear, Bronze Lance, Short Axe, Wooden Rod, Short Rod and Short Knife; stock16 has Herb, Seed, Antidote,
+Wing. `itemdefs.asm` and `spelldefs.asm` own price, type, use-spell, power/range/properties; source
+`allystats01.asm` PRST learns DETOX1 at level4. Legal levels are not capped by an expected walkthrough.
+The [private admission](../content/profiles-and-trust.md#finite-galam-shop-admission) preserves the
+important default/F663 distinction. `PoisonCureTests`, `ShopServiceTests`, `GalamShopContentTests`
+and the actual native [recipe](../development-and-verification.md#galam-shop-and-supply-observation)
+reproduce these bounded consumers. **Unknown:** natural original first shop/use reach, original
+caller/window/audio timing and full later story. No new original observation closes those Unknowns.
+
 ## Finite DISPEL, SUPPORT and silence
 
 **Implemented bounded capability, Standard rigor:** `SupportSpellDefinition` and
@@ -1243,7 +1280,7 @@ HP facts include 6→11, 9→12, 3→12 and 4→11; these are missing-HP clamps,
 item powers. `MedicalHerbTests` checks those minimal facts separately from controlled RNG cases.
 It does not relabel authored tests as an original trace replay.
 
-Private Content admits only the selected Medical Herb definition into this item family.
+Private Content admits Medical Herb and the separately bounded [Seed/Antidote extension](#finite-purchased-supplies-and-detox1) into this item family.
 Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
 not herbs. The current class model admits PRST healing EXP and the existing non-healer
 classes. VICR/MMNK class admission, broader item families, equipment beyond the authored weapon subset, Give/Drop beyond the standalone subsets, field inventory,

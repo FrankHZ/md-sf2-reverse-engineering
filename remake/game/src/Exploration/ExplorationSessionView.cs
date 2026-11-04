@@ -59,6 +59,7 @@ public sealed partial class ExplorationSessionView : Control
     private ExplorationDialogueView _dialogueView = null!;
     private PartyStatusView _partyStatus = null!;
     private ChurchServiceView _church = null!;
+    private ShopServiceView _shop = null!;
     private bool _churchSaveRequested;
     internal Action? RequestServiceSave { get; set; }
     private readonly FieldReturnFeedback _returnFeedback = new();
@@ -112,6 +113,7 @@ public sealed partial class ExplorationSessionView : Control
         };
         ui.AddChild(_partyStatus);
         _church = new ChurchServiceView { Name = "ChurchService" }; ui.AddChild(_church);
+        _shop = new ShopServiceView { Name = "ShopService" }; ui.AddChild(_shop);
         // Keep a stopped presentation readable even when the world is held black.
         var failurePanel = new PanelContainer { Name = "FailurePanel", Position = new(240, 32),
             Size = new(1440, 140), Theme = UI.StoryTheme.Create(), MouseFilter = MouseFilterEnum.Ignore };
@@ -143,8 +145,8 @@ public sealed partial class ExplorationSessionView : Control
         _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
-        _church?.Suspend();
-        if (PresentationFailure is not null) { _church?.Hide(); _churchSaveRequested = false; }
+        _church?.Suspend(); _shop?.Suspend();
+        if (PresentationFailure is not null) { _church?.Hide(); _shop?.Hide(); _churchSaveRequested = false; }
         SuspendEntrySkip();
         CancelFieldWait();
         _tickTime = 0;
@@ -201,10 +203,10 @@ public sealed partial class ExplorationSessionView : Control
         if (_session is null) return;
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
-        if (_session.Current.Story.Wait is ChurchWait)
+        if (_session.Current.Story.Wait is ChurchWait or ShopWait)
         {
             if (!_input.GameplayHeld) _skipRequiresRelease = false;
-            PresentChurch(); _tickTime = 0; return;
+            PresentServices(); _tickTime = 0; return;
         }
         if (_partyStatus.Open)
         { _partyStatus.Present(_session, _input); _tickTime = 0; return; }
@@ -325,6 +327,7 @@ public sealed partial class ExplorationSessionView : Control
         if (_handedOff || !IsVisibleInTree() || _session is null || SessionPresentationOwner.IsBattle(_session.Current) || PresentationFailure is not null) return;
         var current = _session.Current;
         if (current.Story.Wait is ChurchWait) { _church.Handle(action); return; }
+        if (current.Story.Wait is ShopWait) { _shop.Handle(action); return; }
         if (_partyStatus.Open)
         {
             _movementHold.Clear(_input); CancelFieldWait();
@@ -500,8 +503,8 @@ public sealed partial class ExplorationSessionView : Control
         if (_session.Current.CanWaitAtInput && _releaseBattle is not null)
         { _releaseBattle(); _releaseBattle = null; _battleMounted = false; }
         if (!_battleMounted) _lastWorld = _session.Current.Exploration ?? _lastWorld;
-        _dialogueView.Visible = PresentationFailure is null && !_partyStatus.Open && _session.Current.Story.Wait is not ChurchWait;
-        PresentChurch();
+        _dialogueView.Visible = PresentationFailure is null && !_partyStatus.Open && _session.Current.Story.Wait is not (ChurchWait or ShopWait);
+        PresentServices();
         _dialogueView.ReturnNotice = _returnFeedback.Notice(_session.Current);
         if (PresentationFailure is not null) _partyStatus.Hide();
         _partyStatus.Present(_session, _input);
@@ -512,11 +515,12 @@ public sealed partial class ExplorationSessionView : Control
         QueueRedraw();
     }
 
-    private void PresentChurch()
+    private void PresentServices()
     {
         if (PresentationFailure is not null)
-        { _church.Hide(); _church.Suspend(); _churchSaveRequested = false; return; }
+        { _church.Hide(); _church.Suspend(); _shop.Hide(); _shop.Suspend(); _churchSaveRequested = false; return; }
         _church.Present(_session!, _input, (command, revision) => Send(command, revision, recoverable: true));
+        _shop.Present(_session!, _input, (command, revision) => Send(command, revision, recoverable: true));
         if (_churchSaveRequested && _session!.Current.CanWaitAtInput)
         { _churchSaveRequested = false; RequestServiceSave?.Invoke(); }
     }
@@ -795,7 +799,7 @@ public sealed partial class ExplorationSessionView : Control
                 cameraX = WorldViewport.Origin.X, cameraY = WorldViewport.Origin.Y,
                 bounds = Battles.BattleMapViewport.Rectangle(WorldViewport.Bounds),
                 legalScreen = Battles.BattleMapViewport.Rectangle(WorldViewport.Screen) },
-            battleMounted = _battleMounted, partyStatus = _partyStatus.Observe(), church = _church.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
+            battleMounted = _battleMounted, partyStatus = _partyStatus.Observe(), church = _church.Observe(), shop = _shop.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             itemCustody = current?.Exploration?.Party.ItemCustody,
             admittedParty = full && current?.Exploration is { } world ? new

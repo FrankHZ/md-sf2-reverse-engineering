@@ -47,7 +47,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         bool poison = root.TryGetProperty("battlePoison", out _);
-        if (poison) Require(!allowLeaderCleanup && Text(root, "battlePoison") == "fixed-two-after-turn",
+        if (poison) Require(Text(root, "battlePoison") == "fixed-two-after-turn",
             "poison-standalone-only", "battlePoison", true);
         string package = Id(root, "package");
         var start = root.GetProperty("start");
@@ -115,6 +115,16 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Object(spell, "spell", "id", "level", "mpCost", "minimumRange", "maximumRange", "effect");
             var key = new SpellRef(Id(spell, "id"), (byte)Number(spell, "level", 1, 4));
             var effect = spell.GetProperty("effect");
+            if (Text(effect, "kind") == "cure-poison")
+            {
+                Object(effect, "spell.effect", "kind");
+                Require(key.Level == 1 && !retreats.ContainsKey(key) && !attacks.ContainsKey(key) && !supports.ContainsKey(key),
+                    "poison-cure-definition", "spells", true);
+                byte min = (byte)Number(spell, "minimumRange", 0, 3);
+                Require(spells.TryAdd(key, new(key, (byte)Number(spell, "mpCost", 0, 255), 0,
+                    min, (byte)Number(spell, "maximumRange", min, 3), CuresPoison: true)), "duplicate-spell", "spells.id/level");
+                continue;
+            }
             Require(!supports.ContainsKey(key), "duplicate-spell", "spells.id/level");
             if (Text(effect, "kind") == "dispel")
             {
@@ -190,9 +200,10 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     Require(!healingItems.ContainsKey(id) && retreatItems.TryAdd(id, new(id, Text(item, "name"))), "duplicate-item", "items.id");
                     continue;
                 }
-                Require(Text(item, "effect") == "consumable-healing", "item-effect", "items.effect", true);
-                var definition = new HealingItemDefinition(id, Text(item, "name"), (ushort)Number(item, "power", 1, 254),
-                    minimum, (byte)Number(item, "maximumRange", minimum, 3));
+                bool cure = Text(item, "effect") == "consumable-poison-cure";
+                Require(cure || Text(item, "effect") == "consumable-healing", "item-effect", "items.effect", true);
+                var definition = new HealingItemDefinition(id, Text(item, "name"), (ushort)Number(item, "power", cure ? 0 : 1, cure ? 0 : 254),
+                    minimum, (byte)Number(item, "maximumRange", minimum, 3), cure);
                 Require(!retreatItems.ContainsKey(id) && healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
             }
         var weapons = BattleEquipmentReader.Weapons(root, allowLeaderCleanup);

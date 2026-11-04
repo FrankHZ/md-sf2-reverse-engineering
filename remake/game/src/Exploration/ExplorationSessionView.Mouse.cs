@@ -23,12 +23,13 @@ public sealed partial class ExplorationSessionView
 
     internal void HandlePointer(InputEvent input)
     {
-        if (_session?.Current.Story.Wait is ChurchWait)
+        if (_session?.Current.Story.Wait is ChurchWait or ShopWait)
         {
             if (_handedOff || _battleHandoffPending || _skipRequiresRelease || !GetWindow().HasFocus() ||
                 !CanProcess() || !IsVisibleInTree() || PresentationFailure is not null)
-            { _church.Suspend(); return; }
-            _church.HandlePointer(input); return;
+            { _church.Suspend(); _shop.Suspend(); return; }
+            if (_session.Current.Story.Wait is ShopWait) _shop.HandlePointer(input);
+            else _church.HandlePointer(input); return;
         }
         if (_partyStatus.Open) { _partyStatus.HandlePointer(input); return; }
         if (_session is null || _handedOff || _battleHandoffPending || _skipRequiresRelease ||

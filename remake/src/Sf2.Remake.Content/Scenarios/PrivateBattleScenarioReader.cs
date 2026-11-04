@@ -154,7 +154,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             region.Vertices.Select(point => new MapPosition(point.X, point.Y))));
         var healing = definitions.Spells.Values.Where(spell => spell.Code == "HEAL" && spell.Power != 255 && spell.Radius == 0 &&
             spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE")
-            .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange, spell.MaximumRange));
+            .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange, spell.MaximumRange))
+            .Concat(PrivateBattleActionBindings.PoisonCure(definitions));
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
             encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(encounter.Scene.HalfExperience),

@@ -36,8 +36,11 @@ internal static class PrivateBattleDefinitionReader
         var enemies = encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Enemy)
             .Select(row => row.IdentityExpression).Distinct().Select(code => Enemy(FindCode(enemy, "enemies", code))).ToArray();
         var itemIds = start.Allies.SelectMany(row => row.Items).Select(word => (byte)(word & 127)).ToHashSet();
-        // Opening field consumers admit only these early field item records, independently of possession.
-        if (initialAllies is not null) itemIds.UnionWith(new byte[] { 0, 1, 3, 4 });
+        // Finite Galam stock1/16 metadata is independent of current possession. This does not
+        // admit unrelated item effects, rare/broken gear, or any later shop caller.
+        foreach (string code in new[] { "MEDICAL_HERB", "HEALING_SEED", "ANTIDOTE", "ANGEL_WING",
+            "SHORT_SWORD", "SHORT_SPEAR", "BRONZE_LANCE", "SHORT_AXE", "WOODEN_ROD", "SHORT_ROD", "SHORT_KNIFE" })
+            itemIds.Add((byte)Number(FindCode(core, "items", code), "id", 0, 126));
         foreach (var row in enemies.SelectMany(row => row.Items)) itemIds.Add((byte)Number(FindCode(core, "items", row.Item), "id", 0, 127));
         foreach (var row in encounter.Placements)
             itemIds.Add((byte)Number(FindCode(core, "items", row.ItemExpression.Split('|')[0]), "id", 0, 127));
