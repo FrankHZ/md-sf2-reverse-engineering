@@ -29,8 +29,10 @@ No need, insufficient MP or no legal station falls through to the remaining comm
 
 ATTACK scores reachable spell targets before physical targets, in reverse source processing order.
 Normal PRIORITYMOD_2 uses script3's separate thinking RNG; the cleric's PRIORITYMOD_3 selects
-script4's deterministic lethality/inclusive one-fifth-HP score. Mover class preference and stable
-source tie handling reuse the physical owner. With a reachable BLAZE1 candidate, category selection
+script4's deterministic lethality/inclusive one-fifth-HP score. Stable source tie handling reuses
+the physical owner: physical class preference follows the attacker's mover, while CAST_SPELL
+forces the Mage table regardless of mover (`determinebattleaction.asm` @loc_34/35).
+With a reachable BLAZE1 candidate, category selection
 always draws main range6:2/4 choose spell when physical is also viable; otherwise physical wins.
 A spell-only candidate still consumes that category draw. Insufficient MP or no reachable spell
 candidate uses physical without the category draw. Actual critical/variance draws occur only in
@@ -268,7 +270,7 @@ reach and original presentation/timing; the twelve #1047 Unknowns and #638 pause
 
 **Implemented capability, bounded:** SDMN/KNTE/WARR/PRST/MAGE/ACHR/THIF physical definitions
 map to source class bits 0/1/2/4/3/5/10. Archer and Mage retain distinct mover identities even
-though their supported terrain costs equal Regular. Enemy target class preferences select the
+though their supported terrain costs equal Regular. Enemy physical target class preferences select the
 source Regular/Flying/Archer/Mage table by the attacker's mover; a Mage physical definition does
 not implement BLAZE or spell AI. THIF's fixed prowess uses critical 1/16 plus quarter damage,
 double 1/16 and counter 1/32. Other admitted profiles keep double/counter 1/32.

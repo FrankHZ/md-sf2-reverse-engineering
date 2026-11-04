@@ -58,6 +58,43 @@ public sealed class EnemySpellDecisionTests
         Assert.Equal(BattleRandom.NextMain(main, 6).After, chosen.Battle.MainSeed);
     }
 
+    [Theory]
+    [InlineData("regular", true, "wounded")] [InlineData("regular", false, "scout")]
+    [InlineData("healer", true, "wounded")] [InlineData("healer", false, "scout")]
+    [InlineData("archer", true, "wounded")] [InlineData("archer", false, "scout")]
+    [InlineData("centaur", true, "wounded")] [InlineData("centaur", false, "scout")]
+    [InlineData("mage", true, "wounded")] [InlineData("mage", false, "wounded")]
+    public void LethalSpellTiesAlwaysUseMagePreferenceWhilePhysicalTiesUseActualMover(string mover, bool cast, string target)
+    {
+        var before = Battle(d =>
+        {
+            d["actors"]![0]!["classRule"] = "unpromoted-knight";
+            d["actors"]![3]!["classRule"] = "unpromoted-warrior";
+            d["actors"]![1]!["physical"]!["movementType"] = mover;
+            d["start"]!["actors"]![0]!["hp"] = 1;
+            d["start"]!["actors"]![3]!["hp"] = 1;
+            d["start"]!["actors"]![1]!["initialization"]!["activationWord"] = 0x3001;
+            var placements = d["encounters"]![0]!["placements"]!;
+            placements[0]!["x"] = 3; placements[0]!["y"] = 3;
+            placements[1]!["x"] = 4; placements[1]!["y"] = 3;
+            var reserve = placements[3]!;
+            reserve["faction"] = "ally"; reserve["control"] = "player"; reserve["aiStrategy"] = null;
+            reserve["processingOrder"] = 1; reserve["initialization"]!["baseAiWord"] = null;
+            reserve["x"] = 5; reserve["y"] = 3;
+            placements[2]!["initialization"]!["primaryOrder"] = 255;
+            d["start"]!["actors"]![3]!["initialization"]!["activationWord"] = 0;
+            d["encounters"]![0]!["initialization"]!["sourceCombatants"]![3]!["slot"] = 1;
+        }).With(mainSeed: cast ? 0x10000000u : 0u);
+        var chosen = Decide(before, Mage);
+        Assert.Equal(cast, chosen.ChosenAction?.Kind == BattleActionKind.AttackSpell);
+        Assert.Equal(new ActorRef(target), chosen.Target);
+        Assert.Equal(before.GetActor(Mage).Position, chosen.Destination);
+        Assert.Equal(2, chosen.Effects.Count(e => e.Kind == "ai-spell-candidate" && e.After == 17));
+        Assert.Equal(2, chosen.Effects.Count(e => e.Kind == "ai-candidate" && e.After == 17));
+        Assert.Equal(before.ThinkingSeed, chosen.Battle.ThinkingSeed);
+        Assert.Single(chosen.Effects, e => e.Kind == "rng-ai-attack-category");
+    }
+
     [Fact]
     public void HealCommandTwoChoosesHealOneBeforeOrderAttackOrPursuitWithoutDecisionRng()
     {

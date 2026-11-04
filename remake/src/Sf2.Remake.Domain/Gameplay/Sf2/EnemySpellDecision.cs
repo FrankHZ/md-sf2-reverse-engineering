@@ -48,7 +48,8 @@ internal static class EnemySpellDecision
         prepared = prepared.With(mainSeed: category.After);
         if (attack is not null && category.Value is not (2 or 4))
             return attack with { Battle = prepared, Effects = effects.AsReadOnly() };
-        var selection = PhysicalTargetRules.Select(priorities, PhysicalTargetRules.Table(actor.Definition.Mover))
+        // determinebattleaction.asm @loc_34 overrides the mover table for CAST_SPELL.
+        var selection = PhysicalTargetRules.Select(priorities, PhysicalPriorityTable.Mage)
             ?? throw new BattleRuleException("ai-target-selection", "ai.spells", true);
         var chosen = candidates[selection.Index];
         prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: chosen.Target.Actor) : a));
