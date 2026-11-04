@@ -20,11 +20,127 @@ Application/Content/Godot capability. The existing [High save/restore boundary](
 continues to govern identity changes. Canonical source tokens, glyph units, name expansion, HEAL work,
 program acknowledgements, gameplay/RNG and game-save format remain independent of display locale.
 
-The product target remains title/Witch, New Game/naming, supported opening exploration/services,
+The runtime product target remains title/Witch, New Game/naming, supported opening exploration/services,
 Battle01 outcomes and independent-process Continue, then other implemented consumers. One pilot
-does not establish that coverage. Unimplemented chapters, ROM patching, voice/TTS, other languages,
-full string export, a translation platform and UI redesign are non-goals. Preserve the 1080p minimum,
+does not establish that coverage. The current full-text authorization below includes static translation
+of unimplemented chapters; it does not implement those chapters. ROM patching, voice/TTS, other
+languages, a translation platform and UI redesign remain non-goals. Preserve the 1080p minimum,
 96px world cells, source grouping, input/reward authority and private-content boundary.
+
+## Current full-text Chinese corpus
+
+**Standard rigor:** [#1495](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1495)
+authorizes Chinese translation and independent batch review of the complete fixed **4,267 message
+IDs 0–4266, 173,995 source characters**, including chapters without playable consumers. This replaces
+the earlier opening-only/no-whole-game restriction for static translation. Historical M0/M3 pilot
+boundaries below remain their own evidence, not a veto on this authorization. Static translation,
+semantic review, runtime admission and human typography/reading acceptance are separate states;
+English fallback is not a translated or accepted row. No new engine, chapter, ROM writeback,
+publication right, image-lettering change, default-name admission or naming/IME change is authorized.
+
+[#1496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1496) freezes the source,
+ownership, control inventory and **proposed, unapproved** terminology baseline. Its stopping point
+is a reviewable private intake plus this public agreement, before independent acceptance; it does
+not translate the remaining **4,052 rows / 163,719 source characters**. Provenance remains
+`ShiningForceCentral/SF2DISASM` at `c834c652b6862bc5679fd7f69a38a7093206efc6`, the admitted USA ROM
+identity recorded below, and `disasm/data/scripting/text/gamescript.txt`. Direct comparison confirms
+every `{id,text}` in the admitted `world.texts` array equals that pinned table. The six `entry.text`
+display rows are projections of world IDs 216–221, not six additional message IDs.
+
+### One authority and exact ownership
+
+A separately configured persistent private content root outside Git and removable worktrees owns
+exactly `README.md`, `source.jsonl`, `batches.json`, `terminology.tsv`, `control-tokens.json` and
+`accepted-seed.zh-CN.jsonl`. Absolute selections and executable checks stay in the local handoff.
+No original/translated prose or private review is published. `source.jsonl` retains one row per
+occurrence, with locked namespace/ID/source/category/duplicate links/batch/context, nullable translation
+and explicit review state. It is the **only full-text translation writeback source**. A batch writer
+may edit only its assigned translation/review fields; whole-file writes are serialized. Review views
+and the immutable accepted-seed mirror are derived, never independent editable translations.
+
+The existing 209-row world and six-row entry overlays stay frozen admitted subsets in this slice.
+Their historical pilot ownership does not create a second full-text authority. Future corrections
+are recorded once in the full corpus; a separately scoped admission derives and validates runtime
+subsets from it. No automatic mounting, catalog overwrite, per-scene catalog, merger service or new
+runtime manifest is introduced. [#1505](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1505)
+owns later capacity/parameter design and is not a prerequisite for static drafting. The current
+reader's **256 rows / 256 KiB total / 8,192 UTF-16 units per row** remains unchanged.
+
+The exact ID arrays in private `batches.json` are normative. Each row retains pinned source-file/line
+references and accepted narrative/context documents. The
+[six reading groups](../../../docs/design/synthesis/themes/story-progression.md#read-story-content-in-segments)
+are **Inferred editorial context**, not original chapter boundaries or natural-reach evidence.
+Only explicit source-symbol/file references in accepted owners support chapter assignment; map
+identity alone does not determine time or phase. Common, cross-group, ambiguous and unassigned rows
+have one writer, #1497; other batches read them for context. **Unknown:** 1,227 rows lack an established
+chapter context and remain explicitly assigned to that common group, with their source references
+or absence retained; 23 further rows have an additional unclassified source reference and also stay
+common. A common assignment does not itself assert cross-chapter reuse.
+
+| Writer | Reading context | Exact rows | Source characters | Retained seed rows |
+| --- | --- | ---: | ---: | ---: |
+| #1497 | Common/system/descriptions, cross-group and unassigned | 2,369 | 96,115 | 132 |
+| #1498 | Grans opening and departure | 444 | 19,760 | 83 |
+| #1499 | New Granseal and eastern Parmecia | 379 | 15,208 | 0 |
+| #1500 | Southern travel, Caravan and Creed | 310 | 11,891 | 0 |
+| #1501 | Northern travel, Pacalon, Tristan and Mitula | 239 | 10,493 | 0 |
+| #1502 | Moun, Nazca and return to Grans | 366 | 13,972 | 0 |
+| #1503 | Final confrontations and ending | 160 | 6,556 | 0 |
+
+**Confirmed static intake:** all 4,267 IDs have exactly one owner; no deduplication/deletion. Six
+control-only rows (99/262/264/362/3523/3553), literal `x` rows (406/407/411) and 103 equal-source groups
+with 265 occurrences retain their classification and expanded IDs. The 209 world translations retain
+exact accepted wording/control segments; the six entry translations retain their accepted wording
+while display newlines map back to `{N}`, leading `{CLEAR}` remains at 216 and 221, and terminal
+`{W2}` remains at 216–220. This raw six-row source is 281 characters versus the historical 235-character
+entry display inventory. Source controls are never reconstructed from guessed visual layout.
+
+### Tokens, terminology and acceptance
+
+`control-tokens.json` records every native token's exact IDs/counts, current parser/map/producer
+support and pinned source location. Keep syntax, control order and parameter identity/multiplicity
+within each control segment, including unsupported tags. Do not substitute guessed parameter values.
+
+| Native form | Current overlay boundary |
+| --- | --- |
+| `{N}`, `{W1}`, `{W2}`, `{D1}`, `{CLEAR}` | Parsed and mapped; actual consumer/range still needs its own admission |
+| `{LEADER}`, `{NAME}`, `{NAME;n}`, `{CLASS}` | Parsed/mapped; captured typed name/class operand required; absent operands retain explicit failure |
+| `{D2}`, `{D3}`, `{ITEM}`, `{SPELL}`, `{DICT}`, `{#}` | Unsupported by `ExplorationTextTokens`; reader rejects the row, static draft still preserves it |
+
+No new source timing or DICT caller/payload contract is claimed. Unknown operands stay Unknown;
+upstream tag descriptions alone do not establish their live use. Terminology has 24 small candidates
+or explicit English holds for independent main-gate review; documentation Chinese and existing
+functional UI labels do not approve game names. Existing seed wording stays fixed until an explicitly
+owned consistency revision. Player-customized names always retain their exact saved values.
+
+Name tables outside these 4,267 message IDs remain **untranslated/unadmitted by this intake**:
+`disasm/data/stats/allies/allynames.asm` (30), `allies/classes/classnames.asm` (32),
+`items/itemnames.asm` (128), `spells/spellnames.asm` (44) and `enemies/enemynames.asm` (103), with the
+last four paths relative to `disasm/data/stats/`. A prose occurrence does not translate its independent
+table entry. No separate canonical location-display table was identified in those stats tables;
+selected message occurrences are indexed, while a complete location-name inventory remains Unknown.
+No name-table expansion enters the fixed message count.
+
+The measured 209-row sample has 9,995 source characters, 5,215 target characters, 10,931 target UTF-8
+bytes and 155,406 bytes in the full context-bearing row structure. The complete frozen persistent
+intake is about **2.58 MiB**; extrapolating that sample's target-byte ratio plus a bounded derived
+review gives an estimated **under 6 MiB**, within the initial **8 MiB persistent / 16 MiB temporary**
+budgets and at least **1 GiB free** storage condition. Direct checking parses the existing 125,828,417-byte
+world once per invocation, O(world bytes + text/reference bytes), then compares the small corpus;
+no world/assets are copied. Local results record measured duration/peak memory. Replan before
+crossing these budgets or adding external processing; no paid translation API is authorized.
+
+Acceptance is direct live-source/pinned-table equality, exact disjoint batch IDs/counts/context owners,
+215 seed wording/control mappings, token/parameter topology, explicit non-language/repeat categories,
+source-locked fields, placeholder/template/length QA and independent semantic review. Start translation
+blocks with coherent scene/function context, initially about 80–150 rows, then resize by dependencies;
+never split solely to hit a row count. Freeze corrections to ownership through the coordinating owner.
+Recovery reads the current corpus and retained results before writing; the one-time preparation
+freezer must not overwrite later translations. Local reproduction loads the existing input selection
+and runs `python -X utf8 local/issue1496/check.py`; no SDK, Godot, emulator, full research gate or
+whole-game replay is required for this static intake. Retained prior failures remain in their original
+handoff and are not converted into passing runtime evidence. #1504 owns later cross-batch consistency
+and complete-draft closure; this intake does not close #1495 or epic #1468.
 
 ## Implemented M1 boundary
 
@@ -154,7 +270,8 @@ remain outside this slice. Standard rigor and the existing High save boundary co
 `entry.text/216–221` from the admitted `private-local-entry` source as one optional Simplified Chinese
 suggestion and a private bilingual review table. The existing Standard scope remains appropriate:
 this is a finite content/review pilot through admitted consumers, with no code, public PO, schema,
-source package, glossary, default-name or Unicode/IME change. No broader script batch is authorized.
+source package, glossary, default-name or Unicode/IME change. This historical sample does not itself
+authorize a broader batch; the current full-text agreement above supplies the later authorization.
 
 The source inventory is six rows, 235 characters and 49 simple English word matches, with no brace
 control/name tokens. Literal newline counts are `1,2,1,1,1,0`; the draft preserves those counts while
@@ -184,7 +301,7 @@ Main-gate's independent semantic review passed for this suggestion with the requ
 breaks in rows 218–219. **The user approved this sample's text tone on 2026-11-03. In-game typography
 and actual reading approval remain pending** in the private review artifact. That tone approval applies
 to this speaker and does not prescribe other characters' voices. The engineering sample task may close after independent integration while epic #1468's human checkpoint
-remains open. No reply authorizes expansion. Terminology, other private dialogue, image lettering,
+remains open. Terminology, other private dialogue, image lettering,
 full-opening Chinese, Unicode naming and publication remain outside this sample.
 
 ## M3 private opening-world Chinese text
@@ -834,7 +951,7 @@ M1 does not enable Unicode naming or close the epic.
 | --- | --- | --- |
 | Implemented M2a Church/Search feedback after M1 | `A/Runtime/Exploration/FieldService.cs`, `A/Runtime/Exploration/FieldSearch.cs`, `G/src/Exploration/ChurchServiceView.cs`, `G/src/Exploration/ExplorationDialogueView.cs`, `G/src/Localization/GameText.cs`, `G/localization/en.po`, `G/localization/zh_CN.po`, `T/FieldSearchTests.cs`, `T/FieldServiceTests.cs` | Finite result values replace concatenation/string-phase coupling. Success/decline/insufficient/full-pack cases preserve payment, party/status/receipt order and confirmation. Actual behavior/adapter checks; display failure retains committed rewards. Stop after these consumers. |
 | Implemented M2b Entry/slots/naming help after M1 | `G/src/Entry/SessionEntryView.cs`, `NameEntryView.cs`, `SaveSlotView.cs`, `OpeningPersistenceHost.cs`, `NewGameSetupHost.cs`, `EntryPresentationAssets.cs`; `SettingsHost.cs` and `G/src/GameRoot.cs` existing label refresh only; `G/src/Localization/GameText.cs`, both PO paths; `C/Localization/DisplayCatalogReader.cs`, `DisplayCatalog.cs`, `C/Scenarios/EntryPresentationReader.cs` | Stable action/node identity, actual entry identity for six dialogue bindings, readable errors/slots, source/UI fallback and long menu reading. Old names/saves unchanged; direct entry/Continue observations without refresh-triggered audio restart or schema/image replacement. |
-| M3 bounded opening terminology/dialogue after admitted consumers and rights/review | Public owner `remake/docs/application/localization-design.md` only if coverage/boundary changes; private catalog under a separately declared non-worktree content root. Dispatch must name those actual private files before writing | Start with reached IDs/names in one playable segment. Direct source/control/parameter comparison plus bilingual review. No runtime/export edits by translators. Drift/ambiguity stops affected rows; fallback stays explicitly untranslated. No whole-game batch. |
+| M3 bounded opening terminology/dialogue after admitted consumers and rights/review | Public owner `remake/docs/application/localization-design.md` only if coverage/boundary changes; private catalog under a separately declared non-worktree content root. Dispatch must name those actual private files before writing | Start with reached IDs/names in one playable segment. Direct source/control/parameter comparison plus bilingual review. No runtime/export edits by translators. Drift/ambiguity stops affected rows; fallback stays explicitly untranslated. Historical opening pilot; current full-text agreement above separately governs static drafting. |
 | M4 Chinese naming/IME after M1 and accepted High compatibility policy | `A/Runtime/NewGameOptions.cs`, `A/Runtime/OpeningNewGame.cs`, `A/Runtime/CharacterNames.cs`, `A/Runtime/Exploration/ExplorationTextRunner.cs`, `A/Runtime/Battles/BattleSceneContinuation.cs`, `A/Runtime/Persistence/OpeningSaveData.cs`, `A/Runtime/Persistence/OpeningSave.cs`, `A/Runtime/Persistence/OpeningRestore.cs`, `C/Persistence/OpeningSaveJson.cs`, `G/src/Entry/NameEntryView.cs`, `T/OpeningSaveTests.cs`, `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs` | Actual composition/commit/cancel/paste/focus, old name/save preservation and Unicode independent-process Save/Continue. Refuse enablement with unresolved canonical work/backward reading/downgrade; no lossy conversion. Stop at named admitted characters/consumers. |
 
 Party/Prepare has the bounded M2c consumer agreement above. M2d battle commands/targets/equipment/status have their separate boundary above. M2e Give/Discard/retreat has its separate boundary above. M2f story controls/choices/return notices have their separate boundary above. Further battle screens are separate
@@ -862,9 +979,10 @@ font file size is not resident memory. Replan if import exceeds available worktr
 bounds are exceeded or required characters lack coverage. No precise runtime/translation estimate
 or completion date is supported yet.
 
-Before M3 count only proposed admitted/reached IDs, unique source words/characters, token-bearing
+For a new runtime admission count its proposed admitted/reached IDs, unique source words/characters, token-bearing
 rows and names; sample a dialogue/result with human review and estimate review effort separately
-from translation throughput. No API/model expenditure is authorized by this plan. Rights/terminology
+from translation throughput. The historical pilot did not authorize API/model expenditure; current static
+full-text processing follows the bounded agreement above. Rights/terminology
 and quality are not established by placeholder checks.
 
 Remaining boundaries: human typography/readability and translation review, terminology/default-name
