@@ -13,6 +13,8 @@ internal sealed class Sf2HealingRule : IHealingRule
             throw new BattleRuleException("spell-effect", "spell", true);
         if (spell.CuresPoison && (spellRef.Level != 1 || spell.IsAura || spell.Power != 0 || spell.Radius != 0))
             throw new BattleRuleException("poison-cure-definition", "spell", true);
+        if (spell.CuresPoison && !actor.IsAlly)
+            throw new BattleRuleException("enemy-poison-cure", "spell", true);
         if (!spell.IsAura && spellRef.Level is < 1 or > 3)
             throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :

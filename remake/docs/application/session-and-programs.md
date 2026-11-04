@@ -21,7 +21,11 @@ field mechanism. This is a finite modern selection flow, without original shop-w
 
 `PoisonCureRules` supplies the finite battle Antidote/DETOX1 effect through the existing friendly
 recovery/item selection, scene payment, status, EXP and end-of-turn authority. It clears only poison;
-Healing Seed supplies20 HP before the normal missing-HP clamp. The connected authored consumer buys
+Healing Seed supplies20 HP before the normal missing-HP clamp. DETOX target admission checks its
+actual ordinary scenery, caster cast/idle and target idle/frame/held-weapon bindings when private
+scene content is selected/required; it does not require the unused HEAL fairy resources. Missing
+required ordinary content rejects before target confirmation/payment; HEAL/AURA keep their own
+existing content gates. The connected authored consumer buys
 both supplies, enters battle in the same session and consumes their actual carried words. Field HEAL,
 Herb and Seed NoEffect and the existing field Antidote/DETOX1 payment rules are unchanged.
 

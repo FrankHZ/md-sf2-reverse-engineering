@@ -116,7 +116,9 @@ internal static class BattleChoices
             if (!ReferenceEquals(patient, battle.GetActor(target))) throw new InvalidOperationException("Invalid admitted target.");
             if (action.Kind == BattleActionKind.Healing && !Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Present(battle.GetActor(actor).Status))
             {
-                if (battle.Definition.Spells[action.Spell!.Value].IsAura)
+                if (battle.Definition.Spells[action.Spell!.Value].CuresPoison)
+                    RequireCureContent(battle, actor, target, content, requireContent);
+                else if (battle.Definition.Spells[action.Spell!.Value].IsAura)
                 {
                     if (content is not null || requireContent)
                         throw new BattleRuleException("aura-private-presentation", "battleScenes", true);
@@ -125,6 +127,30 @@ internal static class BattleChoices
             }
             return patient;
         });
+    }
+
+    // DETOX consumes ordinary cast/idle actors and scenery, never the HEAL fairy assets/cursor.
+    private static void RequireCureContent(EngineBattleState battle, ActorRef actor, ActorRef target,
+        BattleSceneDefinition? content, bool required)
+    {
+        if (content is null)
+        {
+            if (required) throw new BattleRuleException("cure-scene-content", "battleScenes", true);
+            return;
+        }
+        bool Visual(ActorRef id, bool cast)
+        {
+            var member = battle.GetActor(id);
+            if (!content.Allies.TryGetValue(member.Definition.ClassRule, out var visual) ||
+                visual.IdleTicks <= 0 || visual.Frames.Count == 0 ||
+                !visual.Frames.All(content.Rasters.ContainsKey) || !visual.Sequences.ContainsKey("idle") ||
+                cast && !visual.Sequences.ContainsKey("cast")) return false;
+            ushort? equipped = member.SourceLoadout?.Items.FirstOrDefault(word => (word & 128) != 0 && (word & 127) != 127);
+            return equipped is null or 0 || visual.Item == (equipped.Value & 127);
+        }
+        if (content.Encounter != battle.Definition.Encounter || !content.Rasters.ContainsKey(content.Background) ||
+            !content.Rasters.ContainsKey(content.Ground) || !Visual(actor, true) || !Visual(target, false))
+            throw new BattleRuleException("cure-scene-content", "battleScenes", true);
     }
 
     internal static BattleActionResolution Prepare(SessionRules rules, EngineBattleState battle, ActorRef actor,

@@ -1,17 +1,63 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.TestSupport;
 using Xunit;
+using System.Text.Json.Nodes;
 using static Sf2.Remake.Engine.Tests.EngineTestContent;
 
 namespace Sf2.Remake.Engine.Tests;
 
 public sealed class GalamShopContentTests
 {
+    [PrivateInputFact("SF2_PRIVATE_BATTLE_SCENE_CONTENT")]
+    public void RequiredPrivateDetoxUsesOrdinaryCastContentWithoutHealingFairyAndKeepsHealGuard()
+    {
+        string Input(string key)=>PrivateInputFactAttribute.RequireInput(key);
+        var document=JsonNode.Parse(File.ReadAllText(Input("SF2_PRIVATE_CONTROLLED_START")))!;
+        document["mainSeed"]=4660u;document["gold"]=0;
+        foreach(var row in document["allies"]!.AsArray())
+        {
+            row!["exp"]=0;row["kills"]=0;row["defeats"]=0;
+            if(row["id"]!.GetValue<int>()==1)
+            { row["level"]=4;row["agility"]=100;row["maxMp"]=20;row["mp"]=20;row["spells"]=new JsonArray(0,2,63,63); }
+            else if(row["id"]!.GetValue<int>()==0)row["status"]=2;
+        }
+        string file=Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(file,document.ToJsonString(),new System.Text.UTF8Encoding(false));
+            var read=PrivateBattleScenarioTests.Selected(file).Read();Assert.True(read is ScenarioReadAccepted,read.ToString());
+            var admitted=(ScenarioReadAccepted)read;
+            var scenes=BattleSceneContentReader.Read(Input("SF2_PRIVATE_BATTLE_SCENE_CONTENT"),admitted.Definition.PrivateDefinitions!) with {Healing=null};
+            var definition=new ScenarioDefinition(admitted.Definition.Package,admitted.Definition.Encounters.Values,
+                admitted.Definition.PrivateDefinitions,battleScenes:scenes);
+            var session=Assert.IsType<SessionStarted>(GameSession.Start(definition,admitted.Start)).Session;
+            var priest=new ActorRef("ally-1");var target=new ActorRef("ally-0");
+            Assert.Equal(priest,session.Current.Selection!.Actor);
+            var before=session.Current;
+            var choices=session.QueryBattleChoices();
+            Assert.True(choices.Spells.Single(row=>row.Spell==new SpellRef("detox",1)).Targets.Single(row=>row.Actor==target).Enabled);
+            Assert.Equal("healing-scene-content",choices.Spells.Single(row=>row.Spell==new SpellRef("heal",1)).Reason!.Code);
+            Assert.Same(before,session.Current);
+            Accept(session,new Confirm());Accept(session,new SelectSpell(new("detox",1)));
+            var selecting=session.Current;
+            var missing=BattleCommandDispatcher.Submit(selecting,new SelectTarget(target),requireSceneContent:true,rules:session.Rules);
+            Assert.Equal("cure-scene-content",missing.Failure!.Code);Assert.Same(selecting,missing.Snapshot);
+            Accept(session,new SelectTarget(target));
+            var result=Accept(session,new Confirm());Assert.Null(session.Current.BattleScene!.Healing);
+            FinishBattleScenes(session,result);
+            Assert.Equal((byte)17,session.Current.Battle.GetActor(priest).Mp);
+            Assert.Equal((ushort)0,session.Current.Battle.GetActor(target).Status);
+            Assert.True(session.Current.HasBattleControl);
+        }
+        finally {File.Delete(file);}
+    }
+
     [PrivateInputFact("SF2_PRIVATE_EXPLORATION_CONTENT", "SF2_PRIVATE_STATIC_DATA")]
     public void ActualOpeningPrstGrowthRetainsSarahLevelFourDetoxOne()
     {

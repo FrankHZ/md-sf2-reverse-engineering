@@ -25,7 +25,9 @@ halved-experience battle flag. Neither case restores HP or clears stun/curse/sle
 status reaction, notice and subsequent turn remain staged; DETOX uses no HEAL fairy. Antidote does not
 inherit the spell-only silence gate. Query/cancel, bad range/target, missing MP/accounting and stale
 input preserve the complete prior state. Higher DETOX levels and other cure/status families remain
-Unsupported. Field policies remain separate and unchanged.
+Unsupported. Enemy cure effects (including a `heal/1` authored alias) reject at both finite
+HEAL AI decision and spell admission before any automatic movement, payment, effect or RNG publication;
+this does not admit enemy DETOX. Field policies remain separate and unchanged.
 
 **Confirmed static operands:** `data/stats/items/shopinventories.asm` stock1 has Short Sword, Short
 Spear, Bronze Lance, Short Axe, Wooden Rod, Short Rod and Short Knife; stock16 has Herb, Seed, Antidote,

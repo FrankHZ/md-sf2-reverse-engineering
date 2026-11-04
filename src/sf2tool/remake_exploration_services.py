@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any
 import re
+from typing import Any
 
 from sf2tool.h2.battle_global_data import _arguments, _tokens
 
@@ -17,7 +17,8 @@ def shop_service(compiler: Any, index: int) -> dict[str, Any]:
     source = (compiler.upstream / path).read_text(encoding="utf-8")
     source = re.sub(r"&\s*\n", "", source)
     inventories = _arguments(source, "shopInventory")
-    return {"op": "shop", "stock": [compiler.number("ITEM_" + token) for token in _tokens(inventories[index])]}
+    stock = [compiler.number("ITEM_" + token) for token in _tokens(inventories[index])]
+    return {"op": "shop", "stock": stock}
 
 
 def church_service(compiler: Any) -> dict[str, Any]:

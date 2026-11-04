@@ -456,7 +456,10 @@ class OriginalPrograms:
             ):
                 # These stores are represented by the following typed dialogue speaker binding.
                 pass
-            elif op == "move.b" and len(args) == 2 and args[0].startswith("#") and args[1] == "((CURRENT_SHOP_INDEX-$1000000)).w":
+            elif (
+                op == "move.b" and len(args) == 2 and args[0].startswith("#")
+                and args[1] == "((CURRENT_SHOP_INDEX-$1000000)).w"
+            ):
                 registers["shop"] = self.number(args[0][1:])
             elif op == "jsr" and args == ["j_ShopMenu"] and "shop" in registers:
                 result.append(shop_service(self, registers.pop("shop")))

@@ -15,6 +15,42 @@ public sealed class PoisonCureTests
     private static readonly ActorRef Medic = new("medic-a"), Friend = new("guard-a");
     private static readonly SpellRef Detox = new("detox", 1);
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void EnemyHealAliasCannotAdmitCureOrPublishAutomaticMovementPaymentStatusOrRng(bool poison)
+    {
+        var session=Start("enemy-spells",d=>
+        {
+            d["spells"]!.AsArray().Single(row=>row!["id"]!.GetValue<string>()=="heal")!["effect"]=
+                new JsonObject { ["kind"]="cure-poison" };
+            foreach(var row in d["start"]!["actors"]!.AsArray())
+            {
+                if(row!["actor"]!.GetValue<string>()=="mage")row["hp"]=0;
+                if(row["actor"]!.GetValue<string>()=="wounded")row["status"]=poison?"poison":"none";
+            }
+            d["battlePoison"]="fixed-two-after-turn";d["start"]!["firstAlly"]="scout";
+            d["encounters"]![0]!["outcome"]=new JsonObject { ["leader"]="scout",["defeatedGateEnemy"]="cleric" };
+        });
+        var before=session.Current.Battle;var cleric=EnemySpellDecisionTests.Cleric;
+        var error=Assert.Throws<BattleRuleException>(()=>EnemySpellDecisionTests.Decide(before,cleric));
+        Assert.True(error.Unsupported);Assert.Equal("enemy-poison-cure",error.Code);
+        Assert.Equal("enemy-poison-cure",Assert.Throws<BattleRuleException>(()=>new Sf2HealingRule()
+            .RequireSpell(before,cleric,new("heal",1))).Code);
+        Accept(session,new Confirm());Accept(session,new ChooseAction(SessionAction.Stay));
+        var stopped=Send(session,new Confirm());
+        Assert.Equal(SessionStopReason.Unsupported,stopped.StopReason);Assert.Equal("enemy-poison-cure",stopped.Failure!.Code);
+        Assert.Null(session.Current.BattleScene);Assert.Null(session.Current.BattleMovement);
+        Assert.Equal(before.MainSeed,session.Current.Battle.MainSeed);Assert.Equal(before.ThinkingSeed,session.Current.Battle.ThinkingSeed);
+        Assert.Equal(before.Gold,session.Current.Battle.Gold);
+        foreach(var actor in before.Actors)
+        {
+            var after=session.Current.Battle.GetActor(actor.Actor);
+            Assert.Equal(actor.Position,after.Position);Assert.Equal(actor.Hp,after.Hp);Assert.Equal(actor.Mp,after.Mp);
+            Assert.Equal(actor.Status,after.Status);Assert.Equal(actor.LastTarget,after.LastTarget);
+        }
+        Assert.DoesNotContain(stopped.Observations,row=>row.Actor==cleric && row.Kind is "mp" or "status" or "movement" or "action-committed");
+    }
+
     [Fact]
     public void PurchasedSuppliesAndDeathCreditSurviveFieldTicksTextAndConnectedBattleEntry()
     {

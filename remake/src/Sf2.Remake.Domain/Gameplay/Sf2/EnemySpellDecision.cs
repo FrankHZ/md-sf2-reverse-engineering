@@ -68,6 +68,7 @@ internal static class EnemySpellDecision
         var actor = battle.GetActor(actorRef); var key = new SpellRef("heal", 1);
         if (!actor.Spells.Contains(key)) return null;
         if (!battle.Definition.Spells.TryGetValue(key, out var spell)) throw new BattleRuleException("spell-effect", "spell", true);
+        if (spell.CuresPoison) throw new BattleRuleException("enemy-poison-cure", "spell", true);
         if (actor.Mp < 3 || actor.Mp < spell.MpCost) return null;
         var rule = actions.Single(r => r.Kind == BattleActionKind.Healing);
         var action = new BattleActionRef(BattleActionKind.Healing, key);
