@@ -19,6 +19,27 @@ internal static class GameText
     internal sealed record Candidate(string Language, IReadOnlyDictionary<string, string> Rows, IReadOnlyDictionary<string, RowStatus> Status);
     private static readonly Dictionary<string, int> Arguments = new()
     {
+        ["battle.result-continue"] = 0,
+        ["battle.result-more"] = 0,
+        ["battle.give-result"] = 3,
+        ["battle.exchange-result"] = 4,
+        ["battle.give-target"] = 4,
+        ["battle.give-confirm"] = 2,
+        ["battle.exchange-confirm"] = 3,
+        ["battle.give-title"] = 0,
+        ["battle.exchange-title"] = 1,
+        ["battle.transaction-empty"] = 0,
+        ["battle.transaction-item"] = 4,
+        ["battle.give-item"] = 0,
+        ["battle.give-recipient-help"] = 1,
+        ["battle.discard-result"] = 2,
+        ["battle.discard-confirm"] = 1,
+        ["battle.discard-title"] = 0,
+        ["battle.discard-equipped"] = 0,
+        ["battle.discard-protected"] = 0,
+        ["battle.discard-rare"] = 0,
+        ["battle.retreat-spell"] = 3,
+        ["battle.retreat-item"] = 2,
         ["battle.command.attack"] = 0,
         ["battle.command.magic"] = 0,
         ["battle.command.item"] = 0,
@@ -327,7 +348,7 @@ internal static class GameText
         ["ui.settings.storage"] = "Preferences were not changed. Recovery details above remain in English.",
         ["ui.settings.invalid"] = "Preferences could not be validated. Current settings are retained.",
         ["ui.settings.display"] = "Language resources are unavailable (localization-resources). Current settings are retained.",
-        ["ui.settings.partial"] = "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, battle commands/targets/equipment/status, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English.",
+        ["ui.settings.partial"] = "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, battle commands/targets/equipment/status, Give/Drop/retreat, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English.",
         ["ui.settings.overlay"] = "Field translation unavailable (overlay-unavailable); English fallback. Preference retained.",
     };
     private static Candidate? _current;

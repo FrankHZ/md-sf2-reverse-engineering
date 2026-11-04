@@ -114,7 +114,7 @@ msgstr "Language resources are unavailable (localization-resources). Current set
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, battle commands/targets/equipment/status, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
+msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, battle commands/targets/equipment/status, Give/Drop/retreat, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -904,3 +904,66 @@ msgstr "{0} / {1}: cycle choices\n{2}: select / confirm\n{3}: back"
 
 msgid "battle.read-more"
 msgstr "{0}: Read more"
+
+msgid "battle.result-continue"
+msgstr "Confirm to continue."
+
+msgid "battle.result-more"
+msgstr "Confirm: Read more"
+
+msgid "battle.give-result"
+msgstr "{0} gave {1} to {2}."
+
+msgid "battle.exchange-result"
+msgstr "{0} gave {1} to {2} and received {3}."
+
+msgid "battle.give-target"
+msgstr "Give {0}: choose an adjacent teammate\n{1} / {2}\n> {3}"
+
+msgid "battle.give-confirm"
+msgstr "Give {0} to {1}?\nConfirm transfers and ends this action; Cancel returns."
+
+msgid "battle.exchange-confirm"
+msgstr "Give {0} to {1} for {2}?\nConfirm transfers and ends this action; Cancel returns."
+
+msgid "battle.give-title"
+msgstr "Choose an item to give:"
+
+msgid "battle.exchange-title"
+msgstr "{0}'s hands are full. Choose an item to return:"
+
+msgid "battle.transaction-empty"
+msgstr "No available item."
+
+msgid "battle.transaction-item"
+msgstr "{0} / {1}\n> slot {2}: {3}"
+
+msgid "battle.give-item"
+msgstr "item"
+
+msgid "battle.give-recipient-help"
+msgstr "{0}: cycle recipients"
+
+msgid "battle.discard-result"
+msgstr "{0} discarded {1}."
+
+msgid "battle.discard-confirm"
+msgstr "Discard {0}?\nConfirm discards; Cancel keeps it. Your action and movement preview remain available."
+
+msgid "battle.discard-title"
+msgstr "Choose an item to discard:"
+
+msgid "battle.discard-equipped"
+msgstr " · equipped"
+
+msgid "battle.discard-protected"
+msgstr " · protected: cannot discard"
+
+msgid "battle.discard-rare"
+msgstr " · rare: enters Deals"
+
+msgid "battle.retreat-spell"
+msgstr "{0} cast {1} level {2}!"
+
+msgid "battle.retreat-item"
+msgstr "{0} used {1}!"

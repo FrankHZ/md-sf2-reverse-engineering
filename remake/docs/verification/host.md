@@ -2417,3 +2417,67 @@ Unsupported, actual lethal cards and mounted original command rasters. These do 
 translation/typography acceptance, physical gamepad/DPI coverage, source-image translation, private
 terminology/default-name translation, new effects or battle-wide localization. Give/Discard/Retreat,
 other dynamic scene/results and seven-character ASCII naming retain their existing boundaries.
+
+
+## Localized battle transactions and retreat
+
+Use the [M2e agreement](../application/localization-design.md#implemented-m2e-battle-transactions-and-retreat-boundary)
+and [presentation owner](../godot/presentation.md#localized-battle-transactions-and-retreat-display).
+Load the existing ignored private-input configuration in the launching process and force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Reuse the transferred H project, SDK/Godot/imports and
+`local/issue1471/field-01` APPDATA/LOCALAPPDATA/TEMP. Run `uv run sf2 verify adapter`, then the actual
+Debug build from `remake/`: `& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore`.
+A changed-PO `--headless --editor --import` scan is necessary; do not create another environment.
+Native input uses the selected Godot with `--rendering-method gl_compatibility --fixed-fps 60
+--resolution 1920x1080 --path remake/game --script <retained-driver> -- <startup arguments>`.
+Settings use existing `textMode: adjustable`, language `en`/`zh-CN`, reduced flash and unbound movement
+axes, selected via `--input-settings`; no mid-battle language switch is added.
+
+The retained `local/issue1480/run-native.ps1 -Run <fresh-name> -Case <case>` selects the following
+finite cases. Its local drivers reuse existing real-input/state helpers, not a new production probe.
+Each process is serial and bounded to 45 wall seconds, with named checkpoints and no screenshots.
+
+| Case | Initial inputs and actual observation |
+| --- | --- |
+| `give` | `battle-give.json`, existing Give observer path: movement/preview, item/recipient/confirm Cancel, normal transfer and full-pack exchange. Both loadouts/ATT, RNG and queue remain stable during selection/reveal; each result commits once and acknowledgement advances to receiver control. |
+| `discard` | `battle-discard.json`: duplicate slot identity, equipped/rare/protected wording, real protected refusal without custody change, confirm Cancel, ordinary and rare discard. Actual result acknowledgement preserves actor/action, queue/round, movement preview and RNG; outer Cancel returns movement. |
+| `reading` / `fallback` | Reuse the bounded authored long-Give variation from the finite consumer migration above. HUD/result ReadMore precedes selection/ack without changing revision, inventory or tokens; switching candidates resets reading. Before composition, remove Chinese give-title and invalidate give-result parameters in native Translation resources. Observe whole English templates and key/reason/effective-locale diagnostics, then one transfer and subsequent control. |
+| `literal` | An ignored `battle-give.json` variation replaces the admitted Practice blade name consistently with `Empty {0} Bowie`. English-looking words and placeholder-like characters remain literal in real choices/results, rather than becoming empty-state or name-substitution instructions. |
+| `retreat` | Reuse `local/issue1047/world-01.json`, tracked `battle02-outcome-party.json` and `engine-battle02-egress-start.json` with current issue1047 input selection. Ordinary STAY reaches Bowie, spell selection/Cancel retains MP, actual EGRESS pays 8→0 once before localized text, then cue/effect/close and same-session usable field return/step. |
+| `wing` | Reuse the existing accepted `local/issue1343/world-01.json` unchanged with `battle02-angel-wing-party.json` and `engine-battle02-angel-wing-start.json`. Ordinary Chester control, Item list/second Wing/self-target, Cancel then confirm. Payment retains slot2/word4, MP0 and source name Angel Wing; one payment precedes localized text, effect/close and usable return. No world copy or new acquisition. |
+
+`-Case retreat -Run retreat-long-zhNN` selects the long variation. It removes the Chinese spell row and supplies a complete multiline English
+baseline template in memory, before composition. Reveal-all and each ReadMore must retain the Text
+token/revision/MP/inventory; only a fresh final Confirm starts Effect. Effect/Close tokens remain
+separate and return uses the same session. Inspect native visible labels/glyphs, actual panel/body/
+hint geometry and wrapped line heights, SessionResultObserved receipts and stderr. Long content is
+clipped within the retained reading area; its frame/hint stay inside 1080p. Compare bilingual semantic
+checkpoints for actor/target/slots, resources/RNG, queue/round and accepted continuations.
+Compare revision/sequence/token deltas from the common prepayment boundary when the retained intro
+completed naturally in one run and used the existing entry skip in another; retain both raw histories.
+Custom member names retain the unchanged CharacterNames source/custom resolver; no new name-entry,
+Unicode/IME or private terminology translation is admitted.
+
+Keep this slice's reports <=15 MiB and H free >=1 GiB, retaining all failures/process exits. Reuse
+only existing immutable inputs, keep fresh save namespaces outside checkouts if needed, and preserve
+necessary import-generated UID sidecars in ignored output before freeze. No full opening, research,
+full/H3/H4/emulator or engine/probe unit tests are needed for these display-only changes. On the
+clean committed head run `uv run sf2 verify plan --base origin/main --head HEAD` and compare selected
+CI to its adapter-only scope. Main-gate owns independent acceptance and merge.
+
+**Confirmed, bounded remake observations:** English/Chinese transactions and both retreat payment
+branches use native input and actual tokens/resources/geometry/errors; long reading and whole-row
+fallback retain once-only work. This does not establish human translation/typography approval,
+original reach/timing/audio, source/default-name translation, source-image lettering, other dynamic
+attack/growth/status/results or opening-wide bilingual coverage. These remain outside M2e; canonical
+execution, game-save identity and seven-character ASCII naming are unchanged.
+
+
+**Unknown, retained exit warning:** one passing Chinese Wing observation emitted two ObjectDB
+exit warnings. One same-case `-Case wing -Run wing-zh-verboseNN -VerboseNative` observation completed
+with empty stderr and no leaked-object type output. The original warning is preserved; its owner
+(observer-held references versus existing host/resource lifecycle) is not established. The changed
+consumer code adds string formatting/catalog rows, with no new Godot node/resource creation or
+lifecycle changes. This does not establish that the original warning is resolved or attributable to
+an independent issue; main-gate retains that acceptance boundary. No broader audio investigation or
+repetition of passing scenarios is implied.

@@ -484,6 +484,24 @@ stay visible. Give/Discard/Retreat and other dynamic result text remain outside 
 observation strings are not a claim of visible translation. Settings chooses language before battle.
 See the [finite native recipe](../verification/host.md#localized-battle-commands-targets-and-status).
 
+## Localized battle transactions and retreat display
+
+The [M2e consumer agreement](../application/localization-design.md#implemented-m2e-battle-transactions-and-retreat-boundary)
+owns English/zh-CN Give/exchange and Discard current item/recipient/confirmation/results, protected/
+rare/equipped explanations, auxiliary hints and authored EGRESS/Angel Wing feedback. Views format
+existing typed operands/payment branches through GameText, with whole English template fallback;
+canonical Text/TextFor and source/custom name precedence remain. They never parse an English label.
+The auxiliary HUD reuses the existing equipment cycle/select/back hint plus the Give recipient hint.
+
+Results keep the existing StoryDialoguePanel/reveal/ReadMore guard. Give acknowledgement ends the
+action; Discard preserves action/movement preview; retreat retains Text/Effect/Close/Return, separate
+tokens, once-only MP/item payment, cue/pulse/reduced-flash and focus suspension. Display refresh and
+reading cannot submit another transaction, consume RNG or reconstruct a result. Settings chooses
+language before battle. Other dynamic results, private dialogue/terminology and source-image
+lettering remain outside this group. The [native recipe](../verification/host.md#localized-battle-transactions-and-retreat)
+records finite state/input/geometry/error observations; human translation/typography approval and
+original-game timing/natural reach remain separate.
+
 ## Battle status-card agreement
 
 **Standard rigor; [#1397](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1397).**

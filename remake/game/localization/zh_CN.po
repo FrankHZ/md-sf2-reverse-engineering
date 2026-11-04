@@ -114,7 +114,7 @@ msgstr "语言资源不可用（localization-resources）。已保留当前设�
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "中文显示：战斗指令／目标／装备／状态、队伍／整备、入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
+msgstr "中文显示：战斗指令／目标／装备／状态、交接／丢弃／撤退、队伍／整备、入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -904,3 +904,66 @@ msgstr "{0} / {1}：切换选项\n{2}：选择 / 确认\n{3}：返回"
 
 msgid "battle.read-more"
 msgstr "{0}：继续阅读"
+
+msgid "battle.result-continue"
+msgstr "确认以继续。"
+
+msgid "battle.result-more"
+msgstr "确认：继续阅读"
+
+msgid "battle.give-result"
+msgstr "{0}将{1}交给了{2}。"
+
+msgid "battle.exchange-result"
+msgstr "{0}将{1}交给了{2}，并收到了{3}。"
+
+msgid "battle.give-target"
+msgstr "交出{0}：选择相邻队友\n{1} / {2}\n> {3}"
+
+msgid "battle.give-confirm"
+msgstr "将{0}交给{1}？\n确认后交接并结束本次行动；取消则返回。"
+
+msgid "battle.exchange-confirm"
+msgstr "将{0}交给{1}，换取{2}？\n确认后交接并结束本次行动；取消则返回。"
+
+msgid "battle.give-title"
+msgstr "选择要交出的物品："
+
+msgid "battle.exchange-title"
+msgstr "{0}的背包已满。选择要交回的物品："
+
+msgid "battle.transaction-empty"
+msgstr "没有可选物品。"
+
+msgid "battle.transaction-item"
+msgstr "{0} / {1}\n> 第{2}格：{3}"
+
+msgid "battle.give-item"
+msgstr "物品"
+
+msgid "battle.give-recipient-help"
+msgstr "{0}：切换接收者"
+
+msgid "battle.discard-result"
+msgstr "{0}丢弃了{1}。"
+
+msgid "battle.discard-confirm"
+msgstr "丢弃{0}？\n确认则丢弃；取消则保留。仍可继续本次行动和移动预览。"
+
+msgid "battle.discard-title"
+msgstr "选择要丢弃的物品："
+
+msgid "battle.discard-equipped"
+msgstr " · 已装备"
+
+msgid "battle.discard-protected"
+msgstr " · 受保护：不可丢弃"
+
+msgid "battle.discard-rare"
+msgstr " · 稀有：进入特卖库存"
+
+msgid "battle.retreat-spell"
+msgstr "{0}施放了{1}，等级{2}！"
+
+msgid "battle.retreat-item"
+msgstr "{0}使用了{1}！"

@@ -1,7 +1,9 @@
 using Godot;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
@@ -60,13 +62,18 @@ internal sealed partial class BattleRetreatView : Control
             _panel.Present(false, false, false, default, "", lifetimeOpen: false);
             var actor = _session.Current.Battle.GetActor(state.Actor);
             string name = CharacterNames.Battle(_session.Current.Story, actor, _session.ActiveBattleScenes);
-            _text.Text = state.TextFor(name);
+            _text.Text = state.Payment switch
+            {
+                SpellRetreatPayment spell => GameText.Get("battle.retreat-spell", name, spell.Spell.Value.ToUpperInvariant(), spell.Spell.Level),
+                ItemRetreatPayment item => GameText.Get("battle.retreat-item", name, item.Name),
+                _ => throw new InvalidOperationException("Unknown retreat payment."),
+            };
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
             if (state.Phase == BattleRetreatPhase.Effect) { _cue.Play(); _cue.StreamPaused = _suspended; }
         }
         _state = state;
         _text.Visible = state.Phase == BattleRetreatPhase.Text;
-        _panel.Present(_text.Visible, false, false, default, _panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue.");
+        _panel.Present(_text.Visible, false, false, default, GameText.Get(_panel.MoreBelow ? "battle.result-more" : "battle.result-continue"));
         _veil.Color = state.Phase == BattleRetreatPhase.Text ? new(0, 0, 0, 0.65f) : Colors.Transparent;
     }
 
@@ -105,7 +112,7 @@ internal sealed partial class BattleRetreatView : Control
         if (_suspended || !CanProcess() || _state is not { Phase: BattleRetreatPhase.Text } state || action != GameAction.Confirm) return null;
         if (!state.Revealed) { _text.VisibleCharacters = -1; return null; }
         if (_panel.ReadMore())
-        { _panel.SetHint(_panel.MoreBelow ? "Confirm: Read more" : "Confirm to continue."); return null; }
+        { _panel.SetHint(GameText.Get(_panel.MoreBelow ? "battle.result-more" : "battle.result-continue")); return null; }
         return new Acknowledge(state.Token);
     }
 
