@@ -1019,3 +1019,119 @@ msgstr "已撤离战斗。已返回探索。"
 #. Story controls/typed battle return only; source dialogue remains unchanged.
 msgid "field.return.retreat.pending"
 msgstr "已撤离战斗。正在返回探索……"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.attack"
+msgstr "{0}发动攻击。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.second"
+msgstr "{0}再次攻击。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.counter"
+msgstr "{0}发动反击。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.item"
+msgstr "{0}使用{1}。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.prism"
+msgstr "{0}发射棱镜光束。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.damage"
+msgstr "{0}受到{1}点伤害。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.critical"
+msgstr "暴击：{0}受到{1}点伤害。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.dodge"
+msgstr "{0}避开了攻击。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.ineffective"
+msgstr "本次行动对{0}无效。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.ally-death"
+msgstr "{0}无法继续战斗。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.enemy-death"
+msgstr "{0}被击败。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.received"
+msgstr "{0}获得{1}。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.dropped"
+msgstr "{0}掉落{1}。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.exp"
+msgstr "{0}获得{1}点经验。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.gold"
+msgstr "获得金币：{0}。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.level"
+msgstr "{0}升至{1}级。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.max-hp"
+msgstr "{0}的HP上限增加{1}点。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.max-mp"
+msgstr "{0}的MP上限增加{1}点。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.attack-growth"
+msgstr "{0}的攻击增加{1}点。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.defense-growth"
+msgstr "{0}的防御增加{1}点。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.agility-growth"
+msgstr "{0}的敏捷增加{1}点。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.spell-growth"
+msgstr "{0}学会{2}级{1}。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.sleep"
+msgstr "{0}陷入睡眠。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.sleeping"
+msgstr "{0}仍在睡眠中。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.awake"
+msgstr "{0}醒来了。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.poison"
+msgstr "{0}因中毒失去{1}点HP。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.exhausted"
+msgstr "{0}因中毒伤害无法继续战斗。"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.in-progress"
+msgstr "行动进行中…"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.wait"
+msgstr "{0}：等待"
