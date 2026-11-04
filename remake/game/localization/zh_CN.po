@@ -1150,13 +1150,13 @@ msgid "system.journey"
 msgstr "旅程"
 
 msgid "system.session"
-msgstr "会话"
+msgstr "游戏"
 
 msgid "system.settings-reason"
-msgstr "设置仅在探索可操作且其他菜单关闭时可用。"
+msgstr "请在探索时结束移动和对话，关闭其他菜单后再更改设置。"
 
 msgid "system.new-reason"
-msgstr "新游戏仅在探索可操作时可用。"
+msgstr "请在探索时结束移动和对话，关闭其他菜单后再开始新游戏。"
 
 msgid "system.hint"
 msgstr "{0}：菜单／恢复\n{1}：选择   •   {2}：返回"
@@ -1165,4 +1165,4 @@ msgid "system.no-pad"
 msgstr "摇杆方向均已分配。请用键盘／鼠标进入菜单，或编辑按键配置，为菜单分配手柄输入。"
 
 msgid "system.save-reason"
-msgstr "保存需要处于已支持的开场存档点，且移动和剧情均已结束。"
+msgstr "请在可存档地点结束移动和剧情后再试。"

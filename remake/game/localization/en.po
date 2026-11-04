@@ -1150,13 +1150,13 @@ msgid "system.journey"
 msgstr "Journey"
 
 msgid "system.session"
-msgstr "Session"
+msgstr "Game"
 
 msgid "system.settings-reason"
-msgstr "Settings is available at settled field input, outside other menus."
+msgstr "You can change settings while exploring, after movement and dialogue end and other menus close."
 
 msgid "system.new-reason"
-msgstr "New Game is available at settled field input."
+msgstr "You can start a new game while exploring, after movement and dialogue end and other menus close."
 
 msgid "system.hint"
 msgstr "{0}: Menu / Resume\n{1}: Choose   •   {2}: Back"
@@ -1165,4 +1165,4 @@ msgid "system.no-pad"
 msgstr "All stick directions are already assigned. Use keyboard / mouse for Menu, or edit the bindings file to free a pad input."
 
 msgid "system.save-reason"
-msgstr "Saving requires a supported opening savepoint with movement and story work settled."
+msgstr "Finish movement and story events, then try again at a save point."
