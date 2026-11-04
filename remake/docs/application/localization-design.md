@@ -7,7 +7,8 @@ The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
 settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat, story controls/choices/return notices and semantic battle feedback
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
-This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
+A private six-row M3 Witch-entry suggestion is technically connected, with human review pending, at the
+[bounded sample boundary](#m3-private-witch-entry-review-sample). This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
 These describe the remake, not new original-game evidence.
 
@@ -143,6 +144,45 @@ Church caller return, UTC timestamps, game-save format and preference write/publ
 fallback and independent-process observations. Image lettering, private dialogue translation, other
 menus, Unicode/IME names, full-opening coverage, export and human translation/typography acceptance
 remain outside this slice. Standard rigor and the existing High save boundary continue unchanged.
+
+## M3 private Witch-entry review sample
+
+[#1486](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1486) prepares exactly
+`entry.text/216–221` from the admitted `private-local-entry` source as one optional Simplified Chinese
+suggestion and a private bilingual review table. The existing Standard scope remains appropriate:
+this is a finite content/review pilot through admitted consumers, with no code, public PO, schema,
+source package, glossary, default-name or Unicode/IME change. No broader script batch is authorized.
+
+The source inventory is six rows, 235 characters and 49 simple English word matches, with no brace
+control/name tokens. Literal newline counts are `1,2,1,1,1,0`; the draft preserves those counts while
+placing breaks at Chinese phrase boundaries. Rows 219–220 carry one conditional meaning across the
+existing page boundary. This preserves their source IDs and connected meaning, without claiming
+original rhythm, hardware timing or human-approved pacing.
+
+The persistent private owner is outside Git and removable worktrees, with exactly
+`entry.zh-CN.json` (existing-reader overlay), `review.zh-CN.md` (six bilingual rows, IDs, rationale and
+approval state) and `README.md` (ownership, read-only source identity and finite local reproduction).
+It is user content, not cleanup scratch; retiring its consuming worktree must preserve it. No nested
+repository, link, complete entry-resource copy or publication of source/translated prose is involved.
+The overlay pins the admitted repository/commit/ROM identity through the existing `source` object;
+`SF2_ENTRY_DISPLAY_CATALOG` selects its absolute local path independently of the world catalog.
+Source inputs stay read-only. Local use and reader admission grant no distribution rights.
+
+**Confirmed technical boundary:** the existing Content reader admits all six rows with exact Chinese
+resolution and no diagnostic/fallback. Finite headless ordinary title/greeting input visits every
+Chinese and English row, checks body/hint glyphs and geometry, uses keyboard and pointer continuation,
+and reaches the existing menu/slot-cancel path. Locale Apply retains the menu page/selection, texture
+identities and audio receipts; no gameplay session or save is created. The
+[verification owner](../verification/host.md#private-witch-entry-translation-pilot) records the retained
+recipe, actual results, caller corrections and shutdown warning. This reuses the retained adapter and
+imports, with no SDK/research/full/H3 or campaign/save-compatibility rerun.
+
+Main-gate's independent semantic review passed for this suggestion with the requested Chinese phrase
+breaks in rows 218–219. **Human tone, typography and actual reading approval remain pending** in the
+private review artifact; technical admission and agent review cannot supply that approval. The
+engineering sample task may close after independent integration while epic #1468's human checkpoint
+remains open. No reply authorizes expansion. Terminology, other private dialogue, image lettering,
+full-opening Chinese, Unicode naming and publication remain outside this sample.
 
 ## Current production and consumption paths
 

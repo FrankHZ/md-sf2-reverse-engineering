@@ -2276,6 +2276,70 @@ startup/driver/geometry discoveries in the handoff. Missing private translation,
 lettering, other menus, Unicode names/IME, export and human bilingual typography approval remain
 outside this result. Do not close the localization epic from this screen-group acceptance.
 
+## Private Witch-entry translation pilot
+
+[#1486](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1486) owns the finite
+[M3 suggestion/review boundary](../application/localization-design.md#m3-private-witch-entry-review-sample),
+exactly `private-local-entry` / `entry.text/216–221`. Keep all original and translated dialogue,
+bilingual review and absolute private paths local. The persistent external content owner has
+`entry.zh-CN.json`, `review.zh-CN.md` and `README.md`; its data survives worktree retirement. The
+private README and ignored `local/issue1486/HANDOFF.md` name its location and read-only source identity.
+Neither a complete entry package nor a new content repository is created.
+
+From the assigned existing checkout, load its current private-input/entry selection in the same
+PowerShell process. Select the optional overlay with an absolute `SF2_ENTRY_DISPLAY_CATALOG` and use
+ordinary `zh-CN` preferences/settings; `SF2_DISPLAY_CATALOG` still selects the separate world overlay.
+Reuse the existing adapter, imports, Godot installation and owned runtime directories. The finite
+local entry points are:
+
+```powershell
+pwsh -NoProfile -File ./local/issue1486/catalog.ps1
+pwsh -NoProfile -File ./local/issue1486/run-native.ps1 -Run <fresh-attempt>
+```
+
+The reader check uses the existing compiled Content assemblies without an SDK launch. It validates
+source package/repository/commit/ROM identity, exact six IDs, resolved text/effective locale/reason,
+empty diagnostics and literal newline counts `1,2,1,1,1,0`. These are literal newlines, not added
+`{N}` controls. Source size/mtime remain unchanged. The native launcher uses a fresh disposable
+external preference namespace for this Issue, existing runtime directories, headless 1920×1080,
+a 50-second outer deadline, no focus notification injection and no screenshots. Budget: private
+three-file text below 16 KiB, new local reports below 2 MiB, H free space above 1 GiB. Replan before
+exceeding those limits; no broader acquisition, world copy, environment/cache or new probe framework.
+
+The ordinary input route starts at title, confirms each row to menu 221 with alternating pointer and
+keyboard continuation, Applies English, returns to title and reads the same six English rows, then
+Applies Chinese again. Keep only the six paired key windows and necessary menu/input/process state.
+For every row compare the actual displayed body with the real reader result/source, require the
+expected locale with no fallback, inspect visible control glyph coverage and text/viewport geometry,
+and require fully read bodies. On Apply compare the state after ordinary Settings activation with
+that after Apply: opening Settings legitimately selects that menu item. Page/selection, textures and
+audio receipts then remain unchanged. Exercise menu Up/Down, New Game to empty slot selection and
+Cancel back to menu, without naming, campaign start or any gameplay-save write. Persistence observation
+is a nonempty envelope even with no session; check its null session/progress fields explicitly.
+
+**Confirmed:** the corrected finite observation resolves all six rows in both languages, has no
+input/text/glyph/geometry failures and no session/presenter errors; menu/slot Cancel works, no gameplay
+session/save is created, and both locale changes retain textures/audio/page/selection. The native
+process exits 0 before its deadline. Its stderr retains one shutdown warning for two ObjectDB instances,
+an unattributed lifecycle **Unknown** alongside earlier observations; this slice does not investigate
+or resolve it. Headless glyph/geometry checks do not establish physical rendering or human reading
+comfort. Existing long-text, invalid-parameter, naming and independent-process Save/Continue acceptance
+is reused rather than replayed.
+
+The first completed local attempt has no glyph/geometry failure but failed two caller assumptions:
+selection was compared before the pointer selected Settings, and the empty-session persistence
+envelope was incorrectly required to be an empty object. Its result remains retained. Corrected
+observation compares from Settings activation and checks null session/progress fields. No production
+behavior, source input, fixture or accepted comparison was changed to satisfy it.
+
+Direct document/link/scope/private-content checks and the clean committed planner own this two-document
+tracked diff; record the selected hosted CI in the handoff/PR. No fresh SDK, engine, normal research,
+full, H3, campaign or save-compatibility suite is required by this content sample. Main-gate independently
+reviewed the suggestion's semantics, including the connected 219–220 condition and Chinese phrase
+breaks in 218–219. **Explicit human tone/typography/reading review remains pending** in the private
+bilingual artifact and epic #1468. Closing this engineering sample does not approve a glossary, expand
+the script batch, establish full-opening Chinese or grant private-content publication rights.
+
 ## Localized Party and field Prepare
 
 The [M2c consumer agreement](../application/localization-design.md#implemented-m2c-party-and-field-prepare-boundary)
