@@ -45,7 +45,7 @@ internal static class HealingTargetRules
         ValidateAura(battle.Definition);
         var caster = battle.GetActor(actor);
         if (!caster.IsAlly || caster.Control != BattleControl.Player ||
-            !(caster.Status == 0 || battle.Definition.Poison && caster.Status == 2))
+            !(SilenceRules.Supported(caster.Status, battle.Definition.Poison) && (caster.Status & 0xC0) == 0))
             throw new BattleRuleException("aura-caster", "actor", true);
         var origin = center == actor ? destination : target.Position!;
         // Admitted live states have unique, in-map occupancy. No raw-memory overlap emulation.

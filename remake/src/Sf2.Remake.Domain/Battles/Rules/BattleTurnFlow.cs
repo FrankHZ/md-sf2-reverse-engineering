@@ -71,7 +71,7 @@ internal static class BattleTurnFlow
             Require(start.NewBattle is null && start.DeathCredit is not null, "poison-death-context", "start.firstAlly", true);
             Require(start.DeathCredit!.Ally is not { } first || definition.Deployments.Any(d => d.Actor == first && d.Faction == BattleFaction.Ally),
                 "death-first-ally-context", "start.firstAlly", true);
-            Require(start.Actors.All(a => a.Status is 0 or 2), "poison-status", "start.actors.status", true);
+            Require(start.Actors.All(a => SilenceRules.Supported(a.Status)), "poison-status", "start.actors.status", true);
         }
         Sf2.Remake.Domain.Gameplay.Sf2.HealingTargetRules.ValidateAura(definition);
         BattleInitializationRules.Validate(definition, start);
@@ -91,7 +91,7 @@ internal static class BattleTurnFlow
                 bool playerEquipment = deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
                     !deployment.SourceAllyControl && Sf2ClassRules.SourceClass(actor.ClassRule) is not null;
                 bool fixedEnemyEquipment = deployment.Faction == BattleFaction.Enemy && !actor.Equipment.AllowChanges;
-                Require((playerEquipment || fixedEnemyEquipment) && (input.Status == 0 || definition.Poison && input.Status == 2 ||
+                Require((playerEquipment || fixedEnemyEquipment) && (SilenceRules.Supported(input.Status, definition.Poison) ||
                         !actor.Equipment.AllowChanges && start.NewBattle is not null) && actor.Physical is not null,
                     "equipment-actor", "start.actors", true);
             }
@@ -106,7 +106,7 @@ internal static class BattleTurnFlow
                     "actor-progress", "start.actors.progress");
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
-            Require(input.Status == 0 || definition.Poison && input.Status == 2 || start.NewBattle is not null || definition.Initialization?.RegionProgram == BattleRegionProgram.Authored, "actor-status", "start.actors.status", true);
+            Require(SilenceRules.Supported(input.Status, definition.Poison) || start.NewBattle is not null || definition.Initialization?.RegionProgram == BattleRegionProgram.Authored, "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
                 "missing-accounting", "start.actors");
             if (input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;

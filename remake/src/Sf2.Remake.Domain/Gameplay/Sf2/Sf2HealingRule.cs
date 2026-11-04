@@ -16,13 +16,13 @@ internal sealed class Sf2HealingRule : IHealingRule
         if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
                 spellRef is not { Value: "heal", Level: 1 } ||
-                !(actor.Status == 0 || battle.Definition.Poison && actor.Status == 2))
+                !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (spell.IsAura)
         {
             HealingTargetRules.ValidateAura(battle.Definition);
             if (!actor.IsAlly || actor.Control != BattleControl.Player ||
-                !(actor.Status == 0 || battle.Definition.Poison && actor.Status == 2))
+                !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
                 throw new BattleRuleException("aura-caster", "actor", true);
         }
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");

@@ -12,7 +12,11 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
         foreach (var reaction in reactions.Where(reaction => reaction.Actor == recipient.Actor))
         {
             var target = battle.GetActor(reaction.Target);
-            if (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell)
+            if (kind == BattleActionKind.SupportSpell)
+            {
+                if (reaction.Kind == BattleReactionKind.Status) accumulated = Math.Min(49, accumulated + 5);
+            }
+            else if (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell)
             {
                 int before = accumulated;
                 int kill = BattleRewards.KillExperience(recipient.Level, recipient.Definition.Physical!.Promoted, target.Level);
@@ -30,7 +34,7 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
             }
         }
         List<PhysicalRoll> rolls = [];
-        int award = BattleRewards.Award(accumulated, (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell) && battle.Definition.Rewards!.HalvedExperience, ref seed, rolls);
+        int award = BattleRewards.Award(accumulated, (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell or BattleActionKind.SupportSpell) && battle.Definition.Rewards!.HalvedExperience, ref seed, rolls);
         effects.AddRange(rolls.Select(roll => new BattleEffect("rng-" + roll.Purpose, recipient.Actor,
             roll.Before, roll.After, roll.Range, roll.Result)));
         return award;

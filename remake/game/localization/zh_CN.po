@@ -1176,3 +1176,19 @@ msgstr "请在可存档地点结束移动和剧情后再试。"
 #. Arguments: caster name, spell identity, level.
 msgid "battle.spell.action"
 msgstr "{0}施放了{1}，等级{2}。"
+
+#. Project-authored functional silence feedback.
+msgid "battle.scene.silence"
+msgstr "{0}被沉默了。"
+
+#. Project-authored functional silence feedback.
+msgid "battle.scene.silenced-cast"
+msgstr "{0}处于沉默状态。已消耗MP，但法术没有效果。"
+
+#. Project-authored functional silence feedback.
+msgid "battle.scene.silence-expired"
+msgstr "封魔效果结束。{0}可以再次施法。"
+
+#. Project-authored functional silence feedback.
+msgid "battle.status.silence"
+msgstr "沉默（{0}）"

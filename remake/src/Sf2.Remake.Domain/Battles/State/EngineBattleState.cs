@@ -11,7 +11,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
-public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser, AttackSpell }
+public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser, AttackSpell, SupportSpell }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief }
 public enum BattleControl { Player, Automatic }
@@ -20,8 +20,8 @@ public enum BattleFaction { Ally, Enemy }
 public sealed class PhysicalCriticalRule
 {
     private PhysicalCriticalRule(ushort chanceDenominator, int damageBonusShift, bool inflictsSleep = false,
-        ushort doubleChanceDenominator = 32, ushort counterChanceDenominator = 32)
-    { CounterChanceDenominator = counterChanceDenominator; DoubleChanceDenominator = doubleChanceDenominator; ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
+        ushort doubleChanceDenominator = 32, ushort counterChanceDenominator = 32, bool inflictsSilence = false)
+    { InflictsSilence = inflictsSilence; CounterChanceDenominator = counterChanceDenominator; DoubleChanceDenominator = doubleChanceDenominator; ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
     public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
     public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
     public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
@@ -29,6 +29,8 @@ public sealed class PhysicalCriticalRule
     public ushort CounterChanceDenominator { get; }
     public ushort DoubleChanceDenominator { get; }
     public static PhysicalCriticalRule Sleep { get; } = new(4, 0, true);
+    public static PhysicalCriticalRule Silence { get; } = new(4, 0, doubleChanceDenominator: 16, counterChanceDenominator: 16, inflictsSilence: true);
+    public bool InflictsSilence { get; }
     public bool InflictsSleep { get; }
     public ushort ChanceDenominator { get; }
     public int DamageBonusDenominator => DamageBonusShift == 0 ? 0 : 1 << DamageBonusShift;
@@ -170,8 +172,9 @@ public sealed class BattleDefinition
         IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
         TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
         EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null, BattleGiveDefinition? give = null,
-        BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null)
+        BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null, IEnumerable<SupportSpellDefinition>? supportSpells = null)
     {
+        SupportSpells = new ReadOnlyDictionary<SpellRef, SupportSpellDefinition>((supportSpells ?? []).ToDictionary(s => s.Spell));
         AttackSpells = new ReadOnlyDictionary<SpellRef, AttackSpellDefinition>((attackSpells ?? []).ToDictionary(s => s.Spell));
         Poison = poison; Discard = discard; Give = give; PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
         Encounter = encounter; Map = map; Width = width; Height = height;
@@ -188,7 +191,7 @@ public sealed class BattleDefinition
         source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
         outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, source.RetreatSpells.Values,
         source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, source.ItemDrops, source.PrismLaser,
-        source.Give, source.Discard, source.Poison, source.AttackSpells.Values) { }
+        source.Give, source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values) { }
     internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome) => new(this, outcome: outcome);
     internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments) => new(this, deployments);
 
@@ -200,6 +203,7 @@ public sealed class BattleDefinition
     public IReadOnlyList<BattleDeploymentDefinition> Deployments { get; }
     public IReadOnlyDictionary<SpellRef, HealingSpellDefinition> Spells { get; }
     public IReadOnlyDictionary<SpellRef, AttackSpellDefinition> AttackSpells { get; }
+    public IReadOnlyDictionary<SpellRef, SupportSpellDefinition> SupportSpells { get; }
     public IReadOnlyDictionary<byte, HealingItemDefinition> HealingItems { get; }
     public IReadOnlyDictionary<SpellRef, RetreatSpellDefinition> RetreatSpells { get; }
     public IReadOnlyDictionary<byte, RetreatItemDefinition> RetreatItems { get; }

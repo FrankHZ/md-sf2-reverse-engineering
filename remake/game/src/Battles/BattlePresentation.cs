@@ -40,8 +40,9 @@ internal static class BattleSnapshotProjection
             death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : a.Facing,
             death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit,
             selection?.Target == a.Actor && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady)).ToArray();
+        string Status(BattleActorState a) => (a.Status & 0x300) == 0 ? "" : " · " + GameText.Get("battle.status.silence", (a.Status & 0x300) >> 8);
         string roster = string.Join("\n", battle.Actors.Select(a =>
-            $"{CharacterNames.Battle(snapshot.Story, a, names)}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));
+            $"{CharacterNames.Battle(snapshot.Story, a, names)}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}{Status(a)}"));
         var focus = selection?.Preview.Path.ToList() ?? [];
         foreach (var actor in battle.Actors.Where(a => a.Hp > 0 && (a.Actor == selection?.Actor ||
             a.Actor == selection?.Target || a.Actor == candidate))) focus.Add(actor.Position!);

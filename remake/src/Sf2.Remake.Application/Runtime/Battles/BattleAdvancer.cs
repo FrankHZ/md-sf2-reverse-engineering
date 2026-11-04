@@ -95,7 +95,7 @@ internal static class BattleAdvancer
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
                 var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression, rules.Actions);
                 SessionResult delivery;
-                if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || battle.Definition.Poison && actor.Status == 2))
+                if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || (actor.Status & 0x3C0) != 0 || battle.Definition.Poison && (actor.Status & 2) != 0))
                 {
                     // Source standby still returns to the post-action hook. It never
                     // initializes BATTLESCENE_FIRST_ALLY or fabricates a battle scene.

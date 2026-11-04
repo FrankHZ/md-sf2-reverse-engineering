@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -209,13 +209,17 @@ public sealed class BattleSceneState
 {
     internal BattleSceneState(BattleActionResolution? action, BattleScenePhase phase, int reactionIndex,
         WaitToken token, IReadOnlyList<BattleSceneOffset>? motion = null, IReadOnlyList<BattleGrowthNotice>? growth = null, int noticeIndex = 0,
-        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null, FieldDeathTurn? fieldDeath = null, PoisonTurnNotice? poisonTurn = null)
-    { PoisonTurn = poisonTurn; FieldDeath = fieldDeath; Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
+        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null, FieldDeathTurn? fieldDeath = null, PoisonTurnNotice? poisonTurn = null, SilenceTurnNotice? silenceTurn = null)
+    { SilenceTurn = silenceTurn; PoisonTurn = poisonTurn; FieldDeath = fieldDeath; Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
     private readonly BattleActionResolution? _action;
+    internal SilenceTurnNotice? SilenceTurn { get; }
+    public bool IsSilenceTurn => SilenceTurn is not null;
+    public bool IsSilencedCast => _action?.Silenced is not null;
+    public SpellRef? SilencedSpell => _action?.Silenced?.Action.Spell;
     internal SleepTurnNotice? SleepTurn { get; }
     internal PoisonTurnNotice? PoisonTurn { get; }
     public bool IsPoisonTurn => PoisonTurn is not null;
-    public bool IsAfterTurnNotice => IsSleepTurn || IsPoisonTurn;
+    public bool IsAfterTurnNotice => IsSleepTurn || IsPoisonTurn || IsSilenceTurn;
     internal FieldDeathTurn? FieldDeath { get; }
     public bool IsSleepTurn => SleepTurn is not null;
     public int? SleepTurnText => SleepTurn?.Text;
@@ -235,14 +239,16 @@ public sealed class BattleSceneState
     public PrismLaserShot? Laser => _action?.Laser;
     public bool HasReaction => _action is not null && ReactionIndex < Action.Reactions.Count;
     public ActorRef? ReactionTarget => HasReaction ? Reaction.Target : null;
-    public ActorRef Actor => FieldDeath?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? (Laser is not null ? Action.Actor : Reaction.Actor);
-    public ActorRef? Target => FieldDeath?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? ReactionTarget;
-    public string ActionKind => IsFieldDeath ? "field-death" : IsPoisonTurn ? "poison-turn" : IsSleepTurn ? "sleep-turn" : Laser is not null ? "prism-laser" : Reaction.Action;
+    public ActorRef Actor => FieldDeath?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? SilenceTurn?.Actor ?? (!HasReaction ? Action.Actor : Reaction.Actor);
+    public ActorRef? Target => FieldDeath?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? SilenceTurn?.Actor ?? ReactionTarget;
+    public string ActionKind => IsFieldDeath ? "field-death" : IsPoisonTurn ? "poison-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" : Laser is not null ? "prism-laser" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsAfterTurnNotice ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
     public HealingItemDefinition? Item => _action?.Item;
     public BattleItemReceipt? ItemReceipt => !HasReaction ? null : Reaction.Receipt;
     public HealingSpellDefinition? Spell => _action?.Spell;
     public Sf2.Remake.Domain.Gameplay.Sf2.AttackSpellDefinition? AttackSpell => _action?.AttackSpell;
+    public Sf2.Remake.Domain.Gameplay.Sf2.SupportSpellDefinition? SupportSpell => _action?.SupportSpell;
+    public IReadOnlyList<ActorRef> SupportTargets => SupportSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public IReadOnlyList<ActorRef> AttackTargets => AttackSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public HealingSceneCursor? Healing { get; }
     public bool IsAura => Spell?.IsAura == true;
@@ -276,7 +282,8 @@ public sealed class BattleSceneState
     public int GoldAmount => IsAfterTurnNotice || IsFieldDeath ? 0 : (int)(Action.ConstructionEffects.Where(effect => effect.Kind == "gold")
         .Sum(effect => effect.After!.Value - effect.Before!.Value));
     public bool IsHealingMessage => Healing is not null && Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage;
-    public bool RequiresAcknowledgement => Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage
+    public bool RequiresAcknowledgement => Phase is BattleScenePhase.SilencedCastMessage or
+        BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage
         or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage
         or BattleScenePhase.ItemDroppedMessage or BattleScenePhase.ItemReceivedMessage;
     public PresentationCueKind CompletionKind => Phase switch
@@ -305,7 +312,7 @@ internal static class BattleSceneContinuation
                 observations.Add(Observe(effect, ++sequence, revision));
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
-            healing: action.Spell is null || action.Spell.IsAura ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
+            healing: action.Silenced is not null || action.Spell is null || action.Spell.IsAura ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
         return Result(current, action.Prepared.With(deathCredit: new(action.Laser is null ? action.FirstAlly : null)), scene, revision, sequence, observations);
     }
 
@@ -316,7 +323,7 @@ internal static class BattleSceneContinuation
     {
         var scene = current.BattleScene!;
         if (scene.IsPoisonTurn) return BattlePoisonContinuation.Complete(current, command, rules);
-        if (scene.IsSleepTurn) return BattleAfterTurnContinuation.Complete(current, command, rules);
+        if (scene.IsSleepTurn || scene.IsSilenceTurn) return BattleAfterTurnContinuation.Complete(current, command, rules);
         if (scene.IsFieldDeath) return BattleFieldDeathContinuation.Submit(current, command, rules);
         if (scene.Healing is not { } healing) return Continue(current, command, rules);
         bool advancing = command is AdvanceSimulation { Ticks: 1 } advance && advance.Wait == scene.Token && !healing.LogicalComplete;
@@ -386,7 +393,7 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.Initialize: next = BattleScenePhase.ActionMessage; break;
             case BattleScenePhase.ActionMessage:
                 observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.ReactionTarget));
-                if (scene.Spell is not null || scene.AttackSpell is not null)
+                if (scene.Spell is not null || scene.AttackSpell is not null || scene.SupportSpell is not null || scene.IsSilencedCast)
                 {
                     var caster = battle.GetActor(scene.Actor);
                     battle = scene.Action.ApplySpellCost(battle);
@@ -394,7 +401,11 @@ internal static class BattleSceneContinuation
                     next = BattleScenePhase.SpellCost; break;
                 }
                 next = BattleScenePhase.ActionAnimation; break;
-            case BattleScenePhase.SpellCost: next = BattleScenePhase.ActionAnimation; break;
+            case BattleScenePhase.SpellCost:
+                next = scene.IsSilencedCast ? BattleScenePhase.SilencedCastMessage : BattleScenePhase.ActionAnimation;
+                if (scene.IsSilencedCast) observations.Add(new(++sequence, revision, "silenced-cast", scene.Actor));
+                break;
+            case BattleScenePhase.SilencedCastMessage: next = BattleScenePhase.End; break;
             case BattleScenePhase.ActionAnimation:
                 if (scene.Laser is not null)
                 { next = scene.HasReaction ? BattleScenePhase.TargetEnter : BattleScenePhase.End; break; }
@@ -428,7 +439,7 @@ internal static class BattleSceneContinuation
                 break;
             case BattleScenePhase.Reaction: next = BattleScenePhase.ResultMessage; break;
             case BattleScenePhase.ResultMessage:
-                if (scene.AttackSpell is not null)
+                if (scene.AttackSpell is not null || scene.SupportSpell is not null)
                 {
                     if (scene.TargetDefeated) { next = BattleScenePhase.DeathMessage; break; }
                     goto case BattleScenePhase.ItemReceivedMessage;
@@ -437,6 +448,12 @@ internal static class BattleSceneContinuation
                 { index++; next = BattleScenePhase.TargetExit; break; }
                 if (scene.Spell is not null) { next = BattleScenePhase.MakeIdle; break; }
                 if (scene.Reaction.InflictedSleep is not null) { next = BattleScenePhase.SleepMessage; break; }
+                if (scene.Reaction.InflictedSilence is not null) { next = BattleScenePhase.SilenceMessage; break; }
+                goto case BattleScenePhase.SleepMessage;
+            case BattleScenePhase.SilenceMessage:
+                ushort silenceBefore = battle.GetActor(scene.Target!.Value).Status;
+                battle = scene.Action.ApplySilence(battle, scene.Reaction);
+                observations.Add(new(++sequence, revision, "silence-inflicted", scene.Target, silenceBefore, battle.GetActor(scene.Target!.Value).Status));
                 goto case BattleScenePhase.SleepMessage;
             case BattleScenePhase.SleepMessage:
                 if (scene.Phase == BattleScenePhase.SleepMessage)
@@ -460,7 +477,7 @@ internal static class BattleSceneContinuation
                 goto case BattleScenePhase.ItemReceivedMessage;
             case BattleScenePhase.ItemDroppedMessage: next = BattleScenePhase.ItemReceivedMessage; break;
             case BattleScenePhase.ItemReceivedMessage:
-                if (index + 1 < scene.Action.Reactions.Count) { index++; next = scene.Laser is not null || scene.AttackSpell is not null ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage; }
+                if (index + 1 < scene.Action.Reactions.Count) { index++; next = scene.Laser is not null || scene.AttackSpell is not null || scene.SupportSpell is not null ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage; }
                 else if (scene.Action.Reward is not null)
                 {
                     var reward = scene.Action.CreditReward(battle, rules.Progression);
@@ -499,7 +516,7 @@ internal static class BattleSceneContinuation
                 return BattleAdvancer.Advance(committed, observations, rules);
             default: throw new InvalidOperationException("Unknown battle scene phase.");
         }
-        observations.Add(new(++sequence, revision, "scene-step-started", (scene.Laser is not null ? scene.Action.Actor : scene.Action.Reactions[index].Actor), Detail: next.ToString()));
+        observations.Add(new(++sequence, revision, "scene-step-started", (scene.Laser is not null || !scene.HasReaction ? scene.Action.Actor : scene.Action.Reactions[index].Actor), Detail: next.ToString()));
         var healing = scene.Healing?.Enter(next);
         if (healing is not null)
         {

@@ -25,7 +25,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         }
         int first = commandset switch { 2 => 4, 14 => 5, 9 => 3, _ => 1 };
         if (MoveOrder(first, mode, follow: first == 3) is { } move) return Complete(move);
-        if (commandset == 2) _effects.Add(new("ai-command-support", actorRef, After: -1));
+        if (commandset == 2 && Support() is { } supportFirst) return Complete(supportFirst);
         int attack = commandset == 14 ? 2 : commandset is 2 or 9 ? 3 : 1;
         if (Attack() is { } action)
         {
@@ -38,7 +38,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
             int healCommand = commandset == 14 ? 3 : commandset == 9 ? 2 : 1;
             if (Heal() is { } heal) { _effects.Add(new("ai-command-heal" + healCommand, actorRef, After: 0)); return Complete(heal); }
             _effects.Add(new("ai-command-heal" + healCommand, actorRef, After: -1));
-            _effects.Add(new("ai-command-support", actorRef, After: -1));
+            if (Support() is { } support) return Complete(support);
         }
         if (commandset is 9 or 14 && MoveOrder(commandset == 9 ? 4 : 2, mode, follow: commandset == 14) is { } fallback)
             return Complete(fallback);
@@ -64,6 +64,13 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
             Target: targets[pursuit.TargetIndex].Actor));
         _effects.Add(new("ai-command-move" + (mode + 1), actorRef, After: 0));
         return Complete(new(_battle, [], pursuit.Destination, BattleMovement.Route(Actor.Position!, pursuit.MoveString)));
+    }
+
+    private BattleAutomaticAction? Support()
+    {
+        var action = EnemySupportDecision.Resolve(_battle, actorRef, actions ?? [physical], Grid());
+        _effects.Add(new("ai-command-support", actorRef, After: action is null ? -1 : 0));
+        return action;
     }
 
     private BattleAutomaticAction? MoveOrder(int command, int mode, bool follow)

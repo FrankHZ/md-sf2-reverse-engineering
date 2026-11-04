@@ -1,0 +1,312 @@
+{
+  "formatVersion": 7,
+  "package": "silence-watch",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "terrains": [
+    {
+      "id": "stone-court-terrain",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "p": {
+          "surface": "open",
+          "protection": "none"
+        }
+      },
+      "rows": [
+        "pppppppppp",
+        "ppppp#pppp",
+        "pppp#p#ppp",
+        "ppppp#pppp",
+        "pppppppppp",
+        "pppppppppp",
+        "pppppppppp",
+        "pppppppppp",
+        "pppppppppp"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "stone-court-map",
+      "terrain": "stone-court-terrain"
+    }
+  ],
+  "spells": [
+    {
+      "id": "blaze",
+      "level": 1,
+      "mpCost": 2,
+      "minimumRange": 1,
+      "maximumRange": 2,
+      "effect": {
+        "kind": "attack",
+        "power": 6,
+        "radius": 0,
+        "element": "fire"
+      }
+    },
+    {
+      "id": "heal",
+      "level": 1,
+      "mpCost": 3,
+      "minimumRange": 0,
+      "maximumRange": 1,
+      "effect": {
+        "kind": "heal",
+        "adjustedPower": 15,
+        "fullRecovery": false
+      }
+    },
+    {
+      "id": "dispel",
+      "level": 1,
+      "mpCost": 5,
+      "minimumRange": 1,
+      "maximumRange": 2,
+      "effect": {
+        "kind": "dispel",
+        "radius": 1
+      }
+    }
+  ],
+  "actors": [
+    {
+      "id": "mage",
+      "classRule": "unpromoted-mage",
+      "level": 5,
+      "maxHp": 30,
+      "maxMp": 20,
+      "attack": 10,
+      "defense": 5,
+      "agility": 100,
+      "extraRoundAction": false,
+      "move": 2,
+      "items": [],
+      "spells": [
+        {
+          "id": "blaze",
+          "level": 1
+        }
+      ],
+      "physical": {
+        "movementType": "mage",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 7,
+        "special": "none"
+      },
+      "resistance": 0
+    },
+    {
+      "id": "priest",
+      "classRule": "unpromoted-priest",
+      "level": 5,
+      "maxHp": 30,
+      "maxMp": 20,
+      "attack": 10,
+      "defense": 5,
+      "agility": 60,
+      "extraRoundAction": false,
+      "move": 2,
+      "items": [],
+      "spells": [
+        {
+          "id": "heal",
+          "level": 1
+        }
+      ],
+      "physical": {
+        "movementType": "healer",
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half",
+          "counterChance": "one-in-16"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 7,
+        "special": "none"
+      },
+      "resistance": 0
+    },
+    {
+      "id": "smoke",
+      "classRule": "ordinary",
+      "level": 5,
+      "maxHp": 80,
+      "maxMp": 20,
+      "attack": 10,
+      "defense": 5,
+      "agility": 13,
+      "extraRoundAction": true,
+      "move": 1,
+      "items": [],
+      "spells": [
+        {
+          "id": "dispel",
+          "level": 1
+        }
+      ],
+      "physical": {
+        "movementType": "hovering",
+        "critical": {
+          "chance": "one-in-4",
+          "damageBonus": "silence",
+          "doubleChance": "one-in-16",
+          "counterChance": "one-in-16"
+        },
+        "promoted": false,
+        "leader": false,
+        "gold": 7,
+        "special": "none"
+      },
+      "resistance": 0
+    }
+  ],
+  "start": {
+    "encounter": "spell-yard",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3203334210,
+    "gold": 100,
+    "actors": [
+      {
+        "actor": "mage",
+        "hp": 30,
+        "mp": 20,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "priest",
+        "hp": 30,
+        "mp": 20,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 0
+        }
+      },
+      {
+        "actor": "smoke",
+        "hp": 80,
+        "mp": 5,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null,
+        "initialization": {
+          "initialized": true,
+          "activationWord": 1
+        }
+      }
+    ]
+  },
+  "encounters": [
+    {
+      "id": "spell-yard",
+      "map": "stone-court-map",
+      "placements": [
+        {
+          "actor": "mage",
+          "x": 3,
+          "y": 2,
+          "faction": "ally",
+          "processingOrder": 0,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "priest",
+          "x": 3,
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 1,
+          "control": "player",
+          "aiStrategy": null,
+          "initialization": {
+            "baseAiWord": null,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 0,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        },
+        {
+          "actor": "smoke",
+          "x": 5,
+          "y": 2,
+          "faction": "enemy",
+          "processingOrder": 128,
+          "control": "automatic",
+          "aiStrategy": "source-orders",
+          "initialization": {
+            "baseAiWord": 0,
+            "spawnMode": 0,
+            "primaryRegion": 15,
+            "secondaryRegion": 15,
+            "filler": 0,
+            "commandset": 8,
+            "primaryOrder": 255,
+            "secondaryOrder": 255
+          }
+        }
+      ],
+      "rewards": {
+        "halvedExperience": false
+      },
+      "initialization": {
+        "regions": [],
+        "regionProgram": "none",
+        "enemyCount": 1,
+        "sourceCombatants": [
+          {
+            "slot": 0,
+            "actor": "mage"
+          },
+          {
+            "slot": 1,
+            "actor": "priest"
+          },
+          {
+            "slot": 128,
+            "actor": "smoke"
+          }
+        ]
+      }
+    }
+  ]
+}

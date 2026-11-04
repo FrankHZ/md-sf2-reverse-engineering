@@ -82,12 +82,12 @@ public static class BattleEquipment
     {
         if (loadout is null) return false;
         if (!allowEarlySpells && (loadout.Spells.Any(spell => spell != 63) || definition.Spells.Count != 0)) return false;
-        if (allowEarlySpells && (definition.Spells.Any(spell => spell is not { Value: "heal" or "blaze", Level: 1 }) ||
-            loadout.Spells.Any(spell => spell is not (0 or 11 or 63)))) return false;
+        if (allowEarlySpells && (definition.Spells.Any(spell => spell is not { Value: "heal" or "blaze" or "dispel", Level: 1 }) ||
+            loadout.Spells.Any(spell => spell is not (0 or 6 or 11 or 63)))) return false;
         // Authored semantic books use an empty packed book. A nonempty source book
         // must agree with its decoded definitions; orphan packed spells cannot disappear.
         if (allowEarlySpells && loadout.Spells.Any(spell => spell != 63) &&
-            !definition.Spells.Select(spell => spell.Value == "heal" ? 0 : 11).ToHashSet()
+            !definition.Spells.Select(spell => spell.Value switch { "heal" => 0, "dispel" => 6, _ => 11 }).ToHashSet()
                 .SetEquals(loadout.Spells.Where(spell => spell != 63).Select(spell => (int)spell))) return false;
         if (definition.Equipment is not null) ValidateLoadout(definition, loadout);
         return loadout.Items.All(word => word == 127 || allowHerb && word == 0 ||
@@ -100,7 +100,7 @@ public static class BattleEquipment
             throw new BattleRuleException("equipment-unavailable", "actor.equipment", true);
         ValidateLoadout(actor.Definition, actor.SourceLoadout);
         if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Hp == 0 || actor.Position is null ||
-            actor.Status is not (0 or 2) || actor.Definition.Physical is null)
+            !SilenceRules.Supported(actor.Status) || (actor.Status & 0xC0) != 0 || actor.Definition.Physical is null)
             throw new BattleRuleException("equipment-actor", "actor", true);
         if (actor.Attack != Math.Min(200, actor.BaseAttack + Contribution(actor.Definition, actor.SourceLoadout)))
             throw new BattleRuleException("equipment-stats", "actor.attack");

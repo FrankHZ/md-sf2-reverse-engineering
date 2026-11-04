@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattlePresentationKind { Healing, Physical, Item, None, Retreat, AttackSpell }
+public enum BattlePresentationKind { Healing, Physical, Item, None, Retreat, AttackSpell, SupportSpell }
 public sealed record BattleTargetChoice(ActorRef Actor, bool Enabled, SessionFailure? Reason);
 public sealed record BattleActionChoice(BattleActionRef Action, string Label, BattlePresentationKind Presentation,
     byte? MinimumRange, byte? MaximumRange, bool Empty, bool Enabled, SessionFailure? Reason,
@@ -60,6 +60,10 @@ internal static class BattleChoices
                 (admission.AttackSpell is not { } attack || !battle.Definition.AttackSpells.TryGetValue(action.Spell!.Value, out var knownAttack) || attack != knownAttack ||
                     admission.MinimumRange != attack.MinimumRange || admission.MaximumRange != attack.MaximumRange) ||
                 action.Kind != BattleActionKind.AttackSpell && admission.AttackSpell is not null ||
+                action.Kind == BattleActionKind.SupportSpell && (admission.SupportSpell is not { } support ||
+                    !battle.Definition.SupportSpells.TryGetValue(action.Spell!.Value, out var knownSupport) || support != knownSupport ||
+                    admission.MinimumRange != support.MinimumRange || admission.MaximumRange != support.MaximumRange) ||
+                action.Kind != BattleActionKind.SupportSpell && admission.SupportSpell is not null ||
                 action.Kind == BattleActionKind.Item &&
                 !ValidItemAdmission(battle, actor, action, admission) ||
                 action.Kind == BattleActionKind.Stay && (admission.MinimumRange is not null || admission.MaximumRange is not null) ||
@@ -91,7 +95,7 @@ internal static class BattleChoices
     {
         bool valid = action.Kind switch
         {
-            BattleActionKind.Healing or BattleActionKind.Retreat or BattleActionKind.AttackSpell => action.ItemSlot is null && action.Spell is { } spell &&
+            BattleActionKind.Healing or BattleActionKind.Retreat or BattleActionKind.AttackSpell or BattleActionKind.SupportSpell => action.ItemSlot is null && action.Spell is { } spell &&
                 battle.GetActor(actor).Spells.Contains(spell),
             BattleActionKind.Item => action.Spell is null && action.ItemSlot is { } slot && slot >= 0 &&
                 slot < (battle.GetActor(actor).SourceLoadout?.Items.Count ?? 0),
@@ -110,7 +114,7 @@ internal static class BattleChoices
         {
             var patient = rule.RequireTarget(battle, actor, destination, action, target);
             if (!ReferenceEquals(patient, battle.GetActor(target))) throw new InvalidOperationException("Invalid admitted target.");
-            if (action.Kind == BattleActionKind.Healing)
+            if (action.Kind == BattleActionKind.Healing && !Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Present(battle.GetActor(actor).Status))
             {
                 if (battle.Definition.Spells[action.Spell!.Value].IsAura)
                 {
@@ -193,6 +197,7 @@ internal static class BattleChoices
                 var presentation = rule.Kind switch
                 {
                     BattleActionKind.Healing => BattlePresentationKind.Healing,
+                    BattleActionKind.SupportSpell => BattlePresentationKind.SupportSpell,
                     BattleActionKind.AttackSpell => BattlePresentationKind.AttackSpell,
                     BattleActionKind.Physical => BattlePresentationKind.Physical,
                     BattleActionKind.Item => BattlePresentationKind.Item,

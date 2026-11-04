@@ -47,7 +47,7 @@ internal static class BattlePoisonContinuation
             return Finish(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null, finalize), current.Story,
                 SessionStopReason.SimulationWait), observations, rules);
         }
-        if (scene.Phase != BattleScenePhase.PoisonExhaustedMessage || actor.Hp != 0 || actor.Status != 2 || actor.Position is null)
+        if (scene.Phase != BattleScenePhase.PoisonExhaustedMessage || actor.Hp != 0 || (actor.Status & 2) == 0 || actor.Position is null)
             return BattleCommandDispatcher.Reject(current, "poison-turn-context", "actor");
         var credit = current.Battle.DeathCredit;
         if (credit is null || credit.Ally is { } first && !current.Battle.GetActor(first).IsAlly)

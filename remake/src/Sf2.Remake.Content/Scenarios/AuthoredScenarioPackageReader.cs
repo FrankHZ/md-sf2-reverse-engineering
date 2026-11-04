@@ -109,11 +109,23 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var spells = new Dictionary<SpellRef, HealingSpellDefinition>();
         var retreats = new Dictionary<SpellRef, RetreatSpellDefinition>();
         var attacks = new Dictionary<SpellRef, AttackSpellDefinition>();
+        var supports = new Dictionary<SpellRef, SupportSpellDefinition>();
         foreach (var spell in Array(root, "spells"))
         {
             Object(spell, "spell", "id", "level", "mpCost", "minimumRange", "maximumRange", "effect");
             var key = new SpellRef(Id(spell, "id"), (byte)Number(spell, "level", 1, 4));
             var effect = spell.GetProperty("effect");
+            Require(!supports.ContainsKey(key), "duplicate-spell", "spells.id/level");
+            if (Text(effect, "kind") == "dispel")
+            {
+                Object(effect, "spell.effect", "kind", "radius");
+                var support = new SupportSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
+                    (byte)Number(spell, "minimumRange", 0, 255), (byte)Number(spell, "maximumRange", 0, 255), (byte)Number(effect, "radius", 0, 255));
+                support.RequireSupported();
+                Require(!spells.ContainsKey(key) && !retreats.ContainsKey(key) && !attacks.ContainsKey(key) && supports.TryAdd(key, support),
+                    "duplicate-spell", "spells.id/level");
+                continue;
+            }
             if (Text(effect, "kind") == "attack")
             {
                 Object(effect, "spell.effect", "kind", "power", "radius", "element");
@@ -233,29 +245,32 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 mover = Text(physicalInput, "movementType") switch
                 {
                     "regular" => BattleMover.Regular, "healer" => BattleMover.Healer, "centaur" => BattleMover.Centaur,
-                    "archer" => BattleMover.Archer, "mage" => BattleMover.Mage,
+                    "archer" => BattleMover.Archer, "mage" => BattleMover.Mage, "hovering" => BattleMover.Hovering,
                     _ => throw new BattleRuleException("physical-movement-type", "actors.physical.movementType", true),
                 };
                 Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);
                 var criticalInput = physicalInput.GetProperty("critical");
                 ObjectOptional(criticalInput, "actors.physical.critical", ["chance", "damageBonus"], "doubleChance", "counterChance");
                 string chance = Text(criticalInput, "chance"), bonus = Text(criticalInput, "damageBonus");
-                Require((chance, bonus) is ("one-in-32", "half") or ("one-in-16", "quarter"),
+                bool silence = (chance, bonus) == ("one-in-4", "silence");
+                Require(silence || (chance, bonus) is ("one-in-32", "half") or ("one-in-16", "quarter"),
                     "physical-critical-rule", "actors.physical.critical", true);
-                var critical = chance == "one-in-32" ? PhysicalCriticalRule.OneIn32WithHalfBonus
+                var critical = silence ? PhysicalCriticalRule.Silence : chance == "one-in-32" ? PhysicalCriticalRule.OneIn32WithHalfBonus
                     : PhysicalCriticalRule.OneIn16WithQuarterBonus;
-                if (criticalInput.TryGetProperty("doubleChance", out _))
+                if (!silence && criticalInput.TryGetProperty("doubleChance", out _))
                 {
                     Require(Text(criticalInput, "doubleChance") == "one-in-16" && chance == "one-in-16" && bonus == "quarter",
                         "physical-double-rule", "actors.physical.critical", true);
                     critical = PhysicalCriticalRule.Thief;
                 }
-                if (criticalInput.TryGetProperty("counterChance", out _))
+                if (!silence && criticalInput.TryGetProperty("counterChance", out _))
                 {
                     Require(Text(criticalInput, "counterChance") == "one-in-16" && chance == "one-in-32" && bonus == "half" &&
                         !criticalInput.TryGetProperty("doubleChance", out _), "physical-counter-rule", "actors.physical.critical", true);
                     critical = PhysicalCriticalRule.Cleric;
                 }
+                if (silence) Require(Text(criticalInput, "doubleChance") == "one-in-16" &&
+                    Text(criticalInput, "counterChance") == "one-in-16", "physical-silence-prowess", "actors.physical.critical", true);
                 bool promoted = Boolean(physicalInput, "promoted");
                 Require(className == "ordinary" || !promoted, "class-promotion", "actors.physical.promoted");
                 physical = new(critical, promoted, Boolean(physicalInput, "leader"),
@@ -268,7 +283,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Object(reference, "spell-reference", "id", "level");
                 var key = new SpellRef(Id(reference, "id"), (byte)Number(reference, "level", 1, 4));
-                Require(spells.ContainsKey(key) || retreats.ContainsKey(key) || attacks.ContainsKey(key), "missing-spell", "actors.spells");
+                Require(spells.ContainsKey(key) || retreats.ContainsKey(key) || attacks.ContainsKey(key) || supports.ContainsKey(key), "missing-spell", "actors.spells");
                 Require(!learned.Contains(key), "duplicate-learned-spell", "actors.spells");
                 learned.Add(key);
             }
@@ -357,7 +372,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
                 itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
                 prismLaser: PrismLaserReader.Read(encounter, placements),
-                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: allowLeaderCleanup ? null : discard, poison: poison, attackSpells: attacks.Values)),
+                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: allowLeaderCleanup ? null : discard, poison: poison, attackSpells: attacks.Values, supportSpells: supports.Values)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
@@ -424,14 +439,27 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     private static ushort StartStatus(JsonElement input, bool poison, bool connected)
     {
         string status = Text(input, "status");
-        if (connected) return status switch
+        if (connected && status is "none" or "stun" or "poison" or "poison-stun" or "curse" or "stun-curse" or "poison-curse" or "poison-stun-curse") return status switch
         {
             "none" => 0, "stun" => 1, "poison" => 2, "poison-stun" => 3,
             "curse" => 4, "stun-curse" => 5, "poison-curse" => 6, "poison-stun-curse" => 7,
             _ => throw new BattleRuleException("actor-status", "start.actors.status", true),
         };
-        Require(status == "none" || poison && status == "poison", "actor-status", "start.actors.status", true);
-        return status == "poison" ? (ushort)2 : (ushort)0;
+        if (status == "none") return 0;
+        ushort packed = 0;
+        foreach (string part in status.Split('-'))
+        {
+            ushort bits = part switch
+            {
+                "poison" when poison => 2, "sleep1" => 0x40, "sleep2" => 0x80, "sleep3" => 0xC0,
+                "silence1" => 0x100, "silence2" => 0x200, "silence3" => 0x300,
+                _ => throw new BattleRuleException("actor-status", "start.actors.status", true),
+            };
+            Require((packed & (bits == 2 ? 2 : bits <= 0xC0 ? 0xC0 : 0x300)) == 0,
+                "actor-status", "start.actors.status", true);
+            packed |= bits;
+        }
+        return packed;
     }
 
 }

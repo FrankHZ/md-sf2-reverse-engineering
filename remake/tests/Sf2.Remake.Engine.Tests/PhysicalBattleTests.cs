@@ -348,7 +348,7 @@ public sealed class PhysicalBattleTests
 
     [Theory]
     [InlineData("special", "taros", "physical-special-rule")]
-    [InlineData("movementType", "hovering", "physical-movement-type")]
+    [InlineData("movementType", "flying", "physical-movement-type")]
     public void ContentDoesNotEraseOriginalSpecialRules(string field, string value, string code)
     {
         var document = Document("stone-court");

@@ -266,6 +266,7 @@ internal sealed partial class BattleCommandMenu : Control
             var definition = _current!.Battle.Definition;
             byte? cost = definition.Spells.TryGetValue(spell, out var healing) ? healing.MpCost :
                 definition.AttackSpells.TryGetValue(spell, out var attack) ? attack.MpCost :
+                definition.SupportSpells.TryGetValue(spell, out var support) ? support.MpCost :
                 definition.RetreatSpells.TryGetValue(spell, out var retreat) ? retreat.MpCost : null;
             if (cost is { } mp) label += $" · {mp} MP";
         }

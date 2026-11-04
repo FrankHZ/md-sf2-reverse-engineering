@@ -1,5 +1,38 @@
 # Development and Verification
 
+## Silence observation
+
+Use the existing selected SDK/editor, worktree project and native runtime. New launches here follow
+a stopped prior native instance and a required new semantic consumer; do not copy installations,
+capture screenshots or produce per-frame reports. Load the ignored environment in the same process
+as every command, with absolute `DOTNET_BIN`/`DOTNET_CLI_HOME` and forced PATH opt-out.
+
+Affected behavior lives in `SilenceSpellTests`, `SilenceSessionTests` and `SupportDecisionTests`.
+Run their actual engine tests and the affected existing physical/healing/AI/poison/equipment/growth
+owners, plus `uv run sf2 verify adapter`. Private admission needs selected registered inputs;
+`PrivateSourceAiTests` specifically uses `remake/reference/inputs/battle01-player-ready.json`, while
+the private learned-player-spell admission test needs its normal configured accounting-bearing start.
+Do not apply that comparison override to unrelated private tests. On a clean committed head run
+`uv run sf2 verify plan --base origin/main --head HEAD` and inspect actual public CI. Preserve
+completed failures and rerun only their affected nodes/files; an older red aggregate is not a new
+full-suite requirement.
+
+For native acceptance, build the actual Debug adapter, then launch the selected editor against
+`remake/game`, `--script remake/game/probes/engine_silence_observation.gd` and
+`--authored-package remake/content/authored/silence-watch.json`, with one English and one Chinese
+input-settings selection. Reuse the existing child-only APPDATA/LOCALAPPDATA/TEMP isolation.
+`SF2_OBSERVATION_OUTPUT` must name a fresh ignored report destination. Single native instance,
+45s/run, <=15MiB total issue reports and >=1GiB free disk remain the budget.
+
+The observer sends ordinary Confirm/Stay/Magic/Cancel/target/Confirm keys; the real host supplies
+all simulation/presentation completions. It reads SUPPORT's two area results, one5MP payment,
+packed statuses/cards, a still-selectable silenced BLAZE with2MP paid and no damage/EXP, actual
+expiry, an effective later BLAZE and usable subsequent movement in the same session. English and
+Chinese visible glyph/layout/messages are inspected from the running UI state. No state setters,
+synthetic completion or reference-round predicates define legality. Physical infliction, mixed
+sleep/silence/poison and private Dark Smoke binding have separate actual engine tests; this authored
+witness does not establish original media/natural timing or full Battle07 story integration.
+
 ## Enemy spell observation
 
 The [finite rule agreement](domain/gameplay-rules.md#finite-early-enemy-spell-decisions),

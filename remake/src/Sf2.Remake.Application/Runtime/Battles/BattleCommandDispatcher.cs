@@ -78,10 +78,10 @@ internal static class BattleCommandDispatcher
                             choice.Action == SessionAction.Item ? "select-item" : "unknown-action", "action",
                             choice.Action is not (SessionAction.Heal or SessionAction.Item)),
                     };
-                case SelectSpell spell when CanSelect(BattleActionKind.Healing) || CanSelect(BattleActionKind.Retreat) || CanSelect(BattleActionKind.AttackSpell):
+                case SelectSpell spell when CanSelect(BattleActionKind.Healing) || CanSelect(BattleActionKind.Retreat) || CanSelect(BattleActionKind.AttackSpell) || CanSelect(BattleActionKind.SupportSpell):
                     return Select(new(battle.Definition.RetreatSpells.ContainsKey(spell.Spell)
                         ? BattleActionKind.Retreat : battle.Definition.AttackSpells.ContainsKey(spell.Spell)
-                        ? BattleActionKind.AttackSpell : BattleActionKind.Healing, spell.Spell));
+                        ? BattleActionKind.AttackSpell : battle.Definition.SupportSpells.ContainsKey(spell.Spell) ? BattleActionKind.SupportSpell : BattleActionKind.Healing, spell.Spell));
                 case SelectItem item when CanSelect(BattleActionKind.Item):
                     return Select(new(BattleActionKind.Item, ItemSlot: item.Slot));
                 case SelectBattleAction choice when CanSelect(choice.Action.Kind):
@@ -119,13 +119,14 @@ internal static class BattleCommandDispatcher
             var kind = action.Kind switch
             {
                 BattleActionKind.Retreat => SessionAction.Retreat,
+                BattleActionKind.SupportSpell => SessionAction.SupportSpell,
                 BattleActionKind.AttackSpell => SessionAction.AttackSpell,
                 BattleActionKind.Healing => SessionAction.Heal, BattleActionKind.Physical => SessionAction.PhysicalAttack,
                 BattleActionKind.Item => SessionAction.Item, _ => SessionAction.Stay,
             };
             string observation = action.Kind switch
             {
-                BattleActionKind.Healing or BattleActionKind.Retreat or BattleActionKind.AttackSpell => "spell-selected", BattleActionKind.Physical => "physical-selected",
+                BattleActionKind.Healing or BattleActionKind.Retreat or BattleActionKind.AttackSpell or BattleActionKind.SupportSpell => "spell-selected", BattleActionKind.Physical => "physical-selected",
                 BattleActionKind.Item => "item-selected", _ => "stay-selected",
             };
             return Selected(current, new(selection.Actor, selection.Preview,
@@ -155,7 +156,7 @@ internal static class BattleCommandDispatcher
         var action = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
             selected, selection.Target, sceneContent, requireSceneContent);
         if (action.Retreat is not null) return BattleRetreatContinuation.Begin(current, action);
-        if (action.Reactions.Count > 0)
+        if (action.Reactions.Count > 0 || action.Silenced is not null)
             return BattleSceneContinuation.Begin(current, action, [], sceneContent: sceneContent);
         var observations = new List<SessionObservation>();
         return BattleAdvancer.Advance(BattleActionCommitter.Publish(current, action.Prepared, selection.Actor,
