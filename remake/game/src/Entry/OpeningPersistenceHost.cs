@@ -13,8 +13,6 @@ namespace Sf2.Remake.GodotAdapter;
 public sealed partial class GameRoot
 {
     private SaveSlotView? _slots;
-    private Button? _saveButton;
-    private Button? _quitButton;
     private Guid? _savedSession;
     private long _savedRevision = -1;
     private bool _restoring;
@@ -48,18 +46,20 @@ public sealed partial class GameRoot
         if (_entry is not null && !overEntry) _entry.Hide();
         _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry, Input = _input };
         if (overEntry) _entry?.Setup(true);
-        _hostUi.AddChild(_slots); ApplyHostPause(); DisarmInput();
+        _hostUi.AddChild(_slots); CoverSystemMenu(); ApplyHostPause(); DisarmInput();
     }
     private void CloseSavePanel()
     {
         if (_slots is { } slots) { _slots = null; _hostUi.RemoveChild(slots); slots.QueueFree(); }
         if (_entry is not null) { _entry.Show(); _entry.ReturnFromSetup(); }
+        ReturnToSystemMenu();
         ApplyHostPause();
         DisarmInput();
     }
     private void SaveError(string code)
     {
-        _slots!.ShowChoices("error", Explain(code), (GameText.Get("entry.back"), CloseSavePanel), (GameText.Get("entry.quit-menu"), QuitFromMenu));
+        _slots!.Cancel = CloseSavePanel;
+        _slots.ShowChoices("error", Explain(code), (GameText.Get("entry.back"), CloseSavePanel), (GameText.Get("entry.quit-menu"), QuitFromMenu));
         _slots.ShowDetail(GameText.Get("save.details", code));
     }
     private void QuitFromMenu() { CloseSavePanel(); RequestQuit(); }
@@ -132,16 +132,20 @@ public sealed partial class GameRoot
     private void ConfirmSave(int slot, LocalSaveStore store, SaveAvailability offer)
     {
         var existing = store.Read(slot);
-        _slots!.ShowChoices("confirm-save", existing.Primary is not null ? GameText.Get("save.overwrite", slot)
-            : GameText.Get("save.confirm", slot), (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.save"), () =>
+        _slots!.Cancel = BackToSave;
+        _slots.ShowChoices("confirm-save", existing.Primary is not null ? GameText.Get("save.overwrite", slot)
+            : GameText.Get("save.confirm", slot), (GameText.Get("entry.cancel"), BackToSave), (GameText.Get("entry.save"), () =>
             {
                 var capture = _session!.CaptureSave(offer.SessionId, offer.Revision);
                 if (capture.Data is null) { SaveError(capture.Error!); return; }
                 var result = store.Write(slot, capture.Data);
                 if (!result.Success) { SaveError(result.Error!); return; }
                 _savedSession = offer.SessionId; _savedRevision = offer.Revision;
+                _slots.Cancel = CloseSavePanel;
                 _slots.ShowChoices("saved", GameText.Get("save.saved", slot, SavedDestination(offer.Location!.Recipe)), (GameText.Get("entry.return"), CloseSavePanel));
             }));
+
+        void BackToSave() { CloseSavePanel(); ShowSave(); }
     }
 
     private void ShowContinue()
@@ -197,36 +201,6 @@ public sealed partial class GameRoot
     }
 
     private static string SavedTime(OpeningSaveRecord record) => record.SavedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
-
-    private void RefreshPersistenceLabels()
-    {
-        if (_saveButton is not null)
-        {
-            _saveButton.Text = GameText.Get("entry.save-menu");
-            _saveButton.TooltipText = GameText.Get("save.tooltip", _input!.Hint(Input.GameAction.Stay));
-        }
-        if (_quitButton is not null) _quitButton.Text = GameText.Get("entry.quit-menu");
-    }
-
-    private void ConfigurePersistenceButtons()
-    {
-        _saveButton = HostButton("SaveEntry", GameText.Get("entry.save-menu"), -540, -240, ShowSave);
-        _saveButton.TooltipText = GameText.Get("save.tooltip", _input!.Hint(Input.GameAction.Stay));
-        _quitButton = HostButton("QuitEntry", GameText.Get("entry.quit-menu"), -760, -560, RequestQuit);
-    }
-    private Button HostButton(string name, string text, float left, float right, Action pressed)
-    {
-        var button = new Button { Name = name, Text = text, AnchorLeft = 1, AnchorRight = 1,
-            OffsetLeft = left, OffsetRight = right, OffsetTop = 12, OffsetBottom = 60,
-            Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
-        button.Pressed += () => pressed(); _hostUi.AddChild(button); return button;
-    }
-    private void ReleasePersistenceButtons()
-    {
-        foreach (var button in new[] { _saveButton, _quitButton })
-            if (button is not null) { _hostUi.RemoveChild(button); button.QueueFree(); }
-        _saveButton = null; _quitButton = null;
-    }
 
     public override void _Notification(int what)
     { SettingsNotification(what); }

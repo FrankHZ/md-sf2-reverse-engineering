@@ -1135,3 +1135,34 @@ msgstr "行动进行中…"
 #. Project-authored functional battle feedback; typed operands, not source script translation.
 msgid "battle.scene.wait"
 msgstr "{0}：等待"
+
+#. System menu; existing hosts retain action eligibility.
+msgid "system.entry"
+msgstr "菜单"
+
+msgid "system.title"
+msgstr "游戏菜单"
+
+msgid "system.resume"
+msgstr "恢复游戏"
+
+msgid "system.journey"
+msgstr "旅程"
+
+msgid "system.session"
+msgstr "会话"
+
+msgid "system.settings-reason"
+msgstr "设置仅在探索可操作且其他菜单关闭时可用。"
+
+msgid "system.new-reason"
+msgstr "新游戏仅在探索可操作时可用。"
+
+msgid "system.hint"
+msgstr "{0}：菜单／恢复\n{1}：选择   •   {2}：返回"
+
+msgid "system.no-pad"
+msgstr "摇杆方向均已分配。请用键盘／鼠标进入菜单，或编辑按键配置，为菜单分配手柄输入。"
+
+msgid "system.save-reason"
+msgstr "保存需要处于已支持的开场存档点，且移动和剧情均已结束。"

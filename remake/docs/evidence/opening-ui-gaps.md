@@ -17,10 +17,29 @@ intersecting status cards, on the same original canvas. The
 battle UI, field UI and host UI without changing world-local foreground/entity priority.
 The [finite matrix and reproduction](../verification/host.md#display-layer-boundary-observation)
 cover scene/field dialogue, effects/results, Party/Church, Settings/Save/recovery and scene retirement.
-This is a candidate for independent engineering acceptance, not whole-opening visual approval.
+This layer boundary has independent engineering acceptance in [PR1520](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1520); it does not establish whole-opening visual approval.
 The exact user-reported monster/version and final raster/physical desktop behavior remain **Unknown**;
 headless sorting facts do not establish a rendered screenshot or human readability pass.
-Menu redesign and Church behavior remain separately scoped to #1518/#1519.
+System Menu is owned separately by [#1518](#system-entry-layout-1518); Church behavior remains #1519.
+
+## System entry layout (#1518)
+
+**Confirmed — source and bounded Godot state/input/geometry observation:** the previous1080p
+field/authored-start inventory exposes four visible host buttons, not an assumed identification of
+the user's three shapes: New Game207×64 at1700,12; Save300×64 at1380,12; Quit200×64 at1160,12;
+Settings339×50 at840,12. Settings uses20px text and the others30px; actual native minimums differ
+from declared offsets. The user's exact version/screen remains **Unknown**.
+
+The [system-menu agreement](../godot/presentation.md#system-menu-agreement-1518) consolidates these
+into one160×56 Menu entry, shared by exploration and battle. Resume is default, Journey contains
+Save/Settings and Session contains New Game/Quit. Disabled actions explain the retained eligibility;
+Settings is still unavailable during battle/story and savepoints are not broadened. Existing
+replacement/quit confirmations and child Back semantics remain. Keyboard/pad mappings, old-v1
+collision/all-axis behavior, pointer isolation and paused recovery are bounded by the
+[finite observation](../verification/host.md#system-menu-observation). This is an implemented
+candidate for independent engineering acceptance; whole-opening aesthetics, final pixels and
+physical-device approval remain **Unknown**. Binding capture UI is still deferred; JSON remapping
+and live help/hints include Menu. No Church behavior change belongs to this delivery.
 
 ## Scope and reading rules
 

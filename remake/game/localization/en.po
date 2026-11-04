@@ -1135,3 +1135,34 @@ msgstr "Action in progress…"
 #. Project-authored functional battle feedback; typed operands, not source script translation.
 msgid "battle.scene.wait"
 msgstr "{0}: Wait"
+
+#. System menu; existing hosts retain action eligibility.
+msgid "system.entry"
+msgstr "Menu"
+
+msgid "system.title"
+msgstr "Game Menu"
+
+msgid "system.resume"
+msgstr "Resume Game"
+
+msgid "system.journey"
+msgstr "Journey"
+
+msgid "system.session"
+msgstr "Session"
+
+msgid "system.settings-reason"
+msgstr "Settings is available at settled field input, outside other menus."
+
+msgid "system.new-reason"
+msgstr "New Game is available at settled field input."
+
+msgid "system.hint"
+msgstr "{0}: Menu / Resume\n{1}: Choose   •   {2}: Back"
+
+msgid "system.no-pad"
+msgstr "All stick directions are already assigned. Use keyboard / mouse for Menu, or edit the bindings file to free a pad input."
+
+msgid "system.save-reason"
+msgstr "Saving requires a supported opening savepoint with movement and story work settled."

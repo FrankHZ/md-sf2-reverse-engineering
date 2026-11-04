@@ -23,7 +23,8 @@ public sealed partial class GameRoot : Node
     private ExplorationSessionView? _exploration;
     private SessionAudio? _audio;
     private SessionEntryView? _entry;
-    private Button? _restart;
+    private Button? _menuButton;
+    private SystemMenuView? _systemMenu;
     private bool _releaseBarrier;
 
     public override void _ExitTree() { ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost; _audio?.Dispose(); ClearPreparedNewGame(); }
@@ -41,6 +42,8 @@ public sealed partial class GameRoot : Node
         if (RouteWindowInput(input)) return;
         if (_settings is not null && input is InputEventMouse)
         { _settings.HandlePointer(input); GetViewport().SetInputAsHandled(); return; }
+        if (_systemMenu?.Visible == true && input is InputEventMouse)
+        { _systemMenu.HandlePointer(input); GetViewport().SetInputAsHandled(); return; }
         if (_nameEntry is { } name)
         {
             // Track pad button/axis releases and wait state without routing actions to
@@ -53,7 +56,7 @@ public sealed partial class GameRoot : Node
         if (input is InputEventMouse)
         {
             if (_entry is not null || _slots is not null) return;
-            if (new[] { _restart, _saveButton, _quitButton, _settingsButton }.Any(button => button is not null && button.GetGlobalRect().HasPoint(((InputEventMouse)input).Position))) return;
+            if (_menuButton is { } button && button.IsVisibleInTree() && button.GetGlobalRect().HasPoint(((InputEventMouse)input).Position)) return;
             if (_exploration is { } field && GodotObject.IsInstanceValid(field) && field.IsVisibleInTree())
                 field.HandlePointer(input);
             else if (_battle?.IsVisibleInTree() == true) _battle.HandlePointer(input);
@@ -65,7 +68,9 @@ public sealed partial class GameRoot : Node
         if (_settings is not null) HandleSettingsAction(action.Value, input);
         else if (_slots is not null) _slots.Handle(action.Value);
         else if (_entry is not null) _entry.Handle(action.Value);
-        else if (action == GameAction.Cancel && CanOpenSettings) ShowSettings();
+        else if (_systemMenu is not null) _systemMenu.Handle(action.Value);
+        else if (action == GameAction.Menu) ShowSystemMenu();
+        else if (action == GameAction.Cancel && CanOpenSettings) ShowSystemMenu();
         else if (action == GameAction.Stay && _exploration?.CanOpenHostMenu == true) ShowSave();
         else if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
             exploration.HandleAction(action.Value);
@@ -75,11 +80,11 @@ public sealed partial class GameRoot : Node
 
     public override void _Process(double delta)
     {
-        if (_settingsButton is not null) _settingsButton.Disabled = !CanOpenSettings;
-        bool partyMenu = _exploration?.PartyMenuOpen == true;
-        if (_restart is not null) _restart.Disabled = _settings is not null || _slots is not null || _session?.Current.CanWaitAtInput != true || partyMenu;
-        if (_saveButton is not null) _saveButton.Disabled = _settings is not null || _slots is not null || _entry is not null || partyMenu;
-        if (_quitButton is not null) _quitButton.Disabled = _settings is not null || _slots is not null || _entry is not null || partyMenu;
+        if (_menuButton is not null)
+        {
+            _menuButton.Visible = _entry is null && _settings is null && _slots is null && _systemMenu is null && _windowRecovery is null;
+            _menuButton.Disabled = _exploration?.PartyMenuOpen == true;
+        }
     }
 
     public override void _Ready()
@@ -129,12 +134,14 @@ public sealed partial class GameRoot : Node
             NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit, Settings = ShowSettings };
         _hostUi.AddChild(_entry);
         if (_input is not null) _entry.ConfigureHints(_input);
+        CoverSystemMenu();
         ApplyHostPause(); DisarmInput();
     }
 
     private void CloseEntry()
     {
         if (_entry is { } entry) { _entry = null; _hostUi.RemoveChild(entry); entry.QueueFree(); }
+        ReturnToSystemMenu();
         ApplyHostPause();
         DisarmInput();
     }
@@ -154,8 +161,8 @@ public sealed partial class GameRoot : Node
         if (field is not null && GodotObject.IsInstanceValid(field)) { field.GetParent()?.RemoveChild(field); field.Free(); }
         if (battle is not null && GodotObject.IsInstanceValid(battle)) { battle.GetParent()?.RemoveChild(battle); battle.Free(); }
         _audio?.Dispose(); _audio = null;
-        if (_restart is not null) { _hostUi.RemoveChild(_restart); _restart.QueueFree(); _restart = null; }
-        ReleasePersistenceButtons(); ReleaseSettingsButton();
+        CloseSystemMenu();
+        if (_menuButton is not null) { _hostUi.RemoveChild(_menuButton); _menuButton.QueueFree(); _menuButton = null; }
         _worldViewport = new();
         DisarmInput();
     }
@@ -206,12 +213,11 @@ public sealed partial class GameRoot : Node
         view.LeaveBattle = result => ShowExploration(result, returning: true);
         if (SessionPresentationOwner.IsBattle(started.Result.Snapshot)) EnterBattle(started.Result);
         else { view.Hide(); ShowExploration(started.Result, returning: false); }
-        // A bounded New Game confirmation, available only at settled field input.
-        _restart = new Button { Name = "NewGameEntry", Text = GameText.Get("entry.new-menu"), AnchorLeft = 1, AnchorRight = 1,
-            OffsetLeft = -220, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 60,
+        _menuButton = new Button { Name = "SystemMenuEntry", Text = GameText.Get("system.entry"), AnchorLeft = 1, AnchorRight = 1,
+            OffsetLeft = -180, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 68,
             Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
-        _restart.Pressed += ShowEntry; _hostUi.AddChild(_restart);
-        ConfigurePersistenceButtons(); ConfigureSettingsButton();
+        _menuButton.AddThemeFontSizeOverride("font_size", 24);
+        _menuButton.Pressed += ShowSystemMenu; _hostUi.AddChild(_menuButton); RefreshSystemMenuLabels();
         ApplyHostPause(); DisarmInput();
 
         void CheckAudio() { if (_audio?.Error is { } failure) Fail(failure, "Required private audio could not be consumed."); }
@@ -235,6 +241,41 @@ public sealed partial class GameRoot : Node
                 result => { view.Reparent(exploration, false); view.Attach(started.Session, result); },
                 returning ? () => { view.Reparent(this, false); view.Hide(); } : null);
         }
+    }
+
+    private void ShowSystemMenu()
+    {
+        if (_session is null || _systemMenu is not null || _entry is not null || _slots is not null ||
+            _settings is not null || _windowRecovery is not null || _exploration?.PartyMenuOpen == true) return;
+        _systemMenu = new SystemMenuView { Name = "SystemMenuView", Input = _input!, Resume = CloseSystemMenu };
+        _hostUi.AddChild(_systemMenu); RefreshSystemMenuLabels(); ApplyHostPause(); DisarmInput();
+    }
+    private void RefreshSystemMenuLabels()
+    {
+        if (_menuButton is not null)
+        {
+            _menuButton.Text = GameText.Get("system.entry");
+            _menuButton.TooltipText = _input!.Hint(GameAction.Menu);
+            if (!_input.MenuPadAvailable) _menuButton.TooltipText += "\n" + GameText.Get("system.no-pad");
+        }
+        if (_systemMenu is null) return;
+        var save = _session!.QuerySave();
+        string saveReason = save.Error is "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion"
+            ? Explain(save.Error) : GameText.Get("system.save-reason");
+        _systemMenu.Present(save.Allowed, save.Allowed ? "" : saveReason, CanOpenSettings,
+            _session.Current.CanWaitAtInput && _exploration?.PartyMenuOpen != true,
+            ShowSave, ShowSettings, ShowEntry, RequestQuit);
+    }
+    private void CoverSystemMenu() { _systemMenu?.SuspendPointer(); _systemMenu?.Hide(); }
+    private void ReturnToSystemMenu()
+    {
+        if (_systemMenu is null || _entry is not null || _slots is not null || _settings is not null || _windowRecovery is not null) return;
+        RefreshSystemMenuLabels(); _systemMenu.Show();
+    }
+    private void CloseSystemMenu()
+    {
+        if (_systemMenu is { } menu) { _systemMenu = null; _hostUi.RemoveChild(menu); menu.QueueFree(); }
+        ApplyHostPause(); DisarmInput();
     }
 
     private void Fail(string code, string message) => Fail(new(SessionFailureKind.ContentError, code, "startup", message));
