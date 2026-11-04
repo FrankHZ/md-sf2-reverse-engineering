@@ -4,6 +4,58 @@ The implemented bounded [game localization design](../application/localization-d
 catalogs, safe settings refresh, name/IME and font boundaries. Translated
 display remains separate from Application's canonical text work and game-save identity.
 
+## System menu agreement (#1518)
+
+**Standard rigor:** consolidate the existing gameplay system entries and preserve their eligibility,
+confirmation and input lifetimes. One `SystemMenuEntry` in `HostUi` replaces NewGameEntry, SaveEntry,
+QuitEntry and SettingsEntry. At 1080p it occupies160×56 at right margin20/top12, with24px text;
+the existing font/style minimums are included in its measured dimensions. The centered800px menu
+uses the existing blue/gold theme,64px action rows and readable unavailable reasons. World96px/4×
+scale, battle diamond/status responsibilities and title/Witch presentation are unchanged.
+[Finite state/input/geometry observations](../verification/host.md#system-menu-observation) own
+engineering acceptance; final raster, physical device access and human aesthetic approval remain
+**Unknown**. Church behavior (#1519) and a general navigation/pause service are excluded.
+
+| Group / action | Availability and return |
+| --- | --- |
+| Resume Game (initial selection) | Always safe; closes Menu and resumes only when no other host modal covers play. |
+| Journey / Save | Exactly the current `QuerySave` offer; unsupported controlled/authored starts and busy/non-savepoint states show a reason. The existing field Save shortcut and Church save owner remain. Save confirmation Back returns slots; slots Back returns Menu. |
+| Journey / Settings | Existing `CanOpenSettings`: title/Witch or settled exploration outside other menus. No battle/story access is added. Settings/help retain draft, Apply and Back ownership; closing Settings returns Menu. |
+| Session / New Game | Existing settled-field `CanWaitAtInput` and Party exclusion, followed by the existing replacement entry with Cancel selected, slot/name and final explicit Start/save confirmation. Cancel unwinds those existing pages to Menu. |
+| Session / Quit | Existing clean/dirty confirmation, Cancel initially selected; Cancel returns Menu. Window recovery retains its own Quit confirmation and returns to recovery first. |
+
+Menu can cover field story or battle presentation without delivering a gameplay command. It is
+unavailable over Party; other host modals hide the sole entry. The finite `ApplyHostPause` predicate
+now includes Menu and pauses view/audio. Subpages hide and disable Menu; window recovery hides it
+and restores the same selection/modal before gameplay can resume. Existing `DisarmInput`, remap
+release guards and movement/wait disarming apply on every host transition. Menu's pointer gestures
+reuse `MenuPointer`; only complete same-row press/release activates. Right click and mapped Cancel
+return one level; hidden global buttons cannot intercept gameplay pointers. Directional navigation
+skips unavailable actions, whose reasons remain visible. Recovery/focus loss cancels an unfinished
+Menu mouse gesture before restoring the same panel.
+
+`GameAction.Menu` is integrated in existing `GameInput`/version1 `bindings`, held-state guards,
+actual hints and the existing Controls Help. Defaults are F10 and right stick right (`RightX+`).
+At settled field input Cancel also opens Menu; title Cancel still opens Settings. Battle Cancel
+continues to unwind gameplay, Start remains Equipment and Back remains Item. Within Menu, mapped
+Menu toggles Resume; Confirm/Cancel use the existing swap. Subpages keep their own Cancel semantics.
+
+Old preferences retain every binding. If Menu is absent, choose an unclaimed F10/F9/F8/F7 then an
+unclaimed named key, and the first free signed axis in RightX+,RightX−,RightY−,RightY+,LeftX+,LeftX−,
+LeftY+,LeftY− order. When all axes are assigned, implicit Menu remains keyboard/mouse accessible
+and visibly explains that pad access requires editing bindings. No Guide fallback or claim that a
+host delivers a system-reserved pad button is made. An explicit `menu` binding follows ordinary
+keyboard+pad and duplicate validation. Effective defaults do not rewrite old preferences; Settings
+Apply/Defaults retain the binding dictionary. The existing Settings UI edits preferences and displays
+help, **not** binding capture: Menu remapping uses the existing JSON configuration mechanism, and
+capture UI remains deferred with the other actions.
+
+The owned implementation is GameRoot, the existing persistence/settings/window-support partials,
+one `Entry/SystemMenuView`, GameInput/ControlsHelp and the two existing locale catalogs/argument
+registry. No Domain/Application, progress format, savepoint legality or new navigation authority is
+changed. A directly observed invalid-settings early exit now disconnects window-support signals
+only if initialization actually subscribed them; this does not hide other shutdown warnings.
+
 ## Display layer boundaries (#1517)
 
 **Standard rigor:** make the existing battle dialogue and status readable over world sprites, then
@@ -18,7 +70,7 @@ acceptance, retained failures and the rendering limits.
 | 0 (viewport default) | Field draw/planes/entities/white fade; battle map and close-up visuals | Existing map actors 1, foreground 2, markers 3; close-up ally/weapon/fairy/effects 1–4 remain local. The existing close-up map visibility rule remains. |
 | 1 (`BattleUi`) | `BattleSessionView`: command/HUD, scene cards/messages, Give/Discard/Retreat, battle story/appearance and feedback | Existing sibling order; scene cards/messages have one `SceneUi` container bound to the close-up's visibility. |
 | 2 (`FieldUi`) | `ExplorationSessionView`: story/context, Party, Church and stopped-presentation feedback | Story precedes Party/Church, then failure feedback. Existing phase/visibility rules decide which is active. |
-| 3 (`HostUi`) | `GameRoot`: entry/name/slots, gameplay host buttons, Settings, Save/Quit and window recovery | Existing creation order; recovery explicitly hides covered host views and restores them on close. |
+| 3 (`HostUi`) | `GameRoot`: entry/name/slots, system Menu, Settings, Save/Quit and window recovery | Existing creation order; recovery explicitly hides covered host views and restores them on close. |
 
 `PresentationCanvas` is a small viewport composition helper with these three fixed roles. Each
 session owns its canvas as a child; it does not register/reparent live gameplay owners, select input,
@@ -83,7 +135,7 @@ migration has bounded engineering acceptance; it does not assert human acceptanc
 | Consumer | Current treatment and disposition |
 | --- | --- |
 | Entry, SaveSlot, NameEntry, Settings/control help, gameplay Save/Quit | Already consume shared native button/editor treatment. Regression consumers; no Stage1 rewrite. Preserve their separate persistence and release boundaries. |
-| `GameRoot.NewGameEntry` | Uses `CreateEntry`, matching adjacent Save/Quit/Settings native buttons; no lifecycle change. |
+| Gameplay system entry | The [system Menu](#system-menu-agreement-1518) consolidates the former NewGame/Save/Quit/Settings buttons using `CreateEntry`; existing action hosts retain lifecycle ownership. |
 | `BattleMenuLayout` non-diamond rows/navigation | Stage1 actual consumer: shared selected/unavailable colors and independent marker/reason, including unavailable target feedback. Existing geometry, fonts, scroll and command authority remain. |
 | `ChurchServiceView` and `FieldActionView` (Prepare) | Shared font-color overrides keep unavailable rows muted even when focused, with the existing marker/explanation/refusal. Church derives availability from its nullable command; Prepare uses actual `Use`/`CanDrop` offers. Action/menu/confirmation rows stay inspectable; no English-string parsing or new legality. The [finite feedback agreement](#gameplay-feedback-and-recovery-wording-1454) owns Church wording/transient refusal. |
 | `PartyStatusView` / `PartyDetailsPanel` | Member focus has shared gold plus `▸`; Prepare/Close retain ordinary body text rather than permanent selected accents. Source grouping, gauges, pane hints, typography and detail scrolling remain. `PartyDetailsPanel` is unchanged. |
@@ -176,8 +228,8 @@ awaiting independent review; Appearance #1463 remains deferred.
 Deliver the four existing `InputSettings` preferences: instant/adjustable text, 1–240 characters
 per second, standard/swapped Confirm/Cancel and reduced flash. Existing blue/gold controls expose
 Settings and control help directly on the title and Witch menu. At settled exploration input,
-Cancel opens Settings; the visible Settings button names that mapped shortcut. Active text, choices,
-Church, party menus, movement and battle decisions cannot open it. The host pauses the existing
+Cancel opens the [system Menu](#system-menu-agreement-1518), then Settings. Settings remains
+unavailable during active text, choices, Church, party menus, movement and battle decisions. The host pauses the existing
 view/audio while the modal is open; no gameplay command, session replacement, revision, RNG or game
 save write belongs to this operation. Battle settings can be changed on the next safe field return.
 

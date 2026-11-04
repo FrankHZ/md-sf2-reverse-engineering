@@ -2108,7 +2108,7 @@ $env:SF2_DISPLAY_CATALOG = (Resolve-Path -LiteralPath 'remake/content/authored/l
 ```
 
 The real field program shows the captured Traveler name with W1/CLEAR/N/D1/W2, then returns control.
-At settled field input press Escape for Settings. The fifth row is Language; Confirm changes only
+At settled field input press Escape for Menu, then choose Settings. The fifth row is Language; Confirm changes only
 its draft endonym. Apply (seventh row) stores/publishes it; Cancel retains the old preference. Talk
 repeats the authored dialogue in the selected language. The existing title settings access also
 refreshes. Relaunch the same namespace to reload the preference. For a dynamic battle sample use
@@ -2734,3 +2734,55 @@ EGRESS exit with empty stderr; private HEAL/field checks retain shutdown ObjectD
 instances respectively), without attributing or resolving the existing shutdown Unknown. Earlier
 issue1491 `1801 PASS / 6 FAIL / 1 SKIP`, issue1492 observer failures and school03 exit2 remain retained
 in their original handoffs; this slice does not rerun or relabel them.
+
+## System menu observation
+
+The [Standard agreement](../godot/presentation.md#system-menu-agreement-1518) owns #1518. Reuse the
+transferred worktree/environment, `local/issue1441/inputs.ps1`, locked SDK, existing Godot/project
+imports and `local/issue1471/field-01` runtime directories. Load config in the actual launch process;
+force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Use separate issue1518 reports and external disposable
+save namespaces. Single instance, reports<=15MiB, leave>=1GiB on H; measured native peak<1GiB.
+No screenshots, frame acquisition, full-route replay or broad engine/research suite is required.
+
+Retained launcher: `local/issue1518/run-native.ps1 -Run <fresh-name> -Case <case>`. It uses headless,
+fixed60,1920×1080 and ordinary `Main.tscn`; reports contain state/input/geometry/error observations,
+process exit/time/peak and complete stdout/stderr. The local observer is not production or a new
+verification framework. For an equivalent fresh observation, use ordinary mapped `Input.parse_input_event`
+key/pad/axis and complete mouse gestures against actual Control rectangles; read existing host/view
+observation methods and native geometry, without setters or manufactured gameplay receipts.
+
+| Case / fixture | Required finite observation |
+| --- | --- |
+| `field` | Existing #1517 initial priest seam using current #1441 world and Map3 party. Only one SystemMenuEntry is visible; F10 opens, Resume is selected. Settings and existing New Game replacement open, Cancel returns Menu; Quit defaults Cancel. Controlled-start Save remains disabled with an explanation. Party/Equipment and Party Cancel retain their own responsibilities. |
+| `physical` | Existing `progression-outcome-victory.json`, ordinary Confirm to player Movement. Same Menu/button geometry; Save/Settings/New Game disabled, no activation on click. Battle Confirm/Cancel continue their existing gameplay responsibility after resume. |
+| `product` | Copy #1443 route-01 slot1 read-only into the fresh issue1518 save namespace, then ordinary title→Witch→Continue. Restored product savepoint permits Save. Confirm-save Back→slots Back→Menu; cancel every write. Compare the disposable slot bytes with the original read-only source afterward. Never use the original namespace as writable output. |
+| `story` / `battleStory` | Existing #1393 `control.json` / authored `jaro-conversion.json` and ordinary #1481 adjustable text settings. Jaro uses ordinary Up twice, Stay and round progression to reach `story.kind=DialogueWait`. Open Menu at text, confirm all three conditional actions disabled, verify reveal/token/resources pause, Resume does not acknowledge, then accept fresh text input. |
+| `prefs` | Fresh disposable ordinary preferences with explicit Menu=F9/RightX− and copied product slot. Help reports Menu; Help Back retains Settings; Language Apply refreshes Chinese Menu without session changes; Defaults/Apply restores English and preserves all custom Menu bindings. |
+| `bindings-*` | Existing authored battle plus version1 configs: default; old Attack=F10+RightX+ (Menu becomes F9+RightX−); old Up adds RightX±/RightY− so all eight signed axes are occupied (Menu keyboard only, no Guide, visible reason and working mouse); explicit Menu=F9+RightX−; swapped Confirm/Cancel; invalid explicit duplicate F10 (typed invalid-input-settings before session). Inspect actual InputMap, hints and injected input, not only JSON parsing. |
+
+For field/battle/product, repeat English/zh-CN: read every visible menu Label/Button, required font
+glyphs, native minimum sizes, bounds and selected/disabled states. The800px panel fits1080p and
+2560×1440 using native coordinates and the existing world scale. Shrink to1280×720: recovery hides
+the same Menu, Cancel opens existing recovery Quit, Cancel returns recovery, and an actual supported
+size event restores the same Menu still paused. This is recovery at unsupported gameplay size,
+not a new720p gameplay claim. Headless Restore/Fullscreen physical execution remains **Unknown**.
+
+Use keyboard, pad right-stick open/East Back, mouse entry/Resume/right-click. Hold a Quit mouse
+press across recovery cover/restore: its old release cannot activate confirmation. While the opening key
+and another Confirm key are held, no activation crosses the existing all-release barrier; only a
+fresh Confirm resumes. Also check no old host button exists, entry is hidden under modals, hidden
+Menu is process-disabled, and retirement frees HostUi. A mapped Menu toggles only Menu itself;
+subpages retain their own Back rules. Actual desktop delivery of pad axes and physical focus remain
+**Unknown**; injected native events establish host routing, not all hardware.
+
+Final finite observations pass with no script/session/presenter errors. Private field/product and
+invalid-input teardown retain ObjectDB warnings (two instances); prior #1517 private/field/return
+6/4/2 warnings remain unattributed. Initial observer parse failure, recovery Cancel/geometry
+assumption failures, a misnamed config, and an omitted Jaro trigger were corrected in the observer,
+with failed reports preserved. The misnamed config also exposed uninitialized window-signal
+disconnect errors: the narrow subscription guard corrects that real host early-exit fault; explicit
+invalid binding now retains typed failure without those errors. No claim of general leak closure.
+Historical #1491 engine1801PASS/6FAIL/1SKIP and school03 exit2 remain completed evidence and were
+not rerun or reclassified. Headless facts do not establish final raster, physical focus or human
+approval. Run affected `uv run sf2 verify adapter`, then obtain `verify plan` on the clean committed
+head and compare actual CI with that plan.

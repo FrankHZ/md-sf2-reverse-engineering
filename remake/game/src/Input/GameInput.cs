@@ -2,7 +2,7 @@ using Godot;
 
 namespace Sf2.Remake.GodotAdapter.Input;
 
-internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item, Wait, Equipment, Give, Discard }
+internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item, Wait, Equipment, Give, Discard, Menu }
 
 internal sealed class GameInput
 {
@@ -54,14 +54,27 @@ internal sealed class GameInput
         };
         foreach (var (name, binding) in settings.Bindings)
         {
-            if (!bindings.ContainsKey(name)) throw new ArgumentException($"Unknown action: {name}.");
+            if (name != "menu" && !bindings.ContainsKey(name)) throw new ArgumentException($"Unknown action: {name}.");
             bindings[name] = binding;
+        }
+        // Version-1 preferences predate Menu and may already claim its new defaults.
+        // Fill only unclaimed inputs; preserve every existing custom gameplay binding.
+        if (!bindings.ContainsKey("menu"))
+        {
+            var usedKeys = bindings.Values.Where(row => row?.Keys is not null).SelectMany(row => row.Keys).ToHashSet();
+            var usedAxes = bindings.Values.Where(row => row?.Axes is not null).SelectMany(row => row.Axes).ToHashSet();
+            string key = new[] { "F10", "F9", "F8", "F7" }.Concat(Enum.GetNames<Key>())
+                .First(value => value is not ("None" or "Shift" or "Ctrl" or "Alt" or "Meta") && !usedKeys.Contains(value));
+            string? axis = new[] { "RightX+", "RightX-", "RightY-", "RightY+", "LeftX+", "LeftX-", "LeftY+", "LeftY-" }
+                .FirstOrDefault(value => !usedAxes.Contains(value));
+            bindings["menu"] = new([key], [], axis is null ? [] : [axis]);
         }
         HashSet<string> identities = [];
         foreach (var (name, binding) in bindings)
         {
             if (binding is null || binding.Keys is null || binding.Buttons is null || binding.Axes is null ||
-                binding.Keys.Length == 0 || binding.Buttons.Length + binding.Axes.Length == 0)
+                binding.Keys.Length == 0 || binding.Buttons.Length + binding.Axes.Length == 0 &&
+                    (name != "menu" || settings.Bindings.ContainsKey("menu")))
                 throw new ArgumentException($"{name} requires keys, buttons and axes arrays, with keyboard and gamepad access.");
             List<InputEvent> events = [];
             foreach (string key in binding.Keys)
@@ -185,6 +198,7 @@ internal sealed class GameInput
     }
 
     internal string Hint(GameAction action) => string.Join(" / ", _bindings[action].Select(Describe));
+    internal bool MenuPadAvailable => _bindings[GameAction.Menu].Any(input => input is InputEventJoypadButton or InputEventJoypadMotion);
     private static string Describe(InputEvent input) => input switch
     {
         InputEventKey key => key.Keycode.ToString(),
@@ -197,8 +211,8 @@ internal sealed class GameInput
     internal string CompactHint(GameAction action) => string.Join("/", new[]
     {
         _bindings[action].OfType<InputEventKey>().First(),
-        _bindings[action].First(input => input is InputEventJoypadButton or InputEventJoypadMotion),
-    }.Select(input => Describe(input).Replace("Pad ", "", StringComparison.Ordinal)));
+        _bindings[action].FirstOrDefault(input => input is InputEventJoypadButton or InputEventJoypadMotion),
+    }.OfType<InputEvent>().Select(input => Describe(input).Replace("Pad ", "", StringComparison.Ordinal)));
     internal string MovementHint => string.Join("; ", new[] { GameAction.Up, GameAction.Right, GameAction.Down, GameAction.Left }
         .Select(action => $"{action}: {Hint(action)}"));
     private static string MapName(GameAction action) => "sf2_" + action.ToString().ToLowerInvariant();

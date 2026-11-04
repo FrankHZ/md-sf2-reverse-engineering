@@ -9,7 +9,6 @@ public sealed partial class GameRoot
 {
     private SettingsStore? _preferences;
     private SettingsView? _settings;
-    private Button? _settingsButton;
     private string? _settingsNotice;
     private bool _settingsOverride;
     private InputEvent? _settingsActivation, _settingsRelease;
@@ -44,6 +43,7 @@ public sealed partial class GameRoot
 
     private void SettingsFocusLost()
     {
+        _systemMenu?.SuspendPointer();
         if (_settings is null && _settingsRelease is null) return;
         _settingsRelease = null; _releaseBarrier = false;
         _input?.ReleaseSettingsHold(); _settings?.SuspendPointer();
@@ -95,7 +95,7 @@ public sealed partial class GameRoot
         _input!.DisarmMovement(); _input.DisarmWait();
         _settings = new SettingsView { Name = "SettingsView", Input = _input, Close = CloseSettings,
             Apply = ApplySettings, ReadOnly = _settingsOverride, Notice = _settingsOverride ? GameText.Get("ui.settings.readonly") + (GameText.StartupError is null ? "" : "\n" + GameText.StartupError) : _settingsNotice is null ? null : _settingsNotice + "\n" + GameText.Get("ui.settings.storage") };
-        _hostUi.AddChild(_settings); ApplyHostPause(); DisarmInput();
+        _hostUi.AddChild(_settings); CoverSystemMenu(); ApplyHostPause(); DisarmInput();
     }
 
     private string? ApplySettings(InputSettings candidate, bool reset)
@@ -113,9 +113,7 @@ public sealed partial class GameRoot
         _settingsRelease = _settingsActivation;
         _input!.Apply(candidate, prepared); GameText.Publish(display); _settingsNotice = null;
         _entry?.ConfigureHints(_input);
-        RefreshSettingsShortcut();
-        RefreshPersistenceLabels();
-        if (_restart is not null) _restart.Text = GameText.Get("entry.new-menu");
+        RefreshSystemMenuLabels();
         return null;
     }
 
@@ -123,21 +121,8 @@ public sealed partial class GameRoot
     {
         if (_settings is not { } settings) return;
         _settings = null; _hostUi.RemoveChild(settings); settings.QueueFree();
+        ReturnToSystemMenu();
         ApplyHostPause(); DisarmInput();
     }
 
-    private void ConfigureSettingsButton()
-    {
-        _settingsButton = HostButton("SettingsEntry", "Settings…", -1080, -780, ShowSettings);
-        _settingsButton.AddThemeFontSizeOverride("font_size", 20);
-        RefreshSettingsShortcut();
-    }
-    private void RefreshSettingsShortcut()
-    {
-        if (_settingsButton is not null) _settingsButton.Text = GameText.Get("ui.settings.entry", _input!.CompactHint(GameAction.Cancel));
-    }
-    private void ReleaseSettingsButton()
-    {
-        if (_settingsButton is not null) { _hostUi.RemoveChild(_settingsButton); _settingsButton.QueueFree(); _settingsButton = null; }
-    }
 }
