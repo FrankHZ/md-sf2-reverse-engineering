@@ -1,5 +1,22 @@
 # Remake Capability Status
 
+## Early physical classes and ranged weapons
+
+**Implemented, bounded:** early KNTE/MAGE/ACHR/THIF definitions extend the existing SDMN/WARR/PRST
+physical subset. Ordinary 1-1, Short Spear1-2 and Wooden Arrow2-2 use live equipment for player
+and enemy legality, movement stations, targets, actions and counter range. THIF retains its source
+1/16 double probability. Free equip/unequip refreshes ATT/range once. Existing source commandsets
+6/7/9/14 retain their ordering and unsupported action/cost-domain guards.
+
+The [range sample](../content/authored/early-ranged.json) has actual ordinary native input,
+player/equipment/enemy effects and usable subsequent control in English and Chinese configurations.
+[Rule/provenance boundary](domain/gameplay-rules.md#early-classes-and-ranged-physical-attacks),
+[Content admission](content/profiles-and-trust.md#early-physical-definition-admission) and
+[verification](development-and-verification.md#early-ranged-physical-observation) distinguish that
+capability from controlled pinned Galam equipment and MAGE/THIF class definitions. New private scene resources,
+Kazin/Slade recruitment, full Battle03-07 story and spell actions/AI are not connected here.
+No natural-route, original media/timing, physical-device or final-pixel claim follows.
+
 ## Bounded bilingual localization
 
 **Implemented M1/M2a/M2b/M2c/M2d/M2e/M2f/M2g, bounded:** English/简体中文 selection uses the existing settings transaction and separate

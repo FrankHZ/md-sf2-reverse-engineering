@@ -45,10 +45,10 @@ internal static class BattleInitializationRules
             if (deployment.Faction == BattleFaction.Enemy)
             {
                 _ = EnemyAttack(deployment.Definition.Attack, policy.Difficulty);
-                // General equipped/status refresh is not admitted by a loaded baseline.
-                // The admitted unequipped Herb has no stat refresh effects. Placement AddItem
-                // already masked its AI/drop bits; equipped/unknown words still reject.
-                Require(deployment.Definition.SourceLoadout!.Items.All(word => word is 0 or 127),
+                // Ordinary weapons have only the admitted ATT contribution. Other equipped
+                // effects remain unsupported; placement Herb keeps its existing inert semantics.
+                Require(deployment.Definition.SourceLoadout!.Items.All(word => word is 0 or 127 ||
+                    (word & ~255) == 0 && deployment.Definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true),
                     "enemy-equipment-refresh", "actors.loadout", true);
             }
         }
@@ -89,7 +89,9 @@ internal static class BattleInitializationRules
             bool placed = !actor.IsAlly || (heal && (start.ActiveAllies is null || start.ActiveAllies.Contains(actor.Actor)));
             return new BattleActorState(actor.Deployment,
                 heal ? actor.MaxHp : actor.Hp, heal ? actor.MaxMp : actor.Mp, actor.Exp, placed ? actor.Deployment.Position : null,
-                actor.Kills, actor.Defeats, attack: actor.IsAlly ? actor.Attack : EnemyAttack(actor.Definition.Attack, policy.Difficulty),
+                actor.Kills, actor.Defeats, attack: actor.IsAlly ? actor.Attack : actor.Definition.Equipment is null
+                    ? EnemyAttack(actor.Definition.Attack, policy.Difficulty)
+                    : (byte)Math.Min(200, EnemyAttack(actor.Definition.Attack, policy.Difficulty) + BattleEquipment.Contribution(actor.Definition, actor.SourceLoadout)),
                 status: actor.IsAlly && heal ? (ushort)(actor.Status & 7) : actor.Status,
                 activationWord: actor.IsAlly ? actor.ActivationWord : InitialActivationWord(actor.Deployment.Initialization!), progress: actor.Progress, sourceLoadout: actor.SourceLoadout);
         });

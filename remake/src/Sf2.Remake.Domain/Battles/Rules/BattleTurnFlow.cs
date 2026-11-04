@@ -1,4 +1,5 @@
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Domain.Battles;
 
@@ -87,8 +88,10 @@ internal static class BattleTurnFlow
             if (actor.Equipment is not null)
             {
                 BattleEquipment.ValidateLoadout(actor, loadout);
-                Require(deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
-                    !deployment.SourceAllyControl && (input.Status == 0 || definition.Poison && input.Status == 2 ||
+                bool playerEquipment = deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
+                    !deployment.SourceAllyControl && Sf2ClassRules.SourceClass(actor.ClassRule) is not null;
+                bool fixedEnemyEquipment = deployment.Faction == BattleFaction.Enemy && !actor.Equipment.AllowChanges;
+                Require((playerEquipment || fixedEnemyEquipment) && (input.Status == 0 || definition.Poison && input.Status == 2 ||
                         !actor.Equipment.AllowChanges && start.NewBattle is not null) && actor.Physical is not null,
                     "equipment-actor", "start.actors", true);
             }

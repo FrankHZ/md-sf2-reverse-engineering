@@ -13,16 +13,18 @@ public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
-public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight }
+public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief }
 public enum BattleControl { Player, Automatic }
 public enum BattleFaction { Ally, Enemy }
 
 public sealed class PhysicalCriticalRule
 {
-    private PhysicalCriticalRule(ushort chanceDenominator, int damageBonusShift, bool inflictsSleep = false)
-    { ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
+    private PhysicalCriticalRule(ushort chanceDenominator, int damageBonusShift, bool inflictsSleep = false, ushort doubleChanceDenominator = 32)
+    { DoubleChanceDenominator = doubleChanceDenominator; ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
     public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
     public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
+    public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
+    public ushort DoubleChanceDenominator { get; }
     public static PhysicalCriticalRule Sleep { get; } = new(4, 0, true);
     public bool InflictsSleep { get; }
     public ushort ChanceDenominator { get; }

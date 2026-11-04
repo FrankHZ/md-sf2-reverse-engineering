@@ -74,12 +74,16 @@ internal static class AiMovementRules
 
     internal static MapPosition? AttackPosition(WeightedMovementGrid grid, MapPosition target, int radius,
         Func<MapPosition, bool> occupied)
+        => AttackPosition(grid, target, radius, radius, occupied);
+
+    internal static MapPosition? AttackPosition(WeightedMovementGrid grid, MapPosition target,
+        int minimumRange, int maximumRange, Func<MapPosition, bool> occupied)
     {
         MapPosition? best = null; int minimum = 255;
-        for (int dy = -radius; dy <= radius; dy++)
-            for (int dx = -radius + Math.Abs(dy); dx <= radius - Math.Abs(dy); dx++)
+        for (int dy = -maximumRange; dy <= maximumRange; dy++)
+            for (int dx = -maximumRange + Math.Abs(dy); dx <= maximumRange - Math.Abs(dy); dx++)
             {
-                if (Math.Abs(dx) + Math.Abs(dy) != radius) continue;
+                if (Math.Abs(dx) + Math.Abs(dy) < minimumRange) continue;
                 int x = target.X + dx, y = target.Y + dy;
                 if (x is < 0 or >= 48 || y is < 0 or >= 48) continue;
                 var position = new MapPosition(x, y);

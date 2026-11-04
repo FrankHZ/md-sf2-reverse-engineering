@@ -13,16 +13,18 @@ internal static class EnemyPhysicalDecision
     {
         var actor = current.GetActor(actorRef);
         var grid = selectedGrid ?? BattleMovement.Grid(current, actorRef);
+        var action = new BattleActionRef(BattleActionKind.Physical);
+        var admission = BattleActionRules.Invoke(physical, "ai-range", () => physical.QueryRange(current, actorRef));
+        var targets = BattleActionRules.Invoke(physical, "ai-targets", () => physical.QueryTargets(current, actorRef, action)).ToHashSet();
         var candidates = new List<(BattleActorState Target, MapPosition Position, int Cost)>();
-        foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.Position is not null && a.IsAlly).OrderBy(a => a.ProcessingOrder))
+        foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.Position is not null && targets.Contains(a.Actor)).OrderBy(a => a.ProcessingOrder))
         {
-            if (AiMovementRules.AttackPosition(grid, target.Position!, 1,
+            if (AiMovementRules.AttackPosition(grid, target.Position!, admission.MinimumRange!.Value, admission.MaximumRange!.Value,
                 position => current.Actors.Any(a => a.Hp > 0 && a.Position == position)) is { } position)
                 candidates.Add((target, position, grid.CostAt(position)!.Value));
         }
         if (candidates.Count == 0) return null;
-        _ = BattleActionRules.Invoke(physical, "ai-admission", () =>
-            physical.RequireAction(current, actorRef, new(BattleActionKind.Physical)));
+        _ = BattleActionRules.Invoke(physical, "ai-admission", () => physical.RequireAction(current, actorRef, action));
         var priorities = new PhysicalTargetPriority[candidates.Count];
         var decisions = new List<BattleEffect>();
         uint thinking = current.ThinkingSeed;
@@ -45,9 +47,8 @@ internal static class EnemyPhysicalDecision
             decisions.Add(new("ai-candidate", actorRef, candidate.Cost, priority, Target: candidate.Target.Actor));
             thinking = after;
         }
-        // Source airborne movement selects the Flying table; the other admitted movers use Regular.
-        var selection = PhysicalTargetRules.Select(priorities, actor.Definition.Mover is BattleMover.Hovering or BattleMover.Flying
-            ? PhysicalPriorityTable.Flying : PhysicalPriorityTable.Regular)
+        // Physical preferences follow the actual source mover, independently of the target class.
+        var selection = PhysicalTargetRules.Select(priorities, PhysicalTargetRules.Table(actor.Definition.Mover))
             ?? throw new BattleRuleException("ai-target-selection", "ai.targets", true);
         var selected = candidates[selection.Index];
         var prepared = current.With(thinkingSeed: thinking,

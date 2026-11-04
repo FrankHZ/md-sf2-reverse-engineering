@@ -9,6 +9,12 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     public BattleActionKind Kind => BattleActionKind.Physical;
     public IReadOnlyList<BattleActionOffer> QueryActions(EngineBattleState battle, ActorRef actor) =>
         [new(new(Kind), "ATTACK")];
+    public BattleActionAdmission QueryRange(EngineBattleState battle, ActorRef actor)
+    {
+        var physical = BattleEquipment.Physical(battle.GetActor(actor))
+            ?? throw new BattleRuleException("physical-definition", "actor.physical", true);
+        return new(physical.MinimumRange, physical.MaximumRange);
+    }
     public BattleActionAdmission RequireAction(EngineBattleState battle, ActorRef actor, BattleActionRef action)
     {
         if (action != new BattleActionRef(Kind)) throw new BattleRuleException("physical-action", "action");
@@ -160,7 +166,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 hp, multiplier, seed, defender.Definition.Mover is BattleMover.Hovering or BattleMover.Flying ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC0) != 0,
-                ineffective: !counter && ineffective);
+                ineffective: !counter && ineffective, doubleRange: profile.Critical.DoubleChanceDenominator);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
                 hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical && !strike.Ineffective, strike.Damage,

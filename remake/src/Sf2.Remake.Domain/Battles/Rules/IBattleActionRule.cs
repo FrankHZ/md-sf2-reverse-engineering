@@ -23,6 +23,10 @@ internal interface IBattleActionRule
 
 internal interface IPhysicalActionRule : IBattleActionRule
 {
+    // Movement may query geometry before an attack/reward consumer is reached.
+    // Replacement physical rules retain their own admission unless they supply this query.
+    BattleActionAdmission QueryRange(EngineBattleState battle, ActorRef actor) =>
+        RequireAction(battle, actor, new(BattleActionKind.Physical));
     int EstimateDamage(EngineBattleState battle, ActorRef actor, ActorRef target);
 }
 

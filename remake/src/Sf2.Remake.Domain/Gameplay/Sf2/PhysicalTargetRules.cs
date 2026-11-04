@@ -1,12 +1,19 @@
 using Sf2.Remake.Domain.Battles;
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
-internal enum PhysicalPriorityTable { Regular, Flying }
+internal enum PhysicalPriorityTable { Regular, Flying, Archer, Mage }
 internal readonly record struct PhysicalTargetPriority(byte Movement, byte Priority, byte? ClassId);
 internal readonly record struct PhysicalTargetSelection(int Index, byte RawPriority, byte CappedPriority);
 
 internal static class PhysicalTargetRules
 {
+    internal static PhysicalPriorityTable Table(BattleMover mover) => mover switch
+    {
+        BattleMover.Flying or BattleMover.Hovering => PhysicalPriorityTable.Flying,
+        BattleMover.Archer => PhysicalPriorityTable.Archer, BattleMover.Mage => PhysicalPriorityTable.Mage,
+        _ => PhysicalPriorityTable.Regular,
+    };
+
     internal static byte ScriptThree(byte movement, int remainingHp, byte thinkingResult)
     {
         byte doubled = unchecked((byte)(movement * 2));
@@ -45,13 +52,17 @@ internal static class PhysicalTargetRules
         return new(selected, (byte)maximum, (byte)Math.Min(15, maximum));
     }
 
-    // aipriority.asm: only classes needed by admitted gameplay and the existing reference
-    // consumer. Flying is a reference scalar input, not a new authored movement capability.
+    // aipriority.asm: only the seven admitted source classes. Table selection follows
+    // the actual mover; geometry and class are separate content inputs.
     internal static int ClassRank(byte? classId, PhysicalPriorityTable table) => classId switch
     {
-        0 => 0, 4 => 5,
-        1 => table == PhysicalPriorityTable.Regular ? 22 : 15,
-        2 => table == PhysicalPriorityTable.Regular ? 25 : 8,
+        0 => table == PhysicalPriorityTable.Archer ? 11 : 0,
+        1 => table == PhysicalPriorityTable.Mage ? 10 : table == PhysicalPriorityTable.Flying ? 15 : 22,
+        2 => table == PhysicalPriorityTable.Mage ? 5 : table == PhysicalPriorityTable.Flying ? 8 : 25,
+        3 => table == PhysicalPriorityTable.Mage ? 21 : table == PhysicalPriorityTable.Archer ? 5 : 2,
+        4 => table == PhysicalPriorityTable.Mage ? 24 : table == PhysicalPriorityTable.Archer ? 8 : 5,
+        5 => table == PhysicalPriorityTable.Flying ? 27 : 15,
+        10 => table == PhysicalPriorityTable.Flying ? 25 : table == PhysicalPriorityTable.Mage ? 19 : 13,
         _ => throw new BattleRuleException("ai-target-class", "target.classRule", true),
     };
 }

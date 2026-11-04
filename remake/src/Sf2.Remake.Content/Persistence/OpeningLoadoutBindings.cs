@@ -37,7 +37,7 @@ internal static class OpeningLoadoutBindings
             angelWing.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
             "source-field-angel-wing", "field.items");
         var weapons = source.Items.Values.Where(item => item.ItemTypeExpression == "WEAPON" &&
-            item.MinimumRange == 1 && item.MaximumRange == 1 && item.EquipEffects.All(effect =>
+            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) && item.EquipEffects.All(effect =>
                 effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
             .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName,
                 source.Classes.Values.Where(allowed => allowed.Id < 32 && item.EquipFlags.Contains(allowed.Code))

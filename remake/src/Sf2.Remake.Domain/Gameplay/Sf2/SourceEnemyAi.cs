@@ -64,8 +64,9 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         if (commandset is not (6 or 7 or 9 or 14)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
         // Ordinary unequipped Herb0 cannot be selected: attack-item checks equipped/AI bits,
         // healing-item skips it with AI bit13 clear (Healing Rain has a separate source branch).
-        // Neither path draws RNG. Other items, enabled bits and spells remain Unsupported.
-        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(item => item is not (0 or 127)) || loadout.Spells.Any(spell => spell != 63))
+        // Neither path draws RNG. Admitted ATT-only weapons have no AI use action;
+        // other items, enabled bits and spells remain Unsupported.
+        if (!BattleEquipment.OrdinaryAiLoadout(actor.Definition, actor.SourceLoadout, allowHerb: true))
             throw new BattleRuleException("source-action-categories", "actor.loadout", true);
         var targets = current.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();
@@ -100,6 +101,8 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
         effects.Add(new("ai-command-support", actorRef, After: -1));
+        if (targets.Length == 0)
+            return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
         var pursuit = AiMovementRules.Pursue(Costs(), legal, actor.Position, targets.Select(unit => unit.Position!).ToArray(),
             Occupied, current.Definition.Width, current.Definition.Height);
         var targetRef = targets[pursuit.TargetIndex].Actor;
