@@ -2336,8 +2336,10 @@ Direct document/link/scope/private-content checks and the clean committed planne
 tracked diff; record the selected hosted CI in the handoff/PR. No fresh SDK, engine, normal research,
 full, H3, campaign or save-compatibility suite is required by this content sample. Main-gate independently
 reviewed the suggestion's semantics, including the connected 219–220 condition and Chinese phrase
-breaks in 218–219. **Explicit human tone/typography/reading review remains pending** in the private
-bilingual artifact and epic #1468. Closing this engineering sample does not approve a glossary, expand
+breaks in 218–219. **The user approved this sample's text tone on 2026-11-03; in-game typography
+and actual reading review remain pending** in the private bilingual artifact and epic #1468. This
+speaker's tone approval does not prescribe other characters' voices. Closing this engineering sample
+does not approve a glossary, expand
 the script batch, establish full-opening Chinese or grant private-content publication rights.
 
 ## Localized Party and field Prepare
