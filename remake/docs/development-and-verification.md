@@ -745,6 +745,13 @@ presentation claim follows. Earlier #1047/#1341/#1343 failures/results remain pr
 
 ## Scope
 
+Checks that do not require a real foreground window run in the background by default, using the
+existing [headless native launch](#typed-json-object-shape-observation) for suitable native state/input/layout observations. A Hidden wrapper
+does not ensure its game child cannot take focus. Use foreground only for evidence that requires
+actual focus, a physical window or rendering; explain the concrete need before launch and group the
+minimum necessary observations. Background results do not establish foreground coverage, and must
+not bypass production focus/suspension protections.
+
 ### Retired bulk frame workflow
 
 The user's 2026-10-04 decision retires the previous whole-route per-frame H4 capture,

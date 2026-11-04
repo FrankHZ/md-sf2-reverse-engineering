@@ -1019,3 +1019,119 @@ msgstr "Returned from battle. Back in the field."
 #. Story controls/typed battle return only; source dialogue remains unchanged.
 msgid "field.return.retreat.pending"
 msgstr "Returned from battle. Returning to the field…"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.attack"
+msgstr "{0} attacks."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.second"
+msgstr "{0} attacks again."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.counter"
+msgstr "{0} counterattacks."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.item"
+msgstr "{0} uses {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.prism"
+msgstr "{0} fires a prism laser."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.damage"
+msgstr "{0} takes {1} damage."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.critical"
+msgstr "Critical hit: {0} takes {1} damage."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.dodge"
+msgstr "{0} evades the attack."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.ineffective"
+msgstr "The action has no effect on {0}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.ally-death"
+msgstr "{0} can no longer fight."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.enemy-death"
+msgstr "{0} is defeated."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.received"
+msgstr "{0} receives {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.dropped"
+msgstr "{0} drops {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.exp"
+msgstr "{0} gains {1} EXP."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.gold"
+msgstr "Gold gained: {0}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.level"
+msgstr "{0} reaches level {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.max-hp"
+msgstr "{0}: maximum HP increases by {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.max-mp"
+msgstr "{0}: maximum MP increases by {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.attack-growth"
+msgstr "{0}: attack increases by {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.defense-growth"
+msgstr "{0}: defense increases by {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.agility-growth"
+msgstr "{0}: agility increases by {1}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.spell-growth"
+msgstr "{0} learns {1} level {2}."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.sleep"
+msgstr "{0} falls asleep."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.sleeping"
+msgstr "{0} remains asleep."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.awake"
+msgstr "{0} wakes up."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.poison"
+msgstr "{0} loses {1} HP to poison."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.exhausted"
+msgstr "{0} can no longer fight after poison damage."
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.in-progress"
+msgstr "Action in progress…"
+
+#. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.wait"
+msgstr "{0}: Wait"

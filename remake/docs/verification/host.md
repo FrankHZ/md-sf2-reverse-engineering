@@ -2535,6 +2535,74 @@ existing pilot/overlay exercises the intended partial-support notice. Original c
 import warnings remain under `local/issue1481`. Passing native logs have empty stderr; this does not
 resolve the separate [ObjectDB lifetime Unknown](#audio-resource-lifetime-observation).
 
-Other dialogue bodies, names, BattleScene results/hints, human translation/typography, original
+Other dialogue bodies, names, human translation/typography, original
 reach/timing/audio, Unicode naming, export and full-opening Chinese acceptance remain outside this
 slice. Existing FieldTextWait overlays and all game-save/engine semantics remain unchanged.
+
+## Localized semantic battle feedback
+
+The [M2g display agreement](../application/localization-design.md#implemented-m2g-semantic-battle-feedback-boundary)
+is presentation only: typed Chinese functional feedback, preserved English source-ID display,
+shared card/reading keys and complete English row fallback with a current body/hint key/reason notice.
+The source mapping is reviewed directly for all existing finite phases, action/reaction kinds,
+Critical/side, seven GrowthNotice kinds and 306/354 sleep-turn values. Spell growth uses SpellRef.Level;
+stat growth uses Amount. There is no engine change or new engine/probe test.
+
+Use the existing absolute SDK/Godot selections and serialized H environment/imports. Load the current
+ignored configuration in the launching process, force DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false, run
+`uv run sf2 verify adapter`, and build the existing Debug host as in the
+[locked workflow](../development-and-verification.md#locked-net-workflow). Keep worktree-local runtime
+state, fresh external save namespaces and relevant-field reports under the 15MiB budget; no new
+world copy, environment, cache, SDK or screenshots. The executor's ignored `local/issue1483/run-native.ps1`
+accepts a fresh Run and a finite Case (`physical`, `drop`, `aura`, `poison`, `heal`, `literal`, `private`).
+Its local caller composes ordinary Main, uses existing read-only observations and actual key events;
+no session setters or invented focus events supply a result. The tracked production probes are unchanged.
+
+**Confirmed — bounded headless native observation at 1920×1080:** the headless DisplayServer reports
+focus, and ordinary production input/suspension checks remain active. Existing fixed-fps60 launch
+runs in the background without a physical game window. Catalog glyph coverage, native Label metrics,
+clipped reading-area/card/hint geometry, current message text and canonical state are read directly.
+These observations do not prove physical rendering, desktop focus transfer or human reading quality.
+No foreground run was needed for this slice. The
+[background execution preference](../development-and-verification.md#scope)
+applies to future suitable checks too.
+
+| Case | Actual finite boundary |
+| --- | --- |
+| physical, English/zh-CN | Existing progression-outcome-victory: ordinary interaction/entry, physical attack/damage/death, EXP, level and five stat gains, gold, end and field removal. Existing English wording remains; Chinese uses typed functional templates. Both retain reward/resource/RNG and phase-token order. |
+| drop, English/zh-CN | Existing battle-drops: ordinary target selection reaches enemy; actual dropped/received Taros Sword, death, EXP/gold and custody publication. No private source text enters a PO row. |
+| aura, English/zh-CN | Existing aura-healing: ordinary AURA4 selection, six ordered target recoveries (including full HP), one MP payment, capped EXP and next control. |
+| poison, English/zh-CN | Existing poison-turn: ordinary Stay, fixed2 nonlethal HP loss and next actor, then lethal poison/exhaustion and field cleanup. Short Chinese notices fit the measured panel with the unchanged automatic0.5-second policy. Wider reading comfort remains Unknown. |
+| heal, English/zh-CN | Existing healing-rule-demo: ordinary HEAL action/recovery, logical work through retirement and next control. Retained M1 work/fairy evidence stays authoritative; this checks affected display/hints directly. |
+| literal, English/zh-CN | Before composition vary only the public drop item's admitted label to include `{N}`, `{ITEM}`, `{D1}`, `{CLEAR}`, `{NAME}` and `{0}`. The actual committed drop/receipt shows all tokens literally, including English source-template substitution. CharacterNames/default/custom resolution remains source-equal to accepted main. |
+| fallback, Chinese | Erase attack and invalidate damage parameters before composition. Each actual message uses a complete authored English row; its visible hint names only the current key and missing/invalid reason. An unrelated missing poison row cannot contaminate this screen. Missing Continue similarly falls back visibly with its own key/reason. Blank phases do not display an erroneous body notice. |
+| long, Chinese | Lengthen the existing action row before composition. The actual scene reaches multiple ReadMore pages; each retains token/revision/resources/RNG, and acknowledgement follows reading. The clipped body and measured hint remain disjoint at1080p. |
+| private, English/zh-CN | Reuse the accepted controlled Battle02 world/party/start recipe from issue1398. Ordinary intro skip/Stay reaches Sarah and actual full-HP self HEAL, one MP payment and EXP, then next control. The original private inputs stay read-only. No natural original reach/timing claim follows. |
+
+Direct comparison retains typed actor/resource/seed/custody state, applicable phase tokens/revisions
+and semantic event outcomes across each bilingual pair. The private intro can have a constant
+revision/token offset; compare the common control boundary and subsequent deltas, retaining that
+difference explicitly. Direct catalog checks require every key and exact argument set in both PO
+files; every added public row is project-authored functional UI text. English source-ID selection,
+CharacterNames precedence, canonical HEAL work and all input/continuation/animation code are checked
+against accepted main. Clean committed planner and actual CI select adapter-build, not engine units,
+research/normal/full/H3 or whole-campaign replay.
+
+Completed failed attempts remain in local/issue1483: the first headless pilot read a stale field
+node after battle mounting; a subsequent caller double-connected its observation signal on reparent;
+drop selection initially chose another target; the first long sample fit the enlarged panel and a
+later check incorrectly required the scroll content label itself to fit the viewport. Corrected
+callers read the active node, connect once, select the intended admitted target and measure the
+clipped reading area. None changes production timing or input. Early private attempts used the
+Battle01 menu fixture, whose missing EXP correctly refuses HEAL with `unspecified-exp`; the accepted
+Battle02 recipe supplies the required operand. No golden/schema/input was weakened. Import regenerated
+missing UID sidecars from the existing cache; the originals are retained locally after scope review.
+Reports were narrowed to this Issue's Project record and losslessly compacted with semantic equality,
+preserving every failure/result within budget. No old evidence or environment was removed.
+
+Public headless passes have empty stderr. Private HEAL exits0 without session/presenter errors but
+reports one shutdown warning for eight ObjectDB instances; failed private attempts also retain their
+own warning counts. This remains an unattributed lifecycle **Unknown**, alongside the earlier issue1480
+one-warning/two-instance observation; no new audio investigation or claim of resolution is made.
+Original/private prose and terminology translation, source-image lettering, Unicode naming, export,
+human translation/typography and full-opening Chinese acceptance remain outside this slice.

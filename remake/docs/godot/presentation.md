@@ -568,8 +568,29 @@ DialogueWait body is shown in Chinese. Camera/tick delivery and close remain unc
 Victory/Defeat/retreat events plus CanWaitAtInput select complete pending/ready notices; Begin/Dismiss
 and first-input dismissal retain their existing lifetime, without a new outcome or reward authority.
 The [native recipe](../verification/host.md#localized-story-controls-choices-and-return-notices)
-records bounded bilingual observations. Dynamic BattleScene text, remaining dialogue/names and
+records bounded bilingual observations. Remaining dialogue/names and
 opening-wide Chinese coverage are not admitted here. Language stays in the existing settings entry.
+
+## Localized semantic battle feedback
+
+The [M2g agreement](../application/localization-design.md#implemented-m2g-semantic-battle-feedback-boundary)
+keeps English BattleScene source-ID selection and uses authored typed-state templates for Chinese
+physical/item/prism actions, reactions, side-specific death, receipt/drop, EXP/gold/growth and existing
+sleep/poison notices. AURA shares accepted HEAL keys. Spell-growth level is distinct from a stat gain;
+SleepTurnText retains its existing finite discriminator. Names and item/spell labels stay literal;
+a single source-template token scan prevents inserted values from becoming controls.
+
+Acting/Target, reveal/ReadMore/Continue, in-progress and timed-Wait hints use complete catalog rows.
+Only the current body/hint's fallback adds a visible key/reason notice; missing Chinese rows use a
+whole authored English template, while unmigrated English bodies are explicitly identified. Blank
+phases and unrelated missing rows produce no false notice. Catalog diagnostics remain available.
+The existing panel measures the full hint/footer before allocating its clipped reading area.
+
+Canonical HEAL text/work, animation/audio, focus suspension, 0.5-second automatic status delivery,
+reveal/ReadMore-before-ack, same-token continuity and result/resource ordering are unchanged. The
+[native recipe](../verification/host.md#localized-semantic-battle-feedback) separates headless layout/
+input evidence from physical-rendering and human reading acceptance; wider automatic-notice reading
+comfort remains Unknown. There is no new parser, overlay interpreter or engine/save behavior.
 
 ## Shared story dialogue agreement
 

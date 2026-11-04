@@ -2,10 +2,10 @@
 
 ## Scope and status
 
-**Implemented bounded M1, M2a, M2b, M2c, M2d, M2e and M2f consumers; independent integration/product acceptance remains separate.**
+**Implemented bounded M1, M2a, M2b, M2c, M2d, M2e, M2f and M2g consumers; independent integration/product acceptance remains separate.**
 The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469)
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
-settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat, story controls/choices/return notices
+settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat, story controls/choices/return notices and semantic battle feedback
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
@@ -154,7 +154,7 @@ exhaustive string dump. Linked files and symbols locate the claims without relyi
 | [SettingsView.Refresh](../../game/src/UI/SettingsView.cs), [SessionEntryView](../../game/src/Entry/SessionEntryView.cs), [NameEntryView](../../game/src/Entry/NameEntryView.cs): migrated UI keys/help/errors | Godot Button/Label/LineEdit and hints | M1/M2b use stable keys and action/node identities. The UseName button reference and entry node names no longer depend on displayed English. |
 | [FieldService.Submit/Completion](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldService.cs): M2a `ChurchWait.Result` retains typed outcome/treatment and independent curse notice | [ChurchServiceView.Present](../../game/src/Exploration/ChurchServiceView.cs) | M2a consumes finite result/effect/cost and explicit phase; payment/queue advancement precede display. English wording has no phase authority. |
 | [HealingSceneCursor.Create/Enter](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs): names/spell/amount substituted into `ActionText`/`RecoveryText`; private IDs 274/298 | `Enter` creates logical work per character; [BattleSceneView.Message](../../game/src/Battles/BattleSceneView.cs) displays the same strings | Chinese replacement would change work and potentially fairy/RNG progression. Retain execution strings and add semantic display operands for M1. |
-| `BattleSceneState`: phase, actor, target, amount, rewards, item and growth values | `BattleSceneView.Message` maps source IDs and replaces tags; AURA uses English interpolation | Most semantics already exist. Reuse those fields, without a duplicate event bus. Reward/HP publication remains in the continuation. |
+| `BattleSceneState`: phase, actor, target, amount, rewards, item and growth values | `BattleSceneView.Message` preserves English source IDs and projects typed Chinese functional templates | Most semantics already exist. Reuse those fields, without a duplicate event bus. Reward/HP publication remains in the continuation. |
 | [BattleGiveState.Text](../../src/Sf2.Remake.Application/Runtime/Battles/BattleGiveContinuation.cs), [BattleDiscardState.Text](../../src/Sf2.Remake.Application/Runtime/Battles/BattleDiscardContinuation.cs), [BattleRetreatContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleRetreatContinuation.cs) | Respective battle views | M2e views format retained typed actor/item/returned/payment operands through GameText. Canonical Text/TextFor remain unchanged; authored English is not a universal source-text ID. |
 | [remake_exploration_content.py](../../../src/sf2tool/remake_exploration_content.py) reads pinned `disasm/data/scripting/text/gamescript.txt` hexadecimal IDs and `allynames.asm`; [ExplorationContentReader.ReadTextTokens](../../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) tokenizes text | [ProgramRunner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) selects DialogueWait, W1TextWait or FieldTextWait; [ExplorationDialogueView](../../game/src/Exploration/ExplorationDialogueView.cs) has separate projections | Reuse integer ID plus namespace, not English spelling or list position. The compatibility regex path is not a general token interpreter. |
 | [ExplorationTextRunner.Begin/Normalize/Span/Accepted](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationTextRunner.cs) expands names/classes and builds source glyph units | [FieldTextWait](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationState.cs) stores units, projection and logical cursor; host separately reveals/delivers/acknowledges | Characters above 255 or absent from source font mapping reject (`field-text-symbol`). Glyph advances determine logical wrap/scroll work. Chinese must not replace those units/advances. |
@@ -491,8 +491,8 @@ schema, new message system or engine-behavior test is required by this display-o
   and relaunch. Formatting does not promise an unavailable Back/retry operation or issue commands.
 - Actual equipment HUD/current choice, ATT/range and ReadMore are localized. `_title`, `_roster` and
   non-equipment spell/item strings in observation are diagnostic projections, not another visible
-  localized menu. The separate M2e boundary below covers Give/Discard/Retreat. Other dynamic
-  scene/results beyond HEAL, source terminology/dialogue and source-image lettering remain English.
+  localized menu. The separate M2e boundary below covers Give/Discard/Retreat. Unapproved
+  source terminology/dialogue and source-image lettering remain English; M2g below owns scene results.
   Language is chosen through existing settings before battle; no mid-battle settings are added.
 - Missing/invalid rows use the complete English template and existing key/reason/effective-locale
   diagnostics. Native geometry checks cover long fallback, low/zero HP, zero MP, equipment and
@@ -559,11 +559,46 @@ semantic operation. Catalog fallback retains the whole English row and its key/r
   The notice remains during return, becomes ready at field control and clears on ordinary input.
 - Language stays in the existing safe settings entry; no story/battle hot switch is added. No engine,
   scenario, save, schema, general message framework or input-controller change belongs to this group.
-  BattleScene dynamic results/hints, original dialogue bodies and source/default names remain outside
-  this migration; the accepted field overlay retains its independent coverage and fallback rules.
+  Original dialogue bodies and source/default names remain outside this group; M2g below covers
+  BattleScene display. The accepted field overlay retains its independent coverage and fallback rules.
 
 The [finite native recipe](../verification/host.md#localized-story-controls-choices-and-return-notices)
 owns actual bilingual state/input/glyph/geometry observations, retained outcome evidence and limits.
+
+## Implemented M2g semantic battle feedback boundary
+
+**Standard rigor:** [#1483](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1483)
+extends the accepted semantic HEAL display approach through the existing BattleSceneView message,
+acting/target cards and reading hints. Chinese uses project-authored functional templates from typed
+Phase/ActionKind/ReactionKind/Critical/side/GrowthNotice and existing actor, target, amount, reward,
+gold, receipt and SpellRef operands. These public PO rows are not translations of private script.
+English preserves the existing source-ID selection and admitted source strings; a missing/invalid
+Chinese row uses its complete authored English template, with the current key/reason visible in the
+hint and retained in catalog diagnostics. An unmigrated English body is explicitly marked; blank
+phases and unrelated catalog failures do not produce body-fallback notices.
+
+- Physical first/second/counter, prism, item use, damage/critical/dodge/ineffective/recovery, side-specific
+  death, item drop/receipt, EXP/gold and the seven growth kinds have finite mappings. Spell growth
+  uses SpellRef.Level (also the notice Amount), while stat notices use their actual gain. SleepTurnText
+  is the existing typed 306-asleep/354-awake discriminator, not parsed English; sleep and poison
+  notices retain the existing automatic 0.5-second delivery. AURA reuses HEAL display keys.
+- Name resolution and source/default/custom precedence stay with CharacterNames. Item/spell labels
+  and resolved names are literal format arguments. English source-token substitution scans the
+  source template once, so inserted `{N}`, `{ITEM}`, `{CLEAR}` or delay-like labels are not re-read.
+  Canonical HEAL ActionText/RecoveryText and character work remain unchanged.
+- Shared card roles reuse battle.acting/battle.target; reveal, ReadMore and Continue reuse existing
+  keys, alongside bounded action-in-progress and timed-Wait hints. Same-token redraw, reveal/reading,
+  acknowledgement, automatic delivery, animation/audio/focus and continuation algorithms are unchanged.
+  No locale enters Application/Domain, rewards, resources, RNG, fairy opportunities or save identity.
+- Ownership is BattleSceneView display only, GameText, the two PO catalogs and the four localization/
+  presentation/capability/host owners. The verification guide adds only the authorized stable background
+  execution preference. No battle.text overlay parser, interpreter or general framework is added.
+
+The [bounded native recipe](../verification/host.md#localized-semantic-battle-feedback) owns direct
+state/input/catalog/glyph/layout comparisons. Headless geometry is measured native layout, not a
+physical-window/rendering or human readability claim. Original script/terminology translation,
+source-image lettering, full-opening Chinese, Unicode naming and human prose/typography acceptance
+remain separate. Wider reading comfort for automatic notices remains **Unknown**.
 
 ## Names, IME and compatibility
 

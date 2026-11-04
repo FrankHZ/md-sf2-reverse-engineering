@@ -2,7 +2,7 @@
 
 ## Bounded bilingual localization
 
-**Implemented M1/M2a/M2b/M2c/M2d/M2e/M2f, bounded:** English/简体中文 selection uses the existing settings transaction and separate
+**Implemented M1/M2a/M2b/M2c/M2d/M2e/M2f/M2g, bounded:** English/简体中文 selection uses the existing settings transaction and separate
 preference. Settings, one original authored FieldTextWait with captured names/source controls, and
 semantic HEAL cast/recovery text, Church and Search consume exact catalogs with explicit English fallback. The bundled
 licensed CJK face loads in Godot 4.7.2 without system fallback. Canonical execution and game-save
@@ -13,6 +13,7 @@ and [Party/Prepare boundary](application/localization-design.md#implemented-m2c-
 and [battle menu/status boundary](application/localization-design.md#implemented-m2d-battle-menu-and-status-boundary),
 and [battle transaction/retreat boundary](application/localization-design.md#implemented-m2e-battle-transactions-and-retreat-boundary),
 and [story controls/choices/return notices](application/localization-design.md#implemented-m2f-story-controls-and-return-notices-boundary),
+and [semantic battle feedback](application/localization-design.md#implemented-m2g-semantic-battle-feedback-boundary),
 with [native entry reproduction](verification/host.md#localized-entry-and-save) and
 [Party/Prepare observation](verification/host.md#localized-party-and-field-prepare), own the limits. Entry,
 restricted naming help, slots, Save/Quit/Continue and recovery now consume UI keys; six entry source
@@ -25,8 +26,12 @@ and reading hints now consume typed GameText templates. Give acknowledgement end
 Discard retains it and movement preview; retreat pays once before staged return. Exploration/battle-story
 control and reading hints, Yes/No labels and typed ephemeral return notices are also localized.
 Visible unmigrated dialogue in Chinese carries an English fallback notice; canonical body, waits,
-choice booleans, release barriers and source selection are unchanged. Other dynamic
-scene results and original image lettering,
+choice booleans, release barriers and source selection are unchanged. Existing battle action/result,
+item drop/receipt, death, reward/growth and sleep/poison feedback, AURA, scene card roles and reading
+hints now use typed Chinese functional templates. English retains admitted source display; missing
+Chinese templates fall back to complete authored English with a current-message key/reason notice.
+Source-token formatting does not reinterpret inserted names/labels. Canonical HEAL work, automatic
+status delivery, tokens, rewards/resources and RNG remain unchanged. Original image lettering,
 original/private dialogue, unapproved default/item names and other results remain English; seven-character ASCII names
 remain in force. No whole-opening bilingual, human typography, Unicode naming or export claim.
 

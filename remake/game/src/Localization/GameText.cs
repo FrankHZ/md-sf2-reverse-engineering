@@ -331,6 +331,35 @@ internal static class GameText
         ["field.search"] = 1,
         ["localization.names"] = 0,
         ["localization.fallback"] = 1,
+        ["battle.scene.attack"] = 1,
+        ["battle.scene.second"] = 1,
+        ["battle.scene.counter"] = 1,
+        ["battle.scene.item"] = 2,
+        ["battle.scene.prism"] = 1,
+        ["battle.scene.damage"] = 2,
+        ["battle.scene.critical"] = 2,
+        ["battle.scene.dodge"] = 1,
+        ["battle.scene.ineffective"] = 1,
+        ["battle.scene.ally-death"] = 1,
+        ["battle.scene.enemy-death"] = 1,
+        ["battle.scene.received"] = 2,
+        ["battle.scene.dropped"] = 2,
+        ["battle.scene.exp"] = 2,
+        ["battle.scene.gold"] = 1,
+        ["battle.scene.level"] = 2,
+        ["battle.scene.max-hp"] = 2,
+        ["battle.scene.max-mp"] = 2,
+        ["battle.scene.attack-growth"] = 2,
+        ["battle.scene.defense-growth"] = 2,
+        ["battle.scene.agility-growth"] = 2,
+        ["battle.scene.spell-growth"] = 3,
+        ["battle.scene.sleep"] = 1,
+        ["battle.scene.sleeping"] = 1,
+        ["battle.scene.awake"] = 1,
+        ["battle.scene.poison"] = 2,
+        ["battle.scene.exhausted"] = 1,
+        ["battle.scene.in-progress"] = 0,
+        ["battle.scene.wait"] = 1,
         ["battle.heal.action"] = 3,
         ["battle.heal.recovery"] = 2,
     };
@@ -470,10 +499,15 @@ internal static class GameText
         if (result.Reason is { } reason) Diagnose(reason, $"world.text/{wait.Text}");
         return result;
     }
-    internal static string Fallback(string prefix, bool includeKey = false)
+    internal static string Fallback(string prefix, bool includeKey = false, bool exact = false)
     {
-        var row = _current?.Status.FirstOrDefault(pair => pair.Key.StartsWith(prefix, StringComparison.Ordinal) && pair.Value.Reason is not null);
+        var row = _current?.Status.FirstOrDefault(pair => (exact ? pair.Key == prefix : pair.Key.StartsWith(prefix, StringComparison.Ordinal)) && pair.Value.Reason is not null);
         return row?.Value?.Reason is { } reason ? Get("localization.fallback", includeKey ? reason + ": " + row.Value.Key : reason) : "";
+    }
+    internal static string Unmigrated(string key)
+    {
+        Diagnose("unmigrated-consumer", key);
+        return Get("localization.fallback", "unmigrated-consumer: " + key);
     }
     internal static DisplayResult Search(FieldSearchResult result, GameSession session)
     {

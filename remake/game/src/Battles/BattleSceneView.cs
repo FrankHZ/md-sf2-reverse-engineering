@@ -23,6 +23,7 @@ internal sealed partial class BattleSceneView : Control
     private ColorRect _sceneBlack = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
     private Label _message = null!;
+    private string _messageFallback = "";
     private readonly StoryDialoguePanel _messagePanel = new() { Name = "MessagePanel" };
     private GameInput _input = null!;
     private readonly BattleStatusCard _actorCard = new() { Name = "ActorCard" }, _targetCard = new() { Name = "TargetCard" };
@@ -377,8 +378,8 @@ internal sealed partial class BattleSceneView : Control
         var battle = _session.Current.Battle;
         var actor = battle.GetActor(state.Actor);
         var target = !state.IsAfterTurnNotice && state.Target is { } id ? battle.GetActor(id) : null;
-        _actorCard.Present(actor, ActorName(actor.Actor), "Acting");
-        _targetCard.Present(target, target is null ? "" : ActorName(target.Actor), "Target");
+        _actorCard.Present(actor, ActorName(actor.Actor), GameText.Get("battle.acting"));
+        _targetCard.Present(target, target is null ? "" : ActorName(target.Actor), GameText.Get("battle.target"));
         _actorCard.Position = new(32, 32); _actorCard.Size = _actorCard.RequestedSize;
         _targetCard.Position = new(GetViewportRect().Size.X - 32 - _targetCard.RequestedSize.X, 32);
         _targetCard.Size = _targetCard.RequestedSize;
@@ -386,6 +387,7 @@ internal sealed partial class BattleSceneView : Control
 
     private string Message(BattleSceneState state)
     {
+        _messageFallback = "";
         if (state.Healing is { } message && (!GameText.Ready || message.Display is null ||
             string.IsNullOrEmpty(message.Display.CasterName) || string.IsNullOrEmpty(message.Display.TargetName) ||
             message.Display.RecoveredHp < 0))
@@ -394,13 +396,24 @@ internal sealed partial class BattleSceneView : Control
             return "Message unavailable (" + Error + ").";
         }
         if (state.IsAura && state.Phase == BattleScenePhase.ActionMessage)
-            return $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}.";
+            return GameText.Language == "en" ? $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}." :
+                LocalizedMessage("battle.heal.action", ActorName(state.Actor), state.Spell!.Spell.Value.ToUpperInvariant(), state.Spell.Spell.Level);
         if (state.IsAura && state.Phase == BattleScenePhase.ResultMessage)
-            return $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP.";
+            return GameText.Language == "en" ? $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP." :
+                LocalizedMessage("battle.heal.recovery", ActorName(state.Target!.Value), state.Amount);
         if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
+        {
+            _messageFallback = GameText.Fallback("battle.heal.action", true, exact: true);
             return BattleCharacterNames.HealingText(healing.Display, false);
+        }
         if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop)
+        {
+            _messageFallback = GameText.Fallback("battle.heal.recovery", true, exact: true);
             return BattleCharacterNames.HealingText(recovery.Display, true);
+        }
+        // Chinese uses authored functional templates from typed state. English keeps
+        // the admitted source-ID route below; missing Chinese rows fall back whole.
+        if (GameText.Language != "en" && SemanticMessage(state) is { } translated) return translated;
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         int id = state.Phase switch
         {
@@ -418,6 +431,7 @@ internal sealed partial class BattleSceneView : Control
                 BattleGrowthNoticeKind.MaxMp => 267, BattleGrowthNoticeKind.Attack => 268, BattleGrowthNoticeKind.Defense => 269,
                 BattleGrowthNoticeKind.Agility => 270, BattleGrowthNoticeKind.Spell => 271, _ => -1 };
         if (id < 0) return "";
+        if (GameText.Language != "en") _messageFallback = GameText.Unmigrated("battle.text/" + id);
         string name = ActorName(state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ItemReceivedMessage ? state.Actor :
             state.Phase is BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage ? state.RewardActor!.Value : state.Target!.Value);
         int amount = state.GrowthNotice?.Amount ?? (state.Phase == BattleScenePhase.RewardMessage ? state.RewardAmount : state.Phase == BattleScenePhase.GoldMessage ? state.GoldAmount : state.Amount);
@@ -425,8 +439,72 @@ internal sealed partial class BattleSceneView : Control
             state.Phase == BattleScenePhase.RewardMessage ? "{NAME} earned {#} EXP." : state.Phase == BattleScenePhase.GoldMessage ? "Found {#} gold." : "{NAME}: {#}");
         // Text timing remains the existing product setting. No battle speech bleeps:
         // source bsc10/bsc11 clear CURRENT_SPEECH_SFX.
-        return Regex.Replace(text.Replace("{NAME}", name).Replace("{#}", amount.ToString()).Replace("{N}", "\n")
-            .Replace("{ITEM}", state.ItemReceipt?.Item.Name ?? state.Item?.Name ?? "").Replace("{SPELL}", state.GrowthNotice?.Spell?.Value.ToUpperInvariant() ?? "").Replace("{CLEAR}", ""), @"\{D[0-9]+\}", "");
+        // Replace only source tokens once. Names/item labels are literal values,
+        // including braces that happen to resemble another source token.
+        return Regex.Replace(text, @"\{(?:NAME|#|N|ITEM|SPELL|CLEAR|D[0-9]+)\}", match => match.Value switch
+        {
+            "{NAME}" => name, "{#}" => amount.ToString(), "{N}" => "\n",
+            "{ITEM}" => state.ItemReceipt?.Item.Name ?? state.Item?.Name ?? "",
+            "{SPELL}" => state.GrowthNotice?.Spell?.Value.ToUpperInvariant() ?? "", _ => "",
+        });
+    }
+
+    private string? SemanticMessage(BattleSceneState state)
+    {
+        string Name(ActorRef? actor) => ActorName(actor!.Value);
+        string Target() => Name(state.Target);
+        if (state.GrowthNotice is { } growth)
+        {
+            string? key = growth.Kind switch
+            {
+                BattleGrowthNoticeKind.Level => "level", BattleGrowthNoticeKind.MaxHp => "max-hp",
+                BattleGrowthNoticeKind.MaxMp => "max-mp", BattleGrowthNoticeKind.Attack => "attack-growth",
+                BattleGrowthNoticeKind.Defense => "defense-growth", BattleGrowthNoticeKind.Agility => "agility-growth",
+                BattleGrowthNoticeKind.Spell => "spell-growth", _ => null,
+            };
+            if (key is null) return null;
+            // Amount is the learned level for Spell, not a stat gain; retain SpellRef.
+            return growth.Spell is { } spell && growth.Kind == BattleGrowthNoticeKind.Spell
+                ? LocalizedMessage("battle.scene." + key, Name(state.RewardActor), spell.Value.ToUpperInvariant(), spell.Level)
+                : growth.Kind == BattleGrowthNoticeKind.Spell ? null
+                : LocalizedMessage("battle.scene." + key, Name(state.RewardActor), growth.Amount);
+        }
+        return state.Phase switch
+        {
+            BattleScenePhase.ActionMessage => state.ActionKind switch
+            {
+                "physical-first" => LocalizedMessage("battle.scene.attack", ActorName(state.Actor)),
+                "physical-second" => LocalizedMessage("battle.scene.second", ActorName(state.Actor)),
+                "physical-counter" => LocalizedMessage("battle.scene.counter", ActorName(state.Actor)),
+                "item-use" => LocalizedMessage("battle.scene.item", ActorName(state.Actor), state.Item!.Name),
+                "prism-laser" => LocalizedMessage("battle.scene.prism", ActorName(state.Actor)), _ => null,
+            },
+            BattleScenePhase.ResultMessage => state.ReactionKind switch
+            {
+                "Recovery" => LocalizedMessage("battle.heal.recovery", Target(), state.Amount),
+                "Damage" => LocalizedMessage(state.Critical ? "battle.scene.critical" : "battle.scene.damage", Target(), state.Amount),
+                "Dodge" => LocalizedMessage("battle.scene.dodge", Target()),
+                "Ineffective" => LocalizedMessage("battle.scene.ineffective", Target()), _ => null,
+            },
+            BattleScenePhase.DeathMessage => LocalizedMessage(_session.Current.Battle.GetActor(state.Target!.Value).IsAlly
+                ? "battle.scene.ally-death" : "battle.scene.enemy-death", Target()),
+            BattleScenePhase.ItemReceivedMessage => LocalizedMessage("battle.scene.received", ActorName(state.Actor), state.ItemReceipt!.Item.Name),
+            BattleScenePhase.ItemDroppedMessage => LocalizedMessage("battle.scene.dropped", Target(), state.ItemReceipt!.Item.Name),
+            BattleScenePhase.RewardMessage => LocalizedMessage("battle.scene.exp", Name(state.RewardActor), state.RewardAmount),
+            BattleScenePhase.GoldMessage => LocalizedMessage("battle.scene.gold", state.GoldAmount),
+            BattleScenePhase.SleepMessage => LocalizedMessage("battle.scene.sleep", Target()),
+            // SleepTurnText is the typed existing discriminator: 306 asleep, 354 awake.
+            BattleScenePhase.SleepTurnMessage => state.SleepTurnText switch
+            { 306 => LocalizedMessage("battle.scene.sleeping", Target()), 354 => LocalizedMessage("battle.scene.awake", Target()), _ => null },
+            BattleScenePhase.PoisonDamageMessage => LocalizedMessage("battle.scene.poison", Target(), state.Amount),
+            BattleScenePhase.PoisonExhaustedMessage => LocalizedMessage("battle.scene.exhausted", Target()), _ => null,
+        };
+    }
+
+    private string LocalizedMessage(string key, params object[] args)
+    {
+        _messageFallback = GameText.Fallback(key, true, exact: true);
+        return GameText.Get(key, args);
     }
 
     private void SetFrame(bool ally, int frame)
@@ -468,11 +546,20 @@ internal sealed partial class BattleSceneView : Control
     private void RefreshMessageHint(BattleSceneState state)
     {
         bool revealing = _message.VisibleCharacters >= 0 && _message.VisibleCharacters < _message.GetTotalCharacterCount();
-        string hint = !state.RequiresAcknowledgement ? "Action in progress…" : revealing
-            ? $"{_input.Hint(GameAction.Confirm)}: Reveal" : _messagePanel.MoreBelow
-            ? $"{_input.Hint(GameAction.Confirm)}: Read more" : state.Healing is { LogicalComplete: false, AtTimedInput: false }
-            ? "Action in progress…" : $"{_input.Hint(GameAction.Confirm)}: Continue ▾";
-        if (state.Healing is { AtTimedInput: true }) hint += $"    {_input.Hint(GameAction.Wait)}: Wait";
+        string key = !state.RequiresAcknowledgement ? "battle.scene.in-progress" : revealing
+            ? "field.reveal" : _messagePanel.MoreBelow ? "field.more"
+            : state.Healing is { LogicalComplete: false, AtTimedInput: false }
+            ? "battle.scene.in-progress" : "story.continue";
+        string hint = key == "battle.scene.in-progress" ? GameText.Get(key) : GameText.Get(key, _input.Hint(GameAction.Confirm));
+        var fallbacks = new List<string> { _messageFallback, GameText.Fallback(key, true, exact: true) };
+        if (state.Healing is { AtTimedInput: true })
+        {
+            hint += "    " + GameText.Get("battle.scene.wait", _input.Hint(GameAction.Wait));
+            fallbacks.Add(GameText.Fallback("battle.scene.wait", true, exact: true));
+        }
+        // Only the current visible body/hint contributes a fallback notice.
+        if (_message.Text.Length > 0)
+            foreach (string fallback in fallbacks.Where(value => value.Length > 0).Distinct()) hint += "\n" + fallback;
         _messagePanel.SetHint(hint);
     }
     internal object Observe() => new
