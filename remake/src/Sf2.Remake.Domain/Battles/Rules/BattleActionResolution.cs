@@ -97,14 +97,15 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
         Require((action.Kind == BattleActionKind.PrismLaser) == (Laser is not null));
         Require(action.Kind is BattleActionKind.Retreat or BattleActionKind.Item || Retreat is null);
-        Require(action.Kind == BattleActionKind.Physical || Reactions.All(reaction => reaction.Receipt is null));
+        Require(action.Kind is BattleActionKind.Physical or BattleActionKind.AttackSpell || Reactions.All(reaction => reaction.Receipt is null));
+        Require((action.Kind == BattleActionKind.AttackSpell) == (AttackSpell is not null));
         switch (action.Kind)
         {
             case BattleActionKind.PrismLaser when action == new BattleActionRef(BattleActionKind.PrismLaser):
@@ -122,6 +123,10 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             case BattleActionKind.Healing when action.Spell is { } spell && target is { } patient &&
                 admission.Spell is { } definition && spell == definition.Spell && action.ItemSlot is null:
                 ValidateHealing(before, actor, destination, definition, patient);
+                break;
+            case BattleActionKind.AttackSpell when action.Spell is { } attackKey && target is { } center &&
+                admission.AttackSpell is { } attack && attackKey == attack.Spell && action.ItemSlot is null:
+                ValidateAttackSpell(before, actor, destination, attack, center);
                 break;
             case BattleActionKind.Physical when action.Spell is null && action.ItemSlot is null && target is { } victim:
                 ValidatePhysical(before, actor, destination, victim);
@@ -378,9 +383,42 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(Prepared.MainSeed == seed);
     }
 
+    private void ValidateAttackSpell(EngineBattleState before, ActorRef actor, MapPosition destination,
+        AttackSpellDefinition spell, ActorRef center)
+    {
+        var targets = Sf2AttackSpellAction.ResolveTargets(before, actor, destination, spell, center);
+        Require(Spell is null && Item is null && AttackSpell == spell && CompletionEffects.Count == 0 &&
+            Reactions.Count == targets.Count && Reactions.Count > 0 && Reward is { Actor: var recipient } && recipient == actor);
+        var inventory = before;
+        int cursor = 0;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            var target = targets[i]; var reaction = Reactions[i];
+            Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "attack-spell" &&
+                reaction.Kind == BattleReactionKind.Damage && reaction.HpBefore == target.Hp && reaction.Amount >= 1 &&
+                reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) && reaction.MpBefore == target.Mp &&
+                reaction.MpAfter == target.Mp && reaction.StatusWrite == target.Status && reaction.InflictedSleep is null);
+            // Three source damage draws precede each target's ordinary drop helper.
+            var draws = ConstructionEffects.Skip(cursor).Take(3).ToArray();
+            Require(draws.Length == 3 && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == 32 &&
+                draws.Skip(1).All(e => e.Kind == "rng-spell-variance") && draws.All(e => e.Actor == actor && e.Target == target.Actor));
+            cursor += 3;
+            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: checked((uint)draws[2].After!.Value)),
+                actor, target.Actor, reaction.HpAfter == 0);
+            Require(reaction.Receipt == dropped.Receipt && ConstructionEffects.Skip(cursor).Take(dropped.Effects.Count).SequenceEqual(dropped.Effects));
+            cursor += dropped.Effects.Count; inventory = dropped.Battle;
+        }
+        Require(ConstructionEffects.Skip(cursor).All(e => e.Actor == actor &&
+            (e.Kind is "rng-exp-plus" or "rng-exp-minus" or "spell-exp-contribution" or "gold")));
+        Require(Reactions.Any(r => r.HpAfter == 0) || Prepared.Gold == before.Gold);
+        ValidateState(before, actor, destination, allowGold: true, inventory: inventory);
+        ValidateReward(before, actor);
+        ValidateRandom(before, _ => true);
+    }
+
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target
-            ? actor.With(hp: reaction.HpAfter, mp: Spell is null ? reaction.MpAfter : actor.Mp,
+            ? actor.With(hp: reaction.HpAfter, mp: Spell is null && AttackSpell is null ? reaction.MpAfter : actor.Mp,
                 status: reaction.StatusWrite) : actor));
 
     internal EngineBattleState ApplySleep(EngineBattleState current, BattleReaction reaction) =>
@@ -389,7 +427,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
-            ? actor.With(mp: checked((byte)(actor.Mp - Spell!.MpCost))) : actor));
+            ? actor.With(mp: checked((byte)(actor.Mp - (Spell?.MpCost ?? AttackSpell!.MpCost)))) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)
     {

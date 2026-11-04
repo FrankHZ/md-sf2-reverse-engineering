@@ -373,6 +373,7 @@ internal static class GameText
         ["battle.scene.in-progress"] = 0,
         ["battle.scene.wait"] = 1,
         ["battle.heal.action"] = 3,
+        ["battle.spell.action"] = 3,
         ["battle.heal.recovery"] = 2,
     };
     private static readonly Dictionary<string, string> Recovery = new()

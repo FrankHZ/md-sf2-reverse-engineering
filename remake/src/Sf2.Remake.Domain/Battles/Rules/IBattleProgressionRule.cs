@@ -38,16 +38,17 @@ internal static class BattleProgressionRules
         List<BattleEffect> effects = [];
         int amount = rule.Award(battle, actor, kind, reactions, ref seed, effects);
         Require(amount > 0);
-        var contributions = effects.Where(e => e.Kind == "healing-exp-contribution").ToArray();
+        bool damage = kind == BattleActionKind.AttackSpell;
+        var contributions = effects.Where(e => e.Kind == (damage ? "spell-exp-contribution" : "healing-exp-contribution")).ToArray();
         if (contributions.Length > 0)
         {
-            Require(kind == BattleActionKind.Healing && contributions.Length == reactions.Count);
+            Require((kind == BattleActionKind.Healing || damage) && contributions.Length == reactions.Count);
             int accumulated = 0;
             for (int i = 0; i < contributions.Length; i++)
             {
                 var e = contributions[i];
                 Require(e.Actor == actor.Actor && e.Target == reactions[i].Target && e.Before == accumulated &&
-                    e.After >= accumulated && e.After <= 25 && e.RandomRange is null && e.RandomValue is null);
+                    e.After >= accumulated && e.After <= (damage ? 49 : 25) && e.RandomRange is null && e.RandomValue is null);
                 accumulated = checked((int)e.After!.Value);
             }
         }

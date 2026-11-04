@@ -44,14 +44,11 @@ internal static class OpeningLoadoutBindings
                     .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id),
                 checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
                 item.MinimumRange, item.MaximumRange)).ToArray();
-        var encounters = admitted.Encounters.Values.Select(encounter => new BattleDefinition(encounter.Encounter, encounter.Map,
-            encounter.Width, encounter.Height, encounter.Terrain, encounter.Deployments.Select(deployment =>
+        var encounters = admitted.Encounters.Values.Select(encounter => encounter.WithDeployments(
+            encounter.Deployments.Select(deployment =>
                 deployment.Faction != BattleFaction.Ally || deployment.Definition.Growth is not { } growth ? deployment :
                 deployment with { Definition = deployment.Definition.WithEquipment(new(
-                    checked((byte)(deployment.Definition.Attack - growth.AttackBonus)), weapons, allowChanges: false)) }),
-            encounter.Spells.Values, encounter.Rewards, encounter.Initialization, encounter.Outcome, encounter.HealingItems.Values,
-            encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness,
-            encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser, encounter.Give, encounter.Discard, encounter.Poison));
+                    checked((byte)(deployment.Definition.Attack - growth.AttackBonus)), weapons, allowChanges: false)) })));
         return new(admitted.Package, encounters, source, admitted.Exploration, admitted.BattleScenes, admitted.EncounterStarts.Values,
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {

@@ -4,6 +4,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Content.Scenarios;
 
@@ -107,11 +108,29 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         }
         var spells = new Dictionary<SpellRef, HealingSpellDefinition>();
         var retreats = new Dictionary<SpellRef, RetreatSpellDefinition>();
+        var attacks = new Dictionary<SpellRef, AttackSpellDefinition>();
         foreach (var spell in Array(root, "spells"))
         {
             Object(spell, "spell", "id", "level", "mpCost", "minimumRange", "maximumRange", "effect");
             var key = new SpellRef(Id(spell, "id"), (byte)Number(spell, "level", 1, 4));
             var effect = spell.GetProperty("effect");
+            if (Text(effect, "kind") == "attack")
+            {
+                Object(effect, "spell.effect", "kind", "power", "radius", "element");
+                var element = Text(effect, "element") switch
+                {
+                    "fire" => AttackSpellElement.Fire, "wind" => AttackSpellElement.Wind,
+                    _ => throw new BattleRuleException("attack-spell-element", "spell.effect.element", true),
+                };
+                var attack = new AttackSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
+                    (ushort)Number(effect, "power", 1, 255), (byte)Number(spell, "minimumRange", 1, 2),
+                    (byte)Number(spell, "maximumRange", 1, 2), (byte)Number(effect, "radius", 0, 1), element);
+                attack.RequireSupported();
+                Require(!spells.ContainsKey(key) && !retreats.ContainsKey(key) && attacks.TryAdd(key, attack),
+                    "duplicate-spell", "spells.id/level");
+                continue;
+            }
+            Require(!attacks.ContainsKey(key), "duplicate-spell", "spells.id/level");
             if (Text(effect, "kind") == "retreat")
             {
                 Object(effect, "spell.effect", "kind");
@@ -191,7 +210,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         foreach (var actor in Array(root, "actors"))
         {
             ObjectOptional(actor, "actor", ["id", "classRule", "level", "maxHp", "maxMp",
-                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells"], "physical", "equipment");
+                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells"], "physical", "equipment", "resistance");
             var id = new ActorRef(Id(actor, "id"));
             string className = Text(actor, "classRule");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior" or "unpromoted-knight" or "unpromoted-mage" or "unpromoted-archer" or "unpromoted-thief",
@@ -243,7 +262,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             {
                 Object(reference, "spell-reference", "id", "level");
                 var key = new SpellRef(Id(reference, "id"), (byte)Number(reference, "level", 1, 4));
-                Require(spells.ContainsKey(key) || retreats.ContainsKey(key), "missing-spell", "actors.spells");
+                Require(spells.ContainsKey(key) || retreats.ContainsKey(key) || attacks.ContainsKey(key), "missing-spell", "actors.spells");
                 Require(!learned.Contains(key), "duplicate-learned-spell", "actors.spells");
                 learned.Add(key);
             }
@@ -260,7 +279,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 127), Boolean(actor, "extraRoundAction"),
                 (byte)Number(actor, "move", 1, 255), learned, physical, mover: mover, sourceLoadout: loadout,
-                equipment: BattleEquipmentReader.Actor(actor, weapons, weaponItems));
+                equipment: BattleEquipmentReader.Actor(actor, weapons, weaponItems),
+                resistance: actor.TryGetProperty("resistance", out _) ? (ushort)Number(actor, "resistance", 0, 65535) : (ushort)0);
             BattleEquipmentReader.Validate(definition);
             BattleDiscardReader.Validate(definition, discard);
             Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
@@ -331,7 +351,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
                 itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
                 prismLaser: PrismLaserReader.Read(encounter, placements),
-                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: allowLeaderCleanup ? null : discard, poison: poison)),
+                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: allowLeaderCleanup ? null : discard, poison: poison, attackSpells: attacks.Values)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");

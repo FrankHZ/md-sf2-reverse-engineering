@@ -1,5 +1,63 @@
 # Gameplay Rules and Composition
 
+## Finite player attack spells
+
+**Implemented bounded capability, Standard rigor:** learned BLAZE1-2 and BLAST1 use the existing
+`IBattleActionRule` query/admission/preparation seam. `HealingSpellDefinition` and `IHealingRule`
+continue to own healing only. Separate immutable `AttackSpellDefinition` operands and
+`Sf2AttackSpellAction` own damaging spell legality, target resolution and construction;
+`SessionAction.AttackSpell` preserves that distinction through selection. No new scheduler,
+dispatcher, effect language or mutable state authority is introduced. Existing transaction and
+later-failure prefix rules remain in force.
+
+BLAZE1 costs2, range1-2, radius0, power6; BLAZE2 costs6, range1-2, radius1, power10;
+BLAST1 costs2, range1, radius0, power6. Power is an input to damage, not final damage.
+A living player ally must know the selected rank and afford the cost. The living, placed,
+initialized, non-neutral opponent center must satisfy the range from the provisional destination.
+Radius uses Manhattan distance around that center, independently of caster range; recipients are
+sorted by deployment processing order (the private reader maps original combatant slots to that
+order). Dead, absent, allied and neutral occupants do not receive the attack. Unsupported caster
+statuses/AI and reached unknown accounting reject explicitly. Queries consume neither RNG stream;
+confirmation rechecks the same admission and constructs without publishing speculative changes.
+
+The [spell-resolution contract](../../../docs/design/contracts/battle/spell-resolution.md) owns
+resistance, truncated quarter adjustment, 1/32 critical, two downward variance draws, proportional
+and lethal EXP contributions capped at49, battle halving and the shared two-draw award. A promoted
+physical definition supplies the existing5/4 power/effective-level operand; this does not implement
+promotion services. Damage ignores physical defense/land/dodge/double/counter. Each target retains
+its unrelated supported status. Per-target ordinary item-drop construction remains before the next
+target and award. Prepared state carries movement/RNG/gold/custody; MP/HP/EXP are still unapplied.
+
+The existing scene publishes one MP payment after one cast announcement, then ordered damaging
+reactions/results/deaths, one award, later growth/learning, field removal and next control. Stale
+commands/waits cannot repeat payment or damage. Later credit/growth failures retain the paid and
+applied prefix and retry only the pending phase. Modern fire/wind drawing and bilingual shared
+cards/messages provide functional delivery, including private admitted casts; no original magic
+animation, hardware timing or effect-asset acquisition is claimed.
+
+**Confirmed static provenance:** pinned `SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:
+`data/stats/spells/spelldefs.asm` (three selected records), `spellelements.asm` (BLAZE FIRE,
+BLAST WIND), `sf2enums.asm` (FIRE bits6-7, WIND bits0-1),
+`code/gameflow/battle/battleactions/castspell.asm` (`spellEffect_Blaze`, `spellEffect_Blast`),
+`calculatespelldamage.asm` (`battlesceneScript_CalculateSpellDamage`, `AdjustSpellPower`), and
+`code/gameflow/battle/battlefield/buildactionrangegrids.asm` (`BuildSpellRangeGrid`). `data/stats/allies/stats/allystats04.asm`
+learns BLAZE1 at1/BLAZE2 at5; `allystats01.asm` learns BLAST1 at10. These are source rules,
+not a pre-voyage level ceiling or proof of natural opportunities. The contract distinguishes its
+BLAZE H3 evidence from adjacent static-supported BLAST behavior; full natural reach/timing stays
+**Unknown** and does not start a runtime-acquisition queue.
+
+[AttackSpellTests](../../tests/Sf2.Remake.Engine.Tests/AttackSpellTests.cs),
+[session tests](../../tests/Sf2.Remake.Engine.Tests/AttackSpellSessionTests.cs) and
+[admission/composition tests](../../tests/Sf2.Remake.Engine.Tests/AttackSpellAdmissionTests.cs)
+exercise the actual engine, including changed resistance/seeds/levels/stations, failure atomicity,
+multi-target death/growth and a supported connected outcome/growth/drop/return/re-entry composition.
+`BattleDefinition.WithOutcome`/`WithDeployments` preserve all capability fields during those existing
+Content replacements; actor growth/equipment replacements preserve resistance. The
+[verification recipe](../development-and-verification.md#player-attack-spell-observation) owns actual
+native inputs and resource limits. Other damage families/ranks, enemy spell decisions, silence,
+Kazin recruitment and full Battle03-07 story are outside this outcome.
+
 ## Opening field inventory and use
 
 The [Standard field-preparation agreement](../application/opening-session-lifecycle.md#implemented-field-preparation)

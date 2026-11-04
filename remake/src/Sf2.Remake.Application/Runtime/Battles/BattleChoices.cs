@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattlePresentationKind { Healing, Physical, Item, None, Retreat }
+public enum BattlePresentationKind { Healing, Physical, Item, None, Retreat, AttackSpell }
 public sealed record BattleTargetChoice(ActorRef Actor, bool Enabled, SessionFailure? Reason);
 public sealed record BattleActionChoice(BattleActionRef Action, string Label, BattlePresentationKind Presentation,
     byte? MinimumRange, byte? MaximumRange, bool Empty, bool Enabled, SessionFailure? Reason,
@@ -56,6 +56,10 @@ internal static class BattleChoices
             if (action.Kind == BattleActionKind.Healing &&
                 (admission.Spell is not { } spell || !battle.Definition.Spells.TryGetValue(action.Spell!.Value, out var known) || known != spell ||
                     admission.MinimumRange != spell.MinimumRange || admission.MaximumRange != spell.MaximumRange) ||
+                action.Kind == BattleActionKind.AttackSpell &&
+                (admission.AttackSpell is not { } attack || !battle.Definition.AttackSpells.TryGetValue(action.Spell!.Value, out var knownAttack) || attack != knownAttack ||
+                    admission.MinimumRange != attack.MinimumRange || admission.MaximumRange != attack.MaximumRange) ||
+                action.Kind != BattleActionKind.AttackSpell && admission.AttackSpell is not null ||
                 action.Kind == BattleActionKind.Item &&
                 !ValidItemAdmission(battle, actor, action, admission) ||
                 action.Kind == BattleActionKind.Stay && (admission.MinimumRange is not null || admission.MaximumRange is not null) ||
@@ -87,7 +91,7 @@ internal static class BattleChoices
     {
         bool valid = action.Kind switch
         {
-            BattleActionKind.Healing or BattleActionKind.Retreat => action.ItemSlot is null && action.Spell is { } spell &&
+            BattleActionKind.Healing or BattleActionKind.Retreat or BattleActionKind.AttackSpell => action.ItemSlot is null && action.Spell is { } spell &&
                 battle.GetActor(actor).Spells.Contains(spell),
             BattleActionKind.Item => action.Spell is null && action.ItemSlot is { } slot && slot >= 0 &&
                 slot < (battle.GetActor(actor).SourceLoadout?.Items.Count ?? 0),
@@ -189,6 +193,7 @@ internal static class BattleChoices
                 var presentation = rule.Kind switch
                 {
                     BattleActionKind.Healing => BattlePresentationKind.Healing,
+                    BattleActionKind.AttackSpell => BattlePresentationKind.AttackSpell,
                     BattleActionKind.Physical => BattlePresentationKind.Physical,
                     BattleActionKind.Item => BattlePresentationKind.Item,
                     BattleActionKind.Retreat => BattlePresentationKind.Retreat,

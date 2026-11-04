@@ -1172,3 +1172,7 @@ msgstr "摇杆方向均已分配。请用键盘／鼠标进入菜单，或编辑
 
 msgid "system.save-reason"
 msgstr "请在可存档地点结束移动和剧情后再试。"
+
+#. Arguments: caster name, spell identity, level.
+msgid "battle.spell.action"
+msgstr "{0}施放了{1}，等级{2}。"

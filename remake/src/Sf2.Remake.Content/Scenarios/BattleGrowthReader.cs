@@ -50,12 +50,9 @@ internal static class BattleGrowthReader
             Require(bonus >= 0 && bonus <= actor.Attack, "growth-base-attack", "world.growth.actor", true);
             Require(growth.TryAdd(reference, ReadDefinition(row, (byte)bonus)), "duplicate-growth", "world.growth.actor");
         }
-        return scenario.Encounters.Values.Select(encounter => new BattleDefinition(encounter.Encounter, encounter.Map,
-            encounter.Width, encounter.Height, encounter.Terrain, encounter.Deployments.Select(deployment =>
-                growth.TryGetValue(deployment.Actor, out var value)
-                    ? deployment with { Definition = deployment.Definition.WithGrowth(value) } : deployment),
-            encounter.Spells.Values, encounter.Rewards, encounter.Initialization, encounter.Outcome, encounter.HealingItems.Values,
-            encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness, encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser, encounter.Give, encounter.Discard, encounter.Poison));
+        return scenario.Encounters.Values.Select(encounter => encounter.WithDeployments(
+            encounter.Deployments.Select(deployment => growth.TryGetValue(deployment.Actor, out var value)
+                ? deployment with { Definition = deployment.Definition.WithGrowth(value) } : deployment)));
     }
 
     internal static BattleGrowthDefinition ReadDefinition(JsonElement row, byte attackBonus)

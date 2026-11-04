@@ -18,6 +18,7 @@ internal sealed partial class BattleSceneView : Control
     private readonly Dictionary<(string Encounter, string Resource), ImageTexture> _textures = [];
     private PrismLaserView _laser = null!;
     private AuraRecoveryView _aura = null!;
+    private AttackSpellView _attackSpell = null!;
     private bool _suspended;
     private Node2D _canvas = null!;
     internal Control PresentationRoot { get; set; } = null!;
@@ -73,6 +74,7 @@ internal sealed partial class BattleSceneView : Control
         for (int i = 0; i < 23; i++) _fairyDust.Add(Sprite("FairyDust" + i, Vector2.Zero));
         foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) { sprite.ZIndex = 3; sprite.Hide(); }
         _aura = new AuraRecoveryView { Name = "AuraRecovery", ZIndex = 4 }; _canvas.AddChild(_aura); _aura.Hide();
+        _attackSpell = new AttackSpellView { Name = "AttackSpell", ZIndex = 4 }; _canvas.AddChild(_attackSpell); _attackSpell.Hide();
         _laser = new PrismLaserView { Name = "PrismLaser", ZIndex = 4 }; _canvas.AddChild(_laser); _laser.Hide();
         Hide();
     }
@@ -89,7 +91,7 @@ internal sealed partial class BattleSceneView : Control
     internal void Present()
     {
         var state = _session.Current.BattleScene;
-        if (state is null) { _messagePanel.Present(false, false, false, default, "", false); Hide(); _laser.Hide(); _aura.Hide(); _state = null; return; }
+        if (state is null) { _messagePanel.Present(false, false, false, default, "", false); Hide(); _laser.Hide(); _aura.Hide(); _attackSpell.Hide(); _state = null; return; }
         if (state.IsFieldDeath) Hide(); else Show();
         PresentStatus(state);
         if (_state?.Token != state.Token) _messagePanel.ResetReading();
@@ -97,7 +99,16 @@ internal sealed partial class BattleSceneView : Control
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
-            _laser.Hide(); _aura.Hide();
+            _laser.Hide(); _aura.Hide(); _attackSpell.Hide();
+            if (state.AttackSpell is not null && !state.IsFieldDeath)
+            {
+                foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
+                foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
+                _sceneBlack.Show(); _attackSpell.Present(state);
+                PresentMessage(state);
+                _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
+                return;
+            }
             if (state.IsAura)
             {
                 if (Content is not null) throw new InvalidOperationException("aura-private-presentation-unsupported");
@@ -226,6 +237,12 @@ internal sealed partial class BattleSceneView : Control
                 (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()) && !_messagePanel.MoreBelow)
                 return new CompletePresentation(state.Token, state.CompletionKind);
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
+        }
+        if (state.AttackSpell is not null)
+        {
+            if (!_attackSpell.Advance(_elapsed)) return null;
+            _completed = true;
+            return new CompletePresentation(state.Token, state.CompletionKind);
         }
         if (state.IsAura)
         {
@@ -401,6 +418,12 @@ internal sealed partial class BattleSceneView : Control
             Error = GameText.Ready ? "display-operands" : "localization-resources";
             return "Message unavailable (" + Error + ").";
         }
+        if (state.AttackSpell is { } attack)
+        {
+            if (state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
+                return LocalizedMessage("battle.spell.action", ActorName(state.Actor), attack.Spell.Value.ToUpperInvariant(), attack.Spell.Level);
+            if (SemanticMessage(state) is { } spellMessage) return spellMessage;
+        }
         if (state.IsAura && state.Phase == BattleScenePhase.ActionMessage)
             return GameText.Language == "en" ? $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}." :
                 LocalizedMessage("battle.heal.action", ActorName(state.Actor), state.Spell!.Spell.Value.ToUpperInvariant(), state.Spell.Spell.Level);
@@ -573,6 +596,7 @@ internal sealed partial class BattleSceneView : Control
         aura = _state?.IsAura == true ? _aura.Observe() : null,
         suspended = _suspended,
         laser = _state?.Laser is not null ? _laser.Observe() : null,
+        attackSpell = _state?.AttackSpell is not null ? _attackSpell.Observe() : null,
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
         fieldDeath = _state is { IsFieldDeath: true } field ? new { actors = field.DeadActors.Select(a => a.Value),
             step = field.FieldStep, facing = field.FieldFacing, delay = field.FieldDelay } : null,
@@ -580,8 +604,8 @@ internal sealed partial class BattleSceneView : Control
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,
         reactionAmount = _state?.Amount,
-        item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell,
-        spellAnimationSelector = _state?.IsAura == true ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell,
+        spellAnimationSelector = _state?.AttackSpell is not null ? (int?)null : _state?.IsAura == true ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

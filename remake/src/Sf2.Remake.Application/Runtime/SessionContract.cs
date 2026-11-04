@@ -11,7 +11,7 @@ public sealed record SessionFailure(SessionFailureKind Kind, string Code, string
 public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, BattleEnded, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
 public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice, GiveItemChoice, GiveTargetChoice, GiveExchangeChoice, GiveCommitReady, DiscardItemChoice, DiscardCommitReady }
-public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat }
+public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat, AttackSpell }
 
 public abstract record SessionCommand;
 public sealed record Move(ExplorationDirection Direction) : SessionCommand;
@@ -73,6 +73,7 @@ public sealed class BattleSelection
     public ActorRef? Target { get; }
     public BattleActionRef? ActionReference => Action switch
     {
+        SessionAction.AttackSpell when Spell is { } damage => new(BattleActionKind.AttackSpell, damage),
         SessionAction.Heal when Spell is { } spell => new(BattleActionKind.Healing, spell),
         SessionAction.Retreat when Spell is { } retreat => new(BattleActionKind.Retreat, retreat),
         SessionAction.Item when ItemSlot is { } slot => new(BattleActionKind.Item, ItemSlot: slot),

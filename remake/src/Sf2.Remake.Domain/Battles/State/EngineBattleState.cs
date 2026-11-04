@@ -11,7 +11,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
-public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser }
+public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser, AttackSpell }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief }
 public enum BattleControl { Player, Automatic }
@@ -56,15 +56,16 @@ public sealed class BattleActorDefinition
         byte level, ushort maxHp, byte maxMp,
         byte attack, byte defense, byte agility, bool extraRoundAction, byte move, IEnumerable<SpellRef> spells,
         PhysicalActorDefinition? physical = null, BattleMover mover = BattleMover.Regular,
-        BattleSourceLoadout? sourceLoadout = null, BattleGrowthDefinition? growth = null, BattleEquipmentDefinition? equipment = null)
+        BattleSourceLoadout? sourceLoadout = null, BattleGrowthDefinition? growth = null, BattleEquipmentDefinition? equipment = null, ushort resistance = 0)
     {
-        Actor = actor; ClassRule = classRule;
+        Actor = actor; ClassRule = classRule; Resistance = resistance;
         Level = level; MaxHp = maxHp; MaxMp = maxMp; Attack = attack; Defense = defense;
         Agility = agility; ExtraRoundAction = extraRoundAction; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
         Mover = mover; SourceLoadout = sourceLoadout; Growth = growth; Equipment = equipment;
     }
     public ActorRef Actor { get; }
     public BattleClassRule ClassRule { get; }
+    public ushort Resistance { get; }
     public byte Level { get; }
     public ushort MaxHp { get; }
     public byte MaxMp { get; }
@@ -80,9 +81,9 @@ public sealed class BattleActorDefinition
     public BattleGrowthDefinition? Growth { get; }
     public BattleEquipmentDefinition? Equipment { get; }
     internal BattleActorDefinition WithGrowth(BattleGrowthDefinition growth) => new(Actor, ClassRule,
-        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, growth, Equipment);
+        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, growth, Equipment, Resistance);
     internal BattleActorDefinition WithEquipment(BattleEquipmentDefinition equipment) => new(Actor, ClassRule,
-        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, Growth, equipment);
+        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, Growth, equipment, Resistance);
 }
 
 public sealed class BattleActorState
@@ -166,8 +167,9 @@ public sealed class BattleDefinition
         IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
         TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
         EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null, BattleGiveDefinition? give = null,
-        BattleDiscardDefinition? discard = null, bool poison = false)
+        BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null)
     {
+        AttackSpells = new ReadOnlyDictionary<SpellRef, AttackSpellDefinition>((attackSpells ?? []).ToDictionary(s => s.Spell));
         Poison = poison; Discard = discard; Give = give; PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
@@ -178,6 +180,15 @@ public sealed class BattleDefinition
         RetreatItems = new ReadOnlyDictionary<byte, RetreatItemDefinition>((retreatItems ?? []).ToDictionary(item => item.ItemId));
         HealingItems = new ReadOnlyDictionary<byte, HealingItemDefinition>((healingItems ?? []).ToDictionary(item => item.ItemId));
     }
+    private BattleDefinition(BattleDefinition source, IEnumerable<BattleDeploymentDefinition>? deployments = null,
+        BattleOutcomeDefinition? outcome = null) : this(source.Encounter, source.Map, source.Width, source.Height,
+        source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
+        outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, source.RetreatSpells.Values,
+        source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, source.ItemDrops, source.PrismLaser,
+        source.Give, source.Discard, source.Poison, source.AttackSpells.Values) { }
+    internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome) => new(this, outcome: outcome);
+    internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments) => new(this, deployments);
+
     public string Encounter { get; }
     public MapId Map { get; }
     public int Width { get; }
@@ -185,6 +196,7 @@ public sealed class BattleDefinition
     public IReadOnlyList<BattleTerrain> Terrain { get; }
     public IReadOnlyList<BattleDeploymentDefinition> Deployments { get; }
     public IReadOnlyDictionary<SpellRef, HealingSpellDefinition> Spells { get; }
+    public IReadOnlyDictionary<SpellRef, AttackSpellDefinition> AttackSpells { get; }
     public IReadOnlyDictionary<byte, HealingItemDefinition> HealingItems { get; }
     public IReadOnlyDictionary<SpellRef, RetreatSpellDefinition> RetreatSpells { get; }
     public IReadOnlyDictionary<byte, RetreatItemDefinition> RetreatItems { get; }

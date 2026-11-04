@@ -261,7 +261,14 @@ internal sealed partial class BattleCommandMenu : Control
     {
         string name = GameText.BattleActionLabel(option);
         string label = option.Action.ItemSlot is { } slot ? $"{slot + 1}. {name}" : name;
-        if (option.Action.Spell is { } spell && _current!.Battle.Definition.Spells.TryGetValue(spell, out var definition)) label += $" · {definition.MpCost} MP";
+        if (option.Action.Spell is { } spell)
+        {
+            var definition = _current!.Battle.Definition;
+            byte? cost = definition.Spells.TryGetValue(spell, out var healing) ? healing.MpCost :
+                definition.AttackSpells.TryGetValue(spell, out var attack) ? attack.MpCost :
+                definition.RetreatSpells.TryGetValue(spell, out var retreat) ? retreat.MpCost : null;
+            if (cost is { } mp) label += $" · {mp} MP";
+        }
         return label + (option.Enabled ? "" : GameText.Get("battle.unavailable-tag"));
     }
     private string Describe(BattleActionChoice option)
