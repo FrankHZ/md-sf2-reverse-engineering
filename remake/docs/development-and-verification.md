@@ -39,8 +39,8 @@ The ignored `local/issue1523/run-native.ps1 -Run <fresh> -Kind spear|bow -Langua
 records the two bounded witnesses using the existing equipment observer, current inputs and native
 runtime directories in a child PowerShell. Final spear-en01 and bow-zh01 both exit0 and show the
 above actual state/input/action/control boundaries; stderr is empty. No Godot production change was
-needed. Each run took under3seconds with peak working set below250MiB; local reports are below1MiB,
-within the <=15MiB/report and >=1GiB-free-disk limits. Physical device delivery, raster/pixels,
+needed. Each run took under3seconds with peak working set below250MiB; each native JSON is below1MiB.
+The task keeps combined reports <=15MiB and free disk >=1GiB. Physical device delivery, raster/pixels,
 human aesthetics and original natural timing remain Unknown. The earlier #1519 real-save then
 observer lock-file-assumption failure remains in its handoff; this witness does not repair it.
 
