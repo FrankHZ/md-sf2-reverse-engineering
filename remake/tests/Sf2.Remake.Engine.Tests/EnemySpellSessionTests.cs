@@ -12,6 +12,32 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class EnemySpellSessionTests
 {
     [Fact]
+    public void AutomaticEnemyAreaBlazeRejectsBeforeDecisionMovementRngCostOrEffectWhilePlayerVariantRemainsLegal()
+    {
+        var session = Start("enemy-spells", d => d["spells"]![0]!["effect"]!["radius"] = 1);
+        var before = session.Current.Battle;
+        var error = Assert.Throws<BattleRuleException>(() => Decide(before, Mage));
+        Assert.True(error.Unsupported); Assert.Equal("enemy-spell-radius", error.Code);
+        var actionError = Assert.Throws<BattleRuleException>(() => new Sf2AttackSpellAction().RequireAction(before, Mage,
+            new(BattleActionKind.AttackSpell, new("blaze", 1))));
+        Assert.Equal("enemy-spell-radius", actionError.Code);
+        Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
+        var stopped = Send(session, new Confirm());
+        Assert.Equal(SessionStopReason.Unsupported, stopped.StopReason);
+        Assert.Equal("enemy-spell-radius", stopped.Failure!.Code);
+        Assert.Null(session.Current.BattleScene); Assert.Null(session.Current.BattleMovement);
+        Assert.Equal(before.MainSeed, session.Current.Battle.MainSeed);
+        Assert.Equal(before.ThinkingSeed, session.Current.Battle.ThinkingSeed);
+        Assert.Equal(before.Actors.Select(a => (a.Hp, a.Mp, a.Position, a.LastTarget)),
+            session.Current.Battle.Actors.Select(a => (a.Hp, a.Mp, a.Position, a.LastTarget)));
+        Assert.DoesNotContain(stopped.Observations, e => e.Kind is "mp" or "hp" or "thinking-rng" or "rng-ai-attack-category" or "ai-spell-target");
+
+        var player = AttackSpellTests.Battle(d => d["spells"]![0]!["effect"]!["radius"] = 1);
+        var cast = AttackSpellTests.Prepare(player, rank: 1);
+        Assert.Equal(2, cast.Reactions.Count); Assert.Equal((byte)1, cast.AttackSpell!.Radius);
+    }
+
+    [Fact]
     public void OrdinaryAutomaticBlazeAndHealPayOnceAtSceneBoundariesThenReturnUsablePlayerControl()
     {
         var session = Start("enemy-spells"); var original = session.Current;

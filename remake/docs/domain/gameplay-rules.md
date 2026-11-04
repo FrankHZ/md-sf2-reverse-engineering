@@ -11,6 +11,9 @@ accounting, unsupported payloads and unbound terminal outcomes reject atomically
 damage spells share terminal admission; healing uses actual faction, not a priest/ally assumption.
 Only allies earn EXP/gold/kills; an enemy damage spell can increment an ally's defeats through the
 existing death batch. Enemy healing has no award and retains both RNG streams during construction.
+Enemy BLAZE1 requires radius0: a nonzero authored radius rejects as `enemy-spell-radius` before
+automatic movement, scoring RNG, MP or effects publish. Player radius variants remain supported;
+this finite enemy decision does not implement the source's multi-recipient score/RNG aggregation.
 
 The dedicated commandset byte controls ordering: SENTRY8 attempts ATTACK1, HEAL1, SUPPORT, STAY
 and never pursues on its final fallback. HEALER3 is commandset2: HEAL2, MOVE_ORDER4, SUPPORT,

@@ -18,7 +18,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.AttackSpells.TryGetValue(key, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
-        spell.RequireSupported();
+        spell.RequireSupported(enemy: !actor.IsAlly);
         if (actor.Hp == 0 || (actor.IsAlly ? actor.Control != BattleControl.Player :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
                 key is not { Value: "blaze", Level: 1 }))

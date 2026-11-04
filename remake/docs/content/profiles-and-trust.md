@@ -3,7 +3,9 @@
 ## Early enemy spell admission
 
 The finite [enemy rule owner](../domain/gameplay-rules.md#finite-early-enemy-spell-decisions)
-admits semantic BLAZE1/HEAL1 books in source orders. Authored books retain the existing empty packed
+admits semantic BLAZE1/HEAL1 books in source orders. Enemy BLAZE1 requires radius0; nonzero radius
+is Unsupported at both automatic decision and shared enemy action admission, before AI state/resources
+publish. Player attack radius variants remain admitted. Authored books retain the existing empty packed
 book; nonempty packed source books must match their decoded definitions. Other spells/items/AI-use
 bits retain Unsupported rather than silently disappearing into a physical fallback.
 Private placements additionally bind exact `SENTRY`8 and `HEALER3`2 expressions, the existing HEALER

@@ -16,6 +16,7 @@ internal static class EnemySpellDecision
             return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, selectedGrid);
         if (!battle.Definition.AttackSpells.TryGetValue(key, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
+        spell.RequireSupported(enemy: true);
         if (actor.Mp < spell.MpCost) return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, selectedGrid);
         var rule = actions.Single(r => r.Kind == BattleActionKind.AttackSpell);
         var action = new BattleActionRef(BattleActionKind.AttackSpell, key);
