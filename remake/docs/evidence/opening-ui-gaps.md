@@ -55,9 +55,10 @@ Save/Settings and Session contains New Game/Quit. Disabled actions explain the r
 Settings is still unavailable during battle/story and savepoints are not broadened. Existing
 replacement/quit confirmations and child Back semantics remain. Keyboard/pad mappings, old-v1
 collision/all-axis behavior, pointer isolation and paused recovery are bounded by the
-[finite observation](../verification/host.md#system-menu-observation). This is an implemented
-candidate for independent engineering acceptance; whole-opening aesthetics, final pixels and
-physical-device approval remain **Unknown**. Binding capture UI is still deferred; JSON remapping
+[finite observation](../verification/host.md#system-menu-observation). Its bounded engineering
+implementation was independently accepted and integrated in
+[PR1521](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1521); whole-opening aesthetics,
+final pixels and physical-device approval remain **Unknown**. Binding capture UI is still deferred; JSON remapping
 and live help/hints include Menu. No Church behavior change belongs to this delivery.
 
 ## Scope and reading rules
