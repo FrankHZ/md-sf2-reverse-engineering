@@ -43,9 +43,9 @@ publication right, image-lettering change, default-name admission or naming/IME 
 
 [#1496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1496) freezes the source,
 ownership and control inventory. The intake and the #1506 name/working-term baseline have passed
-independent acceptance. **Current static coverage: 1,870 translated rows and 2,397 untranslated rows**;
-the 1,504 previously translated rows remain exact. Grans, eastern Parmecia, southern and northern travel
-have passed independent acceptance; the Moun/Nazca/return draft is agent-reviewed and awaits main-gate
+independent acceptance. **Current static coverage: 2,030 translated rows and 2,237 untranslated rows**;
+the 1,870 previously translated rows remain exact. Grans, eastern Parmecia, southern and northern travel
+and Moun/Nazca/return have passed independent acceptance; the final/ending draft awaits main-gate
 independent acceptance as recorded in the current coverage table below. Provenance remains
 `ShiningForceCentral/SF2DISASM` at `c834c652b6862bc5679fd7f69a38a7093206efc6`, the admitted USA ROM
 identity recorded below, and `disasm/data/scripting/text/gamescript.txt`. Direct comparison confirms
@@ -97,8 +97,8 @@ common. A common assignment does not itself assert cross-chapter reuse.
 | #1499 | New Granseal and eastern Parmecia | 379 | 15,208 | 379 | Independently accepted |
 | #1500 | Southern travel, Caravan and Creed | 310 | 11,891 | 310 | Independently accepted |
 | #1501 | Northern travel, Pacalon, Tristan and Mitula | 239 | 10,493 | 239 | Independently accepted |
-| #1502 | Moun, Nazca and return to Grans | 366 | 13,972 | 366 | Agent-reviewed; independent acceptance pending |
-| #1503 | Final confrontations and ending | 160 | 6,556 | 0 | Not started |
+| #1502 | Moun, Nazca and return to Grans | 366 | 13,972 | 366 | Independently accepted |
+| #1503 | Final confrontations and ending | 160 | 6,556 | 160 | Agent-reviewed; independent acceptance pending |
 
 **Confirmed static intake:** all 4,267 IDs have exactly one owner; no deduplication/deletion. Six
 control-only rows (99/262/264/362/3523/3553), literal `x` rows (406/407/411) and 103 equal-source groups
@@ -121,10 +121,10 @@ within each control segment, including unsupported tags. Do not substitute guess
 | `{D2}`, `{D3}`, `{ITEM}`, `{SPELL}`, `{DICT}`, `{#}` | Unsupported by `ExplorationTextTokens`; reader rejects the row, static draft still preserves it |
 
 No new source timing or DICT caller/payload contract is claimed. Unknown operands stay Unknown;
-upstream tag descriptions alone do not establish their live use. The working terminology has 98
+upstream tag descriptions alone do not establish their live use. The working terminology has 99
 source-referenced terms or explicit contextual holds, including 48 derived name-table lookups and
-the seven Grans, five eastern Parmecia, seven southern and four northern travel terms adopted at
-independent batch acceptance.
+the seven Grans, five eastern Parmecia, seven southern and four northern travel terms, plus one
+Moun/Nazca compound adopted at independent batch acceptance.
 The 337 name pairs and these working terms are **independently accepted for prose drafting**. Their
 per-row proposed-for-independent-review labels retain the delivery snapshot; the private acceptance
 record and corpus README own the current adoption. Human reading and runtime default-name display
@@ -180,27 +180,26 @@ and complete-draft closure, including this name corpus; neither static slice clo
 
 ### Current batch review boundary
 
-The coverage table owns each batch's current state. The independently accepted Grans, eastern
-Parmecia, southern and northern travel batches retain their private acceptance records, corrected
-semantic findings, source speaker anomalies and classified heuristic findings. Their adopted terms are
-serialized in the shared glossary; frozen pending labels in earlier rows and reviews preserve delivery
-snapshots, not current adoption.
+The coverage table owns each batch's current state. Independently accepted batches through
+Moun/Nazca/return retain their private acceptance records, corrected semantic findings, source speaker
+anomalies and classified heuristic findings. Adopted terms are serialized in the shared glossary;
+frozen pending labels in earlier rows and reviews preserve delivery snapshots, not current adoption.
 
-The [#1502 Moun/Nazca/return draft](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1502)
-covers all 366 assigned occurrences. Each pair was translated and individually reread with its named
+The [#1503 final confrontations and ending draft](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1503)
+covers all 160 assigned occurrences. Each pair was translated and individually reread with its named
 source scene and adjacent dialogue by the accountable executor. Direct checks confirm all 4,267 locked
-source/context/ownership fields, all 1,504 prior translations and all 3,901 non-target occurrence lines
+source/context/ownership fields, all 1,870 prior translations and all 4,107 non-target occurrence lines
 remain exact. Native control order and parameter identity/multiplicity within every control segment
 pass; the derived review matches the authority. English residue, placeholders, template repetition
-and length findings are recorded in the private QA report. Cross-ID continued sentences, interrupted
-warnings, conditional dialogue, choice branches and source speaker distinctions remain intact.
-New wording proposals and source ambiguities remain in private row notes for independent review,
-without changing shared name identities or source mapping. Only the four terms already adopted
-at #1501 acceptance were appended; the original 94 glossary records remain byte-exact.
+and length checks report no findings. The identity correction, unfinished sentences, counterfactual,
+optional council branch, pronouns, hesitation and repeated interactions retain their source scope.
+Source ambiguities remain in private row notes; no new terminology proposal changes shared identities.
+Only the one compound already adopted at #1502 acceptance was appended; the original 98 glossary
+records remain byte-exact. All 337 name rows and earlier review artifacts remain unchanged.
 
 These editorial groups establish static drafting/review coverage only. Unsupported controls,
 unknown runtime operands/timing, natural reach, runtime display and human reading remain separate.
-Independent main-gate acceptance of #1502 is pending; no later batch or runtime consumer is started.
+Independent main-gate acceptance of #1503 is pending; no later batch or runtime consumer is started.
 
 ## Implemented M1 boundary
 
