@@ -5,7 +5,8 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 // Source command ordering with per-decision temporary obstruction grids. Persistent terrain
 // and MOV are never modified. All propagation and path reconstruction use existing owners.
-internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actorRef, IPhysicalActionRule physical)
+internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actorRef, IPhysicalActionRule physical,
+    IReadOnlyList<IBattleActionRule>? actions = null)
 {
     private EngineBattleState _battle = battle;
     private BattleActorState Actor => _battle.GetActor(actorRef);
@@ -15,19 +16,30 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
 
     internal BattleAutomaticAction Resolve(int commandset)
     {
-        int mode = commandset == 14 ? 2 : commandset == 9 ? 1 : 0;
+        int mode = commandset == 14 ? 2 : commandset is 2 or 9 ? 1 : 0;
         Restrict(mode);
-        int first = commandset switch { 14 => 5, 9 => 3, _ => 1 };
+        if (commandset == 2)
+        {
+            if (Heal() is { } heal) { _effects.Add(new("ai-command-heal2", actorRef, After: 0)); return Complete(heal); }
+            _effects.Add(new("ai-command-heal2", actorRef, After: -1));
+        }
+        int first = commandset switch { 2 => 4, 14 => 5, 9 => 3, _ => 1 };
         if (MoveOrder(first, mode, follow: first == 3) is { } move) return Complete(move);
-        int attack = commandset == 14 ? 2 : commandset == 9 ? 3 : 1;
-        if (EnemyPhysicalDecision.TryResolve(_battle, actorRef, physical, Grid()) is { } action)
+        if (commandset == 2) _effects.Add(new("ai-command-support", actorRef, After: -1));
+        int attack = commandset == 14 ? 2 : commandset is 2 or 9 ? 3 : 1;
+        if (Attack() is { } action)
         {
             _effects.Add(new("ai-command-attack" + attack, actorRef, After: 0));
             return Complete(action);
         }
         _effects.Add(new("ai-command-attack" + attack, actorRef, After: -1));
-        _effects.Add(new("ai-command-heal" + (commandset == 14 ? 3 : commandset == 9 ? 2 : 1), actorRef, After: -1));
-        _effects.Add(new("ai-command-support", actorRef, After: -1));
+        if (commandset != 2)
+        {
+            int healCommand = commandset == 14 ? 3 : commandset == 9 ? 2 : 1;
+            if (Heal() is { } heal) { _effects.Add(new("ai-command-heal" + healCommand, actorRef, After: 0)); return Complete(heal); }
+            _effects.Add(new("ai-command-heal" + healCommand, actorRef, After: -1));
+            _effects.Add(new("ai-command-support", actorRef, After: -1));
+        }
         if (commandset is 9 or 14 && MoveOrder(commandset == 9 ? 4 : 2, mode, follow: commandset == 14) is { } fallback)
             return Complete(fallback);
         Restrict(mode);
@@ -69,7 +81,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
             if (position)
             {
                 Quadrant(target);
-                result = EnemyPhysicalDecision.TryResolve(_battle, actorRef, physical, Grid());
+                result = Attack();
                 if (result is null)
                 {
                     _blocked = new bool[2304];
@@ -146,6 +158,8 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         return WeightedMovement.Build(costs, Offset(Actor.Position!), Actor.Definition.Move * 2);
     }
     private bool Occupied(MapPosition position) => _battle.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
+    private BattleAutomaticAction? Attack() => EnemySpellDecision.Attack(_battle, actorRef, physical, actions ?? [physical], Grid());
+    private BattleAutomaticAction? Heal() => EnemySpellDecision.Heal(_battle, actorRef, actions ?? [physical], Grid());
     private BattleAutomaticAction Complete(BattleAutomaticAction result) => result with { Effects = Array.AsReadOnly<BattleEffect>([.. _effects, .. result.Effects]) };
     private static int Offset(MapPosition position) => position.Y * 48 + position.X;
     private static BattleRuleException Missing(string code) => new(code, "placements.orders", true);

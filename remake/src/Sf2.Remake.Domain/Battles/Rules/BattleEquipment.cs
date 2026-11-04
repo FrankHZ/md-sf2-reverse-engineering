@@ -77,10 +77,18 @@ public static class BattleEquipment
         if (equipped > 1) throw new BattleRuleException("equipment-multiple", "actor.sourceLoadout");
     }
 
-    internal static bool OrdinaryAiLoadout(BattleActorDefinition definition, BattleSourceLoadout? loadout, bool allowHerb)
+    internal static bool OrdinaryAiLoadout(BattleActorDefinition definition, BattleSourceLoadout? loadout, bool allowHerb,
+        bool allowEarlySpells = false)
     {
         if (loadout is null) return false;
-        if (loadout.Spells.Any(spell => spell != 63) || definition.Spells.Count != 0) return false;
+        if (!allowEarlySpells && (loadout.Spells.Any(spell => spell != 63) || definition.Spells.Count != 0)) return false;
+        if (allowEarlySpells && (definition.Spells.Any(spell => spell is not { Value: "heal" or "blaze", Level: 1 }) ||
+            loadout.Spells.Any(spell => spell is not (0 or 11 or 63)))) return false;
+        // Authored semantic books use an empty packed book. A nonempty source book
+        // must agree with its decoded definitions; orphan packed spells cannot disappear.
+        if (allowEarlySpells && loadout.Spells.Any(spell => spell != 63) &&
+            !definition.Spells.Select(spell => spell.Value == "heal" ? 0 : 11).ToHashSet()
+                .SetEquals(loadout.Spells.Where(spell => spell != 63).Select(spell => (int)spell))) return false;
         if (definition.Equipment is not null) ValidateLoadout(definition, loadout);
         return loadout.Items.All(word => word == 127 || allowHerb && word == 0 ||
             (word & ~255) == 0 && definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true);

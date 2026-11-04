@@ -13,7 +13,10 @@ internal sealed class Sf2HealingRule : IHealingRule
             throw new BattleRuleException("spell-effect", "spell", true);
         if (!spell.IsAura && spellRef.Level is < 1 or > 3)
             throw new BattleRuleException("healing-animation", "spell.level", true);
-        if (actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest)
+        if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :
+            actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
+                spellRef is not { Value: "heal", Level: 1 } ||
+                !(actor.Status == 0 || battle.Definition.Poison && actor.Status == 2))
             throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (spell.IsAura)
         {
@@ -50,9 +53,10 @@ internal sealed class Sf2HealingRule : IHealingRule
             return new BattleReaction(actorRef, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
                 (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);
         }).ToArray();
-        var award = BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Healing, reactions);
+        var award = actor.IsAlly ? BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Healing, reactions)
+            : (Amount: 0, Seed: battle.MainSeed, Effects: (IReadOnlyList<BattleEffect>)Array.Empty<BattleEffect>());
         var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
             ? a.With(position: destination) : a), mainSeed: award.Seed);
-        return new(prepared, actorRef, destination, reactions, new(actorRef, award.Amount), award.Effects, [], Spell: spell);
+        return new(prepared, actorRef, destination, reactions, actor.IsAlly ? new(actorRef, award.Amount) : null, award.Effects, [], Spell: spell);
     }
 }

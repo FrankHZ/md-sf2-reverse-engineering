@@ -5,7 +5,7 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal static class EnemyPhysicalDecision
 {
-    // Admitted physical-only / script3 decision, using the caller's temporary grid when supplied.
+    // Admitted ordinary script3/4 decision, using the caller's temporary grid when supplied.
     // CalculateTargetPriorityForAttack clears ATTACK1/2/3's extra parameter; the priority
     // script is selected from activation/difficulty, not that command parameter.
     internal static BattleAutomaticAction? TryResolve(
@@ -24,7 +24,6 @@ internal static class EnemyPhysicalDecision
                 candidates.Add((target, position, grid.CostAt(position)!.Value));
         }
         if (candidates.Count == 0) return null;
-        _ = BattleActionRules.Invoke(physical, "ai-admission", () => physical.RequireAction(current, actorRef, action));
         var priorities = new PhysicalTargetPriority[candidates.Count];
         var decisions = new List<BattleEffect>();
         uint thinking = current.ThinkingSeed;
@@ -39,13 +38,9 @@ internal static class EnemyPhysicalDecision
                 if (damage < 0) throw new InvalidOperationException("Invalid physical estimate.");
                 return damage;
             });
-            var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
-            uint after = ((uint)draw.After << 16) | (thinking & 65535);
-            byte priority = PhysicalTargetRules.ScriptThree((byte)candidate.Cost, Math.Max(0, candidate.Target.Hp - potential), draw.Value);
+            byte priority = PhysicalTargetRules.Score(actor, candidate.Target, (byte)candidate.Cost, potential, ref thinking, decisions);
             priorities[index] = new((byte)candidate.Cost, priority, Sf2ClassRules.SourceClass(candidate.Target.Definition.ClassRule));
-            decisions.Add(new("thinking-rng", actorRef, thinking, after, 3, draw.Value, candidate.Target.Actor));
             decisions.Add(new("ai-candidate", actorRef, candidate.Cost, priority, Target: candidate.Target.Actor));
-            thinking = after;
         }
         // Physical preferences follow the actual source mover, independently of the target class.
         var selection = PhysicalTargetRules.Select(priorities, PhysicalTargetRules.Table(actor.Definition.Mover))

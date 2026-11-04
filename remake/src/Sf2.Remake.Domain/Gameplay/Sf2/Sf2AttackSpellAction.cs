@@ -19,7 +19,9 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         if (!battle.Definition.AttackSpells.TryGetValue(key, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
         spell.RequireSupported();
-        if (actor.Hp == 0 || !actor.IsAlly || actor.Control != BattleControl.Player)
+        if (actor.Hp == 0 || (actor.IsAlly ? actor.Control != BattleControl.Player :
+            actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
+                key is not { Value: "blaze", Level: 1 }))
             throw new BattleRuleException("attack-spell-caster", "actor", true);
         if (!(actor.Status == 0 || battle.Definition.Poison && actor.Status == 2))
             throw new BattleRuleException("attack-spell-status", "actor.status", true);
@@ -27,7 +29,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             throw new BattleRuleException("physical-definition", "actor.physical", true);
         if (battle.Definition.Rewards is null)
             throw new BattleRuleException("battle-rewards", "encounter.rewards", true);
-        if (actor.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
+        if (actor.IsAlly && actor.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return new(spell.MinimumRange, spell.MaximumRange, AttackSpell: spell);
     }
@@ -84,19 +86,20 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         {
             int power = actor.Definition.Physical!.Promoted ? spell.Power * 5 / 4 : spell.Power;
             int quarter = power / 4;
-            int resistance = target.Definition.Resistance >> (int)spell.Element & 3;
-            int damage = resistance switch { 1 => power - quarter, 2 => power / 2, 3 => power + quarter, _ => power };
+            int damage = PotentialDamage(actor, target, spell);
             bool critical = Roll(32, "spell-critical", target.Actor) == 0;
             if (critical) damage += quarter;
             ushort range = checked((ushort)(damage / 8 + 1));
             damage = Math.Max(1, damage - Roll(range, "spell-variance", target.Actor) - Roll(range, "spell-variance", target.Actor));
             ushort hp = (ushort)Math.Max(0, target.Hp - damage);
-            if (hp == 0)
+            if (hp == 0 && actor.IsAlly)
             {
                 if (actor.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
                 gold = BattleProgressionRules.Invoke(progression.Identity, "gold", () => progression.Gold(
                     gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true), target.Definition.Physical!.Gold));
             }
+            if (hp == 0 && target.IsAlly && target.Defeats is null)
+                throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
             // The ordinary source post-effect drop helper remains ordered before the next target and award.
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), actorRef, target.Actor, hp == 0);
             inventory = dropped.Battle; seed = inventory.MainSeed;
@@ -104,12 +107,14 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             reactions.Add(new(actorRef, target.Actor, "attack-spell", BattleReactionKind.Damage,
                 target.Hp, hp, target.Mp, target.Mp, critical, damage, target.Status, Receipt: dropped.Receipt));
         }
-        var award = BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed), inventory.GetActor(actorRef), Kind, reactions);
+        BattleOutcomeSelection.RequireContinuing(battle, reactions);
+        var award = actor.IsAlly ? BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed), inventory.GetActor(actorRef), Kind, reactions)
+            : (Amount: 0, Seed: seed, Effects: (IReadOnlyList<BattleEffect>)Array.Empty<BattleEffect>());
         effects.AddRange(award.Effects);
         if (gold != battle.Gold) effects.Add(new("gold", actorRef, battle.Gold, gold));
         var prepared = inventory.With(mainSeed: award.Seed, gold: gold,
             actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? unit.With(position: destination) : unit));
-        return new(prepared, actorRef, destination, reactions.AsReadOnly(), new(actorRef, award.Amount),
+        return new(prepared, actorRef, destination, reactions.AsReadOnly(), actor.IsAlly ? new(actorRef, award.Amount) : null,
             effects.AsReadOnly(), [], AttackSpell: spell);
 
         int Roll(ushort range, string purpose, ActorRef target)
@@ -118,5 +123,13 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             effects.Add(new("rng-" + purpose, actorRef, draw.Before, draw.After, range, draw.Value, target));
             return draw.Value;
         }
+    }
+
+    internal static int PotentialDamage(BattleActorState actor, BattleActorState target, AttackSpellDefinition spell)
+    {
+        int power = actor.Definition.Physical!.Promoted ? spell.Power * 5 / 4 : spell.Power;
+        int quarter = power / 4;
+        int resistance = target.Definition.Resistance >> (int)spell.Element & 3;
+        return resistance switch { 1 => power - quarter, 2 => power / 2, 3 => power + quarter, _ => power };
     }
 }

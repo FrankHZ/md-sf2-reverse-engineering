@@ -1,5 +1,65 @@
 # Gameplay Rules and Composition
 
+## Finite early enemy spell decisions
+
+**Implemented bounded capability, Standard rigor:** activated source enemies can choose BLAZE1 and
+HEAL1 through the same selected action rules, movement continuation, MP publication, effects,
+death cleanup and next-turn flow used by players. Decisions do not publish damage, recovery or MP.
+`IBattleDecisionRule` receives the session's existing action bindings; the common decision boundary
+prepares and discards the chosen action before publishing any AI movement/RNG. Missing reached
+accounting, unsupported payloads and unbound terminal outcomes reject atomically. Physical and
+damage spells share terminal admission; healing uses actual faction, not a priest/ally assumption.
+Only allies earn EXP/gold/kills; an enemy damage spell can increment an ally's defeats through the
+existing death batch. Enemy healing has no award and retains both RNG streams during construction.
+
+The dedicated commandset byte controls ordering: SENTRY8 attempts ATTACK1, HEAL1, SUPPORT, STAY
+and never pursues on its final fallback. HEALER3 is commandset2: HEAL2, MOVE_ORDER4, SUPPORT,
+ATTACK3, MOVE2, STAY, with the existing block-non-movable preparation and live follow/dead-follow
+promotion. HEAL2 here is an AI command whose parameter is unused; the early cleric still casts
+HEAL1 (MP3, range0-1, power15). Existing6/7/9/14 movement/order paths remain in place. Ordinary
+inactive standby still runs before these commands. No actor name, battle ID or reference round
+selects an algorithm.
+
+HEAL1 scans living, placed teammates with `3*HP <= 2*maxHP` and more than2 missing HP, then tries
+stable descending source mover/critical-commandset priority and legal unoccupied casting stations.
+The finite priority order includes healer12, mage11, archer8, hovering7, flying6, stealth4,
+centaur3, regular2; critical/leader commandsets13/14 receive13. No thinking/main draw is needed.
+An unreachable higher-priority target is skipped. Self-healing uses the caster's current station.
+No need, insufficient MP or no legal station falls through to the remaining commands.
+
+ATTACK scores reachable spell targets before physical targets, in reverse source processing order.
+Normal PRIORITYMOD_2 uses script3's separate thinking RNG; the cleric's PRIORITYMOD_3 selects
+script4's deterministic lethality/inclusive one-fifth-HP score. Mover class preference and stable
+source tie handling reuse the physical owner. With a reachable BLAZE1 candidate, category selection
+always draws main range6:2/4 choose spell when physical is also viable; otherwise physical wins.
+A spell-only candidate still consumes that category draw. Insufficient MP or no reachable spell
+candidate uses physical without the category draw. Actual critical/variance draws occur only in
+the shared prepared damage action. The supported cleric prowess is critical1/32 with half bonus,
+double1/32 and defender counter1/16, independent of the attacker's prowess.
+
+**Confirmed static provenance:** pinned `SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:
+`data/battles/global/aicommandsets.asm`, `aipriority.asm`, `data/stats/enemies/enemydefs.asm`
+(GALAM_MAGE67/DARK_CLERIC76), `code/gameflow/battle/ai/startaicontrol.asm`,
+`command/heal.asm`, its `heal/{calculatehealtargetpriority,determinehealingspelllevel,doescombatantrequirehealing}.asm`,
+`command/attack/{prioritizetargets,determinebattleaction,targetprioritizationhelperfunctions}.asm`,
+and `code/common/tech/randomnumbergenerator.asm`. Read these exact objects with
+`git -C $pinnedSf2Disasm show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<relative-path>`.
+The accepted [Battle05](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md)
+and [Battle06](../../../docs/research/chapters/grans-opening/battle06-opening-and-first-control.md)
+owners distinguish static availability from natural first casts. Those natural routes/timing remain
+**Unknown**. This engine capability does not import Battle05/06, implement higher-rank enemy spells,
+DISPEL/support/silence, item AI, all AI or non-Normal difficulty.
+
+[Enemy decision tests](../../tests/Sf2.Remake.Engine.Tests/EnemySpellDecisionTests.cs),
+[session tests](../../tests/Sf2.Remake.Engine.Tests/EnemySpellSessionTests.cs) and
+[private binding test](../../tests/Sf2.Remake.Engine.Tests/EnemySpellAdmissionTests.cs) own changed
+positions/order/MP/need/blocked stations, priorities/RNG, shared effects, failure atomicity and
+next control. The [native recipe](../development-and-verification.md#enemy-spell-observation)
+uses a small [authored package](../../content/authored/enemy-spells.json). Recovery projection now
+switches caster/recipient on their real faction side; supplied private visuals select their matching
+ally/class or enemy/actor dictionary. Authored gestures and private resource admission remain separate.
+
 ## Finite player attack spells
 
 **Implemented bounded capability, Standard rigor:** learned BLAZE1-2 and BLAST1 use the existing
@@ -55,7 +115,8 @@ multi-target death/growth and a supported connected outcome/growth/drop/return/r
 `BattleDefinition.WithOutcome`/`WithDeployments` preserve all capability fields during those existing
 Content replacements; actor growth/equipment replacements preserve resistance. The
 [verification recipe](../development-and-verification.md#player-attack-spell-observation) owns actual
-native inputs and resource limits. Other damage families/ranks, enemy spell decisions, silence,
+native inputs and resource limits. The [early enemy decision slice](#finite-early-enemy-spell-decisions)
+adds BLAZE1/HEAL1; other damage families/ranks, silence,
 Kazin recruitment and full Battle03-07 story are outside this outcome.
 
 ## Opening field inventory and use
@@ -225,7 +286,8 @@ ATT-only ordinary enemy gear is immutable loadout metadata, not a player equipme
 Normal initialization applies the existing source base-ATT adjustment, then the selected weapon
 contribution once (clamp200). Player equip/unequip stays free and refreshes the live base once;
 carried slot words, gold, growth and both RNG channels retain their existing transaction boundaries.
-Unknown usable items, broken/cursed gear, spell AI and unsupported effects still reject.
+Unknown usable items, broken/cursed gear and unsupported effects still reject; the
+[finite enemy BLAZE1/HEAL1 extension](#finite-early-enemy-spell-decisions) owns the admitted spell decisions.
 
 **Confirmed static:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, paths
 relative to `disasm/`: `data/stats/allies/classes/classdefs.asm` rows0-5/10;

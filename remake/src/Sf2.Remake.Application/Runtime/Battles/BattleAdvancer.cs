@@ -93,7 +93,7 @@ internal static class BattleAdvancer
                 var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
                 if (actor.Control != BattleControl.Automatic || actor.AiStrategy is not { } strategy)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
-                var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression);
+                var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression, rules.Actions);
                 SessionResult delivery;
                 if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || battle.Definition.Poison && actor.Status == 2))
                 {

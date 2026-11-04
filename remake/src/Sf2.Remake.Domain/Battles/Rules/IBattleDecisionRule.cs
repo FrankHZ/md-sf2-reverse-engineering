@@ -6,6 +6,8 @@ internal interface IBattleDecisionRule
     void RequireDeployment(BattleDeploymentDefinition deployment);
     void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input);
     BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical);
+    BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical,
+        IReadOnlyList<IBattleActionRule> actions) => Decide(battle, actor, physical);
 }
 
 internal static class BattleDecisionRules
@@ -21,18 +23,21 @@ internal static class BattleDecisionRules
     }
 
     internal static BattleAutomaticAction Decide(IBattleDecisionRule rule, EngineBattleState battle,
-        ActorRef actor, IPhysicalActionRule physical, IBattleProgressionRule progression) => Invoke(rule, "decide", () =>
+        ActorRef actor, IPhysicalActionRule physical, IBattleProgressionRule progression,
+        IReadOnlyList<IBattleActionRule>? actions = null) => Invoke(rule, "decide", () =>
         {
-            var decision = rule.Decide(battle, actor, physical);
+            var decision = actions is null ? rule.Decide(battle, actor, physical) : rule.Decide(battle, actor, physical, actions);
             decision.Validate(battle, actor);
-            // A discarded admission preview uses the same selected physical rule as execution.
+            // A discarded admission preview uses the same selected action rule as execution.
             // No future construction seed or resources survive this seam.
-            if (decision.ChosenAction is null && decision.Target is { } target)
+            if (decision.Target is { } target && decision.ChosenAction?.Kind != BattleActionKind.PrismLaser)
             {
                 try
                 {
-                    _ = BattleActionRules.Prepare(physical, decision.Battle, actor, decision.Destination,
-                        new(BattleActionKind.Physical), target, progression);
+                    var action = decision.ChosenAction ?? new(BattleActionKind.Physical);
+                    var selected = action.Kind == BattleActionKind.Physical ? physical :
+                        actions?.Single(r => r.Kind == action.Kind) ?? throw new InvalidOperationException("Missing decision action rule.");
+                    _ = BattleActionRules.Prepare(selected, decision.Battle, actor, decision.Destination, action, target, progression);
                 }
                 catch (BattleRuleException error) when (!error.Unsupported)
                 { throw new BattleDecisionRuleFault(rule.Identity, "decision-admission"); }

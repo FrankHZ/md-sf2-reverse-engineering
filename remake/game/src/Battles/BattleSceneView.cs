@@ -151,38 +151,40 @@ internal sealed partial class BattleSceneView : Control
             _background.Show(); _backgroundWrap.Show(); _ground.Show(); _ally.Show();
             var battle = _session.Current.Battle;
             var actor = battle.GetActor(state.Actor); var target = battle.GetActor(state.Target!.Value);
-            var ally = battle.GetActor(state.DisplayedAlly!.Value);
+            var ally = state.DisplayedAlly is { } allyRef ? battle.GetActor(allyRef) : null;
             var enemy = state.DisplayedEnemy is { } enemyRef ? battle.GetActor(enemyRef) : null;
+            _ally.Visible = ally is not null;
             _enemy.Visible = enemy is not null;
             _enemyVisual = null; _enemyResource = null; _weaponResource = null;
             if (Content is { } content)
             {
-                if (content.Encounter != battle.Definition.Encounter || !content.Allies.TryGetValue(ally.Definition.ClassRule, out _allyVisual) ||
+                _allyVisual = null;
+                if (content.Encounter != battle.Definition.Encounter || (ally is not null && !content.Allies.TryGetValue(ally.Definition.ClassRule, out _allyVisual)) ||
                     (enemy is not null && !content.Enemies.TryGetValue(enemy.Actor, out _enemyVisual))) throw new InvalidOperationException("battle-scene-actor-unavailable");
                 string background = content.Background, ground = content.Ground;
                 if (content.TerrainScenes is { } terrain)
                 {
-                    var back = enemy?.Position ?? ally.Position ?? ally.Deployment.Position;
-                    var front = ally.Position ?? ally.Deployment.Position;
+                    var back = enemy?.Position ?? ally!.Position ?? ally.Deployment.Position;
+                    var front = ally?.Position ?? back;
                     background = terrain[back.Y * 48 + back.X].Background;
                     ground = terrain[front.Y * 48 + front.X].Ground;
                 }
                 Bind(_background, background); Bind(_backgroundWrap, background); Bind(_ground, ground);
                 _allyFrame = _enemyFrame = 0;
-                var equipped = ally.SourceLoadout?.Items.FirstOrDefault(item => (item & 128) != 0 && (item & 127) != 127);
+                var equipped = ally?.SourceLoadout?.Items.FirstOrDefault(item => (item & 128) != 0 && (item & 127) != 127);
                 _hasWeapon = equipped is > 0;
-                if (_hasWeapon && (equipped!.Value & 127) != _allyVisual.Item) throw new InvalidOperationException("battle-scene-weapon-unavailable");
-                SetFrame(true, 0); if (enemy is not null) SetFrame(false, 0);
-                Weapon(_allyVisual.Sequences["idle"].IdleWeapon, Vector2.Zero);
-                _ground.Visible = ally.Definition.Mover is not (BattleMover.Hovering);
+                if (_hasWeapon && (equipped!.Value & 127) != _allyVisual!.Item) throw new InvalidOperationException("battle-scene-weapon-unavailable");
+                if (ally is not null) SetFrame(true, 0); if (enemy is not null) SetFrame(false, 0);
+                Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, Vector2.Zero);
+                _ground.Visible = ally is not null && ally.Definition.Mover is not (BattleMover.Hovering);
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
-                    var animation = (actor.IsAlly ? _allyVisual : _enemyVisual!).Sequences[state.Spell is not null ? "cast" : state.Item is null ? "attack" : "item"];
+                    var animation = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences[state.Spell is not null ? "cast" : state.Item is null ? "attack" : "item"];
                     _animationIndex = animation.Index;
                     _frames = animation.Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
                 }
                 if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Dodge")
-                    _frames = (target.IsAlly ? _allyVisual : _enemyVisual!).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
+                    _frames = (target.IsAlly ? _allyVisual! : _enemyVisual!).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
             }
             _ally.Position = new(136, 64); _enemy.Position = new(16, 48);
             _background.Position = new(0,56); _backgroundWrap.Position = new(256,56); _ground.Position = new(136,140);
@@ -354,30 +356,33 @@ internal sealed partial class BattleSceneView : Control
     {
         foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
         if (state.Healing is not { } healing) return;
+        bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
+        var recipient = ally ? _ally : _enemy;
+        var origin = ally ? new Vector2(136, 64) : new Vector2(16, 48);
         if (healing.CastRequested && !_castSoundPlayed) { _audio?.PlayEffect(77); _castSoundPlayed = true; }
         if (state.Phase == BattleScenePhase.ActionAnimation && healing.CastFrame is > 0 and var frame && frame <= _frames.Length)
         {
             _frameIndex = frame - 1;
             var entry = _frames[_frameIndex];
-            if (entry.Frame != 15) SetFrame(true, entry.Frame);
-            _ally.Position = new Vector2(136, 64) + new Vector2(entry.X, entry.Y);
-            Weapon(entry.Weapon, new(entry.X, entry.Y));
+            if (entry.Frame != 15) SetFrame(ally, entry.Frame);
+            recipient.Position = origin + new Vector2(entry.X, entry.Y);
+            if (ally) Weapon(entry.Weapon, new(entry.X, entry.Y));
         }
-        _ally.Modulate = !_settings.ReducedFlash && healing.Caller == "cast-flash-on" ? new Color(0.7f, 1, 0.7f) : Colors.White;
+        recipient.Modulate = !_settings.ReducedFlash && healing.Caller == "cast-flash-on" ? new Color(0.7f, 1, 0.7f) : Colors.White;
         if (state.Phase is BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter or BattleScenePhase.ActorExit or BattleScenePhase.ActorEnter)
         {
             float from = state.Phase == BattleScenePhase.TargetEnter ? -376 : state.Phase == BattleScenePhase.ActorEnter ? 8 : 136;
             float to = state.Phase == BattleScenePhase.TargetExit ? 272 : state.Phase == BattleScenePhase.ActorExit ? -112 : 136;
             int opportunity = healing.Caller?.EndsWith(":wait", StringComparison.Ordinal) == true ? 0 : healing.Opportunity;
             float x = from + MathF.Sign(to - from) * MathF.Min(opportunity * 16, MathF.Abs(to - from));
-            _ally.Position = new(x, 64); _ground.Position = new(x, 140);
-            Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, new(x - 136, 0));
+            recipient.Position = ally ? new(x, 64) : new(origin.X - (x - 136), origin.Y);
+            if (ally) { _ground.Position = new(x, 140); Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, new(x - 136, 0)); }
         }
         if (Content?.Healing is not { } visual || healing.Fairy is not { Control: not 0 } fairy) return;
         void Put(Sprite2D sprite, string resource, ushort x, ushort y, bool mirror = false)
         {
             Bind(sprite, resource); sprite.FlipH = mirror;
-            sprite.Position = new Vector2(x - 128, y - 128) - sprite.GetRect().Position * sprite.Scale;
+            sprite.Position = new Vector2(ally ? x - 128 : 256 - (x - 128), y - 128) - sprite.GetRect().Position * sprite.Scale;
             sprite.Show();
         }
         for (int i = 0; i < fairy.Fairies.Count; i++)

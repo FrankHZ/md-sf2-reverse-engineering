@@ -232,13 +232,13 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Object(physicalInput, "actor.physical", "movementType", "critical", "promoted", "leader", "gold", "special");
                 mover = Text(physicalInput, "movementType") switch
                 {
-                    "regular" => BattleMover.Regular, "centaur" => BattleMover.Centaur,
+                    "regular" => BattleMover.Regular, "healer" => BattleMover.Healer, "centaur" => BattleMover.Centaur,
                     "archer" => BattleMover.Archer, "mage" => BattleMover.Mage,
                     _ => throw new BattleRuleException("physical-movement-type", "actors.physical.movementType", true),
                 };
                 Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);
                 var criticalInput = physicalInput.GetProperty("critical");
-                ObjectOptional(criticalInput, "actors.physical.critical", ["chance", "damageBonus"], "doubleChance");
+                ObjectOptional(criticalInput, "actors.physical.critical", ["chance", "damageBonus"], "doubleChance", "counterChance");
                 string chance = Text(criticalInput, "chance"), bonus = Text(criticalInput, "damageBonus");
                 Require((chance, bonus) is ("one-in-32", "half") or ("one-in-16", "quarter"),
                     "physical-critical-rule", "actors.physical.critical", true);
@@ -249,6 +249,12 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     Require(Text(criticalInput, "doubleChance") == "one-in-16" && chance == "one-in-16" && bonus == "quarter",
                         "physical-double-rule", "actors.physical.critical", true);
                     critical = PhysicalCriticalRule.Thief;
+                }
+                if (criticalInput.TryGetProperty("counterChance", out _))
+                {
+                    Require(Text(criticalInput, "counterChance") == "one-in-16" && chance == "one-in-32" && bonus == "half" &&
+                        !criticalInput.TryGetProperty("doubleChance", out _), "physical-counter-rule", "actors.physical.critical", true);
+                    critical = PhysicalCriticalRule.Cleric;
                 }
                 bool promoted = Boolean(physicalInput, "promoted");
                 Require(className == "ordinary" || !promoted, "class-promotion", "actors.physical.promoted");

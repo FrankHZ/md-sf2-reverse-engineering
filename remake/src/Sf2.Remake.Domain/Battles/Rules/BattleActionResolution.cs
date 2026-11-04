@@ -17,15 +17,17 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         static void Require(bool valid)
         { if (!valid) throw new InvalidOperationException("Invalid automatic decision."); }
         var actor = before.GetActor(actorRef);
-        Require(ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser));
-        if (ChosenAction is not null)
+        Require(ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser) ||
+            ChosenAction is { Kind: BattleActionKind.AttackSpell or BattleActionKind.Healing, Spell: not null, ItemSlot: null } &&
+                Target is not null && !QueueOnly);
+        if (ChosenAction?.Kind == BattleActionKind.PrismLaser)
         {
             PrismLaser.RequireActor(before, actorRef);
             Require(Target is not null && Path.Count == 1 && Destination == actor.Position && !QueueOnly &&
                 ReferenceEquals(Battle, before) && Effects.Count == 0 &&
                 PrismLaser.Targets(before, actorRef, alliesOnly: true).FirstOrDefault()?.Actor == Target);
         }
-        Require(ReferenceEquals(Battle.Definition, before.Definition) && Battle.MainSeed == before.MainSeed &&
+        Require(ReferenceEquals(Battle.Definition, before.Definition) &&
             Battle.Round == before.Round && Battle.Cursor == before.Cursor && Battle.Gold == before.Gold &&
             ReferenceEquals(Battle.ItemCustody, before.ItemCustody) && Equals(Battle.DeathCredit, before.DeathCredit) &&
             ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && ReferenceEquals(Battle.Visuals, before.Visuals) && Battle.Queue.SequenceEqual(before.Queue) &&
@@ -73,12 +75,20 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             unit.Actor != actorRef && unit.Hp > 0 && unit.Position == Destination));
         if (Target is { } target)
             Require(before.Actors.Any(unit => unit.Actor == target && unit.Hp > 0 && unit.Position is not null &&
-                unit.Faction != actor.Faction));
+                (ChosenAction?.Kind == BattleActionKind.Healing ? unit.Faction == actor.Faction : unit.Faction != actor.Faction)));
         uint seed = before.ThinkingSeed;
+        uint main = before.MainSeed; int categories = 0;
         foreach (var effect in Effects)
         {
             Require(!string.IsNullOrWhiteSpace(effect.Kind) && effect.Actor == actorRef &&
                 (effect.Target is null || before.Actors.Any(unit => unit.Actor == effect.Target)));
+            if (effect.Kind == "rng-ai-attack-category")
+            {
+                var category = BattleRandom.NextMain(main, 6);
+                Require(++categories == 1 && effect.RandomRange == 6 && effect.Target is null &&
+                    effect.Before == main && effect.After == category.After && effect.RandomValue == category.Value);
+                main = category.After; continue;
+            }
             if (effect.RandomRange is null)
             { Require(effect.RandomValue is null && !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)); continue; }
             Require(effect.Kind == "thinking-rng" && effect.RandomRange <= byte.MaxValue);
@@ -87,7 +97,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             Require(effect.Before == seed && effect.After == after && effect.RandomValue == draw.Value);
             seed = after;
         }
-        Require(Battle.ThinkingSeed == seed);
+        Require(Battle.ThinkingSeed == seed && Battle.MainSeed == main);
         if (QueueOnly) Require(ReferenceEquals(Battle, before) && Path.Count == 1 && Target is null);
     }
 }
@@ -346,6 +356,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         var actor = before.GetActor(actorRef);
         var targets = HealingTargetRules.Resolve(before, actorRef, destination, spell, targetRef);
         Require(Actor == actorRef && Destination == destination && Spell == spell && Item is null);
+        Require(actor.IsAlly || Reward is null);
         ValidateState(before, actorRef, destination);
         Require(Reactions.Count == targets.Count && Reactions.Count > 0 && CompletionEffects.Count == 0);
         for (int i = 0; i < targets.Count; i++)
@@ -388,7 +399,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     {
         var targets = Sf2AttackSpellAction.ResolveTargets(before, actor, destination, spell, center);
         Require(Spell is null && Item is null && AttackSpell == spell && CompletionEffects.Count == 0 &&
-            Reactions.Count == targets.Count && Reactions.Count > 0 && Reward is { Actor: var recipient } && recipient == actor);
+            Reactions.Count == targets.Count && Reactions.Count > 0 &&
+            (before.GetActor(actor).IsAlly ? Reward is { Actor: var recipient } && recipient == actor : Reward is null));
         var inventory = before;
         int cursor = 0;
         for (int i = 0; i < targets.Count; i++)
@@ -398,6 +410,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 reaction.Kind == BattleReactionKind.Damage && reaction.HpBefore == target.Hp && reaction.Amount >= 1 &&
                 reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) && reaction.MpBefore == target.Mp &&
                 reaction.MpAfter == target.Mp && reaction.StatusWrite == target.Status && reaction.InflictedSleep is null);
+            if (reaction.HpAfter == 0 && target.IsAlly && target.Defeats is null)
+                throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
             // Three source damage draws precede each target's ordinary drop helper.
             var draws = ConstructionEffects.Skip(cursor).Take(3).ToArray();
             Require(draws.Length == 3 && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == 32 &&
@@ -410,7 +424,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         }
         Require(ConstructionEffects.Skip(cursor).All(e => e.Actor == actor &&
             (e.Kind is "rng-exp-plus" or "rng-exp-minus" or "spell-exp-contribution" or "gold")));
-        Require(Reactions.Any(r => r.HpAfter == 0) || Prepared.Gold == before.Gold);
+        Require(before.GetActor(actor).IsAlly && Reactions.Any(r => r.HpAfter == 0) || Prepared.Gold == before.Gold);
         ValidateState(before, actor, destination, allowGold: true, inventory: inventory);
         ValidateReward(before, actor);
         ValidateRandom(before, _ => true);
@@ -450,6 +464,6 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         return (current.With(mainSeed: result.Seed, actors: current.Actors.Select(row => row.Actor == reward.Actor ? result.Actor : row)), result.Effects);
     }
 
-    internal ActorRef FirstAlly => Prepared.GetActor(Reactions[0].Actor).IsAlly
-        ? Reactions[0].Actor : Reactions[0].Target;
+    internal ActorRef? FirstAlly => Prepared.GetActor(Reactions[0].Actor).IsAlly
+        ? Reactions[0].Actor : Prepared.GetActor(Reactions[0].Target).IsAlly ? Reactions[0].Target : null;
 }
