@@ -1,5 +1,194 @@
 # Remake Structure and Quality Review
 
+## Finite pre-voyage audit
+
+**Current recommendation: ACCEPT-WITH-FOLLOW-UP for the report, subject to independent main-gate
+review.** Continue bounded development; no P1 or whole-engine redesign was identified. Two P2s
+remain open below. This is a report/design delivery, not their repair or acceptance of the entire
+pre-departure campaign. The [boundary review](engine-script-boundary-review.md#finite-pre-voyage-audit)
+owns the common scope, Standard rigor, accepted diff/base/tree, dependency map and continuation limits.
+Existing High-rigor service/save contracts remain unchanged. This report owns the findings, copy
+design and sole new experiment for [#1528](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1528).
+
+All paths and line numbers in F4/F5 refer to accepted **`7fcd630d7474586e3b91aaa69889ca7e294e6007`**
+(tree `b6d8b2f22e2a0b65f18d5c2d6718f1f2df1e9a3c`); the earlier review below retains its own base.
+**Confirmed** denotes inspected source/assertions or the explicitly executed API result;
+**Inferred** denotes an unexecuted consequence; **Unknown** denotes an unobserved boundary.
+
+### F4 — P2: retain carried context when recovering party resources
+
+**Confirmed, current reachable defect in changed authored content.**
+[`Sf2OutcomeReturnPolicy.Heal:88`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/7fcd630d7474586e3b91aaa69889ca7e294e6007/remake/src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs#L88)
+reconstructs `BattleStartInput` only through `ItemCustody`, silently defaulting `StoryFlags`,
+`Visuals`, `RetainedSourceSlots` and **`DeathCredit`**. `ProgramRunner:163–164` calls that policy for
+the admitted `reset-party-battle-stats` instruction; this is not limited to a battle outcome.
+`OutcomeReturnRules.Party` in `IOutcomeReturnPolicy.cs:67–87` validates resources, seeds, membership
+and custody but omits those carried fields, so it accepts this loss. `BattleEntry:81–85` correctly
+forwards the resulting credit; `BattleTurnFlow:71` then requires it for the connected poison profile.
+
+**Trigger and observed impact:** take tracked `remake/content/authored/shop-supplies.json`, set all
+`battle.start.actors[*].status` to `none` in both variants (recovery's existing status refusal is not
+under test), and prepend `{ "op": "reset-party-battle-stats" }` to `world.programs[id=before-battle].instructions`
+in only the second variant. Start through public `AuthoredScenarioPackageReader`/`GameSession.Start`,
+walk South/East/East/East/North, and service ordinary simulation/dialogue waits with current envelopes.
+Both starts retain initial credit `medic-a`. The control reaches **Battle / PlayerInput**, credit
+`medic-a`, flags13/14/15/16/20, no failure. The reset variant reaches **Exploration / Unsupported**,
+credit null, flags13/14/15, and `UnsupportedCapability / poison-death-context / start.firstAlly`.
+No battle is published; the prior recovery/program prefix remains. This is a rejected valid
+composition, not observed corruption of a save or a claim about a natural original route.
+
+**Origin:** the incomplete recovery copy predates this batch (same reconstruction at `9a99132a`).
+#1527 admits the connected poison/supply composition and repairs the exercised field RNG/entry copies,
+making this remaining sibling relevant now. Do not describe the already corrected movement/text/
+portrait/entry paths as broken. `ProgramRunner.JoinResources:549` and
+`OutcomePartyOperations.ClearOutcomePartyAi:30` also stop copying at `ItemCustody`; they confirm the
+same maintenance hazard. Their downstream failure combinations were **not executed** and are not
+additional reproduced findings. Outcome-to-field reconstruction has different initialization semantics;
+do not blindly carry battle-only context across it.
+
+**Smallest design:** extend the existing `BattleStartInput` immutable replacement owner, alongside
+`WithSeeds`, with a narrow actor/resource replacement operation that preserves the other carried
+fields. Use it for recovery and the directly related actor-only copies after verifying their intended
+lifetime. Keep legitimate fresh battle/restore construction explicit. Extend `OutcomeReturnRules.Party`
+to enforce preservation of fields the recovery policy does not own. Do not invent a generic clone
+service, reflection copier, capability bag or second roster. An immediate explicit argument fix is
+possible, but repeated omissions in #1527 and this execution justify one local preservation owner.
+
+**Scope and acceptance:** Domain `BattleStartInput`, Application recovery policy/validator and the
+named carried-party copies; keep status recovery, outcome rebinding and save format unchanged.
+Repair before depending on reset/recovery plus connected poison entry or expanding those copying
+callers. Unrelated rules/UI work can continue. A small engine behavior assertion should run the
+actual admitted reset program through entry, vary retained accounting/resources, and verify one
+recovery with preserved seeds/custody/context and unchanged invalid-status refusal. Use the concrete
+counterexample below; do not test constructor parameter counts or add a copier test framework.
+
+### F5 — P2: require a target before the silenced-cast shortcut
+
+**Confirmed source invariant gap; Inferred risk to future callers, no current ordinary-game failure
+established.** In
+[`BattleActionRules.Prepare:45–56`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/7fcd630d7474586e3b91aaa69889ca7e294e6007/remake/src/Sf2.Remake.Domain/Battles/Rules/IBattleActionRule.cs#L45),
+`RequireTarget` runs only when the nullable target is supplied. `SilenceRules.Suppress:28–34` then
+returns a zero-reaction resolution, bypassing the concrete spell's missing-target check.
+`BattleActionResolution.Validate:115–121` accepts that suppressed shape and never requires the target.
+Thus a valid silenced caster/action with `target: null` is accepted internally where the equivalent
+unsilenced targeted spell rejects. This was introduced by #1526's shortcut and carried into this
+audit by its [main-gate comment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1528#issuecomment-6640797017).
+It was source-traced here, not rerun as another experiment.
+
+**Reachability and impact:** `BattleCommandDispatcher.Select` puts targeted actions in TargetChoice;
+only `SelectTarget` reaches CommitReady after `BattleChoices.RequireTarget`. Automatic chosen spells
+require a nonnull target in `BattleAutomaticAction.Validate` and carry it through movement completion.
+These callers prevent the missing-target case today. The latent result would permit a future internal
+caller to start a paid no-effect action without its required selection; it does not demonstrate a
+current UI bypass, missing MP check, invalid supplied-target bypass or double payment.
+
+**Smallest design:** before suppression, explicitly require a target for the finite affected targeted
+kinds (Healing, AttackSpell, SupportSpell), retaining their existing error category and supplied-target
+validation. Keep Stay and source EGRESS/item semantics distinct. No generic validation platform or
+target-schema rewrite is needed. Scope the shared preparation owner and its actual behavior test;
+include null versus valid target under silenced/unsilenced states and unchanged no-publication failure.
+Repair before introducing another preparation caller; it does not block current admitted Session/AI
+work. This audit does not implement the correction.
+
+### Copy design, responsibilities and accepted boundaries
+
+**Confirmed:** F3's narrow `BattleDefinition.WithOutcome/WithDeployments` now funnels immutable
+replacement through one definition-owned copy, retaining current attack/support/healing/item/equipment
+capabilities. `BattleActorDefinition.WithGrowth/WithEquipment` retains resistance. The actual connected
+growth/drop/outcome/walking-return assertion in `AttackSpellAdmissionTests` exercises the affected
+behavior. `PrivateFieldPreparation` reuses the same deployment replacement. This is an appropriate
+repair at the observed owner, not proof that every future added constructor field is safe.
+
+`BattleStartInput.WithSeeds` likewise fixes the seed-only copies in entity/text/portrait/random-battle
+work; the supply session test traverses those seams. F4 demonstrates why these local remedies do not
+establish whole-graph copy completeness. Keep definitions, live carried party and fresh starts distinct:
+their lifetimes differ. A future field addition needs the owning replacement and its real consumer
+reviewed together, without a broad repository constructor migration.
+
+The inspected project references still point inward: Application→Domain, Content→Application/Domain,
+Godot→those assemblies; no reference-data/test/tool dependency was added. New attack/support/AI/shop
+files have coherent responsibilities. Similar healing/damage/support action branches reflect distinct
+target/reward/lifecycle rules; merging them into a universal effect pipeline is not justified by this
+diff. Shop selection and existing Church selection share tokens/commit/inventory mechanisms while
+owning different transactions; no additional service framework is warranted.
+
+A direct physical-line check found every changed handwritten `.cs`, `.py` and `.gd` file below1,000
+lines at this base. The source program compiler is close to the limit and the exploration view remains
+large; the next touched growth should extract its concrete responsibility under the existing size
+rule. Size alone is not an additional finding or evidence of product completion. No fresh census of
+unrelated files, performance benchmark or entire historical subsystem audit was performed.
+
+The DETOX fairy dependency and enemy HEAL cure alias are **corrected**, with the current trace and
+assertions in the [boundary assessment](engine-script-boundary-review.md#accepted-corrections-and-explicit-continuation-limits).
+Shop confirmation keeps gold/inventory atomic and stale input free; completed trades survive later
+caller failure. Existing save authority captures completed resources only at admitted stable boundaries;
+no Map16 save eligibility, in-progress shop serialization or new save schema is claimed. These good
+boundaries can remain as they are.
+
+### F4 direct API reproduction and validation limits
+
+The paired experiment reused the retained #1527 Debug Domain/Application/Content assemblies, after
+confirming its corrected candidate `959cacbc` and accepted `7fcd630d` have the same production tree.
+The retained build/native records identify that build; this audit did not build it again. Run the
+following in PowerShell7 from a script with an explicit checkout parameter, using the established
+environment's already-built assemblies. It reads only a public fixture and writes no input or gameplay
+state directly. New output may be redirected to a worktree-local ignored destination.
+
+```powershell
+using namespace Sf2.Remake.Application.Runtime
+using namespace Sf2.Remake.Application.Runtime.Exploration
+using namespace Sf2.Remake.Content.Scenarios
+using namespace Sf2.Remake.Domain.Maps
+param([Parameter(Mandatory)][string]$RepositoryRoot)
+$ErrorActionPreference = 'Stop'
+$auditRoot = (Resolve-Path -LiteralPath $RepositoryRoot).Path
+foreach ($assembly in @('Domain','Application','Content')) {
+    Add-Type -Path (Join-Path $auditRoot "remake/src/Sf2.Remake.$assembly/bin/Debug/net8.0/Sf2.Remake.$assembly.dll")
+}
+foreach ($reset in @($false,$true)) {
+    $d = Get-Content -LiteralPath (Join-Path $auditRoot 'remake/content/authored/shop-supplies.json') -Raw | ConvertFrom-Json -AsHashtable
+    foreach ($actor in $d.battle.start.actors) { $actor.status = 'none' }
+    if ($reset) {
+        $program = $d.world.programs | Where-Object id -eq 'before-battle'
+        $program.instructions = @(@{op='reset-party-battle-stats'}) + $program.instructions
+    }
+    $bytes = [Text.Encoding]::UTF8.GetBytes(($d | ConvertTo-Json -Depth 80))
+    $started = [GameSession]::Start([AuthoredScenarioPackageReader]::FromDocumentBytes($bytes))
+    if ($started -isnot [SessionStarted]) { throw "Admission failed: $started" }
+    $s = $started.Session; $failure = $null
+    foreach ($direction in @('South','East','East','East','North')) {
+        $c = $s.Current
+        $r = $s.Submit([CommandEnvelope]::new($c.SessionId,$c.Revision,$null,[Move]::new([ExplorationDirection]$direction)))
+        if ($r.Failure) { $failure = $r.Failure; break }
+        for ($tick=0; $tick -lt 400 -and $s.Current.Mode -eq 'Exploration' -and -not $s.Current.CanWaitAtInput; $tick++) {
+            $c = $s.Current
+            $command = if ($c.Story.Wait -is [DialogueWait]) { [Acknowledge]::new($c.Story.Wait.Token) }
+                else { [AdvanceSimulation]::new($c.Story.Wait.Token,1) }
+            $r = $s.Submit([CommandEnvelope]::new($c.SessionId,$c.Revision,$null,$command))
+            if ($r.Failure) { $failure = $r.Failure; break }
+        }
+        if ($failure) { break }
+    }
+    [pscustomobject]@{ Reset=$reset; Mode=$s.Current.Mode; Stop=$s.Current.StopReason; Failure=$failure;
+        Credit=if ($s.Current.Mode -eq 'Battle') { $s.Current.Battle.DeathCredit } else { $s.Current.Exploration.Party.DeathCredit } }
+}
+```
+
+Observed control **PASS at battle entry**; changed-content case **FAIL with the exact F4 refusal**,
+not an interrupted run. The first launcher attempt omitted the Maps namespace and stopped before
+movement; the corrected paired run above completed. The mode, failure, flags and credit in local
+`local/issue1528/reset-result.json` retain the outcomes; the recipe and result above are the durable
+reproduction, independent of that ignored report.
+No repeated engine suite, new native launch, screenshot, new comparator or original-game collection
+was performed. F5 uses source and the prior independent observation only. Existing failures and
+Unknowns remain with their owners; current document/plan/CI/freeze status belongs in the handoff.
+
+## Earlier structural review and dispositions
+
+The following sections preserve the earlier audit's evidence, failures and bounded implementation
+dispositions. Their original acceptance-stage wording is historical; the finite audit above owns
+the current continuation decision. No historical repair queue is restarted by this report.
+
 ## Decision and scope
 
 Retain the four-assembly architecture. Fix **F1's host lifecycle defect before work relying on initial

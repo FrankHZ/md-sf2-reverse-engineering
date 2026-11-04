@@ -1,5 +1,81 @@
 # Engine, SF2 rules and story-program boundary
 
+## Finite pre-voyage audit
+
+**Decision:** continue bounded development with the existing modular monolith and typed programs.
+No P1 or general engine/script redesign was identified in the five accepted changes for
+[#1528](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1528).
+The [current structure findings](structure-and-quality-review.md#finite-pre-voyage-audit) retain two
+open P2s: **F4**, an existing party reconstruction omission now reachable through connected poison
+content, and **F5**, a new internal missing-target inconsistency under silence. Repair F4 before
+depending on recovery/reset plus connected poison entry; repair F5 before adding another action
+preparation caller. Neither finding is implemented by this audit. Unrelated bounded work can proceed;
+this is not acceptance of the complete Battle03–07 or first-departure route.
+
+**Standard rigor:** the outcome is a continuation decision and minimal repair design, under the
+[finite batch agreement](../domain/special-mechanics-design.md#finite-pre-voyage-foundation-agreement).
+Existing High-rigor transaction/save requirements remain. Tracked ownership is exactly this report
+and `structure-and-quality-review.md`; architecture navigation already reaches both. No production,
+test, content, research, schema or gate policy changes are authorized here. Main-gate retains
+independent acceptance and integration; this report opens no implementation tickets.
+
+Inspection is the diff from accepted `9a99132a325218c81f47528f6dfdee51a0c02ff9` to
+**`7fcd630d7474586e3b91aaa69889ca7e294e6007`**, tree
+**`b6d8b2f22e2a0b65f18d5c2d6718f1f2df1e9a3c`**, plus the named necessary callers.
+Use `git diff 9a99132a 7fcd630d -- <path>` and `git show 7fcd630d:<path>` for these observations;
+later historical sections retain their own bases. All five implementations were independently
+accepted before this inspection. **Confirmed** means source structure, inspected assertions or the
+explicit F4 API observation. **Inferred** marks unexecuted consequences. **Unknown** remains an
+unobserved boundary. Reading a test or an earlier native report is not a fresh PASS.
+
+### Current responsibility and variation assessment
+
+| Boundary | Confirmed source trace and representative variation | Assessment |
+| --- | --- | --- |
+| One state publisher | `GameSession.Submit` admits session/revision/actor, routes ordinary and `ShopCommand` inputs, and alone assigns `_current`. Domain returns candidates; `ProgramRunner.Commit` and scene continuations construct snapshots for that publisher. | No second mutable party, inventory, spell or shop authority was introduced. Query/selection changes do not publish an action or spend its resources. |
+| Equipment and ordinary legality | `BattleEquipment.Physical/Attack` derive range and ATT from live loadout/base progress. `Sf2PhysicalAction`, `EnemyPhysicalDecision` and `AiMovementRules.AttackPosition` share selected physical geometry. `EarlyRangedPhysicalTests` changes 1–1/1–2/2–2 range, equipped slot, occupied tiles and mover/class priority. | Ordinary legality is not selected by Bowie, a battle number, a reference round or anticipated level. Source class/prowess mappings remain finite SF2 policy; private class identity is admitted in Content. |
+| Player damage spells | `Sf2AttackSpellAction` resolves a legal center and source-ordered area recipients, then shared drop/progression work. `BattleChoices` rechecks action/target at confirmation. `AttackSpellAdmissionTests` varies learned levels and composes growth, drops, outcome and walking re-entry. | Damage definitions stay separate from healing/fairy playback. BLAZE1–2/BLAST1 is an explicit supported family boundary, not a universal spell engine. F3's definition replacement remedy is consumed here. |
+| Enemy choice versus execution | `SourceEnemyAi`/`SourceMoveOrderAi` call finite attack/heal/support decisions. `BattleDecisionRules.Decide` discards the preparation preview; only decision state/RNG is retained. `BattleMovementContinuation.FinishAutomatic` then uses the same `BattleChoices.Prepare` and scene as player actions. | No duplicate MP/reward publication found. MAIN category draws are separate from thinking draws. Mage spell ties and mover-specific physical ties are distinct. Unsupported enemy area variants reject before movement publication; these were corrected in #1525. |
+| Shared effects, cost and reward | `BattleSceneContinuation` pays at `ActionMessage`, applies each reaction at its delivery boundary, and awards at the shared tail. Later area recipients enter `TargetEnter`, not another payment. Enemy damage/heal creates no ally EXP award; `BattleAfterTurnContinuation` orders sleep, silence, poison and queue consumption. | Existing staged commits and wait identity remain useful. `EnemySpellSessionTests` and `SilenceSessionTests` inspect payment, no enemy reward, stale completion, combined statuses and separate extra actions. F5 concerns missing target admission before this chain, not double payment. |
+| Story versus services | `ShopInstructionReader` admits immutable stock/catalog; `ProgramRunner` supplies an `OpenShop` wait and resumes its actual caller. The maintained source compiler lowers admitted `j_ShopMenu` operands. `ShopService` owns ordinary Buy/Sell terms and confirmation. | Galam identity is at source-content selection, not runtime price/recipient legality. Default Map16 has no shop rows; F663 callers135/144 select stock1/16. F530 remains excluded. This follows the accepted [source admission owner](../content/profiles-and-trust.md#finite-galam-shop-admission), not a new original-game observation. |
+| Transaction and save | `ShopService.Submit` revalidates token, phase, offer, live member/slot, funds and capacity; gold and detached loadout enter one `ProgramRunner.Commit`. `OpeningSave.RequireStable` excludes active waits; completed resources use the existing capture/restore payload. | Cancel/full/poor/stale input retains resources. Later caller failure retains the completed trade. `OpeningSaveTests.CompletedShopResourcesUseTheExistingSavePayloadAndRestoreAuthority` is a controlled supported-savepoint composition, not qualification of Map16 or in-shop persistence. No second persistence path is needed. |
+| Godot | `ShopServiceView` stores focus/scroll and submits semantic commands; it displays prices/offers from session data. `AttackSpellView` draws functional fire/wind; `BattleSceneView` projects supplied reactions and sends matching completion. | No damage, price, gold, inventory or status reducer moved into views. Finite presentation branches are justified by different consumers. Existing ordinary-input native evidence is bounded to its named authored/private samples. |
+
+### Accepted corrections and explicit continuation limits
+
+**Confirmed:** #1527's DETOX correction is present in `BattleChoices.RequireCureContent` and
+`BattleSceneContinuation.Begin`: actual ordinary caster/target/scenery content is required when
+selected, but DETOX does not require the HEAL fairy/cursor. `Sf2HealingRule.RequireSpell` and
+`EnemySpellDecision.Heal` both reject `CuresPoison` for enemy HEAL, including an authored `heal/1`
+alias. `GalamShopContentTests.RequiredPrivateDetoxUsesOrdinaryCastContentWithoutHealingFairyAndKeepsHealGuard`
+and `PoisonCureTests.EnemyHealAliasCannotAdmitCureOrPublishAutomaticMovementPaymentStatusOrRng`
+cover those concrete corrections. They are not open findings.
+
+The five main-gate acceptance records were read as prior evidence: ranged equipment, player
+Fire/Wind, enemy BLAZE/HEAL, DISPEL/silence and shop/purchased supply input all reached subsequent
+usable control in their named native samples. #1527's corrected head has CI41911216004 success and
+four independent native PASS observations; its initial lint failure and completed 233 PASS/1 FAIL
+remain recorded. #1491's completed 1801 PASS/6 FAIL/1 SKIP, school03 exit2, ObjectDB teardown Unknown,
+and #1519/#1523–#1526 failures are not rerun, erased or relabeled here. The durable source/test/recipe
+owners, accepted commits and PRs remain the reproduction route; local handoffs are coordination.
+
+**Unknown / excluded:** full Battle03–07 story and outcome composition, all-map saves/suspend,
+promotion/rings/curse/break, broader enemy spells/items, Deals/Repair, original media/timing/natural
+reach, physical-device behavior and human aesthetics. Existing `return-status-refresh` refusal for
+nonzero status is still explicit at the finite outcome policy; this audit does not turn it into
+general status recovery. Do not infer chapter readiness from authored battle support. A next slice
+that crosses an excluded boundary must declare that behavior and its acceptance before implementation.
+
+The bounded review uses selected text and existing compact reports, linear in inspected bytes;
+new local output stays under2 MiB with at least1 GiB disk free. F4 is the only new paired API
+experiment; no SDK build, Godot/emulator process, suite, screenshot, acquisition or comparison platform
+was needed. Document checks and actual candidate/plan/CI/process status belong to the handoff.
+
+## Earlier boundary review and implemented dispositions
+
+The following review retains its original inspected base and observations. The finite audit above
+is the current continuation decision; historical proposals and limits are not newly dispatched work.
+
 The current remake can express another conversation, flag branch, call/wait sequence, supported
 map event or recruitment ceremony as typed content. It is not a chapter-independent engine with
 every gameplay rule supplied by scripts. Several source services deliberately remain compiled SF2
