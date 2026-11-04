@@ -2,10 +2,10 @@
 
 ## Scope and status
 
-**Implemented bounded M1, M2a, M2b, M2c, M2d and M2e consumers; independent integration/product acceptance remains separate.**
+**Implemented bounded M1, M2a, M2b, M2c, M2d, M2e and M2f consumers; independent integration/product acceptance remains separate.**
 The accepted M0 direction from [#1469](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1469)
 now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1471) English/zh-CN
-settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat
+settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat, story controls/choices/return notices
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
@@ -377,8 +377,8 @@ Reuse ExplorationSessionView delivery: translated reveal/ReadMore precede Comple
 logical readiness still gates Acknowledge. Replace English-prefix reveal continuity for this migrated
 consumer with `(window identity, text ID, source range)` continuity. Identical text in separate waits
 must still deliver. Visual wrap/ReadMore never adds a script acknowledgement. Preserve skip and
-release barriers. Other DialogueWait/W1/Search/battle-story consumers remain explicitly English
-until their own migration is accepted.
+release barriers. Unmigrated DialogueWait/W1 and battle-story bodies remain explicitly English; the M2a Search
+consumer and M2f controls/choices below do not admit those bodies for translation.
 
 ### Dynamic HEAL result
 
@@ -534,6 +534,37 @@ schema, input remapping, message framework or additional gameplay capability is 
 The [native reproduction owner](../verification/host.md#localized-battle-transactions-and-retreat)
 owns the bounded scenarios, source/custom-name boundary and remaining English/Unknown surfaces.
 
+## Implemented M2f story controls and return notices boundary
+
+**Standard rigor:** [#1481](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1481)
+localizes the existing exploration and battle-story reveal/ReadMore/continue/scene hints, eligible
+battle-intro skip hints, Yes/No labels and ephemeral battle-return notices through GameText and both
+PO catalogs. Settings retains a short partial-support notice; exact coverage lives here and in the
+capability owner. Complete templates take existing action bindings; no English body or label selects a
+semantic operation. Catalog fallback retains the whole English row and its key/reason diagnostics.
+
+- ExplorationDialogueView changes only RefreshHint. Its FieldTextWait/Search projection, open-window
+  identity, source ranges, retained question, visible characters and reading reset remain unchanged.
+  In Chinese, an actually visible untranslated window keeps the existing English fallback reason.
+  BattleStoryView likewise marks visible DialogueWait bodies `unmigrated-consumer`; camera-only waits
+  get no body fallback notice. Definition.Texts, camera completion, wait tokens and acknowledgements
+  are unchanged. Chinese controls do not imply translated dialogue or a Chinese opening route.
+- StoryChoiceRow translates Text only. Node IDs Yes/No, boolean selection, authored focus and source
+  Work/phase remain authoritative. The bundled face lacks the old triangle glyphs; supported `>`
+  marks selected choices and Continue. Reveal and all ReadMore pages precede a fresh choice/confirm;
+  pointer press alone cannot answer, and complete release/Cancel/right-click No keep existing meaning.
+- FieldReturnFeedback retains Begin/Dismiss and the actual `outcome-program-started` Victory/Defeat
+  or `retreat-exploration-entry` discriminator. Its finite enum selects six complete outcome/ready
+  templates using CanWaitAtInput. It neither parses prose nor commits rewards, resources or outcomes.
+  The notice remains during return, becomes ready at field control and clears on ordinary input.
+- Language stays in the existing safe settings entry; no story/battle hot switch is added. No engine,
+  scenario, save, schema, general message framework or input-controller change belongs to this group.
+  BattleScene dynamic results/hints, original dialogue bodies and source/default names remain outside
+  this migration; the accepted field overlay retains its independent coverage and fallback rules.
+
+The [finite native recipe](../verification/host.md#localized-story-controls-choices-and-return-notices)
+owns actual bilingual state/input/glyph/geometry observations, retained outcome evidence and limits.
+
 ## Names, IME and compatibility
 
 M1 retains the current seven-character ASCII rule and says so in translated help. Chinese display
@@ -653,7 +684,7 @@ M1 does not enable Unicode naming or close the epic.
 | M3 bounded opening terminology/dialogue after admitted consumers and rights/review | Public owner `remake/docs/application/localization-design.md` only if coverage/boundary changes; private catalog under a separately declared non-worktree content root. Dispatch must name those actual private files before writing | Start with reached IDs/names in one playable segment. Direct source/control/parameter comparison plus bilingual review. No runtime/export edits by translators. Drift/ambiguity stops affected rows; fallback stays explicitly untranslated. No whole-game batch. |
 | M4 Chinese naming/IME after M1 and accepted High compatibility policy | `A/Runtime/NewGameOptions.cs`, `A/Runtime/OpeningNewGame.cs`, `A/Runtime/CharacterNames.cs`, `A/Runtime/Exploration/ExplorationTextRunner.cs`, `A/Runtime/Battles/BattleSceneContinuation.cs`, `A/Runtime/Persistence/OpeningSaveData.cs`, `A/Runtime/Persistence/OpeningSave.cs`, `A/Runtime/Persistence/OpeningRestore.cs`, `C/Persistence/OpeningSaveJson.cs`, `G/src/Entry/NameEntryView.cs`, `T/OpeningSaveTests.cs`, `T/ExplorationTextWaitTests.cs`, `T/BattleSceneTests.cs` | Actual composition/commit/cancel/paste/focus, old name/save preservation and Unicode independent-process Save/Continue. Refuse enablement with unresolved canonical work/backward reading/downgrade; no lossy conversion. Stop at named admitted characters/consumers. |
 
-Party/Prepare has the bounded M2c consumer agreement above. M2d battle commands/targets/equipment/status have their separate boundary above. M2e Give/Discard/retreat has its separate boundary above. Further battle screens are separate
+Party/Prepare has the bounded M2c consumer agreement above. M2d battle commands/targets/equipment/status have their separate boundary above. M2e Give/Discard/retreat has its separate boundary above. M2f story controls/choices/return notices have their separate boundary above. Further battle screens are separate
 consumer groups, not implicit all-files ownership.
 M5 is the epic's opening-route and bilingual human acceptance, not another framework. No candidate
 authorizes production edits, new tickets or dispatch during M0.

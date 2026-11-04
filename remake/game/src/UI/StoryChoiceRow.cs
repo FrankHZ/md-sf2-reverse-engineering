@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
@@ -26,8 +27,8 @@ internal sealed partial class StoryChoiceRow : HBoxContainer
         if (!visible) _focusedYes = null;
         if (!source) selectedYes = _focusedYes ?? selectedYes;
         Visible = visible;
-        Yes.Text = selectable && selectedYes ? "▸ Yes" : "Yes";
-        No.Text = selectable && !selectedYes ? "▸ No" : "No";
+        Yes.Text = (selectable && selectedYes ? "> " : "") + GameText.Get("story.yes");
+        No.Text = (selectable && !selectedYes ? "> " : "") + GameText.Get("story.no");
         Yes.Modulate = selectable && selectedYes ? StoryTheme.Selected : Colors.White;
         No.Modulate = selectable && !selectedYes ? StoryTheme.Selected : Colors.White;
     }

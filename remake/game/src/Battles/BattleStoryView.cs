@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.UI;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
@@ -36,8 +37,15 @@ internal sealed partial class BattleStoryView : Control
         }
         Hint();
     }
-    private void Hint() => _panel.SetHint(_wait is DialogueWait
-        ? $"{_input.Hint(GameAction.Confirm)}: {(Revealed ? _panel.MoreBelow ? "Read more" : "Continue ▾" : "Reveal")}" : "Scene in progress…");
+    private void Hint()
+    {
+        string hint = _wait is DialogueWait
+            ? GameText.Get(Revealed ? _panel.MoreBelow ? "field.more" : "story.continue" : "field.reveal",
+                _input.Hint(GameAction.Confirm)) : GameText.Get("story.in-progress");
+        if (_wait is DialogueWait && _text.IsVisibleInTree() && GameText.Language == "zh-CN")
+            hint += "\n" + GameText.Get("localization.fallback", "unmigrated-consumer");
+        _panel.SetHint(hint);
+    }
     private bool Revealed => _text.VisibleCharacters < 0 || _text.VisibleCharacters >= _text.GetTotalCharacterCount();
     public override void _EnterTree()
     { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }

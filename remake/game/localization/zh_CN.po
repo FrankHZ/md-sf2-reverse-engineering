@@ -114,7 +114,7 @@ msgstr "语言资源不可用（localization-resources）。已保留当前设�
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "中文显示：战斗指令／目标／装备／状态、交接／丢弃／撤退、队伍／整备、入口、命名帮助、存档槽位、保存退出、设置、原创场景文本、HEAL、教堂与搜索。缺译原文及未译名称保留英文。"
+msgstr "简体中文尚未覆盖全部内容；缺译的对白和名称仍显示英文。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -967,3 +967,55 @@ msgstr "{0}施放了{1}，等级{2}！"
 
 msgid "battle.retreat-item"
 msgstr "{0}使用了{1}！"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.continue"
+msgstr "{0}：继续 >"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.choice-help"
+msgstr "{0} / {1}：选择    {2}：确认    {3} / 鼠标右键：否"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.in-progress"
+msgstr "场景进行中……"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.skip"
+msgstr "{0}：跳过战斗开场"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.skipping"
+msgstr "正在跳过战斗开场……"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.yes"
+msgstr "是"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.no"
+msgstr "否"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.victory.ready"
+msgstr "战斗胜利。已返回探索。"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.victory.pending"
+msgstr "战斗胜利。正在返回探索……"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.defeat.ready"
+msgstr "战斗失败。已返回探索。"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.defeat.pending"
+msgstr "战斗失败。正在返回探索……"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.retreat.ready"
+msgstr "已撤离战斗。已返回探索。"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.retreat.pending"
+msgstr "已撤离战斗。正在返回探索……"
