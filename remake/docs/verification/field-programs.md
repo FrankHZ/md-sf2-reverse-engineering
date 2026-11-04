@@ -2666,9 +2666,8 @@ Preserve prior controlled-start fade diagnostic failures and all completed attem
 ## Private opening-world Chinese text
 
 The [M3 inventory and boundary](../application/localization-design.md#m3-private-opening-world-chinese-text)
-owns 209 private source-backed rows: 208 connected existing consumers and ordinary-defeat row 363
-prepared for the separate [#1492](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1492)
-display connection. Default/F501 content includes both messenger choices, repeat/local interactions,
+owns 209 private source-backed rows connected to existing consumers, including ordinary-defeat
+row 363 through the legacy `DialogueWait` display. Default/F501 content includes both messenger choices, repeat/local interactions,
 royal/adviser/tower, before/after Battle01 and shared Search prefixes/results/descriptions. Static
 alternatives are not runtime passes. F609 and later campaign remain excluded.
 
@@ -2736,4 +2735,59 @@ focus bypass, emulator, new environment/cache/worktree or normal/full research g
 **Unknown:** the prior independent house run and failed battle01 startup emitted the warning for two
 ObjectDB instances at shutdown. Worker battle03 has empty stderr, while final battle04 succeeds with
 the same two-instance warning; its cause remains unresolved. No unrelated lifecycle/audio investigation
-or user reading/typography acceptance is claimed. Row363's actual Chinese delivery remains explicitly assigned to #1492.
+or user reading/typography acceptance is claimed.
+
+
+### Ordinary-defeat legacy display
+
+[#1492](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1492) changes only the Godot
+whole-row projection. `source-ordinary-defeat` instruction 2 still emits `DialogueWait` for row 363;
+its source binding, token, canonical text, closed logical-text state and acknowledgement remain
+unchanged. `GameText.Dialogue` reuses Search's catalog and `CharacterNames` mechanism, with explicit
+member operands only. Retained explicit `FieldTextWait` window projection precedes this resolver.
+No Application/Domain/Content, PO, source package or private translation changes are required.
+
+From the assigned checkout, the retained bounded recipes load `local/issue1441/inputs.ps1` in the
+same process, select the read-only persistent world/entry catalogs and reuse the existing
+`local/issue1471/field-01` writable runtime. Use fresh validation namespaces under the configured
+issue1492 save root; actual user slots remain untouched:
+
+```powershell
+pwsh -NoProfile -File ./local/issue1492/direct.ps1
+pwsh -NoProfile -File ./local/issue1492/run-native.ps1 -Run <fresh-zh> -Language zh-CN
+pwsh -NoProfile -File ./local/issue1492/run-native.ps1 -Run <fresh-en> -Language en
+pwsh -NoProfile -File ./local/issue1492/run-native.ps1 -Run <fresh-missing> -Reason missing-translation
+pwsh -NoProfile -File ./local/issue1492/run-native.ps1 -Run <fresh-invalid> -Reason invalid-translation
+pwsh -NoProfile -File ./local/issue1492/run-native.ps1 -Run <fresh-unavailable> -Reason overlay-unavailable
+pwsh -NoProfile -File ./local/issue1492/run-native.ps1 -Run <fresh-retained> -Case retained
+pwsh -NoProfile -File ./local/issue1492/run-native.ps1 -Run <fresh-defeat> -Case authored -Language en
+```
+
+**Confirmed:** the direct check invokes the actual compiled `GameText.Dialogue` with the admitted
+private definition and a pre-start `Nova7` story-name override: Chinese/no fallback and literal name
+pass. Ambiguous authored bare `NAME`/`CLASS` contexts return English `display-operands`, without an
+invented member. Native source-body starts execute the actual pinned defeat program on Map3, then
+normal reveal/held input, one acknowledgement, close and fresh field movement in the same session.
+Chinese and English pass, as do complete-English missing/invalid/unavailable overlay fallbacks with
+accurate locale/reason. These are controlled program entries, not preceding battle reach/accounting.
+The existing small authored leader-cleanup variant supplies that separate outcome check: normal Stay
+and enemy action produce one defeat, the same legacy row consumer, one completed return and usable
+movement. Its literal authored member name is distinct from the direct story-override check.
+
+A small existing localization-pilot variant uses explicit row 447 with `CLEAR`, followed by
+`WaitForTextInput`. The final Chinese segment stays visible at `DialogueWait`; discarded prefix
+text does not return through whole-row resolution. Reveal, bundled glyphs and body/hint separation
+pass. Final native runs exit 0 in about 2 seconds each, peak below 0.82 GiB; retained projection and
+authored defeat have empty stderr. Some source-body runs retain unattributed two-/four-instance
+ObjectDB shutdown warnings; no lifecycle fix or attribution is claimed. Physical reading remains
+pending. New task outputs stay below 2 MiB, H free above 1 GiB, serial SDK/native execution and
+headless/hidden launch reuse all existing installations/imports.
+
+Release adapter and necessary Debug builds pass with zero warnings/errors. The committed dependency
+plan and actual CI belong in the handoff. Preserve `local/issue1492/HANDOFF.md` and original failed
+attempts: an initial observer expected null logical text instead of the existing closed object and
+used an obsolete acknowledgement event; the first retained setup lacked a required explicit map view;
+a later normal Down movement met an occupied NPC cell; the first authored observation duplicated a
+signal connection during reparenting. Narrow corrected observations pass without production changes
+for those failures. Earlier six private-configured engine failures remain preserved above; this
+adapter-only fix does not trigger another private aggregate or full research/H3 run.

@@ -9,9 +9,8 @@ settings, authored FieldTextWait and semantic HEAL consumers, localized Church/S
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 The private six-row M3 [Witch-entry suggestion](#m3-private-witch-entry-review-sample) has approved
 human text tone; in-game typography/reading remains pending. The private
-[opening-world catalog](#m3-private-opening-world-chinese-text) prepares 209 source-backed rows,
-with 208 connected to existing consumers and one ordinary-defeat display gap owned by
-[#1492](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1492). Complete-game bilingual
+[opening-world catalog](#m3-private-opening-world-chinese-text) has 209 source-backed rows
+connected to existing consumers, including ordinary-defeat `DialogueWait` row 363. Complete-game bilingual
 coverage and human reading acceptance remain separate. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
 These describe the remake, not new original-game evidence.
@@ -210,7 +209,7 @@ and bilingual pairs belong to the persistent review and ignored reproduction inv
 | Map20 default/F501 conversations, royal visit and exorcism | 563–567; 570–573; 588–596; 2176–2212 | 55 |
 | Map21 default/F501 guard and speakerless fainted line | 568–569; 579–580 | 4 |
 | Battle01 before/after story | 2292–2310 | 19 |
-| Ordinary defeat, translation prepared; display connection pending #1492 | 363 | 1 |
+| Ordinary defeat through the legacy `DialogueWait` display | 363 | 1 |
 | Shared Search prefixes/results and default/F501 descriptions | 403–405; 408–410; 412; 423; 425–430; 4035–4059 | 39 |
 
 **Confirmed static coverage:** the 209-row inventory includes 30 F501 castle-return alternatives;
@@ -247,9 +246,14 @@ observations do not prove every static alternative's reach, all physical line fi
 The [verification owner](../verification/field-programs.md#private-opening-world-chinese-text) retains
 reproduction, completed failures and the unattributed ObjectDB shutdown warning.
 
-**208 rows have connected existing consumers; row 363 is prepared but remains English at its
-unmigrated `DialogueWait` view.** #1492 owns that separate display connection. Reader admission or
-English fallback is not Chinese rendering proof. Main-gate independently passed all 209 bilingual
+**All 209 rows have connected consumers.** Ordinary-defeat row 363 resolves through the existing
+whole-row catalog at the legacy `DialogueWait` view, after retained explicit field projections take
+precedence. Its sole `LEADER` token retains member-0/custom-name identity through `CharacterNames`;
+unsupported bare `NAME`/`CLASS` contexts use explicit `display-operands` fallback. This adds no logical
+text work or engine wait. Controlled native source-body checks confirm Chinese/English, complete
+English fallback, reveal, acknowledgement and usable field return; a small authored defeat confirms
+ordinary outcome return. These seams do not prove prior natural battle reach. Reader admission alone
+is not Chinese rendering proof. Main-gate independently passed all 209 bilingual
 pairs after the retained wording corrections. **User text-tone, in-game typography and actual reading
 experience remain pending.** The Witch's approved tone does not prescribe other speakers. This does
 not complete epic #1468, whole-game Chinese, image lettering, naming/IME or user visual acceptance.
@@ -487,8 +491,12 @@ Reuse ExplorationSessionView delivery: translated reveal/ReadMore precede Comple
 logical readiness still gates Acknowledge. Replace English-prefix reveal continuity for this migrated
 consumer with `(window identity, text ID, source range)` continuity. Identical text in separate waits
 must still deliver. Visual wrap/ReadMore never adds a script acknowledgement. Preserve skip and
-release barriers. Unmigrated DialogueWait/W1 and battle-story bodies remain explicitly English; the M2a Search
-consumer and M2f controls/choices below do not admit those bodies for translation.
+release barriers. Legacy `DialogueWait` without a retained explicit projection reads the whole
+canonical ID through the same catalog/name resolver as Search. Only explicit member operands are
+bound there; Search retains its established implicit-leader context. Missing/invalid overlays retain
+complete English body/locale/reason, while missing name/class operands use `display-operands`. The
+compatibility regex is outside this migrated branch. Unmigrated W1 and battle-story bodies retain
+their existing English boundary.
 
 ### Dynamic HEAL result
 

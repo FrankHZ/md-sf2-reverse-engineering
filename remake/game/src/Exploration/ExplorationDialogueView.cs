@@ -63,6 +63,11 @@ internal sealed partial class ExplorationDialogueView : Control
             _dialogue.Text = display.Text; EffectiveLocale = display.EffectiveLocale; FallbackReason = display.Reason;
         }
         else if (_fieldTextProjection) _dialogue.Text = previousText;
+        else if (current.Story.Wait is DialogueWait dialogue)
+        {
+            var display = GameText.Dialogue(dialogue, session);
+            _dialogue.Text = display.Text; EffectiveLocale = display.EffectiveLocale; FallbackReason = display.Reason;
+        }
         else if (current.Story.Wait is W1TextWait span)
             _dialogue.Text = string.Concat(session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select(part => part.Kind switch
             {
