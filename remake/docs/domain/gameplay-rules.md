@@ -145,6 +145,49 @@ operands are example content. Curses, rings, broken/status effects, wider item u
 services, private/connected imports and save/load remain Unsupported. **Unknown:** natural original
 reach and original presentation/timing; the twelve #1047 Unknowns and #638 pause remain unchanged.
 
+## Early classes and ranged physical attacks
+
+**Implemented capability, bounded:** SDMN/KNTE/WARR/PRST/MAGE/ACHR/THIF physical definitions
+map to source class bits 0/1/2/4/3/5/10. Archer and Mage retain distinct mover identities even
+though their supported terrain costs equal Regular. Enemy target class preferences select the
+source Regular/Flying/Archer/Mage table by the attacker's mover; a Mage physical definition does
+not implement BLAZE or spell AI. THIF's fixed prowess uses critical 1/16 plus quarter damage,
+double 1/16 and counter 1/32. Other admitted profiles keep double/counter 1/32.
+
+Player query, confirmation, physical construction and counter validation use the live equipped
+minimum/maximum range. Enemy physical candidates query that same selected rule's range and target
+set, scan the existing row-major diamond, retain the origin when already in range and otherwise
+choose the first cheapest unoccupied reachable station. The scan includes every distance between
+the two bounds; bow 2-2 cannot attack from distance1. Existing movement costs, occupancy, commandset
+6/7/9/14 ordering and fallback remain authoritative. Range-only AI queries do not require reward
+consumers until a reachable attack exists. Source MOVE's existing unsupported cost-domain boundary
+remains explicit; this slice does not replace that source branch or its failure contract.
+
+ATT-only ordinary enemy gear is immutable loadout metadata, not a player equipment menu. Fresh
+Normal initialization applies the existing source base-ATT adjustment, then the selected weapon
+contribution once (clamp200). Player equip/unequip stays free and refreshes the live base once;
+carried slot words, gold, growth and both RNG channels retain their existing transaction boundaries.
+Unknown usable items, broken/cursed gear, spell AI and unsupported effects still reject.
+
+**Confirmed static:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, paths
+relative to `disasm/`: `data/stats/allies/classes/classdefs.asm` rows0-5/10;
+`data/stats/allies/allystartdefs.asm` Kazin/Slade; `data/stats/items/itemdefs.asm` records45/72/73/85/103;
+`data/battles/global/landeffectsettingsandmovecosts.asm` mover1/2/8/11;
+`data/battles/global/aipriority.asm`; `code/gameflow/battle/battlefield/determineattackposition.asm`
+`DetermineAttackPosition` (`0xC71A..0xC7F2`), AI `command/attack.asm`,
+`battleloop/initializecombatants.asm:InitializeEnemyStats`, and
+`code/common/stats/updatecombatantstats.asm:UpdateCombatantStats`. The latter initialize current
+stats before applying equipped contributions. [Battle05 research](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md)
+owns actual enemy/start composition; these definitions do not establish natural reach or timing.
+
+[early-ranged.json](../../content/authored/early-ranged.json), `EarlyRangedPhysicalTests` and
+`EarlyClassAdmissionTests` exercise actual actions, live equipment, changed valid levels/content,
+source commandsets, illegal/atomic refusal and controlled pinned early definitions. See
+[admission](../content/profiles-and-trust.md#early-physical-definition-admission) and
+[native reproduction](../development-and-verification.md#early-ranged-physical-observation).
+Full Battle03-07 story, Kazin/Slade recruitment, new private scene assets and original presentation
+are separate admissions/Unknowns, not consequences of these capabilities.
+
 ## Authored battle weapon equipment
 
 `BattleEquipment` operates on existing `SourceLoadout` slot words. An explicitly opted-in actor has

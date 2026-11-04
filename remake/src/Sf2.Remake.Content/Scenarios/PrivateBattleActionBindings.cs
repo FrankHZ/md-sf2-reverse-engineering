@@ -4,8 +4,8 @@ using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
 
-// Bounded source-to-semantic binding. Effective ATT has already been refreshed by the declared
-// start policy; checking the source equipment must never apply its bonus a second time.
+// Bounded source-to-semantic binding. Allied controlled ATT is already refreshed;
+// enemy raw base ATT and ordinary gear are refreshed by fresh battle initialization.
 internal static class PrivateBattleActionBindings
 {
     internal static IEnumerable<RetreatSpellDefinition> RetreatSpells(PrivateBattleDefinitions definitions)
@@ -45,6 +45,17 @@ internal static class PrivateBattleActionBindings
         yield return new(item!.Id, item.DisplayName);
     }
 
+    internal static BattleEquipmentDefinition? EnemyEquipment(PrivateBattleDefinitions definitions, byte attack, IReadOnlyList<ushort> items)
+    {
+        var weapons = definitions.Items.Values.Where(item => item.ItemTypeExpression == "WEAPON" && item.UseSpell == "NOTHING" &&
+            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) && item.EquipEffects.All(effect => effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
+            .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName, 0,
+                checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
+                item.MinimumRange, item.MaximumRange)).ToArray();
+        if (!items.Any(word => weapons.Any(w => w.ItemId == (word & 127)))) return null;
+        return new(attack, weapons, allowChanges: false);
+    }
+
     internal static PhysicalActorDefinition Physical(PrivateBattleDefinitions definitions, string prowess,
         IEnumerable<ushort> items, bool leader, ushort gold)
     {
@@ -52,6 +63,7 @@ internal static class PrivateBattleActionBindings
         {
             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn16WithQuarterBonus,
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn32WithHalfBonus,
+            "CRITICAL125_1IN16|DOUBLE_1IN16|COUNTER_1IN32" => PhysicalCriticalRule.Thief,
             "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Sleep,
             _ => throw new BattleRuleException("source-prowess", "actor.prowess", true),
         };
@@ -63,8 +75,8 @@ internal static class PrivateBattleActionBindings
             Require(item.ItemTypeExpression == "WEAPON" && item.EquipEffects.All(effect =>
                 effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }),
                 "source-equipment-effects", "actor.items", true);
-            // The common AI station search currently supports adjacent weapons only.
-            Require(item.MinimumRange == 1 && item.MaximumRange == 1, "source-weapon-range", "actor.items", true);
+            Require((item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2),
+                "source-weapon-range", "actor.items", true);
             minimum = item.MinimumRange; maximum = item.MaximumRange;
         }
         return new(critical, Promoted: false, leader, gold, minimum, maximum);

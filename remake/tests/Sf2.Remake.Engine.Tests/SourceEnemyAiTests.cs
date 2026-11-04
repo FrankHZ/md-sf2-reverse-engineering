@@ -90,13 +90,13 @@ public sealed class SourceEnemyAiTests
     private static readonly ActorRef Enemy = new("varied-source-enemy");
     internal static EngineBattleState State(BattleMover mover = BattleMover.Hovering, bool active = false,
         byte memory = 0, uint thinking = 0x12340042, byte commandset = 6, MapPosition? allyPosition = null,
-        bool blockSouth = true, bool peer = true, byte primaryRegion = 6)
+        bool blockSouth = true, bool peer = true, byte primaryRegion = 6, bool physicalDefinition = true)
     {
         var terrain = Enumerable.Repeat(new BattleTerrain(TerrainSurface.Open, TerrainProtection.None), 2304).ToArray();
         if (blockSouth) terrain[6 * 48 + 5] = new(TerrainSurface.Barrier, TerrainProtection.None);
         terrain[5 * 48 + 4] = new(TerrainSurface.Rough, TerrainProtection.Heavy);
         var empty = new BattleSourceLoadout([127, 127, 127, 127], [63, 63, 63, 63]);
-        var enemyDefinition = new BattleActorDefinition(Enemy, BattleClassRule.Ordinary, 2, 16, 0, 11, 8, 5, false, 2, [], mover: mover, sourceLoadout: empty);
+        var enemyDefinition = new BattleActorDefinition(Enemy, BattleClassRule.Ordinary, 2, 16, 0, 11, 8, 5, false, 2, [], physical: physicalDefinition ? new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, false, 0) : null, mover: mover, sourceLoadout: empty);
         var allyDefinition = new BattleActorDefinition(new("other-party"), BattleClassRule.UnpromotedKnight, 1, 20, 0, 12, 9, 8, false, 7, [], mover: BattleMover.Centaur, sourceLoadout: empty);
         var enemy = new BattleDeploymentDefinition(enemyDefinition, BattleFaction.Enemy, 190, BattleControl.Automatic, new BattleStrategyRef("source-orders"),
             new(5, 5), new(0x2000, 0, primaryRegion, 15, (byte)(commandset << 4), commandset, 255, 255));
@@ -107,7 +107,7 @@ public sealed class SourceEnemyAiTests
             new(ally, 20, 0, null, ally.Position, null, null, activationWord: 0)];
         if (peer)
         {
-            var definition = new BattleActorDefinition(new("source-peer"), BattleClassRule.Ordinary, 2, 16, 0, 11, 8, 5, false, 2, [], mover: mover, sourceLoadout: empty);
+            var definition = new BattleActorDefinition(new("source-peer"), BattleClassRule.Ordinary, 2, 16, 0, 11, 8, 5, false, 2, [], physical: physicalDefinition ? new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, false, 0) : null, mover: mover, sourceLoadout: empty);
             var deployment = enemy with { Definition = definition, Position = new(6, 5), ProcessingOrder = 191 };
             deployments.Add(deployment); actors.Add(new(deployment, 16, 0, null, deployment.Position, null, null, activationWord: 0x2060));
         }
@@ -185,7 +185,7 @@ public sealed class SourceEnemyAiTests
     public void ReachedUnsupportedInputsCannotPublishPartialMemoryRegionsOrRng(string shape, string code)
     {
         var before = State(active: shape is "attack" or "order", memory: shape == "memory" ? (byte)2 : (byte)0,
-            blockSouth: false, peer: false, allyPosition: shape == "attack" ? new(5, 8) : shape == "unknown" ? new(5, 7) : null);
+            blockSouth: false, peer: false, physicalDefinition: shape != "attack", allyPosition: shape == "attack" ? new(5, 8) : shape == "unknown" ? new(5, 7) : null);
         if (shape == "order")
         {
             var actors = before.Actors.Select(actor => actor.Actor == Enemy ?

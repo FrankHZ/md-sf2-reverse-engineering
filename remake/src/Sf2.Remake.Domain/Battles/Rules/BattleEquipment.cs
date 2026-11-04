@@ -58,7 +58,7 @@ public static class BattleEquipment
     internal static void ValidateLoadout(BattleActorDefinition definition, BattleSourceLoadout? loadout)
     {
         var equipment = definition.Equipment ?? throw new BattleRuleException("equipment-unavailable", "actor.equipment", true);
-        if (loadout is null || loadout.Items.Count != 4 || Sf2ClassRules.SourceClass(definition.ClassRule) is not { } sourceClass)
+        if (loadout is null || loadout.Items.Count != 4 || equipment.AllowChanges && Sf2ClassRules.SourceClass(definition.ClassRule) is null)
             throw new BattleRuleException("equipment-loadout", "actor.sourceLoadout");
         int equipped = 0;
         foreach (ushort word in loadout.Items)
@@ -68,13 +68,22 @@ public static class BattleEquipment
             if (equipment.Weapons.TryGetValue((byte)(word & 127), out var weapon))
             {
                 if ((word & 256) != 0) throw new BattleRuleException("equipment-broken", "actor.sourceLoadout", true);
-                if (selected && (weapon.ClassMask & (1u << sourceClass)) == 0)
+                if (selected && Sf2ClassRules.SourceClass(definition.ClassRule) is { } sourceClass && (weapon.ClassMask & (1u << sourceClass)) == 0)
                     throw new BattleRuleException("equipment-class", "actor.sourceLoadout");
                 if (selected) equipped++;
             }
             else if (selected) throw new BattleRuleException("equipment-nonweapon", "actor.sourceLoadout", true);
         }
         if (equipped > 1) throw new BattleRuleException("equipment-multiple", "actor.sourceLoadout");
+    }
+
+    internal static bool OrdinaryAiLoadout(BattleActorDefinition definition, BattleSourceLoadout? loadout, bool allowHerb)
+    {
+        if (loadout is null) return false;
+        if (loadout.Spells.Any(spell => spell != 63) || definition.Spells.Count != 0) return false;
+        if (definition.Equipment is not null) ValidateLoadout(definition, loadout);
+        return loadout.Items.All(word => word == 127 || allowHerb && word == 0 ||
+            (word & ~255) == 0 && definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true);
     }
 
     internal static void RequireActor(BattleActorState actor)

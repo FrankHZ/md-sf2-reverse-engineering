@@ -18,7 +18,7 @@ internal sealed class AttackThenApproachAi : IBattleDecisionRule
     public void RequireStart(BattleDeploymentDefinition deployment, BattleActorStartInput input)
     {
         var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? deployment.Definition.SourceLoadout;
-        if (loadout is not null && loadout.Items.Any(word => (word & 127) != 127))
+        if (loadout is not null && !BattleEquipment.OrdinaryAiLoadout(deployment.Definition, loadout, allowHerb: false))
             throw new BattleRuleException("ai-action-categories", "start.actors.items", true);
     }
     public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical) =>
@@ -39,6 +39,8 @@ internal sealed class AttackThenApproachAi : IBattleDecisionRule
         var actor = current.GetActor(actorRef);
         var targets = current.Actors.Where(a => a.Hp > 0 && a.IsAlly).OrderBy(a => a.ProcessingOrder).ToArray();
         var legal = BattleMovement.Grid(current, actorRef);
+        if (targets.Length == 0)
+            return new(current, Array.AsReadOnly<BattleEffect>([new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
         var decision = AiMovementRules.Pursue(current.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray(),
             legal, actor.Position!, targets.Select(target => target.Position!).ToArray(),
             position => current.Actors.Any(a => a.Hp > 0 && a.Position == position), current.Definition.Width, current.Definition.Height);

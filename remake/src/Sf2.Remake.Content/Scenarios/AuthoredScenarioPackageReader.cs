@@ -194,7 +194,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells"], "physical", "equipment");
             var id = new ActorRef(Id(actor, "id"));
             string className = Text(actor, "classRule");
-            Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
+            Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior" or "unpromoted-knight" or "unpromoted-mage" or "unpromoted-archer" or "unpromoted-thief",
                 "class-rule", "actors.classRule", true);
             var items = Array(actor, "items").Select(value =>
             {
@@ -207,18 +207,30 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Require(items.Length <= 4, "inventory-capacity", "actors.items");
             var loadout = new BattleSourceLoadout(items.Concat(Enumerable.Repeat((ushort)127, 4 - items.Length)), [63, 63, 63, 63]);
             PhysicalActorDefinition? physical = null;
+            BattleMover mover = BattleMover.Regular;
             if (actor.TryGetProperty("physical", out var physicalInput))
             {
                 Object(physicalInput, "actor.physical", "movementType", "critical", "promoted", "leader", "gold", "special");
-                Require(Text(physicalInput, "movementType") == "regular", "physical-movement-type", "actors.physical.movementType", true);
+                mover = Text(physicalInput, "movementType") switch
+                {
+                    "regular" => BattleMover.Regular, "centaur" => BattleMover.Centaur,
+                    "archer" => BattleMover.Archer, "mage" => BattleMover.Mage,
+                    _ => throw new BattleRuleException("physical-movement-type", "actors.physical.movementType", true),
+                };
                 Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);
                 var criticalInput = physicalInput.GetProperty("critical");
-                Object(criticalInput, "actors.physical.critical", "chance", "damageBonus");
+                ObjectOptional(criticalInput, "actors.physical.critical", ["chance", "damageBonus"], "doubleChance");
                 string chance = Text(criticalInput, "chance"), bonus = Text(criticalInput, "damageBonus");
                 Require((chance, bonus) is ("one-in-32", "half") or ("one-in-16", "quarter"),
                     "physical-critical-rule", "actors.physical.critical", true);
                 var critical = chance == "one-in-32" ? PhysicalCriticalRule.OneIn32WithHalfBonus
                     : PhysicalCriticalRule.OneIn16WithQuarterBonus;
+                if (criticalInput.TryGetProperty("doubleChance", out _))
+                {
+                    Require(Text(criticalInput, "doubleChance") == "one-in-16" && chance == "one-in-16" && bonus == "quarter",
+                        "physical-double-rule", "actors.physical.critical", true);
+                    critical = PhysicalCriticalRule.Thief;
+                }
                 bool promoted = Boolean(physicalInput, "promoted");
                 Require(className == "ordinary" || !promoted, "class-promotion", "actors.physical.promoted");
                 physical = new(critical, promoted, Boolean(physicalInput, "leader"),
@@ -239,11 +251,15 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var definition = new BattleActorDefinition(id,
                 className switch { "unpromoted-priest" => BattleClassRule.UnpromotedPriest,
                     "unpromoted-swordsman" => BattleClassRule.UnpromotedSwordsman,
-                    "unpromoted-warrior" => BattleClassRule.UnpromotedWarrior, _ => BattleClassRule.Ordinary },
+                    "unpromoted-warrior" => BattleClassRule.UnpromotedWarrior,
+                    "unpromoted-knight" => BattleClassRule.UnpromotedKnight,
+                    "unpromoted-mage" => BattleClassRule.UnpromotedMage,
+                    "unpromoted-archer" => BattleClassRule.UnpromotedArcher,
+                    "unpromoted-thief" => BattleClassRule.UnpromotedThief, _ => BattleClassRule.Ordinary },
                 (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 127), Boolean(actor, "extraRoundAction"),
-                (byte)Number(actor, "move", 1, 255), learned, physical, sourceLoadout: loadout,
+                (byte)Number(actor, "move", 1, 255), learned, physical, mover: mover, sourceLoadout: loadout,
                 equipment: BattleEquipmentReader.Actor(actor, weapons, weaponItems));
             BattleEquipmentReader.Validate(definition);
             BattleDiscardReader.Validate(definition, discard);
@@ -274,6 +290,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 string factionName = Text(placement, "faction");
                 Require(factionName is "ally" or "enemy", "battle-faction", "placements.faction", true);
                 var faction = factionName == "ally" ? BattleFaction.Ally : BattleFaction.Enemy;
+                if (faction == BattleFaction.Enemy && actor.Equipment is { } equipment)
+                    actor = actor.WithEquipment(new(equipment.BaseAttack, equipment.Weapons.Values, allowChanges: false));
                 int order = Number(placement, "processingOrder", 0, int.MaxValue);
                 string controlName = Text(placement, "control");
                 Require(controlName is "player" or "automatic", "control-mode", "placements.control", true);

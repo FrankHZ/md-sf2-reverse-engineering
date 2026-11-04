@@ -78,6 +78,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 {
                     0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedKnight,
                     2 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedPriest,
+                    3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
+                    10 => BattleClassRule.UnpromotedThief,
                     _ => throw Unsupported("source-class", "actors.class"),
                 };
                 Require(input.Hp <= input.MaxHp && input.Mp <= input.MaxMp, "numeric-range", "allies.resources");
@@ -102,11 +104,11 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 var enemy = definitions.Enemies[row.IdentityExpression];
                 Require(enemy.InitialStatusExpression == "NONE" && enemy.SpellPower == "REGULAR",
                     "enemy-derived-state", "enemy.initialStatus/spellPower", true);
-                var match = Regex.Match(enemy.AiBitfieldExpression, "^PRIORITYMOD_([0-9]+)(\\|BIT5)?$", RegexOptions.CultureInvariant);
+                var match = Regex.Match(enemy.AiBitfieldExpression, "^PRIORITYMOD_([0-9]+)(\\|BIT4)?(\\|BIT5)?$", RegexOptions.CultureInvariant);
                 Require(match.Success && byte.TryParse(match.Groups[1].Value, out byte _) && int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) <= 15,
                     "source-ai-word", "enemy.aiBitfield", true);
                 enemyAi = (ushort)((int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) << 12) |
-                    (match.Groups[2].Success ? 32 : 0));
+                    (match.Groups[2].Success ? 16 : 0) | (match.Groups[3].Success ? 32 : 0));
                 var items = enemy.Items.Select(item => (ushort)(definitions.Items.Values.Single(value => value.Code == item.Item).Id | (item.Equipped ? 128 : 0))).ToArray();
                 if (row.ItemExpression != "NOTHING")
                 {
@@ -121,7 +123,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     enemy.Spells.Where(spell => spell.Spell != "NOTHING").Select(spell => new SpellRef(spell.Spell.ToLowerInvariant(), spell.Level)),
                     physical: PrivateBattleActionBindings.Physical(definitions, enemy.ProwessExpression, items,
                         leader: false, gold: definitions.EnemyGold[enemy.Id].Gold),
-                    mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells));
+                    mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells),
+                    equipment: PrivateBattleActionBindings.EnemyEquipment(definitions, enemy.BaseAttack, items));
                 actorInput = new(actor, enemy.MaxHp, enemy.MaxMp, null, null, null, 0, null);
             }
             var initialization = new BattleDeploymentInitialization(enemyAi, 0, row.Behavior.PrimaryRegion,
@@ -188,7 +191,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     {
         "REGULAR" => BattleMover.Regular, "HEALER" => BattleMover.Healer,
         "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering, "STEALTH" => BattleMover.Stealth,
-        "FLYING" => BattleMover.Flying,
+        "FLYING" => BattleMover.Flying, "ARCHER" => BattleMover.Archer, "MAGE" => BattleMover.Mage,
         _ => throw Unsupported("source-mover", "actor.movementType"),
     };
     private static AdmissionIssue Unsupported(string code, string field) =>

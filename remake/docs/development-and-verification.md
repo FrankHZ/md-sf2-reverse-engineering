@@ -1,5 +1,49 @@
 # Development and Verification
 
+## Early ranged physical observation
+
+Use the [early-ranged authored package](../content/authored/early-ranged.json), with the existing
+Godot project/installation and Debug host build. Load the current ignored inputs in the launching
+process and follow the [locked SDK workflow](#locked-net-workflow). No emulator, screenshots,
+asset preparation, frame capture or full route is required. Changed immutable start content requires
+a fresh session; keep native instances serial and retain the installed environment.
+
+The small behavior selection is `EarlyRangedPhysicalTests|EarlyClassAdmissionTests`, plus affected
+`BattleEquipmentTests`, `BattleEquipmentSessionTests`, `PhysicalBattleTests`,
+`PhysicalRuleConfigurationTests`, `SourceEnemyAiTests`, `TargetSelectionTests`,
+`CommandsetContinuationTests` and `PrivateBattleInitializationTests`. Run the production Engine.Tests
+project with the ordinary `dotnet test --filter` syntax; no verification-tool tests are added.
+The pinned private class test uses the current controlled-start/static/enemy/gold selections;
+without them it skips. Run `uv run sf2 verify adapter` and the clean committed-head
+`uv run sf2 verify plan --base origin/main --head HEAD`; reconcile planner scope with the current
+[engine policy](#scope). The selected local discovery also reproduces the already retained
+`PrivateBattleOutcomeProgramTests.ImportedGrowthMatchesTheAcceptedConnectedBattleExperienceBoundary`
+and `CompletedFlagSkipsOnlyTheAfterProgramAndRetainsItsJoinTail` multi-element `Single()` failures.
+They remain failures; the bounded passing action checks do not relabel them or erase #1491's
+completed1801PASS/6FAIL/1SKIP, school03exit2, or ObjectDB teardown Unknown.
+
+Native reproduction starts the authored package with ordinary input settings and observes
+`BattleSessionView.ReadObservationJson`, `ReadSceneObservationJson` and `SessionResultObserved`:
+
+1. On lancer control, Confirm -> Equipment -> Unarmed -> Confirm. Check ATT20/range1 and preserved
+   gold/RNG; equip Short Spear again and check ATT26/range1-2.
+2. Use Attack/Target/Confirm at distance2, acknowledge actual scene messages and verify target HP,
+   physical-first event and next archer control. Move the archer twice right, use its bow at distance2,
+   and verify the next mage. Stay, observe the enemy physical action and usable lancer control; one
+   fresh movement proves subsequent input. Check visible text glyph/minimum-size/viewport geometry.
+3. For the second valid configuration, change only the first actor to `unpromoted-archer`, mover
+   `archer`, ATT27, items `[173,127,127,127]`; retain baseATT20 and the existing Wooden Arrow45.
+   Repeat with Chinese settings. This is changed authored content, not an authoritative-state setter.
+
+The ignored `local/issue1523/run-native.ps1 -Run <fresh> -Kind spear|bow -Language en|zh-CN`
+records the two bounded witnesses using the existing equipment observer, current inputs and native
+runtime directories in a child PowerShell. Final spear-en01 and bow-zh01 both exit0 and show the
+above actual state/input/action/control boundaries; stderr is empty. No Godot production change was
+needed. Each run took under3seconds with peak working set below250MiB; local reports are below1MiB,
+within the <=15MiB/report and >=1GiB-free-disk limits. Physical device delivery, raster/pixels,
+human aesthetics and original natural timing remain Unknown. The earlier #1519 real-save then
+observer lock-file-assumption failure remains in its handoff; this witness does not repair it.
+
 ## Typed JSON object-shape observation
 
 The bounded [F2 admission correction](evidence/structure-and-quality-review.md#f2--p2-validate-json-object-shape-before-optional-field-discovery)

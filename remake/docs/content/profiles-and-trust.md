@@ -1,5 +1,30 @@
 # Runtime Profiles and Trust
 
+## Early physical definition admission
+
+Standalone format7 admits `unpromoted-knight`, `unpromoted-mage`, `unpromoted-archer` and
+`unpromoted-thief` alongside the existing classes. `physical.movementType` additionally accepts
+`centaur`, `archer`, `mage`; it is an explicit input, independent of class identity.
+Optional `physical.critical.doubleChance:"one-in-16"` selects only the fixed quarter-bonus,
+critical1/16, double1/16, counter1/32 profile. Omission retains double1/32. Existing class-mask,
+packed-slot, equipped-count, broken/effects, promoted and effective-ATT admission still applies.
+An authored enemy's equipment becomes immutable at deployment; it cannot expose player gear changes.
+
+Private definitions additionally bind source MAGE3/ACHR5/THIF10 and ARCHER/MAGE movers, ordinary
+1-1/1-2/2-2 weapons and source BIT4 alongside BIT5. The existing initialization still owns the
+activation mask; preserving a definition bit does not invent a new behavior. Enemy ATT-only,
+no-use-spell weapon metadata permits ordinary physical AI; Galam Mage's real spellbook is preserved
+and its unsupported spell AI explicitly refuses. Original source class/equipment compatibility is
+checked independently from actor/mover admission. Controlled allied ATT remains explicitly
+already refreshed; new enemy initialization applies its source adjustment and weapon once.
+
+`EarlyClassAdmissionTests` consumes the pinned static/enemy/gold inputs through the existing
+reader and a controlled composition of existing placement rows. That verifies definition admission,
+not original placement, recruitment, a new full-battle import, battle-scene assets or natural story.
+Private encounter/region pins remain1/2/3. Kazin/Slade New Game recruitment, later scenes, player
+attack spells and Mage casting remain outside this slice. The authored
+[range sample](../../content/authored/early-ranged.json) uses the ordinary session and native consumer.
+
 ## Authored Jaro victory admission
 
 [jaro-victory.json](../../content/authored/jaro-victory.json) is a public format8 exploration package
