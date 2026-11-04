@@ -509,25 +509,25 @@ internal static class GameText
         Diagnose("unmigrated-consumer", key);
         return Get("localization.fallback", "unmigrated-consumer: " + key);
     }
-    internal static DisplayResult Search(FieldSearchResult result, GameSession session)
+    internal static DisplayResult Dialogue(DialogueWait wait, GameSession session) => WholeRow(wait.Text, session, null);
+    private static DisplayResult WholeRow(int id, GameSession session, int? implicitMember)
     {
         var source = session.Definition.Exploration!;
-        var rows = new List<DisplayResult>();
-        foreach (int id in result.Texts)
-        {
-            var names = new List<DisplayNameBinding>();
-            if (source.TextTokens.TryGetValue(id, out var tokens))
-                for (int i = 0; i < tokens.Count; i++)
-                    if (tokens[i].Kind == ExplorationTextTokenKind.MemberName)
-                    {
-                        int member = tokens[i].Member ?? 0;
-                        names.Add(new(i, member, CharacterNames.Member(session.Definition, session.Current.Story, member), null));
-                    }
-            var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names) : _overlay.Resolve(id, source, names);
-            if (Language != "en" && _overlay is null && row.Reason is null) row = row with { Reason = "overlay-unavailable" };
-            if (row.Reason is { } reason) Diagnose(reason, $"world.text/{id}");
-            rows.Add(row);
-        }
+        var names = new List<DisplayNameBinding>();
+        if (source.TextTokens.TryGetValue(id, out var tokens))
+            for (int i = 0; i < tokens.Count; i++)
+                if (tokens[i].Kind == ExplorationTextTokenKind.MemberName &&
+                    (tokens[i].Member ?? implicitMember) is { } member)
+                    names.Add(new(i, member, CharacterNames.Member(session.Definition, session.Current.Story, member), null));
+        // Legacy dialogue has no captured bare NAME/CLASS operand. Missing bindings use display-operands fallback.
+        var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names) : _overlay.Resolve(id, source, names);
+        if (Language != "en" && _overlay is null && row.Reason is null) row = row with { Reason = "overlay-unavailable" };
+        if (row.Reason is { } reason) Diagnose(reason, $"world.text/{id}");
+        return row;
+    }
+    internal static DisplayResult Search(FieldSearchResult result, GameSession session)
+    {
+        var rows = result.Texts.Select(id => WholeRow(id, session, 0)).ToList();
         string? key = result.Kind switch
         {
             FieldSearchKind.Item => "search.item", FieldSearchKind.Full => "search.full",
