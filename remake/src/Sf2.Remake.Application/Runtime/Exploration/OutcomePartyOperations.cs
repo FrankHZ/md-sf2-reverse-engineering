@@ -27,9 +27,9 @@ internal static class OutcomePartyOperations
                 ushort word = actor.ActivationWord
                     ?? throw new BattleRuleException("missing-activation-word", "party.activation", true);
                 var party = world.Party;
-                return (new ActiveExploration(world.WithParty(new(party.Encounter,
+                return (new ActiveExploration(world.WithParty(party.WithResources(
                     party.Actors.Select(a => a.Actor == actor.Actor ? a with { ActivationWord = (ushort)(word & ~4) } : a),
-                    party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))), next);
+                    party.Gold))), next);
             case LeaveOutcomeBattleParty:
                 // Source writes only X=-1 after clearing active membership, without rebuilding lists.
                 // BattleOutcome already discards battle coordinates; no raw X/Y authority is retained.

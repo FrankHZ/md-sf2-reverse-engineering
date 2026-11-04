@@ -68,6 +68,8 @@ internal static class OutcomeReturnRules
     {
         Require(after.Encounter == before.Encounter && after.MainSeed == before.MainSeed && after.ThinkingSeed == before.ThinkingSeed &&
             ReferenceEquals(after.ItemCustody, before.ItemCustody) &&
+            after.StoryFlags.SequenceEqual(before.StoryFlags) && ReferenceEquals(after.Visuals, before.Visuals) &&
+            after.RetainedSourceSlots.SequenceEqual(before.RetainedSourceSlots) && after.DeathCredit == before.DeathCredit &&
             after.NewBattle == before.NewBattle && (after.ActiveAllies is null ? before.ActiveAllies is null : before.ActiveAllies is not null && after.ActiveAllies.SequenceEqual(before.ActiveAllies)) && after.Actors.Count == before.Actors.Count &&
             (gold ? before.Gold.HasValue == after.Gold.HasValue : before.Gold == after.Gold));
         var encounter = definition.Encounters[before.Encounter];

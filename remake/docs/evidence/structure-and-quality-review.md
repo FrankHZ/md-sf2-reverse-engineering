@@ -2,10 +2,11 @@
 
 ## Finite pre-voyage audit
 
-**Current recommendation: ACCEPT-WITH-FOLLOW-UP for the report, subject to independent main-gate
-review.** Continue bounded development; no P1 or whole-engine redesign was identified. Two P2s
-remain open below. This is a report/design delivery, not their repair or acceptance of the entire
-pre-departure campaign. The [boundary review](engine-script-boundary-review.md#finite-pre-voyage-audit)
+**Current disposition: F4/F5 are implemented and locally verified under
+[#1536](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1536), pending independent main-gate
+acceptance and integration.** Continue bounded development; no P1 or whole-engine redesign was
+identified. The audit-base failures below remain historical evidence. This is not acceptance of the
+entire pre-departure campaign. The [boundary review](engine-script-boundary-review.md#finite-pre-voyage-audit)
 owns the common scope, Standard rigor, accepted diff/base/tree, dependency map and continuation limits.
 Existing High-rigor service/save contracts remain unchanged. This report owns the findings, copy
 design and sole new experiment for [#1528](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1528).
@@ -15,9 +16,59 @@ All paths and line numbers in F4/F5 refer to accepted **`7fcd630d7474586e3b91aaa
 **Confirmed** denotes inspected source/assertions or the explicitly executed API result;
 **Inferred** denotes an unexecuted consequence; **Unknown** denotes an unobserved boundary.
 
+### F4/F5 bounded repair disposition
+
+**Standard rigor:** two finite engine admission/preservation repairs within the existing architecture;
+service/save High-rigor boundaries and the finite campaign scope are unchanged. Production ownership
+is `BattleStartInput`, `BattleActionRules`, `Sf2OutcomeReturnPolicy`, `OutcomeReturnRules`, and the
+same-lifetime `JoinResources`/`ClearOutcomePartyAi` consumers. Tests and these two existing audit owners
+complete the scope. Fresh start, battle-to-field rebinding, save format, action effects/payment,
+original runtime evidence and later campaign work are outside this repair.
+
+**Confirmed:** `BattleStartInput.WithResources` sits beside `WithSeeds` and replaces only actors/gold,
+retaining entry policy, active membership, custody, flags, visuals, retained slots and death credit.
+Recovery and defeat leader/gold edits use it. JoinResources appends only the newly admitted actor;
+AI clear changes only that actor's activation bit. These remain the same carried-party lifetime.
+`BattleOutcome` and `BattleEntry` retain their explicit lifecycle rebindings. `OutcomeReturnRules.Party`
+now rejects recovery policies that alter unowned flags, visuals, retained slots or credit before
+publication. Nonzero recovery status still reports `return-status-refresh` atomically.
+
+**Confirmed:** preparation requires a target for Healing, AttackSpell and SupportSpell after action
+admission and before silence suppression, using the existing missing-target codes. Supplied-target
+validation still runs first; silenced valid spells retain their paid no-effect resolution. Stay,
+item and EGRESS behavior keeps its existing admission and payment path.
+
+Actual behavior acceptance lives in
+[`PartyRecoveryContextTests`](../../tests/Sf2.Remake.Engine.Tests/PartyRecoveryContextTests.cs) and
+[`SilenceSpellTests`](../../tests/Sf2.Remake.Engine.Tests/SilenceSpellTests.cs). It covers the real reset
+program through poison-enabled entry with changed seeds/gold/HP/MP/accounting/credit, reordered smaller
+parties, dead ordinary/immortal members, nondefault retained context, joining/retry, AI clear, defeat
+recovery, refused status and unowned policy writes. The spell matrix covers all three kinds with
+normal/silenced caster and null/valid/invalid target, without live resource/RNG publication on refusal.
+Existing Session/AI, item, EGRESS and outcome behavior is selected directly alongside these tests.
+After the [locked environment setup](../development-and-verification.md#locked-net-workflow), from
+`remake/`, reproduce the bounded new behavior with:
+
+```powershell
+& $env:DOTNET_BIN restore tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --locked-mode
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Debug --no-restore --filter 'FullyQualifiedName~PartyRecoveryContextTests|FullyQualifiedName~SilenceSpellTests'
+```
+
+The unchanged public F4 recipe below was rerun against freshly built corrected Debug assemblies:
+**both control and reset variants reach Battle / PlayerInput with `medic-a` credit and no failure**.
+Before the F5 correction, the three new silenced/null-target cases each failed because no exception
+was thrown; normal and Stay controls passed. After correction the matrix passes. Prior F4 refusal,
+initial launcher failures and all retained aggregate failures are not replaced by these results.
+No native launch, original acquisition, screenshot or new comparison infrastructure is needed.
+ObjectDB exit cleanup, original natural reach/timing and wider campaign capabilities remain Unknown
+at their existing owners. Exact local/CI results and the candidate Git objects belong to the PR handoff.
+
+The F4/F5 sections below describe the accepted audit base, including its then-open repair proposals;
+this disposition owns current implementation status.
+
 ### F4 — P2: retain carried context when recovering party resources
 
-**Confirmed, current reachable defect in changed authored content.**
+**Confirmed at the audit base: reachable defect in changed authored content.**
 [`Sf2OutcomeReturnPolicy.Heal:88`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/7fcd630d7474586e3b91aaa69889ca7e294e6007/remake/src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs#L88)
 reconstructs `BattleStartInput` only through `ItemCustody`, silently defaulting `StoryFlags`,
 `Visuals`, `RetainedSourceSlots` and **`DeathCredit`**. `ProgramRunner:163–164` calls that policy for

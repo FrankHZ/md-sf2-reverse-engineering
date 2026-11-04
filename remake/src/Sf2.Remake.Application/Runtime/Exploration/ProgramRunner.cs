@@ -546,9 +546,8 @@ internal static class ProgramRunner
         if (initial.Length != 1) throw new BattleRuleException("join-member-start", "program.member", true);
         // A newly introduced member receives its admitted resources once at joining.
         // Repeated joins preserve the live inventory/progress; seeds and gold are not starts.
-        return new ActiveExploration(world.WithParty(new(world.Party.Encounter,
-            world.Party.Actors.Append(initial[0]), world.Party.MainSeed, world.Party.ThinkingSeed,
-            world.Party.Gold, world.Party.NewBattle, world.Party.ActiveAllies, world.Party.ItemCustody)));
+        return new ActiveExploration(world.WithParty(world.Party.WithResources(
+            world.Party.Actors.Append(initial[0]), world.Party.Gold)));
     }
 
     internal static SessionSnapshot Commit(SessionSnapshot current, ActiveSessionState active, StoryState story,

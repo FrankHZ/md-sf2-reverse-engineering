@@ -97,6 +97,54 @@ public sealed class SilenceSpellTests
         Assert.Equal((byte?)0, battle.GetActor(caster).Exp); Assert.Equal(80, action.Prepared.GetActor(Smoke).Hp);
     }
 
+    [Theory]
+    [InlineData("blaze", false)] [InlineData("blaze", true)]
+    [InlineData("heal", false)] [InlineData("heal", true)]
+    [InlineData("dispel", false)] [InlineData("dispel", true)]
+    public void TargetedPreparationRequiresSelectionBeforeSilenceAndRejectsWithoutPublication(string id, bool silenced)
+    {
+        var battle = Battle(d => d["actors"]![0]!["spells"]!.AsArray().Add(
+            new JsonObject { ["id"] = "dispel", ["level"] = 1 })).With(mainSeed: 0x12340000);
+        ActorRef caster = id == "heal" ? Priest : Mage;
+        if (silenced) battle = Status(battle, caster, 0x300);
+        var rules = RuleCompositions.Sf2();
+        var kind = id == "heal" ? BattleActionKind.Healing : id == "dispel" ? BattleActionKind.SupportSpell : BattleActionKind.AttackSpell;
+        var action = new BattleActionRef(kind, new(id, 1));
+        var rule = rules.Action(action); var before = battle.Actors.ToArray();
+        var expected = id == "heal" ? "invalid-heal-target" : id == "dispel" ? "support-spell-target" : "attack-spell-target";
+        BattleActionResolution Prepare(ActorRef? target) => BattleActionRules.Prepare(rule, battle, caster,
+            battle.GetActor(caster).Position!, action, target, rules.Progression);
+        foreach (ActorRef? target in new ActorRef?[] { null, id == "heal" ? Smoke : Mage, new("missing") })
+        {
+            var failure = Assert.Throws<BattleRuleException>(() => Prepare(target));
+            Assert.Equal(expected, failure.Code); Assert.Equal("target", failure.Field);
+            Assert.Equal(before, battle.Actors); Assert.Equal(0x12340000u, battle.MainSeed);
+        }
+        var valid = Prepare(id == "heal" ? Mage : Smoke);
+        Assert.Equal(silenced, valid.Silenced is not null);
+        Assert.Equal(before, battle.Actors); // Construction/payment remains a candidate, never a live write.
+        Assert.Equal(20, battle.GetActor(caster).Mp);
+        if (silenced)
+        {
+            Assert.Empty(valid.Reactions); Assert.Empty(valid.ConstructionEffects);
+            Assert.Equal(battle.MainSeed, valid.Prepared.MainSeed);
+        }
+        else Assert.NotEmpty(valid.Reactions);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void StayStillPreparesWithoutATargetUnderEitherSilenceState(bool silenced)
+    {
+        var battle = Battle();
+        if (silenced) battle = Status(battle, Mage, 0x300);
+        var rules = RuleCompositions.Sf2(); var action = new BattleActionRef(BattleActionKind.Stay);
+        var result = BattleActionRules.Prepare(rules.Action(action), battle, Mage, battle.GetActor(Mage).Position!,
+            action, null, rules.Progression);
+        Assert.Null(result.Silenced); Assert.Empty(result.Reactions);
+        Assert.Equal(battle.MainSeed, result.Prepared.MainSeed); Assert.Equal(20, result.Prepared.GetActor(Mage).Mp);
+    }
+
     [Fact]
     public void PlayerDispelAwardsFivePerSuccessAndDefinitionCopiesRetainSupport()
     {
