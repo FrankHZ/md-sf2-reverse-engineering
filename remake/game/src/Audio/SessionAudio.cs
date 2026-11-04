@@ -390,7 +390,7 @@ internal sealed partial class SessionAudio : IDisposable
     private static Slots SoundSlots(int command) => command switch
     {
         65 or 109 or 111 => Slots.Ym5,
-        66 or 67 or 70 or 72 or 73 or 74 or 79 or 102 => Slots.PsgTone3,
+        66 or 67 or 70 or 72 or 73 or 74 or 79 or 100 or 102 => Slots.PsgTone3,
         77 => Slots.Ym4,
         81 or 83 or 116 => Slots.Ym6,
         89 or 110 => Slots.PsgNoise,

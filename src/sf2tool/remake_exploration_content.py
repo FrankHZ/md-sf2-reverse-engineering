@@ -252,6 +252,8 @@ def prepare(
             audio_candidates,
             tuple(selection["battles"]),
             tuple(selection["audioCues"]) if "audioCues" in selection else None,
+            wav_profiles=selection.get("runtimeWavCues", {}),
+            world_directory=output.parent,
         )
     if audio_candidates and visuals is None:
         raise ValueError("audio candidates require private presentation preparation")

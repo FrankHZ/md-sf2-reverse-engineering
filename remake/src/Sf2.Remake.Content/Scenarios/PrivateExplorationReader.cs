@@ -85,7 +85,8 @@ public sealed class PrivateExplorationReader : IScenarioSource
             }
             else start = PrivateBattleContentReader.Start();
             var result = ExplorationContentReader.Read(Id(root, "package"), root.GetProperty("world"), start, admitted,
-                new(expected.Repository, expected.Commit, Text(provenance, "romSha256"), sources, Text(provenance, "controlledBoundary") + " Start: " + startBoundary));
+                new(expected.Repository, expected.Commit, Text(provenance, "romSha256"), sources, Text(provenance, "controlledBoundary") + " Start: " + startBoundary),
+                worldDirectory: Path.GetDirectoryName(Path.GetFullPath(path)));
             if (result.Definition.Exploration!.Visuals is { } visuals)
                 foreach (var scene in result.Definition.EncounterScenes.Values)
                     if (scene.FieldDeath is { } field)

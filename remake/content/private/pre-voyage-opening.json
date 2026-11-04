@@ -87,6 +87,23 @@
     5
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
+  "runtimeWavCues": {
+    "MUSIC_SAD_THEME_1": {
+      "timerB": 209,
+      "wavSha256": "FCDF6C3CA351200916BD40C09F19EE9AE821197BAC62187E9E99547BC7972485",
+      "loopBegin": 305879,
+      "loopEnd": 2218442
+    },
+    "MUSIC_SAD_JOIN": {
+      "timerB": 205,
+      "wavSha256": "1BA575331F4E6A9F375639F0D65D8D9BF9C31D478A01FCCF1649229A952FF674",
+      "modernEndStep": 710
+    },
+    "SFX_BLO": {
+      "timerB": 204,
+      "wavSha256": "574C5C91C185C4400593C9FC00020658E6E44E8E149FBB61FB55004F3A3FD48D"
+    }
+  },
   "presentationAtlases": {
     "map-3": "world.map3.base-tileset-atlas",
     "map-19": "world.map19-20.base-tileset-atlas",
