@@ -1,5 +1,25 @@
 # Runtime Profiles and Trust
 
+## Early enemy spell admission
+
+The finite [enemy rule owner](../domain/gameplay-rules.md#finite-early-enemy-spell-decisions)
+admits semantic BLAZE1/HEAL1 books in source orders. Enemy BLAZE1 requires radius0; nonzero radius
+is Unsupported at both automatic decision and shared enemy action admission, before AI state/resources
+publish. Player attack radius variants remain admitted. Authored books retain the existing empty packed
+book; nonempty packed source books must match their decoded definitions. Other spells/items/AI-use
+bits retain Unsupported rather than silently disappearing into a physical fallback.
+Private placements additionally bind exact `SENTRY`8 and `HEALER3`2 expressions, the existing HEALER
+mover and Dark Cleric's `CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN16` profile.
+The existing encounter1/2/3 story/region-program admission is unchanged: these bindings do not admit
+the entire Battle05/06 chapters. The private behavior test composes those pinned enemy records into
+a controlled existing encounter and reaches shared action admission; it is not original placement evidence.
+
+Standalone physical `movementType:"healer"` and optional `critical.counterChance:"one-in-16"`
+admit only the fixed critical1/32/half-bonus, double1/32, counter1/16 profile. The counter and double
+overrides cannot combine. The actor's semantic book, actual faction, live MP/status/position and
+selected action still control execution. Enemy casting does not require enemy EXP/kills fields;
+reached ally death accounting and terminal outcome bindings remain required.
+
 ## Attack-spell admission
 
 Format7 spell `effect.kind:"attack"` has `power`1-255, `radius`0-1 and `element:"fire"|"wind"`;
@@ -39,8 +59,9 @@ An authored enemy's equipment becomes immutable at deployment; it cannot expose 
 Private definitions additionally bind source MAGE3/ACHR5/THIF10 and ARCHER/MAGE movers, ordinary
 1-1/1-2/2-2 weapons and source BIT4 alongside BIT5. The existing initialization still owns the
 activation mask; preserving a definition bit does not invent a new behavior. Enemy ATT-only,
-no-use-spell weapon metadata permits ordinary physical AI; Galam Mage's real spellbook is preserved
-and its unsupported spell AI explicitly refuses. Original source class/equipment compatibility is
+no-use-spell weapon metadata permits ordinary physical AI; Galam Mage's real BLAZE1 book now reaches
+the separately bounded enemy spell decision and shared damage action. Other enemy spell families
+still refuse. Original source class/equipment compatibility is
 checked independently from actor/mover admission. Controlled allied ATT remains explicitly
 already refreshed; new enemy initialization applies its source adjustment and weapon once.
 
@@ -553,7 +574,8 @@ Unsupported; a named unpromoted class cannot declare promoted EXP rules. Current
 authored effective stats unless the [mutable weapon opt-in](#authored-weapon-admission) supplies its validated base/contribution.
 Unadmitted equipment and nonzero status remain Unsupported. Ordinary weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
 
-`physical.critical` is a closed `{chance, damageBonus}` object. Only these paired values are supported:
+`physical.critical` requires `{chance, damageBonus}` and accepts the finite optional
+`doubleChance`/`counterChance` profiles described above. Only these base paired values are supported:
 
 | chance | damageBonus | Applied semantics |
 | --- | --- | --- |
@@ -564,7 +586,7 @@ Land reduction precedes the bonus; counter halving and the two downward spread d
 The immutable typed rule owns the scalar parameters and every first/second/counter hit consumes it.
 Missing/nonstring fields are ContentError; unimplemented values or cross-pairs are Unsupported.
 Packed `prowess` is no longer an authored field; private source definitions retain it.
-Regular dodge and physical double/counter chances remain fixed at1/32 and distinct from extra-round
+Regular dodge defaults to1/32; double/counter use their fixed admitted profiles, distinct from extra-round
 eligibility. No arbitrary chance/fraction/equipment/status/critical-effect combinations are admitted.
 
 Encounter `rewards`, when present, is closed to boolean `halvedExperience`. Current gold is supplied

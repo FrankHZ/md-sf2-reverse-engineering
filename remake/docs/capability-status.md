@@ -1,5 +1,22 @@
 # Remake Capability Status
 
+## Early enemy BLAZE1 and HEAL1
+
+**Implemented, bounded:** source SENTRY8 and HEALER3/2 decisions now reach ordinary BLAZE1/HEAL1
+actions, legal movement, one MP payment, actual opposing damage/same-faction healing and usable
+later player input. Source command ordering, Normal priority scripts3/4, separate thinking/main
+RNG and physical/Stay/pursuit fallbacks are explicit in the
+[rule owner](domain/gameplay-rules.md#finite-early-enemy-spell-decisions).
+The [authored package](../content/authored/enemy-spells.json) has native English/Chinese witnesses
+of automatic Mage/Cleric actions and real subsequent movement. Recovery switches on the actual
+enemy side. [Content admission](content/profiles-and-trust.md#early-enemy-spell-admission) separately
+binds pinned Galam Mage/Dark Cleric commandsets, mover, spells and cleric counter prowess.
+
+This does not import full Battle05/06 or connect Battle03-07 story. DISPEL/support/silence,
+item AI, higher-rank enemy spells, all-AI parity and non-Normal difficulty remain Unsupported;
+natural original first casts/timing and newly required private scene assets remain outside this
+observation. See [verification](development-and-verification.md#enemy-spell-observation).
+
 ## Player BLAZE1-2 and BLAST1
 
 **Implemented, bounded:** learned player attack spells have actual query/selection, legal opponent
@@ -16,7 +33,7 @@ Pinned private definitions admit the three selected records and class/enemy resi
 a controlled learned Sarah/Kazin-class composition reaches their distinct action admission. Existing
 private growth may expose a supported learned rank without an expected-level ban. This is separate
 from recruiting Kazin, importing another battle or connecting the entire Battle03-07 story.
-Enemy casting/healing AI, DISPEL/silence and other spell families/ranks remain Unsupported.
+The finite enemy BLAZE1/HEAL1 extension is described above; DISPEL/silence and other spell families/ranks remain Unsupported.
 Presentation is a functional modern effect, including private admitted casts, not original magic
 assets/timing or new original-runtime evidence. Natural pre-departure levels/opportunities remain
 Unknown. The older completed private comparison failures remain with their evidence owners.

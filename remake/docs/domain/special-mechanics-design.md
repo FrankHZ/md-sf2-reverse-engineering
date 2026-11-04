@@ -441,8 +441,12 @@ The player-spell slice now implements the [finite attack-spell agreement](gamepl
 separate damage/healing definitions through existing action/scene/progression seams, selected pinned
 resistance operands and functional modern fire/wind delivery. The affected immutable definition
 replacement boundary preserves capability fields through admitted outcome/growth/loadout copies
-(audit F3); this is no broader constructor or architecture audit. Enemy AI, silence and later story
-remain separate slices.
+(audit F3); this is no broader constructor or architecture audit.
+The finite [early enemy spell agreement](gameplay-rules.md#finite-early-enemy-spell-decisions)
+now composes source SENTRY8/HEALER3 command order, Normal target scripts3/4, BLAZE1/HEAL1,
+shared payment/effect/end rules and actual same-faction recovery through subsequent player control.
+Pinned early bindings and authored native delivery remain separate from Battle05/06 chapter import.
+DISPEL/silence, shops and later story remain separate slices.
 
 Accepted foundations include authored AURA, ordinary physical equipment, Give/Drop, drops/Deals and
 poison, plus bounded opening Search, field preparation/DETOX, Church Raise/Cure and shared two-slot

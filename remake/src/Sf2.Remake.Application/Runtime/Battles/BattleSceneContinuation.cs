@@ -47,11 +47,14 @@ public sealed record HealingSceneCursor
             return;
         }
         if (content.Healing is null ||
-            !content.Allies.TryGetValue(battle.GetActor(actorRef).Definition.ClassRule, out var visual) ||
+            !TryVisual(battle.GetActor(actorRef), content, out var visual) ||
             !visual.Sequences.ContainsKey("cast") || visual.IdleTicks <= 0 ||
-            !content.Allies.TryGetValue(battle.GetActor(targetRef).Definition.ClassRule, out var targetVisual) || targetVisual.IdleTicks <= 0)
+            !TryVisual(battle.GetActor(targetRef), content, out var targetVisual) || targetVisual.IdleTicks <= 0)
             throw new BattleRuleException("healing-scene-content", "battleScenes.healing", true);
     }
+
+    private static bool TryVisual(BattleActorState actor, BattleSceneDefinition content, out BattleSceneActorVisual visual) =>
+        actor.IsAlly ? content.Allies.TryGetValue(actor.Definition.ClassRule, out visual!) : content.Enemies.TryGetValue(actor.Actor, out visual!);
 
     internal static HealingSceneCursor Create(BattleActionResolution action, BattleSceneDefinition? content, StoryState? story = null)
     {
@@ -63,13 +66,14 @@ public sealed record HealingSceneCursor
         var cast = new BattleSceneAnimation(0, 2, 255, false, null,
             [new(0, 1, 0, 0, null), new(0, 1, 0, 0, null)]);
         int casterIdle = 1, targetIdle = 1;
-        string ActorName(BattleActorState a) => story is null ? content is null ? a.Actor.Value : content.MemberNames[a.ProcessingOrder]
+        string ActorName(BattleActorState a) => !a.IsAlly ? story is null ? content?.EnemyNames?.GetValueOrDefault(a.Actor) ?? a.Actor.Value
+            : CharacterNames.Battle(story, a, content) : story is null ? content is null ? a.Actor.Value : content.MemberNames[a.ProcessingOrder]
             : CharacterNames.Actor(story, a.Actor, content is null ? a.Actor.Value : content.MemberNames[a.Deployment.Initialization?.AllyPartyMember ?? a.ProcessingOrder]);
         string actionText = "{NAME} cast\n{SPELL} level {#}!", recoveryText = "{NAME} recovered\n{#} hit points.";
         if (content is not null)
         {
-            var visual = content.Allies[actor.Definition.ClassRule];
-            var targetVisual = content.Allies[target.Definition.ClassRule];
+            _ = TryVisual(actor, content, out var visual);
+            _ = TryVisual(target, content, out var targetVisual);
             cast = visual.Sequences["cast"];
             casterIdle = visual.IdleTicks; targetIdle = targetVisual.IdleTicks;
             actionText = content.Texts[274]; recoveryText = content.Texts[298];
@@ -244,15 +248,19 @@ public sealed class BattleSceneState
     public bool IsAura => Spell?.IsAura == true;
     public IReadOnlyList<ActorRef> HealingTargets => Spell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public bool SwitchesAlly => (Item is not null || Spell is not null) && Actor != Target;
-    // InitializeActors / SwitchTargets / Script_End: only one ally occupies this side.
+    // Recovery switches caster/recipient on their actual faction's single scene side.
+    private ActorRef RecoveryDisplayed => IsAura && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0
+        ? Action.Reactions[ReactionIndex - 1].Target
+        : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit
+            ? Target!.Value : Actor;
     public ActorRef? DisplayedAlly => IsAfterTurnNotice || IsFieldDeath ? null : Laser is not null
         ? HasReaction && LaserTargetsVisible && Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : null : Item is not null || Spell is not null
-        ? IsAura && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0 ? Action.Reactions[ReactionIndex - 1].Target
-        : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit ? Target : Actor
+        ? Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Action.Prepared.GetActor(Actor).IsAlly ? Actor : Target;
     private bool LaserTargetsVisible => Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or
         BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage;
-    public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath || Item is not null || Spell is not null ? null
+    public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath ? null : Item is not null || Spell is not null
+        ? !Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Laser is not null ? HasReaction && LaserTargetsVisible && !Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : Action.Actor
         : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
     public bool Critical => HasReaction && Reaction.Critical;

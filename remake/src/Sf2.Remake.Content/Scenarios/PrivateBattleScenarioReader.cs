@@ -60,7 +60,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 "placement-item-refresh", "placements.item", true);
             byte commandset = row.AiCommandsetExpression switch
             {
-                "HEALER1" => 0, "ATTACKER1" => 6, "ATTACKER2" => 7, "ATTACKER3" => 9, "LEADER" => 14,
+                "HEALER1" => 0, "HEALER3" => 2, "ATTACKER1" => 6, "ATTACKER2" => 7,
+                "SENTRY" => 8, "ATTACKER3" => 9, "LEADER" => 14,
                 _ => throw Unsupported("source-commandset", "placements.aiCommandset"),
             };
             ActorRef actor; BattleActorDefinition definition; BattleActorStartInput actorInput; int order;

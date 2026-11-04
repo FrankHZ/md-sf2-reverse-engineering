@@ -21,6 +21,21 @@ internal static class PhysicalTargetRules
             : doubled <= 18 ? (byte)(19 - doubled) : (byte)1;
     }
 
+    internal static byte Score(BattleActorState actor, BattleActorState target, byte movement,
+        int potentialDamage, ref uint thinking, List<BattleEffect> effects)
+    {
+        int remaining = Math.Max(0, target.Hp - potentialDamage);
+        // Normal PRIORITYMOD_3 selects script4. Its lethality/one-fifth test
+        // draws neither channel. Existing ordinary script3 uses thinking only.
+        if (!actor.IsAlly && (actor.ActivationWord >> 12) == 3)
+            return (byte)(1 + (remaining == 0 ? 15 : 0) + (unchecked((ushort)(5 * remaining)) <= target.MaxHp ? 1 : 0));
+        var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
+        uint after = ((uint)draw.After << 16) | (thinking & 65535);
+        effects.Add(new("thinking-rng", actor.Actor, thinking, after, 3, draw.Value, target.Actor));
+        thinking = after;
+        return ScriptThree(movement, remaining, draw.Value);
+    }
+
     // Input is the reachable-target array order, not the reverse order of RNG calls.
     // determinebattleaction.asm keeps the raw maximum for collection before capping output.
     internal static PhysicalTargetSelection? Select(IReadOnlyList<PhysicalTargetPriority> targets, PhysicalPriorityTable table)
@@ -52,8 +67,8 @@ internal static class PhysicalTargetRules
         return new(selected, (byte)maximum, (byte)Math.Min(15, maximum));
     }
 
-    // aipriority.asm: only the seven admitted source classes. Table selection follows
-    // the actual mover; geometry and class are separate content inputs.
+    // aipriority.asm: only the seven admitted source classes. Physical callers select
+    // by mover; CAST_SPELL overrides it with Mage. Geometry and class are separate inputs.
     internal static int ClassRank(byte? classId, PhysicalPriorityTable table) => classId switch
     {
         0 => table == PhysicalPriorityTable.Archer ? 11 : 0,

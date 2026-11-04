@@ -26,7 +26,8 @@ internal static class PhysicalStrikeRules
 
     internal static PhysicalStrike Resolve(int attack, int defense, ushort hp, int multiplier,
         uint seed, ushort dodgeRange, ushort criticalRange, int criticalShift, bool counter = false,
-        bool sleepCritical = false, bool sleepingDefender = false, bool ineffective = false, ushort doubleRange = 32)
+        bool sleepCritical = false, bool sleepingDefender = false, bool ineffective = false, ushort doubleRange = 32,
+        ushort counterRange = 32)
     {
         var rolls = new List<PhysicalRoll>();
         bool dodged = !sleepingDefender && Roll(ref seed, rolls, "dodge", dodgeRange) == 0, critical = false;
@@ -51,7 +52,7 @@ internal static class PhysicalStrikeRules
         }
         ushort remaining = (ushort)Math.Max(0, hp - damage);
         bool twice = remaining > 0 && Roll(ref seed, rolls, "double", doubleRange) == 0;
-        bool response = remaining > 0 && Roll(ref seed, rolls, "counter", 32) == 0;
+        bool response = remaining > 0 && Roll(ref seed, rolls, "counter", counterRange) == 0;
         return new(dodged, critical, damage, remaining, seed, twice, response, rolls.AsReadOnly(), sleep && remaining > 0, !dodged && ineffective);
     }
 }

@@ -17,15 +17,18 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
 
     }
     public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical) =>
-        Resolve(battle, actor, physical);
+        Resolve(battle, actor, physical, [physical]);
+    public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical,
+        IReadOnlyList<IBattleActionRule> actions) => Resolve(battle, actor, physical, actions);
 
     // Explicit source-default overload for standalone policy comparisons.
     internal static BattleAutomaticAction Resolve(EngineBattleState current, ActorRef actor) =>
         BattleDecisionRules.Decide(new SourceEnemyAi(), current, actor, new Sf2PhysicalAction(), new Sf2BattleProgressionRule());
 
     internal static BattleAutomaticAction Resolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, IReadOnlyList<IBattleActionRule>? actions = null)
     {
+        actions ??= [physical];
         var actor = current.GetActor(actorRef);
         if (actor.IsAlly || actor.Position is null || actor.Hp == 0 ||
             !(actor.Status == 0 || current.Definition.Poison && actor.Status == 2) ||
@@ -61,12 +64,12 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         // GetAiCommandset reads the dedicated combatant byte; the activation filler nibble
         // happens to match it in Battle01 but is zero in Battle02.
         int commandset = source.AiCommandset;
-        if (commandset is not (6 or 7 or 9 or 14)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
+        if (commandset is not (2 or 6 or 7 or 8 or 9 or 14)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
         // Ordinary unequipped Herb0 cannot be selected: attack-item checks equipped/AI bits,
         // healing-item skips it with AI bit13 clear (Healing Rain has a separate source branch).
         // Neither path draws RNG. Admitted ATT-only weapons have no AI use action;
-        // other items, enabled bits and spells remain Unsupported.
-        if (!BattleEquipment.OrdinaryAiLoadout(actor.Definition, actor.SourceLoadout, allowHerb: true))
+        // other items/enabled bits and spells outside the finite BLAZE1/HEAL1 family remain Unsupported.
+        if (!BattleEquipment.OrdinaryAiLoadout(actor.Definition, actor.SourceLoadout, allowHerb: true, allowEarlySpells: true))
             throw new BattleRuleException("source-action-categories", "actor.loadout", true);
         var targets = current.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();
@@ -87,21 +90,24 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
                 primary = secondary; secondary = 255;
             }
         }
-        if (commandset is 9 or 14 || commandset == 7 && (primary != 255 || secondary != 255))
+        if (commandset is 2 or 9 or 14 || commandset == 7 && (primary != 255 || secondary != 255))
         {
-            var ordered = new SourceMoveOrderAi(prepared, actorRef, physical).Resolve(commandset);
+            var ordered = new SourceMoveOrderAi(prepared, actorRef, physical, actions).Resolve(commandset);
             return ordered with { Effects = Array.AsReadOnly<BattleEffect>([.. effects, .. ordered.Effects]) };
         }
         if (commandset == 7) effects.Add(new("ai-command-move-order1", actorRef, After: -1));
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
-        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical) is { } attack)
+        if (EnemySpellDecision.Attack(prepared, actorRef, physical, actions) is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([
                 .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
+        if (EnemySpellDecision.Heal(prepared, actorRef, actions) is { } heal)
+            return heal with { Effects = Array.AsReadOnly<BattleEffect>([
+                .. effects, new("ai-command-heal1", actorRef, After: 0), .. heal.Effects]) };
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
         effects.Add(new("ai-command-support", actorRef, After: -1));
-        if (targets.Length == 0)
+        if (commandset == 8 || targets.Length == 0)
             return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
         var pursuit = AiMovementRules.Pursue(Costs(), legal, actor.Position, targets.Select(unit => unit.Position!).ToArray(),
             Occupied, current.Definition.Width, current.Definition.Height);

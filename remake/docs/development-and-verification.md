@@ -1,5 +1,40 @@
 # Development and Verification
 
+## Enemy spell observation
+
+The [finite rule agreement](domain/gameplay-rules.md#finite-early-enemy-spell-decisions),
+[source binding](content/profiles-and-trust.md#early-enemy-spell-admission) and
+[capability boundary](capability-status.md#early-enemy-blaze1-and-heal1) separate implementation,
+private admission and chapter connection. Run the actual engine's
+`EnemySpellDecisionTests|EnemySpellSessionTests|EnemySpellAdmissionTests`, plus affected source
+orders/physical, attack-spell, healing/scene/AURA, equipment, decision replacement, progression and
+outcome behavior tests. Use locked SDK/input setup below. The pinned binding test needs the
+registered seven private inputs. For the retained `PrivateSourceAiTests` comparison specifically,
+select `SF2_PRIVATE_CONTROLLED_START` to the absolute resolved
+`remake/reference/inputs/battle01-player-ready.json`; the ordinary current private play start has
+different seeds/accounting and is not that test's fixture. Run `uv run sf2 rom verify` after loading
+selections before diagnosing a private input blocker. Run `uv run sf2 verify adapter`, clean-head
+`uv run sf2 verify plan --base origin/main --head HEAD` and inspect actual CI.
+
+Build the existing Godot Debug host after changes. Use the same serial native/runtime/input setup
+as [the player-spell recipe](#player-attack-spell-observation), then select
+[enemy-spells.json](../content/authored/enemy-spells.json) and
+`res://probes/engine_enemy_spell_observation.gd` in place of its package/observer. Launch with
+English and Chinese input settings in separate native children. No retained native instance existed
+at this slice's start. Fresh `SF2_OBSERVATION_OUTPUT`, isolated child APPDATA/LOCALAPPDATA/TEMP,
+45-second deadline, total reports<=15MiB, free disk>=1GiB, one instance and no screenshots apply.
+The existing local reproduction is
+`pwsh -NoProfile -File local/issue1525/run-native.ps1 -Run <fresh> -Language en|zh-CN`.
+
+Ordinary Confirm/Stay/Confirm dispatches both enemies. BLAZE1 moves Mage(6,2)->(4,2), pays5->3
+and damages Scout60->53. HEAL1 moves Cleric(6,5)->(5,5), pays7->4 and heals Wounded8->23.
+The observer reads visible result messages, real faction-side projection, mounted glyph/layout
+checks, exactly two MP events, no enemy EXP/gold and same-session Scout control; a new Right input
+moves its preview2->3. It reads existing state/scene projections and events; it never sets state or
+fabricates completions. The authored gesture is not original media/timing or private scene-asset
+acceptance. Preserve initial failure logs and existing older failed evidence in the local handoff;
+narrow reruns cannot erase a completed red aggregate.
+
 ## Player attack-spell observation
 
 The [finite rule owner](domain/gameplay-rules.md#finite-player-attack-spells) and

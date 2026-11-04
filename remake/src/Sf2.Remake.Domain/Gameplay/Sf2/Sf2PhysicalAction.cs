@@ -117,8 +117,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         // double/counter draws, whose toggles cannot schedule another strike.
 
         bool targetDead = targetHp == 0, actorDead = actorHp == 0;
-        RequireContinuing(target, targetDead);
-        RequireContinuing(actor, actorDead);
+        BattleOutcomeSelection.RequireContinuing(current, reactions);
         var ally = actor.IsAlly ? actor : target;
         var enemy = actor.IsAlly ? target : actor;
         bool allyDead = actor.IsAlly ? actorDead : targetDead;
@@ -166,7 +165,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 hp, multiplier, seed, defender.Definition.Mover is BattleMover.Hovering or BattleMover.Flying ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC0) != 0,
-                ineffective: !counter && ineffective, doubleRange: profile.Critical.DoubleChanceDenominator);
+                ineffective: !counter && ineffective, doubleRange: profile.Critical.DoubleChanceDenominator,
+                counterRange: defender.Definition.Physical!.Critical.CounterChanceDenominator);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
                 hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical && !strike.Ineffective, strike.Damage,
@@ -201,16 +201,6 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                     roll.Range, roll.Result, targetActor));
         }
 
-        void RequireContinuing(BattleActorState defeated, bool dead)
-        {
-            if (!dead) return;
-            if (current.Definition.Outcome is not null) return;
-            if (defeated.Definition.Physical!.Leader)
-                throw new BattleRuleException("leader-defeat-program",
-                    defeated.IsAlly ? "actor.physical.leader" : "target.physical.leader", true);
-            if (current.Actors.Count(a => a.Hp > 0 && a.IsAlly == defeated.IsAlly) == 1)
-                throw new BattleRuleException("battle-outcome-program", "battle.outcome", true);
-        }
     }
 
     // Scalar action boundary retained for callers that explicitly evaluate combat without a
