@@ -102,7 +102,7 @@ internal static class ProgramRunner
                             throw new BattleRuleException("party-member-definition", "party.active", true));
                         current = new(current.SessionId, current.Revision, current.ObservationSequence,
                             new ActiveExploration(returned.WithParty(new(party.Encounter, party.Actors, party.MainSeed,
-                                party.ThinkingSeed, party.Gold, party.NewBattle, activeMembers, party.ItemCustody))),
+                                party.ThinkingSeed, party.Gold, party.NewBattle, activeMembers, party.ItemCustody, party.StoryFlags, party.Visuals, party.RetainedSourceSlots, party.DeathCredit))),
                             // Gameplay consumes current flags; the source counted lists change
                             // only at their actual UpdateForce consumers (join, LEADER, entry).
                             current.Story.Copy(null), current.StopReason);
@@ -127,6 +127,9 @@ internal static class ProgramRunner
                 var token = new WaitToken(checked(current.ObservationSequence + 1));
                 switch (instruction)
                 {
+                    case OpenShop shop when current.Exploration is not null:
+                        story = story.Copy(story.Cursor, new ShopWait(token, shop.Definition));
+                        break;
                     case OpenChurch church when current.Exploration is not null:
                         story = story.Copy(story.Cursor, new ChurchWait(token, church.Definition));
                         break;
@@ -430,7 +433,7 @@ internal static class ProgramRunner
                             party.Actors.Select(row => row.Actor != member.Actor ? row : restoreResource.Hp
                                 ? row with { Hp = row.Progress?.MaxHp ?? member.Definition.MaxHp }
                                 : row with { Mp = row.Progress?.MaxMp ?? member.Definition.MaxMp }),
-                            party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody)));
+                            party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody, party.StoryFlags, party.Visuals, party.RetainedSourceSlots, party.DeathCredit)));
                         break;
                     case MoveEntityNextToPlayer beside:
                         var playerMotion = current.Exploration!.PlayerEntity.Motion;
@@ -558,7 +561,7 @@ internal static class ProgramRunner
         {
             FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
-            DialogueWait or W1TextWait or ChoiceWait or ChurchWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
+            DialogueWait or W1TextWait or ChoiceWait or ChurchWait or ShopWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or PhysicalEntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };

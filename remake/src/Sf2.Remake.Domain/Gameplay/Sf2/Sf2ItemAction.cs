@@ -97,10 +97,12 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         var actor = battle.GetActor(actorRef);
         var target = RequireTarget(battle, actorRef, destination, item, targetRef);
         int recovery = Math.Min(item.Power, target.MaxHp - target.Hp);
-        BattleReaction[] reactions = [new(actorRef, targetRef, "item-use", BattleReactionKind.Recovery,
-            target.Hp, (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)];
-        var award = BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Item, reactions);
+        BattleReaction[] reactions = [item.CuresPoison ? PoisonCureRules.Reaction(actorRef, target, "item-use") :
+            new(actorRef, targetRef, "item-use", BattleReactionKind.Recovery,
+                target.Hp, (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)];
         List<BattleEffect> effects = [];
+        var checkedBattle = item.CuresPoison ? PoisonCureRules.PrepareIneffective(battle, actorRef, reactions, effects) : battle;
+        var award = BattleProgressionRules.Award(progression, checkedBattle, actor, BattleActionKind.Item, reactions);
         var items = actor.SourceLoadout!.Items.ToList();
         ushort consumed = items[slot];
         items.RemoveAt(slot); items.Add(127);

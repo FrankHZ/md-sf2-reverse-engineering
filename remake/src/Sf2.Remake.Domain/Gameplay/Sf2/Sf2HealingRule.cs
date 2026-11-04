@@ -11,6 +11,10 @@ internal sealed class Sf2HealingRule : IHealingRule
         if (!actor.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
+        if (spell.CuresPoison && (spellRef.Level != 1 || spell.IsAura || spell.Power != 0 || spell.Radius != 0))
+            throw new BattleRuleException("poison-cure-definition", "spell", true);
+        if (spell.CuresPoison && !actor.IsAlly)
+            throw new BattleRuleException("enemy-poison-cure", "spell", true);
         if (!spell.IsAura && spellRef.Level is < 1 or > 3)
             throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :
@@ -48,15 +52,19 @@ internal sealed class Sf2HealingRule : IHealingRule
         var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
         BattleReaction[] reactions = targets.Select(target =>
         {
+            if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal");
             int recovery = spell.Targets == HealingTargets.AuraAllAllies ? target.MaxHp - target.Hp :
                 Math.Min(spell.Power, target.MaxHp - target.Hp);
             return new BattleReaction(actorRef, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
                 (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);
         }).ToArray();
-        var award = actor.IsAlly ? BattleProgressionRules.Award(progression, battle, actor, BattleActionKind.Healing, reactions)
+        List<BattleEffect> effects = [];
+        var checkedBattle = spell.CuresPoison ? PoisonCureRules.PrepareIneffective(battle, actorRef, reactions, effects) : battle;
+        var award = actor.IsAlly ? BattleProgressionRules.Award(progression, checkedBattle, actor, BattleActionKind.Healing, reactions)
             : (Amount: 0, Seed: battle.MainSeed, Effects: (IReadOnlyList<BattleEffect>)Array.Empty<BattleEffect>());
+        effects.AddRange(award.Effects);
         var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
             ? a.With(position: destination) : a), mainSeed: award.Seed);
-        return new(prepared, actorRef, destination, reactions, actor.IsAlly ? new(actorRef, award.Amount) : null, award.Effects, [], Spell: spell);
+        return new(prepared, actorRef, destination, reactions, actor.IsAlly ? new(actorRef, award.Amount) : null, effects.AsReadOnly(), [], Spell: spell);
     }
 }

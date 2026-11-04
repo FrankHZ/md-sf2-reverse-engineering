@@ -44,7 +44,7 @@ internal static class ExplorationContentReader
             ObjectOptional(row, "program", ["id", "instructions"], "source", "entitiesRunning");
             string id = Id(row, "id");
             Require(programIds.Add(id), "duplicate-program", "program.id");
-            var instructions = Array(row, "instructions").Select(ReadInstruction).ToArray();
+            var instructions = Array(row, "instructions").Select(instruction => ReadInstruction(instruction, battle.Definition.PrivateDefinitions)).ToArray();
             Require(instructions.Length is >= 1 and <= 65536, "program-length", "program.instructions");
             Require(instructions[^1] is EndProgram or ReturnProgram or JumpProgram or UnsupportedInstruction,
                 "unresolved-program-fallthrough", "program.instructions");
@@ -229,9 +229,11 @@ internal static class ExplorationContentReader
         }
         Require(encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
             "leader-cleanup-outcome", "encounter.leaderCleanup", true);
-        return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
+        bool shops = battle.Definition.PrivateDefinitions is not null && programs.Any(program => program.Instructions.Any(instruction => instruction is OpenShop));
+        return new(new(package, shops ? encounters.Select(encounter => PrivateFieldPreparation.Equipment(encounter, battle.Definition.PrivateDefinitions!)) : encounters,
+                battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
                 battle.Definition.EncounterStarts.Values, battle.Definition.EncounterScenes.Values)
-            { FieldPreparation = authored ? battle.Definition.FieldPreparation : null },
+            { FieldPreparation = authored ? battle.Definition.FieldPreparation : shops ? PrivateFieldPreparation.Read(battle.Definition.PrivateDefinitions!) : null },
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
                 (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases,
                 start.TryGetProperty("display", out var display) ? ReadDisplay(display) : null,
@@ -441,11 +443,14 @@ internal static class ExplorationContentReader
             LoadMode: mode == "preserve" ? MapLoadMode.Preserve : MapLoadMode.Rebuild);
     }
 
-    internal static StoryInstruction ReadInstruction(JsonElement row)
+    internal static StoryInstruction ReadInstruction(JsonElement row) => ReadInstruction(row, null);
+
+    private static StoryInstruction ReadInstruction(JsonElement row, PrivateBattleDefinitions? source)
     {
         string opcode = Text(row, "op");
         switch (opcode)
         {
+            case "shop": return ShopInstructionReader.Read(row, source);
             case "church":
                 Object(row, opcode, "op", "raisePerLevel", "promotedExtra", "raisedHpCap", "poisonCost", "stunCost");
                 return new OpenChurch(new((ushort)Number(row, "raisePerLevel", 1, 65535),

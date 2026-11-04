@@ -14,6 +14,34 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class OpeningSaveTests
 {
     [Fact]
+    public void CompletedShopResourcesUseTheExistingSavePayloadAndRestoreAuthority()
+    {
+        var (definition,data)=OpeningRestoreTests.Fixture();
+        var session=Assert.IsType<SessionStarted>(GameSession.Restore(definition,data,RuleCompositions.Sf2())).Session;
+        var current=session.Current;var buyer=current.Exploration!.Party.Actors.First().Actor;
+        // Authored service wait at an already supported savepoint; no Map16 save eligibility is added.
+        current=current.WithStory(current.Story.Copy(null,new ShopWait(new(100),new([1],[new(1,"Seed",40)]))));
+        SessionSnapshot SendTrade(ShopCommand command)
+        {
+            var result=ShopService.Submit(definition,current,command,session.Rules);Assert.Null(result.Failure);
+            return current=result.Snapshot;
+        }
+        ShopWait Wait()=>Assert.IsType<ShopWait>(current.Story.Wait);
+        SendTrade(new ChooseShop(Wait().Token,ShopAction.Buy));SendTrade(new SelectShopItem(Wait().Token,1));
+        SendTrade(new SelectShopMember(Wait().Token,buyer));
+        Assert.False(OpeningSave.Query(definition,current,session.Rules).Allowed);
+        SendTrade(new AnswerShop(Wait().Token,Wait().Offer!,true));
+        SendTrade(new ContinueShop(Wait().Token));SendTrade(new BackShop(Wait().Token));
+        var capture=OpeningSave.Capture(definition,current,session.Rules,current.SessionId,current.Revision);
+        Assert.Null(capture.Error);Assert.Equal(data.Gold-40,capture.Data!.Gold);
+        Assert.Equal((ushort)1,capture.Data.Allies.First(a=>a.Actor==buyer.Value).Items[0]);
+        var restored=Assert.IsType<SessionStarted>(GameSession.Restore(definition,capture.Data,session.Rules)).Session;
+        Assert.Equal(current.Exploration!.Party.Gold,restored.Current.Exploration!.Party.Gold);
+        Assert.Equal(current.Exploration.Party.Actors.First().SourceLoadout!.Items,
+            restored.Current.Exploration.Party.Actors.First().SourceLoadout!.Items);
+    }
+
+    [Fact]
     public void SameContextUnknownMusicNeedsObservedHistoryAndCannotAssumeTheDefault()
     {
         var (definition, data) = OpeningRestoreTests.Fixture();

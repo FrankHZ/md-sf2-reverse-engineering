@@ -1192,3 +1192,107 @@ msgstr "DISPEL expires. {0} can cast again."
 #. Project-authored functional silence feedback.
 msgid "battle.status.silence"
 msgstr "Silenced ({0})"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.title"
+msgstr "Shop · Gold {0}"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.buy"
+msgstr "Buy"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.sell"
+msgstr "Sell"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.repair"
+msgstr "Repair (unavailable)"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.deals"
+msgstr "Deals (unavailable)"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.leave"
+msgstr "Leave"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.back"
+msgstr "Back / Cancel"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.stock"
+msgstr "{0} · {1} gold"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.slot"
+msgstr "Slot {0} · {1} {2}"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.equipped"
+msgstr "(equipped)"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.unknown"
+msgstr "Unknown item {0}"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.recipient"
+msgstr "Who receives the purchase?"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.seller"
+msgstr "Whose item will you sell?"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.confirm-buy"
+msgstr "Buy {0} for {1}, paying {2} gold? It arrives unequipped."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.confirm-sell"
+msgstr "Sell {1}’s {0} for {2} gold?"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.confirm"
+msgstr "Confirm transaction"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.continue"
+msgstr "Continue"
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.bought"
+msgstr "Purchased. The member now carries the item."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.sold"
+msgstr "Sold. Gold received and item removed."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.full"
+msgstr "That member’s hands are full. No gold was spent."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.insufficientgold"
+msgstr "Not enough gold."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.unsellable"
+msgstr "This item cannot be sold."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.result.unsupporteditem"
+msgstr "This item needs a service that is unavailable here."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.unavailable"
+msgstr "Repair and Deals are unavailable for this ordinary early stock."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.hint"
+msgstr "{0}/{1}: select · {2}: confirm · {3}: back. Purchases stay unequipped; use Party Equip after leaving."
+
+#. Finite shop/supply consumer; semantic arguments retained.
+msgid "battle.scene.poison-cured"
+msgstr "{0} is cured of poison."

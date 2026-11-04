@@ -1,0 +1,33 @@
+{
+  "package": "private-galam-shops",
+  "maps": [
+    16
+  ],
+  "battles": [],
+  "controlledEntitySpeed": 32,
+  "controlledBoundary": "Finite controlled Map16 default/F663 shop admission. Initial party, flags and position are explicit inputs; no Battle03-07 story connection, full Map16, natural original reach or timing claim.",
+  "additionalProgramSources": [
+    {
+      "symbol": "ms_Empty",
+      "path": "code/common/scripting/map/ms_empty.asm"
+    }
+  ],
+  "programs": [
+    "ms_Empty",
+    "Map16_297_EntityEvent7",
+    "Map16_297_EntityEvent16"
+  ],
+  "eventMaps": [
+    16
+  ],
+  "setups": {
+    "16": [
+      663
+    ]
+  },
+  "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
+  "presentationAtlases": {},
+  "audioCues": [
+    "MUSIC_CASTLE"
+  ]
+}

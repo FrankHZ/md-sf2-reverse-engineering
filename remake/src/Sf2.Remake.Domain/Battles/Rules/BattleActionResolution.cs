@@ -350,11 +350,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         var reaction = Reactions[0];
         Require(target.Hp > 0 && target.Faction == actor.Faction && target.Position is not null &&
             BattleRange.Contains(destination, targetRef == actorRef ? destination : target.Position, item.MinimumRange, item.MaximumRange) &&
+            (item.CuresPoison ? reaction == PoisonCureRules.Reaction(actorRef, target, "item-use") :
             reaction.Actor == actorRef && reaction.Target == targetRef && reaction.Action == "item-use" &&
             reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
             reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp && reaction.Amount == reaction.HpAfter - target.Hp &&
             reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
-            reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null);
+            reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null));
         ValidateReward(before, actorRef);
         ValidateRandom(before, effect => effect.Kind == "item-consumed"
             ? effect == new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)
@@ -378,7 +379,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i]; var reaction = Reactions[i];
-            Require(reaction.Actor == actorRef && reaction.Target == target.Actor && reaction.Action == "heal" &&
+            Require(spell.CuresPoison ? reaction == PoisonCureRules.Reaction(actorRef, target, "heal") :
+                reaction.Actor == actorRef && reaction.Target == target.Actor && reaction.Action == "heal" &&
                 reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
                 reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
                 reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&

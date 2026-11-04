@@ -21,6 +21,9 @@ public sealed class BattleStartInput
         ActiveAllies = activeAllies is null ? null : Array.AsReadOnly(activeAllies.ToArray());
         StoryFlags = Array.AsReadOnly((storyFlags ?? []).Distinct().Order().ToArray());
     }
+    internal BattleStartInput WithSeeds(uint mainSeed, uint thinkingSeed) => new(Encounter, Actors,
+        mainSeed, thinkingSeed, Gold, NewBattle, ActiveAllies, ItemCustody, StoryFlags, Visuals, RetainedSourceSlots, DeathCredit);
+
     public string Encounter { get; }
     public IReadOnlyList<BattleActorStartInput> Actors { get; }
     public uint MainSeed { get; }

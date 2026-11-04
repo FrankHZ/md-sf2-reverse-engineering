@@ -1,5 +1,44 @@
 # Session and Resumable Programs
 
+## Finite Galam shop transactions
+
+**Implemented finite capability; Standard rigor, existing transactional High retained.** `OpenShop`
+creates a typed `ShopWait`; `ShopService` owns menu, stock, member, held slot, final offer and result.
+Every accepted selection rotates its token/revision. Only a matching final confirmation revalidates
+membership, stock, price, full loadout/slot, affordability and supported item properties, then commits
+one replacement party containing both gold and loadout. Buy adds unequipped to the first empty slot;
+Sell compacts the selected slot, refreshes derived equipment ATT/range, and grants `floor(price*3/4)`
+through the existing SF2 gold cap. Decline/back, full pack, insufficient funds, unsellable, stale or
+replayed input cannot partially change resources. Failed/declined transactions remain reviewable at
+the wait boundary; result acknowledgement returns to the service menu. Closing resumes the real
+caller, including its normal source entity-event return. A later caller failure retains completed
+transactions and its attributed failure. Other gameplay commands cannot advance a service.
+
+Ordinary early stock has no rare/break service requirement. Deals and Repair are explicitly unavailable;
+rare/broken sales and unknown metadata refuse without changing custody. Existing cursed-equipment
+admission is unchanged. Purchased gear remains unequipped; Party Equip after leaving uses the existing
+field mechanism. This is a finite modern selection flow, without original shop-window/timing parity.
+
+`PoisonCureRules` supplies the finite battle Antidote/DETOX1 effect through the existing friendly
+recovery/item selection, scene payment, status, EXP and end-of-turn authority. It clears only poison;
+Healing Seed supplies20 HP before the normal missing-HP clamp. DETOX target admission checks its
+actual ordinary scenery, caster cast/idle and target idle/frame/held-weapon bindings when private
+scene content is selected/required; it does not require the unused HEAL fairy resources. Missing
+required ordinary content rejects before target confirmation/payment; HEAL/AURA keep their own
+existing content gates. The connected authored consumer buys
+both supplies, enters battle in the same session and consumes their actual carried words. Field HEAL,
+Herb and Seed NoEffect and the existing field Antidote/DETOX1 payment rules are unchanged.
+
+Field RNG/entity/text/portrait copies now retain the carried flags, visuals, retained source slots
+and death-credit context; battle entry transfers the already supplied death-credit context. This fixes
+the observed connected poisoned-party entry failure without relaxing source/new-battle poison guards.
+The existing save payload captures completed transaction gold/loadout at supported settled recipes;
+a held service cannot be saved. No Map16 save recipe, new save format, complete Map16 or Battle03–07
+story connection is introduced. [Admission](../content/profiles-and-trust.md#finite-galam-shop-admission),
+[rules/source](../domain/gameplay-rules.md#finite-purchased-supplies-and-detox1) and
+[ordinary native reproduction](../development-and-verification.md#galam-shop-and-supply-observation)
+separate implementation, private binding and natural-route Unknowns.
+
 ## Finite silence continuation
 
 DISPEL1 and paid silenced casts use the common action/scene authority. The support action's

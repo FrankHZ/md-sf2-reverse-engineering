@@ -58,7 +58,7 @@ internal static class ExplorationDispatcher
     {
         if (current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted)
             return Reject(current, "session-stopped", "command");
-        if (current.Story.Wait is ChurchWait) return Reject(current, "service-owns-control", "command");
+        if (current.Story.Wait is ChurchWait or ShopWait) return Reject(current, "service-owns-control", "command");
         List<SessionObservation> observations = [];
         try
         {
@@ -496,7 +496,7 @@ internal static class ExplorationDispatcher
         var draw = BattleRandom.NextMain(party.MainSeed, 256);
         string kind = wait.Wait2 ? "w2" : "w1";
         current = ProgramRunner.Commit(current, new ActiveExploration(current.Exploration.WithParty(
-            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))), current.Story,
+            party.WithSeeds(draw.After, party.ThinkingSeed))), current.Story,
             observations, "rng-text-" + kind);
         observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = draw.Range, RandomValue = draw.Value };
         var window = current.Story.LogicalText!;
@@ -518,7 +518,7 @@ internal static class ExplorationDispatcher
         var party = world.Party;
         uint thinking = ((uint)value << 24) | (party.ThinkingSeed & 0x00FFFFFFu);
         current = ProgramRunner.Commit(current, new ActiveExploration(world.WithParty(
-            new(party.Encounter, party.Actors, party.MainSeed, thinking, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))),
+            party.WithSeeds(party.MainSeed, thinking))),
             story.Copy(story.Cursor, story.Wait, randomSeedCopy: value), observations, "text-seed-copy");
         observations[^1] = observations[^1] with { After = value };
         return current;
@@ -530,7 +530,7 @@ internal static class ExplorationDispatcher
         var party = world.Party;
         var draw = BattleRandom.NextMain(party.MainSeed, 256);
         current = ProgramRunner.Commit(current, new ActiveExploration(world.WithParty(
-            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle, party.ActiveAllies, party.ItemCustody))),
+            party.WithSeeds(draw.After, party.ThinkingSeed))),
             current.Story, observations, "rng-text-w1");
         observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = draw.Range, RandomValue = draw.Value };
         current = CopyTextSeed(current, current.Story, (byte)draw.Value, observations);

@@ -43,14 +43,15 @@ public sealed record BattleRewardDefinition(bool HalvedExperience);
 public sealed record BattleOutcomeDefinition(ActorRef Leader, ActorRef DefeatedGateEnemy);
 public enum BattleOutcomeKind { Victory, Defeat, Retreat }
 
-public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Power, byte MinimumRange, byte MaximumRange);
+public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Power, byte MinimumRange, byte MaximumRange,
+    bool CuresPoison = false);
 
 public sealed record RetreatSpellDefinition(SpellRef Spell, byte MpCost);
 
 public enum HealingTargets { Single, AuraRadius, AuraAllAllies }
 public sealed record HealingSpellDefinition(
     SpellRef Spell, byte MpCost, ushort Power, byte MinimumRange, byte MaximumRange,
-    HealingTargets Targets = HealingTargets.Single, byte Radius = 0)
+    HealingTargets Targets = HealingTargets.Single, byte Radius = 0, bool CuresPoison = false)
 {
     public bool IsAura => Targets is HealingTargets.AuraRadius or HealingTargets.AuraAllAllies;
 }

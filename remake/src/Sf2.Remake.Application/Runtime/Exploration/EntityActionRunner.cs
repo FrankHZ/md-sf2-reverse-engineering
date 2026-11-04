@@ -26,7 +26,7 @@ internal static class EntityActionRunner
         FieldMoveOutcome? fieldOutcome = null;
         List<int> sounds = [];
         ExplorationState Publish() => world.WithEntities(entities.Values, spriteSize).WithParty(
-            new(world.Party.Encounter, world.Party.Actors, seed, world.Party.ThinkingSeed, world.Party.Gold, world.Party.NewBattle, world.Party.ActiveAllies, world.Party.ItemCustody));
+            world.Party.WithSeeds(seed, world.Party.ThinkingSeed));
         // Source order: movement for this entity, then its script, then the next entity.
         foreach (var original in world.AllEntities)
         {
