@@ -43,10 +43,10 @@ publication right, image-lettering change, default-name admission or naming/IME 
 
 [#1496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1496) freezes the source,
 ownership and control inventory. The intake and the #1506 name/working-term baseline have passed
-independent acceptance. **Current static coverage: 955 translated rows and 3,312 untranslated rows**;
-the 576 previously translated rows remain exact. The Grans pilot has passed independent acceptance;
-the eastern Parmecia draft is agent-reviewed and awaits main-gate independent acceptance, as recorded
-in the current coverage table below. Provenance remains
+independent acceptance. **Current static coverage: 1,265 translated rows and 3,002 untranslated rows**;
+the 955 previously translated rows remain exact. Grans and eastern Parmecia have passed independent
+acceptance; the southern travel draft is agent-reviewed and awaits main-gate independent acceptance,
+as recorded in the current coverage table below. Provenance remains
 `ShiningForceCentral/SF2DISASM` at `c834c652b6862bc5679fd7f69a38a7093206efc6`, the admitted USA ROM
 identity recorded below, and `disasm/data/scripting/text/gamescript.txt`. Direct comparison confirms
 every `{id,text}` in the admitted `world.texts` array equals that pinned table. The six `entry.text`
@@ -94,8 +94,8 @@ common. A common assignment does not itself assert cross-chapter reuse.
 | --- | --- | ---: | ---: | ---: | --- |
 | #1497 | Common/system/descriptions, cross-group and unassigned | 2,369 | 96,115 | 132 | Accepted seeds; other rows not started |
 | #1498 | Grans opening and departure | 444 | 19,760 | 444 | Independently accepted, including 83 exact seeds |
-| #1499 | New Granseal and eastern Parmecia | 379 | 15,208 | 379 | Agent-reviewed; independent acceptance pending |
-| #1500 | Southern travel, Caravan and Creed | 310 | 11,891 | 0 | Not started |
+| #1499 | New Granseal and eastern Parmecia | 379 | 15,208 | 379 | Independently accepted |
+| #1500 | Southern travel, Caravan and Creed | 310 | 11,891 | 310 | Agent-reviewed; independent acceptance pending |
 | #1501 | Northern travel, Pacalon, Tristan and Mitula | 239 | 10,493 | 0 | Not started |
 | #1502 | Moun, Nazca and return to Grans | 366 | 13,972 | 0 | Not started |
 | #1503 | Final confrontations and ending | 160 | 6,556 | 0 | Not started |
@@ -121,10 +121,10 @@ within each control segment, including unsupported tags. Do not substitute guess
 | `{D2}`, `{D3}`, `{ITEM}`, `{SPELL}`, `{DICT}`, `{#}` | Unsupported by `ExplorationTextTokens`; reader rejects the row, static draft still preserves it |
 
 No new source timing or DICT caller/payload contract is claimed. Unknown operands stay Unknown;
-upstream tag descriptions alone do not establish their live use. The working terminology has 82
+upstream tag descriptions alone do not establish their live use. The working terminology has 87
 source-referenced terms or explicit contextual holds, including 48 derived name-table lookups and
-the seven Grans story terms adopted at independent pilot acceptance. The 337 name pairs and these
-working terms are **independently accepted for prose drafting**. Their
+the seven Grans terms and five eastern Parmecia terms adopted at independent batch acceptance.
+The 337 name pairs and these working terms are **independently accepted for prose drafting**. Their
 per-row proposed-for-independent-review labels retain the delivery snapshot; the private acceptance
 record and corpus README own the current adoption. Human reading and runtime default-name display
 remain unaccepted; documentation Chinese and functional UI labels do not establish either. Context-dependent
@@ -179,25 +179,26 @@ and complete-draft closure, including this name corpus; neither static slice clo
 
 ### Current batch review boundary
 
-The [#1498 Grans pilot](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1498)
-passed independent review and calibrated the scene-based method above. Its seven story terms are
-now serialized in the shared private glossary; frozen pending labels preserve the delivery snapshot,
-while the private acceptance record owns current adoption. Its corrected semantic finding and
-source speaker anomalies remain in the private evidence, rather than being erased by later batches.
+The coverage table owns each batch's current state. The independently accepted Grans and eastern
+Parmecia batches retain their private acceptance records, corrected semantic findings, source speaker
+anomalies and classified heuristic findings. Their adopted terms are serialized in the shared glossary;
+frozen pending labels in earlier rows and reviews preserve delivery snapshots, not current adoption.
 
-The [#1499 eastern Parmecia draft](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1499)
-covers all 379 assigned occurrences. Each pair was translated and reread against the named source
+The [#1500 southern travel draft](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1500)
+covers all 310 assigned occurrences. Each pair was translated and reread against its named source
 scene and adjacent dialogue by the accountable executor. Direct checks confirm all 4,267 locked
-source/context/ownership fields, all 576 prior translations and all 3,888 non-target occurrence lines
+source/context/ownership fields, all 955 prior translations and all 3,957 non-target occurrence lines
 remain exact. Native control order and parameter identity/multiplicity within every control segment
 pass; the derived review matches the authority. English residue, placeholders, template repetition
-and length scans have no unexplained hits. The dynamic-name-only call at ID1651 correctly contains
-no added Chinese prose. New proper-name proposals and source wording/speaker ambiguities remain in
-private row notes for independent review, without changing shared name identities or source mapping.
+and length scans have no hits. The cross-ID unfinished sentence at 3254–3255, dialogue conditions,
+choice branches and source actor distinctions remain intact. New wording proposals and source
+ambiguities remain in private row notes for independent review, without changing shared name
+identities or source mapping. Only the five terms already adopted at #1499 acceptance were appended;
+the original 82 glossary records remain byte-exact.
 
 These editorial groups establish static drafting/review coverage only. Unsupported controls,
 unknown runtime operands/timing, natural reach, runtime display and human reading remain separate.
-Independent main-gate acceptance of #1499 is pending; no later batch or runtime consumer is started.
+Independent main-gate acceptance of #1500 is pending; no later batch or runtime consumer is started.
 
 ## Implemented M1 boundary
 
