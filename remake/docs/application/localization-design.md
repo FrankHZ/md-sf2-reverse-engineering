@@ -41,9 +41,9 @@ chapters, ROM writeback, publication, image lettering, default-name display or n
 **Current static coverage:** all 4,267 message occurrences are handled: **4,258 language translations
 and nine source-exact non-language rows; no untranslated rows**. The intake, 337-name working draft
 and all seven message batches have passed independent acceptance. The
-[#1504 cross-batch consistency candidate](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1504)
-calibrates old seed names/titles to adopted names/terms and aligns five devil-tier occurrences;
-its final independent acceptance remains pending. Other existing prose remains exact. All 337 name
+[#1504 cross-batch static closure](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1504)
+has passed independent main-gate acceptance, including old seed name/title calibration to adopted
+names/terms and alignment of five devil-tier occurrences. Other existing prose remains exact. All 337 name
 entries retain their independently adopted targets: 335 language entries, one translated empty-slot
 label and one explicitly retained source-marked technical anomaly. No runtime or human-reading
 completion follows from this static coverage.
@@ -165,10 +165,12 @@ must not replay writeback over the current corpus. No SDK, Godot, emulator, rese
 whole-game replay is required for this static work; completed runtime failures retain their original
 results in their owning handoffs.
 
-**#1504 acceptance candidate only:** final cross-batch independent acceptance is pending. Unsupported
+**#1504 static closure independently accepted by main-gate:** the static scope of #1495 is ready for
+closure. Unsupported
 controls/operands/timing, unknown source reach/speakers, unimplemented game consumers, image text,
 custom-name/IME support, default-name display and human reading/typography remain separate boundaries.
-This candidate does not close parent #1495 or epic #1468 and starts no runtime admission.
+Epic #1468, runtime admission and human acceptance remain open. Issue closure and integration belong
+to main-gate; this status update starts no runtime admission.
 
 ## Implemented M1 boundary
 
