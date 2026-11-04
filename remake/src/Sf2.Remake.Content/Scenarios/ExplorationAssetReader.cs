@@ -10,7 +10,7 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class ExplorationAssetReader
 {
-    internal static ExplorationVisuals Read(JsonElement row)
+    internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
         ObjectOptional(row, "presentation", "audio", ["maps", "sprites", "portraits"]);
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
@@ -66,26 +66,36 @@ internal static class ExplorationAssetReader
         if (row.TryGetProperty("audio", out _))
             foreach (var sound in Array(row, "audio"))
             {
-                ObjectOptional(sound, "audio", "modernEndStep", ["cue", "command", "timerB", "sampleRate", "channels", "sampleFrames", "pcm16", "sha256", "loopBegin", "loopEnd"]);
+                bool external = sound.TryGetProperty("runtimeWav", out _);
+                ObjectOptional(sound, "audio", "modernEndStep", ["cue", "command", "timerB", "sampleRate", "channels", "sampleFrames", external ? "runtimeWav" : "pcm16", "sha256", "loopBegin", "loopEnd"]);
                 string cue = Text(sound, "cue");
                 int command = Number(sound, "command", 1, 120);
                 int timerB = Number(sound, "timerB", 0, 255);
                 Require(!string.IsNullOrWhiteSpace(cue) && commands.Add((command, command < 65 ? 0 : timerB)), "audio-command-identity", "presentation.audio");
-                byte[] pcm;
-                try { pcm = Convert.FromBase64String(Text(sound, "pcm16")); }
-                catch (FormatException) { Require(false, "audio-encoding", "presentation.audio"); throw; }
                 int channels = Number(sound, "channels", 1, 2);
+                int rate = Number(sound, "sampleRate", 8000, 192000);
                 int frames = Number(sound, "sampleFrames", 1, 32 * 1024 * 1024);
-                string digest = Convert.ToHexString(SHA256.HashData(pcm));
-                Require(pcm.Length == frames * channels * 2 &&
-                    digest.Equals(Text(sound, "sha256"), StringComparison.OrdinalIgnoreCase),
-                    "audio-identity", "presentation.audio");
                 int? begin = sound.GetProperty("loopBegin").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopBegin", 0, frames - 1);
                 int? end = sound.GetProperty("loopEnd").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopEnd", 1, frames);
                 Require(begin.HasValue == end.HasValue && (begin is null || begin < end), "audio-loop", "presentation.audio");
                 int? modernEnd = sound.TryGetProperty("modernEndStep", out _) ? Number(sound, "modernEndStep", 1, 1000000) : null;
                 Require(modernEnd is null || command < 65 && begin is null, "finite-music-profile", "presentation.audio");
-                Require(audio.TryAdd(cue, new(command, timerB, Number(sound, "sampleRate", 8000, 192000), channels, pcm, digest, begin, end, modernEnd)),
+                byte[] pcm;
+                if (external)
+                {
+                    Require(worldDirectory is not null && Boolean(sound, "runtimeWav"), "private-world-wav", "presentation.audio");
+                    pcm = PrivateAudioWave.Read(worldDirectory!, command, timerB, rate, channels, frames);
+                }
+                else
+                {
+                    try { pcm = Convert.FromBase64String(Text(sound, "pcm16")); }
+                    catch (FormatException) { Require(false, "audio-encoding", "presentation.audio"); throw; }
+                }
+                string digest = Convert.ToHexString(SHA256.HashData(pcm));
+                Require(pcm.Length == frames * channels * 2 &&
+                    digest.Equals(Text(sound, "sha256"), StringComparison.OrdinalIgnoreCase),
+                    "audio-identity", "presentation.audio");
+                Require(audio.TryAdd(cue, new(command, timerB, rate, channels, pcm, digest, begin, end, modernEnd)),
                     "duplicate-audio-cue", "presentation.audio");
             }
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),

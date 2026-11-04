@@ -6,6 +6,7 @@ import base64
 import hashlib
 import io
 import json
+import struct
 import wave
 from pathlib import Path
 from typing import Any
@@ -107,6 +108,65 @@ def source_map_atlas(rom, definition):
     return bytes(pixels)
 
 
+def _read_world_wav(directory, path, asset, profile, source_command):
+    """Bind a reviewed world-relative candidate before allocating its declared PCM."""
+    command, timer = asset["command"], asset["timerB"]
+    runtime = asset["runtime"]
+    if not isinstance(profile, dict) or (
+        command != source_command
+        or timer != profile.get("timerB")
+        or runtime["sha256"] != profile.get("wavSha256")
+        or runtime["loopBegin"] != profile.get("loopBegin")
+        or runtime["loopEnd"] != profile.get("loopEnd")
+    ):
+        raise ValueError("selected WAV candidate identity or loop mismatch")
+    leaf = f"command-{command:02x}-timer-{timer:02x}.wav"
+    expected = directory / f"audio-{command:02x}-{timer:02x}" / leaf
+    if expected != path or expected.resolve(strict=True) != expected:
+        raise ValueError("WAV candidate must be inside its world-relative audio directory")
+
+    frames, rate, channels = runtime["sampleFrames"], runtime["sampleRate"], runtime["channels"]
+    if not (
+        type(frames) is int
+        and 1 <= frames <= 32 * 1024 * 1024
+        and type(rate) is int
+        and 8000 <= rate <= 192000
+        and type(channels) is int
+        and channels in (1, 2)
+    ):
+        raise ValueError("private WAV PCM shape")
+    begin, end = runtime["loopBegin"], runtime["loopEnd"]
+    if (begin, end) != (None, None) and not (
+        type(begin) is int and type(end) is int and 0 <= begin < end <= frames
+    ):
+        raise ValueError("private WAV loop interval")
+    end_step = profile.get("modernEndStep", 505 if command == 19 else None)
+    if end_step is not None and not (
+        type(end_step) is int and 1 <= end_step <= 1000000 and command < 65 and begin is None
+    ):
+        raise ValueError("invalid finite music profile")
+
+    align = channels * 2
+    size = frames * align
+    if path.stat().st_size != size + 44 or runtime["byteLength"] != size + 44:
+        raise ValueError("private WAV reference size")
+    # Canonical header written by remake_audio, including byte rate and RIFF length.
+    fmt = struct.pack("<IHHIIHH", 16, 1, channels, rate, rate * align, align, 16)
+    header = (
+        b"RIFF"
+        + struct.pack("<I", size + 36)
+        + b"WAVEfmt "
+        + fmt
+        + b"data"
+        + struct.pack("<I", size)
+    )
+    with path.open("rb") as source:
+        if source.read(44) != header:
+            raise ValueError("private WAV reference requires canonical PCM16")
+        source.seek(0)
+        return source.read(size + 45), end_step
+
+
 def prepare_visuals(
     compiler,
     canonical: dict[str, Any],
@@ -118,6 +178,9 @@ def prepare_visuals(
     audio_candidates: tuple[Path, ...] = (),
     battles: tuple[int, ...] = (),
     audio_cues: tuple[str, ...] | None = None,
+    *,
+    wav_profiles: dict[str, dict] | None = None,
+    world_directory: Path | None = None,
 ) -> dict[str, Any]:
     if audio_cues is not None and (
         not audio_cues
@@ -356,6 +419,10 @@ def prepare_visuals(
             raise ValueError("audio candidate path escapes selected root")
         selected_audio.append((asset, path))
     cues, identities = set(), set()
+    if wav_profiles is None:
+        wav_profiles = {}
+    if not isinstance(wav_profiles, dict) or (wav_profiles and world_directory is None):
+        raise ValueError("private WAV profiles require the selected world directory")
     for asset, path in selected_audio:
         identity = (asset["command"], asset["timerB"])
         if asset["cue"] in cues or identity in identities:
@@ -363,7 +430,18 @@ def prepare_visuals(
         cues.add(asset["cue"])
         identities.add(identity)
         runtime = asset["runtime"]
-        payload = path.read_bytes()
+        external = asset["cue"] in wav_profiles
+        end_step = 505 if asset["command"] == 19 else None
+        if external:
+            payload, end_step = _read_world_wav(
+                world_directory,
+                path,
+                asset,
+                wav_profiles[asset["cue"]],
+                compiler.number(asset["cue"]),
+            )
+        else:
+            payload = path.read_bytes()
         if (
             len(payload) != runtime["byteLength"]
             or hashlib.sha256(payload).hexdigest().upper() != runtime["sha256"].upper()
@@ -391,11 +469,19 @@ def prepare_visuals(
                 "sampleFrames": runtime["sampleFrames"],
                 "loopBegin": runtime["loopBegin"],
                 "loopEnd": runtime["loopEnd"],
-                "pcm16": base64.b64encode(pcm).decode("ascii"),
+                **(
+                    {"runtimeWav": True}
+                    if external
+                    else {"pcm16": base64.b64encode(pcm).decode("ascii")}
+                ),
                 "sha256": hashlib.sha256(pcm).hexdigest().upper(),
                 # Accepted modern step clock; this is not a PCM/VInt conversion.
-                **({"modernEndStep": 505} if asset["command"] == 19 else {}),
+                **({"modernEndStep": end_step} if end_step is not None else {}),
             }
+        )
+    if set(wav_profiles) - cues:
+        raise ValueError(
+            "selected WAV cue is unavailable: " + ", ".join(sorted(set(wav_profiles) - cues))
         )
     if not audio:
         raise ValueError("private original audio is missing from the selected asset pack")

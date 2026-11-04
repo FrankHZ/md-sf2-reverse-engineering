@@ -53,8 +53,10 @@ directory. It neither launches an emulator nor promotes assets. Original capture
 configuration, failed attempts and runtime WAVs remain private. The source capture and its observed
 boundaries must be reviewed before the existing local asset admission transaction.
 
-The compiler embeds the admitted PCM and metadata in the private world. Content checks its identity
-again. The Godot session owner creates `AudioStreamWav` resources at their admitted rate and channel
+The private world carries admitted audio metadata and either inline PCM or a checked reference
+to a world-relative candidate WAV. The [Hawel preparation](../application/pre-voyage-campaign.md#hawel-media-prerequisite)
+owns the reference format, per-file bounds and measured resource costs. Content verifies the PCM identity
+at admission. The Godot session owner creates `AudioStreamWav` resources at their admitted rate and channel
 layout, with no gain normalization or pitch change. Streams are resident; resource ownership survives
 exploration/battle view replacement. Looping is enabled only when both admitted sample boundaries
 are present. Natural `Finished` and deliberate replacement/stop remain distinct observations.

@@ -62,7 +62,8 @@ and the preceding immutable exports read-only.
 From the repository root with the configured private inputs loaded, use the accepted presentation
 manifest, the nine reviewed additional command/timer candidates from the opening and Yeel recipes
 (59/BD, 6E/CC, 6F/CC, 41/CC, 43/CC, 4A/CC, 41/C2, 43/C2, 01/C2 in hex), and the accepted authored
-defeat and encounter cues. Pass each candidate exactly once.
+defeat and encounter cues. Include the three [Hawel candidates](#hawel-media-prerequisite)
+under the world directory. Pass each candidate exactly once.
 
 ```powershell
 $audioArgs = foreach ($candidate in $reviewedCandidates) { '--audio-candidate'; $candidate }
@@ -75,48 +76,105 @@ $env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorld
 Launch the ordinary title without diagnostic start arguments. Use an external disposable save
 namespace as in the [save recipe](../verification/host.md#opening-save-and-continue).
 **Confirmed:** the product reader admitted eight maps and Battle01/02/03 with this preparation
-(128,128,156 bytes for the measured relative paths). At 1920×1080 the ordinary New Game entered
+(128,129,333 bytes for the measured relative paths). At 1920×1080 the ordinary New Game entered
 Map3 (56,3), accepted a left step, saved at the existing Map3 recipe and quit via the system menu.
 Fresh-process Continue restored the named party, both RNG streams, flags and gold, and accepted the
-same step from the recipe anchor. Peak game working set was 1,472,802,816 bytes at New Game. This verifies early entry, persistence and input. Walking and
+same step from the recipe anchor. Peak game working set was 1,516,285,952 bytes at New Game. This verifies early entry, persistence and input. Walking and
 fighting from this title to Battle03, the post-Battle03 field returns, recruitment and Battle04
 remain pending.
 
 ## Hawel media prerequisite
 
-**Confirmed:** the pinned Map43 area selects music command 16. Its default `cs_540C0` requests
-command 100 during the soldiers' departure and 16 during Hawel's conversation. The sad join selects
-command 20 and waits for finite music completion. The retained title uses 28 and 10. The prepared
-world's 44 cues have 44 distinct PCM identities and include none of 16, 20 or 100. Preparing
-Map43's actual visual with the pinned canonical import and ROM yields a 128×320 native atlas and
-music 16. With the selected manifest and the reviewed candidates above, asking
-`prepare_visuals` for `MUSIC_ENEMY_ATTACK`, `MUSIC_SAD_THEME_1`, `MUSIC_SAD_JOIN` and `SFX_BLO`
-rejects the latter three as unavailable. To reproduce the asset check through the CLI, make a local
-copy of the selection above, set its `audioCues` to those four names, and repeat the producer command
-with a fresh destination. The CLI returns exit 1 with a path-safe ValueError summary; the underlying
-producer identifies the missing cue names. The [audio owner](../godot/audio.md#audio-boundary) requires reviewed
-local sound inputs. Godot's `SessionAudio.Play` rejects unbound resources.
+**Confirmed:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+Map43 `2-areas.asm` and `cs_540C0` select field music 16, enemy music 5, impact 100,
+sad music 16 and the finite sad join 20. The first Map43 visual preparation with only the
+opening candidates rejected 16/20/100. The ordinary selection now pins these three reviewed
+WAVs, their timer contexts and loop/finite profiles. All 44 preceding audio rows remain
+embedded once. The three external files total 10,827,808 bytes. External music has its own disk
+and resident-memory cost. The 128 MiB world and 4 MiB scene limits apply to the actual JSON files.
 
-**Inferred capacity, before acquiring audio:** minified, the eight-map world needs 126,163,791
-bytes (8,053,937 bytes free within 128 MiB). Its audio rows alone need 122,599,488 bytes. For a
-scale estimate, sum the explicit and repeated note/wait lengths of channel 0 in pinned
-`disasm/data/sound/musicbank0/music{16,19,20}.asm`. One pass gives 3072, 504 and 709 units
-respectively. Calibrate against the existing finite command 19 with 429,803 stereo frames at
-44,100 Hz and Timer B 192. At the same export format the estimated base64 bytes are
-`429803 × (units / 504) × ((256 − timerB) / 64) × 4 × 4/3`. Commands 16 (209) and 20 (205)
-would add about 10.26 MB and 2.57 MB for estimated playback times of 44 s and 11 s.
-Even the current audio rows plus these estimates exceed the document cap, before map data or SFX.
-Exact capture lengths, loop point, timer-specific speech/impact bindings and final bytes are
-**Unknown**. The estimate includes neither hardware timing acceptance nor new capture.
+### Private preparation
 
-The minimum independent prerequisite is reviewed 16/20/100 audio and bounded product admission
-for it. First measure one real loop/finite cut using the [existing materializer](../godot/audio.md#audio-boundary)
-and check the speech commands at the reached timer. Prefer a contained reference to the existing
-immutable runtime WAVs when embedding would exceed the cap. Keep the 128 MiB world and 4 MiB scene
-limits, validate actual PCM lengths/loops before allocation, and test the same selection in both
-New Game and Continue. Acceptance needs map music, sad join completion, previous music and resumed
-input. Target one producer or game process at a time, under 2 GiB resident, at least 1 GiB disk
-free, and at most 15 MiB of reports. Main-gate owns sequencing before resuming A.
+Use the registered US ROM (`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`)
+and the [existing isolated audio export](../verification/field-programs.md#audio-selection-and-evidence-boundary).
+The retained inputs are audio-only BizHawk 2.11.1 Genplus-gx wave dumps. Command 20 was the pilot.
+The two finite observations use the documented 180-frame setup, music 5, stop 254 and quiet pre-roll,
+then dispatch at frame 243. All channels became inactive at 896 for music 20 and 246 for SFX 100,
+followed by 60 quiet frames. The latter's only active stream is type 1 PSG tone 3,
+Z80 `1A33..1A3F` (end exclusive), first cursor `1A3B`. Its inherited timer comes from
+`music05.asm`. The music headers in `music16.asm` and `music20.asm` select their own timers.
+For 16, stop at 180, advance 60, dispatch at 241. Channel 0's cursor returned to `E520` at
+2842 and 5441. The observer restored its saved core state after each bounded observation.
+Dump lengths for 16/20/100 were 6400/1400/700 frames respectively, with `--dump-type=wave
+--dump-close --audiosync=false`. Each launch verified the ROM and registered installation.
+
+| Cue | Command / Timer B (decimal) | Capture SHA-256 | Capture interval [start, end) | Runtime loop [start, end) |
+| --- | --- | --- | --- | --- |
+| MUSIC_SAD_THEME_1 | 16 / 209 | `6BB7799A51784D2F61C8D0855859B0C73304DC0050F9B3EC42891FBB426F48E5` | 178888, 2397330 | 305879, 2218442 |
+| MUSIC_SAD_JOIN | 20 / 205 | `C1E7D03E7B5A24E0E4B5A76DEB47134A75246CC56581CC105C27FAEB0B6E4385` | 179448, 661506 | Finite |
+| SFX_BLO | 100 / 204 | `37231BC684B47834436178E0D634FE7051662AED2D92DB09A50EE3AFEF2634EF` | 179532, 185951 | Finite |
+
+All offsets count stereo sample frames at 44,100 Hz, PCM16. The finite cuts retain 441 samples
+on each side of the first/last above-one-LSB sample in the isolated interval. **Inferred:**
+the modern loop for 16 uses the median of five local waveform recurrence lags (1,912,561–1,912,565
+samples) near the observed cursor period and a low-amplitude seam. The full introduction and
+one repeating passage remain in the runtime WAV. For 20 the selection chooses modern end step
+710 from channel 0's 709 note/wait units plus its terminal step, under the
+[existing two-gate policy](../../../docs/design/contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy).
+Original interrupt phase and hardware timing remain **Unknown**.
+
+To reproduce from each retained capture, set the values below from its row. Supply
+`--loop-begin 305879 --loop-end 2218442` only for 16. The new candidate directory must
+be a direct child of the selected world's directory. Keep its WAV there when moving the bundle.
+
+```powershell
+$dir = 'audio-{0:x2}-{1:x2}' -f $command, $timer
+$loopArgs = if ($command -eq 16) { '--loop-begin', '305879', '--loop-end', '2218442' }
+uv run python -m sf2tool.remake_audio --capture $capture --expected-sha256 $captureSha256 `
+  --command $command --timer-b $timer --cue $cue --start-sample $start --end-sample $end `
+  --output (Join-Path (Split-Path $freshWorld) $dir) @loopArgs
+```
+
+Pass each generated `candidate.json` to the ordinary producer above. It checks the source
+command, reviewed timer, WAV digest, PCM shape and loop interval. A private world row marked
+`runtimeWav: true` selects only `audio-cc-tt/command-cc-timer-tt.wav` beside that world
+(two lowercase hex digits each). Content checks both path components for links, the actual file
+length and canonical 44-byte PCM header before allocating samples, then checks the PCM digest.
+Legacy inline worlds and the authored and title readers retain their existing inputs.
+
+### Consumer observations
+
+**Confirmed:** the ordinary package and a separate three-cue diagnostic used identical selected
+audio rows. For the diagnostic, compile Map43 alone from the pinned Map43 setup files
+(`compile_maps(..., only_maps=[43])`), binding the source compound join selector to the bitwise
+OR of its equates in diagnostic isolation. `prepare_visuals` with the three candidates and
+`audio_cues=("MUSIC_ENEMY_ATTACK", "MUSIC_SAD_THEME_1", "MUSIC_SAD_JOIN", "SFX_BLO")`
+produced the 128×320 native atlas, field music 16 and all four rows. Supply the ordinary
+`runtimeWavCues` as `wav_profiles` and the absolute world directory. In an ignored copy of the
+eight-map world, include this map and its sprites/palette. Route the Map3 (54,3) warp to Map43
+(6,11) Up and use an authored on-load sequence in place of the house events. After ordinary
+New Game step left twice. The sequence waits 30 ticks before each of the following Sound requests:
+5, 100, 16, 20. Then run SoundWait, PreviousMusic and End.
+
+At the running Godot host, `ReadAudioObservationJson()` reported area music 16, existing
+enemy music 5 and SFX 100 under requested/recorded timer 204. SFX 100 and music 20 each
+finished once. Early input during the completed logical wait left the simulation tick unchanged.
+After the actual finite finish, 16 restarted once, left moved the player from (6,11) to (5,11),
+and playback wrapped from 50.25 to 6.97 seconds without another start/finish receipt.
+Separate title New Game with one changed PCM byte in a copied 20 WAV returned `audio-identity`
+before mounting a session. To exercise a larger valid selection, also reference the reviewed
+command 1/C2 candidate using its own timer, digest and loop interval; supply that candidate once.
+Its WAV and 16's WAV total 24,422,332 bytes. The actual producer and New Game admitted both.
+Peak game working set in that variation was 1,392,295,936 bytes. The known ObjectDB exit warning
+remained visible in the successful samples.
+
+**Confirmed material boundary for A:** Map43 soldiers and Hawel (sprites 66 and 189) select
+speech 74. Kazin's ally sprite 11 selects 73. The pack has multiple variants of both commands,
+including 74/204, but lacks 73/209, 74/209 and 73/204. Incremental speech under those contexts
+requires its own resolution before claiming the full dialogue route. The diagnostic covers the
+three music/impact resources and return to field control. Recruitment, post-Battle03 traversal,
+and the full house dialogue remain with A.
+
 
 Chapter-specific compiler work also remains. Direct preparation rejects the compound sad-join
 operand. Decoding that operand in isolation exposes the Map17 default setup's five local entities

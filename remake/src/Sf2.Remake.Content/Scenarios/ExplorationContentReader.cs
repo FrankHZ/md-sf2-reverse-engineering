@@ -18,7 +18,7 @@ internal static class ExplorationContentReader
         return Read(Id(root, "package"), root.GetProperty("world"), root.GetProperty("start"), battle, authored: true);
     }
 
-    internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null, bool authored = false)
+    internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null, bool authored = false, string? worldDirectory = null)
     {
         ObjectOptional(world, "world", ["maps", "programs", "texts"], "partyFlags", "textFont", "growth", "memberNames", "presentation");
         MapPartyFlagLayout? partyFlags = null;
@@ -152,7 +152,7 @@ internal static class ExplorationContentReader
         Require(maps.Count > 0, "empty-world", "world.maps");
         CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
-            world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation) : null,
+            world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation, worldDirectory) : null,
             world.TryGetProperty("memberNames", out _) ? Array(world, "memberNames").Select(name =>
             {
                 Require(name.ValueKind == JsonValueKind.String && name.GetString()!.Length is > 0 and <= 32, "member-name", "world.memberNames");
