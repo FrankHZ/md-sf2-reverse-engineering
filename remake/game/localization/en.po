@@ -114,7 +114,7 @@ msgstr "Language resources are unavailable (localization-resources). Current set
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.partial"
-msgstr "Chinese display: entry, naming help, slots, Save/Quit, settings, Party/Prepare, battle commands/targets/equipment/status, Give/Drop/retreat, authored field text, HEAL, Church and Search. Missing source rows and untranslated names use English."
+msgstr "Chinese support is partial. Untranslated dialogue and names remain in English."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
@@ -967,3 +967,55 @@ msgstr "{0} cast {1} level {2}!"
 
 msgid "battle.retreat-item"
 msgstr "{0} used {1}!"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.continue"
+msgstr "{0}: Continue >"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.choice-help"
+msgstr "{0} / {1}: Select    {2}: Confirm    {3} / Right click: No"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.in-progress"
+msgstr "Scene in progress…"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.skip"
+msgstr "{0}: Skip battle intro"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.skipping"
+msgstr "Skipping battle intro…"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.yes"
+msgstr "Yes"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "story.no"
+msgstr "No"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.victory.ready"
+msgstr "Victory. Back in the field."
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.victory.pending"
+msgstr "Victory. Returning to the field…"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.defeat.ready"
+msgstr "Defeat. Back in the field."
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.defeat.pending"
+msgstr "Defeat. Returning to the field…"
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.retreat.ready"
+msgstr "Returned from battle. Back in the field."
+
+#. Story controls/typed battle return only; source dialogue remains unchanged.
+msgid "field.return.retreat.pending"
+msgstr "Returned from battle. Returning to the field…"

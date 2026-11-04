@@ -2473,11 +2473,68 @@ attack/growth/status/results or opening-wide bilingual coverage. These remain ou
 execution, game-save identity and seven-character ASCII naming are unchanged.
 
 
-**Unknown, retained exit warning:** one passing Chinese Wing observation emitted two ObjectDB
-exit warnings. One same-case `-Case wing -Run wing-zh-verboseNN -VerboseNative` observation completed
+**Unknown, retained exit warning:** one passing Chinese Wing observation emitted one exit warning listing two ObjectDB
+instances. The existing [#1410 boundary](#audio-resource-lifetime-observation) remains separate; no shared cause is established. One same-case `-Case wing -Run wing-zh-verboseNN -VerboseNative` observation completed
 with empty stderr and no leaked-object type output. The original warning is preserved; its owner
 (observer-held references versus existing host/resource lifecycle) is not established. The changed
 consumer code adds string formatting/catalog rows, with no new Godot node/resource creation or
 lifecycle changes. This does not establish that the original warning is resolved or attributable to
 an independent issue; main-gate retains that acceptance boundary. No broader audio investigation or
 repetition of passing scenarios is implied.
+
+## Localized story controls, choices and return notices
+
+Use the [M2f Standard agreement](../application/localization-design.md#implemented-m2f-story-controls-and-return-notices-boundary)
+and [presentation boundary](../godot/presentation.md#localized-story-controls-and-return-notices).
+Reuse the installed SDK/Godot, owning project/imports and existing ordinary-input observers. After
+loading current ignored private-input configuration in the launching process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, run `uv run sf2 verify adapter`, then build the actual Debug
+adapter with the selected absolute DOTNET_BIN. A changed assembly needs a new process to load it;
+changed PO files need the ordinary editor import. Stop SDK build servers before native work.
+
+The retained finite launcher is `local/issue1481/run-native.ps1 -Run <fresh-name> -Case <case>`.
+It uses 1920x1080, fixed60, existing `local/issue1471/field-01` writable runtime directories and fresh
+external save-validation namespaces. It emits semantic checkpoints, relevant label rectangles,
+line heights, missing glyphs and catalog status only; no screenshots, frame capture or world copy.
+The local caller extends `engine_story_dialogue_observation.gd` for actual-host input/state/geometry,
+and uses the existing menu-mouse press/release recipe for choices. Return reuses the bounded EGRESS
+caller from the preceding [transaction group](#localized-battle-transactions-and-retreat).
+
+| Case / finite existing input | Required observation |
+| --- | --- |
+| `story`, English/Chinese | Reuse `local/issue1393/control.json` from the [shared-story recipe](#shared-story-dialogue-observation), derived from public `harbor-arrival.json` with the next battle omitted. Ordinary Talk reveals the English body with localized hint/fallback; Cancel preserves token/flags/party/seeds. Reveal-all, continue, stable default Yes and keyboard Right/Cancel=No; reopen, complete right-click No, reopen, left press alone does not answer, full release Yes makes the actual flag10/yard-map branch. Nodes remain Yes/No and selected labels use supported `>`. |
+| `long`, English/Chinese | Reuse existing `local/issue1393/overflow.json`. Reveal-all, then read every measured page before a fresh acknowledge. ReadMore/idle preserve revision, token, flags, party, cursor and seeds; new windows reset reading. The same finite choice semantics remain. |
+| `story` with `fallback-zh` run name | Before composition erase Chinese `story.continue` and give `story.choice-help` invalid `{9}`. Observe complete English templates, effective locale/reasons/diagnostics and the independently identified English body. No canonical work is altered. |
+| `battle`, English/Chinese | Unchanged public `jaro-conversion.json`; ordinary two Up previews and STAY reach two battle-story windows and actual camera waits. Check camera slot/focus, real tokens/completions, visible body fallback only in Chinese, readable hints/geometry, close and fresh movement. |
+| `skip`, English/Chinese | Unchanged public `harbor-arrival.json`; choice excludes skip, later eligible intro shows actual mapped Cancel, held skip reaches handoff but cannot become combat input, release admits battle and fresh Confirm/Cancel works. |
+| `settings`, Chinese | Existing public `localization-pilot.json` with its validated overlay, ordinary text acknowledgement then safe Settings entry. Inspect the short partial-support notice, actual glyphs/measured bounds and unchanged canonical state on open/close. |
+| `return`, English/Chinese | Existing controlled Battle02 EGRESS input/world/party from the preceding transaction recipe. Ordinary STAY reaches Bowie; selection Cancel retains MP, EGRESS pays8→0 once, staged effect/close reaches same-session field. Read actual pending then ready typed retreat notice; first movement dismisses it. Compare resources/seeds and event order rather than translated strings. |
+
+Require exit0, passed=true, empty failures/Unavailable and no script/runtime errors, with shutdown
+warnings retained separately. Directly compare both PO key/argument sets, six complete return rows,
+all new glyphs and source/input boundaries. The remaining Victory/Defeat event/lifetime variants are
+already retained by the [battle-return owner](#battle-return-and-party-status-observation), including
+`local/issue1398/victory-party-final` and `defeat-02`; inspect them directly instead of replaying battles.
+The representative fresh return path is EGRESS, not a new claim of fresh victory/defeat execution.
+Use the clean committed dependency planner and actual selected CI; no engine unit, research/full/H3,
+probe unit tests, complete opening replay or new private acquisition follows from this display change.
+
+**Confirmed executor boundary:** bilingual normal/long dialogue, keyboard and pointer choices,
+intro skip, two battle-story windows/camera waits and EGRESS pending/ready/dismissed notices pass.
+Controls/glyphs fit the actual viewport; shared panel body/hint/choice rectangles are disjoint.
+Redraw/Cancel/ReadMore preserve applicable canonical state; explicit Yes changes the branch and the
+already committed retreat payment is retained. The Chinese EGRESS entry observed one additional
+`selection-cancelled` event before the common payment boundary, giving revision/token offsets of1;
+subsequent semantic events and resources agree. Actual field movement advances the source random-walk
+seed and is not counted as redraw invariance. Missing/invalid UI rows use complete English fallback.
+The initial unsupported Continue glyph (`▾`, code9662) caused resource rejection; font inspection
+identified it and supported `>` replaced it. One long caller initially waited for natural reveal
+past its bounded deadline; ordinary reveal-all corrected the caller. The first settings caller
+selected a no-overlay package, which correctly showed the distinct overlay-unavailable notice; the
+existing pilot/overlay exercises the intended partial-support notice. Original completed failures and
+import warnings remain under `local/issue1481`. Passing native logs have empty stderr; this does not
+resolve the separate [ObjectDB lifetime Unknown](#audio-resource-lifetime-observation).
+
+Other dialogue bodies, names, BattleScene results/hints, human translation/typography, original
+reach/timing/audio, Unicode naming, export and full-opening Chinese acceptance remain outside this
+slice. Existing FieldTextWait overlays and all game-save/engine semantics remain unchanged.

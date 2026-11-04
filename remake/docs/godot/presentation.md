@@ -552,6 +552,25 @@ necessary private-local menu/HEAL seam. No engine/data behavior changes require 
 Retain completed observer failures and the existing focus/release/shutdown Unknowns. Independent
 main-gate integration and broader aesthetic/all-map approval remain separate.
 
+## Localized story controls and return notices
+
+The [M2f consumer agreement](../application/localization-design.md#implemented-m2f-story-controls-and-return-notices-boundary)
+extends the existing GameText/PO/font through ExplorationDialogueView hints, BattleStoryView hints,
+StoryChoiceRow labels and FieldReturnFeedback notices. The shared panel measures the hint including
+its Chinese English-fallback line; body, hint and attached choices remain disjoint at 1080p.
+Both old triangle markers lack bundled coverage; `>` is used for selected Yes/No and Continue.
+Stable Yes/No nodes, booleans and source-owned selection retain input authority. Reveal, ReadMore,
+complete pointer release and fresh confirmation still precede choice delivery.
+
+The exploration body/window/range and retained FieldTextWait projection are unchanged. Battle-story
+Definition.Texts remains English, with a visible `unmigrated-consumer` fallback notice only while a
+DialogueWait body is shown in Chinese. Camera/tick delivery and close remain unchanged. Typed actual
+Victory/Defeat/retreat events plus CanWaitAtInput select complete pending/ready notices; Begin/Dismiss
+and first-input dismissal retain their existing lifetime, without a new outcome or reward authority.
+The [native recipe](../verification/host.md#localized-story-controls-choices-and-return-notices)
+records bounded bilingual observations. Dynamic BattleScene text, remaining dialogue/names and
+opening-wide Chinese coverage are not admitted here. Language stays in the existing settings entry.
+
 ## Shared story dialogue agreement
 
 **Standard rigor; [#1393](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1393).**
