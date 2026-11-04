@@ -5,18 +5,19 @@
 **Decision:** continue bounded development with the existing modular monolith and typed programs.
 No P1 or general engine/script redesign was identified in the five accepted changes for
 [#1528](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1528).
-The [current structure findings](structure-and-quality-review.md#finite-pre-voyage-audit) retain two
-open P2s: **F4**, an existing party reconstruction omission now reachable through connected poison
-content, and **F5**, a new internal missing-target inconsistency under silence. Repair F4 before
-depending on recovery/reset plus connected poison entry; repair F5 before adding another action
-preparation caller. Neither finding is implemented by this audit. Unrelated bounded work can proceed;
-this is not acceptance of the complete Battle03–07 or first-departure route.
+The [current repair disposition](structure-and-quality-review.md#f4f5-bounded-repair-disposition)
+records **F4/F5 implemented and locally verified under #1536, pending independent acceptance and
+integration**. Recovery and related same-lifetime resource edits preserve carried context; targeted
+spell preparation requires selection before the silence shortcut. Audit-base source/failures below
+remain evidence of the original findings. Unrelated bounded work can proceed; this is not acceptance
+of the complete Battle03–07 or first-departure route.
 
 **Standard rigor:** the outcome is a continuation decision and minimal repair design, under the
 [finite batch agreement](../domain/special-mechanics-design.md#finite-pre-voyage-foundation-agreement).
 Existing High-rigor transaction/save requirements remain. Tracked ownership is exactly this report
 and `structure-and-quality-review.md`; architecture navigation already reaches both. No production,
-test, content, research, schema or gate policy changes are authorized here. Main-gate retains
+test, content, research, schema or gate policy changes were part of that audit. The separate #1536
+repair scope and executable acceptance are owned by the linked disposition. Main-gate retains
 independent acceptance and integration; this report opens no implementation tickets.
 
 Inspection is the diff from accepted `9a99132a325218c81f47528f6dfdee51a0c02ff9` to

@@ -24,6 +24,10 @@ public sealed class BattleStartInput
     internal BattleStartInput WithSeeds(uint mainSeed, uint thinkingSeed) => new(Encounter, Actors,
         mainSeed, thinkingSeed, Gold, NewBattle, ActiveAllies, ItemCustody, StoryFlags, Visuals, RetainedSourceSlots, DeathCredit);
 
+    // Same carried-party lifetime: replace resources without resetting entry/presentation context.
+    internal BattleStartInput WithResources(IEnumerable<BattleActorStartInput> actors, uint? gold) => new(Encounter, actors,
+        MainSeed, ThinkingSeed, gold, NewBattle, ActiveAllies, ItemCustody, StoryFlags, Visuals, RetainedSourceSlots, DeathCredit);
+
     public string Encounter { get; }
     public IReadOnlyList<BattleActorStartInput> Actors { get; }
     public uint MainSeed { get; }

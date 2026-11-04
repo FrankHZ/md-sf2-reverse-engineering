@@ -46,6 +46,18 @@ internal static class BattleActionRules
         Invoke(rule, "prepare", () =>
         {
             var admission = rule.RequireAction(battle, actor, action);
+            // These spells require a selected center even when silence suppresses their effects.
+            if (target is null)
+            {
+                var missingTarget = action.Kind switch
+                {
+                    BattleActionKind.Healing => "invalid-heal-target",
+                    BattleActionKind.AttackSpell => "attack-spell-target",
+                    BattleActionKind.SupportSpell => "support-spell-target",
+                    _ => null,
+                };
+                if (missingTarget is not null) throw new BattleRuleException(missingTarget, "target");
+            }
             if (target is { } victim) _ = rule.RequireTarget(battle, actor, destination, action, victim);
             var prepared = Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Suppress(battle, actor, destination, action, admission)
                 ?? rule.Prepare(battle, actor, destination, action, target, progression);
