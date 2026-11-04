@@ -202,7 +202,10 @@ public sealed partial class ExplorationSessionView : Control
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
         if (_session.Current.Story.Wait is ChurchWait)
-        { PresentChurch(); _tickTime = 0; return; }
+        {
+            if (!_input.GameplayHeld) _skipRequiresRelease = false;
+            PresentChurch(); _tickTime = 0; return;
+        }
         if (_partyStatus.Open)
         { _partyStatus.Present(_session, _input); _tickTime = 0; return; }
         if (FinishEntryHandoff()) return;

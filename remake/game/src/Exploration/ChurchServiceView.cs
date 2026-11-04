@@ -85,12 +85,14 @@ internal sealed partial class ChurchServiceView : Control
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < _options.Count; i++)
         {
-            _rows[i].Text = (i == _index ? "▸ " : "   ") + _options[i].Label;
+            _rows[i].Text = (i == _index ? "> " : "   ") + _options[i].Label;
             if (_options[i].Command is not null && i != _index) _rows[i].RemoveThemeColorOverride("font_color");
             else _rows[i].AddThemeColorOverride("font_color", _options[i].Command is null ? StoryTheme.Unavailable : StoryTheme.Selected);
         }
         _hint.Text = (_error is null ? "" : _error + "\n") + GameText.Get("church.hint",
             input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
+        if (_wait?.Phase == ChurchPhase.Menu && _options[_index].Command is LeaveChurch { Save: true })
+            _hint.Text += "\n" + GameText.Get("church.save-hint");
         if (GameText.Language == "zh-CN")
         {
             _hint.Text += "\n" + GameText.Get("localization.names");

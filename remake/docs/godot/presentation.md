@@ -56,6 +56,42 @@ registry. No Domain/Application, progress format, savepoint legality or new navi
 changed. A directly observed invalid-settings early exit now disconnects window-support signals
 only if initialization actually subscribed them; this does not hide other shutdown warnings.
 
+## Church and shared Save agreement (#1519)
+
+**Standard rigor:** clarify the existing priest services and common persistence entrance within the
+[High recovery agreement](../application/opening-session-lifecycle.md#implemented-opening-church).
+The real Map3 caller already offers Raise, Cure, unavailable Promotion, Save and Leave, and completes
+its program/event/portrait return before opening the common save host. Retain that lifecycle.
+The finite [state/input/geometry observations](../verification/host.md#church-and-shared-save-calibration)
+cover this calibration; independent integration belongs to main-gate.
+
+- The world entry reads **Record adventure… (Save)** / **记录冒险…（存档）**. Selecting that row
+  explains the same two slots as Menu → Save, existing save-point limits, return to exploration after
+  closing saving, and a fresh priest interaction for further services. It requests the existing
+  `LeaveChurch(Save: true)`; it does not require a separate manual Leave.
+- Both entrances retain the same slot labels, declared Continue destination, safe Cancel-first
+  overwrite confirmation, backup/write/recovery rules and format. Church has no additional save
+  permission. Save cancel, success and failure close into usable exploration. Menu Save retains its
+  existing Back-to-slots then Back-to-Menu hierarchy. Neither entrance captures a service wait.
+- Cost, target, Confirm/Decline, no-applicable-member, insufficient-gold and paid feedback retain their
+  typed transaction meanings. Promotion remains inspectable/unavailable; curse removal explicitly
+  remains unavailable here. No new service or automatic save is added.
+- Church uses the bundled-font-supported `>` focus marker with the existing gold/unavailable colors.
+  A selected Save appends its explanation to mapped navigation; the existing measured footer grows
+  to fit. Other rows retain their existing hints and transient-refusal lifetime.
+- On resuming a paused Church, its early-return branch clears the existing entry-skip release flag
+  only after gameplay input is neutral, as ordinary exploration already does. The Church's own held
+  input and `MenuPointer` suspension still reject the old gesture; fresh mouse input works after
+  release. There is no new pause or input authority.
+- A diagnostic/authored profile that cannot save now explains that saving is unavailable in this
+  game, retaining existing saves and the diagnostic code. Waiting longer or ending an already-closed
+  priest conversation cannot enable that profile. Other save errors retain their existing mapping.
+
+World96px/4× scale, panel geometry, services, save eligibility, Domain/Application and durable format
+are unchanged. Physical focus/device delivery, final pixels, original service cadence and whole-game
+human/aesthetic acceptance remain **Unknown**. Existing ObjectDB shutdown warnings are retained;
+this slice does not claim leak closure.
+
 ## Display layer boundaries (#1517)
 
 **Standard rigor:** make the existing battle dialogue and status readable over world sprites, then

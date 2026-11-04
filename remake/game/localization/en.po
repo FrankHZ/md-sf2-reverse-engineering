@@ -158,7 +158,10 @@ msgstr "Promote · Unavailable"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.save"
-msgstr "Save… · Close Church first"
+msgstr "Record adventure… (Save)"
+
+msgid "church.save-hint"
+msgstr "Uses the same two slots as Menu → Save. Saving remains limited to save points.\nClose saving to resume exploring; talk to the priest again for services."
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.leave"
@@ -202,7 +205,7 @@ msgstr "Stun removed. Paid {0} gold."
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.curse"
-msgstr "Curse removal is unavailable in this content."
+msgstr "Curse removal is unavailable here."
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.promotion"
@@ -430,6 +433,9 @@ msgstr "The write may already have completed. Your current session is still paus
 
 msgid "save.error.location"
 msgstr "Save after returning to a supported location: opening Granseal or the settled first battle return."
+
+msgid "save.error.profile"
+msgstr "Saving is unavailable in this game. Your existing saves have been kept."
 
 msgid "save.error.compatibility"
 msgstr "This save needs the matching content/rules. The file has been kept."
