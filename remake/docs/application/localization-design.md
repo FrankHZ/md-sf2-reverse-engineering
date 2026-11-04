@@ -188,8 +188,8 @@ all 4,267 source/context/ownership fields, all 215 seeds and the 3,906 other occ
 exact. Direct checks pass native control order, parameter identity/multiplicity within every control
 segment, source/ID coverage, placeholders, English residue, repeated/template targets and length
 heuristics. One repeated short hesitation was inspected as legitimate; no unresolved mechanical
-QA defect remains. The new targets contain **7,895 characters / 17,791 UTF-8 bytes**; the derived
-review is **110,616 bytes**. These are static text measurements, not renderer-fit acceptance.
+QA defect remains. The new targets contain **7,897 characters / 17,797 UTF-8 bytes**; the derived
+review is **110,887 bytes**. These are static text measurements, not renderer-fit acceptance.
 
 Ground Seal, Ancient Tower/Shrine, the two jewels, Evil World and light tube have consistent
 source-context-backed working proposals recorded in the private row notes/review, without changing
