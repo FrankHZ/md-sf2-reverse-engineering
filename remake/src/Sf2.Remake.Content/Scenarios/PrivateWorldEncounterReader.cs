@@ -12,12 +12,15 @@ internal static class PrivateWorldEncounterReader
         PrivateBattleContentReader? newGame = null)
     {
         Require(selections.ValueKind == JsonValueKind.Array, "array-required", "encounters");
-        Require(selections.GetArrayLength() <= 1, "encounter-selection-limit", "encounters");
+        // The product route admits Battle01 through Battle03. Controlled scenarios retain their two-encounter boundary.
+        Require(selections.GetArrayLength() <= (newGame is null ? 1 : 2), "encounter-selection-limit", "encounters");
         var admitted = new List<ScenarioReadAccepted> { first };
         string directory = Path.GetDirectoryName(Path.GetFullPath(worldPath))!;
         foreach (var row in selections.EnumerateArray())
         {
-            Object(row, "encounter-inputs", "placement", "scene", "terrain", "static", "enemies", "gold", "start", "battleScenes");
+            string[] required = ["placement", "scene", "terrain", "static", "enemies", "gold", "battleScenes"];
+            if (newGame is null) Object(row, "encounter-inputs", [.. required, "start"]);
+            else ObjectOptional(row, "encounter-inputs", required, "start");
             string Input(string key)
             {
                 string relative = Text(row, key);

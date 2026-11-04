@@ -1,5 +1,8 @@
 # Remake Capability Status
 
+The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
+handoffs, carried state and acceptance boundaries for Battle03 through departure.
+
 ## Finite Galam shop and purchased-supply closure
 
 **Implemented bounded capability, Standard with existing transactional/persistence High:** ordinary
