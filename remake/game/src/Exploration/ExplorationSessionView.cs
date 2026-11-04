@@ -97,9 +97,10 @@ public sealed partial class ExplorationSessionView : Control
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
+        var ui = UI.PresentationCanvas.Mount(this, "FieldUi", UI.PresentationCanvas.Field);
         _dialogueView = new ExplorationDialogueView { Name = "StoryDialogue" };
         _dialogueView.Panel.Choices.InvalidatePointer = _choicePointer.Cancel;
-        AddChild(_dialogueView);
+        ui.AddChild(_dialogueView);
         _partyStatus = new PartyStatusView { Name = "PartyStatus" };
         _partyStatus.SubmitField = (command, revision) =>
         {
@@ -109,14 +110,13 @@ public sealed partial class ExplorationSessionView : Control
             if (result.Failure is null) { _result = result; PublishResult("submit"); Present(); }
             return result;
         };
-        AddChild(_partyStatus);
-        _church = new ChurchServiceView { Name = "ChurchService" }; AddChild(_church);
+        ui.AddChild(_partyStatus);
+        _church = new ChurchServiceView { Name = "ChurchService" }; ui.AddChild(_church);
         // Keep a stopped presentation readable even when the world is held black.
-        var failureLayer = new CanvasLayer { Layer = 101 };
         var failurePanel = new PanelContainer { Name = "FailurePanel", Position = new(240, 32),
             Size = new(1440, 140), Theme = UI.StoryTheme.Create(), MouseFilter = MouseFilterEnum.Ignore };
         _failureLabel = new Label { Name = "TransitionFailure", AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        AddChild(failureLayer); failureLayer.AddChild(failurePanel); failurePanel.AddChild(_failureLabel);
+        ui.AddChild(failurePanel); failurePanel.AddChild(_failureLabel);
         failurePanel.Hide();
         GetViewport().SizeChanged += Present;
         GetWindow().FocusExited += SuspendClock;

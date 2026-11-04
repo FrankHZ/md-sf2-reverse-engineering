@@ -8,6 +8,20 @@ whole-opening human/aesthetic approval. A–E now have accepted bounded deliveri
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
+## Sprite and interface overlap (#1517)
+
+**Confirmed — bounded implementation and headless Godot state/input observation:** private HEAL
+places the ally sprite (effective Z2) over intersecting scene text (Z0), and fairy sprites (Z3) over
+intersecting status cards, on the same original canvas. The
+[display layer agreement](../godot/presentation.md#display-layer-boundaries-1517) separates world,
+battle UI, field UI and host UI without changing world-local foreground/entity priority.
+The [finite matrix and reproduction](../verification/host.md#display-layer-boundary-observation)
+cover scene/field dialogue, effects/results, Party/Church, Settings/Save/recovery and scene retirement.
+This is a candidate for independent engineering acceptance, not whole-opening visual approval.
+The exact user-reported monster/version and final raster/physical desktop behavior remain **Unknown**;
+headless sorting facts do not establish a rendered screenshot or human readability pass.
+Menu redesign and Church behavior remain separately scoped to #1518/#1519.
+
 ## Scope and reading rules
 
 **Standard rigor:** this assessment supports prioritization under

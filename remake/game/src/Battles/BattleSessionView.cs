@@ -89,16 +89,17 @@ public sealed partial class BattleSessionView : Control
         _map.SubjectChanged = rectangle =>
         { _hudSubject = rectangle; _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle); };
         AddChild(_map);
-        AddChild(_hud); _hud.Choices.Hide();
+        var ui = UI.PresentationCanvas.Mount(this, "BattleUi", UI.PresentationCanvas.Battle);
+        ui.AddChild(_hud); _hud.Choices.Hide();
         _menu = new BattleCommandMenu { Name = "CommandMenu", Submit = Send };
-        AddChild(_menu);
-        _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
-        _give = new BattleGiveView { Name = "BattleGive" }; AddChild(_give);
-        _discard = new BattleDiscardView { Name = "BattleDiscard" }; AddChild(_discard);
-        _retreat = new BattleRetreatView { Name = "BattleRetreat" }; AddChild(_retreat);
-        _story = new BattleStoryView { Name = "BattleStory" }; AddChild(_story);
-        _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; AddChild(_appearance);
-        _feedback = new UI.ContextHint { Name = "BattleFeedback", ZIndex = 100 }; AddChild(_feedback);
+        ui.AddChild(_menu);
+        _scene = new BattleSceneView { Name = "BattleScene", PresentationRoot = ui }; AddChild(_scene);
+        _give = new BattleGiveView { Name = "BattleGive" }; ui.AddChild(_give);
+        _discard = new BattleDiscardView { Name = "BattleDiscard" }; ui.AddChild(_discard);
+        _retreat = new BattleRetreatView { Name = "BattleRetreat" }; ui.AddChild(_retreat);
+        _story = new BattleStoryView { Name = "BattleStory" }; ui.AddChild(_story);
+        _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; ui.AddChild(_appearance);
+        _feedback = new UI.ContextHint { Name = "BattleFeedback", ZIndex = 100 }; ui.AddChild(_feedback);
         _feedback.Hide();
         Arrange();
     }
@@ -136,8 +137,7 @@ public sealed partial class BattleSessionView : Control
     {
         if (_map is null || _hud is null) return;
         var size = GetViewportRect().Size;
-        // Map framing is independent of which overlay is open. Map is the first child;
-        // command menus, the supplementary HUD and scene presenters draw above it.
+        // Map framing is independent of overlays; the UI canvas owns their draw boundary.
         _map.Position = Vector2.Zero;
         _map.Size = size;
         _menu?.Arrange(size);

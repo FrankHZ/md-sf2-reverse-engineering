@@ -48,11 +48,11 @@ public sealed partial class GameRoot
         if (_entry is not null && !overEntry) _entry.Hide();
         _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry, Input = _input };
         if (overEntry) _entry?.Setup(true);
-        AddChild(_slots); ApplyHostPause(); DisarmInput();
+        _hostUi.AddChild(_slots); ApplyHostPause(); DisarmInput();
     }
     private void CloseSavePanel()
     {
-        if (_slots is { } slots) { _slots = null; RemoveChild(slots); slots.QueueFree(); }
+        if (_slots is { } slots) { _slots = null; _hostUi.RemoveChild(slots); slots.QueueFree(); }
         if (_entry is not null) { _entry.Show(); _entry.ReturnFromSetup(); }
         ApplyHostPause();
         DisarmInput();
@@ -219,12 +219,12 @@ public sealed partial class GameRoot
         var button = new Button { Name = name, Text = text, AnchorLeft = 1, AnchorRight = 1,
             OffsetLeft = left, OffsetRight = right, OffsetTop = 12, OffsetBottom = 60,
             Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
-        button.Pressed += () => pressed(); AddChild(button); return button;
+        button.Pressed += () => pressed(); _hostUi.AddChild(button); return button;
     }
     private void ReleasePersistenceButtons()
     {
         foreach (var button in new[] { _saveButton, _quitButton })
-            if (button is not null) { RemoveChild(button); button.QueueFree(); }
+            if (button is not null) { _hostUi.RemoveChild(button); button.QueueFree(); }
         _saveButton = null; _quitButton = null;
     }
 

@@ -15,6 +15,7 @@ namespace Sf2.Remake.GodotAdapter;
 // Ordinary product entry; authored/controlled starts remain explicit diagnostic options.
 public sealed partial class GameRoot : Node
 {
+    private Control _hostUi = null!;
     private WorldViewportLayout _worldViewport = new();
     private GameInput? _input;
     private GameSession? _session;
@@ -83,6 +84,7 @@ public sealed partial class GameRoot : Node
 
     public override void _Ready()
     {
+        _hostUi = UI.PresentationCanvas.Mount(this, "HostUi", UI.PresentationCanvas.Host);
         GetTree().AutoAcceptQuit = false;
         GetWindow().FocusExited += SettingsFocusLost;
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -125,14 +127,14 @@ public sealed partial class GameRoot : Node
         if (_entry is not null) return;
         _entry = new SessionEntryView { Name = "SessionEntryView", Replacement = _session is not null,
             NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit, Settings = ShowSettings };
-        AddChild(_entry);
+        _hostUi.AddChild(_entry);
         if (_input is not null) _entry.ConfigureHints(_input);
         ApplyHostPause(); DisarmInput();
     }
 
     private void CloseEntry()
     {
-        if (_entry is { } entry) { _entry = null; RemoveChild(entry); entry.QueueFree(); }
+        if (_entry is { } entry) { _entry = null; _hostUi.RemoveChild(entry); entry.QueueFree(); }
         ApplyHostPause();
         DisarmInput();
     }
@@ -152,7 +154,7 @@ public sealed partial class GameRoot : Node
         if (field is not null && GodotObject.IsInstanceValid(field)) { field.GetParent()?.RemoveChild(field); field.Free(); }
         if (battle is not null && GodotObject.IsInstanceValid(battle)) { battle.GetParent()?.RemoveChild(battle); battle.Free(); }
         _audio?.Dispose(); _audio = null;
-        if (_restart is not null) { RemoveChild(_restart); _restart.QueueFree(); _restart = null; }
+        if (_restart is not null) { _hostUi.RemoveChild(_restart); _restart.QueueFree(); _restart = null; }
         ReleasePersistenceButtons(); ReleaseSettingsButton();
         _worldViewport = new();
         DisarmInput();
@@ -208,7 +210,7 @@ public sealed partial class GameRoot : Node
         _restart = new Button { Name = "NewGameEntry", Text = GameText.Get("entry.new-menu"), AnchorLeft = 1, AnchorRight = 1,
             OffsetLeft = -220, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 60,
             Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
-        _restart.Pressed += ShowEntry; AddChild(_restart);
+        _restart.Pressed += ShowEntry; _hostUi.AddChild(_restart);
         ConfigurePersistenceButtons(); ConfigureSettingsButton();
         ApplyHostPause(); DisarmInput();
 

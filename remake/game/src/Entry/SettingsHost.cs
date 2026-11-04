@@ -95,7 +95,7 @@ public sealed partial class GameRoot
         _input!.DisarmMovement(); _input.DisarmWait();
         _settings = new SettingsView { Name = "SettingsView", Input = _input, Close = CloseSettings,
             Apply = ApplySettings, ReadOnly = _settingsOverride, Notice = _settingsOverride ? GameText.Get("ui.settings.readonly") + (GameText.StartupError is null ? "" : "\n" + GameText.StartupError) : _settingsNotice is null ? null : _settingsNotice + "\n" + GameText.Get("ui.settings.storage") };
-        AddChild(_settings); ApplyHostPause(); DisarmInput();
+        _hostUi.AddChild(_settings); ApplyHostPause(); DisarmInput();
     }
 
     private string? ApplySettings(InputSettings candidate, bool reset)
@@ -122,7 +122,7 @@ public sealed partial class GameRoot
     private void CloseSettings()
     {
         if (_settings is not { } settings) return;
-        _settings = null; RemoveChild(settings); settings.QueueFree();
+        _settings = null; _hostUi.RemoveChild(settings); settings.QueueFree();
         ApplyHostPause(); DisarmInput();
     }
 
@@ -138,6 +138,6 @@ public sealed partial class GameRoot
     }
     private void ReleaseSettingsButton()
     {
-        if (_settingsButton is not null) { RemoveChild(_settingsButton); _settingsButton.QueueFree(); _settingsButton = null; }
+        if (_settingsButton is not null) { _hostUi.RemoveChild(_settingsButton); _settingsButton.QueueFree(); _settingsButton = null; }
     }
 }
