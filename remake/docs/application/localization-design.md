@@ -42,9 +42,10 @@ English fallback is not a translated or accepted row. No new engine, chapter, RO
 publication right, image-lettering change, default-name admission or naming/IME change is authorized.
 
 [#1496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1496) freezes the source,
-ownership, control inventory and **proposed, unapproved** terminology baseline. Its stopping point
-is a reviewable private intake plus this public agreement, before independent acceptance; it does
-not translate the remaining **4,052 rows / 163,719 source characters**. Provenance remains
+ownership and control inventory. The intake and the #1506 name/working-term baseline have passed
+independent acceptance. **Current static coverage: 576 translated rows and 3,691 untranslated rows**;
+the 215 accepted seeds remain exact. The 361 newly translated rows belong to the Grans pilot below
+and await independent acceptance. Provenance remains
 `ShiningForceCentral/SF2DISASM` at `c834c652b6862bc5679fd7f69a38a7093206efc6`, the admitted USA ROM
 identity recorded below, and `disasm/data/scripting/text/gamescript.txt`. Direct comparison confirms
 every `{id,text}` in the admitted `world.texts` array equals that pinned table. The six `entry.text`
@@ -54,7 +55,8 @@ display rows are projections of world IDs 216–221, not six additional message 
 
 A separately configured persistent private content root outside Git and removable worktrees owns
 `README.md`, `source.jsonl`, `batches.json`, `terminology.tsv`, `control-tokens.json`,
-`accepted-seed.zh-CN.jsonl`, `names.zh-CN.jsonl` and `names-review.zh-CN.md`.
+`accepted-seed.zh-CN.jsonl`, `names.zh-CN.jsonl`, `names-review.zh-CN.md` and the generated
+`review-1498.zh-CN.md`.
 Absolute selections and executable checks stay in the local handoff.
 No original/translated prose or private review is published. `source.jsonl` retains one row per
 occurrence, with locked namespace/ID/source/category/duplicate links/batch/context, nullable translation
@@ -120,14 +122,16 @@ within each control segment, including unsupported tags. Do not substitute guess
 No new source timing or DICT caller/payload contract is claimed. Unknown operands stay Unknown;
 upstream tag descriptions alone do not establish their live use. The working terminology has 75
 source-referenced proposals or explicit contextual holds, including 48 derived name-table lookups.
-All are **agent-reviewed / proposed-for-independent-review**, not main-gate or human approval;
-documentation Chinese and existing functional UI labels do not approve game names. Context-dependent
+The 337 name pairs and 75 working terms are **independently accepted for prose drafting**. Their
+per-row proposed-for-independent-review labels retain the delivery snapshot; the private acceptance
+record and corpus README own the current adoption. Human reading and runtime default-name display
+remain unaccepted; documentation Chinese and functional UI labels do not establish either. Context-dependent
 prose homographs stay separate rather than triggering global replacements. Existing seed wording
 stays fixed until an explicitly owned consistency revision. Player-customized names always retain
 their exact saved values; dynamic name tokens retain identity rather than fixed translated names.
 
-The name tables outside these 4,267 message IDs have a **complete static working draft under #1506,
-pending independent semantic acceptance; runtime default-name display remains unadmitted**:
+The name tables outside these 4,267 message IDs have a **complete, independently adopted working
+draft under #1506; runtime default-name display remains unadmitted**:
 `disasm/data/stats/allies/allynames.asm` (30), `allies/classes/classnames.asm` (32),
 `items/itemnames.asm` (128), `spells/spellnames.asm` (44) and `enemies/enemynames.asm` (103), with the
 last four paths relative to `disasm/data/stats/`. A prose occurrence does not translate its independent
@@ -144,11 +148,12 @@ No name-table expansion enters the fixed message count.
 
 The measured 209-row sample has 9,995 source characters, 5,215 target characters, 10,931 target UTF-8
 bytes and 155,406 bytes in the full context-bearing row structure. The current persistent corpus,
-including the names draft/review, is **under 2.75 MiB**; extrapolating that sample's target-byte ratio plus a bounded derived
+including the names and Grans reviews, is **under 2.9 MiB**; extrapolating that sample's target-byte ratio plus a bounded derived
 review gives an estimated **under 6 MiB**, within the initial **8 MiB persistent / 16 MiB temporary**
 budgets and at least **1 GiB free** storage condition. Message-intake checking parses the existing
-125,828,417-byte world once per invocation, O(world bytes + text/reference bytes). Name checks use
-only the small tables/corpus and generated review, without rereading that world. No world/assets
+125,828,417-byte world once per invocation, O(world bytes + text/reference bytes). Current batch checks use
+the small corpus, an authorized before snapshot, pinned text/context files and generated review,
+without rereading that world. No world/assets
 are copied. Local results record measured duration/peak memory. Replan before
 crossing these budgets or adding external processing; no paid translation API is authorized.
 
@@ -167,6 +172,31 @@ No SDK, Godot, emulator, full research gate or whole-game replay is required for
 Retained prior failures remain in their original
 handoff and are not converted into passing runtime evidence. #1504 owns later cross-batch consistency
 and complete-draft closure, including this name corpus; neither static slice closes #1495 or epic #1468.
+
+### Grans static editorial pilot
+
+[#1498](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1498) now has a complete static
+**444-row** assigned draft: **361 new translations / 15,699 source characters**, plus **83 exact
+accepted seeds**. All 361 new pairs were individually translated and reread for meaning, speaker,
+conditions, options and adjacent dialogue; independent main-gate review remains pending. This fixed
+editorial group does not establish all Grans story coverage, natural execution or chapter playability.
+The other batches retain their intake fields and target values.
+
+`source.jsonl` remains the sole message authority; its generated bilingual Grans review includes all
+444 pairs and necessary semantic notes. The assigned 361 translation/review fields alone changed:
+all 4,267 source/context/ownership fields, all 215 seeds and the 3,906 other occurrence lines remain
+exact. Direct checks pass native control order, parameter identity/multiplicity within every control
+segment, source/ID coverage, placeholders, English residue, repeated/template targets and length
+heuristics. One repeated short hesitation was inspected as legitimate; no unresolved mechanical
+QA defect remains. The new targets contain **7,897 characters / 17,797 UTF-8 bytes**; the derived
+review is **110,887 bytes**. These are static text measurements, not renderer-fit acceptance.
+
+Ground Seal, Ancient Tower/Shrine, the two jewels, Evil World and light tube have consistent
+source-context-backed working proposals recorded in the private row notes/review, without changing
+the shared glossary. Source speaker/wording anomalies remain explicit, including the first-person
+jewel claim at ID910 and third-person wording under the leader's actor at ID2432. Existing seed
+English names stay exact. Unsupported controls and unknown runtime operands/timing remain separate;
+no catalog/PO/code, runtime display, human reading or original-game reach is accepted by this pilot.
 
 ## Implemented M1 boundary
 
