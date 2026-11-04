@@ -20,6 +20,9 @@ internal sealed partial class BattleSceneView : Control
     private AuraRecoveryView _aura = null!;
     private bool _suspended;
     private Node2D _canvas = null!;
+    internal Control PresentationRoot { get; set; } = null!;
+    private readonly Control _overlay = new() { Name = "SceneUi", MouseFilter = MouseFilterEnum.Ignore };
+    private void SyncOverlay() => _overlay.Visible = IsVisibleInTree();
     private ColorRect _sceneBlack = null!;
     private Sprite2D _background = null!, _backgroundWrap = null!, _ground = null!, _ally = null!, _enemy = null!, _weapon = null!;
     private Label _message = null!;
@@ -58,8 +61,10 @@ internal sealed partial class BattleSceneView : Control
         _ground = Sprite("Ground", new(136, 140));
         _ally = Sprite("Ally", new(136, 64)); _ally.ZIndex = 2;
         _weapon = Sprite("Weapon", new(136, 64));
-        AddChild(_actorCard); AddChild(_targetCard);
-        AddChild(_messagePanel); _message = _messagePanel.Body; _message.AutoTranslateMode = AutoTranslateModeEnum.Disabled; _messagePanel.Choices.Hide();
+        PresentationRoot.AddChild(_overlay);
+        _overlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _overlay.AddChild(_actorCard); _overlay.AddChild(_targetCard);
+        _overlay.AddChild(_messagePanel); _message = _messagePanel.Body; _message.AutoTranslateMode = AutoTranslateModeEnum.Disabled; _messagePanel.Choices.Hide();
         for (int i = 0; i < 2; i++)
         {
             _fairyBodies.Add(Sprite("FairyBody" + i, Vector2.Zero));
@@ -73,7 +78,8 @@ internal sealed partial class BattleSceneView : Control
     }
 
     public override void _EnterTree()
-    { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }
+    { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume;
+        VisibilityChanged += SyncOverlay; SyncOverlay(); }
     private void Suspend() => _suspended = true;
     private void Resume() => _suspended = false;
 
@@ -617,5 +623,8 @@ internal sealed partial class BattleSceneView : Control
     };
     public override void _ExitTree()
     {
+        VisibilityChanged -= SyncOverlay;
+        // The overlay shares BattleSessionView lifetime; reparenting a battle exits/re-enters
+        // this tree without retiring its presenters or their reading state.
         GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume; foreach (var texture in _textures.Values) texture.Dispose(); _textures.Clear(); }
 }

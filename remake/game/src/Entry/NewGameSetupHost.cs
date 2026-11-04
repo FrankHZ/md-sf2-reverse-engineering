@@ -51,12 +51,12 @@ public sealed partial class GameRoot
         _nameEntry = new NameEntryView { Name = "NameEntryView", Draft = _nameDraft,
             Done = name => { _nameDraft = name; CloseName(); ConfirmNewGame(); },
             Back = name => { _nameDraft = name; ShowNewSlots(); } };
-        AddChild(_nameEntry); ApplyHostPause(); DisarmInput();
+        _hostUi.AddChild(_nameEntry); ApplyHostPause(); DisarmInput();
     }
     private void CloseName()
     {
         if (_nameEntry is not { } view) return;
-        _nameEntry = null; RemoveChild(view); view.QueueFree();
+        _nameEntry = null; _hostUi.RemoveChild(view); view.QueueFree();
     }
 
     private void ConfirmNewGame()

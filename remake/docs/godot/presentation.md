@@ -4,6 +4,45 @@ The implemented bounded [game localization design](../application/localization-d
 catalogs, safe settings refresh, name/IME and font boundaries. Translated
 display remains separate from Application's canonical text work and game-save identity.
 
+## Display layer boundaries (#1517)
+
+**Standard rigor:** make the existing battle dialogue and status readable over world sprites, then
+bound the current field, battle and host overlay consumers. This slice owns composition and
+visibility lifetime only. Menu redesign (#1518), Church behavior (#1519), gameplay, save data,
+translation, source-world priority and all-scene aesthetic approval remain outside it.
+The [finite observation recipe](../verification/host.md#display-layer-boundary-observation) owns
+acceptance, retained failures and the rendering limits.
+
+| Canvas | Owner and responsibility | Local ordering |
+| --- | --- | --- |
+| 0 (viewport default) | Field draw/planes/entities/white fade; battle map and close-up visuals | Existing map actors 1, foreground 2, markers 3; close-up ally/weapon/fairy/effects 1–4 remain local. The existing close-up map visibility rule remains. |
+| 1 (`BattleUi`) | `BattleSessionView`: command/HUD, scene cards/messages, Give/Discard/Retreat, battle story/appearance and feedback | Existing sibling order; scene cards/messages have one `SceneUi` container bound to the close-up's visibility. |
+| 2 (`FieldUi`) | `ExplorationSessionView`: story/context, Party, Church and stopped-presentation feedback | Story precedes Party/Church, then failure feedback. Existing phase/visibility rules decide which is active. |
+| 3 (`HostUi`) | `GameRoot`: entry/name/slots, gameplay host buttons, Settings, Save/Quit and window recovery | Existing creation order; recovery explicitly hides covered host views and restores them on close. |
+
+`PresentationCanvas` is a small viewport composition helper with these three fixed roles. Each
+session owns its canvas as a child; it does not register/reparent live gameplay owners, select input,
+or introduce a layer manager. There is at most one live canvas per role. Canvas-layer ordering
+isolates world Z from UI even where geometry overlaps; local Z and tree order apply within a canvas.
+See Godot's [CanvasLayer ordering](https://docs.godotengine.org/en/stable/classes/class_canvaslayer.html)
+and [CanvasItem relative Z](https://docs.godotengine.org/en/stable/classes/class_canvasitem.html).
+World fades, white flashes and world modulation stay on canvas 0; readable UI is outside that
+modulation chain, including stopped-presentation feedback. This is a modern presentation boundary,
+not a change to logical source fade state or timing.
+
+The new roots fill the viewport, use identity transforms and ignore mouse filtering. Existing views
+retain their own themes, geometry, pointer routing and action/release guards. Canvas boundaries do
+not grant modal input protection: `ApplyHostPause`, focus suspension and each existing input owner
+still provide it. Canvas children inherit process mode through the scene tree. A session canvas
+explicitly mirrors its owning Control's inherited visibility, since a CanvasLayer does not inherit
+CanvasItem visibility/modulation. `SceneUi` similarly mirrors the close-up's visibility while sharing
+the battle session's lifetime. Enter/exit subscriptions survive battle reparenting; Hide/Show does
+not recreate UI or clear reading state. Freeing the owning session frees its canvas and UI.
+
+Acceptance covers the named controlled/authored consumers, actual state/input and overlap geometry,
+not the unidentified version in the user's original report. Final raster appearance, physical
+focus/device coverage and whole-game visual approval remain **Unknown**.
+
 ## Shared visual rules and finite consumers (#1453)
 
 **Standard rigor:** harmonize existing readable gameplay controls in independently reviewed stages.

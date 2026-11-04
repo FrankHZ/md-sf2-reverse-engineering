@@ -2672,3 +2672,65 @@ own warning counts. This remains an unattributed lifecycle **Unknown**, alongsid
 one-warning/two-instance observation; no new audio investigation or claim of resolution is made.
 Original/private prose and terminology translation, source-image lettering, Unicode naming, export,
 human translation/typography and full-opening Chinese acceptance remain outside this slice.
+
+
+## Display layer boundary observation
+
+The [Standard scope and fixed canvas contract](../godot/presentation.md#display-layer-boundaries-1517)
+own #1517. Reuse the transferred H worktree, private inputs, SDK/Godot installation, project/imports
+and existing ordinary-input probes. Load `local/issue1441/inputs.ps1` in the launching process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, run `uv run sf2 verify adapter`, then build the existing
+Debug adapter from `remake/` with the configured absolute `DOTNET_BIN` and `--no-restore`.
+No engine rule changed; no behavior-test addition or normal/full research suite is selected.
+On a clean committed head inspect `uv run sf2 verify plan --base origin/main --head HEAD`.
+
+The retained launcher is `local/issue1517/run-native.ps1 -Run <fresh-name> -Case <case>`.
+It extends the existing scene/story/return and world-viewport observers with finite node facts;
+there is no production observer API or new test framework. Use the cases below serially, with
+`--headless --fixed-fps 60 --resolution 1920x1080`, isolated ignored report/save namespaces and the
+existing worktree-local runtime directories. Target <15 MiB retained reports and >=1 GiB H free;
+losslessly compress repeated diagnostic logs when necessary, preserving their failed process result.
+
+| Case | Controlled consumer and actual acceptance |
+| --- | --- |
+| `private` | Existing admitted Battle01 entry in `local/issue1491/battle-start.json`, current services world and `map3-opening-party.json`. Ordinary intro skip/Confirm, Bowie STAY, then Sarah HEAL. Capture map sprites/terrain and weapon/ally/fairy/message/card intersections, message/result/reward input and return to map. Before/after canonical event arrays match exactly, including RNG and rewards. |
+| `physical` / `aura` | `progression-outcome-victory.json` attack/messages/results/death/rewards and `aura-healing.json` magic. Ordinary input and existing same-token redraw/ack checks; authored placeholder art is not proof of private source art. |
+| `battleStory` | `jaro-conversion.json`: camera wait, map/story dialogue, close and fresh movement. Existing story observer; normal-reading settings from issue1481. |
+| `story` | Existing `local/issue1393/control.json`: field reveal/read/choice/continue/cancel with ordinary input and token/state invariants. Use normal-reading settings, not the scene observer's instant-text selection. |
+| `field` | Small controlled initial Map3 priest seam derived from the existing admitted start: player32,13 facing Up, current world/party, no mutation after start. Party open/close; parent Hide/Show and process-disable; synthetic window focus signals; native pointer Settings/Save open, input blocking, recovery cover/size restoration and Church unavailable choice/close; fresh movement and full owner retirement. |
+| `return` | Existing `engine-battle02-egress-start.json`, `battle02-outcome-party.json` and the matching issue1047 world. EGRESS cancel/payment/text/effect/closure, same-session usable field return and movement. Hidden battle and every canvas descendant are invisible; field remains active; retiring the host leaves neither canvas. Do not substitute the services world's different party definition. |
+
+For each relevant visible node retain its path, nearest CanvasLayer/canvas identity, relative Z,
+ancestor Z accumulation until a canvas/non-CanvasItem boundary, tree index and inherited visibility.
+Use actual Sprite2D rect transformed by `get_global_transform_with_canvas()` and actual Control
+rects for intersections; a node's own Z alone is insufficient. Inspect existing map terrain Z2
+against actor Z1 as well as UI canvas order. Scene cards/messages are canvas1 over intersecting
+sprite/effect canvas0; field dialogue/menus are canvas2; host windows are canvas3. At scene end,
+check map visible and scene UI hidden; at field return check the entire hidden battle subtree,
+not just its root. Verify viewport roots, unchanged consumer fonts/rects and explicit themes.
+Modal input is independently checked by actual pointer/key events and unchanged revision, tokens,
+party/gold/flags/RNG while covered, then fresh control after close.
+
+**Confirmed — bounded headless Godot observation:** all matrix cases above complete exit0 with no
+session/presenter/script error. Private HEAL reproduces the pre-fix overlap, and the corrected
+composition retains that geometry with higher UI canvas order. The pre-fix and corrected HEAL
+semantic receipts are identical. Field Hide/Show, owner process inheritance, scene reparenting,
+EGRESS return and host retirement are directly checked. World plane/entity algorithms are untouched;
+these observations do not replay every wall/roof or certify final raster pixels.
+
+Retain the initial implementation failure: freeing `SceneUi` on ExitTree disposed still-live message
+nodes during ordinary battle reparenting. The correction keeps that UI with the battle session and
+resubscribes visibility on tree entry; the same private consumer passes. Earlier attempts also retain
+an invalid private party selection, a GDScript type error, a wrong return-world party definition and
+an instant-versus-normal-reading observer mismatch. These are failed attempts, not successful gates.
+
+**Unknown / not applicable:** headless has no real desktop fit or final raster proof. Its restore and
+fullscreen buttons are correctly unavailable; clicking disabled restore and using actual recovery
+reading input cannot submit gameplay, and a supported-size window event restores the covered Save
+modal before field control. Physical restore-button execution and physical focus are unobserved;
+focus events in the lifecycle check are explicitly synthetic. No screenshots, per-frame collection,
+foreground window, all-device pass or original natural route is claimed. Public authored cases and
+EGRESS exit with empty stderr; private HEAL/field checks retain shutdown ObjectDB warnings (six/four
+instances respectively), without attributing or resolving the existing shutdown Unknown. Earlier
+issue1491 `1801 PASS / 6 FAIL / 1 SKIP`, issue1492 observer failures and school03 exit2 remain retained
+in their original handoffs; this slice does not rerun or relabel them.

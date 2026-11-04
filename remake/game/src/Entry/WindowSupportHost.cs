@@ -74,7 +74,7 @@ public sealed partial class GameRoot
                 if (view is not null) { _windowCoveredViews.Add((view, view.Visible)); view.Hide(); }
             _windowRecovery = new WindowRecoveryView { Name = "WindowRecoveryView", Input = _input!,
                 RestoreWindow = RestoreGameplayWindow, Fullscreen = UseGameplayFullscreen, Quit = RequestQuit };
-            AddChild(_windowRecovery); DisarmInput(); ApplyHostPause();
+            _hostUi.AddChild(_windowRecovery); DisarmInput(); ApplyHostPause();
         }
         _windowRecovery.Present(GetWindow().Size, WindowCanFit, FullscreenCanFit, null);
     }
@@ -88,7 +88,7 @@ public sealed partial class GameRoot
         }
         if (_windowRecovery is null || _windowQuit is not null) return;
         var recovery = _windowRecovery; _windowRecovery = null;
-        RemoveChild(recovery); recovery.QueueFree();
+        _hostUi.RemoveChild(recovery); recovery.QueueFree();
         foreach (var (view, visible) in _windowCoveredViews)
             if (GodotObject.IsInstanceValid(view) && !view.IsQueuedForDeletion()) view.Visible = visible;
         _windowCoveredViews.Clear(); ApplyHostPause(); DisarmInput();
@@ -169,11 +169,11 @@ public sealed partial class GameRoot
         if (_windowQuit is not null) return;
         _windowRecovery!.Hide();
         _windowQuit = new SaveSlotView { Name = "WindowQuitView", Input = _input, Cancel = CloseWindowQuit };
-        AddChild(_windowQuit); PresentQuitChoices(_windowQuit, CloseWindowQuit); ApplyHostPause(); DisarmInput();
+        _hostUi.AddChild(_windowQuit); PresentQuitChoices(_windowQuit, CloseWindowQuit); ApplyHostPause(); DisarmInput();
     }
     private void CloseWindowQuit()
     {
-        if (_windowQuit is { } quit) { _windowQuit = null; RemoveChild(quit); quit.QueueFree(); }
+        if (_windowQuit is { } quit) { _windowQuit = null; _hostUi.RemoveChild(quit); quit.QueueFree(); }
         _windowRecovery?.Show(); RefreshWindowSupport(); ApplyHostPause(); DisarmInput();
     }
     public string ReadWindowSupportObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
