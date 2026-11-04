@@ -8,7 +8,7 @@ repair is implemented; see its disposition below. Address **F3's definition-copy
 capability extension that needs it**, before relaxing existing admission restrictions. None warrants a
 general engine rewrite, generic capability registry or new verification platform.
 F1 now has a [bounded implementation disposition](#f1--p1-make-host-ownership-and-return-wiring-cover-every-admitted-entry);
-the audit-base evidence below remains preserved. F2 is implemented pending independent integration; F3 remains unresolved.
+the audit-base evidence below remains preserved. F2 is implemented pending independent integration; F3 has the bounded attack-spell disposition below.
 
 This is the deliverable for [Issue #1373](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1373).
 **Standard rigor:** established architecture with concrete cross-layer composition risks. The outcome is
@@ -87,7 +87,7 @@ field movement; initial field-owned battle load plus start; ordinary player/auto
 terminal defeat; and visible stopped-program failure. Load/start waits retain field ownership even
 with `ActiveBattle`. No Domain/Application/Content behavior changed. See the
 [reproducible variants, commands and retained failure history](../development-and-verification.md#ordinary-host-lifecycle-observation).
-Independent review/integration remains required. F2 has the bounded disposition below; F3 remains unresolved.
+Independent review/integration remains required. F2 has the bounded disposition below; F3 has the bounded attack-spell disposition below.
 
 The following **audit-base** observations and Inferred limits describe the inspected commit above;
 they are not relabeled by the new authored observations. The connected/native return boundaries now
@@ -235,6 +235,16 @@ research/full suite or new parser/probe test was run. Private skips remain unobs
 Independent acceptance and integration remain main-gate-owned; F3 is unchanged.
 
 ### F3 — P2: avoid silent defaults when reconstructing definitions
+
+**Implemented bounded disposition:** the [finite player attack-spell integration](../domain/gameplay-rules.md#finite-player-attack-spells)
+adds an actually consumed definition field at the named outcome/growth boundary.
+`BattleDefinition.WithOutcome`/`WithDeployments` now own immutable replacement; outcome, growth and
+opening loadout callers specify only their changed responsibility. Actor growth/equipment copies
+also retain resistance. `AttackSpellAdmissionTests.ConnectedOutcomeGrowthDropAndWalkingReturnRetainAttackDefinitionAndLiveAccounting`
+executes a supported learned spell with outcome, growth, drop, return and walking re-entry. Existing
+connected Give/Discard/poison/equipment restrictions remain intact. No generic capability bag,
+reflection copier, new program platform or full-constructor audit is introduced. Independent
+integration remains main-gate-owned. The following audit-base diagnosis is retained as provenance.
 
 **Confirmed source asymmetry; Inferred future integration risk, not current capability loss.**
 [BattleDefinition:158](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs#L158) has optional
@@ -387,8 +397,8 @@ unmerged PR #692 were not reassessed. No performance finding or large acquisitio
    appearance/region waits or direct battle return in further six-family composition.
 2. **Implemented, awaiting independent integration — F2:** ordered shape admission and direct public
    API controls pass within the declared sibling boundary; no whole-decoder cleanliness claim follows.
-3. **With affected integration — F3:** centralize narrow immutable definition replacement before
-   enabling connected capabilities whose fields would otherwise default away. Keep current guards.
+3. **Implemented bounded F3:** narrow immutable replacement owns the attack-spell outcome/growth
+   integration; its actual supported composition is exercised. Keep unrelated admission guards.
 4. **Acceptable as-is within limits:** retain the modular monolith, one state authority, finite rule
    seams, explicit prefix/token model and separated private trust. Continue bounded feature work with
    changed-state and actual host-composition acceptance; no speculative refactor queue or clean-system claim.

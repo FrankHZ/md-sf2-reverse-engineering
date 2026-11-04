@@ -1,5 +1,26 @@
 # Remake Capability Status
 
+## Player BLAZE1-2 and BLAST1
+
+**Implemented, bounded:** learned player attack spells have actual query/selection, legal opponent
+center/radius/order, one MP payment, elemental resistance/critical/variance, damage/death/drop,
+shared EXP/learning and next control through the ordinary session and Godot host. The authored
+[attack-spells package](../content/authored/attack-spells.json) demonstrates two-target BLAZE2 in
+English and a changed priest/level/position BLAST1 configuration in Chinese. Both native witnesses
+read actual visible fire/wind effects, cards/messages/resources and usable follow-up movement.
+[Rules/provenance](domain/gameplay-rules.md#finite-player-attack-spells),
+[Content boundary](content/profiles-and-trust.md#attack-spell-admission) and
+[verification](development-and-verification.md#player-attack-spell-observation) own the details.
+
+Pinned private definitions admit the three selected records and class/enemy resistance operands;
+a controlled learned Sarah/Kazin-class composition reaches their distinct action admission. Existing
+private growth may expose a supported learned rank without an expected-level ban. This is separate
+from recruiting Kazin, importing another battle or connecting the entire Battle03-07 story.
+Enemy casting/healing AI, DISPEL/silence and other spell families/ranks remain Unsupported.
+Presentation is a functional modern effect, including private admitted casts, not original magic
+assets/timing or new original-runtime evidence. Natural pre-departure levels/opportunities remain
+Unknown. The older completed private comparison failures remain with their evidence owners.
+
 ## Early physical classes and ranged weapons
 
 **Implemented, bounded:** early KNTE/MAGE/ACHR/THIF definitions extend the existing SDMN/WARR/PRST
@@ -14,7 +35,8 @@ player/equipment/enemy effects and usable subsequent control in English and Chin
 [Content admission](content/profiles-and-trust.md#early-physical-definition-admission) and
 [verification](development-and-verification.md#early-ranged-physical-observation) distinguish that
 capability from controlled pinned Galam equipment and MAGE/THIF class definitions. New private scene resources,
-Kazin/Slade recruitment, full Battle03-07 story and spell actions/AI are not connected here.
+Kazin/Slade recruitment, full Battle03-07 story and spell AI are not connected by the physical slice; selected player spells
+are implemented at the agreement above.
 No natural-route, original media/timing, physical-device or final-pixel claim follows.
 
 ## Bounded bilingual localization
@@ -569,7 +591,7 @@ full-game parity and public distribution remain outside the accepted boundary.
 | Godot input and projection | **Implemented:** shared remappable keyboard/standard-gamepad actions, configurable Confirm/Cancel convention and effective HUD hints across exploration, battle and return. Versioned startup settings also select reduced white flashes and instant/adjustable text while preserving real wait/cue completion. [Native 9A observation](verification/host.md#native-9a-observation) covers default/remapped/swapped devices, alternate authored content and the private continuous return. These are intentional modern-interface deviations; physical controller drivers are not observed by injected events. Authored export packaging and original presentation remain unclaimed. |
 | Private initialized entry | **Implemented subset:** actual trusted encounter plus pinned selected enemy/class/item/spell exports and external controlled PlayerReady party/start enter the common session. New-battle heal/effective ATT, initial AI/region state, activation/program/spawn admission, carried first queue and candidate control lead to common movement/cancel. Required regular/healer/Centaur/hovering/Stealth/Flying movers work. Unknown accounting stays null; source baseline/loadout/words/provenance remain retained. |
 | Private source enemy continuation | **Implemented subset:** actual common player commands reach inactive anchor-relative standby, evolving occupancy/memory, region activation and source set6/set7 no-action pursuit, then the next live player. Source NONE orders, activation/tested words, last target and both RNG channels remain intact. Standby/pursuit calculations have one production owner; one common movement/action publisher commits results. Reached physical operands use the shared action binding below; failures remain atomic. Nonempty move-order/action categories and broader status/neutral behavior remain Unsupported. |
-| Private actions and spell selection | **Implemented subset:** actual class prowess/adjacent ATT-only equipment, source HEAL1–3 and pinned enemy gold bind to common physical/reward/death/after-turn. Hovering/Flying share airborne dodge and priority; only Flying ignores ground land protection. The logical Spell action (default H / Pad North) cycles learned spells and levels without content reordering; engine owns legality/resources. Explicit external accounting enables actual enemy/player/kill/HEAL continuation; natural counters and seeds remain Unknown. Selected Battle02 EGRESS/Angel Wing is implemented at the agreement above; wider effects remain Unsupported. The connected private world binds growth and terminal programs below; broader M2 capabilities and hardware 8C remain incomplete; current milestone acceptance is recorded below. |
+| Private actions and spell selection | **Implemented subset:** actual class prowess/adjacent ATT-only equipment, source HEAL1–3, selected player BLAZE1-2/BLAST1 and pinned enemy gold bind to common physical/reward/death/after-turn. Hovering/Flying share airborne dodge and priority; only Flying ignores ground land protection. The logical Spell action (default H / Pad North) cycles learned spells and levels without content reordering; engine owns legality/resources. Explicit external accounting enables actual enemy/player/kill/HEAL continuation; natural counters and seeds remain Unknown. Selected Battle02 EGRESS/Angel Wing is implemented at the agreement above; wider effects remain Unsupported. The connected private world binds growth and terminal programs below; broader M2 capabilities and hardware 8C remain incomplete; current milestone acceptance is recorded below. |
 | Ordinary physical attack and rewards | **Implemented subset:** regular-ground, status0 or admitted pure poison, frozen or explicitly admitted authored ATT-only equipment, explicit paired critical chance/bonus definitions (1/32 plus half or1/16 plus quarter); source-ordered first/second/reversed counter, dodge/critical/spread, per-action EXP/gold, ordinary enemy/ally cleanup, capped kills/defeats and next living control. Both authored physical packages support either legal kill order. |
 | Physical battle scene execution | **Implemented bounded consumer:** typed construction, animation/reaction, result/death, EXP/growth/gold and end waits retain input and turn ownership. Damage reactions advance shared-main RNG by 24 source draws each; growth uses the carried seed. Godot consumes privately prepared actor/weapon/environment frames and source music2/5, hit81/83 and level102 SFX through actual audio. Normal/reduced-flash observations preserve gameplay/RNG. HEAL has the separate bounded consumer below; modern text/fade timing and controlled native entry do not prove original timing, final pixels or H4. [Scene owner](godot/battle-scenes.md#physical-battle-scenes). |
 | HEAL spell scenes | **Implemented bounded consumer:** HEAL1–3 MP-before-cast, one/one/two source-rule fairies, shared-main RNG, self/other HP recovery, stop/cleanup before rewards/input, private rasters and actual77/113 audio. Function comparison under externally supplied opportunities/control passes; normal/reduced native semantic events match. **Unknown:** continuous original opportunity admission; recovery bsc0B is the first observed divergence and produces intermediate RNG differences. The accepted selected HEAL/scene composition supplies the current milestone obligation; this historical timing divergence remains with its owner. [Exact boundary](godot/battle-scenes.md#heal-spell-scenes). |

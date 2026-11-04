@@ -78,9 +78,10 @@ internal static class BattleCommandDispatcher
                             choice.Action == SessionAction.Item ? "select-item" : "unknown-action", "action",
                             choice.Action is not (SessionAction.Heal or SessionAction.Item)),
                     };
-                case SelectSpell spell when CanSelect(BattleActionKind.Healing) || CanSelect(BattleActionKind.Retreat):
+                case SelectSpell spell when CanSelect(BattleActionKind.Healing) || CanSelect(BattleActionKind.Retreat) || CanSelect(BattleActionKind.AttackSpell):
                     return Select(new(battle.Definition.RetreatSpells.ContainsKey(spell.Spell)
-                        ? BattleActionKind.Retreat : BattleActionKind.Healing, spell.Spell));
+                        ? BattleActionKind.Retreat : battle.Definition.AttackSpells.ContainsKey(spell.Spell)
+                        ? BattleActionKind.AttackSpell : BattleActionKind.Healing, spell.Spell));
                 case SelectItem item when CanSelect(BattleActionKind.Item):
                     return Select(new(BattleActionKind.Item, ItemSlot: item.Slot));
                 case SelectBattleAction choice when CanSelect(choice.Action.Kind):
@@ -118,12 +119,13 @@ internal static class BattleCommandDispatcher
             var kind = action.Kind switch
             {
                 BattleActionKind.Retreat => SessionAction.Retreat,
+                BattleActionKind.AttackSpell => SessionAction.AttackSpell,
                 BattleActionKind.Healing => SessionAction.Heal, BattleActionKind.Physical => SessionAction.PhysicalAttack,
                 BattleActionKind.Item => SessionAction.Item, _ => SessionAction.Stay,
             };
             string observation = action.Kind switch
             {
-                BattleActionKind.Healing or BattleActionKind.Retreat => "spell-selected", BattleActionKind.Physical => "physical-selected",
+                BattleActionKind.Healing or BattleActionKind.Retreat or BattleActionKind.AttackSpell => "spell-selected", BattleActionKind.Physical => "physical-selected",
                 BattleActionKind.Item => "item-selected", _ => "stay-selected",
             };
             return Selected(current, new(selection.Actor, selection.Preview,

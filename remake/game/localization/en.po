@@ -1172,3 +1172,7 @@ msgstr "All stick directions are already assigned. Use keyboard / mouse for Menu
 
 msgid "system.save-reason"
 msgstr "Finish movement and story events, then try again at a save point."
+
+#. Arguments: caster name, spell identity, level.
+msgid "battle.spell.action"
+msgstr "{0} casts {1} level {2}."

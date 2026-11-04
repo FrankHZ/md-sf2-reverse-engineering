@@ -1,5 +1,65 @@
 # Development and Verification
 
+## Player attack-spell observation
+
+The [finite rule owner](domain/gameplay-rules.md#finite-player-attack-spells) and
+[Content owner](content/profiles-and-trust.md#attack-spell-admission) distinguish implemented behavior,
+private admission and story connection. Use `AttackSpellTests|AttackSpellSessionTests|AttackSpellAdmissionTests`
+in the actual Engine.Tests project, plus affected healing/scene/progression/growth/drop/selection
+and SourceEnemyAi behavior tests. The pinned source-admission test requires the current registered
+static/enemy/gold/controlled-start/encounter inputs; missing inputs mean skipped, not a private PASS.
+Run `uv run sf2 verify adapter`, then the clean committed-head
+`uv run sf2 verify plan --base origin/main --head HEAD` and inspect actual CI.
+Do not replay the old full engine/research suites solely for this engine capability.
+
+Reuse the existing installation, project, input selections and worktree-local native runtime.
+Build the Debug host once after product changes with the locked SDK selection:
+`& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore`.
+Run `engine_attack_spell_observation.gd` in one serial native child, with a fresh explicit ignored
+`SF2_OBSERVATION_OUTPUT`, a45-second process deadline, aggregate local reports<=15MiB and free disk>=1GiB.
+The observer uses ordinary menu/target/confirm keys, existing read-only state/scene projections and
+`SessionResultObserved`; no setters, fabricated completions, screenshots, frame dumps or original
+magic-asset acquisition. Each compact final native report is below1MiB. Retain initial failures and
+previous reports; a new run never overwrites them.
+
+For BLAZE2 use [attack-spells.json](../content/authored/attack-spells.json),
+`SF2_ATTACK_SPELL_KIND=blaze` and English input settings. For the changed BLAST1 configuration,
+create a separate ignored copy **before startup**: only first start actor positionOverride becomes
+`{"x":3,"y":2}`; first actor classRule becomes `unpromoted-priest`, physical.movementType `regular`,
+level10. Set `SF2_ATTACK_SPELL_KIND=blast` and use Chinese input settings. No state is injected after
+session start. The current retained child launcher is
+`pwsh -NoProfile -File local/issue1524/run-native.ps1 -Run <fresh> -Kind blaze|blast -Language en|zh-CN`.
+Its core launch, from the repository root with absolute resolved paths, is:
+
+```powershell
+# Execute inside the bounded native child shell, never the shell used for GitHub credentials.
+. ./local/issue1441/inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$nativeRuntime = Join-Path (Get-Location).Path 'local/issue1471/field-01'
+$env:APPDATA = Join-Path $nativeRuntime 'appdata'
+$env:LOCALAPPDATA = Join-Path $nativeRuntime 'localappdata'
+$env:TEMP = Join-Path $nativeRuntime 'temp'
+$env:TMP = $env:TEMP
+# Set SF2_ATTACK_SPELL_KIND and fresh SF2_OBSERVATION_OUTPUT, and select package/input settings above.
+& $env:GODOT_BIN --headless --rendering-method gl_compatibility --fixed-fps 60 `
+    --resolution 1920x1080 --path ./remake/game `
+    --script res://probes/engine_attack_spell_observation.gd -- `
+    --authored-package $selectedPackage --input-settings $selectedInputSettings
+```
+
+The observer cancels the magic list without payment/RNG, opens it again, selects BLAZE2 or BLAST1,
+checks the real target and confirms. It reads the visible spell announcement, MP payment, fire/wind
+drawing, each ordered damage result, death/gold/EXP, next guard control and new Right movement.
+Visible English/Chinese labels are checked for glyph coverage, minimum height and viewport bounds.
+BLAZE2 hits wing then center, pays20->14, changes wing30->20, kills center4->0, awards49 EXP and
+one kill; BLAST1 pays20->18, kills only center, leaves wing30 and awards24 EXP at the changed level.
+Both change gold100->107 and return usable guard control. Functional geometry/text assertions are
+not physical-device, final-pixel, human-aesthetic, original-effect or natural-route acceptance.
+
+Completed #1491's1801PASS/6FAIL/1SKIP, school03exit2/ObjectDBUnknown, #1523's437PASS/2existing
+PrivateBattleOutcomeProgramTests failures and #1519's actual-save observer-lock-file failure remain
+in their handoffs. The focused passing checks do not erase or rerun those completed results.
+
 ## Early ranged physical observation
 
 Use the [early-ranged authored package](../content/authored/early-ranged.json), with the existing

@@ -214,9 +214,7 @@ internal static class ExplorationContentReader
                     !OriginalMapTraversal.IsBlocked(egress.Layout, route.Outcome.EgressPosition),
                     "outcome-egress", "map.battle.outcome.egress");
             }
-            encounters[index] = new(encounter.Encounter, encounter.Map, encounter.Width, encounter.Height, encounter.Terrain,
-                encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor), encounter.HealingItems.Values,
-                encounter.SourceMapRegion, encounter.RetreatSpells.Values, encounter.RetreatItems.Values, encounter.TarosEffectiveness, encounter.LeaderCleanup, encounter.ItemDrops, encounter.PrismLaser);
+            encounters[index] = encounter.WithOutcome(new(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor));
         }
         foreach (var operation in programs.SelectMany(p => p.Instructions).OfType<OutcomePartyInstruction>())
         {

@@ -238,6 +238,8 @@ public sealed class BattleSceneState
     public HealingItemDefinition? Item => _action?.Item;
     public BattleItemReceipt? ItemReceipt => !HasReaction ? null : Reaction.Receipt;
     public HealingSpellDefinition? Spell => _action?.Spell;
+    public Sf2.Remake.Domain.Gameplay.Sf2.AttackSpellDefinition? AttackSpell => _action?.AttackSpell;
+    public IReadOnlyList<ActorRef> AttackTargets => AttackSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public HealingSceneCursor? Healing { get; }
     public bool IsAura => Spell?.IsAura == true;
     public IReadOnlyList<ActorRef> HealingTargets => Spell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
@@ -376,7 +378,7 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.Initialize: next = BattleScenePhase.ActionMessage; break;
             case BattleScenePhase.ActionMessage:
                 observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.ReactionTarget));
-                if (scene.Spell is not null)
+                if (scene.Spell is not null || scene.AttackSpell is not null)
                 {
                     var caster = battle.GetActor(scene.Actor);
                     battle = scene.Action.ApplySpellCost(battle);
@@ -418,6 +420,11 @@ internal static class BattleSceneContinuation
                 break;
             case BattleScenePhase.Reaction: next = BattleScenePhase.ResultMessage; break;
             case BattleScenePhase.ResultMessage:
+                if (scene.AttackSpell is not null)
+                {
+                    if (scene.TargetDefeated) { next = BattleScenePhase.DeathMessage; break; }
+                    goto case BattleScenePhase.ItemReceivedMessage;
+                }
                 if (scene.IsAura && index + 1 < scene.Action.Reactions.Count)
                 { index++; next = BattleScenePhase.TargetExit; break; }
                 if (scene.Spell is not null) { next = BattleScenePhase.MakeIdle; break; }
@@ -445,7 +452,7 @@ internal static class BattleSceneContinuation
                 goto case BattleScenePhase.ItemReceivedMessage;
             case BattleScenePhase.ItemDroppedMessage: next = BattleScenePhase.ItemReceivedMessage; break;
             case BattleScenePhase.ItemReceivedMessage:
-                if (index + 1 < scene.Action.Reactions.Count) { index++; next = scene.Laser is not null ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage; }
+                if (index + 1 < scene.Action.Reactions.Count) { index++; next = scene.Laser is not null || scene.AttackSpell is not null ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage; }
                 else if (scene.Action.Reward is not null)
                 {
                     var reward = scene.Action.CreditReward(battle, rules.Progression);

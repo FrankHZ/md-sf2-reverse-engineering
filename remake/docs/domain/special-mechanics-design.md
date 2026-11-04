@@ -437,6 +437,13 @@ behavior tests, adapter compile, clean-head verification plan and actual CI appl
 native environment; serial instances, <=15MiB local reports and >=1GiB free disk are hard limits.
 No screenshots, frame capture, general comparator or whole-campaign replay is needed.
 
+The player-spell slice now implements the [finite attack-spell agreement](gameplay-rules.md#finite-player-attack-spells):
+separate damage/healing definitions through existing action/scene/progression seams, selected pinned
+resistance operands and functional modern fire/wind delivery. The affected immutable definition
+replacement boundary preserves capability fields through admitted outcome/growth/loadout copies
+(audit F3); this is no broader constructor or architecture audit. Enemy AI, silence and later story
+remain separate slices.
+
 Accepted foundations include authored AURA, ordinary physical equipment, Give/Drop, drops/Deals and
 poison, plus bounded opening Search, field preparation/DETOX, Church Raise/Cure and shared two-slot
 Save/Continue. Their actual admission/consumer limits remain in the [capability owner](../capability-status.md).

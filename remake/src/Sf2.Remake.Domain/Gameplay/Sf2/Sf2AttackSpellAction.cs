@@ -1,0 +1,122 @@
+using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
+
+namespace Sf2.Remake.Domain.Gameplay.Sf2;
+
+internal sealed class Sf2AttackSpellAction : IBattleActionRule
+{
+    public string Identity => "sf2-attack-spell";
+    public BattleActionKind Kind => BattleActionKind.AttackSpell;
+    public IReadOnlyList<BattleActionOffer> QueryActions(EngineBattleState battle, ActorRef actor) =>
+        battle.GetActor(actor).Spells.Where(battle.Definition.AttackSpells.ContainsKey)
+            .Select(spell => new BattleActionOffer(new(Kind, spell), $"{spell.Value.ToUpperInvariant()} {spell.Level}")).ToArray();
+
+    public BattleActionAdmission RequireAction(EngineBattleState battle, ActorRef actorRef, BattleActionRef action)
+    {
+        var actor = battle.GetActor(actorRef);
+        if (action.Kind != Kind || action.ItemSlot is not null || action.Spell is not { } key || !actor.Spells.Contains(key))
+            throw new BattleRuleException("spell-not-known", "spell");
+        if (!battle.Definition.AttackSpells.TryGetValue(key, out var spell))
+            throw new BattleRuleException("spell-effect", "spell", true);
+        spell.RequireSupported();
+        if (actor.Hp == 0 || !actor.IsAlly || actor.Control != BattleControl.Player)
+            throw new BattleRuleException("attack-spell-caster", "actor", true);
+        if (!(actor.Status == 0 || battle.Definition.Poison && actor.Status == 2))
+            throw new BattleRuleException("attack-spell-status", "actor.status", true);
+        if (actor.Definition.Physical is null)
+            throw new BattleRuleException("physical-definition", "actor.physical", true);
+        if (battle.Definition.Rewards is null)
+            throw new BattleRuleException("battle-rewards", "encounter.rewards", true);
+        if (actor.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
+        if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
+        return new(spell.MinimumRange, spell.MaximumRange, AttackSpell: spell);
+    }
+
+    private static bool Eligible(BattleActorState actor, BattleActorState target) =>
+        target.Faction != actor.Faction && target.Initialized && target.Hp > 0 && target.Position is not null &&
+        (target.ActivationWord & 8) != 8;
+
+    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
+        battle.Actors.Where(target => Eligible(battle.GetActor(actor), target))
+            .OrderBy(target => target.ProcessingOrder).Select(target => target.Actor).ToArray();
+
+    public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef target)
+    {
+        var spell = RequireAction(battle, actor, action).AttackSpell!;
+        _ = ResolveTargets(battle, actor, destination, spell, target);
+        return battle.GetActor(target);
+    }
+
+    internal static IReadOnlyList<BattleActorState> ResolveTargets(EngineBattleState battle, ActorRef actorRef,
+        MapPosition destination, AttackSpellDefinition spell, ActorRef center)
+    {
+        var actor = battle.GetActor(actorRef);
+        var target = battle.Actors.SingleOrDefault(unit => unit.Actor == center);
+        if (target is null || !Eligible(actor, target)) throw new BattleRuleException("attack-spell-target", "target");
+        if (!BattleRange.Contains(destination, target.Position!, spell.MinimumRange, spell.MaximumRange))
+            throw new BattleRuleException("target-range", "target");
+        var targets = battle.Actors.Where(unit => Eligible(actor, unit) &&
+            BattleRange.Contains(target.Position!, unit.Position!, 0, spell.Radius)).OrderBy(unit => unit.ProcessingOrder).ToArray();
+        foreach (var unit in targets)
+        {
+            if (!PoisonTurnRules.SupportedPhysicalStatus(unit.Status) || !battle.Definition.Poison && unit.Status == 2)
+                throw new BattleRuleException("attack-spell-target-status", "actors.status", true);
+            if (unit.Definition.Physical is null) throw new BattleRuleException("physical-definition", "target.physical", true);
+        }
+        return targets;
+    }
+
+    public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actorRef, MapPosition destination,
+        BattleActionRef action, ActorRef? center, IBattleProgressionRule progression)
+    {
+        BattleMovement.RequireStop(battle, actorRef, destination);
+        var spell = RequireAction(battle, actorRef, action).AttackSpell!;
+        var actor = battle.GetActor(actorRef);
+        var targets = ResolveTargets(battle, actorRef, destination, spell,
+            center ?? throw new BattleRuleException("attack-spell-target", "target"));
+        uint seed = battle.MainSeed;
+        var inventory = battle;
+        List<BattleEffect> effects = [];
+        List<BattleReaction> reactions = [];
+        uint? gold = battle.Gold;
+        foreach (var target in targets)
+        {
+            int power = actor.Definition.Physical!.Promoted ? spell.Power * 5 / 4 : spell.Power;
+            int quarter = power / 4;
+            int resistance = target.Definition.Resistance >> (int)spell.Element & 3;
+            int damage = resistance switch { 1 => power - quarter, 2 => power / 2, 3 => power + quarter, _ => power };
+            bool critical = Roll(32, "spell-critical", target.Actor) == 0;
+            if (critical) damage += quarter;
+            ushort range = checked((ushort)(damage / 8 + 1));
+            damage = Math.Max(1, damage - Roll(range, "spell-variance", target.Actor) - Roll(range, "spell-variance", target.Actor));
+            ushort hp = (ushort)Math.Max(0, target.Hp - damage);
+            if (hp == 0)
+            {
+                if (actor.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
+                gold = BattleProgressionRules.Invoke(progression.Identity, "gold", () => progression.Gold(
+                    gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true), target.Definition.Physical!.Gold));
+            }
+            // The ordinary source post-effect drop helper remains ordered before the next target and award.
+            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), actorRef, target.Actor, hp == 0);
+            inventory = dropped.Battle; seed = inventory.MainSeed;
+            effects.AddRange(dropped.Effects);
+            reactions.Add(new(actorRef, target.Actor, "attack-spell", BattleReactionKind.Damage,
+                target.Hp, hp, target.Mp, target.Mp, critical, damage, target.Status, Receipt: dropped.Receipt));
+        }
+        var award = BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed), inventory.GetActor(actorRef), Kind, reactions);
+        effects.AddRange(award.Effects);
+        if (gold != battle.Gold) effects.Add(new("gold", actorRef, battle.Gold, gold));
+        var prepared = inventory.With(mainSeed: award.Seed, gold: gold,
+            actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? unit.With(position: destination) : unit));
+        return new(prepared, actorRef, destination, reactions.AsReadOnly(), new(actorRef, award.Amount),
+            effects.AsReadOnly(), [], AttackSpell: spell);
+
+        int Roll(ushort range, string purpose, ActorRef target)
+        {
+            var draw = BattleRandom.NextMain(seed, range); seed = draw.After;
+            effects.Add(new("rng-" + purpose, actorRef, draw.Before, draw.After, range, draw.Value, target));
+            return draw.Value;
+        }
+    }
+}

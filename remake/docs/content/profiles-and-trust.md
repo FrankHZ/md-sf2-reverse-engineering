@@ -1,5 +1,31 @@
 # Runtime Profiles and Trust
 
+## Attack-spell admission
+
+Format7 spell `effect.kind:"attack"` has `power`1-255, `radius`0-1 and `element:"fire"|"wind"`;
+spell MP cost and minimum/maximum range are immutable operands. Range is1-2 with minimum<=maximum.
+Only BLAZE ranks1/2 with fire and BLAST rank1 with wind enter the finite damage rule. Authored power,
+range and radius may vary within those supported bounds; no generic spell platform follows.
+Duplicate keys across healing/retreat/damage reject. Optional actor `resistance` is a packed
+unsigned16-bit word; omission means authored neutral0. Source profiles never infer neutral from an
+unresolved expression: `PrivateAttackSpellBindings` decodes named resistance settings or explicit
+zero and rejects unknown/ambiguous tokens. Actor growth/equipment copies retain this operand.
+
+The private binder checks exact pinned base IDs11/14, costs2/6/2, powers6/10/6, ranges1-2/1-2/1,
+radii0/1/0 and `TYPE_ATTACK|AFFECTEDBYSILENCE` for BLAZE1/BLAZE2/BLAST1. Element lookup is the
+named pinned static FIRE/WIND mapping in the [rule owner](../domain/gameplay-rules.md#finite-player-attack-spells).
+Learning/MP/position/faction/status and reached accounting remain live action checks; definitions
+do not grant learning, recruitment or enemy AI. Unknown resistance expressions are Unsupported.
+
+Existing supported connected outcome and growth admission also preserve attack definitions.
+`BattleDefinition.WithOutcome`/`WithDeployments` own replacement copies, including the opening
+loadout binder, so a new capability does not default away. The connected behavior test combines
+learned BLAZE1, real damage/death/drop, growth, outcome return and walking re-entry. Existing
+connected Give/Discard/poison/equipment restrictions remain in force. Authored new spell-learning
+schedules remain unsupported; the existing admitted source growth implementation owns learning.
+The private test uses controlled learned priest/mage states and pinned exports; it neither imports
+Kazin's story nor proves a natural cast. See [capabilities](../capability-status.md#player-blaze1-2-and-blast1).
+
 ## Early physical definition admission
 
 Standalone format7 admits `unpromoted-knight`, `unpromoted-mage`, `unpromoted-archer` and
@@ -21,8 +47,8 @@ already refreshed; new enemy initialization applies its source adjustment and we
 `EarlyClassAdmissionTests` consumes the pinned static/enemy/gold inputs through the existing
 reader and a controlled composition of existing placement rows. That verifies definition admission,
 not original placement, recruitment, a new full-battle import, battle-scene assets or natural story.
-Private encounter/region pins remain1/2/3. Kazin/Slade New Game recruitment, later scenes, player
-attack spells and Mage casting remain outside this slice. The authored
+Private encounter/region pins remain1/2/3. Kazin/Slade New Game recruitment, later scenes and Mage casting remain outside the physical slice.
+Selected player attack spells have their separate bounded admission above. The authored
 [range sample](../../content/authored/early-ranged.json) uses the ordinary session and native consumer.
 
 ## Authored Jaro victory admission

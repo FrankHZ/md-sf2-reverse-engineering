@@ -95,7 +95,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     (byte)(input.Agility & 127), (input.Agility & 128) != 0, input.Move, spells,
                     physical: PrivateBattleActionBindings.Physical(definitions, classDefinition.ProwessExpression, input.Items,
                         leader: id == 0, gold: 0),
-                    mover: Mover(classDefinition.MovementType), sourceLoadout: new(input.Items, input.Spells));
+                    mover: Mover(classDefinition.MovementType), sourceLoadout: new(input.Items, input.Spells),
+                    resistance: PrivateAttackSpellBindings.Resistance(classDefinition.ResistanceExpression));
                 actorInput = new(actor, input.Hp, input.Mp, input.Exp, input.Kills, input.Defeats, input.Status, null, ActivationWord: input.ActivationWord);
             }
             else
@@ -124,7 +125,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     physical: PrivateBattleActionBindings.Physical(definitions, enemy.ProwessExpression, items,
                         leader: false, gold: definitions.EnemyGold[enemy.Id].Gold),
                     mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells),
-                    equipment: PrivateBattleActionBindings.EnemyEquipment(definitions, enemy.BaseAttack, items));
+                    equipment: PrivateBattleActionBindings.EnemyEquipment(definitions, enemy.BaseAttack, items),
+                    resistance: PrivateAttackSpellBindings.Resistance(enemy.ResistanceExpression));
                 actorInput = new(actor, enemy.MaxHp, enemy.MaxMp, null, null, null, 0, null);
             }
             var initialization = new BattleDeploymentInitialization(enemyAi, 0, row.Behavior.PrimaryRegion,
@@ -163,7 +165,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             sourceMapRegion: new(new("map-" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
                 new(encounter.Area.X, encounter.Area.Y)),
             retreatSpells: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatSpells(definitions) : [],
-            retreatItems: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatItems(definitions) : []);
+            retreatItems: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatItems(definitions) : [],
+            attackSpells: PrivateAttackSpellBindings.Spells(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         // Product content is assembled before its ordinary before-battle program has run.
         // The actual battle entry still validates the routed policy through BattleTurnFlow.
