@@ -2663,77 +2663,77 @@ field control. Source/runtime reach and timing remain Unknown outside named orig
 modern Search shortcut/result delivery and safe repeated hide are explicit remake policies.
 Preserve prior controlled-start fade diagnostic failures and all completed attempts in the handoff.
 
-## Private house-exit translation sample
+## Private opening-world Chinese text
 
-[#1489](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1489) owns the finite
-[M3 house-exit boundary](../application/localization-design.md#m3-private-house-exit-review-sample):
-`private-battle01-to-battle02`, `world.text/510,511,483`, existing `cs-5145c`. The
-[opening guide](../../../docs/design/synthesis/chapters/grans-opening/opening-through-battle01.md#1-map-3-leaving-the-house-and-meeting-the-school-entities)
-retains the original-source evidence boundary. Translation adds no original reach/timing claim.
-All source/translated prose, bilingual review, absolute private paths and generated reports stay
-local. The stable external world owner has exactly `world.zh-CN.json`, `review.zh-CN.md` and
-`README.md`; preserve it when retiring a consuming worktree. It contains only these three rows,
-uses the existing catalog envelope, and creates no segment merger or complete-world copy.
+The [M3 inventory and boundary](../application/localization-design.md#m3-private-opening-world-chinese-text)
+owns 209 private source-backed rows: 208 connected existing consumers and ordinary-defeat row 363
+prepared for the separate [#1492](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1492)
+display connection. Default/F501 content includes both messenger choices, repeat/local interactions,
+royal/adviser/tower, before/after Battle01 and shared Search prefixes/results/descriptions. Static
+alternatives are not runtime passes. F609 and later campaign remain excluded.
 
-From the assigned existing checkout, load `local/issue1441/inputs.ps1` in the launch process.
-Select this owner's absolute `world.zh-CN.json` with `SF2_DISPLAY_CATALOG`; select `zh-CN` or `en`
-through existing preferences. Reuse compiled Content/adapter, imports, Godot and the owned
-`local/issue1471/field-01` runtime directories. Finite ignored entry points are:
+Reuse the assigned isolated checkout, current ignored `local/issue1441/inputs.ps1`, actual admitted
+world, existing compiled adapter/Content, font imports and retained `local/issue1471/field-01` runtime.
+Do not rerun initial private creation scripts or copy the world/assets. Select the persistent private
+`world.zh-CN.json` through `SF2_DISPLAY_CATALOG`; all three world-owner files survive worktree retirement.
+The separate Witch files remain read-only. From that checkout, the retained task-local recipes are:
 
 ```powershell
-pwsh -NoProfile -File ./local/issue1489/catalog.ps1
-pwsh -NoProfile -File ./local/issue1489/run-native.ps1 -Run <fresh-pilot> -Rows 1
-pwsh -NoProfile -File ./local/issue1489/run-native.ps1 -Run <fresh-zh> -Language zh-CN
-pwsh -NoProfile -File ./local/issue1489/run-native.ps1 -Run <fresh-en> -Language en
-python -X utf8 ./local/issue1489/compare.py
+pwsh -NoProfile -File ./local/issue1491/catalog.ps1
+python -X utf8 local/issue1491/review-record.py
+pwsh -NoProfile -File ./local/issue1491/run-native.ps1 -Run <fresh-battle-run> -Scene battle -Language zh-CN
 ```
 
-The compiled `OpeningNewGameReader` supplies the actual admitted definition to
-`DisplayCatalogReader`; the one-row pilot precedes all-three admission. Compare exact package,
-repository URL, commit and ROM identity, per-row controls/name positions, captured literal names,
-resolved text/effective locale/reason and empty diagnostics. Missing and invalid-control row 511
-retain its complete English text with distinct reasons; mismatched source identity rejects the
-overlay. Source size/mtime remain unchanged. Reports name the read-only selection without publishing
-it. Static controls total four N, two W2, one W1, LEADER and NAME;1 across 156 source characters.
+`catalog.ps1` loads the current selections in the same process, invokes actual `OpeningNewGameReader`
+and `DisplayCatalogReader`, resolves all 209 rows/captured names, and checks missing/invalid/source
+failure recovery. `qa-static.json` records exact source/control/name parity, IDs, UTF-8/per-row/total
+length, placeholder and repeated-target checks. The private review holds all 209 English/Chinese pairs;
+no private text is printed into public CI or this owner. Independent bilingual agent review passes;
+physical reading/typography and user text tone remain pending.
 
-The native launcher uses fresh disposable external save/preference namespaces, supported
-`adjustable` text mode, headless 1920×1080, a 50-second outer deadline and the existing ordinary
-production input path. No focus notification is injected. Ordinary title/greeting skip, menu reveal,
-New Game, slot/name and final confirmation create a fresh initial house session. Preserve the
-captured literal name within the existing ASCII naming limit. From `(56,3)`, use Left, Left through the existing house warp,
-then Right to trigger the three-text program. Read/confirm 510,511,483, wait for caller return at
-`(4,4)`, then Down to `(4,5)` proves field input recovery. Stop there: no school/messenger/battle,
-Save/Continue compatibility replay, canonical-input mutation, screenshot or general observer.
+The ordinary New Game school/messenger recipe uses a fresh disposable save namespace under the
+configured issue1491 validation root, literal custom name `Nova7`, actual input and the existing
+95-step opening reference trace. A live walking NPC may obstruct a fixed trace edge; ordinary held
+Wait then retry handles that state without position/flag/seed injection. The retained `school03`
+record contains 29 Chinese house/school/messenger/join windows, choice 531, no fallback, captured names,
+reveal/paging/confirm, and all selected code points present in the actual body font. Its final ordinary
+return is Map3 `(43,10)` with flags 66/603, joined 0/1/2, no cursor/wait/failure; Down reaches `(43,11)`.
+The process exited 2 because the observer compared integer flags using floating-point `Array.has`.
+`school03-record-review.json` independently checks those recorded flags using explicit integers and
+confirms the complete display/return/movement boundary. Preserve that original failure; it is not a
+successful process exit. Main-gate owns an independent candidate observation, without another worker
+route replay solely to change the scalar assertion's result.
 
-**Confirmed:** both full runs exit 0 with no deadline, input/text/glyph/geometry or session failure.
-All three actual bodies match reader/source expectations, use their selected locale without fallback,
-and are fully read before acknowledgement; no overflow page is needed. Captured player/member names
-and the unapproved source proper name remain literal. Fourteen key inputs agree between the Chinese
-and English runs. Wait tokens `165/390/514`, cursor/wait, canonical FieldText units, names, revision,
-flags, party, gold, continuation and logical clock agree at the three input boundaries and comparable
-initial/return/moved states. Their independent ordinary New Game starts choose different main/thinking
-seeds; actual values remain in the private comparison, without injection or an equality claim.
+The battle recipe uses the existing controlled `battle01-to-battle02-start` seam and opening-party
+input. Its small task-local `battle-start.json` omits only historical `mapPalettes` duplicated by the
+current admitted world's canonical `basePalette`; the actual reader admits it. Original inputs stay
+read-only; no complete world copy or stale missing-display `map3-opening-start` is used. The controlled
+entry declares prerequisites rather than proving earlier natural reach. Final `battle04` completes
+exit 0 in about 5s, peak 0.91GiB, Chinese/no-fallback rows 2292–2294, source default BOWIE, W2/W1 reveal,
+paging/confirm, glyphs and geometry, with empty failure lists. It retains the two-instance ObjectDB
+shutdown warning and stops at that body boundary;
+no battle victory or full campaign is replayed for translation acceptance.
 
-A focused one-row observation captures the actual adjustable reveal: Confirm changes 0 to 24 visible
-characters, keeps row 510 and its token/flags/party/gold/seeds, and leaves acknowledgement unavailable
-until canonical delivery completes. The logical clock advances normally from 115 to 119 during the
-input interval; reveal does not replace source execution. This additional input history is separate
-from the matching full-run histories. Headless glyph/geometry checks do not establish physical
-rendering, typography or human reading comfort.
+Completed diagnostic runs and their exact corrections remain in `local/issue1491/HANDOFF.md`,
+including deadline/partial state, live NPC obstruction, the numeric flag assertion, interrupted
+redundant replay, historical duplicate palettes and custom-versus-default name expectations.
+They remain failures or stopped attempts; final reader and battle04 success do not replace them.
 
-Prior completed failed attempts and their corrections remain in the ignored handoff. Exit 0 without
-the required checkpoint report is not a passed observation; the current launcher requires both.
+The narrow reader ceiling change compiles in both configurations and the affected adapter gate passes.
+The completed private-configured engine gate reports 1,801 passed / 6 failed / 1 skipped; exact failed nodes and
+logs stay in the handoff. The failures concern old controlled seeds/AI, single-encounter assumptions
+and oversized reserialized private-world fixtures; none calls `DisplayCatalogReader`. Configuration
+mismatch is **Inferred**, not a separately reproduced baseline pass. Preserve that red aggregate;
+no full-suite rerun or unrelated fixture weakening is required for this content slice. Record the
+committed planner and actual public CI in the final handoff.
 
-The worker runs `pilot03`, `zh01`, `en01` and `reveal01` have empty stderr. The independent
-`main-gate01` three-row run passes and exits 0 but retains the two-ObjectDB shutdown warning also
-seen in the first attempt. Its cause remains an unresolved lifecycle **Unknown**; no audio
-investigation is implied. Peak working set is about 1.42 GiB for this existing private world/entry
-composition; one serial native consumer stays below the revised 2 GiB planning estimate. Private
-three-file text remains below 16 KiB, all Issue reports below 2 MiB and H free above 1 GiB. No new
-worktree, environment, cache, SDK, import or acquisition is needed.
+One native consumer at a time stays below 2GiB working set; measured school peak is about1.44GiB.
+The catalog/review stay below 256KiB/512KiB, task outputs below 5MiB and H free above 1GiB. Native launches
+are headless/hidden, reuse imports and writable runtime paths, require a final report plus process
+completion, and leave user slots untouched. Partial progress is not final acceptance. No screenshots,
+focus bypass, emulator, new environment/cache/worktree or normal/full research gate is used.
 
-Direct document/link/scope/private-boundary checks, the clean committed planner and actual selected
-hosted CI own the three-document tracked diff. No fresh SDK, engine, normal research/full or H3 suite
-is selected solely for this sample. Main-gate's independent semantic/wording review passed without
-requested edits; human review of these three rows and actual in-game reading remains pending.
-Technical connection neither expands the script batch nor grants publication rights.
+**Unknown:** the prior independent house run and failed battle01 startup emitted the warning for two
+ObjectDB instances at shutdown. Worker battle03 has empty stderr, while final battle04 succeeds with
+the same two-instance warning; its cause remains unresolved. No unrelated lifecycle/audio investigation
+or user reading/typography acceptance is claimed. Row363's actual Chinese delivery remains explicitly assigned to #1492.

@@ -8,9 +8,11 @@ now has the [#1471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues
 settings, authored FieldTextWait and semantic HEAL consumers, localized Church/Search, entry/save, Party/Prepare and battle command/target/equipment/status and Give/Discard/retreat, story controls/choices/return notices and semantic battle feedback
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 The private six-row M3 [Witch-entry suggestion](#m3-private-witch-entry-review-sample) has approved
-human text tone; in-game typography/reading remains pending. A separate three-row
-[house-exit sample](#m3-private-house-exit-review-sample) is technically connected and agent-reviewed.
-This does not establish opening-wide or complete-game bilingual coverage. The inventory below records
+human text tone; in-game typography/reading remains pending. The private
+[opening-world catalog](#m3-private-opening-world-chinese-text) prepares 209 source-backed rows,
+with 208 connected to existing consumers and one ordinary-defeat display gap owned by
+[#1492](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1492). Complete-game bilingual
+coverage and human reading acceptance remain separate. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
 These describe the remake, not new original-game evidence.
 
@@ -37,7 +39,7 @@ full string export, a translation platform and UI redesign are non-goals. Preser
   retain their existing detailed recovery errors (currently English) with a localized explanation.
   No gameplay command, save operation, scene remount or music restart implements a locale change.
 - An explicit absolute `SF2_DISPLAY_CATALOG` selects the optional package overlay once per session
-  composition. `DisplayCatalogReader` reuses `ExplorationTextTokens`, enforces the 256 KiB/64-row
+  composition. `DisplayCatalogReader` reuses `ExplorationTextTokens`, enforces the 256 KiB/256-row
   envelope and package/locale/private source identity, and retains complete per-row control/name maps.
   Structural failures reject the overlay; semantic row failures discard that whole row and mapping.
   Missing rows remain distinguishable from invalid rows and producer-operand defects. Diagnostics are
@@ -186,49 +188,71 @@ to this speaker and does not prescribe other characters' voices. The engineering
 remains open. No reply authorizes expansion. Terminology, other private dialogue, image lettering,
 full-opening Chinese, Unicode naming and publication remain outside this sample.
 
-## M3 private house-exit review sample
+## M3 private opening-world Chinese text
 
-[#1489](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1489) adds exactly
-`world.text/510,511,483` to the existing `private-battle01-to-battle02` display consumer. Standard
-rigor remains appropriate: the outcome is one bounded private content group, preserving source
-controls, captured names, English fallback and field control. No code, PO, schema, production probe,
-source package, glossary, default-name or Unicode/IME change belongs to this slice.
+[#1491](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1491) prepares the complete
+bounded text inventory for the implemented Map3–Battle01 opening and usable return: **209 unique
+`world.text` rows, 9,995 source characters including controls; 206 additions and the three unchanged,
+independently reviewed house-exit rows 510/511/483.** Standard rigor and the existing High save/identity
+boundary apply. This is display content, without canonical script, source package, PO, gameplay,
+save-format, glossary, default-name or Unicode/IME changes.
 
-The [opening guide's House-exit row](../../../docs/design/synthesis/chapters/grans-opening/opening-through-battle01.md#1-map-3-leaving-the-house-and-meeting-the-school-entities)
-locates entity operand 128 and `cs-5145c`: cursor 510 supplies 510/511, then cursor 483 supplies 483.
-Its pinned source is `disasm/data/maps/entries/map03/mapsetups/scripts_1.asm:cs_5145C` at SF2DISASM
-`c834c652b6862bc5679fd7f69a38a7093206efc6`, USA ROM SHA-256
-`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. This is provenance and existing
-structure, not a new original-game reach, acknowledgement or timing claim.
+The [opening guide](../../../docs/design/synthesis/chapters/grans-opening/opening-through-battle01.md)
+and [offered-branch inventory](../content/opening-branch-inventory.md) select default and supported
+F501 phases. Transitive program calls/branches retain text-cursor progression; Search also consumes
+its marker prefixes and empty-result rows. Exact private per-row program/instruction/source bindings
+and bilingual pairs belong to the persistent review and ignored reproduction inventory.
 
-The inventory is three rows, 156 source characters including literal controls: one `{LEADER}`, one
-`{NAME;1}`, four `{N}`, two `{W2}` and one `{W1}`. The translation retains their exact per-row order
-and control-segment name mapping. Unapproved proper names retain their source English form; captured
-player/member names remain literal. The prior Witch tone is not imposed on this different speaker.
+| Existing consumer group | Unique IDs in that group | Rows |
+| --- | --- | --- |
+| Map3 house, school, messenger Yes/No/re-prompt, joins, gate and local conversation | 447; 480–505; 507–542 | 63 |
+| Map19 default/F501 conversations and adviser first/repeat choice | 543–562; 575–578; 583–586 | 28 |
+| Map20 default/F501 conversations, royal visit and exorcism | 563–567; 570–573; 588–596; 2176–2212 | 55 |
+| Map21 default/F501 guard and speakerless fainted line | 568–569; 579–580 | 4 |
+| Battle01 before/after story | 2292–2310 | 19 |
+| Ordinary defeat, translation prepared; display connection pending #1492 | 363 | 1 |
+| Shared Search prefixes/results and default/F501 descriptions | 403–405; 408–410; 412; 423; 425–430; 4035–4059 | 39 |
 
-One stable external private world owner, outside Git and removable worktrees, contains exactly
-`world.zh-CN.json`, `review.zh-CN.md` and `README.md`. Its current catalog has only these three rows;
-future separately authorized bounded additions use the same existing 256 KiB/64-row contract, not
-per-segment overlays or a merger/manifest. `SF2_DISPLAY_CATALOG` selects that optional absolute local
-path. The `source` object matches the actual admitted world repository/commit/ROM identity, including
-the repository URL verbatim. The separate Witch owner and source inputs remain read-only. These
-three files are persistent user content, not cleanup scratch; local admission grants no publication
-rights. Public Git retains no original/translated prose, review table or absolute private path.
+**Confirmed static coverage:** the 209-row inventory includes 30 F501 castle-return alternatives;
+those are admitted content, not a claim that this task naturally executed each branch. No text table
+is invented for Map40's absent NPCs or returned Map57. F609/F506/F543 setup variants, the markerless
+later Map21 zone body, Map66/Battle02 and later campaign are excluded. Church's typed menus/results
+remain the existing M2a consumer; this inventory does not invent source dialogue for that service.
 
-**Confirmed technical boundary:** existing compiled Content admission passes a one-row pilot, all
-three rows, exact controls/captured names, complete missing/invalid-row English fallback and source
-mismatch rejection. Ordinary headless New Game reaches the initial house, displays all three rows in
-Chinese and English, confirms them and returns to usable field movement. An early Confirm reveals
-row 510 from 0 to 24 visible characters without acknowledging it. Comparable canonical units, waits,
-tokens, flags, party/resources and logical clocks agree; two independent New Game seeds differ and
-remain explicit. The [field-program reproduction owner](../verification/field-programs.md#private-house-exit-translation-sample)
-records the exact bounded method, corrections, input comparison and shutdown-warning boundary.
+One persistent private owner outside Git and removable worktrees contains exactly
+`world.zh-CN.json` (the sole writeback source), `review.zh-CN.md` (all pairs and review disposition)
+and `README.md` (ownership, scope and reproduction). `SF2_DISPLAY_CATALOG` selects its absolute path;
+the separate Witch files and original inputs remain read-only. The overlay pins the admitted package
+`private-battle01-to-battle02` and its exact repository URL/commit/ROM source object. Provenance is
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, USA ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. No original/translated prose,
+private review table or absolute input path is published in Git. Local admission grants no distribution
+right, and worktree retirement must preserve these three user-content files.
 
-Main-gate independently passed the three pairs' semantics and wording with no requested changes.
-**Human text-tone review of these three rows, in-game typography and actual reading experience remain
-pending.** This is an explicit experience boundary, not a new engineering authorization gate. School,
-messenger, recruitment, battle, other dialogue groups, naming/IME and opening-wide Chinese remain
-outside this sample. No further batch or publication is authorized by its technical success.
+The measured 209 rows require changing only the existing reader's finite entry ceiling from 64 to
+256 (47 rows of headroom); 256 KiB total, 8,192 characters per row, strict UTF-8/shape/source/duplicate
+and control-segment name checks remain unchanged. The current catalog is 28,053 UTF-8 bytes. There is
+no segment loader, merger, manifest, cache or second content authority. Unapproved proper/default
+names and source class abbreviations remain English; captured custom names remain literal. Every
+assigned sentence is translated; names alone are not untranslated-sentence permission.
+
+**Confirmed technical boundary:** whole-catalog actual Content admission resolves all 209 rows in
+Chinese without diagnostics/fallback and preserves controls/captured names; missing/invalid-row English
+fallback and source-mismatch rejection still pass. Strict source/token/name/ID, per-row/total length,
+placeholder and repeated-target QA pass. The actual bundled body font covers every selected Chinese
+code point. Ordinary New Game observes 29 selected house/school/messenger/join windows, retained
+Chinese choice text, reveal/paging/confirmation and usable field return; a separate explicitly
+controlled before-battle seam observes rows 2292–2294 through the actual view. These representative
+observations do not prove every static alternative's reach, all physical line fits or original timing.
+The [verification owner](../verification/field-programs.md#private-opening-world-chinese-text) retains
+reproduction, completed failures and the unattributed ObjectDB shutdown warning.
+
+**208 rows have connected existing consumers; row 363 is prepared but remains English at its
+unmigrated `DialogueWait` view.** #1492 owns that separate display connection. Reader admission or
+English fallback is not Chinese rendering proof. Main-gate independently passed all 209 bilingual
+pairs after the retained wording corrections. **User text-tone, in-game typography and actual reading
+experience remain pending.** The Witch's approved tone does not prescribe other speakers. This does
+not complete epic #1468, whole-game Chinese, image lettering, naming/IME or user visual acceptance.
 
 ## Current production and consumption paths
 
