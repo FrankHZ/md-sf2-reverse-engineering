@@ -43,9 +43,10 @@ publication right, image-lettering change, default-name admission or naming/IME 
 
 [#1496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1496) freezes the source,
 ownership and control inventory. The intake and the #1506 name/working-term baseline have passed
-independent acceptance. **Current static coverage: 576 translated rows and 3,691 untranslated rows**;
-the 215 accepted seeds remain exact. The 361 newly translated rows belong to the Grans pilot below
-and await independent acceptance. Provenance remains
+independent acceptance. **Current static coverage: 955 translated rows and 3,312 untranslated rows**;
+the 576 previously translated rows remain exact. The Grans pilot has passed independent acceptance;
+the eastern Parmecia draft is agent-reviewed and awaits main-gate independent acceptance, as recorded
+in the current coverage table below. Provenance remains
 `ShiningForceCentral/SF2DISASM` at `c834c652b6862bc5679fd7f69a38a7093206efc6`, the admitted USA ROM
 identity recorded below, and `disasm/data/scripting/text/gamescript.txt`. Direct comparison confirms
 every `{id,text}` in the admitted `world.texts` array equals that pinned table. The six `entry.text`
@@ -55,8 +56,8 @@ display rows are projections of world IDs 216–221, not six additional message 
 
 A separately configured persistent private content root outside Git and removable worktrees owns
 `README.md`, `source.jsonl`, `batches.json`, `terminology.tsv`, `control-tokens.json`,
-`accepted-seed.zh-CN.jsonl`, `names.zh-CN.jsonl`, `names-review.zh-CN.md` and the generated
-`review-1498.zh-CN.md`.
+`accepted-seed.zh-CN.jsonl`, `names.zh-CN.jsonl`, `names-review.zh-CN.md` and generated
+batch `review-<issue>.zh-CN.md` views.
 Absolute selections and executable checks stay in the local handoff.
 No original/translated prose or private review is published. `source.jsonl` retains one row per
 occurrence, with locked namespace/ID/source/category/duplicate links/batch/context, nullable translation
@@ -89,15 +90,15 @@ chapter context and remain explicitly assigned to that common group, with their 
 or absence retained; 23 further rows have an additional unclassified source reference and also stay
 common. A common assignment does not itself assert cross-chapter reuse.
 
-| Writer | Reading context | Exact rows | Source characters | Retained seed rows |
-| --- | --- | ---: | ---: | ---: |
-| #1497 | Common/system/descriptions, cross-group and unassigned | 2,369 | 96,115 | 132 |
-| #1498 | Grans opening and departure | 444 | 19,760 | 83 |
-| #1499 | New Granseal and eastern Parmecia | 379 | 15,208 | 0 |
-| #1500 | Southern travel, Caravan and Creed | 310 | 11,891 | 0 |
-| #1501 | Northern travel, Pacalon, Tristan and Mitula | 239 | 10,493 | 0 |
-| #1502 | Moun, Nazca and return to Grans | 366 | 13,972 | 0 |
-| #1503 | Final confrontations and ending | 160 | 6,556 | 0 |
+| Writer | Reading context | Assigned rows | Source characters | Translated rows | Current static state |
+| --- | --- | ---: | ---: | ---: | --- |
+| #1497 | Common/system/descriptions, cross-group and unassigned | 2,369 | 96,115 | 132 | Accepted seeds; other rows not started |
+| #1498 | Grans opening and departure | 444 | 19,760 | 444 | Independently accepted, including 83 exact seeds |
+| #1499 | New Granseal and eastern Parmecia | 379 | 15,208 | 379 | Agent-reviewed; independent acceptance pending |
+| #1500 | Southern travel, Caravan and Creed | 310 | 11,891 | 0 | Not started |
+| #1501 | Northern travel, Pacalon, Tristan and Mitula | 239 | 10,493 | 0 | Not started |
+| #1502 | Moun, Nazca and return to Grans | 366 | 13,972 | 0 | Not started |
+| #1503 | Final confrontations and ending | 160 | 6,556 | 0 | Not started |
 
 **Confirmed static intake:** all 4,267 IDs have exactly one owner; no deduplication/deletion. Six
 control-only rows (99/262/264/362/3523/3553), literal `x` rows (406/407/411) and 103 equal-source groups
@@ -120,9 +121,10 @@ within each control segment, including unsupported tags. Do not substitute guess
 | `{D2}`, `{D3}`, `{ITEM}`, `{SPELL}`, `{DICT}`, `{#}` | Unsupported by `ExplorationTextTokens`; reader rejects the row, static draft still preserves it |
 
 No new source timing or DICT caller/payload contract is claimed. Unknown operands stay Unknown;
-upstream tag descriptions alone do not establish their live use. The working terminology has 75
-source-referenced proposals or explicit contextual holds, including 48 derived name-table lookups.
-The 337 name pairs and 75 working terms are **independently accepted for prose drafting**. Their
+upstream tag descriptions alone do not establish their live use. The working terminology has 82
+source-referenced terms or explicit contextual holds, including 48 derived name-table lookups and
+the seven Grans story terms adopted at independent pilot acceptance. The 337 name pairs and these
+working terms are **independently accepted for prose drafting**. Their
 per-row proposed-for-independent-review labels retain the delivery snapshot; the private acceptance
 record and corpus README own the current adoption. Human reading and runtime default-name display
 remain unaccepted; documentation Chinese and functional UI labels do not establish either. Context-dependent
@@ -148,9 +150,11 @@ No name-table expansion enters the fixed message count.
 
 The measured 209-row sample has 9,995 source characters, 5,215 target characters, 10,931 target UTF-8
 bytes and 155,406 bytes in the full context-bearing row structure. The current persistent corpus,
-including the names and Grans reviews, is **under 2.9 MiB**; extrapolating that sample's target-byte ratio plus a bounded derived
-review gives an estimated **under 6 MiB**, within the initial **8 MiB persistent / 16 MiB temporary**
-budgets and at least **1 GiB free** storage condition. Message-intake checking parses the existing
+including the name and current batch reviews, remains within the
+**8 MiB persistent** budget; extrapolating that sample's target-byte ratio plus bounded derived
+reviews gives an estimated **under 6 MiB**. The current **32 MiB cumulative temporary** budget
+retains each batch's single before snapshot and completed failure records, with at least **1 GiB free**
+storage required. Message-intake checking parses the existing
 125,828,417-byte world once per invocation, O(world bytes + text/reference bytes). Current batch checks use
 the small corpus, an authorized before snapshot, pinned text/context files and generated review,
 without rereading that world. No world/assets
@@ -173,30 +177,27 @@ Retained prior failures remain in their original
 handoff and are not converted into passing runtime evidence. #1504 owns later cross-batch consistency
 and complete-draft closure, including this name corpus; neither static slice closes #1495 or epic #1468.
 
-### Grans static editorial pilot
+### Current batch review boundary
 
-[#1498](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1498) now has a complete static
-**444-row** assigned draft: **361 new translations / 15,699 source characters**, plus **83 exact
-accepted seeds**. All 361 new pairs were individually translated and reread for meaning, speaker,
-conditions, options and adjacent dialogue; independent main-gate review remains pending. This fixed
-editorial group does not establish all Grans story coverage, natural execution or chapter playability.
-The other batches retain their intake fields and target values.
+The [#1498 Grans pilot](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1498)
+passed independent review and calibrated the scene-based method above. Its seven story terms are
+now serialized in the shared private glossary; frozen pending labels preserve the delivery snapshot,
+while the private acceptance record owns current adoption. Its corrected semantic finding and
+source speaker anomalies remain in the private evidence, rather than being erased by later batches.
 
-`source.jsonl` remains the sole message authority; its generated bilingual Grans review includes all
-444 pairs and necessary semantic notes. The assigned 361 translation/review fields alone changed:
-all 4,267 source/context/ownership fields, all 215 seeds and the 3,906 other occurrence lines remain
-exact. Direct checks pass native control order, parameter identity/multiplicity within every control
-segment, source/ID coverage, placeholders, English residue, repeated/template targets and length
-heuristics. One repeated short hesitation was inspected as legitimate; no unresolved mechanical
-QA defect remains. The new targets contain **7,897 characters / 17,797 UTF-8 bytes**; the derived
-review is **110,887 bytes**. These are static text measurements, not renderer-fit acceptance.
+The [#1499 eastern Parmecia draft](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1499)
+covers all 379 assigned occurrences. Each pair was translated and reread against the named source
+scene and adjacent dialogue by the accountable executor. Direct checks confirm all 4,267 locked
+source/context/ownership fields, all 576 prior translations and all 3,888 non-target occurrence lines
+remain exact. Native control order and parameter identity/multiplicity within every control segment
+pass; the derived review matches the authority. English residue, placeholders, template repetition
+and length scans have no unexplained hits. The dynamic-name-only call at ID1651 correctly contains
+no added Chinese prose. New proper-name proposals and source wording/speaker ambiguities remain in
+private row notes for independent review, without changing shared name identities or source mapping.
 
-Ground Seal, Ancient Tower/Shrine, the two jewels, Evil World and light tube have consistent
-source-context-backed working proposals recorded in the private row notes/review, without changing
-the shared glossary. Source speaker/wording anomalies remain explicit, including the first-person
-jewel claim at ID910 and third-person wording under the leader's actor at ID2432. Existing seed
-English names stay exact. Unsupported controls and unknown runtime operands/timing remain separate;
-no catalog/PO/code, runtime display, human reading or original-game reach is accepted by this pilot.
+These editorial groups establish static drafting/review coverage only. Unsupported controls,
+unknown runtime operands/timing, natural reach, runtime display and human reading remain separate.
+Independent main-gate acceptance of #1499 is pending; no later batch or runtime consumer is started.
 
 ## Implemented M1 boundary
 
