@@ -57,20 +57,26 @@ public sealed partial class ExplorationSessionView
         for (int i = 0; i < due; i++)
         {
             var before = _session!.Current;
-            if (!before.HasOrdinaryFieldTime || PresentationFailure is not null || !CanProcess() || _handedOff)
+            if (!before.HasOrdinaryFieldTime || PresentationFailure is not null || !CanProcess() || _handedOff || _battleHandoffPending)
             { _tickTime = 0; return; }
             if (!MenuEntryPending && before.CanWaitAtInput &&
                 _movementHold.Repeat(_input, before, Time.GetTicksUsec()) is { } direction)
                 HandleAction(direction, repeating: true);
-            if (!_session.Current.HasOrdinaryFieldTime || !CanProcess()) { _tickTime = 0; return; }
+            // An action may publish a failure or hand off before its next service opportunity.
+            // Never overwrite that result with a neutral step from the same callback.
+            var afterAction = _session.Current;
+            if (PresentationFailure is not null || _handedOff || _battleHandoffPending || !CanProcess() ||
+                afterAction.SessionId != before.SessionId ||
+                afterAction.Exploration?.Definition != before.Exploration?.Definition || !afterAction.HasOrdinaryFieldTime)
+            { _tickTime = 0; return; }
             bool settling = MenuEntryPending;
-            var result = Send(_session.Current.CanWaitAtInput ? new WaitAtInput() :
-                new AdvanceSimulation(_session.Current.Story.Wait?.Token));
+            var result = Send(afterAction.CanWaitAtInput ? new WaitAtInput() :
+                new AdvanceSimulation(afterAction.Story.Wait?.Token));
             if (settling) _menuSteps++;
             CheckMenuEntry();
             if (result.Failure is not null || _session.Current.SessionId != before.SessionId ||
                 _session.Current.Exploration?.Definition != before.Exploration?.Definition ||
-                !_session.Current.HasOrdinaryFieldTime || !CanProcess() || _handedOff)
+                !_session.Current.HasOrdinaryFieldTime || !CanProcess() || _handedOff || _battleHandoffPending)
             { _tickTime = 0; return; }
         }
     }

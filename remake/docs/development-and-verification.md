@@ -32,8 +32,9 @@ the existing movement/warp assertions with the admitted ordinary sprite-counter 
 Use the existing owned Godot installation/project and a Debug adapter build. Reimport only changed
 source/localization when needed; do not restart an unrelated retained instance. The tracked
 [`engine_ordinary_time_observation.gd`](../game/probes/engine_ordinary_time_observation.gd) reads real
-session/input/projection and persistence observations. It uses ordinary title Continue, physical key
-events and the genuine Church interaction; it never supplies sprite/audio completion or mutates a
+session/input/projection and persistence observations. It uses ordinary title Continue, synthesized
+keyboard events through production input routing and the genuine Church interaction; it never
+supplies sprite/audio completion or mutates a
 running game state. `partition-a`, `partition-b` and `clock-policy` disable automatic callbacks at
 attach, then call the actual view `_Process` with controlled deltas. They do not model the scheduler.
 All output is selected with `SF2_EXPLORATION_OBSERVATION_OUTPUT` in a fresh ignored run directory.
