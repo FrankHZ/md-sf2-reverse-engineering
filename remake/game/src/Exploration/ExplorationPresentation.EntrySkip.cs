@@ -20,9 +20,11 @@ internal sealed partial class ExplorationPresentation
                 _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], wait.Cue.Resource == "nod");
                 break;
             case PresentationCueKind.EntityEffect:
-                if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "flash-white") || wait.Cue.Entity is null)
+                if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "slide-out" or "flash-white") || wait.Cue.Entity is null)
                     throw new InvalidOperationException("effect-binding");
                 _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false);
+                if (wait.Cue.Resource is "slide-in" or "slide-out")
+                    SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, wait.Cue.Resource == "slide-out");
                 break;
             case PresentationCueKind.CameraWait: _camera = target; break;
             case PresentationCueKind.FlashWhite:
@@ -39,7 +41,8 @@ internal sealed partial class ExplorationPresentation
                 _owner.Modulate = wait.Cue.Resource == "black" && fadeOut ? Colors.Black : Colors.White;
                 break;
             case PresentationCueKind.Sound:
-                _audio.Play(wait.Cue.Resource ?? throw new InvalidOperationException("sound-binding"));
+                if (wait.Cue.SoundCommand is { } command) _audio.Play(command);
+                else _audio.Play(wait.Cue.Resource ?? throw new InvalidOperationException("sound-binding"));
                 if (current.Story.Music is { EndStep: not null } music && music.Cue == wait.Cue.Resource)
                     _audio.BindMusic(music.Generation, music.Cue);
                 break;
@@ -56,5 +59,12 @@ internal sealed partial class ExplorationPresentation
         _cue = wait.Token; _cueAge = 0; _cueResource = null;
         _gesture = null; _mosaic = null; _storyEffect = null; _shivering = _nodding = false;
         ActiveCue = null; CompletedCueToken = wait.Token.Value; CompletedCueKind = "Skipped:" + wait.Cue.Kind;
+    }
+
+    private void SetSpriteBlank(ExplorationState world, EntityRef reference, bool blank)
+    {
+        var entity = world.Entities[reference];
+        var key = (world.Map, entity.Slot, entity.SpriteRequest);
+        if (blank) _blankSprites.Add(key); else _blankSprites.Remove(key);
     }
 }

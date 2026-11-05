@@ -533,6 +533,11 @@ internal static class ExplorationContentReader
             case "close-text": Object(row, opcode, "op"); return new CloseText();
             case "wait-view": Object(row, opcode, "op"); return new WaitForView();
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));
+            case "prompt-yes-no": Object(row, opcode, "op", "noTarget"); return new ChooseYesNo(null, Location(row.GetProperty("noTarget")));
+            case "name-member": Object(row, opcode, "op", "member"); return new NamePartyMember(Number(row, "member", 0, 29));
+            case "camera-speed": Object(row, opcode, "op", "speed"); return new SetCameraSpeed((ushort)Number(row, "speed", 0, 32767));
+            case "add-follower": Object(row, opcode, "op", "entity"); return new AddExplorationFollower(new(Text(row, "entity")));
+            case "wait-idle": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Text(row, "entity")), true);
             case "sprite":
             case "ally-sprite":
                 Object(row, opcode, "op", "entity", "sprite");
@@ -610,9 +615,13 @@ internal static class ExplorationContentReader
             case "wait-entity": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Id(row, "entity")));
             case "wait-ticks": Object(row, opcode, "op", "ticks"); return new WaitProgramTicks(Number(row, "ticks", 0, 65535));
             case "present":
-                ObjectOptional(row, opcode, ["op", "kind", "resource", "entity", "position"], "fullBlack", "durationTicks");
+                ObjectOptional(row, opcode, ["op", "kind", "resource", "entity", "position"], "fullBlack", "durationTicks", "soundCommand");
                 Require(Enum.GetNames<PresentationCueKind>().Contains(Text(row, "kind")), "presentation-cue", "program.kind", true);
                 FullBlackFade? fullBlack = null;
+                int? soundCommand = row.TryGetProperty("soundCommand", out _) ? Number(row, "soundCommand", 65, 120) : null;
+                if (soundCommand is not null)
+                    Require(Text(row, "kind") == "Sound" && row.GetProperty("resource").ValueKind == JsonValueKind.Null,
+                        "sound-command-binding", "program.soundCommand", true);
                 if (row.TryGetProperty("fullBlack", out var full))
                 {
                     Object(full, "fullBlack", "period");
@@ -623,7 +632,7 @@ internal static class ExplorationContentReader
                 return new PresentCue(Enum.Parse<PresentationCueKind>(Text(row, "kind")), row.GetProperty("resource").ValueKind == JsonValueKind.Null ? null : Text(row, "resource"),
                     row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")),
                     row.GetProperty("position").ValueKind == JsonValueKind.Null ? null : Position(row.GetProperty("position")), fullBlack,
-                    row.TryGetProperty("durationTicks", out _) ? Number(row, "durationTicks", 1, 65535) : null);
+                    row.TryGetProperty("durationTicks", out _) ? Number(row, "durationTicks", 1, 65535) : null, soundCommand);
             case "queue-warp":
                 Object(row, opcode, "op", "map", "position", "facing");
                 return new QueueMapWarp(new(Id(row, "map")), Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 3));
@@ -652,6 +661,7 @@ internal static class ExplorationContentReader
                         !action.TryGetProperty("wait", out _) || Boolean(action, "wait"))); break;
                 case "random-walk": Object(action, opcode, "op", "x", "y", "radius"); actions.Add(new RandomWalkEntity(new(Number(action, "x", 0, 63), Number(action, "y", 0, 63)), Number(action, "radius", 0, 63))); break;
                 case "destination": Object(action, opcode, "op", "position"); actions.Add(new MoveEntityAbsolute(Position(action.GetProperty("position")))); break;
+                case "position": Object(action, opcode, "op", "position"); actions.Add(new PositionEntity(Position(action.GetProperty("position")))); break;
                 case "face": Object(action, opcode, "op", "facing"); actions.Add(new FaceEntity((byte)Number(action, "facing", 0, 7))); break;
                 case "wait": Object(action, opcode, "op", "ticks"); actions.Add(new WaitEntityTicks((byte)Number(action, "ticks", 0, 255))); break;
                 case "speed": Object(action, opcode, "op", "x", "y"); actions.Add(new SetEntitySpeed((ushort)Number(action, "x", 0, 384), (ushort)Number(action, "y", 0, 384))); break;
@@ -728,6 +738,7 @@ internal static class ExplorationContentReader
                 {
                     case JumpProgram jump: Target(jump.Target); break;
                     case BranchFlag branch: Target(branch.Target); break;
+                    case ChooseYesNo choice: Target(choice.NoTarget); break;
                     case BranchEntityCoordinates branch: Target(branch.Target); break;
                     case CallProgram call: Target(call.Target); break;
                     case SourceRandomBattle random: Target(random.OnRequest); break;

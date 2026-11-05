@@ -29,7 +29,7 @@ internal static class SceneEntities
         aliases[add.Entity] = slot;
         return new(world.Definition, world.Layout, world.Player,
             world.AllEntities.Where(row => row.Slot != slot).Append(entity), world.Party,
-            world.SpriteSize, aliases, world.RoofState, world.Population, world.Quake);
+            world.SpriteSize, aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities);
     }
 
     internal static ExplorationState Build(ExplorationMapDefinition map, WorkingMapLayout layout, EntityRef player,
@@ -58,7 +58,8 @@ internal static class SceneEntities
         // Only fresh allocation initializes zero entries. Copies retain removed-reference tombstones.
         var aliases = Enumerable.Range(0, 64).ToDictionary(index => Reference(index < 32 ? index : index + 96), _ => 0);
         foreach (var alias in allocation.Aliases) aliases[Reference(alias.Key)] = alias.Value;
-        return new(map, layout, player, slots, party, aliases: aliases, roofState: roofState, population: population);
+        return new(map, layout, player, slots, party, aliases: aliases, roofState: roofState, population: population,
+            currentEntities: allocation.Slots.Where(slot => slot.Slot == 0 || slot.FollowerOrder is not null).Select(slot => slot.Slot).ToArray());
     }
 
     internal static ExplorationState Reload(ExplorationState world, LoadSceneEntities load, IReadOnlyList<int> flags, long request)

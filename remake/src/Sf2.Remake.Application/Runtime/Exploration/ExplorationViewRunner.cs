@@ -89,7 +89,6 @@ internal static class ExplorationViewRunner
     internal static LogicalView Tick(ExplorationState world, LogicalView view, ExplorationTextSettings settings)
     {
         Validate(view.Area);
-        if (settings.ViewSpeed != 0) throw new BattleRuleException("field-view-speed", "story.textSettings", true);
         var target = view.TargetSlot is null ? null : world.AllEntities.FirstOrDefault(entity => entity.Slot == view.TargetSlot);
         if (view.TargetSlot is not null && (target is null || target.Slot == 63))
             throw new BattleRuleException("field-view-target", "story.view", true);
@@ -97,7 +96,7 @@ internal static class ExplorationViewRunner
         {
             // The FF branch bypasses following but prepares speed even during a scroll.
             int speed = unchecked((short)view.FollowCounter) > 6 ? 32 : 24;
-            view = Speeds(view, speed);
+            view = Speeds(view, settings.ViewSpeed == 0 ? speed : settings.ViewSpeed);
         }
         // A followed entity with an active mask retains its existing speeds.
         else if (!view.Scrolling)
@@ -110,7 +109,7 @@ internal static class ExplorationViewRunner
             bool changed = x != nextX || y != nextY;
             int counter = changed ? unchecked((ushort)(view.FollowCounter + 1)) : 0;
             int speed = unchecked((short)counter) > 6 ? 32 : 24;
-            view = Speeds(view, speed);
+            view = Speeds(view, settings.ViewSpeed == 0 ? speed : settings.ViewSpeed);
             LogicalViewAxis Destination(LogicalViewAxis axis, int destination) => changed
                 ? axis with { Destination = axis.Position == destination ? null : destination }
                 : axis;

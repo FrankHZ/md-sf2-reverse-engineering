@@ -3,7 +3,7 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
-## Ordinary opening through Battle06 first control
+## Ordinary opening through Battle07 tower return
 
 The private title New Game and a real Map57 Continue connect Battle01/02, Yeel and Battle03 to
 Hawel's house. Ordinary play completed the source scene, formally recruited Kazin, inspected
@@ -20,10 +20,19 @@ paid supplies, drawbridge dialogue and exit lead to six living members at Battle
 player control. The [campaign observations](application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
 record the source bindings, input route, resources and stopping boundary.
 
-Battle06 results, later F530 setups, arbitrary field saves and the remaining pre-voyage campaign
-are Unsupported. Original natural traversal/timing remain Unknown. The existing legal Battle01
-save and fresh-process Continue preserve the six-member initialization; no post-Galam save recipe
-or migration of older member counts is added.
+Stage C consumes real Battle06 victory and its F506 changed Granseal setup, optional Kiwi refusal,
+castle bypass, naming/join and repeated talk, Astral/Lemon departure and royal following. Ordinary
+Map60 traversal reaches Battle07; paid EGRESS, revival and re-entry retain real costs and resources.
+The seven-member revision4 world uses TORT growth, unarmed visuals and common faction/target rules.
+Actual victory executes the full source continuation and returns control at Map58 (13,35), then
+ordinary movement to (13,34), with F507/F74/F640 and separate Astral/king/minister followers.
+The [Stage C observations](application/pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration)
+own the exact input, state, projection and error boundary; independent integration remains with main-gate.
+
+Later F530 setups, earthquake-town/departure and arbitrary field saves are Unsupported. Original
+natural traversal/timing and human-play acceptance remain Unknown. The existing legal Battle01
+save and fresh-process Continue preserve revision4's seven-member initialization; no post-Galam save
+recipe or migration of older member counts is added. Older worlds retain their own compatible slots.
 
 ## Finite Galam shop and purchased-supply closure
 
@@ -36,8 +45,8 @@ poison cure through the existing scene/payment/end rules. Actual English/Chinese
 private Talk/trades/return and a separate authored same-session purchase→battle→use→further control.
 The existing save payload preserves completed trade resources at its already supported recipes.
 
-Deals/Repair, rare/broken sale support, higher DETOX, full Map16 and Battle03–07 story connection are
-Unsupported. No Map16 save eligibility or natural original timing/reach is claimed. The current
+Deals/Repair, rare/broken sale support, higher DETOX and full Map16 remain Unsupported. The selected
+Battle03–07 story connection is described above. No Map16 save eligibility or natural original timing/reach is claimed. The current
 [service owner](application/session-and-programs.md#finite-galam-shop-transactions),
 [private boundary](content/profiles-and-trust.md#finite-galam-shop-admission),
 [rules/source](domain/gameplay-rules.md#finite-purchased-supplies-and-detox1) and
@@ -61,8 +70,9 @@ The [rules](domain/gameplay-rules.md#finite-dispel-support-and-silence),
 witnesses of SUPPORT → silence → paid suppressed spell → expiry → effective next cast → movement.
 Functional messages/cards project the actual state; this is not original magic media/timing.
 Pinned Dark Smoke definitions independently reach shared action admission in a controlled existing
-encounter. Battle07 placement/story import, natural original casts/criticals/repeated lifetime,
-broader statuses and full SUPPORT/spell AI remain Unsupported or Unknown, not implied by admission.
+encounter. The selected Battle07 placement/story and reached silence/suppressed-cast continuation
+are observed above. Natural original casts/criticals/repeated lifetime, broader statuses and full
+SUPPORT/spell AI remain Unsupported or Unknown, not implied by admission.
 
 ## Early enemy BLAZE1 and HEAL1
 

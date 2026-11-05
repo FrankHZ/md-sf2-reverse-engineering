@@ -236,7 +236,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells"], "physical", "equipment", "resistance");
             var id = new ActorRef(Id(actor, "id"));
             string className = Text(actor, "classRule");
-            Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior" or "unpromoted-knight" or "unpromoted-mage" or "unpromoted-archer" or "unpromoted-thief",
+            Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior" or "unpromoted-knight" or "unpromoted-mage" or "unpromoted-archer" or "unpromoted-thief" or "unpromoted-tortoise",
                 "class-rule", "actors.classRule", true);
             var items = Array(actor, "items").Select(value =>
             {
@@ -306,6 +306,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     "unpromoted-knight" => BattleClassRule.UnpromotedKnight,
                     "unpromoted-mage" => BattleClassRule.UnpromotedMage,
                     "unpromoted-archer" => BattleClassRule.UnpromotedArcher,
+                    "unpromoted-tortoise" => BattleClassRule.UnpromotedTortoise,
                     "unpromoted-thief" => BattleClassRule.UnpromotedThief, _ => BattleClassRule.Ordinary },
                 (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),

@@ -336,7 +336,13 @@ msgid "name.title"
 msgstr "What is your name?"
 
 msgid "name.empty"
-msgstr "Empty keeps Bowie"
+msgstr "Empty keeps the default name"
+
+msgid "name.member-title"
+msgstr "Name {0}"
+
+msgid "name.confirm-hint"
+msgstr "Enter: Use name"
 
 msgid "name.help"
 msgstr "Keyboard only • Up to 7 characters\nLetters A–Z / a–z, digits 0–9\n, . - ! ? # ' and space\nBackspace/Delete: Remove characters\nEmpty keeps the default name"

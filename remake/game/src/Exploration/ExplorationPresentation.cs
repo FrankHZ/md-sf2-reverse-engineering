@@ -15,7 +15,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
-    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift), ImageTexture> _sprites = [];
+    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size), ImageTexture> _sprites = [];
+    private readonly HashSet<(MapId Map, int Slot, long Request)> _blankSprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
@@ -176,6 +177,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     (_visuals is not null || world.Definition.Caravan is null)))
                 {
                     _ = Sprite(entity, false);
+                    _blankSprites.RemoveWhere(key => key.Map == world.Map && key.Slot == entity.Slot);
                     _spriteMounts++;
                     completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
                 }
@@ -256,11 +258,12 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.EntityEffect)
                 {
-                    if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "flash-white") || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
-                    if (wait.Cue.Resource is "slide-in" or "flash-white") _storyEffect = wait.Cue.Entity;
+                    if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "slide-out" or "flash-white") || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
+                    if (wait.Cue.Resource is "slide-in" or "slide-out" or "flash-white") _storyEffect = wait.Cue.Entity;
                     else _mosaic = wait.Cue.Entity;
                     _mosaicOut = wait.Cue.Resource == "mosaic-out";
                     _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false);
+                    if (wait.Cue.Resource == "slide-in") SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, false);
                     _cueAge = -delta;
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.BattleLoad)
@@ -271,7 +274,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.Sound)
                 {
-                    _audio.Play(wait.Cue.Resource ?? throw new InvalidOperationException("sound-binding"));
+                    if (wait.Cue.SoundCommand is { } command) _audio.Play(command);
+                    else _audio.Play(wait.Cue.Resource ?? throw new InvalidOperationException("sound-binding"));
                     if (current.Story.Music is { EndStep: not null } requested && requested.Cue == wait.Cue.Resource)
                         _audio.BindMusic(requested.Generation, requested.Cue);
                 }
@@ -340,6 +344,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
             }
             if (complete)
             {
+                if (wait.Cue.Kind == PresentationCueKind.EntityEffect && wait.Cue.Resource == "slide-out")
+                    SetSpriteBlank(current.Exploration!, wait.Cue.Entity!.Value, true);
                 completions.Add(new CompletePresentation(wait.Token, wait.Cue.Kind));
                 CompletedCueToken = wait.Token.Value;
                 CompletedCueKind = wait.Cue.Kind.ToString();
@@ -407,6 +413,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             foreach (var entity in world.AllEntities.Where(entity => entity.Visible).OrderBy(entity => entity.Priority)
                 .ThenBy(entity => entity.Motion.Y).ThenBy(entity => entity.Slot))
             {
+                if (_blankSprites.Contains((world.Map, entity.Slot, entity.SpriteRequest))) continue;
                 bool? highPriority = view is null ? null : High(entity);
                 int actorPass = pass++;
                 bool gesture = sourceNod is not null ? sourceNod.Entity == entity.Entity : _gesture == entity.Entity;
@@ -739,10 +746,13 @@ internal sealed partial class ExplorationPresentation : IDisposable
             throw new InvalidOperationException("entity-sprite-binding");
         int direction = entity.Motion.Facing switch { 1 => 0, 3 => 2, _ => 1 };
         int half = entity.Motion.AnimationCounter > 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
-        var key = (sprite, direction, half, nod, headShift);
+        int orientation = entity.Motion.FlagsB & 3;
+        int size = entity.RenderSize;
+        var key = (sprite, direction, half, nod, headShift, orientation, size);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
         using var sheet = ExplorationRasterImages.Open(visual.Directions[direction]);
         using var image = sheet.GetRegion(new(half * 24, 0, 24, 24));
+        ExplorationStoryEffects.Transform(image, orientation, size);
         ExplorationStoryEffects.ShiftHead(image, headShift);
         if (nod)
         {
@@ -752,7 +762,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             for (int x = 0; x < 24; x++) image.SetPixel(x, 0, Colors.Transparent);
         }
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
-        _resourceSelectors[texture] = new { kind = "entity", sprite, direction, half, nod };
+        _resourceSelectors[texture] = new { kind = "entity", sprite, direction, half, nod, orientation, size };
         List<Rect2> ink = [];
         for (int y = 0; y < 24; y++)
             for (int x = 0; x < 24;)

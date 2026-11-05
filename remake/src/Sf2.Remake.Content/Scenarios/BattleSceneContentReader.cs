@@ -73,9 +73,9 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is 0 or 1 or 2 or 3 or 4 or 5, "scene-class", "battleScenes.actors", true);
+                Require(sprite is 0 or 1 or 2 or 3 or 4 or 5 or 6, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
-                    2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, _ => BattleClassRule.UnpromotedThief };
+                    2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, _ => BattleClassRule.UnpromotedTortoise };
                 Require(palette == 0 && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
                 allies.TryAdd(kind, visual);
             }
@@ -89,7 +89,7 @@ internal static class BattleSceneContentReader
                     var selected = placement.IdentityExpression switch
                     { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
                         "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
-                        "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0),
+                        "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
                         _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,
                             "scene-enemy-species", "battleScenes.actors", "unadmitted species")) };
                     if ((sprite, palette) == selected)
