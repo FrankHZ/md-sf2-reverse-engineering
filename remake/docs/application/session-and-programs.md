@@ -1568,6 +1568,17 @@ and logical previous eligibility. Duplicate current cues preserve it; earlier re
 Ordinary unprofiled/looping `PreviousMusic` also pops this history and changes the semantic generation;
 it does not require a finite helper. Restoring a profiled cue starts its progress at0, matching the
 player restart. Unknown/empty history remains Unsupported.
+`ExplorationViewContext` derives one immutable map/area selection from the current world and logical
+view for both music history/waits and Godot delivery. It matches the loaded source area while
+normalizing the four mutable autoscroll fields. The retained player can be in another area or
+outside all areas; player traversal is consulted only when there is no logical view. Missing or
+ambiguous view identity reports `map-music-area-unavailable` / `map-music-area-ambiguous` before
+publishing a music request, helper wait or finite service. This is derived context, not a second
+cached state authority. Stable save music capture/observation uses the same selection after the
+existing busy, player-area, collision and entity-stability checks; no save recipe is added.
+The [bounded F8 disposition](../evidence/structure-and-quality-review.md#f8-bounded-repair-disposition)
+owns changed-state acceptance and the retained baseline reproduction.
+
 `ExplorationMusicRunner` advances this state before each existing bound common service, regardless
 of entity enablement. It never adds a second entity service or uses PCM duration.
 

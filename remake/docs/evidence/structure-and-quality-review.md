@@ -7,7 +7,7 @@ Issue1564's Standard scope, continuation decision, responsibility matrix, source
 retained Unknowns. This section owns minimal repair designs only. All source references below pin
 accepted **`75d682862e7ae196662769c04bd890ed7bf04405`**, tree
 **`84b364832c9d77b3cb4ae17fb18c40f6c1dee33c`**. That audit made no production modification or new runtime observation.
-The F6/F7 repair dispositions below record the subsequent bounded engine work separately.
+The F6/F7/F8 repair dispositions below record the subsequent bounded engine work separately.
 The findings are P2 composition defects/risks, not evidence that the accepted ordinary
 Battle01–07/first Map14 observations failed. Main-gate owns independent acceptance and any subsequent
 path allocation; existing High-rigor transaction/save boundaries are unchanged.
@@ -226,6 +226,51 @@ must not change the selected area. Keep ordinary area round-trip invalidation an
 refusal. One focused adapter state/audio observation should confirm that the logical context reaches
 the existing delivery consumer, without a voyage rerun or acoustic parity claim. Repair before new
 scene music/history compositions; original driver timing and ObjectDB teardown remain Unknown.
+
+### F8 bounded repair disposition
+
+**Standard rigor:** this repair unifies the existing logical/delivery area selection, preserving the
+High-rigor service and stable-save boundaries. Scope is `ExplorationViewContext`, its music/save/audio
+consumers, focused engine behavior, one public authored fixture and one small native observation.
+No source-research claim, chapter admission, save recipe, audio timer/channel policy or shutdown
+change is included. Independent review and actual CI state belong to Issue1568 and its PR.
+
+**Confirmed:** the immutable context resolver uses the selected logical view, normalizes autoscroll
+registers and falls back to player traversal only without a view. Application requires a successful
+resolution through its typed Unsupported status before music/history/wait publication. Godot uses
+the same result and reports its error without selecting a substitute area. `OpeningSave` shares the
+selection after its unchanged stable-control checks; an off-area player remains ineligible.
+
+[`SceneMusicContextTests`](../../tests/Sf2.Remake.Engine.Tests/SceneMusicContextTests.cs) executes
+scene-map replacement with camera in B, player in A or outside every target area, varied scroll
+values, finite logical/actual completion, previous playback and stale generations. It also covers
+missing view identity, a directly constructed ambiguous immutable view definition (the JSON reader
+already rejects duplicate traversal bounds), unbound fallback, and stable observation/refusal.
+Existing `ExplorationMusicTests` retains ordinary map/area round trips and finite service ordering;
+`OpeningSaveTests`, `OpeningRestoreTests`, `PreVoyageSaveTests` and `DepartureProgramTests` retain
+the affected save and scene boundaries. From `remake/` after locked environment setup:
+
+```powershell
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~SceneMusicContextTests|FullyQualifiedName~ExplorationMusicTests|FullyQualifiedName~DepartureProgramTests|FullyQualifiedName~OpeningSaveTests|FullyQualifiedName~OpeningRestoreTests|FullyQualifiedName~PreVoyageSaveTests'
+```
+
+**Confirmed baseline reproduction:** with only `ExplorationMusicRunner.cs` temporarily restored from
+accepted `43b3389e811299e5f9d877db5ac3eee3028ae88c`, the four
+`SceneViewOwnsFiniteHistoryAndCompletionWithRetainedActors` cases fail: player A selects ordinal0
+instead of1; the off-area variants throw `NullReferenceException` in `Area` → `Request`. The current
+runner was restored in `finally`; the completed failure is retained locally as
+`baseline-f8-reproduction.trx`/`.log`. Initial test-development results also remain: an enum-name
+compile error, then six failures caused by attempting black-screen field return, omitting text
+settings in an unbound request, and using reader-rejected duplicate bounds. The authored scene now
+stops at a tick boundary; invalid runtime identity is tested directly without relaxing admission.
+
+**Confirmed bounded delivery:** the [native scene-music observation](../godot/audio.md#scene-music-context-observation)
+uses real `SessionAudio`, `ExplorationPresentation` and native Finished callbacks. Both player
+variants deliver areaB, bind the finite generation, complete the logical wait and restart areaB.
+The one headless Dummy run exited0 in about2.3 seconds with a20,660-byte JSON report. Its stderr
+retains `WARNING: 2 ObjectDB instances were leaked at exit`; #1570 owns that separate shutdown
+investigation. **Unknown:** original acoustic/timing parity, other backend behavior for this specific
+scene observation, and any broader campaign composition beyond these cases.
 
 [campaign-reader]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs#L198
 [campaign-defeated]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/src/Sf2.Remake.Application/Runtime/Battles/BattleDefeatedProgram.cs#L16
