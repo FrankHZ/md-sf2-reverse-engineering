@@ -172,6 +172,71 @@ custom-name/IME support, default-name display and human reading/typography remai
 Epic #1468, runtime admission and human acceptance remain open. Issue closure and integration belong
 to main-gate; this status update starts no runtime admission.
 
+### Existing Chinese terminology: bounded adoption decision
+
+**Standard rigor:** the [#1542 terminology review](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1542)
+supports choosing familiar Chinese names without replacing the accepted US-based naming direction.
+Its acceptance is actual candidate-page reading, stable-identity comparison with the current private
+authorities, bounded recommendations and exact consumer impact. It authorizes no corpus writeback,
+runtime name admission, save migration, external ROM/patch acquisition or complete-table import.
+The full 34-row comparison and reproducible ID impact stay only in `reviews/issue1542/` beneath the
+existing configured full-text root. These are read-only review attachments, never another authority.
+
+**Confirmed page observations, accessed 2026-11-04:**
+
+| Source actually read | Version and usable evidence | Limit |
+| --- | --- | --- |
+| [Ken_Tse old final-release post, first page](https://kxb4u.com/yzzl/viewthread.php?extra=&page=1&tid=19) | The 2011 forum post preserves dated 2005–2007 release notes, including the 2007-01-27 final notice and earlier Japanese/Chinese switching. | Body access succeeded in this review. It establishes an earlier localization effort, not a published term table or exact patch identity. Its older release notes include a redistribution condition; no compatible bulk-import permission was established. |
+| [Ken_Tse 2026 recompilation post, first page](https://www.kxb4u.com/yzzl/viewthread.php?extra=page%3D1&tid=115905) | The 2026-02-22 post contains updates through 03-17, describes carrying earlier localization code forward, and describes gameplay/storage/UI alterations. | Distinct from the old final release and from the pinned USA baseline. It supplies isolated names, not a complete versioned glossary. No attachment was accessed. |
+| [Chinese Wikipedia, fixed revision 94821718](https://zh.wikipedia.org/w/index.php?title=光明與黑暗續戰篇II_古代的封印&oldid=94821718) | Character entries explicitly place Chinese, Japanese and US names together; profession and spell sections provide additional vocabulary. | A secondary cross-version reference, with no demonstrated attribution of its Chinese names to either Ken_Tse release. The footer states CC BY-SA 4.0; that is not permission to import another project's translation under this repository's license. |
+| [GOAL GOAL guide, first page](https://gmerago.com/forum.php?mod=viewthread&tid=1506) | The 2022-10-18 post's opening chapter pairs several Chinese item names with Japanese strings. | Its language header spans Japanese/English/localization without identifying the translation build. Some transcriptions and names differ from the US baseline. Treat as circulation evidence, not an independent vote or source of gameplay rules. |
+
+**Recommendation:** retain accepted names that already agree with these references, and record
+other systems as version-qualified lookup aliases in the private review. Do not transplant a whole
+Japanese-derived naming system into the US corpus. For example, the encyclopedia explicitly pairs
+Chester with Japanese ヒューイ / Chinese 修伊, and Slade with ジッポ / 吉布. Those are identity
+cross-references, not spelling corrections to the current US-oriented names. **Inferred:** the
+reported JP-to-US associations fit the named roles and pinned US table identities; this review did
+not independently inspect a Japanese ROM, patch or original Japanese name table.
+
+Only two target changes are proposed for a later serialized review; neither is applied here:
+
+| Stable identity | Proposed change and reason | Exact writeback and display boundary |
+| --- | --- | --- |
+| `name.ally:4` / KAZIN | 卡津 → 卡辛: a small phonetic revision with an explicit identity match in the encyclopedia; useful for Chinese-reference lookup, without claiming a universal or official name. | Name authority row, derived `names-review` pair and `terminology.tsv` line 6. Zero current literal occurrences of either source name or current Chinese target in message prose; six numbered-name token rows are enumerated privately. |
+| `name.ally:28` / LEMON | 莱蒙 → 雷蒙: this spelling appears in the encyclopedia, guide and 2026 post. Their possible dependence prevents counting them as independent corroboration. Keep the character and Red Baron title distinct. | Name authority row, derived `names-review` pair and `terminology.tsv` line 45. Zero current literal occurrences of either source name or current Chinese target in message prose; 37 numbered-name token rows are enumerated privately. |
+
+**Confirmed static impact:** the paired early-message review preserves Hawel's literal name and
+uses `{NAME;4}` / `{NAME;28}` for the two proposed characters. Leave every message and native token
+unchanged if only those name targets are later adopted. Numbered-token occurrences are not proof of
+natural reach; bare `{NAME}`, `{LEADER}`, `{CLASS}`, `{ITEM}` and `{SPELL}` require caller operands.
+The frozen 209-row world overlay and six entry rows contain neither proposed numbered token nor
+either current target. They are not automatically regenerated by a terminology decision.
+
+The current [CharacterNames](../../src/Sf2.Remake.Application/Runtime/CharacterNames.cs) and
+[text runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationTextRunner.cs) consume
+canonical package names and capture custom-name precedence; the
+[display catalog](../../src/Sf2.Remake.Content/Localization/DisplayCatalog.cs) projects those captured
+bindings. None reads the private name-review table. Party/battle/Church/slot names, typed item
+labels and spell operands therefore need separately scoped display admission; changing a draft
+does not change a running consumer. Keep canonical work, category/index, ActorRef, saved overrides,
+and the existing reader envelope unchanged; #1505 owns the later parameter/directory admission design.
+
+Retain current location spellings: the sources disagree about Galam, while Grans island and the
+separate old/new Granseal map identities must stay distinct. A guide's unnamed village is insufficient
+evidence for Yeel. Preserve accepted class expansions and spell/item names where only synonyms or
+JP-version labels differ; neither translated class labels nor a guide's item descriptions establish
+US behavior. The private review records the encyclopedia's inconsistent labels for the same
+Japanese lightning spell and the guide's water/wine and generic-material ambiguities.
+
+**Unknown / finite next order:** the review samples 10 ally, eight class, six spell and four item
+entries plus six prose terms. It does not externally clear the remaining 309 name entries or the
+whole 100-term glossary. Japanese class literals, exact localized-build membership, source
+independence and compatible translation-import rights remain unestablished. First decide the two
+proposals; next, if separately requested, resolve the Yeel/Galam location aliases and early item
+identity questions, then the privately recorded Elric/Eric cross-version trap. No search or runtime
+acquisition queue follows from those Unknowns. Direct document/source checks suffice for this slice.
+
 ## Implemented M1 boundary
 
 - `GameText` loads exact native PO resources and validates the complete English baseline. Selected
