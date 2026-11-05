@@ -153,6 +153,13 @@ pure delivery delay do not add gameplay opportunities. The [continuous-scenario 
 owns admission and command-readiness details. Interactive wait rate and concrete scheduling remain
 implementation decisions requiring a bounded contract; this choice does not establish them.
 
+A recorded logical Wait opportunity does not require an explicit physical Wait button in ordinary
+play. Fixed-step automatic scheduling can preserve deterministic service semantics. The
+[proposed ordinary exploration clock and save boundary](../../remake/docs/application/session-and-programs.md#proposed-ordinary-exploration-clock-and-save-boundary)
+evaluates that cutover, including menu ordering and follower settlement; it is not yet accepted or
+implemented. It does not extend autonomous time to text/choice consumers or alter the finite-music
+policy below, and an old comparison's explicit input schedule is not a player interaction requirement.
+
 This is accepted product policy, not evidence of implementation conformance or original runtime
 reach. Missing caller/phase/audio-end bindings remain Unknown. The existing 260-step plan is not
 automatically a conforming Wait trace, and this decision neither promises seed `0x6DC1` nor changes
