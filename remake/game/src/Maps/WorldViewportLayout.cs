@@ -17,7 +17,10 @@ internal sealed class WorldViewportLayout
     internal Vector2 Origin { get; private set; }
     internal bool Settled => Origin.DistanceTo(_target) < 0.26f;
     internal Rect2 Bounds => _bounds;
-    internal Rect2 Screen => new Rect2((_bounds.Position - Origin) * PixelScale,
+    internal Rect2 Screen => ScreenAt(Origin);
+    // Explicit scene planes retain their source origin even when the modern
+    // camera's framing is clamped. Project the display area with the drawn origin.
+    internal Rect2 ScreenAt(Vector2 origin) => new Rect2((_bounds.Position - origin) * PixelScale,
         _bounds.Size * PixelScale).Intersection(new(Vector2.Zero, _viewport));
 
     internal static Rect2 FieldBounds(ExplorationState world, LogicalView? view = null)

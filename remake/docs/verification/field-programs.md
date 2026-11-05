@@ -2998,3 +2998,90 @@ a later normal Down movement met an occupied NPC cell; the first authored observ
 signal connection during reparenting. Narrow corrected observations pass without production changes
 for those failures. Earlier six private-configured engine failures remain preserved above; this
 adapter-only fix does not trigger another private aggregate or full research/H3 run.
+## Scene visible area observation
+
+The [#1589 agreement](../godot/presentation.md#scene-visibility-coordinates-1589) owns this bounded
+adapter correction. It retains source area/camera data and the existing modern world scale. The
+question is whether the actual draw clip follows the main plane during a detached story view,
+not whether a new content boundary or original widescreen rule should be invented.
+
+**Confirmed:** the accepted-code baseline, entered through the real Map3 zone event at(43,10),
+reproduces the reported teacher departure. At `cs_5149A`'s “Sorry, kids…” text525, area0 is
+X0–50/Y0–31. Logical B=(912,168), A=(912,936) source pixels become actual B=(792,165) and
+A=(792,933) after modern framing. The clamped camera is(744,165). The old1920px-wide clip
+therefore submits main-layout cells X51/52 from the adjacent packed rooms. With the same scene,
+the actual clip is now(0,0,1728,1080): submitted edge cells stop at X50, while all108 high-priority
+foreground tile draws and the player, Sarah, Chester, teacher and messenger remain visible.
+The correction changes no logical axes or area dimensions.
+
+`engine_scene_visibility_observation.gd` uses ordinary Main, real mapped key events, existing
+`ReadCaptureState` and `ObserveLayoutRegion`/`ReadLayoutRegion`. It records only named source
+dialogues, both camera movements, return and a fresh player step, not a per-frame trace. Its
+224-cell edge selection joins actual source cells, passes and clipped texture/destination rectangles;
+it does not infer raster pixels. A legal same-map warp from(45,7) RIGHT enters(59,12), selects
+area X51–61/Y10–19 with clip(432,60,1056,960), and LEFT/RIGHT returns to area0 and full-width
+outdoor display. The original event/warp wrappers and actual fade completion remain active.
+
+The probe's small generated **authored** variant uses the existing harbor package and authored
+opaque rasters to check main-plane A (admitted layer255), secondary B at half parallax with a
+32-cell Y offset, detached/followed cameras, and quake±2. Detached A=(480,71)/(480,67) yields
+clip heights964/980 and width1056; B retains its independent(180,803)/(180,799) origins.
+Followed return uses the drawn actor origin as well. This is changed-content adapter evidence,
+not a claim that this invented scene occurs in the original. Layer1 is rejected by current
+`ExplorationViewRunner.Validate`; the source/admission encodings254/255 select foreground main.
+
+### Reproduce the bounded scene
+
+Reuse the owning installation/project and existing prepared private world, encounter/static/party
+selections. Load the current ignored input configuration in the launching PowerShell process.
+Build the changed Debug adapter with absolute `DOTNET_BIN`/`DOTNET_CLI_HOME` and
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, then select a fresh ignored run directory. Keep native
+APPDATA, LOCALAPPDATA, TEMP/TMP and logs under that run; no save-slot selection or save command
+is involved. The existing immutable world is about120MiB and is read in place, never copied.
+
+Create the small controlled start from `remake/reference/inputs/map3-sarah-start.json`:
+remove `start.program`, set position(43,11), facing1, flags[0,32,256,602], and add
+`textSettings:{messageSpeed:2,mouthControl:0,viewSpeed:0}` plus the `display` object from
+`map3-opening-start.json`. This deliberately controls only the pre-event seam; it makes no claim
+about earlier play or natural original reach. Source `s3_zoneevents.asm:Map3_ZoneEvent8` checks
+602-set/603-clear before calling `cs_5149A`. A direct detached program start lacks the required
+field-text caller context and is not a substitute. The probe presses UP to invoke that real event.
+Use fresh version1 input settings with `textMode:"instant"` and default bindings.
+
+```powershell
+$env:SF2_VISIBILITY_CASE = 'school-trigger'
+$env:SF2_VISIBILITY_CHECK = '1'
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $run 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1920x1080 --path remake/game `
+  --audio-driver Dummy --script res://probes/engine_scene_visibility_observation.gd -- `
+  --private-exploration-start $start --input-settings $settings
+```
+
+For `SF2_VISIBILITY_CASE='transition'`, use the same start without a program at(45,7), adding603
+to the flags. For `authored`, set `SF2_VISIBILITY_PACKAGE` to a fresh output JSON path and replace
+`--private-exploration-start $start` with `--authored-package $env:SF2_VISIBILITY_PACKAGE`.
+The probe writes that tiny fixture before Main starts; it uses no private rasters. It sets the
+headless root size explicitly before Main, because this host initially reports a64×64 client.
+
+Require exit0/`passed:true`, both scene camera movements, real caller/control return and fresh
+movement, legal transition round trip, and the authored A/B/quake assertions. Actual draw records
+use `cameraProjection.legalScreen`; `worldGeometry.legalScreen` remains clamped camera geometry.
+Local acceptance is affected `uv run sf2 verify adapter`, the Debug build and these native checks;
+no engine rule changed, so no new engine unit test or legacy/full aggregate is appropriate.
+Run the committed verification planner and report actual CI separately at handoff.
+
+### Evidence limits and retained failures
+
+The ignored `local/issue1589/HANDOFF.md` indexes exact runs and resource/process receipts. Baseline
+headless64×64 startup failures, the unbound non-reproducing program entry, `field-text-context`
+without the event wrapper, `full-fade-state` without the display selection, and rejected authored
+layer1 are preserved. A later foreground assertion counted only the low-priority pass; baseline
+and candidate both have low0/high108. Correcting that observer to include both passes does not
+alter product priority or drawing. No existing fixture/golden was weakened.
+
+The successful transition reports4 ObjectDB exit instances; source-scene and authored runs have
+no native errors. This does not close the separate ObjectDB Unknown. Earlier #1591 completed
+aggregate failures and #1583 completed long-observation failures remain in their owning records;
+none is rerun or reclassified. Original natural reach/cadence, hardware raster, physical device
+delivery and the user's overall visual approval remain **Unknown**. Source coordinates and
+bounded actual draw operands support this fix, not whole-campaign rendering completeness.

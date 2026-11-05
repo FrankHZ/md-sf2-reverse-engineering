@@ -372,8 +372,6 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var viewport = _owner.GetViewportRect().Size;
             _scale = WorldViewportLayout.PixelScale;
             _camera = _viewport.Origin;
-            _screen = _viewport.Screen;
-            _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
             var view = story.LogicalView;
             var background = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, false);
             var foreground = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, true);
@@ -395,6 +393,11 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var actorOrigin = view is { TargetSlot: null }
                 ? view.Area.Layer == 0 ? background : foreground
                 : _camera + new Vector2(0, quake);
+            // Clip in the same coordinate space as the actual main plane and actors.
+            // The clamped modern camera can differ from an explicit source view;
+            // using its screen rectangle exposes packed rooms beyond this area.
+            _screen = _viewport.ScreenAt(actorOrigin);
+            _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
             var overlay = new MapOverlayOffset(0, 0);
             if (view is null)
             {

@@ -1244,6 +1244,36 @@ independently of the retained player; non-player story follow targets bypass the
 Its inclusive cell bounds become a half-open pixel rectangle. Rendering clips every plane and
 actor to that rectangle and the viewport. Small areas center on exterior base color, never zoom
 or reveal another area. High tile priority, actor ink masks and draw order remain in their owners.
+
+#### Scene visibility coordinates (#1589)
+
+**Standard rigor:** this bounded adapter correction keeps the existing area/display policy and
+source camera commands. The camera movement limit and drawable screen rectangle have different
+origins when a detached source view extends beyond the modern camera clamp. `ScreenAt` projects
+the existing inclusive area with the **actual main-plane/actor origin**, including quake displacement;
+all A/B passes, actor visibility, occlusion restores and exterior masks consume that same rectangle.
+Layer0 selects B; admitted nonzero layer values254/255 select A. Independent plane offsets/parallax are retained; a secondary
+plane is not clipped against untransformed main-layout coordinates. No content/schema boundary,
+collision/trigger/entity coordinate, global scale, camera target or completion rule changes.
+
+`WorldViewportLayout.Screen` and `worldGeometry.legalScreen` describe the **clamped camera geometry**.
+`cameraProjection.legalScreen` describes the **actual draw clip** and can differ during explicit
+story views. Consumers inspecting visibility must use the latter together with the emitted plane
+origins. `Bounds` still describes the existing display area in main-world coordinates.
+
+**Confirmed:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/common/maps/{mapload,camerafunctions}.asm` (`LoadMapArea`, `VInt_UpdateViewData`),
+uses area start/end in followed-camera calculations. Map3 `2-areas.asm` separates X0–50/Y0–31
+from X51–61/Y0–9 and X51–61/Y10–19. Its `mapsetups/scripts_1.asm:cs_5149A` explicitly sets
+camera destinations (38,7), then (38,6). These are source structure/operand claims, not natural
+original runtime or proof of a universal original drawable-boundary rule. Reusing the admitted
+area as a widescreen display boundary is the existing **modern presentation policy** above.
+The [finite source-scene and legal-transition observation](../verification/field-programs.md#scene-visible-area-observation)
+owns the reproduced mismatch and acceptance; original raster/cadence and user visual approval
+remain **Unknown**. No per-scene mask, new visibility dataset or wider campaign coverage is claimed.
+
+#### Battle framing and overlays
+
 Battle regions bound their own legal draw rectangle. Movement/target/story subjects pan into the
 central safe area above the bottom UI; distant objects never cause a zoom change. When a legal
 edge clamp prevents that placement, the overlapping corner UI panel moves vertically to avoid
