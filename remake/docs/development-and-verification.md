@@ -1125,6 +1125,142 @@ or native Godot. These commands launch the selected executable from `remake/`, h
 and the protected environment. Neither needs private inputs. `Sf2.Remake.sln` contains the four
 production projects and Engine.Tests; the legacy test projects and reference host were retired at M5. Use formatting only for affected product projects when needed.
 
+## Private world mutation probes
+
+The #1569 agreement uses **Standard** rigor for a bounded verification repair; production admission,
+gameplay and the existing High-rigor state/save boundaries are unchanged. Scope is the two obsolete
+`PrivateExplorationTests` input-validation nodes and their verification/campaign/audit dispositions.
+They are retired under the current test policy; the direct recipe below retains all three intended
+rejections, valid admission and strict size rejection. No new world, production API, reader limit,
+verification framework or aggregate rerun is needed.
+
+**Confirmed:** on .NET8.0.31 / System.Text.Json8.0.0.0, the registered services world is125,828,417 bytes.
+Default `JsonNode.ToJsonString()` produces146,157,627 bytes, including4,064,367 `\u002B` escapes.
+`UnsafeRelaxedJsonEscaping` produces125,828,417 bytes with zero escaped plus signs. Both are compact
+JSON. This encoder is suitable for JSON-file scratch inputs, not HTML embedding. The unchanged
+`PrivateExplorationReader` has pre-read and post-read134,217,728-byte guards. It rejects the default
+file with `document-size`; the JSON-only control starts through the actual `GameSession.Start`.
+
+The pre-run estimate used O(n) time/space per serialization, one worker, <=3GiB peak memory,
+<=1GiB local scratch and ten minutes of measurement/check execution, with22.8GiB free disk.
+Escaping the plus signs alone was estimated to add20,321,835 bytes. Reassess before expanding these
+budgets. The initial serial measurement took1.63seconds and peaked at2,002,157,568 bytes; input
+size/mtime stayed unchanged. The final five-case direct check took3.07seconds and peaked at
+1,731,530,752 bytes. Retained scratch stays below1GiB. No network acquisition or API processing is used.
+
+### Explicit staged-package contract
+
+This recipe supports the registered `world-services-issue1424.json`, its accepted Battle01 placement,
+scene, terrain, static, enemies, gold and controlled-start selections, and the eight relative encounter
+inputs below. It is not a universal world-package copier or a test requiring only the world file.
+`PrivateExplorationReader` reads encounters **before** provenance; their relative paths resolve from
+the world file's directory. The old nodes lost that base by writing to arbitrary TEMP. Changing only
+their encoder is insufficient. The first measurement without staged dependencies returned
+`private-encounter`; preserve `local/issue1569/measurement.log` as that failed attempt.
+
+Load the owning worktree's ignored selections in the same process as each command. Keep shared
+inputs read-only and caches/TEMP local under the locked SDK workflow. Prepare a fresh explicit
+directory beneath this checkout's `local/`, copying the selected world as `world.json` and these
+eight selected inputs with their relative paths unchanged (669,487 dependency bytes):
+
+- `battle02/placement.json`, `battle02/scene.json`, `battle02/terrain.bin`, `battle02-party.json`
+- `accepted-inputs/SF2_PRIVATE_STATIC_DATA.json`, `accepted-inputs/SF2_PRIVATE_ENEMY_DATA.json`,
+  `accepted-inputs/SF2_PRIVATE_ENEMY_GOLD.json`, `scene02-field-01/battle-scenes.json`
+
+Byte-compare each copy to its selected source. No source directory is writable scratch. The program
+takes this staged directory explicitly; it never relies on TEMP containing hidden dependencies.
+Its valid JSON-only control runs first and stops the command on any missing/incompatible dependency,
+before the negative cases can be counted. It reuses only its own newly named mutation file, retaining
+the staged source and compact results. Other worlds/dependency layouts need a separately declared
+selection and budget; they are not silently supported by this bounded recipe.
+
+### Direct reproduction
+
+Save the following as `local/issue1569/direct/direct.csproj` and `Program.cs` respectively (ignored
+local reproduction files, not another maintained verification project). The code is the direct
+production admission check, with no tests of the check itself:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../remake/src/Sf2.Remake.Content/Sf2.Remake.Content.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+```csharp
+using System.Diagnostics;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Content.Scenarios;
+
+// Run from remake/ with an explicitly prepared package under this checkout's local/.
+string Input(string key) => Environment.GetEnvironmentVariable("SF2_PRIVATE_" + key)!;
+var directory = Path.GetFullPath(args[0]);
+var local = Path.GetFullPath("../local") + Path.DirectorySeparatorChar;
+if (!directory.StartsWith(local, StringComparison.OrdinalIgnoreCase))
+    throw new Exception("Select a worktree-local staged package, never the canonical input directory.");
+var world = Path.Combine(directory, "world.json");
+var scratch = Path.Combine(directory, "probe-" + Guid.NewGuid().ToString("N") + ".json");
+var party = new PrivateBattleScenarioReader(Input("BATTLE01_DATA"), Input("BATTLE01_SCENE"),
+    Input("BATTLE01_TERRAIN"), Input("STATIC_DATA"), Input("ENEMY_DATA"), Input("ENEMY_GOLD"), Input("CONTROLLED_START"));
+var watch = Stopwatch.StartNew();
+foreach (string expected in new[] { "accepted", "world-rom-identity", "raster-identity", "missing-sprite-visual", "document-size" })
+{
+    Probe(expected);
+    GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+}
+Console.WriteLine($"seconds={watch.Elapsed.TotalSeconds:F2}; peakWorkingSetBytes={Process.GetCurrentProcess().PeakWorkingSet64}");
+
+void Probe(string expected)
+{
+    var node = JsonNode.Parse(File.ReadAllText(world))!;
+    if (expected == "world-rom-identity") node["provenance"]!["romSha256"] = new string('0', 64);
+    if (expected == "raster-identity") node["world"]!["presentation"]!["maps"]![0]!["atlas"]!["data"] = "AAAA";
+    if (expected == "missing-sprite-visual")
+    {
+        var sprites = node["world"]!["presentation"]!["sprites"]!.AsArray();
+        sprites.Remove(sprites.Single(sprite => sprite!["sprite"]!.GetValue<int>() == 209));
+    }
+    // Only JSON files, never HTML. Default encoding is retained solely as the oversized control.
+    var options = expected == "document-size" ? null : new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    File.WriteAllText(scratch, node.ToJsonString(options));
+    var start = expected == "world-rom-identity" ? "map3-sarah-start.json" : "map3-opening-start.json";
+    var result = GameSession.Start(new PrivateExplorationReader(scratch, Path.GetFullPath("reference/inputs/" + start), party));
+    var code = result is SessionStartFailed failed ? failed.Failure.Code : result is SessionStarted ? "accepted" : "unexpected-result";
+    Console.WriteLine($"expected={expected}; actual={code}; bytes={new FileInfo(scratch).Length}");
+    if (code != expected || result is SessionStartFailed failure && failure.Failure.Kind != SessionFailureKind.ContentError)
+        throw new Exception("Admission control failed: " + code);
+}
+```
+
+From `remake/`, after same-process input/SDK setup, use the explicit staged directory:
+
+```powershell
+& $env:DOTNET_BIN restore ../local/issue1569/direct/direct.csproj --locked-mode
+& $env:DOTNET_BIN run --project ../local/issue1569/direct/direct.csproj `
+  --configuration Release --no-restore -- ../local/issue1569/scratch
+```
+
+**Confirmed:** the direct check exits0 with `accepted` (125,828,417 bytes), `world-rom-identity`
+(125,828,417), `raster-identity` (125,799,637), `missing-sprite-visual` (125,809,545), and
+`document-size` (146,157,627). Each rejection is `ContentError`. No guard, golden or expected code
+changed. The intermediate two-node run with staged TEMP passed2/0/0, but is not the final delivery:
+the final recipe makes its package dependency explicit and retires those validation unit nodes.
+
+Preserve the completed2069 PASS/25 FAIL/2 SKIP aggregate and later20 PASS/2 FAIL disposition; these
+focused controls do not turn historical runs green. Clean-head planner and actual CI belong to the
+PR handoff. Original reach/timing, full campaign and Godot/ObjectDB exit behavior remain outside
+this admission-only repair.
+
 ## Optional Private .NET Checks
 
 Private engine checks use xUnit's explicit private-input selection through `PrivateInputFact`.

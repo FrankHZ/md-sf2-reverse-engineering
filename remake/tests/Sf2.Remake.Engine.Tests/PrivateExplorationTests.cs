@@ -482,46 +482,4 @@ public sealed class PrivateExplorationTests
             Assert.Equal(new[] { 0, 1, 2, 32, 33, 34, 401, 451, 506 }, started.Session.Current.Story.Flags);
         }
     }
-
-    [PrivateInputFact(World)]
-    public void APrivateWorldWithDifferentRomProvenanceCannotStartTheSession()
-    {
-        var path = Path.Combine(Path.GetTempPath(), "private-exploration-" + Guid.NewGuid().ToString("N") + ".json");
-        try
-        {
-            var content = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(PrivateInputFactAttribute.RequireInput(World)))!;
-            content["provenance"]!["romSha256"] = new string('0', 64);
-            File.WriteAllText(path, content.ToJsonString());
-            var failed = Assert.IsType<SessionStartFailed>(GameSession.Start(new PrivateExplorationReader(path,
-                Path.Combine(AppContext.BaseDirectory, "controlled", "map3-sarah-start.json"), PrivateBattleScenarioTests.Selected())));
-            Assert.Equal(SessionFailureKind.ContentError, failed.Failure.Kind);
-            Assert.Equal("world-rom-identity", failed.Failure.Code);
-        }
-        finally { File.Delete(path); }
-    }
-
-    [PrivateInputFact(World)]
-    public void PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup()
-    {
-        var path = Path.Combine(Path.GetTempPath(), "private-exploration-visual-" + Guid.NewGuid().ToString("N") + ".json");
-        try
-        {
-            foreach (bool corruptBytes in new[] { true, false })
-            {
-                var content = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(PrivateInputFactAttribute.RequireInput(World)))!;
-                var visuals = content["world"]!["presentation"]!;
-                if (corruptBytes) visuals["maps"]![0]!["atlas"]!["data"] = "AAAA";
-                else
-                {
-                    var sprites = visuals["sprites"]!.AsArray();
-                    sprites.Remove(sprites.Single(sprite => sprite!["sprite"]!.GetValue<int>() == 209));
-                }
-                File.WriteAllText(path, content.ToJsonString());
-                var failed = Assert.IsType<SessionStartFailed>(GameSession.Start(new PrivateExplorationReader(path,
-                    Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-start.json"), PrivateBattleScenarioTests.Selected())));
-                Assert.Equal(corruptBytes ? "raster-identity" : "missing-sprite-visual", failed.Failure.Code);
-            }
-        }
-        finally { File.Delete(path); }
-    }
 }

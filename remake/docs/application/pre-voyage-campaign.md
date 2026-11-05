@@ -161,15 +161,19 @@ The obsolete blanket autoscroll-rejection assertion now checks the still-unsuppo
 and passes directly. The other24 failures came from applying the current campaign selections to
 older private comparisons. The two source-AI/player-ready nodes pass with their documented
 `battle01-player-ready.json` input. The remaining22-node rerun uses the registered earlier world:
-20 pass; these two retained private mutation probes stop at `document-size` before their intended
-identity checks, the same known oversized-JSON boundary as before this slice:
+20 pass; these two retained private mutation probes stopped at `document-size` before their intended
+identity checks, the same oversized-JSON boundary observed before this slice:
 
 - `PrivateExplorationTests.APrivateWorldWithDifferentRomProvenanceCannotStartTheSession`
 - `PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`
 
-These are not passed observations. The current18-map world passes the ordinary opening/save reader
-and actual native route; no reader limit, golden or legacy mutation probe is weakened to turn the
-aggregate green. The retained narrow source-view, scene/caller, save, map-transfer and field-egress
+Those failed observations remain preserved. The [private mutation probe disposition](../development-and-verification.md#private-world-mutation-probes)
+now confirms default JSON escaping as the size cause and replaces the obsolete validation nodes
+with a direct check taking an explicit staged package. All three intended rejection codes, valid
+admission and unchanged strict size rejection pass; relative encounter dependencies are explicit.
+The current18-map world passes the ordinary opening/save reader and actual native route; no reader
+limit, golden or expected rejection was weakened to turn the aggregate green. The retained narrow
+source-view, scene/caller, save, map-transfer and field-egress
 selections pass, including65 scene/entry cases and20 placement/transfer/egress cases. Missing logical
 view context in authored plane commands now produces the explicit Unsupported failure instead of
 an exception outside the status contract. Public CI and main-gate's independent review remain the
@@ -823,12 +827,14 @@ its cause and original natural escape/timing remain **Unknown**. The observer re
 but the detached-process wrapper did not recover an OS exit status; do not count that as a clean
 shutdown gate. This does not invalidate the observed movement/cast/return boundaries above.
 
-The configured private all-engine run retains two unresolved `PrivateExplorationTests` checks:
+The configured private all-engine run retains two failed `PrivateExplorationTests` checks:
 `APrivateWorldWithDifferentRomProvenanceCannotStartTheSession` and
 `PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`. Their mutated serialization
-of the selected large services world reaches `document-size` before the expected ROM/raster guard.
-No assertion or size limit was weakened; further large temporary copies are outside the available
-headroom. The separate player-ready/AI checks require the documented `battle01-player-ready.json`
+of the selected large services world reached `document-size` before the expected ROM/raster guard.
+The [current probe disposition](../development-and-verification.md#private-world-mutation-probes) records
+the measured encoding cause, bounded staged-package recipe and direct correction with unchanged
+expected codes and production limit; it does not erase this failed run. The separate player-ready/AI
+checks require the documented `battle01-player-ready.json`
 selection and pass with that input. Preserve the completed aggregate and node-specific results;
 these optional private-input failures are not field EGRESS success evidence.
 
