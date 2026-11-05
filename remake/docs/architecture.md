@@ -2,7 +2,10 @@
 
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
 implemented rules determine behavior; reference routes are external comparisons. The common session
-runs authored packages and the connected private Map 3 through Battle 01 world.
+runs authored packages and the connected private opening through Battles01–07 and first stable
+Map14 control. The [campaign agreement](application/pre-voyage-campaign.md) owns that finite boundary;
+the [post-campaign audit](evidence/engine-script-boundary-review.md#post-campaign-boundary-assessment)
+owns the continuation recommendation and remaining composition risks.
 
 The adopted boundaries are [ADR 0011](../../docs/decisions/0011-phase4-remake-runtime-architecture.md),
 [ADR 0017](../../docs/decisions/0017-heavy-boundaries-light-internals.md) and

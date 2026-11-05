@@ -1,13 +1,100 @@
 # Engine, SF2 rules and story-program boundary
 
+## Post-campaign boundary assessment
+
+**Decision: continue bounded chapter work with the existing engine; repair the named seams before
+depending on their broader compositions.** No general script VM, engine rewrite or migration of
+shared SF2 algorithms into chapter scripts is justified. Three P2 findings concern defeated-scene
+resource authority, scene-load follower ordering and logical/adapter music context. They are
+[F6–F8 in the structure review](structure-and-quality-review.md#post-campaign-findings), with concrete
+variation, correction owners and acceptance boundaries. No new failure of the accepted Battle01–07
+through first Map14 route, or P0/P1 on that route, is established by this source inspection.
+
+**Standard rigor**, [Issue1564](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1564):
+assess reuse and design minimal corrections; retain the existing High-rigor campaign, transaction
+and persistence agreements. Scope is this report, the structure review and architecture's current
+scope/navigation. Production, tests, research, schemas and other owners remain read-only. No runtime
+fix, new chapter, general audit framework, compatibility change or automatic repair dispatch follows.
+
+Inspected accepted commit **`75d682862e7ae196662769c04bd890ed7bf04405`**, tree
+**`84b364832c9d77b3cb4ae17fb18c40f6c1dee33c`**; diff from the prior finite audit's
+`7fcd630d7474586e3b91aaa69889ca7e294e6007`, plus necessary current callers. Reproduce with
+`git diff 7fcd630d 75d68286 -- <path>` and `git show 75d68286:<path>`. Findings pin source links to
+that commit. **Confirmed** means inspected source or assertion structure; **Inferred** means the
+unexecuted consequence of the stated variation. **Unknown** remains unobserved. Retained campaign
+observations and tests are evidence at their own boundaries, never a fresh runtime PASS here.
+
+### Responsibility and consumer matrix
+
+Paths below are relative to `remake/src/` unless prefixed otherwise; class/method names locate the
+inspected callers. The [campaign owner](../application/pre-voyage-campaign.md) supplies the admitted
+source provenance and retained ordinary-input observations, rather than remake code proving the original.
+
+| Responsibility | Actual chain and valid variation | Assessment |
+| --- | --- | --- |
+| State publication and staged death | `GameSession.Submit` → `BattleSceneContinuation.End` → `BattleActionCommitter.Publish` → `ContinueStory` → `BattleDefeatedProgram.Begin/Resume` → field-death delivery → `BattleOutcome.Begin`. `DefeatedScene.CompletedWorld` projects poses while the suspended battle owns combat. `BattleEndPositionTests` varies origin and stages a retained ally. | One session publisher remains. F6 is a conflicting temporary resource copy, not a second Godot combat reducer. A changed reset/join in the admitted defeated program crosses an unguarded boundary. |
+| SF2 battle outcome policy | `BattleEndPositions.Apply` consumes definition `DeathPositions`; `Sf2OutcomeReturnPolicy.Start/Finish` consumes route, live egress, member layout and completion flags. `BattleOutcome` executes the selected program and shared tail. | Source slots128/158, first active member ordering and immortal members7/28 are finite SF2 semantics, not Battle05/07 IDs selecting generic execution. `CompletedDefeatMap` expresses the admitted capture-on-defeat policy; it is not an arbitrary map load in the presenter. Preserve this fixed-service limit when considering alternative rules. |
+| Chapter content and source admission | `src/sf2tool/remake_exploration_battles.py` lowers selected source hooks, after-leader positions and the verified completed-on-defeat tail; `remake_exploration_programs.py`, `_actions.py`, `_scene.py`, `_view.py` lower actual operands. `ExplorationContentReader.ReadOutcome/Link` links them. | Battle05 positions/defeated/after ordering, Battle04 capture, Map73→Map14 and F700 are content. Changing supported positions, text, branch targets or loop counts need not add a runtime chapter case. The reader's broad `defeatedScene` escape is nevertheless F6; compiler finiteness alone cannot constrain authored admission. |
+| Ordinary transfer versus scene load | `ProgramRunner` drains `ScriptWarp` through `MapTransfer.Validate/BeginWarp`; `Apply` chooses setup/early battle using passed `rules`, then pushes the actual caller under `OnLoad`. `LoadScene`/`BindScene` retain cursor/callers and bind a black scene; `Return` resumes the tail. | Map73 init may load Map14 then write F700 without running Map14 init. `DepartureProgramTests.WarpInitCanReplaceTheSceneAndResumeItsCallerWithoutRunningTheSceneMapInit` checks the scene/tail and forbidden init; it is not a complete ordinary-warp replay. F7 concerns the retained follower list, not lost callers. |
+| Source placement and EGRESS/retry | `MapTransfer.Build(sourcePlacement)` skips blocked-cell rejection but still requires an admitted area. Queued script warps and source outcome projection request it; ordinary walking/warp, preserve-map landing and save rebuild remain strict. `FieldRecovery` → `FieldEgress.Begin` validates recovery/destination before payment; its program flashes, resets living resources and warps. | Battle02's enclosed victory and Map73(26,13) are scripted placement, not permission to walk/save through walls. `PrivateFieldEgress.Bind` admits source overworld Maps66–78 and command77; live egress and F399/F64/F640 remain source rules. Defeat-only fallback is explicit data, never a universal fallback for retreat. `FieldEgressTests` and `Battle02OutcomeTests` vary obstruction, live anchors and failure/payment boundaries. |
+| AI classes, recruitment and naming | `Sf2ClassRules` maps Tortoise→11; `PhysicalTargetRules.ClassRank` supplies source priority tables, consumed through mover-specific AI. `JoinPartyMember` uses member bindings and `WithResources`; `CharacterNames.Binding` resolves a unique actor. `NameWait`/`NameMember` validate token/text; `PartyNameHost` submits the command. | Kiwi is not a runtime string comparison selecting AI or join. `KiwiTests` varies mover/ties and name confirmation/refusal. Empty input restores fallback naming without changing membership/resources. Supported different member/actor bindings reuse these paths; new source classes need explicit rule/admission work. |
+| Physical following | `SceneEntities.Build` initializes `CurrentEntities` from actual allocation; `AddExplorationFollower` appends after its last physical slot; `FollowEntity` uses an explicit leader. `EntityActionRunner`/`FollowerMotion` perform movement independently of party flags. | Royal followers need not be party members; a scene hide does not remove Jaha from combat membership. `MapEntityLifecycleTests` checks allocation and ordinary copies. F7 identifies the missed `LoadScene` copy; merely retaining entity records does not preserve the chain's append authority. |
+| View, waits and audio | `ExplorationViewRunner` owns selected area, independent plane origins/autoscroll and completion. Godot projects these values. `SessionAudio.Observe` uses the logical view area, ignoring mutable autoscroll registers for identity. `ExplorationMusicRunner` still uses the player tile for context. | Counted source loops become finite operations, not a hardcoded voyage timeline. Actual view/music completions and generation tokens remain necessary. Fixed command/channel/PCM timer admission is audio policy, not story sequencing. F8 concerns inconsistent context selection; hardware-exact timing/acoustics remain Unknown. |
+| Safe save and Continue | `OpeningSave.Query/Capture` → stability checks → selected `Sf2OpeningRestore.Select/Rebuild`; `OpeningRestore` builds a detached candidate. Map58 recipe uses retained return anchor, F507/F74/F640 and absence of F407/F999. | Legitimate finite policy: generic save/storage does not decide a chapter. Rebuild validates collision/occupancy and does not replay init/outcome/healing. `PreVoyageSaveTests` changes progress and rejects missing predicates; retained fresh-process Continue is bounded evidence. Map14 scene arrival, arbitrary checkpoints and battle suspend remain excluded. |
+
+### Prior dispositions at the inspected head
+
+**Confirmed:** B1's `BattleEntry` captures the post-before-program field binding. Ordinary victory,
+defeat and paid retreat consume it; source population intentionally resets speed32, while strict
+named authored worlds retain their configured speed. `FieldPlayerReturnTests` includes traveler96,
+scout192 and later transfer. B2's `MapTransfer.Apply/Validate/BeginWarp` and program callers carry the
+selected `SessionRules` into early selection; `MapTransferPolicyTests` includes refused selection
+and retry without replaying accepted prefix writes. These fixes are not reopened by the campaign.
+F6's new defeated-scene admission must not be mistaken for B1 coverage of arbitrary named scenes.
+
+**Confirmed:** F4/F5 are merged via
+[PR1545](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1545), commit `a5e68a53`, already
+an ancestor of this audit. `WithResources`, recovery validation and pre-silence target requirements
+remain present. The later campaign's recovery now clears only the admitted silence bits `0xC0`;
+other nonzero bits still refuse. The older statement that *all* nonzero status refuses is historical,
+not current policy. Original F4 API failure and F5 pre-fix failures remain below/at their owner.
+
+### Continuation, sampling and retained limits
+
+Recommended order: F6 before adding resource-affecting defeated scripts or admitting new defeated
+profiles; F7 before scene-load/follower-append composition; F8 before explicit music/history waits
+in scenes whose selected view and player area differ. Unrelated bounded content can proceed after
+declaring its own unsupported operations. None of these recommendations authorizes a runtime fix.
+Prefer explicit restrictions at an unsupported context over accepting a write then losing it; do
+not disable legitimate ordinary field scripts or replace the engine with a universal VM.
+
+This is a responsibility-led sample, not an exhaustive proof of every opcode, malformed package,
+custom algorithm, full campaign, performance or original reach. Identifier searches only located
+owners; conclusions above follow the named callers and changed-state examples. Selected text reads
+are linear in inspected bytes, with bounded scratch below2 MiB and no private payload processing,
+new runtime experiment, SDK build, Godot/emulator run or full-route replay. Document/link/fence checks,
+`git diff --check` and clean-head planner/CI are the audit gates; their actual results belong to the
+Issue/PR handoff. No gameplay environment is controlled by this audit.
+
+Preserve the campaign's completed2069 PASS/25 FAIL/2 SKIP aggregate and its narrow dispositions.
+The two private probes
+`PrivateExplorationTests.APrivateWorldWithDifferentRomProvenanceCannotStartTheSession` and
+`PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`
+still stop at `document-size` before their intended identity checks. They are not PASS and were not
+rerun. ObjectDB exit causality remains **Unknown**. Source natural reach, original timing/media,
+physical devices and human play/aesthetic acceptance remain separately bounded; no source review
+or retained native observation closes them.
+
 ## Finite pre-voyage audit
 
-**Decision:** continue bounded development with the existing modular monolith and typed programs.
+This section retains #1528's original scope/base and evidence. The post-campaign assessment above
+owns the current continuation decision.
+
+**Decision at that base:** continue bounded development with the existing modular monolith and typed programs.
 No P1 or general engine/script redesign was identified in the five accepted changes for
 [#1528](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1528).
 The [current repair disposition](structure-and-quality-review.md#f4f5-bounded-repair-disposition)
-records **F4/F5 implemented and locally verified under #1536, pending independent acceptance and
-integration**. Recovery and related same-lifetime resource edits preserve carried context; targeted
+records **F4/F5 implemented under #1536 and merged in PR1545**. Recovery and related same-lifetime resource edits preserve carried context; targeted
 spell preparation requires selection before the silence shortcut. Audit-base source/failures below
 remain evidence of the original findings. Unrelated bounded work can proceed; this is not acceptance
 of the complete Battle03–07 or first-departure route.
@@ -74,8 +161,8 @@ was needed. Document checks and actual candidate/plan/CI/process status belong t
 
 ## Earlier boundary review and implemented dispositions
 
-The following review retains its original inspected base and observations. The finite audit above
-is the current continuation decision; historical proposals and limits are not newly dispatched work.
+The following review retains its original inspected base and observations. The post-campaign
+assessment owns the current decision; historical proposals and limits are not newly dispatched work.
 
 The current remake can express another conversation, flag branch, call/wait sequence, supported
 map event or recruitment ceremony as typed content. It is not a chapter-independent engine with
