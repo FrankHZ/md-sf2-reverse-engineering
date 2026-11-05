@@ -22,6 +22,8 @@ func voice(loop: bool) -> AudioStreamPlayer:
     player.finished.connect(func(): finished_count += 1)
     player.play()
     refs.append([weakref(wav), weakref(player.get_stream_playback())])
+    print("LIFETIME voice ", JSON.stringify({"stream":wav.get_instance_id(),
+        "playback":player.get_stream_playback().get_instance_id(), "loop":loop}))
     return player
 
 func retained() -> int:
