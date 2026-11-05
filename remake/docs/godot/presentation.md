@@ -41,7 +41,7 @@ Menu mouse gesture before restoring the same panel.
 
 `GameAction.Menu` is integrated in existing `GameInput`/version1 `bindings`, held-state guards,
 actual hints and the existing Controls Help. Defaults are F10 and right stick right (`RightX+`).
-At settled field input Cancel also opens Menu; title Cancel still opens Settings. Battle Cancel
+At settled field input Cancel opens the [gameplay diamond](#exploration-gameplay-diamond-agreement-1588); title Cancel still opens Settings. Battle Cancel
 continues to unwind gameplay, Start remains Equipment and Back remains Item. Within Menu, mapped
 Menu toggles Resume; Confirm/Cancel use the existing swap. Subpages keep their own Cancel semantics.
 
@@ -60,6 +60,51 @@ one `Entry/SystemMenuView`, GameInput/ControlsHelp and the two existing locale c
 registry. No Domain/Application, progress format, savepoint legality or new navigation authority is
 changed. A directly observed invalid-settings early exit now disconnects window-support signals
 only if initialization actually subscribed them; this does not hide other shutdown warnings.
+
+## Exploration gameplay diamond agreement (#1588)
+
+Standard rigor: a bounded multi-consumer presentation change with existing command authority.
+Outcome: ordinary field control exposes a four-cardinal gameplay menu without another top bar.
+Cancel (including the current remap/pad alternative) or the visible bottom-right Adventure entry
+opens it. Equipment (default E / Pad Start) keeps direct Party Status. Menu retains its independent
+system menu binding and Settings/Save/Quit; field Cancel now belongs to gameplay. Existing title,
+story and battle Cancel semantics remain with their consumers.
+
+**Confirmed:** pinned `SF2DISASM` revision `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/menus/menustringspointertable.asm:pt_FieldMenuNames`, `diamondmenu.asm:ExecuteDiamondMenu`
+and `menutilespointertable.asm:pt_tiles_Menu` bind Up Member, Left Magic, Right Item, Down Search.
+The packed field entry `0x85010204` selects main-menu icon indices5/1/2/4; each576-byte icon has
+normal/selected288-byte halves. `main/mainactions.asm:FieldMenu` starts Member with the main-summary
+member list, Magic with the magic-summary list then spell/target, Item with the Use/Give/Equip/Drop
+submenu then owner/item/recipient or equipment, and Search through the faced location. These are
+static source claims, not original natural reach, hardware timing or visual approval.
+
+The modern mapping reuses `PartyStatusView` member selection and `FieldActionView`: Member retains
+status and general Prepare; Magic opens the magic pane, then Confirm opens that member's spell list;
+Item opens inventory, then Confirm offers Use/Give/Equip/Drop before their existing item/target and
+confirmation pages. This deliberately chooses the member before the item operation. Cancel unwinds
+one provisional page to its parent, then member selection, then the same selected root diamond,
+then field control. Successful preparation uses the existing result page and refreshed root actions.
+Search submits the same Application `Search` as contextual Confirm; it does not substitute Talk.
+Every transaction uses `QueryFieldActions` and the existing revision/command/result path. No UI rule,
+party, flag, inventory or resource authority is introduced. Member availability uses the party query; Magic/Item require at least one member with a successful
+`QueryFieldActions`, and Search uses `CanSearch`. Unavailable actions remain inspectable and cannot submit; unsupported effects retain the preparation refusal/no-effect behavior.
+
+Opening, selecting and cancelling submit no session command, discard clock debt and disarm movement
+and held input. While this menu or its member pages is open the exploration clock does not advance.
+Story/Church/Shop/battle and system modals cannot coexist with it. Menu and Save shortcuts stay
+unavailable until gameplay pages close. Focus loss, pause and page transitions suspend complete
+pointer gestures and require release before new actions. Shared `DiamondCommandButton`, geometry,
+theme and `MenuPointer` own their established presentation/input responsibilities. Optional complete
+`presentation.fieldMenu` supplies original icons; absent art uses measured short text captions.
+Malformed native images stop through the existing presentation failure, without repeated decoding.
+
+Acceptance is the affected Content admission behavior tests, adapter compilation, committed scope
+plan/actual CI and a bounded actual Godot input/state/projection/error observation. First accept one
+representative scene before extending to keyboard/mouse/pad, remap, Chinese, disabled actions,
+release/focus and layered return. No screenshots or full campaign rerun. Remote town services,
+objectives/quest data, minimap/navigation/auto-walk and global hint redesign (#1544) are excluded;
+#1578 may later consume the existing selected-detail layout. Human visual approval remains #1456.
 
 ## Church and shared Save agreement (#1519)
 
@@ -271,7 +316,7 @@ awaiting independent review; Appearance #1463 remains deferred.
 Deliver the four existing `InputSettings` preferences: instant/adjustable text, 1–240 characters
 per second, standard/swapped Confirm/Cancel and reduced flash. Existing blue/gold controls expose
 Settings and control help directly on the title and Witch menu. At settled exploration input,
-Cancel opens the [system Menu](#system-menu-agreement-1518), then Settings. Settings remains
+The mapped Menu action opens the [system Menu](#system-menu-agreement-1518), then Settings; field Cancel opens the gameplay diamond. Settings remains
 unavailable during active text, choices, Church, party menus, movement and battle decisions. The host pauses the existing
 view/audio while the modal is open; no gameplay command, session replacement, revision, RNG or game
 save write belongs to this operation. Battle settings can be changed on the next safe field return.

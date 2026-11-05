@@ -517,3 +517,11 @@ it does not rerun or relabel the historical observations. #1447 now has a bounde
 static title idle/return and finite music are established; no production change is recommended
 pending independent review. Physical audibility and perceived entrance remain Unknown; #1447 stays
 open for investigation acceptance. #1463 remains deferred.
+
+## Exploration gameplay menu (#1588)
+
+The [exploration diamond agreement](../godot/presentation.md#exploration-gameplay-diamond-agreement-1588)
+owns the four source-cardinal options, modern member-first preparation mapping, Cancel versus
+system Menu/Party shortcuts, modal and free-menu clock boundary. Existing unsupported field effects
+remain explicit. Objective content, remote services and navigation are deferred; engineering
+observations do not establish #1456 human visual approval.

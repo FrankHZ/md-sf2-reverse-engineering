@@ -1326,3 +1326,37 @@ msgstr "Promo."
 
 msgid "church.icon-save"
 msgstr "Save"
+
+
+msgid "field-menu.title"
+msgstr "Adventure"
+
+msgid "field-menu.member"
+msgstr "Party"
+
+msgid "field-menu.magic"
+msgstr "Magic"
+
+msgid "field-menu.item"
+msgstr "Item"
+
+msgid "field-menu.search"
+msgstr "Search"
+
+msgid "field-menu.member-help"
+msgstr "Member status and preparation. Choose a member, then inspect or prepare their equipment, items and magic."
+
+msgid "field-menu.magic-help"
+msgstr "Choose a member, then a spell. Field effects and MP costs follow the existing preparation rules."
+
+msgid "field-menu.item-help"
+msgstr "Choose a member, then Use, Give, Equip or Drop. Every change has its own confirmation."
+
+msgid "field-menu.search-help"
+msgstr "Search the faced location, using the same field Search operation as contextual Confirm."
+
+msgid "field-menu.unavailable"
+msgstr "Unavailable at the current field boundary."
+
+msgid "field-menu.hint"
+msgstr "{0} / {1} / {2} / {3}: Choose\n{4}: Select   {5}: Back"
