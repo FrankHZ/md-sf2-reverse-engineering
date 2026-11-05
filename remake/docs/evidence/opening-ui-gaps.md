@@ -8,6 +8,16 @@ whole-opening human/aesthetic approval. A–E now have accepted bounded deliveri
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
+## Local services and battle overview proposal (#1543)
+
+The [design owner](../godot/modernization-design.md) recommends visited/unlocked near-town services
+and an on-demand read-only battle overview, with existing Save eligibility and explicit hidden-info
+limits. These are **Not implemented**; product approval and human benefit remain **Unknown**.
+It separates the finite Galam controlled Shop consumer from ordinary campaign reach and retains
+opening Church/Party transaction limits. Remote replenishment is a deliberate gameplay proposal.
+The limited ranking reuses #1544 for later hint work; main-story delivery remains the priority.
+No runtime observation, implementation queue or broader experience acceptance is added here.
+
 ## Church and shared-save calibration (#1519)
 
 **Standard, bounded candidate:** the existing priest Save already completed the real caller and
