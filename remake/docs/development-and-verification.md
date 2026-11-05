@@ -1427,9 +1427,8 @@ unit tests; ordinary game changes select ordinary compilation. Controlled inputs
 engine facts consume them. Shared product/build inputs select both actual downstream builds.
 
 Shared CLI/harness/planner changes retain conservative research selection by default. For a declared
-engine-only wiring change in those shared modules, or an equivalent graphics-source/parity
-responsibility move needed by private engine asset preparation (`graphics_source.py` and
-`texture_extract.py`), inspect the actual diff and use:
+engine-only wiring change in those shared modules,
+inspect the actual diff and use:
 
 ```powershell
 uv run sf2 verify plan --scope engine --base origin/main --head HEAD
