@@ -220,7 +220,7 @@ canonical package names and capture custom-name precedence; the
 bindings. None reads the private name-review table. Party/battle/Church/slot names, typed item
 labels and spell operands therefore need separately scoped display admission; changing a draft
 does not change a running consumer. Keep canonical work, category/index, ActorRef, saved overrides,
-and the existing reader envelope unchanged; reuse #1505's parameter/directory design.
+and the existing reader envelope unchanged; #1505 owns the later parameter/directory admission design.
 
 Retain current location spellings: the sources disagree about Galam, while Grans island and the
 separate old/new Granseal map identities must stay distinct. A guide's unnamed village is insufficient
