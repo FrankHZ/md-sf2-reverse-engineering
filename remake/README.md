@@ -7,7 +7,7 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 One common `GameSession` runs configurable authored battle/exploration packages and the connected
-private opening world and selected Battle02/Yeel–Battle03 content. Content admits reusable immutable
+private opening world through Battles01–07 and first damaged-ship control. Content admits reusable immutable
 definitions and separate controlled starts. Domain supplies deterministic movement, admitted actions, progression and rules;
 Application owns program execution, waits, automatic turns, staged effects and return. Godot submits
 semantic input and presents current state. Production has no Reference or verification dependency.
@@ -27,12 +27,15 @@ full-game parity and public distribution remain outside that acceptance. The
 [retained evidence route](./docs/evidence/retained-comparisons.md) preserves failed comparisons,
 source/provenance and the retired reference implementation without turning them into current run plans.
 
-The ordinary New Game carries the party through Battle01–03, Yeel and Hawel’s house. The house
-scene turns Kazin from a follower into a party member. The five-member opening uses separate
-save slots from the four-member world. The [campaign agreement](docs/application/pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment)
-records the inputs and compatible Continue selections. Battle04 first victory and special defeat
-reach distinct Galam prison entries and its first dialogue input. The remaining prison program
-and interactions are the next campaign stage.
+The private ordinary opening carries the party through Battles01–07, the Galam escape,
+optional Kiwi recruitment, tower aftermath, earthquake town and docks departure. Map73's first-arrival
+init reaches usable Map14 control; stop before the plank choice, Battle08 and new-town construction.
+The current eighteen-map world keeps gameplay revision4 and seven generated members. Earlier
+revision1–3 worlds retain their own compatible slots. Explicit Save/Continue supports the existing
+opening recipes plus the completed Battle07 Map58 safe point, preserving actual progress.
+The [campaign agreement](docs/application/pre-voyage-campaign.md) owns preparation, ordinary launch,
+continuous input observations, completed failures and remaining acceptance boundaries. Independent
+main-gate review and human/aesthetic acceptance are not implied by the local route result.
 
 The [current Godot presentation](./docs/godot/presentation.md) includes continuous exploration/Talk,
 a shared 1920×1080 world at 96px per cell, story dialogue, battle movement ranges, HP/MP cards,
@@ -104,7 +107,7 @@ not require a game launch.
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | explicit `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
-| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, a confirmed initial save, shared custom protagonist name, Map3/Battle01 savepoints and process restart; no interior/battle suspend or full campaign claim |
+| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, a confirmed initial save, shared custom protagonist name, Map3/Battle01 and completed Battle07 Map58 return savepoints with process restart; [finite campaign scope](docs/application/pre-voyage-campaign.md), no arbitrary interior/battle suspend or full campaign claim |
 | `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; selected connected packages cover opening/Battle01, Battle02 outcomes/returns and Yeel–Battle03 play/control at their separate boundaries. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back

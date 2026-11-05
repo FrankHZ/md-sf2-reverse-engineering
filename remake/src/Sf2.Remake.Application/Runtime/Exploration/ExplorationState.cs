@@ -44,7 +44,9 @@ public sealed record LogicalView(ExplorationViewArea Area, int? TargetSlot,
     LogicalViewAxis AX, LogicalViewAxis AY, LogicalViewAxis BX, LogicalViewAxis BY,
     int FollowCounter = 0, bool HideWindows = false)
 {
-    public bool Scrolling => AX.Active || AY.Active || BX.Active || BY.Active;
+    // IsMapScrollingToViewTarget excludes an automatically scrolled plane.
+    public bool Scrolling => Area.AutoscrollAX == 0 && Area.AutoscrollAY == 0 && (AX.Active || AY.Active) ||
+        Area.AutoscrollBX == 0 && Area.AutoscrollBY == 0 && (BX.Active || BY.Active);
 }
 public enum ChoicePhase { Entry, Opening, Release, Input, Closing, ReturnDelay }
 public sealed record ChoiceWork(ChoicePhase Phase = ChoicePhase.Entry, bool Yes = true, bool EntryHeld = false,
@@ -75,7 +77,7 @@ public sealed record FullFadeWait(WaitToken Token, PresentationCueKind Kind, Ful
     byte Period, byte Countdown, int Entry = 0, int ExtraServices = 0, bool LogicalDone = false,
     bool ActualDone = false, byte? RestorePeriod = null, FullFadeColor Color = FullFadeColor.Black) : ProgramWait(Token);
 public sealed record WarpLoadWait(WaitToken Token, int Remaining = 2) : ProgramWait(Token);
-public sealed record OrdinaryWarp(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode);
+public sealed record OrdinaryWarp(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode, bool SourcePlacement = false);
 public enum EntityWaitCompletion { NotBusy, ScriptIdle, MotionStopped }
 public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocation? AfterMotion = null,
     ExplorationDirection? PendingMove = null, EntityWaitCompletion Completion = EntityWaitCompletion.NotBusy) : ProgramWait(Token);

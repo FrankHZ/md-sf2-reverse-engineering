@@ -76,7 +76,7 @@ public sealed class GalamSceneOperationsTests
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public void WarpSkipsAnAlreadyCompletedInitSceneButRejectsTheReachableUnsupportedLoad(bool completed, bool backward)
+    public void WarpSkipsAnAlreadyCompletedInitSceneButRejectsItsReachableMissingPalette(bool completed, bool backward)
     {
         var basis = Start("harbor-arrival");
         var words = new ushort[WorkingMapLayout.WordCount]; words[66] = 0x1000;
@@ -99,7 +99,7 @@ public sealed class GalamSceneOperationsTests
         var moved = ExplorationDispatcher.Submit(definition, current, new Move(ExplorationDirection.East));
         if (!completed || backward)
         {
-            Assert.Equal("ordinary-warp-scene-load", moved.Failure!.Code);
+            Assert.Equal("scene-load-palette-binding", moved.Failure!.Code);
             Assert.Same(current.Active, moved.Snapshot.Active);
             Assert.DoesNotContain(611, moved.Snapshot.Story.Flags);
             return;

@@ -54,6 +54,13 @@ def compile_maps(
         key: {row["id"]: row for row in rows} for key, rows in canonical["resources"].items()
     }
     map_rows = {row["id"]: row for row in canonical["maps"]}
+    switches = {}
+    for switch in compiler.source_operations(
+        "disasm/data/maps/global/flagswitchedmaps.asm", "table_FlagSwitchedMaps"
+    ):
+        if switch["opcode"] == "flagSwitchedMap":
+            original, flag, replacement = map(compiler.number, _tokens(switch["operandText"]))
+            switches[original] = (flag, replacement)
     maps = []
     for selected in only_maps or selection["maps"]:
         row = map_rows[selected]
@@ -126,6 +133,34 @@ def compile_maps(
                     f"map-{selected}-warp-{index}", f"{references['warpEventTable']}[{index}]"
                 )
                 events.append({"kind": "warp-frontier", **common, "program": _location(symbol)})
+        # SwitchMap checks the source flag table before an explicit map transfer.
+        # Express it with the existing conditional event dispatch; current-map
+        # warps preserve their map and do not invoke SwitchMap.
+        switched_events = []
+        for event in events:
+            target = int(event["map"][4:]) if event["kind"] == "warp" else None
+            if event.get("loadMode") == "rebuild" and target in switches:
+                flag, replacement = switches[target]
+                if replacement in selection["maps"]:
+                    switched_events.append(
+                        {**event, "map": f"map-{replacement}", "requiredFlag": flag}
+                    )
+                else:
+                    symbol = compiler.frontier(
+                        f"map-{selected}-switched-{target}",
+                        f"SwitchMap:{target}:{flag}:{replacement}",
+                    )
+                    switched_events.append(
+                        {
+                            **{key: event[key] for key in ("x", "y", "marker", "requiredValue")},
+                            "kind": "warp-frontier",
+                            "requiredFlag": flag,
+                            "program": _location(symbol),
+                        }
+                    )
+                event = {**event, "requiredFlag": flag, "requiredValue": False}
+            switched_events.append(event)
+        events = switched_events
         population = (
             compiler.population() if route is None and "outcomeEgressMap" in selection else None
         )
@@ -179,6 +214,28 @@ def compile_maps(
                 ("zoneEvents", "s3_zoneevents.asm", "msZoneEvent", "msDefaultZoneEvent"),
             ):
                 table = rows(folder, filename.removesuffix(".asm"), setup["references"][key])
+                # Retain the reviewed raw default displacement as an explicit frontier.
+                # Its target lies in entity data; the neighboring rts is not that target.
+                if key == "zoneEvents" and [(r["opcode"], r["operandText"]) for r in table] == [
+                    ("dc.w", "$FD00"),
+                    ("dc.w", "byte_54868+4-ms_map44_ZoneEvents"),
+                ]:
+                    target = compiler.frontier(
+                        "raw-map44-zone-default-expression-boundary", folder + filename
+                    )
+                    events.append(
+                        {
+                            "kind": "source-zone",
+                            "program": _location(target),
+                            "requiredFlag": None,
+                            "requiredValue": True,
+                            "marker": 0x1400,
+                            "x": None,
+                            "y": None,
+                            "actions": action_stream(compiler, "eas_Init"),
+                        }
+                    )
+                    continue
                 for source_row in table:
                     args = _tokens(source_row["operandText"])
                     if source_row["opcode"] not in (macro, default):

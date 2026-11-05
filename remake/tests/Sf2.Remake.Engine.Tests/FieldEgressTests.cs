@@ -148,7 +148,7 @@ public sealed class FieldEgressTests
         if (enclosed)
         {
             var field = MapTransfer.Build(world.Maps[new(startMap)], new("player"), new(32, 32), 3, 32,
-                safe.Current.Exploration!.Party, flags, combatPlacement: true);
+                safe.Current.Exploration!.Party, flags, sourcePlacement: true);
             // External controlled boundary, not a public teleport or ordinary-start capability.
             typeof(GameSession).GetField("_current", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
                 .SetValue(safe, new SessionSnapshot(safe.Current.SessionId, safe.Current.Revision, safe.Current.ObservationSequence,

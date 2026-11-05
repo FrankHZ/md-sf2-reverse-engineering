@@ -21,9 +21,12 @@ sequential delivery plan.
 
 The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
 [current composed boundary](./docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone).
-Accepted extensions cover Battle02 victory/defeat, field return and re-entry, plus selected early Yeel guidance,
-Kazin following and Battle03 play/control. **Battle03 outcomes, Hawel recruitment, later campaign,
-full services and save/load are not delivered by those extensions.**
+The current private-local remake connects Battles01–07, their admitted field returns and recruitment,
+and the tower aftermath through departure to first stable Map14 damaged-ship control. Finite safe
+savepoints include the Map58 Battle07 return. The [campaign owner](./remake/docs/application/pre-voyage-campaign.md)
+records this playable scope and its separate acceptance evidence; it does not expand the original
+Map3→Battle01 milestone's proof boundary. **Plank choices, Battle08, new-town building and the later
+campaign remain outside current admission.**
 
 Current presentation includes continuous exploration with contextual Talk, a shared 1920×1080 world
 with 96px cells, blue/gold story dialogue, reachable battle tiles, image-based HP/MP cards, battle

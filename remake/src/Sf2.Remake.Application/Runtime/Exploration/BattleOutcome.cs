@@ -37,7 +37,7 @@ internal static class BattleOutcome
             var map = definition.Exploration!.Maps[route.BattleMap];
             var world = MapTransfer.Build(map, player.Player, selected.ProjectionPosition,
                 kind == BattleOutcomeKind.Victory ? selected.Return.Facing : route.VictoryFacing, player.Speed,
-                selected.Party, current.Story.Flags, combatPlacement: route.BattleOrigin is not null);
+                selected.Party, current.Story.Flags, sourcePlacement: route.BattleOrigin is not null);
             if (kind == BattleOutcomeKind.Victory && current.Story.DefeatedScene?.CompletedWorld is { } prior)
                 world = BattleDefeatedProgram.AfterDeath(prior, battle, selected.Party);
             var story = current.Story.Copy(selected.Program, callers: [],
@@ -76,7 +76,7 @@ internal static class BattleOutcome
             var player = current.Story.FieldPlayer ?? throw new BattleRuleException("field-player-binding", "battle.retreat", true);
             var map = definition.Exploration!.Maps[route.Outcome!.BattleMap];
             var world = MapTransfer.Build(map, player.Player, selected.ProjectionPosition,
-                route.Outcome.VictoryFacing, player.Speed, recovered, current.Story.Flags, combatPlacement: route.Outcome.BattleOrigin is not null);
+                route.Outcome.VictoryFacing, player.Speed, recovered, current.Story.Flags, sourcePlacement: route.Outcome.BattleOrigin is not null);
             var story = current.Story.Copy(selected.Program, callers: [],
                 continuation: ProgramContinuation.OutcomeMapLoaded, outcomeReturn: selected.Return,
                 clearCameraEntity: true, clearCameraTarget: true, textWindow: new ClosedTextWindow());

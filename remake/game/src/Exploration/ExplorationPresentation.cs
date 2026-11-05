@@ -377,13 +377,24 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var view = story.LogicalView;
             var background = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, false);
             var foreground = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, true);
+            if (view is { TargetSlot: null })
+            {
+                // Scene planes have independent source origins (ship/shore/autoscroll).
+                // Center the source camera frame in the modern viewport; do not derive
+                // both planes from the actor or discard an explicitly written origin.
+                var framing = WorldViewportLayout.LogicalHalfFrame - viewport / (2 * _scale) + new Vector2(0, 24);
+                foreground = new Vector2(view.AX.Position, view.AY.Position) / 16 + framing;
+                background = new Vector2(view.BX.Position, view.BY.Position) / 16 + framing;
+            }
             // A deterministic bounded displacement; no gameplay RNG or motion is consumed.
             float quake = world.Quake == 0 || _reducedFlash ? 0 : (story.SimulationTick % 2 == 0 ? world.Quake : -world.Quake);
             background.Y += quake; foreground.Y += quake;
 
             // VInt_UpdateSprites selects the area's main plane once before its entity loop.
             // ENTITYDEF_LAYER controls signed window priority, not coordinate selection.
-            var actorOrigin = _camera + new Vector2(0, quake);
+            var actorOrigin = view is { TargetSlot: null }
+                ? view.Area.Layer == 0 ? background : foreground
+                : _camera + new Vector2(0, quake);
             var overlay = new MapOverlayOffset(0, 0);
             if (view is null)
             {

@@ -45,7 +45,8 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
     public void ValidateRegisters(OpeningSaveData data)
     {
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
-        if (data.EgressMap is not ("map-0" or "map-3"))
+        if (data.EgressMap is not ("map-0" or "map-3") &&
+            !(data.Recipe == "battle07-return" && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
 
@@ -81,6 +82,9 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
         if (map.Value == "map-57" && flags.Contains(501) && !flags.Contains(506) &&
             anchor is { Map.Value: "map-57", Facing: 3 })
             return new("battle01-return", anchor, "Ancient Tower, completed battle return");
+        if (map.Value == "map-58" && flags.Contains(507) && flags.Contains(74) && flags.Contains(640) &&
+            !flags.Contains(407) && !flags.Contains(999) && anchor is { Map.Value: "map-58", Facing: 3 })
+            return new("battle07-return", anchor, "Ancient Tower, earthquake aftermath");
         Fail(); return null!;
     }
 

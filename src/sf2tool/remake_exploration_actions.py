@@ -3,7 +3,7 @@
 import re
 from typing import Any
 
-from sf2tool.h2.battle_global_data import _tokens
+from sf2tool.h2.battle_global_data import _statements, _tokens
 
 
 def finish_in_idle(actions: list[dict[str, Any]]) -> None:
@@ -14,6 +14,15 @@ def finish_in_idle(actions: list[dict[str, Any]]) -> None:
 def action_stream(self, symbol: str) -> list[dict[str, Any]]:
     if symbol in self.actions:
         return self.actions[symbol]
+    if symbol == "eas_Walking":
+        path = "disasm/data/scripting/entity/eas_main.asm"
+        text = (self.upstream / path).read_text(encoding="utf-8")
+        match = re.search(r"^byte_45074:[ \t]*ac_randomWalk ([^\r\n;]+)", text, re.MULTILINE)
+        if match is None:
+            raise ValueError("source walking action operands")
+        result = self.walking(*map(self.number, _tokens(match[1])))
+        self.actions[symbol] = result
+        return result
     path = "disasm/data/scripting/entity/eas_actions.asm"
     if symbol in ("eas_Motionless", "eas_LyingLeft", "eas_LyingRight"):
         path = "disasm/data/scripting/entity/eas_battleneutralentities.asm"
@@ -38,6 +47,39 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
             result.extend(compile_action(self, "ac_updateSprite", [], path + ":" + symbol))
         result.extend(compile_action(self, "ac_motion", ["OFF"], path + ":eas_Motionless"))
         finish_in_idle(result)
+        self.actions[symbol] = result
+        return result
+    if symbol in self.raw:
+        path = "disasm/" + self.raw[symbol]["path"]
+    if symbol.startswith("eas_Follower"):
+        path = "disasm/data/scripting/entity/eas_main.asm"
+    self.sources.add(path)
+    text = (self.upstream / path).read_text(encoding="utf-8")
+    body = re.search(
+        rf"^{re.escape(symbol)}:[ \t]*(.*?)(?=^(?!byte_|word_)[A-Za-z_]\w*:|\Z)",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    if body is None:
+        raise ValueError("selected action source label is missing: " + symbol)
+    if symbol.startswith("eas_Follower"):
+        result, labels, pending = [], {}, False
+        for line in body[1].splitlines():
+            if match := re.match(r"^(\w+):[ \t]*(.*)", line):
+                labels[match[1]] = len(result)
+                line = match[2]
+            for statement in _statements(line):
+                op, _, operands = statement.partition(" ")
+                if op == "ac_branch":
+                    pending = True
+                elif op == "dc.w" and pending:
+                    target = re.match(r"\((\w+)-\w+\)", operands.strip())
+                    if target is None or target[1] not in labels:
+                        raise ValueError("source action branch")
+                    result.append({"op": "jump", "instruction": labels[target[1]]})
+                    pending = False
+                else:
+                    result.extend(compile_action(self, op, _tokens(operands), path + ":" + symbol))
         self.actions[symbol] = result
         return result
     rows = self.source_operations(path, symbol)
@@ -87,7 +129,8 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
         ].index(op[4:])
         return [{"op": "face", "facing": facing}, {"op": "wait", "ticks": self.number(args[0])}]
     if op == "eaWait" or op == "ac_wait":
-        return [{"op": "wait", "ticks": self.number(args[0])}]
+        ticks = self.number(args[0])
+        return [{"op": "wait", "ticks": ticks}] if 0 <= ticks <= 255 else [self.native(op, source)]
     if op == "ac_motion":
         return [{"op": "animation-counter", "counter": 1 if self.number(args[0]) else 255}]
     if op == "ac_moveRel":
@@ -154,6 +197,19 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
         ]
     if op == "ac_updateSprite":
         return [{"op": "refresh-sprite", "source": source}]
+    if op == "ac_follow":
+        return [
+            {
+                "op": "follow-physical",
+                "slot": self.number(args[0]),
+                "x": self.number(args[1]),
+                "y": self.number(args[2]),
+            }
+        ]
+    if op == "ac_waitDest":
+        return [{"op": "wait-destination"}]
+    if op == "ac_soundCommand":
+        return [{"op": "sound", "command": self.number(args[0])}]
     if op == "ac_setFacing":
         return [{"op": "face", "facing": self.number(args[0])}]
     return [self.native(op, source)]

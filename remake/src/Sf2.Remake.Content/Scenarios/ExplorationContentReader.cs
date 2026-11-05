@@ -535,6 +535,12 @@ internal static class ExplorationContentReader
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));
             case "prompt-yes-no": Object(row, opcode, "op", "noTarget"); return new ChooseYesNo(null, Location(row.GetProperty("noTarget")));
             case "name-member": Object(row, opcode, "op", "member"); return new NamePartyMember(Number(row, "member", 0, 29));
+            case "plane-autoscroll":
+                Object(row, opcode, "op", "axis", "value", "relative");
+                return new SetPlaneAutoscroll(Number(row,"axis",0,3), Number(row,"value",-127,255), Boolean(row,"relative"));
+            case "plane-position":
+                Object(row, opcode, "op", "axis", "value");
+                return new SetPlanePosition(Number(row,"axis",0,3), Number(row,"value",0,24575));
             case "camera-speed": Object(row, opcode, "op", "speed"); return new SetCameraSpeed((ushort)Number(row, "speed", 0, 32767));
             case "add-follower": Object(row, opcode, "op", "entity"); return new AddExplorationFollower(new(Text(row, "entity")));
             case "wait-idle": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Text(row, "entity")), true);
@@ -671,6 +677,9 @@ internal static class ExplorationContentReader
                     Object(action, opcode, "op", "field", "mask", "value");
                     string field = Text(action, "field"); Require(field is "a" or "b", "entity-flag-field", "program.actions");
                     actions.Add(new ChangeEntityFlags(field == "b", (byte)Number(action, "mask", 0, 255), (byte)Number(action, "value", 0, 255))); break;
+                case "follow-physical": Object(action, opcode, "op", "slot", "x", "y"); actions.Add(new FollowPhysical(Number(action,"slot",0,62), Number(action,"x",-128,127), Number(action,"y",-128,127))); break;
+                case "wait-destination": Object(action, opcode, "op"); actions.Add(new WaitEntityDestination()); break;
+                case "sound": Object(action, opcode, "op", "command"); actions.Add(new EntitySound(Number(action,"command",0,255))); break;
                 case "sprite-size": Object(action, opcode, "op", "size"); actions.Add(new SetGlobalSpriteSize((ushort)Number(action, "size", 0, 65535))); break;
                 case "refresh-sprite": Object(action, opcode, "op", "source"); actions.Add(new RefreshEntitySprite(Text(action, "source"))); break;
                 case "jump": Object(action, opcode, "op", "instruction"); actions.Add(new JumpEntityAction(Number(action, "instruction", 0, 4096))); break;

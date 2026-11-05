@@ -127,6 +127,7 @@ public sealed partial class GameRoot
         "map3-opening" => GameText.Get("save.destination.map3-opening"),
         "map3-joined" => GameText.Get("save.destination.map3-joined"),
         "battle01-return" => GameText.Get("save.destination.battle01-return"),
+        "battle07-return" => GameText.Get("save.destination.battle07-return"),
         _ => GameText.Get("save.destination.unavailable"),
     };
 

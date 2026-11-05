@@ -12,6 +12,7 @@ from sf2tool.remake_exploration_actions import action_stream, compile_action, fi
 from sf2tool.remake_exploration_joins import join_selector, join_service
 from sf2tool.remake_exploration_scene import portrait_operations, scene_operation, sound_operation
 from sf2tool.remake_exploration_services import church_service, shop_service
+from sf2tool.remake_exploration_view import counted_view_loop, view_operation
 
 
 def _location(program: str, instruction: int = 0) -> dict[str, Any]:
@@ -162,17 +163,29 @@ class OriginalPrograms:
     def source_operations(self, relative: str, symbol: str) -> list[dict[str, Any]]:
         self.sources.add(relative)
         text = (self.upstream / relative).read_text(encoding="utf-8")
-        match = re.search(
-            rf"^{re.escape(symbol)}:[ \t]*(.*?)(?=^[A-Za-z_]\w*:|\Z)",
-            text,
-            re.MULTILINE | re.DOTALL,
-        )
+        match = re.search(rf"^{re.escape(symbol)}:[ \t]*", text, re.MULTILINE)
         if match is None:
             raise ValueError("selected source label is missing: " + symbol)
-        result = []
-        for index, statement in enumerate(_statements(match.group(1))):
-            opcode, _, operands = statement.partition(" ")
-            result.append({"index": index, "opcode": opcode, "operandText": operands.strip()})
+        result, inline = [], False
+        for line in text[match.end() :].splitlines():
+            if label := re.match(r"^([A-Za-z_]\w*):[ \t]*(.*)", line):
+                if not inline:
+                    break
+                line = label[2]
+            for statement in _statements(line):
+                opcode, _, operands = statement.partition(" ")
+                result.append(
+                    {"index": len(result), "opcode": opcode, "operandText": operands.strip()}
+                )
+                if opcode in (
+                    "entityActions",
+                    "entityActionsWait",
+                    "customActscript",
+                    "customActscriptWait",
+                ):
+                    inline = True
+                elif opcode in ("endActions", "ac_end"):
+                    inline = False
         return result
 
     def native(self, opcode: str, source: str) -> dict[str, Any]:
@@ -251,7 +264,10 @@ class OriginalPrograms:
             "source": f"{relative}:{symbol}",
             "instructions": result,
         }
-        rows, index = raw["operations"], 0
+        rows, index = self.source_operations(relative, symbol), 0
+        if loop := counted_view_loop(self, relative, symbol, rows):
+            lowered, rows = loop
+            result.extend(lowered)
         registers: dict[str, int] = {}
         speaker = None
         event_speaker = True
@@ -265,7 +281,20 @@ class OriginalPrograms:
             op, args = row["opcode"], _tokens(row["operandText"])
             source = f"{relative}:{symbol}[{row['index']}]"
             index += 1
-            if op in ("csc_end", "rts") or (op == "dc.w" and args == ["$FFFF"]):
+            if lowered_view := view_operation(self, op, args):
+                result.append(lowered_view)
+            elif op == "flashScreenWhite" and 24 <= self.number(args[0]) < 32:
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "FlashWhite",
+                        "resource": "white-four-pulses",
+                        "entity": None,
+                        "position": None,
+                        "durationTicks": self.number(args[0]),
+                    }
+                )
+            elif op in ("csc_end", "rts") or (op == "dc.w" and args == ["$FFFF"]):
                 result.append({"op": "end" if op == "rts" else "end-map-script"})
             elif (
                 op == "chkFlg"
@@ -348,6 +377,15 @@ class OriginalPrograms:
                 result.append(church_service(self))
             elif op == "jsr" and args == ["j_YesNoPrompt"]:
                 # The direct prompt returns d0, unlike csc06 which writes F89.
+                if rows[index]["opcode"] in ("bne.s", "bne.w"):
+                    result.append(
+                        {
+                            "op": "prompt-yes-no",
+                            "noTarget": _location(self.compile(rows[index]["operandText"])),
+                        }
+                    )
+                    index += 1
+                    continue
                 tail = rows[index : index + 3]
                 if [r["opcode"] for r in tail] != ["clsTxt", "tst.w", "bne.s"] or tail[1][
                     "operandText"
