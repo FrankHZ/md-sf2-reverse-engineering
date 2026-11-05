@@ -112,13 +112,23 @@ public sealed class Battle02OutcomeTests
         Assert.Equal(0x80, ally.Status);
     }
 
-    [Fact]
-    public void OverworldVictoryKeepsTheCombatantTileEvenWhenFieldWalkingCannotEnterIt()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OverworldVictoryKeepsTheCombatantTileEvenWhenFieldWalkingCannotEnterIt(bool enclosed)
     {
         var (original, battle, story, party) = Outcome(false);
         var landed = new MapPosition(32, 32);
         var words = new ushort[WorkingMapLayout.WordCount];
         words[32 * WorkingMapLayout.ColumnCount + 32] = 0xC16B;
+        if (enclosed)
+        {
+            // Minimal Map66 facts from the pinned source: no neighbor has been opened.
+            words[32 * WorkingMapLayout.ColumnCount + 31] = 0xC16A;
+            words[32 * WorkingMapLayout.ColumnCount + 33] = 0xC16C;
+            words[31 * WorkingMapLayout.ColumnCount + 32] = 0xC164;
+            words[33 * WorkingMapLayout.ColumnCount + 32] = 0xC177;
+        }
         var map = new ExplorationMapDefinition(new("map-66"), new WorkingMapLayout(words),
             new OriginalMapTraversal([new(0, 0, 63, 63)]), [], []);
         var world = new ExplorationDefinition([map], original.Exploration!.Programs.Values,
@@ -136,9 +146,20 @@ public sealed class Battle02OutcomeTests
         Assert.Equal(landed, returned.Snapshot.Exploration!.PlayerEntity.Position);
         Assert.Contains(returned.Observations, observation => observation.Kind == "battle-returned");
         Assert.Equal(SessionStopReason.PlayerInput, returned.Snapshot.StopReason);
-        Assert.Equal(OriginalMapTraversalOutcome.Moved, map.Traversal.TryMove(map.Layout, landed, ExplorationDirection.West).Outcome);
+        Assert.Equal(enclosed ? OriginalMapTraversalOutcome.BlockedByCollision : OriginalMapTraversalOutcome.Moved,
+            map.Traversal.TryMove(map.Layout, landed, ExplorationDirection.West).Outcome);
         Assert.True(OriginalMapTraversal.IsBlocked(map.Layout, landed));
         Assert.Throws<BattleRuleException>(() => MapTransfer.Build(map, new("player"), landed, 0, 32, party, story.Flags));
+        if (enclosed)
+            foreach (var direction in Enum.GetValues<ExplorationDirection>())
+            {
+                var moved = ExplorationDispatcher.Submit(definition, returned.Snapshot, new Move(direction));
+                Assert.Null(moved.Failure);
+                Assert.Equal(landed, moved.Snapshot.Exploration!.PlayerEntity.Position);
+                Assert.Contains(moved.Observations, observation => observation.Kind == "movement-blocked");
+                Assert.Same(returned.Snapshot.Exploration.Party, moved.Snapshot.Exploration.Party);
+                Assert.Equal(returned.Snapshot.Story.Flags, moved.Snapshot.Story.Flags);
+            }
     }
 
     [Theory]

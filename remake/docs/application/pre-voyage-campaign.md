@@ -159,8 +159,114 @@ terrain 1. Adding origin (16,19) selects Map66 (32,32), whose walking word is 0x
 records the source operands. The engine places the party at the sampled combatant coordinate
 and retains the walking collision flags. The four adjoining tiles in this sample are blocked.
 The targeted engine regression `OverworldVictoryKeepsTheCombatantTileEvenWhenFieldWalkingCannotEnterIt`
-reproduces the refused result and checks the corrected field return using a passable neighbor.
-Natural original recovery from the enclosed location remains **Unknown**.
+separately covers a passable-neighbor variation and the real center/four-neighbor collision words.
+The latter returns successfully but all four movement inputs remain blocked and preserve the party
+and flags. Successful placement does not establish usable exploration. The investigation and proposed
+recovery boundary follow below; natural original recovery remains **Unknown**.
+
+### Enclosed Battle02 return and field EGRESS
+
+The [enclosed-return issue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1552)
+uses **Standard** scope: distinguish a source/import/coordinate error from a missing field action
+before changing gameplay. The independent diagnosis is complete at the engine/state boundary.
+Recovery implementation and native input acceptance remain pending main-gate's scope decision.
+Stage B does not resolve this earlier playable risk.
+
+**Confirmed in the selected inputs.** Against the pinned source above and the verified US ROM,
+Map66's decoded 4096-word layout equals the ordinary ten-map world's layout word for word.
+`data/maps/entries/map66/0-blocks.bin` and `1-layout.bin` equal ROM ranges
+`0xBBDD8..0xBCB9A` and `0xBCB9A..0xBD1F0` (end exclusive).
+Battle02's compressed terrain equals both its imported input and ROM `0x1AD460..0x1AD5AC`;
+the existing stack decoder gives terrain 1 at `13 * 48 + 16`. The admitted origin is `(16,19)`.
+No layout replacement, field/battle coordinate disagreement or selected terrain import mismatch
+explains this location.
+
+| Field position | Walking word |
+| --- | --- |
+| Center `(32,32)` | `0xC16B` |
+| West `(31,32)` | `0xC16A` |
+| East `(33,32)` | `0xC16C` |
+| North `(32,31)` | `0xC164` |
+| South `(32,33)` | `0xC177` |
+
+All four diagonal neighbors also have collision bits `0xC000`. None of these nine cells has a
+door, warp or zone marker. The Granseal warp at `(30,32)` is two cells west, behind the blocked
+neighbor. Map66's single area spans `(0,0)..(63,63)` and its init directly returns.
+
+**Confirmed source structure.** `code/gameflow/battle/battleloop_2.asm:BattleLoop_Victory`
+samples the final first active member and adds the area origin. The regular field controller is
+`code/common/scripting/entity/entityscriptengine_2.asm:esc02_controlCharacter`:
+`loc_50BC` gates map collision with entity flag bit 6; `loc_52C0` compares the destination against
+`0xC000`. Its bit-15 stair candidate can also inspect a diagonal from this center; those
+candidates are blocked too. `DeclareNewEntity` in `entityfunctions_1.asm` sets the collision
+flag. The source debug+B bypass is not ordinary player input. Battle terrain and field collision
+therefore have distinct responsibilities; admitting the combat projection must not clear collision.
+
+**Confirmed in the current engine.** A focused controlled outcome used the unchanged ordinary
+world, existing production assemblies, the actual `(16,13)` combatant coordinate and source route.
+The complete outcome program returned Map66 `(32,32)`, `PlayerInput`, F402 clear/F502 set and
+egress Map3. Each separate `Move` through `ExplorationDispatcher.Submit` emitted
+`movement-blocked`; `WaitAtInput` stayed in exploration at the same position. The live interaction
+query returned none, and field search was unavailable. Bowie knows `SpellRef("egress", 1)`,
+but `FieldInventory.Query` offered no spells and `FieldCommands.Submit(FieldCast(...))` returned
+`field-spell-unsupported`. Gold 102 and the selected main/thinking seeds 1535008860/24202529
+survived return. This is a controlled boundary, not reconstruction of the entire recorded party
+or a new ordinary-route/native observation. The retained real failure remains independent evidence.
+
+Controls using the same real maps admit east/south movement from Map66 `(19,24)` and Map3
+`(32,13)`. They establish that the closed return is local, not a global movement rejection; they
+do not establish travel from the enclosed tile. The existing retreat and outcome tests retain
+their live-anchor and resource contracts. Run the focused behavior tests under the locked SDK:
+
+```powershell
+# In remake/, after loading the owning worktree's private-input/tool configuration.
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --no-restore --disable-build-servers `
+  --filter 'FullyQualifiedName~Battle02OutcomeTests|FullyQualifiedName~BattleRetreatTests|FullyQualifiedName~ExplorationSessionTests'
+```
+
+For the private input comparison, use the existing `sf2tool.h2.map_layouts.decode_map_blocks`
+and `decode_map_layout`: decode `0-blocks.bin`, pass `len(block_words) // 9` when decoding
+`1-layout.bin`, then compare all words with the flattened selected `world.maps[id=map-66].layout`.
+Use `sf2tool.compression.decode_stack_compressed(..., expected_output_bytes=2304)` for the
+named terrain input. Compare the compressed inputs directly with the named ROM slices before
+interpreting either result. No full world diagnostic copy or whole-game acquisition is needed.
+
+**Confirmed source recovery mechanism.** `code/common/menus/main/mainactions.asm`,
+`@IsOnOverworldMap` / `@Egress`, admits EGRESS on source maps 66 through 78, obtains its MP
+cost, calls `DecreaseCurrentMp`, flashes, calls `GetSavepointForMap(EGRESS_MAP)` and queues
+map event 1. It does not halve gold or undo the victory flags. There is no sufficient-MP check
+in this caller; `combatantstats_2.asm:DecreaseCurrentMp` uses `DecreaseAndClampByte` with
+zero as its lower bound. `code/common/maps/egressinit.asm:GetSavepointForMap` and
+`data/maps/global/savepointmapcoords.asm` select Map3 `(32,13)` Up when F399 is set and
+the live egress map is 3. Its pre-F399 and raft branches are separate source conditions.
+Original natural execution from the sampled enclosed tile, exact visual timing and onward travel
+are **Unknown**; static availability is not an observed escape.
+
+**Proposed minimum implementation, not accepted capability.** Admit field EGRESS for the
+selected source overworld maps through `PrivateFieldPreparation`, expose it through the existing
+Magic confirmation, and extend field command execution with the source MP payment and ordinary
+flash/warp continuation. Resolve the live egress register through existing admitted savepoint
+operands; do not choose a nearby tile, change the map, replay the battle outcome, or branch on
+Battle02's number. Preserve gold, inventory, EXP, accounting, RNG and victory flags. Validate the
+destination before payment; distinguish paid departure from subsequent ordinary entry recovery.
+The bounded target is early walking mode with F399 set and supported live egress destinations.
+Pre-F399, raft/Caravan and unbound destinations must remain explicit until admitted.
+
+This affects Content field capability binding, Application field recovery/command and map-transfer
+continuation, and the existing Godot field-action presentation. It needs behavior cases for low/zero
+MP, cancellation/stale input, live destination changes, payment once, a normal accessible departure
+and rejection before payment when unsupported. Non-overworld source EGRESS has no effect; retain
+that distinction. Angel Wing shares the original destination path but also removes an inventory
+slot and falls through the shared spell-entry code; its exact payment operands need their own check
+and are not necessary to unblock a living Bowie with EGRESS.
+
+Acceptance remains ordinary menu/input at this exact position, return with retained progress,
+then re-entry and travel toward Yeel in the unchanged world, alongside a usable victory position
+and legal paid-retreat control. Use a bounded native observation on the existing runtime after
+implementation; do not replay the whole campaign. Until that passes, this issue is unresolved and
+the enclosed return is not a playable-success claim. Retain the earlier ObjectDB exit **Unknown**.
 
 ## Battle04 and the Galam prison handoff
 
