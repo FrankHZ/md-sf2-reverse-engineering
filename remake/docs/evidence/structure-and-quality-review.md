@@ -1,11 +1,167 @@
 # Remake Structure and Quality Review
 
+## Post-campaign findings
+
+The [boundary assessment](engine-script-boundary-review.md#post-campaign-boundary-assessment) owns
+Issue1564's Standard scope, continuation decision, responsibility matrix, source sampling and
+retained Unknowns. This section owns minimal repair designs only. All source references below pin
+accepted **`75d682862e7ae196662769c04bd890ed7bf04405`**, tree
+**`84b364832c9d77b3cb4ae17fb18c40f6c1dee33c`**. No production modification or new runtime observation
+was made. The findings are P2 composition defects/risks, not evidence that the accepted ordinary
+Battle01–07/first Map14 observations failed. Main-gate owns independent acceptance and any subsequent
+path allocation; existing High-rigor transaction/save boundaries are unchanged.
+
+### F6 — P2: bound the defeated interpreter to the state it can preserve
+
+**Confirmed source gap:**
+[`ExplorationContentReader.Read:198`][campaign-reader] accepts a nonempty defeated program whenever
+`DefeatedScene` is true. `ReadOutcome:333–359` exposes that boolean to authored and private decoding;
+`Link` checks references but does not constrain its reachable instructions or require source
+population. In contrast, `ProgramRunner.Run:118–123` has an explicit instruction boundary for a
+battle-round program. There is no equivalent defeated-phase check.
+
+The reached path is `BattleActionCommitter.Publish` → `GameSession.ContinueStory` →
+[`BattleDefeatedProgram.Begin/Resume`][campaign-defeated]. `Begin` creates an active field party from
+the combat state and suspends that combat state in `Story.DefeatedScene`. Ordinary
+[`ProgramRunner:166–168`][campaign-runner] can publish `ResetPartyBattleStats` through the selected
+recovery policy; join and service operations likewise use field resources. `Resume:77–84` transfers
+only `MainSeed` and `ThinkingSeed` into `pending.Battle`, then resumes death processing. Later
+`BattleOutcome.Begin` builds the returned party from that battle. Thus a successful field resource
+write has no matching merge or rejection at the resume boundary. There is no `set-gold` opcode in
+this engine; reset/join or an admitted shop transaction are the actual consumers to consider.
+
+**Trigger and Inferred consequence:** keep the admitted source-populated defeated setup, living
+leader, source bindings and zero status; give a surviving ally spent MP and a dead ordinary ally
+(not immortal member7/28). Insert the already admitted `reset-party-battle-stats` followed by a
+one-tick wait into the defeated program, including through a called/branched program. Recovery
+commits restored MP and revived ordinary ally HP in the temporary field. On resume the suspended
+battle's spent MP/dead ally return. Ordinary victory healing may mask the MP difference, but does
+not revive the ordinary dead ally. This is an unexecuted changed-content counterexample, not a new
+observed route failure. A paid shop operation would expose the same resource-authority conflict;
+it is not necessary to run a shop to establish the missing merge.
+
+**Sibling admission risk, Confirmed source / Inferred failure:** a strict authored outcome can set
+`defeatedScene: true` without a population. `Begin:43` passes `shell.Population!` into
+`SceneEntities.ResolveAllySprite`, which dereferences it. Missing context can therefore escape the
+`BattleRuleException` status contract. The staged helper also constructs source `entity-N` aliases,
+speed32 and source-relative camera operands; it is not a general implementation for every named
+authored field. This does not undo B1's ordinary named-world return fix.
+
+**Counterexample and limit:** the retained Battle05 defeated sequence uses staging, poses, dialogue,
+waits and then shared death/after-event delivery. The source-position service belongs to SF2, and
+keeping a suspended battle for that presentation is legitimate. `BattleEndPositionTests` explicitly
+checks that its scene poses survive while combat HP/MP/EXP/queue stay unchanged. Those assertions
+do not exercise a committed resource write inside the temporary interpreter. No such loss on the
+accepted Battle05 route is claimed.
+
+**Smallest recommendation / owner:** Application `BattleDefeatedProgram` and `ProgramRunner`, with
+Content `ExplorationContentReader`, should define this as a finite source staging context. Validate
+required population/actor/visual bindings before staging; reject unsupported resource and lifecycle
+operations before they publish, including operations reached through calls/branches. Reuse the
+existing reached-instruction guard/status mechanism instead of a new script VM or effect framework.
+Do not silently discard a completed write, blanket-ban ordinary field reset/shop/join, or use a
+Battle05/package-name allowlist. If a later chapter actually needs resource edits in this phase,
+scope an explicit transaction/merge at the combat authority then; copying the entire field snapshot
+back would overwrite death/queue work and is not the minimal repair. Reconcile the admission owner
+which still describes nonempty defeated programs as excluded, without claiming universal support.
+
+**Acceptance boundary:** a small actual-engine test enters the hook with changed HP/MP/gold/custody,
+uses direct and nested resource operations, and verifies a typed refusal before those writes with
+earlier accepted presentation/flag prefixes retained. Missing population must yield a typed failure,
+not a raw exception. Valid staging with changed actors/origin, wait completion, death credit and
+completed-flag skip must continue once into the actual after-program without duplicated rewards.
+Use the existing scene behavior tests and an affected short adapter observation only if presentation
+changes. Repair before extending defeated-program admission; unrelated content need not wait.
+
+### F7 — P2: preserve follower append order across scene-map replacement
+
+**Confirmed source omission:** [`MapTransfer.LoadScene:224–232`][campaign-transfer] preserves physical
+entities, aliases and party while replacing map/layout. It omits `CurrentEntities` from the new
+`ExplorationState`. That constructor (`ExplorationState:230–239`) defaults the list to the target
+Caravan definition or empty. The list is live state: `SceneEntities.Build` initializes it from actual
+allocation, `WithFollower` appends to it, and ordinary `WithParty/WithEntities` preserve it.
+[`ProgramRunner:223–227`][campaign-runner] uses its last slot to implement `AddExplorationFollower`.
+
+**Trigger and Inferred consequence:** start with player slot0 and physical followers1/2, perform a
+valid black `scene-map` to another admitted ordinary map, then `add-follower` for an existing third
+entity before any entity reload. Existing follower records remain, but the list is empty, so the
+third follows slot0 instead of the preceding follower2. Subsequent appends use the truncated list.
+The opcodes and context are already admitted; no new chapter or arbitrary save is required. This
+was not executed here. No claim is made that the accepted voyage has this exact opcode order.
+
+**Counterexample:** a true `LoadSceneEntities`/`LoadSetupEntities` allocation intentionally rebuilds
+the list. The existing Map73/Map14 scene-tail observation and `DepartureProgramTests` do not assert
+append order before that rebuild. `MapEntityLifecycleTests` covers initial allocation and ordinary
+entity addition, so its success would not close this separate replacement path. Physical following
+is independent of party membership; rebuilding it from joined flags would be the wrong repair.
+
+**Smallest recommendation / owner:** preserve `world.CurrentEntities` in the existing
+`MapTransfer.LoadScene` construction; review only this scene-replacement lifetime alongside
+`SceneEntities.Reload`. No new follower manager, generic copier or persisted schema is required.
+Keep intentional map-layout/roof reconstruction distinct from retained physical-list state.
+
+**Acceptance boundary:** an actual scene-load program with two followers and a third append retains
+the predecessor slot and motions; vary physical allocation/order rather than hardcode member names.
+Verify that a later explicit entity reload rebuilds the list and that caller tail, party/resources,
+selected map and no-target-init semantics remain intact. Repair before depending on this composition;
+existing ordinary following and unrelated chapter work can continue.
+
+### F8 — P2: share the selected scene area between logical music and delivery
+
+**Confirmed source divergence:** [`ExplorationMusicRunner.Area:10–11`][campaign-music] derives the
+area from the player tile and null-forgives the result. `Request`, `ValidateContext`, `BeforeService`
+and `Previous` use it for music history/waits. `InvalidateContext:85–96`, called by every
+`ProgramRunner.Commit`, repeats the player-area lookup for an already bound same-map history.
+By contrast, [`SessionAudio.Observe:157–181`][campaign-audio] resolves `Story.LogicalView.Area`, normalizing only
+mutable autoscroll fields, expressly to support actors staged outside areas. `MapTransfer.LoadScene`
+retains actors, while `BindScene` → `ExplorationViewRunner.LoadScene` selects its area from the
+explicit camera operand. Different camera and player areas are therefore valid scene state.
+
+**Trigger and Inferred consequence:** use an admitted scene map with two areas, camera in B and
+retained player in A; after the black load issue an admitted music cue (`Sound`, command below65)
+with text/view context present. `ProgramRunner` calls `Request` using A; the adapter's map context
+is B. History/previous-cue interpretation can differ from delivered context. If the retained player
+is outside every area, the same request or finite-music service dereferences a null area instead of
+reporting Unsupported; a same-map commit with bound history can encounter this even earlier in
+`InvalidateContext`. This is not a claim that command89 SFX itself enters `Request`'s music branch, nor a newly
+observed audible failure on Map73. SFX and explicit music have different consumers.
+
+**Counterexample:** ordinary control where player and view select the same area remains consistent.
+`ExplorationMusicTests.ContextRoundTripInvalidatesHistoryUntilANewRequest` exercises ordinary
+transfer/history invalidation, not a detached scene camera with retained off-area actors. The new
+adapter logic is justified; copying its old player-only assumption back would restore the original
+scene limitation. PCM timer variants, channel replacement groups and finite source command admission
+are separate valid policies and need no redesign for this finding.
+
+**Smallest recommendation / owner:** Application's existing view/music context owner should resolve
+the selected source area once for logical history and expose/reuse that result in Godot audio.
+Use the existing immutable area data, normalize autoscroll identity, and retain a player-area fallback
+only when no logical view exists. Missing/ambiguous context must fail through a typed status before
+history/wait publication. Avoid a second mutable music-area authority or map-ID special cases.
+Review `OpeningSave.Music` against the same selection; it runs at stricter stable control and does
+not justify widening save eligibility.
+
+**Acceptance boundary:** engine behavior with cameraB/playerA and an off-area retained player must
+agree on selected cue/history, finite wait generation and actual completion; changing autoscroll
+must not change the selected area. Keep ordinary area round-trip invalidation and stale completion
+refusal. One focused adapter state/audio observation should confirm that the logical context reaches
+the existing delivery consumer, without a voyage rerun or acoustic parity claim. Repair before new
+scene music/history compositions; original driver timing and ObjectDB teardown remain Unknown.
+
+[campaign-reader]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs#L198
+[campaign-defeated]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/src/Sf2.Remake.Application/Runtime/Battles/BattleDefeatedProgram.cs#L16
+[campaign-runner]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs#L118
+[campaign-transfer]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/src/Sf2.Remake.Application/Runtime/Exploration/MapTransfer.cs#L224
+[campaign-music]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationMusicRunner.cs#L10
+[campaign-audio]: https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/75d682862e7ae196662769c04bd890ed7bf04405/remake/game/src/Audio/SessionAudio.cs#L157
+
 ## Finite pre-voyage audit
 
-**Current disposition: F4/F5 are implemented and locally verified under
-[#1536](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1536), pending independent main-gate
-acceptance and integration.** Continue bounded development; no P1 or whole-engine redesign was
-identified. The audit-base failures below remain historical evidence. This is not acceptance of the
+**F4/F5 disposition: implemented under
+[#1536](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1536), merged in
+[PR1545](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1545) (`a5e68a53`).**
+The #1528 audit identified no P1 or whole-engine redesign. Its failures below remain historical evidence.
+The post-campaign sections now own current assessment; this older audit was not acceptance of the
 entire pre-departure campaign. The [boundary review](engine-script-boundary-review.md#finite-pre-voyage-audit)
 owns the common scope, Standard rigor, accepted diff/base/tree, dependency map and continuation limits.
 Existing High-rigor service/save contracts remain unchanged. This report owns the findings, copy
@@ -31,7 +187,8 @@ Recovery and defeat leader/gold edits use it. JoinResources appends only the new
 AI clear changes only that actor's activation bit. These remain the same carried-party lifetime.
 `BattleOutcome` and `BattleEntry` retain their explicit lifecycle rebindings. `OutcomeReturnRules.Party`
 now rejects recovery policies that alter unowned flags, visuals, retained slots or credit before
-publication. Nonzero recovery status still reports `return-status-refresh` atomically.
+publication. At that repair base nonzero recovery status reports `return-status-refresh` atomically;
+the current campaign additionally admits clearing silence bits `0xC0`, while other bits still refuse.
 
 **Confirmed:** preparation requires a target for Healing, AttackSpell and SupportSpell after action
 admission and before silence suppression, using the existing missing-target codes. Supplied-target
@@ -237,7 +394,7 @@ Unknowns remain with their owners; current document/plan/CI/freeze status belong
 ## Earlier structural review and dispositions
 
 The following sections preserve the earlier audit's evidence, failures and bounded implementation
-dispositions. Their original acceptance-stage wording is historical; the finite audit above owns
+dispositions. Their original acceptance-stage wording is historical; the post-campaign assessment owns
 the current continuation decision. No historical repair queue is restarted by this report.
 
 ## Decision and scope
