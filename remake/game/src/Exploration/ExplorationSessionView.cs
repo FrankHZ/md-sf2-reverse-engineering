@@ -143,6 +143,7 @@ public sealed partial class ExplorationSessionView : Control
     private void SuspendClock()
     {
         CancelMenuEntry("save-entry-paused");
+        _readingConfirmation = null;
         _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
@@ -256,6 +257,7 @@ public sealed partial class ExplorationSessionView : Control
             _tickTime = 0;
             return;
         }
+        if (ContinueReadingConfirmation()) return;
         WaitToken? deliveryToken = _session.Current.Story.Wait switch
         {
             W1TextWait { Revealed: false } delivery => delivery.Token,
@@ -392,15 +394,10 @@ public sealed partial class ExplorationSessionView : Control
                 command = new ChooseDialogue(choice.Token, action == GameAction.Confirm && _dialogueView.Panel.Choices.SelectedYes);
             }
         }
-        else if (current.Story.Wait is FieldTextWait fieldText)
+        else if (current.Story.Wait is FieldTextWait or W1TextWait)
         {
-            if (action == GameAction.Confirm && !RevealText() && current.CanWaitForText)
-                command = new Acknowledge(fieldText.Token);
-        }
-        else if (current.Story.Wait is W1TextWait w1)
-        {
-            if (action == GameAction.Confirm && !RevealText() && w1 is { AtInput: true, Revealed: true })
-                command = new Acknowledge(w1.Token);
+            if (action == GameAction.Confirm) ConfirmReading();
+            return;
         }
         else if (current.Story.Wait is FieldSearchWait search)
         {
@@ -408,7 +405,8 @@ public sealed partial class ExplorationSessionView : Control
         }
         else if (current.Story.Wait is DialogueWait)
         {
-            if (action == GameAction.Confirm && !RevealText()) command = new Acknowledge(current.Story.Wait.Token);
+            if (action == GameAction.Confirm) ConfirmReading();
+            return;
         }
         else if (current.CanWaitAtInput)
         {

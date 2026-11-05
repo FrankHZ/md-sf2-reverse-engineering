@@ -1,5 +1,57 @@
 # Field and Program Verification
 
+## Ordinary dialogue Confirm observation
+
+The [High reading agreement](../godot/presentation.md#ordinary-dialogue-confirm) supersedes older
+reveal-only Confirm assertions for exploration Dialogue/W1/field text. Historical reports keep
+those actual results; they do not establish the current reading policy. Choice, battle, Search,
+transaction and explicit Wait observations retain their own scope. The maintained direct witness
+is [`engine_dialogue_confirm_observation.gd`](../../game/probes/engine_dialogue_confirm_observation.gd).
+It derives a finite prelaunch authored package from `harbor-arrival.json`, using the existing text,
+font, portrait and entity-service admission. Generated transparent raster data exercises actual
+portrait mounting/lifetime; it is not private art, a screenshot or visual-fidelity evidence.
+
+Load the worktree's ignored input configuration in the launching process, force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, and build the existing Debug adapter. Select a fresh
+ignored run directory; isolate TEMP/TMP, APPDATA/LOCALAPPDATA there as in the native host recipe.
+Set `SF2_EXPLORATION_OBSERVATION_OUTPUT` to its report JSON, `SF2_READING_PACKAGE` to a new JSON
+path in it, and `SF2_READING_CASE` to one of `plain`, `field`, `field-portrait`, `w1`, `long`,
+`field-pause`, `field-clear`, `field-interrupt`. The package path must also be passed to ordinary
+startup. Use existing adjustable input settings with120 characters/second; default Confirm keys
+and pad South remain active. From repository root, the native argument equivalent is:
+
+```powershell
+& $env:GODOT_BIN --headless --max-fps 60 --resolution 1920x1080 `
+  --path remake/game --rendering-method gl_compatibility --audio-driver Dummy `
+  --script res://probes/engine_dialogue_confirm_observation.gd -- `
+  --authored-package $env:SF2_READING_PACKAGE --input-settings $inputSettings
+```
+
+The runner creates only the named generated package before mounting ordinary Main. Input is mapped
+Godot key/pad events; no live session setter, injected command, acknowledgement or completion.
+Each native run is serial and bounded to45seconds; reports/packages/logs together<=10MiB. Check
+both exit/report and native/script errors; report PASS alone cannot excuse a failing callback.
+The existing control witness's `cadence` case covers a real choice, modal, held direction,
+map transfer and battle-menu handoff, including one Confirm on revealing ordinary text. It verifies the installed Down mapping contains J
+and excludes S, rejects actual S input and walks with J; the ordinary Talk/Party hint no longer
+advertises movement bindings. This retains remap coverage at the actual input authority.
+
+**Confirmed, bounded executor observations:** revealing first segment advances with one fresh
+Confirm, fully visible final segment acknowledges with pad South and completes the genuine caller
+close, with/without mounted portrait and through W1. Echo/hold does not cross the next token.
+A55-line passage retains its token while revealing and reading every page, including the press
+that exposes the last page. `{D1}` retains its22 elapsed services; CLEAR retains the new display
+span for fresh reading. During the interruption case, the observer hides the actual host from its
+first mandatory-service callback: the batch stops on that tick, hiding freezes it, restoration
+finishes only ordinary work and leaves the original input pending until a fresh Confirm.
+Adapter/native checks cover this host policy; Application commands/rules are unchanged.
+
+A prechange authored pilot reproduced the old first-press reveal-only result (0/55 to55/55,
+same DialogueWait and simulation tick), then second-press choice. The user's exact reported scene
+and physical device/human experience remain **Unknown**. Prior private aggregate failures and
+ObjectDB warnings are retained in their owners; this finite authored observation neither reruns
+nor resolves them. No full-route/private-source acquisition or new comparator is involved.
+
 ## Continuous exploration control and contextual Talk
 
 **Standard rigor; [#1389](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1389).**

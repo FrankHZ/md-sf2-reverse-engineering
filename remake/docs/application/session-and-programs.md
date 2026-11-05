@@ -119,7 +119,7 @@ do not reseed, split RNG, normalize NPCs or revive a full-route golden to hide t
 | Field input / committed ordinary movement | Continue the existing enabled field service, including autonomous NPCs and follower follow-up decisions, not only already-started translations. Input-ready does not mean persistent-ready. |
 | System/party/settings/save modal | Pause world and ordinary sprite progression after the bounded entry procedure below where applicable. No time debt or world updates behind a mounted modal. This full modal freeze is a modern policy; the original field menu leaves some other VInt services registered. |
 | OS focus loss, hidden view, tree pause, window recovery, failure | Suspend immediately, even during pending menu settlement; disarm input and pending host intent. Focus return requires fresh input, no catch-up. Never defer a real OS pause to finish saving. |
-| Text reveal, W1/plain/field text input, choice, Search result, Church/Shop | No new automatic ordinary opportunities. Keep each existing mandatory-work, delivery, token, explicit poll and acknowledgement contract. Reveal-only Confirm and slow reading/rendering add no gameplay steps. Church Save may request ordinary settlement only after its genuine caller return. |
+| Text reveal, W1/plain/field text input, choice, Search result, Church/Shop | No new automatic ordinary opportunities. Keep each existing mandatory-work, delivery, token, explicit poll and acknowledgement contract. Slow reading/rendering adds no gameplay steps. Explicit ordinary-dialogue Confirm may schedule existing mandatory text work under the [host reading policy](../godot/presentation.md#ordinary-dialogue-confirm). Church Save may request ordinary settlement only after its genuine caller return. |
 | Script waits, finite music, warp/load/fade, scene/battle handoff | Yield ordinary scheduling; existing owners run their required work or wait for delivery. Keep the modern finite-music logical-end plus actual-completion gates and sound-before-entity service order. No audio-duration-derived field ticks and no extension into battle choice/turn time. |
 
 Extending automatic neutral time to text/choice input is a separate bounded follow-up: review each
@@ -1018,8 +1018,8 @@ a W1. Wait and Ack reject incomplete delivery. Each accepted W1 creates a fresh 
 next span; the host retains already shown characters and reveals only up to that next endpoint.
 The full projection remains mounted for at least one host frame before the delivery receipt.
 A trailing span then completes automatically, with no invented manual Ack or logical tick.
-Generic elapsed `AdvanceSimulation` is rejected for all W1 delivery/input states. Confirm can
-reveal text without polling; accepting W1 does not play generic SFX67. Plain JOIN and choice
+Generic elapsed `AdvanceSimulation` is rejected for all W1 delivery/input states. A delivery alone can
+reveal text without polling; the [host reading policy](../godot/presentation.md#ordinary-dialogue-confirm) may pair actual delivery with a separately eligible acknowledgement on one fresh Confirm; accepting W1 does not play generic SFX67. Plain JOIN and choice
 semantics remain with their separate owners.
 
 **Confirmed (source):** the [reached W1 contract](../../../docs/design/contracts/interface/dialogue-system.md#reached-w1-consumer-binding)
@@ -1120,8 +1120,7 @@ moving-bit clear observation. Reopening starts a fresh layout.
 
 Neutral mandatory work supplies logical input0. Source nonzero input shortens the extra glyph
 delay only when mouth control is0; the engine tests that rule, but exposes no new shortening
-player action. Reveal-only Confirm and actual delivery neither supply this input nor consume
-work. They cannot skip outstanding work; logical completion without delivery also cannot poll.
+player action. Actual delivery supplies neither this input nor work. The modern [host reading policy](../godot/presentation.md#ordinary-dialogue-confirm) may batch existing neutral mandatory services after an explicit Confirm, retaining their order and explicit text pauses. It cannot skip outstanding work; logical completion without delivery also cannot poll.
 Each optional Wait and accepting Ack draws main RNG256, copies its byte, updates the W2 indicator
 if applicable, services once, then decides input. Enabled NPC draws may change the main image
 in that service; they cannot overwrite the copy. W2's20-step indicator is visible at counter>=7,
