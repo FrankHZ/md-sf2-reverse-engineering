@@ -25,6 +25,9 @@ ENGINE_WIRING_PATHS = (
         {
             "src/sf2tool/cli.py",
             "src/sf2tool/harness.py",
+            # Explicit engine scope only after reviewing unchanged research/parity semantics.
+            "src/sf2tool/graphics_source.py",
+            "src/sf2tool/texture_extract.py",
             "src/sf2tool/verification_plan.py",
             "src/sf2tool/verification_engine_paths.py",
             "src/sf2tool/verification_partitions.py",
