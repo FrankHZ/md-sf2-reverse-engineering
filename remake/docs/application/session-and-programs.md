@@ -1,16 +1,18 @@
 # Session and Resumable Programs
 
-## Proposed ordinary exploration clock and save boundary
+<a id="proposed-ordinary-exploration-clock-and-save-boundary"></a>
 
-**Proposed, not implemented or accepted scheduling. High rigor:** ordinary time, shared RNG,
-animation, modal ordering and persistence are coupled. This bounded
+## Ordinary exploration clock and save boundary
+
+**Implemented bounded capability. High rigor:** ordinary time, shared RNG,
+animation, modal ordering and persistence are coupled. The bounded
 [#1586 investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1586)
-recommends one implementation outcome: ordinary focused exploration advances without holding V;
-legal followers finish naturally; opening Save cannot freeze them permanently midway. Include
-[#1580](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1580) in that implementation's
-acceptance, rather than shipping a follower-only clock alongside it. This document authorizes no
-production change. The current [explicit field Wait implementation](../verification/field-programs.md#explicit-field-input-gameplay-wait)
-continues to describe today's behavior.
+and [implementation scope #1591](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1591)
+own one outcome: ordinary focused exploration advances without holding V; legal followers finish
+naturally; menu/save entry settles transient motion before pausing. The bounded native and engine
+acceptance includes [#1580](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1580).
+See the [current verification route](../development-and-verification.md#ordinary-clock-and-save-entry).
+Existing save recipes and guards remain binding; this is not universal save eligibility.
 
 ### Original source and limits
 
@@ -35,11 +37,11 @@ Use the named symbols/line spans; no ROM execution, rebuild or new acquisition i
 **Inferred:** automatic ordinary exploration opportunities are closer to that source structure
 than a stopped world awaiting V. **Unknown:** exact original natural idle phases, every caller's
 enable transitions, hardware timing and visible standing cadence at the reported save location.
-This recommendation does not promote those Unknowns to a runtime-fidelity claim.
+This implementation does not promote those Unknowns to a runtime-fidelity claim.
 
-### Current cause and what automatic time fixes
+### Evidence boundary and repaired starvation
 
-**Confirmed:** remake structure at accepted `b0f7871a`:
+**Confirmed:** the following diagnosis describes accepted `b0f7871a`, before this cutover:
 [`CanWaitAtInput`](../../src/Sf2.Remake.Application/Runtime/SessionContract.cs) describes player
 command readiness, not world/save stability. It requires ordinary field continuation with no
 cursor/callers/wait/event/battle entry, closed text and a nonbusy, sprite-ready player; it does not
@@ -57,17 +59,18 @@ can strand followers when the player arrives first. The
 **Inferred:** that host stop explains the persistent refusal; no target-side `QuerySave` was invoked.
 The [human follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1580#issuecomment-6667523004)
 reports V → completed followers → successful slot2 save, supporting this cause without substituting
-for an instrumented post-V query. No new observation was run for this design.
+for an instrumented post-V query. This remains the diagnosis evidence, separate from the current
+native acceptance below.
 
-Automatic time removes this starvation, but does not alone make saving reliable:
-[`ShowSystemMenu`](../../game/src/GameRoot.cs) can open before motion settles, queries once and
+Automatic time alone could not make saving reliable: the former
+[`ShowSystemMenu`](../../game/src/GameRoot.cs) opened before motion settled, queried once and
 [`ApplyHostPause`](../../game/src/Entry/WindowSupportHost.cs) disables exploration processing.
 A perfectly working free clock would then pause the same unfinished follower behind a disabled Save.
 Also, [`EntityActionRunner`](../../src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs)
-currently adds stationary animation progress only for the selected 2x flag; ordinary motion owns
+previously added stationary animation progress only for the selected 2x flag; ordinary motion owns
 travel increments. Merely scheduling that runner does not supply the missing normal standing pass.
 
-### Recommended finite scheduling contract
+### Implemented finite scheduling contract
 
 Reuse the current session, immutable motion/counter state, host accumulator and service commands.
 Do not add a parallel follower scheduler, RNG stream, generic clock platform or render-owned actor
@@ -80,7 +83,7 @@ moving; save stability remains a stricter independent query.
   means a neutral service opportunity, not a synthetic physical keypress. Keep its music prelude
   and service ordering; do not run both paths for the same step. No direction/action is invented.
 - Reuse `_tickTime` with at most four ordinary steps per callback, retaining only a fractional
-  step and dropping excess whole-step backlog after that cap. This is a proposed responsiveness
+  step and dropping excess whole-step backlog after that cap. This is a modern responsiveness
   limit, not an original timing constant. Slow/stalled rendering may slow gameplay; it cannot
   trigger a long catch-up burst. Check fresh session/revision, mode, token, pause and failure after
   every result; stop the batch on a consumer transition. Clear debt at pause/handoff/replacement;
@@ -111,7 +114,7 @@ and explicit step/action schedules directly; automatic play naturally changes ho
 occur before interaction/battle entry. Keep completed reference failures and original Unknowns;
 do not reseed, split RNG, normalize NPCs or revive a full-route golden to hide this difference.
 
-| State/owner | Proposed ordinary-clock responsibility |
+| State/owner | Ordinary-clock responsibility |
 | --- | --- |
 | Field input / committed ordinary movement | Continue the existing enabled field service, including autonomous NPCs and follower follow-up decisions, not only already-started translations. Input-ready does not mean persistent-ready. |
 | System/party/settings/save modal | Pause world and ordinary sprite progression after the bounded entry procedure below where applicable. No time debt or world updates behind a mounted modal. This full modal freeze is a modern policy; the original field menu leaves some other VInt services registered. |
@@ -121,7 +124,7 @@ do not reseed, split RNG, normalize NPCs or revive a full-route golden to hide t
 
 Extending automatic neutral time to text/choice input is a separate bounded follow-up: review each
 caller's enable flags and input-first versus service-first accepting poll, token occurrence and
-reveal/delivery boundary before changing that consumer. Thus this proposal removes V from ordinary
+reveal/delivery boundary before changing that consumer. This implementation removes V from ordinary
 exploration, not from every current diagnostic or text wait, and makes no whole-game time claim.
 
 ### Menu entry, capture and restoration
@@ -135,7 +138,7 @@ wait for every ambient NPC script to become idle or for every save recipe to bec
 No follower-only service, teleport, action clearing, manual completion or guard relaxation is used.
 
 Bound this pending entry to 120 logical steps (two nominal seconds), with cancel available. This is
-a proposed failure limit, not a claim that every legal setup settles in 120 steps. Failure, unexpected
+a failure limit, not a claim that every legal setup settles in 120 steps. Failure, unexpected
 caller/warp/battle transition or budget exhaustion cancels settlement and opens only the ordinary
 paused menu with Save unavailable and an accurate reason/Resume path; no hidden retry loop or
 successful-save claim. Cancel during pending entry freezes immediately and opens the existing
@@ -167,9 +170,8 @@ interior/later-map recipes, arbitrary suspended-state saving or original SRAM pa
 [`OpeningRestore`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs) still
 rebuilds the finite savepoint off-session, preserves captured seeds/progress and performs no
 ordinary-service RNG draws before publication. NPC phases and fresh music playback may differ from
-uninterrupted play. Under this proposal, the first *eligible automatic* step after mounting resumes
-ambient work; the current owner's “next deliberate service” wording must be updated at implementation.
-For the first implementation, retain the conservative unsaved warning in
+uninterrupted play. The first *eligible automatic* step after mounting resumes ambient work.
+The implementation retains the conservative unsaved warning in
 [`OpeningPersistenceHost.PresentQuitChoices`](../../game/src/Entry/OpeningPersistenceHost.cs):
 `_savedRevision != Current.Revision` can become true on the first automatic step after saving,
 including an animation-only step that changes no durable progress. NPC steps can also change the
@@ -178,11 +180,13 @@ as lost story progress. Verify both cases and preserve Cancel/exit access. Do no
 weaken stale-offer checks or introduce hashes/a second dirty-state authority to hide the warning.
 A later persistent-value comparison, if requested, belongs to the save/quit owner, not this clock fix.
 
-### Implementation acceptance and remaining Unknowns
+### Bounded acceptance and remaining Unknowns
 
-One coherent follow-up should own the session/host ordinary scheduler, missing normal sprite phase,
-menu/save entry and their direct behavior assertions/docs. Reuse existing input/state observers,
-save store and restoration recipes; no new framework or broad capture matrix. Acceptance is:
+The session/host ordinary scheduler, normal sprite phase and menu/save entry share this acceptance
+boundary. `HasOrdinaryFieldTime` selects the eligible ordinary owner, including committed player
+motion; `HasSettledFieldEntry` additionally requires input readiness and visible follower/sprite
+readiness. Neither predicate replaces the stricter side-effect-free save query. The existing host
+accumulator and commands remain the only time authority. Acceptance is:
 
 1. Actual engine steps with a stopped player and moving followers settle and make `QuerySave`
    available at an already supported recipe. Vary direction, follower spacing and seed; blocked
@@ -200,14 +204,18 @@ save store and restoration recipes; no new framework or broad capture matrix. Ac
    not enter those consumers. A narrow existing text/finite-music boundary observation retains
    delivery-versus-logical gating. No full campaign replay, new emulator capture or tests of probes.
 
-**Unknown:** the proposed implementation's runtime behavior, settlement bound adequacy, every
-legal follower configuration's convergence, original offscreen/standing phase fidelity and future
+**Confirmed:** the [bounded verification](../development-and-verification.md#ordinary-clock-and-save-entry)
+exercises these engine and native boundaries, including genuine Church return, actual finite audio,
+physical focus transfer and fresh Continue before its first service. This does not establish all-state
+convergence or original runtime parity.
+**Unknown:** settlement bound adequacy for every legal follower configuration, original
+offscreen/standing phase fidelity and future
 text-idle policy. These do not justify declaring saving universally solved. Source/service ordering
-and the bounded acceptance above are enough to implement the recommended outcome; any observed
+and the bounded acceptance above delimit this implementation; any observed
 nonconvergence must be attributed to its owning movement/content rule, not hidden by saving mid-motion.
-For this design-only change, use direct document/link/source checks and a clean committed
-`uv run sf2 verify plan --base origin/main --head HEAD`; record actual CI separately. No SDK,
-engine/full suite, native process, asset generation or original-game acquisition belongs to this review.
+Use affected actual-engine assertions, adapter compilation, the bounded native observer and the
+clean committed dependency plan. Record actual CI separately; no original-game acquisition or
+full campaign replay is implied by this implementation.
 
 ## Finite Galam shop transactions
 

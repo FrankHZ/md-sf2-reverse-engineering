@@ -1,5 +1,108 @@
 # Development and Verification
 
+## Ordinary clock and save entry
+
+The [High-rigor scope agreement](application/session-and-programs.md#ordinary-exploration-clock-and-save-boundary)
+owns the scheduler, sprite phase and finite menu-entry boundary. This engine/adapter capability uses
+existing private content and actual-engine behavior assertions, not new original runtime evidence.
+Load the worktree's existing private-input/tool configuration in the launching process and use the
+[locked SDK workflow](#locked-net-workflow). The focused behavior selection is:
+
+```powershell
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --no-restore --filter 'FullyQualifiedName~OrdinaryFieldTimeTests|FullyQualifiedName~ExplorationSessionTests|FullyQualifiedName~OpeningSaveTests|FullyQualifiedName~OpeningRestoreTests'
+uv run sf2 verify adapter
+uv run sf2 verify plan --base origin/main --head HEAD
+```
+
+`OrdinaryFieldTimeTests` varies legal follower spacing/direction/seed, exercises unchanged unsettled
+save refusal followed by natural completion, ordinary/fixed/2x/suppressed sprite rules, actual NPC
+RNG and matched step/action sequences, and stale capture after an animation-only revision. Existing
+save/restore tests retain text/story/sprite/battle/unsupported-recipe refusals. A readiness assertion
+does not imply save eligibility. The extracted `ExplorationSessionTests.OrdinaryTime.cs` preserves
+the existing movement/warp assertions with the admitted ordinary sprite-counter contribution.
+
+### Native reproduction
+
+Use the existing owned Godot installation/project and a Debug adapter build. Reimport only changed
+source/localization when needed; do not restart an unrelated retained instance. The tracked
+[`engine_ordinary_time_observation.gd`](../game/probes/engine_ordinary_time_observation.gd) reads real
+session/input/projection and persistence observations. It uses ordinary title Continue, physical key
+events and the genuine Church interaction; it never supplies sprite/audio completion or mutates a
+running game state. `partition-a`, `partition-b` and `clock-policy` disable automatic callbacks at
+attach, then call the actual view `_Process` with controlled deltas. They do not model the scheduler.
+All output is selected with `SF2_EXPLORATION_OBSERVATION_OUTPUT` in a fresh ignored run directory.
+
+Prepare a disposable slot1 through the existing `OpeningNewGameReader`, `GameSession.Start`,
+`CaptureSave` and `OpeningSaveJson.Write` APIs, in a **new** namespace under the configured external
+validation save root. Select the already admitted connected opening world, static/party/battle
+inputs, entry presentation and battle-scene resources. Set initial main/thinking seeds to
+`305441741`/`305397760`. On the detached captured payload set recipe `map3-joined`, map3 anchor
+`(32,13)`, facing1, gold60, active allies `ally-0,ally-1,ally-2` and flags
+`0,1,2,32,33,34,66,67,80,600,602,603`; preserve the other captured resources. Validate that payload
+with production `GameSession.Restore` and `QuerySave` before writing sequence1. No existing user slot
+or backup is an input or target. The native `field`/`clock-policy` cases subsequently save through
+the real UI/store, and `continue` reads the resulting slot in a new process.
+
+After setting the existing private inputs and isolated writable runtime environment:
+
+```powershell
+$env:SF2_CLOCK_CASE = 'field'
+$env:SF2_SAVE_NAMESPACE = $disposableNamespace
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = (Join-Path $runRoot 'native.json')
+& $godotBinary --headless --fullscreen --path remake/game --rendering-method gl_compatibility `
+  --audio-driver Dummy --resolution 1920x1080 --fixed-fps 60 --max-fps 60 `
+  --script res://probes/engine_ordinary_time_observation.gd -- --input-settings $englishInputSettings
+```
+
+Use default keyboard bindings and English text. `field` observes two real standing sprite textures,
+held V, released walking with player-ready/follower-moving state, immediate menu/direct Save,
+Cancel, genuine Church-return Save, a real slot write and conservative Quit. `continue` captures
+persistence synchronously at attach/revision0 before automatic time; directly compare every
+`progress` field to `field`'s saved payload. `focus` requires a visible launch (omit `--headless`);
+its native sibling window takes actual OS focus and checks frozen state and fresh return. The
+`quit-pending` case exercises the existing WM-close notification consumer, not a physical OS-close
+claim. `pause-pending` uses actual SceneTree pause. No screenshots are used.
+
+Run `partition-a` and `partition-b` on identical prepared slots/content. Both bootstrap16 logical
+steps, then three24-step phases with Down before phase2 and Up before phase3; callbacks consume
+1 versus3 steps. Compare `partition-initial`/`partition-final` gameplay facts exactly, excluding
+only floating accumulator roundoff (`abs(tickDebtA-tickDebtB) < 1e-12`). Both reach tick88 and
+main seed3593120717 with identical entities, revision and control. `clock-policy` saves first,
+checks animation-only and RNG-changing Quit warnings, then supplies a slow callback and verifies
+4 steps, no whole-step catch-up on delta0, and retained half-step debt.
+
+For `budget`, `transition`, `quit-pending`, `pause-pending` and `music`, use one prelaunch controlled
+copy of the same private world. Preserve the original Church program/event and all embedded media:
+
+- Prepend a flag651-gated interact event on entity141 (`entityFlags=1`) targeting a new
+  `clock-stress` program. With `entitiesRunning=false`, it branches on flag650 to `clock-music`;
+  otherwise it installs ordinary Follow for entity128 behind entity0 at offset(-24,0), then ends.
+- Add a step event at(33,13) targeting `clock-transition`: WaitTicks10, End. It deliberately changes
+  the owner during pending menu entry, without adding a warp or altering save guards.
+- `clock-music`: TextCursor65000; ShowText(single, null speaker, explicitWindows/useEventSpeaker true);
+  Sound(MUSIC_JOIN); SoundWait; PreviousMusic; CloseText; End. Add authored text65000
+  `Clock boundary.{W1}`. Set only MUSIC_JOIN's controlled modernEndStep to6, preserving its existing
+  9.746-second PCM. Use flag651 in the stress save and flags650/651 in the music save.
+
+These are modern test inputs, not original-game provenance. Keep linked relative battle inputs
+beside the copy, read-only; do not republish embedded private content. Budget before cloning: one
+125.9MB world plus about0.67MB linked inputs, linear JSON parsing/copying, under1GiB estimated peak
+memory, under15MiB observation/log output, serial native processes, 60-second process bound. No
+acquisition/API cost or parallel runtime is required. Replan if the selected content materially grows.
+
+**Confirmed:** bounded native cases pass for field/save/Continue, physical focus,120-step exhaustion,
+transition/Cancel/pause/Quit escape, revealed text idle and real finite-audio return, callback
+partitions and cap/fraction policy. The focused final behavior selection passes206 tests; adapter
+compilation has zero warnings/errors. Earlier completed failures remain in the slice handoff:
+unrepresentative follower fixture, old sprite-counter expectations, native setup/focus/content
+errors and exact floating-debt comparison. Corrections rerun their owning selections, not the
+whole slow aggregate solely to erase failures. Native exit reports retain2–6 ObjectDB leak warnings
+on some runs; cause is **Unknown**, not a gameplay/presentation error-free cleanup claim. All owned
+processes exited. Exact candidate head, run paths, command results and actual CI belong to the frozen
+handoff. Universal follower convergence, original offscreen cadence and text-idle policy remain
+**Unknown**; these cases do not widen save recipes or prove campaign parity.
+
 ## Galam shop and supply observation
 
 Use the finite [scope/source agreement](domain/gameplay-rules.md#finite-purchased-supplies-and-detox1)

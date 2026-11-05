@@ -145,7 +145,7 @@ internal sealed partial class ExplorationDialogueView : Control
             _ when current.CanWaitAtInput => GameText.Get("field.controls",
                 session.QueryExplorationInteraction() is not null ? GameText.Get("field.talk", input.Hint(GameAction.Confirm)) :
                 session.CanSearch ? GameText.Get("field.search", input.Hint(GameAction.Confirm)) : "",
-                input.Hint(GameAction.Wait), input.Hint(GameAction.Equipment)),
+                input.Hint(GameAction.Equipment)),
             _ => GameText.Get("story.in-progress"),
         };
         if (Panel.Visible && Panel.MoreBelow && revealed) hint = GameText.Get("field.more", input.Hint(GameAction.Confirm));

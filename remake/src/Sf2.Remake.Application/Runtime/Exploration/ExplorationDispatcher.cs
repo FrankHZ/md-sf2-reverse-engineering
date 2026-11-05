@@ -325,10 +325,13 @@ internal static class ExplorationDispatcher
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
                                 definition.Programs[location.Program].EntitiesRunning);
                         var pendingMove = (current.Story.Wait as EntityWait)?.PendingMove;
+                        bool ordinarySprites = current.HasOrdinaryFieldTime;
                         EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world
                             ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,
-                                fieldControl: existingFieldInput || pendingMove is not null) : null;
+                                fieldControl: existingFieldInput || pendingMove is not null, ordinarySprites: ordinarySprites) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.FieldRoof(tickResult.World, current.Story)) : current.Active;
+                        if (ordinarySprites && active is ActiveExploration ordinary && tickResult?.Failure is null)
+                            active = new ActiveExploration(OrdinaryFieldService.Sprites(ordinary.World));
                         var story = active is ActiveExploration serviced ? ExplorationTextRunner.AfterEntities(serviced.World, current.Story) : current.Story;
                         foreach (int sound in tickResult?.Sounds ?? [])
                             current = ProgramRunner.Commit(current, active, story, observations, "entity-sound", sound.ToString(System.Globalization.CultureInfo.InvariantCulture));

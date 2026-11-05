@@ -400,7 +400,7 @@ growth draw, one-time script or reward while reconstructing. A failed candidate
 leaves the current session/slot usable; disposing candidate resources follows existing host ownership.
 
 The seeds in the candidate equal the saved seeds. Restoration itself has no gameplay RNG draws;
-ambient programs begin on the next deliberate service. Repeated loads with the same content/rules
+ambient programs begin on the first eligible automatic ordinary step. Repeated loads with the same content/rules
 and semantic input/poll sequence must agree in gameplay results. Comparison with uninterrupted play
 is limited to persistent resources/progress: NPC phases, elapsed music and subsequent draw timing
 can differ because this is a savepoint reload. This distinction must appear in player help and tests.
