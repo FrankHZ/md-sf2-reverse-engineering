@@ -1347,7 +1347,8 @@ request and main push. Its Windows jobs are:
 
 | Job | Current execution |
 | --- | --- |
-| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit engine, adapter, research and H4 affected-path booleans. |
+| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit engine, adapter, research, H4 and private-admission affected-path booleans. |
+| `private-admission-build` | Locked restore/build of the bounded [private admission entry](#private-world-mutation-probes) and its actual Content dependencies; no private execution or input. |
 | `engine-unit` | Locked restore/build/test of Engine.Tests and its actual production dependencies, using the pinned .NET SDK/runtime. No Python, native Godot, private input or legacy test project. |
 | `adapter-build` | Locked restore/build of the ordinary game C# project. No Godot tests or native editor launch. |
 | `research-public` | Locked Python/uv dependencies, Ruff, direct design-contract traceability and research-index checks. No engine or verification-tool pytest families. |
@@ -1356,7 +1357,9 @@ request and main push. Its Windows jobs are:
 Shared product/build inputs select engine and adapter; engine tests select engine; `remake/game/`
 selects the ordinary adapter. `remake/reference/inputs/` selects engine for its Engine.Tests consumers. Research/contracts/source/fixtures/manifests/schema inputs select
 research. Workflow and shared CLI/harness/planner changes select
-engine/adapter/research; the workflow also selects H4 for its explicit comparison/build inputs.
+engine/adapter/research and private-admission compilation; the workflow also selects H4 for its explicit comparison/build inputs.
+Changes under `remake/tools/Sf2.Remake.PrivateAdmission/` select only private-admission compilation;
+shared product/build inputs also compile that consumer.
 Changes under `tools/h4-comparison/` or to the named H4 bridge/comparator/environment/planner/workflow
 paths select `h4-comparison-build`. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
