@@ -76,7 +76,8 @@ changes. Repair before extending defeated-program admission; unrelated content n
 
 ### F6 bounded repair disposition
 
-**Implemented; independent integration pending**, [Issue1566](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1566).
+**Implemented under [Issue1566](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1566)**;
+independent acceptance and CI status belong to the Issue/PR.
 Standard rigor: restrict the existing temporary interpreter to finite source staging, preserving
 High-rigor resource/death/queue authority. Scope is `BattleDefeatedProgram`, its reached guard in
 `ProgramRunner`, actual-engine tests and the four current contract/audit owners. No new VM,
