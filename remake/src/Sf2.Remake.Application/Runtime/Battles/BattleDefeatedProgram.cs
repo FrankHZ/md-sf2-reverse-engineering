@@ -6,8 +6,8 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Runtime.Battles;
 
 // The pending battle/death work is suspended while the ordinary field interpreter
-// stages its actors. CompletedWorld retains only that scene's projection for the
-// immediately following after-program; combat resources remain in the battle.
+// stages its actors. CompletedWorld retains that scene's projection through field
+// death and the following after-program; combat resources remain in the battle.
 internal sealed record DefeatedProgramState(EngineBattleState Battle, ActorRef Actor,
     MapPosition? Destination, BattleDeathBatch Deaths, ExplorationState? CompletedWorld = null);
 

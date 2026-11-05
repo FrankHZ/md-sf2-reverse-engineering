@@ -263,6 +263,24 @@ tests, plus the actual Content/adapter build. Shop cancellation, full-inventory 
 transaction guarantees retain their existing behavior tests. Map16/17 saves, Battle06 outcomes,
 later F530 content, later spell families and original timing remain outside this boundary.
 
+The completed defeated scene also owns field-death presentation poses. The retained ordinary
+victory record ends defeated2331 with Slade at map(18,16), Left, and Bowie at(16,18), Up.
+Independent review found that FieldSpin/FieldExit instead projected their earlier battle placements
+until the after-program restored the finished field scene. The battle presenter now consumes
+that same completed scene through death delivery, subtracting the declared battle origin only
+for board coordinates; its mounted viewport does not override these facings with older battle
+visuals. HP, queue, rewards and death accounting still come from the live battle. Only the actual
+death batch spins/exits, and cleanup removes its marker without reviving a retained scene entity.
+
+`BattleEndPositionTests` runs the real defeated interpreter, death continuation and outcome entry
+with two area origins and changed leader/companion/corpse poses. It checks continuity through
+FieldSpin/FieldExit/FieldSettle and the after-program, unchanged combat resources/queue and exactly
+one kill credit at cleanup. A bounded authored native observation mounts the existing
+`BattleSnapshotProjection`/`BattleMapViewport` on those reducer results: leader board(6,6) Up and
+companion(8,4) Left stay at their actual nodes through death delivery, the corpse uses(7,4), and its
+marker disappears only at cleanup. This is a projection-boundary check, not another ordinary
+campaign run; the complete ordinary route and main-gate entrance/EGRESS observations remain retained.
+
 ## Galam door audio
 
 The Stage B selection consumes `cs_52530`'s `SFX_SECRET_PATH_ROCK` and `cs_51F88`'s

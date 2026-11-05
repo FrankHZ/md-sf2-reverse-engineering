@@ -79,14 +79,89 @@ public sealed class BattleEndPositionTests
         }
     }
 
-    [Fact]
-    public void DefeatedSceneProjectsSourcePositionsThenResumesTheOriginalDeathWork()
+    [Theory]
+    [InlineData(10, 12)]
+    [InlineData(0, 14)]
+    public void DefeatedScenePosesSurviveDeathDeliveryWithoutChangingCombatAuthority(int originX, int originY)
     {
-        var battle = BattleEndPositions.Apply(Battle(false)).With(firstAlly: new ActorRef("medic-a"));
+        var (definition, result) = DefeatedSceneBoundary(originX, originY);
+        var field = result.Snapshot;
+        Assert.False(field.CanWaitAtInput);
+        Assert.Null(field.BattleFieldScene);
+        Assert.Null(field.Story.DefeatedScene!.CompletedWorld);
+        var before = field.Story.DefeatedScene.Battle;
+        result = ExplorationDispatcher.Submit(definition, field, new AdvanceSimulation(field.Story.Wait!.Token));
+        Assert.Null(result.Failure);
+        Assert.Contains(result.Observations, e => e.Kind == "enemy-defeated-program-finished");
+        Assert.Contains(result.Observations, e => e.Kind == "field-death-started");
+        var phases = new HashSet<BattleScenePhase>();
+        while (true)
+        {
+            var current = result.Snapshot;
+            var death = current.BattleScene!;
+            phases.Add(death.Phase);
+            var projection = Assert.IsType<ExplorationState>(current.BattleFieldScene);
+            Assert.Equal(new MapPosition(originX + 6, originY + 6), projection.Entities[new("entity-7")].Position);
+            Assert.Equal(1, projection.Entities[new("entity-7")].Motion.Facing);
+            Assert.Equal(new MapPosition(originX + 8, originY + 4), projection.Entities[new("entity-9")].Position);
+            Assert.Equal(2, projection.Entities[new("entity-9")].Motion.Facing);
+            Assert.Equal(new MapPosition(originX + 7, originY + 4), projection.Entities[new("entity-128")].Position);
+            Assert.Equal(new MapPosition(4, 2), current.Battle.GetActor(new("medic-a")).Position);
+            Assert.Equal(new MapPosition(6, 2), current.Battle.GetActor(new("guard-a")).Position);
+            Assert.Equal(before.Queue, current.Battle.Queue);
+            Assert.Equal(before.Cursor, current.Battle.Cursor);
+            Assert.Equal(before.Gold, current.Battle.Gold);
+            foreach (var actor in before.Actors)
+            {
+                var actual = current.Battle.GetActor(actor.Actor);
+                Assert.Equal(actor.Hp, actual.Hp);
+                Assert.Equal(actor.Mp, actual.Mp);
+                Assert.Equal(actor.Exp, actual.Exp);
+            }
+            if (death.Phase == BattleScenePhase.FieldSettle)
+            {
+                Assert.Null(current.Battle.GetActor(new("dummy-a")).Position);
+                Assert.Equal(before.GetActor(new("medic-a")).Kills + 1, current.Battle.GetActor(new("medic-a")).Kills);
+                var finished = BattleFieldDeathContinuation.Submit(current,
+                    new CompletePresentation(death.Token, death.CompletionKind), RuleCompositions.Sf2());
+                var after = BattleOutcome.Begin(definition, finished, RuleCompositions.Sf2());
+                Assert.Null(after.Failure);
+                Assert.Equal("after", after.Snapshot.Story.Cursor!.Value.Program);
+                Assert.Null(after.Snapshot.BattleFieldScene);
+                foreach (int slot in new[] { 7, 9 })
+                {
+                    var entity = new EntityRef("entity-" + slot);
+                    Assert.Equal(projection.Entities[entity].Motion, after.Snapshot.Exploration!.Entities[entity].Motion);
+                }
+                Assert.False(after.Snapshot.Exploration!.Entities[new("entity-128")].Visible);
+                break;
+            }
+            Assert.Equal(before.GetActor(new("medic-a")).Kills, current.Battle.GetActor(new("medic-a")).Kills);
+            Assert.Equal(new MapPosition(5, 2), current.Battle.GetActor(new("dummy-a")).Position);
+            result = BattleFieldDeathContinuation.Submit(current, new CompletePresentation(death.Token, death.CompletionKind), RuleCompositions.Sf2());
+            Assert.Null(result.Failure);
+        }
+        Assert.Contains(BattleScenePhase.FieldSpin, phases);
+        Assert.Contains(BattleScenePhase.FieldExit, phases);
+    }
+
+    private static (ScenarioDefinition Definition, SessionResult Started) DefeatedSceneBoundary(int originX, int originY)
+    {
+        var battle = BattleEndPositions.Apply(Battle(false, stageCompanion: true)).With(firstAlly: new ActorRef("medic-a"));
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.Actor == new ActorRef("tail")
+            ? actor.With(hp: 0, clearPosition: true) : actor));
+        battle = battle.With(visuals: new BattleVisualState(
+            battle.Actors.Select((actor, slot) => (actor.Actor, slot)).ToDictionary(row => row.Actor, row => row.slot),
+            battle.Actors.Select((actor, slot) => (actor, slot)).Where(row => row.actor.Position is not null)
+                .Select(row => new BattleVisual(row.slot, row.actor.Actor, row.actor.Position!, 3))));
         var map = new ExplorationMapDefinition(new("castle"), new(new ushort[WorkingMapLayout.WordCount]),
             new OriginalMapTraversal([new(0, 0, 63, 63)]), [], [], population: new(30, 128, 0, []));
         var world = new ExplorationDefinition([map],
-            [new("defeated", [new SetEntityPosition(new("entity-7"), new(9, 11), 3), new WaitProgramTicks(1), new EndProgram(true)])]);
+            [new("defeated", [new SetEntityPosition(new("entity-7"), new(originX + 6, originY + 6), 1),
+                new SetEntityPosition(new("entity-9"), new(originX + 8, originY + 4), 2),
+                new SetEntityPosition(new("entity-128"), new(originX + 7, originY + 4), 0),
+                new WaitProgramTicks(1), new EndProgram(true)]),
+             new("after", [new WaitProgramTicks(1), new EndProgram()])]);
         var scene = new BattleSceneDefinition(battle.Definition.Encounter, "background", "ground",
             new Dictionary<string, ExplorationRaster>(), new Dictionary<BattleClassRule, BattleSceneActorVisual>(),
             new Dictionary<ActorRef, BattleSceneActorVisual>(), new Dictionary<int, string>(), [],
@@ -94,32 +169,16 @@ public sealed class BattleEndPositionTests
         var definition = new ScenarioDefinition("projection", [battle.Definition], exploration: world, battleScenes: scene);
         var route = new ExplorationBattleRoute(battle.Definition.Encounter, 405, 505, 455, null, null,
             Outcome: new(new("after", 0), 0, new("defeated", 0), new("defeat", 0), new("return", 0),
-                map.Map, 3, map.Map, new(2, 3), 1, BattleOrigin: new(10, 12), DefeatedScene: true));
+                map.Map, 3, map.Map, new(2, 3), 1, BattleOrigin: new(originX, originY), DefeatedScene: true));
         var story = new StoryState([], enteringBattle: route, fieldPlayer: new(new("entity-0"), 32),
             defeatedScene: new(battle, new("medic-a"), new(4, 2), new([new("dummy-a")])));
         var before = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveBattle(battle, null), story, SessionStopReason.SimulationWait);
         var result = BattleDefeatedProgram.Begin(definition, new(before, [], before.StopReason), RuleCompositions.Sf2());
         Assert.Null(result.Failure);
-        var field = result.Snapshot;
-        Assert.Equal(new MapPosition(9, 11), field.Exploration!.PlayerEntity.Position);
-        Assert.Equal(new MapPosition(15, 14), field.Exploration.Entities[new("entity-128")].Position);
-        Assert.False(field.CanWaitAtInput);
-        Assert.Null(field.Story.DefeatedScene!.CompletedWorld);
-        result = ExplorationDispatcher.Submit(definition, field, new AdvanceSimulation(field.Story.Wait!.Token));
-        Assert.Null(result.Failure);
-        var resumed = result.Snapshot;
-        Assert.Equal(SessionMode.Battle, resumed.Mode);
-        Assert.NotNull(resumed.BattleScene);
-        Assert.Equal(new MapPosition(9, 11), resumed.Story.DefeatedScene!.CompletedWorld!.PlayerEntity.Position);
-        Assert.Equal(new MapPosition(4, 2), resumed.Battle.GetActor(new("medic-a")).Position);
-        Assert.Equal(new MapPosition(5, 2), resumed.Battle.GetActor(new("dummy-a")).Position);
-        Assert.Equal(battle.Gold, resumed.Battle.Gold);
-        Assert.Equal(battle.GetActor(new("medic-a")).Kills, resumed.Battle.GetActor(new("medic-a")).Kills);
-        Assert.Contains(result.Observations, e => e.Kind == "enemy-defeated-program-finished");
-        Assert.Contains(result.Observations, e => e.Kind == "field-death-started");
+        return (definition, result);
     }
 
-    private static EngineBattleState Battle(bool gateAlive)
+    private static EngineBattleState Battle(bool gateAlive, bool stageCompanion = false)
     {
         var session = Start(change: d =>
         {
@@ -134,8 +193,9 @@ public sealed class BattleEndPositionTests
             }
         });
         var b = session.Current.Battle;
-        var definition = b.Definition.WithOutcome(new(new("medic-a"), new("dummy-a"), new Dictionary<int, MapPosition>
-            { [7] = new(4, 2), [128] = new(5, 2) }));
+        var positions = new Dictionary<int, MapPosition> { [7] = new(4, 2), [128] = new(5, 2) };
+        if (stageCompanion) positions[9] = new(6, 2);
+        var definition = b.Definition.WithOutcome(new(new("medic-a"), new("dummy-a"), positions));
         return new(definition, b.Actors.Select(a => a.Actor == new ActorRef("dummy-a") ? a.With(hp: (ushort)(gateAlive ? 5 : 0)) : a),
             b.MainSeed, b.ThinkingSeed, b.Round, b.Queue, b.Cursor, b.Gold);
     }
