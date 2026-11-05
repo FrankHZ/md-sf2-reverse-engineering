@@ -889,6 +889,49 @@ Retain prior focus-loss Unavailable, physical-release Unknown, missed-skip timin
 warnings. Independent main-gate review owns integration; this agreement is the approved modern
 presentation direction and does not assert final aesthetic or all-map acceptance.
 
+### Ordinary dialogue Confirm
+
+**High; bounded host clock/read-intent change.** One mapped Confirm on ordinary exploration
+`DialogueWait`, `W1TextWait` or `FieldTextWait` requests the next segment or end, including while
+characters are still revealing. Portrait animation is not an additional admission condition.
+This supersedes reveal-first for these consumers only. Entry, battle presentation, Search results,
+transaction results and choice questions retain their separate reading/confirmation contracts.
+No layout/theme, binding, engine command, save format, content admission or source rule changes.
+
+A single-screen segment may be dismissed directly. A segment overflowing the screen first reveals
+its current page; further fresh presses move through every remaining page. The press exposing the
+last page never also acknowledges it. Choice questions retain reveal/read coverage and a distinct
+fresh confirmation. Native key echo, pad edge guards and choice release prevent a held press from
+crossing segments or selecting an answer. Cancel does not dismiss ordinary text.
+
+The controller's Reading partial owns at most one current token/display-span intent. W1/field
+text keeps the full projection mounted for a process boundary, then submits its real delivery and
+eligible acknowledgement separately. Field text executes the existing neutral mandatory services
+in batches of at most600 opportunities per host frame, stopping at the same span's input/end.
+This is an explicit modern latency choice: logical entity/window/portrait work, RNG and accepting
+poll still execute in their original order. It does not synthesize completion or shorten a service.
+An explicit `{D1}` pause retains ordinary elapsed-time service. CLEAR replaces the projection and
+cancels old intent even when the token is unchanged. No intent crosses another token, choice,
+map/battle ownership, focus loss, hiding, modal suspension or failure. Subsequent close, movement,
+audio and script waits retain their existing authorities and elapsed/delivery boundaries.
+
+**Confirmed (bounded host witness):** an authored no-portrait ordinary dialogue on the previous
+policy consumed its first Confirm solely revealing55 characters, with no simulation tick; a second
+press reached its choice. That establishes one reveal-first cause, not the user's exact scene.
+**Unknown:** the user's precise original wait and human acceptance of the revised experience.
+Existing source text/window services remain evidence for the original; this host latency policy
+is a modern choice, not a claim about original natural button timing. The
+[field observation owner](../verification/field-programs.md#ordinary-dialogue-confirm-observation)
+owns reproduction and the finite acceptance matrix.
+
+Acceptance: actual mapped input through no/with portrait, revealing/all-visible, nonfinal/final,
+long reading pages, W1, explicit pause/CLEAR, choice and held-input boundaries; adapter build,
+committed dependency plan and actual CI. No full route, emulator capture, screenshots or new
+comparison system. Serial native processes<=45seconds each and new reports<=10MiB; existing
+installations/materials reused. Release is independent Draft-PR review. Recovery is reverting this
+host policy; original evidence, completed failures and protected sessions are retained. No new
+engine behavior tests are required for unchanged Application commands; observers run directly.
+
 ### Current story presentation
 
 `ExplorationDialogueView` owns field text-to-label projection. The existing field controller still
@@ -899,10 +942,11 @@ the existing battle menu frames. There is no gameplay/wait/clock service in thes
 
 At 1080p the panel begins at 1440×280 (304px high with a portrait), uses 30px body/24px hints, and measures full shaped text
 before incremental reveal. It expands within the 32px safe area; screen-sized overflow uses
-Confirm-driven reading pages with a line of overlap. Reveal-all omits incremental speech, retains
-the pending input and shows the full current segment. A later fresh Confirm reads remaining pages
-before it can acknowledge. Field `CompleteTextReveal` also waits for that display coverage; it
-remains distinct from script `Acknowledge`. Ordinary Cancel remains unable to skip dialogue.
+Confirm-driven reading pages with a line of overlap. Ordinary exploration dialogue now follows the
+[explicit reading agreement](#ordinary-dialogue-confirm). Other consumers retain reveal-first:
+reveal-all omits incremental speech and a later fresh Confirm reads remaining pages before
+acknowledgement. Field `CompleteTextReveal` remains distinct from script `Acknowledge`.
+Ordinary Cancel remains unable to skip dialogue.
 Reading resets on an explicitly new window/segment, including identical text; source append spans
 and temporary window hiding retain it. Attached choice rows cannot submit Confirm past unread
 content. Source Yes/default/Cancel=No and release phases remain session-owned; authored choices

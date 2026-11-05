@@ -140,6 +140,7 @@ internal sealed partial class ExplorationDialogueView : Control
             FieldSearchWait when revealed => GameText.Get("search.continue", input.Hint(GameAction.Confirm), input.Hint(GameAction.Cancel)),
             ChoiceWait => GameText.Get("story.choice-help", input.Hint(GameAction.Left), input.Hint(GameAction.Right),
                 input.Hint(GameAction.Confirm), input.Hint(GameAction.Cancel)),
+            DialogueWait or FieldTextWait or W1TextWait when !Panel.MoreBelow => GameText.Get("story.continue", input.Hint(GameAction.Confirm)),
             _ when Panel.Visible && !revealed => GameText.Get("field.reveal", input.Hint(GameAction.Confirm)),
             _ when Panel.Visible && atInput => GameText.Get("story.continue", input.Hint(GameAction.Confirm)),
             _ when current.CanWaitAtInput => GameText.Get("field.controls",

@@ -218,7 +218,7 @@ func _run() -> void:
     if OS.get_environment("SF2_CONTROL_CASE").begins_with("cadence"):
         await walk_cadence()
         return
-    if not require(state().help.contains("J") and state().help.contains(": Talk"), "mapping-derived initial prompt"): return
+    if not require(state().help.contains(": Talk"), "mapping-derived initial prompt"): return
     if not await tap(KEY_S): return
     if not require(requests == 0, "old down binding removed"): return
     if not await key(KEY_J, true): return
@@ -279,10 +279,8 @@ func _run() -> void:
     if not await tap(KEY_ENTER): return
     if not require(state().wait == "DialogueWait" and not state().help.contains(": Talk"), "Confirm enters existing target dialogue and removes hint"): return
     if not await key(KEY_J, true): return
-    if not await tap(KEY_ENTER): return # Actual reveal, not acknowledgement.
-    if not require(state().wait == "DialogueWait" and (state().visibleCharacters < 0 or state().visibleCharacters >= state().totalCharacters), "Confirm reveals current text"): return
     if not await tap(KEY_ENTER): return
-    if not require(state().wait == "ChoiceWait", "next Confirm acknowledges into Yes/No"): return
+    if not require(state().wait == "ChoiceWait", "one fresh Confirm advances revealing ordinary text into Yes/No"): return
     if not await text_ready(): return
     if not await inert("direction held through choice"): return
     if not await tap(KEY_X): return
@@ -394,8 +392,13 @@ func walk_cadence() -> void:
     if not await tap(KEY_ENTER): return
     if not require(state().wait == "DialogueWait", "actual interaction owns control"): return
     if not await key(KEY_J, true): return
-    if not await text_ready(): return
-    if not await tap(KEY_ENTER): return
+    if not require(state().visibleCharacters < state().totalCharacters, "ordinary text still revealing"): return
+    if not await key(KEY_ENTER, true): return
+    if not require(state().wait == "ChoiceWait", "one Confirm reaches a separate choice"): return
+    var question = state().token
+    if not await key(KEY_ENTER, true, true): return
+    if not require(state().token == question and state().flags.is_empty(), "held Confirm cannot answer the new choice"): return
+    if not await key(KEY_ENTER, false): return
     if not await text_ready(): return
     if not await tap(KEY_X): return
     if not require(state().canWaitAtInput and state().flags.is_empty(), "decline returns actual field control"): return

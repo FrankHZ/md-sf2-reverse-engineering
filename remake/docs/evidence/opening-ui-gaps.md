@@ -8,6 +8,23 @@ whole-opening human/aesthetic approval. A–E now have accepted bounded deliveri
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
+## Ordinary dialogue confirmation
+
+**Implemented; independent acceptance and human experience remain separate.** The
+[reading owner](../godot/presentation.md#ordinary-dialogue-confirm) records the explicit modern
+change from reveal-first for ordinary exploration Dialogue/W1/field text: a fresh mapped Confirm
+advances a single-screen segment or requests its genuine completion, including during reveal.
+Long passages keep page coverage; choice confirmation, explicit pause/CLEAR and subsequent script
+work retain their boundaries. Portrait animation is not a separate readiness condition.
+
+**Confirmed:** a no-portrait authored baseline reproduced first-press reveal-only without a logical
+tick, so that symptom is not intrinsically caused by portrait animation. The
+[finite input/state observation](../verification/field-programs.md#ordinary-dialogue-confirm-observation)
+covers actual mounted portraits, no portrait, W1, reading pages, final return and interrupted host
+service. **Unknown:** the user's exact reported consumer and subjective acceptance of this revised
+behavior. Layout/line-break work and the broader opening experience remain separate; no original
+natural-timing, physical-device or all-consumer claim follows from these bounded observations.
+
 ## Minimal contextual hints proposal (#1544)
 
 The [design owner](../godot/presentation.md#minimal-contextual-hints-proposal-1544) recommends one
