@@ -71,8 +71,16 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
                 Require(!before.Actors.Any(unit => unit.Hp > 0 && unit.Faction != actor.Faction &&
                     unit.Position == position));
         }
-        Require(cost <= actor.Definition.Move * 2 && !before.Actors.Any(unit =>
-            unit.Actor != actorRef && unit.Hp > 0 && unit.Position == Destination));
+        if (cost > actor.Definition.Move * 2)
+        {
+            // The source descending-cost walker can retain an earlier direction bit and
+            // travel farther than the destination's propagated cost. Admit that exact path.
+            var grid = BattleMovement.Grid(before, actorRef);
+            Require(grid.CostAt(Destination) is { } destinationCost && destinationCost <= actor.Definition.Move * 2 &&
+                Path.SequenceEqual(BattleMovement.Route(actor.Position!, BattleMovement.MoveString(grid, actor.Position!,
+                    Destination, before.Definition.Width, before.Definition.Height))));
+        }
+        Require(!before.Actors.Any(unit => unit.Actor != actorRef && unit.Hp > 0 && unit.Position == Destination));
         if (Target is { } target)
             Require(before.Actors.Any(unit => unit.Actor == target && unit.Hp > 0 && unit.Position is not null &&
                 (ChosenAction?.Kind == BattleActionKind.Healing ? unit.Faction == actor.Faction : unit.Faction != actor.Faction)));

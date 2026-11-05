@@ -46,8 +46,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     {
         var encounter = definitions.Encounter;
         Require(start.Battle == encounter.Battle.Id, "controlled-encounter", "start.battle");
-        // These selected slots have no region program; region geometry is independent.
-        Require(encounter.Battle.Id is 1 or 2 or 3, "region-program-table", "encounter.regionProgram", true);
+        // The pinned table_BattleRegionCutscenes has entries only for To Moun and Odd Eye.
+        Require(encounter.Battle.Id is not (32 or 40), "region-program-table", "encounter.regionProgram", true);
         Require(encounter.AllyCount <= 30 && encounter.EnemyCount <= 32, "roster-capacity", "encounter.placements");
         var deployments = new List<BattleDeploymentDefinition>(); var actorInputs = new List<BattleActorStartInput>();
         var party = start.Allies.ToDictionary(row => row.Id); var usedAllies = new HashSet<byte>();

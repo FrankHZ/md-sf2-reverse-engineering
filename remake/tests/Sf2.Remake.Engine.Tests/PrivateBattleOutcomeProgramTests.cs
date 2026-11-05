@@ -45,7 +45,8 @@ public sealed class PrivateBattleOutcomeProgramTests
     [PrivateInputFact(World)]
     public void ImportedGrowthMatchesTheAcceptedConnectedBattleExperienceBoundary()
     {
-        var source = Read().Definition.Encounters.Values.Single().Deployments.Single(row => row.Actor.Value == "ally-0");
+        var read = Read();
+        var source = read.Definition.Encounters[read.Start.Party.Encounter].Deployments.Single(row => row.Actor.Value == "ally-0");
         using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "battle-exp-level-up.json")));
         var input = fixture.RootElement.GetProperty("case").GetProperty("input");
         var expected = fixture.RootElement.GetProperty("expected");
@@ -78,10 +79,11 @@ public sealed class PrivateBattleOutcomeProgramTests
     public void CompletedFlagSkipsOnlyTheAfterProgramAndRetainsItsJoinTail()
     {
         var read = Read();
-        var encounter = read.Definition.Encounters.Values.Single();
-        var before = BattleTurnFlow.Start(encounter, read.Start.Party);
+        var encounter = read.Definition.Encounters[read.Start.Party.Encounter];
+        var before = StartBattle([]).Current.Battle;
         var terminal = before.With(actors: before.Actors.Select(actor => actor.IsAlly ? actor : actor.With(hp: 0)));
-        var route = read.Definition.Exploration!.Maps.Values.Single(map => map.Battle is not null).Battle!;
+        var route = read.Definition.Exploration!.Maps.Values.SelectMany(map => map.Battles)
+            .Single(candidate => candidate.Encounter == encounter.Encounter);
         var story = new StoryState([0, 1, 2, 32, 33, 34, 401, 501], enteringBattle: route,
             fieldPlayer: new(new("entity-0"), 32));
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 1, 1, new ActiveBattle(terminal, null), story, SessionStopReason.SimulationWait);

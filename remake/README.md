@@ -30,7 +30,9 @@ source/provenance and the retired reference implementation without turning them 
 The ordinary New Game carries the party through Battle01–03, Yeel and Hawel’s house. The house
 scene turns Kazin from a follower into a party member. The five-member opening uses separate
 save slots from the four-member world. The [campaign agreement](docs/application/pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment)
-records the inputs, compatible Continue selections and remaining Battle04/prison handoff.
+records the inputs and compatible Continue selections. Battle04 first victory and special defeat
+reach distinct Galam prison entries and its first dialogue input. The remaining prison program
+and interactions are the next campaign stage.
 
 The [current Godot presentation](./docs/godot/presentation.md) includes continuous exploration/Talk,
 a shared 1920×1080 world at 96px per cell, story dialogue, battle movement ranges, HP/MP cards,

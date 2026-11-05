@@ -13,6 +13,31 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class SourceEnemyAiTests
 {
+    [Fact]
+    public void AutomaticMovementAcceptsTheSourceGradientRouteButRejectsAnExtraDetour()
+    {
+        var original = State(BattleMover.Regular, peer: false, blockSouth: false);
+        var terrain = original.Definition.Terrain.ToArray();
+        terrain[5 * 48 + 4] = new(TerrainSurface.Open, TerrainProtection.None);
+        terrain[6 * 48 + 5] = new(TerrainSurface.Brush, TerrainProtection.None);
+        var definition = original.Definition;
+        var varied = new BattleDefinition(definition.Encounter, definition.Map, definition.Width,
+            definition.Height, terrain, definition.Deployments, definition.Spells.Values);
+        var before = new EngineBattleState(varied, original.Actors, original.MainSeed, original.ThinkingSeed,
+            original.Round, original.Queue, original.Cursor, original.Gold, regions: original.Regions);
+        var origin = before.GetActor(Enemy).Position!;
+        var destination = new MapPosition(4, 6);
+        var grid = BattleMovement.Grid(before, Enemy);
+        var path = BattleMovement.Route(origin, BattleMovement.MoveString(grid, origin, destination, 20, 20));
+        Assert.Equal(4, grid.CostAt(destination));
+        Assert.Equal(new[] { origin, new MapPosition(5, 6), destination }, path);
+        Assert.Equal(5, path.Skip(1).Sum(position => BattleTerrainRules.MovementCost(terrain[position.Y * 48 + position.X])));
+        var decision = new BattleAutomaticAction(before, [], destination, path);
+        decision.Validate(before, Enemy);
+        var detour = decision with { Path = new[] { origin, new MapPosition(6, 5), origin }.Concat(path.Skip(1)).ToArray() };
+        Assert.Throws<InvalidOperationException>(() => detour.Validate(before, Enemy));
+    }
+
     [Theory]
     [InlineData("{W1}", 0x00340099u)]
     [InlineData("{W2}", 0x00340099u)]

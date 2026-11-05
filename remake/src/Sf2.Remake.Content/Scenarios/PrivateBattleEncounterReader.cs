@@ -32,8 +32,7 @@ public sealed class PrivateBattleEncounterReader
     {
         try
         {
-            byte[] placement = ReadInput(_placementPath, PlacementExportDigest, "placement", alternativeDigest: Placement02Digest,
-                secondAlternativeDigest: "67E6BE08EA40B2AEFDD78BAC46666AE9845AC16415365B039A9308593DBB35A2");
+            byte[] placement = ReadInput(_placementPath, Pins.Values.Select(pin => pin.Placement), "placement", null, 65536);
             using var selection = JsonDocument.Parse(placement);
             int id = selection.RootElement.GetProperty("battle").GetProperty("id").GetInt32();
             var pin = Pin(id);
@@ -162,27 +161,39 @@ public sealed class PrivateBattleEncounterReader
         string suffix = id.ToString("D2", CultureInfo.InvariantCulture);
         Require(definition.PlacementSource.SourcePath == $"data/battles/spritesets/spriteset{suffix}.asm", "provenance.sourcePath", "The selected placement source drifted.");
         Require(definition.PlacementSource.SourceSha256 == pin.Source, "provenance.sourceSha256", "The selected placement identity drifted.");
-        Require(definition.TerrainSource.SourcePath == $"data/battles/entries/battle{suffix}/terrain.bin", "provenance.terrainSourcePath", "The selected terrain source drifted.");
+        Require(definition.TerrainSource.SourcePath == $"data/battles/entries/battle{pin.TerrainId:D2}/terrain.bin", "provenance.terrainSourcePath", "The selected terrain source drifted.");
         Require(definition.TerrainSource.SourceSha256 == pin.Terrain, "provenance.terrainSourceSha256", "The selected terrain identity drifted.");
         Require(definition.PlacementRange == pin.PlacementRange, "romRange", "The selected placement range drifted.");
         Require(definition.CompressedRange == pin.TerrainRange, "terrain.compressedRange", "The selected terrain range drifted.");
     }
 
-    private static (string Code, string Scene, string Terrain, string Source, EncounterRange PlacementRange, EncounterRange TerrainRange) Pin(int id) => id switch
+    private sealed record EncounterPin(string Code, string Placement, string Scene, string Terrain, string Source,
+        int TerrainId, EncounterRange PlacementRange, EncounterRange TerrainRange);
+    private static readonly Dictionary<int, EncounterPin> Pins = new()
     {
-        1 => ("INSIDE_ANCIENT_TOWER", SceneExportDigest, CompressedTerrainDigest, PlacementSourceDigest,
-            new(1782498, 1782646, 148), new(1758020, 1758304, 284)),
-        2 => ("TO_YEEL", Scene02Digest, Terrain02Digest, Source02Digest,
-            new(1782646, 1782772, 126), new(1758304, 1758636, 332)),
-        3 => ("TO_HAWEL_HOUSE", "8E9F759345D0EC1596C9921E85020A6F3DCFD5E972B7D4D75B7427E7866457B3",
+        [1] = new("INSIDE_ANCIENT_TOWER", PlacementExportDigest, SceneExportDigest, CompressedTerrainDigest, PlacementSourceDigest,
+            1, new(1782498, 1782646, 148), new(1758020, 1758304, 284)),
+        [2] = new("TO_YEEL", Placement02Digest, Scene02Digest, Terrain02Digest, Source02Digest,
+            2, new(1782646, 1782772, 126), new(1758304, 1758636, 332)),
+        [3] = new("TO_HAWEL_HOUSE", "67E6BE08EA40B2AEFDD78BAC46666AE9845AC16415365B039A9308593DBB35A2",
+            "8E9F759345D0EC1596C9921E85020A6F3DCFD5E972B7D4D75B7427E7866457B3",
             "56B788E61D745755DCE3D331A179A33938BC5E1CBB116C505B0DF3DAA4F577AA",
             "0616BB9F25BB37A92D97C40C05A18DC0E71D109D7E9564428F8BB9E509C67402",
-            new(1782772, 1783004, 232), new(1758636, 1758970, 334)),
-        _ => throw Invalid("battle", "The selected encounter is not admitted."),
+            3, new(1782772, 1783004, 232), new(1758636, 1758970, 334)),
+        [4] = new("AMBUSHED_BY_GALAM_SOLDIERS", "774A4F283268C61B1731D2E544C5ABF1C9382487D3EFA9F37E92CF44FFDB44DA",
+            "C0F6BE4E0EA9324355DD9207FBF2CE927A65064EAB0C58E904B3423A79686E06",
+            "56B788E61D745755DCE3D331A179A33938BC5E1CBB116C505B0DF3DAA4F577AA",
+            "79381A1FB344CB88BDB20A849AA13B4513F686C0E2E9C4CAAE5A6DD39D15CA46",
+            3, new(1783004, 1783202, 198), new(1758636, 1758970, 334)),
     };
+    internal static int RegisteredCount => Pins.Count;
+    private static EncounterPin Pin(int id) => Pins.TryGetValue(id, out var pin) ? pin
+        : throw Invalid("battle", "The selected encounter is not admitted.");
 
-    internal static byte[] ReadInput(string path, string digest, string field, int? expectedLength = null, int maximumLength = 65536,
-        string? alternativeDigest = null, string? secondAlternativeDigest = null)
+    internal static byte[] ReadInput(string path, string digest, string field, int? expectedLength = null, int maximumLength = 65536) =>
+        ReadInput(path, [digest], field, expectedLength, maximumLength);
+
+    private static byte[] ReadInput(string path, IEnumerable<string> digests, string field, int? expectedLength, int maximumLength)
     {
         try
         {
@@ -190,7 +201,7 @@ public sealed class PrivateBattleEncounterReader
             Require(stream.Length > 0 && stream.Length <= maximumLength && (expectedLength is null || stream.Length == expectedLength), field, "The selected input length is invalid.");
             byte[] bytes = new byte[(int)stream.Length]; stream.ReadExactly(bytes);
             string actual = Convert.ToHexString(SHA256.HashData(bytes));
-            Require(actual == digest || actual == alternativeDigest || actual == secondAlternativeDigest, field, "The fixed selected input identity drifted.");
+            Require(digests.Contains(actual, StringComparer.Ordinal), field, "The fixed selected input identity drifted.");
             return bytes;
         }
         catch (IOException) { throw Invalid(field, "The required private encounter input is unavailable."); }

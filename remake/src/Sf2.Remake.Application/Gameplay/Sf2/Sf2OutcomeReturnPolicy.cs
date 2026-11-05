@@ -40,6 +40,8 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         var destination = kind == BattleOutcomeKind.Victory
             ? new FieldReturnAnchor(route.BattleMap, projected, route.BattleOrigin is null ? route.VictoryFacing : first!.Facing)
             : EgressDestination(definition, story, route, kind);
+        if (kind == BattleOutcomeKind.Defeat && route.CompletedDefeatMap is { } handoff)
+            destination = destination with { Map = handoff };
         bool skip = kind == BattleOutcomeKind.Victory && selected.CompletedFlag is { } flag && story.Flags.Contains(flag);
         return new(kind == BattleOutcomeKind.Victory ? skip ? null : route.AfterProgram : route.DefeatProgram,
             destination, projected,
@@ -76,7 +78,8 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 DefeatGold(party.Gold ?? throw new BattleRuleException("unspecified-gold", "party.gold", true)));
         }
         return new(party, Heal(definition, party, all: false), victory ? route.JoinMember : null,
-            victory || selected.CompletedFlag is { } completed && story.Flags.Contains(completed), victory, route.ReturnProgram);
+            victory || route.CompletedDefeatMap is not null || selected.CompletedFlag is { } completed && story.Flags.Contains(completed),
+            victory || route.CompletedDefeatMap is not null, route.ReturnProgram);
     }
     protected virtual uint DefeatGold(uint current) => current / 2;
 

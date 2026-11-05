@@ -16,8 +16,8 @@ setup, placement/facing, egress register, result and next accepted input at each
 | Stage and current acceptance boundary | Field, encounter and party transfer | Reachable interactions and verification |
 | --- | --- | --- |
 | Opening to Yeel. Confirmed in one ordinary session through Battle03. | Map3 → castle/tower → Battle01 return → commission and Jaha → Map66 Battle02. Victory hands the current field party back on Map66. Yeel's conversation sets F72 for Kazin following. A legal Map66 request consumes encounter state to enter Battle03. | Retain opening [search, dialogue and Church](../content/opening-branch-inventory.md), refusal/acceptance, ordinary Battle02 defeat and paid retreat/retry, Yeel conversation, repeat visit and the source-eligible encounter without visiting Yeel. |
-| A · Battle03 outcomes and Hawel recruitment observed. Battle04 pending. | Battle03 victory clears F403, sets F503 and uses the first party member's final tile plus origin. Defeat restores Bowie, halves gold and uses egress. Paid escape takes its own egress return. Map66 (6,5) enters Map43 (6,11) Up. Default setup runs the house scene; F612 selects the revisit. Join Kazin (F4, active subject to capacity), follow, clear F72, set F404. Caller sets F612/F650, clears F72 and writes egress 43. | Ordinary input played the house scene, inspected the diary, exited and revisited the F612 setup in the three-encounter world. The level-4 mage retained his generated stats, equipped rod and herb. House init has no F503 or F72 gate. Check actual Kazin action and recipient, and a Galam Archer attacking from distance 2, with readable result and control. |
-| A · Battle04 outcomes. Pending. | First victory stages Lemon's capture warp, executes the shared Bowie join tail, clears F404 and sets F504 before returning Map17 (0,0) Right. Completed victory skips capture and uses the saved ordinary victory return. Special defeat restores Bowie and halves gold, clears F404, sets F504 and overrides the egress map to 17; retain egress coordinates/facing. With egress 43 these are (7,5) Down. Legal EGRESS/Wing consumes its actual resource and returns to the egress map; first escape leaves F404 armed. | Check the distinct incoming return operands and usable handoff on real Map17 with carried resources. Stage B owns the prison interior, including F660-gated wake/reset and subsequent player interactions. |
+| A · Battle03 outcomes, Hawel recruitment and Battle04 observed. | Battle03 victory clears F403, sets F503 and uses the first party member's final tile plus origin. Defeat restores Bowie, halves gold and uses egress. Paid escape takes its own egress return. Map66 (6,5) enters Map43 (6,11) Up. Default setup runs the house scene; F612 selects the revisit. Join Kazin (F4, active subject to capacity), follow, clear F72, set F404. Caller sets F612/F650, clears F72 and writes egress 43. | Ordinary input played the house scene, inspected the diary, exited and revisited the F612 setup in the three-encounter world. The level-4 mage retained his generated stats, equipped rod and herb. House init has no F503 or F72 gate. Battle04 exercised Kazin BLAZE with the selected enemy recipient, and Galam Archer attacks from distance 2, with result messages and resumed turns. |
+| A · Battle04 outcomes and prison entry observed. | First victory stages Lemon's capture warp, executes the shared Bowie join tail, clears F404 and sets F504 before returning Map17 (0,0) Right. Completed victory skips capture and uses the saved ordinary victory return. Special defeat restores Bowie and halves gold, clears F404, sets F504 and overrides the egress map to 17; retain egress coordinates/facing. With egress 43 these are (7,5) Down. Legal EGRESS/Wing consumes its actual resource and returns to the egress map; first escape leaves F404 armed. | First victory and special defeat reached their distinct Map17 entry operands, then the first text 880 input. Paid EGRESS returned to Map43 and allowed re-entry. Stage B owns the remaining F660-gated prison program and subsequent interactions. |
 | B · Captivity through Battle06 admission. Pending. | Early Map17 wake (F660), doors (F661), warning (F662) and Slade following (F73) → Map16 rally (F663), guard request (F405/F664) → Battle05. Its first victory returns Map16 (16,18) Down, recruits Slade, clears F73 and unlocks Battle06 (F406). Carry the actual jewel and paid purchases into the Map66 board. | Speak to prisoners/companions, maid and Slade, use doors, stairs warning and passage; check guard first/repeat, compatible purchased equipment and paid supplies carried onto the board. |
 | C · Battle06 through Battle07 tower return. Pending. | Battle06 victory clears F406, sets F506 and returns on Map66. Map3's changed setup offers Kiwi (joined F6, active F38 subject to capacity). Battle07 admission uses F407. First victory sets F74/F640 through its scene and clears F407/sets F507 through the caller. Preserve Slade, Kiwi and royal followers in their separate roles. | Exercise join and bypass for Kiwi, real changed equipment, enemy support and reached statuses, costs, deaths and resumed control. |
 | D · Tower aftermath through departure. Pending. | The Map57 tower return carries F507 and F74/F640. The castle's Map3 request selects quake Map4 on F640. Map44 departure clears F74/F640 and requests Map73 (26,13) Right. Admit the first stable successor control. | Check ordinary interactions, refusal/acceptance where offered, and fresh-process Continue from an existing legal point. Stage ends before Battle08. |
@@ -45,8 +45,8 @@ saves, Map16/17 save recipes and high-level promotion are outside this delivery.
 ## Preparing the ordinary selection
 
 Use the [opening inputs](../content/profiles-and-trust.md#opening-new-game-admission) for root
-Battle01 and title content. The [nine-map selection](../../content/private/pre-voyage-opening.json)
-admits Yeel (Map5), Hawel's house (Map43), the Map66 encounter requests and the Battle02/03 boards and outcomes.
+Battle01 and title content. The [ten-map selection](../../content/private/pre-voyage-opening.json)
+admits Yeel (Map5), Hawel's house (Map43), Map17, the Map66 encounter requests and the Battle02/03/04 boards and outcomes.
 The producer binds each map's two base palette words from the verified ROM. Both ordinary readers
 load the same world. The package keeps its historical ID and uses gameplay revision 2 for the five generated members.
 To Continue an existing four-member V1 slot, select its previously prepared world via
@@ -58,9 +58,9 @@ checks the selected revision before restoring progress.
 
 Reuse the [Battle02 input recipe](../verification/field-programs.md#prepare-the-selected-inputs)
 and [Battle03 materials](../verification/field-programs.md#yeel-guide-through-battle03). Under one
-fresh ignored output directory, place the two small encounter exports and their field-death scenes
+fresh ignored output directory, place the three small encounter exports and their field-death scenes
 in separate subdirectories. Place one copy of the shared trusted static, enemy and gold inputs there.
-In the encounter list, supply one row per additional battle, ordered 02 then 03. Each row has
+In the encounter list, supply one row per additional battle, ordered 02, 03, 04. Each row has
 `placement`, `scene`, `terrain`, `static`, `enemies`, `gold` and `battleScenes` paths relative to the
 world's parent. Product rows omit the diagnostic party checkpoint. Keep the root Battle01 inputs
 and the preceding immutable exports read-only.
@@ -81,7 +81,7 @@ $env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorld
 
 Launch the ordinary title without diagnostic start arguments. Use an external disposable save
 namespace as in the [save recipe](../verification/host.md#opening-save-and-continue).
-The measured world is 108,443,731 bytes. Keep the unchanged 01/C2 main-theme WAV and its candidate
+The measured world is 108,998,786 bytes. Keep the unchanged 01/C2 main-theme WAV and its candidate
 in `audio-01-c2` beneath the world's parent, alongside the three Hawel directories. Supply its
 candidate once. These four referenced WAVs total 26,376,328 bytes. The selection also requires
 the seven additional inline field cues below. Missing selected cues reject preparation.
@@ -140,9 +140,8 @@ and walked to Map66 (6,6). Up entered Map43. The same session established these 
 
 The three-encounter selection ends here. With F404 armed the source caller selects Battle04 on
 Map66. These exit/revisit observations establish the field content in the current selection.
-Battle04 admission, paid return to the Hawel savepoint, special defeat and capture into Map17
-remain pending. The earlier four-member world still restored its original Map57 slot in a fresh
-process. Selecting revision 2 for that slot showed the matching-content message and preserved
+The Battle04 continuation is recorded below. The earlier four-member world still restored its
+original Map57 slot in a fresh process. Selecting revision 2 for that slot showed the matching-content message and preserved
 the slot bytes.
 
 **Confirmed source structure.** In the pinned `mapscriptengine_1.asm`, csc43 searches by roof
@@ -162,6 +161,66 @@ and retains the walking collision flags. The four adjoining tiles in this sample
 The targeted engine regression `OverworldVictoryKeepsTheCombatantTileEvenWhenFieldWalkingCannotEnterIt`
 reproduces the refused result and checks the corrected field return using a passable neighbor.
 Natural original recovery from the enclosed location remains **Unknown**.
+
+## Battle04 and the Galam prison handoff
+
+**Confirmed in the remake.** Continue the existing five-member Map57 save, complete the ordinary
+Battle02/03 and Hawel route, then leave Map43 with F404 armed. This selects the source Battle04
+board with five carried members, eight enemies, three AI regions and one AI point. The observations
+use Normal, 1920×1080 and 96px cells. Original natural reach and hardware timing remain **Unknown**.
+
+| Actual input and outcome | Observed handoff |
+| --- | --- |
+| Cast EGRESS, acknowledge its paid action and leave Hawel again | Bowie pays 8 MP. Map43 (7,5) Down retains 149 gold, F404 armed and F504 clear. Eligible field recovery restores his MP. The next exit mounts fresh Battle04. |
+| Fight with the carried party and defeat every enemy | Kazin casts BLAZE1 at Archer slot 5 from distance 2, MP 13→11 and enemy HP 15→9. Archer slot 5 attacks Jaha from distance 2 for 1 damage. The acting/recipient HP/MP cards, modern fire effect and result messages update through the action. Later turns and rewards continue. Kazin finishes the leader with BLAZE and gains level 5/BLAZE2 through ordinary growth. |
+| First victory | The real after-battle capture program runs, its caller joins Bowie, clears F404 and sets F504. Incoming Map17 is (0,0) Right with 509 gold and the carried items, EXP, levels, accounting and RNG. |
+| Fight to Bowie's defeat on another real Continue route | Gold 149→74, Bowie HP 12 and his defeat count 6→7. F404 clears and F504 sets. Incoming Map17 is (7,5) Down from live egress 43. Sarah remains dead at this boundary. Earlier Huge Bat attacks rendered Kazin as the recipient with mage resource `ally4/frame0`, HP13→7→1 and resumed turns. |
+| Both Map17 arrivals | Default initialization selects the actual 12-record population, resets party battle stats, loads its scene and presents text 880 at Bowie (59,4) Up. `FieldTextWait` accepts text input, with no session failure. Sarah's later recovery belongs to that source reset. |
+
+The handoff stops at this first prison dialogue. Stage B owns the remaining program, F660, doors,
+Slade and subsequent field control. The later `setDest` instruction remains explicitly Unsupported.
+Engine variations also verify completed-victory capture skipping, distinct live egress coordinates
+and caller-tail ordering before target initialization. These variations use authored states.
+
+Prepare Battle04 with the pinned source and verified registered ROM under one new ignored directory.
+The root Battle01 materials and existing two encounter inputs remain the shared immutable inputs.
+
+```powershell
+uv run python -m sf2tool.remake_exploration_battles --upstream $upstream --rom $rom `
+  --battle 4 --output (Join-Path $bundle 'inputs/battle04')
+uv run python -m sf2tool.remake_battle_scene_content --upstream $upstream --rom $rom `
+  --battle 4 --output (Join-Path $bundle 'scene04-base')
+uv run python -m sf2tool.remake_battle_scene_content --upstream $upstream --rom $rom `
+  --field-death-base (Join-Path $bundle 'scene04-base/battle-scenes.json') `
+  --output (Join-Path $bundle 'inputs/scene04')
+```
+
+Append the Battle04 encounter row using the shared static/enemy/gold paths and the new placement,
+scene, terrain and field-death scene paths, then run the ordinary world recipe above. Content pins
+placement `774A4F283268C61B1731D2E544C5ABF1C9382487D3EFA9F37E92CF44FFDB44DA`,
+scene `C0F6BE4E0EA9324355DD9207FBF2CE927A65064EAB0C58E904B3423A79686E06` and the
+existing BattleTerrain03 identity. The base scene export measured 1,209,226 bytes and its field-death
+scene 287,759 bytes. The additional actors use the existing physical, ranged and fire consumers.
+
+Keep one uncompressed final world and reuse the already reviewed WAVs. Budget about 109 MB for the
+world, 2 MB for the additional small exports and at most 15 MiB for observations, retaining at least 1 GiB
+free through writes and builds. Observed game peak working set was 1,555,095,552 bytes. An initial
+compressed-file write consumed more allocation than its sample predicted and crossed the floor.
+The run stopped and removed only its newly generated world, then measured a plain-file sample and
+wrote the final once with a live free-space guard. Prior inputs, reports and saves were retained.
+
+The first native battle exposed a gradient-route validation failure. Pinned
+`code/gameflow/battle/battlefield/buildmovestringfunctions.asm` (`alt_BuildMoveString`, `loc_DE14`)
+retains direction bits while lowering its threshold. The chosen path may cost more than its propagated
+destination value. The validator admits that exact source walk when its destination is in budget,
+while rejecting an extra detour. A small authored terrain variation covers this behavior.
+
+Run `Battle02OutcomeTests`, `SourceEnemyAiTests` and the affected outcome/movement/map/scene/save
+behavior tests under the locked SDK environment, plus `uv run sf2 verify adapter`. Existing
+`PrivateBattleOutcomeProgramTests` use the controlled two-encounter world and now select the opening
+encounter explicitly and enter through the ordinary battle initializer. Their original two `Single()`
+failures, the mismatched metadata/product-world attempts and their focused passing reruns are retained.
+The ordinary four-encounter reader and native route above supply the product acceptance.
 
 ## Hawel media prerequisite
 
@@ -273,8 +332,6 @@ on either side of the non-quiet interval. Use the table's capture digest and sam
 | SFX_VALIDATION_TIMER_D1 | 67 / 209 | `151A14F883EFF52CCA6CDBA27775583C53AF9101437C2FD43B51BF6FE4998CDE` | 179508, 202961 | 271 |
 | SFX_WARP_TIMER_D1 | 89 / 209 | `1B3AE55D708CE17FD06A5603754441C1143FC349C0B991820B195547E8509DA8` | 179656, 201405 | 277 |
 
-For the next stage, pinned `terrainentries.asm` binds Battle04 to BattleTerrain03. Its measured
-placement has five allied slots, eight enemies, three AI regions and one AI point. Map17's
-default source population falls through from five records into seven shared records under the
-following label. Its current reader stops at five. The Battle04 actor and terrain admission,
-real combat and outcome-specific Map17 placements remain the next acceptance boundary.
+Pinned `terrainentries.asm` binds Battle04 to BattleTerrain03. The producer follows that pointer.
+Map17's default population falls through from five records into seven shared records under the
+following label. The producer joins them by canonical record address before checking cardinality.

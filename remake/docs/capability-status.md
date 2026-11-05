@@ -8,9 +8,12 @@ handoffs, carried state and acceptance boundaries for Battle03 through departure
 The private title New Game and a real Map57 Continue connect Battle01/02, Yeel and Battle03 to
 Hawel's house. Ordinary play completed the source scene, formally recruited Kazin, inspected
 the diary and exercised exit/revisit with the carried party. Five-member gameplay revision 2
-uses separate slots from the four-member revision 1 world. Battle04 and its Galam prison
-handoffs remain pending. The [campaign observations](application/pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment)
-record both the playable scope and the source F404 boundary.
+uses separate slots from the four-member revision 1 world. Battle04 now consumes that party and
+plays physical, ranged and Kazin BLAZE actions. Paid EGRESS returns to Map43 and permits re-entry.
+First victory and special defeat reach their distinct Map17 placements, then its first text 880 input.
+The remaining prison program and interactions belong to Stage B. The
+[campaign observations](application/pre-voyage-campaign.md#battle04-and-the-galam-prison-handoff)
+record the inputs, resources, source bindings and current handoff.
 
 ## Finite Galam shop and purchased-supply closure
 

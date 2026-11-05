@@ -53,6 +53,7 @@ public sealed record SetDialogueSpeaker(EntityRef? Entity) : StoryInstruction;
 public sealed record SetCameraTarget(MapPosition Position) : StoryInstruction;
 public sealed record SetCameraEntity(EntityRef? Entity) : StoryInstruction;
 public sealed record LoadSceneMap(MapId Map, MapPosition Camera) : StoryInstruction;
+public sealed record LoadSetupEntities(MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record LoadSceneEntities(ExplorationPopulation Population, MapPosition PlayerPosition, byte Facing,
     IReadOnlyList<ExplorationEntityDefinition> Entities) : StoryInstruction;
 public enum EntityScriptInstallation { Preserve, SlotTimer, SlotTimerClearCollision }
