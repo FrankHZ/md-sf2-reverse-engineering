@@ -40,7 +40,8 @@ public sealed class PhysicalCriticalRule
 public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool Promoted, bool Leader, ushort Gold,
     byte MinimumRange = 1, byte MaximumRange = 1);
 public sealed record BattleRewardDefinition(bool HalvedExperience);
-public sealed record BattleOutcomeDefinition(ActorRef Leader, ActorRef DefeatedGateEnemy);
+public sealed record BattleOutcomeDefinition(ActorRef Leader, ActorRef DefeatedGateEnemy,
+    IReadOnlyDictionary<int, MapPosition>? DeathPositions = null);
 public enum BattleOutcomeKind { Victory, Defeat, Retreat }
 
 public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Power, byte MinimumRange, byte MaximumRange,

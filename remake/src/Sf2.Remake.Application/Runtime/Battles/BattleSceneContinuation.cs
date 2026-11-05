@@ -54,7 +54,7 @@ public sealed record HealingSceneCursor
     }
 
     private static bool TryVisual(BattleActorState actor, BattleSceneDefinition content, out BattleSceneActorVisual visual) =>
-        actor.IsAlly ? content.Allies.TryGetValue(actor.Definition.ClassRule, out visual!) : content.Enemies.TryGetValue(actor.Actor, out visual!);
+        actor.IsAlly ? content.TryAllyVisual(actor, out visual!) : content.Enemies.TryGetValue(actor.Actor, out visual!);
 
     internal static HealingSceneCursor Create(BattleActionResolution action, BattleSceneDefinition? content, StoryState? story = null)
     {
@@ -506,6 +506,7 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.End:
                 // ExecuteIndividualTurn reloads the battlefield through LoadBattle /
                 // PositionBattleEntities before post-action death and outcome processing.
+                battle = Sf2.Remake.Domain.Gameplay.Sf2.BattleEndPositions.Apply(battle);
                 battle = battle.With(actors: battle.Actors.Select(actor =>
                     actor.Position is not null ? actor.With(facing: 3) : actor));
                 observations.Add(new(++sequence, revision, "scene-ended", scene.Action.Actor));

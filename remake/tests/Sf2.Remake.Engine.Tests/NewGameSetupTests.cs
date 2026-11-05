@@ -94,13 +94,17 @@ public sealed class NewGameSetupTests
         }
     }
 
-    [Fact]
-    public void InitialRecipeRunsRealOnloadWhileOrdinaryBusySaveStillRejects()
+    [Theory]
+    [InlineData("map-0")]
+    [InlineData("map-3")]
+    public void InitialRecipeRunsRealOnloadWhileOrdinaryBusySaveStillRejects(string egress)
     {
         var (definition, data) = Fixture(initial: true);
+        data = data with { EgressMap = egress };
         var first = Restored(definition, data);
         var second = Restored(definition, data);
         Assert.IsType<TickWait>(first.Current.Story.Wait);
+        Assert.Equal(egress, first.Current.Story.EgressMap!.Value);
         Assert.Equal("save-busy", first.QuerySave().Error);
         Assert.DoesNotContain(999, first.Current.Story.Flags);
         Assert.Equal("Nova", CharacterNames.Member(definition, first.Current.Story, 0));
@@ -145,6 +149,7 @@ public sealed class NewGameSetupTests
         Assert.Null(prepared.Failure);
         var initial = prepared.Save!;
         Assert.Equal("new-game", initial.Recipe);
+        Assert.Equal("map-3", initial.EgressMap);
         Assert.Equal(new[] { 0, 32, 80 }, initial.Flags);
         Assert.Equal("Nova7", initial.Names["ally-0"]);
         var candidate = prepared.Started!.Session;

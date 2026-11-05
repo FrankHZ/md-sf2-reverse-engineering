@@ -27,14 +27,16 @@ public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
     bool WaitForAcknowledgement = true, bool ExplicitWindows = false, int? NameMember = null, int? TextId = null,
     bool Narration = false) : StoryInstruction;
-public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0) : StoryInstruction;
+public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0, bool UseEventSpeaker = false) : StoryInstruction;
 public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
 public sealed record WaitForView : StoryInstruction;
 public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
-public sealed record SetEntitySprite(EntityRef Entity, int Sprite) : StoryInstruction;
+public sealed record SetEntitySprite(EntityRef Entity, int Sprite, bool Ally = false) : StoryInstruction;
+public sealed record SetEntityDestination(EntityRef Entity, MapPosition Position, bool Wait) : StoryInstruction;
+public sealed record CopyMapLayout(WorkingMapBlockCopy Copy) : StoryInstruction;
 public sealed record SetEntityPriority(EntityRef Entity, bool Value) : StoryInstruction;
 public sealed record SetMapEntityAnimation(EntityRef Entity, byte Counter) : StoryInstruction;
 public sealed record AddMapEntity(EntityRef Entity, MapPosition Position, byte Facing, int Sprite,

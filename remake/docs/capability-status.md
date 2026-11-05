@@ -3,17 +3,27 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
-## Ordinary opening through Battle03 outcomes
+## Ordinary opening through Battle06 first control
 
 The private title New Game and a real Map57 Continue connect Battle01/02, Yeel and Battle03 to
 Hawel's house. Ordinary play completed the source scene, formally recruited Kazin, inspected
-the diary and exercised exit/revisit with the carried party. Five-member gameplay revision 2
-uses separate slots from the four-member revision 1 world. Battle04 now consumes that party and
+the diary and exercised exit/revisit with the carried party. Six-member gameplay revision3
+uses separate slots from the four/five-member revision1/2 worlds. Battle04 consumes that party and
 plays physical, ranged and Kazin BLAZE actions. Paid EGRESS returns to Map43 and permits re-entry.
 First victory and special defeat reach their distinct Map17 placements, then its first text 880 input.
-The remaining prison program and interactions belong to Stage B. The
-[campaign observations](application/pre-voyage-campaign.md#battle04-and-the-galam-prison-handoff)
-record the inputs, resources, source bindings and current handoff.
+Stage B completes the prison doors, Slade's following passage, kitchen/maid and F663 rally,
+then actual Battle05 victory, ordinary defeat and paid EGRESS/retry. Its separate scene-return
+position/HP consumer precedes defeated dialogue and death cleanup. The after-program sets
+jewel F384, joins Slade (F5/F37), clears follower F73 and unlocks Battle06. Completed guard and
+Map17 revisits do not replay the award/join. Actual F663 Buy/Sell, compatible changed equipment,
+paid supplies, drawbridge dialogue and exit lead to six living members at Battle06's first usable
+player control. The [campaign observations](application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
+record the source bindings, input route, resources and stopping boundary.
+
+Battle06 results, later F530 setups, arbitrary field saves and the remaining pre-voyage campaign
+are Unsupported. Original natural traversal/timing remain Unknown. The existing legal Battle01
+save and fresh-process Continue preserve the six-member initialization; no post-Galam save recipe
+or migration of older member counts is added.
 
 ## Finite Galam shop and purchased-supply closure
 
@@ -66,7 +76,7 @@ of automatic Mage/Cleric actions and real subsequent movement. Recovery switches
 enemy side. [Content admission](content/profiles-and-trust.md#early-enemy-spell-admission) separately
 binds pinned Galam Mage/Dark Cleric commandsets, mover, spells and cleric counter prowess.
 
-This does not import full Battle05/06 or connect Battle03-07 story. Wider support spells,
+These spell observations are separate from the connected campaign boundary above. Wider support spells,
 item AI, higher-rank enemy spells, all-AI parity and non-Normal difficulty remain Unsupported;
 natural original first casts/timing and newly required private scene assets remain outside this
 observation. See [verification](development-and-verification.md#enemy-spell-observation).

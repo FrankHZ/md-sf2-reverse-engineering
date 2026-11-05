@@ -107,7 +107,7 @@ public sealed class SessionSnapshot
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
     public BattleOutcomeKind? BattleResult => (Active as ActiveBattle)?.Outcome;
-    public bool HasBattleControl => BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null;
+    public bool HasBattleControl => Story.DefeatedScene is not { CompletedWorld: null } && BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null;
     public BattleDiscardState? BattleDiscard => (Active as ActiveBattle)?.Discard;
     public BattleGiveState? BattleGive => (Active as ActiveBattle)?.Give;
     public BattleRoundState? BattleRound => (Active as ActiveBattle)?.Round;

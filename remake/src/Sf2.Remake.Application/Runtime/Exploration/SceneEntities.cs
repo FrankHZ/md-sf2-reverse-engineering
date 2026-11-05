@@ -6,6 +6,13 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class SceneEntities
 {
+    internal static int ResolveAllySprite(ExplorationPopulation population, IReadOnlyList<int> flags, int character, int fallback)
+    {
+        var appearance = population.AllySprites?.FirstOrDefault(row => row.Character == character);
+        return appearance is null ? fallback : appearance.JoinedFlag is { } joined && !flags.Contains(joined)
+            ? appearance.UnjoinedSprite!.Value : appearance.Sprite;
+    }
+
     internal static ExplorationState Add(ExplorationState world, AddMapEntity add, long request)
     {
         // InitializeNewEntity scans the first 63 signed alias bytes, then allocates max+1.
@@ -30,12 +37,7 @@ internal static class SceneEntities
         ExplorationPopulation population, IReadOnlyList<ExplorationEntityDefinition> records,
         MapBlockCopyLifecycleState? roofState = null)
     {
-        int AllySprite(int character, int fallback)
-        {
-            var appearance = population.AllySprites?.FirstOrDefault(row => row.Character == character);
-            return appearance is null ? fallback : appearance.JoinedFlag is { } joined && !flags.Contains(joined)
-                ? appearance.UnjoinedSprite!.Value : appearance.Sprite;
-        }
+        int AllySprite(int character, int fallback) => ResolveAllySprite(population, flags, character, fallback);
         var followers = population.Followers.Where(follower => flags.Contains(follower.Flag))
             .Select(follower => new MapFollowerSpawn(follower.Character, AllySprite(follower.Character, follower.Sprite))).ToArray();
         var allocation = MapEntityAllocator.Allocate(records.Select(entity => entity.Sprite ??

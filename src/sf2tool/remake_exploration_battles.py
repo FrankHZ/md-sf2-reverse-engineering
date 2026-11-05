@@ -27,7 +27,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     Source macros and the pinned split ranges own placement and terrain. No H1
     rebuild or mutation of the canonical source tree is required.
     """
-    if battle not in (2, 3, 4):
+    if battle not in (2, 3, 4, 5, 6):
         raise ValueError("unsupported overworld encounter selection")
     root = repo_path("").resolve()
     output = output.resolve()
@@ -65,7 +65,12 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     bounds = re.search(r"0x([0-9A-Fa-f]+)\.\.0x([0-9A-Fa-f]+)", source)
     begin, end = (int(value, 16) for value in bounds.groups())
     counts = [int(value) for value in _arguments(source, "dc.b")[:4]]
-    if counts != {2: [4, 6, 0, 1], 3: [12, 6, 1, 0], 4: [5, 8, 3, 1]}[battle]:
+    if (
+        counts
+        != {2: [4, 6, 0, 1], 3: [12, 6, 1, 0], 4: [5, 8, 3, 1], 5: [6, 8, 1, 1], 6: [6, 9, 1, 0]}[
+            battle
+        ]
+    ):
         raise ValueError("selected spriteset header drift")
     entities = []
     pattern = (
@@ -129,7 +134,13 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     ):
         raise ValueError("selected spriteset record drift")
     provenance = dict(repository=ACCEPTED_UPSTREAM_REPOSITORY, commit=ACCEPTED_UPSTREAM_COMMIT)
-    code = {2: "TO_YEEL", 3: "TO_HAWEL_HOUSE", 4: "AMBUSHED_BY_GALAM_SOLDIERS"}[battle]
+    code = {
+        2: "TO_YEEL",
+        3: "TO_HAWEL_HOUSE",
+        4: "AMBUSHED_BY_GALAM_SOLDIERS",
+        5: "GALAM_CASTLE",
+        6: "TO_GRANSEAL",
+    }[battle]
     identity = dict(id=battle, code=code)
 
     def span(start: int, end: int) -> dict:
@@ -363,6 +374,35 @@ def compile_routes(compiler, selection, upstream):
                     "facing": facing,
                 },
             }
+        if battle_id in selection.get("positionAfterLeaderDeath", []):
+            path = "disasm/data/battles/global/afterbattlepositions.asm"
+            compiler.sources.add(path)
+            compiler.sources.add(
+                "disasm/code/gameflow/battle/cutscenes/afterenemyleaderdeathpositions.asm"
+            )
+            table = compiler.source_operations(path, "table_AfterBattlePositions")
+            match = next(
+                (
+                    i
+                    for i, row in enumerate(table)
+                    if row["opcode"] == "dc.w" and compiler.number(row["operandText"]) == battle_id
+                ),
+                None,
+            )
+            if match is None or table[match + 1]["opcode"] != "dc.l":
+                raise ValueError("missing after-leader position table")
+            values = [
+                compiler.number(row["operandText"])
+                for row in compiler.source_operations(path, table[match + 1]["operandText"])
+                if row["opcode"] == "dc.b"
+            ]
+            if len(values) % 4:
+                raise ValueError("after-leader position record")
+            route["outcome"]["deathPositions"] = [
+                {"slot": values[i], "position": {"x": values[i + 1], "y": values[i + 2]}}
+                for i in range(0, len(values), 4)
+            ]
+            route["outcome"]["defeatedScene"] = True
         if battle_id in selection.get("completedOnDefeat", []):
             body = (upstream / "disasm/code/gameflow/battle/battleloop_2.asm").read_text(
                 encoding="utf-8"
@@ -434,7 +474,7 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(2, 3, 4), default=2)
+    parser.add_argument("--battle", type=int, choices=(2, 3, 4, 5, 6), default=2)
     args = parser.parse_args()
     print(
         json.dumps(

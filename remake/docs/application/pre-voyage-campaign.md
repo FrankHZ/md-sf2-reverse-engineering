@@ -5,6 +5,38 @@ handoffs required by [the campaign issue](https://github.com/FrankHZ/md-sf2-reve
 Cross-chapter acceptance is **High** because encounter selection, field reload, recruitment and
 saved progress share party state. A local rule or content change uses **Standard** scope.
 
+## Current Stage B implementation agreement
+
+Stage B consumes the accepted Battle04 prison entry and stops at the first usable Battle06
+player control. Its implementation uses **High** scope: imported init dispatch, map-load audio
+and suspended battle scenes share mutable session state, so each stage needs its actual handoff
+before later acceptance. The source owners linked below govern prison movement/layout, F660–F664,
+follower F73 versus joined F5/active F37, Battle05's separate position/HP consumer, jewel F384,
+F406 and setup-specific services. No Battle06 result, later spell catalog, arbitrary save point,
+original natural-route claim or later F530 setup is included.
+
+Implement in order: prison and passage consumers with real Map16 entry; Battle05 entry, special
+post-scene positions and outcome programs; then F663 services and actual Battle06 entry. Each
+increment retains the ordinary content selection. The six-member initialization uses gameplay
+revision 3, with the existing visible revision mismatch and protected older slots. A fresh New Game,
+legal Save and fresh-process Continue carries that party into this segment; no invented RNG history
+is used to migrate four/five-member progress.
+
+Acceptance combines narrow engine behavior tests, affected Content/adapter builds and one compact
+ordinary-route observation with real victory, ordinary defeat/paid escape, repeated interactions,
+paid equipment/supplies and the next usable control. The existing shop transaction tests cover
+cancellation, full inventory and insufficient gold. Native checks read actual input/state/projection
+and errors; no screenshots or frame collection. Preserve completed failures and verify corrections
+at their affected boundary. Exact committed-head planner selection and public CI complete handoff.
+
+Reuse the existing ten-map/four-battle inputs, adding Map16/18, Battle05/06 and Slade. The source
+program pilot has twelve maps and 377 programs. Before final export, measure a representative
+new scene and the serialized world. Initial incremental storage budget is 1 GiB, with shared WAVs
+and prior encounter inputs reused read-only; native reports remain at most 15 MiB. Preparation is
+linear in selected map/scene payloads, with one world resident in memory (allow 3 GiB peak RAM).
+Reassess a world/scene reader limit, missing asset or unexpectedly expanded dependency before
+scaling; keep all older generated worlds and private evidence.
+
 ## Session and handoffs
 
 One ordinary title New Game selects an immutable world and starts the party from source definitions.
@@ -18,7 +50,7 @@ setup, placement/facing, egress register, result and next accepted input at each
 | Opening to Yeel. Confirmed in one ordinary session through Battle03. | Map3 → castle/tower → Battle01 return → commission and Jaha → Map66 Battle02. Victory hands the current field party back on Map66. Yeel's conversation sets F72 for Kazin following. A legal Map66 request consumes encounter state to enter Battle03. | Retain opening [search, dialogue and Church](../content/opening-branch-inventory.md), refusal/acceptance, ordinary Battle02 defeat and paid retreat/retry, Yeel conversation, repeat visit and the source-eligible encounter without visiting Yeel. |
 | A · Battle03 outcomes, Hawel recruitment and Battle04 observed. | Battle03 victory clears F403, sets F503 and uses the first party member's final tile plus origin. Defeat restores Bowie, halves gold and uses egress. Paid escape takes its own egress return. Map66 (6,5) enters Map43 (6,11) Up. Default setup runs the house scene; F612 selects the revisit. Join Kazin (F4, active subject to capacity), follow, clear F72, set F404. Caller sets F612/F650, clears F72 and writes egress 43. | Ordinary input played the house scene, inspected the diary, exited and revisited the F612 setup in the three-encounter world. The level-4 mage retained his generated stats, equipped rod and herb. House init has no F503 or F72 gate. Battle04 exercised Kazin BLAZE with the selected enemy recipient, and Galam Archer attacks from distance 2, with result messages and resumed turns. |
 | A · Battle04 outcomes and prison entry observed. | First victory stages Lemon's capture warp, executes the shared Bowie join tail, clears F404 and sets F504 before returning Map17 (0,0) Right. Completed victory skips capture and uses the saved ordinary victory return. Special defeat restores Bowie and halves gold, clears F404, sets F504 and overrides the egress map to 17; retain egress coordinates/facing. With egress 43 these are (7,5) Down. Legal EGRESS/Wing consumes its actual resource and returns to the egress map; first escape leaves F404 armed. | First victory and special defeat reached their distinct Map17 entry operands, then the first text 880 input. Paid EGRESS returned to Map43 and allowed re-entry. Stage B owns the remaining F660-gated prison program and subsequent interactions. |
-| B · Captivity through Battle06 admission. Pending. | Early Map17 wake (F660), doors (F661), warning (F662) and Slade following (F73) → Map16 rally (F663), guard request (F405/F664) → Battle05. Its first victory returns Map16 (16,18) Down, recruits Slade, clears F73 and unlocks Battle06 (F406). Carry the actual jewel and paid purchases into the Map66 board. | Speak to prisoners/companions, maid and Slade, use doors, stairs warning and passage; check guard first/repeat, compatible purchased equipment and paid supplies carried onto the board. |
+| B · Captivity through Battle06 first usable control observed. | Early Map17 wake (F660), doors (F661), warning (F662) and Slade following (F73) → Map16 rally (F663), guard request (F405/F664) → Battle05. Actual first victory returns Map16 (16,18) Down, recruits Slade, clears F73 and unlocks Battle06 (F406). The jewel is F384, not an inventory award. | Prison/maid first and repeated interactions, actual defeat/paid EGRESS/retry, completed guard/interior revisit, paid Buy/Sell/equipment/supplies and six living members on the Battle06 board are observed below. No Battle06 result is admitted. |
 | C · Battle06 through Battle07 tower return. Pending. | Battle06 victory clears F406, sets F506 and returns on Map66. Map3's changed setup offers Kiwi (joined F6, active F38 subject to capacity). Battle07 admission uses F407. First victory sets F74/F640 through its scene and clears F407/sets F507 through the caller. Preserve Slade, Kiwi and royal followers in their separate roles. | Exercise join and bypass for Kiwi, real changed equipment, enemy support and reached statuses, costs, deaths and resumed control. |
 | D · Tower aftermath through departure. Pending. | The Map57 tower return carries F507 and F74/F640. The castle's Map3 request selects quake Map4 on F640. Map44 departure clears F74/F640 and requests Map73 (26,13) Right. Admit the first stable successor control. | Check ordinary interactions, refusal/acceptance where offered, and fresh-process Continue from an existing legal point. Stage ends before Battle08. |
 
@@ -45,22 +77,42 @@ saves, Map16/17 save recipes and high-level promotion are outside this delivery.
 ## Preparing the ordinary selection
 
 Use the [opening inputs](../content/profiles-and-trust.md#opening-new-game-admission) for root
-Battle01 and title content. The [ten-map selection](../../content/private/pre-voyage-opening.json)
-admits Yeel (Map5), Hawel's house (Map43), Map17, the Map66 encounter requests and the Battle02/03/04 boards and outcomes.
+Battle01 and title content. The [twelve-map selection](../../content/private/pre-voyage-opening.json)
+adds Map16/18 to Yeel, Hawel's house, Map17 and the opening maps. It admits Battle01–06 boards,
+Battle01–05 outcomes and the selected Map66 requests. Battle06 outcomes remain outside this slice.
 The producer binds each map's two base palette words from the verified ROM. Both ordinary readers
-load the same world. The package keeps its historical ID and uses gameplay revision 2 for the five generated members.
+load the same world. The package keeps its historical ID and uses gameplay revision 3 for six generated members.
 To Continue an existing four-member V1 slot, select its previously prepared world via
 `SF2_PRIVATE_EXPLORATION_CONTENT`. To rebuild it with the current producer, obtain the revision-1
 selection using `git show 158ee4528a86d2ffbab091023f7d1e40673c84ad:remake/content/private/pre-voyage-opening.json`
 and supply the same four-member source/audio inputs in a separate ignored directory. Choose a
-separate slot for a five-member New Game. The established [compatibility rule](opening-session-lifecycle.md#format-compatibility-and-local-storage)
+separate slot for a six-member New Game. Five-member revision-2 slots likewise retain their existing
+world; no extra Slade record or prior growth draws are inferred. The established [compatibility rule](opening-session-lifecycle.md#format-compatibility-and-local-storage)
 checks the selected revision before restoring progress.
+
+For each new battle 5 and 6, prepare the immutable board and scene inputs with the existing
+source/ROM consumers. Use separate fresh ignored directories for each output:
+
+```powershell
+uv run python -m sf2tool.remake_exploration_battles --upstream $upstream --rom $rom `
+  --battle $battle --output $boardDirectory
+uv run python -m sf2tool.remake_battle_scene_content --upstream $upstream --rom $rom `
+  --battle $battle --output $sceneDirectory
+uv run python -m sf2tool.remake_battle_scene_content --upstream $upstream --rom $rom `
+  --field-death-base (Join-Path $sceneDirectory 'battle-scenes.json') --output $fieldSceneDirectory
+```
+
+Scene selection includes Knight/Mage and the Battle06 Cleric, plus Slade's knife and the finite
+Galam stock variants for Bowie, Sarah/Kazin and Chester. The shared renderer resolves the current
+equipped item together with class. An unavailable equipped-item binding rejects; unequipped
+actors retain the existing class idle/unarmed projection. No equipment statistic is inferred
+from the selected image.
 
 Reuse the [Battle02 input recipe](../verification/field-programs.md#prepare-the-selected-inputs)
 and [Battle03 materials](../verification/field-programs.md#yeel-guide-through-battle03). Under one
-fresh ignored output directory, place the three small encounter exports and their field-death scenes
+fresh ignored output directory, place the five additional encounter exports and their field-death scenes
 in separate subdirectories. Place one copy of the shared trusted static, enemy and gold inputs there.
-In the encounter list, supply one row per additional battle, ordered 02, 03, 04. Each row has
+In the encounter list, supply one row per additional battle, ordered 02 through 06. Each row has
 `placement`, `scene`, `terrain`, `static`, `enemies`, `gold` and `battleScenes` paths relative to the
 world's parent. Product rows omit the diagnostic party checkpoint. Keep the root Battle01 inputs
 and the preceding immutable exports read-only.
@@ -69,7 +121,8 @@ From the repository root with the configured private inputs loaded, use the acce
 manifest, the nine reviewed additional command/timer candidates from the opening and Yeel recipes
 (59/BD, 6E/CC, 6F/CC, 41/CC, 43/CC, 4A/CC, 41/C2, 43/C2, 01/C2 in hex), and the accepted authored
 defeat and encounter cues. Include the three [Hawel candidates](#hawel-media-prerequisite) and
-the [four timer-specific field effects](#yeel-warp-and-hawel-speech-variants). Pass each candidate once.
+the [four timer-specific field effects](#yeel-warp-and-hawel-speech-variants) and the
+[two Galam door effects](#galam-door-audio). Pass each candidate once.
 
 ```powershell
 $audioArgs = foreach ($candidate in $reviewedCandidates) { '--audio-candidate'; $candidate }
@@ -109,16 +162,138 @@ The source chapter and [recovery contract](../../../docs/design/contracts/battle
 retain the original-game boundary. Other unsupported status refreshes remain explicit.
 With F399 set, the pinned `getegresspositionforbattle.asm` and `egressinit.asm` look up the
 current EGRESS_MAP. The engine uses the live map's registered anchor, including a declared
-map zero. The admitted opening has no zero anchor, so early defeat at zero uses the starting
-map's declared savepoint (Granseal). This opening fallback applies only to defeat. Controlled
-starts without a register use their route default. An unsupported live value gives `egress-map`.
+map zero. **Confirmed static:** `code/specialscreens/witch/witchstart.asm:witchMenuAction_New`
+sets CURRENT_MAP and EGRESS_MAP to GAMESTART_MAP (3) before SaveGame and MainLoop. The accepted
+[Witch source/runtime evidence](../../../docs/research/presentation/special-screens.md) and
+[Map3 admitted-start observation](../../../docs/research/chapters/grans-opening/map3-admitted-start.md)
+already retain this boundary. The earlier
+`InitializeGameSettings` zero is not the product New Game handoff. Ordinary New Game therefore
+starts with Granseal as its registered refuge, and field EGRESS uses that actual anchor. No new
+fallback or migration is added. Older saved zero registers remain unchanged; their established
+opening fallback applies only to defeat. An unsupported live value still gives `egress-map`.
+
+The repeated stairs warning also exposed a producer omission: `byte_5241E` contains raw `txt`
+948/951 without an entity-event caller. `sf2macros.asm:txt` uses trap 5;
+`code/common/tech/interrupts/trap5_textbox.asm:Trap5_TextBox` at `0x556..0x57A` calls
+`DisplayText` directly. The compiler now selects the existing raw-text consumer for `txt`:
+no entity lookup, no implicit acknowledgement, and the text's actual W1/W2 waits plus current
+portrait/speech services are preserved. This common opcode correction also applies to NPC
+handlers; it is not a Slade-specific speaker override. The existing raw-text behavior tests
+cover speakerless zone context, registered portrait services, explicit waits and invalid speakers.
+The failed `field-text-speaker` repetition remains distinct from the earlier audio failures.
+
+The tunnel ladder's preserving Map17 warp must run the selected init without replaying F660's
+wake branch. Warp preflight resolves only the pure entry flag/jump dispatch against the admitted
+entry flags; after the first other operation it keeps the existing conservative scan. Runtime
+scene-load guards remain intact. Engine tests cover completed entry and immediate refusal of the
+reachable unsupported branch before movement. Native's earlier `ordinary-warp-scene-load` refusal
+is retained. During scripted hide/staging, audio uses the already selected logical view area, as
+the [map-load/view contract](../../../docs/design/contracts/world/map-exploration.md#load-and-selection-order)
+requires; it no longer dereferences a nonexistent player-coordinate area. The earlier adapter
+`NullReferenceException` is a completed failure, not a clean passage observation.
 
 On the ordinary route F453 starts clear. Unsuspended entry executes `bbcs_03` →
 `csub_49816` (the pinned `battle03/cs_beforebattle.asm`), which writes Yeel before the start
 wrapper sets F453. This write has no follower predicate. Re-entry with F453 set skips before and
-inherits the existing register. Before the first house visit the only reachable egress writer in this selection is the Battle03 before
-program. A first ordinary Battle03 fight with the reset register was not observed. A supplied
-intro-seen state is a separate case. New Game and V1 Continue bind the same immutable opening fallback.
+inherits the existing register. Church recording also writes the current map in the source's
+`churchactions_1.asm:@DoSaveGame`; current remake Church save delegates to its existing save
+surface and does not claim that additional register write. The Battle03 before-program is the
+next admitted field writer after the Witch's initial Granseal binding.
+
+
+Battle outcome returns use the source `alt_MainLoopEntry` path: load the selected return map
+without running `CheckBattle` again. Ordinary later exit requests still select encounters.
+This distinction matters when Battle05 returns to its own Map16 while F405 remains armed.
+The actual paid EGRESS failure immediately reopened Battle05 after payment/recovery; the return
+consumer now explicitly bypasses encounter selection, without clearing the unlock or changing
+the egress tuple. `BattleRetreatTests` covers an armed return map and later ordinary reentry.
+
+A same-map defeat return also restores the area's field music. Pinned
+`explorationfunctions_2.asm:ExplorationLoop` calls `PlayMapMusic` before its return fade-in;
+`battlemusic.asm:PlayMapMusic` selects the field command outside battle. Retaining only the
+(map, area, battle) tuple incorrectly left command12 after returning to the same Map16 area,
+so the priest's portrait request used timer196 and rejected the ambiguous command65 binding.
+The outcome return now binds the existing typed area cue and tells the audio consumer to
+reselect it even when that tuple is unchanged. No substitute recording or new timer variant
+is admitted for the erroneous context. `ExplorationMusicTests` covers the same-map return,
+its logical cue/history and the emitted map-music selection; existing context and finite-wait
+behavior remains separately checked.
+
+The outcome-program entry also binds field music before the first finite join cue. The first
+actual Battle05 victory reached Slade's join but stopped at `field-music-progress-unbound`:
+the host had selected field music while the logical history still described the prior battle.
+The shared field selection establishes that history before the after-program runs. A later
+ordinary replay completed the join, previous-music restoration and field return. Authored
+packages with no audio remain usable without a music binding, matching the host's existing
+no-audio boundary. Existing outcome behavior tests cover that alternative.
+
+## Galam escape through Battle06 first control
+
+**Confirmed in the remake, ordinary input/state/projection observation:** the six-member New Game
+was saved at the existing Battle01 safe return and restored in a fresh process with matching
+map, flags, party/resources/equipment, gold, egress and both RNG streams. From that real state,
+play Battle02/03, Hawel and Battle04's special defeat, then continue through text880. No controlled
+start, successful-outcome setter, save edit or intermediate arbitrary save supplies Stage B.
+The selected twelve-map world is 110,769,065 bytes. Private assets and compact native receipts
+remain ignored; older stopped runs are retained losslessly within the 15 MiB report budget.
+
+| Ordinary action / reproduced boundary | Actual result |
+| --- | --- |
+| Finish wake and prison interactions; open the doors; first/repeated stairs warning; accept Slade's passage | Text880–893 and 901–957, F660/F661/F662, then F73 without F5/F37. The ladder at Map17 (2,24) and diagonal cellar stairs reach the kitchen; maid first/repeat dialogue returns control. |
+| Kitchen exit, rally at Map16 (17,9), guard approach at (3,18) | Rally962–985 sets F663. First guard writes F405/F664 and egress16; repeats retain the separate first-dialogue gate. Battle05 carries five active members and the unjoined Slade record, with eight enemies. |
+| Battle05 paid EGRESS and ordinary Bowie defeat, followed by guard retry | EGRESS spends8 MP without a gold penalty and returns Map16 (27,7) Up. Defeat halves131 gold to65 and restores Bowie there. F405 remains armed, F505/F406/F5 remain clear. Actual church revival spends the listed level-based fees; later battle entry refreshes eligible living resources. |
+| Defeat the Knight by real physical/fire actions | The separate scene-return consumer stages living Bowie/Slade and zero-HP slot128, clears the specified enemy HP range, then runs defeated2323–2331 before ordinary death cleanup. No join or jewel grant belongs to that defeated program. |
+| Finish after2332–2341 and the fixed join message | F384, F5/F37 and F406 set; F73/F405 clear; F505 set. Return Map16 (16,18) Down. Gold595 and carried growth/resources come from actual battles, including failed attempts; Slade has no invented combat history. |
+| Revisit guard and F505 Map17 interior | No encounter, new join or inventory award; flags, party and gold unchanged. Kitchen stairs are diagonal: from arrival (17,3), Right reaches (18,4), Left returns to Map16. Cardinal Down/Up at the arrival is blocked, not a broken warp. |
+| Revive Chester, buy/equip Short Rod, sell Wooden Rod | Raise costs20 (595→575). F663 entity135 stock1 sells item86 for130 (575→445). Sarah's equipment query changes ATT20→22; actual equipped word214 replaces213. Selling old unequipped item85 adds45 (445→490), leaving the equipped new rod intact. |
+| Buy supplies and leave through the drawbridge | Entity144 stock16 sells Healing Seed to Bowie for200 and Healing Herb to Slade for10 (490→280). Map16 south (26,31) reaches Map18 (9,10); optional merchant870–872 changes no inventory. Map18 south (9,29) requests Map66 (31,9). |
+| Battle06 before/start and first real movement | Before2342–2356 sets F407; start sets F456. Six living active members, nine enemies, one AI region/no points, F384/F5/F37/F505/F406 and gold280 are present. Sarah retains equipped214, Bowie Seed1, Slade Herb0. Sarah's round1 preview moves (10,6)→(10,7)→(10,6); all six sprites are visible in the viewport and audio has no error. Stop before committing an action or reaching any Battle06 result. |
+
+Reproduce with the ordinary selection and launch recipe above, following the named map coordinates
+and actual menus; combat inputs depend on the live legal state and carried growth. Normal 1080p/96px
+was used. Failed combat attempts are ordinary losses, not successful-route witnesses. The earlier
+join-music failure and pre-correction audio/warp failures remain preserved. First-mount layout
+settles before the visibility check; a blocked north movement does not replace the successful
+south/return movement witness. This is remake continuity, not new original natural-route evidence.
+
+Behavior verification uses `BattleEndPositionTests`, `GalamSceneOperationsTests`,
+`BattleSceneEquipmentTests`, `BattleRetreatTests`, `Battle02OutcomeTests`,
+`BattleOutcomeProgramTests`, `ExplorationMusicTests`, the existing raw-text/warp and New Game/restore
+tests, plus the actual Content/adapter build. Shop cancellation, full-inventory and insufficient-gold
+transaction guarantees retain their existing behavior tests. Map16/17 saves, Battle06 outcomes,
+later F530 content, later spell families and original timing remain outside this boundary.
+
+## Galam door audio
+
+The Stage B selection consumes `cs_52530`'s `SFX_SECRET_PATH_ROCK` and `cs_51F88`'s
+`SFX_BIG_DOOR_RUMBLE`. The first ordinary prison attempt stopped at the former with
+`presentation-unavailable` / `audio-content-unavailable`; it did not complete the door program.
+The corrected package adds these two finite assets without changing the programs or saved state.
+The next attempt reached the separate `sfx-slots-unavailable` guard. Source `activeSlots` for
+both commands are `ym2-4,ym2-5`; the adapter now admits them in its existing YM4/YM5 replacement
+group. This is the same documented whole-clip mixing approximation as other admitted SFX.
+
+**Confirmed bounded export:** the pinned US ROM and source above identify commands 96/93,
+type-2 headers at Z80 `0x1BDD`/`0x196C`. Their active streams start at `0x1C13,0x1BE4` and
+`0x1973,0x1984`, respectively. The castle music command 38 supplies Timer B 210 (`0xD2`).
+Use the [isolated finite audio recipe](#private-preparation): 180 setup frames, dispatch music 38,
+two frames, stop 254, 60 quiet frames, then the selected SFX at frame 243. Observe the verified
+stream pointers, channel termination and another 60 quiet frames; restore the saved core state.
+Each audio-only dump is 1,400 frames (4,121,348 bytes). Serial launches verified the registered
+BizHawk installation and ROM before/after; shared installation metadata remained unchanged.
+
+| Cue / command | All inactive / quiet tail frame | Capture SHA-256 | Unmodified sample interval |
+| --- | --- | --- | --- |
+| SFX_SECRET_PATH_ROCK / 96 | 258 / 318 | `70C1D2AC737BDA6668B49196476B9FE11866399813ACAB299446F351290D6551` | `[179222,193062)` |
+| SFX_BIG_DOOR_RUMBLE / 93 | 343 / 403 | `89F700A14F61D79D7A1C96FB45F8E767AC87B31D287CF51C03DAC6875DBC8766` | `[179231,257094)` |
+
+Pass those intervals and Timer B 210 to `python -m sf2tool.remake_audio` as in the recipe,
+without loop arguments, then supply both candidates to world preparation. The unchanged PCM16
+stereo/44,100 Hz cuts retain 441 samples around the above-one-LSB signal. No normalization,
+filtering or synthetic replacement is applied. The two runtime WAVs total 366,900 bytes; the
+twelve-map world with their embedded PCM is 110,767,472 bytes, below the 128 MiB reader limit.
+These controlled exports establish asset identity and finite delivery, not original natural
+scene reach or hardware phase. The earlier missing-resource failure remains evidence.
 
 ## Ordinary Hawel house and Kazin recruitment
 
