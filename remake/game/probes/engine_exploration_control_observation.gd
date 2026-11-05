@@ -215,12 +215,17 @@ func _run() -> void:
         if not intentional_focus and (not held_keys.is_empty() or held_axis): interrupted_hold = true)
     identity = state().sessionId
     if not require(state().canWaitAtInput, "authored field input"): return
+    # The field hint now shows Talk/Party, not movement controls. Read installed remaps
+    # from their actual input authority, then exercise both removed and replacement keys.
+    var down_keys = InputMap.action_get_events("sf2_down").filter(func(event): return event is InputEventKey).map(func(event): return event.keycode)
+    samples.append({"label":"installed-down-mapping","keys":down_keys,"hint":state().help})
+    if not require(KEY_J in down_keys and not KEY_S in down_keys, "installed Down mapping uses J instead of S"): return
+    if not require(state().help.contains(": Talk"), "available Talk prompt"): return
+    if not await tap(KEY_S): return
+    if not require(requests == 0, "old down binding removed"): return
     if OS.get_environment("SF2_CONTROL_CASE").begins_with("cadence"):
         await walk_cadence()
         return
-    if not require(state().help.contains(": Talk"), "mapping-derived initial prompt"): return
-    if not await tap(KEY_S): return
-    if not require(requests == 0, "old down binding removed"): return
     if not await key(KEY_J, true): return
     if not await rest(0.55): return
     if not require(requests >= 3, "single mapped press walks multiple steps through ordinary motion waits"): return

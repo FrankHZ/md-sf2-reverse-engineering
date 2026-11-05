@@ -32,7 +32,9 @@ Godot key/pad events; no live session setter, injected command, acknowledgement 
 Each native run is serial and bounded to45seconds; reports/packages/logs together<=10MiB. Check
 both exit/report and native/script errors; report PASS alone cannot excuse a failing callback.
 The existing control witness's `cadence` case covers a real choice, modal, held direction,
-map transfer and battle-menu handoff, including one Confirm on revealing ordinary text.
+map transfer and battle-menu handoff, including one Confirm on revealing ordinary text. It verifies the installed Down mapping contains J
+and excludes S, rejects actual S input and walks with J; the ordinary Talk/Party hint no longer
+advertises movement bindings. This retains remap coverage at the actual input authority.
 
 **Confirmed, bounded executor observations:** revealing first segment advances with one fresh
 Confirm, fully visible final segment acknowledges with pad South and completes the genuine caller
