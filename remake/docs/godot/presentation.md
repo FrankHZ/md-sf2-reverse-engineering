@@ -4,6 +4,11 @@ The implemented bounded [game localization design](../application/localization-d
 catalogs, safe settings refresh, name/IME and font boundaries. Translated
 display remains separate from Application's canonical text work and game-save identity.
 
+The [local services and battle overview proposal](modernization-design.md) owns #1543's bounded
+modernization choices, real service/disclosure limits, menu/return sketches and minimum acceptance.
+Near-town remote services and a read-only overview are recommendations awaiting product selection,
+not implemented capabilities or changes to the current agreements below.
+
 ## System menu agreement (#1518)
 
 **Standard rigor:** consolidate the existing gameplay system entries and preserve their eligibility,
