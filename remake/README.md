@@ -107,7 +107,7 @@ not require a game launch.
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | explicit `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
-| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, a confirmed initial save, shared custom protagonist name, Map3/Battle01 savepoints and process restart; no interior/battle suspend or full campaign claim |
+| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, a confirmed initial save, shared custom protagonist name, Map3/Battle01 and completed Battle07 Map58 return savepoints with process restart; [finite campaign scope](docs/application/pre-voyage-campaign.md), no arbitrary interior/battle suspend or full campaign claim |
 | `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; selected connected packages cover opening/Battle01, Battle02 outcomes/returns and Yeel–Battle03 play/control at their separate boundaries. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back
