@@ -7,7 +7,6 @@ import json
 import subprocess
 from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from urllib.parse import urlparse
@@ -22,19 +21,7 @@ from sf2tool.verification_engine_paths import (
     _engine_or_document_path,
     engine_partitions_for_path,
 )
-
-
-@dataclass(frozen=True)
-class VerificationPartition:
-    """One stable scheduling and maintenance boundary."""
-
-    partition_id: str
-    layer: str
-    description: str
-    commands: tuple[str, ...]
-    parallel_safe: bool = True
-    resource_lock: str | None = None
-    external_gates: tuple[str, ...] = ()
+from sf2tool.verification_partitions import TOOL_BUILD_PARTITIONS, VerificationPartition
 
 
 def _group_pairs(pairs: Iterable[tuple[str, str]]) -> dict[str, list[str]]:
@@ -219,17 +206,7 @@ def _h3_command(command: str) -> str:
 
 
 PARTITIONS = (
-    VerificationPartition(
-        "private-admission-build",
-        "remake",
-        "Compile the private admission entry; run from remake/ after SDK setup.",
-        (
-            "& $env:DOTNET_BIN build "
-            "tools/Sf2.Remake.PrivateAdmission/Sf2.Remake.PrivateAdmission.csproj "
-            "--configuration Release -p:RestoreLockedMode=true",
-        ),
-        external_gates=("Public checks / private-admission-build",),
-    ),
+    *TOOL_BUILD_PARTITIONS,
     VerificationPartition(
         "h4-comparison-build",
         "affected",
@@ -736,9 +713,11 @@ def plan_paths(
         normalized = path.replace("\\", "/")
         if normalized in ENGINE_WIRING_PATHS or normalized == ".github/workflows/public-checks.yml":
             _selection_entry(selected, "private-admission-build", normalized)
+            _selection_entry(selected, "live-inspection-build", normalized)
         if normalized in {
             "src/sf2tool/verification_plan.py",
             "src/sf2tool/verification_engine_paths.py",
+            "src/sf2tool/verification_partitions.py",
             ".github/workflows/public-checks.yml",
         }:
             _selection_entry(selected, "h4-comparison-build", normalized)

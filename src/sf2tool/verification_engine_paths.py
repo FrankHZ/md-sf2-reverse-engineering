@@ -27,6 +27,7 @@ ENGINE_WIRING_PATHS = (
             "src/sf2tool/harness.py",
             "src/sf2tool/verification_plan.py",
             "src/sf2tool/verification_engine_paths.py",
+            "src/sf2tool/verification_partitions.py",
             "remake/reference/inputs/map3-programs.json",
         }
     )
@@ -75,6 +76,7 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
         if path in {
             "src/sf2tool/verification_plan.py",
             "src/sf2tool/verification_engine_paths.py",
+            "src/sf2tool/verification_partitions.py",
             ".github/workflows/public-checks.yml",
         }
         else ()
@@ -83,10 +85,13 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
         return ()
     if wiring:
         return comparison + (
-            "engine-unit", "adapter-build", "research-public", "private-admission-build"
+            "engine-unit", "adapter-build", "research-public", "private-admission-build",
+            "live-inspection-build",
         )
     if path.startswith("remake/tools/Sf2.Remake.PrivateAdmission/"):
         return ("private-admission-build",)
+    if path.startswith("remake/tools/Sf2.Remake.LiveInspection/"):
+        return ("live-inspection-build",)
     if path.startswith("remake/tests/Sf2.Remake.Engine.Tests/"):
         return ("engine-unit",)
     if path.startswith("remake/tests/"):
@@ -95,4 +100,4 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
         return ("engine-unit",)
     if path.startswith("remake/game/"):
         return ("adapter-build",)
-    return ("engine-unit", "adapter-build", "private-admission-build")
+    return ("engine-unit", "adapter-build", "private-admission-build", "live-inspection-build")
