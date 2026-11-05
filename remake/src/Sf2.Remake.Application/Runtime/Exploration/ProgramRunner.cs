@@ -231,9 +231,11 @@ internal static class ProgramRunner
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
                     case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
                     case SetPlaneAutoscroll scroll:
-                        story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Autoscroll(story.LogicalView!, scroll)); break;
+                        story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Autoscroll(
+                            story.LogicalView ?? throw new BattleRuleException("field-view-context", "program.view", true), scroll)); break;
                     case SetPlanePosition plane:
-                        story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Position(story.LogicalView!, plane)); break;
+                        story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Position(
+                            story.LogicalView ?? throw new BattleRuleException("field-view-context", "program.view", true), plane)); break;
                     case SetCameraSpeed speed:
                         if (story.TextSettings is null) throw new BattleRuleException("field-text-settings", "program.camera", true);
                         story = story.Copy(story.Cursor, textSettings: story.TextSettings with { ViewSpeed = speed.Speed }); break;

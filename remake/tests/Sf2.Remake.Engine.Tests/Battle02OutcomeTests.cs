@@ -256,7 +256,7 @@ public sealed class Battle02OutcomeTests
         Assert.Equal(9240, followed.AX.Position); Assert.Equal(followed.AX, followed.BX);
         Assert.Equal(10368, followed.AY.Position); Assert.True(followed.Scrolling);
         Assert.Throws<BattleRuleException>(() => ExplorationViewRunner.Validate(view.Area with { Layer = 253 }));
-        Assert.Throws<BattleRuleException>(() => ExplorationViewRunner.Validate(view.Area with { AutoscrollAX = 1 }));
+        Assert.Throws<BattleRuleException>(() => ExplorationViewRunner.Validate(view.Area with { AutoscrollAX = 128 }));
     }
 
     [Fact]

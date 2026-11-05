@@ -10,6 +10,24 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class DepartureProgramTests
 {
+    [Theory]
+    [InlineData("plane-position")]
+    [InlineData("plane-autoscroll")]
+    public void SourcePlaneOperationsRejectAnAuthoredContextWithoutLogicalView(string opcode)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            var command = new JsonObject { ["op"] = opcode, ["axis"] = 0, ["value"] = 1 };
+            if (opcode == "plane-autoscroll") command["relative"] = false;
+            document["world"]!["programs"]!.AsArray().Add(new JsonObject { ["id"] = "view-only",
+                ["instructions"] = new JsonArray(command, new JsonObject { ["op"] = "end" }) });
+        });
+        var current = session.Current.WithStory(new([], new("view-only", 0)));
+        var result = ProgramRunner.Run(session.Definition, current, []);
+        Assert.Equal("field-view-context", result.Failure!.Code);
+        Assert.Same(current.Active, result.Snapshot.Active);
+    }
+
     [Fact]
     public void WarpInitCanReplaceTheSceneAndResumeItsCallerWithoutRunningTheSceneMapInit()
     {

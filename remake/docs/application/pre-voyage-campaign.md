@@ -150,6 +150,31 @@ Completed development failures remain explicit:
   Corrected ordinary slot selection saved successfully. The ordinary quit retained the known
   two-instance ObjectDB exit warning; leak causality remains **Unknown**, not a new clean-exit claim.
 
+The clean-head plan uses `--scope engine`: the sole shared-gate edit registers the new remake
+producer path and does not change research semantics. Its selected partitions are engine-unit,
+adapter-build, research-public and H4 comparison build; no unclassified paths or research execution
+semantics changes are reported. Ruff, direct design-contract/research-index checks, adapter and H4
+build pass. The dedicated engine aggregate completed2069 passed/25 failed/2 skipped. Preserve
+that completed result: it is not a passing aggregate or an interrupted run.
+
+The obsolete blanket autoscroll-rejection assertion now checks the still-unsupported sentinel128
+and passes directly. The other24 failures came from applying the current campaign selections to
+older private comparisons. The two source-AI/player-ready nodes pass with their documented
+`battle01-player-ready.json` input. The remaining22-node rerun uses the registered earlier world:
+20 pass; these two retained private mutation probes stop at `document-size` before their intended
+identity checks, the same known oversized-JSON boundary as before this slice:
+
+- `PrivateExplorationTests.APrivateWorldWithDifferentRomProvenanceCannotStartTheSession`
+- `PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`
+
+These are not passed observations. The current18-map world passes the ordinary opening/save reader
+and actual native route; no reader limit, golden or legacy mutation probe is weakened to turn the
+aggregate green. The retained narrow source-view, scene/caller, save, map-transfer and field-egress
+selections pass, including65 scene/entry cases and20 placement/transfer/egress cases. Missing logical
+view context in authored plane commands now produces the explicit Unsupported failure instead of
+an exception outside the status contract. Public CI and main-gate's independent review remain the
+remote acceptance boundary; never infer their result from these local selections.
+
 The initial failed nodes (all under `Sf2.Remake.Engine.Tests`) were:
 
 - `OpeningSaveTests.CompletedShopResourcesUseTheExistingSavePayloadAndRestoreAuthority`
