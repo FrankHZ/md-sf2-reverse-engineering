@@ -100,8 +100,12 @@ Preserve the campaign's completed2069 PASS/25 FAIL/2 SKIP aggregate and its narr
 The two private probes
 `PrivateExplorationTests.APrivateWorldWithDifferentRomProvenanceCannotStartTheSession` and
 `PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`
-still stop at `document-size` before their intended identity checks. They are not PASS and were not
-rerun. ObjectDB exit causality remains **Unknown**. Source natural reach, original timing/media,
+stopped at `document-size` before their intended identity checks during that retained run. The
+[current probe disposition](../development-and-verification.md#private-world-mutation-probes) records
+the measured serialization cause and direct staged-package replacement for the obsolete validation
+nodes. All three rejection codes, valid admission and strict size rejection pass. The historical
+failures remain; the aggregate was not rerun. ObjectDB exit causality remains **Unknown**.
+Source natural reach, original timing/media,
 physical devices and human play/aesthetic acceptance remain separately bounded; no source review
 or retained native observation closes them.
 
