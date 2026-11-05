@@ -284,6 +284,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     if (current.Story.Music is { EndStep: not null } previous)
                         _audio.BindMusic(previous.Generation, previous.Cue);
                 }
+                else if (wait.Cue.Kind == PresentationCueKind.SoundCut) _audio.CutMusic();
                 else if (wait.Cue.Kind == PresentationCueKind.SoundFade)
                 {
                     _audio.BeginSceneEnd();
@@ -326,7 +327,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 case PresentationCueKind.BattleLoad:
                     // The existing battle board and roster have been mounted for a frame; input is still program-owned.
                     complete = _cueAge > 0; break;
-                case PresentationCueKind.Sound: complete = true; break;
+                case PresentationCueKind.Sound:
+                case PresentationCueKind.SoundCut: complete = true; break;
                 case PresentationCueKind.SoundWait: complete = _audio.FiniteMusicReady(); break;
                 case PresentationCueKind.PreviousMusic: complete = true; break;
                 case PresentationCueKind.SoundFade:

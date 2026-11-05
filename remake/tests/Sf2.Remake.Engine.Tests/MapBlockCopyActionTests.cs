@@ -6,6 +6,18 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class MapBlockCopyActionTests
 {
     [Fact]
+    public void ScriptedRoofUsesItsCoordinateEvenOnADoorMarker()
+    {
+        var layout = LayoutWith((CellIndex(2, 3), 0x0400));
+        var table = Table(Record(2, 3, CopyMutation(0, 0, 10, 0)));
+        var field = Apply(layout, Inactive, State(false, false), Cell(2, 3), false, table);
+        Assert.Equal(MapBlockCopyActionOutcome.Neutral, field.Outcome);
+        var script = MapBlockCopyActionReducer.ActivateAt(layout, Inactive, State(false, false), Cell(2, 3), table);
+        Assert.Equal(MapBlockCopyActionOutcome.Activated, script.Outcome);
+        Assert.Equal(1, Active(script).RecordOrdinal);
+    }
+
+    [Fact]
     public void FadingSkipsShowActionWithoutChangingAnyState()
     {
         WorkingMapLayout layout = LayoutWith((CellIndex(2, 3), 0x0800), (0, 77));

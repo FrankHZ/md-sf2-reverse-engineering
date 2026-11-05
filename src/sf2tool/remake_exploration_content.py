@@ -349,6 +349,11 @@ def prepare(
             "controlledBoundary": selection["controlledBoundary"],
         },
         "world": {
+            **(
+                {"gameplayRevision": selection["gameplayRevision"]}
+                if "gameplayRevision" in selection
+                else {}
+            ),
             "maps": maps,
             "programs": list(compiler.programs.values()),
             "texts": texts,

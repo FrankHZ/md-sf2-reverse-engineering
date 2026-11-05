@@ -30,7 +30,7 @@ and dependencies are worktree and handoff state, not a second tracked source of 
 - Godot 4.7.2 .NET/C# is the accepted Phase 4 baseline. The user explicitly authorized a bounded
   Phase 4 implementation start on 2026-08-28 under ADR 0016. [`remake/`](../../remake/) now contains
   bounded Domain, Application, validated Content, and a thin Godot host for authored packages and the
-  connected private-local opening world through Battle03 outcomes and the approach to Hawel.
+  connected private-local opening world through Battle03 outcomes, Hawel’s house and Kazin’s formal recruitment.
   Its [campaign agreement](../../remake/docs/application/pre-voyage-campaign.md) owns the next chapter boundary. Its
   [capability owner](../../remake/docs/capability-status.md) records
   what is runnable, diagnostic, admitted-but-unconsumed, Unsupported, or Unknown.

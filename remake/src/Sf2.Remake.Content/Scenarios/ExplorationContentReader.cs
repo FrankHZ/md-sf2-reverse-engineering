@@ -20,7 +20,7 @@ internal static class ExplorationContentReader
 
     internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null, bool authored = false, string? worldDirectory = null)
     {
-        ObjectOptional(world, "world", ["maps", "programs", "texts"], "partyFlags", "textFont", "growth", "memberNames", "presentation");
+        ObjectOptional(world, "world", ["maps", "programs", "texts"], "partyFlags", "textFont", "growth", "memberNames", "presentation", "gameplayRevision");
         MapPartyFlagLayout? partyFlags = null;
         if (world.TryGetProperty("partyFlags", out var membership))
         {
@@ -158,7 +158,8 @@ internal static class ExplorationContentReader
                 Require(name.ValueKind == JsonValueKind.String && name.GetString()!.Length is > 0 and <= 32, "member-name", "world.memberNames");
                 return name.GetString()!;
             }) : null, texts.Select(pair => new KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>(pair.Key, ExplorationTextTokens.Read(pair.Value))),
-            world.TryGetProperty("textFont", out var font) ? ReadFont(font) : null);
+            world.TryGetProperty("textFont", out var font) ? ReadFont(font) : null)
+        { GameplayRevision = world.TryGetProperty("gameplayRevision", out _) ? Number(world, "gameplayRevision", 1, int.MaxValue) : 1 };
         Link(definition);
         ObjectOptional(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags"],
             "textSettings", "display", "mapPalettes", "program", "entityPhases");
@@ -540,6 +541,13 @@ internal static class ExplorationContentReader
                 Object(row, opcode, "op", "entity", "direction");
                 return new MoveEntityNextToPlayer(new(Id(row, "entity")), (byte)Number(row, "direction", 0, 3));
             case "wait-motion": Object(row, opcode, "op", "entity"); return new WaitForEntityMotion(new(Id(row, "entity")));
+            case "roof-at":
+            case "door-at":
+                Object(row, opcode, "op", "position");
+                return new ApplyMapLayoutEvent(Position(row.GetProperty("position")), opcode == "roof-at");
+            case "flash-entity-position":
+                Object(row, opcode, "op", "entity");
+                return new FlashEntityPosition(new(Id(row, "entity")));
             case "position":
                 Object(row, opcode, "op", "entity", "position", "facing");
                 return new SetEntityPosition(new(Id(row, "entity")), Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 7));

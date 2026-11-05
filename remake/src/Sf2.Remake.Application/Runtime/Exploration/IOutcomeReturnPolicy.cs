@@ -29,9 +29,16 @@ internal static class OutcomeReturnRules
             if (kind == BattleOutcomeKind.Retreat)
                 Require(result.Program is not null && result.Party.Actors.SequenceEqual(party.Actors));
             Program(definition, result.Program);
-            Position(definition, result.Return.Map, result.Return.Position);
+            var route = story.EnteringBattle!.Outcome!;
+            // Battle terrain and walking collision are independent. Only an actual combatant
+            // coordinate (or the leader's deployment when nobody remains) supplies this exception.
+            bool fromBoard = route.BattleOrigin is { } origin && IsCombatPosition(battle,
+                new(result.ProjectionPosition.X - origin.X, result.ProjectionPosition.Y - origin.Y));
+            bool projectedReturn = fromBoard && kind == BattleOutcomeKind.Victory &&
+                result.Return.Map == route.BattleMap && result.Return.Position == result.ProjectionPosition;
+            Position(definition, result.Return.Map, result.Return.Position, projectedReturn);
             Require(result.Return.Facing <= 3);
-            Position(definition, story.EnteringBattle!.Outcome!.BattleMap, result.ProjectionPosition);
+            Position(definition, route.BattleMap, result.ProjectionPosition, fromBoard);
             return result;
         });
 
@@ -61,9 +68,16 @@ internal static class OutcomeReturnRules
         Require(definition.Exploration!.Programs.TryGetValue(pc.Program, out var program) &&
             pc.Instruction >= 0 && pc.Instruction < program.Instructions.Count);
     }
-    private static void Position(ScenarioDefinition definition, MapId map, MapPosition position) => Require(
+    private static bool IsCombatPosition(EngineBattleState battle, MapPosition position)
+    {
+        var standing = battle.Actors.Where(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null).ToArray();
+        return standing.Length > 0 ? standing.Any(actor => actor.Position == position)
+            : battle.GetActor(battle.Definition.Outcome!.Leader).Deployment.Position == position;
+    }
+
+    private static void Position(ScenarioDefinition definition, MapId map, MapPosition position, bool combatPlacement) => Require(
         definition.Exploration!.Maps.TryGetValue(map, out var target) && target.Traversal.IsWithinActiveArea(position) &&
-        !OriginalMapTraversal.IsBlocked(target.Layout, position));
+        (combatPlacement || !OriginalMapTraversal.IsBlocked(target.Layout, position)));
     private static void Party(ScenarioDefinition definition, BattleStartInput before, BattleStartInput after, bool gold,
         bool healing = false, bool all = false)
     {

@@ -138,7 +138,7 @@ public static class MapBlockCopyActionReducer
         ushort blockFlag = (ushort)(layout[coordinate.X, coordinate.Y] & BlockFlagMask);
         return blockFlag switch
         {
-            ShowFlag => ApplyShow(
+            ShowFlag => ActivateAt(
                 layout,
                 lifecycleState,
                 updateState,
@@ -153,7 +153,7 @@ public static class MapBlockCopyActionReducer
         };
     }
 
-    private static MapBlockCopyActionResult ApplyShow(
+    internal static MapBlockCopyActionResult ActivateAt(
         WorkingMapLayout layout,
         MapBlockCopyLifecycleState lifecycleState,
         MapViewUpdateState updateState,

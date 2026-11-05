@@ -20,6 +20,32 @@ public sealed class MapEntityLifecycleTests
         Assert.NotNull(EntityMotion.Start(player, 3 * 384, 2 * 384, [other]));
     }
 
+    [Fact]
+    public void FlashAtTheOldPositionFinishesBeforeTheActorIsRelocated()
+    {
+        var session = StartPopulation(false, """
+            [{"op":"flash-entity-position","entity":"entity-128"},
+             {"op":"position","entity":"entity-128","position":{"x":3,"y":2},"facing":2},{"op":"end"}]
+            """);
+        ExplorationEntity Actor() => session.Current.Exploration!.Entities[new("entity-128")];
+        var original = Actor().Position;
+        var token = Assert.IsType<PositionFlashWait>(session.Current.Story.Wait).Token;
+        Assert.False(Actor().Visible);
+        Accept(session, new AdvanceSimulation(token, 2));
+        Assert.True(Actor().Visible);
+        Assert.Equal(original, Actor().Position);
+        Accept(session, new AdvanceSimulation(token, 30));
+        Assert.False(Actor().Visible);
+        Accept(session, new AdvanceSimulation(token, 301));
+        Assert.True(Actor().Visible);
+        Assert.Equal(original, Actor().Position);
+        Accept(session, new AdvanceSimulation(token, 1));
+        Assert.Equal(new MapPosition(3, 2), Actor().Position);
+        Assert.Equal(2, Actor().Motion.Facing);
+        Assert.True(Actor().Visible);
+        Assert.Null(session.Current.Story.Wait);
+    }
+
     [Theory]
     [InlineData(false, 3)]
     [InlineData(true, 4)]

@@ -5,12 +5,12 @@ handoffs, carried state and acceptance boundaries for Battle03 through departure
 
 ## Ordinary opening through Battle03 outcomes
 
-The ordinary title selection connects Battle01/02, Yeel's optional guide, Battle03 combat and
-field return. Actual play reached Yeel after paid EGRESS and ordinary defeat, walked back into
-Battle03 and won. The carried party then walked on Map66 to Hawel's doorstep. Map43 entry,
-Kazin's formal recruitment, Battle04 and the Galam prison handoff remain pending.
-The [campaign agreement and native inputs](application/pre-voyage-campaign.md#ordinary-new-game-through-the-battle03-return)
-own the state transitions, save boundaries and private preparation.
+The private title New Game and a real Map57 Continue connect Battle01/02, Yeel and Battle03 to
+Hawel's house. Ordinary play completed the source scene, formally recruited Kazin, inspected
+the diary and exercised exit/revisit with the carried party. Five-member gameplay revision 2
+uses separate slots from the four-member revision 1 world. Battle04 and its Galam prison
+handoffs remain pending. The [campaign observations](application/pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment)
+record both the playable scope and the source F404 boundary.
 
 ## Finite Galam shop and purchased-supply closure
 

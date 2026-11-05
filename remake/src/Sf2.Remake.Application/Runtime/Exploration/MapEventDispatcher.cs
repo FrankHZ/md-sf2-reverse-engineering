@@ -34,7 +34,7 @@ internal static class MapEventDispatcher
         if (candidate is not null && (world.Definition.Caravan is not null || world.Definition.Traversal.IsWithinActiveArea(candidate)))
         {
             var before = world;
-            world = OpenDoor(world, candidate);
+            if ((world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x400) world = OpenDoor(world, candidate);
             opened = !ReferenceEquals(before, world);
             reached = world.Definition.Events.FirstOrDefault(entry => entry.Kind is ExplorationEventKind.Warp or ExplorationEventKind.SourceZone &&
                 Matches(entry, candidate, world.Layout[candidate.X, candidate.Y], flags));
@@ -170,10 +170,22 @@ internal static class MapEventDispatcher
 
     internal static ExplorationState OpenDoor(ExplorationState world, MapPosition candidate)
     {
-        if ((world.Layout[candidate.X, candidate.Y] & 0x3C00) != 0x400) return world;
         var door = world.Definition.LayoutEvents?.Doors.FirstOrDefault(row => row.Trigger == candidate);
         return door is null ? world : world.WithLayout(world.Layout.ApplyBlockCopy(door.Copy));
     }
+
+    internal static ExplorationState ScriptedRoof(ExplorationState world, MapPosition position)
+    {
+        if (world.Definition.LayoutEvents is not { } events) return world;
+        var result = MapBlockCopyActionReducer.ActivateAt(world.Layout, world.RoofState, new(false, false),
+            new(position.X, position.Y), events.Roofs);
+        return world.WithLayout(result.Layout, result.LifecycleState);
+    }
+
+    // Automatic marker checks belong to the field controller (esc40). A cutscene moves
+    // its actors with their installed scripts and requests roof changes explicitly.
+    internal static ExplorationState FieldRoof(ExplorationState world, StoryState story) =>
+        story.Cursor is null && story.EventCaller is null ? Roof(world) : world;
 
     internal static ExplorationState Roof(ExplorationState world)
     {
