@@ -10,6 +10,14 @@ resource authority, scene-load follower ordering and logical/adapter music conte
 variation, correction owners and acceptance boundaries. No new failure of the accepted Battle01–07
 through first Map14 route, or P0/P1 on that route, is established by this source inspection.
 
+**Current F6 disposition:** [Issue1566's bounded repair](structure-and-quality-review.md#f6-bounded-repair-disposition)
+implements reached-instruction restrictions and typed staging prerequisite failures, with affected
+engine behavior verified and independent integration pending. Ordinary field resource/lifecycle
+operations retain their existing context. This repairs the implemented F6 seam at the stated finite
+boundary; it does not make the interpreter a universal defeated-program executor. F7/F8 remain
+open separate findings. The audit-base observations, inferred consequences and retained failures
+below continue to describe their named Git object.
+
 **Standard rigor**, [Issue1564](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1564):
 assess reuse and design minimal corrections; retain the existing High-rigor campaign, transaction
 and persistence agreements. Scope is this report, the structure review and architecture's current

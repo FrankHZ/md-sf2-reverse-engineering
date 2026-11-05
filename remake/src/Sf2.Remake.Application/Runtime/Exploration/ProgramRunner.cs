@@ -116,6 +116,8 @@ internal static class ProgramRunner
                     cursor.Instruction < 0 || cursor.Instruction >= program.Instructions.Count)
                     throw new BattleRuleException("program-cursor", "program.cursor");
                 StoryInstruction instruction = program.Instructions[cursor.Instruction];
+                if (current.Story.Continuation == ProgramContinuation.DefeatedProgramFinished)
+                    BattleDefeatedProgram.RequireStagingInstruction(instruction);
                 if (current.BattleRound is { Program: true } && instruction is not
                     (EndProgram { SourceMapScript: false } or ReturnProgram or JumpProgram or BranchFlag or CallProgram { ActivateEntities: false } or WriteFlag or
                     SetTextCursor or ShowText { ExplicitWindows: false, UseEventSpeaker: false } or CloseText or
