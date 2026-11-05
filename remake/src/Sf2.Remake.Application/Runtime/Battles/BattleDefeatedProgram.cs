@@ -13,25 +13,56 @@ internal sealed record DefeatedProgramState(EngineBattleState Battle, ActorRef A
 
 internal static class BattleDefeatedProgram
 {
+    // This interpreter stages a projection of suspended combat. Resource and
+    // map/battle lifecycle work has no merge contract at Resume. Check each
+    // reached instruction, including callees, before any part of it publishes.
+    internal static void RequireStagingInstruction(StoryInstruction instruction)
+    {
+        if (instruction is not (EndProgram or ReturnProgram or JumpProgram or BranchFlag or
+            BranchEntityCoordinates or CallProgram or WriteFlag or SetTextCursor or ShowText or
+            SetDialogueSpeaker or OpenPortrait or ClosePortrait or WaitForTextInput or CloseText or
+            ChooseYesNo or WaitProgramTicks or WaitForView or SetPlaneAutoscroll or SetPlanePosition or
+            SetCameraSpeed or SetCameraTarget or SetCameraEntity or
+            PresentCue { Kind: not PresentationCueKind.BattleLoad } or
+            SetEntitySprite or SetEntityFacing or SetEntityPriority or SetMapEntityAnimation or
+            SetMapQuake or MoveEntityNextToPlayer or WaitForEntityMotion or SetEntityVisibility or
+            HideMapEntity or ApplyMapLayoutEvent or FlashEntityPosition or CopyMapLayout or
+            SetEntityDestination or SetEntityPosition or StartEntityMotion or WaitForEntity or FollowEntity))
+            throw new BattleRuleException("defeated-program-instruction", "program." + instruction.GetType().Name, true);
+    }
+
     internal static SessionResult Begin(ScenarioDefinition definition, SessionResult result, SessionRules rules)
     {
         var current = result.Snapshot;
         var observations = result.Observations.ToList();
         try
         {
-            var battle = current.Battle;
-            var route = current.Story.EnteringBattle!.Outcome!;
-            var binding = current.Story.FieldPlayer!;
+            if (current.Active is not ActiveBattle { Battle: var battle } || current.Story.DefeatedScene is not { } pending ||
+                current.Story.EnteringBattle?.Outcome is not { DefeatedScene: true } route || current.Story.FieldPlayer is not { } binding)
+                throw new BattleRuleException("defeated-context", "story.defeatedScene", true);
+            if (definition.Exploration is not { } exploration || !exploration.Maps.TryGetValue(route.BattleMap, out var map))
+                throw new BattleRuleException("defeated-map", "outcome.battleMap", true);
+            if (map.SelectSetup(current.Story.Flags).Population is null)
+                throw new BattleRuleException("defeated-population", "outcome.battleMap.population", true);
+            if (binding.Player != Reference(0))
+                throw new BattleRuleException("defeated-player", "story.fieldPlayer", true);
+            var leader = battle.Definition.Outcome is { } outcome
+                ? battle.Actors.SingleOrDefault(a => a.Actor == outcome.Leader) : null;
+            if (leader is not { IsAlly: true, Hp: > 0, Position: not null })
+                throw new BattleRuleException("defeated-leader", "battle.outcome.leader", true);
+            if (!battle.Actors.Any(a => a.Actor == pending.Actor))
+                throw new BattleRuleException("defeated-actor", "story.defeatedScene.actor", true);
+            var visuals = battle.Visuals ?? throw new BattleRuleException("defeated-visuals", "battle.visuals", true);
+            foreach (var actor in battle.Actors.Where(a => a.Position is not null)) _ = visuals.Resolve(actor.Actor);
+            foreach (var death in pending.Deaths.Actors) _ = visuals.Resolve(death);
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Where(a => a.IsAlly).Select(a => new BattleActorStartInput(a.Actor, a.Hp, a.Mp,
                     a.Exp, a.Kills, a.Defeats, a.Status, null, a.Progress, a.SourceLoadout, a.ActivationWord, a.Initialized))
                     .Concat(binding.RetainedAllies ?? []), battle.MainSeed, battle.ThinkingSeed, battle.Gold,
                 battle.StartPolicy, itemCustody: battle.ItemCustody);
-            var map = definition.Exploration!.Maps[route.BattleMap];
             var origin = route.BattleOrigin ?? new MapPosition(0, 0);
             MapPosition MapPoint(MapPosition p) => new(p.X + origin.X, p.Y + origin.Y);
-            var leader = battle.GetActor(battle.Definition.Outcome!.Leader);
-            var leaderPosition = MapPoint(leader.Position ?? leader.Deployment.Position);
+            var leaderPosition = MapPoint(leader.Position);
             var shell = MapTransfer.Build(map, binding.Player, leaderPosition, 3, binding.Speed, party,
                 current.Story.Flags, sourcePlacement: true);
             var field = definition.ScenesFor(battle.Definition.Encounter)?.FieldDeath;
@@ -39,6 +70,9 @@ internal static class BattleDefeatedProgram
             foreach (var actor in battle.Actors.Where(a => a.Position is not null))
             {
                 int sourceSlot = actor.IsAlly ? actor.Deployment.Initialization?.AllyPartyMember ?? actor.ProcessingOrder : actor.ProcessingOrder;
+                if ((actor.IsAlly ? sourceSlot is < 0 or >= 30 : sourceSlot is < 128 or >= 160) ||
+                    entities.Any(e => e.Entity == Reference(sourceSlot)))
+                    throw new BattleRuleException("defeated-source-slot", "battle.actors", true);
                 int sprite;
                 if (actor.IsAlly) sprite = SceneEntities.ResolveAllySprite(shell.Population!, current.Story.Flags, sourceSlot, sourceSlot);
                 else if (field is null || !field.EnemySprites.TryGetValue(actor.Actor, out sprite))

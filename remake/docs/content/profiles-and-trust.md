@@ -520,11 +520,17 @@ and admitted source equipment/spell mappings.
 
 An authored `world.maps[].battle.outcome` uses the existing `after`, `defeated`, `defeat`, `return`,
 `joinMember`, `victoryFacing` and `egress` fields. It requires exactly one allied physical leader,
-an enemy roster without enemy leaders unless explicitly bound above, the existing no-op defeated
-program, valid program references,
+an enemy roster without enemy leaders unless explicitly bound above, valid program references,
 join membership within `partyFlags`, and traversable in-bounds egress. Private source/provenance
 checks remain on the private entry; this authored entry cannot relabel a private package.
-Nonempty defeated programs, unbound enemy-leader outcomes and wider egress/status behavior are not admitted.
+Without `defeatedScene: true`, the defeated program must remain no-op. That explicit boolean admits
+the finite [source staging context](../application/session-and-programs.md#finite-defeated-scene-staging),
+including authored content with the same required source population, actor and visual bindings;
+it does not admit arbitrary named-world defeated scripts or resource transactions. Entry validates
+the live prerequisites; the interpreter rejects unsupported reached operations before publication,
+including nested calls/branches, while retaining accepted prefixes. Content reference linking is
+not a whole-program proof that every branch can execute. No package/Battle05 allowlist applies.
+Unbound enemy-leader outcomes and wider egress/status behavior remain outside this admission.
 
 [`progression-outcome-victory`](../../content/authored/progression-outcome-victory.json) and
 [`progression-outcome-defeat`](../../content/authored/progression-outcome-defeat.json) are small authored

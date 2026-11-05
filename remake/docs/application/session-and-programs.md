@@ -1346,6 +1346,38 @@ source-sprite samples through progressively finer blocks over half a second. Shi
 alternating five-tick offsets, then restores the engine fields; original sprite DMA/bitfield waveform
 is unclaimed. The renderer reports an adapter failure if an admitted service cannot be bound.
 
+## Finite defeated-scene staging
+
+`BattleDefeatedProgram` temporarily projects suspended combat into the ordinary field interpreter.
+This is a source-populated staging context, not a second resource authority. Entry requires a
+selected map population, the source player binding, a living positioned allied leader, the pending
+action actor, valid battle visual aliases and enemy field sprites. Staged source actor slots must
+be valid and distinct. Missing prerequisites return typed failures before staging publishes.
+Encounter/package names and chapter IDs do not select permission.
+
+During `DefeatedProgramFinished`, `ProgramRunner` checks each **reached** instruction before execution,
+including nested calls, jumps and taken branches. The finite set covers control flow, flags, text,
+choices, waits, camera/plane work, presentation cues except battle-load, actor pose/motion/following,
+visibility and local layout effects. Recovery, member resource writes, join/leave/AI membership,
+shop/church, naming, Caravan, source-policy extensions, random battle requests, egress/warps/return,
+scene-map/population replacement and other unlisted instructions return `UnsupportedCapability` /
+`defeated-program-instruction`, with `program.<instruction type>` as field. The failed cursor and
+earlier accepted flags/poses/waits remain; the refused instruction publishes no resource, wait or
+lifecycle change. Untaken unsupported branches do not reject the program. Ordinary field and
+after-program reset/shop/join keep their existing execution rules.
+
+Completion transfers only the field RNG seeds back to combat, retains the staged world for field
+death presentation and the after-program, and resumes the original pending death work. HP/MP,
+inventory/custody, gold, queue and death credit remain owned by the suspended battle. Do not copy
+the temporary party back over that authority. A later resource-affecting defeated scene needs an
+explicit combat transaction contract before admission can expand.
+
+`DefeatedContextTests` exercises direct/nested refusals, retained prefixes, an untaken resource branch,
+dialogue/facing/wait and missing context. `BattleEndPositionTests` varies origins, HP/MP/gold/custody
+and death-credit actor through field death and after-program entry, including completed-flag skip.
+The [F6 disposition](../evidence/structure-and-quality-review.md#f6-bounded-repair-disposition)
+retains the pre-fix failures and observation limits.
+
 ## Battle01 outcome, after-program and return
 
 Bound outcomes initialize the newly built field world through `ExplorationTextRunner.Initialize`:

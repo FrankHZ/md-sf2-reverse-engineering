@@ -6,8 +6,9 @@ The [boundary assessment](engine-script-boundary-review.md#post-campaign-boundar
 Issue1564's Standard scope, continuation decision, responsibility matrix, source sampling and
 retained Unknowns. This section owns minimal repair designs only. All source references below pin
 accepted **`75d682862e7ae196662769c04bd890ed7bf04405`**, tree
-**`84b364832c9d77b3cb4ae17fb18c40f6c1dee33c`**. No production modification or new runtime observation
-was made. The findings are P2 composition defects/risks, not evidence that the accepted ordinary
+**`84b364832c9d77b3cb4ae17fb18c40f6c1dee33c`**. That audit made no production modification or new runtime observation.
+The F6 repair disposition below records the subsequent bounded engine work separately.
+The findings are P2 composition defects/risks, not evidence that the accepted ordinary
 Battle01–07/first Map14 observations failed. Main-gate owns independent acceptance and any subsequent
 path allocation; existing High-rigor transaction/save boundaries are unchanged.
 
@@ -72,6 +73,53 @@ not a raw exception. Valid staging with changed actors/origin, wait completion, 
 completed-flag skip must continue once into the actual after-program without duplicated rewards.
 Use the existing scene behavior tests and an affected short adapter observation only if presentation
 changes. Repair before extending defeated-program admission; unrelated content need not wait.
+
+### F6 bounded repair disposition
+
+**Implemented under [Issue1566](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1566)**;
+independent acceptance and CI status belong to the Issue/PR.
+Standard rigor: restrict the existing temporary interpreter to finite source staging, preserving
+High-rigor resource/death/queue authority. Scope is `BattleDefeatedProgram`, its reached guard in
+`ProgramRunner`, actual-engine tests and the four current contract/audit owners. No new VM,
+Content format, resource merge, private acquisition or campaign extension is required. F7/F8 and
+the retained private-probe/ObjectDB failures remain separate.
+
+**Confirmed engine reproduction before correction**, accepted base `590bd2d495c903cc784e1bd4dd01f8acc9c87d41`:
+the new `DefeatedContextTests` run completed **19 FAIL / 2 PASS / 0 SKIP**. Failing rows were
+all16 `ReachedResourceOrLifecycleWorkRefusesBeforePublicationAndKeepsPrefix` cases and
+`MissingStagingPrerequisiteReturnsTypedFailureWithoutStarting` for population, leader and visual.
+Population escaped as `NullReferenceException` in `ResolveAllySprite`; a leader without position
+escaped as `InvalidOperationException` at `Single`. A focused reset rerun completed **2 FAIL**:
+both direct and call→branch forms published MP20 instead of preserving MP2. The corresponding
+TRX files remain local as `local/issue1566/f6-before.trx` and `f6-reset-before.trx`.
+This confirms the missing restriction and temporary resource publication; the original audit's
+resume-loss consequence remains a source inference, not a newly observed campaign failure.
+
+The correction validates map/population, source player, leader/action actor and visual prerequisites
+before publication, then uses the existing typed failure path. `RequireStagingInstruction` enumerates
+the finite operation kinds retained by this context. The guard checks the actual reached instruction,
+so nested calls/branches cannot bypass it and unrelated unreachable bodies remain legal. A refusal
+preserves accepted flags/poses and the failing cursor. Combat resources and pending death work are
+never replaced from the temporary party. The
+[session contract](../application/session-and-programs.md#finite-defeated-scene-staging) and
+[admission description](../content/profiles-and-trust.md#authored-growth-and-ordinary-outcomes)
+own current supported behavior; ordinary field service/recovery/join remains supported.
+
+**Confirmed corrected behavior:** the affected engine selection completed **118 PASS / 0 FAIL /
+0 SKIP**, including `DefeatedContextTests`, `BattleEndPositionTests`, `PartyRecoveryContextTests`,
+`ShopServiceTests`, `BattleOutcomeProgramTests`, `BattleRegionProgramTests`, `GalamSceneOperationsTests`,
+`KiwiTests` and `FieldPlayerReturnTests`. It varies resource values/custody, origin and death-credit
+actor, checks exactly one cleanup credit/after-program entry, and retains completed-flag skip.
+The focused post-fix selection previously completed28 PASS; neither result replaces the earlier
+failed run. Reproduce from `remake/`, after the locked environment setup, with the selected
+`DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release
+--no-restore --filter <FullyQualifiedName terms joined by |>` for those nine classes. The exact
+command, clean-head planner and actual CI belong to the frozen Issue/PR handoff.
+
+**Unknown / unobserved:** no new native presentation or full campaign run, original natural reach,
+hardware timing or human/aesthetic acceptance is claimed. Existing valid staging semantics and
+projection are unchanged; no Godot launch was needed. The completed campaign aggregate
+2069 PASS/25 FAIL/2 SKIP and its private size-probe/ObjectDB limits remain preserved elsewhere.
 
 ### F7 — P2: preserve follower append order across scene-map replacement
 
