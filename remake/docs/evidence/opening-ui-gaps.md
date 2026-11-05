@@ -8,6 +8,21 @@ whole-opening human/aesthetic approval. A–E now have accepted bounded deliveri
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
+## Source dialogue reading space (#1583)
+
+**Implemented; independent review and human acceptance remain separate.** The
+[display policy](../godot/presentation.md#source-line-reflow-1583) removes forced source-layout short
+lines from selected Witch/exploration projections using native available-width wrapping. Explicit
+paragraphs, source-control boundaries, defaults for other consumers and the existing reading contract
+remain intact. No font shrink, theme replacement or wider entry panel is used.
+
+**Confirmed:** native entry217 wraps into2 lines instead of3 at592px body width; the ordinary authored
+sample uses5 instead of6 lines at1392px while preserving both literal and source blank paragraphs.
+The [finite observation](../verification/field-programs.md#source-line-reflow-observation) covers both
+locales, names, portrait/no-portrait, long pages, append, legal bounds and language Apply.
+**Unknown:** every source break's semantic intent, physical-device/final-raster experience and the
+user's whole-opening approval. These remain separate from bounded engineering checks and #1456.
+
 ## Ordinary dialogue confirmation
 
 **Implemented; independent acceptance and human experience remain separate.** The

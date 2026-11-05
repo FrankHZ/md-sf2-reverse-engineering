@@ -889,6 +889,44 @@ Retain prior focus-loss Unavailable, physical-release Unknown, missed-skip timin
 warnings. Independent main-gate review owns integration; this agreement is the approved modern
 presentation direction and does not assert final aesthetic or all-map acceptance.
 
+### Source line reflow (#1583)
+
+**Standard rigor:** a bounded display-only change reuses the current Content resolver and shared
+panel. The source glyph/window service, source ranges, RNG, script waits and the separate High
+[Confirm agreement](#ordinary-dialogue-confirm) are unchanged. No theme, geometry, font-size,
+save format, input schema or content rewrite is included.
+
+Selected exploration `DialogueWait`, `FieldTextWait` and English `W1TextWait` projections opt into
+modern wrapping. A single typed `{N}` between literal/name/class text contributes a word separator
+in English, or no separator for Chinese prose. Mixed Latin boundaries use the **resolved display
+name/class**, including a custom name, to retain a word space. Existing whitespace is not doubled.
+Consecutive `{N}`, row/control-adjacent breaks and literal newlines (including paragraphs) remain
+explicit. No punctuation heuristic identifies paragraphs. W1/Delay/CLEAR still belong to the
+original program; display ranges and append-prefix/reading ownership are preserved. An attached
+choice retains the already resolved question and locale instead of reconstructing raw source text.
+W1 keeps its
+existing English/unmigrated boundary, not a newly claimed Chinese consumer.
+
+`DisplayCatalog` defaults to its original projection; only these consumers request reflow. Search,
+battle and compatibility-only raw-string consumers keep their current policies. Entry is a separate
+narrow compatibility boundary: the pinned `private-local-entry` v1 generator maps source `{N}` to
+LF in IDs216–221. `EntryPresentationAssets` reflows those isolated LF breaks for the selected
+English/Chinese row after resolution, preserving blank lines. It never normalizes arbitrary UI
+strings, mutates the source/overlay or changes `ResolveEntry`'s default output. Locale Apply resolves
+again in the same entry; existing Reveal/More/Continue and release guards remain.
+
+**Confirmed:** the generator `src/sf2tool/remake_entry_content.py` projects `{N}` to LF. In the pinned
+source represented by admitted entry row217 and ordinary opening row480, a break splits an unfinished
+clause. This supports identifying those breaks as original layout; it does **not** prove that every
+single `{N}` in the complete catalog is nonsemantic. Reflow for the selected consumers is an explicit
+modern policy. Private wording and the pinned inputs remain read-only. **Unknown:** semantic intent
+of every unreviewed source break and human approval of the resulting reading experience (#1456).
+
+The [finite observation owner](../verification/field-programs.md#source-line-reflow-observation)
+records native widths/line counts, bilingual paragraphs, names, portrait reservations, long pages,
+append/control/release boundaries and language Apply. The panel's30px body,24px hint, entry safe
+region and legal viewport rules are retained; native wrapping determines final visual lines.
+
 ### Ordinary dialogue Confirm
 
 **High; bounded host clock/read-intent change.** One mapped Confirm on ordinary exploration
