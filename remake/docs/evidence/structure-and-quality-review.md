@@ -7,7 +7,7 @@ Issue1564's Standard scope, continuation decision, responsibility matrix, source
 retained Unknowns. This section owns minimal repair designs only. All source references below pin
 accepted **`75d682862e7ae196662769c04bd890ed7bf04405`**, tree
 **`84b364832c9d77b3cb4ae17fb18c40f6c1dee33c`**. That audit made no production modification or new runtime observation.
-The F6 repair disposition below records the subsequent bounded engine work separately.
+The F6/F7 repair dispositions below record the subsequent bounded engine work separately.
 The findings are P2 composition defects/risks, not evidence that the accepted ordinary
 Battle01–07/first Map14 observations failed. Main-gate owns independent acceptance and any subsequent
 path allocation; existing High-rigor transaction/save boundaries are unchanged.
@@ -123,7 +123,7 @@ projection are unchanged; no Godot launch was needed. The completed campaign agg
 
 ### F7 — P2: preserve follower append order across scene-map replacement
 
-**Confirmed source omission:** [`MapTransfer.LoadScene:224–232`][campaign-transfer] preserves physical
+**Confirmed source omission at the audit base:** [`MapTransfer.LoadScene:224–232`][campaign-transfer] preserves physical
 entities, aliases and party while replacing map/layout. It omits `CurrentEntities` from the new
 `ExplorationState`. That constructor (`ExplorationState:230–239`) defaults the list to the target
 Caravan definition or empty. The list is live state: `SceneEntities.Build` initializes it from actual
@@ -153,6 +153,37 @@ the predecessor slot and motions; vary physical allocation/order rather than har
 Verify that a later explicit entity reload rebuilds the list and that caller tail, party/resources,
 selected map and no-target-init semantics remain intact. Repair before depending on this composition;
 existing ordinary following and unrelated chapter work can continue.
+
+### F7 bounded repair disposition
+
+**Standard rigor**, [Issue1567](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1567):
+preserve the existing scene-map lifetime without adding a copier, follower manager or persistence
+schema. Existing High-rigor transaction/save boundaries remain unchanged. The implementation owner
+is `Runtime/Exploration/MapTransfer.cs`; focused engine behavior belongs to `DepartureProgramTests`.
+This section, the boundary review and the scene-load session contract own the documentation scope.
+Godot, full-route replay, F8 and private probes are outside this repair.
+
+**Confirmed:** `MapTransfer.LoadScene` carries `world.CurrentEntities` into the replacement world.
+The physical append order survives independently of target-map population, aliases and combat-party
+membership. `SceneEntities.Reload`, reached by explicit `LoadSceneEntities` or `LoadSetupEntities`,
+still constructs a fresh allocation and follower list; scene-map replacement does not do so.
+
+`DepartureProgramTests.SceneMapPreservesPhysicalAppendOrderAndReturnsToTheCaller` executes `follow`,
+a real `call`/`scene-map`/`add-follower` program and the resumed caller tail. Physical slot orders
+`1,2,3`, `5,2,7` and `2,6,4` retain the previous follower as leader; unchanged actors retain their
+motions and records, and the new follower receives the ordinary motion installation. Party/resources
+and aliases remain intact, the target map is selected and its init is not invoked.
+`ExplicitEntityReloadRebuildsTheSceneFollowerList` executes both reload instructions and asserts the
+new allocation/list and sprite-delivery wait. These are bounded Application engine cases, not an
+original-game reach, native-rendering or full-voyage claim.
+
+The pre-fix regression completed with three append-order failures and two reload passes: the actual
+lists were `[3]`, `[7]`, `[4]` instead of `[1,2,3]`, `[5,2,7]`, `[2,6,4]`.
+Reproduce the affected behavior after the locked environment setup with `dotnet test
+tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release --no-restore
+--filter "FullyQualifiedName~DepartureProgramTests|FullyQualifiedName~MapEntityLifecycleTests"`
+from `remake/`, invoking the configured absolute `DOTNET_BIN` with the worktree-local environment.
+Clean-head planner, check results and independent acceptance status belong to the Issue/PR.
 
 ### F8 — P2: share the selected scene area between logical music and delivery
 

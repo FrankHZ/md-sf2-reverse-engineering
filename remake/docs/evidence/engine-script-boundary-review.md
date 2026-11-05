@@ -14,8 +14,13 @@ through first Map14 route, or P0/P1 on that route, is established by this source
 implements reached-instruction restrictions and typed staging prerequisite failures under #1566,
 with affected engine behavior verified; independent acceptance and CI status belong to the Issue/PR. Ordinary field resource/lifecycle
 operations retain their existing context. This repairs the implemented F6 seam at the stated finite
-boundary; it does not make the interpreter a universal defeated-program executor. F7/F8 remain
-open separate findings. The audit-base observations, inferred consequences and retained failures
+boundary; it does not make the interpreter a universal defeated-program executor.
+
+**Current F7 disposition:** [the bounded repair](structure-and-quality-review.md#f7-bounded-repair-disposition)
+preserves `CurrentEntities` across scene-map replacement. Actual program cases vary physical append
+order, resume the caller tail without target init, and distinguish both explicit entity reloads,
+which still rebuild the allocation/list. Party/resources, aliases and existing actor motions remain
+intact. F8 remains a separate open finding. The audit-base observations, inferred consequences and retained failures
 below continue to describe their named Git object.
 
 **Standard rigor**, [Issue1564](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1564):
@@ -69,10 +74,11 @@ not current policy. Original F4 API failure and F5 pre-fix failures remain below
 
 ### Continuation, sampling and retained limits
 
-Recommended order: F6 before adding resource-affecting defeated scripts or admitting new defeated
+The audit-base recommendation was F6 before adding resource-affecting defeated scripts or admitting new defeated
 profiles; F7 before scene-load/follower-append composition; F8 before explicit music/history waits
 in scenes whose selected view and player area differ. Unrelated bounded content can proceed after
-declaring its own unsupported operations. None of these recommendations authorizes a runtime fix.
+declaring its own unsupported operations. F6/F7 now have the bounded dispositions above; F8 remains
+unrepaired. The audit recommendations alone do not authorize further runtime fixes.
 Prefer explicit restrictions at an unsupported context over accepting a write then losing it; do
 not disable legitimate ordinary field scripts or replace the engine with a universal VM.
 

@@ -227,9 +227,9 @@ internal static class MapTransfer
         CaravanRuntime.RequireOrdinaryMapOperation(world);
         if (!definition.Maps.TryGetValue(load.Map, out var map)) throw new BattleRuleException("missing-map", "scene.map");
         // csc48 changes the displayed layout/view; entity allocation, map init and battle selection
-        // are separate calls. Keep the running program, party and physical entities intact here.
+        // are separate calls. Keep the running program, party, physical entities and append order intact here.
         return new(map, map.Layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
-            world.Aliases, population: world.Population, quake: world.Quake);
+            world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities);
     }
 
     internal static (ExplorationState World, StoryState Story) ReloadScene(SessionSnapshot current, ReloadSceneMap reload)

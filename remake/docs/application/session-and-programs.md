@@ -1259,11 +1259,15 @@ Bound `scene-map` requires settled closed windows, no ordinary warp, a valid tar
 a settled black current display and the accepted view profile. Its explicit camera origin selects
 the target area and independently transforms A/B; following and scroll speeds/mask clear, but the
 source follow counter and entity service policy remain. Window state clears without resetting
-party/RNG/music/callers or invoking OnLoad. Base changes while black Current remains unchanged;
+party/RNG/music/callers or invoking OnLoad. Physical actors, aliases and their `CurrentEntities`
+append order remain intact, so a subsequent `add-follower` follows the last retained physical slot.
+Base changes while black Current remains unchanged;
 only the later real fade restores new colors. Visible/transitioning/open-window/missing-palette
 loads reject before any replacement. This restriction is a remake representation boundary,
 not a statement about original visible csc48 behavior. Separate `scene-entities` replaces physical
-aliases and mounts sprites without re-centering or reattaching the camera.
+actors/aliases and rebuilds `CurrentEntities` from its new allocation before mounting sprites,
+without re-centering or reattaching the camera. Explicit `setup-entities` likewise rebuilds from
+the selected setup; neither entity reload inherits the old append list.
 Bound rendering uses the selected logical area and both plane origins even when no target-map
 area covers the retained player. Player-area and legacy overlay lookup apply only to unbound drawing.
 
