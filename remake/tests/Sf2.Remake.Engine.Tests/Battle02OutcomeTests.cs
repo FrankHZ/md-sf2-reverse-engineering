@@ -43,10 +43,11 @@ public sealed class Battle02OutcomeTests
             partyFlags: original.Exploration.PartyFlags);
         var definition = new ScenarioDefinition(original.Package, original.Encounters.Values, exploration: world,
             encounterStarts: original.EncounterStarts.Values);
-        battle = battle.With(actors: battle.Actors.Select(actor => actor.IsAlly
-            ? actor.Actor.Value == "medic-a" ? actor.With(position: new(16, 13)) : actor
-            : actor.With(hp: 0, clearPosition: true)));
-        story = story.Copy(null, fieldPlayer: new(new("player"), 32));
+        var fighter = battle.GetActor(new("medic-a")).Position!;
+        var route = story.EnteringBattle!;
+        story = story.Copy(null, fieldPlayer: new(new("player"), 32), enteringBattle: route with
+            { Outcome = route.Outcome! with { BattleOrigin = new(landed.X - fighter.X, landed.Y - fighter.Y) } });
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.IsAlly ? actor : actor.With(hp: 0, clearPosition: true)));
         var input = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveBattle(battle, null), story, SessionStopReason.PlayerInput);
         var returned = BattleOutcome.Begin(definition, new(input, [], input.StopReason));
         Assert.Null(returned.Failure);
