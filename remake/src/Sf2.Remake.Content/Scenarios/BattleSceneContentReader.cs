@@ -33,6 +33,7 @@ internal static class BattleSceneContentReader
         string background = Text(root, "background"), ground = Text(root, "ground");
         Require(rasters.ContainsKey(background) && rasters.ContainsKey(ground), "scene-background", "battleScenes.rasters");
         var allies = new Dictionary<BattleClassRule, BattleSceneActorVisual>();
+        var equipment = new Dictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>();
         var enemies = new Dictionary<ActorRef, BattleSceneActorVisual>();
         foreach (var row in Array(root, "actors"))
         {
@@ -72,10 +73,11 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is 0 or 1 or 2 or 3 or 4, "scene-class", "battleScenes.actors", true);
+                Require(sprite is 0 or 1 or 2 or 3 or 4 or 5, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
-                    2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, _ => BattleClassRule.UnpromotedMage };
-                Require(palette == 0 && allies.TryAdd(kind, visual), "scene-ally-binding", "battleScenes.actors");
+                    2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, _ => BattleClassRule.UnpromotedThief };
+                Require(palette == 0 && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
+                allies.TryAdd(kind, visual);
             }
             else
             {
@@ -87,6 +89,7 @@ internal static class BattleSceneContentReader
                     var selected = placement.IdentityExpression switch
                     { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
                         "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
+                        "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0),
                         _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,
                             "scene-enemy-species", "battleScenes.actors", "unadmitted species")) };
                     if ((sprite, palette) == selected)
@@ -177,7 +180,8 @@ internal static class BattleSceneContentReader
             new ReadOnlyDictionary<ActorRef, string>(definitions.Encounter.Placements
                 .Where(row => row.Kind == EncounterEntityKind.Enemy).Select((row, index) =>
                     (Actor: new ActorRef("enemy-" + index), Name: definitions.Enemies[row.IdentityExpression].DisplayName))
-                .ToDictionary(row => row.Actor, row => row.Name)));
+                .ToDictionary(row => row.Actor, row => row.Name)),
+            new ReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>(equipment));
     }
 
     private static string[] Strings(JsonElement row, string key) => Array(row, key).Select(value =>

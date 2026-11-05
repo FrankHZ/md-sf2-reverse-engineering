@@ -1,3 +1,4 @@
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
@@ -37,12 +38,15 @@ internal static class BattleOutcome
             var world = MapTransfer.Build(map, player.Player, selected.ProjectionPosition,
                 kind == BattleOutcomeKind.Victory ? selected.Return.Facing : route.VictoryFacing, player.Speed,
                 selected.Party, current.Story.Flags, combatPlacement: route.BattleOrigin is not null);
+            if (kind == BattleOutcomeKind.Victory && current.Story.DefeatedScene?.CompletedWorld is { } prior)
+                world = BattleDefeatedProgram.AfterDeath(prior, battle, selected.Party);
             var story = current.Story.Copy(selected.Program, callers: [],
                 continuation: kind == BattleOutcomeKind.Victory ? ProgramContinuation.VictoryProgramFinished : ProgramContinuation.DefeatProgramFinished,
                 outcomeReturn: selected.Return, clearCameraEntity: true, clearCameraTarget: true, textWindow: new ClosedTextWindow());
             story = ExplorationTextRunner.Initialize(world, story);
             current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations,
                 "outcome-program-started", kind.ToString());
+            current = ExplorationMusicRunner.SelectFieldMusic(definition.Exploration!, current, observations);
             return ProgramRunner.Run(definition, current, observations, rules);
         }
         catch (BattlePolicyFault error) { return ProgramRunner.Failure(current, observations, error); }

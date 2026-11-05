@@ -35,7 +35,7 @@ internal static class BattleAdvancer
 
     private static SessionResult AdvanceCore(SessionSnapshot current, List<SessionObservation> observations, SessionRules rules)
     {
-        if (current.BattleRound is not null || current.BattleScene is not null || current.BattleMovement is not null)
+        if (current.Story.DefeatedScene is { CompletedWorld: null } || current.BattleRound is not null || current.BattleScene is not null || current.BattleMovement is not null)
             return new(current, observations.AsReadOnly(), SessionStopReason.PresentationWait);
         var battle = current.Battle;
         long revision = current.Revision, sequence = current.ObservationSequence;

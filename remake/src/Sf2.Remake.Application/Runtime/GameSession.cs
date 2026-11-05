@@ -121,6 +121,8 @@ public sealed class GameSession
 
     private static SessionResult ContinueStory(ScenarioDefinition definition, SessionResult result, SessionRules rules)
     {
+        if (result.Failure is null && result.Snapshot.Mode == SessionMode.Battle && result.Snapshot.Story.DefeatedScene is { CompletedWorld: null })
+            return BattleDefeatedProgram.Begin(definition, result, rules);
         if (result.Failure is not null || result.Snapshot.BattleRound is not { Program: true } || result.Snapshot.Story.Wait is not null)
             return result;
         return ProgramRunner.Run(definition, result.Snapshot, result.Observations.ToList(), rules);

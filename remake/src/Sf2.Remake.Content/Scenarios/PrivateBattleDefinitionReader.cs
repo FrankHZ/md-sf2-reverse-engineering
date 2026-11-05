@@ -82,10 +82,10 @@ internal static class PrivateBattleDefinitionReader
         Require(growth.ValueKind == JsonValueKind.Array, "initial-growth-required", "world.growth");
         var members = growth.EnumerateArray().Select(row => Text(row, "actor")).ToHashSet(StringComparer.Ordinal);
         Require(new[] { "ally-0", "ally-1", "ally-2" }.All(members.Contains) &&
-            members.All(actor => actor is "ally-0" or "ally-1" or "ally-2" or "ally-3" or "ally-4"),
+            members.All(actor => actor is "ally-0" or "ally-1" or "ally-2" or "ally-3" or "ally-4" or "ally-5"),
             "initial-growth-members", "world.growth");
         var result = new List<SourceAllyDefinition>();
-        foreach (byte id in new byte[] { 0, 1, 2, 3, 4 })
+        foreach (byte id in new byte[] { 0, 1, 2, 3, 4, 5 })
         {
             if (!members.Contains("ally-" + id)) continue;
             var row = FindId(core, "allies", id);

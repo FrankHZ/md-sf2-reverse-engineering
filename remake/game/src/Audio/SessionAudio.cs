@@ -148,11 +148,21 @@ internal sealed partial class SessionAudio : IDisposable
                 if (_entrySuppressed) continue;
                 if (observation.Kind == "door-opened") Play(92);
                 else if (observation.Kind == "warp-started") Play(89);
+                else if (observation.Kind == "field-map-music-selected") _context = null;
             }
             _observedSequence = current.ObservationSequence;
             if (current.Exploration is { } world)
             {
-                int area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1;
+                // LoadMap/csc48 already selected the view area, independently of
+                // a player temporarily hidden or staged outside every area.
+                int area = -1;
+                if (current.Story.LogicalView is { } view)
+                {
+                    for (int i = 0; i < world.Definition.ViewAreas.Count; i++)
+                        if (world.Definition.ViewAreas[i] == view.Area) { area = i; break; }
+                }
+                else area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)?.OneBasedRecordOrdinal - 1 ?? -1;
+                if (area < 0) throw new InvalidOperationException("map-music-area-unavailable");
                 var context = (world.Map, area, current.Story.SelectsBattleMusic);
                 if (_context == context) return;
                 if (!_maps.TryGetValue(world.Map, out var visual) || area >= visual.Music.Count)
@@ -403,7 +413,7 @@ internal sealed partial class SessionAudio : IDisposable
         77 => Slots.Ym4,
         81 or 83 or 116 => Slots.Ym6,
         89 or 110 => Slots.PsgNoise,
-        92 or 113 => Slots.Ym4 | Slots.Ym5,
+        92 or 93 or 96 or 113 => Slots.Ym4 | Slots.Ym5,
         _ => throw new InvalidOperationException("sfx-slots-unavailable"),
     };
 

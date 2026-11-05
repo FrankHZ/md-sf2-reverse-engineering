@@ -93,8 +93,10 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
         // Source systeminit/gameintro restore period3; current colors start at the admitted map base.
         var display = new ExplorationDisplay(3, palette, palette, FullFadeVisibility.BaseRestored);
         var product = Persistence.OpeningLoadoutBindings.Bind(admitted.Definition, admitted.Start.Map);
+        // witchMenuAction_New sets CURRENT_MAP and EGRESS_MAP to GAMESTART_MAP after
+        // InitializeGameSettings and before its initial SaveGame/MainLoop entry.
         return new(product, new(old.Map, old.Player, old.Position, old.Facing, old.Speed, old.Flags,
-            party, display: display, textSettings: old.TextSettings, stepCounter: 0, egressMap: new("map-0")));
+            party, display: display, textSettings: old.TextSettings, stepCounter: 0, egressMap: old.Map));
     }
 
     // Restore admission uses only immutable source baselines; it never draws initial growth.

@@ -107,12 +107,15 @@ public sealed class SessionSnapshot
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
     public BattleOutcomeKind? BattleResult => (Active as ActiveBattle)?.Outcome;
-    public bool HasBattleControl => BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null;
+    public bool HasBattleControl => Story.DefeatedScene is not { CompletedWorld: null } && BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null;
     public BattleDiscardState? BattleDiscard => (Active as ActiveBattle)?.Discard;
     public BattleGiveState? BattleGive => (Active as ActiveBattle)?.Give;
     public BattleRoundState? BattleRound => (Active as ActiveBattle)?.Round;
     public BattleRetreatState? BattleRetreat => (Active as ActiveBattle)?.Retreat;
     public BattleSceneState? BattleScene => (Active as ActiveBattle)?.Scene;
+    // Scene entities retain their finished poses while the battle owns death/accounting work.
+    public ExplorationState? BattleFieldScene => BattleScene is { IsFieldDeath: true }
+        ? Story.DefeatedScene?.CompletedWorld : null;
     public BattleMovementState? BattleMovement => (Active as ActiveBattle)?.Movement;
     public EngineBattleState Battle => Active is ActiveBattle battle ? battle.Battle :
         throw new InvalidOperationException("The active mode is exploration.");

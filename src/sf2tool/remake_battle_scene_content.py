@@ -83,7 +83,7 @@ def sprite_layout(columns: int, rows: int) -> list[int]:
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (1, 2, 3, 4):
+    if battle not in (1, 2, 3, 4, 5, 6):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -146,6 +146,8 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     assets, rasters = [], {}
 
     def raster(name, data, pal, width, height, layout, *, opaque=False):
+        if name in rasters:
+            return name
         pixels = compose(data, pal, width, height, layout, opaque=opaque)
         master = output / ("masters/battle-scenes/" + name + ".png")
         master.parent.mkdir(parents=True, exist_ok=True)
@@ -230,6 +232,26 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
                 ("enemy", 23, 0, None),
             ]
         )
+    if battle in (5, 6):
+        actor_selections = [
+            ("ally", 0, 0, 71),
+            ("ally", 0, 0, 57),
+            ("ally", 1, 0, 85),
+            ("ally", 1, 0, 86),
+            ("ally", 2, 0, 56),
+            ("ally", 2, 0, 72),
+            ("ally", 2, 0, 73),
+            ("ally", 3, 0, 33),
+            ("ally", 4, 0, 85),
+            ("ally", 4, 0, 86),
+            ("ally", 5, 0, 103),
+            ("enemy", 2, 0, None),
+            ("enemy", 3, 0, None),
+            ("enemy", 31, 0, None),
+            ("enemy", 36, 0, None),
+        ]
+        if battle == 6:
+            actor_selections.append(("enemy", 40, 0, None))
     for side, index, pal_index, weapon_item in actor_selections:
         base = pointer(sprites[side + "BattlespriteTableAddress"] + index * 4)
         pal_offset = base + 4 + word(base + 4)
@@ -356,7 +378,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             "background" + str(index), bgdata, bgpal, 256, 96, layout, opaque=True
         )
         backdrop[index] = dict(background=background_asset, ground=ground_asset)
-    if battle in (2, 3, 4):
+    if battle in (2, 3, 4, 5, 6):
         terrain_scenes = [
             dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
         ]
@@ -418,7 +440,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         293,
         393,
     }
-    if battle in (3, 4):
+    if battle in (3, 4, 5, 6):
         text_ids.update((306, 338, 354))
     texts = {
         str(int(line[:4], 16)): line[5:]
@@ -465,7 +487,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             texts=texts,
             memberNames=names,
             healing=healing,
-            **({"terrainScenes": terrain_scenes} if battle in (2, 3, 4) else {}),
+            **({"terrainScenes": terrain_scenes} if battle in (2, 3, 4, 5, 6) else {}),
         ),
     )
     report = dict(
@@ -517,7 +539,8 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     scene = json.loads(scene_path.read_text(encoding="utf-8"))
     if (
         scene["version"] != 1
-        or scene["encounter"] not in ("battle-1", "battle-2", "battle-3", "battle-4")
+        or scene["encounter"]
+        not in ("battle-1", "battle-2", "battle-3", "battle-4", "battle-5", "battle-6")
         or "fieldDeath" in scene
     ):
         raise ValueError("selected scene field boundary")
@@ -527,7 +550,14 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     allies = [
         {"character": r["character"], "sprite": r["sprite"]}
         for r in compiler.initial_ally_sprites()[
-            : {"battle-1": 3, "battle-2": 4, "battle-3": 12, "battle-4": 5}[scene["encounter"]]
+            : {
+                "battle-1": 3,
+                "battle-2": 4,
+                "battle-3": 12,
+                "battle-4": 5,
+                "battle-5": 6,
+                "battle-6": 6,
+            }[scene["encounter"]]
         ]
     ]
     enemy_table = json.loads(
@@ -538,6 +568,10 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
         species.append("HUGE_BAT")
     if scene["encounter"] == "battle-4":
         species = ["GALAM_ARCHER", "GALAM_SOLDIER", "HUGE_BAT"]
+    if scene["encounter"] in ("battle-5", "battle-6"):
+        species = ["GALAM_ARCHER", "GALAM_SOLDIER", "GALAM_KNIGHT", "GALAM_MAGE"]
+        if scene["encounter"] == "battle-6":
+            species.append("DARK_CLERIC")
     enemy_sprites = [
         dict(code=code, sprite=rom[enemy_table + compiler.equates["ENEMY_" + code]])
         for code in species
@@ -602,7 +636,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(1, 2, 3, 4), default=1)
+    parser.add_argument("--battle", type=int, choices=(1, 2, 3, 4, 5, 6), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

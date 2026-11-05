@@ -66,7 +66,7 @@ internal static class ExplorationTextRunner
             TextSettings: not null, LogicalText: not null, LogicalView: not null };
 
     internal static bool BattleReturn(StoryState story) => story is
-        { Continuation: ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded,
+        { Continuation: ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded or ProgramContinuation.DefeatedProgramFinished,
             EnteringBattle.Outcome: not null, OutcomeReturn: not null, EventCaller: null, Cursor: not null,
             TextSettings: not null, LogicalText: not null, LogicalView: not null };
 

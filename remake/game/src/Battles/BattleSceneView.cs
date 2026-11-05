@@ -167,7 +167,7 @@ internal sealed partial class BattleSceneView : Control
             if (Content is { } content)
             {
                 _allyVisual = null;
-                if (content.Encounter != battle.Definition.Encounter || (ally is not null && !content.Allies.TryGetValue(ally.Definition.ClassRule, out _allyVisual)) ||
+                if (content.Encounter != battle.Definition.Encounter || (ally is not null && !content.TryAllyVisual(ally, out _allyVisual)) ||
                     (enemy is not null && !content.Enemies.TryGetValue(enemy.Actor, out _enemyVisual))) throw new InvalidOperationException("battle-scene-actor-unavailable");
                 string background = content.Background, ground = content.Ground;
                 if (content.TerrainScenes is { } terrain)

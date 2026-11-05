@@ -33,6 +33,8 @@ internal static class ProgramRunner
                 if (current.Story.Wait is not null) return Finish(Result(current, observations));
                 if (current.Story.Cursor is not { } cursor)
                 {
+                    if (current.Story.Continuation == ProgramContinuation.DefeatedProgramFinished)
+                        return Finish(BattleDefeatedProgram.Resume(definition, current, observations, rules));
                     if (current.BattleRound is { Program: true })
                         return Finish(BattleRoundContinuation.ResumeProgram(current, observations, rules));
                     if (current.Story.BattleRequest && current.Story.EventCaller is null)
@@ -62,7 +64,7 @@ internal static class ProgramRunner
                     }
                     if (current.Story.Continuation == ProgramContinuation.OutcomeMapLoaded)
                         current = Commit(current, current.Active, current.Story.Copy(null,
-                            continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true,
+                            continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true, clearDefeatedScene: true,
                             saveAnchor: new(current.Exploration!.Map, current.Exploration.PlayerEntity.Position, 3)), observations, "battle-returned");
                     if (current.Story.Continuation is ProgramContinuation.MapLoaded or ProgramContinuation.BeforeBattleFinished or ProgramContinuation.BattleLoadFinished)
                     {
@@ -165,13 +167,16 @@ internal static class ProgramRunner
                         active = new ActiveExploration(current.Exploration!.WithParty(OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration.Party, all: !reset.LivingOnly)));
                         break;
                     case ReturnBattleMap:
+                        // alt_MainLoopEntry returns through SwitchMap without CheckBattle.
                         var eventWarp = current.Story.ScriptWarp;
                         story = story.Copy(story.Cursor, clearWarp: true, clearScriptWarp: true);
                         var returning = eventWarp is null ? current.Story.OutcomeReturn ?? throw new BattleRuleException("outcome-return", "story.outcomeReturn")
                             : new FieldReturnAnchor(eventWarp.Map, eventWarp.Position, eventWarp.Facing);
                         current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
                             MapLoadMode.Rebuild, story, observations, rules,
-                            combatPlacement: eventWarp is not null || current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap);
+                            combatPlacement: eventWarp is not null || current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap,
+                            checkBattle: false);
+                        current = ExplorationMusicRunner.SelectFieldMusic(definition.Exploration!, current, observations);
                         continue;
                     case SourceStoryInstruction source:
                         try { active = SourceStoryRules.Apply(rules.SourceStory, definition, current, source, cursor); }
@@ -221,6 +226,8 @@ internal static class ProgramRunner
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
                     case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
                     case SetCameraTarget target:
+                        if (story.Continuation == ProgramContinuation.DefeatedProgramFinished && story.EnteringBattle?.Outcome?.BattleOrigin is { } cameraOrigin)
+                            target = target with { Position = new(target.Position.X + cameraOrigin.X, target.Position.Y + cameraOrigin.Y) };
                         if (story.TextSettings is not null)
                         {
                             ExplorationTextRunner.ValidateContext(current);
@@ -260,7 +267,10 @@ internal static class ProgramRunner
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case OpenPortrait portrait:
-                        if (story.TextSettings is not null && ExplorationPortraitRunner.HasCaller(story) && portrait.Entity is { } boundActor)
+                        EntityRef? portraitActor = portrait.UseEventSpeaker
+                            ? story.EntityEvent?.Entity ?? throw new BattleRuleException("portrait-event-speaker", "program.portrait", true)
+                            : portrait.Entity;
+                        if (story.TextSettings is not null && ExplorationPortraitRunner.HasCaller(story) && portraitActor is { } boundActor)
                         {
                             current = ExplorationPortraitRunner.Open(definition, current, boundActor, portrait.Flags, observations, false);
                             story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story;
@@ -268,8 +278,8 @@ internal static class ProgramRunner
                         }
                         // A skipped lookup or an existing window preserves the gate. Missing
                         // metadata cannot prove absence; an unknown incoming window stays unknown.
-                        if (portrait.Entity is null || story.PortraitWindow is not ClosedPortraitWindow) break;
-                        var portraitEntity = Entity(current, portrait.Entity.Value);
+                        if (portraitActor is null || story.PortraitWindow is not ClosedPortraitWindow) break;
+                        var portraitEntity = Entity(current, portraitActor.Value);
                         if (portraitEntity.Sprite is not { } portraitSprite || definition.Exploration!.Visuals is not { } visuals ||
                             !visuals.Sprites.TryGetValue(portraitSprite, out var portraitVisual))
                             story = story.Copy(story.Cursor, portraitWindow: new UnknownPortraitWindow());
@@ -403,7 +413,9 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, boundNod ? new NodWait(token, cue.Entity!.Value) : new PresentationWait(token, cue, restore), music: music); break;
                     case SetEntitySprite sprite:
                         var changedSprite = Entity(current, sprite.Entity);
-                        changedSprite = changedSprite with { Sprite = sprite.Sprite,
+                        int spriteId = sprite.Ally ? SceneEntities.ResolveAllySprite(current.Exploration!.Population
+                            ?? throw new BattleRuleException("ally-sprite-population", "program.sprite", true), current.Story.Flags, sprite.Sprite, sprite.Sprite) : sprite.Sprite;
+                        changedSprite = changedSprite with { Sprite = spriteId,
                             SpriteRequest = checked(changedSprite.SpriteRequest + 1), WaitingForSprite = true };
                         active = new ActiveExploration(current.Exploration!.WithEntity(changedSprite));
                         story = current.Story.Copy(cursor, new EntitySpriteWait(token, changedSprite.Slot, changedSprite.SpriteRequest));
@@ -478,6 +490,20 @@ internal static class ProgramRunner
                         var flashing = Entity(current, flash.Entity);
                         active = new ActiveExploration(current.Exploration!.WithEntity(flashing with { Visible = false }));
                         story = current.Story.Copy(cursor, new PositionFlashWait(token, flash.Entity, flashing.Visible));
+                        break;
+                    case CopyMapLayout copy:
+                        active = new ActiveExploration(current.Exploration!.WithLayout(current.Exploration.Layout.ApplyBlockCopy(copy.Copy)));
+                        break;
+                    case SetEntityDestination destination:
+                        active = EditEntity(current, destination.Entity, entity =>
+                        {
+                            short x = checked((short)(destination.Position.X * 384)), y = checked((short)(destination.Position.Y * 384));
+                            return entity with { Motion = entity.Motion with {
+                                XDestination = x, YDestination = y,
+                                XTravel = (ushort)Math.Abs(x - entity.Motion.X), YTravel = (ushort)Math.Abs(y - entity.Motion.Y),
+                                XVelocity = (short)(x < entity.Motion.X ? -32 : 32), YVelocity = (short)(y < entity.Motion.Y ? -32 : 32) } };
+                        });
+                        if (destination.Wait) story = current.Story.Copy(cursor, new EntityWait(token, destination.Entity, Completion: EntityWaitCompletion.MotionStopped));
                         break;
                     case SetEntityPosition position:
                         active = EditEntity(current, position.Entity, entity => entity with

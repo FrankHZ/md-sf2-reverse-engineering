@@ -279,6 +279,53 @@ public sealed class ExplorationMusicTests
         Assert.Same(music, session.Current.Story.Music);
     }
 
+    [Fact]
+    public void BattleReturnRestoresAreaMusicEvenWhenMapAndAreaAreUnchanged()
+    {
+        var session = StartMusic(0, edit: doc =>
+        {
+            foreach (var map in doc["world"]!["maps"]!.AsArray()) map!["onLoad"] = null;
+            foreach (var visual in doc["world"]!["presentation"]!["maps"]!.AsArray())
+                visual!["music"] = JsonNode.Parse("""[{"field":8,"battle":8}]""");
+            doc["world"]!["programs"]![0]!["instructions"] = new JsonArray(
+                Cue("Sound", "town"), Cue("Sound", "join"),
+                JsonNode.Parse("""{"op":"wait-ticks","ticks":1}"""),
+                JsonNode.Parse("""{"op":"battle-return-map"}"""),
+                JsonNode.Parse("""{"op":"wait-ticks","ticks":1}"""),
+                JsonNode.Parse("""{"op":"end"}"""));
+        });
+        var before = session.Current;
+        var field = before.Exploration!;
+        var current = before.WithStory(before.Story.Copy(before.Story.Cursor, before.Story.Wait,
+            outcomeReturn: new(field.Map, field.PlayerEntity.Position, 1)));
+        var result = ExplorationDispatcher.Submit(session.Definition, current,
+            new AdvanceSimulation(current.Story.Wait!.Token));
+        Assert.Null(result.Failure);
+        Assert.Equal(field.Map, result.Snapshot.Exploration!.Map);
+        Assert.Equal("town", result.Snapshot.Story.Music!.Cue);
+        Assert.Equal("join", result.Snapshot.Story.Music.Previous[0]);
+        Assert.Single(result.Observations, row => row.Kind == "field-map-music-selected" && row.Detail == "town");
+    }
+
+    [Fact]
+    public void OutcomeFieldMusicBindsTheFirstFiniteJoinAfterBattleHistoryWasInvalidated()
+    {
+        var session = StartMusic(0, edit: doc =>
+        {
+            foreach (var visual in doc["world"]!["presentation"]!["maps"]!.AsArray())
+                visual!["music"] = JsonNode.Parse("""[{"field":8,"battle":8}]""");
+        });
+        var before = session.Current;
+        var unbound = before.WithStory(before.Story.Copy(null,
+            music: before.Story.Music! with { HistoryBound = false, EndStep = null }));
+        var current = ExplorationMusicRunner.SelectFieldMusic(session.Definition.Exploration!, unbound, []);
+        var join = ExplorationMusicRunner.Request(session.Definition.Exploration!, current, "join",
+            new(current.ObservationSequence + 1));
+        Assert.True(join!.HistoryBound);
+        Assert.Equal(505, join.EndStep);
+        Assert.Equal(new[] { "town" }, join.Previous);
+    }
+
     private static GameSession StartMusic(int ticks, string? text = null, int speed = 2, int width = 6,
         string name = "Name", bool enabled = false, int command = 19, int end = 505, Action<JsonNode>? edit = null)
     {

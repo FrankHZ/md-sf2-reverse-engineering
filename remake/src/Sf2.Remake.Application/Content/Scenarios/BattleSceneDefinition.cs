@@ -19,4 +19,14 @@ public sealed record BattleSceneDefinition(string Encounter, string Background, 
     IReadOnlyDictionary<ActorRef, BattleSceneActorVisual> Enemies,
     IReadOnlyDictionary<int, string> Texts, IReadOnlyList<string> MemberNames, HealingSceneVisual? Healing = null, FieldDeathVisual? FieldDeath = null,
     IReadOnlyList<BattleSceneTerrainVisual>? TerrainScenes = null,
-    IReadOnlyDictionary<ActorRef, string>? EnemyNames = null);
+    IReadOnlyDictionary<ActorRef, string>? EnemyNames = null,
+    IReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>? Equipment = null)
+{
+    public bool TryAllyVisual(BattleActorState actor, out BattleSceneActorVisual visual)
+    {
+        ushort equipped = actor.SourceLoadout?.Items.FirstOrDefault(word => (word & 128) != 0 && (word & 127) != 127) ?? 0;
+        if (Equipment is not null && equipped != 0)
+            return Equipment.TryGetValue((actor.Definition.ClassRule, equipped & 127), out visual!);
+        return Allies.TryGetValue(actor.Definition.ClassRule, out visual!);
+    }
+}

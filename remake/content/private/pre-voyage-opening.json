@@ -1,6 +1,6 @@
 {
   "package": "private-battle01-to-battle02",
-  "gameplayRevision": 2,
+  "gameplayRevision": 3,
   "maps": [
     3,
     19,
@@ -11,13 +11,17 @@
     66,
     5,
     43,
-    17
+    17,
+    16,
+    18
   ],
   "battles": [
     1,
     2,
     3,
-    4
+    4,
+    5,
+    6
   ],
   "growthClasses": [
     {
@@ -39,16 +43,21 @@
     {
       "member": 4,
       "class": "MAGE"
+    },
+    {
+      "member": 5,
+      "class": "THIF"
     }
   ],
   "outcomeEgressMap": {
     "1": 3,
     "2": 3,
     "3": 5,
-    "4": 43
+    "4": 43,
+    "5": 16
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening through Battle04 and the Galam prison arrival.",
+  "controlledBoundary": "Ordinary opening through Galam captivity, Battle05 and first Battle06 player control.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -81,6 +90,18 @@
     {
       "symbol": "abcs_battle04",
       "path": "data/battles/entries/battle04/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "edcs_battle5",
+      "path": "data/battles/entries/battle05/cs_battleend.asm"
+    },
+    {
+      "symbol": "abcs_battle05",
+      "path": "data/battles/entries/battle05/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "bbcs_06",
+      "path": "data/battles/entries/battle06/cs_beforebattle.asm"
     }
   ],
   "programs": [
@@ -107,7 +128,9 @@
     66,
     5,
     43,
-    17
+    17,
+    16,
+    18
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -159,13 +182,20 @@
     ],
     "43": [
       612
+    ],
+    "16": [
+      663
+    ],
+    "17": [
+      505
     ]
   },
   "outcomeBattles": [
     1,
     2,
     3,
-    4
+    4,
+    5
   ],
   "searchMaps": [
     3,
@@ -230,14 +260,20 @@
     "SFX_DIALOG_BLEEP_5_TIMER_CC",
     "SFX_MENU_SWITCH_TIMER_D1",
     "SFX_VALIDATION_TIMER_D1",
-    "SFX_WARP_TIMER_D1"
+    "SFX_WARP_TIMER_D1",
+    "SFX_BIG_DOOR_RUMBLE",
+    "SFX_SECRET_PATH_ROCK"
   ],
   "paidRetreatBattles": [
     2,
     3,
-    4
+    4,
+    5
   ],
   "completedOnDefeat": [
     4
+  ],
+  "positionAfterLeaderDeath": [
+    5
   ]
 }

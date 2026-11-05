@@ -182,7 +182,7 @@ internal sealed partial class BattleMapViewport : Control
             node.SetMeta("physicalAppearance", physical.Value);
             node.Visible = true; node.Rotation = 0;
             node.Position = new(actor.Position.X * CellSize + 2, actor.Position.Y * CellSize + 4);
-            int? shownFacing = _battleVisuals is not null && _battleVisuals.Aliases.TryGetValue(actor.Actor, out int slot) &&
+            int? shownFacing = current.BattleFieldScene is null && _battleVisuals is not null && _battleVisuals.Aliases.TryGetValue(actor.Actor, out int slot) &&
                 _battleVisuals.Visuals.TryGetValue(slot, out var visual) ? visual.Facing : actor.Facing;
             node.Text = actor.Text + FacingMark(shownFacing);
             node.Modulate = actor.Selected ? Colors.Gold : actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;

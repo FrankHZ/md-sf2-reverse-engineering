@@ -195,7 +195,7 @@ internal static class ExplorationContentReader
             Require(authored ? provenance is null && battle.Definition.PrivateDefinitions is null :
                 battle.Definition.PrivateDefinitions is { Encounter.Scene.EnemyLeaderPresent: false },
                 "outcome-source", "map.battle.outcome", true);
-            Require(definition.Programs[route.Outcome!.DefeatedProgram.Program].Instructions.All(instruction => instruction is EndProgram or ReturnProgram),
+            Require(route.Outcome!.DefeatedScene || definition.Programs[route.Outcome.DefeatedProgram.Program].Instructions.All(instruction => instruction is EndProgram or ReturnProgram),
                 "defeated-program", "map.battle.outcome.defeated", true);
             int index = System.Array.FindIndex(encounters, encounter => encounter.Encounter == route.Encounter);
             var encounter = encounters[index];
@@ -215,7 +215,7 @@ internal static class ExplorationContentReader
                     !OriginalMapTraversal.IsBlocked(egress.Layout, route.Outcome.EgressPosition),
                     "outcome-egress", "map.battle.outcome.egress");
             }
-            var outcome = new BattleOutcomeDefinition(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor);
+            var outcome = new BattleOutcomeDefinition(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor, route.Outcome.DeathPositions);
             var source = battle.Definition.PrivateDefinitions;
             Require(!route.Outcome.PaidRetreat || source is not null, "private-retreat-definition", "map.battle.outcome.paidRetreat");
             encounters[index] = route.Outcome.PaidRetreat
@@ -333,8 +333,21 @@ internal static class ExplorationContentReader
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
     {
         ObjectOptional(row, "outcome", ["after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress"],
-            "battleOrigin", "paidRetreat", "completedDefeatMap");
-        // Nonempty defeated programs remain unsupported; admitted leader cleanup uses its finite binding.
+            "battleOrigin", "paidRetreat", "completedDefeatMap", "deathPositions", "defeatedScene");
+        IReadOnlyDictionary<int, MapPosition>? positions = null;
+        if (row.TryGetProperty("deathPositions", out var positionRows))
+        {
+            var parsed = new Dictionary<int, MapPosition>();
+            foreach (var entry in positionRows.EnumerateArray())
+            {
+                Object(entry, "deathPosition", "slot", "position");
+                int slot = Number(entry, "slot", 0, 159);
+                Require((slot < 30 || slot >= 128) && parsed.TryAdd(slot, Position(entry.GetProperty("position"))),
+                    "death-position-slot", "outcome.deathPositions");
+            }
+            Require(parsed.Count > 0, "death-position-required", "outcome.deathPositions");
+            positions = new System.Collections.ObjectModel.ReadOnlyDictionary<int, MapPosition>(parsed);
+        }
         var egress = row.GetProperty("egress");
         Object(egress, "egress", "map", "position", "facing");
         return new(Required("after"), Number(row, "joinMember", 0, 29),
@@ -342,7 +355,8 @@ internal static class ExplorationContentReader
             (byte)Number(row, "victoryFacing", 0, 3), new(Id(egress, "map")), Position(egress.GetProperty("position")), (byte)Number(egress, "facing", 0, 3),
             row.TryGetProperty("battleOrigin", out var origin) ? Position(origin) : null,
             row.TryGetProperty("paidRetreat", out _) && Boolean(row, "paidRetreat"),
-            row.TryGetProperty("completedDefeatMap", out _) ? new MapId(Id(row, "completedDefeatMap")) : null);
+            row.TryGetProperty("completedDefeatMap", out _) ? new MapId(Id(row, "completedDefeatMap")) : null,
+            positions, row.TryGetProperty("defeatedScene", out _) && Boolean(row, "defeatedScene"));
         ProgramLocation Required(string name)
         {
             var value = Location(row.GetProperty(name));
@@ -385,34 +399,35 @@ internal static class ExplorationContentReader
             }).ToArray()) : null);
     }
 
+    private static WorkingMapBlockCopy ReadCopy(JsonElement copy)
+    {
+        Object(copy, "blockCopy", "source", "destination", "width", "height");
+        var source = Position(copy.GetProperty("source"));
+        var destination = Position(copy.GetProperty("destination"));
+        int width = Number(copy, "width", 1, 64), height = Number(copy, "height", 1, 64);
+        Require(source.X + width <= 64 && source.Y + height <= 64 && destination.X + width <= 64 && destination.Y + height <= 64,
+            "block-copy-bounds", "layoutEvents");
+        return new(source.X, source.Y, destination.X, destination.Y, width, height);
+    }
+
     private static ExplorationLayoutEvents ReadLayoutEvents(JsonElement row)
     {
         Object(row, "layoutEvents", "doors", "flags", "roofs");
-        WorkingMapBlockCopy Copy(JsonElement copy)
-        {
-            Object(copy, "blockCopy", "source", "destination", "width", "height");
-            var source = Position(copy.GetProperty("source"));
-            var destination = Position(copy.GetProperty("destination"));
-            int width = Number(copy, "width", 1, 64), height = Number(copy, "height", 1, 64);
-            Require(source.X + width <= 64 && source.Y + height <= 64 && destination.X + width <= 64 && destination.Y + height <= 64,
-                "block-copy-bounds", "layoutEvents");
-            return new(source.X, source.Y, destination.X, destination.Y, width, height);
-        }
         var doors = Array(row, "doors").Select(door =>
         {
             Object(door, "door", "trigger", "copy");
-            return new ExplorationDoor(Position(door.GetProperty("trigger")), Copy(door.GetProperty("copy")));
+            return new ExplorationDoor(Position(door.GetProperty("trigger")), ReadCopy(door.GetProperty("copy")));
         }).ToArray();
         var flags = Array(row, "flags").Select(flag =>
         {
             Object(flag, "flagCopy", "flag", "copy");
-            return new ExplorationFlagCopy(Number(flag, "flag", 0, 65535), Copy(flag.GetProperty("copy")));
+            return new ExplorationFlagCopy(Number(flag, "flag", 0, 65535), ReadCopy(flag.GetProperty("copy")));
         }).ToArray();
         var roofs = Array(row, "roofs").Select(roof =>
         {
             Object(roof, "roof", "trigger", "copy", "clear");
             var trigger = Position(roof.GetProperty("trigger"));
-            var copy = Copy(roof.GetProperty("copy"));
+            var copy = ReadCopy(roof.GetProperty("copy"));
             return new MapBlockCopyActionRecord(new(trigger.X, trigger.Y), Boolean(roof, "clear")
                 ? MapBlockRegionMutation.Clear(copy.DestinationX, copy.DestinationY, copy.Width, copy.Height)
                 : MapBlockRegionMutation.CopyFrom(copy));
@@ -510,17 +525,24 @@ internal static class ExplorationContentReader
                     row.TryGetProperty("nameMember", out _) ? Number(row, "nameMember", 0, 29) : null,
                     row.TryGetProperty("text", out _) ? Number(row, "text", 0, 65535) : null, narration);
             case "open-portrait":
-                Object(row, opcode, "op", "entity", "flags");
+                ObjectOptional(row, opcode, ["op", "entity", "flags"], "useEventSpeaker");
                 return new OpenPortrait(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")),
-                    (byte)Number(row, "flags", 0, 255));
+                    (byte)Number(row, "flags", 0, 255), row.TryGetProperty("useEventSpeaker", out _) && Boolean(row, "useEventSpeaker"));
             case "close-portrait": Object(row, opcode, "op"); return new ClosePortrait();
             case "wait-text-input": Object(row, opcode, "op"); return new WaitForTextInput();
             case "close-text": Object(row, opcode, "op"); return new CloseText();
             case "wait-view": Object(row, opcode, "op"); return new WaitForView();
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));
             case "sprite":
+            case "ally-sprite":
                 Object(row, opcode, "op", "entity", "sprite");
-                return new SetEntitySprite(new(Text(row, "entity")), Number(row, "sprite", 30, 255));
+                return new SetEntitySprite(new(Text(row, "entity")), Number(row, "sprite", opcode == "sprite" ? 30 : 0, opcode == "sprite" ? 255 : 29), opcode == "ally-sprite");
+            case "entity-destination":
+                Object(row, opcode, "op", "entity", "position", "wait");
+                return new SetEntityDestination(new(Id(row, "entity")), Position(row.GetProperty("position")), Boolean(row, "wait"));
+            case "copy-layout":
+                Object(row, opcode, "op", "copy");
+                return new CopyMapLayout(ReadCopy(row.GetProperty("copy")));
             case "face":
                 ObjectOptional(row, opcode, "refreshSprite", "op", "entity", "facing");
                 return new SetEntityFacing(new(Id(row, "entity")), (byte)Number(row, "facing", 0, 7),
@@ -713,7 +735,7 @@ internal static class ExplorationContentReader
                     case TransferToMap transfer: Require(definition.Maps.ContainsKey(transfer.Map), "missing-map", "program.map"); break;
                     case QueueMapWarp warp: Require(definition.Maps.ContainsKey(warp.Map), "missing-map", "program.map"); break;
                     case LoadSceneMap load: Require(definition.Maps.ContainsKey(load.Map), "missing-map", "program.map"); break;
-                    case SetEntitySprite sprite when definition.Visuals is { } visuals:
+                    case SetEntitySprite { Ally: false } sprite when definition.Visuals is { } visuals:
                         Require(visuals.Sprites.ContainsKey(sprite.Sprite), "missing-sprite-visual", "program.sprite"); break;
                     case AddMapEntity add when definition.Visuals is { } visuals:
                         Require(visuals.Sprites.ContainsKey(add.Sprite), "missing-sprite-visual", "program.sprite"); break;

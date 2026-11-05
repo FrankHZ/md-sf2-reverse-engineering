@@ -141,7 +141,7 @@ internal static class BattleChoices
         bool Visual(ActorRef id, bool cast)
         {
             var member = battle.GetActor(id);
-            if (!content.Allies.TryGetValue(member.Definition.ClassRule, out var visual) ||
+            if (!content.TryAllyVisual(member, out var visual) ||
                 visual.IdleTicks <= 0 || visual.Frames.Count == 0 ||
                 !visual.Frames.All(content.Rasters.ContainsKey) || !visual.Sequences.ContainsKey("idle") ||
                 cast && !visual.Sequences.ContainsKey("cast")) return false;

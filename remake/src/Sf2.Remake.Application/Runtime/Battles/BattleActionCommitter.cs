@@ -32,9 +32,17 @@ internal static class BattleActionCommitter
                 RandomRange: effect.RandomRange, RandomValue: effect.RandomValue, Target: effect.Target));
         if (hook)
             observations.Add(new(++sequence, revision, current.Story.EnteringBattle?.CompletedFlag is { } completed &&
-                current.Story.Flags.Contains(completed) ? "enemy-defeated-program-skipped" : "enemy-defeated-program-none"));
+                current.Story.Flags.Contains(completed) ? "enemy-defeated-program-skipped" : current.Story.EnteringBattle?.Outcome is { DefeatedScene: true }
+                    ? "enemy-defeated-program-pending" : "enemy-defeated-program-none"));
         foreach (var effect in effects.Where(effect => effect.Kind is "death-cleanup" or "kills" or "defeats"))
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));
+        if (hook && current.Story.EnteringBattle?.Outcome is { DefeatedScene: true } &&
+            !(current.Story.EnteringBattle.CompletedFlag is { } seen && current.Story.Flags.Contains(seen)))
+        {
+            var pending = new DefeatedProgramState(battle, actor, destination, deaths);
+            return new(current.SessionId, revision, sequence, new ActiveBattle(battle, null),
+                current.Story.Copy(null, defeatedScene: pending), SessionStopReason.SimulationWait);
+        }
         if (deaths.Actors.Count > 0)
         {
             var pending = new SessionSnapshot(current.SessionId, revision, sequence,

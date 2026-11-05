@@ -70,7 +70,8 @@ public sealed record ExplorationBattleRoute(string Encounter, int? UnlockedFlag,
     ExplorationOutcomeRoute? Outcome = null);
 public sealed record ExplorationOutcomeRoute(ProgramLocation AfterProgram, int JoinMember,
     ProgramLocation DefeatedProgram, ProgramLocation DefeatProgram, ProgramLocation ReturnProgram, MapId BattleMap, byte VictoryFacing,
-    MapId EgressMap, MapPosition EgressPosition, byte EgressFacing, MapPosition? BattleOrigin = null, bool PaidRetreat = false, MapId? CompletedDefeatMap = null);
+    MapId EgressMap, MapPosition EgressPosition, byte EgressFacing, MapPosition? BattleOrigin = null, bool PaidRetreat = false, MapId? CompletedDefeatMap = null,
+    IReadOnlyDictionary<int, MapPosition>? DeathPositions = null, bool DefeatedScene = false);
 
 // The source compares the LONG containing palette colors 2 and 3. These are
 // logical CRAM words, independent of the host's rendered brightness.

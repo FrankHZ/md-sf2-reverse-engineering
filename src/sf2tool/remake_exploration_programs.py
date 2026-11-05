@@ -9,7 +9,7 @@ from typing import Any
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.remake_exploration_joins import join_selector, join_service
-from sf2tool.remake_exploration_scene import scene_operation, sound_operation
+from sf2tool.remake_exploration_scene import portrait_operations, scene_operation, sound_operation
 from sf2tool.remake_exploration_services import church_service, shop_service
 
 
@@ -391,6 +391,7 @@ class OriginalPrograms:
         speaker = None
         event_speaker = True
         narration = False
+        saved_speaker = (speaker, event_speaker)
         self.programs[symbol]["entitiesRunning"] = not any(
             row["opcode"] in ("chkFlg", "txt", "script", "rts") for row in rows
         )
@@ -461,7 +462,14 @@ class OriginalPrograms:
                 ["d2", "((CURRENT_SPEECH_SFX-$1000000)).w"],
             ):
                 # These stores are represented by the following typed dialogue speaker binding.
-                pass
+                if args[0].startswith("((CURRENT_SPEECH_SFX"):
+                    saved_speaker = (speaker, event_speaker)
+            elif op == "move.w" and args == [
+                "((SPEECH_SFX_COPY-$1000000)).w",
+                "((CURRENT_SPEECH_SFX-$1000000)).w",
+            ]:
+                speaker, event_speaker = saved_speaker
+                narration = False
             elif (
                 op == "move.b"
                 and len(args) == 2
@@ -476,14 +484,10 @@ class OriginalPrograms:
             elif op == "jsr" and args == ["GetEntityPortaitAndSpeechSfx"]:
                 speaker = self.entity(str(registers["d0"]))
             elif op == "jsr" and args == ["DisplayCurrentPortrait"]:
-                event_speaker = False
+                if narration and speaker is None:
+                    speaker, event_speaker = saved_speaker
                 narration = False
-                result.append({"op": "speaker", "entity": speaker})
-                result.append(
-                    {"op": "open-portrait", "entity": speaker, "flags": 0}
-                    if speaker is not None
-                    else self.native(op, source)
-                )
+                result.extend(portrait_operations(self, speaker, event_speaker, source))
             elif op == "jsr" and args == ["j_ClosePortraitWindow"]:
                 result.append({"op": "close-portrait"})
             elif (
@@ -565,15 +569,15 @@ class OriginalPrograms:
                     }
                 )
             elif op == "txt":
+                # Trap5_TextBox: raw DisplayText, no entity lookup or extra acknowledgement.
                 result.extend(
                     [
                         {"op": "text-cursor", "text": self.number(args[0])},
                         {
                             "op": "show-text",
                             "mode": "single",
-                            "speaker": speaker,
-                            "useEventSpeaker": speaker is None and event_speaker,
-                            **({"narration": True} if narration else {}),
+                            "speaker": None,
+                            "waitForAcknowledgement": False,
                             "explicitWindows": True,
                         },
                     ]
@@ -875,10 +879,8 @@ class OriginalPrograms:
                 result.append({"op": "yes-no", "flag": 89})
             elif op == "csWait":
                 result.append({"op": "wait-ticks", "ticks": self.number(args[0])})
-            elif op == "setSprite" and self.number(args[1]) >= 30:
-                result.append(
-                    {"op": "sprite", "entity": self.entity(args[0]), "sprite": self.number(args[1])}
-                )
+            elif op == "setSprite":
+                result.extend(scene_operation(self, op, args))
             elif op == "setFacing":
                 result.append(
                     {
@@ -907,7 +909,7 @@ class OriginalPrograms:
                         "fullBlack": {"period": 6 if op.startswith("slow") else None},
                     }
                 )
-            elif op in ("setPos", "setPosFlash", "roofEvent", "stepEvent"):
+            elif op in ("setPos", "setPosFlash", "roofEvent", "stepEvent", "setDest", "setBlocks"):
                 result.extend(scene_operation(self, op, args))
             elif op in (
                 "entityActions",

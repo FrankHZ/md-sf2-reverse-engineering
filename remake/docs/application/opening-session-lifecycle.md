@@ -298,7 +298,12 @@ and Chester. Jaha is initialized only when retained growth/encounter content inc
 pickup receipts use the source item flags in saved story progress. Persistence retains existing
 battle custody separately; Search adds no duplicate pickup ledger.
 
-Fresh world counters are step0/battle-request false and source reset EgressMap0. Text settings are
+Fresh world counters are step0/battle-request false. EgressMap is Map3: the Witch New Game
+caller overwrites the earlier InitializeGameSettings zero with GAMESTART_MAP before its initial
+SaveGame/MainLoop handoff. The [accepted Witch evidence](../../../docs/research/presentation/special-screens.md)
+and [Map3 start observation](../../../docs/research/chapters/grans-opening/map3-admitted-start.md)
+own that boundary. New Game and its initial save carry Map3; old saved zero values are preserved
+without migration. Text settings are
 message speed2/mouth0/view0. Each map must provide admitted `basePalette`; initial current/base
 colors are the Map3 base and fade period3 follows pinned `code/gameflow/start/systeminit.asm` and
 `gameintro.asm` writes to `FADING_COUNTER_MAX`. This is static source plus product initialization,
@@ -525,12 +530,13 @@ best-effort load, inferred migration or fallback to a new game. Future formats r
 reviewed migration only if a real retained save needs one.
 
 The private opening selection declares its gameplay revision. Existing four-member worlds use
-revision 1. The five-member world uses revision 2 because New Game generates Kazin's level-4
-stats from the main RNG before the player moves. A four-member save lacks those attained stats
-and stores only the later RNG value. To Continue that slot, select the four-member world. Start
-the five-member world in a separate slot and use the same world when continuing it. Selecting
+revision 1 and five-member worlds use revision 2. The current six-member world uses revision 3:
+New Game generates Kazin's level-4 MAGE and Slade's level-5 THIF stats from the main RNG before
+the player moves. Older saves lack those attained stats and store only the later RNG value.
+Continue each older slot with its matching world. Start the six-member world in a separate slot
+and use the same world when continuing it. Selecting
 a mismatched revision shows the existing matching-content message before restoring the party.
-The [campaign preparation](pre-voyage-campaign.md#preparing-the-ordinary-selection) identifies both selections.
+The [campaign preparation](pre-voyage-campaign.md#preparing-the-ordinary-selection) identifies the selections.
 
 Application owns DTO capture/validation/restore; Content owns bounded JSON admission/encoding and
 binding to admitted definitions; the host owns a small filesystem adapter. Domain has no file/Godot

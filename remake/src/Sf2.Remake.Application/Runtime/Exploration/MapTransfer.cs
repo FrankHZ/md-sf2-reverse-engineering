@@ -13,7 +13,7 @@ internal static class MapTransfer
     {
         var preview = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(MapEventDispatcher.Roof(candidate)), current.Story, current.StopReason);
-        _ = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
+        var admitted = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
             warp.LoadMode, current.Story, [], rules);
         if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null) return;
         ValidateDisplay(current.Story.Display);
@@ -21,11 +21,11 @@ internal static class MapTransfer
         if (warp.LoadMode == MapLoadMode.Rebuild && target.BasePalette is not { Valid: true })
             throw new BattleRuleException("warp-palette-binding", "map.basePalette", true);
         // Reject statically known unsupported display effects before consuming the move.
-        var visited = new HashSet<string>();
+        var visited = new HashSet<ProgramLocation>();
         void Check(ProgramLocation? location)
         {
-            if (location is not { } entry || !visited.Add(entry.Program)) return;
-            foreach (var instruction in definition.Exploration.Programs[entry.Program].Instructions)
+            if (location is not { } entry || !visited.Add(entry)) return;
+            foreach (var instruction in definition.Exploration.Programs[entry.Program].Instructions.Skip(entry.Instruction))
                 switch (instruction)
                 {
                     case PresentCue { Kind: PresentationCueKind.FlashWhite } cue: ValidateFlash(cue); break;
@@ -37,7 +37,20 @@ internal static class MapTransfer
                     case BranchEntityCoordinates branch: Check(branch.Target); break;
                 }
         }
-        Check(target.OnLoad);
+        // Resolve only the pure entry dispatch, before any operation can mutate flags.
+        // After that boundary retain the conservative scan of every possible branch.
+        var start = target.OnLoad;
+        var dispatch = new HashSet<ProgramLocation>();
+        while (start is { } at && dispatch.Add(at))
+        {
+            var instruction = definition.Exploration.Programs[at.Program].Instructions[at.Instruction];
+            if (instruction is BranchFlag branch)
+                start = admitted.Story.Flags.Contains(branch.Flag) == branch.WhenSet
+                    ? branch.Target : new(at.Program, at.Instruction + 1);
+            else if (instruction is JumpProgram jump) start = jump.Target;
+            else break;
+        }
+        Check(start);
     }
 
     internal static void ValidateDisplay(ExplorationDisplay? display)
@@ -260,7 +273,7 @@ internal static class MapTransfer
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,
         MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules rules,
-        bool combatPlacement = false)
+        bool combatPlacement = false, bool checkBattle = true)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
         CaravanRuntime.RequireOrdinaryMapOperation(world);
@@ -269,7 +282,7 @@ internal static class MapTransfer
         target = target.SelectSetup(current.Story.Flags);
         // MainLoop selects BattleLoop before ExplorationLoop. The before-battle script owns
         // its map load and entity replacement; retain the actual field scene until those calls.
-        if (world.Party.NewBattle is not null && BattleEntry.First(definition, current.Story, target, rules) is { } battle)
+        if (checkBattle && world.Party.NewBattle is not null && BattleEntry.First(definition, current.Story, target, rules) is { } battle)
             return BattleEntry.Select(current, continuation.Copy(continuation.Cursor,
                 returnAnchor: new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing)), battle, observations);
         ExplorationState next;

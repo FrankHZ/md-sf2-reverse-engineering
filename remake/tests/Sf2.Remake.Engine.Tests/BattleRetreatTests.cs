@@ -54,11 +54,12 @@ public sealed class BattleRetreatTests
     }
 
     [Theory]
-    [InlineData("camp-a", false)]
-    [InlineData("camp-b", true)]
-    public void PaidRetreatWaitsThenReturnsAndWalksIntoFreshEncounter(string destination, bool deadAlly)
+    [InlineData("camp-a", false, false)]
+    [InlineData("camp-b", true, false)]
+    [InlineData("camp-b", false, true)]
+    public void PaidRetreatWaitsThenReturnsAndWalksIntoFreshEncounter(string destination, bool deadAlly, bool armedReturn)
     {
-        var session = StartRetreat(8, destination, deadAlly);
+        var session = StartRetreat(8, destination, deadAlly, armedReturn);
         var id = session.Current.SessionId;
         var before = session.Current.Battle;
         Select(session);
@@ -121,6 +122,28 @@ public sealed class BattleRetreatTests
         Assert.Equal(20, session.Current.Battle.GetActor(Caster).Mp);
         Assert.Equal(deadAlly ? null : before.GetActor(new("guard-a")).Deployment.Position, session.Current.Battle.GetActor(new("guard-a")).Position);
         Assert.NotNull(session.Current.Selection);
+    }
+
+    [Fact]
+    public void SourceRetreatReturnsToAnArmedMapWithoutSelectingAnotherBattle()
+    {
+        var session = StartRetreat(8, "camp-b", armedReturn: true);
+        var source = session.Current.Battle;
+        var policy = new NewBattleStartPolicy("authored", "engine behavior", "return boundary", 0,
+            true, true, true, false, false, null);
+        var battle = new EngineBattleState(source.Definition, source.Actors, source.MainSeed,
+            source.ThinkingSeed, source.Round, source.Queue, source.Cursor, source.Gold, policy);
+        var current = new SessionSnapshot(session.Current.SessionId, session.Current.Revision,
+            session.Current.ObservationSequence, new ActiveBattle(battle, null), session.Current.Story,
+            SessionStopReason.PresentationWait);
+        var result = BattleOutcome.ReturnFromRetreat(session.Definition, current, [], session.Rules);
+        Assert.Null(result.Failure);
+        Assert.True(result.Snapshot.CanWaitAtInput);
+        Assert.Equal(new MapId("camp-b"), result.Snapshot.Exploration!.Map);
+        Assert.Equal(new MapPosition(1, 1), result.Snapshot.Exploration.PlayerEntity.Position);
+        Assert.Contains(402, result.Snapshot.Story.Flags);
+        Assert.Null(result.Snapshot.Story.EnteringBattle);
+        Assert.DoesNotContain(result.Observations, e => e.Kind == "battle-selected");
     }
 
     [Theory]
@@ -249,7 +272,7 @@ public sealed class BattleRetreatTests
     private static void Select(GameSession session)
     { Accept(session, new Confirm()); Accept(session, new SelectSpell(Egress)); Accept(session, new SelectTarget(Caster)); }
 
-    private static GameSession StartRetreat(byte mp, string liveDestination = "camp-a", bool deadAlly = false)
+    private static GameSession StartRetreat(byte mp, string liveDestination = "camp-a", bool deadAlly = false, bool armedReturn = false)
     {
         var document = Document();
         document["spells"] = JsonNode.Parse("""[{"id":"egress","level":1,"mpCost":8,"minimumRange":0,"maximumRange":0,"effect":{"kind":"retreat"}}]""");
@@ -272,7 +295,7 @@ public sealed class BattleRetreatTests
                 [new(ExplorationEventKind.Warp, 2, 1, null, null, new("arena"), new(1, 1))]),
             new ExplorationMapDefinition(new("camp-b"), layout, traversal, [],
                 [new(ExplorationEventKind.Warp, 2, 1, null, null, new("arena"), new(1, 1))],
-                battle: route with { UnlockedFlag = 999, Outcome = Outcome("camp-b") }) };
+                battle: route with { UnlockedFlag = armedReturn ? 402 : 999, Outcome = Outcome("camp-b") }) };
         var world = new ExplorationDefinition(maps, [new("empty", [new EndProgram()]),
             new("defeat", [new UnsupportedInstruction("forbidden-defeat", "test")]),
             new("initial", [new SetEgressMap(new(liveDestination)), new EndProgram()]),

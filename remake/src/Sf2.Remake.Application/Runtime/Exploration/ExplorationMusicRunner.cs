@@ -31,6 +31,22 @@ internal static class ExplorationMusicRunner
             current.StopReason);
     }
 
+    internal static SessionSnapshot SelectFieldMusic(ExplorationDefinition definition, SessionSnapshot current,
+        List<SessionObservation> observations)
+    {
+        if (definition.Visuals is not { } visuals || visuals.Audio.Count == 0) return current;
+        var world = current.Exploration!;
+        int area = Area(current);
+        if (!visuals.Maps.TryGetValue(world.Map, out var map) || area >= map.Music.Count)
+            throw new BattleRuleException("map-music-unavailable", "story.music", true);
+        var selected = visuals.Audio.Where(pair => pair.Value.Command == map.Music[area].Field).ToArray();
+        if (selected.Length != 1) throw new BattleRuleException("map-music-binding", "story.music", true);
+        var music = Request(definition, current, selected[0].Key, new(current.ObservationSequence + 1));
+        return ProgramRunner.Commit(current, current.Active,
+            current.Story.Copy(current.Story.Cursor, current.Story.Wait, music: music), observations,
+            "field-map-music-selected", selected[0].Key);
+    }
+
     internal static MusicProgress? Request(ExplorationDefinition definition, SessionSnapshot current, string? cue, WaitToken token)
     {
         if (current.Story.Wait is MusicWait)

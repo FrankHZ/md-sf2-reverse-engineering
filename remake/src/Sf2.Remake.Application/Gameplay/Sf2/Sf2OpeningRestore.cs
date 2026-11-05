@@ -26,7 +26,7 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
         if (data.Recipe != InitialRecipe) return null;
         if (data.Map != "map-3" || data.X != 56 || data.Y != 3 || data.Facing != 3 ||
             !data.Flags.Order().SequenceEqual(new[] { 0, 32, 80 }) || data.Gold != 0 || data.OnceFlags.Count != 0 || data.Deals.Count != 0 ||
-            data.StepCounter != 0 || data.EgressMap != "map-0" || data.TextCursor != 0 || data.FadePeriod != 3 ||
+            data.StepCounter != 0 || data.EgressMap is not ("map-0" or "map-3") || data.TextCursor != 0 || data.FadePeriod != 3 ||
             data.TextSettings != new ExplorationTextSettings(2, 0, 0) || data.Difficulty != 0 || data.AllyAutoBattle || data.OpponentControl ||
             !data.ActiveAllies.SequenceEqual(new[] { "ally-0" }) ||
             data.Allies.Any(ally => ally.Hp != ally.MaxHp || ally.Mp != ally.MaxMp || ally.Exp != 0 || ally.Kills != 0 ||
@@ -39,12 +39,12 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
         var palette = map.BasePalette!;
         return new(new("map-3"), new("entity-0"), new(56, 3), 3, 32, data.Flags, party,
             display: new(3, palette, palette, FullFadeVisibility.BaseRestored), textSettings: data.TextSettings,
-            stepCounter: 0, egressMap: new("map-0")) { Names = data.Names };
+            stepCounter: 0, egressMap: new(data.EgressMap)) { Names = data.Names };
     }
 
     public void ValidateRegisters(OpeningSaveData data)
     {
-        // Fresh system initialization uses map0; admitted ordinary defeat uses Map3.
+        // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
         if (data.EgressMap is not ("map-0" or "map-3"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }

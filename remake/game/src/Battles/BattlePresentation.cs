@@ -2,6 +2,7 @@ using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
@@ -33,11 +34,22 @@ internal static class BattleSnapshotProjection
                 _ => GameText.Get("battle.status.confirm"),
             };
         var death = snapshot.BattleScene is { IsFieldDeath: true } field ? field : null;
-        var markers = battle.Actors.Where(a => a.Position is not null).Select(a => new BattleActorMarker(
-            a.Actor, snapshot.BattleMovement?.Actor == a.Actor ? snapshot.BattleMovement.From :
-                selection?.Actor == a.Actor ? selection.Preview.Destination : a.Position!, a.IsAlly, a.Actor == selection?.Actor,
+        var staged = snapshot.BattleFieldScene;
+        var mapOrigin = snapshot.Story.EnteringBattle?.Outcome?.BattleOrigin ?? new MapPosition(0, 0);
+        ExplorationEntity? Entity(BattleActorState actor)
+        {
+            int slot = actor.IsAlly ? actor.Deployment.Initialization?.AllyPartyMember ?? actor.ProcessingOrder : actor.ProcessingOrder;
+            var reference = new EntityRef("entity-" + slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            return staged?.Entities.TryGetValue(reference, out var entity) == true && entity.Entity == reference ? entity : null;
+        }
+        MapPosition Position(BattleActorState actor) => Entity(actor) is { } entity
+            ? new(entity.Position.X - mapOrigin.X, entity.Position.Y - mapOrigin.Y)
+            : snapshot.BattleMovement?.Actor == actor.Actor ? snapshot.BattleMovement.From
+            : selection?.Actor == actor.Actor ? selection.Preview.Destination : actor.Position!;
+        var markers = battle.Actors.Where(a => a.Position is not null && (staged is null || Entity(a) is { Visible: true })).Select(a => new BattleActorMarker(
+            a.Actor, Position(a), a.IsAlly, a.Actor == selection?.Actor,
             $"{CharacterNames.Battle(snapshot.Story, a, names)}\n{a.Hp}/{a.MaxHp}",
-            death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : a.Facing,
+            death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : Entity(a)?.Motion.Facing ?? a.Facing,
             death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit,
             selection?.Target == a.Actor && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady)).ToArray();
         string Status(BattleActorState a) => (a.Status & 0x300) == 0 ? "" : " · " + GameText.Get("battle.status.silence", (a.Status & 0x300) >> 8);
@@ -48,7 +60,7 @@ internal static class BattleSnapshotProjection
             a.Actor == selection?.Target || a.Actor == candidate))) focus.Add(actor.Position!);
         if (death is not null)
             foreach (var id in death.DeadActors)
-                if (battle.GetActor(id).Position is { } position) focus.Add(position);
+                if (battle.GetActor(id).Position is not null) focus.Add(Position(battle.GetActor(id)));
         if (snapshot.BattleMovement is { } movement) { focus.Add(movement.From); focus.Add(movement.To); }
         string title = origin switch
         {

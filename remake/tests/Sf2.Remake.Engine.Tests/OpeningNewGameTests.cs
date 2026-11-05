@@ -66,6 +66,31 @@ public sealed class OpeningNewGameTests
         Assert.Equal(expectedSeed, again);
     }
 
+    [Fact]
+    public void ThiefInitialLevelConsumesGrowthAndHealsWithoutAddingSpells()
+    {
+        var curve = Array.AsReadOnly(Enumerable.Range(1, 29)
+            .Select(_ => new StatGrowthFraction(0, 0)).ToArray());
+        var growth = new BattleGrowthDefinition(10, 0,
+            [new(10, 10, curve), new(0, 0, []), new(5, 5, curve), new(3, 3, curve), new(6, 6, curve)],
+            [], new Dictionary<byte, SpellRef>());
+        var definition = new BattleActorDefinition(new("new-thief"), BattleClassRule.UnpromotedThief, 1,
+            10, 0, 5, 3, 6, false, 5, [],
+            sourceLoadout: new([127, 127, 127, 127], [63, 63, 63, 63]), growth: growth);
+        uint seed = 0x1234abcdu;
+        var input = OpeningPartyInitialization.Initialize(
+            new(definition, BattleFaction.Ally, 5, BattleControl.Player, null, new(1, 1)), 5, ref seed);
+        Assert.Equal(5, input.Progress!.Level);
+        Assert.Equal(10, input.Hp); Assert.Equal(0, input.Mp);
+        Assert.Empty(input.Progress.Spells);
+        Assert.All(input.SourceLoadout!.Spells, spell => Assert.Equal(63, spell));
+        // Four growing stats, two draws per stat, four levels; zero-MP growth draws none.
+        uint expected = 0x1234abcdu;
+        for (int i = 0; i < 32; i++) expected = BattleRandom.NextMain(expected, 128).After;
+        Assert.Equal(expected, seed);
+        Assert.Equal((byte)0, input.Exp); Assert.True(input.Initialized);
+    }
+
     private static OpeningNewGameReader Selected(uint main, uint thinking) => new(
         PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_EXPLORATION_CONTENT"),
         PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_DATA"), PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_SCENE"),
@@ -83,7 +108,7 @@ public sealed class OpeningNewGameTests
         Assert.Equal(new[] { 0, 32, 80 }, first.Current.Story.Flags);
         Assert.Equal(new MapPosition(56, 3), first.Current.Exploration!.PlayerEntity.Position);
         Assert.Equal((short)0, first.Current.Story.StepCounter); Assert.False(first.Current.Story.BattleRequest);
-        Assert.Equal(new MapId("map-0"), first.Current.Story.EgressMap);
+        Assert.Equal(new MapId("map-3"), first.Current.Story.EgressMap);
         var party = first.Current.Exploration.Party;
         Assert.Equal(4, party.Actors.Count); Assert.Equal(0u, party.MainSeed); Assert.Equal(uint.MaxValue, party.ThinkingSeed);
         Assert.Equal(0u, party.Gold); Assert.Equal(new ActorRef("ally-0"), Assert.Single(party.ActiveAllies!));
