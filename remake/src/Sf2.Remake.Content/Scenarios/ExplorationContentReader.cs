@@ -214,7 +214,12 @@ internal static class ExplorationContentReader
                     !OriginalMapTraversal.IsBlocked(egress.Layout, route.Outcome.EgressPosition),
                     "outcome-egress", "map.battle.outcome.egress");
             }
-            encounters[index] = encounter.WithOutcome(new(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor));
+            var outcome = new BattleOutcomeDefinition(leader!.Actor, encounter.LeaderCleanup?.Gate ?? firstEnemy!.Actor);
+            var source = battle.Definition.PrivateDefinitions;
+            Require(!route.Outcome.PaidRetreat || source is not null, "private-retreat-definition", "map.battle.outcome.paidRetreat");
+            encounters[index] = route.Outcome.PaidRetreat
+                ? encounter.WithOutcome(outcome, PrivateBattleActionBindings.RetreatSpells(source!), PrivateBattleActionBindings.RetreatItems(source!))
+                : encounter.WithOutcome(outcome);
         }
         foreach (var operation in programs.SelectMany(p => p.Instructions).OfType<OutcomePartyInstruction>())
         {
@@ -326,14 +331,16 @@ internal static class ExplorationContentReader
 
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
     {
-        ObjectOptional(row, "outcome", "battleOrigin", "after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress");
+        ObjectOptional(row, "outcome", ["after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress"],
+            "battleOrigin", "paidRetreat");
         // Nonempty defeated programs remain unsupported; admitted leader cleanup uses its finite binding.
         var egress = row.GetProperty("egress");
         Object(egress, "egress", "map", "position", "facing");
         return new(Required("after"), Number(row, "joinMember", 0, 29),
             Required("defeated"), Required("defeat"), Required("return"), battleMap,
             (byte)Number(row, "victoryFacing", 0, 3), new(Id(egress, "map")), Position(egress.GetProperty("position")), (byte)Number(egress, "facing", 0, 3),
-            row.TryGetProperty("battleOrigin", out var origin) ? Position(origin) : null);
+            row.TryGetProperty("battleOrigin", out var origin) ? Position(origin) : null,
+            row.TryGetProperty("paidRetreat", out _) && Boolean(row, "paidRetreat"));
         ProgramLocation Required(string name)
         {
             var value = Location(row.GetProperty(name));

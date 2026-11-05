@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Content.Scenarios;
 
@@ -8,7 +9,7 @@ namespace Sf2.Remake.Content.Persistence;
 
 internal static class OpeningLoadoutBindings
 {
-    internal static ScenarioDefinition Bind(ScenarioDefinition admitted)
+    internal static ScenarioDefinition Bind(ScenarioDefinition admitted, MapId openingMap)
     {
         var source = admitted.PrivateDefinitions!;
         ScenarioJson.Require(admitted.Exploration!.Programs.TryGetValue("map3-entityevent13", out var church) &&
@@ -46,6 +47,7 @@ internal static class OpeningLoadoutBindings
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {
             Persistence = new Sf2OpeningRestore(),
+            DefeatFallback = (new("map-0"), openingMap),
             FieldPreparation = PrivateFieldPreparation.Read(source, openingMaps),
         };
     }

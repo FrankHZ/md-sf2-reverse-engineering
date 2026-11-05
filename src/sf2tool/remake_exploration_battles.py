@@ -338,9 +338,10 @@ def compile_routes(compiler, selection, upstream):
                     "savePointMapCoordinates",
                 )
             ]
-            egress, ex, ey, facing = next(
-                row for row in savepoints if row[0] == selection["outcomeEgressMap"]
-            )
+            egress_map = selection["outcomeEgressMap"]
+            if isinstance(egress_map, dict):
+                egress_map = egress_map[str(battle_id)]
+            egress, ex, ey, facing = next(row for row in savepoints if row[0] == egress_map)
             route["outcome"] = {
                 "after": outcome_hooks[1],
                 "defeated": outcome_hooks[0],
@@ -355,6 +356,10 @@ def compile_routes(compiler, selection, upstream):
                     "facing": facing,
                 },
             }
+        if battle_id in selection.get("paidRetreatBattles", []):
+            if "outcome" not in route:
+                raise ValueError("paid retreat requires a field return")
+            route["outcome"]["paidRetreat"] = True
         battle_routes.setdefault(map_id, []).append(route)
     if "outcomeEgressMap" in selection:
         compiler.programs["source-ordinary-defeat"] = {

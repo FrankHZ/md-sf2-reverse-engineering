@@ -33,7 +33,11 @@
       "class": "WARR"
     }
   ],
-  "outcomeEgressMap": 3,
+  "outcomeEgressMap": {
+    "1": 3,
+    "2": 3,
+    "3": 5
+  },
   "controlledEntitySpeed": 32,
   "controlledBoundary": "Ordinary opening content through the Yeel encounter. The product reader supplies the initial state.",
   "additionalProgramSources": [
@@ -102,6 +106,12 @@
     "SFX_BLO": {
       "timerB": 204,
       "wavSha256": "574C5C91C185C4400593C9FC00020658E6E44E8E149FBB61FB55004F3A3FD48D"
+    },
+    "MUSIC_MAIN_THEME": {
+      "loopBegin": 358968,
+      "loopEnd": 3887119,
+      "timerB": 194,
+      "wavSha256": "E19BC7F1E5DD99E5863ECFC356EA02BF1CFE41A47BDFBA9244C4D299B6E76035"
     }
   },
   "presentationAtlases": {
@@ -131,7 +141,8 @@
   },
   "outcomeBattles": [
     1,
-    2
+    2,
+    3
   ],
   "searchMaps": [
     3,
@@ -140,5 +151,62 @@
     21,
     57
   ],
-  "basePalettes": true
+  "basePalettes": true,
+  "audioCues": [
+    "MUSIC_TOWN",
+    "MUSIC_JOIN",
+    "MUSIC_ATTACK",
+    "MUSIC_ENEMY_ATTACK",
+    "MUSIC_BATTLE_THEME_1",
+    "MUSIC_CASTLE",
+    "SFX_WARP_TIMER_CB",
+    "SFX_DIALOG_BLEEP_4_TIMER_CB",
+    "SFX_VALIDATION_TIMER_CB",
+    "SFX_DOOR_OPEN_TIMER_CB",
+    "SFX_MENU_SWITCH_TIMER_CB",
+    "SFX_DIALOG_BLEEP_2_TIMER_CB",
+    "SFX_DIALOG_BLEEP_6_TIMER_CB",
+    "SFX_DIALOG_BLEEP_5_TIMER_CB",
+    "SFX_WARP_TIMER_D2",
+    "SFX_MENU_SWITCH_TIMER_D2",
+    "SFX_DIALOG_BLEEP_6_TIMER_D2",
+    "SFX_DIALOG_BLEEP_2_TIMER_D2",
+    "SFX_DIALOG_BLEEP_5_TIMER_D2",
+    "SFX_VALIDATION_TIMER_D2",
+    "SFX_MENU_SWITCH_TIMER_BD",
+    "SFX_WALKING_TIMER_BD",
+    "SFX_VALIDATION_TIMER_BD",
+    "SFX_LIGHTNING_1_TIMER_CC",
+    "SFX_HIT_1_TIMER_C6",
+    "SFX_MENU_SELECTION_TIMER_BD",
+    "SFX_HEALING_TIMER_C6",
+    "SFX_BATTLEFIELD_DEATH_TIMER_BD",
+    "SFX_SPELL_CAST_TIMER_C6",
+    "SFX_LEVEL_UP_TIMER_C6",
+    "SFX_DIALOG_BLEEP_6_TIMER_BD",
+    "SFX_DIALOG_BLEEP_2_TIMER_BD",
+    "SFX_DIALOG_BLEEP_5_TIMER_BD",
+    "MUSIC_MAIN_THEME",
+    "SFX_MENU_SWITCH_TIMER_C2",
+    "SFX_MENU_SWITCH_TIMER_CC",
+    "SFX_VALIDATION_TIMER_C2",
+    "SFX_VALIDATION_TIMER_CC",
+    "SFX_DIALOG_BLEEP_6_TIMER_CC",
+    "SFX_WARP_TIMER_BD",
+    "SFX_DESOUL_HOVERING_TIMER_CC",
+    "SFX_PRISM_LASER_CUTSCENE_FIRING_TIMER_CC",
+    "MUSIC_SAD_THEME_2",
+    "SFX_BOOST",
+    "MUSIC_SAD_THEME_1",
+    "MUSIC_SAD_JOIN",
+    "SFX_BLO",
+    "SFX_WARP_TIMER_C2",
+    "SFX_DIALOG_BLEEP_5_TIMER_D1",
+    "SFX_DIALOG_BLEEP_6_TIMER_D1",
+    "SFX_DIALOG_BLEEP_5_TIMER_CC"
+  ],
+  "paidRetreatBattles": [
+    2,
+    3
+  ]
 }

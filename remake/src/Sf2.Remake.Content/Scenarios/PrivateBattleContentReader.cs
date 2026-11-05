@@ -92,7 +92,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
         var palette = admitted.Definition.Exploration.Maps[old.Map].BasePalette!;
         // Source systeminit/gameintro restore period3; current colors start at the admitted map base.
         var display = new ExplorationDisplay(3, palette, palette, FullFadeVisibility.BaseRestored);
-        var product = Persistence.OpeningLoadoutBindings.Bind(admitted.Definition);
+        var product = Persistence.OpeningLoadoutBindings.Bind(admitted.Definition, admitted.Start.Map);
         return new(product, new(old.Map, old.Player, old.Position, old.Facing, old.Speed, old.Flags,
             party, display: display, textSettings: old.TextSettings, stepCounter: 0, egressMap: new("map-0")));
     }
@@ -102,7 +102,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
     {
         Require(admitted.Definition.Exploration!.Maps.Values.All(map => map.BasePalette is { Valid: true }),
             "initial-map-palette-required", "world.maps.basePalette");
-        return new(Persistence.OpeningLoadoutBindings.Bind(admitted.Definition), admitted.Start);
+        return new(Persistence.OpeningLoadoutBindings.Bind(admitted.Definition, admitted.Start.Map), admitted.Start);
     }
 
     internal static JsonElement Start() => JsonSerializer.SerializeToElement(new

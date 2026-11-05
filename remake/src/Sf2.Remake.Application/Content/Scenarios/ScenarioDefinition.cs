@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 
 [assembly: InternalsVisibleTo("Sf2.Remake.Content")]
 [assembly: InternalsVisibleTo("Sf2.Remake.Engine.Tests")]
@@ -24,6 +25,7 @@ public sealed class ScenarioDefinition
         EncounterScenes = new ReadOnlyDictionary<string, BattleSceneDefinition>((encounterScenes ?? (battleScenes is null ? [] : [battleScenes]))
             .ToDictionary(scene => scene.Encounter, StringComparer.Ordinal));
     }
+    internal (MapId Register, MapId Destination)? DefeatFallback { get; init; }
     internal Runtime.Persistence.IOpeningRestorePolicy? Persistence { get; init; }
     internal Runtime.Exploration.FieldPreparationDefinition? FieldPreparation { get; init; }
     public string Package { get; }

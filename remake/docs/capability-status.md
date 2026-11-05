@@ -3,6 +3,15 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
+## Ordinary opening through Battle03 outcomes
+
+The ordinary title selection connects Battle01/02, Yeel's optional guide, Battle03 combat and
+field return. Actual play reached Yeel after paid EGRESS and ordinary defeat, walked back into
+Battle03 and won. The carried party then walked on Map66 to Hawel's doorstep. Map43 entry,
+Kazin's formal recruitment, Battle04 and the Galam prison handoff remain pending.
+The [campaign agreement and native inputs](application/pre-voyage-campaign.md#ordinary-new-game-through-the-battle03-return)
+own the state transitions, save boundaries and private preparation.
+
 ## Finite Galam shop and purchased-supply closure
 
 **Implemented bounded capability, Standard with existing transactional/persistence High:** ordinary
@@ -139,8 +148,7 @@ The common state/content-driven session supports configurable authored packages 
 content. The accepted continuous Map3–Battle01 milestone is followed by bounded
 [Battle02 outcome/field return and re-entry](#battle02-outcome-implementation-agreement) and
 [Yeel–Battle03 play/control](#yeel-guide-through-battle03-implementation-agreement).
-Battle03 outcomes/Hawel recruitment, later campaign, full services and save/load remain outside those
-slices. [Local play](../README.md#run-locally) opens the title and an opening New Game; explicit
+The [ordinary campaign](#ordinary-opening-through-battle03-outcomes) connects those capabilities through the Battle03 outcomes. [Local play](../README.md#run-locally) opens the title and an opening New Game; explicit
 package/start options retain diagnostic play. This is not a full New Game campaign.
 
 The [opening lifecycle agreement](application/opening-session-lifecycle.md) implements genuine opening New Game,

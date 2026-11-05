@@ -188,12 +188,14 @@ public sealed class BattleDefinition
         HealingItems = new ReadOnlyDictionary<byte, HealingItemDefinition>((healingItems ?? []).ToDictionary(item => item.ItemId));
     }
     private BattleDefinition(BattleDefinition source, IEnumerable<BattleDeploymentDefinition>? deployments = null,
-        BattleOutcomeDefinition? outcome = null) : this(source.Encounter, source.Map, source.Width, source.Height,
+        BattleOutcomeDefinition? outcome = null, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
+        IEnumerable<RetreatItemDefinition>? retreatItems = null) : this(source.Encounter, source.Map, source.Width, source.Height,
         source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
-        outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, source.RetreatSpells.Values,
-        source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, source.ItemDrops, source.PrismLaser,
+        outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, retreatSpells ?? source.RetreatSpells.Values,
+        retreatItems ?? source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, source.ItemDrops, source.PrismLaser,
         source.Give, source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values) { }
-    internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome) => new(this, outcome: outcome);
+    internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
+        IEnumerable<RetreatItemDefinition>? retreatItems = null) => new(this, outcome: outcome, retreatSpells: retreatSpells, retreatItems: retreatItems);
     internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments) => new(this, deployments);
 
     public string Encounter { get; }

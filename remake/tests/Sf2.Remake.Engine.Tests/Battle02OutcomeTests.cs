@@ -6,6 +6,7 @@ using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.TestSupport;
 using Xunit;
 using System.Text.Json.Nodes;
 using static Sf2.Remake.Engine.Tests.EngineTestContent;
@@ -14,6 +15,96 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class Battle02OutcomeTests
 {
+    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN",
+        "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD", "SF2_PRIVATE_CONTROLLED_START")]
+    public void FreshFormationKeepsAnUnrevivedSleepingAllyOffTheBoard()
+    {
+        var read = Assert.IsType<ScenarioReadAccepted>(PrivateBattleScenarioTests.Selected().Read());
+        var casualty = new ActorRef("ally-2");
+        var start = read.Start.WithResources(read.Start.Actors.Select(actor =>
+            actor.Actor == casualty ? actor with { Hp = 0, Status = 0x80 } : actor), read.Start.Gold);
+        var battle = BattleTurnFlow.Start(read.Definition.Encounters[start.Encounter], start);
+        var ally = battle.GetActor(casualty);
+        Assert.Null(ally.Position);
+        Assert.Equal(0, ally.Hp);
+        Assert.Equal(0x80, ally.Status);
+    }
+
+    [Theory]
+    [InlineData(BattleOutcomeKind.Defeat)]
+    [InlineData(BattleOutcomeKind.Retreat)]
+    public void FailureReturnsToTheLiveRegisteredSavepoint(BattleOutcomeKind kind)
+    {
+        var (original, battle, story, party) = Outcome(false);
+        var selected = story.EnteringBattle!;
+        var alternate = selected with { Outcome = selected.Outcome! with
+            { EgressMap = new("village"), EgressPosition = new(2, 3), EgressFacing = 2 } };
+        var template = original.Exploration!.Maps.Values.First();
+        var village = new ExplorationMapDefinition(new("village"), template.Layout, template.Traversal,
+            [], [], battle: alternate);
+        var world = new ExplorationDefinition([village], [], original.Exploration.Texts);
+        var definition = new ScenarioDefinition(original.Package, original.Encounters.Values, exploration: world);
+        var policy = new Sf2OutcomeReturnPolicy();
+        var entered = story.Copy(null, egressMap: village.Map);
+        var start = policy.Start(definition, battle, entered, kind, party);
+        Assert.Equal(new FieldReturnAnchor(village.Map, new(2, 3), 2), start.Return);
+        var invalid = story.Copy(null, egressMap: new("unbound"));
+        Assert.Equal("egress-map", Assert.Throws<BattleRuleException>(() =>
+            policy.Start(definition, battle, invalid, kind, party)).Code);
+    }
+
+    [Theory]
+    [InlineData(true, "map-0", "map-0")]
+    [InlineData(false, "map-0", "harbor")]
+    [InlineData(true, "village", "village")]
+    [InlineData(false, "unbound", null)]
+    public void OpeningDefeatResolvesTheLiveAnchorBeforeItsDeclaredFallback(bool hasZeroAnchor, string live, string? expected)
+    {
+        var (original, battle, story, party) = Outcome(false);
+        var route = story.EnteringBattle!;
+        var template = original.Exploration!.Maps.Values.First();
+        ExplorationMapDefinition Destination(string id, MapPosition at, byte facing) =>
+            new(new(id), template.Layout, template.Traversal, [], [], battle: route with
+                { Outcome = route.Outcome! with { EgressMap = new(id), EgressPosition = at, EgressFacing = facing } });
+        var destinations = new List<ExplorationMapDefinition> {
+            Destination("harbor", new(2, 4), 1), Destination("village", new(3, 5), 0) };
+        if (hasZeroAnchor) destinations.Add(Destination("map-0", new(1, 2), 2));
+        var world = new ExplorationDefinition(destinations, [], original.Exploration.Texts);
+        var definition = new ScenarioDefinition(original.Package, original.Encounters.Values, exploration: world)
+            { DefeatFallback = (new("map-0"), new("harbor")) };
+        var policy = new Sf2OutcomeReturnPolicy();
+        OutcomeStart Resolve(BattleOutcomeKind kind) =>
+            policy.Start(definition, battle, story.Copy(null, egressMap: new(live)), kind, party);
+
+        if (expected is null)
+            Assert.Equal("egress-map", Assert.Throws<BattleRuleException>(() => Resolve(BattleOutcomeKind.Defeat)).Code);
+        else
+        {
+            var anchor = world.Maps[new(expected)].Battles.Single().Outcome!;
+            Assert.Equal(new FieldReturnAnchor(anchor.EgressMap, anchor.EgressPosition, anchor.EgressFacing),
+                Resolve(BattleOutcomeKind.Defeat).Return);
+        }
+        if (!hasZeroAnchor && live == "map-0")
+            Assert.Equal("egress-map", Assert.Throws<BattleRuleException>(() => Resolve(BattleOutcomeKind.Retreat)).Code);
+    }
+
+    [Theory]
+    [InlineData(0x40, false)]
+    [InlineData(0x80, false)]
+    [InlineData(0xC0, true)]
+    public void RecoveryClearsSleepOnlyForMembersWhoseStatsAreRestored(int status, bool resetAll)
+    {
+        var (definition, _, _, party) = Outcome(deadAlly: true);
+        var affected = party.WithResources(party.Actors.Select(actor => actor with { Status = (ushort)status }), party.Gold);
+        var result = OutcomeReturnRules.Heal(new Sf2OutcomeReturnPolicy(), definition, affected, resetAll);
+        foreach (var original in affected.Actors)
+        {
+            var recovered = result.Actors.Single(actor => actor.Actor == original.Actor);
+            Assert.Equal(resetAll || original.Hp > 0 ? 0 : status, (int)recovered.Status);
+            Assert.Equal(original, recovered with { Status = original.Status, Hp = original.Hp, Mp = original.Mp });
+        }
+    }
+
     [Fact]
     public void OverworldLayer254InitializesFollowsAndKeepsUnsupportedProfilesClosed()
     {

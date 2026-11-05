@@ -17,15 +17,9 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         {
             if (!story.Flags.Contains(399) || story.Flags.Any(flag => flag is 64 or 640))
                 throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
-            // The route is the admitted controlled initial selection when no live writer has run.
-            // A live church/program write overrides that selection, never silently falls back.
-            var map = story.EgressMap ?? route.EgressMap;
-            var admitted = definition.Exploration!.Maps.Values.SelectMany(value => value.Battles)
-                .Select(value => value.Outcome).FirstOrDefault(value => value?.EgressMap == map);
-            if (admitted is null) throw new BattleRuleException("egress-map", "story.egressMap", true);
             var caster = battle.Actors.First(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null);
             var retreatOrigin = route.BattleOrigin ?? new MapPosition(0, 0);
-            return new(route.ReturnProgram, new(map, admitted.EgressPosition, admitted.EgressFacing),
+            return new(route.ReturnProgram, EgressDestination(definition, story, route, kind),
                 new(caster.Position!.X + retreatOrigin.X, caster.Position.Y + retreatOrigin.Y), party);
         }
         var leader = battle.GetActor(battle.Definition.Outcome!.Leader);
@@ -45,11 +39,27 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
             throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
         var destination = kind == BattleOutcomeKind.Victory
             ? new FieldReturnAnchor(route.BattleMap, projected, route.BattleOrigin is null ? route.VictoryFacing : first!.Facing)
-            : new FieldReturnAnchor(route.EgressMap, route.EgressPosition, route.EgressFacing);
+            : EgressDestination(definition, story, route, kind);
         bool skip = kind == BattleOutcomeKind.Victory && selected.CompletedFlag is { } flag && story.Flags.Contains(flag);
         return new(kind == BattleOutcomeKind.Victory ? skip ? null : route.AfterProgram : route.DefeatProgram,
             destination, projected,
             kind == BattleOutcomeKind.Victory ? Heal(definition, party, all: false) : party);
+    }
+
+    private static FieldReturnAnchor EgressDestination(ScenarioDefinition definition, StoryState story,
+        ExplorationOutcomeRoute route, BattleOutcomeKind kind)
+    {
+        var live = story.EgressMap ?? route.EgressMap;
+        ExplorationOutcomeRoute? Lookup(MapId map) => route.EgressMap == map ? route : definition.Exploration!.Maps.Values
+            .SelectMany(value => value.Battles).Select(value => value.Outcome)
+            .FirstOrDefault(value => value?.EgressMap == map);
+
+        var destination = Lookup(live);
+        if (destination is null && kind == BattleOutcomeKind.Defeat &&
+            definition.DefeatFallback is { } fallback && live == fallback.Register)
+            destination = Lookup(fallback.Destination);
+        if (destination is null) throw new BattleRuleException("egress-map", "story.egressMap", true);
+        return new(destination.EgressMap, destination.EgressPosition, destination.EgressFacing);
     }
 
     public OutcomeFinish Finish(ScenarioDefinition definition, StoryState story, BattleStartInput party)
@@ -79,8 +89,8 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 definition.Encounters.Values.SelectMany(value => value.Deployments)
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == input.Actor);
             if (deployment.Faction != BattleFaction.Ally || (!all && input.Hp == 0 && deployment.Initialization?.AllyPartyMember is not (7 or 28))) return input;
-            if (input.Status != 0) throw new BattleRuleException("return-status-refresh", "party.status", true);
-            return input with { Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
+            if ((input.Status & ~0xC0) != 0) throw new BattleRuleException("return-status-refresh", "party.status", true);
+            return input with { Status = 0, Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
                 Mp = input.Progress?.MaxMp ?? deployment.Definition.MaxMp };
         }).ToArray();
         return party.WithResources(actors, party.Gold);
