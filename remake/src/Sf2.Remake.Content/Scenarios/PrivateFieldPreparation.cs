@@ -30,7 +30,8 @@ internal static class PrivateFieldPreparation
                 checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
                 item.MinimumRange, item.MaximumRange)).ToArray();
     }
-    internal static FieldPreparationDefinition Read(PrivateBattleDefinitions source, IEnumerable<string>? wingMaps = null)
+    internal static FieldPreparationDefinition Read(PrivateBattleDefinitions source, IEnumerable<string>? wingMaps = null,
+        FieldEgressDefinition? egress = null)
     {
         var weapons = Weapons(source);
         var wingNoEffectMaps = wingMaps ?? [];
@@ -38,10 +39,11 @@ internal static class PrivateFieldPreparation
                 item.ItemTypeExpression == "CONSUMABLE").Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
-                FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 })
+                FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 } ||
+                    egress is not null && spell is { Code: "EGRESS", Level: 1 })
                     .Select(spell => new FieldSpellChoice(spell.Spell, spell.DisplayName, spell.MpCost,
-                        spell.Code == "DETOX" ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect)),
-                [new(4, FieldRecoveryEffect.NoEffect, wingNoEffectMaps.Select(id => new Sf2.Remake.Domain.Maps.MapId(id)).ToArray())]);
+                        spell.Code switch { "DETOX" => FieldRecoveryEffect.CurePoison, "EGRESS" => FieldRecoveryEffect.Egress, _ => FieldRecoveryEffect.NoEffect })),
+                [new(4, FieldRecoveryEffect.NoEffect, wingNoEffectMaps.Select(id => new Sf2.Remake.Domain.Maps.MapId(id)).ToArray())], egress);
     }
     private static IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>> FieldItems(Application.Content.Scenarios.PrivateBattleDefinitions source)
     {

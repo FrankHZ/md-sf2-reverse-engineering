@@ -162,7 +162,7 @@ public sealed class GameSession
         }
         if (current.Mode == SessionMode.Exploration && envelope.Command is FieldCommand field)
         {
-            var prepared = FieldCommands.Submit(Definition, current, field);
+            var prepared = FieldCommands.Submit(Definition, current, field, Rules);
             _current = prepared.Snapshot;
             return prepared;
         }

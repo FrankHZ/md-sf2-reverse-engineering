@@ -52,16 +52,20 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         ExplorationOutcomeRoute route, BattleOutcomeKind kind)
     {
         var live = story.EgressMap ?? route.EgressMap;
-        ExplorationOutcomeRoute? Lookup(MapId map) => route.EgressMap == map ? route : definition.Exploration!.Maps.Values
-            .SelectMany(value => value.Battles).Select(value => value.Outcome)
-            .FirstOrDefault(value => value?.EgressMap == map);
-
-        var destination = Lookup(live);
+        var destination = FindEgress(definition, live, route);
         if (destination is null && kind == BattleOutcomeKind.Defeat &&
             definition.DefeatFallback is { } fallback && live == fallback.Register)
-            destination = Lookup(fallback.Destination);
+            destination = FindEgress(definition, fallback.Destination, route);
         if (destination is null) throw new BattleRuleException("egress-map", "story.egressMap", true);
-        return new(destination.EgressMap, destination.EgressPosition, destination.EgressFacing);
+        return destination;
+    }
+
+    internal static FieldReturnAnchor? FindEgress(ScenarioDefinition definition, MapId live, ExplorationOutcomeRoute? preferred = null)
+    {
+        var destination = preferred?.EgressMap == live ? preferred : definition.Exploration!.Maps.Values
+            .SelectMany(value => value.Battles).Select(value => value.Outcome)
+            .FirstOrDefault(value => value?.EgressMap == live);
+        return destination is null ? null : new(destination.EgressMap, destination.EgressPosition, destination.EgressFacing);
     }
 
     public OutcomeFinish Finish(ScenarioDefinition definition, StoryState story, BattleStartInput party)

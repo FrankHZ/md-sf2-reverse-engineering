@@ -9,12 +9,14 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 public sealed class FieldPreparationDefinition
 {
     internal FieldPreparationDefinition(IEnumerable<BattleDiscardItem> items,
-        IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>>? itemEffects = null, IEnumerable<FieldSpellChoice>? spells = null, IEnumerable<FieldItemMapEffect>? mapEffects = null)
+        IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>>? itemEffects = null, IEnumerable<FieldSpellChoice>? spells = null, IEnumerable<FieldItemMapEffect>? mapEffects = null,
+        FieldEgressDefinition? egress = null)
     {
         MapEffects = Array.AsReadOnly((mapEffects ?? []).ToArray());
         Items = new ReadOnlyDictionary<byte, BattleDiscardItem>(items.ToDictionary(item => item.ItemId));
         ItemEffects = new ReadOnlyDictionary<byte, FieldRecoveryEffect>((itemEffects ?? []).ToDictionary());
         Spells = new ReadOnlyDictionary<SpellRef, FieldSpellChoice>((spells ?? []).ToDictionary(spell => spell.Spell));
+        Egress = egress;
     }
     public IReadOnlyDictionary<byte, BattleDiscardItem> Items { get; }
     public IReadOnlyDictionary<byte, FieldRecoveryEffect> ItemEffects { get; }
@@ -23,7 +25,14 @@ public sealed class FieldPreparationDefinition
         MapEffects.FirstOrDefault(row => row.Item == item && row.Maps.Contains(map!))?.Effect ??
         (ItemEffects.TryGetValue(item, out var effect) ? effect : null);
     public IReadOnlyDictionary<SpellRef, FieldSpellChoice> Spells { get; }
+    internal FieldEgressDefinition? Egress { get; }
+    internal FieldSpellChoice? Spell(SpellRef spell, MapId map) => Spells.TryGetValue(spell, out var choice)
+        ? choice.Effect == FieldRecoveryEffect.Egress && Egress?.Maps.Contains(map) != true
+            ? choice with { Effect = FieldRecoveryEffect.NoEffect } : choice
+        : null;
 }
+
+internal sealed record FieldEgressDefinition(IReadOnlyList<MapId> Maps, ProgramLocation Program);
 
 public sealed record FieldItemMapEffect(byte Item, FieldRecoveryEffect Effect, IReadOnlyList<MapId> Maps);
 public sealed record FieldInventoryChoice(int Slot, ushort Word, string Name, bool CanDrop, FieldRecoveryEffect? Use = null);
@@ -85,7 +94,7 @@ internal static class FieldInventory
                 BattleEquipment.Choices(member.Deployment.Definition, BaseAttack(member), Loadout(member));
             var learned = member.Carried.Progress?.Spells ?? member.Deployment.Definition.Spells;
             return new(current.SessionId, current.Revision, actor, equipment, items,
-                learned.Where(definition.FieldPreparation!.Spells.ContainsKey).Select(spell => definition.FieldPreparation.Spells[spell]).ToArray());
+                learned.Where(definition.FieldPreparation!.Spells.ContainsKey).Select(spell => definition.FieldPreparation.Spell(spell, current.Exploration.Map)!).ToArray());
         }
         catch (BattleRuleException error) { return new(current.SessionId, current.Revision, actor, [], [], [], error.Code); }
     }

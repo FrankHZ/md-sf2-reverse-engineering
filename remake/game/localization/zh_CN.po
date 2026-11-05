@@ -686,6 +686,9 @@ msgstr "对谁施法？"
 msgid "prepare.confirm-no-effect-spell"
 msgstr "施放{0}？在这里无效，不消耗 MP。"
 
+msgid "prepare.confirm-egress"
+msgstr "施放{0}，返回上次的休息点？消耗至多 {1} MP，MP 不足时也能使用。保留金币和进度。"
+
 msgid "prepare.confirm-cast"
 msgstr "施放{0}？消耗 {1} MP，即使目标没有中毒。"
 

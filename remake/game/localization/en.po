@@ -689,6 +689,9 @@ msgstr "Cast {0}? Nothing happens here; MP is kept."
 msgid "prepare.confirm-cast"
 msgstr "Cast {0}? Cost: {1} MP, including when there is no poison to cure."
 
+msgid "prepare.confirm-egress"
+msgstr "Cast {0} and return to your last refuge? Uses up to {1} MP, even when MP is low. Gold and progress are kept."
+
 msgid "prepare.drop-item"
 msgstr "Drop which item?"
 

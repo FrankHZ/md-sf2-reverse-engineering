@@ -107,6 +107,8 @@ internal sealed partial class FieldActionView : Control
         {
             if (spell.Effect == FieldRecoveryEffect.NoEffect)
                 Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-no-effect-spell", spell.Name));
+            else if (spell.Effect == FieldRecoveryEffect.Egress)
+                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-egress", spell.Name, spell.MpCost));
             else Targets("magic-target", () => GameText.Get("prepare.magic-target"), true, target => Confirm(new FieldCast(_member, spell.Spell, target),
                 () => GameText.Get("prepare.confirm-cast", spell.Name, spell.MpCost)));
         }), true)));
@@ -126,6 +128,7 @@ internal sealed partial class FieldActionView : Control
         [(() => GameText.Get("prepare.confirm"), () =>
         {
             var result = _submit(command, _choices.Revision);
+            if (result.Failure is null && !result.Snapshot.CanWaitAtInput) { Hide(); return; }
             Message(result.Failure is { } failure ? () => GameText.Get("prepare.failure", Recovery(failure.Code), failure.Code, failure.Field, failure.Message) :
                 result.Observations.Any(row => row.Kind == "field-no-effect") ? () => GameText.Get("prepare.no-effect") : () => GameText.Get("prepare.done"));
         }, true), (() => GameText.Get("prepare.cancel"), Actions, true)]);
@@ -137,7 +140,7 @@ internal sealed partial class FieldActionView : Control
         "field-member-unavailable" => "prepare.recovery.member",
         "field-preparation-unsupported" or "field-loadout-unavailable" or "field-item-unsupported" or
         "field-equipped-item-unsupported" or "equipment-unavailable" or "field-item-effect-unsupported" or
-        "field-spell-unsupported" => "prepare.recovery.unsupported",
+        "field-spell-unsupported" or "field-egress-context" or "egress-map" => "prepare.recovery.unsupported",
         "field-give-exchange-required" => "prepare.recovery.exchange",
         "discard-unsellable" => "prepare.drop-refused",
         _ => "prepare.recovery.retry",

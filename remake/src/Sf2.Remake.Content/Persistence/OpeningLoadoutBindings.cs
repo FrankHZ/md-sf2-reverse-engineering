@@ -43,12 +43,13 @@ internal static class OpeningLoadoutBindings
                 deployment.Faction != BattleFaction.Ally || deployment.Definition.Growth is not { } growth ? deployment :
                 deployment with { Definition = deployment.Definition.WithEquipment(new(
                     checked((byte)(deployment.Definition.Attack - growth.AttackBonus)), weapons, allowChanges: false)) })));
-        return new(admitted.Package, encounters, source, admitted.Exploration, admitted.BattleScenes, admitted.EncounterStarts.Values,
+        var egress = PrivateFieldEgress.Bind(admitted.Exploration);
+        return new(admitted.Package, encounters, source, egress.World, admitted.BattleScenes, admitted.EncounterStarts.Values,
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {
             Persistence = new Sf2OpeningRestore(),
             DefeatFallback = (new("map-0"), openingMap),
-            FieldPreparation = PrivateFieldPreparation.Read(source, openingMaps),
+            FieldPreparation = PrivateFieldPreparation.Read(source, openingMaps, egress.Capability),
         };
     }
 

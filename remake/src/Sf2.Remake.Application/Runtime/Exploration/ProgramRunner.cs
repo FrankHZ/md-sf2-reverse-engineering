@@ -161,8 +161,8 @@ internal static class ProgramRunner
                     case SourceRandomBattle random:
                         current = SourceRandomBattleRunner.Check(current, random, cursor, observations);
                         continue;
-                    case ResetPartyBattleStats:
-                        active = new ActiveExploration(current.Exploration!.WithParty(OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration.Party, all: true)));
+                    case ResetPartyBattleStats reset:
+                        active = new ActiveExploration(current.Exploration!.WithParty(OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration.Party, all: !reset.LivingOnly)));
                         break;
                     case ReturnBattleMap:
                         var eventWarp = current.Story.ScriptWarp;

@@ -169,6 +169,7 @@ internal static class GameText
         ["prepare.magic-target"] = 0,
         ["prepare.confirm-no-effect-spell"] = 1,
         ["prepare.confirm-cast"] = 2,
+        ["prepare.confirm-egress"] = 2,
         ["prepare.drop-item"] = 0,
         ["prepare.cannot-drop"] = 0,
         ["prepare.drop-refused"] = 0,
