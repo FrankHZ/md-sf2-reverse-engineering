@@ -181,6 +181,27 @@ for a concrete credible regression, preferably using information from necessary 
    decision. Retain failures and required evidence: narrower scope cannot turn missing evidence into
    PASS or silently weaken a contract. Deferred work is explicit and is not an automatic future queue.
 
+#### Resolve Evidence Conflicts Before Product Choices
+
+When a contract and observed behavior disagree, the executor and main-gate first locate the
+assumption's evidence and scope. Trace the relevant initialization, final entry, caller and later
+writers/readers of the value. Reuse pinned source, fixtures and retained observations appropriate
+to that boundary; a reset helper's output alone cannot establish the value at gameplay entry.
+
+- An implementation omission or incorrect factual contract within the authorized original-behavior
+  scope is a correction. Fix its owning consumer and current contract together, record the evidence
+  and superseded assumption, and verify actual behavior through the affected normal entry point.
+  Preserve historical failures and supported-data compatibility; independent review owns acceptance.
+- An explicit, accepted remake deviation retains its design authority. Evidence about the original
+  informs any proposed change to that decision; it does not revoke the user's choice.
+- Conflicting or insufficient evidence goes to main-gate with the smallest unresolved boundary and
+  a focused way to resolve it. Apply the existing runtime-admission and resource rules.
+
+Use the existing Issue and owning documents. A correction above needs no renewed user approval
+merely because it changes accepted prose or a test expectation. Ask the user when an unresolved
+product tradeoff changes the intended outcome, accepted fidelity, compatibility commitment or
+explicit budget. Main-gate checks this classification before integration and before escalating.
+
 ### Issue Anatomy
 
 Every executable Issue carries, in its body:
