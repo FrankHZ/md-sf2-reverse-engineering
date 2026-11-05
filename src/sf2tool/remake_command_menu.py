@@ -1,4 +1,4 @@
-"""Add original battle or church icons to a copy of an existing private input.
+"""Add original battle, church or field icons to a copy of an existing private input.
 
 Only eight 24x24 rasters are decoded. Source verification, palette decoding and
 tile rendering reuse texture_extract; the ordinary Content raster reader owns
@@ -81,15 +81,20 @@ def prepare_church(
     out_dir: Path,
     listing: Path | None = None,
     rom_assets: bool = False,
+    menu: str = "church",
 ) -> None:
-    """Mount only the four church slots, using the existing world raster admission."""
+    """Mount four source menu slots through the existing world raster admission."""
+    if menu not in ("church", "field"):
+        raise ValueError("unknown world menu")
     if out_dir.exists():
         raise ValueError("output directory already exists")
     source, commit, identity = _verified_source(
-        rom, upstream, owner="church-menu", listing_path=listing
+        rom, upstream, owner=f"{menu}-menu", listing_path=listing
     )
-    source_path = Path("data/graphics/tech/menus/churchmenutiles.bin")
-    address = source.addresses["tiles_ChurchMenu"]
+    field = menu == "field"
+    symbol = "tiles_MainMenu" if field else "tiles_ChurchMenu"
+    source_path = MAIN_MENU_PATH if field else Path("data/graphics/tech/menus/churchmenutiles.bin")
+    address = source.addresses[symbol]
     consumed = None
     if rom_assets:
         # A deliberate canonical-ROM route for read-only source checkouts without split bins.
@@ -97,18 +102,25 @@ def prepare_church(
         fixture = json.loads(
             repo_path("tests/fixtures/h2/ui-graphics-decode-v1.json").read_text(encoding="utf-8")
         )
-        for symbol in ("tiles_ChurchMenu", "tiles_ShopMenu", "p_tiles_ChurchMenu", "pt_tiles_Menu"):
-            if source.addresses[symbol] != fixture["table"][symbol]:
-                raise ValueError("church-menu H1/accepted-address drift")
-        pointer = source.addresses["p_tiles_ChurchMenu"]
+        symbols = (
+            ("tiles_MainMenu", "tiles_ItemMenu", "p_tiles_MainMenu", "pt_tiles_Menu")
+            if field
+            else ("tiles_ChurchMenu", "tiles_ShopMenu", "p_tiles_ChurchMenu", "pt_tiles_Menu")
+        )
+        for checked in symbols:
+            if source.addresses[checked] != fixture["table"][checked]:
+                raise ValueError(f"{menu}-menu H1/accepted-address drift")
+        pointer = source.addresses["p_tiles_MainMenu" if field else "p_tiles_ChurchMenu"]
         if int.from_bytes(source.rom[pointer : pointer + 4], "big") != address:
-            raise ValueError("church-menu ROM pointer drift")
-        byte_count = source.addresses["tiles_ShopMenu"] - address
+            raise ValueError(f"{menu}-menu ROM pointer drift")
+        byte_count = (
+            7 * MAIN_MENU_ICON_BYTES if field else source.addresses["tiles_ShopMenu"] - address
+        )
         compressed = source.rom[address : address + byte_count]
         if (source.disasm / source_path).exists() and len(
-            source.read(source_path, symbol="tiles_ChurchMenu")
+            source.read(source_path, symbol=symbol)
         ) != byte_count:
-            raise ValueError("church-menu split payload size drift")
+            raise ValueError(f"{menu}-menu split payload size drift")
         palette_address = source.addresses["palette_Base"]
         palette_fixture = json.loads(
             repo_path(
@@ -119,28 +131,39 @@ def prepare_church(
             palette_address != palette_fixture["static"]["indexBindings"]["paletteBase"]
             or PALETTE_BYTES != 32
         ):
-            raise ValueError("church-menu H1/accepted-palette drift")
+            raise ValueError(f"{menu}-menu H1/accepted-palette drift")
         palette_data = source.rom[palette_address : palette_address + PALETTE_BYTES]
         if (source.disasm / BASE_PALETTE_PATH).exists() and len(
             source.read(BASE_PALETTE_PATH, symbol="palette_Base")
         ) != PALETTE_BYTES:
-            raise ValueError("church-menu split palette size drift")
+            raise ValueError(f"{menu}-menu split palette size drift")
         palette = [
             md_palette_color(int.from_bytes(palette_data[i : i + 2], "big"))
             for i in range(0, PALETTE_BYTES, 2)
         ]
     else:
-        compressed = source.read(source_path, symbol="tiles_ChurchMenu")
+        compressed = source.read(source_path, symbol=symbol)
         palette = _load_base_palette(source)
         palette_address = source.addresses["palette_Base"]
-    decoded = decode_stack_compressed(compressed, expected_output_bytes=2304)
-    payload, consumed = decoded.output, decoded.input_bits_consumed
+    if field:
+        if len(compressed) != 7 * MAIN_MENU_ICON_BYTES:
+            raise ValueError("field-menu source size drift")
+        table = source.addresses["pt_tiles_Menu"]
+        if int.from_bytes(source.rom[table : table + 4], "big") != 0x85010204:
+            raise ValueError("field-menu slot mapping drift")
+        payload = compressed
+    else:
+        decoded = decode_stack_compressed(compressed, expected_output_bytes=2304)
+        payload, consumed = decoded.output, decoded.input_bits_consumed
     document = json.loads(world.read_text(encoding="utf-8-sig"))
     world_document = document.get("world", document)
-    if "churchMenu" in world_document["presentation"]:
-        raise ValueError("input world already owns churchMenu")
+    property_name = "fieldMenu" if field else "churchMenu"
+    if property_name in world_document["presentation"]:
+        raise ValueError(f"input world already owns {property_name}")
     rasters, receipts = {}, []
-    for index, name in enumerate(("raise", "cure", "promote", "save")):
+    names = ("member", "magic", "item", "search") if field else ("raise", "cure", "promote", "save")
+    indices = (5, 1, 2, 4) if field else (0, 1, 2, 3)
+    for index, name in zip(indices, names, strict=True):
         for frame, state in enumerate(("normal", "selected")):
             start = index * MAIN_MENU_ICON_BYTES + frame * 288
             pixels, width, height = _render_tile_pool_sheet(
@@ -156,9 +179,9 @@ def prepare_church(
                 "sha256": digest,
             }
             receipts.append(
-                {"resource": f"church-menu.{key}", "decodedOffset": start, "sha256": digest}
+                {"resource": f"{menu}-menu.{key}", "decodedOffset": start, "sha256": digest}
             )
-    world_document["presentation"]["churchMenu"] = rasters
+    world_document["presentation"][property_name] = rasters
     # The private-world reader intentionally resolves these selections beneath its world directory.
     # Preserve that package boundary when publishing the one new world, rather than rewriting paths.
     dependencies = {
@@ -196,14 +219,15 @@ def prepare_church(
                 "romSha256": identity["hashes"]["sha256"],
                 "inputMode": "canonical-ROM" if rom_assets else "split-payload-parity",
                 "sourceAddress": address,
-                "compressedBytes": len(compressed),
+                "sourceBytes": len(compressed),
+                "compressedBytes": None if field else len(compressed),
                 "inputBitsConsumed": consumed,
                 "decodedBytes": len(payload),
                 "paletteAddress": palette_address,
                 "paletteBytes": PALETTE_BYTES,
                 "copiedDependencies": sorted(dependencies),
                 "source": source_path.as_posix(),
-                "symbol": "tiles_ChurchMenu",
+                "symbol": symbol,
                 "palette": "base palette via texture_extract",
                 "transparentIndex": 0,
                 "paletteSource": (
@@ -217,11 +241,11 @@ def prepare_church(
                     "static.indexBindings.paletteBase"
                 ),
                 "layout": (
-                    "four 576-byte slots in source up/left/right/down order; 288-byte "
+                    f"slots {indices} in source up/left/right/down order; 288-byte "
                     "normal/selected halves, 3x3 tiles"
                 ),
                 "mappingSource": (
-                    "menustringspointertable.asm pt_ChurchMenuNames; diamondmenu.asm "
+                    f"menustringspointertable.asm pt_{menu.title()}MenuNames; diamondmenu.asm "
                     "dmaDiamondMenuIcon_Up/Left/Right/Down"
                 ),
                 "resources": receipts,
@@ -242,19 +266,28 @@ def main() -> None:
     parser.add_argument(
         "--listing",
         type=Path,
-        help="Existing H1 listing for a read-only upstream checkout (church only)",
+        help="Existing H1 listing for a read-only upstream checkout (world menus only)",
     )
     parser.add_argument(
         "--rom-assets",
         action="store_true",
-        help="Decode church bytes directly from the verified canonical ROM",
+        help="Decode world-menu bytes directly from the verified canonical ROM",
     )
+    parser.add_argument("--menu", choices=("church", "field"), default="church")
     args = parser.parse_args()
-    if (args.listing is not None or args.rom_assets) and args.world is None:
-        parser.error("--listing/--rom-assets requires --world")
+    if (
+        args.listing is not None or args.rom_assets or args.menu != "church"
+    ) and args.world is None:
+        parser.error("--listing/--rom-assets/--menu field requires --world")
     if args.world is not None:
         prepare_church(
-            args.rom, args.upstream, args.world, args.out_dir, args.listing, args.rom_assets
+            args.rom,
+            args.upstream,
+            args.world,
+            args.out_dir,
+            args.listing,
+            args.rom_assets,
+            args.menu,
         )
     else:
         prepare(args.rom, args.upstream, args.scene, args.out_dir)

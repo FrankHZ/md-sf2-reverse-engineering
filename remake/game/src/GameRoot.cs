@@ -75,7 +75,6 @@ public sealed partial class GameRoot : Node
         else if (_entry is not null) _entry.Handle(action.Value);
         else if (_systemMenu is not null) _systemMenu.Handle(action.Value);
         else if (action == GameAction.Menu) ShowSystemMenu();
-        else if (action == GameAction.Cancel && CanOpenSettings) ShowSystemMenu();
         else if (action == GameAction.Stay && _exploration?.CanRequestFieldSave == true) ShowSave();
         else if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
             exploration.HandleAction(action.Value);

@@ -276,3 +276,37 @@ The SVG/font/theme specifications above constrain proposed product assets and ex
 tooling; they do not claim that the ordinary host has a complete product Theme, font/glyph UI or
 general HUD catalog. #438 owns later art/UI/UX choices. No public export or distribution right is
 established by private preparation, local asset Git history, successful checks or native play.
+
+## Private exploration menu icons
+
+`presentation.fieldMenu` optionally supplies exactly member/magic/item/search normal/selected
+24×24 rasters. The ordinary Content raster identity/shape checks remain authoritative; partial sets
+reject. The adapter displays unchanged pixels at nearest4× through the shared diamond control.
+Missing art keeps short text captions; native decode failure stops once with
+`field-menu-resource-invalid`. No original bitmap is tracked or granted public distribution rights.
+
+The existing `sf2tool.remake_command_menu` world publisher adds `--menu field`; its default remains
+Church and its battle scene route is unchanged. Example after loading the local input configuration:
+
+```powershell
+uv run python -m sf2tool.remake_command_menu --rom <verified-rom> --upstream <pinned-upstream> `
+    --world <existing-world-or-authored-package> --out-dir <new-ignored-directory> `
+    --listing <existing-pinned-H1-listing> --rom-assets --menu field
+```
+
+Only use explicit `--rom-assets` when the pinned read-only checkout lacks split binaries. Identity,
+H1/accepted table addresses, pointer and palette checks precede decoding; present split payloads
+still require strict ROM parity and exact size. `tiles_MainMenu` is4032 uncompressed bytes at
+0x29A02, `p_tiles_MainMenu` at0x28010 and `pt_tiles_Menu` at0x1115C. The first packed entry
+`0x85010204` selects icon records5/1/2/4 (Member/Magic/Item/Search); the accepted
+`tests/fixtures/h2/ui-graphics-decode-v1.json` binds those addresses and indices. Palette_Base at
+0x309E and its32 bytes follow the existing church palette binding. The pinned revision and source
+symbols are in the [gameplay agreement](../godot/presentation.md#exploration-gameplay-diamond-agreement-1588).
+A provenance receipt records source offsets, canonical identity, palette and resource bytes.
+
+Minimum work is8×24×24×4=18,432 raw icon bytes, approximately25KiB base64; publication additionally
+reads/writes its whole input JSON and selected finite relative encounter/audio dependencies. The
+bounded observation reused one126,677,125-byte private publication and tiny authored variants,
+with O(input bytes) time/space, <3GiB assumed peak memory and <1GiB scratch. Existing private data
+and listing remained read-only. No full asset export, network acquisition or comparison pipeline
+was added. Replan for new dependencies, escaping paths or measured volume/memory above that budget.

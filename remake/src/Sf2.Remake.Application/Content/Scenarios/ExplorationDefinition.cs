@@ -59,7 +59,8 @@ public sealed class ExplorationAudio
 public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMapVisual> Maps,
     IReadOnlyDictionary<int, ExplorationSpriteVisual> Sprites, IReadOnlyDictionary<int, ExplorationPortraitVisual> Portraits,
     IReadOnlyDictionary<string, ExplorationAudio> Audio,
-    IReadOnlyDictionary<string, ExplorationRaster>? ChurchMenu = null);
+    IReadOnlyDictionary<string, ExplorationRaster>? ChurchMenu = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? FieldMenu = null);
 public enum ExplorationEventKind { Step, Interact, Warp, SourceZone }
 public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,

@@ -19,6 +19,17 @@ internal static class GameText
     internal sealed record Candidate(string Language, IReadOnlyDictionary<string, string> Rows, IReadOnlyDictionary<string, RowStatus> Status);
     private static readonly Dictionary<string, int> Arguments = new()
     {
+        ["field-menu.title"] = 0,
+        ["field-menu.member"] = 0,
+        ["field-menu.magic"] = 0,
+        ["field-menu.item"] = 0,
+        ["field-menu.search"] = 0,
+        ["field-menu.member-help"] = 0,
+        ["field-menu.magic-help"] = 0,
+        ["field-menu.item-help"] = 0,
+        ["field-menu.search-help"] = 0,
+        ["field-menu.unavailable"] = 0,
+        ["field-menu.hint"] = 6,
         ["system.entry"] = 0,
         ["system.title"] = 0,
         ["system.resume"] = 0,

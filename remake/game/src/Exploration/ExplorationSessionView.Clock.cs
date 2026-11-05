@@ -11,7 +11,7 @@ public sealed partial class ExplorationSessionView
     private object? _menuMap;
     private int _menuSteps;
     internal bool MenuEntryPending => _menuEntry is not null;
-    internal bool CanRequestFieldSave => _session?.Current.HasOrdinaryFieldTime == true && !_partyStatus.Open && !_battleMounted;
+    internal bool CanRequestFieldSave => _session?.Current.HasOrdinaryFieldTime == true && !PartyMenuOpen && !_battleMounted;
 
     internal bool BeginMenuEntry(Action<string?> completed)
     {

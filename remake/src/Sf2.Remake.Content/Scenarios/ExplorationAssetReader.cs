@@ -12,7 +12,7 @@ internal static class ExplorationAssetReader
 {
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
-        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu");
+        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu");
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
@@ -108,9 +108,20 @@ internal static class ExplorationAssetReader
             Require(churchMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
                 "church-menu-shape", "presentation.churchMenu");
         }
+        Dictionary<string, ExplorationRaster>? fieldMenu = null;
+        if (row.TryGetProperty("fieldMenu", out var field))
+        {
+            string[] keys = ["member.normal", "member.selected", "magic.normal", "magic.selected",
+                "item.normal", "item.selected", "search.normal", "search.selected"];
+            Object(field, "presentation.fieldMenu", keys);
+            fieldMenu = keys.ToDictionary(key => key, key => Raster(field.GetProperty(key)), StringComparer.Ordinal);
+            Require(fieldMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
+                "field-menu-shape", "presentation.fieldMenu");
+        }
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio),
-            churchMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(churchMenu));
+            churchMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(churchMenu),
+            fieldMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(fieldMenu));
     }
 
     private static IReadOnlyList<PortraitTileChange>? PortraitChanges(JsonElement portrait, string key)

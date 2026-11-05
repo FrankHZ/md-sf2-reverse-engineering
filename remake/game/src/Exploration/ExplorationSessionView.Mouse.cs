@@ -36,6 +36,8 @@ public sealed partial class ExplorationSessionView
             !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() || PresentationFailure is not null ||
             _partyStatus.Open)
         { _choicePointer.Suspend(); return; }
+        _fieldMenu.HandlePointer(input);
+        if (_fieldMenuActive) { Present(); return; }
         if (_session.Current.Story.Wait is not (FieldSearchWait or ChoiceWait))
         { _choicePointer.Suspend(); return; }
         _movementHold.Clear(_input); CancelFieldWait();

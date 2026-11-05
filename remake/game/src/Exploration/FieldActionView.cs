@@ -26,6 +26,8 @@ internal sealed partial class FieldActionView : Control
     private Func<string> _titleText = () => "";
     private int _index;
     private long _generation;
+    private readonly Stack<Action> _parents = [];
+    private Action? _restore;
     private bool _requiresRelease;
     internal bool Open => Visible;
 
@@ -42,17 +44,27 @@ internal sealed partial class FieldActionView : Control
         Hide();
     }
 
-    internal void Begin(GameSession session, GameInput input, ActorRef member, string name, Func<FieldCommand, long, SessionResult> submit)
+    private string _entry = "actions";
+    internal void Begin(GameSession session, GameInput input, ActorRef member, string name, Func<FieldCommand, long, SessionResult> submit, string entry = "actions")
     {
+        _entry = entry;
         _session = session; _input = input; _member = member; _name = name; _submit = submit;
-        Show(); Actions();
+        _parents.Clear(); _restore = null; Show(); Actions();
     }
 
     private void Menu(string stage, Func<string> title, IEnumerable<(Func<string> Label, Action Choose, bool Available)> options)
     {
+        if (_restore is { } restore && stage is not ("actions" or "item-actions" or "result"))
+        {
+            int index = _index;
+            _parents.Push(() => { restore(); _index = index; Present(); });
+        }
+        if (stage is "actions" or "item-actions" or "result") _parents.Clear();
+        var saved = options.ToArray();
+        _restore = () => { _restore = null; Menu(stage, title, saved); };
         _stage = stage; _titleText = title; _index = 0; _generation++; _pointer.Suspend(); _requiresRelease = true;
-        _options.Clear(); _options.AddRange(options);
-        if (_options.Count == 0) _options.Add((() => GameText.Get("prepare.empty"), Actions, true));
+        _options.Clear(); _options.AddRange(saved);
+        if (_options.Count == 0) _options.Add((() => GameText.Get("prepare.empty"), Back, true));
         while (_rows.Count < _options.Count)
         {
             var row = Text("Choice" + _rows.Count, 28); _rows.Add(row); _panel.AddChild(row);
@@ -62,10 +74,25 @@ internal sealed partial class FieldActionView : Control
         Present();
     }
 
+    private void Back()
+    {
+        if (_parents.TryPop(out var parent)) parent(); else Hide();
+    }
+
     private void Actions()
     {
+        _parents.Clear(); _restore = null;
         _choices = _session.QueryFieldActions(_member);
         if (_choices.Error is { } error) { Message(() => GameText.Get("prepare.unavailable", Recovery(error), error)); return; }
+        if (_entry == "magic") { Magic(); return; }
+        if (_entry == "item")
+        {
+            Menu("item-actions", () => GameText.Get("prepare.title", _name), [
+                (() => GameText.Get("prepare.use"), Use, true), (() => GameText.Get("prepare.give"), Give, true),
+                (() => GameText.Get("prepare.equip"), Equip, true), (() => GameText.Get("prepare.drop"), Drop, true),
+                (() => GameText.Get("prepare.back"), Hide, true)]);
+            return;
+        }
         Menu("actions", () => GameText.Get("prepare.title", _name), [
             (() => GameText.Get("prepare.equip"), Equip, true), (() => GameText.Get("prepare.give"), Give, true),
             (() => GameText.Get("prepare.use"), Use, true), (() => GameText.Get("prepare.magic"), Magic, true),
@@ -131,7 +158,7 @@ internal sealed partial class FieldActionView : Control
             if (result.Failure is null && !result.Snapshot.CanWaitAtInput) { Hide(); return; }
             Message(result.Failure is { } failure ? () => GameText.Get("prepare.failure", Recovery(failure.Code), failure.Code, failure.Field, failure.Message) :
                 result.Observations.Any(row => row.Kind == "field-no-effect") ? () => GameText.Get("prepare.no-effect") : () => GameText.Get("prepare.done"));
-        }, true), (() => GameText.Get("prepare.cancel"), Actions, true)]);
+        }, true), (() => GameText.Get("prepare.cancel"), Back, true)]);
 
     private static string Recovery(string code) => GameText.Get(code switch
     {
@@ -174,7 +201,7 @@ internal sealed partial class FieldActionView : Control
     internal void Handle(GameAction action)
     {
         _pointer.Cancel(); if (_requiresRelease) return;
-        if (action is GameAction.Cancel or GameAction.Equipment) { if (_stage == "actions" || _choices.Error is not null) Hide(); else Actions(); return; }
+        if (action is GameAction.Cancel or GameAction.Equipment) { Back(); return; }
         if (action is GameAction.Up or GameAction.Down)
             _index = (_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count;
         else if (action == GameAction.Confirm) _options[_index].Choose();
@@ -186,8 +213,14 @@ internal sealed partial class FieldActionView : Control
         if (input is InputEventMouseMotion motion) { _pointer.Moved(motion); return; }
         if (input is not InputEventMouseButton button) return;
         int hit = _rows.FindIndex(row => row.Visible && row.GetGlobalRect().HasPoint(button.Position));
-        string? clicked = _pointer.Read(button, hit < 0 ? null : hit.ToString(), hit < 0 ? default : _rows[hit].GetGlobalRect(), _generation);
-        if (!_requiresRelease && clicked is not null) { _index = int.Parse(clicked); _options[_index].Choose(); }
+        bool back = button.ButtonIndex == MouseButton.Right;
+        string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(),
+            back ? GetGlobalRect() : hit < 0 ? default : _rows[hit].GetGlobalRect(), _generation);
+        if (!_requiresRelease && clicked is not null)
+        {
+            if (clicked == "back") Back();
+            else { _index = int.Parse(clicked); _options[_index].Choose(); }
+        }
         Present();
     }
     internal object Observe() => new { visible = IsVisibleInTree(), stage = _stage, index = _index,

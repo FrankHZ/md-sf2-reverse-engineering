@@ -55,9 +55,11 @@ internal sealed partial class PartyStatusView : Control
     }
 
     public override void _ExitTree() { _portrait.Texture = null; _portraitTexture?.Dispose(); }
-    internal void Begin(GameSession session, GameInput input)
+    private string _entry = "actions";
+    internal void Begin(GameSession session, GameInput input, string entry = "actions")
     {
-        _session = session; _input = input; _index = 0; _details.FocusPane = 0; _selectorOpen = false;
+        _entry = entry;
+        _session = session; _input = input; _index = 0; _details.FocusPane = entry == "magic" ? 1 : entry == "item" ? 2 : 0; _selectorOpen = false;
         _requiresRelease = true; _pointer.Suspend(); _roster.ScrollVertical = 0; _details.ResetReading();
         _actions.Hide();
         Show(); Present(session, input);
@@ -70,7 +72,7 @@ internal sealed partial class PartyStatusView : Control
         _session = session; _input = input; _pointer.ReleaseIfNeutral();
         if (!input.GameplayHeld) _requiresRelease = false;
         if (!session.Current.CanWaitAtInput || session.QueryPartyDetails() is not { } party) { Hide(); return; }
-        _prepare.Text = GameText.Get("party.prepare"); _close.Text = GameText.Get("party.close");
+        _prepare.Text = GameText.Get(_entry == "magic" ? "prepare.magic" : _entry == "item" ? "field-menu.item" : "party.prepare"); _close.Text = GameText.Get("party.close");
         _kills.Text = GameText.Get("party.kills"); _defeats.Text = GameText.Get("party.defeats");
         _shown = party; _count = party.Members.Count; _index = Math.Clamp(_index, 0, Math.Max(0, _count - 1));
         while (_labels.Count < _count)
@@ -173,7 +175,7 @@ internal sealed partial class PartyStatusView : Control
     {
         if (_shown is null || _count == 0 || SubmitField is null) return;
         var member = _shown.Members[_index];
-        _actions.Begin(_session!, _input!, member.Carried.Actor, MemberName(member, _session!), SubmitField);
+        _actions.Begin(_session!, _input!, member.Carried.Actor, MemberName(member, _session!), SubmitField, _entry);
     }
     internal void Handle(GameAction action, GameSession session, GameInput input)
     {
@@ -204,6 +206,7 @@ internal sealed partial class PartyStatusView : Control
             _pointer.Cancel(); return;
         }
         string? id = null; Rect2 rect = default;
+        if (button.ButtonIndex == MouseButton.Right) { id = "close"; rect = GetGlobalRect(); }
         if (button.ButtonIndex == MouseButton.Left)
         {
             foreach (var (key, control) in new[] { ("close", _close), ("previous", _previous), ("next", _next), ("selector", _selector), ("prepare", _prepare) })

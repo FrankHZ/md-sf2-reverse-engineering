@@ -53,8 +53,8 @@ public sealed partial class ExplorationSessionView : Control
     private Action<SessionResult>? _enterBattle;
     private bool _handedOff;
     private bool _battleMounted;
-    internal bool CanOpenHostMenu => _session?.Current.CanWaitAtInput == true && !_partyStatus.Open && !_battleMounted;
-    internal bool PartyMenuOpen => _partyStatus?.Open == true;
+    internal bool CanOpenHostMenu => _session?.Current.CanWaitAtInput == true && !PartyMenuOpen && !_battleMounted;
+    internal bool PartyMenuOpen => _partyStatus?.Open == true || _fieldMenuActive;
     private Action? _releaseBattle;
     private ExplorationDialogueView _dialogueView = null!;
     private PartyStatusView _partyStatus = null!;
@@ -88,6 +88,8 @@ public sealed partial class ExplorationSessionView : Control
     private readonly Dictionary<int, AuthoredEntityDraw> _authoredDraws = [];
     private SessionAudio? _audio;
     private SessionFailure? PresentationFailure => _result?.Failure ??
+        (_fieldMenu?.AssetError is { } fieldError ? new SessionFailure(SessionFailureKind.AdapterError,
+            "field-menu-resource-invalid", "presentation.fieldMenu", fieldError) : null) ??
         (_church?.AssetError is { } churchError ? new SessionFailure(SessionFailureKind.AdapterError,
             "church-menu-resource-invalid", "presentation.churchMenu", churchError) : null) ??
         (_presentation?.Error is { } error ? new(SessionFailureKind.AdapterError,
@@ -114,6 +116,9 @@ public sealed partial class ExplorationSessionView : Control
             return result;
         };
         ui.AddChild(_partyStatus);
+        _fieldMenu = new FieldMenuView { Name = "FieldMenu" }; ui.AddChild(_fieldMenu);
+        // Member/preparation pages cover the root diamond and retain their existing consumers.
+        ui.MoveChild(_partyStatus, -1);
         _church = new ChurchServiceView { Name = "ChurchService" }; ui.AddChild(_church);
         _shop = new ShopServiceView { Name = "ShopService" }; ui.AddChild(_shop);
         // Keep a stopped presentation readable even when the world is held black.
@@ -149,6 +154,7 @@ public sealed partial class ExplorationSessionView : Control
         _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
+        _fieldMenu?.Suspend();
         _church?.Suspend(); _shop?.Suspend();
         if (PresentationFailure is not null) { _church?.Hide(); _shop?.Hide(); _churchSaveRequested = false; }
         SuspendEntrySkip();
@@ -207,18 +213,19 @@ public sealed partial class ExplorationSessionView : Control
         if (_session is null) return;
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
+        if (!_input.GameplayHeld) _skipRequiresRelease = false;
         if (_session.Current.Story.Wait is ChurchWait or ShopWait)
         {
-            if (!_input.GameplayHeld) _skipRequiresRelease = false;
             PresentServices(); _tickTime = 0; return;
         }
         if (_partyStatus.Open)
-        { _partyStatus.Present(_session, _input); _tickTime = 0; return; }
+        { _partyStatus.Present(_session, _input); PresentFieldMenu(); _tickTime = 0; return; }
+        PresentFieldMenu();
+        if (_fieldMenuActive) { _tickTime = 0; return; }
         if (FinishEntryHandoff()) return;
         if (_handedOff || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (!ChoiceButtonsHeld) _choiceRequiresRelease = false;
-        if (!_input.GameplayHeld) _skipRequiresRelease = false;
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
         { Send(new ChoiceHeldInput(entry.Token, ChoiceButtonsHeld)); return; }
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Release } release)
@@ -342,6 +349,9 @@ public sealed partial class ExplorationSessionView : Control
             _partyStatus.Handle(action, _session, _input);
             Present(); return;
         }
+        if (_fieldMenuActive) { _fieldMenu.Handle(action); Present(); return; }
+        if (action == GameAction.Cancel && CanOpenFieldMenu && !_skipRequiresRelease)
+        { BeginFieldMenu(); return; }
         if (action == GameAction.Equipment && current.CanWaitAtInput && !_battleMounted)
         {
             _movementHold.Clear(_input); CancelFieldWait(); _returnFeedback.Dismiss();
@@ -513,11 +523,12 @@ public sealed partial class ExplorationSessionView : Control
         if (_session.Current.CanWaitAtInput && _releaseBattle is not null)
         { _releaseBattle(); _releaseBattle = null; _battleMounted = false; }
         if (!_battleMounted) _lastWorld = _session.Current.Exploration ?? _lastWorld;
-        _dialogueView.Visible = PresentationFailure is null && !_partyStatus.Open && _session.Current.Story.Wait is not (ChurchWait or ShopWait);
+        _dialogueView.Visible = PresentationFailure is null && !PartyMenuOpen && _session.Current.Story.Wait is not (ChurchWait or ShopWait);
         PresentServices();
         _dialogueView.ReturnNotice = _returnFeedback.Notice(_session.Current);
         if (PresentationFailure is not null) _partyStatus.Hide();
         _partyStatus.Present(_session, _input);
+        PresentFieldMenu();
         _dialogueView.Present(_session, _input, WorldViewport, _battleMounted, TextRevealed);
         _failureLabel.GetParent<Control>().Visible = PresentationFailure is not null;
         _failureLabel.Text = PresentationFailure is { } failure
@@ -813,7 +824,7 @@ public sealed partial class ExplorationSessionView : Control
                 cameraX = WorldViewport.Origin.X, cameraY = WorldViewport.Origin.Y,
                 bounds = Battles.BattleMapViewport.Rectangle(WorldViewport.Bounds),
                 legalScreen = Battles.BattleMapViewport.Rectangle(WorldViewport.Screen) },
-            battleMounted = _battleMounted, partyStatus = _partyStatus.Observe(), church = _church.Observe(), shop = _shop.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
+            battleMounted = _battleMounted, fieldMenu = _fieldMenu.Observe(), partyStatus = _partyStatus.Observe(), church = _church.Observe(), shop = _shop.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             itemCustody = current?.Exploration?.Party.ItemCustody,
             admittedParty = full && current?.Exploration is { } world ? new

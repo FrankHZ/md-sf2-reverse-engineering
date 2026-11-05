@@ -2995,3 +2995,63 @@ Existing eight-instance ObjectDB shutdown warnings in the real-source seam remai
 Physical hardware delivery, original menu animation/window pixels and human visual approval remain
 outside these observations; #1456 owns the latter. Run affected adapter compilation, direct resource
 preparation/provenance and document checks, committed planner selection and actual exact-head CI.
+
+## Exploration gameplay diamond observation
+
+The [gameplay agreement](../godot/presentation.md#exploration-gameplay-diamond-agreement-1588) owns
+scope, source mapping and modern input decisions. `probes/engine_field_menu_observation.gd` drives
+actual Godot input and reads the ordinary session/presenter state. It never injects gameplay commands,
+completions or post-start state and captures no screenshots. Reuse the selected installation/project;
+a new native instance is necessary when no owned one remains or changed adapter binaries need loading.
+
+Prepare one small controlled authored start in an explicit ignored directory from
+`remake/content/authored/localization-pilot.json`: remove `start.program`, set its position to(2,2)
+and facing2. Keep the original world programs/events and controlled party. Write instant-text
+version1 settings with language `en` or `zh-CN`. For private original icons use the existing
+[world-menu publisher](../content/presentation-assets.md#private-exploration-menu-icons), and use its
+resulting `world.json` as the authored package. After same-process configuration and Debug build:
+
+```powershell
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$env:SF2_FIELD_MENU_OUTPUT = <absolute-new-ignored-report-path>
+$env:SF2_FIELD_MENU_CASE = 'public'
+& $env:GODOT_BIN --headless --fullscreen --fixed-fps 60 --resolution 1920x1080 `
+    --audio-driver Dummy --path remake/game --script res://probes/engine_field_menu_observation.gd `
+    -- --authored-package <absolute-controlled-package> --input-settings <absolute-settings>
+```
+
+Use the existing worktree-local TEMP/cache and fresh APPDATA/LOCALAPPDATA/report selections. No user
+save slot is read or written. The observer exits after its finite steps; operator wrappers retain
+exit/error output and stop at55s. `public` observes root geometry, selected help at1080p/1440p,
+Member/Magic/Item consumers, empty spells, all free pages and the actual flushed closing input edge,
+complete mouse entry, held Confirm, focus-exited signal invalidation and fresh gesture recovery,
+system/Save exclusion, pad return/Party shortcut and actual Search. Delivering the Godot focus signal
+checks the installed handler; it does not claim an OS window-focus transition. Independent visual
+and human usability acceptance remains #1456.
+
+Finite variants use the same scene and observer: omit the map `search` to verify disabled Search;
+`remap` settings assign Confirm F5/South and Cancel F6/East; `swapped` uses `confirmCancel: swapped`.
+`transaction` and `shortcut` add two item0s to the first authored actor, then compare gameplay Item
+versus E/Prepare Drop. Both submit exactly one confirmed Drop through the same consumer while held,
+preserve gold, restore the second item focus on pointer Back and return to field control. No new
+field effect/rule is inferred from this observation. `real` uses a controlled Map3 private start and
+an admitted world lacking FieldPreparation: Member remains available, Magic/Item are disabled,
+Search reaches the existing field Search wait even while facing a priest. It does not prove private
+normal-route reach or support absent from that content. `bad-png` replaces magic.selected by a
+valid-dimension/digest but undecodable PNG and observes one stopped failure through further input.
+
+**Confirmed:** bounded observations pass for these inputs and actual adapter projection/errors.
+Fallback English widths are Party68, Magic76, Item60 and Search89px, all within96px; Chinese labels
+and the selected full descriptions fit the measured panels. Original normal/selected resources use
+24px images at4× nearest. Menu idle and provisional navigation preserve revision, simulation tick,
+party and gold; closing edge submits no command, and ordinary field time resumes afterward. Final
+menu and shortcut Drop results are equal. The initial focus scenario exposed a neutral-release
+reset located below the new modal early return; moving it before modal dispatch restores fresh
+pointer input. Earlier failed observer assumptions and unsupported-content attempts remain in the
+local slice handoff. **Unknown:** the private process retains the existing two-instance ObjectDB exit
+warning; expected malformed-PNG decoder errors are a separate deliberate failure observation.
+
+Gates are affected Content admission behavior plus existing FieldInventory/Recovery/Search tests,
+adapter Release and necessary Debug build, direct source/docs/private checks and clean committed
+planner/actual CI. The unchanged source-path limitation in normal toolchain verification and completed
+old aggregate failures remain failures; this UI change does not require another full aggregate run.

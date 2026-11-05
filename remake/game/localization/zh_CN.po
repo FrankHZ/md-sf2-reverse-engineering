@@ -1326,3 +1326,37 @@ msgstr "转职"
 
 msgid "church.icon-save"
 msgstr "存档"
+
+
+msgid "field-menu.title"
+msgstr "探索菜单"
+
+msgid "field-menu.member"
+msgstr "成员"
+
+msgid "field-menu.magic"
+msgstr "魔法"
+
+msgid "field-menu.item"
+msgstr "道具"
+
+msgid "field-menu.search"
+msgstr "搜索"
+
+msgid "field-menu.member-help"
+msgstr "查看成员状态与整备。选择成员后，可检查装备、道具和魔法。"
+
+msgid "field-menu.magic-help"
+msgstr "选择施法成员，再选择法术。野外效果和 MP 消耗沿用现有整备规则。"
+
+msgid "field-menu.item-help"
+msgstr "选择持有道具的成员，再选择使用、给予、装备或丢弃。每次变更均需单独确认。"
+
+msgid "field-menu.search-help"
+msgstr "调查当前面向的位置，与场景确认快捷操作使用相同的搜索规则。"
+
+msgid "field-menu.unavailable"
+msgstr "当前探索状态下不可用。"
+
+msgid "field-menu.hint"
+msgstr "{0} / {1} / {2} / {3}：选择\n{4}：确认   {5}：返回"
