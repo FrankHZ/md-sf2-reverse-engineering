@@ -1317,3 +1317,12 @@ msgstr "Save preparation was cancelled. Resume play before trying again."
 
 msgid "save.error.entry-transition"
 msgstr "The scene changed while preparing Save. Resume play before trying again."
+
+msgid "church.diamond-hint"
+msgstr "{0} / {1} / {2} / {3}: Choose service   {4}: Select\n{5}: Leave   Mouse: select an icon"
+
+msgid "church.icon-promote"
+msgstr "Promo."
+
+msgid "church.icon-save"
+msgstr "Save"

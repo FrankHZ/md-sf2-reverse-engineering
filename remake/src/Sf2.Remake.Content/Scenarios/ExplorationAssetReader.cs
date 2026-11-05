@@ -12,7 +12,7 @@ internal static class ExplorationAssetReader
 {
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
-        ObjectOptional(row, "presentation", "audio", ["maps", "sprites", "portraits"]);
+        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu");
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
@@ -98,8 +98,19 @@ internal static class ExplorationAssetReader
                 Require(audio.TryAdd(cue, new(command, timerB, rate, channels, pcm, digest, begin, end, modernEnd)),
                     "duplicate-audio-cue", "presentation.audio");
             }
+        Dictionary<string, ExplorationRaster>? churchMenu = null;
+        if (row.TryGetProperty("churchMenu", out var menu))
+        {
+            string[] keys = ["raise.normal", "raise.selected", "cure.normal", "cure.selected",
+                "promote.normal", "promote.selected", "save.normal", "save.selected"];
+            Object(menu, "presentation.churchMenu", keys);
+            churchMenu = keys.ToDictionary(key => key, key => Raster(menu.GetProperty(key)), StringComparer.Ordinal);
+            Require(churchMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
+                "church-menu-shape", "presentation.churchMenu");
+        }
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),
-            new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio));
+            new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio),
+            churchMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(churchMenu));
     }
 
     private static IReadOnlyList<PortraitTileChange>? PortraitChanges(JsonElement portrait, string key)

@@ -2931,3 +2931,67 @@ candidate. This is an adapter/UI correction, with no new engine behavior or help
 research/engine/H3/full-suite rerun. Direct ownership, source-size, document/link/catalog and private
 boundary checks complete the slice. Record actual CI independently from the selected plan; queued is
 not passed. Freeze a Draft PR for main-gate's independent review and merge.
+
+
+## Church diamond observation
+
+The [Standard current agreement](../godot/presentation.md#church-and-shared-save-agreement-1519)
+owns #1587. Use `probes/engine_church_diamond_observation.gd` with the actual Debug adapter,
+selected existing Godot installation/project and same-process private/tool configuration. The
+observer submits ordinary mapped keys, pad buttons and pointer events; it reads real state, labels,
+rectangles and errors. No screenshots, post-start state setters, synthetic successful commands,
+whole-route run or tests of the observer are involved.
+
+Small controlled input: copy `content/authored/localization-pilot.json` into a fresh ignored output;
+remove `start.program`, set position(2,2), facing2 (West), keeping its real church interaction,
+programs, party, text/font and presentation. Initial gold100 and dead/status-bearing medic provide
+Raise10 and Cure poison10/stun20. For the `low` case change only initial gold to5. Do not mutate
+live state. `public` uses no church rasters. `private` mounts only the eight privately prepared
+`churchMenu` entries into that same input. `bad-png` changes only `cure.selected` to a33-byte PNG
+header claiming24×24, with correct digest/declared shape but invalid image data. This deliberately
+passes header admission and exercises the actual native decoder/failure boundary.
+
+```powershell
+$env:SF2_CHURCH_CASE = 'public' # private, low, bad-png, or real
+$env:SF2_CHURCH_OUTPUT = Join-Path $freshIgnoredRun 'native.json'
+# Resolve these paths before launch; APPDATA/LOCALAPPDATA/TEMP remain in this fresh owning run.
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1920x1080 --path $project `
+    --audio-driver Dummy --script res://probes/engine_church_diamond_observation.gd -- `
+    --authored-package $controlledPackage --input-settings $preferences
+```
+
+Preferences are ordinary version1 English/Chinese, instant text. The observer sets the headless
+viewport to1920×1080 before mounting the ordinary host. Run with a55s process deadline and stop the
+owned process after completion; retain logs, failures and process exit/stopped state. Reimport only
+changed translation resources if required, and keep importer output out of the diff.
+
+**Confirmed:** English and Chinese no-art samples fit the short96px button captions and full
+selected text. Four cardinal icons plus independent Leave replace the five-row menu. Mapped
+keyboard Promotion refuses without mutation; a new focus clears its reason. Holding a mouse press
+through actual system Menu/Back rejects its old release; a fresh complete icon click reaches Raise.
+Decline takes no gold; accept charges10 once while held Confirm cannot advance/recharge. Pad Cure
+preserves ordered poison refusal then stun20/payment/result/menu. Healthy Raise and the separate
+5-gold insufficient case preserve resources. Save help wraps at1080p/1440p. Authored Save completes
+its caller and uses the shared `save-profile-unavailable` panel; closing it returns usable field.
+The private-art sample observes all mounted normal/selected church resources. Bad PNG reports one
+native decoder error, `church-menu-resource-invalid`, a hidden service and stable revision after
+idle/fresh input; no repeated decode or payment occurs.
+
+`real` uses the existing admitted private world with only these new resources, the same controlled
+initial party and an explicit Map3 priest-counter start(32,13), facing1 (North), with the current
+opening flags/display/text settings. Select it through `--private-exploration-start` rather than
+`--authored-package`. Ordinary Confirm enters the actual original Church program/event; healthy
+Cure returns no-applicable with gold60 unchanged. Leave completes the caller; a fresh interaction
+reopens it. Save then completes the actual caller/portrait/finite settlement and reaches the same
+shared eligibility failure with no `ChurchWait` or payment. This controlled diagnostic seam does not
+claim natural reach or grant product save eligibility; retained
+[shared Save calibration](#church-and-shared-save-calibration) owns successful slot/write/restart
+coverage, whose host/format is unchanged here. No user slots/backups are read or written by this seam.
+
+The representative authored run completed in<2s; real source observation in<2s after startup. The
+single prepared private world preserves its selected encounter dependency files. Retain failed
+startup/window/fixture setup observations and their corrections; they are not interrupted runs.
+Existing eight-instance ObjectDB shutdown warnings in the real-source seam remain **Unknown**.
+Physical hardware delivery, original menu animation/window pixels and human visual approval remain
+outside these observations; #1456 owns the latter. Run affected adapter compilation, direct resource
+preparation/provenance and document checks, committed planner selection and actual exact-head CI.
