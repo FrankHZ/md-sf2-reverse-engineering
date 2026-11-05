@@ -22,6 +22,7 @@ jobs:
       adapter: ${{ steps.paths.outputs.adapter }}
       research: ${{ steps.paths.outputs.research }}
       h4: ${{ steps.paths.outputs.h4 }}
+      admission: ${{ steps.paths.outputs.admission }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,6 +48,7 @@ jobs:
           $adapter = $false
           $research = $false
           $h4 = $false
+          $admission = $false
           foreach ($changedPath in $changedPaths) {
             if ($changedPath -like 'tools/h4-comparison/*' -or $changedPath -in @('src/sf2tool/h4_dotnet.py', 'src/sf2tool/remake_h4_comparison.py', 'src/sf2tool/dotnet_environment.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/verification_engine_paths.py', '.github/workflows/public-checks.yml')) {
               $h4 = $true
@@ -55,6 +57,7 @@ jobs:
               $engine = $true
               $adapter = $true
               $research = $true
+              $admission = $true
             } elseif ($changedPath -in @('tests/fixtures/h2/map3-battle01-admission-static-v1.json', 'tests/fixtures/h2/map3-battle01-victory-return-static-v1.json', 'tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json', 'tests/fixtures/h3/battle-exp-level-up-v1.json', 'tests/fixtures/h3/battlefield-movement-matrix-v1.json', 'tests/fixtures/h3/entity-movement-matrix-v1.json', 'tests/fixtures/h3/map3-admitted-start-v1.json', 'tests/fixtures/h3/map3-battle01-natural-route-v1.json', 'tests/fixtures/h3/map3-battle01-player-ready-v1.json', 'tests/fixtures/h3/map3-messenger-acceptance-v1.json')) {
               $engine = $true
               $research = $true
@@ -62,6 +65,8 @@ jobs:
               $research = $true
             } elseif ($changedPath -like '*.md') {
               continue
+            } elseif ($changedPath -like 'remake/tools/Sf2.Remake.PrivateAdmission/*') {
+              $admission = $true
             } elseif ($changedPath -like 'remake/tests/Sf2.Remake.Engine.Tests/*') {
               $engine = $true
             } elseif ($changedPath -like 'remake/tests/*') {
@@ -73,6 +78,7 @@ jobs:
             } elseif ($changedPath -like 'remake/*') {
               $engine = $true
               $adapter = $true
+              $admission = $true
             } else {
               $research = $true
             }
@@ -81,6 +87,44 @@ jobs:
           "adapter=$($adapter.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "research=$($research.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "h4=$($h4.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "admission=$($admission.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+  private-admission-build:
+    needs: scope
+    if: needs.scope.outputs.admission == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: remake
+    env:
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"
+      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home
+      DOTNET_CLI_USE_MSBUILD_SERVER: "0"
+      MSBUILDDISABLENODEREUSE: "1"
+      NUGET_PACKAGES: ${{ github.workspace }}/local/nuget-packages
+      NUGET_HTTP_CACHE_PATH: ${{ github.workspace }}/local/nuget-http-cache
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            10.0.204
+            8.0.424
+      - name: Compile maintained admission entry without private inputs
+        run: |
+          $env:DOTNET_BIN = (Get-Command dotnet -CommandType Application).Source
+          $env:TEMP = Join-Path $env:GITHUB_WORKSPACE 'local/tmp/admission'
+          $env:TMP = $env:TEMP
+          New-Item -ItemType Directory -Force $env:TEMP | Out-Null
+          $project = 'tools/Sf2.Remake.PrivateAdmission/Sf2.Remake.PrivateAdmission.csproj'
+          & $env:DOTNET_BIN restore $project --locked-mode
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $env:DOTNET_BIN build $project --configuration Release --no-restore
+          exit $LASTEXITCODE
 
   engine-unit:
     needs: scope

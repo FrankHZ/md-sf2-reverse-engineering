@@ -20,6 +20,7 @@ from sf2tool.verification_engine_paths import (
     REMAKE_PRODUCER_PATHS,
     RETIRED_ENGINE_TEST_PATHS,
     _engine_or_document_path,
+    engine_partitions_for_path,
 )
 
 
@@ -218,6 +219,17 @@ def _h3_command(command: str) -> str:
 
 
 PARTITIONS = (
+    VerificationPartition(
+        "private-admission-build",
+        "remake",
+        "Compile the private admission entry; run from remake/ after SDK setup.",
+        (
+            "& $env:DOTNET_BIN build "
+            "tools/Sf2.Remake.PrivateAdmission/Sf2.Remake.PrivateAdmission.csproj "
+            "--configuration Release -p:RestoreLockedMode=true",
+        ),
+        external_gates=("Public checks / private-admission-build",),
+    ),
     VerificationPartition(
         "h4-comparison-build",
         "affected",
@@ -658,30 +670,7 @@ def _plan_engine_paths(
     selected: dict[str, dict[str, set[str]]] = {}
     _select_all(selected, include_partitions, "explicit --include-partition")
     for path in paths:
-        if path in {
-            "src/sf2tool/verification_plan.py",
-            "src/sf2tool/verification_engine_paths.py",
-            ".github/workflows/public-checks.yml",
-        }:
-            _selection_entry(selected, "h4-comparison-build", path)
-        if path.endswith(".md") or path in RETIRED_ENGINE_TEST_PATHS:
-            continue
-        if path in ENGINE_WIRING_PATHS or path == ".github/workflows/public-checks.yml":
-            _select_all(selected, ("engine-unit", "adapter-build", "research-public"), path)
-        elif path.startswith("remake/tests/Sf2.Remake.Engine.Tests/"):
-            _selection_entry(selected, "engine-unit", path)
-        elif path.startswith("remake/tests/"):
-            # Legacy/reference test edits or retirement do not run the old solution.
-            continue
-        elif path.startswith("remake/reference/inputs/"):
-            # External controlled starts copied by Engine.Tests and read by the common host.
-            _selection_entry(selected, "engine-unit", path)
-        elif path.startswith("remake/game/"):
-            _selection_entry(selected, "adapter-build", path)
-        else:
-            # Shared runtime/configuration roots build every actual downstream host.
-            _selection_entry(selected, "engine-unit", path)
-            _selection_entry(selected, "adapter-build", path)
+        _select_all(selected, engine_partitions_for_path(path), path)
     return {**_selection_rows(selected, set()), "scope": "engine"}
 
 
@@ -745,6 +734,8 @@ def plan_paths(
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
+        if normalized in ENGINE_WIRING_PATHS or normalized == ".github/workflows/public-checks.yml":
+            _selection_entry(selected, "private-admission-build", normalized)
         if normalized in {
             "src/sf2tool/verification_plan.py",
             "src/sf2tool/verification_engine_paths.py",

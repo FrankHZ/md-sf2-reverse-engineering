@@ -1127,139 +1127,121 @@ production projects and Engine.Tests; the legacy test projects and reference hos
 
 ## Private world mutation probes
 
-The #1569 agreement uses **Standard** rigor for a bounded verification repair; production admission,
-gameplay and the existing High-rigor state/save boundaries are unchanged. Scope is the two obsolete
-`PrivateExplorationTests` input-validation nodes and their verification/campaign/audit dispositions.
-They are retired under the current test policy; the direct recipe below retains all three intended
-rejections, valid admission and strict size rejection. No new world, production API, reader limit,
-verification framework or aggregate rerun is needed.
+**Standard** rigor: this bounded maintenance entry owns reproducible private admission checks and
+its compilation, with explicit package/scratch inputs. Production admission, gameplay and the
+existing High-rigor state/save boundaries are unchanged. The two obsolete `PrivateExplorationTests`
+validation nodes remain retired. No tests of this probe, general package copier, new world,
+production API/limit change, Godot run or old aggregate rerun is part of this scope.
 
-**Confirmed:** on .NET8.0.31 / System.Text.Json8.0.0.0, the registered services world is125,828,417 bytes.
-Default `JsonNode.ToJsonString()` produces146,157,627 bytes, including4,064,367 `\u002B` escapes.
-`UnsafeRelaxedJsonEscaping` produces125,828,417 bytes with zero escaped plus signs. Both are compact
-JSON. This encoder is suitable for JSON-file scratch inputs, not HTML embedding. The unchanged
-`PrivateExplorationReader` has pre-read and post-read134,217,728-byte guards. It rejects the default
-file with `document-size`; the JSON-only control starts through the actual `GameSession.Start`.
+The maintained owner is [`Sf2.Remake.PrivateAdmission`](../tools/Sf2.Remake.PrivateAdmission/Program.cs),
+a small console project referencing the actual Content reader and `GameSession.Start`. Public CI
+and the planner's `private-admission-build` compile it without private inputs. Changes to the tool
+select that build; product/shared build changes also compile this consumer. This is not an automatic
+private execution gate. Planner/CI wiring retains its existing conservative public selections.
 
-The pre-run estimate used O(n) time/space per serialization, one worker, <=3GiB peak memory,
-<=1GiB local scratch and ten minutes of measurement/check execution, with22.8GiB free disk.
-Escaping the plus signs alone was estimated to add20,321,835 bytes. Reassess before expanding these
-budgets. The initial serial measurement took1.63seconds and peaked at2,002,157,568 bytes; input
-size/mtime stayed unchanged. The final five-case direct check took3.07seconds and peaked at
-1,731,530,752 bytes. Retained scratch stays below1GiB. No network acquisition or API processing is used.
+### Supported package and path contract
 
-### Explicit staged-package contract
-
-This recipe supports the registered `world-services-issue1424.json`, its accepted Battle01 placement,
-scene, terrain, static, enemies, gold and controlled-start selections, and the eight relative encounter
-inputs below. It is not a universal world-package copier or a test requiring only the world file.
-`PrivateExplorationReader` reads encounters **before** provenance; their relative paths resolve from
-the world file's directory. The old nodes lost that base by writing to arbitrary TEMP. Changing only
-their encoder is insufficient. The first measurement without staged dependencies returned
-`private-encounter`; preserve `local/issue1569/measurement.log` as that failed attempt.
-
-Load the owning worktree's ignored selections in the same process as each command. Keep shared
-inputs read-only and caches/TEMP local under the locked SDK workflow. Prepare a fresh explicit
-directory beneath this checkout's `local/`, copying the selected world as `world.json` and these
-eight selected inputs with their relative paths unchanged (669,487 dependency bytes):
+The entry supports the already prepared services world (`world-services-issue1424.json`, named
+`world.json` in the selected package), its accepted Battle01 placement, scene, terrain, static,
+enemies, gold and controlled-start selections, and exactly these eight world-relative dependencies:
 
 - `battle02/placement.json`, `battle02/scene.json`, `battle02/terrain.bin`, `battle02-party.json`
 - `accepted-inputs/SF2_PRIVATE_STATIC_DATA.json`, `accepted-inputs/SF2_PRIVATE_ENEMY_DATA.json`,
   `accepted-inputs/SF2_PRIVATE_ENEMY_GOLD.json`, `scene02-field-01/battle-scenes.json`
 
-Byte-compare each copy to its selected source. No source directory is writable scratch. The program
-takes this staged directory explicitly; it never relies on TEMP containing hidden dependencies.
-Its valid JSON-only control runs first and stops the command on any missing/incompatible dependency,
-before the negative cases can be counted. It reuses only its own newly named mutation file, retaining
-the staged source and compact results. Other worlds/dependency layouts need a separately declared
-selection and budget; they are not silently supported by this bounded recipe.
+The package is read-only. The tool checks the fixed encounter layout and copies only these eight
+files (669,487 bytes for the accepted package), preserving bytes and relative names, to the explicit
+fresh scratch directory. It serializes one `mutation.json` there, reusing only that new run's file.
+No world copy, source-adjacent sibling, directory-tree copier, hidden TEMP dependency, path rewriting,
+link or manifest is required. Other layouts and external `runtimeWav` audio are unsupported. Keep
+this bounded input's real encoding expansion; reduced inputs have not been established equivalent.
+
+Pass arguments in this order: `--repository <checkout> --package <directory> --scratch <directory>`.
+`--repository` resolves against the caller's working directory and must contain this tool and Git
+metadata (a `.git` file in a linked worktree is supported). Package and scratch paths resolve against
+that explicit repository, independent of cwd; absolute paths are also accepted. Scratch must not
+exist, must be beneath this checkout's `local/`, must be separate from the input package, and cannot
+traverse a link/junction. Inputs may be registered shared read-only selections. Nothing in another
+checkout is written merely because it is the caller's cwd. Build products stay in the tool's owning
+checkout; the executable is not a standalone installed replacement for its repository's inputs.
+
+Load the owning worktree's ignored selections in the same process as each invocation, following
+[Local Private Inputs](../../docs/operations/local-private-inputs.md) and the
+[locked SDK workflow](#locked-net-workflow). The seven `SF2_PRIVATE_` selections are
+`BATTLE01_DATA`, `BATTLE01_SCENE`, `BATTLE01_TERRAIN`, `STATIC_DATA`, `ENEMY_DATA`, `ENEMY_GOLD`,
+and `CONTROLLED_START`; each must name an existing absolute file. `SF2_PRIVATE_EXPLORATION_CONTENT`
+is not consulted: the world is explicitly selected by `--package`. Keep NuGet/TEMP/output local.
 
 ### Direct reproduction
 
-Save the following as `local/issue1569/direct/direct.csproj` and `Program.cs` respectively (ignored
-local reproduction files, not another maintained verification project). The code is the direct
-production admission check, with no tests of the check itself:
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="../../../remake/src/Sf2.Remake.Content/Sf2.Remake.Content.csproj" />
-  </ItemGroup>
-</Project>
-```
-
-```csharp
-using System.Diagnostics;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Sf2.Remake.Application.Runtime;
-using Sf2.Remake.Content.Scenarios;
-
-// Run from remake/ with an explicitly prepared package under this checkout's local/.
-string Input(string key) => Environment.GetEnvironmentVariable("SF2_PRIVATE_" + key)!;
-var directory = Path.GetFullPath(args[0]);
-var local = Path.GetFullPath("../local") + Path.DirectorySeparatorChar;
-if (!directory.StartsWith(local, StringComparison.OrdinalIgnoreCase))
-    throw new Exception("Select a worktree-local staged package, never the canonical input directory.");
-var world = Path.Combine(directory, "world.json");
-var scratch = Path.Combine(directory, "probe-" + Guid.NewGuid().ToString("N") + ".json");
-var party = new PrivateBattleScenarioReader(Input("BATTLE01_DATA"), Input("BATTLE01_SCENE"),
-    Input("BATTLE01_TERRAIN"), Input("STATIC_DATA"), Input("ENEMY_DATA"), Input("ENEMY_GOLD"), Input("CONTROLLED_START"));
-var watch = Stopwatch.StartNew();
-foreach (string expected in new[] { "accepted", "world-rom-identity", "raster-identity", "missing-sprite-visual", "document-size" })
-{
-    Probe(expected);
-    GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-}
-Console.WriteLine($"seconds={watch.Elapsed.TotalSeconds:F2}; peakWorkingSetBytes={Process.GetCurrentProcess().PeakWorkingSet64}");
-
-void Probe(string expected)
-{
-    var node = JsonNode.Parse(File.ReadAllText(world))!;
-    if (expected == "world-rom-identity") node["provenance"]!["romSha256"] = new string('0', 64);
-    if (expected == "raster-identity") node["world"]!["presentation"]!["maps"]![0]!["atlas"]!["data"] = "AAAA";
-    if (expected == "missing-sprite-visual")
-    {
-        var sprites = node["world"]!["presentation"]!["sprites"]!.AsArray();
-        sprites.Remove(sprites.Single(sprite => sprite!["sprite"]!.GetValue<int>() == 209));
-    }
-    // Only JSON files, never HTML. Default encoding is retained solely as the oversized control.
-    var options = expected == "document-size" ? null : new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-    File.WriteAllText(scratch, node.ToJsonString(options));
-    var start = expected == "world-rom-identity" ? "map3-sarah-start.json" : "map3-opening-start.json";
-    var result = GameSession.Start(new PrivateExplorationReader(scratch, Path.GetFullPath("reference/inputs/" + start), party));
-    var code = result is SessionStartFailed failed ? failed.Failure.Code : result is SessionStarted ? "accepted" : "unexpected-result";
-    Console.WriteLine($"expected={expected}; actual={code}; bytes={new FileInfo(scratch).Length}");
-    if (code != expected || result is SessionStartFailed failure && failure.Failure.Kind != SessionFailureKind.ContentError)
-        throw new Exception("Admission control failed: " + code);
-}
-```
-
-From `remake/`, after same-process input/SDK setup, use the explicit staged directory:
+From `remake/`, after same-process environment setup, build and run the maintained project. The
+example reuses the existing accepted package; choose a new scratch name for every invocation.
+No copied C# source or temporary project is needed.
 
 ```powershell
-& $env:DOTNET_BIN restore ../local/issue1569/direct/direct.csproj --locked-mode
-& $env:DOTNET_BIN run --project ../local/issue1569/direct/direct.csproj `
-  --configuration Release --no-restore -- ../local/issue1569/scratch
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$project = 'tools/Sf2.Remake.PrivateAdmission/Sf2.Remake.PrivateAdmission.csproj'
+& $env:DOTNET_BIN restore $project --locked-mode
+if ($LASTEXITCODE -ne 0) { throw 'Admission restore failed' }
+& $env:DOTNET_BIN build $project --configuration Release --no-restore
+if ($LASTEXITCODE -ne 0) { throw 'Admission build failed' }
+& $env:DOTNET_BIN run --project $project --configuration Release --no-build --no-restore -- `
+  --repository .. --package local/issue1569/scratch --scratch local/issue1576/admission-remake
+if ($LASTEXITCODE -ne 0) { throw 'Admission controls failed; retain the case output' }
 ```
 
-**Confirmed:** the direct check exits0 with `accepted` (125,828,417 bytes), `world-rom-identity`
-(125,828,417), `raster-identity` (125,799,637), `missing-sprite-visual` (125,809,545), and
-`document-size` (146,157,627). Each rejection is `ContentError`. No guard, golden or expected code
-changed. The intermediate two-node run with staged TEMP passed2/0/0, but is not the final delivery:
-the final recipe makes its package dependency explicit and retires those validation unit nodes.
+After building, the equivalent invocation from the repository root is:
 
-Preserve the completed2069 PASS/25 FAIL/2 SKIP aggregate and later20 PASS/2 FAIL disposition; these
-focused controls do not turn historical runs green. Clean-head planner and actual CI belong to the
-PR handoff. Original reach/timing, full campaign and Godot/ObjectDB exit behavior remain outside
-this admission-only repair.
+```powershell
+& $env:DOTNET_BIN remake/tools/Sf2.Remake.PrivateAdmission/bin/Release/net8.0/Sf2.Remake.PrivateAdmission.dll `
+  --repository . --package local/issue1569/scratch --scratch local/issue1576/admission-root
+if ($LASTEXITCODE -ne 0) { throw 'Admission controls failed; retain the case output' }
+```
+
+The valid JSON-only control must start successfully before any negative case runs. Every case prints
+expected/actual code, failure kind and bytes; any mismatch stops with exit1, never skipped. Setup,
+missing-dependency and malformed-input failures also exit1. Success exits0 after all five controls.
+The final line reports exit status, elapsed seconds, process peak working set and scratch bytes;
+retain stdout/stderr and the process exit code together. Failed-run scratch is retained for inspection.
+
+**Confirmed:** root and `remake/` invocations in the isolated linked worktree both produced:
+
+| Expected and actual result | Bytes | Failure kind |
+| --- | ---: | --- |
+| `accepted` | 125,828,417 | none |
+| `world-rom-identity` | 125,828,417 | `ContentError` |
+| `raster-identity` | 125,799,637 | `ContentError` |
+| `missing-sprite-visual` | 125,809,545 | `ContentError` |
+| `document-size` | 146,157,627 | `ContentError` |
+
+The runs exited 0 in 3.03/3.04 seconds, peaking at 1,891,250,176/1,892,032,512 bytes and retaining
+146,827,114 scratch bytes each. Input size/mtime stayed unchanged. Before execution, the O(n)
+parse/serialization plan reused the <=3GiB peak, <=1GiB cumulative scratch and ten-minute budget,
+with about 22 GiB free disk. One worker, no network/API processing. Reassess before expanding inputs
+or run count. No large package needs to be copied to another checkout for path checks.
+
+**Confirmed:** a 397-byte synthetic package with a missing dependency exits1 before creating scratch;
+with tiny invalid dependencies, its valid control returns `missing-field` and exits1 without running
+negative cases. The same small input invoked from another checkout's cwd writes only beneath the
+explicit repository. Source-overlapping and already-existing scratch selections exit1 without
+writing. These direct path/failure checks use the actual entry, not a second test project.
+
+### Preserved evidence and limits
+
+**Confirmed:** on .NET8.0.31 / System.Text.Json8.0.0.0, default serialization of the125,828,417-byte
+world produces146,157,627 bytes, including4,064,367 `\u002B` escapes. JSON-only
+`UnsafeRelaxedJsonEscaping` preserves125,828,417 bytes with no escaped plus signs; it is not suitable
+for HTML embedding. The production reader's pre/post-read134,217,728-byte guards remain unchanged.
+
+The initial check without staged dependencies failed `private-encounter` before provenance:
+`PrivateExplorationReader` resolves encounter inputs from the world directory. Retain
+`local/issue1569/measurement.log`; changing the encoder alone did not repair that failure. The
+subsequent staged-TEMP two-node run passed2/0/0; the final explicit-package direct run passed all
+five controls in3.07seconds with1,731,530,752-byte peak. Its original serial measurement took
+1.63seconds with2,002,157,568-byte peak. Keep those completed logs/materials and the completed
+2069 PASS/25 FAIL/2 SKIP aggregate and later20 PASS/2 FAIL disposition. This maintained entry does
+not replace historical failures with green. Original reach/timing, full campaign, other packages
+and Godot/ObjectDB exit behavior remain outside this admission-only boundary.
 
 ## Optional Private .NET Checks
 
@@ -1365,7 +1347,8 @@ request and main push. Its Windows jobs are:
 
 | Job | Current execution |
 | --- | --- |
-| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit engine, adapter, research and H4 affected-path booleans. |
+| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit engine, adapter, research, H4 and private-admission affected-path booleans. |
+| `private-admission-build` | Locked restore/build of the bounded [private admission entry](#private-world-mutation-probes) and its actual Content dependencies; no private execution or input. |
 | `engine-unit` | Locked restore/build/test of Engine.Tests and its actual production dependencies, using the pinned .NET SDK/runtime. No Python, native Godot, private input or legacy test project. |
 | `adapter-build` | Locked restore/build of the ordinary game C# project. No Godot tests or native editor launch. |
 | `research-public` | Locked Python/uv dependencies, Ruff, direct design-contract traceability and research-index checks. No engine or verification-tool pytest families. |
@@ -1374,7 +1357,9 @@ request and main push. Its Windows jobs are:
 Shared product/build inputs select engine and adapter; engine tests select engine; `remake/game/`
 selects the ordinary adapter. `remake/reference/inputs/` selects engine for its Engine.Tests consumers. Research/contracts/source/fixtures/manifests/schema inputs select
 research. Workflow and shared CLI/harness/planner changes select
-engine/adapter/research; the workflow also selects H4 for its explicit comparison/build inputs.
+engine/adapter/research and private-admission compilation; the workflow also selects H4 for its explicit comparison/build inputs.
+Changes under `remake/tools/Sf2.Remake.PrivateAdmission/` select only private-admission compilation;
+shared product/build inputs also compile that consumer.
 Changes under `tools/h4-comparison/` or to the named H4 bridge/comparator/environment/planner/workflow
 paths select `h4-comparison-build`. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency

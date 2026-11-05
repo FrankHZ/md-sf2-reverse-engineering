@@ -65,3 +65,34 @@ def _engine_or_document_path(path: str) -> bool:
         or path in RETIRED_ENGINE_TEST_PATHS
         or path == ".github/workflows/public-checks.yml"
     )
+
+
+def engine_partitions_for_path(path: str) -> tuple[str, ...]:
+    """Product/tool consumers; private admission executes only by explicit local selection."""
+    wiring = path in ENGINE_WIRING_PATHS or path == ".github/workflows/public-checks.yml"
+    comparison = (
+        ("h4-comparison-build",)
+        if path in {
+            "src/sf2tool/verification_plan.py",
+            "src/sf2tool/verification_engine_paths.py",
+            ".github/workflows/public-checks.yml",
+        }
+        else ()
+    )
+    if path.endswith(".md") or path in RETIRED_ENGINE_TEST_PATHS:
+        return ()
+    if wiring:
+        return comparison + (
+            "engine-unit", "adapter-build", "research-public", "private-admission-build"
+        )
+    if path.startswith("remake/tools/Sf2.Remake.PrivateAdmission/"):
+        return ("private-admission-build",)
+    if path.startswith("remake/tests/Sf2.Remake.Engine.Tests/"):
+        return ("engine-unit",)
+    if path.startswith("remake/tests/"):
+        return ()  # Retired projects do not run the old solution.
+    if path.startswith("remake/reference/inputs/"):
+        return ("engine-unit",)
+    if path.startswith("remake/game/"):
+        return ("adapter-build",)
+    return ("engine-unit", "adapter-build", "private-admission-build")
