@@ -78,6 +78,11 @@ public sealed partial class ExplorationSessionView
                 _session.Current.Exploration?.Definition != before.Exploration?.Definition ||
                 !_session.Current.HasOrdinaryFieldTime || !CanProcess() || _handedOff || _battleHandoffPending)
             { _tickTime = 0; return; }
+            // A completed step may hand straight to the next held direction. Read live input
+            // only after Observe has rejected story/transfer ownership; retain no queued Move.
+            if (!MenuEntryPending && !afterAction.CanWaitAtInput && _session.Current.CanWaitAtInput &&
+                _movementHold.Repeat(_input, _session.Current, Time.GetTicksUsec()) is { } nextDirection)
+                HandleAction(nextDirection, repeating: true);
         }
     }
 }
